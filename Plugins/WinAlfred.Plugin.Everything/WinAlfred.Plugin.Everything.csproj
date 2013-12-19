@@ -43,7 +43,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\WinAlfred.Plugin\WinAlfred.Plugin.csproj">
+    <ProjectReference Include="..\..\WinAlfred.Plugin\WinAlfred.Plugin.csproj">
       <Project>{8451ecdd-2ea4-4966-bb0a-7bbc40138e80}</Project>
       <Name>WinAlfred.Plugin</Name>
     </ProjectReference>

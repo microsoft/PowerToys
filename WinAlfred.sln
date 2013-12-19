@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinAlfred.Plugin", "WinAlfr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugin", "Plugin", "{3A73F5A7-0335-40D8-BF7C-F20BE5D0BA87}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinAlfred.Plugin.Everything", "WinAlfred.Plugin.Everything\WinAlfred.Plugin.Everything.csproj", "{230AE83F-E92E-4E69-8355-426B305DA9C0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinAlfred.Plugin.Everything", "Plugins\WinAlfred.Plugin.Everything\WinAlfred.Plugin.Everything.csproj", "{230AE83F-E92E-4E69-8355-426B305DA9C0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
