@@ -28,29 +28,31 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.tbQuery = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
-            // textBox1
+            // tbQuery
             // 
-            this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox1.Location = new System.Drawing.Point(12, 12);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(471, 21);
-            this.textBox1.TabIndex = 0;
+            this.tbQuery.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tbQuery.Location = new System.Drawing.Point(12, 12);
+            this.tbQuery.Name = "tbQuery";
+            this.tbQuery.Size = new System.Drawing.Size(471, 21);
+            this.tbQuery.TabIndex = 0;
+            this.tbQuery.TextChanged += new System.EventHandler(this.TbQuery_TextChanged);
             // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(495, 45);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.tbQuery);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "FrmMain";
             this.ShowIcon = false;
             this.Text = "Form1";
             this.TopMost = true;
+            this.Load += new System.EventHandler(this.FrmMain_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -58,7 +60,7 @@
 
         #endregion
 
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox tbQuery;
 
 
     }
