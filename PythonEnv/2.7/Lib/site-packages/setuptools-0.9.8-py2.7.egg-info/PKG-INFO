@@ -1,0 +1,960 @@
+Metadata-Version: 1.1
+Name: setuptools
+Version: 0.9.8
+Summary: Easily download, build, install, upgrade, and uninstall Python packages
+Home-page: https://pypi.python.org/pypi/setuptools
+Author: Python Packaging Authority
+Author-email: distutils-sig@python.org
+License: PSF or ZPL
+Description: ===============================
+        Installing and Using Setuptools
+        ===============================
+        
+        .. contents:: **Table of Contents**
+        
+        
+        -------------------------
+        Installation Instructions
+        -------------------------
+        
+        Upgrading from Distribute
+        =========================
+        
+        Currently, Distribute disallows installing Setuptools 0.7+ over Distribute.
+        You must first uninstall any active version of Distribute first (see
+        `Uninstalling`_).
+        
+        Upgrading from Setuptools 0.6
+        =============================
+        
+        Upgrading from prior versions of Setuptools is supported. Initial reports
+        good success in this regard.
+        
+        Windows
+        =======
+        
+        The recommended way to install setuptools on Windows is to download
+        `ez_setup.py`_ and run it. The script will download the appropriate .egg
+        file and install it for you.
+        
+        .. _ez_setup.py: https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+        
+        For best results, uninstall previous versions FIRST (see `Uninstalling`_).
+        
+        Once installation is complete, you will find an ``easy_install.exe`` program in
+        your Python ``Scripts`` subdirectory.  For simple invocation and best results,
+        add this directory to your ``PATH`` environment variable, if it is not already
+        present.
+        
+        
+        Unix-based Systems including Mac OS X
+        =====================================
+        
+        Download `ez_setup.py`_ and run it using the target Python version. The script
+        will download the appropriate version and install it for you::
+        
+            > wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py -O - | python
+        
+        Note that you will may need to invoke the command with superuser privileges to
+        install to the system Python.
+        
+        Alternatively, on Python 2.6 and later, Setuptools may be installed to a
+        user-local path::
+        
+            > wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+            > python ez_setup.py --user
+        
+        
+        Advanced Installation
+        =====================
+        
+        For more advanced installation options, such as installing to custom
+        locations or prefixes, download and extract the source
+        tarball from `Setuptools on PyPI <https://pypi.python.org/pypi/setuptools>`_
+        and run setup.py with any supported distutils and Setuptools options.
+        For example::
+        
+            setuptools-x.x$ python setup.py --prefix=/opt/setuptools
+        
+        Use ``--help`` to get a full options list, but we recommend consulting
+        the `EasyInstall manual`_ for detailed instructions, especially `the section
+        on custom installation locations`_.
+        
+        .. _EasyInstall manual: https://pythonhosted.org/setuptools/EasyInstall
+        .. _the section on custom installation locations: https://pythonhosted.org/setuptools/EasyInstall#custom-installation-locations
+        
+        
+        Downloads
+        =========
+        
+        All setuptools downloads can be found at `the project's home page in the Python
+        Package Index`_.  Scroll to the very bottom of the page to find the links.
+        
+        .. _the project's home page in the Python Package Index: https://pypi.python.org/pypi/setuptools
+        
+        In addition to the PyPI downloads, the development version of ``setuptools``
+        is available from the `Bitbucket repo`_, and in-development versions of the
+        `0.6 branch`_ are available as well.
+        
+        .. _Bitbucket repo: https://bitbucket.org/pypa/setuptools/get/default.tar.gz#egg=setuptools-dev
+        .. _0.6 branch: http://svn.python.org/projects/sandbox/branches/setuptools-0.6/#egg=setuptools-dev06
+        
+        Uninstalling
+        ============
+        
+        On Windows, if Setuptools was installed using an ``.exe`` or ``.msi``
+        installer, simply use the uninstall feature of "Add/Remove Programs" in the
+        Control Panel.
+        
+        Otherwise, to uninstall Setuptools or Distribute, regardless of the Python
+        version, delete all ``setuptools*`` and ``distribute*`` files and
+        directories from your system's ``site-packages`` directory
+        (and any other ``sys.path`` directories) FIRST.
+        
+        If you are upgrading or otherwise plan to re-install Setuptools or Distribute,
+        nothing further needs to be done. If you want to completely remove Setuptools,
+        you may also want to remove the 'easy_install' and 'easy_install-x.x' scripts
+        and associated executables installed to the Python scripts directory.
+        
+        --------------------------------
+        Using Setuptools and EasyInstall
+        --------------------------------
+        
+        Here are some of the available manuals, tutorials, and other resources for
+        learning about Setuptools, Python Eggs, and EasyInstall:
+        
+        * `The EasyInstall user's guide and reference manual`_
+        * `The setuptools Developer's Guide`_
+        * `The pkg_resources API reference`_
+        * `Package Compatibility Notes`_ (user-maintained)
+        * `The Internal Structure of Python Eggs`_
+        
+        Questions, comments, and bug reports should be directed to the `distutils-sig
+        mailing list`_.  If you have written (or know of) any tutorials, documentation,
+        plug-ins, or other resources for setuptools users, please let us know about
+        them there, so this reference list can be updated.  If you have working,
+        *tested* patches to correct problems or add features, you may submit them to
+        the `setuptools bug tracker`_.
+        
+        .. _setuptools bug tracker: https://bitbucket.org/pypa/setuptools/issues
+        .. _Package Compatibility Notes: https://pythonhosted.org/setuptools/PackageNotes
+        .. _The Internal Structure of Python Eggs: https://pythonhosted.org/setuptools/formats.html
+        .. _The setuptools Developer's Guide: https://pythonhosted.org/setuptools/setuptools.html
+        .. _The pkg_resources API reference: https://pythonhosted.org/setuptools/pkg_resources.html
+        .. _The EasyInstall user's guide and reference manual: https://pythonhosted.org/setuptools/easy_install.html
+        .. _distutils-sig mailing list: http://mail.python.org/pipermail/distutils-sig/
+        
+        
+        -------
+        Credits
+        -------
+        
+        * The original design for the ``.egg`` format and the ``pkg_resources`` API was
+          co-created by Phillip Eby and Bob Ippolito.  Bob also implemented the first
+          version of ``pkg_resources``, and supplied the OS X operating system version
+          compatibility algorithm.
+        
+        * Ian Bicking implemented many early "creature comfort" features of
+          easy_install, including support for downloading via Sourceforge and
+          Subversion repositories.  Ian's comments on the Web-SIG about WSGI
+          application deployment also inspired the concept of "entry points" in eggs,
+          and he has given talks at PyCon and elsewhere to inform and educate the
+          community about eggs and setuptools.
+        
+        * Jim Fulton contributed time and effort to build automated tests of various
+          aspects of ``easy_install``, and supplied the doctests for the command-line
+          ``.exe`` wrappers on Windows.
+        
+        * Phillip J. Eby is the seminal author of setuptools, and
+          first proposed the idea of an importable binary distribution format for
+          Python application plug-ins.
+        
+        * Significant parts of the implementation of setuptools were funded by the Open
+          Source Applications Foundation, to provide a plug-in infrastructure for the
+          Chandler PIM application.  In addition, many OSAF staffers (such as Mike
+          "Code Bear" Taylor) contributed their time and stress as guinea pigs for the
+          use of eggs and setuptools, even before eggs were "cool".  (Thanks, guys!)
+        
+        * Since the merge with Distribute, Jason R. Coombs is the
+          maintainer of setuptools.  The project is maintained in coordination with
+          the Python Packaging Authority (PyPA) and the larger Python community.
+        
+        .. _files:
+        
+        =======
+        CHANGES
+        =======
+        
+        -----
+        0.9.8
+        -----
+        
+        * `Issue #53 <https://bitbucket.org/pypa/setuptools/issue/53>`_: Fix NameErrors in `_vcs_split_rev_from_url`.
+        
+        -----
+        0.9.7
+        -----
+        
+        * `Issue #49 <https://bitbucket.org/pypa/setuptools/issue/49>`_: Correct AttributeError on PyPy where a hashlib.HASH object does
+          not have a `.name` attribute.
+        * `Issue #34 <https://bitbucket.org/pypa/setuptools/issue/34>`_: Documentation now refers to bootstrap script in code repository
+          referenced by bookmark.
+        * Add underscore-separated keys to environment markers (markerlib).
+        
+        -----
+        0.9.6
+        -----
+        
+        * `Issue #44 <https://bitbucket.org/pypa/setuptools/issue/44>`_: Test failure on Python 2.4 when MD5 hash doesn't have a `.name`
+          attribute.
+        
+        -----
+        0.9.5
+        -----
+        
+        * `Python #17980 <http://bugs.python.org/issue17980>`_: Fix security vulnerability in SSL certificate validation.
+        
+        -----
+        0.9.4
+        -----
+        
+        * `Issue #43 <https://bitbucket.org/pypa/setuptools/issue/43>`_: Fix issue (introduced in 0.9.1) with version resolution when
+          upgrading over other releases of Setuptools.
+        
+        -----
+        0.9.3
+        -----
+        
+        * `Issue #42 <https://bitbucket.org/pypa/setuptools/issue/42>`_: Fix new ``AttributeError`` introduced in last fix.
+        
+        -----
+        0.9.2
+        -----
+        
+        * `Issue #42 <https://bitbucket.org/pypa/setuptools/issue/42>`_: Fix regression where blank checksums would trigger an
+          ``AttributeError``.
+        
+        -----
+        0.9.1
+        -----
+        
+        * `Distribute #386 <https://bitbucket.org/tarek/distribute/issue/386>`_: Allow other positional and keyword arguments to os.open.
+        * Corrected dependency on certifi mis-referenced in 0.9.
+        
+        ---
+        0.9
+        ---
+        
+        * `package_index` now validates hashes other than MD5 in download links.
+        
+        ---
+        0.8
+        ---
+        
+        * Code base now runs on Python 2.4 - Python 3.3 without Python 2to3
+          conversion.
+        
+        -----
+        0.7.8
+        -----
+        
+        * `Distribute #375 <https://bitbucket.org/tarek/distribute/issue/375>`_: Yet another fix for yet another regression.
+        
+        -----
+        0.7.7
+        -----
+        
+        * `Distribute #375 <https://bitbucket.org/tarek/distribute/issue/375>`_: Repair AttributeError created in last release (redo).
+        * `Issue #30 <https://bitbucket.org/pypa/setuptools/issue/30>`_: Added test for get_cache_path.
+        
+        -----
+        0.7.6
+        -----
+        
+        * `Distribute #375 <https://bitbucket.org/tarek/distribute/issue/375>`_: Repair AttributeError created in last release.
+        
+        -----
+        0.7.5
+        -----
+        
+        * `Issue #21 <https://bitbucket.org/pypa/setuptools/issue/21>`_: Restore Python 2.4 compatibility in ``test_easy_install``.
+        * `Distribute #375 <https://bitbucket.org/tarek/distribute/issue/375>`_: Merged additional warning from Distribute 0.6.46.
+        * Now honor the environment variable
+          ``SETUPTOOLS_DISABLE_VERSIONED_EASY_INSTALL_SCRIPT`` in addition to the now
+          deprecated ``DISTRIBUTE_DISABLE_VERSIONED_EASY_INSTALL_SCRIPT``.
+        
+        -----
+        0.7.4
+        -----
+        
+        * `Issue #20 <https://bitbucket.org/pypa/setuptools/issue/20>`_: Fix comparison of parsed SVN version on Python 3.
+        
+        -----
+        0.7.3
+        -----
+        
+        * `Issue #1 <https://bitbucket.org/pypa/setuptools/issue/1>`_: Disable installation of Windows-specific files on non-Windows systems.
+        * Use new sysconfig module with Python 2.7 or >=3.2.
+        
+        -----
+        0.7.2
+        -----
+        
+        * `Issue #14 <https://bitbucket.org/pypa/setuptools/issue/14>`_: Use markerlib when the `parser` module is not available.
+        * `Issue #10 <https://bitbucket.org/pypa/setuptools/issue/10>`_: ``ez_setup.py`` now uses HTTPS to download setuptools from PyPI.
+        
+        -----
+        0.7.1
+        -----
+        
+        * Fix NameError (`Issue #3 <https://bitbucket.org/pypa/setuptools/issue/3>`_) again - broken in bad merge.
+        
+        ---
+        0.7
+        ---
+        
+        * Merged Setuptools and Distribute. See docs/merge.txt for details.
+        
+        Added several features that were slated for setuptools 0.6c12:
+        
+        * Index URL now defaults to HTTPS.
+        * Added experimental environment marker support. Now clients may designate a
+          PEP-426 environment marker for "extra" dependencies. Setuptools uses this
+          feature in ``setup.py`` for optional SSL and certificate validation support
+          on older platforms. Based on Distutils-SIG discussions, the syntax is
+          somewhat tentative. There should probably be a PEP with a firmer spec before
+          the feature should be considered suitable for use.
+        * Added support for SSL certificate validation when installing packages from
+          an HTTPS service.
+        
+        -----
+        0.7b4
+        -----
+        
+        * `Issue #3 <https://bitbucket.org/pypa/setuptools/issue/3>`_: Fixed NameError in SSL support.
+        
+        ------
+        0.6.49
+        ------
+        
+        * Move warning check in ``get_cache_path`` to follow the directory creation
+          to avoid errors when the cache path does not yet exist. Fixes the error
+          reported in `Distribute #375 <https://bitbucket.org/tarek/distribute/issue/375>`_.
+        
+        ------
+        0.6.48
+        ------
+        
+        * Correct AttributeError in ``ResourceManager.get_cache_path`` introduced in
+          0.6.46 (redo).
+        
+        ------
+        0.6.47
+        ------
+        
+        * Correct AttributeError in ``ResourceManager.get_cache_path`` introduced in
+          0.6.46.
+        
+        ------
+        0.6.46
+        ------
+        
+        * `Distribute #375 <https://bitbucket.org/tarek/distribute/issue/375>`_: Issue a warning if the PYTHON_EGG_CACHE or otherwise
+          customized egg cache location specifies a directory that's group- or
+          world-writable.
+        
+        ------
+        0.6.45
+        ------
+        
+        * `Distribute #379 <https://bitbucket.org/tarek/distribute/issue/379>`_: ``distribute_setup.py`` now traps VersionConflict as well,
+          restoring ability to upgrade from an older setuptools version.
+        
+        ------
+        0.6.44
+        ------
+        
+        * ``distribute_setup.py`` has been updated to allow Setuptools 0.7 to
+          satisfy use_setuptools.
+        
+        ------
+        0.6.43
+        ------
+        
+        * `Distribute #378 <https://bitbucket.org/tarek/distribute/issue/378>`_: Restore support for Python 2.4 Syntax (regression in 0.6.42).
+        
+        ------
+        0.6.42
+        ------
+        
+        * External links finder no longer yields duplicate links.
+        * `Distribute #337 <https://bitbucket.org/tarek/distribute/issue/337>`_: Moved site.py to setuptools/site-patch.py (graft of very old
+          patch from setuptools trunk which inspired PR `#31 <https://bitbucket.org/pypa/setuptools/issue/31>`_).
+        
+        ------
+        0.6.41
+        ------
+        
+        * `Distribute #27 <https://bitbucket.org/tarek/distribute/issue/27>`_: Use public api for loading resources from zip files rather than
+          the private method `_zip_directory_cache`.
+        * Added a new function ``easy_install.get_win_launcher`` which may be used by
+          third-party libraries such as buildout to get a suitable script launcher.
+        
+        ------
+        0.6.40
+        ------
+        
+        * `Distribute #376 <https://bitbucket.org/tarek/distribute/issue/376>`_: brought back cli.exe and gui.exe that were deleted in the
+          previous release.
+        
+        ------
+        0.6.39
+        ------
+        
+        * Add support for console launchers on ARM platforms.
+        * Fix possible issue in GUI launchers where the subsystem was not supplied to
+          the linker.
+        * Launcher build script now refactored for robustness.
+        * `Distribute #375 <https://bitbucket.org/tarek/distribute/issue/375>`_: Resources extracted from a zip egg to the file system now also
+          check the contents of the file against the zip contents during each
+          invocation of get_resource_filename.
+        
+        ------
+        0.6.38
+        ------
+        
+        * `Distribute #371 <https://bitbucket.org/tarek/distribute/issue/371>`_: The launcher manifest file is now installed properly.
+        
+        ------
+        0.6.37
+        ------
+        
+        * `Distribute #143 <https://bitbucket.org/tarek/distribute/issue/143>`_: Launcher scripts, including easy_install itself, are now
+          accompanied by a manifest on 32-bit Windows environments to avoid the
+          Installer Detection Technology and thus undesirable UAC elevation described
+          in `this Microsoft article
+          <http://technet.microsoft.com/en-us/library/cc709628%28WS.10%29.aspx>`_.
+        
+        ------
+        0.6.36
+        ------
+        
+        * Pull Request `#35 <https://bitbucket.org/pypa/setuptools/issue/35>`_: In `Buildout #64 <https://github.com/buildout/buildout/issues/64>`_, it was reported that
+          under Python 3, installation of distutils scripts could attempt to copy
+          the ``__pycache__`` directory as a file, causing an error, apparently only
+          under Windows. Easy_install now skips all directories when processing
+          metadata scripts.
+        
+        ------
+        0.6.35
+        ------
+        
+        
+        Note this release is backward-incompatible with distribute 0.6.23-0.6.34 in
+        how it parses version numbers.
+        
+        * `Distribute #278 <https://bitbucket.org/tarek/distribute/issue/278>`_: Restored compatibility with distribute 0.6.22 and setuptools
+          0.6. Updated the documentation to match more closely with the version
+          parsing as intended in setuptools 0.6.
+        
+        ------
+        0.6.34
+        ------
+        
+        * `Distribute #341 <https://bitbucket.org/tarek/distribute/issue/341>`_: 0.6.33 fails to build under Python 2.4.
+        
+        ------
+        0.6.33
+        ------
+        
+        * Fix 2 errors with Jython 2.5.
+        * Fix 1 failure with Jython 2.5 and 2.7.
+        * Disable workaround for Jython scripts on Linux systems.
+        * `Distribute #336 <https://bitbucket.org/tarek/distribute/issue/336>`_: `setup.py` no longer masks failure exit code when tests fail.
+        * Fix issue in pkg_resources where try/except around a platform-dependent
+          import would trigger hook load failures on Mercurial. See pull request 32
+          for details.
+        * `Distribute #341 <https://bitbucket.org/tarek/distribute/issue/341>`_: Fix a ResourceWarning.
+        
+        ------
+        0.6.32
+        ------
+        
+        * Fix test suite with Python 2.6.
+        * Fix some DeprecationWarnings and ResourceWarnings.
+        * `Distribute #335 <https://bitbucket.org/tarek/distribute/issue/335>`_: Backed out `setup_requires` superceding installed requirements
+          until regression can be addressed.
+        
+        ------
+        0.6.31
+        ------
+        
+        * `Distribute #303 <https://bitbucket.org/tarek/distribute/issue/303>`_: Make sure the manifest only ever contains UTF-8 in Python 3.
+        * `Distribute #329 <https://bitbucket.org/tarek/distribute/issue/329>`_: Properly close files created by tests for compatibility with
+          Jython.
+        * Work around `Jython #1980 <http://bugs.jython.org/issue1980>`_ and `Jython #1981 <http://bugs.jython.org/issue1981>`_.
+        * `Distribute #334 <https://bitbucket.org/tarek/distribute/issue/334>`_: Provide workaround for packages that reference `sys.__stdout__`
+          such as numpy does. This change should address
+          `virtualenv `#359 <https://bitbucket.org/pypa/setuptools/issue/359>`_ <https://github.com/pypa/virtualenv/issues/359>`_ as long
+          as the system encoding is UTF-8 or the IO encoding is specified in the
+          environment, i.e.::
+        
+             PYTHONIOENCODING=utf8 pip install numpy
+        
+        * Fix for encoding issue when installing from Windows executable on Python 3.
+        * `Distribute #323 <https://bitbucket.org/tarek/distribute/issue/323>`_: Allow `setup_requires` requirements to supercede installed
+          requirements. Added some new keyword arguments to existing pkg_resources
+          methods. Also had to updated how __path__ is handled for namespace packages
+          to ensure that when a new egg distribution containing a namespace package is
+          placed on sys.path, the entries in __path__ are found in the same order they
+          would have been in had that egg been on the path when pkg_resources was
+          first imported.
+        
+        ------
+        0.6.30
+        ------
+        
+        * `Distribute #328 <https://bitbucket.org/tarek/distribute/issue/328>`_: Clean up temporary directories in distribute_setup.py.
+        * Fix fatal bug in distribute_setup.py.
+        
+        ------
+        0.6.29
+        ------
+        
+        * Pull Request `#14 <https://bitbucket.org/pypa/setuptools/issue/14>`_: Honor file permissions in zip files.
+        * `Distribute #327 <https://bitbucket.org/tarek/distribute/issue/327>`_: Merged pull request `#24 <https://bitbucket.org/pypa/setuptools/issue/24>`_ to fix a dependency problem with pip.
+        * Merged pull request `#23 <https://bitbucket.org/pypa/setuptools/issue/23>`_ to fix https://github.com/pypa/virtualenv/issues/301.
+        * If Sphinx is installed, the `upload_docs` command now runs `build_sphinx`
+          to produce uploadable documentation.
+        * `Distribute #326 <https://bitbucket.org/tarek/distribute/issue/326>`_: `upload_docs` provided mangled auth credentials under Python 3.
+        * `Distribute #320 <https://bitbucket.org/tarek/distribute/issue/320>`_: Fix check for "createable" in distribute_setup.py.
+        * `Distribute #305 <https://bitbucket.org/tarek/distribute/issue/305>`_: Remove a warning that was triggered during normal operations.
+        * `Distribute #311 <https://bitbucket.org/tarek/distribute/issue/311>`_: Print metadata in UTF-8 independent of platform.
+        * `Distribute #303 <https://bitbucket.org/tarek/distribute/issue/303>`_: Read manifest file with UTF-8 encoding under Python 3.
+        * `Distribute #301 <https://bitbucket.org/tarek/distribute/issue/301>`_: Allow to run tests of namespace packages when using 2to3.
+        * `Distribute #304 <https://bitbucket.org/tarek/distribute/issue/304>`_: Prevent import loop in site.py under Python 3.3.
+        * `Distribute #283 <https://bitbucket.org/tarek/distribute/issue/283>`_: Reenable scanning of `*.pyc` / `*.pyo` files on Python 3.3.
+        * `Distribute #299 <https://bitbucket.org/tarek/distribute/issue/299>`_: The develop command didn't work on Python 3, when using 2to3,
+          as the egg link would go to the Python 2 source. Linking to the 2to3'd code
+          in build/lib makes it work, although you will have to rebuild the module
+          before testing it.
+        * `Distribute #306 <https://bitbucket.org/tarek/distribute/issue/306>`_: Even if 2to3 is used, we build in-place under Python 2.
+        * `Distribute #307 <https://bitbucket.org/tarek/distribute/issue/307>`_: Prints the full path when .svn/entries is broken.
+        * `Distribute #313 <https://bitbucket.org/tarek/distribute/issue/313>`_: Support for sdist subcommands (Python 2.7)
+        * `Distribute #314 <https://bitbucket.org/tarek/distribute/issue/314>`_: test_local_index() would fail an OS X.
+        * `Distribute #310 <https://bitbucket.org/tarek/distribute/issue/310>`_: Non-ascii characters in a namespace __init__.py causes errors.
+        * `Distribute #218 <https://bitbucket.org/tarek/distribute/issue/218>`_: Improved documentation on behavior of `package_data` and
+          `include_package_data`. Files indicated by `package_data` are now included
+          in the manifest.
+        * `distribute_setup.py` now allows a `--download-base` argument for retrieving
+          distribute from a specified location.
+        
+        ------
+        0.6.28
+        ------
+        
+        * `Distribute #294 <https://bitbucket.org/tarek/distribute/issue/294>`_: setup.py can now be invoked from any directory.
+        * Scripts are now installed honoring the umask.
+        * Added support for .dist-info directories.
+        * `Distribute #283 <https://bitbucket.org/tarek/distribute/issue/283>`_: Fix and disable scanning of `*.pyc` / `*.pyo` files on
+          Python 3.3.
+        
+        ------
+        0.6.27
+        ------
+        
+        * Support current snapshots of CPython 3.3.
+        * Distribute now recognizes README.rst as a standard, default readme file.
+        * Exclude 'encodings' modules when removing modules from sys.modules.
+          Workaround for `#285 <https://bitbucket.org/pypa/setuptools/issue/285>`_.
+        * `Distribute #231 <https://bitbucket.org/tarek/distribute/issue/231>`_: Don't fiddle with system python when used with buildout
+          (bootstrap.py)
+        
+        ------
+        0.6.26
+        ------
+        
+        * `Distribute #183 <https://bitbucket.org/tarek/distribute/issue/183>`_: Symlinked files are now extracted from source distributions.
+        * `Distribute #227 <https://bitbucket.org/tarek/distribute/issue/227>`_: Easy_install fetch parameters are now passed during the
+          installation of a source distribution; now fulfillment of setup_requires
+          dependencies will honor the parameters passed to easy_install.
+        
+        ------
+        0.6.25
+        ------
+        
+        * `Distribute #258 <https://bitbucket.org/tarek/distribute/issue/258>`_: Workaround a cache issue
+        * `Distribute #260 <https://bitbucket.org/tarek/distribute/issue/260>`_: distribute_setup.py now accepts the --user parameter for
+          Python 2.6 and later.
+        * `Distribute #262 <https://bitbucket.org/tarek/distribute/issue/262>`_: package_index.open_with_auth no longer throws LookupError
+          on Python 3.
+        * `Distribute #269 <https://bitbucket.org/tarek/distribute/issue/269>`_: AttributeError when an exception occurs reading Manifest.in
+          on late releases of Python.
+        * `Distribute #272 <https://bitbucket.org/tarek/distribute/issue/272>`_: Prevent TypeError when namespace package names are unicode
+          and single-install-externally-managed is used. Also fixes PIP issue
+          449.
+        * `Distribute #273 <https://bitbucket.org/tarek/distribute/issue/273>`_: Legacy script launchers now install with Python2/3 support.
+        
+        ------
+        0.6.24
+        ------
+        
+        * `Distribute #249 <https://bitbucket.org/tarek/distribute/issue/249>`_: Added options to exclude 2to3 fixers
+        
+        ------
+        0.6.23
+        ------
+        
+        * `Distribute #244 <https://bitbucket.org/tarek/distribute/issue/244>`_: Fixed a test
+        * `Distribute #243 <https://bitbucket.org/tarek/distribute/issue/243>`_: Fixed a test
+        * `Distribute #239 <https://bitbucket.org/tarek/distribute/issue/239>`_: Fixed a test
+        * `Distribute #240 <https://bitbucket.org/tarek/distribute/issue/240>`_: Fixed a test
+        * `Distribute #241 <https://bitbucket.org/tarek/distribute/issue/241>`_: Fixed a test
+        * `Distribute #237 <https://bitbucket.org/tarek/distribute/issue/237>`_: Fixed a test
+        * `Distribute #238 <https://bitbucket.org/tarek/distribute/issue/238>`_: easy_install now uses 64bit executable wrappers on 64bit Python
+        * `Distribute #208 <https://bitbucket.org/tarek/distribute/issue/208>`_: Fixed parsed_versions, it now honors post-releases as noted in the documentation
+        * `Distribute #207 <https://bitbucket.org/tarek/distribute/issue/207>`_: Windows cli and gui wrappers pass CTRL-C to child python process
+        * `Distribute #227 <https://bitbucket.org/tarek/distribute/issue/227>`_: easy_install now passes its arguments to setup.py bdist_egg
+        * `Distribute #225 <https://bitbucket.org/tarek/distribute/issue/225>`_: Fixed a NameError on Python 2.5, 2.4
+        
+        ------
+        0.6.21
+        ------
+        
+        * `Distribute #225 <https://bitbucket.org/tarek/distribute/issue/225>`_: FIxed a regression on py2.4
+        
+        ------
+        0.6.20
+        ------
+        
+        * `Distribute #135 <https://bitbucket.org/tarek/distribute/issue/135>`_: Include url in warning when processing URLs in package_index.
+        * `Distribute #212 <https://bitbucket.org/tarek/distribute/issue/212>`_: Fix issue where easy_instal fails on Python 3 on windows installer.
+        * `Distribute #213 <https://bitbucket.org/tarek/distribute/issue/213>`_: Fix typo in documentation.
+        
+        ------
+        0.6.19
+        ------
+        
+        * `Distribute #206 <https://bitbucket.org/tarek/distribute/issue/206>`_: AttributeError: 'HTTPMessage' object has no attribute 'getheaders'
+        
+        ------
+        0.6.18
+        ------
+        
+        * `Distribute #210 <https://bitbucket.org/tarek/distribute/issue/210>`_: Fixed a regression introduced by `Distribute #204 <https://bitbucket.org/tarek/distribute/issue/204>`_ fix.
+        
+        ------
+        0.6.17
+        ------
+        
+        * Support 'DISTRIBUTE_DISABLE_VERSIONED_EASY_INSTALL_SCRIPT' environment
+          variable to allow to disable installation of easy_install-${version} script.
+        * Support Python >=3.1.4 and >=3.2.1.
+        * `Distribute #204 <https://bitbucket.org/tarek/distribute/issue/204>`_: Don't try to import the parent of a namespace package in
+          declare_namespace
+        * `Distribute #196 <https://bitbucket.org/tarek/distribute/issue/196>`_: Tolerate responses with multiple Content-Length headers
+        * `Distribute #205 <https://bitbucket.org/tarek/distribute/issue/205>`_: Sandboxing doesn't preserve working_set. Leads to setup_requires
+          problems.
+        
+        ------
+        0.6.16
+        ------
+        
+        * Builds sdist gztar even on Windows (avoiding `Distribute #193 <https://bitbucket.org/tarek/distribute/issue/193>`_).
+        * `Distribute #192 <https://bitbucket.org/tarek/distribute/issue/192>`_: Fixed metadata omitted on Windows when package_dir
+          specified with forward-slash.
+        * `Distribute #195 <https://bitbucket.org/tarek/distribute/issue/195>`_: Cython build support.
+        * `Distribute #200 <https://bitbucket.org/tarek/distribute/issue/200>`_: Issues with recognizing 64-bit packages on Windows.
+        
+        ------
+        0.6.15
+        ------
+        
+        * Fixed typo in bdist_egg
+        * Several issues under Python 3 has been solved.
+        * `Distribute #146 <https://bitbucket.org/tarek/distribute/issue/146>`_: Fixed missing DLL files after easy_install of windows exe package.
+        
+        ------
+        0.6.14
+        ------
+        
+        * `Distribute #170 <https://bitbucket.org/tarek/distribute/issue/170>`_: Fixed unittest failure. Thanks to Toshio.
+        * `Distribute #171 <https://bitbucket.org/tarek/distribute/issue/171>`_: Fixed race condition in unittests cause deadlocks in test suite.
+        * `Distribute #143 <https://bitbucket.org/tarek/distribute/issue/143>`_: Fixed a lookup issue with easy_install.
+          Thanks to David and Zooko.
+        * `Distribute #174 <https://bitbucket.org/tarek/distribute/issue/174>`_: Fixed the edit mode when its used with setuptools itself
+        
+        ------
+        0.6.13
+        ------
+        
+        * `Distribute #160 <https://bitbucket.org/tarek/distribute/issue/160>`_: 2.7 gives ValueError("Invalid IPv6 URL")
+        * `Distribute #150 <https://bitbucket.org/tarek/distribute/issue/150>`_: Fixed using ~/.local even in a --no-site-packages virtualenv
+        * `Distribute #163 <https://bitbucket.org/tarek/distribute/issue/163>`_: scan index links before external links, and don't use the md5 when
+          comparing two distributions
+        
+        ------
+        0.6.12
+        ------
+        
+        * `Distribute #149 <https://bitbucket.org/tarek/distribute/issue/149>`_: Fixed various failures on 2.3/2.4
+        
+        ------
+        0.6.11
+        ------
+        
+        * Found another case of SandboxViolation - fixed
+        * `Distribute #15 <https://bitbucket.org/tarek/distribute/issue/15>`_ and `Distribute #48 <https://bitbucket.org/tarek/distribute/issue/48>`_: Introduced a socket timeout of 15 seconds on url openings
+        * Added indexsidebar.html into MANIFEST.in
+        * `Distribute #108 <https://bitbucket.org/tarek/distribute/issue/108>`_: Fixed TypeError with Python3.1
+        * `Distribute #121 <https://bitbucket.org/tarek/distribute/issue/121>`_: Fixed --help install command trying to actually install.
+        * `Distribute #112 <https://bitbucket.org/tarek/distribute/issue/112>`_: Added an os.makedirs so that Tarek's solution will work.
+        * `Distribute #133 <https://bitbucket.org/tarek/distribute/issue/133>`_: Added --no-find-links to easy_install
+        * Added easy_install --user
+        * `Distribute #100 <https://bitbucket.org/tarek/distribute/issue/100>`_: Fixed develop --user not taking '.' in PYTHONPATH into account
+        * `Distribute #134 <https://bitbucket.org/tarek/distribute/issue/134>`_: removed spurious UserWarnings. Patch by VanLindberg
+        * `Distribute #138 <https://bitbucket.org/tarek/distribute/issue/138>`_: cant_write_to_target error when setup_requires is used.
+        * `Distribute #147 <https://bitbucket.org/tarek/distribute/issue/147>`_: respect the sys.dont_write_bytecode flag
+        
+        ------
+        0.6.10
+        ------
+        
+        * Reverted change made for the DistributionNotFound exception because
+          zc.buildout uses the exception message to get the name of the
+          distribution.
+        
+        -----
+        0.6.9
+        -----
+        
+        * `Distribute #90 <https://bitbucket.org/tarek/distribute/issue/90>`_: unknown setuptools version can be added in the working set
+        * `Distribute #87 <https://bitbucket.org/tarek/distribute/issue/87>`_: setupt.py doesn't try to convert distribute_setup.py anymore
+          Initial Patch by arfrever.
+        * `Distribute #89 <https://bitbucket.org/tarek/distribute/issue/89>`_: added a side bar with a download link to the doc.
+        * `Distribute #86 <https://bitbucket.org/tarek/distribute/issue/86>`_: fixed missing sentence in pkg_resources doc.
+        * Added a nicer error message when a DistributionNotFound is raised.
+        * `Distribute #80 <https://bitbucket.org/tarek/distribute/issue/80>`_: test_develop now works with Python 3.1
+        * `Distribute #93 <https://bitbucket.org/tarek/distribute/issue/93>`_: upload_docs now works if there is an empty sub-directory.
+        * `Distribute #70 <https://bitbucket.org/tarek/distribute/issue/70>`_: exec bit on non-exec files
+        * `Distribute #99 <https://bitbucket.org/tarek/distribute/issue/99>`_: now the standalone easy_install command doesn't uses a
+          "setup.cfg" if any exists in the working directory. It will use it
+          only if triggered by ``install_requires`` from a setup.py call
+          (install, develop, etc).
+        * `Distribute #101 <https://bitbucket.org/tarek/distribute/issue/101>`_: Allowing ``os.devnull`` in Sandbox
+        * `Distribute #92 <https://bitbucket.org/tarek/distribute/issue/92>`_: Fixed the "no eggs" found error with MacPort
+          (platform.mac_ver() fails)
+        * `Distribute #103 <https://bitbucket.org/tarek/distribute/issue/103>`_: test_get_script_header_jython_workaround not run
+          anymore under py3 with C or POSIX local. Contributed by Arfrever.
+        * `Distribute #104 <https://bitbucket.org/tarek/distribute/issue/104>`_: remvoved the assertion when the installation fails,
+          with a nicer message for the end user.
+        * `Distribute #100 <https://bitbucket.org/tarek/distribute/issue/100>`_: making sure there's no SandboxViolation when
+          the setup script patches setuptools.
+        
+        -----
+        0.6.8
+        -----
+        
+        * Added "check_packages" in dist. (added in Setuptools 0.6c11)
+        * Fixed the DONT_PATCH_SETUPTOOLS state.
+        
+        -----
+        0.6.7
+        -----
+        
+        * `Distribute #58 <https://bitbucket.org/tarek/distribute/issue/58>`_: Added --user support to the develop command
+        * `Distribute #11 <https://bitbucket.org/tarek/distribute/issue/11>`_: Generated scripts now wrap their call to the script entry point
+          in the standard "if name == 'main'"
+        * Added the 'DONT_PATCH_SETUPTOOLS' environment variable, so virtualenv
+          can drive an installation that doesn't patch a global setuptools.
+        * Reviewed unladen-swallow specific change from
+          http://code.google.com/p/unladen-swallow/source/detail?spec=svn875&r=719
+          and determined that it no longer applies. Distribute should work fine with
+          Unladen Swallow 2009Q3.
+        * `Distribute #21 <https://bitbucket.org/tarek/distribute/issue/21>`_: Allow PackageIndex.open_url to gracefully handle all cases of a
+          httplib.HTTPException instead of just InvalidURL and BadStatusLine.
+        * Removed virtual-python.py from this distribution and updated documentation
+          to point to the actively maintained virtualenv instead.
+        * `Distribute #64 <https://bitbucket.org/tarek/distribute/issue/64>`_: use_setuptools no longer rebuilds the distribute egg every
+          time it is run
+        * use_setuptools now properly respects the requested version
+        * use_setuptools will no longer try to import a distribute egg for the
+          wrong Python version
+        * `Distribute #74 <https://bitbucket.org/tarek/distribute/issue/74>`_: no_fake should be True by default.
+        * `Distribute #72 <https://bitbucket.org/tarek/distribute/issue/72>`_: avoid a bootstrapping issue with easy_install -U
+        
+        -----
+        0.6.6
+        -----
+        
+        * Unified the bootstrap file so it works on both py2.x and py3k without 2to3
+          (patch by Holger Krekel)
+        
+        -----
+        0.6.5
+        -----
+        
+        * `Distribute #65 <https://bitbucket.org/tarek/distribute/issue/65>`_: cli.exe and gui.exe are now generated at build time,
+          depending on the platform in use.
+        
+        * `Distribute #67 <https://bitbucket.org/tarek/distribute/issue/67>`_: Fixed doc typo (PEP 381/382)
+        
+        * Distribute no longer shadows setuptools if we require a 0.7-series
+          setuptools.  And an error is raised when installing a 0.7 setuptools with
+          distribute.
+        
+        * When run from within buildout, no attempt is made to modify an existing
+          setuptools egg, whether in a shared egg directory or a system setuptools.
+        
+        * Fixed a hole in sandboxing allowing builtin file to write outside of
+          the sandbox.
+        
+        -----
+        0.6.4
+        -----
+        
+        * Added the generation of `distribute_setup_3k.py` during the release.
+          This closes `Distribute #52 <https://bitbucket.org/tarek/distribute/issue/52>`_.
+        
+        * Added an upload_docs command to easily upload project documentation to
+          PyPI's https://pythonhosted.org. This close issue `Distribute #56 <https://bitbucket.org/tarek/distribute/issue/56>`_.
+        
+        * Fixed a bootstrap bug on the use_setuptools() API.
+        
+        -----
+        0.6.3
+        -----
+        
+        setuptools
+        ==========
+        
+        * Fixed a bunch of calls to file() that caused crashes on Python 3.
+        
+        bootstrapping
+        =============
+        
+        * Fixed a bug in sorting that caused bootstrap to fail on Python 3.
+        
+        -----
+        0.6.2
+        -----
+        
+        setuptools
+        ==========
+        
+        * Added Python 3 support; see docs/python3.txt.
+          This closes `Old Setuptools #39 <http://bugs.python.org/setuptools/issue39>`_.
+        
+        * Added option to run 2to3 automatically when installing on Python 3.
+          This closes issue `Distribute #31 <https://bitbucket.org/tarek/distribute/issue/31>`_.
+        
+        * Fixed invalid usage of requirement.parse, that broke develop -d.
+          This closes `Old Setuptools #44 <http://bugs.python.org/setuptools/issue44>`_.
+        
+        * Fixed script launcher for 64-bit Windows.
+          This closes `Old Setuptools #2 <http://bugs.python.org/setuptools/issue2>`_.
+        
+        * KeyError when compiling extensions.
+          This closes `Old Setuptools #41 <http://bugs.python.org/setuptools/issue41>`_.
+        
+        bootstrapping
+        =============
+        
+        * Fixed bootstrap not working on Windows. This closes issue `Distribute #49 <https://bitbucket.org/tarek/distribute/issue/49>`_.
+        
+        * Fixed 2.6 dependencies. This closes issue `Distribute #50 <https://bitbucket.org/tarek/distribute/issue/50>`_.
+        
+        * Make sure setuptools is patched when running through easy_install
+          This closes `Old Setuptools #40 <http://bugs.python.org/setuptools/issue40>`_.
+        
+        -----
+        0.6.1
+        -----
+        
+        setuptools
+        ==========
+        
+        * package_index.urlopen now catches BadStatusLine and malformed url errors.
+          This closes `Distribute #16 <https://bitbucket.org/tarek/distribute/issue/16>`_ and `Distribute #18 <https://bitbucket.org/tarek/distribute/issue/18>`_.
+        
+        * zip_ok is now False by default. This closes `Old Setuptools #33 <http://bugs.python.org/setuptools/issue33>`_.
+        
+        * Fixed invalid URL error catching. `Old Setuptools #20 <http://bugs.python.org/setuptools/issue20>`_.
+        
+        * Fixed invalid bootstraping with easy_install installation (`Distribute #40 <https://bitbucket.org/tarek/distribute/issue/40>`_).
+          Thanks to Florian Schulze for the help.
+        
+        * Removed buildout/bootstrap.py. A new repository will create a specific
+          bootstrap.py script.
+        
+        
+        bootstrapping
+        =============
+        
+        * The boostrap process leave setuptools alone if detected in the system
+          and --root or --prefix is provided, but is not in the same location.
+          This closes `Distribute #10 <https://bitbucket.org/tarek/distribute/issue/10>`_.
+        
+        ---
+        0.6
+        ---
+        
+        setuptools
+        ==========
+        
+        * Packages required at build time where not fully present at install time.
+          This closes `Distribute #12 <https://bitbucket.org/tarek/distribute/issue/12>`_.
+        
+        * Protected against failures in tarfile extraction. This closes `Distribute #10 <https://bitbucket.org/tarek/distribute/issue/10>`_.
+        
+        * Made Jython api_tests.txt doctest compatible. This closes `Distribute #7 <https://bitbucket.org/tarek/distribute/issue/7>`_.
+        
+        * sandbox.py replaced builtin type file with builtin function open. This
+          closes `Distribute #6 <https://bitbucket.org/tarek/distribute/issue/6>`_.
+        
+        * Immediately close all file handles. This closes `Distribute #3 <https://bitbucket.org/tarek/distribute/issue/3>`_.
+        
+        * Added compatibility with Subversion 1.6. This references `Distribute #1 <https://bitbucket.org/tarek/distribute/issue/1>`_.
+        
+        pkg_resources
+        =============
+        
+        * Avoid a call to /usr/bin/sw_vers on OSX and use the official platform API
+          instead. Based on a patch from ronaldoussoren. This closes issue `#5 <https://bitbucket.org/pypa/setuptools/issue/5>`_.
+        
+        * Fixed a SandboxViolation for mkdir that could occur in certain cases.
+          This closes `Distribute #13 <https://bitbucket.org/tarek/distribute/issue/13>`_.
+        
+        * Allow to find_on_path on systems with tight permissions to fail gracefully.
+          This closes `Distribute #9 <https://bitbucket.org/tarek/distribute/issue/9>`_.
+        
+        * Corrected inconsistency between documentation and code of add_entry.
+          This closes `Distribute #8 <https://bitbucket.org/tarek/distribute/issue/8>`_.
+        
+        * Immediately close all file handles. This closes `Distribute #3 <https://bitbucket.org/tarek/distribute/issue/3>`_.
+        
+        easy_install
+        ============
+        
+        * Immediately close all file handles. This closes `Distribute #3 <https://bitbucket.org/tarek/distribute/issue/3>`_.
+        
+        
+Keywords: CPAN PyPI distutils eggs package management
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Python Software Foundation License
+Classifier: License :: OSI Approved :: Zope Public License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2.4
+Classifier: Programming Language :: Python :: 2.5
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.1
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: System :: Archiving :: Packaging
+Classifier: Topic :: System :: Systems Administration
+Classifier: Topic :: Utilities

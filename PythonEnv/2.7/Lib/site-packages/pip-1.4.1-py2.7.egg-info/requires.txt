@@ -1,0 +1,7 @@
+
+
+[testing]
+nose>=1.3.0
+virtualenv>=1.10
+scripttest>=1.1.1
+mock

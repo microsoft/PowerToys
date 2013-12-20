@@ -1,0 +1,4 @@
+[console_scripts]
+pip = pip:main
+pip-2.7 = pip:main
+
