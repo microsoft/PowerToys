@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using WinAlfred.Helper;
 using WinAlfred.Plugin;
-using log4net;
 
 namespace WinAlfred.PluginLoader
 {
@@ -14,14 +12,14 @@ namespace WinAlfred.PluginLoader
         private static string PluginConfigName = "plugin.ini";
         protected static List<PluginMetadata> pluginMetadatas = new List<PluginMetadata>();
 
-        public abstract List<IPlugin> LoadPlugin();
+        public abstract List<PluginPair> LoadPlugin();
 
         static BasePluginLoader()
         {
             ParsePlugins();
         }
 
-        protected static void ParsePlugins()
+        private static void ParsePlugins()
         {
             ParseDirectories();
             ParsePackagedPlugin();
@@ -32,8 +30,7 @@ namespace WinAlfred.PluginLoader
             string[] directories = Directory.GetDirectories(PluginPath);
             foreach (string directory in directories)
             {
-                string iniPath = directory + "\\" + PluginConfigName;
-                PluginMetadata metadata = GetMetadataFromIni(iniPath);
+                PluginMetadata metadata = GetMetadataFromIni(directory);
                 if (metadata != null) pluginMetadatas.Add(metadata);
             }
         }
@@ -43,11 +40,13 @@ namespace WinAlfred.PluginLoader
 
         }
 
-        private static PluginMetadata GetMetadataFromIni(string iniPath)
+        private static PluginMetadata GetMetadataFromIni(string directory)
         {
+            string iniPath = directory + "\\" + PluginConfigName;
+
             if (!File.Exists(iniPath))
             {
-                Log.FileLogger.Error(string.Format("parse plugin {0} failed: didn't find config file.", iniPath));
+                Log.Error(string.Format("parse plugin {0} failed: didn't find config file.", iniPath));
                 return null;
             }
 
@@ -61,10 +60,17 @@ namespace WinAlfred.PluginLoader
                 metadata.Description = ini.GetSetting("plugin", "Description");
                 metadata.Language = ini.GetSetting("plugin", "Language");
                 metadata.Version = ini.GetSetting("plugin", "Version");
+                metadata.ActionKeyword = ini.GetSetting("plugin", "ActionKeyword");
+                metadata.ExecuteFile = AppDomain.CurrentDomain.BaseDirectory + directory + "\\" + ini.GetSetting("plugin", "ExecuteFile");
 
                 if (!AllowedLanguage.IsAllowed(metadata.Language))
                 {
-                    Log.FileLogger.Error(string.Format("Parse ini {0} failed: invalid language {1}", iniPath, metadata.Language));
+                    Log.Error(string.Format("Parse ini {0} failed: invalid language {1}", iniPath, metadata.Language));
+                    return null;
+                }
+                if (!File.Exists(metadata.ExecuteFile))
+                {
+                    Log.Error(string.Format("Parse ini {0} failed: ExecuteFile didn't exist {1}", iniPath, metadata.ExecuteFile));
                     return null;
                 }
 
@@ -72,7 +78,7 @@ namespace WinAlfred.PluginLoader
             }
             catch (Exception e)
             {
-                Log.FileLogger.Error(string.Format("Parse ini {0} failed: {1}", iniPath, e.Message));
+                Log.Error(string.Format("Parse ini {0} failed: {1}", iniPath, e.Message));
                 return null;
             }
         }

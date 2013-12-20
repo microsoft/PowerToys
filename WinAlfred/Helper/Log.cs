@@ -11,9 +11,9 @@ namespace WinAlfred.Helper
     {
         private static ILog fileLogger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public static ILog FileLogger
+        public static void Error(string msg)
         {
-            get { return fileLogger; }
+            fileLogger.Error(msg);
         }
     }
 }

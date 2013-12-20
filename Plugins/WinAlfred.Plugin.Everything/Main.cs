@@ -9,17 +9,18 @@ namespace WinAlfred.Plugin.Everything
     {
         EverythingAPI api = new EverythingAPI();
 
-        public string GetActionName()
-        {
-            return "ev";
-        }
-
         public List<Result> Query(Query query)
         {
             var results = new List<Result>();
-            if (query.ActionParameters.Count > 0)
+            if (query.ActionParameters.Count > 0 && query.ActionParameters[0].Length > 0)
             {
-                api.Search(query.ActionParameters[0]);
+                IEnumerable<string> enumerable = api.Search(query.ActionParameters[0]);
+                foreach (string s in enumerable)
+                {
+                    Result r  = new Result();
+                    r.Title = s;
+                    results.Add(r);
+                }
             }
 
             return results;

@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.tbQuery = new System.Windows.Forms.TextBox();
+            this.listBox1 = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // tbQuery
@@ -40,11 +41,21 @@
             this.tbQuery.TabIndex = 0;
             this.tbQuery.TextChanged += new System.EventHandler(this.TbQuery_TextChanged);
             // 
+            // listBox1
+            // 
+            this.listBox1.FormattingEnabled = true;
+            this.listBox1.ItemHeight = 12;
+            this.listBox1.Location = new System.Drawing.Point(12, 39);
+            this.listBox1.Name = "listBox1";
+            this.listBox1.Size = new System.Drawing.Size(471, 352);
+            this.listBox1.TabIndex = 1;
+            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(495, 45);
+            this.ClientSize = new System.Drawing.Size(495, 404);
+            this.Controls.Add(this.listBox1);
             this.Controls.Add(this.tbQuery);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -61,6 +72,7 @@
         #endregion
 
         private System.Windows.Forms.TextBox tbQuery;
+        private System.Windows.Forms.ListBox listBox1;
 
 
     }

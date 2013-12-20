@@ -8,91 +8,274 @@ namespace WinAlfred.Plugin.Everything
 {
     public sealed class EverythingAPI
     {
-        const int EVERYTHING_OK	= 0;
-		const int EVERYTHING_ERROR_MEMORY = 1;
-		const int EVERYTHING_ERROR_IPC = 2;
-		const int EVERYTHING_ERROR_REGISTERCLASSEX = 3;
-		const int EVERYTHING_ERROR_CREATEWINDOW = 4;
-		const int EVERYTHING_ERROR_CREATETHREAD = 5;
-		const int EVERYTHING_ERROR_INVALIDINDEX = 6;
-		const int EVERYTHING_ERROR_INVALIDCALL = 7;
+        #region Const
+        const string EVERYTHING_DLL_NAME = "Everything.dll";
+        #endregion
 
-		[DllImport("Everything.dll")]
-		private static extern int Everything_SetSearch(string lpSearchString);
-		[DllImport("Everything.dll")]
-		private static extern void Everything_SetMatchPath(bool bEnable);
-		[DllImport("Everything.dll")]
-		private static extern void Everything_SetMatchCase(bool bEnable);
-		[DllImport("Everything.dll")]
-		private static extern void Everything_SetMatchWholeWord(bool bEnable);
-		[DllImport("Everything.dll")]
-		private static extern void Everything_SetRegex(bool bEnable);
-		[DllImport("Everything.dll")]
-		private static extern void Everything_SetMax(int dwMax);
-		[DllImport("Everything.dll")]
-		private static extern void Everything_SetOffset(int dwOffset);
+        #region DllImport
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern int Everything_SetSearch(string lpSearchString);
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern void Everything_SetMatchPath(bool bEnable);
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern void Everything_SetMatchCase(bool bEnable);
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern void Everything_SetMatchWholeWord(bool bEnable);
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern void Everything_SetRegex(bool bEnable);
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern void Everything_SetMax(int dwMax);
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern void Everything_SetOffset(int dwOffset);
 
-		[DllImport("Everything.dll")]
-		private static extern bool Everything_GetMatchPath();
-		[DllImport("Everything.dll")]
-		private static extern bool Everything_GetMatchCase();
-		[DllImport("Everything.dll")]
-		private static extern bool Everything_GetMatchWholeWord();
-		[DllImport("Everything.dll")]
-		private static extern bool Everything_GetRegex();
-		[DllImport("Everything.dll")]
-		private static extern UInt32 Everything_GetMax();
-		[DllImport("Everything.dll")]
-		private static extern UInt32 Everything_GetOffset();
-		[DllImport("Everything.dll")]
-		private static extern string Everything_GetSearch();
-		[DllImport("Everything.dll")]
-		private static extern int Everything_GetLastError();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern bool Everything_GetMatchPath();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern bool Everything_GetMatchCase();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern bool Everything_GetMatchWholeWord();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern bool Everything_GetRegex();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern UInt32 Everything_GetMax();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern UInt32 Everything_GetOffset();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern string Everything_GetSearch();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern StateCode Everything_GetLastError();
 
-		[DllImport("Everything.dll")]
-		private static extern bool Everything_Query();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern bool Everything_Query();
 
-		[DllImport("Everything.dll")]
-		private static extern void Everything_SortResultsByPath();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern void Everything_SortResultsByPath();
 
-		[DllImport("Everything.dll")]
-		private static extern int Everything_GetNumFileResults();
-		[DllImport("Everything.dll")]
-		private static extern int Everything_GetNumFolderResults();
-		[DllImport("Everything.dll")]
-		private static extern int Everything_GetNumResults();
-		[DllImport("Everything.dll")]
-		private static extern int Everything_GetTotFileResults();
-		[DllImport("Everything.dll")]
-		private static extern int Everything_GetTotFolderResults();
-		[DllImport("Everything.dll")]
-		private static extern int Everything_GetTotResults();
-		[DllImport("Everything.dll")]
-		private static extern bool Everything_IsVolumeResult(int nIndex);
-		[DllImport("Everything.dll")]
-		private static extern bool Everything_IsFolderResult(int nIndex);
-		[DllImport("Everything.dll")]
-		private static extern bool Everything_IsFileResult(int nIndex);
-		[DllImport("Everything.dll")]
-		private static extern void Everything_GetResultFullPathName(int nIndex, StringBuilder lpString, int nMaxCount);
-		[DllImport("Everything.dll")]
-		private static extern void Everything_Reset();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern int Everything_GetNumFileResults();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern int Everything_GetNumFolderResults();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern int Everything_GetNumResults();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern int Everything_GetTotFileResults();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern int Everything_GetTotFolderResults();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern int Everything_GetTotResults();
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern bool Everything_IsVolumeResult(int nIndex);
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern bool Everything_IsFolderResult(int nIndex);
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern bool Everything_IsFileResult(int nIndex);
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern void Everything_GetResultFullPathName(int nIndex, StringBuilder lpString, int nMaxCount);
+        [DllImport(EVERYTHING_DLL_NAME)]
+        private static extern void Everything_Reset();
+        #endregion
 
+        #region Enum
+        enum StateCode
+        {
+            OK,
+            MemoryError,
+            IPCError,
+            RegisterClassExError,
+            CreateWindowError,
+            CreateThreadError,
+            InvalidIndexError,
+            InvalidCallError
+        }
+        #endregion
 
-		public void Search(string query)
-		{
-			int i;
-			const int bufsize = 260; 
-			StringBuilder buf = new StringBuilder(bufsize);
+        #region Property
 
-            Everything_SetSearch(query);
-            Everything_Query();
-            // loop through the results, adding each result to the listbox.
-            for (i = 0; i < Everything_GetNumResults(); i++)
+        /// <summary>
+        /// Gets or sets a value indicating whether [match path].
+        /// </summary>
+        /// <value><c>true</c> if [match path]; otherwise, <c>false</c>.</value>
+        public Boolean MatchPath
+        {
+            get
             {
-                // get the result's full path and file name.
-                Everything_GetResultFullPathName(i, buf, bufsize);
+                return Everything_GetMatchPath();
             }
-		}
+            set
+            {
+                Everything_SetMatchPath(value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [match case].
+        /// </summary>
+        /// <value><c>true</c> if [match case]; otherwise, <c>false</c>.</value>
+        public Boolean MatchCase
+        {
+            get
+            {
+                return Everything_GetMatchCase();
+            }
+            set
+            {
+                Everything_SetMatchCase(value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [match whole word].
+        /// </summary>
+        /// <value><c>true</c> if [match whole word]; otherwise, <c>false</c>.</value>
+        public Boolean MatchWholeWord
+        {
+            get
+            {
+                return Everything_GetMatchWholeWord();
+            }
+            set
+            {
+                Everything_SetMatchWholeWord(value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable regex].
+        /// </summary>
+        /// <value><c>true</c> if [enable regex]; otherwise, <c>false</c>.</value>
+        public Boolean EnableRegex
+        {
+            get
+            {
+                return Everything_GetRegex();
+            }
+            set
+            {
+                Everything_SetRegex(value);
+            }
+        }
+        #endregion
+
+        #region Public Method
+        /// <summary>
+        /// Resets this instance.
+        /// </summary>
+        public void Reset()
+        {
+            Everything_Reset();
+        }
+
+        /// <summary>
+        /// Searches the specified key word.
+        /// </summary>
+        /// <param name="keyWord">The key word.</param>
+        /// <returns></returns>
+        public IEnumerable<string> Search(string keyWord)
+        {
+            return Search(keyWord, 0, int.MaxValue);
+        }
+
+        /// <summary>
+        /// Searches the specified key word.
+        /// </summary>
+        /// <param name="keyWord">The key word.</param>
+        /// <param name="offset">The offset.</param>
+        /// <param name="maxCount">The max count.</param>
+        /// <returns></returns>
+        public IEnumerable<string> Search(string keyWord, int offset, int maxCount)
+        {
+            if (string.IsNullOrEmpty(keyWord))
+                throw new ArgumentNullException("keyWord");
+
+            if (offset < 0)
+                throw new ArgumentOutOfRangeException("offset");
+
+            if (maxCount < 0)
+                throw new ArgumentOutOfRangeException("maxCount");
+
+            Everything_SetSearch(keyWord);
+            Everything_SetOffset(offset);
+            Everything_SetMax(maxCount);
+            if (!Everything_Query())
+            {
+                switch (Everything_GetLastError())
+                {
+                    case StateCode.CreateThreadError:
+                        throw new CreateThreadException();
+                    case StateCode.CreateWindowError:
+                        throw new CreateWindowException();
+                    case StateCode.InvalidCallError:
+                        throw new InvalidCallException();
+                    case StateCode.InvalidIndexError:
+                        throw new InvalidIndexException();
+                    case StateCode.IPCError:
+                        throw new IPCErrorException();
+                    case StateCode.MemoryError:
+                        throw new MemoryErrorException();
+                    case StateCode.RegisterClassExError:
+                        throw new RegisterClassExException();
+                }
+                yield break;
+            }
+
+            const int bufferSize = 256;
+            StringBuilder buffer = new StringBuilder(bufferSize);
+            for (int idx = 0; idx < Everything_GetNumResults(); ++idx)
+            {
+                Everything_GetResultFullPathName(idx, buffer, bufferSize);
+                yield return buffer.ToString();
+            }
+        }
+        #endregion
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class MemoryErrorException : ApplicationException
+    {
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class IPCErrorException : ApplicationException
+    {
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class RegisterClassExException : ApplicationException
+    {
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class CreateWindowException : ApplicationException
+    {
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class CreateThreadException : ApplicationException
+    {
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class InvalidIndexException : ApplicationException
+    {
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class InvalidCallException : ApplicationException
+    {
     }
 }
