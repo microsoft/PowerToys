@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.tbQuery = new System.Windows.Forms.TextBox();
-            this.listBox1 = new System.Windows.Forms.ListBox();
+            this.pnlResults = new System.Windows.Forms.Panel();
             this.SuspendLayout();
             // 
             // tbQuery
@@ -40,29 +40,33 @@
             this.tbQuery.Size = new System.Drawing.Size(471, 21);
             this.tbQuery.TabIndex = 0;
             this.tbQuery.TextChanged += new System.EventHandler(this.TbQuery_TextChanged);
+            this.tbQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbQuery_KeyDown);
             // 
-            // listBox1
+            // pnlResults
             // 
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.ItemHeight = 12;
-            this.listBox1.Location = new System.Drawing.Point(12, 39);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(471, 352);
-            this.listBox1.TabIndex = 1;
+            this.pnlResults.AutoSize = true;
+            this.pnlResults.Location = new System.Drawing.Point(12, 39);
+            this.pnlResults.Name = "pnlResults";
+            this.pnlResults.Size = new System.Drawing.Size(471, 22);
+            this.pnlResults.TabIndex = 1;
             // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(495, 404);
-            this.Controls.Add(this.listBox1);
+            this.AutoSize = true;
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.ClientSize = new System.Drawing.Size(495, 72);
+            this.Controls.Add(this.pnlResults);
             this.Controls.Add(this.tbQuery);
+            this.DoubleBuffered = true;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "FrmMain";
             this.ShowIcon = false;
-            this.Text = "Form1";
-            this.TopMost = true;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "WinAlfred";
             this.Load += new System.EventHandler(this.FrmMain_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -72,7 +76,7 @@
         #endregion
 
         private System.Windows.Forms.TextBox tbQuery;
-        private System.Windows.Forms.ListBox listBox1;
+        private System.Windows.Forms.Panel pnlResults;
 
 
     }

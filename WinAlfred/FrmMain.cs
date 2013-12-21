@@ -9,6 +9,8 @@ using System.Windows.Forms;
 using WinAlfred.Helper;
 using WinAlfred.Plugin;
 using WinAlfred.PluginLoader;
+using WinAlfreds.CustomControls;
+using WinAlfreds.Helper;
 
 namespace WinAlfred
 {
@@ -16,10 +18,23 @@ namespace WinAlfred
     {
         public List<PluginPair> plugins = new List<PluginPair>();
         private List<Result> results = new List<Result>();
+        KeyboardHook hook = new KeyboardHook();
 
         public FrmMain()
         {
             InitializeComponent();
+
+            hook.KeyPressed += OnHotKey;
+            hook.RegisterHotKey(XModifierKeys.Alt, Keys.Space);
+        }
+
+        private void OnHotKey(object sender, KeyPressedEventArgs e)
+        {
+            if (!Visible)
+            {
+                tbQuery.SelectAll();
+            }
+            Visible = !Visible;
         }
 
         private void FrmMain_Load(object sender, EventArgs e)
@@ -48,18 +63,27 @@ namespace WinAlfred
                             throw;
                         }
 #endif
-                        throw;
                     }
                 }
             }
             var s = results.OrderByDescending(o => o.Score);
 
-            listBox1.Items.Clear();
+            pnlResults.Controls.Clear();
             foreach (Result result in results)
             {
-                listBox1.Items.Add(result.Title);
+                ResultItemControl control = new ResultItemControl(result);
+                pnlResults.Controls.Add(control);
             }
         }
 
+        private void tbQuery_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                Hide();
+            }
+        }
     }
 }

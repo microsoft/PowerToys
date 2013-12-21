@@ -20,10 +20,12 @@ namespace WinAlfred.Plugin
             if (string.IsNullOrEmpty(RawQuery)) return;
 
             string[] strings = RawQuery.Split(' ');
+            if (strings.Length == 1) return; //we consider a valid query must contain a space
+
             ActionName = strings[0];
-            if (strings.Length > 1)
+            for (int i = 1; i < strings.Length; i++)
             {
-                for (int i = 1; i < strings.Length; i++)
+                if (!string.IsNullOrEmpty(strings[i]))
                 {
                     ActionParameters.Add(strings[i]);
                 }

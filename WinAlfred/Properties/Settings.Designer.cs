@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WinAlfred.Properties
+namespace WinAlfreds.Properties
 {
 
 
