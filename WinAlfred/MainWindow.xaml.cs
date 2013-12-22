@@ -18,6 +18,7 @@ namespace WinAlfred
         private KeyboardHook hook = new KeyboardHook();
         public List<PluginPair> plugins = new List<PluginPair>();
         private List<Result> results = new List<Result>();
+        private NotifyIcon notifyIcon = null;
 
         public MainWindow()
         {
@@ -27,9 +28,26 @@ namespace WinAlfred
             resultCtrl.resultItemChangedEvent += resultCtrl_resultItemChangedEvent;
         }
 
+        private void InitialTray()
+        {
+            notifyIcon = new NotifyIcon {Text = "WinAlfred", Icon = Properties.Resources.app, Visible = true};
+            notifyIcon.Click += (o, e) => ShowWinAlfred();
+            System.Windows.Forms.MenuItem open = new System.Windows.Forms.MenuItem("Open");
+            open.Click += (o, e) => ShowWinAlfred();
+            System.Windows.Forms.MenuItem exit = new System.Windows.Forms.MenuItem("Exit");
+            exit.Click += (o, e) =>
+            {
+                notifyIcon.Visible = false;
+                Close();
+            };
+            System.Windows.Forms.MenuItem[] childen = { open, exit };
+            notifyIcon.ContextMenu = new System.Windows.Forms.ContextMenu(childen);
+        }
+
         private void resultCtrl_resultItemChangedEvent()
         {
             Height = resultCtrl.pnlContainer.ActualHeight + tbQuery.Height + tbQuery.Margin.Top + tbQuery.Margin.Bottom;
+            resultCtrl.Margin = results.Count > 0 ? new Thickness{ Bottom = 10,Left = 10,Right = 10} : new Thickness { Bottom = 0,Left = 10,Right = 10 };
         }
 
         private void OnHotKey(object sender, KeyPressedEventArgs e)
@@ -92,6 +110,7 @@ namespace WinAlfred
             plugins.AddRange(new CSharpPluginLoader().LoadPlugin());
 
             ShowWinAlfred();
+            InitialTray();
         }
 
         private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e)

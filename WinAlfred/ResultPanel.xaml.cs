@@ -22,11 +22,14 @@ namespace WinAlfred
         public void AddResults(List<Result> results)
         {
             pnlContainer.Children.Clear();
-            foreach (Result result in results)
+            for (int i = 0; i < results.Count; i++)
             {
+                Result result = results[i];
                 ResultItem control = new ResultItem(result);
+                control.SetIndex(i+1);
                 pnlContainer.Children.Add(control);
             }
+
             pnlContainer.UpdateLayout();
 
             double resultItemHeight = 0;

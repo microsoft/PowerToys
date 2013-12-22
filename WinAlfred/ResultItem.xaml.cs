@@ -21,8 +21,14 @@ namespace WinAlfred
             set
             {
                 selected = value;
-                Background = selected ? Brushes.Gray : Brushes.White;
+                BrushConverter bc = new BrushConverter();
+                Background = selected ? (Brush)(bc.ConvertFrom("#d1d1d1")) : (Brush)(bc.ConvertFrom("#ebebeb"));
             }
+        }
+
+        public void SetIndex(int index)
+        {
+            tbIndex.Text = index.ToString();
         }
 
         public ResultItem(Result result)

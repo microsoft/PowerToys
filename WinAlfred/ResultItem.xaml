@@ -4,22 +4,26 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="60.233" d:DesignWidth="436.064">
-    <Grid  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10">
+             d:DesignWidth="400"
+             Height="50">
+    <Grid  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="66"></ColumnDefinition>
+            <ColumnDefinition Width="32"></ColumnDefinition>
             <ColumnDefinition/>
             <ColumnDefinition Width="73.064"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <Image x:Name="imgIco" Width="32" Height="32" ></Image>
-        <Grid HorizontalAlignment="Stretch" Grid.Column="1" VerticalAlignment="Stretch">
+        <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" ></Image>
+        <Grid HorizontalAlignment="Stretch" Margin="5 0 0 0" Grid.Column="1" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
-                <RowDefinition Height="33"></RowDefinition>
+                <RowDefinition Height="23"></RowDefinition>
                 <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
-            <TextBlock x:Name="tbTitle">Title</TextBlock>
-            <TextBlock Grid.Row="1" x:Name="tbSubTitle">sdfdsf</TextBlock>
+            <TextBlock x:Name="tbTitle" FontSize="16" Foreground="#37392c" FontWeight="Medium">Title</TextBlock>
+            <TextBlock Grid.Row="1" Foreground="#8e94a4" x:Name="tbSubTitle">sdfdsf</TextBlock>
         </Grid>
-        <Button Grid.Column="2" />
+        <DockPanel Grid.Column="2" >
+            <Image  Source="Images\ctrl.png" VerticalAlignment="Center"/>
+            <TextBlock x:Name="tbIndex" FontSize="16" Foreground="#5c1f87" Margin="0 5 0 0" Text="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
+        </DockPanel>
     </Grid>
 </UserControl>
