@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -52,10 +53,14 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Images\lock.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy  /Y  $(TargetDir)$(TargetFileName) $(SolutionDir)WinAlfred\bin\Debug\Plugins\System\
-xcopy  /Y  $(TargetDir)plugin.ini $(SolutionDir)WinAlfred\bin\Debug\Plugins\System\</PostBuildEvent>
+xcopy  /Y  $(TargetDir)plugin.ini $(SolutionDir)WinAlfred\bin\Debug\Plugins\System\
+xcopy  /Y  $(ProjectDir)Images\*.* $(SolutionDir)WinAlfred\bin\Debug\Plugins\System\Images\</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

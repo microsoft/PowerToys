@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using WinAlfred.Helper;
 
-namespace WinAlfreds.Helper
+namespace WinAlfred.Helper
 {
     public sealed class KeyboardHook : IDisposable
     {

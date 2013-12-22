@@ -1,0 +1,25 @@
+﻿<UserControl x:Class="WinAlfred.ResultItem"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="60.233" d:DesignWidth="436.064">
+    <Grid  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="66"></ColumnDefinition>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="73.064"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Image x:Name="imgIco" Width="32" Height="32" ></Image>
+        <Grid HorizontalAlignment="Stretch" Grid.Column="1" VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="33"></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <TextBlock x:Name="tbTitle">Title</TextBlock>
+            <TextBlock Grid.Row="1" x:Name="tbSubTitle">sdfdsf</TextBlock>
+        </Grid>
+        <Button Grid.Column="2" />
+    </Grid>
+</UserControl>

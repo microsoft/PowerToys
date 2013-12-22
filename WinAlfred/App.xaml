@@ -1,0 +1,32 @@
+﻿<Application x:Class="WinAlfred.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <Style x:Key="windowShow" TargetType="Window">
+                <Setter Property="Border.RenderTransform">
+                    <Setter.Value>
+                        <ScaleTransform CenterX="50" CenterY="50" ScaleX="1" ScaleY="1" />
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <EventTrigger RoutedEvent="Window.Loaded">
+                        <EventTrigger.Actions>
+                            <BeginStoryboard >
+                                <Storyboard>
+                                    <DoubleAnimation Duration="0:0:0.5" Storyboard.TargetProperty="RenderTransform.ScaleX" 
+                                           From="1.0" To="1.1" 
+                                           AutoReverse="True"/>
+                                    <DoubleAnimation Duration="0:0:0.5" Storyboard.TargetProperty="RenderTransform.ScaleY" 
+                                           From="1.0" To="1.1" 
+                                           AutoReverse="True"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger.Actions>
+                    </EventTrigger>
+                </Style.Triggers>
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

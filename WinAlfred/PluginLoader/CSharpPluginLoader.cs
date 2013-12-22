@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+using System.Threading;
 using WinAlfred.Helper;
 using WinAlfred.Plugin;
 
@@ -55,7 +55,16 @@ namespace WinAlfred.PluginLoader
 
             }
 
+            InitPlugin(plugins);
             return plugins;
+        }
+
+        private void InitPlugin(List<PluginPair> plugins)
+        {
+            foreach (IPlugin plugin in plugins.Select(pluginPair => pluginPair.Plugin))
+            {
+                new Thread(plugin.Init).Start();
+            }
         }
     }
 }

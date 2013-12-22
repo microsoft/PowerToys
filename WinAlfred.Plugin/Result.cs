@@ -11,5 +11,10 @@ namespace WinAlfred.Plugin
         public Action Action { get; set; }
         public int Score { get; set; }
         public List<Result> ContextResults { get; set; }
+
+        /// <summary>
+        /// you don't need to set this property if you are developing a plugin
+        /// </summary>
+        public string PluginDirectory { get; set; }
     }
 }

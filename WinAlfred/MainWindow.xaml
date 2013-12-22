@@ -1,0 +1,19 @@
+﻿<Window x:Class="WinAlfred.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:winAlfred="clr-namespace:WinAlfred"
+        Title="WinAlfred" Height="80" Width="525" 
+        Background="Cornsilk"
+        Loaded="MainWindow_OnLoaded"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="False"
+        >
+    <DockPanel>
+        <TextBox DockPanel.Dock="Top" Margin="10" VerticalContentAlignment="Center" x:Name="tbQuery" PreviewKeyDown="TbQuery_OnPreviewKeyDown" TextChanged="TextBoxBase_OnTextChanged" Height="26.965" />
+        <winAlfred:ResultPanel x:Name="resultCtrl" />
+    </DockPanel>
+</Window>
+

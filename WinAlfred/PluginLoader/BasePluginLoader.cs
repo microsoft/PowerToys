@@ -62,6 +62,7 @@ namespace WinAlfred.PluginLoader
                 metadata.Version = ini.GetSetting("plugin", "Version");
                 metadata.ActionKeyword = ini.GetSetting("plugin", "ActionKeyword");
                 metadata.ExecuteFile = AppDomain.CurrentDomain.BaseDirectory + directory + "\\" + ini.GetSetting("plugin", "ExecuteFile");
+                metadata.PluginDirecotry = AppDomain.CurrentDomain.BaseDirectory + directory + "\\";
 
                 if (!AllowedLanguage.IsAllowed(metadata.Language))
                 {
