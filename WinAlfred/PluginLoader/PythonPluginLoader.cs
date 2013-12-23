@@ -13,7 +13,7 @@ namespace WinAlfred.PluginLoader
             List<PluginMetadata> metadatas = pluginMetadatas.Where(o => o.Language.ToUpper() == AllowedLanguage.Python.ToUpper()).ToList();
             foreach (PluginMetadata metadata in metadatas)
             {
-                PythonPluginWrapper python = new PythonPluginWrapper(metadata.ExecuteFile);
+                PythonPluginWrapper python = new PythonPluginWrapper(metadata);
                 PluginPair pair = new PluginPair()
                 {
                     Plugin = python,

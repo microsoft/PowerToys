@@ -1,52 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
-using IronPython.Hosting;
-using Microsoft.Scripting.Hosting;
+using System.Runtime.InteropServices;
 using WinAlfred.Plugin;
 
 namespace WinAlfred.PluginLoader
 {
     public class PythonPluginWrapper : IPlugin
     {
-        private static ScriptEngine engine;
-        private static ScriptScope scope;
-        private object pythonInstance;
+        private PluginMetadata metadata;
+
+        [DllImport("PyWinAlfred.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public extern static void ExecPython(string directory, string file, string query);
 
         static PythonPluginWrapper()
         {
-            //creating engine and stuff
-            engine = Python.CreateEngine();
-            scope = engine.CreateScope();
 
-            var paths = engine.GetSearchPaths();
-            paths.Add(AppDomain.CurrentDomain.BaseDirectory + @"PythonEnv\2.7\Lib\");
-            engine.SetSearchPaths(paths);
         }
 
-        public PythonPluginWrapper(string file)
+        public PythonPluginWrapper(PluginMetadata metadata)
         {
-            pythonInstance = GetPythonClassInstance(file, "winAlfred");
+            this.metadata = metadata;
         }
 
-        private object GetPythonClassInstance(string file, string className)
-        {
-            ScriptSource source = engine.CreateScriptSourceFromFile(file);
-            CompiledCode compiled = source.Compile();
-
-            //now executing this code (the code should contain a class)
-            compiled.Execute(scope);
-
-            //now creating an object that could be used to access the stuff inside a python script
-            return engine.Operations.Invoke(scope.GetVariable(className));
-        }
 
         public List<Result> Query(Query query)
         {
             List<Result> results = new List<Result>();
-            object invokeMember = engine.Operations.InvokeMember(pythonInstance, "query", query.RawQuery);
+            ExecPython(metadata.PluginDirecotry, metadata.ExecuteFile.Replace(".py", ""), query.RawQuery);
             results.Add(new Result()
             {
-                Title = invokeMember.ToString()
             });
             return results;
         }

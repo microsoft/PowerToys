@@ -66,12 +66,26 @@ namespace WinAlfred.PluginLoader
 
                 if (!AllowedLanguage.IsAllowed(metadata.Language))
                 {
-                    Log.Error(string.Format("Parse ini {0} failed: invalid language {1}", iniPath, metadata.Language));
+                    string error = string.Format("Parse ini {0} failed: invalid language {1}", iniPath,
+                                                 metadata.Language);
+                    Log.Error(error);
+#if (DEBUG)
+                    {
+                        throw new WinAlfredException(error);
+                    }
+#endif
                     return null;
                 }
                 if (!File.Exists(metadata.ExecuteFile))
                 {
-                    Log.Error(string.Format("Parse ini {0} failed: ExecuteFile didn't exist {1}", iniPath, metadata.ExecuteFile));
+                    string error = string.Format("Parse ini {0} failed: ExecuteFile didn't exist {1}", iniPath,
+                                                 metadata.ExecuteFile);
+                    Log.Error(error);
+#if (DEBUG)
+                    {
+                        throw new WinAlfredException(error);
+                    }
+#endif
                     return null;
                 }
 
@@ -80,6 +94,11 @@ namespace WinAlfred.PluginLoader
             catch (Exception e)
             {
                 Log.Error(string.Format("Parse ini {0} failed: {1}", iniPath, e.Message));
+#if (DEBUG)
+                {
+                    throw;
+                }
+#endif
                 return null;
             }
         }
