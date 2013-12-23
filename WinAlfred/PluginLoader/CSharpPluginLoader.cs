@@ -19,7 +19,7 @@ namespace WinAlfred.PluginLoader
             {
                 try
                 {
-                    Assembly asm = Assembly.LoadFile(metadata.ExecuteFile);
+                    Assembly asm = Assembly.LoadFile(metadata.ExecuteFilePath);
                     List<Type> types = asm.GetTypes().Where(o => o.GetInterfaces().Contains(typeof (IPlugin))).ToList();
                     if (types.Count == 0)
                     {

@@ -61,8 +61,9 @@ namespace WinAlfred.PluginLoader
                 metadata.Language = ini.GetSetting("plugin", "Language");
                 metadata.Version = ini.GetSetting("plugin", "Version");
                 metadata.ActionKeyword = ini.GetSetting("plugin", "ActionKeyword");
-                metadata.ExecuteFile = AppDomain.CurrentDomain.BaseDirectory + directory + "\\" + ini.GetSetting("plugin", "ExecuteFile");
+                metadata.ExecuteFilePath = AppDomain.CurrentDomain.BaseDirectory + directory + "\\" + ini.GetSetting("plugin", "ExecuteFile");
                 metadata.PluginDirecotry = AppDomain.CurrentDomain.BaseDirectory + directory + "\\";
+                metadata.ExecuteFileName = ini.GetSetting("plugin", "ExecuteFile");
 
                 if (!AllowedLanguage.IsAllowed(metadata.Language))
                 {
@@ -76,10 +77,10 @@ namespace WinAlfred.PluginLoader
 #endif
                     return null;
                 }
-                if (!File.Exists(metadata.ExecuteFile))
+                if (!File.Exists(metadata.ExecuteFilePath))
                 {
-                    string error = string.Format("Parse ini {0} failed: ExecuteFile didn't exist {1}", iniPath,
-                                                 metadata.ExecuteFile);
+                    string error = string.Format("Parse ini {0} failed: ExecuteFilePath didn't exist {1}", iniPath,
+                                                 metadata.ExecuteFilePath);
                     Log.Error(error);
 #if (DEBUG)
                     {

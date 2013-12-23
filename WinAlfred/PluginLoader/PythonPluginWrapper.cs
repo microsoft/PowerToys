@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Newtonsoft.Json;
 using WinAlfred.Plugin;
 
 namespace WinAlfred.PluginLoader
@@ -10,27 +11,18 @@ namespace WinAlfred.PluginLoader
         private PluginMetadata metadata;
 
         [DllImport("PyWinAlfred.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public extern static void ExecPython(string directory, string file, string query);
-
-        static PythonPluginWrapper()
-        {
-
-        }
+        private extern static IntPtr ExecPython(string directory, string file, string query);
 
         public PythonPluginWrapper(PluginMetadata metadata)
         {
             this.metadata = metadata;
         }
 
-
         public List<Result> Query(Query query)
         {
-            List<Result> results = new List<Result>();
-            ExecPython(metadata.PluginDirecotry, metadata.ExecuteFile.Replace(".py", ""), query.RawQuery);
-            results.Add(new Result()
-            {
-            });
-            return results;
+            string s = Marshal.PtrToStringAnsi(ExecPython(metadata.PluginDirecotry, metadata.ExecuteFileName.Replace(".py", ""), query.RawQuery));
+            List<Result> o = JsonConvert.DeserializeObject<List<Result>>(s);
+            return o;
         }
 
         public void Init()

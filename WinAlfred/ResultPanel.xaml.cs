@@ -4,9 +4,6 @@ using WinAlfred.Plugin;
 
 namespace WinAlfred
 {
-    /// <summary>
-    /// Result.xaml 的交互逻辑
-    /// </summary>
     public partial class ResultPanel : UserControl
     {
         public delegate void ResultItemsChanged();
@@ -26,7 +23,7 @@ namespace WinAlfred
             {
                 Result result = results[i];
                 ResultItem control = new ResultItem(result);
-                control.SetIndex(i+1);
+                control.SetIndex(i + 1);
                 pnlContainer.Children.Add(control);
             }
 
@@ -39,7 +36,7 @@ namespace WinAlfred
                 if (resultItem != null)
                     resultItemHeight = resultItem.ActualHeight;
             }
-            Height = pnlContainer.Height = results.Count * resultItemHeight;
+            pnlContainer.Height = results.Count * resultItemHeight;
             OnResultItemChangedEvent();
         }
 

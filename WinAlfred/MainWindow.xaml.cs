@@ -91,12 +91,12 @@ namespace WinAlfred
             resultCtrl.SelectFirst();
         }
 
-        public void HideWinAlfred()
+        private void HideWinAlfred()
         {
             Hide();
         }
 
-        public void ShowWinAlfred()
+        private void ShowWinAlfred()
         {
             tbQuery.SelectAll();
             Focus();

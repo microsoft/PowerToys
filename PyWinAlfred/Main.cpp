@@ -1,7 +1,7 @@
 #include <tchar.h>
 #include "Python.h"
 
-extern "C" __declspec(dllexport) void ExecPython(char* directory, char* file, char* query)
+extern "C" __declspec(dllexport) char* ExecPython(char* directory, char* file, char* query)
 {
 	try{
 		PyObject *pName, *pModule, *pDict, *pFunc, *pValue, *pClass, *pInstance ;
@@ -32,14 +32,16 @@ extern "C" __declspec(dllexport) void ExecPython(char* directory, char* file, ch
 		else 
 		{
 			PyErr_Print();
-			return;
+			return "failed";
 		}
 
 		// Call a method of the class with two parameters
 		pValue = PyObject_CallMethod(pInstance,"query", "(s)",query);
-
+        char * str_ret = PyString_AsString(pValue); 
 		// Finish the Python Interpreter
 		Py_Finalize();
+
+		return str_ret;
 	}
 	catch(int& value){
 		PyErr_Print();
