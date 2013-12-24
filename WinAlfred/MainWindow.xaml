@@ -14,7 +14,7 @@
         Icon="Images\ico.png"
         >
     <DockPanel>
-        <TextBox DockPanel.Dock="Top" Margin="10" VerticalContentAlignment="Center" x:Name="tbQuery" PreviewKeyDown="TbQuery_OnPreviewKeyDown" TextChanged="TextBoxBase_OnTextChanged" Height="26.965" />
+        <TextBox Style="{DynamicResource defaultQueryBoxStyle}" DockPanel.Dock="Top" x:Name="tbQuery" PreviewKeyDown="TbQuery_OnPreviewKeyDown" TextChanged="TextBoxBase_OnTextChanged" />
         <winAlfred:ResultPanel x:Name="resultCtrl" Margin="10 0 10 0" />
     </DockPanel>
 </Window>

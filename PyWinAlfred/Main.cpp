@@ -38,6 +38,7 @@ extern "C" __declspec(dllexport) char* ExecPython(char* directory, char* file, c
 		// Call a method of the class with two parameters
 		pValue = PyObject_CallMethod(pInstance,"query", "(s)",query);
         char * str_ret = PyString_AsString(pValue); 
+
 		// Finish the Python Interpreter
 		Py_Finalize();
 
