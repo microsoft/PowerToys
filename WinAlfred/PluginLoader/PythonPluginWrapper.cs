@@ -12,6 +12,8 @@ namespace WinAlfred.PluginLoader
 
         [DllImport("PyWinAlfred.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private extern static IntPtr ExecPython(string directory, string file, string query);
+        [DllImport("PyWinAlfred.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private extern static void InitPythonEnv();
 
         public PythonPluginWrapper(PluginMetadata metadata)
         {
@@ -27,7 +29,7 @@ namespace WinAlfred.PluginLoader
 
         public void Init()
         {
-
+            InitPythonEnv();
         }
     }
 }

@@ -1,13 +1,29 @@
 #include <tchar.h>
 #include "Python.h"
 
+
+extern "C" __declspec(dllexport) void InitPythonEnv()
+{
+
+}
+
 extern "C" __declspec(dllexport) char* ExecPython(char* directory, char* file, char* query)
 {
 	try{
-		PyObject *pName, *pModule, *pDict, *pFunc, *pValue, *pClass, *pInstance ;
+		PyObject *pName, *pModule, *pDict, *pFunc, *pValue, *pClass, *pInstance;
 
-		// Initialize the Python Interpreter
+		// Initialise the Python interpreter
 		Py_Initialize();
+
+		// Create GIL/enable threads
+		PyEval_InitThreads();
+
+		PyGILState_STATE gstate = PyGILState_Ensure();
+		//      // Get the default thread state  
+		//      PyThreadState* state = PyThreadState_Get();
+		//      // Once in each thread
+		//PyThreadState* stateForNewThread = PyThreadState_New(state->interp);
+		//PyEval_RestoreThread(stateForNewThread);
 
 		// Build the name object
 		PyObject *sys = PyImport_ImportModule("sys");
@@ -37,10 +53,13 @@ extern "C" __declspec(dllexport) char* ExecPython(char* directory, char* file, c
 
 		// Call a method of the class with two parameters
 		pValue = PyObject_CallMethod(pInstance,"query", "(s)",query);
-        char * str_ret = PyString_AsString(pValue); 
+		char * str_ret = PyString_AsString(pValue); 
+
+		PyGILState_Release(gstate);
+		//PyEval_SaveThread();
 
 		// Finish the Python Interpreter
-		Py_Finalize();
+		//Py_Finalize();
 
 		return str_ret;
 	}

@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using WinAlfred.Plugin;
 
 namespace WinAlfred.PluginLoader
 {
     public class PythonPluginLoader : BasePluginLoader
     {
-
         public override List<PluginPair> LoadPlugin()
         {
             List<PluginPair> plugins = new List<PluginPair>();
@@ -21,9 +21,12 @@ namespace WinAlfred.PluginLoader
                 };
                 plugins.Add(pair);
             }
+
+            foreach (IPlugin plugin in plugins.Select(pluginPair => pluginPair.Plugin))
+            {
+                new Thread(plugin.Init).Start();
+            }
             return plugins;
         }
-
-
     }
 }
