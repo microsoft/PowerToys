@@ -7,7 +7,7 @@ extern "C" __declspec(dllexport) void InitPythonEnv()
 
 }
 
-extern "C" __declspec(dllexport) char* ExecPython(char* directory, char* file, char* query)
+extern "C" __declspec(dllexport) char* ExecPython(char* directory, char* file, char* method, char* para)
 {
 	try{
 		PyObject *pName, *pModule, *pDict, *pFunc, *pValue, *pClass, *pInstance;
@@ -16,9 +16,9 @@ extern "C" __declspec(dllexport) char* ExecPython(char* directory, char* file, c
 		Py_Initialize();
 
 		// Create GIL/enable threads
-		PyEval_InitThreads();
+		//PyEval_InitThreads();
 
-		PyGILState_STATE gstate = PyGILState_Ensure();
+		//PyGILState_STATE gstate = PyGILState_Ensure();
 		//      // Get the default thread state  
 		//      PyThreadState* state = PyThreadState_Get();
 		//      // Once in each thread
@@ -52,10 +52,10 @@ extern "C" __declspec(dllexport) char* ExecPython(char* directory, char* file, c
 		}
 
 		// Call a method of the class with two parameters
-		pValue = PyObject_CallMethod(pInstance,"query", "(s)",query);
+		pValue = PyObject_CallMethod(pInstance,method, "(s)",para);
 		char * str_ret = PyString_AsString(pValue); 
 
-		PyGILState_Release(gstate);
+		//PyGILState_Release(gstate);
 		//PyEval_SaveThread();
 
 		// Finish the Python Interpreter

@@ -144,6 +144,7 @@ namespace WinAlfred
 
                 case Key.Enter:
                     resultCtrl.AcceptSelect();
+                    HideWinAlfred();
                     e.Handled = true;
                     break;
             }

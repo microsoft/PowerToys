@@ -62,6 +62,7 @@
     <Compile Include="Plugin.cs" />
     <Compile Include="PluginMetadata.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PythonResult.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="Result.cs" />
   </ItemGroup>
