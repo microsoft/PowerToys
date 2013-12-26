@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto">
+    <ScrollViewer x:Name="sv" MaxHeight="300" VerticalScrollBarVisibility="Auto">
         <StackPanel x:Name="pnlContainer">
 
         </StackPanel>

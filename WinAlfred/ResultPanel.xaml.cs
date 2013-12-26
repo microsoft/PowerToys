@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 using WinAlfred.Plugin;
 
@@ -89,9 +90,54 @@ namespace WinAlfred
         {
             if (pnlContainer.Children.Count > 0)
             {
+                int oldIndex = GetCurrentSelectedResultIndex();
+
                 UnSelectAll();
                 var resultItemControl = pnlContainer.Children[index] as ResultItem;
-                if (resultItemControl != null) resultItemControl.Selected = true;
+                if (resultItemControl != null)
+                {
+                    resultItemControl.Selected = true;
+
+                    double scrollPosition = 0;
+                    Point newItemBottomPoint = resultItemControl.TranslatePoint(new Point(0, resultItemControl.ActualHeight), pnlContainer);
+                    if (index == 0)
+                    {
+                        sv.ScrollToTop();
+                        return;
+                    }
+                    if (index == pnlContainer.Children.Count - 1)
+                    {
+                        sv.ScrollToBottom();
+                        return;
+                    }
+
+                    if (index < oldIndex)
+                    {
+                        //move up and old item is at the top of the scroll view 
+                        if ( newItemBottomPoint.Y - sv.VerticalOffset == 0)
+                        {
+                            scrollPosition = sv.VerticalOffset - resultItemControl.ActualHeight;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        //move down and old item is at the bottom of scroll view
+                        if (sv.ActualHeight + sv.VerticalOffset == newItemBottomPoint.Y - resultItemControl.ActualHeight)
+                        {
+                            scrollPosition = newItemBottomPoint.Y - sv.ActualHeight;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    sv.ScrollToVerticalOffset(scrollPosition);
+                }
             }
         }
 
