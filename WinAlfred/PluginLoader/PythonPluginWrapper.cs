@@ -25,12 +25,24 @@ namespace WinAlfred.PluginLoader
             try
             {
                 string s = Marshal.PtrToStringAnsi(ExecPython(metadata.PluginDirecotry, metadata.ExecuteFileName.Replace(".py", ""), "query", query.RawQuery));
+                if (string.IsNullOrEmpty(s))
+                {
+                    return new List<Result>();
+                }
+
+                if (s.StartsWith("PYTHONERROR"))
+                {
+                    throw new ArgumentException(s);
+                }
                 List<PythonResult> o = JsonConvert.DeserializeObject<List<PythonResult>>(s);
                 List<Result> r = new List<Result>();
                 foreach (PythonResult pythonResult in o)
                 {
                     PythonResult ps = pythonResult;
-                    ps.Action = () => ExecPython(metadata.PluginDirecotry, metadata.ExecuteFileName.Replace(".py", ""), ps.ActionName, ps.ActionPara);
+                    if (!string.IsNullOrEmpty(ps.ActionName))
+                    {
+                        ps.Action = () => ExecPython(metadata.PluginDirecotry, metadata.ExecuteFileName.Replace(".py", ""), ps.ActionName, ps.ActionPara);
+                    }
                     r.Add(ps);
                 }
                 return r;

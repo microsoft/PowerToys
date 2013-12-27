@@ -68,8 +68,8 @@ namespace WinAlfred
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             string query = tbQuery.Text;
-            ThreadPool.QueueUserWorkItem(state =>
-            {
+            //ThreadPool.QueueUserWorkItem(state =>
+            //{
                 results.Clear();
                 foreach (PluginPair pair in plugins)
                 {
@@ -98,7 +98,7 @@ namespace WinAlfred
                     resultCtrl.AddResults(results.OrderByDescending(o => o.Score).ToList());
                     resultCtrl.SelectFirst();
                 }));
-            });
+            //});
         }
 
         private void HideWinAlfred()

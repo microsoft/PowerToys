@@ -152,7 +152,7 @@ namespace WinAlfred
             var resultItemControl = pnlContainer.Children[index] as ResultItem;
             if (resultItemControl != null)
             {
-                resultItemControl.Result.Action();
+                if (resultItemControl.Result.Action != null) resultItemControl.Result.Action();
             }
         }
 
