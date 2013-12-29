@@ -1,16 +1,8 @@
 #include <tchar.h>
+#include <stdio.h>
 #include "Python.h"
 #include <thread>
 #include <future>
-
-int i = 0;
-
-extern "C" __declspec(dllexport) void InitPythonEnv()
-{
-    i++;
-	Py_Initialize();
-	PyEval_InitThreads();
-}
 
 char* GetErrorMessage()
 {
@@ -30,16 +22,15 @@ char* Exec(char* directory, char* file, char* method, char* para)
 {
 	PyObject *pName, *pModule, *pDict, *pFunc, *pValue, *pClass, *pInstance;
 	char *error;
-    i++;
 
-	PyThreadState* global_state = PyThreadState_Get();
-	PyThreadState* ts = Py_NewInterpreter();
-	PyThreadState_Swap(ts);
+	//PyThreadState* global_state = PyThreadState_Get();
+	//PyThreadState* ts = Py_NewInterpreter();
+	//PyThreadState_Swap(ts);
 	// Initialise the Python interpreter
 
 	// Create GIL/enable threads
 
-	//PyGILState_STATE gstate = PyGILState_Ensure();
+	PyGILState_STATE gstate = PyGILState_Ensure();
 	//      // Get the default thread state  
 	//      PyThreadState* state = PyThreadState_Get();
 	//      // Once in each thread
@@ -106,15 +97,28 @@ char* Exec(char* directory, char* file, char* method, char* para)
 
 	// Finish the Python Interpreter
 
-	PyErr_Clear();
-	Py_EndInterpreter(ts);
-	PyThreadState_Swap(global_state);
+	//PyErr_Clear();
+	//Py_EndInterpreter(ts);
+	//PyThreadState_Swap(global_state);
 
+
+	PyGILState_Release(gstate);
 	return str_ret;
 }
 
-extern "C" __declspec(dllexport) char* ExecPython(char* directory, char* file, char* method, char* para)
+int main(int argc, char *argv[])
 {
-	auto future = std::async(Exec,directory,file,method,para);
-	return future.get();
+	char* directory = "d:\\Personal\\WinAlfred\\WinAlfred\\bin\\Debug\\Plugins\\p4pperson\\";
+	char* file = "main";
+	char* method = "query";
+	char* para = "p q";
+	Py_Initialize();
+	PyEval_InitThreads();
+	for(int i=0;i++;i<10){
+		auto future = std::async(Exec,directory,file,method,para);
+		printf("%s",future.get());
+	}
+	Py_Finalize();
+	getchar();
+	return 0;
 }
