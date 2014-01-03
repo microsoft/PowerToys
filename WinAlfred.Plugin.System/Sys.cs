@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -8,7 +7,7 @@ using System.Windows.Forms;
 
 namespace WinAlfred.Plugin.System
 {
-    public class Main : IPlugin
+    public class Sys : ISystemPlugin
     {
         List<Result> availableResults = new List<Result>();
 
@@ -20,18 +19,18 @@ namespace WinAlfred.Plugin.System
         public List<Result> Query(Query query)
         {
             List<Result> results = new List<Result>();
-            if (query.ActionParameters.Count == 0)
+
+            foreach (Result availableResult in availableResults)
             {
-                results = availableResults;
-            }
-            else
-            {
-                results.AddRange(availableResults.Where(result => result.Title.ToLower().Contains(query.ActionParameters[0].ToLower())));
+                if (availableResult.Title.ToLower().StartsWith(query.RawQuery.ToLower()))
+                {
+                    results.Add(availableResult);
+                }
             }
             return results;
         }
 
-        public void Init()
+        public void Init(PluginInitContext context)
         {
             availableResults.Add(new Result
             {
@@ -54,7 +53,23 @@ namespace WinAlfred.Plugin.System
                 Score = 20,
                 IcoPath = "Images\\lock.png",
                 Action = () => LockWorkStation()
-        });
+            });
+        }
+
+        public string Name
+        {
+            get
+            {
+                return "sys";
+            }
+        }
+
+        public string Description
+        {
+            get
+            {
+                return "provide system commands";
+            }
         }
     }
 }

@@ -1,0 +1,13 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace WinAlfred.Plugin
+{
+    public class PluginInitContext
+    {
+        public List<PluginPair> Plugins { get; set; }
+        public Action<string> ChangeQuery { get; set; }
+    }
+}

@@ -60,6 +60,7 @@
     <Compile Include="AllowedLanguage.cs" />
     <Compile Include="IPlugin.cs" />
     <Compile Include="Plugin.cs" />
+    <Compile Include="PluginInitContext.cs" />
     <Compile Include="PluginMetadata.cs" />
     <Compile Include="PluginType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

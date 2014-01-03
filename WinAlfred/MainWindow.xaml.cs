@@ -13,6 +13,7 @@ using WinAlfred.Helper;
 using WinAlfred.Plugin;
 using WinAlfred.PluginLoader;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using Timer = System.Threading.Timer;
 
 namespace WinAlfred
 {
@@ -21,11 +22,12 @@ namespace WinAlfred
         private KeyboardHook hook = new KeyboardHook();
         private List<Result> results = new List<Result>();
         private NotifyIcon notifyIcon = null;
-        private CommandDispatcher cmdDispatcher = new CommandDispatcher();
+        private Command cmdDispatcher;
 
         public MainWindow()
         {
             InitializeComponent();
+
             hook.KeyPressed += OnHotKey;
             hook.RegisterHotKey(XModifierKeys.Alt, Keys.Space);
             resultCtrl.resultItemChangedEvent += resultCtrl_resultItemChangedEvent;
@@ -51,7 +53,12 @@ namespace WinAlfred
         private void resultCtrl_resultItemChangedEvent()
         {
             Height = resultCtrl.pnlContainer.ActualHeight + tbQuery.Height + tbQuery.Margin.Top + tbQuery.Margin.Bottom;
-            resultCtrl.Margin = results.Count > 0 ? new Thickness { Bottom = 10, Left = 10, Right = 10 } : new Thickness { Bottom = 0, Left = 10, Right = 10 };
+            resultCtrl.Margin = resultCtrl.GetCurrentResultCount() > 0 ? new Thickness { Bottom = 10, Left = 10, Right = 10 } : new Thickness { Bottom = 0, Left = 10, Right = 10 };
+
+            if (resultCtrl.GetCurrentResultCount() == 1)
+            {
+                resultCtrl.SelectFirst();
+            }
         }
 
         private void OnHotKey(object sender, KeyPressedEventArgs e)
@@ -68,6 +75,19 @@ namespace WinAlfred
 
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
         {
+            resultCtrl.Dirty = true;
+            //auto clear results after 50ms if there are any results returned by plugins
+            //why we do this? because if we clear resulsts in the start of the text changed event
+            //we will see the splash. The more closer that clear and addResult method, the less splash we will see.
+            new Timer(o =>
+            {
+                if (resultCtrl.Dirty)
+                {
+                    resultCtrl.Dispatcher.Invoke(new Action(() => resultCtrl.Clear()));
+                }
+            }, null, TimeSpan.FromMilliseconds(50),TimeSpan.FromMilliseconds(-1));
+            if (string.IsNullOrEmpty(tbQuery.Text)) return;
+
             var q = new Query(tbQuery.Text);
             cmdDispatcher.DispatchCommand(q);
         }
@@ -77,7 +97,7 @@ namespace WinAlfred
             Hide();
         }
 
-        private void ShowWinAlfred()
+        public void ShowWinAlfred()
         {
             tbQuery.SelectAll();
             Show();
@@ -87,7 +107,8 @@ namespace WinAlfred
 
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
-            Plugins.Init();
+            Plugins.Init(this);
+            cmdDispatcher = new Command(this);
             ShowWinAlfred();
             InitialTray();
         }
@@ -117,6 +138,15 @@ namespace WinAlfred
                     e.Handled = true;
                     break;
             }
+        }
+
+        public void OnUpdateResultView(List<Result> list)
+        {
+            resultCtrl.Dispatcher.Invoke(new Action(() =>
+            {
+                List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).OrderByDescending(o => o.Score).ToList();
+                    resultCtrl.AddResults(l);
+            }));
         }
     }
 }

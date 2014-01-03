@@ -1,20 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 
 namespace WinAlfred.Plugin.System
 {
-    public class CMD:IPlugin
+    public class CMD : ISystemPlugin
     {
         public List<Result> Query(Query query)
         {
-            throw new NotImplementedException();
+            List<Result> results = new List<Result>();
+            if (query.RawQuery.StartsWith(">") && query.RawQuery.Length > 1)
+            {
+                string cmd = query.RawQuery.Substring(1);
+                Result result = new Result
+                {
+                    Title = cmd,
+                    SubTitle = "execute command through command shell" ,
+                    IcoPath = "Images/cmd.png",
+                    Action = () =>
+                    {
+                        Process process = new Process();
+                        ProcessStartInfo startInfo = new ProcessStartInfo();
+                        startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                        startInfo.FileName = "cmd.exe";
+                        startInfo.Arguments = "/C " + cmd;
+                        process.StartInfo = startInfo;
+                        process.Start();
+                    }
+                };
+                results.Add(result);
+            }
+            return results;
         }
 
-        public void Init()
+        public void Init(PluginInitContext context)
         {
-            throw new NotImplementedException();
+        }
+
+        public string Name
+        {
+            get
+            {
+                return "CMD";
+            }
+        }
+
+        public string Description
+        {
+            get
+            {
+                return "Execute shell commands.";
+            }
         }
     }
 }

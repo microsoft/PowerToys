@@ -7,5 +7,7 @@ namespace WinAlfred.Plugin.System
 {
     public interface ISystemPlugin : IPlugin
     {
+        string Name { get; }
+        string Description { get; }
     }
 }

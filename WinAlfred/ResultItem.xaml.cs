@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -39,7 +40,7 @@ namespace WinAlfred
 
             tbTitle.Text = result.Title;
             tbSubTitle.Text = result.SubTitle;
-            if (!string.IsNullOrEmpty(result.IcoPath))
+            if (!string.IsNullOrEmpty(result.IcoPath) && File.Exists(result.PluginDirectory + result.IcoPath))
             {
                 imgIco.Source = new BitmapImage(new Uri(result.PluginDirectory + result.IcoPath));
             }

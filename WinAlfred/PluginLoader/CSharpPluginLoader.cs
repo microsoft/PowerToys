@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading;
 using WinAlfred.Helper;
 using WinAlfred.Plugin;
+using WinAlfred.Plugin.System;
 
 namespace WinAlfred.PluginLoader
 {
@@ -20,28 +21,23 @@ namespace WinAlfred.PluginLoader
                 try
                 {
                     Assembly asm = Assembly.LoadFile(metadata.ExecuteFilePath);
-                    List<Type> types = asm.GetTypes().Where(o => o.GetInterfaces().Contains(typeof (IPlugin))).ToList();
+                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && o.GetInterfaces().Contains(typeof(IPlugin)) || o.GetInterfaces().Contains(typeof(ISystemPlugin))).ToList();
                     if (types.Count == 0)
                     {
                         Log.Error(string.Format("Cound't load plugin {0}: didn't find the class who implement IPlugin",
                             metadata.Name));
                         continue;
                     }
-                    if (types.Count > 1)
-                    {
-                        Log.Error(
-                            string.Format(
-                                "Cound't load plugin {0}: find more than one class who implement IPlugin, there should only one class implement IPlugin",
-                                metadata.Name));
-                        continue;
-                    }
 
-                    PluginPair pair = new PluginPair()
+                    foreach (Type type in types)
                     {
-                        Plugin = Activator.CreateInstance(types[0]) as IPlugin,
-                        Metadata = metadata
-                    };
-                    plugins.Add(pair);
+                        PluginPair pair = new PluginPair()
+                        {
+                            Plugin = Activator.CreateInstance(type) as IPlugin,
+                            Metadata = metadata
+                        };
+                        plugins.Add(pair);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -61,10 +57,7 @@ namespace WinAlfred.PluginLoader
 
         private void InitPlugin(List<PluginPair> plugins)
         {
-            foreach (IPlugin plugin in plugins.Select(pluginPair => pluginPair.Plugin))
-            {
-                new Thread(plugin.Init).Start();
-            }
+      
         }
     }
 }

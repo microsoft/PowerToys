@@ -7,6 +7,8 @@ namespace WinAlfred
 {
     public partial class ResultPanel : UserControl
     {
+        public bool Dirty { get; set; }
+
         public delegate void ResultItemsChanged();
 
         public event ResultItemsChanged resultItemChangedEvent;
@@ -19,7 +21,14 @@ namespace WinAlfred
 
         public void AddResults(List<Result> results)
         {
-            pnlContainer.Children.Clear();
+            if (results.Count == 0) return;
+
+            if (Dirty)
+            {
+                Dirty = false;
+                pnlContainer.Children.Clear();
+            }
+
             for (int i = 0; i < results.Count; i++)
             {
                 Result result = results[i];
@@ -39,6 +48,11 @@ namespace WinAlfred
             }
             pnlContainer.Height = results.Count * resultItemHeight;
             OnResultItemChangedEvent();
+        }
+
+        public int GetCurrentResultCount()
+        {
+            return pnlContainer.Children.Count;
         }
 
         private int GetCurrentSelectedResultIndex()
@@ -114,7 +128,7 @@ namespace WinAlfred
                     if (index < oldIndex)
                     {
                         //move up and old item is at the top of the scroll view 
-                        if ( newItemBottomPoint.Y - sv.VerticalOffset == 0)
+                        if (newItemBottomPoint.Y - sv.VerticalOffset == 0)
                         {
                             scrollPosition = sv.VerticalOffset - resultItemControl.ActualHeight;
                         }
@@ -159,6 +173,13 @@ namespace WinAlfred
         public ResultPanel()
         {
             InitializeComponent();
+        }
+
+        public void Clear()
+        {
+            pnlContainer.Children.Clear();
+            pnlContainer.Height = 0;
+            OnResultItemChangedEvent();
         }
     }
 }

@@ -30,25 +30,18 @@ namespace WinAlfred.PluginLoader
 
         private static void ParseSystemPlugins()
         {
-            try
-            {
-                Assembly asm = Assembly.GetAssembly(typeof (CMD));
-                List<Type> types = asm.GetTypes().Where(o => o.GetInterfaces().Contains(typeof(ISystemPlugin))).ToList();
-                foreach (Type type in types)
-                {
-                    ISystemPlugin sysPlugin = Activator.CreateInstance(types[0]) as ISystemPlugin;
-                    PluginMetadata metadata = new PluginMetadata();
-                }
-            }
-            catch (Exception e)
-            {
-                Log.Error(string.Format("Cound't load system plugin: {0}", e.Message));
-#if (DEBUG)
-                {
-                    throw;
-                }
-#endif
-            } 
+            PluginMetadata metadata = new PluginMetadata();
+            metadata.Name = "System Plugins";
+            metadata.Author = "System";
+            metadata.Description = "system plugins collection";
+            metadata.Language = AllowedLanguage.CSharp;
+            metadata.Version = "1.0";
+            metadata.PluginType = PluginType.System;
+            metadata.ActionKeyword = "*";
+            metadata.ExecuteFileName = "WinAlfred.Plugin.System.dll";
+            metadata.ExecuteFilePath = AppDomain.CurrentDomain.BaseDirectory + metadata.ExecuteFileName;
+            metadata.PluginDirecotry = AppDomain.CurrentDomain.BaseDirectory;
+            pluginMetadatas.Add(metadata);
         }
 
         private static void ParseThirdPartyPlugins()

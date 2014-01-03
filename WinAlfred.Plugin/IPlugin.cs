@@ -5,6 +5,6 @@ namespace WinAlfred.Plugin
     public interface IPlugin
     {
         List<Result> Query(Query query);
-        void Init();
+        void Init(PluginInitContext context);
     }
 }
