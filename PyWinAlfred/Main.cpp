@@ -7,9 +7,10 @@ int i = 0;
 
 extern "C" __declspec(dllexport) void InitPythonEnv()
 {
-    i++;
 	Py_Initialize();
 	PyEval_InitThreads();
+	PyEval_ReleaseLock();
+	// 启动子线程前执行，为了释放PyEval_InitThreads获得的全局锁，否则子线程可能无法获取到全局锁。
 }
 
 char* GetErrorMessage()
@@ -30,25 +31,11 @@ char* Exec(char* directory, char* file, char* method, char* para)
 {
 	PyObject *pName, *pModule, *pDict, *pFunc, *pValue, *pClass, *pInstance;
 	char *error;
-    i++;
 
-	PyThreadState* global_state = PyThreadState_Get();
-	PyThreadState* ts = Py_NewInterpreter();
-	PyThreadState_Swap(ts);
-	// Initialise the Python interpreter
-
-	// Create GIL/enable threads
-
-	//PyGILState_STATE gstate = PyGILState_Ensure();
-	//      // Get the default thread state  
-	//      PyThreadState* state = PyThreadState_Get();
-	//      // Once in each thread
-	//PyThreadState* stateForNewThread = PyThreadState_New(state->interp);
-	//PyEval_RestoreThread(stateForNewThread);
+	PyGILState_STATE gstate = PyGILState_Ensure();
 
 	// Build the name object
-	PyObject *sys = PyImport_ImportModule("sys");
-	PyObject *path = PyObject_GetAttrString(sys, "path");
+	PyObject *path = PySys_GetObject("path");
 	PyList_Append(path, PyString_FromString(directory));
 
 	pName = PyString_FromString(file);
@@ -102,19 +89,17 @@ char* Exec(char* directory, char* file, char* method, char* para)
 
 	char * str_ret = PyString_AsString(pValue); 
 
-	//PyEval_SaveThread();
-
-	// Finish the Python Interpreter
-
-	PyErr_Clear();
-	Py_EndInterpreter(ts);
-	PyThreadState_Swap(global_state);
+	//PyErr_Clear();
+	PyGILState_Release(gstate);
 
 	return str_ret;
 }
 
 extern "C" __declspec(dllexport) char* ExecPython(char* directory, char* file, char* method, char* para)
 {
-	auto future = std::async(Exec,directory,file,method,para);
-	return future.get();
+	char* s = Exec(directory,file,method,para);
+	PyGILState_Ensure();
+	return s;
+	//auto future = std::async(Exec,directory,file,method,para);
+	//return future.get();
 }

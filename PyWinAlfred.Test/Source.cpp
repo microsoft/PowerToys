@@ -23,19 +23,10 @@ char* Exec(char* directory, char* file, char* method, char* para)
 	PyObject *pName, *pModule, *pDict, *pFunc, *pValue, *pClass, *pInstance;
 	char *error;
 
-	//PyThreadState* global_state = PyThreadState_Get();
-	//PyThreadState* ts = Py_NewInterpreter();
-	//PyThreadState_Swap(ts);
+	PyGILState_STATE gstate = PyGILState_Ensure();
+
 	// Initialise the Python interpreter
 
-	// Create GIL/enable threads
-
-	PyGILState_STATE gstate = PyGILState_Ensure();
-	//      // Get the default thread state  
-	//      PyThreadState* state = PyThreadState_Get();
-	//      // Once in each thread
-	//PyThreadState* stateForNewThread = PyThreadState_New(state->interp);
-	//PyEval_RestoreThread(stateForNewThread);
 
 	// Build the name object
 	PyObject *sys = PyImport_ImportModule("sys");
@@ -98,27 +89,36 @@ char* Exec(char* directory, char* file, char* method, char* para)
 	// Finish the Python Interpreter
 
 	//PyErr_Clear();
-	//Py_EndInterpreter(ts);
-	//PyThreadState_Swap(global_state);
 
-
+	printf("My thread is finishing... %s \n",para);
 	PyGILState_Release(gstate);
 	return str_ret;
 }
 
 int main(int argc, char *argv[])
 {
-	char* directory = "d:\\Personal\\WinAlfred\\WinAlfred\\bin\\Debug\\Plugins\\p4pperson\\";
+	char* directory = "d:\\github\\WinAlfred\\WinAlfred\\bin\\Debug\\Plugins\\p";
 	char* file = "main";
 	char* method = "query";
-	char* para = "p q";
+	char* para1 = "p 1";
+	char* para2 = "p 2";
+	char* para3 = "p 3";
+	char* para4 = "p 4";
+	int i  = 0;
+	// 初始化
 	Py_Initialize();
+	// 初始化线程支持
 	PyEval_InitThreads();
-	for(int i=0;i++;i<10){
-		auto future = std::async(Exec,directory,file,method,para);
-		printf("%s",future.get());
-	}
-	Py_Finalize();
+PyEval_ReleaseLock(); 
+	// 启动子线程前执行，为了释放PyEval_InitThreads获得的全局锁，否则子线程可能无法获取到全局锁。
+	//std::async(Exec,directory,file,method,para);
+	std::async(Exec,directory,file,method,para1);
+	std::async(Exec,directory,file,method,para2);
+	std::async(Exec,directory,file,method,para3);
+	std::async(Exec,directory,file,method,para4);
+	// 保证子线程调用都结束后
+	//PyGILState_Ensure();
 	getchar();
+	Py_Finalize();
 	return 0;
 }
