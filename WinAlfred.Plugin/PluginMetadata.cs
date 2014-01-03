@@ -16,5 +16,6 @@ namespace WinAlfred.Plugin
         public string ExecuteFileName { get; set; }
         public string PluginDirecotry { get; set; }
         public string ActionKeyword { get; set; }
+        public PluginType PluginType { get; set; }
     }
 }

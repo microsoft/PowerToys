@@ -64,12 +64,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Commands\CommandDispatcher.cs" />
+    <Compile Include="Commands\PluginCommand.cs" />
+    <Compile Include="Commands\SystemCommand.cs" />
     <Compile Include="Helper\IniParser.cs" />
     <Compile Include="Helper\KeyboardHook.cs" />
     <Compile Include="Helper\Log.cs" />
     <Compile Include="Helper\WinAlfredException.cs" />
     <Compile Include="PluginLoader\BasePluginLoader.cs" />
     <Compile Include="PluginLoader\CSharpPluginLoader.cs" />
+    <Compile Include="PluginLoader\Plugins.cs" />
     <Compile Include="PluginLoader\PythonPluginLoader.cs" />
     <Compile Include="PluginLoader\PythonPluginWrapper.cs" />
     <Compile Include="ResultPanel.xaml.cs">
@@ -128,6 +132,10 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\WinAlfred.Plugin.System\WinAlfred.Plugin.System.csproj">
+      <Project>{69ce0206-cb41-453d-88af-df86092ef9b8}</Project>
+      <Name>WinAlfred.Plugin.System</Name>
+    </ProjectReference>
     <ProjectReference Include="..\WinAlfred.Plugin\WinAlfred.Plugin.csproj">
       <Project>{8451ECDD-2EA4-4966-BB0A-7BBC40138E80}</Project>
       <Name>WinAlfred.Plugin</Name>

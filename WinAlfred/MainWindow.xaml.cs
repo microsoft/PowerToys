@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
+using WinAlfred.Commands;
 using WinAlfred.Helper;
 using WinAlfred.Plugin;
 using WinAlfred.PluginLoader;
@@ -18,9 +19,9 @@ namespace WinAlfred
     public partial class MainWindow : Window
     {
         private KeyboardHook hook = new KeyboardHook();
-        public List<PluginPair> plugins = new List<PluginPair>();
         private List<Result> results = new List<Result>();
         private NotifyIcon notifyIcon = null;
+        private CommandDispatcher cmdDispatcher = new CommandDispatcher();
 
         public MainWindow()
         {
@@ -67,38 +68,8 @@ namespace WinAlfred
 
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            string query = tbQuery.Text;
-            //ThreadPool.QueueUserWorkItem(state =>
-            //{
-                results.Clear();
-                foreach (PluginPair pair in plugins)
-                {
-                    var q = new Query(query);
-                    if (pair.Metadata.ActionKeyword == q.ActionName)
-                    {
-                        try
-                        {
-                            results.AddRange(pair.Plugin.Query(q));
-                            results.ForEach(o => o.PluginDirectory = pair.Metadata.PluginDirecotry);
-                        }
-                        catch (Exception queryException)
-                        {
-                            Log.Error(string.Format("Plugin {0} query failed: {1}", pair.Metadata.Name,
-                                queryException.Message));
-#if (DEBUG)
-                            {
-                                throw;
-                            }
-#endif
-                        }
-                    }
-                }
-                resultCtrl.Dispatcher.Invoke(new Action(() =>
-                {
-                    resultCtrl.AddResults(results.OrderByDescending(o => o.Score).ToList());
-                    resultCtrl.SelectFirst();
-                }));
-            //});
+            var q = new Query(tbQuery.Text);
+            cmdDispatcher.DispatchCommand(q);
         }
 
         private void HideWinAlfred()
@@ -116,9 +87,7 @@ namespace WinAlfred
 
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
-            plugins.AddRange(new PythonPluginLoader().LoadPlugin());
-            plugins.AddRange(new CSharpPluginLoader().LoadPlugin());
-
+            Plugins.Init();
             ShowWinAlfred();
             InitialTray();
         }
