@@ -26,5 +26,13 @@ namespace WinAlfred.Plugin
         /// you don't need to set this property if you are developing a plugin
         /// </summary>
         public string PluginDirectory { get; set; }
+
+        public new bool Equals(object obj)
+        {
+            if (obj == null || !(obj is Result)) return false;
+
+            Result r = (Result)obj;
+            return r.Title == Title && r.SubTitle == SubTitle;
+        }
     }
 }

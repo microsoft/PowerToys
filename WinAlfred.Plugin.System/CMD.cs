@@ -23,10 +23,12 @@ namespace WinAlfred.Plugin.System
                     Action = () =>
                     {
                         Process process = new Process();
-                        ProcessStartInfo startInfo = new ProcessStartInfo();
-                        startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                        startInfo.FileName = "cmd.exe";
-                        startInfo.Arguments = "/C " + cmd;
+                        ProcessStartInfo startInfo = new ProcessStartInfo
+                        {
+                            WindowStyle = ProcessWindowStyle.Normal,
+                            FileName = "cmd.exe",
+                            Arguments = "/C " + cmd
+                        };
                         process.StartInfo = startInfo;
                         process.Start();
                     }

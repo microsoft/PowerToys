@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using WinAlfred.Plugin;
@@ -32,11 +33,15 @@ namespace WinAlfred
             for (int i = 0; i < results.Count; i++)
             {
                 Result result = results[i];
-                ResultItem control = new ResultItem(result);
-                control.SetIndex(i + 1);
-                pnlContainer.Children.Add(control);
+                if (!CheckExisted(result))
+                {
+                    ResultItem control = new ResultItem(result);
+                    control.SetIndex(i + 1);
+                    pnlContainer.Children.Insert(GetInsertLocation(result.Score), control);
+                }
             }
 
+            SelectFirst();
             pnlContainer.UpdateLayout();
 
             double resultItemHeight = 0;
@@ -46,8 +51,35 @@ namespace WinAlfred
                 if (resultItem != null)
                     resultItemHeight = resultItem.ActualHeight;
             }
-            pnlContainer.Height = results.Count * resultItemHeight;
+            pnlContainer.Height = pnlContainer.Children.Count * resultItemHeight;
             OnResultItemChangedEvent();
+        }
+
+        private bool CheckExisted(Result result)
+        {
+            return pnlContainer.Children.Cast<ResultItem>().Any(child => child.Result.Equals(result));
+        }
+
+        private int GetInsertLocation(int currentScore)
+        {
+            int location = pnlContainer.Children.Count;
+            if (pnlContainer.Children.Count == 0) return 0;
+            if (currentScore > ((ResultItem)pnlContainer.Children[0]).Result.Score) return 0;
+
+            for (int index = 1; index < pnlContainer.Children.Count; index++)
+            {
+                ResultItem next = pnlContainer.Children[index] as ResultItem;
+                ResultItem prev = pnlContainer.Children[index - 1] as ResultItem;
+                if (next != null && prev != null)
+                {
+                    if ((currentScore >= next.Result.Score && currentScore <= prev.Result.Score))
+                    {
+                        location = index;
+                    }
+                }
+            }
+
+            return location;
         }
 
         public int GetCurrentResultCount()
@@ -55,7 +87,7 @@ namespace WinAlfred
             return pnlContainer.Children.Count;
         }
 
-        private int GetCurrentSelectedResultIndex()
+        public int GetCurrentSelectedResultIndex()
         {
             for (int i = 0; i < pnlContainer.Children.Count; i++)
             {

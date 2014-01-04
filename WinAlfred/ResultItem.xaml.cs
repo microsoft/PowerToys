@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using WinAlfred.Plugin;
+using Brush = System.Windows.Media.Brush;
 
 namespace WinAlfred
 {
@@ -40,10 +43,36 @@ namespace WinAlfred
 
             tbTitle.Text = result.Title;
             tbSubTitle.Text = result.SubTitle;
-            if (!string.IsNullOrEmpty(result.IcoPath) && File.Exists(result.PluginDirectory + result.IcoPath))
+            string path = string.Empty;
+            if (!string.IsNullOrEmpty(result.IcoPath) && result.IcoPath.Contains(":\\") && File.Exists(result.IcoPath))
             {
-                imgIco.Source = new BitmapImage(new Uri(result.PluginDirectory + result.IcoPath));
+                path = result.IcoPath;
             }
+            else if (!string.IsNullOrEmpty(result.IcoPath) && File.Exists(result.PluginDirectory + result.IcoPath))
+            {
+                path = result.PluginDirectory + result.IcoPath;
+            }
+
+            if (!string.IsNullOrEmpty(path))
+            {
+                if (path.ToLower().EndsWith(".exe") || path.ToLower().EndsWith(".lnk"))
+                {
+                    imgIco.Source = GetIcon(path);
+                }
+                else
+                {
+                    imgIco.Source = new BitmapImage(new Uri(path));
+                }
+            }
+        }
+
+        public static ImageSource GetIcon(string fileName)
+        {
+            Icon icon = Icon.ExtractAssociatedIcon(fileName);
+            return System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(
+                        icon.Handle,
+                        new Int32Rect(0, 0, icon.Width, icon.Height),
+                        BitmapSizeOptions.FromEmptyOptions());
         }
     }
 }

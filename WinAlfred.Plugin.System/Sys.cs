@@ -11,6 +11,12 @@ namespace WinAlfred.Plugin.System
     {
         List<Result> availableResults = new List<Result>();
 
+        internal const int EWX_LOGOFF = 0x00000000;
+        internal const int EWX_SHUTDOWN = 0x00000001;
+        internal const int EWX_REBOOT = 0x00000002;
+        internal const int EWX_FORCE = 0x00000004;
+        internal const int EWX_POWEROFF = 0x00000008;
+        internal const int EWX_FORCEIFHUNG = 0x00000010;
         [DllImport("user32")]
         public static extern bool ExitWindowsEx(uint uFlags, uint dwReason);
         [DllImport("user32")]
@@ -37,14 +43,16 @@ namespace WinAlfred.Plugin.System
                 Title = "Shutdown",
                 SubTitle = "Shutdown Computer",
                 Score = 100,
-                Action = () => MessageBox.Show("shutdown")
+                IcoPath = "Images\\exit.png",
+                Action = () => ExitWindowsEx(EWX_SHUTDOWN,0)
             });
             availableResults.Add(new Result
             {
                 Title = "Log off",
                 SubTitle = "Log off current user",
-                Score = 10,
-                Action = () => MessageBox.Show("Logoff")
+                Score = 20,
+                IcoPath = "Images\\logoff.png",
+                Action = () => ExitWindowsEx(EWX_LOGOFF, 0)
             });
             availableResults.Add(new Result
             {
