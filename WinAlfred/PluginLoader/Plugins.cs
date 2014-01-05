@@ -22,11 +22,11 @@ namespace WinAlfred.PluginLoader
                 ThreadPool.QueueUserWorkItem(o => plugin1.Init(new PluginInitContext()
                 {
                     Plugins = plugins,
-                    ChangeQuery = s =>
-                    {
-                        window.tbQuery.Text = s;
-                        window.ShowWinAlfred();
-                    }
+                    ChangeQuery = s => window.ChangeQuery(s),
+                    CloseApp = window.CloseApp,
+                    HideApp =  window.HideApp,
+                    ShowApp = window.ShowApp,
+                    ShowMsg = (title,subTitle,iconPath) => window.ShowMsg(title,subTitle,iconPath)
                 }));
             }
         }

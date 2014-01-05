@@ -62,6 +62,14 @@ namespace WinAlfred.Plugin.System
                 IcoPath = "Images\\lock.png",
                 Action = () => LockWorkStation()
             });
+            availableResults.Add(new Result
+            {
+                Title = "Exit",
+                SubTitle = "Close this app",
+                Score = 110,
+                IcoPath = "Images\\exit.png",
+                Action = () => context.CloseApp()
+            });
         }
 
         public string Name

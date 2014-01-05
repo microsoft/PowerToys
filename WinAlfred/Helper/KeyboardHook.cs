@@ -85,6 +85,7 @@ namespace WinAlfred.Helper
             if (!RegisterHotKey(window.Handle, currentId, (uint)xModifier, (uint)key))
             {
                 Log.Error("Couldn’t register the hot key.");
+                MessageBox.Show("Couldn’t register the hot key.");
 #if (DEBUG)
                 {
                     throw new InvalidOperationException("Couldn’t register the hot key.");

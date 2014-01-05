@@ -192,14 +192,21 @@ namespace WinAlfred
             Select(0);
         }
 
-        public void AcceptSelect()
+        public bool AcceptSelect()
         {
             int index = GetCurrentSelectedResultIndex();
             var resultItemControl = pnlContainer.Children[index] as ResultItem;
             if (resultItemControl != null)
             {
-                if (resultItemControl.Result.Action != null) resultItemControl.Result.Action();
+                if (resultItemControl.Result.Action != null)
+                {
+                    resultItemControl.Result.Action();
+                }
+
+                return !resultItemControl.Result.DontHideWinAlfredAfterAction;
             }
+
+            return true;
         }
 
         public ResultPanel()

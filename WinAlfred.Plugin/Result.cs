@@ -12,6 +12,8 @@ namespace WinAlfred.Plugin
         public Action Action { get; set; }
         public int Score { get; set; }
 
+        public bool DontHideWinAlfredAfterAction { get; set; }
+
         //todo: this should be controlled by system, not visible to users
         /// <summary>
         /// Only resulsts that originQuery match with curren query will be displayed in the panel

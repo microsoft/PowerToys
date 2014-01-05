@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
+using Noesis.Javascript;
 using WinAlfred.Commands;
 using WinAlfred.Helper;
 using WinAlfred.Plugin;
@@ -39,11 +40,7 @@ namespace WinAlfred
             System.Windows.Forms.MenuItem open = new System.Windows.Forms.MenuItem("Open");
             open.Click += (o, e) => ShowWinAlfred();
             System.Windows.Forms.MenuItem exit = new System.Windows.Forms.MenuItem("Exit");
-            exit.Click += (o, e) =>
-            {
-                notifyIcon.Visible = false;
-                Close();
-            };
+            exit.Click += (o, e) => CloseApp();
             System.Windows.Forms.MenuItem[] childen = { open, exit };
             notifyIcon.ContextMenu = new System.Windows.Forms.ContextMenu(childen);
         }
@@ -68,6 +65,30 @@ namespace WinAlfred
 
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
         {
+
+            // Initialize a context
+            using (JavascriptContext context = new JavascriptContext())
+            {
+
+                // Setting external parameters for the context
+                context.SetParameter("message", "Hello World !");
+                context.SetParameter("number", 1);
+
+                // Script
+                string script = @"
+        var i;
+        for (i = 0; i < 5; i++)
+            console.Print(message + ' (' + i + ')');
+        number += i;
+    ";
+
+                // Running the script
+                context.Run(script);
+
+                // Getting a parameter
+                MessageBox.Show("number: " + context.GetParameter("number"));
+            }
+
             //MessageBox.Show("s");
             resultCtrl.Dirty = true;
             ////auto clear results after 50ms if there are any results returned by plugins
@@ -91,7 +112,7 @@ namespace WinAlfred
             Hide();
         }
 
-        public void ShowWinAlfred()
+        private void ShowWinAlfred()
         {
             Show();
             //FocusManager.SetFocusedElement(this, tbQuery);
@@ -104,6 +125,9 @@ namespace WinAlfred
             Plugins.Init(this);
             cmdDispatcher = new Command(this);
             InitialTray();
+
+
+          
         }
 
         private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e)
@@ -126,8 +150,7 @@ namespace WinAlfred
                     break;
 
                 case Key.Enter:
-                    resultCtrl.AcceptSelect();
-                    HideWinAlfred();
+                    if (resultCtrl.AcceptSelect()) HideWinAlfred();
                     e.Handled = true;
                     break;
             }
@@ -141,5 +164,39 @@ namespace WinAlfred
                 resultCtrl.AddResults(l);
             }));
         }
+
+        #region Public API
+
+        //Those method can be invoked by plugins
+
+        public void ChangeQuery(string query)
+        {
+            tbQuery.Text = query;
+            tbQuery.CaretIndex = tbQuery.Text.Length;
+        }
+
+        public void CloseApp()
+        {
+            notifyIcon.Visible = false;
+            Close();
+        }
+
+        public void HideApp()
+        {
+            HideWinAlfred();
+        }
+
+        public void ShowApp()
+        {
+            ShowWinAlfred();
+        }
+
+        public void ShowMsg(string title, string subTitle, string iconPath)
+        {
+            Msg m = new Msg { Owner = GetWindow(this) };
+            m.Show(title, subTitle, iconPath);
+        }
+
+        #endregion
     }
 }

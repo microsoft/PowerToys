@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using WinAlfred.Plugin.System.Common;
 
 namespace WinAlfred.Plugin.System
 {
@@ -14,21 +15,30 @@ namespace WinAlfred.Plugin.System
         public string Title { get; set; }
         public string IcoPath { get; set; }
         public string ExecutePath { get; set; }
+        public int Score { get; set; }
     }
 
     public class Programs : ISystemPlugin
     {
+        //TODO:add score for MRU program
+
+        private List<string> indexDirectory = new List<string>();
+        private List<string> indexPostfix = new List<string> { "lnk", "exe" };
+
         List<Program> installedList = new List<Program>();
 
         public List<Result> Query(Query query)
         {
-            if (string.IsNullOrEmpty(query.RawQuery) || query.RawQuery.Length <= 1) return new List<Result>();
+            if (string.IsNullOrEmpty(query.RawQuery) || query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
 
-            return installedList.Where(o => o.Title.ToLower().Contains(query.RawQuery.ToLower())).Select(c => new Result()
+            List<Program> returnList = installedList.Where(o => MatchProgram(o, query)).ToList();
+            returnList.ForEach(ScoreFilter);
+
+            return returnList.Select(c => new Result()
             {
                 Title = c.Title,
                 IcoPath = c.IcoPath,
-                Score = 10,
+                Score = c.Score,
                 Action = () =>
                 {
                     if (string.IsNullOrEmpty(c.ExecutePath))
@@ -43,18 +53,27 @@ namespace WinAlfred.Plugin.System
             }).ToList();
         }
 
+        private bool MatchProgram(Program program, Query query)
+        {
+            if (program.Title.ToLower().Contains(query.RawQuery.ToLower())) return true;
+            if (ChineseToPinYin.ToPinYin(program.Title).Replace(" ", "").ToLower().Contains(query.RawQuery.ToLower())) return true;
+
+            return false;
+        }
+
         public void Init(PluginInitContext context)
         {
+            indexDirectory.Add(Environment.GetFolderPath(Environment.SpecialFolder.Programs));
+            indexDirectory.Add(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Microsoft\Windows\Start Menu\Programs");
+
             GetAppFromStartMenu();
         }
 
         private void GetAppFromStartMenu()
         {
-            List<string> path =
-                Directory.GetDirectories(Environment.GetFolderPath(Environment.SpecialFolder.Programs)).ToList();
-            foreach (string s in path)
+            foreach (string directory in indexDirectory)
             {
-                GetAppFromDirectory(s);
+                GetAppFromDirectory(directory);
             }
         }
 
@@ -62,12 +81,13 @@ namespace WinAlfred.Plugin.System
         {
             foreach (string file in Directory.GetFiles(path))
             {
-                if (file.EndsWith(".lnk") || file.EndsWith(".exe"))
+                if (indexPostfix.Any(o => file.EndsWith("." + o)))
                 {
                     Program p = new Program()
                     {
                         Title = getAppNameFromAppPath(file),
                         IcoPath = file,
+                        Score = 10,
                         ExecutePath = file
                     };
                     installedList.Add(p);
@@ -77,6 +97,18 @@ namespace WinAlfred.Plugin.System
             foreach (var subDirectory in Directory.GetDirectories(path))
             {
                 GetAppFromDirectory(subDirectory);
+            }
+        }
+
+        private void ScoreFilter(Program p)
+        {
+            if (p.Title.Contains("启动") || p.Title.ToLower().Contains("start"))
+            {
+                p.Score += 10;
+            }
+            if (p.Title.Contains("卸载") || p.Title.ToLower().Contains("uninstall"))
+            {
+                p.Score -= 5;
             }
         }
 
