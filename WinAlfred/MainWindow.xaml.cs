@@ -6,7 +6,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
-using Noesis.Javascript;
 using WinAlfred.Commands;
 using WinAlfred.Helper;
 using WinAlfred.Plugin;
@@ -65,30 +64,6 @@ namespace WinAlfred
 
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-
-            // Initialize a context
-            using (JavascriptContext context = new JavascriptContext())
-            {
-
-                // Setting external parameters for the context
-                context.SetParameter("message", "Hello World !");
-                context.SetParameter("number", 1);
-
-                // Script
-                string script = @"
-        var i;
-        for (i = 0; i < 5; i++)
-            console.Print(message + ' (' + i + ')');
-        number += i;
-    ";
-
-                // Running the script
-                context.Run(script);
-
-                // Getting a parameter
-                MessageBox.Show("number: " + context.GetParameter("number"));
-            }
-
             //MessageBox.Show("s");
             resultCtrl.Dirty = true;
             ////auto clear results after 50ms if there are any results returned by plugins
@@ -125,9 +100,6 @@ namespace WinAlfred
             Plugins.Init(this);
             cmdDispatcher = new Command(this);
             InitialTray();
-
-
-          
         }
 
         private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e)
