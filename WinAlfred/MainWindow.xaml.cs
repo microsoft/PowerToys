@@ -100,6 +100,9 @@ namespace WinAlfred
             Plugins.Init(this);
             cmdDispatcher = new Command(this);
             InitialTray();
+
+            //var engine = new Jurassic.ScriptEngine();
+            //MessageBox.Show(engine.Evaluate("5 * 10 + 2").ToString());
         }
 
         private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e)
