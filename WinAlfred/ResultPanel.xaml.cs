@@ -195,6 +195,8 @@ namespace WinAlfred
         public bool AcceptSelect()
         {
             int index = GetCurrentSelectedResultIndex();
+            if (index < 0) return false;
+
             var resultItemControl = pnlContainer.Children[index] as ResultItem;
             if (resultItemControl != null)
             {

@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="CMD.cs" />
     <Compile Include="Common\ChineseToPinYin.cs" />
+    <Compile Include="DirectoryIndicator.cs" />
     <Compile Include="ISystemPlugin.cs" />
     <Compile Include="Programs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

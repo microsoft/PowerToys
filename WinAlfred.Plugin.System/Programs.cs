@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using Microsoft.Win32;
@@ -26,6 +27,12 @@ namespace WinAlfred.Plugin.System
         private List<string> indexPostfix = new List<string> { "lnk", "exe" };
 
         List<Program> installedList = new List<Program>();
+
+
+        [DllImport("shell32.dll")]
+        static extern bool SHGetSpecialFolderPath(IntPtr hwndOwner,[Out] StringBuilder lpszPath, int nFolder, bool fCreate);
+        const int CSIDL_COMMON_STARTMENU = 0x16;  // \Windows\Start Menu\Programs
+        const int CSIDL_COMMON_PROGRAMS = 0x17;
 
         public List<Result> Query(Query query)
         {
@@ -64,7 +71,10 @@ namespace WinAlfred.Plugin.System
         public void Init(PluginInitContext context)
         {
             indexDirectory.Add(Environment.GetFolderPath(Environment.SpecialFolder.Programs));
-            indexDirectory.Add(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Microsoft\Windows\Start Menu\Programs");
+
+            StringBuilder commonStartMenuPath = new StringBuilder(560);
+            SHGetSpecialFolderPath(IntPtr.Zero, commonStartMenuPath, CSIDL_COMMON_PROGRAMS, false);
+            indexDirectory.Add(commonStartMenuPath.ToString());
 
             GetAppFromStartMenu();
         }

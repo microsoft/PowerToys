@@ -91,8 +91,14 @@ namespace WinAlfred
         {
             Show();
             //FocusManager.SetFocusedElement(this, tbQuery);
+            tbQuery.Focusable = true;
             Keyboard.Focus(tbQuery);
             tbQuery.SelectAll();
+
+            if (!tbQuery.IsKeyboardFocused)
+            {
+                MessageBox.Show("didnt focus");
+            }
         }
 
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
