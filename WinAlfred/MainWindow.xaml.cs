@@ -6,6 +6,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
+using IWshRuntimeLibrary;
+using Microsoft.Win32;
 using WinAlfred.Commands;
 using WinAlfred.Helper;
 using WinAlfred.Plugin;
@@ -101,12 +103,31 @@ namespace WinAlfred
             }
         }
 
+        public void SetAutoStart(bool IsAtuoRun)
+        {
+            string LnkPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup) + "//WinAlfred.lnk";
+            if (IsAtuoRun)
+            {
+                WshShell shell = new WshShell();
+                IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(LnkPath);
+                shortcut.TargetPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                shortcut.WorkingDirectory = Environment.CurrentDirectory;
+                shortcut.WindowStyle = 1; //normal window
+                shortcut.Description = "WinAlfred";
+                shortcut.Save();
+            }
+            else
+            {
+                System.IO.File.Delete(LnkPath);
+            }
+        }
+
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
             Plugins.Init(this);
             cmdDispatcher = new Command(this);
             InitialTray();
-
+            SetAutoStart(true);
             //var engine = new Jurassic.ScriptEngine();
             //MessageBox.Show(engine.Evaluate("5 * 10 + 2").ToString());
         }

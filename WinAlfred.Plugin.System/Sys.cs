@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -44,7 +45,7 @@ namespace WinAlfred.Plugin.System
                 SubTitle = "Shutdown Computer",
                 Score = 100,
                 IcoPath = "Images\\exit.png",
-                Action = () => ExitWindowsEx(EWX_SHUTDOWN,0)
+                Action = () => Process.Start("shutdown","/s /t 0")
             });
             availableResults.Add(new Result
             {
