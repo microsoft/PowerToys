@@ -5,7 +5,9 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 using Newtonsoft.Json;
 
 namespace WinAlfred.Plugin.Fanyi

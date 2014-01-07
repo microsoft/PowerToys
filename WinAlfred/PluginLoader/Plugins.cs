@@ -24,9 +24,9 @@ namespace WinAlfred.PluginLoader
                     Plugins = plugins,
                     ChangeQuery = s => window.ChangeQuery(s),
                     CloseApp = window.CloseApp,
-                    HideApp =  window.HideApp,
+                    HideApp = window.HideApp,
                     ShowApp = window.ShowApp,
-                    ShowMsg = (title,subTitle,iconPath) => window.ShowMsg(title,subTitle,iconPath)
+                    ShowMsg = (title, subTitle, iconPath) => window.ShowMsg(title, subTitle, iconPath)
                 }));
             }
         }
@@ -34,6 +34,13 @@ namespace WinAlfred.PluginLoader
         public static List<PluginPair> AllPlugins
         {
             get { return plugins; }
+        }
+
+        public static bool HitThirdpartyKeyword(Query query)
+        {
+            if (string.IsNullOrEmpty(query.ActionName)) return false;
+
+            return plugins.Any(o => o.Metadata.PluginType == PluginType.ThirdParty && o.Metadata.ActionKeyword == query.ActionName);
         }
     }
 }

@@ -31,7 +31,7 @@ namespace WinAlfred.Commands
                         result.PluginDirectory = pair1.Metadata.PluginDirecotry;
                         result.OriginQuery = query;
                     }
-                    UpdateResultView(results);
+                    if(results.Count > 0) UpdateResultView(results);
                 });
             }
         }

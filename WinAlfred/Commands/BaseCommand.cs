@@ -20,10 +20,7 @@ namespace WinAlfred.Commands
 
         protected void UpdateResultView(List<Result> results)
         {
-            if (results.Count > 0)
-            {
-                window.OnUpdateResultView(results);
-            }
+            window.OnUpdateResultView(results);
         }
     }
 }

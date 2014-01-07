@@ -26,6 +26,8 @@ namespace WinAlfred
         private NotifyIcon notifyIcon;
         private Command cmdDispatcher;
         Storyboard progressBarStoryboard = new Storyboard();
+        private bool queryHasReturn = false;
+        SelectedRecords selectedRecords = new SelectedRecords();
 
         public MainWindow()
         {
@@ -40,10 +42,10 @@ namespace WinAlfred
 
         private void InitProgressbarAnimation()
         {
-            DoubleAnimation da = new DoubleAnimation(progressBar.X2, Width + 100, new Duration(new TimeSpan(0, 0, 0,0,1600)));
-            DoubleAnimation da1 = new DoubleAnimation(progressBar.X1, Width, new Duration(new TimeSpan(0, 0, 0, 0,1600)));
-            Storyboard.SetTargetProperty(da, new PropertyPath("(Line.X1)"));
-            Storyboard.SetTargetProperty(da1, new PropertyPath("(Line.X2)"));
+            DoubleAnimation da = new DoubleAnimation(progressBar.X2, Width + 100, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
+            DoubleAnimation da1 = new DoubleAnimation(progressBar.X1, Width, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
+            Storyboard.SetTargetProperty(da, new PropertyPath("(Line.X2)"));
+            Storyboard.SetTargetProperty(da1, new PropertyPath("(Line.X1)"));
             progressBarStoryboard.Children.Add(da);
             progressBarStoryboard.Children.Add(da1);
             progressBarStoryboard.RepeatBehavior = RepeatBehavior.Forever;
@@ -81,19 +83,44 @@ namespace WinAlfred
             }
         }
 
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonDown(e);
+
+            // Begin dragging the window
+            this.DragMove();
+        }
+
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             resultCtrl.Dirty = true;
             Dispatcher.DelayInvoke("UpdateSearch",
-               () =>
+               o =>
                {
-                   resultCtrl.Clear();
+                   Dispatcher.DelayInvoke("ClearResults", i =>
+                   {
+                       // first try to use clear method inside resultCtrl, which is more closer to the add new results
+                       // and this will not bring splash issues.After waiting 30ms, if there still no results added, we
+                       // must clear the result. otherwise, it will be confused why the query changed, but the results
+                       // didn't.
+                       if (resultCtrl.Dirty) resultCtrl.Clear();
+                   }, TimeSpan.FromMilliseconds(30), null);
                    var q = new Query(tbQuery.Text);
                    cmdDispatcher.DispatchCommand(q);
+                   queryHasReturn = false;
+                   if (Plugins.HitThirdpartyKeyword(q))
+                   {
+                       Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
+                       {
+                           if (!queryHasReturn && originQuery == tbQuery.Text)
+                           {
+                               StartProgress();
+                           }
+                       }, TimeSpan.FromSeconds(1), tbQuery.Text);
+                   }
+
                }, TimeSpan.FromMilliseconds(300));
-
         }
-
 
         private void StartProgress()
         {
@@ -124,7 +151,7 @@ namespace WinAlfred
             }
         }
 
-        public void SetAutoStart(bool IsAtuoRun)
+        private void SetAutoStart(bool IsAtuoRun)
         {
             string LnkPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup) + "//WinAlfred.lnk";
             if (IsAtuoRun)
@@ -148,10 +175,10 @@ namespace WinAlfred
             Plugins.Init(this);
             cmdDispatcher = new Command(this);
             InitialTray();
+            selectedRecords.LoadSelectedRecords();
             SetAutoStart(true);
             //var engine = new Jurassic.ScriptEngine();
             //MessageBox.Show(engine.Evaluate("5 * 10 + 2").ToString());
-            StartProgress();
         }
 
         private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e)
@@ -174,7 +201,15 @@ namespace WinAlfred
                     break;
 
                 case Key.Enter:
-                    if (resultCtrl.AcceptSelect()) HideWinAlfred();
+                    Result result = resultCtrl.AcceptSelect();
+                    if (result != null)
+                    {
+                        selectedRecords.AddSelect(result);
+                        if (!result.DontHideWinAlfredAfterAction)
+                        {
+                            HideWinAlfred();
+                        }
+                    }
                     e.Handled = true;
                     break;
             }
@@ -182,11 +217,20 @@ namespace WinAlfred
 
         public void OnUpdateResultView(List<Result> list)
         {
-            resultCtrl.Dispatcher.Invoke(new Action(() =>
+            queryHasReturn = true;
+            progressBar.Dispatcher.Invoke(new Action(StopProgress));
+            if (list.Count > 0)
             {
-                List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).OrderByDescending(o => o.Score).ToList();
-                resultCtrl.AddResults(l);
-            }));
+                list.ForEach(o =>
+                {
+                    o.Score += selectedRecords.GetSelectedCount(o);
+                });
+                resultCtrl.Dispatcher.Invoke(new Action(() =>
+                {
+                    List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).OrderByDescending(o => o.Score).ToList();
+                    resultCtrl.AddResults(l);
+                }));
+            }
         }
 
         #region Public API

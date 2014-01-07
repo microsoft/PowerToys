@@ -70,7 +70,7 @@ namespace WinAlfred.Plugin.System
                 Title = "Exit",
                 SubTitle = "Close this app",
                 Score = 110,
-                IcoPath = "Images\\exit.png",
+                IcoPath = "Images\\ico.png",
                 Action = () => context.CloseApp()
             });
         }

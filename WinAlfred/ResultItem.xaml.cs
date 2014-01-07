@@ -27,6 +27,15 @@ namespace WinAlfred
                 selected = value;
                 BrushConverter bc = new BrushConverter();
                 Background = selected ? (Brush)(bc.ConvertFrom("#d1d1d1")) : (Brush)(bc.ConvertFrom("#ebebeb"));
+                if (selected)
+                {
+                    img.Visibility = Visibility.Visible;
+                    img.Source = new BitmapImage(new Uri(Directory.GetCurrentDirectory()+"\\Images\\enter.png"));
+                }
+                else
+                {
+                    img.Visibility = Visibility.Hidden;
+                }
             }
         }
 

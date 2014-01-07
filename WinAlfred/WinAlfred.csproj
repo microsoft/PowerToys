@@ -112,6 +112,7 @@
     <Compile Include="ResultItem.xaml.cs">
       <DependentUpon>ResultItem.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Helper\SelectedRecords.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

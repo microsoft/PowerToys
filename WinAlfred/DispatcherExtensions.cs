@@ -13,7 +13,14 @@ namespace WinAlfred
         private static readonly object syncRoot = new object();
 
         public static string DelayInvoke(this Dispatcher dispatcher, string namedInvocation,
-            Action action, TimeSpan delay,
+            Action<string> action, TimeSpan delay,
+            DispatcherPriority priority = DispatcherPriority.Normal)
+        {
+            return DelayInvoke(dispatcher, namedInvocation, action, delay, string.Empty, priority);
+        }
+
+        public static string DelayInvoke(this Dispatcher dispatcher, string namedInvocation,
+            Action<string> action, TimeSpan delay, string arg,
             DispatcherPriority priority = DispatcherPriority.Normal)
         {
             lock (syncRoot)
@@ -29,7 +36,7 @@ namespace WinAlfred
                 var timer = new DispatcherTimer(delay, priority, (s, e) =>
                 {
                     RemoveTimer(namedInvocation);
-                    action();
+                    action(arg);
                 }, dispatcher);
                 timer.Start();
                 timers.Add(namedInvocation, timer);

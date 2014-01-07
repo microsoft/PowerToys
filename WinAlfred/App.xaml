@@ -10,7 +10,7 @@
                 <Setter Property="FontWeight" Value="Medium"/>
                 <Setter Property="AllowDrop" Value="true"/>
                 <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="Margin" Value="10"/>
+                <Setter Property="Margin" Value="10 10 10 5"/>
                 <Setter Property="Height" Value="36"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -53,6 +53,7 @@
                     </EventTrigger>
                 </Style.Triggers>
             </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>
