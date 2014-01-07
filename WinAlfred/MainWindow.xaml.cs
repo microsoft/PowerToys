@@ -6,6 +6,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
+using System.Windows.Shapes;
 using IWshRuntimeLibrary;
 using Microsoft.Win32;
 using WinAlfred.Commands;
@@ -23,6 +25,7 @@ namespace WinAlfred
         private KeyboardHook hook = new KeyboardHook();
         private NotifyIcon notifyIcon;
         private Command cmdDispatcher;
+        Storyboard progressBarStoryboard = new Storyboard();
 
         public MainWindow()
         {
@@ -32,6 +35,20 @@ namespace WinAlfred
             hook.RegisterHotKey(XModifierKeys.Alt, Keys.Space);
             resultCtrl.resultItemChangedEvent += resultCtrl_resultItemChangedEvent;
             ThreadPool.SetMaxThreads(30, 10);
+            InitProgressbarAnimation();
+        }
+
+        private void InitProgressbarAnimation()
+        {
+            DoubleAnimation da = new DoubleAnimation(progressBar.X2, Width + 100, new Duration(new TimeSpan(0, 0, 0,0,1600)));
+            DoubleAnimation da1 = new DoubleAnimation(progressBar.X1, Width, new Duration(new TimeSpan(0, 0, 0, 0,1600)));
+            Storyboard.SetTargetProperty(da, new PropertyPath("(Line.X1)"));
+            Storyboard.SetTargetProperty(da1, new PropertyPath("(Line.X2)"));
+            progressBarStoryboard.Children.Add(da);
+            progressBarStoryboard.Children.Add(da1);
+            progressBarStoryboard.RepeatBehavior = RepeatBehavior.Forever;
+            progressBar.Visibility = Visibility.Hidden;
+            progressBar.BeginStoryboard(progressBarStoryboard);
         }
 
         private void InitialTray()
@@ -66,22 +83,26 @@ namespace WinAlfred
 
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            //MessageBox.Show("s");
             resultCtrl.Dirty = true;
-            ////auto clear results after 50ms if there are any results returned by plugins
-            ////why we do this? because if we clear resulsts in the start of the text changed event
-            ////we will see the splash. The more closer that clear and addResult method, the less splash we will see.
-            new Timer(o =>
-            {
-                if (resultCtrl.Dirty)
-                {
-                    resultCtrl.Dispatcher.Invoke(new Action(() => resultCtrl.Clear()));
-                }
-            }, null, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(-1));
-            if (string.IsNullOrEmpty(tbQuery.Text)) return;
+            Dispatcher.DelayInvoke("UpdateSearch",
+               () =>
+               {
+                   resultCtrl.Clear();
+                   var q = new Query(tbQuery.Text);
+                   cmdDispatcher.DispatchCommand(q);
+               }, TimeSpan.FromMilliseconds(300));
 
-            var q = new Query(tbQuery.Text);
-            cmdDispatcher.DispatchCommand(q);
+        }
+
+
+        private void StartProgress()
+        {
+            progressBar.Visibility = Visibility.Visible;
+        }
+
+        private void StopProgress()
+        {
+            progressBar.Visibility = Visibility.Hidden;
         }
 
         private void HideWinAlfred()
@@ -130,6 +151,7 @@ namespace WinAlfred
             SetAutoStart(true);
             //var engine = new Jurassic.ScriptEngine();
             //MessageBox.Show(engine.Evaluate("5 * 10 + 2").ToString());
+            StartProgress();
         }
 
         private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e)

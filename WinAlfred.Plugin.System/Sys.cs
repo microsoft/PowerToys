@@ -25,6 +25,8 @@ namespace WinAlfred.Plugin.System
 
         public List<Result> Query(Query query)
         {
+            if (string.IsNullOrEmpty(query.RawQuery) || query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
+
             List<Result> results = new List<Result>();
 
             foreach (Result availableResult in availableResults)
