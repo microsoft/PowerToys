@@ -69,14 +69,16 @@ namespace WinAlfred
             }
             imgIco.Source = new BitmapImage(new Uri(icopath));
             Show();
-            new Timer(o =>
-            {
-                if (!closing)
-                {
-                    closing = true;
-                    Dispatcher.Invoke(new Action(fadeOutStoryboard.Begin));
-                }
-            }, null, TimeSpan.FromSeconds(3), TimeSpan.FromMilliseconds(-1));
+
+            Dispatcher.DelayInvoke("ShowMsg",
+                                   o =>
+                                   {
+                                       if (!closing)
+                                       {
+                                           closing = true;
+                                           Dispatcher.Invoke(new Action(fadeOutStoryboard.Begin));
+                                       }
+                                   }, TimeSpan.FromSeconds(3));
         }
     }
 }

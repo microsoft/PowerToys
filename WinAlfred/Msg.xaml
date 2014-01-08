@@ -7,7 +7,7 @@
         ResizeMode="NoResize"
         WindowStyle="None"
         ShowInTaskbar="False"
-        Title="Msg" Height="60" Width="382.978">
+        Title="Msg" Height="60" Width="420">
     <Window.Triggers>
         <EventTrigger RoutedEvent="Window.Loaded">
             <BeginStoryboard>
@@ -22,7 +22,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="32"></ColumnDefinition>
             <ColumnDefinition/>
-            <ColumnDefinition Width="32"></ColumnDefinition>
+            <ColumnDefinition Width="16"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" ></Image>
         <Grid HorizontalAlignment="Stretch" Margin="5 0 0 0" Grid.Column="1" VerticalAlignment="Stretch">
