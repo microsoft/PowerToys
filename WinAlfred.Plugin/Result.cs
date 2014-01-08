@@ -36,5 +36,10 @@ namespace WinAlfred.Plugin
             Result r = (Result)obj;
             return r.Title == Title && r.SubTitle == SubTitle;
         }
+
+        public override string ToString()
+        {
+            return Title + SubTitle;
+        }
     }
 }
