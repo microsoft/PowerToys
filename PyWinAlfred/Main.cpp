@@ -9,7 +9,6 @@ extern "C" __declspec(dllexport) void InitPythonEnv()
 {
 	Py_Initialize();
 	PyEval_InitThreads();
-	PyEval_ReleaseLock();
 	// 启动子线程前执行，为了释放PyEval_InitThreads获得的全局锁，否则子线程可能无法获取到全局锁。
 }
 
@@ -32,8 +31,8 @@ char* Exec(char* directory, char* file, char* method, char* para)
 	PyObject *pName, *pModule, *pDict, *pFunc, *pValue, *pClass, *pInstance;
 	char *error;
 
+	PyEval_ReleaseLock();
 	PyGILState_STATE gstate = PyGILState_Ensure();
-
 	// Build the name object
 	PyObject *path = PySys_GetObject("path");
 	PyList_Append(path, PyString_FromString(directory));
@@ -91,14 +90,13 @@ char* Exec(char* directory, char* file, char* method, char* para)
 
 	//PyErr_Clear();
 	PyGILState_Release(gstate);
-
 	return str_ret;
 }
 
 extern "C" __declspec(dllexport) char* ExecPython(char* directory, char* file, char* method, char* para)
 {
+	//PyEval_ReleaseLock();
 	char* s = Exec(directory,file,method,para);
-	PyGILState_Ensure();
 	return s;
 	//auto future = std::async(Exec,directory,file,method,para);
 	//return future.get();

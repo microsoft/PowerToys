@@ -7,6 +7,8 @@ class PyWinAlfred():
 
     def query(self,key):
         k = key.split(" ")[1]
+        if not k: 
+            return ""
         r = requests.get('http://movie.douban.com/subject_search?search_text=' + k)
         bs = BeautifulSoup(r.text)
         results = []

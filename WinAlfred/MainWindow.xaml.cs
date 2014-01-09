@@ -8,7 +8,6 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
-using IWshRuntimeLibrary;
 using Microsoft.Win32;
 using WinAlfred.Commands;
 using WinAlfred.Helper;
@@ -153,21 +152,21 @@ namespace WinAlfred
 
         private void SetAutoStart(bool IsAtuoRun)
         {
-            string LnkPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup) + "//WinAlfred.lnk";
-            if (IsAtuoRun)
-            {
-                WshShell shell = new WshShell();
-                IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(LnkPath);
-                shortcut.TargetPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-                shortcut.WorkingDirectory = Environment.CurrentDirectory;
-                shortcut.WindowStyle = 1; //normal window
-                shortcut.Description = "WinAlfred";
-                shortcut.Save();
-            }
-            else
-            {
-                System.IO.File.Delete(LnkPath);
-            }
+            //string LnkPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup) + "//WinAlfred.lnk";
+            //if (IsAtuoRun)
+            //{
+            //    WshShell shell = new WshShell();
+            //    IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(LnkPath);
+            //    shortcut.TargetPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            //    shortcut.WorkingDirectory = Environment.CurrentDirectory;
+            //    shortcut.WindowStyle = 1; //normal window
+            //    shortcut.Description = "WinAlfred";
+            //    shortcut.Save();
+            //}
+            //else
+            //{
+            //    System.IO.File.Delete(LnkPath);
+            //}
         }
 
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)

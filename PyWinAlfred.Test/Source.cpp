@@ -23,6 +23,8 @@ char* Exec(char* directory, char* file, char* method, char* para)
 	PyObject *pName, *pModule, *pDict, *pFunc, *pValue, *pClass, *pInstance;
 	char *error;
 
+	// 启动子线程前执行，为了释放PyEval_InitThreads获得的全局锁，否则子线程可能无法获取到全局锁。
+	PyEval_ReleaseLock(); 
 	PyGILState_STATE gstate = PyGILState_Ensure();
 
 	// Initialise the Python interpreter
@@ -97,20 +99,19 @@ char* Exec(char* directory, char* file, char* method, char* para)
 
 int main(int argc, char *argv[])
 {
-	char* directory = "d:\\github\\WinAlfred\\WinAlfred\\bin\\Debug\\Plugins\\p";
+	char* directory = "d:\\github\\WinAlfred\\Plugins\\WinAlfred.Plugin.DouBan\\";
 	char* file = "main";
 	char* method = "query";
-	char* para1 = "p 1";
-	char* para2 = "p 2";
-	char* para3 = "p 3";
-	char* para4 = "p 4";
+	char* para1 = "movie 1";
+	char* para2 = "movie 2";
+	char* para3 = "movie 3";
+	char* para4 = "movie 4";
 	int i  = 0;
 	// 初始化
 	Py_Initialize();
 	// 初始化线程支持
 	PyEval_InitThreads();
-PyEval_ReleaseLock(); 
-	// 启动子线程前执行，为了释放PyEval_InitThreads获得的全局锁，否则子线程可能无法获取到全局锁。
+
 	//std::async(Exec,directory,file,method,para);
 	std::async(Exec,directory,file,method,para1);
 	std::async(Exec,directory,file,method,para2);
