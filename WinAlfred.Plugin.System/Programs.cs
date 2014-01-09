@@ -21,8 +21,6 @@ namespace WinAlfred.Plugin.System
 
     public class Programs : ISystemPlugin
     {
-        //TODO:add score for MRU program
-
         private List<string> indexDirectory = new List<string>();
         private List<string> indexPostfix = new List<string> { "lnk", "exe" };
 
