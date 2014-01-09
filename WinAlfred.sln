@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinAlfred.Plugin.System", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinAlfred.Plugin.Fanyi", "Plugins\WinAlfred.Plugin.Fanyi\WinAlfred.Plugin.Fanyi.csproj", "{353769D3-D11C-4D86-BD06-AC8C1D68642B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PyWinAlfred", "PyWinAlfred\PyWinAlfred.vcxproj", "{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PyWinAlfred.Test", "PyWinAlfred.Test\PyWinAlfred.Test.vcxproj", "{05D72D92-4010-4F92-A147-906930241573}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -100,6 +104,42 @@ Global
 		{353769D3-D11C-4D86-BD06-AC8C1D68642B}.Release|Win32.ActiveCfg = Release|Any CPU
 		{353769D3-D11C-4D86-BD06-AC8C1D68642B}.Release|x64.ActiveCfg = Release|Any CPU
 		{353769D3-D11C-4D86-BD06-AC8C1D68642B}.Release|x86.ActiveCfg = Release|Any CPU
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Debug|Win32.Build.0 = Debug|Win32
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Debug|x64.ActiveCfg = Debug|x64
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Debug|x64.Build.0 = Debug|x64
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Debug|x86.ActiveCfg = Debug|Win32
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Debug|x86.Build.0 = Debug|Win32
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Release|Any CPU.ActiveCfg = Release|Win32
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Release|Win32.ActiveCfg = Release|Win32
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Release|Win32.Build.0 = Release|Win32
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Release|x64.ActiveCfg = Release|x64
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Release|x64.Build.0 = Release|x64
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Release|x86.ActiveCfg = Release|Win32
+		{D03FD663-38A8-4C1A-8431-EB44F93E7EBA}.Release|x86.Build.0 = Release|Win32
+		{05D72D92-4010-4F92-A147-906930241573}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{05D72D92-4010-4F92-A147-906930241573}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{05D72D92-4010-4F92-A147-906930241573}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{05D72D92-4010-4F92-A147-906930241573}.Debug|Win32.ActiveCfg = Debug|Win32
+		{05D72D92-4010-4F92-A147-906930241573}.Debug|Win32.Build.0 = Debug|Win32
+		{05D72D92-4010-4F92-A147-906930241573}.Debug|x64.ActiveCfg = Debug|x64
+		{05D72D92-4010-4F92-A147-906930241573}.Debug|x64.Build.0 = Debug|x64
+		{05D72D92-4010-4F92-A147-906930241573}.Debug|x86.ActiveCfg = Debug|Win32
+		{05D72D92-4010-4F92-A147-906930241573}.Debug|x86.Build.0 = Debug|Win32
+		{05D72D92-4010-4F92-A147-906930241573}.Release|Any CPU.ActiveCfg = Release|Win32
+		{05D72D92-4010-4F92-A147-906930241573}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{05D72D92-4010-4F92-A147-906930241573}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{05D72D92-4010-4F92-A147-906930241573}.Release|Win32.ActiveCfg = Release|Win32
+		{05D72D92-4010-4F92-A147-906930241573}.Release|Win32.Build.0 = Release|Win32
+		{05D72D92-4010-4F92-A147-906930241573}.Release|x64.ActiveCfg = Release|x64
+		{05D72D92-4010-4F92-A147-906930241573}.Release|x64.Build.0 = Release|x64
+		{05D72D92-4010-4F92-A147-906930241573}.Release|x86.ActiveCfg = Release|Win32
+		{05D72D92-4010-4F92-A147-906930241573}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
