@@ -55,7 +55,7 @@ namespace WinAlfred.PluginLoader
 
         }
 
-        public void Init()
+        public void Init(PluginInitContext context)
         {
             InitPythonEnv();
         }

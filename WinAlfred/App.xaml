@@ -1,7 +1,7 @@
 ﻿<Application x:Class="WinAlfred.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="MainWindow.xaml">
+            >
     <Application.Resources>
         <ResourceDictionary>
             <Style x:Key="defaultQueryBoxStyle" BasedOn="{x:Null}" TargetType="{x:Type TextBox}">
@@ -10,11 +10,10 @@
                 <Setter Property="FontWeight" Value="Medium"/>
                 <Setter Property="AllowDrop" Value="true"/>
                 <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="Margin" Value="10"/>
+                <Setter Property="Margin" Value="10 10 10 5"/>
                 <Setter Property="Height" Value="36"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst"/>
                 <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
                 <Setter Property="Template">
                     <Setter.Value>
@@ -54,6 +53,7 @@
                     </EventTrigger>
                 </Style.Triggers>
             </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

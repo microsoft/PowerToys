@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using WinAlfred.Helper;
 using WinAlfred.Plugin;
+using WinAlfred.Plugin.System;
 
 namespace WinAlfred.PluginLoader
 {
@@ -21,11 +24,27 @@ namespace WinAlfred.PluginLoader
 
         private static void ParsePlugins()
         {
-            ParseDirectories();
-            ParsePackagedPlugin();
+            ParseSystemPlugins();
+            ParseThirdPartyPlugins();
         }
 
-        private static void ParseDirectories()
+        private static void ParseSystemPlugins()
+        {
+            PluginMetadata metadata = new PluginMetadata();
+            metadata.Name = "System Plugins";
+            metadata.Author = "System";
+            metadata.Description = "system plugins collection";
+            metadata.Language = AllowedLanguage.CSharp;
+            metadata.Version = "1.0";
+            metadata.PluginType = PluginType.System;
+            metadata.ActionKeyword = "*";
+            metadata.ExecuteFileName = "WinAlfred.Plugin.System.dll";
+            metadata.ExecuteFilePath = AppDomain.CurrentDomain.BaseDirectory + metadata.ExecuteFileName;
+            metadata.PluginDirecotry = AppDomain.CurrentDomain.BaseDirectory;
+            pluginMetadatas.Add(metadata);
+        }
+
+        private static void ParseThirdPartyPlugins()
         {
             string[] directories = Directory.GetDirectories(PluginPath);
             foreach (string directory in directories)
@@ -33,11 +52,6 @@ namespace WinAlfred.PluginLoader
                 PluginMetadata metadata = GetMetadataFromIni(directory);
                 if (metadata != null) pluginMetadatas.Add(metadata);
             }
-        }
-
-        private static void ParsePackagedPlugin()
-        {
-
         }
 
         private static PluginMetadata GetMetadataFromIni(string directory)
@@ -50,7 +64,6 @@ namespace WinAlfred.PluginLoader
                 return null;
             }
 
-
             try
             {
                 PluginMetadata metadata = new PluginMetadata();
@@ -60,6 +73,7 @@ namespace WinAlfred.PluginLoader
                 metadata.Description = ini.GetSetting("plugin", "Description");
                 metadata.Language = ini.GetSetting("plugin", "Language");
                 metadata.Version = ini.GetSetting("plugin", "Version");
+                metadata.PluginType = PluginType.ThirdParty;
                 metadata.ActionKeyword = ini.GetSetting("plugin", "ActionKeyword");
                 metadata.ExecuteFilePath = AppDomain.CurrentDomain.BaseDirectory + directory + "\\" + ini.GetSetting("plugin", "ExecuteFile");
                 metadata.PluginDirecotry = AppDomain.CurrentDomain.BaseDirectory + directory + "\\";

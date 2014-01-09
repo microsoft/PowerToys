@@ -21,9 +21,9 @@
             <TextBlock x:Name="tbTitle" FontSize="16" Foreground="#37392c" FontWeight="Medium">Title</TextBlock>
             <TextBlock Grid.Row="1" Foreground="#8e94a4" x:Name="tbSubTitle">sdfdsf</TextBlock>
         </Grid>
-        <DockPanel Grid.Column="2" >
-            <Image  Source="Images\ctrl.png" VerticalAlignment="Center"/>
-            <TextBlock x:Name="tbIndex" FontSize="16" Foreground="#5c1f87" Margin="0 5 0 0" Text="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
+        <DockPanel Grid.Column="2" Visibility="Hidden">
+            <Image x:Name="img" Source="Images\ctrl.png" VerticalAlignment="Center"/>
+            <TextBlock x:Name="tbIndex" Visibility="Hidden" FontSize="16" Foreground="#5c1f87" Margin="0 5 0 0" Text="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
         </DockPanel>
     </Grid>
 </UserControl>

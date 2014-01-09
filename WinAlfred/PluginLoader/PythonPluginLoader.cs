@@ -22,10 +22,6 @@ namespace WinAlfred.PluginLoader
                 plugins.Add(pair);
             }
 
-            foreach (IPlugin plugin in plugins.Select(pluginPair => pluginPair.Plugin))
-            {
-                new Thread(plugin.Init).Start();
-            }
             return plugins;
         }
     }

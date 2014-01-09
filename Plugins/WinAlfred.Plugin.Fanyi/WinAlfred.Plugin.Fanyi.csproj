@@ -4,13 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E515011D-A769-418B-8761-ABE6F29827A0}</ProjectGuid>
+    <ProjectGuid>{353769D3-D11C-4D86-BD06-AC8C1D68642B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WinAlfred.Plugin.System</RootNamespace>
-    <AssemblyName>WinAlfred.Plugin.System</AssemblyName>
+    <RootNamespace>WinAlfred.Plugin.Fanyi</RootNamespace>
+    <AssemblyName>WinAlfred.Plugin.Fanyi</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,6 +32,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HtmlAgilityPack">
+      <HintPath>..\..\packages\HtmlAgilityPack.1.4.6\lib\Net20\HtmlAgilityPack.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.5.0.8\lib\net35\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms" />
@@ -39,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HttpRequest.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -49,18 +58,20 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="plugin.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Images\lock.png" />
+    <Content Include="Images\translate.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy  /Y  $(TargetDir)$(TargetFileName) $(SolutionDir)WinAlfred\bin\Debug\Plugins\System\
-xcopy  /Y  $(TargetDir)plugin.ini $(SolutionDir)WinAlfred\bin\Debug\Plugins\System\
-xcopy  /Y  $(ProjectDir)Images\*.* $(SolutionDir)WinAlfred\bin\Debug\Plugins\System\Images\</PostBuildEvent>
+    <PostBuildEvent>xcopy  /Y  $(TargetDir)$(TargetFileName) $(SolutionDir)WinAlfred\bin\Debug\Plugins\Fanyi\
+xcopy  /Y  $(TargetDir)plugin.ini $(SolutionDir)WinAlfred\bin\Debug\Plugins\Fanyi\
+xcopy  /Y  $(ProjectDir)Images\*.* $(SolutionDir)WinAlfred\bin\Debug\Plugins\Fanyi\Images\</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

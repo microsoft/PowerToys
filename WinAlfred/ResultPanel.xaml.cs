@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using WinAlfred.Plugin;
@@ -7,6 +8,8 @@ namespace WinAlfred
 {
     public partial class ResultPanel : UserControl
     {
+        public bool Dirty { get; set; }
+
         public delegate void ResultItemsChanged();
 
         public event ResultItemsChanged resultItemChangedEvent;
@@ -19,15 +22,26 @@ namespace WinAlfred
 
         public void AddResults(List<Result> results)
         {
-            pnlContainer.Children.Clear();
+            if (results.Count == 0) return;
+
+            if (Dirty)
+            {
+                Dirty = false;
+                pnlContainer.Children.Clear();
+            }
+
             for (int i = 0; i < results.Count; i++)
             {
                 Result result = results[i];
-                ResultItem control = new ResultItem(result);
-                control.SetIndex(i + 1);
-                pnlContainer.Children.Add(control);
+                if (!CheckExisted(result))
+                {
+                    ResultItem control = new ResultItem(result);
+                    control.SetIndex(i + 1);
+                    pnlContainer.Children.Insert(GetInsertLocation(result.Score), control);
+                }
             }
 
+            SelectFirst();
             pnlContainer.UpdateLayout();
 
             double resultItemHeight = 0;
@@ -37,11 +51,43 @@ namespace WinAlfred
                 if (resultItem != null)
                     resultItemHeight = resultItem.ActualHeight;
             }
-            pnlContainer.Height = results.Count * resultItemHeight;
+            pnlContainer.Height = pnlContainer.Children.Count * resultItemHeight;
             OnResultItemChangedEvent();
         }
 
-        private int GetCurrentSelectedResultIndex()
+        private bool CheckExisted(Result result)
+        {
+            return pnlContainer.Children.Cast<ResultItem>().Any(child => child.Result.Equals(result));
+        }
+
+        private int GetInsertLocation(int currentScore)
+        {
+            int location = pnlContainer.Children.Count;
+            if (pnlContainer.Children.Count == 0) return 0;
+            if (currentScore > ((ResultItem)pnlContainer.Children[0]).Result.Score) return 0;
+
+            for (int index = 1; index < pnlContainer.Children.Count; index++)
+            {
+                ResultItem next = pnlContainer.Children[index] as ResultItem;
+                ResultItem prev = pnlContainer.Children[index - 1] as ResultItem;
+                if (next != null && prev != null)
+                {
+                    if ((currentScore >= next.Result.Score && currentScore <= prev.Result.Score))
+                    {
+                        location = index;
+                    }
+                }
+            }
+
+            return location;
+        }
+
+        public int GetCurrentResultCount()
+        {
+            return pnlContainer.Children.Count;
+        }
+
+        public int GetCurrentSelectedResultIndex()
         {
             for (int i = 0; i < pnlContainer.Children.Count; i++)
             {
@@ -114,7 +160,7 @@ namespace WinAlfred
                     if (index < oldIndex)
                     {
                         //move up and old item is at the top of the scroll view 
-                        if ( newItemBottomPoint.Y - sv.VerticalOffset == 0)
+                        if (newItemBottomPoint.Y - sv.VerticalOffset == 0)
                         {
                             scrollPosition = sv.VerticalOffset - resultItemControl.ActualHeight;
                         }
@@ -146,19 +192,35 @@ namespace WinAlfred
             Select(0);
         }
 
-        public void AcceptSelect()
+        public Result AcceptSelect()
         {
             int index = GetCurrentSelectedResultIndex();
+            if (index < 0) return null;
+
             var resultItemControl = pnlContainer.Children[index] as ResultItem;
             if (resultItemControl != null)
             {
-                if (resultItemControl.Result.Action != null) resultItemControl.Result.Action();
+                if (resultItemControl.Result.Action != null)
+                {
+                    resultItemControl.Result.Action();
+                }
+
+                return resultItemControl.Result;
             }
+
+            return null;
         }
 
         public ResultPanel()
         {
             InitializeComponent();
+        }
+
+        public void Clear()
+        {
+            pnlContainer.Children.Clear();
+            pnlContainer.Height = 0;
+            OnResultItemChangedEvent();
         }
     }
 }
