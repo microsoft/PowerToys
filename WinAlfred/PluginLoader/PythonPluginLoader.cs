@@ -1,12 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Python.Runtime;
 using WinAlfred.Plugin;
 
 namespace WinAlfred.PluginLoader
 {
     public class PythonPluginLoader : BasePluginLoader
     {
+
+        static PythonPluginLoader()
+        {
+            PythonEngine.Initialize();
+            PythonEngine.BeginAllowThreads();
+        }
+
         public override List<PluginPair> LoadPlugin()
         {
             List<PluginPair> plugins = new List<PluginPair>();

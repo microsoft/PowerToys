@@ -19,16 +19,17 @@ namespace WinAlfred.PluginLoader
             foreach (IPlugin plugin in plugins.Select(pluginPair => pluginPair.Plugin))
             {
                 IPlugin plugin1 = plugin;
-                //ThreadPool.QueueUserWorkItem(o =>);
-
-                plugin1.Init(new PluginInitContext()
+                ThreadPool.QueueUserWorkItem(o =>
                 {
-                    Plugins = plugins,
-                    ChangeQuery = s => window.ChangeQuery(s),
-                    CloseApp = window.CloseApp,
-                    HideApp = window.HideApp,
-                    ShowApp = window.ShowApp,
-                    ShowMsg = (title, subTitle, iconPath) => window.ShowMsg(title, subTitle, iconPath)
+                    plugin1.Init(new PluginInitContext()
+                    {
+                        Plugins = plugins,
+                        ChangeQuery = s => window.ChangeQuery(s),
+                        CloseApp = window.CloseApp,
+                        HideApp = window.HideApp,
+                        ShowApp = window.ShowApp,
+                        ShowMsg = (title, subTitle, iconPath) => window.ShowMsg(title, subTitle, iconPath)
+                    });
                 });
             }
         }

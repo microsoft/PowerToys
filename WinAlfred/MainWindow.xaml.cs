@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,12 +10,14 @@ using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Microsoft.Win32;
+using Python.Runtime;
 using WinAlfred.Commands;
 using WinAlfred.Helper;
 using WinAlfred.Plugin;
 using WinAlfred.PluginLoader;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
+using Python;
 using Timer = System.Threading.Timer;
 
 namespace WinAlfred
@@ -37,6 +40,12 @@ namespace WinAlfred
             resultCtrl.resultItemChangedEvent += resultCtrl_resultItemChangedEvent;
             ThreadPool.SetMaxThreads(30, 10);
             InitProgressbarAnimation();
+            Closed += MainWindow_Closed;
+        }
+
+        void MainWindow_Closed(object sender, EventArgs e)
+        {
+            PythonEngine.Shutdown();
         }
 
         private void InitProgressbarAnimation()
@@ -179,6 +188,8 @@ namespace WinAlfred
             //var engine = new Jurassic.ScriptEngine();
             //MessageBox.Show(engine.Evaluate("5 * 10 + 2").ToString());
         }
+
+     
 
         private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {

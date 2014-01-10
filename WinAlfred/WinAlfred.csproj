@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WinAlfred</RootNamespace>
     <AssemblyName>WinAlfred</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -26,6 +26,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -167,6 +168,10 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Pythonnet.Runtime\Python.Runtime.csproj">
+      <Project>{097b4ac0-74e9-4c58-bcf8-c69746ec8271}</Project>
+      <Name>Python.Runtime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\WinAlfred.Plugin.System\WinAlfred.Plugin.System.csproj">
       <Project>{69ce0206-cb41-453d-88af-df86092ef9b8}</Project>
       <Name>WinAlfred.Plugin.System</Name>
