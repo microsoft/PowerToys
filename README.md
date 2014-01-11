@@ -4,7 +4,7 @@ WinAlfred
 alfred for windows.
 
 
-ScreenShot
+Screenshot
 =========
 
 <a href="https://github.com/qianlifeng/WinAlfred/wiki/Screenshot">More screenshot</a>
