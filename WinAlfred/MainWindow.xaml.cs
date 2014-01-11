@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using IWshRuntimeLibrary;
 using Microsoft.Win32;
 using WinAlfred.Commands;
@@ -140,15 +141,9 @@ namespace WinAlfred
         private void ShowWinAlfred()
         {
             Show();
-            //FocusManager.SetFocusedElement(this, tbQuery);
-            tbQuery.Focusable = true;
-            Keyboard.Focus(tbQuery);
+            Activate();
+            tbQuery.Focus();
             tbQuery.SelectAll();
-
-            if (!tbQuery.IsKeyboardFocused)
-            {
-                MessageBox.Show("didnt focus");
-            }
         }
 
         private void SetAutoStart(bool IsAtuoRun)
@@ -177,6 +172,7 @@ namespace WinAlfred
             InitialTray();
             selectedRecords.LoadSelectedRecords();
             SetAutoStart(true);
+            ShowWinAlfred();
             //var engine = new Jurassic.ScriptEngine();
             //MessageBox.Show(engine.Evaluate("5 * 10 + 2").ToString());
         }
