@@ -10,6 +10,7 @@ namespace WinAlfred.PluginLoader
 {
     public class PythonPluginWrapper : IPlugin
     {
+
         private PluginMetadata metadata;
 
         public PythonPluginWrapper(PluginMetadata metadata)
@@ -21,13 +22,13 @@ namespace WinAlfred.PluginLoader
         {
             try
             {
-                string s = InvokeFunc(metadata.PluginDirecotry, metadata.ExecuteFileName.Replace(".py", ""),"query",query.RawQuery);
-                if (string.IsNullOrEmpty(s))
+                string jsonResult = InvokeFunc(metadata.PluginDirecotry, metadata.ExecuteFileName.Replace(".py", ""), "query", query.RawQuery);
+                if (string.IsNullOrEmpty(jsonResult))
                 {
                     return new List<Result>();
                 }
 
-                List<PythonResult> o = JsonConvert.DeserializeObject<List<PythonResult>>(s);
+                List<PythonResult> o = JsonConvert.DeserializeObject<List<PythonResult>>(jsonResult);
                 List<Result> r = new List<Result>();
                 foreach (PythonResult pythonResult in o)
                 {
@@ -42,22 +43,20 @@ namespace WinAlfred.PluginLoader
             }
             catch (Exception)
             {
-
-                throw;
+#if (DEBUG)
+                {
+                    throw;
+                }
+#endif
             }
 
         }
 
-        private string InvokeFunc(string path, string moduleName,string func, string para)
+        private string InvokeFunc(string path, string moduleName, string func, string para)
         {
             IntPtr gs = PythonEngine.AcquireLock();
 
-            IntPtr pyStrPtr = Runtime.PyString_FromString(path);
-            IntPtr SysDotPath = Runtime.PySys_GetObject("path");
-            Runtime.PyList_Append(SysDotPath, pyStrPtr);
-
             PyObject module = PythonEngine.ImportModule(moduleName);
-            module = PythonEngine.ReloadModule(module);
             PyObject res = module.InvokeMethod(func, new PyString(para));
             string json = Runtime.GetManagedString(res.Handle);
 
@@ -68,7 +67,7 @@ namespace WinAlfred.PluginLoader
 
         public void Init(PluginInitContext context)
         {
-           
+
         }
     }
 }

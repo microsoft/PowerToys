@@ -45,7 +45,7 @@ namespace WinAlfred
 
         void MainWindow_Closed(object sender, EventArgs e)
         {
-            PythonEngine.Shutdown();
+            //PythonEngine.Shutdown();
         }
 
         private void InitProgressbarAnimation()
