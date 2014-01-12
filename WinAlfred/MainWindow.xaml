@@ -18,7 +18,7 @@
             <RowDefinition Height="2"></RowDefinition>
             <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
-        <TextBox Style="{DynamicResource defaultQueryBoxStyle}" Grid.Row="0"  x:Name="tbQuery" PreviewKeyDown="TbQuery_OnPreviewKeyDown" TextChanged="TextBoxBase_OnTextChanged" />
+        <TextBox AllowDrop="True" Style="{DynamicResource defaultQueryBoxStyle}" Grid.Row="0"  x:Name="tbQuery" PreviewKeyDown="TbQuery_OnPreviewKeyDown" TextChanged="TextBoxBase_OnTextChanged" />
         <Line Stroke="Blue" x:Name="progressBar" Y1="0" Y2="0" X2="100" Grid.Row="1" Height="2" StrokeThickness="1"></Line>
         <winAlfred:ResultPanel x:Name="resultCtrl" Grid.Row="2" Margin="10 0 10 0" />
     </Grid>

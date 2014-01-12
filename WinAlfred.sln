@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinAlfred.Plugin.System", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinAlfred.Plugin.Fanyi", "Plugins\WinAlfred.Plugin.Fanyi\WinAlfred.Plugin.Fanyi.csproj", "{353769D3-D11C-4D86-BD06-AC8C1D68642B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinAlfred.WorkflowInstaller", "WinAlfred.WorkflowInstaller\WinAlfred.WorkflowInstaller.csproj", "{FAFCAD04-C37E-477B-88C9-0C945E4FB928}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -100,6 +102,20 @@ Global
 		{353769D3-D11C-4D86-BD06-AC8C1D68642B}.Release|Win32.ActiveCfg = Release|Any CPU
 		{353769D3-D11C-4D86-BD06-AC8C1D68642B}.Release|x64.ActiveCfg = Release|Any CPU
 		{353769D3-D11C-4D86-BD06-AC8C1D68642B}.Release|x86.ActiveCfg = Release|Any CPU
+		{FAFCAD04-C37E-477B-88C9-0C945E4FB928}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAFCAD04-C37E-477B-88C9-0C945E4FB928}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAFCAD04-C37E-477B-88C9-0C945E4FB928}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FAFCAD04-C37E-477B-88C9-0C945E4FB928}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{FAFCAD04-C37E-477B-88C9-0C945E4FB928}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{FAFCAD04-C37E-477B-88C9-0C945E4FB928}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FAFCAD04-C37E-477B-88C9-0C945E4FB928}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FAFCAD04-C37E-477B-88C9-0C945E4FB928}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAFCAD04-C37E-477B-88C9-0C945E4FB928}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAFCAD04-C37E-477B-88C9-0C945E4FB928}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{FAFCAD04-C37E-477B-88C9-0C945E4FB928}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{FAFCAD04-C37E-477B-88C9-0C945E4FB928}.Release|Win32.ActiveCfg = Release|Any CPU
+		{FAFCAD04-C37E-477B-88C9-0C945E4FB928}.Release|x64.ActiveCfg = Release|Any CPU
+		{FAFCAD04-C37E-477B-88C9-0C945E4FB928}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
