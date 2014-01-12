@@ -111,7 +111,11 @@ namespace WinAlfred.WorkflowInstaller
                     string winalfred = AppDomain.CurrentDomain.BaseDirectory + "WinAlfred.exe";
                     if (File.Exists(winalfred))
                     {
-                        Process.Start(winalfred, "reloadWorkflows");
+                        ProcessStartInfo info = new ProcessStartInfo(winalfred, "reloadWorkflows")
+                        {
+                            UseShellExecute = true
+                        };
+                        Process.Start(info);
                         MessageBox.Show("You have installed workflow " + plugin.Name + " successfully.");
                     }
                     else

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Forms;
 using WinAlfred.Helper;
 using WinAlfred.Plugin;
 using WinAlfred.Plugin.System;
@@ -11,7 +12,7 @@ namespace WinAlfred.PluginLoader
 {
     public abstract class BasePluginLoader
     {
-        private static string PluginPath = "Plugins";
+        private static string PluginPath = AppDomain.CurrentDomain.BaseDirectory + "Plugins";
         private static string PluginConfigName = "plugin.ini";
         protected static List<PluginMetadata> pluginMetadatas = new List<PluginMetadata>();
         public abstract List<PluginPair> LoadPlugin();
@@ -70,8 +71,8 @@ namespace WinAlfred.PluginLoader
                 metadata.Version = ini.GetSetting("plugin", "Version");
                 metadata.PluginType = PluginType.ThirdParty;
                 metadata.ActionKeyword = ini.GetSetting("plugin", "ActionKeyword");
-                metadata.ExecuteFilePath = AppDomain.CurrentDomain.BaseDirectory + directory + "\\" + ini.GetSetting("plugin", "ExecuteFile");
-                metadata.PluginDirecotry = AppDomain.CurrentDomain.BaseDirectory + directory + "\\";
+                metadata.ExecuteFilePath = directory + "\\" + ini.GetSetting("plugin", "ExecuteFile");
+                metadata.PluginDirecotry = directory + "\\";
                 metadata.ExecuteFileName = ini.GetSetting("plugin", "ExecuteFile");
 
                 if (!AllowedLanguage.IsAllowed(metadata.Language))

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows;
 using Microsoft.VisualBasic.ApplicationServices;
+using WinAlfred.Commands;
 using StartupEventArgs = System.Windows.StartupEventArgs;
 
 namespace WinAlfred
@@ -57,12 +58,14 @@ namespace WinAlfred
             base.OnStartup(e);
 
             window = new MainWindow();
-            window.ShowApp(e.Args);
+            window.ShowApp();
+            window.ParseArgs(e.Args);
         }
 
-        public void Activate(string[] commandLine)
+        public void Activate(string[] args)
         {
-            window.ShowApp(commandLine);
+            window.ShowApp();
+            window.ParseArgs(args);
         }
     }
 }

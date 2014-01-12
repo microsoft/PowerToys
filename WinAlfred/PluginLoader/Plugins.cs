@@ -28,7 +28,7 @@ namespace WinAlfred.PluginLoader
                     ChangeQuery = s => window.ChangeQuery(s),
                     CloseApp = window.CloseApp,
                     HideApp = window.HideApp,
-                    ShowApp = () => window.ShowApp(null),
+                    ShowApp = () => window.ShowApp(),
                     ShowMsg = (title, subTitle, iconPath) => window.ShowMsg(title, subTitle, iconPath)
                 }));
             }

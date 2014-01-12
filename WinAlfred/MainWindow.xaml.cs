@@ -59,9 +59,9 @@ namespace WinAlfred
         private void InitialTray()
         {
             notifyIcon = new NotifyIcon { Text = "WinAlfred", Icon = Properties.Resources.app, Visible = true };
-            notifyIcon.Click += (o, e) => ShowWinAlfred(null);
+            notifyIcon.Click += (o, e) => ShowWinAlfred();
             System.Windows.Forms.MenuItem open = new System.Windows.Forms.MenuItem("Open");
-            open.Click += (o, e) => ShowWinAlfred(null);
+            open.Click += (o, e) => ShowWinAlfred();
             System.Windows.Forms.MenuItem exit = new System.Windows.Forms.MenuItem("Exit");
             exit.Click += (o, e) => CloseApp();
             System.Windows.Forms.MenuItem[] childen = { open, exit };
@@ -78,7 +78,7 @@ namespace WinAlfred
         {
             if (!IsVisible)
             {
-                ShowWinAlfred(null);
+                ShowWinAlfred();
             }
             else
             {
@@ -132,7 +132,15 @@ namespace WinAlfred
             Hide();
         }
 
-        private void ShowWinAlfred(string[] args)
+        private void ShowWinAlfred()
+        {
+            Show();
+            Activate();
+            tbQuery.Focus();
+            tbQuery.SelectAll();
+        }
+
+        public void ParseArgs(string[] args)
         {
             if (args != null && args.Length > 0)
             {
@@ -147,15 +155,11 @@ namespace WinAlfred
                         {
                             string query = args[1];
                             tbQuery.Text = query;
+                            tbQuery.SelectAll();
                         }
                         break;
                 }
             }
-
-            Show();
-            Activate();
-            tbQuery.Focus();
-            tbQuery.SelectAll();
         }
 
         private void SetAutoStart(bool IsAtuoRun)
@@ -261,9 +265,9 @@ namespace WinAlfred
             HideWinAlfred();
         }
 
-        public void ShowApp(string[] args)
+        public void ShowApp()
         {
-            ShowWinAlfred(args);
+            ShowWinAlfred();
         }
 
         public void ShowMsg(string title, string subTitle, string iconPath)
