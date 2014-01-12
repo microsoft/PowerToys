@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Microsoft.CSharp;
 using WinAlfred.Plugin;
 
 namespace WinAlfred.PluginLoader
@@ -14,23 +15,22 @@ namespace WinAlfred.PluginLoader
         public static void Init(MainWindow window)
         {
             plugins.Clear();
+            BasePluginLoader.ParsePluginsConfig();
+
             plugins.AddRange(new PythonPluginLoader().LoadPlugin());
             plugins.AddRange(new CSharpPluginLoader().LoadPlugin());
             foreach (IPlugin plugin in plugins.Select(pluginPair => pluginPair.Plugin))
             {
                 IPlugin plugin1 = plugin;
-                ThreadPool.QueueUserWorkItem(o =>
+                ThreadPool.QueueUserWorkItem(o => plugin1.Init(new PluginInitContext()
                 {
-                    plugin1.Init(new PluginInitContext()
-                    {
-                        Plugins = plugins,
-                        ChangeQuery = s => window.ChangeQuery(s),
-                        CloseApp = window.CloseApp,
-                        HideApp = window.HideApp,
-                        ShowApp = window.ShowApp,
-                        ShowMsg = (title, subTitle, iconPath) => window.ShowMsg(title, subTitle, iconPath)
-                    });
-                });
+                    Plugins = plugins,
+                    ChangeQuery = s => window.ChangeQuery(s),
+                    CloseApp = window.CloseApp,
+                    HideApp = window.HideApp,
+                    ShowApp = () => window.ShowApp(null),
+                    ShowMsg = (title, subTitle, iconPath) => window.ShowMsg(title, subTitle, iconPath)
+                }));
             }
         }
 

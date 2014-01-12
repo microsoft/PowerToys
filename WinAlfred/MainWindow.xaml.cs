@@ -59,9 +59,9 @@ namespace WinAlfred
         private void InitialTray()
         {
             notifyIcon = new NotifyIcon { Text = "WinAlfred", Icon = Properties.Resources.app, Visible = true };
-            notifyIcon.Click += (o, e) => ShowWinAlfred();
+            notifyIcon.Click += (o, e) => ShowWinAlfred(null);
             System.Windows.Forms.MenuItem open = new System.Windows.Forms.MenuItem("Open");
-            open.Click += (o, e) => ShowWinAlfred();
+            open.Click += (o, e) => ShowWinAlfred(null);
             System.Windows.Forms.MenuItem exit = new System.Windows.Forms.MenuItem("Exit");
             exit.Click += (o, e) => CloseApp();
             System.Windows.Forms.MenuItem[] childen = { open, exit };
@@ -78,7 +78,7 @@ namespace WinAlfred
         {
             if (!IsVisible)
             {
-                ShowWinAlfred();
+                ShowWinAlfred(null);
             }
             else
             {
@@ -132,8 +132,26 @@ namespace WinAlfred
             Hide();
         }
 
-        private void ShowWinAlfred()
+        private void ShowWinAlfred(string[] args)
         {
+            if (args != null && args.Length > 0)
+            {
+                switch (args[0])
+                {
+                    case "reloadWorkflows":
+                        Plugins.Init(this);
+                        break;
+
+                    case "query":
+                        if (args.Length > 1)
+                        {
+                            string query = args[1];
+                            tbQuery.Text = query;
+                        }
+                        break;
+                }
+            }
+
             Show();
             Activate();
             tbQuery.Focus();
@@ -166,7 +184,6 @@ namespace WinAlfred
             InitialTray();
             selectedRecords.LoadSelectedRecords();
             SetAutoStart(true);
-            ShowWinAlfred();
             //var engine = new Jurassic.ScriptEngine();
             //MessageBox.Show(engine.Evaluate("5 * 10 + 2").ToString());
         }
@@ -244,9 +261,9 @@ namespace WinAlfred
             HideWinAlfred();
         }
 
-        public void ShowApp()
+        public void ShowApp(string[] args)
         {
-            ShowWinAlfred();
+            ShowWinAlfred(args);
         }
 
         public void ShowMsg(string title, string subTitle, string iconPath)

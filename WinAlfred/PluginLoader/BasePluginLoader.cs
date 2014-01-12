@@ -14,16 +14,11 @@ namespace WinAlfred.PluginLoader
         private static string PluginPath = "Plugins";
         private static string PluginConfigName = "plugin.ini";
         protected static List<PluginMetadata> pluginMetadatas = new List<PluginMetadata>();
-
         public abstract List<PluginPair> LoadPlugin();
 
-        static BasePluginLoader()
+        public static void ParsePluginsConfig()
         {
-            ParsePlugins();
-        }
-
-        private static void ParsePlugins()
-        {
+            pluginMetadatas.Clear();
             ParseSystemPlugins();
             ParseThirdPartyPlugins();
         }
@@ -126,7 +121,7 @@ namespace WinAlfred.PluginLoader
         ///// <returns></returns>
         //private static PluginMetadata filterPythonMetadata(PluginMetadata metadata)
         //{
-            
+
         //}
     }
 }

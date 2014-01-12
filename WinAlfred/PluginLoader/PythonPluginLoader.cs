@@ -9,12 +9,6 @@ namespace WinAlfred.PluginLoader
 {
     public class PythonPluginLoader : BasePluginLoader
     {
-
-        static PythonPluginLoader()
-        {
-         
-        }
-
         public override List<PluginPair> LoadPlugin()
         {
             List<PluginPair> plugins = new List<PluginPair>();
