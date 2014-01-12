@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{097B4AC0-74E9-4C58-BCF8-C69746EC8271}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <AssemblyName>Python.Runtime</AssemblyName>
+    <RootNamespace>Python.Runtime</RootNamespace>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>.\bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;PYTHON27,UCS2</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>.\bin\Release\</OutputPath>
+    <DefineConstants>TRACE;PYTHON27, UCS2</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'EmbeddingTest|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\EmbeddingTest\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;PYTHON27,UCS2</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'UnitTests|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\UnitTests\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;PYTHON27,UCS2</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;PYTHON26,UCS2</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <NoWarn>1607</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE;PYTHON26,UCS2</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <NoWarn>1607</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'EmbeddingTest|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\EmbeddingTest\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;PYTHON26,UCS2</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <NoWarn>1607</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'UnitTests|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\UnitTests\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;PYTHON26,UCS2</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <NoWarn>1607</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="arrayobject.cs" />
+    <Compile Include="assemblyinfo.cs" />
+    <Compile Include="assemblymanager.cs" />
+    <Compile Include="classbase.cs" />
+    <Compile Include="classmanager.cs" />
+    <Compile Include="classobject.cs" />
+    <Compile Include="clrobject.cs" />
+    <Compile Include="codegenerator.cs" />
+    <Compile Include="constructorbinder.cs" />
+    <Compile Include="constructorbinding.cs" />
+    <Compile Include="converter.cs" />
+    <Compile Include="debughelper.cs" />
+    <Compile Include="delegatemanager.cs" />
+    <Compile Include="delegateobject.cs" />
+    <Compile Include="eventbinding.cs" />
+    <Compile Include="eventobject.cs" />
+    <Compile Include="exceptions.cs" />
+    <Compile Include="extensiontype.cs" />
+    <Compile Include="fieldobject.cs" />
+    <Compile Include="generictype.cs" />
+    <Compile Include="genericutil.cs" />
+    <Compile Include="importhook.cs" />
+    <Compile Include="indexer.cs" />
+    <Compile Include="interfaceobject.cs" />
+    <Compile Include="interfaces.cs" />
+    <Compile Include="interop.cs" />
+    <Compile Include="iterator.cs" />
+    <Compile Include="managedtype.cs" />
+    <Compile Include="metatype.cs" />
+    <Compile Include="methodbinder.cs" />
+    <Compile Include="methodbinding.cs" />
+    <Compile Include="methodobject.cs" />
+    <Compile Include="methodwrapper.cs" />
+    <Compile Include="modulefunctionobject.cs" />
+    <Compile Include="moduleobject.cs" />
+    <Compile Include="modulepropertyobject.cs" />
+    <Compile Include="monosupport.cs" />
+    <Compile Include="nativecall.cs" />
+    <Compile Include="overload.cs" />
+    <Compile Include="propertyobject.cs" />
+    <Compile Include="pyansistring.cs" />
+    <Compile Include="pydict.cs" />
+    <Compile Include="pyfloat.cs" />
+    <Compile Include="pyint.cs" />
+    <Compile Include="pyiter.cs" />
+    <Compile Include="pylist.cs" />
+    <Compile Include="pylong.cs" />
+    <Compile Include="pynumber.cs" />
+    <Compile Include="pyobject.cs" />
+    <Compile Include="pysequence.cs" />
+    <Compile Include="pystring.cs" />
+    <Compile Include="pythonengine.cs" />
+    <Compile Include="pythonexception.cs" />
+    <Compile Include="pytuple.cs" />
+    <Compile Include="runtime.cs" />
+    <Compile Include="typemanager.cs" />
+    <Compile Include="typemethod.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="buildclrmodule.bat" />
+    <None Include="clrmodule.il" />
+    <None Include="x64\clrmodule-platform.il" />
+    <None Include="x86\clrmodule-platform.il" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="python-clear.ico" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />
+  <ProjectExtensions>
+    <VisualStudio AllowExistingFolder="true" />
+  </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>call "$(ProjectDir)buildclrmodule.bat" $(Platform) "$(ProjectDir)" "$(TargetDir)clr.pyd"
+copy "$(TargetPath)" "$(SolutionDir)"
+copy "$(TargetDir)*.pdb" "$(SolutionDir)"
+copy "$(TargetDir)clr.pyd" "$(SolutionDir)"
+</PostBuildEvent>
+    <PreBuildEvent>del "$(TargetDir)clr.pyd"</PreBuildEvent>
+  </PropertyGroup>
+</Project>

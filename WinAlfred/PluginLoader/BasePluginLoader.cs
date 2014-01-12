@@ -117,5 +117,16 @@ namespace WinAlfred.PluginLoader
                 return null;
             }
         }
+
+        ///// <summary>
+        ///// Change python execute file name to unique file name using GUID
+        ///// this is because if two pythong plugin use the same
+        ///// </summary>
+        ///// <param name="metadata"></param>
+        ///// <returns></returns>
+        //private static PluginMetadata filterPythonMetadata(PluginMetadata metadata)
+        //{
+            
+        //}
     }
 }
