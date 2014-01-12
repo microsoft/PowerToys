@@ -1,7 +1,8 @@
 WinAlfred
 =========
+<img src="http://ww2.sinaimg.cn/large/5d7c1fa4gw1ecguilvacmj2074074748.jpg" height="48" />
 
-alfred for windows.
+alfred for windows. 
 
 
 Screenshot
