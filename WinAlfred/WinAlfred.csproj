@@ -168,6 +168,10 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Pythonnet.Runtime\Python.Runtime.csproj">
+      <Project>{097b4ac0-74e9-4c58-bcf8-c69746ec8271}</Project>
+      <Name>Python.Runtime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\WinAlfred.Plugin.System\WinAlfred.Plugin.System.csproj">
       <Project>{69ce0206-cb41-453d-88af-df86092ef9b8}</Project>
       <Name>WinAlfred.Plugin.System</Name>
