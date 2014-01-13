@@ -34,16 +34,15 @@ namespace WinAlfred
             resultCtrl.resultItemChangedEvent += resultCtrl_resultItemChangedEvent;
             ThreadPool.SetMaxThreads(30, 10);
             InitProgressbarAnimation();
-            WakeupApp();
         }
 
         private void WakeupApp()
         {
             //After hide winalfred in the background for a long time. It will become very slow in the next show.
-            //This is caused by the Virtual Mermory Page Mechanisam. So, our solution is execute some codes in every 20min
+            //This is caused by the Virtual Mermory Page Mechanisam. So, our solution is execute some codes in every min
             //which may prevent sysetem uninstall memory from RAM to disk.
 
-            System.Timers.Timer t = new System.Timers.Timer(1000 * 30 * 1) { AutoReset = true, Enabled = true };
+            System.Timers.Timer t = new System.Timers.Timer(1000 * 60 * 3) { AutoReset = true, Enabled = true };
             t.Elapsed += (o, e) => Dispatcher.Invoke(new Action(() =>
                 {
                     if (Visibility != Visibility.Visible)
@@ -203,6 +202,7 @@ namespace WinAlfred
             InitialTray();
             selectedRecords.LoadSelectedRecords();
             SetAutoStart(true);
+            WakeupApp();
             //var engine = new Jurassic.ScriptEngine();
             //MessageBox.Show(engine.Evaluate("5 * 10 + 2").ToString());
         }
@@ -272,7 +272,7 @@ namespace WinAlfred
         public void CloseApp()
         {
             notifyIcon.Visible = false;
-            Close();
+            Environment.Exit(0);
         }
 
         public void HideApp()
