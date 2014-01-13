@@ -23,5 +23,11 @@ namespace WinAlfred.Commands
             systemCmd.Dispatch(query);
             pluginCmd.Dispatch(query);
         }
+
+        public void DispatchCommand(Query query,bool updateView)
+        {
+            systemCmd.Dispatch(query,updateView);
+            pluginCmd.Dispatch(query,updateView);
+        }
     }
 }

@@ -7,19 +7,12 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using System.Windows.Shapes;
-using System.Windows.Threading;
-using Microsoft.Win32;
 using WinAlfred.Commands;
 using WinAlfred.Helper;
 using WinAlfred.Plugin;
 using WinAlfred.PluginLoader;
-using DataFormats = System.Windows.DataFormats;
-using DragDropEffects = System.Windows.DragDropEffects;
-using DragEventArgs = System.Windows.DragEventArgs;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
-using Timer = System.Threading.Timer;
 
 namespace WinAlfred
 {
@@ -41,6 +34,28 @@ namespace WinAlfred
             resultCtrl.resultItemChangedEvent += resultCtrl_resultItemChangedEvent;
             ThreadPool.SetMaxThreads(30, 10);
             InitProgressbarAnimation();
+            WakeupApp();
+        }
+
+        private void WakeupApp()
+        {
+            //After hide winalfred in the background for a long time. It will become very slow in the next show.
+            //This is caused by the Virtual Mermory Page Mechanisam. So, our solution is execute some codes in every 20min
+            //which may prevent sysetem uninstall memory from RAM to disk.
+
+            System.Timers.Timer t = new System.Timers.Timer(1000 * 30 * 1) { AutoReset = true, Enabled = true };
+            t.Elapsed += (o, e) => Dispatcher.Invoke(new Action(() =>
+                {
+                    if (Visibility != Visibility.Visible)
+                    {
+                        double oldLeft = Left;
+                        Left = 20000;
+                        ShowWinAlfred();
+                        cmdDispatcher.DispatchCommand(new Query("qq"),false);
+                        HideWinAlfred();
+                        Left = oldLeft;
+                    }
+                }));
         }
 
         private void InitProgressbarAnimation()
