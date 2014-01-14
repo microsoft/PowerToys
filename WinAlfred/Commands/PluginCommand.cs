@@ -20,7 +20,7 @@ namespace WinAlfred.Commands
 
         }
 
-        public override void Dispatch(Query q)
+        public override void Dispatch(Query q,bool updateView)
         {
             PluginPair thirdPlugin = Plugins.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == q.ActionName);
             if (thirdPlugin != null && !string.IsNullOrEmpty(thirdPlugin.Metadata.ActionKeyword))
@@ -39,7 +39,7 @@ namespace WinAlfred.Commands
                             o.PluginDirectory = thirdPlugin.Metadata.PluginDirecotry;
                             o.OriginQuery = q;
                         });
-                        UpdateResultView(r);
+                        if(updateView) UpdateResultView(r);
                     }
                     catch (Exception queryException)
                     {

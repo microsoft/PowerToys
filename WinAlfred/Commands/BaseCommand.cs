@@ -10,7 +10,12 @@ namespace WinAlfred.Commands
     {
         private MainWindow window;
 
-        public abstract void Dispatch(Query query);
+        public void Dispatch(Query query)
+        {
+            Dispatch(query, true);
+        }
+
+        public abstract void Dispatch(Query query, bool updateView);
 
         //TODO:Ugly, we should subscribe events here, instead of just use usercontrol as the parameter
         protected BaseCommand(MainWindow window)

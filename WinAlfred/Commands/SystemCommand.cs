@@ -18,7 +18,7 @@ namespace WinAlfred.Commands
             systemPlugins = Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System).ToList();
         }
 
-        public override void Dispatch(Query query)
+        public override void Dispatch(Query query,bool updateView)
         {
             foreach (PluginPair pair in systemPlugins)
             {
@@ -31,7 +31,7 @@ namespace WinAlfred.Commands
                         result.PluginDirectory = pair1.Metadata.PluginDirecotry;
                         result.OriginQuery = query;
                     }
-                    if(results.Count > 0) UpdateResultView(results);
+                    if(results.Count > 0 && updateView) UpdateResultView(results);
                 });
             }
         }
