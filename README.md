@@ -22,3 +22,8 @@ Create workflow
 =========
 
 Currently, WinAlfred support using C# and Python to write your workflows. Please refer to [Create-workflows](https://github.com/qianlifeng/WinAlfred/wiki/Create-workflows) page for more infomation.
+
+Upload your workflow
+=========
+
+Share your workflows through <a href="http://winalfred.scottqian.com/">WinalfredWorkflows</a>. After you upload your workflow, other uses can download or search your workflow through `wf` command (this is a workflow management workflow, which is the one of the default workflows inside winalfred).
