@@ -74,7 +74,14 @@ namespace WinAlfred
                 {
                     if ((currentScore >= next.Result.Score && currentScore <= prev.Result.Score))
                     {
-                        location = index;
+                        if (currentScore == next.Result.Score)
+                        {
+                            location = index + 1;
+                        }
+                        else
+                        {
+                            location = index;
+                        }
                     }
                 }
             }
