@@ -231,7 +231,7 @@ namespace WinAlfred
                     if (result != null)
                     {
                         selectedRecords.AddSelect(result);
-                        if (!result.DontHideWinAlfredAfterAction)
+                        if (!result.DontHideWinAlfredAfterSelect)
                         {
                             HideWinAlfred();
                         }
@@ -250,7 +250,7 @@ namespace WinAlfred
                 //todo:this used be opened to users, it's they choise use it or not in thier workflows
                 list.ForEach(o =>
                 {
-                    o.Score += selectedRecords.GetSelectedCount(o);
+                    if(o.AutoAjustScore) o.Score += selectedRecords.GetSelectedCount(o);
                 });
                 resultCtrl.Dispatcher.Invoke(new Action(() =>
                 {

@@ -19,7 +19,7 @@ namespace WinAlfred.Plugin.System
         public int Score { get; set; }
     }
 
-    public class Programs : ISystemPlugin
+    public class Programs : BaseSystemPlugin
     {
         private List<string> indexDirectory = new List<string>();
         private List<string> indexPostfix = new List<string> { "lnk", "exe" };
@@ -32,7 +32,7 @@ namespace WinAlfred.Plugin.System
         const int CSIDL_COMMON_STARTMENU = 0x16;  // \Windows\Start Menu\Programs
         const int CSIDL_COMMON_PROGRAMS = 0x17;
 
-        public List<Result> Query(Query query)
+        protected override List<Result> QueryInternal(Query query)
         {
             if (string.IsNullOrEmpty(query.RawQuery) || query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
 
@@ -66,7 +66,7 @@ namespace WinAlfred.Plugin.System
             return false;
         }
 
-        public void Init(PluginInitContext context)
+        protected override void InitInternal(PluginInitContext context)
         {
             indexDirectory.Add(Environment.GetFolderPath(Environment.SpecialFolder.Programs));
 
@@ -125,22 +125,6 @@ namespace WinAlfred.Plugin.System
             string temp = app.Substring(app.LastIndexOf('\\') + 1);
             string name = temp.Substring(0, temp.LastIndexOf('.'));
             return name;
-        }
-
-        public string Name
-        {
-            get
-            {
-                return "Programs";
-            }
-        }
-
-        public string Description
-        {
-            get
-            {
-                return "get system programs";
-            }
         }
     }
 }

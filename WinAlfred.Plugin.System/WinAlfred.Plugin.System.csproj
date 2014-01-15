@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseSystemPlugin.cs" />
     <Compile Include="BrowserBookmarks.cs" />
     <Compile Include="CMD.cs" />
     <Compile Include="Common\ChineseToPinYin.cs" />

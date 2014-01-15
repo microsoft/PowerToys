@@ -31,7 +31,7 @@ namespace WinAlfred.Plugin.Fanyi
         private string translateURL = "http://openapi.baidu.com/public/2.0/bmt/translate";
         private string baiduKey = "SnPcDY3iH5jDbklRewkG2D2v";
 
-        static public string AssemblyDirectory
+        private static string AssemblyDirectory
         {
             get
             {
@@ -87,23 +87,6 @@ namespace WinAlfred.Plugin.Fanyi
             }
 
             return results;
-        }
-
-        public static string GetHtmlStr(string url)
-        {
-            try
-            {
-                WebRequest rGet = WebRequest.Create(url);
-                WebResponse rSet = rGet.GetResponse();
-                Stream s = rSet.GetResponseStream();
-                StreamReader reader = new StreamReader(s, Encoding.UTF8);
-                return reader.ReadToEnd();
-            }
-            catch (WebException)
-            {
-                //连接失败
-                return null;
-            }
         }
 
         public void Init(PluginInitContext context)

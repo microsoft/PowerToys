@@ -5,12 +5,12 @@ using System.Text;
 
 namespace WinAlfred.Plugin.System
 {
-    public class ThirdpartyPluginIndicator : ISystemPlugin
+    public class ThirdpartyPluginIndicator : BaseSystemPlugin
     {
         private List<PluginPair> allPlugins = new List<PluginPair>();
         private Action<string> changeQuery;
 
-        public List<Result> Query(Query query)
+        protected override List<Result> QueryInternal(Query query)
         {
             List<Result> results = new List<Result>();
             if (string.IsNullOrEmpty(query.RawQuery)) return results;
@@ -27,7 +27,7 @@ namespace WinAlfred.Plugin.System
                         Score = 50,
                         IcoPath = "Images/work.png",
                         Action = () => changeQuery(metadataCopy.ActionKeyword + " "),
-                        DontHideWinAlfredAfterAction = true
+                        DontHideWinAlfredAfterSelect = true
                     };
                     results.Add(result); 
                 }
@@ -35,25 +35,10 @@ namespace WinAlfred.Plugin.System
             return results;
         }
 
-        public void Init(PluginInitContext context)
+        protected override void InitInternal(PluginInitContext context)
         {
             allPlugins = context.Plugins;
             changeQuery = context.ChangeQuery;
-        }
-
-        public string Name {
-            get
-            {
-                return "ThirdpartyPluginIndicator";
-            }
-        }
-
-        public string Description
-        {
-            get
-            {
-                return "ThirdpartyPluginIndicator";
-            }
         }
 
 

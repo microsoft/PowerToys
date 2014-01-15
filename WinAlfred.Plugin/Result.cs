@@ -12,7 +12,12 @@ namespace WinAlfred.Plugin
         public Action Action { get; set; }
         public int Score { get; set; }
 
-        public bool DontHideWinAlfredAfterAction { get; set; }
+        public bool DontHideWinAlfredAfterSelect { get; set; }
+
+        /// <summary>
+        /// Auto add scores for MRU items
+        /// </summary>
+        public bool AutoAjustScore { get; set; }
 
         //todo: this should be controlled by system, not visible to users
         /// <summary>

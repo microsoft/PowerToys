@@ -7,9 +7,9 @@ using System.Windows.Forms;
 
 namespace WinAlfred.Plugin.System
 {
-    public class CMD : ISystemPlugin
+    public class CMD : BaseSystemPlugin
     {
-        public List<Result> Query(Query query)
+        protected override List<Result> QueryInternal(Query query)
         {
             List<Result> results = new List<Result>();
             if (query.RawQuery.StartsWith(">") && query.RawQuery.Length > 1)
@@ -38,24 +38,9 @@ namespace WinAlfred.Plugin.System
             return results;
         }
 
-        public void Init(PluginInitContext context)
+        protected override void InitInternal(PluginInitContext context)
         {
         }
 
-        public string Name
-        {
-            get
-            {
-                return "CMD";
-            }
-        }
-
-        public string Description
-        {
-            get
-            {
-                return "Execute shell commands.";
-            }
-        }
     }
 }
