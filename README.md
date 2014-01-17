@@ -26,4 +26,4 @@ Currently, WinAlfred support using C# and Python to write your workflows. Please
 Share workflow
 =========
 
-Share your workflows through <a href="http://winalfred.scottqian.com/">WinAlfredWorkflows</a>. After you upload your workflow, other uses can download or search your workflow through `wf` command (this is a workflow for workflow management , which is the one of the default workflows inside winalfred).
+Share your workflows through <a href="http://winalfred.scottqian.com/">WinAlfredWorkflows</a>. After you upload your workflow, other uses can download or search your workflow through `wf` command (this is a workflow for workflow management , which is one of the default workflows inside winalfred).
