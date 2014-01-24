@@ -20,9 +20,8 @@ namespace WinAlfred.PluginLoader
             {
                 try
                 {
-                    byte[] buffer = System.IO.File.ReadAllBytes(metadata.ExecuteFilePath);
-                    Assembly asm = Assembly.Load(buffer);
-                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && o.GetInterfaces().Contains(typeof(IPlugin)) || o.GetInterfaces().Contains(typeof(ISystemPlugin))).ToList();
+                    Assembly asm = Assembly.LoadFile(metadata.ExecuteFilePath);
+                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract && (o.BaseType == typeof(BaseSystemPlugin) || o.GetInterfaces().Contains(typeof(IPlugin)))).ToList();
                     if (types.Count == 0)
                     {
                         Log.Error(string.Format("Cound't load plugin {0}: didn't find the class who implement IPlugin",
@@ -58,7 +57,7 @@ namespace WinAlfred.PluginLoader
 
         private void InitPlugin(List<PluginPair> plugins)
         {
-      
+
         }
     }
 }

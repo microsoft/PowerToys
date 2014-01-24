@@ -12,7 +12,7 @@ using WinAlfred.Plugin.System.Common;
 
 namespace WinAlfred.Plugin.System
 {
-    public class BrowserBookmarks : ISystemPlugin
+    public class BrowserBookmarks : BaseSystemPlugin
     {
 
         private List<Bookmark> bookmarks = new List<Bookmark>();
@@ -21,7 +21,7 @@ namespace WinAlfred.Plugin.System
         static extern bool SHGetSpecialFolderPath(IntPtr hwndOwner, [Out] StringBuilder lpszPath, int nFolder, bool fCreate);
         const int CSIDL_LOCAL_APPDATA = 0x001c;
 
-        public List<Result> Query(Query query)
+        protected override List<Result> QueryInternal(Query query)
         {
             if (string.IsNullOrEmpty(query.RawQuery) || query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
 
@@ -55,7 +55,7 @@ namespace WinAlfred.Plugin.System
             return false;
         }
 
-        public void Init(PluginInitContext context)
+        protected override void InitInternal(PluginInitContext context)
         {
             LoadChromeBookmarks();
         }
@@ -113,22 +113,6 @@ namespace WinAlfred.Plugin.System
         {
             Regex reg = new Regex(@"(?i)\\[uU]([0-9a-f]{4})");
             return reg.Replace(dataStr, m => ((char)Convert.ToInt32(m.Groups[1].Value, 16)).ToString());
-        }
-
-        public string Name
-        {
-            get
-            {
-                return "BrowserBookmark";
-            }
-        }
-
-        public string Description
-        {
-            get
-            {
-                return "BrowserBookmark";
-            }
         }
     }
 

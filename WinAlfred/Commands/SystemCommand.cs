@@ -30,6 +30,7 @@ namespace WinAlfred.Commands
                     {
                         result.PluginDirectory = pair1.Metadata.PluginDirecotry;
                         result.OriginQuery = query;
+                        result.AutoAjustScore = true;
                     }
                     if(results.Count > 0 && updateView) UpdateResultView(results);
                 });

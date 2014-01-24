@@ -7,14 +7,14 @@ using System.Text;
 
 namespace WinAlfred.Plugin.System
 {
-    public class DirectoryIndicator : ISystemPlugin
+    public class DirectoryIndicator : BaseSystemPlugin
     {
-        public List<Result> Query(Query query)
+        protected override List<Result> QueryInternal(Query query)
         {
             List<Result> results = new List<Result>();
             if (string.IsNullOrEmpty(query.RawQuery)) return results;
 
-            if (CheckIfDirectory(query.RawQuery))
+            if (Directory.Exists(query.RawQuery))
             {
                 Result result = new Result
                 {
@@ -30,29 +30,9 @@ namespace WinAlfred.Plugin.System
             return results;
         }
 
-        private bool CheckIfDirectory(string path)
-        {
-            return Directory.Exists(path);
-        }
-
-        public void Init(PluginInitContext context)
+        protected override void InitInternal(PluginInitContext context)
         {
         }
 
-        public string Name
-        {
-            get
-            {
-                return "DirectoryIndicator";
-            }
-        }
-
-        public string Description
-        {
-            get
-            {
-                return "DirectoryIndicator";
-            }
-        }
     }
 }

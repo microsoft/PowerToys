@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace WinAlfred.Plugin.System
 {
-    public class Sys : ISystemPlugin
+    public class Sys : BaseSystemPlugin
     {
         List<Result> availableResults = new List<Result>();
 
@@ -23,7 +23,7 @@ namespace WinAlfred.Plugin.System
         [DllImport("user32")]
         public static extern void LockWorkStation();
 
-        public List<Result> Query(Query query)
+        protected override List<Result> QueryInternal(Query query)
         {
             if (string.IsNullOrEmpty(query.RawQuery) || query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
 
@@ -39,7 +39,7 @@ namespace WinAlfred.Plugin.System
             return results;
         }
 
-        public void Init(PluginInitContext context)
+        protected override void InitInternal(PluginInitContext context)
         {
             availableResults.Add(new Result
             {
@@ -73,22 +73,6 @@ namespace WinAlfred.Plugin.System
                 IcoPath = "Images\\ico.png",
                 Action = () => context.CloseApp()
             });
-        }
-
-        public string Name
-        {
-            get
-            {
-                return "sys";
-            }
-        }
-
-        public string Description
-        {
-            get
-            {
-                return "provide system commands";
-            }
         }
     }
 }

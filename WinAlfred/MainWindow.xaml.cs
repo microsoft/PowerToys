@@ -231,7 +231,7 @@ namespace WinAlfred
                     if (result != null)
                     {
                         selectedRecords.AddSelect(result);
-                        if (!result.DontHideWinAlfredAfterAction)
+                        if (!result.DontHideWinAlfredAfterSelect)
                         {
                             HideWinAlfred();
                         }
@@ -247,13 +247,14 @@ namespace WinAlfred
             progressBar.Dispatcher.Invoke(new Action(StopProgress));
             if (list.Count > 0)
             {
+                //todo:this used be opened to users, it's they choise use it or not in thier workflows
                 list.ForEach(o =>
                 {
-                    o.Score += selectedRecords.GetSelectedCount(o);
+                    if(o.AutoAjustScore) o.Score += selectedRecords.GetSelectedCount(o);
                 });
                 resultCtrl.Dispatcher.Invoke(new Action(() =>
                 {
-                    List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).OrderByDescending(o => o.Score).ToList();
+                    List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).ToList();
                     resultCtrl.AddResults(l);
                 }));
             }
