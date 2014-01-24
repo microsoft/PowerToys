@@ -1,41 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Web;
+using Microsoft.Win32;
 
 namespace WinAlfred.Plugin.Doc
 {
     public class Main : IPlugin
     {
-        static public string AssemblyDirectory
-        {
-            get
-            {
-                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-                UriBuilder uri = new UriBuilder(codeBase);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
-            }
-        }
+        private List<Doc> docs = new List<Doc>();
+        DocViewFrm frm = new DocViewFrm();
+        private string docsetBasePath;
 
         public List<Result> Query(Query query)
         {
-            string path = @"D:\Personal\WinAlfred\WinAlfred\bin\Debug\Plugins\Doc\Docset\jQuery.docset\Contents\Resources\docSet.dsidx";
+            List<Result> results = new List<Result>();
             if (query.ActionParameters.Count == 0)
             {
-                //todo:return available docsets name
-                return new List<Result>();
+                results.Add(new Result()
+                {
+                    Title = "Current supported docs:"
+                });
+                results.AddRange(docs.Select(o => new Result()
+                {
+                    Title = o.Name.Replace(".docset", ""),
+                    IcoPath = o.IconPath
+                }).ToList());
+                return results;
             }
-            return QuerySqllite(path, query.ActionParameters[0]);
+
+            foreach (Doc doc in docs)
+            {
+                results.AddRange(QuerySqllite(doc, query.ActionParameters[0]));
+            }
+
+            return results;
         }
 
         public void Init(PluginInitContext context)
         {
+
             //todo:move to common place
-            var otherCompanyDlls = new DirectoryInfo(AssemblyDirectory + "\\Plugins\\Doc").GetFiles("*.dll");
+            var otherCompanyDlls = new DirectoryInfo(context.PluginMetadata.PluginDirecotry).GetFiles("*.dll");
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
                 {
                     var dll = otherCompanyDlls.FirstOrDefault(fi =>
@@ -57,39 +69,124 @@ namespace WinAlfred.Plugin.Doc
 
                     return Assembly.LoadFile(dll.FullName);
                 };
+
+            docsetBasePath = context.PluginMetadata.PluginDirecotry + @"Docset";
+            foreach (string path in Directory.GetDirectories(docsetBasePath))
+            {
+                string name = path.Substring(path.LastIndexOf('\\') + 1);
+                string dbPath = path + @"\Contents\Resources\docSet.dsidx";
+                string dbType = CheckTableExists("searchIndex", dbPath) ? "DASH" : "ZDASH";
+                docs.Add(new Doc
+                {
+                    Name = name,
+                    DBPath = dbPath,
+                    DBType = dbType,
+                    IconPath = TryGetIcon(name, path)
+                });
+            }
         }
 
-        public List<Result> QuerySqllite(string path, string key)
+        private string TryGetIcon(string name, string path)
         {
-            SQLiteConnection conn = null;
-            string dbPath = "Data Source =" + path;
-            conn = new SQLiteConnection(dbPath);
+            string url = "https://raw.github.com/jkozera/zeal/master/zeal/icons/" +
+                         name.Replace(".docset", "").Replace(" ", "_") + ".png";
+            string imagePath = path + "\\icon.png";
+            if (!File.Exists(imagePath))
+            {
+                HttpWebRequest lxRequest = (HttpWebRequest)WebRequest.Create(url);
+                // returned values are returned as a stream, then read into a string
+                String lsResponse = string.Empty;
+                using (HttpWebResponse lxResponse = (HttpWebResponse)lxRequest.GetResponse())
+                {
+                    using (BinaryReader reader = new BinaryReader(lxResponse.GetResponseStream()))
+                    {
+                        Byte[] lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
+                        using (FileStream lxFS = new FileStream(imagePath, FileMode.Create))
+                        {
+                            lxFS.Write(lnByte, 0, lnByte.Length);
+                        }
+                    }
+                }
+
+            }
+            return imagePath;
+        }
+
+        private List<Result> QuerySqllite(Doc doc, string key)
+        {
+            string dbPath = "Data Source =" + doc.DBPath;
+            SQLiteConnection conn = new SQLiteConnection(dbPath);
             conn.Open();
-            string sql = "select * from searchIndex where name like '%" + key + "%'";
+            string sql = GetSqlByDocDBType(doc.DBType).Replace("{0}", key);
             SQLiteCommand cmdQ = new SQLiteCommand(sql, conn);
             SQLiteDataReader reader = cmdQ.ExecuteReader();
 
             List<Result> results = new List<Result>();
             while (reader.Read())
             {
-                string name = reader.GetString(1);
-                string type = reader.GetString(2);
-                string docPath = reader.GetString(3);
+                string name = reader.GetString(reader.GetOrdinal("name"));
+                string docPath = reader.GetString(reader.GetOrdinal("path"));
 
                 results.Add(new Result
                     {
                         Title = name,
-                        SubTitle = AssemblyDirectory + "\\Plugins\\Doc\\Docset\\" +  docPath,
+                        SubTitle = doc.Name.Replace(".docset", ""),
+                        IcoPath = doc.IconPath,
                         Action = () =>
-                            {
-                                DocViewFrm frm = new DocViewFrm();
-                                frm.ShowDoc(AssemblyDirectory + @"\Plugins\Doc\Docset\jQuery.docset\Contents\Resources\Documents\" + docPath);
-                            }
+                        {
+                            string url = string.Format(@"{0}\{1}\Contents\Resources\Documents\{2}#{3}", docsetBasePath,
+                                doc.Name, docPath, name);
+
+                            //frm.ShowDoc(url);
+                            string browser = GetDefaultBrowserPath();
+                            Process.Start(browser, String.Format("\"file:///{0}\"", url));
+                        }
                     });
             }
+
             conn.Close();
 
             return results;
+        }
+
+        private static string GetDefaultBrowserPath()
+        {
+            string key = @"HTTP\shell\open\command";
+            using (RegistryKey registrykey = Registry.ClassesRoot.OpenSubKey(key, false))
+            {
+                if (registrykey != null) return ((string)registrykey.GetValue(null, null)).Split('"')[1];
+            }
+            return null;
+        }
+
+        private string GetSqlByDocDBType(string type)
+        {
+            string sql = string.Empty;
+            if (type == "DASH")
+            {
+                sql = "select * from searchIndex where name like '%{0}%' order by name asc, path asc limit 30";
+            }
+            if (type == "ZDASH")
+            {
+                sql = @"select ztokenname as name, zpath as path from ztoken 
+join ztokenmetainformation on ztoken.zmetainformation = ztokenmetainformation.z_pk
+join zfilepath on ztokenmetainformation.zfile = zfilepath.z_pk
+where (ztokenname like '%{0}%') order by lower(ztokenname) asc, zpath asc limit 30";
+            }
+
+            return sql;
+        }
+
+        private bool CheckTableExists(string table, string path)
+        {
+            string dbPath = "Data Source =" + path;
+            SQLiteConnection conn = new SQLiteConnection(dbPath);
+            conn.Open();
+            string sql = "SELECT name FROM sqlite_master WHERE type='table' AND name='" + table + "';";
+            SQLiteCommand cmdQ = new SQLiteCommand(sql, conn);
+            object obj = cmdQ.ExecuteScalar();
+            conn.Close();
+            return obj != null;
         }
     }
 }

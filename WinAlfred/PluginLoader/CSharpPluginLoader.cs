@@ -51,13 +51,7 @@ namespace WinAlfred.PluginLoader
 
             }
 
-            InitPlugin(plugins);
             return plugins;
-        }
-
-        private void InitPlugin(List<PluginPair> plugins)
-        {
-
         }
     }
 }
