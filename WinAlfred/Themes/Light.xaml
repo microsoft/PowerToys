@@ -1,0 +1,43 @@
+﻿<ResourceDictionary  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style x:Key="QueryBoxStyle" TargetType="{x:Type TextBox}">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontSize" Value="22"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="AllowDrop" Value="true"/>
+        <Setter Property="Height" Value="46"/>
+        <Setter Property="Background" Value="#D1D1D1"/>
+        <Setter Property="Foreground" Value="#000000" />
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
+    </Style>
+    <Style x:Key="WindowStyle" TargetType="{x:Type Window}" >
+        <Setter Property="Background" Value="#EBEBEB"></Setter>
+        <Setter Property="Width" Value="520"></Setter>
+        <Setter Property="Height" Value="80"></Setter>
+    </Style>
+    <Style x:Key="GridStyle" TargetType="{x:Type Grid}" >
+        <Setter Property="Margin" Value="8 10 8 8"></Setter>
+    </Style>
+    <Style x:Key="PendingLineStyle" TargetType="{x:Type Line}" >
+        <Setter Property="Stroke" Value="Blue"></Setter>
+    </Style>
+
+    <!-- Item Style -->
+    <Style x:Key="ItemTitleStyle" TargetType="{x:Type TextBlock}" >
+        <Setter Property="Foreground" Value="#1A191A"></Setter>
+        <Setter Property="FontSize" Value="16"></Setter>
+        <Setter Property="FontWeight" Value="Medium"></Setter>
+    </Style>
+    <Style x:Key="ItemSubTitleStyle" TargetType="{x:Type TextBlock}" >
+        <Setter Property="Foreground"  Value="#807F80"></Setter>
+    </Style>
+    <Style x:Key="ItemStyle" TargetType="{x:Type UserControl}" >
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Selected}" Value="true">
+                <Setter Property="Background" Value="#D1D1D1"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

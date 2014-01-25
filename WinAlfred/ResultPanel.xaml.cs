@@ -153,6 +153,7 @@ namespace WinAlfred
 
                     double scrollPosition = 0;
                     Point newItemBottomPoint = resultItemControl.TranslatePoint(new Point(0, resultItemControl.ActualHeight), pnlContainer);
+                    scrollPosition = newItemBottomPoint.Y;
                     if (index == 0)
                     {
                         sv.ScrollToTop();
@@ -167,7 +168,9 @@ namespace WinAlfred
                     if (index < oldIndex)
                     {
                         //move up and old item is at the top of the scroll view 
-                        if (newItemBottomPoint.Y - sv.VerticalOffset == 0)
+                        var scrollPostionY = sv.VerticalOffset - sv.VerticalOffset%resultItemControl.ActualHeight +
+                                             resultItemControl.ActualHeight;
+                        if (newItemBottomPoint.Y - scrollPostionY == 0)
                         {
                             scrollPosition = sv.VerticalOffset - resultItemControl.ActualHeight;
                         }
@@ -179,7 +182,8 @@ namespace WinAlfred
                     else
                     {
                         //move down and old item is at the bottom of scroll view
-                        if (sv.ActualHeight + sv.VerticalOffset == newItemBottomPoint.Y - resultItemControl.ActualHeight)
+                        double scrollPostionY = (sv.ActualHeight + sv.VerticalOffset) - (sv.ActualHeight + sv.VerticalOffset)%resultItemControl.ActualHeight;
+                        if (scrollPostionY  == newItemBottomPoint.Y - resultItemControl.ActualHeight)
                         {
                             scrollPosition = newItemBottomPoint.Y - sv.ActualHeight;
                         }

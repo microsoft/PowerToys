@@ -34,7 +34,8 @@ namespace WinAlfred.PluginLoader
                         CloseApp = window.CloseApp,
                         HideApp = window.HideApp,
                         ShowApp = () => window.ShowApp(),
-                        ShowMsg = (title, subTitle, iconPath) => window.ShowMsg(title, subTitle, iconPath)
+                        ShowMsg = (title, subTitle, iconPath) => window.ShowMsg(title, subTitle, iconPath),
+                        OpenSettingDialog = ()=> window.OpenSettingDialog()
                     }));
                 }
             }

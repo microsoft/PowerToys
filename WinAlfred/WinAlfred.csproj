@@ -116,6 +116,7 @@
     <Compile Include="Helper\DwmDropShadow.cs" />
     <Compile Include="Helper\KeyboardHook.cs" />
     <Compile Include="Helper\Log.cs" />
+    <Compile Include="Helper\Settings.cs" />
     <Compile Include="Helper\WinAlfredException.cs" />
     <Compile Include="Msg.xaml.cs">
       <DependentUpon>Msg.xaml</DependentUpon>
@@ -126,6 +127,7 @@
     <Compile Include="PluginLoader\Plugins.cs" />
     <Compile Include="PluginLoader\PythonPluginLoader.cs" />
     <Compile Include="PluginLoader\PythonPluginWrapper.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="ResultPanel.xaml.cs">
       <DependentUpon>ResultPanel.xaml</DependentUpon>
     </Compile>
@@ -133,6 +135,9 @@
       <DependentUpon>ResultItem.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helper\SelectedRecords.cs" />
+    <Compile Include="SettingWindow.xaml.cs">
+      <DependentUpon>SettingWindow.xaml</DependentUpon>
+    </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -156,6 +161,18 @@
     <Page Include="ResultItem.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Light.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Default.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -201,9 +218,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\ico.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\app.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -235,11 +249,24 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\app.png" />
+    <Resource Include="Images\bookmark.png" />
+    <Resource Include="Images\close.png" />
+    <Resource Include="Images\cmd.png" />
+    <Resource Include="Images\enter.png" />
+    <Resource Include="Images\exit.png" />
+    <Resource Include="Images\folder.png" />
+    <Resource Include="Images\lock.png" />
+    <Resource Include="Images\logoff.png" />
+    <Resource Include="Images\work.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy  /Y  $(ProjectDir)Images\*.* $(SolutionDir)WinAlfred\bin\Debug\Images\
-xcopy  /Y  $(ProjectDir)app.ico $(SolutionDir)WinAlfred\bin\Debug\</PostBuildEvent>
+    <PostBuildEvent>xcopy  /Y  $(ProjectDir)Images\*.* $(TargetDir)Images\
+xcopy  /Y  $(ProjectDir)app.ico $(TargetDir)
+xcopy  /Y  $(ProjectDir)Themes\*.* $(TargetDir)Themes\</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

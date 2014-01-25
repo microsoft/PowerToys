@@ -4,56 +4,9 @@
             >
     <Application.Resources>
         <ResourceDictionary>
-            <Style x:Key="defaultQueryBoxStyle" BasedOn="{x:Null}" TargetType="{x:Type TextBox}">
-                <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="FontSize" Value="22"/>
-                <Setter Property="FontWeight" Value="Medium"/>
-                <Setter Property="AllowDrop" Value="true"/>
-                <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="Margin" Value="10 10 10 5"/>
-                <Setter Property="Height" Value="36"/>
-                <Setter Property="VerticalContentAlignment" Value="Center"/>
-                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="{x:Type TextBox}">
-                            <Border x:Name="border" Background="Transparent" BorderBrush="Transparent" CornerRadius="3" BorderThickness="0">
-                                <ScrollViewer x:Name="PART_ContentHost" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsFocused" Value="True">
-                                    <Setter Property="BorderBrush" TargetName="border" Value="Silver"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-            <Style x:Key="windowShow" TargetType="Window">
-                <Setter Property="Border.RenderTransform">
-                    <Setter.Value>
-                        <ScaleTransform CenterX="50" CenterY="50" ScaleX="1" ScaleY="1" />
-                    </Setter.Value>
-                </Setter>
-                <Style.Triggers>
-                    <EventTrigger RoutedEvent="Window.Loaded">
-                        <EventTrigger.Actions>
-                            <BeginStoryboard >
-                                <Storyboard>
-                                    <DoubleAnimation Duration="0:0:0.5" Storyboard.TargetProperty="RenderTransform.ScaleX" 
-                                           From="1.0" To="1.1" 
-                                           AutoReverse="True"/>
-                                    <DoubleAnimation Duration="0:0:0.5" Storyboard.TargetProperty="RenderTransform.ScaleY" 
-                                           From="1.0" To="1.1" 
-                                           AutoReverse="True"/>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger.Actions>
-                    </EventTrigger>
-                </Style.Triggers>
-            </Style>
-
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Default.xaml"></ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

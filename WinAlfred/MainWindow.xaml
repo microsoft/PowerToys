@@ -1,8 +1,7 @@
 ﻿<Window x:Class="WinAlfred.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:winAlfred="clr-namespace:WinAlfred"
-        Title="WinAlfred" Height="80" Width="525" 
-        Background="#ebebeb"
+        Title="WinAlfred"
         Topmost="True"
         Loaded="MainWindow_OnLoaded"
         SizeToContent="Height"
@@ -10,17 +9,17 @@
         WindowStyle="None"
         WindowStartupLocation="CenterScreen"
         ShowInTaskbar="False"
-        Icon="Images\ico.png"
+        Style="{DynamicResource WindowStyle}"
+        Icon="Images\app.png"
         >
-    <Grid>
+    <Grid Style="{DynamicResource GridStyle}">
         <Grid.RowDefinitions>
             <RowDefinition ></RowDefinition>
-            <RowDefinition Height="2"></RowDefinition>
+            <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
-        <TextBox AllowDrop="True" Style="{DynamicResource defaultQueryBoxStyle}" Grid.Row="0"  x:Name="tbQuery" PreviewKeyDown="TbQuery_OnPreviewKeyDown" TextChanged="TextBoxBase_OnTextChanged" />
-        <Line Stroke="Blue" x:Name="progressBar" Y1="0" Y2="0" X2="100" Grid.Row="1" Height="2" StrokeThickness="1"></Line>
-        <winAlfred:ResultPanel x:Name="resultCtrl" Grid.Row="2" Margin="10 0 10 0" />
+        <TextBox AllowDrop="True" Style="{DynamicResource QueryBoxStyle}" Grid.Row="0"  x:Name="tbQuery" PreviewKeyDown="TbQuery_OnPreviewKeyDown" TextChanged="TextBoxBase_OnTextChanged" />
+        <Line Style="{DynamicResource PendingLineStyle}" x:Name="progressBar" Y1="0" Y2="0" X2="100" Grid.Row="1" Height="2" StrokeThickness="1"></Line>
+        <winAlfred:ResultPanel x:Name="resultCtrl" Grid.Row="2"/>
     </Grid>
 </Window>
-

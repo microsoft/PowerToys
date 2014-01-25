@@ -5,8 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignWidth="400"
+             Style="{DynamicResource ItemStyle}"
              Height="50">
-    <Grid  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5">
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="32"></ColumnDefinition>
             <ColumnDefinition/>
@@ -18,8 +19,8 @@
                 <RowDefinition Height="23"></RowDefinition>
                 <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
-            <TextBlock x:Name="tbTitle" FontSize="16" Foreground="#37392c" FontWeight="Medium">Title</TextBlock>
-            <TextBlock Grid.Row="1" Foreground="#8e94a4" x:Name="tbSubTitle">sdfdsf</TextBlock>
+            <TextBlock Style="{DynamicResource ItemTitleStyle}" x:Name="tbTitle">Title</TextBlock>
+            <TextBlock Style="{DynamicResource ItemSubTitleStyle}" Grid.Row="1" x:Name="tbSubTitle">sub title</TextBlock>
         </Grid>
         <DockPanel Grid.Column="2" Visibility="Hidden">
             <Image x:Name="img" Source="Images\ctrl.png" VerticalAlignment="Center"/>

@@ -11,6 +11,7 @@ using WinAlfred.Commands;
 using WinAlfred.Helper;
 using WinAlfred.Plugin;
 using WinAlfred.PluginLoader;
+using Application = System.Windows.Application;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 
@@ -34,6 +35,8 @@ namespace WinAlfred
             resultCtrl.resultItemChangedEvent += resultCtrl_resultItemChangedEvent;
             ThreadPool.SetMaxThreads(30, 10);
             InitProgressbarAnimation();
+
+            ChangeStyles(Settings.Instance.Theme);
         }
 
         private void WakeupApp()
@@ -50,7 +53,7 @@ namespace WinAlfred
                         double oldLeft = Left;
                         Left = 20000;
                         ShowWinAlfred();
-                        cmdDispatcher.DispatchCommand(new Query("qq"),false);
+                        cmdDispatcher.DispatchCommand(new Query("qq"), false);
                         HideWinAlfred();
                         Left = oldLeft;
                     }
@@ -84,8 +87,8 @@ namespace WinAlfred
 
         private void resultCtrl_resultItemChangedEvent()
         {
-            Height = resultCtrl.pnlContainer.ActualHeight + tbQuery.Height + tbQuery.Margin.Top + tbQuery.Margin.Bottom;
-            resultCtrl.Margin = resultCtrl.GetCurrentResultCount() > 0 ? new Thickness { Bottom = 10, Left = 10, Right = 10 } : new Thickness { Bottom = 0, Left = 10, Right = 10 };
+            //Height = resultCtrl.pnlContainer.ActualHeight + tbQuery.Height + tbQuery.Margin.Top + tbQuery.Margin.Bottom;
+            resultCtrl.Margin = resultCtrl.GetCurrentResultCount() > 0 ? new Thickness { Top = 10 } : new Thickness { Top = 0 };
         }
 
         private void OnHotKey(object sender, KeyPressedEventArgs e)
@@ -250,7 +253,7 @@ namespace WinAlfred
                 //todo:this used be opened to users, it's they choise use it or not in thier workflows
                 list.ForEach(o =>
                 {
-                    if(o.AutoAjustScore) o.Score += selectedRecords.GetSelectedCount(o);
+                    if (o.AutoAjustScore) o.Score += selectedRecords.GetSelectedCount(o);
                 });
                 resultCtrl.Dispatcher.Invoke(new Action(() =>
                 {
@@ -258,6 +261,17 @@ namespace WinAlfred
                     resultCtrl.AddResults(l);
                 }));
             }
+        }
+
+        public void ChangeStyles(string themeName)
+        {
+            ResourceDictionary dict = new ResourceDictionary
+            {
+                Source = new Uri("pack://application:,,,/Themes/" + themeName + ".xaml")
+            };
+
+            Application.Current.Resources.MergedDictionaries.Clear();
+            Application.Current.Resources.MergedDictionaries.Add(dict);
         }
 
         #region Public API
@@ -292,7 +306,14 @@ namespace WinAlfred
             m.Show(title, subTitle, iconPath);
         }
 
+        public void OpenSettingDialog()
+        {
+            SettingWidow s = new SettingWidow(this);
+            s.Show();
+        }
+
         #endregion
+
 
     }
 }

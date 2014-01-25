@@ -1,16 +1,18 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using WinAlfred.Annotations;
 using WinAlfred.Plugin;
 using Brush = System.Windows.Media.Brush;
 
 namespace WinAlfred
 {
-    public partial class ResultItem : UserControl
+    public partial class ResultItem : UserControl, INotifyPropertyChanged
     {
         private bool selected;
 
@@ -25,17 +27,16 @@ namespace WinAlfred
             set
             {
                 selected = value;
-                BrushConverter bc = new BrushConverter();
-                Background = selected ? (Brush)(bc.ConvertFrom("#d1d1d1")) : (Brush)(bc.ConvertFrom("#ebebeb"));
                 if (selected)
                 {
                     img.Visibility = Visibility.Visible;
-                    img.Source = new BitmapImage(new Uri(Directory.GetCurrentDirectory()+"\\Images\\enter.png"));
+                    img.Source = new BitmapImage(new Uri(Directory.GetCurrentDirectory() + "\\Images\\enter.png"));
                 }
                 else
                 {
                     img.Visibility = Visibility.Hidden;
                 }
+                OnPropertyChanged("Selected");
             }
         }
 
@@ -75,13 +76,22 @@ namespace WinAlfred
             }
         }
 
-        public static ImageSource GetIcon(string fileName)
+        private static ImageSource GetIcon(string fileName)
         {
             Icon icon = Icon.ExtractAssociatedIcon(fileName);
             return System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(
                         icon.Handle,
                         new Int32Rect(0, 0, icon.Width, icon.Height),
                         BitmapSizeOptions.FromEmptyOptions());
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
