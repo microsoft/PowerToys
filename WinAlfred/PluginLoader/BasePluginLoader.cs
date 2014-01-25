@@ -42,6 +42,9 @@ namespace WinAlfred.PluginLoader
 
         private static void ParseThirdPartyPlugins()
         {
+            if (!Directory.Exists(PluginPath))
+                Directory.CreateDirectory(PluginPath);
+
             string[] directories = Directory.GetDirectories(PluginPath);
             foreach (string directory in directories)
             {

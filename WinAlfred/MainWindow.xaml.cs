@@ -41,9 +41,15 @@ namespace WinAlfred
             ThreadPool.SetMaxThreads(30, 10);
             InitProgressbarAnimation();
 
+            try
+            {
+                ChangeStyles(Settings.Instance.Theme);
 
-            ChangeStyles(Settings.Instance.Theme);
-
+            }
+            catch (System.IO.IOException)
+            {
+                ChangeStyles(Settings.Instance.Theme = "Default");
+            }
         }
 
         private void WakeupApp()

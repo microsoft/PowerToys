@@ -10,19 +10,20 @@ namespace WinAlfred.Helper
     {
         private string configPath = Directory.GetCurrentDirectory() + "\\config.ini";
         private static readonly Settings settings = new Settings();
-        IniParser parser = new IniParser("config.ini");
+        IniParser parser;
 
         public string Theme { get; set; }
         public bool ReplaceWinR { get; set; }
 
         private Settings()
         {
+            if (!File.Exists(configPath)) File.Create(configPath);
+            parser = new IniParser(configPath);
             LoadSettings();
         }
 
         private void LoadSettings()
         {
-            if (!File.Exists(configPath)) File.Create(configPath);
             Theme = parser.GetSetting("ui", "theme");
 
             string replaceWinRStr = parser.GetSetting("hotkey", "replaceWinR");
