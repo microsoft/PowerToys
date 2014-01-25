@@ -6,8 +6,15 @@
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Height="407.447" Width="843.989">
-    <Grid>
-        <TextBlock Text="Theme:"/>
-        <ComboBox x:Name="themeComboBox" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Left" Margin="59.83,0,0,0" VerticalAlignment="Top" Width="120"/>
-    </Grid>
+    <StackPanel Orientation="Vertical" Margin="10">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Theme:" />
+            <ComboBox x:Name="themeComboBox" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <CheckBox x:Name="cbReplaceWinR" />
+            <TextBlock Text="Replace Win+R:" />
+        </StackPanel>
+    </StackPanel>
+
 </Window>

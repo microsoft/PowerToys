@@ -41,6 +41,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -77,6 +78,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Accessibility" />
+    <Reference Include="InputSimulator">
+      <HintPath>C:\Users\Scott\Desktop\InputSimulator.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.3\lib\net35-full\log4net.dll</HintPath>
     </Reference>
@@ -114,10 +118,12 @@
     <Compile Include="Commands\SystemCommand.cs" />
     <Compile Include="DispatcherExtensions.cs" />
     <Compile Include="Helper\DwmDropShadow.cs" />
+    <Compile Include="Helper\GlobalKeyboardHook.cs" />
     <Compile Include="Helper\KeyboardHook.cs" />
     <Compile Include="Helper\Log.cs" />
     <Compile Include="Helper\Settings.cs" />
     <Compile Include="Helper\WinAlfredException.cs" />
+    <Compile Include="KeyboardListener.cs" />
     <Compile Include="Msg.xaml.cs">
       <DependentUpon>Msg.xaml</DependentUpon>
     </Compile>

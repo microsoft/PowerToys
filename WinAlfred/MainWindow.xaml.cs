@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -26,6 +28,9 @@ namespace WinAlfred
         private bool queryHasReturn = false;
         SelectedRecords selectedRecords = new SelectedRecords();
 
+        private KeyboardListener keyboardListener = new KeyboardListener();
+        private bool WinRStroked = false;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -36,7 +41,9 @@ namespace WinAlfred
             ThreadPool.SetMaxThreads(30, 10);
             InitProgressbarAnimation();
 
+
             ChangeStyles(Settings.Instance.Theme);
+
         }
 
         private void WakeupApp()
@@ -45,7 +52,7 @@ namespace WinAlfred
             //This is caused by the Virtual Mermory Page Mechanisam. So, our solution is execute some codes in every min
             //which may prevent sysetem uninstall memory from RAM to disk.
 
-            System.Timers.Timer t = new System.Timers.Timer(1000 * 60 * 3) { AutoReset = true, Enabled = true };
+            System.Timers.Timer t = new System.Timers.Timer(1000 * 60 * 5) { AutoReset = true, Enabled = true };
             t.Elapsed += (o, e) => Dispatcher.Invoke(new Action(() =>
                 {
                     if (Visibility != Visibility.Visible)
@@ -87,8 +94,7 @@ namespace WinAlfred
 
         private void resultCtrl_resultItemChangedEvent()
         {
-            //Height = resultCtrl.pnlContainer.ActualHeight + tbQuery.Height + tbQuery.Margin.Top + tbQuery.Margin.Bottom;
-            resultCtrl.Margin = resultCtrl.GetCurrentResultCount() > 0 ? new Thickness { Top = 10 } : new Thickness { Top = 0 };
+            resultCtrl.Margin = resultCtrl.GetCurrentResultCount() > 0 ? new Thickness { Top = grid.Margin.Top } : new Thickness { Top = 0 };
         }
 
         private void OnHotKey(object sender, KeyPressedEventArgs e)
@@ -153,8 +159,9 @@ namespace WinAlfred
         {
             Show();
             Activate();
-            tbQuery.Focus();
             tbQuery.SelectAll();
+            Focus();
+            tbQuery.Focus();
         }
 
         public void ParseArgs(string[] args)
@@ -200,6 +207,9 @@ namespace WinAlfred
 
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
+            Left = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
+            Top = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 3;
+
             Plugins.Init(this);
             cmdDispatcher = new Command(this);
             InitialTray();
@@ -208,6 +218,32 @@ namespace WinAlfred
             WakeupApp();
             //var engine = new Jurassic.ScriptEngine();
             //MessageBox.Show(engine.Evaluate("5 * 10 + 2").ToString());
+            keyboardListener.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
+        }
+
+        private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)
+        {
+            if (Settings.Instance.ReplaceWinR)
+            {
+                if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
+                {
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        resultCtrl.Clear();
+                        ShowWinAlfred();
+                        ChangeQuery(">");
+                        WinRStroked = true;
+                    }));
+                    return false;
+                }
+                if (keyevent == KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int)Keys.LWin)
+                {
+                    WinRStroked = false;
+                    WindowsInput.InputSimulator.SimulateModifiedKeyStroke(WindowsInput.VirtualKeyCode.LWIN, WindowsInput.VirtualKeyCode.CONTROL);
+                    return false;
+                }
+            }
+            return true;
         }
 
         private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e)
@@ -250,7 +286,7 @@ namespace WinAlfred
             progressBar.Dispatcher.Invoke(new Action(StopProgress));
             if (list.Count > 0)
             {
-                //todo:this used be opened to users, it's they choise use it or not in thier workflows
+                //todo:this should be opened to users, it's their choise to use it or not in thier workflows
                 list.ForEach(o =>
                 {
                     if (o.AutoAjustScore) o.Score += selectedRecords.GetSelectedCount(o);
@@ -313,7 +349,6 @@ namespace WinAlfred
         }
 
         #endregion
-
 
     }
 }

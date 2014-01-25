@@ -7,12 +7,12 @@
         SizeToContent="Height"
         ResizeMode="NoResize"
         WindowStyle="None"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="Manual"
         ShowInTaskbar="False"
         Style="{DynamicResource WindowStyle}"
         Icon="Images\app.png"
         >
-    <Grid Style="{DynamicResource GridStyle}">
+    <Grid Style="{DynamicResource GridStyle}" x:Name="grid">
         <Grid.RowDefinitions>
             <RowDefinition ></RowDefinition>
             <RowDefinition></RowDefinition>

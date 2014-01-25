@@ -16,6 +16,16 @@ namespace WinAlfred
             this.mainWindow = mainWindow;
             InitializeComponent();
             Loaded += Setting_Loaded;
+            cbReplaceWinR.Checked += (o, e) =>
+            {
+                Settings.Instance.ReplaceWinR = true;
+                Settings.Instance.SaveSettings();
+            };
+            cbReplaceWinR.Unchecked += (o, e) =>
+            {
+                Settings.Instance.ReplaceWinR = false;
+                Settings.Instance.SaveSettings();
+            };
         }
 
         private void Setting_Loaded(object sender, RoutedEventArgs e)
@@ -27,6 +37,7 @@ namespace WinAlfred
             }
 
             themeComboBox.SelectedItem = Settings.Instance.Theme;
+            cbReplaceWinR.IsChecked = Settings.Instance.ReplaceWinR;
         }
 
         private List<string> LoadAvailableThemes()

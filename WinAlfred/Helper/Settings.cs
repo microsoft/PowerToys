@@ -13,6 +13,7 @@ namespace WinAlfred.Helper
         IniParser parser = new IniParser("config.ini");
 
         public string Theme { get; set; }
+        public bool ReplaceWinR { get; set; }
 
         private Settings()
         {
@@ -23,11 +24,19 @@ namespace WinAlfred.Helper
         {
             if (!File.Exists(configPath)) File.Create(configPath);
             Theme = parser.GetSetting("ui", "theme");
+
+            string replaceWinRStr = parser.GetSetting("hotkey", "replaceWinR");
+            bool replace = true;
+            if (bool.TryParse(replaceWinRStr, out replace))
+            {
+                ReplaceWinR = replace;
+            }
         }
 
         public void SaveSettings()
         {
             parser.AddSetting("ui", "theme", Theme);
+            parser.AddSetting("hotkey", "replaceWinR", ReplaceWinR.ToString());
             parser.SaveSettings();
         }
 
