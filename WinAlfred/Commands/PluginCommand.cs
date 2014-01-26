@@ -14,13 +14,7 @@ namespace WinAlfred.Commands
         private string currentPythonModulePath = string.Empty;
         private IntPtr GIL;
 
-        public PluginCommand(MainWindow mainWindow)
-            : base(mainWindow)
-        {
-
-        }
-
-        public override void Dispatch(Query q,bool updateView)
+        public override void Dispatch(Query q,bool updateView = true)
         {
             PluginPair thirdPlugin = Plugins.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == q.ActionName);
             if (thirdPlugin != null && !string.IsNullOrEmpty(thirdPlugin.Metadata.ActionKeyword))

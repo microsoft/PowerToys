@@ -12,13 +12,12 @@ namespace WinAlfred.Commands
     {
         private List<PluginPair> systemPlugins;
 
-        public SystemCommand(MainWindow window)
-            : base(window)
+        public SystemCommand()
         {
             systemPlugins = Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System).ToList();
         }
 
-        public override void Dispatch(Query query,bool updateView)
+        public override void Dispatch(Query query,bool updateView = true)
         {
             foreach (PluginPair pair in systemPlugins)
             {

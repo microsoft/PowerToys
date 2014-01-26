@@ -4,9 +4,11 @@ using System.Drawing;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using WinAlfred.Annotations;
+using WinAlfred.Helper;
 using WinAlfred.Plugin;
 using Brush = System.Windows.Media.Brush;
 
@@ -14,6 +16,7 @@ namespace WinAlfred
 {
     public partial class ResultItem : UserControl, INotifyPropertyChanged
     {
+
         private bool selected;
 
         public Result Result { get; private set; }
@@ -47,7 +50,6 @@ namespace WinAlfred
 
         public ResultItem(Result result)
         {
-
             InitializeComponent();
             Result = result;
 
@@ -74,6 +76,17 @@ namespace WinAlfred
                     imgIco.Source = new BitmapImage(new Uri(path));
                 }
             }
+
+            AddHandler(MouseLeftButtonUpEvent, new RoutedEventHandler((o, e) =>
+            {
+                Result.Action();
+                SelectedRecords.Instance.AddSelect(result);
+                if (!result.DontHideWinAlfredAfterSelect)
+                {
+                    App.Window.HideApp();
+                }
+                e.Handled = true;
+            }));
         }
 
         private static ImageSource GetIcon(string fileName)

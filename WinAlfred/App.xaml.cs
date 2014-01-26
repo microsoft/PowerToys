@@ -51,7 +51,16 @@ namespace WinAlfred
 
     public partial class App : Application
     {
-        private MainWindow window;
+
+        private static MainWindow window;
+
+        public static MainWindow Window
+        {
+            get
+            {
+                return window;
+            }
+        }
 
         protected override void OnStartup(StartupEventArgs e)
         {

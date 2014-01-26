@@ -8,7 +8,7 @@
              x:Name="resultItemControl"
              Style="{DynamicResource ItemStyle}"
              Height="50">
-    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5" >
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5"  Cursor="Hand">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="32"></ColumnDefinition>
             <ColumnDefinition/>

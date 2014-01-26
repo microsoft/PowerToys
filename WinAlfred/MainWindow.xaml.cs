@@ -16,6 +16,7 @@ using WinAlfred.PluginLoader;
 using Application = System.Windows.Application;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
+using UserControl = System.Windows.Controls.UserControl;
 
 namespace WinAlfred
 {
@@ -23,10 +24,8 @@ namespace WinAlfred
     {
         private KeyboardHook hook = new KeyboardHook();
         private NotifyIcon notifyIcon;
-        private Command cmdDispatcher;
         Storyboard progressBarStoryboard = new Storyboard();
         private bool queryHasReturn = false;
-        SelectedRecords selectedRecords = new SelectedRecords();
 
         private KeyboardListener keyboardListener = new KeyboardListener();
         private bool WinRStroked = false;
@@ -68,7 +67,7 @@ namespace WinAlfred
                         double oldLeft = Left;
                         Left = 20000;
                         ShowWinAlfred();
-                        cmdDispatcher.DispatchCommand(new Query("qq"), false);
+                        CommandFactory.DispatchCommand(new Query("qq"), false);
                         HideWinAlfred();
                         Left = oldLeft;
                     }
@@ -132,7 +131,7 @@ namespace WinAlfred
                        if (resultCtrl.Dirty) resultCtrl.Clear();
                    }, TimeSpan.FromMilliseconds(30), null);
                    var q = new Query(tbQuery.Text);
-                   cmdDispatcher.DispatchCommand(q);
+                   CommandFactory.DispatchCommand(q);
                    queryHasReturn = false;
                    if (Plugins.HitThirdpartyKeyword(q))
                    {
@@ -169,7 +168,7 @@ namespace WinAlfred
             Activate();
             Focus();
             tbQuery.Focus();
-            if(selectAll) tbQuery.SelectAll();
+            if (selectAll) tbQuery.SelectAll();
         }
 
         public void ParseArgs(string[] args)
@@ -179,7 +178,7 @@ namespace WinAlfred
                 switch (args[0])
                 {
                     case "reloadWorkflows":
-                        Plugins.Init(this);
+                        Plugins.Init();
                         break;
 
                     case "query":
@@ -218,12 +217,11 @@ namespace WinAlfred
             Left = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
             Top = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 3;
 
-            Plugins.Init(this);
-            cmdDispatcher = new Command(this);
+            Plugins.Init();
             InitialTray();
-            selectedRecords.LoadSelectedRecords();
             SetAutoStart(true);
             WakeupApp();
+
             //var engine = new Jurassic.ScriptEngine();
             //MessageBox.Show(engine.Evaluate("5 * 10 + 2").ToString());
             keyboardListener.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
@@ -279,17 +277,22 @@ namespace WinAlfred
                     break;
 
                 case Key.Enter:
-                    Result result = resultCtrl.AcceptSelect();
-                    if (result != null)
-                    {
-                        selectedRecords.AddSelect(result);
-                        if (!result.DontHideWinAlfredAfterSelect)
-                        {
-                            HideWinAlfred();
-                        }
-                    }
+                    AcceptSelect();
                     e.Handled = true;
                     break;
+            }
+        }
+
+        private void AcceptSelect()
+        {
+            Result result = resultCtrl.AcceptSelect();
+            if (result != null)
+            {
+                SelectedRecords.Instance.AddSelect(result);
+                if (!result.DontHideWinAlfredAfterSelect)
+                {
+                    HideWinAlfred();
+                }
             }
         }
 
@@ -302,7 +305,7 @@ namespace WinAlfred
                 //todo:this should be opened to users, it's their choise to use it or not in thier workflows
                 list.ForEach(o =>
                 {
-                    if (o.AutoAjustScore) o.Score += selectedRecords.GetSelectedCount(o);
+                    if (o.AutoAjustScore) o.Score += SelectedRecords.Instance.GetSelectedCount(o);
                 });
                 resultCtrl.Dispatcher.Invoke(new Action(() =>
                 {

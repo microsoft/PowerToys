@@ -12,7 +12,7 @@ namespace WinAlfred.PluginLoader
     {
         private static List<PluginPair> plugins = new List<PluginPair>();
 
-        public static void Init(MainWindow window)
+        public static void Init()
         {
             plugins.Clear();
             BasePluginLoader.ParsePluginsConfig();
@@ -30,12 +30,12 @@ namespace WinAlfred.PluginLoader
                     {
                         Plugins = plugins,
                         PluginMetadata = metadata,
-                        ChangeQuery = s => window.ChangeQuery(s),
-                        CloseApp = window.CloseApp,
-                        HideApp = window.HideApp,
-                        ShowApp = () => window.ShowApp(),
-                        ShowMsg = (title, subTitle, iconPath) => window.ShowMsg(title, subTitle, iconPath),
-                        OpenSettingDialog = ()=> window.OpenSettingDialog()
+                        ChangeQuery = s => App.Window.ChangeQuery(s),
+                        CloseApp = App.Window.CloseApp,
+                        HideApp = App.Window.HideApp,
+                        ShowApp = () => App.Window.ShowApp(),
+                        ShowMsg = (title, subTitle, iconPath) => App.Window.ShowMsg(title, subTitle, iconPath),
+                        OpenSettingDialog = () => App.Window.OpenSettingDialog()
                     }));
                 }
             }

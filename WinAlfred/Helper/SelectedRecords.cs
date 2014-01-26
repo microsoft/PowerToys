@@ -13,8 +13,22 @@ namespace WinAlfred.Helper
         private int hasAddedCount = 0;
         private Dictionary<string, int> dict = new Dictionary<string, int>();
         private string filePath = Directory.GetCurrentDirectory() + "\\selectedRecords.dat";
+        private static readonly SelectedRecords instance = new SelectedRecords();
 
-        public void LoadSelectedRecords()
+        private SelectedRecords()
+        {
+            LoadSelectedRecords();
+        }
+
+        public static SelectedRecords Instance
+        {
+            get
+            {
+                return instance;
+            }
+        }
+
+        private void LoadSelectedRecords()
         {
             if (File.Exists(filePath))
             {
