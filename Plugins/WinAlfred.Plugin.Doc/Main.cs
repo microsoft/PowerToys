@@ -71,6 +71,9 @@ namespace WinAlfred.Plugin.Doc
                 };
 
             docsetBasePath = context.PluginMetadata.PluginDirecotry + @"Docset";
+            if (!Directory.Exists(docsetBasePath))
+                Directory.CreateDirectory(docsetBasePath);
+
             foreach (string path in Directory.GetDirectories(docsetBasePath))
             {
                 string name = path.Substring(path.LastIndexOf('\\') + 1);
