@@ -17,6 +17,24 @@ namespace WinAlfred.Plugin.System
         protected override List<Result> QueryInternal(Query query)
         {
             List<Result> results = new List<Result>();
+            if (query.RawQuery == ">")
+            {
+                IEnumerable<Result> history = cmdHistory.OrderByDescending(o => o.Value)
+                 .Select(m => new Result
+                 {
+                     Title = m.Key,
+                     SubTitle = "this command has been executed " + m.Value + " times",
+                     IcoPath = "Images/cmd.png",
+                     Action = () =>
+                     {
+                         ExecuteCmd(m.Key);
+                         AddCmdHistory(m.Key);
+                     }
+                 }).Take(5);
+
+                results.AddRange(history);
+            }
+
             if (query.RawQuery.StartsWith(">") && query.RawQuery.Length > 1)
             {
                 string cmd = query.RawQuery.Substring(1);

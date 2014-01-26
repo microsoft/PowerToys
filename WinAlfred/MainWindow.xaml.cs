@@ -163,13 +163,13 @@ namespace WinAlfred
             Hide();
         }
 
-        private void ShowWinAlfred()
+        private void ShowWinAlfred(bool selectAll = true)
         {
             Show();
             Activate();
-            tbQuery.SelectAll();
             Focus();
             tbQuery.Focus();
+            if(selectAll) tbQuery.SelectAll();
         }
 
         public void ParseArgs(string[] args)
@@ -235,13 +235,8 @@ namespace WinAlfred
             {
                 if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
                 {
-                    Dispatcher.BeginInvoke(new Action(() =>
-                    {
-                        resultCtrl.Clear();
-                        ShowWinAlfred();
-                        ChangeQuery(">");
-                        WinRStroked = true;
-                    }));
+                    WinRStroked = true;
+                    Dispatcher.BeginInvoke(new Action(OnWinRPressed));
                     return false;
                 }
                 if (keyevent == KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int)Keys.LWin)
@@ -252,6 +247,16 @@ namespace WinAlfred
                 }
             }
             return true;
+        }
+
+        private void OnWinRPressed()
+        {
+            ShowWinAlfred(false);
+            if (tbQuery.Text != ">")
+            {
+                resultCtrl.Clear();
+                ChangeQuery(">");
+            }
         }
 
         private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e)
