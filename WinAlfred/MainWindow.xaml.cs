@@ -31,6 +31,8 @@ namespace WinAlfred
         private KeyboardListener keyboardListener = new KeyboardListener();
         private bool WinRStroked = false;
 
+        private WindowsInput.KeyboardSimulator keyboardSimulator = new WindowsInput.KeyboardSimulator(new WindowsInput.InputSimulator());
+
         public MainWindow()
         {
             InitializeComponent();
@@ -41,9 +43,15 @@ namespace WinAlfred
             ThreadPool.SetMaxThreads(30, 10);
             InitProgressbarAnimation();
 
+            try
+            {
+                ChangeStyles(Settings.Instance.Theme);
 
-            ChangeStyles(Settings.Instance.Theme);
-
+            }
+            catch (System.IO.IOException)
+            {
+                ChangeStyles(Settings.Instance.Theme = "Default");
+            }
         }
 
         private void WakeupApp()
@@ -239,7 +247,7 @@ namespace WinAlfred
                 if (keyevent == KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int)Keys.LWin)
                 {
                     WinRStroked = false;
-                    WindowsInput.InputSimulator.SimulateModifiedKeyStroke(WindowsInput.VirtualKeyCode.LWIN, WindowsInput.VirtualKeyCode.CONTROL);
+                    keyboardSimulator.ModifiedKeyStroke(WindowsInput.Native.VirtualKeyCode.LWIN, WindowsInput.Native.VirtualKeyCode.CONTROL);
                     return false;
                 }
             }
