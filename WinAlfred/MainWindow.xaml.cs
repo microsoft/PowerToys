@@ -231,6 +231,7 @@ namespace WinAlfred
         {
             if (Settings.Instance.ReplaceWinR)
             {
+                //todo:need refatoring. move those codes to CMD file or expose events
                 if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
                 {
                     WinRStroked = true;
@@ -255,6 +256,7 @@ namespace WinAlfred
                 resultCtrl.Clear();
                 ChangeQuery(">");
             }
+            tbQuery.CaretIndex = tbQuery.Text.Length;
         }
 
         private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e)
