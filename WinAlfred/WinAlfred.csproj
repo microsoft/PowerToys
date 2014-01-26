@@ -121,7 +121,7 @@
     <Compile Include="Helper\Log.cs" />
     <Compile Include="Helper\Settings.cs" />
     <Compile Include="Helper\WinAlfredException.cs" />
-    <Compile Include="KeyboardListener.cs" />
+    <Compile Include="Helper\KeyboardListener.cs" />
     <Compile Include="Msg.xaml.cs">
       <DependentUpon>Msg.xaml</DependentUpon>
     </Compile>

@@ -2,10 +2,8 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Windows.Input;
-using System.Windows.Threading;
 
-namespace WinAlfred
+namespace WinAlfred.Helper
 {
     public enum KeyEvent : int
     {
