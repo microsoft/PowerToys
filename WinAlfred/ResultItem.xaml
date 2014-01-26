@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignWidth="400"
+             x:Name="resultItemControl"
              Style="{DynamicResource ItemStyle}"
              Height="50">
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5" >

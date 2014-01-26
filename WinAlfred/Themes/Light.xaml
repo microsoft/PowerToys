@@ -2,17 +2,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Style x:Key="QueryBoxStyle" TargetType="{x:Type TextBox}">
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="FontSize" Value="22"/>
+        <Setter Property="FontSize" Value="25"/>
         <Setter Property="FontWeight" Value="Medium"/>
         <Setter Property="AllowDrop" Value="true"/>
         <Setter Property="Height" Value="46"/>
-        <Setter Property="Background" Value="#D1D1D1"/>
-        <Setter Property="Foreground" Value="#000000" />
+        <Setter Property="Background" Value="#DEDEDE"/>
+        <Setter Property="Foreground" Value="#2E2F30" />
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
     </Style>
     <Style x:Key="WindowStyle" TargetType="{x:Type Window}" >
-        <Setter Property="Background" Value="#EBEBEB"></Setter>
+        <Setter Property="Background" Value="#EDEDED"></Setter>
         <Setter Property="Width" Value="520"></Setter>
         <Setter Property="Height" Value="80"></Setter>
     </Style>
@@ -25,19 +25,102 @@
 
     <!-- Item Style -->
     <Style x:Key="ItemTitleStyle" TargetType="{x:Type TextBlock}" >
-        <Setter Property="Foreground" Value="#1A191A"></Setter>
+        <Setter Property="Foreground" Value="#141411"></Setter>
         <Setter Property="FontSize" Value="16"></Setter>
         <Setter Property="FontWeight" Value="Medium"></Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ElementName=resultItemControl, Path=Selected}" Value="true">
+                <Setter Property="Foreground" Value="#F6F6FF"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
     <Style x:Key="ItemSubTitleStyle" TargetType="{x:Type TextBlock}" >
-        <Setter Property="Foreground"  Value="#807F80"></Setter>
+        <Setter Property="Foreground"  Value="#B3B2B0"></Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ElementName=resultItemControl, Path=Selected}" Value="true">
+                <Setter Property="Foreground" Value="#F6F6FF"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
     <Style x:Key="ItemStyle" TargetType="{x:Type UserControl}" >
         <Setter Property="Background" Value="Transparent"></Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Selected}" Value="true">
-                <Setter Property="Background" Value="#D1D1D1"></Setter>
+                <Setter Property="Background" Value="#543BFD"></Setter>
             </DataTrigger>
         </Style.Triggers>
+    </Style>
+
+    <!-- ScrollViewer Style -->
+    <ControlTemplate x:Key="ScrollViewerControlTemplate" TargetType="{x:Type ScrollViewer}">
+        <Grid x:Name="Grid" Background="{TemplateBinding Background}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!--content in the left of ScrollViewer, just default-->
+            <ScrollContentPresenter x:Name="PART_ScrollContentPresenter"
+                                        CanContentScroll="{TemplateBinding CanContentScroll}"
+                                        CanHorizontallyScroll="False"
+                                        CanVerticallyScroll="False"
+                                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                                        Content="{TemplateBinding Content}"
+                                        Grid.Column="0"
+                                        Margin="{TemplateBinding Padding}"
+                                        Grid.Row="0" />
+
+            <!--Scrollbar in thr rigth of ScrollViewer-->
+            <ScrollBar x:Name="PART_VerticalScrollBar"
+                           AutomationProperties.AutomationId="VerticalScrollBar"
+                           Cursor="Arrow"
+                           Grid.Column="1"
+                           Margin="2 0 0 0"
+                           Maximum="{TemplateBinding ScrollableHeight}"
+                           Minimum="0"
+                           Grid.Row="0"
+                           Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
+                           Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                           ViewportSize="{TemplateBinding ViewportHeight}"
+                           Style="{DynamicResource ScrollBarStyle}" />
+
+        </Grid>
+    </ControlTemplate>
+
+    <!-- button style in the middle of the scrollbar -->
+    <Style x:Key="ThumbStyle" TargetType="{x:Type Thumb}">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="OverridesDefaultStyle" Value="true"/>
+        <Setter Property="IsTabStop" Value="false"/>
+        <Setter Property="Focusable" Value="false"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Thumb}">
+                    <Border CornerRadius="2" DockPanel.Dock="Right" Background="#DEDEDE" BorderBrush="Transparent" BorderThickness="0" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ScrollBarStyle" TargetType="{x:Type ScrollBar}">
+        <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false" />
+        <Setter Property="Stylus.IsFlicksEnabled" Value="false" />
+        <!-- must set min width -->
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="Width" Value="3.5"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ScrollBar}">
+                    <DockPanel>
+                        <Track x:Name="PART_Track" IsDirectionReversed="true" DockPanel.Dock="Right">
+                            <Track.Thumb>
+                                <Thumb Style="{DynamicResource ThumbStyle}"/>
+                            </Track.Thumb>
+                        </Track>
+                    </DockPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
     </Style>
 </ResourceDictionary>
