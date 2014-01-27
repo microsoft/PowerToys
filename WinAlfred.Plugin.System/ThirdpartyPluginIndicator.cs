@@ -23,7 +23,7 @@ namespace WinAlfred.Plugin.System
                     Result result = new Result
                     {
                         Title = metadata.ActionKeyword,
-                        SubTitle = string.Format("press space to active {0} workflow",metadata.Name),
+                        SubTitle = string.Format("Activate {0} workflow",metadata.Name),
                         Score = 50,
                         IcoPath = "Images/work.png",
                         Action = () => changeQuery(metadataCopy.ActionKeyword + " "),
