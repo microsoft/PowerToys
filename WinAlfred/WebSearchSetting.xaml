@@ -1,0 +1,48 @@
+﻿<Window x:Class="WinAlfred.WebSearchSetting"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                Icon="Images\app.png"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Title="WebSearchSetting" Height="400" Width="674.766">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="40"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="24"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="24"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="24"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="120"></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <TextBlock Margin="10" FontSize="14" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Search URL:</TextBlock>
+        <TextBox Margin="10" Grid.Row="0" Width="400" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left"></TextBox>
+        <TextBlock Margin="10 0 10 0" Foreground="Gray" VerticalAlignment="Top" Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" HorizontalAlignment="Left">Perform a search on a website and copy the result URL. Replace your search term with {query} in curly brackets</TextBlock>
+
+        <TextBlock Margin="10" FontSize="14" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Title:</TextBlock>
+        <TextBox Margin="10" Grid.Row="2" Width="400" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left"></TextBox>
+        <TextBlock Margin="10 0 10 0" Foreground="Gray" VerticalAlignment="Top" Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" HorizontalAlignment="Left">What to show in the WinAlfred. The search query is automatically appended for clarity.</TextBlock>
+
+        <TextBlock Margin="10" FontSize="14" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Keyword:</TextBlock>
+        <TextBox Margin="10" Grid.Row="4" Width="400" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left"></TextBox>
+        <TextBlock Margin="10 0 10 0" Foreground="Gray" VerticalAlignment="Top" Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" HorizontalAlignment="Left">What you type to use this shortcut.</TextBlock>
+
+        <TextBlock Margin="10" FontSize="14" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Validation:</TextBlock>
+        <StackPanel Grid.Row="6" Grid.Column="1"  VerticalAlignment="Center" Orientation="Horizontal">
+            <TextBox Margin="10"  Width="400" HorizontalAlignment="Left"></TextBox>
+            <Button x:Name="btnValidation" Width="60" Height="24">Test</Button>
+        </StackPanel>
+        <TextBlock Margin="10 0 10 0" Foreground="Gray" VerticalAlignment="Top" Grid.Row="7" Grid.Column="1" TextWrapping="Wrap" HorizontalAlignment="Left">Type some text and click test to check it works.</TextBlock>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="8" Grid.Column="1">
+            <Button x:Name="btnCancel" Click="BtnCancel_OnClick" Margin="10 0 10 0" Width="80" Height="25">Cancel</Button>
+            <Button Margin="10 0 10 0"  Width="80" Height="25">Add</Button>
+        </StackPanel>
+    </Grid>
+</Window>

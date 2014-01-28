@@ -80,7 +80,7 @@ namespace WinAlfred
             AddHandler(MouseLeftButtonUpEvent, new RoutedEventHandler((o, e) =>
             {
                 Result.Action();
-                SelectedRecords.Instance.AddSelect(result);
+                CommonStorage.Instance.UserSelectedRecords.Add(result);
                 if (!result.DontHideWinAlfredAfterSelect)
                 {
                     App.Window.HideApp();

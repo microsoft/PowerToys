@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -41,15 +42,13 @@ namespace WinAlfred
             resultCtrl.resultItemChangedEvent += resultCtrl_resultItemChangedEvent;
             ThreadPool.SetMaxThreads(30, 10);
             InitProgressbarAnimation();
-
             try
             {
-                ChangeStyles(Settings.Instance.Theme);
-
+                SetTheme(CommonStorage.Instance.UserSetting.Theme);
             }
-            catch (System.IO.IOException)
+            catch (IOException)
             {
-                ChangeStyles(Settings.Instance.Theme = "Default");
+                SetTheme(CommonStorage.Instance.UserSetting.Theme = "Default");
             }
         }
 
@@ -229,7 +228,7 @@ namespace WinAlfred
 
         private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)
         {
-            if (Settings.Instance.ReplaceWinR)
+            if (CommonStorage.Instance.UserSetting.ReplaceWinR)
             {
                 //todo:need refatoring. move those codes to CMD file or expose events
                 if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
@@ -290,7 +289,7 @@ namespace WinAlfred
             Result result = resultCtrl.AcceptSelect();
             if (result != null)
             {
-                SelectedRecords.Instance.AddSelect(result);
+                CommonStorage.Instance.UserSelectedRecords.Add(result);
                 if (!result.DontHideWinAlfredAfterSelect)
                 {
                     HideWinAlfred();
@@ -307,7 +306,7 @@ namespace WinAlfred
                 //todo:this should be opened to users, it's their choise to use it or not in thier workflows
                 list.ForEach(o =>
                 {
-                    if (o.AutoAjustScore) o.Score += SelectedRecords.Instance.GetSelectedCount(o);
+                    if (o.AutoAjustScore) o.Score += CommonStorage.Instance.UserSelectedRecords.GetSelectedCount(o);
                 });
                 resultCtrl.Dispatcher.Invoke(new Action(() =>
                 {
@@ -317,7 +316,7 @@ namespace WinAlfred
             }
         }
 
-        public void ChangeStyles(string themeName)
+        public void SetTheme(string themeName)
         {
             ResourceDictionary dict = new ResourceDictionary
             {
@@ -367,6 +366,5 @@ namespace WinAlfred
         }
 
         #endregion
-
     }
 }

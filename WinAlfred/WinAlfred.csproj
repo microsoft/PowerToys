@@ -41,7 +41,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -85,6 +85,7 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.5.0.8\lib\net35\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationUI, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="ReachFramework" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -116,10 +117,11 @@
     <Compile Include="Commands\SystemCommand.cs" />
     <Compile Include="DispatcherExtensions.cs" />
     <Compile Include="Helper\DwmDropShadow.cs" />
-    <Compile Include="Helper\GlobalKeyboardHook.cs" />
     <Compile Include="Helper\KeyboardHook.cs" />
     <Compile Include="Helper\Log.cs" />
-    <Compile Include="Helper\Settings.cs" />
+    <Compile Include="Helper\CommonStorage.cs" />
+    <Compile Include="Models\UserSetting.cs" />
+    <Compile Include="Models\WebSearch.cs" />
     <Compile Include="Helper\WinAlfredException.cs" />
     <Compile Include="Helper\KeyboardListener.cs" />
     <Compile Include="Msg.xaml.cs">
@@ -138,9 +140,12 @@
     <Compile Include="ResultItem.xaml.cs">
       <DependentUpon>ResultItem.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Helper\SelectedRecords.cs" />
+    <Compile Include="Models\UserSelectedRecords.cs" />
     <Compile Include="SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="WebSearchSetting.xaml.cs">
+      <DependentUpon>WebSearchSetting.xaml</DependentUpon>
     </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -177,6 +182,10 @@
     <Page Include="Themes\Default.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="WebSearchSetting.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>

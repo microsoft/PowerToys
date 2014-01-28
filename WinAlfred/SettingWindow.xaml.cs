@@ -18,13 +18,13 @@ namespace WinAlfred
             Loaded += Setting_Loaded;
             cbReplaceWinR.Checked += (o, e) =>
             {
-                Settings.Instance.ReplaceWinR = true;
-                Settings.Instance.SaveSettings();
+                CommonStorage.Instance.UserSetting.ReplaceWinR = true;
+                CommonStorage.Instance.Save();
             };
             cbReplaceWinR.Unchecked += (o, e) =>
             {
-                Settings.Instance.ReplaceWinR = false;
-                Settings.Instance.SaveSettings();
+                CommonStorage.Instance.UserSetting.ReplaceWinR = false;
+                CommonStorage.Instance.Save();
             };
         }
 
@@ -36,8 +36,8 @@ namespace WinAlfred
                 themeComboBox.Items.Add(themeName);
             }
 
-            themeComboBox.SelectedItem = Settings.Instance.Theme;
-            cbReplaceWinR.IsChecked = Settings.Instance.ReplaceWinR;
+            themeComboBox.SelectedItem = CommonStorage.Instance.UserSetting.Theme;
+            cbReplaceWinR.IsChecked = CommonStorage.Instance.UserSetting.ReplaceWinR;
         }
 
         private List<string> LoadAvailableThemes()
@@ -49,9 +49,15 @@ namespace WinAlfred
         private void ThemeComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string themeName = themeComboBox.SelectedItem.ToString();
-            mainWindow.ChangeStyles(themeName);
-            Settings.Instance.Theme = themeName;
-            Settings.Instance.SaveSettings();
+            mainWindow.SetTheme(themeName);
+            CommonStorage.Instance.UserSetting.Theme = themeName;
+            CommonStorage.Instance.Save();
+        }
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            WebSearchSetting webSearch = new WebSearchSetting();
+            webSearch.Show();
         }
     }
 }

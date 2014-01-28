@@ -6,15 +6,57 @@
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Height="407.447" Width="843.989">
-    <StackPanel Orientation="Vertical" Margin="10">
-        <StackPanel Orientation="Horizontal">
-            <TextBlock Text="Theme:" />
-            <ComboBox x:Name="themeComboBox" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <CheckBox x:Name="cbReplaceWinR" />
-            <TextBlock Text="Replace Win+R:" />
-        </StackPanel>
-    </StackPanel>
 
+    <TabControl Height="auto" >
+        <TabItem Header="Basic">
+            <StackPanel Orientation="Vertical" Margin="10">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Theme:" />
+                    <ComboBox x:Name="themeComboBox" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox x:Name="cbReplaceWinR" />
+                    <TextBlock Text="Replace Win+R:" />
+                </StackPanel>
+            </StackPanel>
+        </TabItem>
+        <TabItem Header="Web Search">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="50"></RowDefinition>
+                </Grid.RowDefinitions>
+                <ListView Grid.Row="0">
+                    <ListView.View>
+                        <GridView>
+                            <GridView.Columns>
+                                <GridViewColumn Header="Keyword"  Width="180">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Path=OPERATOR}"></TextBlock>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Website" Width="500">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Path=DDATE}"></TextBlock>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Enable"  Width="50" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Path=CONTENT}"></TextBlock>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView.Columns>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                <Button  Grid.Row="1" HorizontalAlignment="Right" Click="ButtonBase_OnClick" Width="100" Margin="10">Add</Button>
+            </Grid>
+        </TabItem>
+    </TabControl>
 </Window>
