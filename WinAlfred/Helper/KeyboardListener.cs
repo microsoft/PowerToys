@@ -101,7 +101,8 @@ namespace WinAlfred.Helper
                     wParam.ToUInt32() == (int)KeyEvent.WM_SYSKEYDOWN ||
                     wParam.ToUInt32() == (int)KeyEvent.WM_SYSKEYUP)
                 {
-                    continues = hookedKeyboardCallback((KeyEvent)wParam.ToUInt32(), Marshal.ReadInt32(lParam), CheckModifiers());
+                    if (hookedKeyboardCallback != null)
+                        continues = hookedKeyboardCallback((KeyEvent)wParam.ToUInt32(), Marshal.ReadInt32(lParam), CheckModifiers());
                 }
             }
 
