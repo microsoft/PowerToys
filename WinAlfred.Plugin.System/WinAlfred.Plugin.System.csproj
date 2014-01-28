@@ -37,6 +37,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -46,6 +47,7 @@
   <ItemGroup>
     <Compile Include="BaseSystemPlugin.cs" />
     <Compile Include="BrowserBookmarks.cs" />
+    <Compile Include="WindowsShellRun.cs" />
     <Compile Include="CMD.cs" />
     <Compile Include="Common\ChineseToPinYin.cs" />
     <Compile Include="DirectoryIndicator.cs" />
