@@ -13,6 +13,7 @@ namespace WinAlfred.Plugin.System
     {
         private Dictionary<string, int> cmdHistory = new Dictionary<string, int>();
         private string filePath = Directory.GetCurrentDirectory() + "\\CMDHistory.dat";
+        private PluginInitContext context;
 
         protected override List<Result> QueryInternal(Query query)
         {
@@ -71,23 +72,22 @@ namespace WinAlfred.Plugin.System
             return results;
         }
 
-        private static void ExecuteCmd(string cmd)
+
+        private void ExecuteCmd(string cmd)
         {
             try
             {
-                Process process = new Process();
-                process.StartInfo.UseShellExecute = true;
-                process.StartInfo.FileName = cmd;
-                process.Start();
+                WindowsShellRun.Start(cmd);
             }
             catch (Exception e)
             {
-                MessageBox.Show("WinAlfred cound't execute this command.");
+                MessageBox.Show("WinAlfred cound't execute this command. \n\n" + e.Message);
             }
         }
 
         protected override void InitInternal(PluginInitContext context)
         {
+            this.context = context;
             LoadCmdHistory();
         }
 
