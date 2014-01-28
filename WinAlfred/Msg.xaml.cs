@@ -65,7 +65,7 @@ namespace WinAlfred
             tbSubTitle.Text = subTitle;
             if (!File.Exists(icopath))
             {
-                icopath = AppDomain.CurrentDomain.BaseDirectory + "Images\\ico.png";
+                icopath = AppDomain.CurrentDomain.BaseDirectory + "Images\\app.png";
             }
             imgIco.Source = new BitmapImage(new Uri(icopath));
             Show();
