@@ -51,6 +51,13 @@ namespace Wox
             {
                 SetTheme(CommonStorage.Instance.UserSetting.Theme = "Default");
             }
+
+            this.Closing += MainWindow_Closing;
+        }
+
+        void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            e.Cancel = true;
         }
 
         private void WakeupApp()
