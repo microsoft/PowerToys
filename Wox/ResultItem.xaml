@@ -1,0 +1,31 @@
+﻿<UserControl x:Class="Wox.ResultItem"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignWidth="400"
+             x:Name="resultItemControl"
+             Style="{DynamicResource ItemStyle}"
+             Height="50">
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5"  Cursor="Hand">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="32"></ColumnDefinition>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="73.064"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" ></Image>
+        <Grid HorizontalAlignment="Stretch" Margin="5 0 0 0" Grid.Column="1" VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="23"></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <TextBlock Style="{DynamicResource ItemTitleStyle}" x:Name="tbTitle">Title</TextBlock>
+            <TextBlock Style="{DynamicResource ItemSubTitleStyle}" Grid.Row="1" x:Name="tbSubTitle">sub title</TextBlock>
+        </Grid>
+        <DockPanel Grid.Column="2" Visibility="Hidden">
+            <Image x:Name="img" Source="Images\ctrl.png" VerticalAlignment="Center"/>
+            <TextBlock x:Name="tbIndex" Visibility="Hidden" FontSize="16" Foreground="#5c1f87" Margin="0 5 0 0" Text="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
+        </DockPanel>
+    </Grid>
+</UserControl>
