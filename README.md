@@ -1,6 +1,6 @@
 Wox
 =========
-<img src="http://ww2.sinaimg.cn/large/5d7c1fa4gw1ecguilvacmj2074074748.jpg" height="48" />
+<img src="http://ww3.sinaimg.cn/large/5d7c1fa4tw1ed0s9k0c2zj20740743yh.jpg" height="48" />
 
 Screenshot
 =========
