@@ -112,3 +112,4 @@ Backup*/
 UpgradeLog*.XML
 
 *.DotSettings
+/Python.Runtime.dll
