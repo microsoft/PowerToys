@@ -8,6 +8,7 @@ namespace Wox.Plugin.Everything
 {
     public sealed class EverythingAPI
     {
+
         #region Const
         const string EVERYTHING_DLL_NAME = "Everything.dll";
         #endregion
@@ -46,7 +47,7 @@ namespace Wox.Plugin.Everything
         private static extern StateCode Everything_GetLastError();
 
         [DllImport(EVERYTHING_DLL_NAME)]
-        private static extern bool Everything_Query();
+        private static extern bool Everything_Query(bool bWait);
 
         [DllImport(EVERYTHING_DLL_NAME)]
         private static extern void Everything_SortResultsByPath();
@@ -175,6 +176,27 @@ namespace Wox.Plugin.Everything
             return Search(keyWord, 0, int.MaxValue);
         }
 
+        private void no()
+        {
+            switch (Everything_GetLastError())
+            {
+                case StateCode.CreateThreadError:
+                    throw new CreateThreadException();
+                case StateCode.CreateWindowError:
+                    throw new CreateWindowException();
+                case StateCode.InvalidCallError:
+                    throw new InvalidCallException();
+                case StateCode.InvalidIndexError:
+                    throw new InvalidIndexException();
+                case StateCode.IPCError:
+                    throw new IPCErrorException();
+                case StateCode.MemoryError:
+                    throw new MemoryErrorException();
+                case StateCode.RegisterClassExError:
+                    throw new RegisterClassExException();
+            }
+        }
+
         /// <summary>
         /// Searches the specified key word.
         /// </summary>
@@ -196,7 +218,9 @@ namespace Wox.Plugin.Everything
             Everything_SetSearch(keyWord);
             Everything_SetOffset(offset);
             Everything_SetMax(maxCount);
-            if (!Everything_Query())
+            Everything_SetRegex(true);
+
+            if (!Everything_Query(true))
             {
                 switch (Everything_GetLastError())
                 {
@@ -218,7 +242,9 @@ namespace Wox.Plugin.Everything
                 yield break;
             }
 
-            const int bufferSize = 256;
+            Everything_SortResultsByPath();
+
+            const int bufferSize = 4096;
             StringBuilder buffer = new StringBuilder(bufferSize);
             for (int idx = 0; idx < Everything_GetNumResults(); ++idx)
             {

@@ -48,6 +48,9 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -76,7 +79,8 @@
   <PropertyGroup>
     <PostBuildEvent>xcopy  /Y  $(TargetDir)$(TargetFileName) $(SolutionDir)Wox\bin\Debug\Plugins\Everything\
 xcopy  /Y  $(TargetDir)plugin.ini $(SolutionDir)Wox\bin\Debug\Plugins\Everything\
-xcopy  /Y  $(ProjectDir)Everything.dll $(SolutionDir)Wox\bin\Debug\Plugins\Everything\</PostBuildEvent>
+xcopy  /Y  $(ProjectDir)x86\Everything.dll $(SolutionDir)Wox\bin\Debug\Plugins\Everything\x86\
+xcopy  /Y  $(ProjectDir)x64\Everything.dll $(SolutionDir)Wox\bin\Debug\Plugins\Everything\x64\</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
