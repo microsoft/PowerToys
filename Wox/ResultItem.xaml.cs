@@ -83,7 +83,9 @@ namespace Wox
 
             AddHandler(MouseLeftButtonUpEvent, new RoutedEventHandler((o, e) =>
             {
-                Result.Action();
+                if (Result.Action != null)
+                    Result.Action();
+
                 CommonStorage.Instance.UserSelectedRecords.Add(result);
                 if (!result.DontHideWoxAfterSelect)
                 {
