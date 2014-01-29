@@ -26,28 +26,28 @@
                     <RowDefinition Height="*"></RowDefinition>
                     <RowDefinition Height="50"></RowDefinition>
                 </Grid.RowDefinitions>
-                <ListView Grid.Row="0">
+                <ListView x:Name="webSearchView" Grid.Row="0">
                     <ListView.View>
                         <GridView>
                             <GridView.Columns>
-                                <GridViewColumn Header="Keyword"  Width="180">
+                                <GridViewColumn Header="ActionWord"  Width="180">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Path=OPERATOR}"></TextBlock>
+                                            <TextBlock Text="{Binding Path=ActionWord}"></TextBlock>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Website" Width="500">
+                                <GridViewColumn Header="Url" Width="500">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Path=DDATE}"></TextBlock>
+                                            <TextBlock Text="{Binding Path=Url}"></TextBlock>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
                                 <GridViewColumn Header="Enable"  Width="50" >
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Path=CONTENT}"></TextBlock>
+                                            <TextBlock Text="{Binding Path=Enabled}"></TextBlock>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>

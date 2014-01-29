@@ -12,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media.Animation;
 using Wox.Commands;
 using Wox.Helper;
+using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.PluginLoader;
 using Application = System.Windows.Application;

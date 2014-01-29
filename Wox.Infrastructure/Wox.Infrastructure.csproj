@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{69CE0206-CB41-453D-88AF-DF86092EF9B8}</ProjectGuid>
+    <ProjectGuid>{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Wox.Plugin.System</RootNamespace>
-    <AssemblyName>Wox.Plugin.System</AssemblyName>
+    <RootNamespace>Wox.Infrastructure</RootNamespace>
+    <AssemblyName>Wox.Infrastructure</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -37,46 +37,28 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BaseSystemPlugin.cs" />
-    <Compile Include="BrowserBookmarks.cs" />
-    <Compile Include="WebSearchPlugin.cs" />
-    <Compile Include="WindowsShellRun.cs" />
-    <Compile Include="CMD.cs" />
-    <Compile Include="Common\ChineseToPinYin.cs" />
-    <Compile Include="DirectoryIndicator.cs" />
-    <Compile Include="ISystemPlugin.cs" />
-    <Compile Include="Programs.cs" />
+    <Compile Include="CommonStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Setting.cs" />
-    <Compile Include="Sys.cs" />
-    <Compile Include="ThirdpartyPluginIndicator.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj">
-      <Project>{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}</Project>
-      <Name>Wox.Infrastructure</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj">
-      <Project>{8451ECDD-2EA4-4966-BB0A-7BBC40138E80}</Project>
-      <Name>Wox.Plugin</Name>
-    </ProjectReference>
+    <Compile Include="UserSettings\UserSelectedRecords.cs" />
+    <Compile Include="UserSettings\UserSetting.cs" />
+    <Compile Include="UserSettings\WebSearch.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj">
+      <Project>{8451ecdd-2ea4-4966-bb0a-7bbc40138e80}</Project>
+      <Name>Wox.Plugin</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

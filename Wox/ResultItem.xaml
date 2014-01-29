@@ -15,12 +15,12 @@
             <ColumnDefinition Width="73.064"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" ></Image>
-        <Grid HorizontalAlignment="Stretch" Margin="5 0 0 0" Grid.Column="1" VerticalAlignment="Stretch">
+        <Grid Margin="5 0 0 0" Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="23"></RowDefinition>
-                <RowDefinition></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition x:Name="SubTitleRowDefinition"></RowDefinition>
             </Grid.RowDefinitions>
-            <TextBlock Style="{DynamicResource ItemTitleStyle}" x:Name="tbTitle">Title</TextBlock>
+            <TextBlock Style="{DynamicResource ItemTitleStyle}" VerticalAlignment="Center" x:Name="tbTitle">Title</TextBlock>
             <TextBlock Style="{DynamicResource ItemSubTitleStyle}" Grid.Row="1" x:Name="tbSubTitle">sub title</TextBlock>
         </Grid>
         <DockPanel Grid.Column="2" Visibility="Hidden">

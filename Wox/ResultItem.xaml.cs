@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wox.Annotations;
 using Wox.Helper;
+using Wox.Infrastructure;
 using Wox.Plugin;
 using Brush = System.Windows.Media.Brush;
 
@@ -16,7 +17,6 @@ namespace Wox
 {
     public partial class ResultItem : UserControl, INotifyPropertyChanged
     {
-
         private bool selected;
 
         public Result Result { get; private set; }
@@ -55,6 +55,10 @@ namespace Wox
 
             tbTitle.Text = result.Title;
             tbSubTitle.Text = result.SubTitle;
+            if (string.IsNullOrEmpty(result.SubTitle))
+            {
+                SubTitleRowDefinition.Height = new GridLength(0);
+            }
             string path = string.Empty;
             if (!string.IsNullOrEmpty(result.IcoPath) && result.IcoPath.Contains(":\\") && File.Exists(result.IcoPath))
             {

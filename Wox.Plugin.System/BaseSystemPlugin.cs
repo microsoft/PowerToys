@@ -12,7 +12,7 @@ namespace Wox.Plugin.System
 
         public List<Result> Query(Query query)
         {
-            if (string.IsNullOrEmpty(query.RawQuery) || query.RawQuery.EndsWith(" ")) return new List<Result>();
+            if (string.IsNullOrEmpty(query.RawQuery)) return new List<Result>();
             return QueryInternal(query);
         }
 

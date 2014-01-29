@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using Wox.Helper;
 using Wox.Plugin;
 
-namespace Wox.Models
+namespace Wox.Infrastructure.UserSettings
 {
     [Serializable]
     public class UserSelectedRecords

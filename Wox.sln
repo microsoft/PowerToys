@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Python.Runtime", "Pythonnet
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Doc", "Plugins\Wox.Plugin.Doc\Wox.Plugin.Doc.csproj", "{6B6696B1-A547-4FD4-85EF-E1FD0F54AD2C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Infrastructure", "Wox.Infrastructure\Wox.Infrastructure.csproj", "{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -280,6 +282,34 @@ Global
 		{6B6696B1-A547-4FD4-85EF-E1FD0F54AD2C}.UnitTests|Win32.ActiveCfg = Release|Any CPU
 		{6B6696B1-A547-4FD4-85EF-E1FD0F54AD2C}.UnitTests|x64.ActiveCfg = Release|Any CPU
 		{6B6696B1-A547-4FD4-85EF-E1FD0F54AD2C}.UnitTests|x86.ActiveCfg = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.EmbeddingTest|Any CPU.ActiveCfg = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.EmbeddingTest|Any CPU.Build.0 = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.EmbeddingTest|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.EmbeddingTest|Mixed Platforms.Build.0 = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.EmbeddingTest|Win32.ActiveCfg = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.EmbeddingTest|x64.ActiveCfg = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.EmbeddingTest|x86.ActiveCfg = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Release|Win32.ActiveCfg = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Release|x64.ActiveCfg = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Release|x86.ActiveCfg = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.UnitTests|Any CPU.ActiveCfg = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.UnitTests|Any CPU.Build.0 = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.UnitTests|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.UnitTests|Mixed Platforms.Build.0 = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.UnitTests|Win32.ActiveCfg = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.UnitTests|x64.ActiveCfg = Release|Any CPU
+		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.UnitTests|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

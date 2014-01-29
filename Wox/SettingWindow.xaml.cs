@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Wox.Helper;
+using Wox.Infrastructure;
 
 namespace Wox
 {
@@ -38,6 +39,7 @@ namespace Wox
 
             themeComboBox.SelectedItem = CommonStorage.Instance.UserSetting.Theme;
             cbReplaceWinR.IsChecked = CommonStorage.Instance.UserSetting.ReplaceWinR;
+            webSearchView.ItemsSource = CommonStorage.Instance.UserSetting.WebSearches;
         }
 
         private List<string> LoadAvailableThemes()

@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading;
 using Newtonsoft.Json;
-using Wox.Models;
+using Wox.Infrastructure.UserSettings;
 
-namespace Wox.Helper
+namespace Wox.Infrastructure
 {
     [Serializable]
     public class CommonStorage
@@ -22,14 +18,7 @@ namespace Wox.Helper
 
         private CommonStorage()
         {
-            //default setting
-            UserSetting = new UserSetting
-            {
-                Theme = "Default",
-                ReplaceWinR = true,
-                WebSearches = new List<WebSearch>()
-            };
-
+            UserSetting = new UserSetting();
             UserSelectedRecords = new UserSelectedRecords();
         }
 
@@ -81,5 +70,6 @@ namespace Wox.Helper
                 return storage;
             }
         }
+
     }
 }
