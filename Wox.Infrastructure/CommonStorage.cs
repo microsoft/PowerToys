@@ -47,9 +47,21 @@ namespace Wox.Infrastructure
                 }
                 catch (Exception e)
                 {
-                    //on-op, keep default storage
+                    LoadDefaultUserSetting();
                 }
             }
+            else
+            {
+                LoadDefaultUserSetting();
+            }
+        }
+
+        private static void LoadDefaultUserSetting()
+        {
+            //default setting
+            Instance.UserSetting.Theme = "Default";
+            Instance.UserSetting.ReplaceWinR = true;
+            Instance.UserSetting.WebSearches = Instance.UserSetting.LoadDefaultWebSearches();
         }
 
         public static CommonStorage Instance
@@ -70,6 +82,5 @@ namespace Wox.Infrastructure
                 return storage;
             }
         }
-
     }
 }

@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Wox.Helper;
 using Wox.Infrastructure;
+using Wox.Infrastructure.UserSettings;
 
 namespace Wox
 {
@@ -42,6 +43,11 @@ namespace Wox
             webSearchView.ItemsSource = CommonStorage.Instance.UserSetting.WebSearches;
         }
 
+        public void ReloadWebSearchView()
+        {
+            webSearchView.Items.Refresh();
+        }
+
         private List<string> LoadAvailableThemes()
         {
             string themePath = Directory.GetCurrentDirectory() + "\\Themes\\";
@@ -56,10 +62,41 @@ namespace Wox
             CommonStorage.Instance.Save();
         }
 
-        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        private void btnAddWebSearch_OnClick(object sender, RoutedEventArgs e)
         {
-            WebSearchSetting webSearch = new WebSearchSetting();
+            WebSearchSetting webSearch = new WebSearchSetting(this);
             webSearch.Show();
+        }
+
+        private void btnDeleteWebSearch_OnClick(object sender, RoutedEventArgs e)
+        {
+            WebSearch seletedWebSearch = webSearchView.SelectedItem as WebSearch;
+            if (seletedWebSearch != null &&
+                MessageBox.Show("Are your sure to delete " + seletedWebSearch.Title, "Delete WebSearch",
+                    MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                CommonStorage.Instance.UserSetting.WebSearches.Remove(seletedWebSearch);
+                webSearchView.Items.Refresh();
+            }
+            else
+            {
+                MessageBox.Show("Please select a web search");
+            }
+        }
+
+        private void btnEditWebSearch_OnClick(object sender, RoutedEventArgs e)
+        {
+            WebSearch seletedWebSearch = webSearchView.SelectedItem as WebSearch;
+            if (seletedWebSearch != null)
+            {
+                WebSearchSetting webSearch = new WebSearchSetting(this);
+                webSearch.Show();
+                webSearch.UpdateItem(seletedWebSearch);
+            }
+            else
+            {
+                MessageBox.Show("Please select a web search");
+            }
         }
     }
 }

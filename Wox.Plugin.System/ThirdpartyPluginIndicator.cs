@@ -34,11 +34,10 @@ namespace Wox.Plugin.System
                 }
             }
 
-            results.AddRange(CommonStorage.Instance.UserSetting.WebSearches.Where(o => o.ActionWord.StartsWith(query.RawQuery)).Select(n => new Result()
+            results.AddRange(CommonStorage.Instance.UserSetting.WebSearches.Where(o => o.ActionWord.StartsWith(query.RawQuery) && o.Enabled).Select(n => new Result()
             {
-
                 Title = n.ActionWord,
-                SubTitle = string.Format("Activate {0} plugin", n.ActionWord),
+                SubTitle = string.Format("Activate {0} web search", n.ActionWord),
                 Score = 50,
                 IcoPath = "Images/work.png",
                 Action = () => changeQuery(n.ActionWord + " "),

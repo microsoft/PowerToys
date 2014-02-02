@@ -11,6 +11,7 @@
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="120"></ColumnDefinition>
@@ -25,9 +26,12 @@
         <TextBlock Margin="10" FontSize="14" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">ActionWord:</TextBlock>
         <TextBox x:Name="tbActionword" Margin="10" Grid.Row="2" Width="400" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left"></TextBox>
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="8" Grid.Column="1">
+        <TextBlock Margin="10" FontSize="14" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Enable:</TextBlock>
+        <CheckBox x:Name="cbEnable" IsChecked="True" Margin="10" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center"></CheckBox>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4" Grid.Column="1">
             <Button x:Name="btnCancel" Click="BtnCancel_OnClick" Margin="10 0 10 0" Width="80" Height="25">Cancel</Button>
-            <Button x:Name="btnAdd" Margin="10 0 10 0"  Width="80" Height="25" Click="btnAdd_OnClick">Add</Button>
+            <Button x:Name="btnAdd" Margin="10 0 10 0"  Width="80" Height="25" Click="btnAdd_OnClick"><TextBlock x:Name="lblAdd">Add</TextBlock></Button>
         </StackPanel>
     </Grid>
 </Window>

@@ -44,18 +44,15 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Enable"  Width="50" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Path=Enabled}"></TextBlock>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
                             </GridView.Columns>
                         </GridView>
                     </ListView.View>
                 </ListView>
-                <Button  Grid.Row="1" HorizontalAlignment="Right" Click="ButtonBase_OnClick" Width="100" Margin="10">Add</Button>
+                <StackPanel Grid.Row="1" HorizontalAlignment="Right" Orientation="Horizontal">
+                    <Button x:Name="btnDeleteWebSearch" Click="btnDeleteWebSearch_OnClick" Width="100" Margin="10">Delete</Button>
+                    <Button x:Name="btnEditWebSearch" Click="btnEditWebSearch_OnClick" Width="100" Margin="10">Edit</Button>
+                    <Button x:Name="btnAddWebSearch" Click="btnAddWebSearch_OnClick" Width="100" Margin="10">Add</Button>
+                </StackPanel>
             </Grid>
         </TabItem>
     </TabControl>

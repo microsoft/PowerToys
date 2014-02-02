@@ -17,14 +17,14 @@ namespace Wox.Plugin.System
             if (string.IsNullOrEmpty(query.ActionName)) return results;
 
             WebSearch webSearch =
-                CommonStorage.Instance.UserSetting.WebSearches.FirstOrDefault(o => o.ActionWord == query.ActionName);
+                CommonStorage.Instance.UserSetting.WebSearches.FirstOrDefault(o => o.ActionWord == query.ActionName && o.Enabled);
 
             if (webSearch != null)
             {
                 string keyword = query.ActionParameters.Count > 0 ? query.RawQuery.Substring(query.RawQuery.IndexOf(' ') + 1) : "";
                 results.Add(new Result()
                 {
-                    Title = string.Format("Search {0} for {1}", webSearch.Title, keyword),
+                    Title = string.Format("Search {0} for \"{1}\"", webSearch.Title, keyword),
                     IcoPath = webSearch.IconPath,
                     Action = () => Process.Start(webSearch.Url.Replace("{q}", keyword))
                 });
