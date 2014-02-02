@@ -75,6 +75,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="x64\Everything.dll" />
+    <Content Include="x86\Everything.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy  /Y  $(TargetDir)$(TargetFileName) $(SolutionDir)Wox\bin\Debug\Plugins\Everything\
