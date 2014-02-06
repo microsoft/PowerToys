@@ -2,7 +2,7 @@
 using System.Collections;
 using System.IO;
 
-namespace Wox.Helper
+namespace Wox.Infrastructure
 {
     public class IniParser
     {

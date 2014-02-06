@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Newtonsoft.Json;
-using Wox.Plugin.System.Common;
+using Wox.Infrastructure;
 
 namespace Wox.Plugin.System
 {

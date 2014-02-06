@@ -78,6 +78,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Accessibility" />
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.3\lib\net35-full\log4net.dll</HintPath>
     </Reference>
@@ -119,6 +123,7 @@
     <Compile Include="Helper\DwmDropShadow.cs" />
     <Compile Include="Helper\KeyboardHook.cs" />
     <Compile Include="Helper\Log.cs" />
+    <Compile Include="Helper\PluginInstaller.cs" />
     <Compile Include="Helper\WoxException.cs" />
     <Compile Include="Helper\KeyboardListener.cs" />
     <Compile Include="Msg.xaml.cs">
@@ -126,7 +131,6 @@
     </Compile>
     <Compile Include="PluginLoader\BasePluginLoader.cs" />
     <Compile Include="PluginLoader\CSharpPluginLoader.cs" />
-    <Compile Include="Helper\IniParser.cs" />
     <Compile Include="PluginLoader\Plugins.cs" />
     <Compile Include="PluginLoader\PythonPluginLoader.cs" />
     <Compile Include="PluginLoader\PythonPluginWrapper.cs" />

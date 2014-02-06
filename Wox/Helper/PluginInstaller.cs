@@ -1,47 +1,72 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Win32;
-using Wox.Helper;
+using Wox.Infrastructure;
 using Wox.Plugin;
-using Path = System.IO.Path;
 
-namespace Wox.WorkflowInstaller
+namespace Wox.Helper
 {
-
-    public partial class MainWindow
+    public class PluginInstaller
     {
-        public MainWindow()
+        [DllImport("shell32.dll")]
+        private static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
+
+        /// <summary>
+        /// associate filetype with specified program
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="fileType"></param>
+        /// <param name="iconPath"></param>
+        /// <param name="overrides"></param>
+        private static void SaveReg(string filePath, string fileType, string iconPath, bool overrides)
         {
-            InitializeComponent();
-            Loaded += MainWindow_Loaded;
-            string[] param = Environment.GetCommandLineArgs();
-            if (param.Length == 2)
+            RegistryKey classRootKey = Registry.ClassesRoot.OpenSubKey("", true);
+            RegistryKey woxKey = classRootKey.OpenSubKey(fileType, true);
+            if (woxKey != null)
             {
-                string workflowPath = param[1];
-                //string workflowPath = @"c:\Users\Scott\Desktop\Desktop.wox";
-                if (workflowPath.EndsWith(".wox"))
+                if (!overrides)
                 {
-                    InstallWorkflow(workflowPath);
+                    return;
                 }
+                classRootKey.DeleteSubKeyTree(fileType);
             }
+            classRootKey.CreateSubKey(fileType);
+            woxKey = classRootKey.OpenSubKey(fileType, true);
+            woxKey.SetValue("", "wox.wox");
+            woxKey.SetValue("Content Type", "application/wox");
+
+            RegistryKey iconKey = woxKey.CreateSubKey("DefaultIcon");
+            iconKey.SetValue("", iconPath);
+
+            woxKey.CreateSubKey("shell");
+            RegistryKey shellKey = woxKey.OpenSubKey("shell", true);
+            shellKey.SetValue("", "Open");
+            RegistryKey openKey = shellKey.CreateSubKey("open");
+            openKey.SetValue("", "Open with wox");
+
+            openKey = shellKey.OpenSubKey("open", true);
+            openKey.CreateSubKey("command");
+            RegistryKey commandKey = openKey.OpenSubKey("command", true);
+            string pathString = "\"" + filePath + "\" \"%1\"";
+            commandKey.SetValue("", pathString);
+
+            //refresh cache
+            SHChangeNotify(0x8000000, 0, IntPtr.Zero, IntPtr.Zero);
         }
 
-        private void InstallWorkflow(string path)
+        public void RegisterInstaller()
+        {
+            string filePath = Directory.GetCurrentDirectory() + "\\Wox.Installer.exe";
+            string iconPath = Directory.GetCurrentDirectory() + "\\app.ico";
+
+            SaveReg(filePath, ".wox", iconPath, false);
+        }
+
+        public void Install(string path)
         {
             if (File.Exists(path))
             {
@@ -56,7 +81,6 @@ namespace Wox.WorkflowInstaller
                 if (!File.Exists(iniPath))
                 {
                     MessageBox.Show("Install failed: config is missing");
-                    Close();
                     return;
                 }
 
@@ -64,7 +88,6 @@ namespace Wox.WorkflowInstaller
                 if (plugin == null || plugin.Name == null)
                 {
                     MessageBox.Show("Install failed: config of this workflow is invalid");
-                    Close();
                     return;
                 }
 
@@ -72,7 +95,6 @@ namespace Wox.WorkflowInstaller
                 if (!Directory.Exists(pluginFolerPath))
                 {
                     MessageBox.Show("Install failed: cound't find workflow directory");
-                    Close();
                     return;
                 }
 
@@ -122,16 +144,11 @@ namespace Wox.WorkflowInstaller
                     {
                         MessageBox.Show("You have installed workflow " + plugin.Name + " successfully. Please restart your wox to use new workflow.");
                     }
-                    Close();
-                }
-                else
-                {
-                    Close();
                 }
             }
         }
 
-        private static PluginMetadata GetMetadataFromIni(string directory)
+        private PluginMetadata GetMetadataFromIni(string directory)
         {
             string iniPath = directory + "\\plugin.ini";
 
@@ -182,7 +199,7 @@ namespace Wox.WorkflowInstaller
         /// <param name="zipedFile">The ziped file.</param>
         /// <param name="strDirectory">The STR directory.</param>
         /// <param name="overWrite">overwirte</param>
-        public void UnZip(string zipedFile, string strDirectory, bool overWrite)
+        private void UnZip(string zipedFile, string strDirectory, bool overWrite)
         {
             if (strDirectory == "")
                 strDirectory = Directory.GetCurrentDirectory();
@@ -230,53 +247,6 @@ namespace Wox.WorkflowInstaller
 
                 s.Close();
             }
-        }
-
-        void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            string filePath = Directory.GetCurrentDirectory() + "\\Wox.WorkflowInstaller.exe";
-            string iconPath = Directory.GetCurrentDirectory() + "\\app.ico";
-
-            SaveReg(filePath, ".wox", iconPath, false);
-        }
-
-        [DllImport("shell32.dll")]
-        private static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
-
-        private static void SaveReg(string filePath, string fileType, string iconPath, bool overrides)
-        {
-            RegistryKey classRootKey = Registry.ClassesRoot.OpenSubKey("", true);
-            RegistryKey woxKey = classRootKey.OpenSubKey(fileType, true);
-            if (woxKey != null)
-            {
-                if (!overrides)
-                {
-                    return;
-                }
-                classRootKey.DeleteSubKeyTree(fileType);
-            }
-            classRootKey.CreateSubKey(fileType);
-            woxKey = classRootKey.OpenSubKey(fileType, true);
-            woxKey.SetValue("", "wox.wox");
-            woxKey.SetValue("Content Type", "application/wox");
-
-            RegistryKey iconKey = woxKey.CreateSubKey("DefaultIcon");
-            iconKey.SetValue("", iconPath);
-
-            woxKey.CreateSubKey("shell");
-            RegistryKey shellKey = woxKey.OpenSubKey("shell", true);
-            shellKey.SetValue("", "Open");
-            RegistryKey openKey = shellKey.CreateSubKey("open");
-            openKey.SetValue("", "Open with wox");
-
-            openKey = shellKey.OpenSubKey("open", true);
-            openKey.CreateSubKey("command");
-            RegistryKey commandKey = openKey.OpenSubKey("command", true);
-            string pathString = "\"" + filePath + "\" \"%1\"";
-            commandKey.SetValue("", pathString);
-
-            //refresh cache
-            SHChangeNotify(0x8000000, 0, IntPtr.Zero, IntPtr.Zero);
         }
     }
 }

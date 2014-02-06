@@ -53,7 +53,6 @@ namespace Wox.Commands
         {
             if (currentPythonModulePath != thirdPlugin.Metadata.PluginDirecotry)
             {
-                //this must initial in main thread
                 currentPythonModulePath = thirdPlugin.Metadata.PluginDirecotry;
 
                 if (GIL != IntPtr.Zero)
@@ -63,8 +62,8 @@ namespace Wox.Commands
                 }
                 PythonEngine.Initialize();
                 IntPtr pyStrPtr = Runtime.PyString_FromString(thirdPlugin.Metadata.PluginDirecotry);
-                IntPtr SysDotPath = Runtime.PySys_GetObject("path");
-                Runtime.PyList_Append(SysDotPath, pyStrPtr);
+                IntPtr sysDotPath = Runtime.PySys_GetObject("path");
+                Runtime.PyList_Append(sysDotPath, pyStrPtr);
                 GIL = PythonEngine.BeginAllowThreads();
             }
         }

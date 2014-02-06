@@ -10,13 +10,17 @@
     <TabControl Height="auto" >
         <TabItem Header="Basic">
             <StackPanel Orientation="Vertical" Margin="10">
-                <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <CheckBox x:Name="cbStartWithWindows" Unchecked="CbStartWithWindows_OnUnchecked" Checked="CbStartWithWindows_OnChecked" />
+                    <TextBlock Text="Start Wox on system startup" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <CheckBox x:Name="cbReplaceWinR" />
+                    <TextBlock Text="Replace Win+R" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="10">
                     <TextBlock Text="Theme:" />
                     <ComboBox x:Name="themeComboBox" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <CheckBox x:Name="cbReplaceWinR" />
-                    <TextBlock Text="Replace Win+R:" />
                 </StackPanel>
             </StackPanel>
         </TabItem>

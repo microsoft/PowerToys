@@ -182,9 +182,9 @@ namespace Wox
         {
             if (args != null && args.Length > 0)
             {
-                switch (args[0])
+                switch (args[0].ToLower())
                 {
-                    case "reloadWorkflows":
+                    case "reloadworkflows":
                         Plugins.Init();
                         break;
 

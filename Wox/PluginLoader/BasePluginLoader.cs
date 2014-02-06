@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Wox.Helper;
+using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.System;
 

@@ -4,13 +4,14 @@
                 Icon="Images\app.png"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
-        Title="WebSearchSetting" Height="300" Width="674.766">
+        Title="WebSearchSetting" Height="350" Width="674.766">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
+            <RowDefinition Height="60"></RowDefinition>
             <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -29,7 +30,13 @@
         <TextBlock Margin="10" FontSize="14" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Enable:</TextBlock>
         <CheckBox x:Name="cbEnable" IsChecked="True" Margin="10" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center"></CheckBox>
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4" Grid.Column="1">
+        <TextBlock Margin="10" FontSize="14" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Icon:</TextBlock>
+        <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="1" Margin="10">
+            <Image x:Name="imgIcon" Width="24" Height="24" Margin="0 0 10 0" />
+            <Button x:Name="btnSelectIcon" Height="24" Click="BtnSelectIcon_OnClick">Select Icon</Button>
+            <TextBlock x:Name="tbIconPath" Visibility="Hidden"></TextBlock>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="5" Grid.Column="1">
             <Button x:Name="btnCancel" Click="BtnCancel_OnClick" Margin="10 0 10 0" Width="80" Height="25">Cancel</Button>
             <Button x:Name="btnAdd" Margin="10 0 10 0"  Width="80" Height="25" Click="btnAdd_OnClick"><TextBlock x:Name="lblAdd">Add</TextBlock></Button>
         </StackPanel>

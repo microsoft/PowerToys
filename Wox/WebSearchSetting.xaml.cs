@@ -42,10 +42,23 @@ namespace Wox
 
             update = true;
             lblAdd.Text = "Update";
+            tbIconPath.Text = webSearch.IconPath;
+            ShowIcon(webSearch.IconPath);
             cbEnable.IsChecked = webSearch.Enabled;
             tbTitle.Text = webSearch.Title;
             tbUrl.Text = webSearch.Url;
             tbActionword.Text = webSearch.ActionWord;
+        }
+
+        private void ShowIcon(string path)
+        {
+            try
+            {
+                imgIcon.Source = new BitmapImage(new Uri(path));
+            }
+            catch (Exception)
+            {
+            }
         }
 
         private void BtnCancel_OnClick(object sender, RoutedEventArgs e)
@@ -88,7 +101,7 @@ namespace Wox
                 {
                     ActionWord = action,
                     Enabled = cbEnable.IsChecked ?? false,
-                    IconPath = "",
+                    IconPath = tbIconPath.Text,
                     Url = url,
                     Title = title
                 });
@@ -97,7 +110,7 @@ namespace Wox
             else
             {
                 updateWebSearch.ActionWord = action;
-                updateWebSearch.IconPath = "";
+                updateWebSearch.IconPath = tbIconPath.Text;
                 updateWebSearch.Enabled = cbEnable.IsChecked ?? false;
                 updateWebSearch.Url = url;
                 updateWebSearch.Title= title;
@@ -106,6 +119,24 @@ namespace Wox
             CommonStorage.Instance.Save();
             settingWidow.ReloadWebSearchView();
             Close();
+        }
+
+        private void BtnSelectIcon_OnClick(object sender, RoutedEventArgs e)
+        {
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                DefaultExt = ".png",
+                Filter =
+                    "JPEG Files (*.jpeg)|*.jpeg|PNG Files (*.png)|*.png|JPG Files (*.jpg)|*.jpg|GIF Files (*.gif)|*.gif"
+            };
+
+            bool? result = dlg.ShowDialog();
+            if (result == true)
+            {
+                string filename = dlg.FileName;
+                tbIconPath.Text = filename;
+                ShowIcon(filename);
+            }
         }
     }
 }
