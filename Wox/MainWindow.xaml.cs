@@ -38,6 +38,7 @@ namespace Wox
         {
             InitializeComponent();
 
+            InitialTray();
             hook.KeyPressed += OnHotKey;
             hook.RegisterHotKey(XModifierKeys.Alt, Keys.Space);
             resultCtrl.resultItemChangedEvent += resultCtrl_resultItemChangedEvent;
@@ -151,7 +152,7 @@ namespace Wox
                        }, TimeSpan.FromSeconds(1), tbQuery.Text);
                    }
 
-               }, TimeSpan.FromMilliseconds(300));
+               }, TimeSpan.FromMilliseconds(150));
         }
 
         private void StartProgress()
@@ -196,27 +197,12 @@ namespace Wox
                             tbQuery.SelectAll();
                         }
                         break;
+
+                    case "starthide":
+                        HideApp();
+                        break;
                 }
             }
-        }
-
-        private void SetAutoStart(bool IsAtuoRun)
-        {
-            //string LnkPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup) + "//Wox.lnk";
-            //if (IsAtuoRun)
-            //{
-            //    WshShell shell = new WshShell();
-            //    IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(LnkPath);
-            //    shortcut.TargetPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            //    shortcut.WorkingDirectory = Environment.CurrentDirectory;
-            //    shortcut.WindowStyle = 1; //normal window
-            //    shortcut.Description = "Wox";
-            //    shortcut.Save();
-            //}
-            //else
-            //{
-            //    System.IO.File.Delete(LnkPath);
-            //}
         }
 
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
@@ -224,13 +210,9 @@ namespace Wox
             Left = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
             Top = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 3;
 
-            Plugins.Init();
-            InitialTray();
-            SetAutoStart(true);
             WakeupApp();
+            Plugins.Init();
 
-            //var engine = new Jurassic.ScriptEngine();
-            //MessageBox.Show(engine.Evaluate("5 * 10 + 2").ToString());
             keyboardListener.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
         }
 

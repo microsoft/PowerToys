@@ -53,6 +53,7 @@ namespace Wox
             themeComboBox.SelectedItem = CommonStorage.Instance.UserSetting.Theme;
             cbReplaceWinR.IsChecked = CommonStorage.Instance.UserSetting.ReplaceWinR;
             webSearchView.ItemsSource = CommonStorage.Instance.UserSetting.WebSearches;
+            cbStartWithWindows.IsChecked = CommonStorage.Instance.UserSetting.StartWoxOnSystemStartup;
         }
 
         public void ReloadWebSearchView()
@@ -111,15 +112,21 @@ namespace Wox
             }
         }
 
-
         private void CbStartWithWindows_OnChecked(object sender, RoutedEventArgs e)
         {
-            OnStartWithWindowsChecked();
+            if (!CommonStorage.Instance.UserSetting.StartWoxOnSystemStartup)
+            {
+                CommonStorage.Instance.UserSetting.StartWoxOnSystemStartup = true;
+                OnStartWithWindowsChecked();
+                CommonStorage.Instance.Save();
+            }
         }
 
         private void CbStartWithWindows_OnUnchecked(object sender, RoutedEventArgs e)
         {
+            CommonStorage.Instance.UserSetting.StartWoxOnSystemStartup = false;
             OnStartWithWindowUnChecked();
+            CommonStorage.Instance.Save();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -142,7 +149,7 @@ namespace Wox
             {
                 if (startup)
                 {
-                    rk.SetValue("Wox",Path.Combine(Directory.GetCurrentDirectory(),"Wox.exe startHide"));
+                    rk.SetValue("Wox", Path.Combine(Directory.GetCurrentDirectory(), "Wox.exe startHide"));
                 }
                 else
                 {

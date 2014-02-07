@@ -67,13 +67,20 @@ namespace Wox
             base.OnStartup(e);
 
             window = new MainWindow();
-            window.ShowApp();
+            if (e.Args.Length == 0 || e.Args[0].ToLower() != "starthide")
+            {
+                window.ShowApp();
+            }
+
             window.ParseArgs(e.Args);
         }
 
         public void Activate(string[] args)
         {
-            window.ShowApp();
+            if (args.Length == 0 || args[0].ToLower() != "starthide")
+            {
+                window.ShowApp();
+            }
             window.ParseArgs(args);
         }
     }

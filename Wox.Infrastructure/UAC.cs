@@ -66,7 +66,6 @@ namespace Wox.Infrastructure
                 var process = new Process();
                 process.StartInfo = psi;
                 process.Start();
-                process.WaitForExit();
             }
             catch (Exception e)
             {

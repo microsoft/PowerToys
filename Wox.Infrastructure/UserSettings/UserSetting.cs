@@ -9,6 +9,8 @@ namespace Wox.Infrastructure.UserSettings
         public bool ReplaceWinR { get; set; }
         public List<WebSearch> WebSearches { get; set; }
 
+        public bool StartWoxOnSystemStartup { get; set; }
+
         public List<WebSearch> LoadDefaultWebSearches()
         {
             List<WebSearch> webSearches = new List<WebSearch>();
