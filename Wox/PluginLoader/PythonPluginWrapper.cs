@@ -54,11 +54,13 @@ namespace Wox.PluginLoader
                 }
 #endif
             }
+
+            return new List<Result>();
         }
 
         private string InvokeFunc(string func, params string[] para)
         {
-            string json;
+            string json = "";
 
             PyObject[] paras = { };
             if (para != null && para.Length > 0)
