@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -52,7 +53,19 @@ namespace Wox.Plugin.System
                     }
                     else
                     {
-                        Process.Start(c.ExecutePath);
+                        try
+                        {
+                            Process.Start(c.ExecutePath);
+                        }
+                        catch (Win32Exception)
+                        {
+                            //Do nothing.
+                            //It may be caused if UAC blocks the program.
+                        }
+                        catch (Exception e)
+                        {
+                            throw e;
+                        }
                     }
                 }
             }).ToList();
