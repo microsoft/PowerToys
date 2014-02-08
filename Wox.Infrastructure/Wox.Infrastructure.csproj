@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="ChineseToPinYin.cs" />
     <Compile Include="CommonStorage.cs" />
+    <Compile Include="FuzzyMatcher.cs" />
     <Compile Include="IniParser.cs" />
     <Compile Include="UAC.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

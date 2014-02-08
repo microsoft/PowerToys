@@ -37,7 +37,8 @@ namespace Wox.Plugin.System
         {
             if (string.IsNullOrEmpty(query.RawQuery) || query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
 
-            List<Program> returnList = installedList.Where(o => MatchProgram(o, query)).ToList();
+            var fuzzyMather = FuzzyMatcher.Create(query.RawQuery);
+            List<Program> returnList = installedList.Where(o => MatchProgram(o, fuzzyMather)).ToList();
             returnList.ForEach(ScoreFilter);
 
             return returnList.Select(c => new Result()
@@ -71,10 +72,12 @@ namespace Wox.Plugin.System
             }).ToList();
         }
 
-        private bool MatchProgram(Program program, Query query)
+        private bool MatchProgram(Program program, FuzzyMatcher matcher)
         {
-            if (program.Title.ToLower().Contains(query.RawQuery.ToLower())) return true;
-            if (ChineseToPinYin.ToPinYin(program.Title).Replace(" ", "").ToLower().Contains(query.RawQuery.ToLower())) return true;
+            program.Score = matcher.Score(program.Title);
+            if (program.Score > 0) return true;
+            program.Score = matcher.Score(ChineseToPinYin.ToPinYin(program.Title).Replace(" ", ""));
+            if (program.Score > 0) return true;
 
             return false;
         }
