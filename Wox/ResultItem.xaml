@@ -12,10 +12,9 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="32"></ColumnDefinition>
             <ColumnDefinition/>
-            <ColumnDefinition Width="73.064"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" ></Image>
-        <Grid Margin="5 0 0 0" Grid.Column="1">
+        <Grid Margin="5 0 5 0" Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"></RowDefinition>
                 <RowDefinition x:Name="SubTitleRowDefinition"></RowDefinition>
@@ -23,9 +22,5 @@
             <TextBlock Style="{DynamicResource ItemTitleStyle}" VerticalAlignment="Center" x:Name="tbTitle">Title</TextBlock>
             <TextBlock Style="{DynamicResource ItemSubTitleStyle}" Grid.Row="1" x:Name="tbSubTitle">sub title</TextBlock>
         </Grid>
-        <DockPanel Grid.Column="2" Visibility="Hidden">
-            <Image x:Name="img" Source="Images\ctrl.png" VerticalAlignment="Center"/>
-            <TextBlock x:Name="tbIndex" Visibility="Hidden" FontSize="16" Foreground="#5c1f87" Margin="0 5 0 0" Text="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
-        </DockPanel>
     </Grid>
 </UserControl>

@@ -30,22 +30,8 @@ namespace Wox
             set
             {
                 selected = value;
-                if (selected)
-                {
-                    img.Visibility = Visibility.Visible;
-                    img.Source = new BitmapImage(new Uri(Directory.GetCurrentDirectory() + "\\Images\\enter.png"));
-                }
-                else
-                {
-                    img.Visibility = Visibility.Hidden;
-                }
                 OnPropertyChanged("Selected");
             }
-        }
-
-        public void SetIndex(int index)
-        {
-            tbIndex.Text = index.ToString();
         }
 
         public ResultItem(Result result)

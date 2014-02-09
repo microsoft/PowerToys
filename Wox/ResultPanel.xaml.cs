@@ -36,7 +36,6 @@ namespace Wox
                 if (!CheckExisted(result))
                 {
                     ResultItem control = new ResultItem(result);
-                    control.SetIndex(i + 1);
                     pnlContainer.Children.Insert(GetInsertLocation(result.Score), control);
                 }
             }
