@@ -120,7 +120,6 @@
     <Compile Include="Commands\PluginCommand.cs" />
     <Compile Include="Commands\SystemCommand.cs" />
     <Compile Include="DispatcherExtensions.cs" />
-    <Compile Include="Helper\DwmDropShadow.cs" />
     <Compile Include="Helper\KeyboardHook.cs" />
     <Compile Include="Helper\Log.cs" />
     <Compile Include="Helper\PluginInstaller.cs" />

@@ -22,7 +22,7 @@ namespace Wox.Plugin.Everything
                     Result r  = new Result();
                     r.Title = Path.GetFileName(s);
                     r.SubTitle = s;
-                    r.Action = () =>
+                    r.Action = (c) =>
                     {
                         context.HideApp();
                         System.Diagnostics.ProcessStartInfo info = new System.Diagnostics.ProcessStartInfo();

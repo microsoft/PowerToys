@@ -9,7 +9,7 @@ namespace Wox.Plugin
         public string Title { get; set; }
         public string SubTitle { get; set; }
         public string IcoPath { get; set; }
-        public Action Action { get; set; }
+        public Action<ActionContext> Action { get; set; }
         public int Score { get; set; }
 
         public bool DontHideWoxAfterSelect { get; set; }
@@ -24,13 +24,9 @@ namespace Wox.Plugin
         /// Only resulsts that originQuery match with curren query will be displayed in the panel
         /// </summary>
         public Query OriginQuery { get; set; }
-        /// <summary>
-        /// context results connected with current reuslt, usually, it can use <- or -> navigate context results
-        /// </summary>
-        public List<Result> ContextResults { get; set; }
 
         /// <summary>
-        /// you don't need to set this property if you are developing a plugin
+        /// Don't set this property if you are developing a plugin
         /// </summary>
         public string PluginDirectory { get; set; }
 

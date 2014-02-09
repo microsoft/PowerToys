@@ -26,7 +26,7 @@ namespace Wox.Plugin.System
                      Title = m.Key,
                      SubTitle = "this command has been executed " + m.Value + " times",
                      IcoPath = "Images/cmd.png",
-                     Action = () =>
+                     Action = (c) =>
                      {
                          ExecuteCmd(m.Key);
                          AddCmdHistory(m.Key);
@@ -45,7 +45,7 @@ namespace Wox.Plugin.System
                     Score = 5000,
                     SubTitle = "execute command through command shell",
                     IcoPath = "Images/cmd.png",
-                    Action = () =>
+                    Action = (c) =>
                     {
                         ExecuteCmd(cmd);
                         AddCmdHistory(cmd);
@@ -60,7 +60,7 @@ namespace Wox.Plugin.System
                         Title = m.Key,
                         SubTitle = "this command has been executed " + m.Value + " times",
                         IcoPath = "Images/cmd.png",
-                        Action = () =>
+                        Action = (c) =>
                         {
                             ExecuteCmd(m.Key);
                             AddCmdHistory(m.Key);

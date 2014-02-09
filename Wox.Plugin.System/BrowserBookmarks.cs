@@ -33,7 +33,7 @@ namespace Wox.Plugin.System
                 SubTitle = "Bookmark: " + c.Url,
                 IcoPath = Directory.GetCurrentDirectory() + @"\Images\bookmark.png",
                 Score = 5,
-                Action = () =>
+                Action = (context) =>
                 {
                     try
                     {

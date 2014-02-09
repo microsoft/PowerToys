@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 
 namespace Wox.Plugin.System
 {
@@ -22,7 +23,10 @@ namespace Wox.Plugin.System
                     SubTitle = string.Format("path: {0}", query.RawQuery),
                     Score = 50,
                     IcoPath = "Images/folder.png",
-                    Action = () =>  Process.Start(query.RawQuery)
+                    Action = (c) =>
+                    {
+                        Process.Start(query.RawQuery);
+                    }
                 };
                 results.Add(result); 
             }

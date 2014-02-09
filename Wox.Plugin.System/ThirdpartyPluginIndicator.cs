@@ -27,7 +27,7 @@ namespace Wox.Plugin.System
                         SubTitle = string.Format("Activate {0} plugin", metadata.Name),
                         Score = 50,
                         IcoPath = "Images/work.png",
-                        Action = () => changeQuery(metadataCopy.ActionKeyword + " "),
+                        Action = (c) => changeQuery(metadataCopy.ActionKeyword + " "),
                         DontHideWoxAfterSelect = true
                     };
                     results.Add(result);
@@ -40,7 +40,7 @@ namespace Wox.Plugin.System
                 SubTitle = string.Format("Activate {0} web search", n.ActionWord),
                 Score = 50,
                 IcoPath = "Images/work.png",
-                Action = () => changeQuery(n.ActionWord + " "),
+                Action = (c) => changeQuery(n.ActionWord + " "),
                 DontHideWoxAfterSelect = true
             }));
 

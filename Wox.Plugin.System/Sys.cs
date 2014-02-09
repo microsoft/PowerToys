@@ -47,7 +47,7 @@ namespace Wox.Plugin.System
                 SubTitle = "Shutdown Computer",
                 Score = 100,
                 IcoPath = "Images\\exit.png",
-                Action = () => Process.Start("shutdown","/s /t 0")
+                Action = (c) => Process.Start("shutdown","/s /t 0")
             });
             availableResults.Add(new Result
             {
@@ -55,7 +55,7 @@ namespace Wox.Plugin.System
                 SubTitle = "Log off current user",
                 Score = 20,
                 IcoPath = "Images\\logoff.png",
-                Action = () => ExitWindowsEx(EWX_LOGOFF, 0)
+                Action = (c) => ExitWindowsEx(EWX_LOGOFF, 0)
             });
             availableResults.Add(new Result
             {
@@ -63,7 +63,7 @@ namespace Wox.Plugin.System
                 SubTitle = "Lock this computer",
                 Score = 20,
                 IcoPath = "Images\\lock.png",
-                Action = () => LockWorkStation()
+                Action = (c) => LockWorkStation()
             });
             availableResults.Add(new Result
             {
@@ -71,7 +71,7 @@ namespace Wox.Plugin.System
                 SubTitle = "Close this app",
                 Score = 110,
                 IcoPath = "Images\\app.png",
-                Action = () => context.CloseApp()
+                Action = (c) => context.CloseApp()
             });
         }
     }

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Wox.Plugin;
 
 namespace Wox.Helper
 {
@@ -28,17 +29,10 @@ namespace Wox.Helper
         WM_SYSKEYDOWN = 260
     }
 
-    public class SpecialKeyState
-    {
-        public bool CtrlPressed { get; set; }
-        public bool ShiftPressed { get; set; }
-        public bool AltPressed { get; set; }
-        public bool WinPressed { get; set; }
-    }
+
 
     /// <summary>
     /// Listens keyboard globally.
-    /// 
     /// <remarks>Uses WH_KEYBOARD_LL.</remarks>
     /// </summary>
     public class KeyboardListener : IDisposable
@@ -62,7 +56,7 @@ namespace Wox.Helper
             hookId = InterceptKeys.SetHook(hookedLowLevelKeyboardProc);
         }
 
-        private SpecialKeyState CheckModifiers()
+        public SpecialKeyState CheckModifiers()
         {
             SpecialKeyState state = new SpecialKeyState();
             if ((InterceptKeys.GetKeyState(VK_SHIFT) & 0x8000) != 0)
@@ -157,19 +151,6 @@ namespace Wox.Helper
 
         [DllImport("user32.dll")]
         internal static extern uint SendInput(uint nInputs, [MarshalAs(UnmanagedType.LPArray), In] INPUT[] pInputs, int cbSize);
-
-
-        public static void SendKeyStroke(int funckey, int key)
-        {
-            INPUT[] input = new INPUT[4];
-            input[0].type = input[1].type = input[2].type = input[3].type = (int)InputType.INPUT_KEYBOARD;
-            input[0].ki.wVk = input[2].ki.wVk = (short) funckey;
-            input[1].ki.wVk = input[3].ki.wVk = (short) key;
-
-            input[2].ki.dwFlags = input[3].ki.dwFlags =(int) KEYEVENTF.KEYUP;
-
-            SendInput((uint)input.Length, input, Marshal.SizeOf(input[0]));
-        }
     }
 
     public enum InputType

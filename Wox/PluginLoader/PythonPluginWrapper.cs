@@ -40,7 +40,7 @@ namespace Wox.PluginLoader
                     PythonResult ps = pythonResult;
                     if (!string.IsNullOrEmpty(ps.ActionName))
                     {
-                        ps.Action = () => InvokeFunc(ps.ActionName, ps.ActionPara);
+                        ps.Action = (context) => InvokeFunc(ps.ActionName, GetPythonActionContext(context),new PyString(ps.ActionPara));
                     }
                     r.Add(ps);
                 }
@@ -58,15 +58,22 @@ namespace Wox.PluginLoader
             return new List<Result>();
         }
 
-        private string InvokeFunc(string func, params string[] para)
+        private PyObject GetPythonActionContext(ActionContext context)
         {
-            string json = "";
+            PyDict dict = new PyDict();
+            PyDict specialKeyStateDict = new PyDict();
+            specialKeyStateDict["CtrlPressed"] = new PyString(context.SpecialKeyState.CtrlPressed.ToString());
+            specialKeyStateDict["AltPressed"] = new PyString(context.SpecialKeyState.AltPressed.ToString());
+            specialKeyStateDict["WinPressed"] = new PyString(context.SpecialKeyState.WinPressed.ToString());
+            specialKeyStateDict["ShiftPressed"] = new PyString(context.SpecialKeyState.ShiftPressed.ToString());
 
-            PyObject[] paras = { };
-            if (para != null && para.Length > 0)
-            {
-                paras = para.Select(o => new PyString(o)).ToArray();
-            }
+            dict["SpecialKeyState"] = specialKeyStateDict;
+            return dict;
+        }
+
+        private string InvokeFunc(string func, params PyObject[] paras)
+        {
+            string json;
 
             IntPtr gs = PythonEngine.AcquireLock();
 
@@ -91,6 +98,16 @@ namespace Wox.PluginLoader
             PythonEngine.ReleaseLock(gs);
 
             return json;
+        }
+
+        private string InvokeFunc(string func, params string[] para)
+        {
+            PyObject[] paras = { };
+            if (para != null && para.Length > 0)
+            {
+                paras = para.Select(o => new PyString(o)).ToArray();
+            }
+            return InvokeFunc(func, paras);
         }
 
         public void Init(PluginInitContext context)

@@ -46,7 +46,7 @@ namespace Wox.Plugin.System
                 Title = c.Title,
                 IcoPath = c.IcoPath,
                 Score = c.Score,
-                Action = () =>
+                Action = (context) =>
                 {
                     if (string.IsNullOrEmpty(c.ExecutePath))
                     {

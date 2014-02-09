@@ -185,7 +185,7 @@ namespace Wox
             {
                 switch (args[0].ToLower())
                 {
-                    case "reloadworkflows":
+                    case "reloadplugin":
                         Plugins.Init();
                         break;
 
@@ -250,7 +250,9 @@ namespace Wox
 
         private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            switch (e.Key)
+            //when alt is pressed, the real key should be e.SystemKey
+            Key key = (e.Key == Key.System ? e.SystemKey : e.Key);
+            switch (key)
             {
                 case Key.Escape:
                     HideWox();

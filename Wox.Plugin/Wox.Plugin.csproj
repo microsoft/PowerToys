@@ -59,7 +59,7 @@
   <ItemGroup>
     <Compile Include="AllowedLanguage.cs" />
     <Compile Include="IPlugin.cs" />
-    <Compile Include="Plugin.cs" />
+    <Compile Include="PluginPair.cs" />
     <Compile Include="PluginInitContext.cs" />
     <Compile Include="PluginMetadata.cs" />
     <Compile Include="PluginType.cs" />
@@ -67,6 +67,7 @@
     <Compile Include="PythonResult.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="Result.cs" />
+    <Compile Include="ActionContext.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

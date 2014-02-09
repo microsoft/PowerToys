@@ -76,7 +76,7 @@ namespace Wox.Plugin.Fanyi
                         Title = dst,
                         SubTitle = "Copy to clipboard",
                         IcoPath = "Images\\translate.png",
-                        Action = () =>
+                        Action = (c) =>
                         {
                             Clipboard.SetText(dst);
                             context.ShowMsg("translation has been copyed to your clipboard.", "",

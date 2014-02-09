@@ -25,7 +25,9 @@ def query(key):
         results.append(res)
     return json.dumps(results)
 
-def openUrl(url):
+def openUrl(context,url):
+    #shift + enter
+    #if context["SpecialKeyState"]["ShiftPressed"] == "True":
     webbrowser.open(url)
 
 if __name__ == "__main__":

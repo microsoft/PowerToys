@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Wox.Helper;
 using Wox.Plugin;
 
 namespace Wox
@@ -212,7 +213,10 @@ namespace Wox
             {
                 if (resultItemControl.Result.Action != null)
                 {
-                    resultItemControl.Result.Action();
+                    resultItemControl.Result.Action(new ActionContext()
+                    {
+                        SpecialKeyState = new KeyboardListener().CheckModifiers()
+                    });
                 }
 
                 return resultItemControl.Result;

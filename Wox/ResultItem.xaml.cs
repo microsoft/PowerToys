@@ -70,7 +70,10 @@ namespace Wox
             AddHandler(MouseLeftButtonUpEvent, new RoutedEventHandler((o, e) =>
             {
                 if (Result.Action != null)
-                    Result.Action();
+                    Result.Action(new ActionContext()
+                    {
+                        SpecialKeyState = new KeyboardListener().CheckModifiers()
+                    });
 
                 CommonStorage.Instance.UserSelectedRecords.Add(result);
                 if (!result.DontHideWoxAfterSelect)

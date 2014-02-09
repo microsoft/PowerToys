@@ -135,7 +135,7 @@ namespace Wox.Plugin.Doc
                         Title = name,
                         SubTitle = doc.Name.Replace(".docset", ""),
                         IcoPath = doc.IconPath,
-                        Action = () =>
+                        Action = (c) =>
                         {
                             string url = string.Format(@"{0}\{1}\Contents\Resources\Documents\{2}#{3}", docsetBasePath,
                                 doc.Name, docPath, name);

@@ -26,7 +26,7 @@ namespace Wox.Plugin.System
                 {
                     Title = string.Format("Search {0} for \"{1}\"", webSearch.Title, keyword),
                     IcoPath = webSearch.IconPath,
-                    Action = () => Process.Start(webSearch.Url.Replace("{q}", keyword))
+                    Action = (c) => Process.Start(webSearch.Url.Replace("{q}", keyword))
                 });
             }
 
