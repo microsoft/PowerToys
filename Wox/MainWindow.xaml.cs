@@ -31,7 +31,6 @@ namespace Wox
 
         private KeyboardListener keyboardListener = new KeyboardListener();
         private bool WinRStroked = false;
-
         private WindowsInput.KeyboardSimulator keyboardSimulator = new WindowsInput.KeyboardSimulator(new WindowsInput.InputSimulator());
 
         public MainWindow()
