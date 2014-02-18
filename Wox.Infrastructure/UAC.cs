@@ -55,7 +55,7 @@ namespace Wox.Infrastructure
             Debug.WriteLine(args);
             var psi = new ProcessStartInfo
             {
-                FileName = Path.Combine(Directory.GetCurrentDirectory(), "Wox.UAC.exe"),
+                FileName = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Wox.UAC.exe"),
                 Arguments = args,
                 CreateNoWindow = true,
                 Verb = "runas"

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Permissions;
 using System.Windows;
@@ -149,7 +150,7 @@ namespace Wox
             {
                 if (startup)
                 {
-                    rk.SetValue("Wox", Path.Combine(Directory.GetCurrentDirectory(), "Wox.exe startHide"));
+                    rk.SetValue("Wox", Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Wox.exe hidestart"));
                 }
                 else
                 {

@@ -67,7 +67,7 @@ namespace Wox
             base.OnStartup(e);
 
             window = new MainWindow();
-            if (e.Args.Length == 0 || e.Args[0].ToLower() != "starthide")
+            if (e.Args.Length == 0 || e.Args[0].ToLower() != "hidestart")
             {
                 window.ShowApp();
             }
@@ -77,7 +77,7 @@ namespace Wox
 
         public void Activate(string[] args)
         {
-            if (args.Length == 0 || args[0].ToLower() != "starthide")
+            if (args.Length == 0 || args[0].ToLower() != "hidestart")
             {
                 window.ShowApp();
             }

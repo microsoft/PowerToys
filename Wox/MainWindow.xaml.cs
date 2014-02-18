@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using Wox.Commands;
 using Wox.Helper;
 using Wox.Infrastructure;
@@ -31,6 +32,7 @@ namespace Wox
 
         private KeyboardListener keyboardListener = new KeyboardListener();
         private bool WinRStroked = false;
+        private static object locker = new object();
 
         private WindowsInput.KeyboardSimulator keyboardSimulator = new WindowsInput.KeyboardSimulator(new WindowsInput.InputSimulator());
 
@@ -198,7 +200,7 @@ namespace Wox
                         }
                         break;
 
-                    case "starthide":
+                    case "hidestart":
                         HideApp();
                         break;
                 }
@@ -300,11 +302,14 @@ namespace Wox
                 {
                     if (o.AutoAjustScore) o.Score += CommonStorage.Instance.UserSelectedRecords.GetSelectedCount(o);
                 });
-                resultCtrl.Dispatcher.Invoke(new Action(() =>
+                lock (locker)
                 {
-                    List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).ToList();
-                    resultCtrl.AddResults(l);
-                }));
+                    resultCtrl.Dispatcher.Invoke(new Action(() =>
+                    {
+                        List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).ToList();
+                        resultCtrl.AddResults(list);
+                    }));
+                }
             }
         }
 
