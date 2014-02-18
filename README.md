@@ -22,4 +22,4 @@ Currently, Wox support using C# and Python to write your plugins. Please refer t
 Share plugin
 =========
 
-Share your plugin through <a href="http://wox.scottqian.com/">WoxPlugins</a>. After you upload your plugin, other uses can download or search your plugin through `plugin` command (this is a plugin for plugin management, which is one of the default plugins inside Wox).
+Share your plugin through <a href="http://plugin.getwox.com/">WoxPlugins</a>. After you upload your plugin, other uses can download or search your plugin through `plugin` command (this is a plugin for plugin management, which is one of the default plugins inside Wox).
