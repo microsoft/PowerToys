@@ -144,6 +144,7 @@
     <Compile Include="SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="StringNullOrEmptyToVisibilityConverter.cs" />
     <Compile Include="WebSearchSetting.xaml.cs">
       <DependentUpon>WebSearchSetting.xaml</DependentUpon>
     </Compile>

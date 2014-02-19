@@ -37,11 +37,11 @@
                         </Image>
                         <Grid Margin="5 0 5 0" Grid.Column="1">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="*"></RowDefinition>
-                                <RowDefinition x:Name="SubTitleRowDefinition"></RowDefinition>
+                                <RowDefinition></RowDefinition>
+                                <RowDefinition Height="Auto" x:Name="SubTitleRowDefinition"></RowDefinition>
                             </Grid.RowDefinitions>
                             <TextBlock Style="{DynamicResource ItemTitleStyle}" VerticalAlignment="Center" x:Name="tbTitle" Text="{Binding Title}"></TextBlock>
-                            <TextBlock Style="{DynamicResource ItemSubTitleStyle}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding SubTitle}"></TextBlock>
+                            <TextBlock Style="{DynamicResource ItemSubTitleStyle}" Visibility="{Binding SubTitle, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding SubTitle}"></TextBlock>
                         </Grid>
                     </Grid>
                 </DataTemplate>
