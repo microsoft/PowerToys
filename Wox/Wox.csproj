@@ -125,6 +125,7 @@
     <Compile Include="Helper\PluginInstaller.cs" />
     <Compile Include="Helper\WoxException.cs" />
     <Compile Include="Helper\KeyboardListener.cs" />
+    <Compile Include="ImagePathConverter.cs" />
     <Compile Include="Msg.xaml.cs">
       <DependentUpon>Msg.xaml</DependentUpon>
     </Compile>

@@ -40,7 +40,6 @@ namespace Wox
             InitialTray();
             hook.KeyPressed += OnHotKey;
             hook.RegisterHotKey(XModifierKeys.Alt, Keys.Space);
-            resultCtrl.resultItemChangedEvent += resultCtrl_resultItemChangedEvent;
             ThreadPool.SetMaxThreads(30, 10);
             InitProgressbarAnimation();
             try
@@ -104,11 +103,6 @@ namespace Wox
             exit.Click += (o, e) => CloseApp();
             System.Windows.Forms.MenuItem[] childen = { open, exit };
             notifyIcon.ContextMenu = new System.Windows.Forms.ContextMenu(childen);
-        }
-
-        private void resultCtrl_resultItemChangedEvent()
-        {
-            resultCtrl.Margin = resultCtrl.GetCurrentResultCount() > 0 ? new Thickness { Top = grid.Margin.Top } : new Thickness { Top = 0 };
         }
 
         private void OnHotKey(object sender, KeyPressedEventArgs e)
@@ -301,8 +295,10 @@ namespace Wox
                 });
                 resultCtrl.Dispatcher.Invoke(new Action(() =>
                 {
+                    var t1 = Environment.TickCount;
                     List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).ToList();
                     resultCtrl.AddResults(l);
+                    Debug.WriteLine("Time:" + (Environment.TickCount - t1) + " Count:" + l.Count);
                 }));
             }
         }

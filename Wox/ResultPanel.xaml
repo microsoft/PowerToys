@@ -3,9 +3,49 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:wox="clr-namespace:Wox"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
-    <ScrollViewer x:Name="sv" Template="{DynamicResource ScrollViewerControlTemplate}" MaxHeight="300" VerticalScrollBarVisibility="Auto">
-        <StackPanel x:Name="pnlContainer"/>
-    </ScrollViewer>
+    <UserControl.Resources>
+        <wox:ImagePathConverter x:Key="ImagePathConverter"/>
+    </UserControl.Resources>
+
+    <Grid>
+        <ListBox x:Name="lbResults" ScrollViewer.HorizontalScrollBarVisibility="Hidden" SelectionChanged ="lbResults_SelectionChanged"  Focusable="False"  KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single" BorderBrush="Transparent" Background="Transparent" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
+            <ListBox.Resources>
+                <!--SelectedItem with focus-->
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#4F6180"/>
+                <!--SelectedItem without focus-->
+                <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#4F6180"/>
+            </ListBox.Resources>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5"  Cursor="Hand">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="32"></ColumnDefinition>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" >
+                            <Image.Source>
+                                <MultiBinding Converter="{StaticResource ImagePathConverter}">
+                                    <MultiBinding.Bindings>
+                                        <Binding Path="IcoPath" />
+                                        <Binding Path="PluginDirectory" />
+                                    </MultiBinding.Bindings>
+                                </MultiBinding>
+                            </Image.Source>
+                        </Image>
+                        <Grid Margin="5 0 5 0" Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"></RowDefinition>
+                                <RowDefinition x:Name="SubTitleRowDefinition"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <TextBlock Style="{DynamicResource ItemTitleStyle}" VerticalAlignment="Center" x:Name="tbTitle" Text="{Binding Title}"></TextBlock>
+                            <TextBlock Style="{DynamicResource ItemSubTitleStyle}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding SubTitle}"></TextBlock>
+                        </Grid>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
 </UserControl>
