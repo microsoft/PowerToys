@@ -22,6 +22,8 @@ namespace Wox
 
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
+            if (values[0] == null) return null;
+
             string path = values[0].ToString();
             string pluginDirectory = values[1].ToString();
 
