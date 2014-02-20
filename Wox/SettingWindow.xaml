@@ -1,6 +1,7 @@
 ﻿<Window x:Class="Wox.SettingWidow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wox="clr-namespace:Wox"
         Icon="Images\app.png"
         Title="Wox Setting"
         ResizeMode="NoResize"
@@ -21,6 +22,9 @@
                 <StackPanel Orientation="Horizontal" Margin="10">
                     <TextBlock Text="Theme:" />
                     <ComboBox x:Name="themeComboBox" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <wox:HotkeyControl />
                 </StackPanel>
             </StackPanel>
         </TabItem>

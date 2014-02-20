@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using System.Windows.Threading;
+using NHotkey;
+using NHotkey.Wpf;
 using Wox.Commands;
 using Wox.Helper;
 using Wox.Infrastructure;
@@ -18,19 +17,16 @@ using Wox.Plugin;
 using Wox.PluginLoader;
 using Application = System.Windows.Application;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-using MessageBox = System.Windows.MessageBox;
-using UserControl = System.Windows.Controls.UserControl;
 
 namespace Wox
 {
     public partial class MainWindow
     {
-        private KeyboardHook hook = new KeyboardHook();
         private NotifyIcon notifyIcon;
         Storyboard progressBarStoryboard = new Storyboard();
         private bool queryHasReturn = false;
 
-        private KeyboardListener keyboardListener = new KeyboardListener();
+        private GloablHotkey globalHotkey = new GloablHotkey();
         private bool WinRStroked = false;
         private static object locker = new object();
 
@@ -41,8 +37,6 @@ namespace Wox
             InitializeComponent();
 
             InitialTray();
-            hook.KeyPressed += OnHotKey;
-            hook.RegisterHotKey(XModifierKeys.Alt, Keys.Space);
             resultCtrl.resultItemChangedEvent += resultCtrl_resultItemChangedEvent;
             ThreadPool.SetMaxThreads(30, 10);
             InitProgressbarAnimation();
@@ -55,7 +49,21 @@ namespace Wox
                 SetTheme(CommonStorage.Instance.UserSetting.Theme = "Default");
             }
 
+            HotkeyManager.Current.AddOrReplace("ShowHideWox", Key.W, ModifierKeys.Windows, OnHotkey);
             this.Closing += MainWindow_Closing;
+        }
+
+        private void OnHotkey(object sender, HotkeyEventArgs e)
+        {
+            if (!IsVisible)
+            {
+                ShowWox();
+            }
+            else
+            {
+                HideWox();
+            }
+            e.Handled = true;
         }
 
         void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -112,18 +120,6 @@ namespace Wox
         private void resultCtrl_resultItemChangedEvent()
         {
             resultCtrl.Margin = resultCtrl.GetCurrentResultCount() > 0 ? new Thickness { Top = grid.Margin.Top } : new Thickness { Top = 0 };
-        }
-
-        private void OnHotKey(object sender, KeyPressedEventArgs e)
-        {
-            if (!IsVisible)
-            {
-                ShowWox();
-            }
-            else
-            {
-                HideWox();
-            }
         }
 
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
@@ -215,7 +211,7 @@ namespace Wox
             WakeupApp();
             Plugins.Init();
 
-            keyboardListener.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
+            globalHotkey.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
         }
 
         private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)

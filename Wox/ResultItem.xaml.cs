@@ -72,7 +72,7 @@ namespace Wox
                 if (Result.Action != null)
                     Result.Action(new ActionContext()
                     {
-                        SpecialKeyState = new KeyboardListener().CheckModifiers()
+                        SpecialKeyState = new GloablHotkey().CheckModifiers()
                     });
 
                 CommonStorage.Instance.UserSelectedRecords.Add(result);

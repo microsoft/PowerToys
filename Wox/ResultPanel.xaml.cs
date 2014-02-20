@@ -215,7 +215,7 @@ namespace Wox
                 {
                     resultItemControl.Result.Action(new ActionContext()
                     {
-                        SpecialKeyState = new KeyboardListener().CheckModifiers()
+                        SpecialKeyState = new GloablHotkey().CheckModifiers()
                     });
                 }
 

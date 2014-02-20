@@ -35,7 +35,7 @@ namespace Wox.Helper
     /// Listens keyboard globally.
     /// <remarks>Uses WH_KEYBOARD_LL.</remarks>
     /// </summary>
-    public class KeyboardListener : IDisposable
+    public class GloablHotkey : IDisposable
     {
         private InterceptKeys.LowLevelKeyboardProc hookedLowLevelKeyboardProc;
         private IntPtr hookId = IntPtr.Zero;
@@ -48,7 +48,7 @@ namespace Wox.Helper
         private const int VK_ALT = 0x12;
         private const int VK_WIN = 91;
 
-        public KeyboardListener()
+        public GloablHotkey()
         {
             // We have to store the LowLevelKeyboardProc, so that it is not garbage collected runtime
             hookedLowLevelKeyboardProc = LowLevelKeyboardProc;
@@ -107,7 +107,7 @@ namespace Wox.Helper
             return (IntPtr)1;
         }
 
-        ~KeyboardListener()
+        ~GloablHotkey()
         {
             Dispose();
         }

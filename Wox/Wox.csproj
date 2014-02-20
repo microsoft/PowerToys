@@ -89,6 +89,12 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.5.0.8\lib\net35\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="NHotkey">
+      <HintPath>..\packages\NHotkey.1.1.0.0\lib\NHotkey.dll</HintPath>
+    </Reference>
+    <Reference Include="NHotkey.Wpf">
+      <HintPath>..\packages\NHotkey.Wpf.1.1.0.0\lib\NHotkey.Wpf.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationUI, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="ReachFramework" />
     <Reference Include="System" />
@@ -120,11 +126,13 @@
     <Compile Include="Commands\PluginCommand.cs" />
     <Compile Include="Commands\SystemCommand.cs" />
     <Compile Include="DispatcherExtensions.cs" />
-    <Compile Include="Helper\KeyboardHook.cs" />
     <Compile Include="Helper\Log.cs" />
     <Compile Include="Helper\PluginInstaller.cs" />
     <Compile Include="Helper\WoxException.cs" />
-    <Compile Include="Helper\KeyboardListener.cs" />
+    <Compile Include="Helper\GloablHotkey.cs" />
+    <Compile Include="HotkeyControl.xaml.cs">
+      <DependentUpon>HotkeyControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Msg.xaml.cs">
       <DependentUpon>Msg.xaml</DependentUpon>
     </Compile>
@@ -140,15 +148,16 @@
     <Compile Include="ResultItem.xaml.cs">
       <DependentUpon>ResultItem.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ResultWindow.xaml.cs">
-      <DependentUpon>ResultWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="WebSearchSetting.xaml.cs">
       <DependentUpon>WebSearchSetting.xaml</DependentUpon>
     </Compile>
+    <Page Include="HotkeyControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -172,10 +181,6 @@
     <Page Include="ResultItem.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ResultWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="SettingWindow.xaml">
       <SubType>Designer</SubType>
