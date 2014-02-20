@@ -11,7 +11,7 @@
     </UserControl.Resources>
 
     <Grid>
-        <ListBox x:Name="lbResults" ScrollViewer.HorizontalScrollBarVisibility="Hidden" SelectionChanged ="lbResults_SelectionChanged"  Focusable="False"  KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single" BorderBrush="Transparent" Background="Transparent" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
+        <ListBox x:Name="lbResults" ScrollViewer.CanContentScroll="False" ScrollViewer.HorizontalScrollBarVisibility="Hidden" SelectionChanged ="lbResults_SelectionChanged"  Focusable="False"  KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single" BorderBrush="Transparent" Background="Transparent" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
             <ListBox.Resources>
                 <!--SelectedItem with focus-->
                 <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#4F6180"/>

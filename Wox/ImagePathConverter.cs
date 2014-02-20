@@ -41,10 +41,10 @@ namespace Wox
             {
                 return GetIcon(resolvedPath);
             }
-            else
-            {
-                return new BitmapImage(new Uri(resolvedPath));
-            }
+
+            if(!string.IsNullOrEmpty(path)) return new BitmapImage(new Uri(resolvedPath));
+
+            return null;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
