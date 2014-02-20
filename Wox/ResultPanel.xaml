@@ -10,13 +10,13 @@
         <wox:ImagePathConverter x:Key="ImagePathConverter"/>
     </UserControl.Resources>
 
-    <Grid>
-        <ListBox x:Name="lbResults" ScrollViewer.CanContentScroll="False" ScrollViewer.HorizontalScrollBarVisibility="Hidden" SelectionChanged ="lbResults_SelectionChanged"  Focusable="False"  KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single" BorderBrush="Transparent" Background="Transparent" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
+    <Grid x:Name="gridContainer">
+        <ListBox x:Name="lbResults" Style="{DynamicResource listboxStyle}" SelectionChanged ="lbResults_SelectionChanged"  Focusable="False"  KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
             <ListBox.Resources>
                 <!--SelectedItem with focus-->
-                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#4F6180"/>
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{DynamicResource ResultItemHighlightBackgroundColor}"/>
                 <!--SelectedItem without focus-->
-                <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#4F6180"/>
+                <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource ResultItemHighlightBackgroundColor}"/>
             </ListBox.Resources>
             <ListBox.ItemTemplate>
                 <DataTemplate>

@@ -28,6 +28,8 @@ namespace Wox
         private NotifyIcon notifyIcon;
         Storyboard progressBarStoryboard = new Storyboard();
         private bool queryHasReturn = false;
+        private static object locker = new object();
+        private static List<Result> waitShowResultList = new List<Result>();
 
         private KeyboardListener keyboardListener = new KeyboardListener();
         private bool WinRStroked = false;
@@ -51,12 +53,7 @@ namespace Wox
                 SetTheme(CommonStorage.Instance.UserSetting.Theme = "Default");
             }
 
-            this.Closing += MainWindow_Closing;
-        }
-
-        void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            e.Cancel = true;
+            Plugins.Init();
         }
 
         private void WakeupApp()
@@ -203,8 +200,7 @@ namespace Wox
             Left = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
             Top = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 3;
 
-            WakeupApp();
-            Plugins.Init();
+            //WakeupApp();
 
             keyboardListener.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
         }
@@ -293,13 +289,22 @@ namespace Wox
                 {
                     if (o.AutoAjustScore) o.Score += CommonStorage.Instance.UserSelectedRecords.GetSelectedCount(o);
                 });
-                resultCtrl.Dispatcher.Invoke(new Action(() =>
+                lock(locker)
+                {
+                    waitShowResultList.AddRange(list);
+                }
+                Dispatcher.DelayInvoke("ShowResult", k => resultCtrl.Dispatcher.Invoke(new Action(() =>
                 {
                     var t1 = Environment.TickCount;
-                    List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).ToList();
+                    
+                    List<Result> l = waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).ToList();
+                    waitShowResultList.Clear();
+
                     resultCtrl.AddResults(l);
+
                     Debug.WriteLine("Time:" + (Environment.TickCount - t1) + " Count:" + l.Count);
-                }));
+                })), TimeSpan.FromMilliseconds(50));
+
             }
         }
 
@@ -327,6 +332,7 @@ namespace Wox
         public void CloseApp()
         {
             notifyIcon.Visible = false;
+            Close();
             Environment.Exit(0);
         }
 

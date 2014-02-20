@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
+using System.Windows;
 using System.Windows.Controls;
 using Wox.Helper;
 using Wox.Plugin;
-using Point = System.Windows.Point;
 
 namespace Wox
 {
@@ -23,6 +22,7 @@ namespace Wox
                 int position = GetInsertLocation(result.Score);
                 lbResults.Items.Insert(position, result);
             }
+            gridContainer.Margin = lbResults.Items.Count > 0 ? new Thickness { Top = 8 } : new Thickness { Top = 0 };
             lbResults.UpdateLayout();
             SelectFirst();
         }
@@ -119,6 +119,7 @@ namespace Wox
         public void Clear()
         {
             lbResults.Items.Clear();
+            gridContainer.Margin = new Thickness { Top = 0 };
         }
 
         private void lbResults_SelectionChanged(object sender, SelectionChangedEventArgs e)

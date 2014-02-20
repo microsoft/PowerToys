@@ -23,32 +23,37 @@
         <Setter Property="Stroke" Value="Blue"></Setter>
     </Style>
 
+    <Color x:Key="ResultItemHighlightBackgroundColor">#543BFD</Color>
+
     <!-- Item Style -->
     <Style x:Key="ItemTitleStyle" TargetType="{x:Type TextBlock}" >
         <Setter Property="Foreground" Value="#141411"></Setter>
         <Setter Property="FontSize" Value="16"></Setter>
         <Setter Property="FontWeight" Value="Medium"></Setter>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding ElementName=resultItemControl, Path=Selected}" Value="true">
-                <Setter Property="Foreground" Value="#F6F6FF"></Setter>
-            </DataTrigger>
-        </Style.Triggers>
     </Style>
     <Style x:Key="ItemSubTitleStyle" TargetType="{x:Type TextBlock}" >
         <Setter Property="Foreground"  Value="#B3B2B0"></Setter>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding ElementName=resultItemControl, Path=Selected}" Value="true">
-                <Setter Property="Foreground" Value="#F6F6FF"></Setter>
-            </DataTrigger>
-        </Style.Triggers>
     </Style>
     <Style x:Key="ItemStyle" TargetType="{x:Type UserControl}" >
         <Setter Property="Background" Value="Transparent"></Setter>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Selected}" Value="true">
-                <Setter Property="Background" Value="#543BFD"></Setter>
-            </DataTrigger>
-        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="listboxStyle" TargetType="{x:Type ListBox}">
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="OverridesDefaultStyle" Value="true"/>
+        <Setter Property="OverridesDefaultStyle" Value="true"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBox">
+                    <ScrollViewer Focusable="false" Template="{DynamicResource ScrollViewerControlTemplate}">
+                        <StackPanel IsItemsHost="True" />
+                    </ScrollViewer>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- ScrollViewer Style -->
