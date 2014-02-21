@@ -35,6 +35,8 @@
     </Style>
     <Style x:Key="ItemTitleSelectedStyle" TargetType="{x:Type TextBlock}">
         <Setter Property="Foreground" Value="#F6F6FF" />
+        <Setter Property="FontSize" Value="16"></Setter>
+        <Setter Property="FontWeight" Value="Medium"></Setter>
     </Style>
     <Style x:Key="ItemSubTitleSelectedStyle" TargetType="{x:Type TextBlock}">
         <Setter Property="Foreground" Value="#F6F6FF" />

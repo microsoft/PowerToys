@@ -7,45 +7,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Themes/Default.xaml"></ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
-
-            <Style x:Key="BaseWindowStyle" TargetType="{x:Type Window}">
-                <Setter Property="Height" Value="80" />
-                <Setter Property="Width" Value="500" />
-                <Setter Property="Background" Value="#424242" />
-            </Style>
-            
-            <Style x:Key="BaseQueryBoxStyle" TargetType="{x:Type TextBox}">
-                <Setter Property="BorderThickness" Value="0" />
-                <Setter Property="FontSize" Value="25" />
-                <Setter Property="FontWeight" Value="Medium" />
-                <Setter Property="AllowDrop" Value="true" />
-                <Setter Property="Height" Value="46" />
-                <Setter Property="Background" Value="#616161" />
-                <Setter Property="Foreground" Value="#E3E0E3" />
-                <Setter Property="VerticalContentAlignment" Value="Center" />
-                <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
-            </Style>
-
-            <!-- search item title -->
-            <Style x:Key="BaseItemTitleStyle" TargetType="{x:Type TextBlock}">
-                <Setter Property="Foreground" Value="#FFFFF8" />
-                <Setter Property="FontSize" Value="16" />
-                <Setter Property="FontWeight" Value="Medium" />
-            </Style>
-            <!-- search item selected title -->
-            <Style x:Key="BaseItemTitleSelectedStyle" TargetType="{x:Type TextBlock}">
-                <Setter Property="Foreground" Value="#FFFFF8" />
-                <Setter Property="FontSize" Value="16" />
-                <Setter Property="FontWeight" Value="Medium" />
-            </Style>
-
-            <!-- search item sub title -->
-            <Style x:Key="BaseItemSubTitleStyle" TargetType="{x:Type TextBlock}">
-                <Setter Property="Foreground" Value="#D9D9D4" />
-            </Style>
-            <Style x:Key="BaseItemSubTitleSelectedStyle" TargetType="{x:Type TextBlock}">
-                <Setter Property="Foreground" Value="#D9D9D4" />
-            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
