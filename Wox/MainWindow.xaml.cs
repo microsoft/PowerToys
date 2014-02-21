@@ -41,7 +41,7 @@ namespace Wox
 
             InitialTray();
             hook.KeyPressed += OnHotKey;
-            hook.RegisterHotKey(XModifierKeys.Alt, Keys.Space);
+            hook.RegisterHotKey(XModifierKeys.Win, Keys.W);
             ThreadPool.SetMaxThreads(30, 10);
             InitProgressbarAnimation();
             try
@@ -53,7 +53,6 @@ namespace Wox
                 SetTheme(CommonStorage.Instance.UserSetting.Theme = "Default");
             }
 
-            Plugins.Init();
         }
 
         private void WakeupApp()
@@ -201,6 +200,7 @@ namespace Wox
             Top = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 3;
 
             //WakeupApp();
+            Plugins.Init();
 
             keyboardListener.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
         }
@@ -302,7 +302,7 @@ namespace Wox
 
                     resultCtrl.AddResults(l);
 
-                    Debug.WriteLine("Time:" + (Environment.TickCount - t1) + " Count:" + l.Count);
+                    Debug.WriteLine("Total Time:" + (Environment.TickCount - t1) + " Count:" + l.Count);
                 })), TimeSpan.FromMilliseconds(50));
 
             }

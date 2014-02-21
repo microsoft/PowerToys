@@ -23,7 +23,6 @@
         <Setter Property="Stroke" Value="Blue"></Setter>
     </Style>
 
-    <Color x:Key="ResultItemHighlightBackgroundColor">#543BFD</Color>
 
     <!-- Item Style -->
     <Style x:Key="ItemTitleStyle" TargetType="{x:Type TextBlock}" >
@@ -34,9 +33,13 @@
     <Style x:Key="ItemSubTitleStyle" TargetType="{x:Type TextBlock}" >
         <Setter Property="Foreground"  Value="#B3B2B0"></Setter>
     </Style>
-    <Style x:Key="ItemStyle" TargetType="{x:Type UserControl}" >
-        <Setter Property="Background" Value="Transparent"></Setter>
+    <Style x:Key="ItemTitleSelectedStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="#F6F6FF" />
     </Style>
+    <Style x:Key="ItemSubTitleSelectedStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="#F6F6FF" />
+    </Style>
+    <Color x:Key="ResultItemHighlightBackgroundColor">#543BFD</Color>
 
     <Style x:Key="listboxStyle" TargetType="{x:Type ListBox}">
         <Setter Property="BorderBrush" Value="Transparent"/>

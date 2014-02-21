@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using Wox.Helper;
@@ -23,7 +25,6 @@ namespace Wox
                 lbResults.Items.Insert(position, result);
             }
             gridContainer.Margin = lbResults.Items.Count > 0 ? new Thickness { Top = 8 } : new Thickness { Top = 0 };
-            lbResults.UpdateLayout();
             SelectFirst();
         }
 
