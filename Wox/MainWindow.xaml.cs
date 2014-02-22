@@ -15,6 +15,7 @@ using NHotkey;
 using NHotkey.Wpf;
 using Wox.Commands;
 using Wox.Infrastructure;
+using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.PluginLoader;
 using Application = System.Windows.Application;
@@ -58,18 +59,35 @@ namespace Wox
             Closing += MainWindow_Closing;
         }
 
-        public void SetHotkey(string hotkeyStr)
+        public void SetHotkey(string hotkeyStr,EventHandler<HotkeyEventArgs> action)
         {
             HotkeyModel hotkey = new HotkeyModel(hotkeyStr);
             try
             {
-                HotkeyManager.Current.AddOrReplace("ShowHideWox", hotkey.CharKey, hotkey.ModifierKeys, OnHotkey);
+                HotkeyManager.Current.AddOrReplace(hotkeyStr, hotkey.CharKey, hotkey.ModifierKeys,action);
             }
             catch (Exception)
             {
                 MessageBox.Show("Registe hotkey: " + CommonStorage.Instance.UserSetting.Hotkey + " failed.");
             }
+        }
 
+        public void RemoveHotkey(string hotkeyStr)
+        {
+            HotkeyManager.Current.Remove(hotkeyStr);
+        }
+
+        private void SetCustomPluginHotkey()
+        {
+            foreach (CustomPluginHotkey hotkey in CommonStorage.Instance.UserSetting.CustomPluginHotkeys)
+            {
+                CustomPluginHotkey hotkey1 = hotkey;
+                SetHotkey(hotkey.Hotkey,delegate
+                {
+                    ShowApp();
+                    ChangeQuery(hotkey1.ActionKeyword);
+                });
+            }
         }
 
         private void OnHotkey(object sender, HotkeyEventArgs e)
@@ -96,7 +114,7 @@ namespace Wox
             //This is caused by the Virtual Mermory Page Mechanisam. So, our solution is execute some codes in every min
             //which may prevent sysetem uninstall memory from RAM to disk.
 
-            var t = new Timer(1000*60*5) {AutoReset = true, Enabled = true};
+            var t = new Timer(1000 * 60 * 5) { AutoReset = true, Enabled = true };
             t.Elapsed += (o, e) => Dispatcher.Invoke(new Action(() =>
             {
                 if (Visibility != Visibility.Visible)
@@ -126,21 +144,21 @@ namespace Wox
 
         private void InitialTray()
         {
-            notifyIcon = new NotifyIcon {Text = "Wox", Icon = Properties.Resources.app, Visible = true};
+            notifyIcon = new NotifyIcon { Text = "Wox", Icon = Properties.Resources.app, Visible = true };
             notifyIcon.Click += (o, e) => ShowWox();
             var open = new MenuItem("Open");
             open.Click += (o, e) => ShowWox();
             var exit = new MenuItem("Exit");
             exit.Click += (o, e) => CloseApp();
-            MenuItem[] childen = {open, exit};
+            MenuItem[] childen = { open, exit };
             notifyIcon.ContextMenu = new ContextMenu(childen);
         }
 
         private void resultCtrl_resultItemChangedEvent()
         {
             resultCtrl.Margin = resultCtrl.GetCurrentResultCount() > 0
-                ? new Thickness {Top = grid.Margin.Top}
-                : new Thickness {Top = 0};
+                ? new Thickness { Top = grid.Margin.Top }
+                : new Thickness { Top = 0 };
         }
 
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
@@ -225,10 +243,11 @@ namespace Wox
 
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
-            Left = (SystemParameters.PrimaryScreenWidth - ActualWidth)/2;
-            Top = (SystemParameters.PrimaryScreenHeight - ActualHeight)/3;
+            Left = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
+            Top = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 3;
 
-            SetHotkey(CommonStorage.Instance.UserSetting.Hotkey);
+            SetHotkey(CommonStorage.Instance.UserSetting.Hotkey,OnHotkey);
+            SetCustomPluginHotkey();
             WakeupApp();
             Plugins.Init();
 
@@ -240,13 +259,13 @@ namespace Wox
             if (CommonStorage.Instance.UserSetting.ReplaceWinR)
             {
                 //todo:need refatoring. move those codes to CMD file or expose events
-                if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int) Keys.R && state.WinPressed)
+                if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
                 {
                     WinRStroked = true;
                     Dispatcher.BeginInvoke(new Action(OnWinRPressed));
                     return false;
                 }
-                if (keyevent == KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int) Keys.LWin)
+                if (keyevent == KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int)Keys.LWin)
                 {
                     WinRStroked = false;
                     keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.CONTROL);
@@ -345,8 +364,6 @@ namespace Wox
 
         #region Public API
 
-        //Those method can be invoked by plugins
-
         public void ChangeQuery(string query)
         {
             tbQuery.Text = query;
@@ -371,14 +388,13 @@ namespace Wox
 
         public void ShowMsg(string title, string subTitle, string iconPath)
         {
-            var m = new Msg {Owner = GetWindow(this)};
+            var m = new Msg { Owner = GetWindow(this) };
             m.Show(title, subTitle, iconPath);
         }
 
         public void OpenSettingDialog()
         {
-            var s = new SettingWidow(this);
-            s.Show();
+            new SettingWidow(this).Show();
         }
 
         #endregion

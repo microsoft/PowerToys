@@ -9,7 +9,7 @@ namespace Wox.Infrastructure.UserSettings
         public string Theme { get; set; }
         public bool ReplaceWinR { get; set; }
         public List<WebSearch> WebSearches { get; set; }
-
+        public List<CustomPluginHotkey> CustomPluginHotkeys { get; set; }
         public bool StartWoxOnSystemStartup { get; set; }
 
         public List<WebSearch> LoadDefaultWebSearches()

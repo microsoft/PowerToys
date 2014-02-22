@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -31,16 +32,9 @@ namespace Wox
             InitializeComponent();
         }
 
-        public void SetHotkey(HotkeyModel model)
-        {
-            if (model != null)
-            {
-                SetHotkey(model.ToString());
-            }
-        }
-
         private void TbHotkey_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
+            e.Handled = true;
             tbMsg.Visibility = Visibility.Hidden;
 
             //when alt is pressed, the real key should be e.SystemKey
@@ -77,31 +71,41 @@ namespace Wox
             {
                 text += " + Space";
             }
-            
-            e.Handled = true;
+            else
+            {
+                return;
+            }
+
+            if (text == tbHotkey.Text)
+            {
+                return;
+            }
 
             Dispatcher.DelayInvoke("HotkeyAvailableTest", o => SetHotkey(text), TimeSpan.FromMilliseconds(300));
         }
 
-        public void SetHotkey(string keyStr)
+        public void SetHotkey(string keyStr, bool triggerValidate = true)
         {
+            tbMsg.Visibility = Visibility.Visible;
             tbHotkey.Text = keyStr;
             tbHotkey.Select(tbHotkey.Text.Length, 0);
-
             CurrentHotkey = new HotkeyModel(keyStr);
-            CurrentHotkeyAvailable = CheckHotAvailabel(CurrentHotkey);
-            tbMsg.Visibility = Visibility.Visible;
-            if (!CurrentHotkeyAvailable)
+
+            if (triggerValidate)
             {
-                tbMsg.Foreground = new SolidColorBrush(Colors.Red);
-                tbMsg.Text = "hotkey unavailable";
+                CurrentHotkeyAvailable = CheckHotAvailabel(CurrentHotkey);
+                if (!CurrentHotkeyAvailable)
+                {
+                    tbMsg.Foreground = new SolidColorBrush(Colors.Red);
+                    tbMsg.Text = "hotkey unavailable";
+                }
+                else
+                {
+                    tbMsg.Foreground = new SolidColorBrush(Colors.Green);
+                    tbMsg.Text = "succeed";
+                }
+                OnOnHotkeyChanged();
             }
-            else
-            {
-                tbMsg.Foreground = new SolidColorBrush(Colors.Green);
-                tbMsg.Text = "hotkey available";
-            }
-            OnOnHotkeyChanged();
         }
 
         private bool CheckHotAvailabel(HotkeyModel hotkey)

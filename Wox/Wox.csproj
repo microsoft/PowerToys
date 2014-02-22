@@ -125,6 +125,9 @@
     <Compile Include="Commands\CommandFactory.cs" />
     <Compile Include="Commands\PluginCommand.cs" />
     <Compile Include="Commands\SystemCommand.cs" />
+    <Compile Include="CustomPluginHotkeySetting.xaml.cs">
+      <DependentUpon>CustomPluginHotkeySetting.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DispatcherExtensions.cs" />
     <Compile Include="Helper\Log.cs" />
     <Compile Include="Helper\PluginInstaller.cs" />
@@ -153,6 +156,10 @@
     <Compile Include="WebSearchSetting.xaml.cs">
       <DependentUpon>WebSearchSetting.xaml</DependentUpon>
     </Compile>
+    <Page Include="CustomPluginHotkeySetting.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="HotkeyControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
