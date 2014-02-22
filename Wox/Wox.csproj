@@ -135,6 +135,7 @@
     <Compile Include="HotkeyControl.xaml.cs">
       <DependentUpon>HotkeyControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ImagePathConverter.cs" />
     <Compile Include="Msg.xaml.cs">
       <DependentUpon>Msg.xaml</DependentUpon>
     </Compile>
@@ -147,12 +148,10 @@
     <Compile Include="ResultPanel.xaml.cs">
       <DependentUpon>ResultPanel.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ResultItem.xaml.cs">
-      <DependentUpon>ResultItem.xaml</DependentUpon>
-    </Compile>
     <Compile Include="SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="StringNullOrEmptyToVisibilityConverter.cs" />
     <Compile Include="WebSearchSetting.xaml.cs">
       <DependentUpon>WebSearchSetting.xaml</DependentUpon>
     </Compile>
@@ -181,10 +180,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ResultPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ResultItem.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -30,8 +30,9 @@ namespace Wox
     public partial class MainWindow
     {
         private static readonly object locker = new object();
-        private readonly GloablHotkey globalHotkey = new GloablHotkey();
 
+        private static readonly List<Result> waitShowResultList = new List<Result>();
+        private readonly GloablHotkey globalHotkey = new GloablHotkey();
         private readonly KeyboardSimulator keyboardSimulator = new KeyboardSimulator(new InputSimulator());
         private readonly Storyboard progressBarStoryboard = new Storyboard();
         private bool WinRStroked;
@@ -43,7 +44,7 @@ namespace Wox
             InitializeComponent();
 
             InitialTray();
-            resultCtrl.resultItemChangedEvent += resultCtrl_resultItemChangedEvent;
+
             ThreadPool.SetMaxThreads(30, 10);
             InitProgressbarAnimation();
             try
@@ -54,17 +55,14 @@ namespace Wox
             {
                 SetTheme(CommonStorage.Instance.UserSetting.Theme = "Default");
             }
-
-
-            Closing += MainWindow_Closing;
         }
 
-        public void SetHotkey(string hotkeyStr,EventHandler<HotkeyEventArgs> action)
+        public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
         {
-            HotkeyModel hotkey = new HotkeyModel(hotkeyStr);
+            var hotkey = new HotkeyModel(hotkeyStr);
             try
             {
-                HotkeyManager.Current.AddOrReplace(hotkeyStr, hotkey.CharKey, hotkey.ModifierKeys,action);
+                HotkeyManager.Current.AddOrReplace(hotkeyStr, hotkey.CharKey, hotkey.ModifierKeys, action);
             }
             catch (Exception)
             {
@@ -74,15 +72,19 @@ namespace Wox
 
         public void RemoveHotkey(string hotkeyStr)
         {
-            HotkeyManager.Current.Remove(hotkeyStr);
+            if (!string.IsNullOrEmpty(hotkeyStr))
+            {
+                HotkeyManager.Current.Remove(hotkeyStr);
+            }
         }
 
         private void SetCustomPluginHotkey()
         {
+            if (CommonStorage.Instance.UserSetting.CustomPluginHotkeys == null) return;
             foreach (CustomPluginHotkey hotkey in CommonStorage.Instance.UserSetting.CustomPluginHotkeys)
             {
                 CustomPluginHotkey hotkey1 = hotkey;
-                SetHotkey(hotkey.Hotkey,delegate
+                SetHotkey(hotkey.Hotkey, delegate
                 {
                     ShowApp();
                     ChangeQuery(hotkey1.ActionKeyword);
@@ -103,18 +105,13 @@ namespace Wox
             e.Handled = true;
         }
 
-        private void MainWindow_Closing(object sender, CancelEventArgs e)
-        {
-            e.Cancel = true;
-        }
-
         private void WakeupApp()
         {
             //After hide wox in the background for a long time. It will become very slow in the next show.
             //This is caused by the Virtual Mermory Page Mechanisam. So, our solution is execute some codes in every min
             //which may prevent sysetem uninstall memory from RAM to disk.
 
-            var t = new Timer(1000 * 60 * 5) { AutoReset = true, Enabled = true };
+            var t = new Timer(1000*60*5) {AutoReset = true, Enabled = true};
             t.Elapsed += (o, e) => Dispatcher.Invoke(new Action(() =>
             {
                 if (Visibility != Visibility.Visible)
@@ -144,21 +141,14 @@ namespace Wox
 
         private void InitialTray()
         {
-            notifyIcon = new NotifyIcon { Text = "Wox", Icon = Properties.Resources.app, Visible = true };
+            notifyIcon = new NotifyIcon {Text = "Wox", Icon = Properties.Resources.app, Visible = true};
             notifyIcon.Click += (o, e) => ShowWox();
             var open = new MenuItem("Open");
             open.Click += (o, e) => ShowWox();
             var exit = new MenuItem("Exit");
             exit.Click += (o, e) => CloseApp();
-            MenuItem[] childen = { open, exit };
+            MenuItem[] childen = {open, exit};
             notifyIcon.ContextMenu = new ContextMenu(childen);
-        }
-
-        private void resultCtrl_resultItemChangedEvent()
-        {
-            resultCtrl.Margin = resultCtrl.GetCurrentResultCount() > 0
-                ? new Thickness { Top = grid.Margin.Top }
-                : new Thickness { Top = 0 };
         }
 
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
@@ -243,12 +233,12 @@ namespace Wox
 
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
-            Left = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
-            Top = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 3;
+            Left = (SystemParameters.PrimaryScreenWidth - ActualWidth)/2;
+            Top = (SystemParameters.PrimaryScreenHeight - ActualHeight)/3;
 
-            SetHotkey(CommonStorage.Instance.UserSetting.Hotkey,OnHotkey);
+            SetHotkey(CommonStorage.Instance.UserSetting.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
-            WakeupApp();
+            //WakeupApp();
             Plugins.Init();
 
             globalHotkey.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
@@ -259,13 +249,13 @@ namespace Wox
             if (CommonStorage.Instance.UserSetting.ReplaceWinR)
             {
                 //todo:need refatoring. move those codes to CMD file or expose events
-                if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
+                if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int) Keys.R && state.WinPressed)
                 {
                     WinRStroked = true;
                     Dispatcher.BeginInvoke(new Action(OnWinRPressed));
                     return false;
                 }
-                if (keyevent == KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int)Keys.LWin)
+                if (keyevent == KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int) Keys.LWin)
                 {
                     WinRStroked = false;
                     keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.CONTROL);
@@ -341,13 +331,21 @@ namespace Wox
                     });
                 lock (locker)
                 {
-                    resultCtrl.Dispatcher.Invoke(new Action(() =>
-                    {
-                        List<Result> l =
-                            list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).ToList();
-                        resultCtrl.AddResults(list);
-                    }));
+                    waitShowResultList.AddRange(list);
                 }
+                Dispatcher.DelayInvoke("ShowResult", k => resultCtrl.Dispatcher.Invoke(new Action(() =>
+                {
+                    int t1 = Environment.TickCount;
+
+                    List<Result> l =
+                        waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text)
+                            .ToList();
+                    waitShowResultList.Clear();
+
+                    resultCtrl.AddResults(l);
+
+                    Debug.WriteLine("Total Time:" + (Environment.TickCount - t1) + " Count:" + l.Count);
+                })), TimeSpan.FromMilliseconds(50));
             }
         }
 
@@ -373,6 +371,7 @@ namespace Wox
         public void CloseApp()
         {
             notifyIcon.Visible = false;
+            Close();
             Environment.Exit(0);
         }
 
@@ -388,7 +387,7 @@ namespace Wox
 
         public void ShowMsg(string title, string subTitle, string iconPath)
         {
-            var m = new Msg { Owner = GetWindow(this) };
+            var m = new Msg {Owner = GetWindow(this)};
             m.Show(title, subTitle, iconPath);
         }
 
