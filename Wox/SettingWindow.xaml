@@ -24,7 +24,7 @@
                     <ComboBox x:Name="themeComboBox" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="10">
-                    <wox:HotkeyControl />
+                    <wox:HotkeyControl x:Name="ctlHotkey" />
                 </StackPanel>
             </StackPanel>
         </TabItem>

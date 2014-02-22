@@ -31,6 +31,8 @@ namespace Wox
             this.mainWindow = mainWindow;
             InitializeComponent();
             Loaded += Setting_Loaded;
+            ctlHotkey.OnHotkeyChanged += ctlHotkey_OnHotkeyChanged;
+            ctlHotkey.SetHotkey(CommonStorage.Instance.UserSetting.Hotkey);
             cbReplaceWinR.Checked += (o, e) =>
             {
                 CommonStorage.Instance.UserSetting.ReplaceWinR = true;
@@ -41,6 +43,16 @@ namespace Wox
                 CommonStorage.Instance.UserSetting.ReplaceWinR = false;
                 CommonStorage.Instance.Save();
             };
+        }
+
+        void ctlHotkey_OnHotkeyChanged(object sender, System.EventArgs e)
+        {
+            if (ctlHotkey.CurrentHotkeyAvailable)
+            {
+                mainWindow.SetHotkey(ctlHotkey.CurrentHotkey.ToString());
+                CommonStorage.Instance.UserSetting.Hotkey = ctlHotkey.CurrentHotkey.ToString();
+                CommonStorage.Instance.Save();
+            }
         }
 
         private void Setting_Loaded(object sender, RoutedEventArgs e)

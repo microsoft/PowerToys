@@ -5,6 +5,7 @@ namespace Wox.Infrastructure.UserSettings
 {
     public class UserSetting
     {
+        public string Hotkey { get; set; }
         public string Theme { get; set; }
         public bool ReplaceWinR { get; set; }
         public List<WebSearch> WebSearches { get; set; }

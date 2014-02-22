@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Wox.Helper;
+using Wox.Infrastructure;
 using Wox.Plugin;
 
 namespace Wox

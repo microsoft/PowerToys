@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Wox.Plugin;
 
-namespace Wox.Helper
+namespace Wox.Infrastructure
 {
     public enum KeyEvent : int
     {
@@ -28,8 +28,6 @@ namespace Wox.Helper
         /// </summary>
         WM_SYSKEYDOWN = 260
     }
-
-
 
     /// <summary>
     /// Listens keyboard globally.
@@ -153,37 +151,6 @@ namespace Wox.Helper
         internal static extern uint SendInput(uint nInputs, [MarshalAs(UnmanagedType.LPArray), In] INPUT[] pInputs, int cbSize);
     }
 
-    public enum InputType
-    {
-        INPUT_MOUSE = 0,
-        INPUT_KEYBOARD = 1,
-        INPUT_HARDWARE = 2,
-    }
-    [Flags()]
-    public enum MOUSEEVENTF
-    {
-        MOVE = 0x0001,  //mouse move   
-        LEFTDOWN = 0x0002,  //left button down   
-        LEFTUP = 0x0004,  //left button up   
-        RIGHTDOWN = 0x0008,  //right button down   
-        RIGHTUP = 0x0010,  //right button up   
-        MIDDLEDOWN = 0x0020, //middle button down   
-        MIDDLEUP = 0x0040,  //middle button up   
-        XDOWN = 0x0080,  //x button down   
-        XUP = 0x0100,  //x button down   
-        WHEEL = 0x0800,  //wheel button rolled   
-        VIRTUALDESK = 0x4000,  //map to entire virtual desktop   
-        ABSOLUTE = 0x8000,  //absolute move   
-    }
-
-    [Flags()]
-    public enum KEYEVENTF
-    {
-        EXTENDEDKEY = 0x0001,
-        KEYUP = 0x0002,
-        UNICODE = 0x0004,
-        SCANCODE = 0x0008,
-    }
     [StructLayout(LayoutKind.Explicit)]
     public struct INPUT
     {
