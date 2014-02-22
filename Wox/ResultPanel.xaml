@@ -20,7 +20,7 @@
             </ListBox.Resources>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5"  Cursor="Hand">
+                    <Grid HorizontalAlignment="Stretch" Height="40" VerticalAlignment="Stretch" Margin="5"  Cursor="Hand">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="32"></ColumnDefinition>
                             <ColumnDefinition/>
