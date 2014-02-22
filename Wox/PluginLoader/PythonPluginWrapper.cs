@@ -40,19 +40,20 @@ namespace Wox.PluginLoader
                     PythonResult ps = pythonResult;
                     if (!string.IsNullOrEmpty(ps.ActionName))
                     {
-                        ps.Action = (context) => InvokeFunc(ps.ActionName, GetPythonActionContext(context),new PyString(ps.ActionPara));
+                        ps.Action = (context) => InvokeFunc(ps.ActionName, GetPythonActionContext(context), new PyString(ps.ActionPara));
                     }
                     r.Add(ps);
                 }
                 return r;
             }
-            catch (Exception)
+            catch (Exception e)
             {
 #if (DEBUG)
                 {
                     throw;
                 }
 #endif
+                Log.Error(string.Format("Python Plugin {0} query failed: {1}", metadata.Name, e.Message));
             }
 
             return new List<Result>();
@@ -73,11 +74,19 @@ namespace Wox.PluginLoader
 
         private string InvokeFunc(string func, params PyObject[] paras)
         {
-            string json;
+            string json = null;
 
             IntPtr gs = PythonEngine.AcquireLock();
 
             PyObject module = PythonEngine.ImportModule(moduleName);
+            if (module == null)
+            {
+                string error = string.Format("Python Invoke failed: {0} doesn't has module {1}",
+                   metadata.ExecuteFilePath,moduleName);
+                Log.Error(error);
+                return json;
+            }
+
             if (module.HasAttr(func))
             {
                 PyObject res = paras.Length > 0 ? module.InvokeMethod(func, paras) : module.InvokeMethod(func);
