@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Windows.Documents;
 using Newtonsoft.Json;
 using Python.Runtime;
 using Wox.Helper;
@@ -13,7 +10,6 @@ namespace Wox.PluginLoader
 {
     public class PythonPluginWrapper : IPlugin
     {
-
         private PluginMetadata metadata;
         private string moduleName;
 
@@ -50,7 +46,7 @@ namespace Wox.PluginLoader
             {
 #if (DEBUG)
                 {
-                    throw;
+                    throw new WoxPythonException(e.Message);
                 }
 #endif
                 Log.Error(string.Format("Python Plugin {0} query failed: {1}", metadata.Name, e.Message));
@@ -82,15 +78,29 @@ namespace Wox.PluginLoader
             if (module == null)
             {
                 string error = string.Format("Python Invoke failed: {0} doesn't has module {1}",
-                   metadata.ExecuteFilePath,moduleName);
+                   metadata.ExecuteFilePath, moduleName);
                 Log.Error(error);
                 return json;
             }
 
             if (module.HasAttr(func))
             {
-                PyObject res = paras.Length > 0 ? module.InvokeMethod(func, paras) : module.InvokeMethod(func);
-                json = Runtime.GetManagedString(res.Handle);
+                try
+                {
+                    PyObject res = paras.Length > 0 ? module.InvokeMethod(func, paras) : module.InvokeMethod(func);
+                    json = Runtime.GetManagedString(res.Handle);
+                }
+                catch (Exception e)
+                {
+                    string error = string.Format("Python Invoke failed: {0}", e.Message);
+                    Log.Error(error);
+#if (DEBUG)
+                    {
+                        throw new WoxPythonException(error);
+                    }
+#endif
+                }
+
             }
             else
             {
@@ -99,7 +109,7 @@ namespace Wox.PluginLoader
                 Log.Error(error);
 #if (DEBUG)
                 {
-                    throw new ArgumentException(error);
+                    throw new WoxPythonException(error);
                 }
 #endif
             }

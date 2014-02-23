@@ -132,6 +132,7 @@
     <Compile Include="Helper\Log.cs" />
     <Compile Include="Helper\PluginInstaller.cs" />
     <Compile Include="Helper\WoxException.cs" />
+    <Compile Include="Helper\WoxPythonException.cs" />
     <Compile Include="HotkeyControl.xaml.cs">
       <DependentUpon>HotkeyControl.xaml</DependentUpon>
     </Compile>
