@@ -111,7 +111,7 @@ namespace Wox
             //This is caused by the Virtual Mermory Page Mechanisam. So, our solution is execute some codes in every min
             //which may prevent sysetem uninstall memory from RAM to disk.
 
-            var t = new Timer(1000*60*5) {AutoReset = true, Enabled = true};
+            var t = new Timer(1000 * 60 * 5) { AutoReset = true, Enabled = true };
             t.Elapsed += (o, e) => Dispatcher.Invoke(new Action(() =>
             {
                 if (Visibility != Visibility.Visible)
@@ -141,13 +141,13 @@ namespace Wox
 
         private void InitialTray()
         {
-            notifyIcon = new NotifyIcon {Text = "Wox", Icon = Properties.Resources.app, Visible = true};
+            notifyIcon = new NotifyIcon { Text = "Wox", Icon = Properties.Resources.app, Visible = true };
             notifyIcon.Click += (o, e) => ShowWox();
             var open = new MenuItem("Open");
             open.Click += (o, e) => ShowWox();
             var exit = new MenuItem("Exit");
             exit.Click += (o, e) => CloseApp();
-            MenuItem[] childen = {open, exit};
+            MenuItem[] childen = { open, exit };
             notifyIcon.ContextMenu = new ContextMenu(childen);
         }
 
@@ -233,8 +233,8 @@ namespace Wox
 
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
-            Left = (SystemParameters.PrimaryScreenWidth - ActualWidth)/2;
-            Top = (SystemParameters.PrimaryScreenHeight - ActualHeight)/3;
+            Left = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
+            Top = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 3;
 
             SetHotkey(CommonStorage.Instance.UserSetting.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
@@ -249,13 +249,13 @@ namespace Wox
             if (CommonStorage.Instance.UserSetting.ReplaceWinR)
             {
                 //todo:need refatoring. move those codes to CMD file or expose events
-                if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int) Keys.R && state.WinPressed)
+                if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
                 {
                     WinRStroked = true;
                     Dispatcher.BeginInvoke(new Action(OnWinRPressed));
                     return false;
                 }
-                if (keyevent == KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int) Keys.LWin)
+                if (keyevent == KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int)Keys.LWin)
                 {
                     WinRStroked = false;
                     keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.CONTROL);
@@ -309,10 +309,17 @@ namespace Wox
             Result result = resultCtrl.AcceptSelect();
             if (result != null)
             {
-                CommonStorage.Instance.UserSelectedRecords.Add(result);
                 if (!result.DontHideWoxAfterSelect)
                 {
                     HideWox();
+                }
+                if (result.Action != null)
+                {
+                    result.Action(new ActionContext()
+                    {
+                        SpecialKeyState = new GloablHotkey().CheckModifiers()
+                    });
+                    CommonStorage.Instance.UserSelectedRecords.Add(result);
                 }
             }
         }
@@ -335,16 +342,9 @@ namespace Wox
                 }
                 Dispatcher.DelayInvoke("ShowResult", k => resultCtrl.Dispatcher.Invoke(new Action(() =>
                 {
-                    int t1 = Environment.TickCount;
-
-                    List<Result> l =
-                        waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text)
-                            .ToList();
+                    List<Result> l =waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).ToList();
                     waitShowResultList.Clear();
-
                     resultCtrl.AddResults(l);
-
-                    Debug.WriteLine("Total Time:" + (Environment.TickCount - t1) + " Count:" + l.Count);
                 })), TimeSpan.FromMilliseconds(50));
             }
         }
@@ -387,7 +387,7 @@ namespace Wox
 
         public void ShowMsg(string title, string subTitle, string iconPath)
         {
-            var m = new Msg {Owner = GetWindow(this)};
+            var m = new Msg { Owner = GetWindow(this) };
             m.Show(title, subTitle, iconPath);
         }
 

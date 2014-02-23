@@ -96,21 +96,7 @@ namespace Wox
             int index = lbResults.SelectedIndex;
             if (index < 0) return null;
 
-            var result = lbResults.Items[index] as Result;
-            if (result != null)
-            {
-                if (result.Action != null)
-                {
-                    result.Action(new ActionContext()
-                    {
-                        SpecialKeyState = new GloablHotkey().CheckModifiers()
-                    });
-                }
-
-                return result;
-            }
-
-            return null;
+            return lbResults.Items[index] as Result;
         }
 
         public ResultPanel()
