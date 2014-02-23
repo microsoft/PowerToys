@@ -83,6 +83,7 @@
     <None Include="plugin.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj">
@@ -101,7 +102,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy  /Y /E  $(TargetDir)*.* $(SolutionDir)Wox\bin\Debug\Plugins\Doc\</PostBuildEvent>
+    <PostBuildEvent>xcopy  /Y /E  $(TargetDir)*.* $(SolutionDir)Wox\bin\Debug\Plugins\$(ProjectName)\</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

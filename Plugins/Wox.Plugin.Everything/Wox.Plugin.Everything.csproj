@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\Wox\bin\Debug\Plugins\Everything\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -81,10 +81,9 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy  /Y  $(TargetDir)$(TargetFileName) $(SolutionDir)Wox\bin\Debug\Plugins\Everything\
-xcopy  /Y  $(TargetDir)plugin.ini $(SolutionDir)Wox\bin\Debug\Plugins\Everything\
-xcopy  /Y  $(ProjectDir)x86\Everything.dll $(SolutionDir)Wox\bin\Debug\Plugins\Everything\x86\
-xcopy  /Y  $(ProjectDir)x64\Everything.dll $(SolutionDir)Wox\bin\Debug\Plugins\Everything\x64\</PostBuildEvent>
+    <PostBuildEvent>xcopy  /Y /E  $(TargetDir)*.* $(SolutionDir)Wox\bin\Debug\Plugins\$(ProjectName)\
+xcopy  /Y  $(ProjectDir)x86\Everything.dll $(SolutionDir)Wox\bin\Debug\Plugins\$(ProjectName)\x86\
+xcopy  /Y  $(ProjectDir)x64\Everything.dll $(SolutionDir)Wox\bin\Debug\Plugins\$(ProjectName)\x64\</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
