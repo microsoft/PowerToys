@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Python.Runtime;
 using Wox.Plugin;
+using Wox.Helper;
 
 namespace Wox.PluginLoader
 {
@@ -11,6 +12,8 @@ namespace Wox.PluginLoader
     {
         public override List<PluginPair> LoadPlugin()
         {
+            if (!CheckPythonEnvironmentInstalled()) return new List<PluginPair>();
+
             List<PluginPair> plugins = new List<PluginPair>();
             List<PluginMetadata> metadatas = pluginMetadatas.Where(o => o.Language.ToUpper() == AllowedLanguage.Python.ToUpper()).ToList();
             foreach (PluginMetadata metadata in metadatas)
@@ -25,6 +28,19 @@ namespace Wox.PluginLoader
             }
 
             return plugins;
+        }
+
+        private bool CheckPythonEnvironmentInstalled() {
+            try
+            {
+                PythonEngine.Initialize();
+                PythonEngine.Shutdown();
+            }
+            catch {
+                Log.Error("Could't find python environment, all python plugins disabled.");
+                return false;
+            }
+            return true;
         }
     }
 }

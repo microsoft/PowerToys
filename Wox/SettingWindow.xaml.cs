@@ -19,7 +19,7 @@ namespace Wox
 {
     public partial class SettingWidow : Window
     {
-        private MainWindow mainWindow;
+        public MainWindow MainWindow;
 
         public SettingWidow()
         {
@@ -28,9 +28,17 @@ namespace Wox
 
         public SettingWidow(MainWindow mainWindow)
         {
-            this.mainWindow = mainWindow;
+            this.MainWindow = mainWindow;
             InitializeComponent();
             Loaded += Setting_Loaded;
+        }
+
+
+
+        private void Setting_Loaded(object sender, RoutedEventArgs ev)
+        {
+            ctlHotkey.OnHotkeyChanged += ctlHotkey_OnHotkeyChanged;
+            ctlHotkey.SetHotkey(CommonStorage.Instance.UserSetting.Hotkey, false);
             cbReplaceWinR.Checked += (o, e) =>
             {
                 CommonStorage.Instance.UserSetting.ReplaceWinR = true;
@@ -41,10 +49,7 @@ namespace Wox
                 CommonStorage.Instance.UserSetting.ReplaceWinR = false;
                 CommonStorage.Instance.Save();
             };
-        }
 
-        private void Setting_Loaded(object sender, RoutedEventArgs e)
-        {
             foreach (string theme in LoadAvailableThemes())
             {
                 string themeName = theme.Substring(theme.LastIndexOf('\\') + 1).Replace(".xaml", "");
@@ -54,6 +59,7 @@ namespace Wox
             themeComboBox.SelectedItem = CommonStorage.Instance.UserSetting.Theme;
             cbReplaceWinR.IsChecked = CommonStorage.Instance.UserSetting.ReplaceWinR;
             webSearchView.ItemsSource = CommonStorage.Instance.UserSetting.WebSearches;
+            lvCustomHotkey.ItemsSource = CommonStorage.Instance.UserSetting.CustomPluginHotkeys;
             cbStartWithWindows.IsChecked = CommonStorage.Instance.UserSetting.StartWoxOnSystemStartup;
         }
 
@@ -71,7 +77,7 @@ namespace Wox
         private void ThemeComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string themeName = themeComboBox.SelectedItem.ToString();
-            mainWindow.SetTheme(themeName);
+            MainWindow.SetTheme(themeName);
             CommonStorage.Instance.UserSetting.Theme = themeName;
             CommonStorage.Instance.Save();
         }
@@ -79,7 +85,7 @@ namespace Wox
         private void btnAddWebSearch_OnClick(object sender, RoutedEventArgs e)
         {
             WebSearchSetting webSearch = new WebSearchSetting(this);
-            webSearch.Show();
+            webSearch.ShowDialog();
         }
 
         private void btnDeleteWebSearch_OnClick(object sender, RoutedEventArgs e)
@@ -104,8 +110,8 @@ namespace Wox
             if (seletedWebSearch != null)
             {
                 WebSearchSetting webSearch = new WebSearchSetting(this);
-                webSearch.Show();
                 webSearch.UpdateItem(seletedWebSearch);
+                webSearch.ShowDialog();
             }
             else
             {
@@ -158,6 +164,74 @@ namespace Wox
                 }
             }
         }
+
+        void ctlHotkey_OnHotkeyChanged(object sender, System.EventArgs e)
+        {
+            if (ctlHotkey.CurrentHotkeyAvailable)
+            {
+                MainWindow.SetHotkey(ctlHotkey.CurrentHotkey.ToString(), delegate
+                {
+                    if (!MainWindow.IsVisible)
+                    {
+                        MainWindow.ShowApp();
+                    }
+                    else
+                    {
+                        MainWindow.HideApp();
+                    }
+                });
+                MainWindow.RemoveHotkey(CommonStorage.Instance.UserSetting.Hotkey);
+                CommonStorage.Instance.UserSetting.Hotkey = ctlHotkey.CurrentHotkey.ToString();
+                CommonStorage.Instance.Save();
+            }
+        }
+
+        #region Custom Plugin Hotkey
+
+        private void BtnDeleteCustomHotkey_OnClick(object sender, RoutedEventArgs e)
+        {
+            CustomPluginHotkey item = lvCustomHotkey.SelectedItem as CustomPluginHotkey;
+            if (item != null &&
+                MessageBox.Show("Are your sure to delete " + item.Hotkey + " plugin hotkey?","Delete Custom Plugin Hotkey",
+                    MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                CommonStorage.Instance.UserSetting.CustomPluginHotkeys.Remove(item);
+                lvCustomHotkey.Items.Refresh();
+                CommonStorage.Instance.Save();
+                MainWindow.RemoveHotkey(item.Hotkey);
+            }
+            else
+            {
+                MessageBox.Show("Please select an item");
+            }
+        }
+
+        private void BtnEditCustomHotkey_OnClick(object sender, RoutedEventArgs e)
+        {
+            CustomPluginHotkey item = lvCustomHotkey.SelectedItem as CustomPluginHotkey;
+            if (item != null)
+            {
+                CustomPluginHotkeySetting window = new CustomPluginHotkeySetting(this);
+                window.UpdateItem(item);
+                window.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show("Please select an item");
+            }
+        }
+
+        private void BtnAddCustomeHotkey_OnClick(object sender, RoutedEventArgs e)
+        {
+            new CustomPluginHotkeySetting(this).ShowDialog();
+        }
+
+        public void ReloadCustomPluginHotkeyView()
+        {
+            lvCustomHotkey.Items.Refresh();
+        }
+
+        #endregion
 
 
     }

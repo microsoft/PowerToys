@@ -27,7 +27,7 @@ def query(key):
             pass
     return json.dumps(results)
 
-def killProcess(pid):
+def killProcess(context,pid):
      p = psutil.Process(int(pid))
      if p:
          p.kill()

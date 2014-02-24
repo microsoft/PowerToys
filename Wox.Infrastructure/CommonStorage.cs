@@ -62,6 +62,7 @@ namespace Wox.Infrastructure
             Instance.UserSetting.Theme = "Default";
             Instance.UserSetting.ReplaceWinR = true;
             Instance.UserSetting.WebSearches = Instance.UserSetting.LoadDefaultWebSearches();
+            Instance.UserSetting.Hotkey = "Alt + Space";
         }
 
         public static CommonStorage Instance

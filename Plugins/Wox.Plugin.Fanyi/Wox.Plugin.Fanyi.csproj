@@ -69,9 +69,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy  /Y  $(TargetDir)$(TargetFileName) $(SolutionDir)Wox\bin\Debug\Plugins\Fanyi\
-xcopy  /Y  $(TargetDir)plugin.ini $(SolutionDir)Wox\bin\Debug\Plugins\Fanyi\
-xcopy  /Y  $(ProjectDir)Images\*.* $(SolutionDir)Wox\bin\Debug\Plugins\Fanyi\Images\</PostBuildEvent>
+    <PostBuildEvent>xcopy  /Y /E  $(TargetDir)*.* $(SolutionDir)Wox\bin\Debug\Plugins\$(ProjectName)\</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

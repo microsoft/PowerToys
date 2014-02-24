@@ -3,47 +3,48 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using System.Windows.Threading;
+using WindowsInput;
+using WindowsInput.Native;
+using NHotkey;
+using NHotkey.Wpf;
 using Wox.Commands;
-using Wox.Helper;
 using Wox.Infrastructure;
+using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.PluginLoader;
 using Application = System.Windows.Application;
+using ContextMenu = System.Windows.Forms.ContextMenu;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using MenuItem = System.Windows.Forms.MenuItem;
 using MessageBox = System.Windows.MessageBox;
-using UserControl = System.Windows.Controls.UserControl;
+using Timer = System.Timers.Timer;
 
 namespace Wox
 {
     public partial class MainWindow
     {
-        private KeyboardHook hook = new KeyboardHook();
+        private static readonly object locker = new object();
+
+        private static readonly List<Result> waitShowResultList = new List<Result>();
+        private readonly GloablHotkey globalHotkey = new GloablHotkey();
+        private readonly KeyboardSimulator keyboardSimulator = new KeyboardSimulator(new InputSimulator());
+        private readonly Storyboard progressBarStoryboard = new Storyboard();
+        private bool WinRStroked;
         private NotifyIcon notifyIcon;
-        Storyboard progressBarStoryboard = new Storyboard();
-        private bool queryHasReturn = false;
-
-        private KeyboardListener keyboardListener = new KeyboardListener();
-        private bool WinRStroked = false;
-        private static object locker = new object();
-
-        private WindowsInput.KeyboardSimulator keyboardSimulator = new WindowsInput.KeyboardSimulator(new WindowsInput.InputSimulator());
+        private bool queryHasReturn;
 
         public MainWindow()
         {
             InitializeComponent();
 
             InitialTray();
-            hook.KeyPressed += OnHotKey;
-            hook.RegisterHotKey(XModifierKeys.Alt, Keys.Space);
-            resultCtrl.resultItemChangedEvent += resultCtrl_resultItemChangedEvent;
+
             ThreadPool.SetMaxThreads(30, 10);
             InitProgressbarAnimation();
             try
@@ -54,13 +55,54 @@ namespace Wox
             {
                 SetTheme(CommonStorage.Instance.UserSetting.Theme = "Default");
             }
-
-            this.Closing += MainWindow_Closing;
         }
 
-        void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
         {
-            e.Cancel = true;
+            var hotkey = new HotkeyModel(hotkeyStr);
+            try
+            {
+                HotkeyManager.Current.AddOrReplace(hotkeyStr, hotkey.CharKey, hotkey.ModifierKeys, action);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Registe hotkey: " + CommonStorage.Instance.UserSetting.Hotkey + " failed.");
+            }
+        }
+
+        public void RemoveHotkey(string hotkeyStr)
+        {
+            if (!string.IsNullOrEmpty(hotkeyStr))
+            {
+                HotkeyManager.Current.Remove(hotkeyStr);
+            }
+        }
+
+        private void SetCustomPluginHotkey()
+        {
+            if (CommonStorage.Instance.UserSetting.CustomPluginHotkeys == null) return;
+            foreach (CustomPluginHotkey hotkey in CommonStorage.Instance.UserSetting.CustomPluginHotkeys)
+            {
+                CustomPluginHotkey hotkey1 = hotkey;
+                SetHotkey(hotkey.Hotkey, delegate
+                {
+                    ShowApp();
+                    ChangeQuery(hotkey1.ActionKeyword);
+                });
+            }
+        }
+
+        private void OnHotkey(object sender, HotkeyEventArgs e)
+        {
+            if (!IsVisible)
+            {
+                ShowWox();
+            }
+            else
+            {
+                HideWox();
+            }
+            e.Handled = true;
         }
 
         private void WakeupApp()
@@ -69,25 +111,25 @@ namespace Wox
             //This is caused by the Virtual Mermory Page Mechanisam. So, our solution is execute some codes in every min
             //which may prevent sysetem uninstall memory from RAM to disk.
 
-            System.Timers.Timer t = new System.Timers.Timer(1000 * 60 * 5) { AutoReset = true, Enabled = true };
+            var t = new Timer(1000 * 60 * 5) { AutoReset = true, Enabled = true };
             t.Elapsed += (o, e) => Dispatcher.Invoke(new Action(() =>
+            {
+                if (Visibility != Visibility.Visible)
                 {
-                    if (Visibility != Visibility.Visible)
-                    {
-                        double oldLeft = Left;
-                        Left = 20000;
-                        ShowWox();
-                        CommandFactory.DispatchCommand(new Query("qq"), false);
-                        HideWox();
-                        Left = oldLeft;
-                    }
-                }));
+                    double oldLeft = Left;
+                    Left = 20000;
+                    ShowWox();
+                    CommandFactory.DispatchCommand(new Query("qq"), false);
+                    HideWox();
+                    Left = oldLeft;
+                }
+            }));
         }
 
         private void InitProgressbarAnimation()
         {
-            DoubleAnimation da = new DoubleAnimation(progressBar.X2, Width + 100, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
-            DoubleAnimation da1 = new DoubleAnimation(progressBar.X1, Width, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
+            var da = new DoubleAnimation(progressBar.X2, Width + 100, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
+            var da1 = new DoubleAnimation(progressBar.X1, Width, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
             Storyboard.SetTargetProperty(da, new PropertyPath("(Line.X2)"));
             Storyboard.SetTargetProperty(da1, new PropertyPath("(Line.X1)"));
             progressBarStoryboard.Children.Add(da);
@@ -101,60 +143,42 @@ namespace Wox
         {
             notifyIcon = new NotifyIcon { Text = "Wox", Icon = Properties.Resources.app, Visible = true };
             notifyIcon.Click += (o, e) => ShowWox();
-            System.Windows.Forms.MenuItem open = new System.Windows.Forms.MenuItem("Open");
+            var open = new MenuItem("Open");
             open.Click += (o, e) => ShowWox();
-            System.Windows.Forms.MenuItem exit = new System.Windows.Forms.MenuItem("Exit");
+            var exit = new MenuItem("Exit");
             exit.Click += (o, e) => CloseApp();
-            System.Windows.Forms.MenuItem[] childen = { open, exit };
-            notifyIcon.ContextMenu = new System.Windows.Forms.ContextMenu(childen);
-        }
-
-        private void resultCtrl_resultItemChangedEvent()
-        {
-            resultCtrl.Margin = resultCtrl.GetCurrentResultCount() > 0 ? new Thickness { Top = grid.Margin.Top } : new Thickness { Top = 0 };
-        }
-
-        private void OnHotKey(object sender, KeyPressedEventArgs e)
-        {
-            if (!IsVisible)
-            {
-                ShowWox();
-            }
-            else
-            {
-                HideWox();
-            }
+            MenuItem[] childen = { open, exit };
+            notifyIcon.ContextMenu = new ContextMenu(childen);
         }
 
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             resultCtrl.Dirty = true;
             Dispatcher.DelayInvoke("UpdateSearch",
-               o =>
-               {
-                   Dispatcher.DelayInvoke("ClearResults", i =>
-                   {
-                       // first try to use clear method inside resultCtrl, which is more closer to the add new results
-                       // and this will not bring splash issues.After waiting 30ms, if there still no results added, we
-                       // must clear the result. otherwise, it will be confused why the query changed, but the results
-                       // didn't.
-                       if (resultCtrl.Dirty) resultCtrl.Clear();
-                   }, TimeSpan.FromMilliseconds(30), null);
-                   var q = new Query(tbQuery.Text);
-                   CommandFactory.DispatchCommand(q);
-                   queryHasReturn = false;
-                   if (Plugins.HitThirdpartyKeyword(q))
-                   {
-                       Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
-                       {
-                           if (!queryHasReturn && originQuery == tbQuery.Text)
-                           {
-                               StartProgress();
-                           }
-                       }, TimeSpan.FromSeconds(1), tbQuery.Text);
-                   }
-
-               }, TimeSpan.FromMilliseconds(150));
+                o =>
+                {
+                    Dispatcher.DelayInvoke("ClearResults", i =>
+                    {
+                        // first try to use clear method inside resultCtrl, which is more closer to the add new results
+                        // and this will not bring splash issues.After waiting 30ms, if there still no results added, we
+                        // must clear the result. otherwise, it will be confused why the query changed, but the results
+                        // didn't.
+                        if (resultCtrl.Dirty) resultCtrl.Clear();
+                    }, TimeSpan.FromMilliseconds(30), null);
+                    var q = new Query(tbQuery.Text);
+                    CommandFactory.DispatchCommand(q);
+                    queryHasReturn = false;
+                    if (Plugins.HitThirdpartyKeyword(q))
+                    {
+                        Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
+                        {
+                            if (!queryHasReturn && originQuery == tbQuery.Text)
+                            {
+                                StartProgress();
+                            }
+                        }, TimeSpan.FromSeconds(1), tbQuery.Text);
+                    }
+                }, TimeSpan.FromMilliseconds(150));
         }
 
         private void StartProgress()
@@ -212,10 +236,12 @@ namespace Wox
             Left = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
             Top = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 3;
 
-            WakeupApp();
+            SetHotkey(CommonStorage.Instance.UserSetting.Hotkey, OnHotkey);
+            SetCustomPluginHotkey();
+            //WakeupApp();
             Plugins.Init();
 
-            keyboardListener.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
+            globalHotkey.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
         }
 
         private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)
@@ -232,7 +258,7 @@ namespace Wox
                 if (keyevent == KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int)Keys.LWin)
                 {
                     WinRStroked = false;
-                    keyboardSimulator.ModifiedKeyStroke(WindowsInput.Native.VirtualKeyCode.LWIN, WindowsInput.Native.VirtualKeyCode.CONTROL);
+                    keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.CONTROL);
                     return false;
                 }
             }
@@ -283,10 +309,17 @@ namespace Wox
             Result result = resultCtrl.AcceptSelect();
             if (result != null)
             {
-                CommonStorage.Instance.UserSelectedRecords.Add(result);
                 if (!result.DontHideWoxAfterSelect)
                 {
                     HideWox();
+                }
+                if (result.Action != null)
+                {
+                    result.Action(new ActionContext()
+                    {
+                        SpecialKeyState = new GloablHotkey().CheckModifiers()
+                    });
+                    CommonStorage.Instance.UserSelectedRecords.Add(result);
                 }
             }
         }
@@ -298,24 +331,27 @@ namespace Wox
             if (list.Count > 0)
             {
                 //todo:this should be opened to users, it's their choise to use it or not in thier workflows
-                list.ForEach(o =>
-                {
-                    if (o.AutoAjustScore) o.Score += CommonStorage.Instance.UserSelectedRecords.GetSelectedCount(o);
-                });
+                list.ForEach(
+                    o =>
+                    {
+                        if (o.AutoAjustScore) o.Score += CommonStorage.Instance.UserSelectedRecords.GetSelectedCount(o);
+                    });
                 lock (locker)
                 {
-                    resultCtrl.Dispatcher.Invoke(new Action(() =>
-                    {
-                        List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).ToList();
-                        resultCtrl.AddResults(list);
-                    }));
+                    waitShowResultList.AddRange(list);
                 }
+                Dispatcher.DelayInvoke("ShowResult", k => resultCtrl.Dispatcher.Invoke(new Action(() =>
+                {
+                    List<Result> l =waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).ToList();
+                    waitShowResultList.Clear();
+                    resultCtrl.AddResults(l);
+                })), TimeSpan.FromMilliseconds(50));
             }
         }
 
         public void SetTheme(string themeName)
         {
-            ResourceDictionary dict = new ResourceDictionary
+            var dict = new ResourceDictionary
             {
                 Source = new Uri("pack://application:,,,/Themes/" + themeName + ".xaml")
             };
@@ -326,8 +362,6 @@ namespace Wox
 
         #region Public API
 
-        //Those method can be invoked by plugins
-
         public void ChangeQuery(string query)
         {
             tbQuery.Text = query;
@@ -337,6 +371,7 @@ namespace Wox
         public void CloseApp()
         {
             notifyIcon.Visible = false;
+            Close();
             Environment.Exit(0);
         }
 
@@ -352,14 +387,13 @@ namespace Wox
 
         public void ShowMsg(string title, string subTitle, string iconPath)
         {
-            Msg m = new Msg { Owner = GetWindow(this) };
+            var m = new Msg { Owner = GetWindow(this) };
             m.Show(title, subTitle, iconPath);
         }
 
         public void OpenSettingDialog()
         {
-            SettingWidow s = new SettingWidow(this);
-            s.Show();
+            new SettingWidow(this).Show();
         }
 
         #endregion

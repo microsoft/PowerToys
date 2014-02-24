@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Test", "Wox.Test\Wox.Test.csproj", "{FF742965-9A80-41A5-B042-D6C7D3A21708}"
 EndProject
@@ -24,6 +24,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Everything", "Plugins\Wox.Plugin.Everything\Wox.Plugin.Everything.csproj", "{230AE83F-E92E-4E69-8355-426B305DA9C0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.UAC", "Wox.UAC\Wox.UAC.csproj", "{C9BC17A0-C2BC-4185-AC1F-32E3352C1233}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.DotnetPluginTest", "Plugins\Wox.Plugin.DotnetPluginTest\Wox.Plugin.DotnetPluginTest.csproj", "{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -346,6 +348,34 @@ Global
 		{C9BC17A0-C2BC-4185-AC1F-32E3352C1233}.UnitTests|Win32.ActiveCfg = Release|Any CPU
 		{C9BC17A0-C2BC-4185-AC1F-32E3352C1233}.UnitTests|x64.ActiveCfg = Release|Any CPU
 		{C9BC17A0-C2BC-4185-AC1F-32E3352C1233}.UnitTests|x86.ActiveCfg = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.EmbeddingTest|Any CPU.ActiveCfg = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.EmbeddingTest|Any CPU.Build.0 = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.EmbeddingTest|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.EmbeddingTest|Mixed Platforms.Build.0 = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.EmbeddingTest|Win32.ActiveCfg = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.EmbeddingTest|x64.ActiveCfg = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.EmbeddingTest|x86.ActiveCfg = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Release|Win32.ActiveCfg = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Release|x64.ActiveCfg = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Release|x86.ActiveCfg = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.UnitTests|Any CPU.ActiveCfg = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.UnitTests|Any CPU.Build.0 = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.UnitTests|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.UnitTests|Mixed Platforms.Build.0 = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.UnitTests|Win32.ActiveCfg = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.UnitTests|x64.ActiveCfg = Release|Any CPU
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.UnitTests|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -354,5 +384,6 @@ Global
 		{353769D3-D11C-4D86-BD06-AC8C1D68642B} = {3A73F5A7-0335-40D8-BF7C-F20BE5D0BA87}
 		{6B6696B1-A547-4FD4-85EF-E1FD0F54AD2C} = {3A73F5A7-0335-40D8-BF7C-F20BE5D0BA87}
 		{230AE83F-E92E-4E69-8355-426B305DA9C0} = {3A73F5A7-0335-40D8-BF7C-F20BE5D0BA87}
+		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2} = {3A73F5A7-0335-40D8-BF7C-F20BE5D0BA87}
 	EndGlobalSection
 EndGlobal

@@ -23,53 +23,36 @@ namespace Wox.Plugin.Doc
             List<Result> results = new List<Result>();
             if (query.ActionParameters.Count == 0)
             {
-                results.Add(new Result()
-                {
-                    Title = "Current supported docs:"
-                });
                 results.AddRange(docs.Select(o => new Result()
                 {
-                    Title = o.Name.Replace(".docset", ""),
+                    Title = o.Name.Replace(".docset", "").Replace(" ",""),
                     IcoPath = o.IconPath
                 }).ToList());
                 return results;
             }
 
-            foreach (Doc doc in docs)
+            if (query.ActionParameters.Count >= 2)
             {
-                results.AddRange(QuerySqllite(doc, query.ActionParameters[0]));
+                Doc firstOrDefault = docs.FirstOrDefault(o => o.Name.Replace(".docset", "").Replace(" ","").ToLower() == query.ActionParameters[0]);
+                if (firstOrDefault != null)
+                {
+                    results.AddRange(QuerySqllite(firstOrDefault, query.ActionParameters[1]));
+                }
             }
+            else
+            {
+                foreach (Doc doc in docs)
+                {
+                    results.AddRange(QuerySqllite(doc, query.ActionParameters[0]));
+                }
+            }
+            
 
             return results;
         }
 
         public void Init(PluginInitContext context)
         {
-
-            //todo:move to common place
-            var otherCompanyDlls = new DirectoryInfo(context.PluginMetadata.PluginDirecotry).GetFiles("*.dll");
-            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
-                {
-                    var dll = otherCompanyDlls.FirstOrDefault(fi =>
-                        {
-                            try
-                            {
-                                Assembly assembly = Assembly.LoadFile(fi.FullName);
-                                return assembly.FullName == args.Name;
-                            }
-                            catch
-                            {
-                                return false;
-                            }
-                        });
-                    if (dll == null)
-                    {
-                        return null;
-                    }
-
-                    return Assembly.LoadFile(dll.FullName);
-                };
-
             docsetBasePath = context.PluginMetadata.PluginDirecotry + @"Docset";
             if (!Directory.Exists(docsetBasePath))
                 Directory.CreateDirectory(docsetBasePath);
@@ -110,7 +93,6 @@ namespace Wox.Plugin.Doc
                         }
                     }
                 }
-
             }
             return imagePath;
         }

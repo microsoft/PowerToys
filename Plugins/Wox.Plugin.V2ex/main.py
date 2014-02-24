@@ -27,7 +27,7 @@ def query(key):
         results.append(res)
     return json.dumps(results)
 
-def openUrl(url):
+def openUrl(context,url):
     webbrowser.open(url)
 
 if __name__ == "__main__":
