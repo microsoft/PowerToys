@@ -18,7 +18,7 @@
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
-        <TextBox AllowDrop="True" Style="{DynamicResource QueryBoxStyle}" Grid.Row="0"  x:Name="tbQuery" PreviewKeyDown="TbQuery_OnPreviewKeyDown" TextChanged="TextBoxBase_OnTextChanged" />
+        <TextBox Style="{DynamicResource QueryBoxStyle}" Grid.Row="0"  x:Name="tbQuery" PreviewKeyDown="TbQuery_OnPreviewKeyDown" TextChanged="TextBoxBase_OnTextChanged" />
         <Line Style="{DynamicResource PendingLineStyle}" x:Name="progressBar" Y1="0" Y2="0" X2="100" Grid.Row="1" Height="2" StrokeThickness="1"></Line>
         <wox:ResultPanel x:Name="resultCtrl" Grid.Row="2"/>
     </Grid>

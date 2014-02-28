@@ -16,5 +16,7 @@ namespace Wox.Plugin
         public Action ShowApp { get; set; }
         public Action<string,string,string> ShowMsg { get; set; }
         public Action OpenSettingDialog { get; set; }
+
+        public Action<string> ShowCurrentResultItemTooltip { get; set; }
     }
 }

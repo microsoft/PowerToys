@@ -30,6 +30,7 @@ namespace Wox.Plugin.System
                      {
                          ExecuteCmd(m.Key);
                          AddCmdHistory(m.Key);
+                         return true;
                      }
                  }).Take(5);
 
@@ -49,6 +50,7 @@ namespace Wox.Plugin.System
                     {
                         ExecuteCmd(cmd);
                         AddCmdHistory(cmd);
+                        return true;
                     }
                 };
                 results.Add(result);
@@ -64,6 +66,7 @@ namespace Wox.Plugin.System
                         {
                             ExecuteCmd(m.Key);
                             AddCmdHistory(m.Key);
+                            return true;
                         }
                     }).Take(4);
 

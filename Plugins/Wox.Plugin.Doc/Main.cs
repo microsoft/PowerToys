@@ -125,6 +125,7 @@ namespace Wox.Plugin.Doc
                             //frm.ShowDoc(url);
                             string browser = GetDefaultBrowserPath();
                             Process.Start(browser, String.Format("\"file:///{0}\"", url));
+                            return true;
                         }
                     });
             }

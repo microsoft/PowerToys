@@ -42,7 +42,10 @@ namespace Wox
                 return GetIcon(resolvedPath);
             }
 
-            if(!string.IsNullOrEmpty(path)) return new BitmapImage(new Uri(resolvedPath));
+            if (!string.IsNullOrEmpty(resolvedPath) && File.Exists(resolvedPath))
+            {
+                return new BitmapImage(new Uri(resolvedPath));
+            }
 
             return null;
         }

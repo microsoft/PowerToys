@@ -43,6 +43,7 @@ namespace Wox.Plugin.System
                     {
                         MessageBox.Show("open url failed:" + c.Url);
                     }
+                    return true;
                 }
             }).ToList();
         }

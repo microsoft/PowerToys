@@ -18,7 +18,11 @@ namespace Wox.Plugin.System
                     Title = "Wox Setting Dialog",
                     Score = 100,
                     IcoPath = "Images/app.png",
-                    Action = (contenxt) => context.OpenSettingDialog()
+                    Action = (contenxt) =>
+                    {
+                        context.OpenSettingDialog();
+                        return true;
+                    }
                 });
             }
 

@@ -35,7 +35,8 @@ namespace Wox.PluginLoader
                         HideApp = App.Window.HideApp,
                         ShowApp = () => App.Window.ShowApp(),
                         ShowMsg = (title, subTitle, iconPath) => App.Window.ShowMsg(title, subTitle, iconPath),
-                        OpenSettingDialog = () => App.Window.OpenSettingDialog()
+                        OpenSettingDialog = () => App.Window.OpenSettingDialog(),
+                        ShowCurrentResultItemTooltip = (msg) => App.Window.ShowCurrentResultItemTooltip(msg)
                     }));
                 }
             }

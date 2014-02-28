@@ -68,6 +68,7 @@ namespace Wox.Plugin.System
                             throw e;
                         }
                     }
+                    return true;
                 }
             }).ToList();
         }

@@ -9,10 +9,12 @@ namespace Wox.Plugin
         public string Title { get; set; }
         public string SubTitle { get; set; }
         public string IcoPath { get; set; }
-        public Action<ActionContext> Action { get; set; }
-        public int Score { get; set; }
 
-        public bool DontHideWoxAfterSelect { get; set; }
+        /// <summary>
+        /// return true to hide wox after select result
+        /// </summary>
+        public Func<ActionContext,bool> Action { get; set; }
+        public int Score { get; set; }
 
         /// <summary>
         /// Auto add scores for MRU items

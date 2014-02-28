@@ -56,8 +56,8 @@ namespace Wox
                 CommonStorage.Instance.UserSetting.CustomPluginHotkeys.Add(pluginHotkey);
                 settingWidow.MainWindow.SetHotkey(ctlHotkey.CurrentHotkey.ToString(), delegate
                 {
-                    settingWidow.MainWindow.ShowApp();
                     settingWidow.MainWindow.ChangeQuery(pluginHotkey.ActionKeyword);
+                    settingWidow.MainWindow.ShowApp();
                 });
                 MessageBox.Show("Add hotkey successfully!");
             }

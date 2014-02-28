@@ -26,6 +26,7 @@ namespace Wox.Plugin.System
                     Action = (c) =>
                     {
                         Process.Start(query.RawQuery);
+                        return true;
                     }
                 };
                 results.Add(result); 

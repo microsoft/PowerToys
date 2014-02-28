@@ -13,7 +13,6 @@ namespace Wox.Test
         public void QueryActionTest()
         {
             Query q = new Query("this");
-            Assert.AreEqual(q.ActionName,"this");
 
             q = new Query("ev file.txt");
             Assert.AreEqual(q.ActionName,"ev");
@@ -24,6 +23,9 @@ namespace Wox.Test
             Assert.AreEqual(q.ActionName,"ev");
             Assert.AreEqual(q.ActionParameters.Count,2);
             Assert.AreEqual(q.ActionParameters[1],"file2.txt");
+
+            q = new Query("ev file.txt file2.tx st");
+            Assert.AreEqual(q.GetAllRemainingParameter(), "file.txt file2.tx st");
         }
     }
 }

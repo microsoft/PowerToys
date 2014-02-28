@@ -20,6 +20,7 @@ namespace Wox.Plugin
             if (string.IsNullOrEmpty(RawQuery)) return;
 
             string[] strings = RawQuery.Split(' ');
+            //todo:not exactly correct. query that didn't containing a space should be a valid query
             if (strings.Length == 1) return; //we consider a valid query must contain a space
 
             ActionName = strings[0];
@@ -30,6 +31,17 @@ namespace Wox.Plugin
                     ActionParameters.Add(strings[i]);
                 }
             }
+        }
+
+        public string GetAllRemainingParameter()
+        {
+            string[] strings = RawQuery.Split(' ');
+            if (strings.Length > 1)
+            {
+                return RawQuery.Substring(RawQuery.IndexOf(' ') + 1);
+            }
+
+            return string.Empty;
         }
     }
 }

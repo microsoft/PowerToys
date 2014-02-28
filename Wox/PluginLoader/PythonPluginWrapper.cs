@@ -36,7 +36,11 @@ namespace Wox.PluginLoader
                     PythonResult ps = pythonResult;
                     if (!string.IsNullOrEmpty(ps.ActionName))
                     {
-                        ps.Action = (context) => InvokeFunc(ps.ActionName, GetPythonActionContext(context), new PyString(ps.ActionPara));
+                        ps.Action = (context) =>
+                        {
+                            InvokeFunc(ps.ActionName, GetPythonActionContext(context), new PyString(ps.ActionPara));
+                            return true;
+                        };
                     }
                     r.Add(ps);
                 }

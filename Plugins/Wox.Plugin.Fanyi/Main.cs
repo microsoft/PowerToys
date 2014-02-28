@@ -81,6 +81,7 @@ namespace Wox.Plugin.Fanyi
                             Clipboard.SetText(dst);
                             context.ShowMsg("translation has been copyed to your clipboard.", "",
                                 AssemblyDirectory + "\\Images\\translate.png");
+                            return true;
                         }
                     });
                 }

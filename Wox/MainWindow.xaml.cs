@@ -23,7 +23,7 @@ using ContextMenu = System.Windows.Forms.ContextMenu;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MenuItem = System.Windows.Forms.MenuItem;
 using MessageBox = System.Windows.MessageBox;
-using Timer = System.Timers.Timer;
+using ToolTip = System.Windows.Controls.ToolTip;
 
 namespace Wox
 {
@@ -38,11 +38,13 @@ namespace Wox
         private bool WinRStroked;
         private NotifyIcon notifyIcon;
         private bool queryHasReturn;
+        private ToolTip toolTip = new ToolTip();
+
 
         public MainWindow()
         {
             InitializeComponent();
-
+            progressBar.ToolTip = toolTip;
             InitialTray();
 
             ThreadPool.SetMaxThreads(30, 10);
@@ -87,7 +89,7 @@ namespace Wox
                 SetHotkey(hotkey.Hotkey, delegate
                 {
                     ShowApp();
-                    ChangeQuery(hotkey1.ActionKeyword);
+                    ChangeQuery(hotkey1.ActionKeyword, true);
                 });
             }
         }
@@ -103,27 +105,6 @@ namespace Wox
                 HideWox();
             }
             e.Handled = true;
-        }
-
-        private void WakeupApp()
-        {
-            //After hide wox in the background for a long time. It will become very slow in the next show.
-            //This is caused by the Virtual Mermory Page Mechanisam. So, our solution is execute some codes in every min
-            //which may prevent sysetem uninstall memory from RAM to disk.
-
-            var t = new Timer(1000 * 60 * 5) { AutoReset = true, Enabled = true };
-            t.Elapsed += (o, e) => Dispatcher.Invoke(new Action(() =>
-            {
-                if (Visibility != Visibility.Visible)
-                {
-                    double oldLeft = Left;
-                    Left = 20000;
-                    ShowWox();
-                    CommandFactory.DispatchCommand(new Query("qq"), false);
-                    HideWox();
-                    Left = oldLeft;
-                }
-            }));
         }
 
         private void InitProgressbarAnimation()
@@ -153,6 +134,7 @@ namespace Wox
 
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
         {
+            toolTip.IsOpen = false;
             resultCtrl.Dirty = true;
             Dispatcher.DelayInvoke("UpdateSearch",
                 o =>
@@ -289,11 +271,13 @@ namespace Wox
 
                 case Key.Down:
                     resultCtrl.SelectNext();
+                    toolTip.IsOpen = false;
                     e.Handled = true;
                     break;
 
                 case Key.Up:
                     resultCtrl.SelectPrev();
+                    toolTip.IsOpen = false;
                     e.Handled = true;
                     break;
 
@@ -309,16 +293,16 @@ namespace Wox
             Result result = resultCtrl.AcceptSelect();
             if (result != null)
             {
-                if (!result.DontHideWoxAfterSelect)
-                {
-                    HideWox();
-                }
                 if (result.Action != null)
                 {
-                    result.Action(new ActionContext()
+                    bool hideWindow = result.Action(new ActionContext()
                     {
                         SpecialKeyState = new GloablHotkey().CheckModifiers()
                     });
+                    if (hideWindow)
+                    {
+                        HideWox();
+                    }
                     CommonStorage.Instance.UserSelectedRecords.Add(result);
                 }
             }
@@ -342,7 +326,7 @@ namespace Wox
                 }
                 Dispatcher.DelayInvoke("ShowResult", k => resultCtrl.Dispatcher.Invoke(new Action(() =>
                 {
-                    List<Result> l =waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).ToList();
+                    List<Result> l = waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).ToList();
                     waitShowResultList.Clear();
                     resultCtrl.AddResults(l);
                 })), TimeSpan.FromMilliseconds(50));
@@ -362,10 +346,14 @@ namespace Wox
 
         #region Public API
 
-        public void ChangeQuery(string query)
+        public void ChangeQuery(string query, bool requery = false)
         {
             tbQuery.Text = query;
             tbQuery.CaretIndex = tbQuery.Text.Length;
+            if (requery)
+            {
+                TextBoxBase_OnTextChanged(null, null);
+            }
         }
 
         public void CloseApp()
@@ -396,6 +384,14 @@ namespace Wox
             new SettingWidow(this).Show();
         }
 
+        public void ShowCurrentResultItemTooltip(string text)
+        {
+            toolTip.Content = text;
+            toolTip.IsOpen = true;
+        }
+
         #endregion
+
+
     }
 }

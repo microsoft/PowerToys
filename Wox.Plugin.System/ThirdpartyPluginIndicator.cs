@@ -27,8 +27,11 @@ namespace Wox.Plugin.System
                         SubTitle = string.Format("Activate {0} plugin", metadata.Name),
                         Score = 50,
                         IcoPath = "Images/work.png",
-                        Action = (c) => changeQuery(metadataCopy.ActionKeyword + " "),
-                        DontHideWoxAfterSelect = true
+                        Action = (c) =>
+                        {
+                            changeQuery(metadataCopy.ActionKeyword + " ");
+                            return false;
+                        },
                     };
                     results.Add(result);
                 }
@@ -40,8 +43,11 @@ namespace Wox.Plugin.System
                 SubTitle = string.Format("Activate {0} web search", n.ActionWord),
                 Score = 50,
                 IcoPath = "Images/work.png",
-                Action = (c) => changeQuery(n.ActionWord + " "),
-                DontHideWoxAfterSelect = true
+                Action = (c) =>
+                {
+                    changeQuery(n.ActionWord + " ");
+                    return false;
+                }
             }));
 
             return results;

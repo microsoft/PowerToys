@@ -7,8 +7,8 @@
     <ProjectGuid>{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Wox.Plugin.DotnetPluginTest</RootNamespace>
-    <AssemblyName>Wox.Plugin.DotnetPluginTest</AssemblyName>
+    <RootNamespace>Wox.Plugin.Clipboard</RootNamespace>
+    <AssemblyName>Wox.Plugin.Clipboard</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -38,12 +38,17 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsInput">
+      <HintPath>..\..\packages\InputSimulator.1.0.4.0\lib\net20\WindowsInput.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClipboardMonitor.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -59,9 +64,13 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Images\clipboard.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy  /Y /E  $(TargetDir)*.* $(SolutionDir)Wox\bin\Debug\Plugins\$(ProjectName)\</PostBuildEvent>
+    <PostBuildEvent>xcopy  /Y /E  $(TargetDir)*.* $(SolutionDir)Wox\bin\Debug\Plugins\$(ProjectName)\
+xcopy  /Y /E  $(ProjectDir)Images $(SolutionDir)Wox\bin\Debug\Plugins\$(ProjectName)\Images\</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

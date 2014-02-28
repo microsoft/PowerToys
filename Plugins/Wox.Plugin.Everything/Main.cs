@@ -36,6 +36,7 @@ namespace Wox.Plugin.Everything
                         {
                             context.ShowMsg("Could not start " + r.Title, ex.Message, null);
                         }
+                        return true;
                     };
                     results.Add(r);
                 }
