@@ -67,7 +67,7 @@ namespace Wox
             }
             catch (Exception)
             {
-                MessageBox.Show("Registe hotkey: " + CommonStorage.Instance.UserSetting.Hotkey + " failed.");
+                MessageBox.Show("Registe hotkey: " + hotkeyStr + " failed.");
             }
         }
 

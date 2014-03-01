@@ -71,13 +71,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="plugin.ini">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="x64\Everything.dll" />
     <Content Include="x86\Everything.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="plugin.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

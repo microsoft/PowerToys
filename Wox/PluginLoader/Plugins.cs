@@ -29,7 +29,7 @@ namespace Wox.PluginLoader
                     ThreadPool.QueueUserWorkItem(o => plugin1.Init(new PluginInitContext()
                     {
                         Plugins = plugins,
-                        PluginMetadata = metadata,
+                        CurrentPluginMetadata = metadata,
                         ChangeQuery = s => App.Window.ChangeQuery(s),
                         CloseApp = App.Window.CloseApp,
                         HideApp = App.Window.HideApp,

@@ -8,7 +8,8 @@ namespace Wox.Plugin
     public class PluginInitContext
     {
         public List<PluginPair> Plugins { get; set; }
-        public PluginMetadata PluginMetadata { get; set; }
+        public PluginMetadata CurrentPluginMetadata { get; set; }
+
 
         public Action<string> ChangeQuery { get; set; }
         public Action CloseApp { get; set; }

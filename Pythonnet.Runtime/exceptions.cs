@@ -384,7 +384,6 @@ namespace Python.Runtime {
         /// </remarks>
 
         public static PythonException GetException() {
-            // TODO: implement this.
             return null;
         }
 

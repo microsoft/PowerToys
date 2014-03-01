@@ -168,7 +168,6 @@ namespace Wox.Helper
                 metadata.Version = ini.GetSetting("plugin", "Version");
                 metadata.PluginType = PluginType.ThirdParty;
                 metadata.ActionKeyword = ini.GetSetting("plugin", "ActionKeyword");
-                metadata.ExecuteFilePath = directory + "\\" + ini.GetSetting("plugin", "ExecuteFile");
                 metadata.PluginDirecotry = directory + "\\";
                 metadata.ExecuteFileName = ini.GetSetting("plugin", "ExecuteFile");
 

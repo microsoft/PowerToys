@@ -1,0 +1,11 @@
+{
+    "ID":"D2D2C23B084D411DB66FE0C79D6C2A6E",
+    "ActionKeyword":"ev",
+    "Name":"Wox.Plugin.Everything",
+    "Description":"Search Everything",
+    "Author":"orzfly",
+    "Version":"1.0",
+    "Language":"csharp",
+    "Website":"http://www.getwox.com",
+    "ExecuteFileName":"Wox.Plugin.Everything.dll"
+}

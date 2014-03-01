@@ -55,7 +55,7 @@ namespace Wox.Plugin.Everything
             this.context = context;
 
             LoadLibrary(Path.Combine(
-                Path.Combine(context.PluginMetadata.PluginDirecotry, (IntPtr.Size == 4) ? "x86" : "x64"),
+                Path.Combine(context.CurrentPluginMetadata.PluginDirecotry, (IntPtr.Size == 4) ? "x86" : "x64"),
                 "Everything.dll"
             ));
             //init everything

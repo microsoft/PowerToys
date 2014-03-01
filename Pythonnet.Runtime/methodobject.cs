@@ -17,7 +17,6 @@ namespace Python.Runtime {
     // Implements a Python type that represents a CLR method. Method objects
     // support a subscript syntax [] to allow explicit overload selection.
     //========================================================================
-    // TODO: ForbidPythonThreadsAttribute per method info
 
     internal class MethodObject : ExtensionType {
 

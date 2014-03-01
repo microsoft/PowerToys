@@ -1,0 +1,11 @@
+{
+    "ID":"D2D2C23B084D411DB66FE0C79D6C2A6D",
+    "ActionKeyword":"movie",
+    "Name":"Wox.Plugin.Douban.Movie",
+    "Description":"search douban movies",
+    "Author":"qianlifeng",
+    "Version":"1.0",
+    "Language":"python",
+    "Website":"http://www.getwox.com",
+    "ExecuteFileName":"main.py"
+}

@@ -25,7 +25,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Everything", "Pl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.UAC", "Wox.UAC\Wox.UAC.csproj", "{C9BC17A0-C2BC-4185-AC1F-32E3352C1233}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Clipboard", "Plugins\Wox.Plugin.DotnetPluginTest\Wox.Plugin.Clipboard.csproj", "{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Clipboard", "Plugins\Wox.Plugin.Clipboard\Wox.Plugin.Clipboard.csproj", "{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

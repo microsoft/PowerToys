@@ -330,7 +330,6 @@ namespace Python.Runtime {
         public static int ValidVersionTag = (1 << 19);
         public static int IsAbstract = (1 << 20);
         public static int HaveNewBuffer = (1 << 21);
-        // TODO: Implement FastSubclass functions
         public static int IntSubclass = (1 << 23);
         public static int LongSubclass = (1 << 24);
         public static int ListSubclass = (1 << 25);

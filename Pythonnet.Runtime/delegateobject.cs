@@ -82,7 +82,6 @@ namespace Python.Runtime {
         //====================================================================
 
         public static IntPtr tp_call(IntPtr ob, IntPtr args, IntPtr kw) {
-            // todo: add fast type check!
             IntPtr pytype = Runtime.PyObject_TYPE(ob);
             DelegateObject self = (DelegateObject)GetManagedObject(pytype);
             CLRObject o = GetManagedObject(ob) as CLRObject;

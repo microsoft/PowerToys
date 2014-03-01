@@ -15,7 +15,7 @@ namespace Wox.Plugin.System
             {
                 results.Add(new Result()
                 {
-                    Title = "Wox Setting Dialog",
+                    Title = "Wox Setting",
                     Score = 100,
                     IcoPath = "Images/app.png",
                     Action = (contenxt) =>

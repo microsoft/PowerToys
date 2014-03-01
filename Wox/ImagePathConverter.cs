@@ -32,9 +32,9 @@ namespace Wox
             {
                 resolvedPath = path;
             }
-            else if (!string.IsNullOrEmpty(path) && File.Exists(pluginDirectory + path))
+            else if (!string.IsNullOrEmpty(path) && File.Exists(Path.Combine(pluginDirectory,path)))
             {
-                resolvedPath = pluginDirectory + path;
+                resolvedPath = Path.Combine(pluginDirectory, path);
             }
 
             if (resolvedPath.ToLower().EndsWith(".exe") || resolvedPath.ToLower().EndsWith(".lnk"))

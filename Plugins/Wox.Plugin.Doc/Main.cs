@@ -53,7 +53,7 @@ namespace Wox.Plugin.Doc
 
         public void Init(PluginInitContext context)
         {
-            docsetBasePath = context.PluginMetadata.PluginDirecotry + @"Docset";
+            docsetBasePath = context.CurrentPluginMetadata.PluginDirecotry + @"Docset";
             if (!Directory.Exists(docsetBasePath))
                 Directory.CreateDirectory(docsetBasePath);
 

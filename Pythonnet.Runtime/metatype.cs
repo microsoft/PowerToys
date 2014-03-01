@@ -88,7 +88,6 @@ namespace Python.Runtime {
                 );
             }
 
-            // hack for now... fix for 1.0
             //return TypeManager.CreateSubType(args);
 
 
