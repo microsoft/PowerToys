@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -59,40 +56,7 @@ namespace Wox
             {
                 SetTheme(CommonStorage.Instance.UserSetting.Theme = "Default");
             }
-
-            new Thread(Listen).Start();
         }
-
-        private void Listen()
-        {
-
-            try
-            {
-
-                TcpListener tcpl = new TcpListener(new IPEndPoint(IPAddress.Parse("127.0.0.1"),1234));//在5656端口新建一个TcpListener对象
-                tcpl.Start();
-                Debug.WriteLine("started listening..");
-                while (true)
-                {
-                    Socket s = tcpl.AcceptSocket();
-                    string remote = s.RemoteEndPoint.ToString();
-                    Byte[] stream = new Byte[80];
-                    int i = s.Receive(stream);
-                    string msg = "<" + remote + ">" + System.Text.Encoding.UTF8.GetString(stream);
-                    Debug.WriteLine(msg);
-                }
-            }
-            catch (System.Security.SecurityException)
-            {
-                Debug.WriteLine("firewall says no no to application - application cries..");
-            }
-
-            catch (Exception)
-            {
-                Debug.WriteLine("stoped listening..");
-            }
-        }
-
 
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
         {
