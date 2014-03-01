@@ -1,6 +1,14 @@
-[Wox](http://www.getwox.com)
+Wox
 =========
-<img src="http://ww3.sinaimg.cn/large/5d7c1fa4tw1ed0s9k0c2zj20740743yh.jpg" height="48" />
+[Wox](http://www.getwox.com) is an effective launcher for windows, which was inspired by [Alfred](http://www.alfredapp.com/) and [Launchy](http://www.launchy.net/). Wox provide bundles of features let you access infomations quickly. 
+
+Features
+=========
+1. Search applications, files (via everything plugin) and chrome bookmarks
+2. Search web contents with shortcuts (e.g. search google with `g keyword` or `youtube keyword`)
+3. Search clipboard history (via clipboard plugin)
+4. Themes support, get more themes from [http://www.getwox.com/theme](http://www.getwox.com/theme)
+5. Plugin support, get more plugins from [http://www.getwox.com/plugin](http://www.getwox.com/plugin)
 
 Screenshot
 =========
