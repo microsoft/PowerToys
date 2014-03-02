@@ -40,7 +40,7 @@
                                 <RowDefinition></RowDefinition>
                                 <RowDefinition Height="Auto" x:Name="SubTitleRowDefinition"></RowDefinition>
                             </Grid.RowDefinitions>
-                            <TextBlock Style="{DynamicResource ItemTitleStyle}" ToolTip="{Binding Title}" x:Name="tbTitle" Text="{Binding Title}"></TextBlock>
+                            <TextBlock Style="{DynamicResource ItemTitleStyle}" VerticalAlignment="Center" ToolTip="{Binding Title}" x:Name="tbTitle" Text="{Binding Title}"></TextBlock>
                             <TextBlock Style="{DynamicResource ItemSubTitleStyle}" Visibility="{Binding SubTitle, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding SubTitle}"></TextBlock>
                         </Grid>
                     </Grid>

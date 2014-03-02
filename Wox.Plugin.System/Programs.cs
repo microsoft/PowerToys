@@ -27,7 +27,6 @@ namespace Wox.Plugin.System
 
         List<Program> installedList = new List<Program>();
 
-
         [DllImport("shell32.dll")]
         static extern bool SHGetSpecialFolderPath(IntPtr hwndOwner,[Out] StringBuilder lpszPath, int nFolder, bool fCreate);
         const int CSIDL_COMMON_STARTMENU = 0x16;  // \Windows\Start Menu\Programs
@@ -40,6 +39,10 @@ namespace Wox.Plugin.System
             var fuzzyMather = FuzzyMatcher.Create(query.RawQuery);
             List<Program> returnList = installedList.Where(o => MatchProgram(o, fuzzyMather)).ToList();
             returnList.ForEach(ScoreFilter);
+            //return ordered list instead of return the score, because programs scores will affect other
+            //plugins, the weight of program should be less than the plugins when they showed at the same time.
+            returnList = returnList.OrderByDescending(o => o.Score).ToList();
+            returnList.ForEach(o=>o.Score = 0);
 
             return returnList.Select(c => new Result()
             {
@@ -112,7 +115,6 @@ namespace Wox.Plugin.System
                     {
                         Title = getAppNameFromAppPath(file),
                         IcoPath = file,
-                        Score = 10,
                         ExecutePath = file
                     };
                     installedList.Add(p);
@@ -129,11 +131,11 @@ namespace Wox.Plugin.System
         {
             if (p.Title.Contains("启动") || p.Title.ToLower().Contains("start"))
             {
-                p.Score += 10;
+                p.Score += 1;
             }
             if (p.Title.Contains("卸载") || p.Title.ToLower().Contains("uninstall"))
             {
-                p.Score -= 5;
+                p.Score -= 1;
             }
         }
 

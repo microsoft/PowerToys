@@ -25,6 +25,7 @@ namespace Wox.Plugin.System
                 results.Add(new Result()
                 {
                     Title = string.Format("Search {0} for \"{1}\"", webSearch.Title, keyword),
+                    Score = 6,
                     IcoPath = webSearch.IconPath,
                     Action = (c) =>
                     {
