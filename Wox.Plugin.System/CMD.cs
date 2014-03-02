@@ -29,7 +29,6 @@ namespace Wox.Plugin.System
                      Action = (c) =>
                      {
                          ExecuteCmd(m.Key);
-                         AddCmdHistory(m.Key);
                          return true;
                      }
                  }).Take(5);
@@ -49,7 +48,6 @@ namespace Wox.Plugin.System
                     Action = (c) =>
                     {
                         ExecuteCmd(cmd);
-                        AddCmdHistory(cmd);
                         return true;
                     }
                 };
@@ -65,7 +63,6 @@ namespace Wox.Plugin.System
                         Action = (c) =>
                         {
                             ExecuteCmd(m.Key);
-                            AddCmdHistory(m.Key);
                             return true;
                         }
                     }).Take(4);
@@ -81,6 +78,7 @@ namespace Wox.Plugin.System
             try
             {
                 WindowsShellRun.Start(cmd);
+                AddCmdHistory(cmd);
             }
             catch (Exception e)
             {
