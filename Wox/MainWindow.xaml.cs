@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,6 +14,7 @@ using WindowsInput.Native;
 using NHotkey;
 using NHotkey.Wpf;
 using Wox.Commands;
+using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
@@ -57,6 +59,8 @@ namespace Wox
                 SetTheme(CommonStorage.Instance.UserSetting.Theme = "Default");
             }
         }
+
+
 
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
         {

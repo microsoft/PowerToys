@@ -5,10 +5,10 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Win32;
-using Wox.Infrastructure;
+using Newtonsoft.Json;
 using Wox.Plugin;
 
-namespace Wox.Helper
+namespace Wox.UAC
 {
     public class PluginInstaller
     {
@@ -51,7 +51,7 @@ namespace Wox.Helper
             openKey = shellKey.OpenSubKey("open", true);
             openKey.CreateSubKey("command");
             RegistryKey commandKey = openKey.OpenSubKey("command", true);
-            string pathString = "\"" + filePath + "\" \"%1\"";
+            string pathString = "\"" + filePath + "\" \"installPlugin\" \"%1\"";
             commandKey.SetValue("", pathString);
 
             //refresh cache
@@ -60,51 +60,51 @@ namespace Wox.Helper
 
         public void RegisterInstaller()
         {
-            string filePath = Directory.GetCurrentDirectory() + "\\Wox.Installer.exe";
+            string filePath = Directory.GetCurrentDirectory() + "\\Wox.UAC.exe";
             string iconPath = Directory.GetCurrentDirectory() + "\\app.ico";
 
-            SaveReg(filePath, ".wox", iconPath, false);
+            SaveReg(filePath, ".wox", iconPath, true);
         }
 
         public void Install(string path)
         {
             if (File.Exists(path))
             {
-                string tempFoler = System.IO.Path.GetTempPath() + "\\wox\\workflows";
+                string tempFoler = System.IO.Path.GetTempPath() + "\\wox\\plugins";
                 if (Directory.Exists(tempFoler))
                 {
                     Directory.Delete(tempFoler, true);
                 }
                 UnZip(path, tempFoler, true);
 
-                string iniPath = tempFoler + "\\plugin.ini";
+                string iniPath = tempFoler + "\\plugin.json";
                 if (!File.Exists(iniPath))
                 {
                     MessageBox.Show("Install failed: config is missing");
                     return;
                 }
 
-                PluginMetadata plugin = GetMetadataFromIni(tempFoler);
+                PluginMetadata plugin = GetMetadataFromJson(tempFoler);
                 if (plugin == null || plugin.Name == null)
                 {
-                    MessageBox.Show("Install failed: config of this workflow is invalid");
+                    MessageBox.Show("Install failed: config of this plugin is invalid");
                     return;
                 }
 
                 string pluginFolerPath = AppDomain.CurrentDomain.BaseDirectory + "Plugins";
                 if (!Directory.Exists(pluginFolerPath))
                 {
-                    MessageBox.Show("Install failed: cound't find workflow directory");
+                    MessageBox.Show("Install failed: cound't find plugin directory");
                     return;
                 }
 
                 string newPluginPath = pluginFolerPath + "\\" + plugin.Name;
                 string content = string.Format(
-                        "Do you want to install following workflow?\r\nName: {0}\r\nVersion: {1}\r\nAuthor: {2}",
+                        "Do you want to install following plugin?\r\nName: {0}\r\nVersion: {1}\r\nAuthor: {2}",
                         plugin.Name, plugin.Version, plugin.Author);
                 if (Directory.Exists(newPluginPath))
                 {
-                    PluginMetadata existingPlugin = GetMetadataFromIni(newPluginPath);
+                    PluginMetadata existingPlugin = GetMetadataFromJson(newPluginPath);
                     if (existingPlugin == null || existingPlugin.Name == null)
                     {
                         //maybe broken plugin, just delete it
@@ -113,12 +113,12 @@ namespace Wox.Helper
                     else
                     {
                         content = string.Format(
-                        "Do you want to update following workflow?\r\nName: {0}\r\nOld Version: {1}\r\nNew Version: {2}\r\nAuthor: {3}",
+                        "Do you want to update following plugin?\r\nName: {0}\r\nOld Version: {1}\r\nNew Version: {2}\r\nAuthor: {3}",
                         plugin.Name, existingPlugin.Version, plugin.Version, plugin.Author);
                     }
                 }
 
-                MessageBoxResult result = MessageBox.Show(content, "Install workflow",
+                MessageBoxResult result = MessageBox.Show(content, "Install plugin",
                     MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result == MessageBoxResult.Yes)
                 {
@@ -133,63 +133,73 @@ namespace Wox.Helper
                     string wox = AppDomain.CurrentDomain.BaseDirectory + "Wox.exe";
                     if (File.Exists(wox))
                     {
-                        ProcessStartInfo info = new ProcessStartInfo(wox, "reloadWorkflows")
+                        ProcessStartInfo info = new ProcessStartInfo(wox, "reloadplugin")
                         {
                             UseShellExecute = true
                         };
                         Process.Start(info);
-                        MessageBox.Show("You have installed workflow " + plugin.Name + " successfully.");
+                        MessageBox.Show("You have installed plugin " + plugin.Name + " successfully.");
                     }
                     else
                     {
-                        MessageBox.Show("You have installed workflow " + plugin.Name + " successfully. Please restart your wox to use new workflow.");
+                        MessageBox.Show("You have installed plugin " + plugin.Name + " successfully. Please restart your wox to use new plugin.");
                     }
                 }
             }
         }
 
-        private PluginMetadata GetMetadataFromIni(string directory)
-        {
-            string iniPath = directory + "\\plugin.ini";
+        private static PluginMetadata GetMetadataFromJson(string pluginDirectory)
+       {
+            string configPath = Path.Combine(pluginDirectory, "plugin.json");
+            PluginMetadata metadata;
 
-            if (!File.Exists(iniPath))
+            if (!File.Exists(configPath))
             {
                 return null;
             }
 
             try
             {
-                PluginMetadata metadata = new PluginMetadata();
-                IniParser ini = new IniParser(iniPath);
-                metadata.Name = ini.GetSetting("plugin", "Name");
-                metadata.Author = ini.GetSetting("plugin", "Author");
-                metadata.Description = ini.GetSetting("plugin", "Description");
-                metadata.Language = ini.GetSetting("plugin", "Language");
-                metadata.Version = ini.GetSetting("plugin", "Version");
+                metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
                 metadata.PluginType = PluginType.ThirdParty;
-                metadata.ActionKeyword = ini.GetSetting("plugin", "ActionKeyword");
-                metadata.PluginDirecotry = directory + "\\";
-                metadata.ExecuteFileName = ini.GetSetting("plugin", "ExecuteFile");
-
-                if (!AllowedLanguage.IsAllowed(metadata.Language))
-                {
-                    string error = string.Format("Parse ini {0} failed: invalid language {1}", iniPath,
-                                                 metadata.Language);
-                    return null;
-                }
-                if (!File.Exists(metadata.ExecuteFilePath))
-                {
-                    string error = string.Format("Parse ini {0} failed: ExecuteFilePath didn't exist {1}", iniPath,
-                                                 metadata.ExecuteFilePath);
-                    return null;
-                }
-
-                return metadata;
+                metadata.PluginDirecotry = pluginDirectory;
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                string error = string.Format("Parse plugin config {0} failed: json format is not valid", configPath);
+#if (DEBUG)
+                {
+                    throw new Exception(error);
+                }
+#endif
                 return null;
             }
+
+
+            if (!AllowedLanguage.IsAllowed(metadata.Language))
+            {
+                string error = string.Format("Parse plugin config {0} failed: invalid language {1}", configPath,
+                    metadata.Language);
+#if (DEBUG)
+                {
+                    throw new Exception(error);
+                }
+#endif
+                return null;
+            }
+            if (!File.Exists(metadata.ExecuteFilePath))
+            {
+                string error = string.Format("Parse plugin config {0} failed: ExecuteFile {1} didn't exist", configPath,
+                    metadata.ExecuteFilePath);
+#if (DEBUG)
+                {
+                    throw new Exception(error);
+                }
+#endif
+                return null;
+            }
+
+            return metadata;
         }
 
         /// <summary>
