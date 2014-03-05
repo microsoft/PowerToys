@@ -3,15 +3,27 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
+using System.Windows.Input;
 using System.Windows.Media;
 using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Plugin;
+using MessageBox = System.Windows.MessageBox;
+using UserControl = System.Windows.Controls.UserControl;
 
 namespace Wox
 {
     public partial class ResultPanel : UserControl
     {
+        public event Action<Result> OnMouseClickItem;
+
+        protected virtual void OnOnMouseClickItem(Result result)
+        {
+            Action<Result> handler = OnMouseClickItem;
+            if (handler != null) handler(result);
+        }
+
         public bool Dirty { get; set; }
 
         public void AddResults(List<Result> results)
@@ -139,6 +151,15 @@ namespace Wox
             if (e.AddedItems.Count > 0)
             {
                 lbResults.ScrollIntoView(e.AddedItems[0]);
+            }
+        }
+
+        private void LbResults_OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var item = ItemsControl.ContainerFromElement(lbResults, e.OriginalSource as DependencyObject) as ListBoxItem;
+            if (item != null)
+            {
+                OnOnMouseClickItem(item.DataContext as Result);
             }
         }
     }

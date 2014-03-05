@@ -11,7 +11,7 @@
     </UserControl.Resources>
 
     <Grid x:Name="gridContainer">
-        <ListBox x:Name="lbResults" Style="{DynamicResource listboxStyle}" SelectionChanged ="lbResults_SelectionChanged"  Focusable="False"  KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
+        <ListBox x:Name="lbResults" PreviewMouseDown="LbResults_OnPreviewMouseDown" Style="{DynamicResource listboxStyle}" SelectionChanged ="lbResults_SelectionChanged"  Focusable="False"  KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
             <ListBox.Resources>
                 <!--SelectedItem with focus-->
                 <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{DynamicResource ResultItemHighlightBackgroundColor}"/>
@@ -35,7 +35,7 @@
                                 </MultiBinding>
                             </Image.Source>
                         </Image>
-                        <Grid Margin="5 0 5 0" Grid.Column="1">
+                        <Grid Margin="5 0 5 0" Grid.Column="1" HorizontalAlignment="Stretch">
                             <Grid.RowDefinitions>
                                 <RowDefinition></RowDefinition>
                                 <RowDefinition Height="Auto" x:Name="SubTitleRowDefinition"></RowDefinition>

@@ -47,6 +47,7 @@ namespace Wox
             InitializeComponent();
             progressBar.ToolTip = toolTip;
             InitialTray();
+            resultCtrl.OnMouseClickItem += AcceptSelect;
 
             ThreadPool.SetMaxThreads(30, 10);
             InitProgressbarAnimation();
@@ -59,8 +60,6 @@ namespace Wox
                 SetTheme(CommonStorage.Instance.UserSetting.Theme = "Default");
             }
         }
-
-
 
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
         {
@@ -285,15 +284,14 @@ namespace Wox
                     break;
 
                 case Key.Enter:
-                    AcceptSelect();
+                    AcceptSelect(resultCtrl.AcceptSelect());
                     e.Handled = true;
                     break;
             }
         }
 
-        private void AcceptSelect()
+        private void AcceptSelect(Result result)
         {
-            Result result = resultCtrl.AcceptSelect();
             if (result != null)
             {
                 if (result.Action != null)

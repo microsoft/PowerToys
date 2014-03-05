@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using Python.Runtime;
@@ -33,6 +34,7 @@ namespace Wox.PluginLoader
         private bool CheckPythonEnvironmentInstalled() {
             try
             {
+                SetPythonHome();
                 PythonEngine.Initialize();
                 PythonEngine.Shutdown();
             }
@@ -41,6 +43,13 @@ namespace Wox.PluginLoader
                 return false;
             }
             return true;
+        }
+
+        private void SetPythonHome()
+        {
+            //Environment.SetEnvironmentVariable("PYTHONHOME",Path.Combine(Directory.GetCurrentDirectory(),"PythonHome"));
+            //PythonEngine.PythonHome = 
+            //PythonEngine.ProgramName
         }
     }
 }

@@ -1,0 +1,11 @@
+{
+    "ID":"D2D2C23B084D411DB66FE0C79D6C2A7D",
+    "ActionKeyword":"hotmovie",
+    "Name":"近期热映电影",
+    "Description":"近期热映电影,powered by 格瓦拉",
+    "Author":"qianlifeng",
+    "Version":"1.0",
+    "Language":"python",
+    "Website":"http://www.getwox.com",
+    "ExecuteFileName":"main.py"
+}
