@@ -46,16 +46,14 @@
     <Style x:Key="listboxStyle" TargetType="{x:Type ListBox}">
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="OverridesDefaultStyle" Value="true"/>
-        <Setter Property="OverridesDefaultStyle" Value="true"/>
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBox">
-                    <ScrollViewer Focusable="false" Template="{DynamicResource ScrollViewerControlTemplate}">
-                            <StackPanel IsItemsHost="True" />
-                        </ScrollViewer>
+                <ScrollViewer Focusable="false" Template="{DynamicResource ScrollViewerControlTemplate}">
+                    <VirtualizingStackPanel IsItemsHost="True" />
+                </ScrollViewer>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

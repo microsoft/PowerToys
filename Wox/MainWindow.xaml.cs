@@ -59,6 +59,9 @@ namespace Wox
             {
                 SetTheme(CommonStorage.Instance.UserSetting.Theme = "Default");
             }
+
+            SetHotkey(CommonStorage.Instance.UserSetting.Hotkey, OnHotkey);
+            SetCustomPluginHotkey();
         }
 
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
@@ -220,9 +223,7 @@ namespace Wox
             Left = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
             Top = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 3;
 
-            SetHotkey(CommonStorage.Instance.UserSetting.Hotkey, OnHotkey);
-            SetCustomPluginHotkey();
-            //WakeupApp();
+
             Plugins.Init();
 
             globalHotkey.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
