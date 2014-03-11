@@ -45,6 +45,9 @@ namespace Wox
         public MainWindow()
         {
             InitializeComponent();
+
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
             progressBar.ToolTip = toolTip;
             InitialTray();
             resultCtrl.OnMouseClickItem += AcceptSelect;
@@ -62,6 +65,19 @@ namespace Wox
 
             SetHotkey(CommonStorage.Instance.UserSetting.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
+        }
+
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            if (!System.Diagnostics.Debugger.IsAttached)
+            {
+                string error = "Wox has an error that can't be handled. " + e.ExceptionObject;
+                Log.Error(error);
+                if (e.IsTerminating)
+                {
+                    MessageBox.Show(error);
+                }
+            }
         }
 
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
