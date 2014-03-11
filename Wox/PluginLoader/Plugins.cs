@@ -36,7 +36,8 @@ namespace Wox.PluginLoader
                         ShowApp = () => App.Window.ShowApp(),
                         ShowMsg = (title, subTitle, iconPath) => App.Window.ShowMsg(title, subTitle, iconPath),
                         OpenSettingDialog = () => App.Window.OpenSettingDialog(),
-                        ShowCurrentResultItemTooltip = (msg) => App.Window.ShowCurrentResultItemTooltip(msg)
+                        ShowCurrentResultItemTooltip = (msg) => App.Window.ShowCurrentResultItemTooltip(msg),
+                        ReloadPlugins = ()=> Init()
                     }));
                 }
             }

@@ -31,6 +31,7 @@ namespace Wox
     public partial class MainWindow
     {
         private static readonly object locker = new object();
+        public static bool Initialized = false;
 
         private static readonly List<Result> waitShowResultList = new List<Result>();
         private readonly GloablHotkey globalHotkey = new GloablHotkey();
@@ -41,10 +42,10 @@ namespace Wox
         private bool queryHasReturn;
         private ToolTip toolTip = new ToolTip();
 
-
         public MainWindow()
         {
             InitializeComponent();
+            Initialized = true;
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
@@ -65,6 +66,15 @@ namespace Wox
 
             SetHotkey(CommonStorage.Instance.UserSetting.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
+
+            globalHotkey.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
+        }
+
+        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            Left = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
+            Top = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 3;
+            Plugins.Init();
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -75,6 +85,7 @@ namespace Wox
                 Log.Error(error);
                 if (e.IsTerminating)
                 {
+                    notifyIcon.Visible = false;
                     MessageBox.Show(error);
                 }
             }
@@ -244,16 +255,7 @@ namespace Wox
             }
         }
 
-        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
-        {
-            Left = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
-            Top = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 3;
 
-
-            Plugins.Init();
-
-            globalHotkey.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
-        }
 
         private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)
         {

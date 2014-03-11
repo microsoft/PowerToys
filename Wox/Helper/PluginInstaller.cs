@@ -8,6 +8,7 @@ using System.Windows;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json;
 using Wox.Plugin;
+using Wox.PluginLoader;
 
 namespace Wox.Helper
 {
@@ -18,37 +19,36 @@ namespace Wox.Helper
         {
             if (File.Exists(path))
             {
-                string tempFoler = System.IO.Path.GetTempPath() + "\\wox\\plugins";
+                string tempFoler = Path.Combine(Path.GetTempPath(), "wox\\plugins");
                 if (Directory.Exists(tempFoler))
                 {
                     Directory.Delete(tempFoler, true);
                 }
                 UnZip(path, tempFoler, true);
 
-                string iniPath = tempFoler + "\\plugin.json";
+                string iniPath = Path.Combine(tempFoler, "plugin.json");
                 if (!File.Exists(iniPath))
                 {
-                    MessageBox.Show("Install failed: config is missing");
+                    MessageBox.Show("Install failed: plugin config is missing");
                     return;
                 }
 
                 PluginMetadata plugin = GetMetadataFromJson(tempFoler);
                 if (plugin == null || plugin.Name == null)
                 {
-                    MessageBox.Show("Install failed: config of this plugin is invalid");
+                    MessageBox.Show("Install failed: plugin config is invalid");
                     return;
                 }
 
-                string pluginFolerPath = AppDomain.CurrentDomain.BaseDirectory + "Plugins";
+                string pluginFolerPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
                 if (!Directory.Exists(pluginFolerPath))
                 {
-                    MessageBox.Show("Install failed: cound't find plugin directory");
-                    return;
+                    Directory.CreateDirectory(pluginFolerPath);
                 }
 
-                string newPluginPath = pluginFolerPath + "\\" + plugin.Name;
+                string newPluginPath = Path.Combine(pluginFolerPath, plugin.Name);
                 string content = string.Format(
-                        "Do you want to install following plugin?\r\nName: {0}\r\nVersion: {1}\r\nAuthor: {2}",
+                        "Do you want to install following plugin?\r\n\r\nName: {0}\r\nVersion: {1}\r\nAuthor: {2}",
                         plugin.Name, plugin.Version, plugin.Author);
                 if (Directory.Exists(newPluginPath))
                 {
@@ -61,7 +61,7 @@ namespace Wox.Helper
                     else
                     {
                         content = string.Format(
-                        "Do you want to update following plugin?\r\nName: {0}\r\nOld Version: {1}\r\nNew Version: {2}\r\nAuthor: {3}",
+                        "Do you want to update following plugin?\r\n\r\nName: {0}\r\nOld Version: {1}\r\nNew Version: {2}\r\nAuthor: {3}",
                         plugin.Name, existingPlugin.Version, plugin.Version, plugin.Author);
                     }
                 }
@@ -77,21 +77,12 @@ namespace Wox.Helper
                     UnZip(path, newPluginPath, true);
                     Directory.Delete(tempFoler, true);
 
+                    if (MainWindow.Initialized)
+                    {
+                        Plugins.Init();
+                    }
 
-                    string wox = AppDomain.CurrentDomain.BaseDirectory + "Wox.exe";
-                    if (File.Exists(wox))
-                    {
-                        ProcessStartInfo info = new ProcessStartInfo(wox, "reloadplugin")
-                        {
-                            UseShellExecute = true
-                        };
-                        Process.Start(info);
-                        MessageBox.Show("You have installed plugin " + plugin.Name + " successfully.");
-                    }
-                    else
-                    {
-                        MessageBox.Show("You have installed plugin " + plugin.Name + " successfully. Please restart your wox to use new plugin.");
-                    }
+                    MessageBox.Show("You have installed plugin " + plugin.Name + " successfully.");
                 }
             }
         }

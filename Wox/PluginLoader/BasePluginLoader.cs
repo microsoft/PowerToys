@@ -48,6 +48,11 @@ namespace Wox.PluginLoader
             string[] directories = Directory.GetDirectories(PluginPath);
             foreach (string directory in directories)
             {
+                if (File.Exists((Path.Combine(directory, "NeedDelete.txt"))))
+                {
+                    Directory.Delete(directory,true);
+                    continue;
+                }
                 PluginMetadata metadata = GetMetadataFromJson(directory);
                 if (metadata != null) pluginMetadatas.Add(metadata);
             }
