@@ -1,24 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Security.Permissions;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using Microsoft.Win32;
-using Wox.Helper;
+using IWshRuntimeLibrary;
 using Wox.Infrastructure;
 using Wox.Infrastructure.UserSettings;
+using Application = System.Windows.Forms.Application;
+using File = System.IO.File;
 using MessageBox = System.Windows.MessageBox;
 
 namespace Wox
 {
     public partial class SettingWidow : Window
     {
+        string woxLinkPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "wox.lnk");
         public MainWindow MainWindow;
 
         public SettingWidow()
@@ -32,8 +29,6 @@ namespace Wox
             InitializeComponent();
             Loaded += Setting_Loaded;
         }
-
-
 
         private void Setting_Loaded(object sender, RoutedEventArgs ev)
         {
@@ -60,7 +55,7 @@ namespace Wox
             cbReplaceWinR.IsChecked = CommonStorage.Instance.UserSetting.ReplaceWinR;
             webSearchView.ItemsSource = CommonStorage.Instance.UserSetting.WebSearches;
             lvCustomHotkey.ItemsSource = CommonStorage.Instance.UserSetting.CustomPluginHotkeys;
-            cbStartWithWindows.IsChecked = CommonStorage.Instance.UserSetting.StartWoxOnSystemStartup;
+            cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
         }
 
         public void ReloadWebSearchView()
@@ -121,48 +116,28 @@ namespace Wox
 
         private void CbStartWithWindows_OnChecked(object sender, RoutedEventArgs e)
         {
-            if (!CommonStorage.Instance.UserSetting.StartWoxOnSystemStartup)
-            {
-                CommonStorage.Instance.UserSetting.StartWoxOnSystemStartup = true;
-                OnStartWithWindowsChecked();
-                CommonStorage.Instance.Save();
-            }
+            CreateStartupFolderShortcut();
         }
 
         private void CbStartWithWindows_OnUnchecked(object sender, RoutedEventArgs e)
         {
-            CommonStorage.Instance.UserSetting.StartWoxOnSystemStartup = false;
-            OnStartWithWindowUnChecked();
-            CommonStorage.Instance.Save();
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private void OnStartWithWindowUnChecked()
-        {
-            UAC.ExecuteAdminMethod(() => SetStartup(false));
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private void OnStartWithWindowsChecked()
-        {
-            UAC.ExecuteAdminMethod(() => SetStartup(true));
-        }
-
-        private void SetStartup(bool startup)
-        {
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-
-            if (rk != null)
+            if (File.Exists(woxLinkPath))
             {
-                if (startup)
-                {
-                    rk.SetValue("Wox", Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Wox.exe hidestart"));
-                }
-                else
-                {
-                    rk.DeleteValue("Wox", false);
-                }
+                File.Delete(woxLinkPath);
             }
+        }
+
+        private void CreateStartupFolderShortcut()
+        {
+            WshShellClass wshShell = new WshShellClass();
+
+            IWshShortcut shortcut = (IWshShortcut)wshShell.CreateShortcut(woxLinkPath);
+            shortcut.TargetPath = Application.ExecutablePath;
+            shortcut.Arguments = "hideStart";
+            shortcut.WorkingDirectory = Application.StartupPath;
+            shortcut.Description = "Launch Wox";
+            shortcut.IconLocation = Application.StartupPath + @"\App.ico";
+            shortcut.Save();
         }
 
         void ctlHotkey_OnHotkeyChanged(object sender, System.EventArgs e)
@@ -192,7 +167,7 @@ namespace Wox
         {
             CustomPluginHotkey item = lvCustomHotkey.SelectedItem as CustomPluginHotkey;
             if (item != null &&
-                MessageBox.Show("Are your sure to delete " + item.Hotkey + " plugin hotkey?","Delete Custom Plugin Hotkey",
+                MessageBox.Show("Are your sure to delete " + item.Hotkey + " plugin hotkey?", "Delete Custom Plugin Hotkey",
                     MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 CommonStorage.Instance.UserSetting.CustomPluginHotkeys.Remove(item);
