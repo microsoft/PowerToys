@@ -82,7 +82,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PluginInstaller.cs" />
+    <Compile Include="FileTypeAssociateInstaller.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

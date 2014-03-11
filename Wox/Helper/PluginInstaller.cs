@@ -1,72 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.Linq;
+using System.Text;
 using System.Windows;
 using ICSharpCode.SharpZipLib.Zip;
-using Microsoft.Win32;
 using Newtonsoft.Json;
 using Wox.Plugin;
 
-namespace Wox.UAC
+namespace Wox.Helper
 {
     public class PluginInstaller
     {
-        [DllImport("shell32.dll")]
-        private static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
 
-        /// <summary>
-        /// associate filetype with specified program
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <param name="fileType"></param>
-        /// <param name="iconPath"></param>
-        /// <param name="overrides"></param>
-        private static void SaveReg(string filePath, string fileType, string iconPath, bool overrides)
-        {
-            RegistryKey classRootKey = Registry.ClassesRoot.OpenSubKey("", true);
-            RegistryKey woxKey = classRootKey.OpenSubKey(fileType, true);
-            if (woxKey != null)
-            {
-                if (!overrides)
-                {
-                    return;
-                }
-                classRootKey.DeleteSubKeyTree(fileType);
-            }
-            classRootKey.CreateSubKey(fileType);
-            woxKey = classRootKey.OpenSubKey(fileType, true);
-            woxKey.SetValue("", "wox.wox");
-            woxKey.SetValue("Content Type", "application/wox");
-
-            RegistryKey iconKey = woxKey.CreateSubKey("DefaultIcon");
-            iconKey.SetValue("", iconPath);
-
-            woxKey.CreateSubKey("shell");
-            RegistryKey shellKey = woxKey.OpenSubKey("shell", true);
-            shellKey.SetValue("", "Open");
-            RegistryKey openKey = shellKey.CreateSubKey("open");
-            openKey.SetValue("", "Open with wox");
-
-            openKey = shellKey.OpenSubKey("open", true);
-            openKey.CreateSubKey("command");
-            RegistryKey commandKey = openKey.OpenSubKey("command", true);
-            string pathString = "\"" + filePath + "\" \"installPlugin\" \"%1\"";
-            commandKey.SetValue("", pathString);
-
-            //refresh cache
-            SHChangeNotify(0x8000000, 0, IntPtr.Zero, IntPtr.Zero);
-        }
-
-        public void RegisterInstaller()
-        {
-            string filePath = Directory.GetCurrentDirectory() + "\\Wox.UAC.exe";
-            string iconPath = Directory.GetCurrentDirectory() + "\\app.ico";
-
-            SaveReg(filePath, ".wox", iconPath, true);
-        }
-
-        public void Install(string path)
+        public static void Install(string path)
         {
             if (File.Exists(path))
             {
@@ -149,7 +97,7 @@ namespace Wox.UAC
         }
 
         private static PluginMetadata GetMetadataFromJson(string pluginDirectory)
-       {
+        {
             string configPath = Path.Combine(pluginDirectory, "plugin.json");
             PluginMetadata metadata;
 
@@ -208,7 +156,7 @@ namespace Wox.UAC
         /// <param name="zipedFile">The ziped file.</param>
         /// <param name="strDirectory">The STR directory.</param>
         /// <param name="overWrite">overwirte</param>
-        private void UnZip(string zipedFile, string strDirectory, bool overWrite)
+        private static void UnZip(string zipedFile, string strDirectory, bool overWrite)
         {
             if (strDirectory == "")
                 strDirectory = Directory.GetCurrentDirectory();

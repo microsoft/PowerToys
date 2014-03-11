@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -208,6 +209,9 @@ namespace Wox
 
         #endregion
 
-
+        private void BtnEnableInstaller_OnClick(object sender, RoutedEventArgs e)
+        {
+            Process.Start("Wox.UAC.exe", "AssociatePluginInstaller");
+        }
     }
 }

@@ -230,6 +230,16 @@ namespace Wox
                     case "hidestart":
                         HideApp();
                         break;
+
+                    case "installplugin":
+                        var path = args[1];
+                        if (!File.Exists(path))
+                        {
+                            MessageBox.Show("Plugin " + path + " didn't exist");
+                            return;
+                        }
+                        PluginInstaller.Install(path);
+                        break;
                 }
             }
         }
