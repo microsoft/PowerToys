@@ -21,10 +21,15 @@ namespace Wox.Plugin.System
 
             if (webSearch != null)
             {
-                string keyword = query.ActionParameters.Count > 0 ? query.RawQuery.Substring(query.RawQuery.IndexOf(' ') + 1) : "";
+                string keyword = query.ActionParameters.Count > 0 ? query.GetAllRemainingParameter() : "";
+                string title = string.Format("Search {0} for \"{1}\"", webSearch.Title, keyword);
+                if (string.IsNullOrEmpty(keyword))
+                {
+                    title = "Search " + webSearch.Title;
+                }
                 results.Add(new Result()
                 {
-                    Title = string.Format("Search {0} for \"{1}\"", webSearch.Title, keyword),
+                    Title = title,
                     Score = 6,
                     IcoPath = webSearch.IconPath,
                     Action = (c) =>

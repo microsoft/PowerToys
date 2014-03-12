@@ -81,7 +81,7 @@ namespace Wox.Plugin.PluginManagement
                     Action = e =>
                     {
                         UnInstalledPlugins(plugin);
-                        return true;
+                        return false;
                     }
                 });
             }
