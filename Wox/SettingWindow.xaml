@@ -23,7 +23,9 @@
                     <TextBlock Text="Theme:" />
                     <ComboBox x:Name="themeComboBox" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120"/>
                 </StackPanel>
-
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button x:Name="btnEnableInstaller" Click="BtnEnableInstaller_OnClick">enable plugin installer</Button>
+                </StackPanel>
             </StackPanel>
         </TabItem>
         <TabItem Header="Hotkey">

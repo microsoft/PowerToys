@@ -53,7 +53,6 @@
     <Compile Include="GloablHotkey.cs" />
     <Compile Include="HotkeyModel.cs" />
     <Compile Include="IniParser.cs" />
-    <Compile Include="UAC.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UserSettings\PluginHotkey.cs" />
     <Compile Include="UserSettings\UserSelectedRecords.cs" />

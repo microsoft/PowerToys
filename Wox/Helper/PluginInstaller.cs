@@ -1,106 +1,54 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.Linq;
+using System.Text;
 using System.Windows;
 using ICSharpCode.SharpZipLib.Zip;
-using Microsoft.Win32;
 using Newtonsoft.Json;
 using Wox.Plugin;
+using Wox.PluginLoader;
 
-namespace Wox.UAC
+namespace Wox.Helper
 {
     public class PluginInstaller
     {
-        [DllImport("shell32.dll")]
-        private static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
 
-        /// <summary>
-        /// associate filetype with specified program
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <param name="fileType"></param>
-        /// <param name="iconPath"></param>
-        /// <param name="overrides"></param>
-        private static void SaveReg(string filePath, string fileType, string iconPath, bool overrides)
-        {
-            RegistryKey classRootKey = Registry.ClassesRoot.OpenSubKey("", true);
-            RegistryKey woxKey = classRootKey.OpenSubKey(fileType, true);
-            if (woxKey != null)
-            {
-                if (!overrides)
-                {
-                    return;
-                }
-                classRootKey.DeleteSubKeyTree(fileType);
-            }
-            classRootKey.CreateSubKey(fileType);
-            woxKey = classRootKey.OpenSubKey(fileType, true);
-            woxKey.SetValue("", "wox.wox");
-            woxKey.SetValue("Content Type", "application/wox");
-
-            RegistryKey iconKey = woxKey.CreateSubKey("DefaultIcon");
-            iconKey.SetValue("", iconPath);
-
-            woxKey.CreateSubKey("shell");
-            RegistryKey shellKey = woxKey.OpenSubKey("shell", true);
-            shellKey.SetValue("", "Open");
-            RegistryKey openKey = shellKey.CreateSubKey("open");
-            openKey.SetValue("", "Open with wox");
-
-            openKey = shellKey.OpenSubKey("open", true);
-            openKey.CreateSubKey("command");
-            RegistryKey commandKey = openKey.OpenSubKey("command", true);
-            string pathString = "\"" + filePath + "\" \"installPlugin\" \"%1\"";
-            commandKey.SetValue("", pathString);
-
-            //refresh cache
-            SHChangeNotify(0x8000000, 0, IntPtr.Zero, IntPtr.Zero);
-        }
-
-        public void RegisterInstaller()
-        {
-            string filePath = Directory.GetCurrentDirectory() + "\\Wox.UAC.exe";
-            string iconPath = Directory.GetCurrentDirectory() + "\\app.ico";
-
-            SaveReg(filePath, ".wox", iconPath, true);
-        }
-
-        public void Install(string path)
+        public static void Install(string path)
         {
             if (File.Exists(path))
             {
-                string tempFoler = System.IO.Path.GetTempPath() + "\\wox\\plugins";
+                string tempFoler = Path.Combine(Path.GetTempPath(), "wox\\plugins");
                 if (Directory.Exists(tempFoler))
                 {
                     Directory.Delete(tempFoler, true);
                 }
                 UnZip(path, tempFoler, true);
 
-                string iniPath = tempFoler + "\\plugin.json";
+                string iniPath = Path.Combine(tempFoler, "plugin.json");
                 if (!File.Exists(iniPath))
                 {
-                    MessageBox.Show("Install failed: config is missing");
+                    MessageBox.Show("Install failed: plugin config is missing");
                     return;
                 }
 
                 PluginMetadata plugin = GetMetadataFromJson(tempFoler);
                 if (plugin == null || plugin.Name == null)
                 {
-                    MessageBox.Show("Install failed: config of this plugin is invalid");
+                    MessageBox.Show("Install failed: plugin config is invalid");
                     return;
                 }
 
-                string pluginFolerPath = AppDomain.CurrentDomain.BaseDirectory + "Plugins";
+                string pluginFolerPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
                 if (!Directory.Exists(pluginFolerPath))
                 {
-                    MessageBox.Show("Install failed: cound't find plugin directory");
-                    return;
+                    Directory.CreateDirectory(pluginFolerPath);
                 }
 
-                string newPluginPath = pluginFolerPath + "\\" + plugin.Name;
+                string newPluginPath = Path.Combine(pluginFolerPath, plugin.Name);
                 string content = string.Format(
-                        "Do you want to install following plugin?\r\nName: {0}\r\nVersion: {1}\r\nAuthor: {2}",
+                        "Do you want to install following plugin?\r\n\r\nName: {0}\r\nVersion: {1}\r\nAuthor: {2}",
                         plugin.Name, plugin.Version, plugin.Author);
                 if (Directory.Exists(newPluginPath))
                 {
@@ -113,7 +61,7 @@ namespace Wox.UAC
                     else
                     {
                         content = string.Format(
-                        "Do you want to update following plugin?\r\nName: {0}\r\nOld Version: {1}\r\nNew Version: {2}\r\nAuthor: {3}",
+                        "Do you want to update following plugin?\r\n\r\nName: {0}\r\nOld Version: {1}\r\nNew Version: {2}\r\nAuthor: {3}",
                         plugin.Name, existingPlugin.Version, plugin.Version, plugin.Author);
                     }
                 }
@@ -129,27 +77,18 @@ namespace Wox.UAC
                     UnZip(path, newPluginPath, true);
                     Directory.Delete(tempFoler, true);
 
+                    if (MainWindow.Initialized)
+                    {
+                        Plugins.Init();
+                    }
 
-                    string wox = AppDomain.CurrentDomain.BaseDirectory + "Wox.exe";
-                    if (File.Exists(wox))
-                    {
-                        ProcessStartInfo info = new ProcessStartInfo(wox, "reloadplugin")
-                        {
-                            UseShellExecute = true
-                        };
-                        Process.Start(info);
-                        MessageBox.Show("You have installed plugin " + plugin.Name + " successfully.");
-                    }
-                    else
-                    {
-                        MessageBox.Show("You have installed plugin " + plugin.Name + " successfully. Please restart your wox to use new plugin.");
-                    }
+                    MessageBox.Show("You have installed plugin " + plugin.Name + " successfully.");
                 }
             }
         }
 
         private static PluginMetadata GetMetadataFromJson(string pluginDirectory)
-       {
+        {
             string configPath = Path.Combine(pluginDirectory, "plugin.json");
             PluginMetadata metadata;
 
@@ -208,7 +147,7 @@ namespace Wox.UAC
         /// <param name="zipedFile">The ziped file.</param>
         /// <param name="strDirectory">The STR directory.</param>
         /// <param name="overWrite">overwirte</param>
-        private void UnZip(string zipedFile, string strDirectory, bool overWrite)
+        private static void UnZip(string zipedFile, string strDirectory, bool overWrite)
         {
             if (strDirectory == "")
                 strDirectory = Directory.GetCurrentDirectory();

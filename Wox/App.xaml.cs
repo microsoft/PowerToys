@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows;
 using Microsoft.VisualBasic.ApplicationServices;
 using Wox.Commands;
+using Wox.Helper;
 using StartupEventArgs = System.Windows.StartupEventArgs;
 
 namespace Wox
@@ -65,6 +67,22 @@ namespace Wox
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
+            //for install plugin command when wox didn't start up
+            //we shouldn't init MainWindow, just intall plugin and exit.
+            if (e.Args.Length > 0 && e.Args[0].ToLower() == "installplugin")
+            {
+                var path = e.Args[1];
+                if (!File.Exists(path))
+                {
+                    MessageBox.Show("Plugin " + path + " didn't exist");
+                    return;
+                }
+                PluginInstaller.Install(path);
+                Environment.Exit(0);
+                return;
+            }
+
 
             window = new MainWindow();
             if (e.Args.Length == 0 || e.Args[0].ToLower() != "hidestart")
