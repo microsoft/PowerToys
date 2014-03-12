@@ -1,0 +1,11 @@
+{
+    "ID":"095A6AE3A254432EBBD78F05A71D4981",
+    "ActionKeyword":"yd",
+    "Name":"Youdao Translator",
+    "Description":"Translate Chinese and English",
+    "Author":"qianlifeng",
+    "Version":"1.0",
+    "Language":"csharp",
+    "Website":"http://www.getwox.com",
+    "ExecuteFileName":"Wox.Plugin.Youdao.dll"
+}
