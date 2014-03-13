@@ -76,6 +76,7 @@ namespace Wox.PluginLoader
         {
             string json = null;
 
+            //if pythobn plugin folder name is chinese, here will deadlock.
             IntPtr gs = PythonEngine.AcquireLock();
 
             PyObject module = PythonEngine.ImportModule(moduleName);

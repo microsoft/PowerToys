@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json;
@@ -14,7 +12,6 @@ namespace Wox.Helper
 {
     public class PluginInstaller
     {
-
         public static void Install(string path)
         {
             if (File.Exists(path))
@@ -46,43 +43,51 @@ namespace Wox.Helper
                     Directory.CreateDirectory(pluginFolerPath);
                 }
 
-                string newPluginPath = Path.Combine(pluginFolerPath, plugin.Name);
+                string newPluginPath = Path.Combine(pluginFolerPath, Guid.NewGuid().ToString());
                 string content = string.Format(
                         "Do you want to install following plugin?\r\n\r\nName: {0}\r\nVersion: {1}\r\nAuthor: {2}",
                         plugin.Name, plugin.Version, plugin.Author);
-                if (Directory.Exists(newPluginPath))
+                PluginPair existingPlugin = Plugins.AllPlugins.FirstOrDefault(o => o.Metadata.ID == plugin.ID);
+
+                if (existingPlugin != null)
                 {
-                    PluginMetadata existingPlugin = GetMetadataFromJson(newPluginPath);
-                    if (existingPlugin == null || existingPlugin.Name == null)
-                    {
-                        //maybe broken plugin, just delete it
-                        Directory.Delete(newPluginPath, true);
-                    }
-                    else
-                    {
                         content = string.Format(
                         "Do you want to update following plugin?\r\n\r\nName: {0}\r\nOld Version: {1}\r\nNew Version: {2}\r\nAuthor: {3}",
-                        plugin.Name, existingPlugin.Version, plugin.Version, plugin.Author);
-                    }
+                        plugin.Name, existingPlugin.Metadata.Version, plugin.Version, plugin.Author);
                 }
 
                 MessageBoxResult result = MessageBox.Show(content, "Install plugin",
                     MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result == MessageBoxResult.Yes)
                 {
-                    if (Directory.Exists(newPluginPath))
+                    if (existingPlugin != null && Directory.Exists(existingPlugin.Metadata.PluginDirecotry))
                     {
-                        Directory.Delete(newPluginPath, true);
+                        File.Create(Path.Combine(existingPlugin.Metadata.PluginDirecotry, "NeedDelete.txt")).Close();
                     }
+
                     UnZip(path, newPluginPath, true);
                     Directory.Delete(tempFoler, true);
 
-                    if (MainWindow.Initialized)
+                    //exsiting plugins may be has loaded by application,
+                    //if we try to delelte those kind of plugins, we will get a  error that indicate the
+                    //file is been used now.
+                    //current solution is to restart wox. Ugly.
+                    //if (MainWindow.Initialized)
+                    //{
+                    //    Plugins.Init();
+                    //}
+                    if (MessageBox.Show("You have installed plugin " + plugin.Name + " successfully.\r\n Restart Wox to take effect?", "Install plugin",
+                            MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     {
-                        Plugins.Init();
+                        ProcessStartInfo Info = new ProcessStartInfo();
+                        Info.Arguments = "/C ping 127.0.0.1 -n 1 && \"" +
+                                         Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wox.exe") + "\"";
+                        Info.WindowStyle = ProcessWindowStyle.Hidden;
+                        Info.CreateNoWindow = true;
+                        Info.FileName = "cmd.exe";
+                        Process.Start(Info);
+                        App.Window.CloseApp();
                     }
-
-                    MessageBox.Show("You have installed plugin " + plugin.Name + " successfully.");
                 }
             }
         }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.CSharp;
+using Wox.Helper;
 using Wox.Plugin;
 
 namespace Wox.PluginLoader
@@ -30,14 +31,21 @@ namespace Wox.PluginLoader
                     {
                         Plugins = plugins,
                         CurrentPluginMetadata = metadata,
-                        ChangeQuery = s => App.Window.ChangeQuery(s),
-                        CloseApp = App.Window.CloseApp,
-                        HideApp = App.Window.HideApp,
-                        ShowApp = () => App.Window.ShowApp(),
-                        ShowMsg = (title, subTitle, iconPath) => App.Window.ShowMsg(title, subTitle, iconPath),
-                        OpenSettingDialog = () => App.Window.OpenSettingDialog(),
-                        ShowCurrentResultItemTooltip = (msg) => App.Window.ShowCurrentResultItemTooltip(msg),
-                        ReloadPlugins = ()=> Init()
+                        ChangeQuery = s => App.Window.Dispatcher.Invoke(new Action(() => App.Window.ChangeQuery(s))),
+                        CloseApp = () => App.Window.Dispatcher.Invoke(new Action(() => App.Window.CloseApp())),
+                        HideApp = () => App.Window.Dispatcher.Invoke(new Action(() => App.Window.HideApp())),
+                        ShowApp = () => App.Window.Dispatcher.Invoke(new Action(() => App.Window.ShowApp())),
+                        ShowMsg = (title, subTitle, iconPath) => App.Window.Dispatcher.Invoke(new Action(() =>
+                            App.Window.ShowMsg(title, subTitle, iconPath))),
+                        OpenSettingDialog = () => App.Window.Dispatcher.Invoke(new Action(() => App.Window.OpenSettingDialog())),
+                        ShowCurrentResultItemTooltip = (msg) => App.Window.Dispatcher.Invoke(new Action(() => App.Window.ShowCurrentResultItemTooltip(msg))),
+                        ReloadPlugins = () => App.Window.Dispatcher.Invoke(new Action(() => Init())),
+                        InstallPlugin = (filePath) => App.Window.Dispatcher.Invoke(new Action(() =>
+                        {
+                            PluginInstaller.Install(filePath);
+                        })),
+                        StartLoadingBar = () => App.Window.Dispatcher.Invoke(new Action(() => App.Window.StartLoadingBar())),
+                        StopLoadingBar = () => App.Window.Dispatcher.Invoke(new Action(() => App.Window.StopLoadingBar())),
                     }));
                 }
             }

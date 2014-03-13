@@ -7,12 +7,12 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 //From:http://blog.csdn.net/zhoufoxcn/article/details/6404236
-namespace Wox.Plugin.Fanyi
+namespace Wox.Plugin.PluginManagement
 {
     public class HttpRequest
     {
         private static readonly string DefaultUserAgent = "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)";
-
+     
         public static HttpWebResponse CreateGetHttpResponse(string url, int? timeout, string userAgent, CookieCollection cookies)
         {
             if (string.IsNullOrEmpty(url))
@@ -37,7 +37,7 @@ namespace Wox.Plugin.Fanyi
             }
             return request.GetResponse() as HttpWebResponse;
         }
-
+ 
         public static HttpWebResponse CreatePostHttpResponse(string url, IDictionary<string, string> parameters, int? timeout, string userAgent, Encoding requestEncoding, CookieCollection cookies)
         {
             if (string.IsNullOrEmpty(url))
@@ -107,7 +107,7 @@ namespace Wox.Plugin.Fanyi
 
         private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
         {
-            return true;
+            return true; 
         }
     }
 }

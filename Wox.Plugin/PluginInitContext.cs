@@ -25,5 +25,9 @@ namespace Wox.Plugin
         /// </summary>
         public Action ReloadPlugins { get; set; }
 
+        public Action<string> InstallPlugin { get; set; }
+
+        public Action StartLoadingBar { get; set; }
+        public Action StopLoadingBar { get; set; }
     }
 }

@@ -41,7 +41,6 @@ namespace Wox
         private NotifyIcon notifyIcon;
         private bool queryHasReturn;
         private ToolTip toolTip = new ToolTip();
-
         public MainWindow()
         {
             InitializeComponent();
@@ -420,8 +419,18 @@ namespace Wox
             toolTip.IsOpen = true;
         }
 
+        public void StartLoadingBar()
+        {
+            Dispatcher.Invoke(new Action(StartProgress));
+        }
+
+        public void StopLoadingBar()
+        {
+            Dispatcher.Invoke(new Action(StopProgress));
+        }
+
         #endregion
 
-
+    
     }
 }
