@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Windows.Forms;
 using Newtonsoft.Json;
 using Wox.Infrastructure.UserSettings;
 
@@ -9,7 +10,7 @@ namespace Wox.Infrastructure
     [Serializable]
     public class CommonStorage
     {
-        private static string configPath = Directory.GetCurrentDirectory() + "\\data.json";
+        private static string configPath = Directory.GetCurrentDirectory() + "\\config.json";
         private static object locker = new object();
         private static CommonStorage storage;
 
@@ -62,7 +63,7 @@ namespace Wox.Infrastructure
             Instance.UserSetting.Theme = "Default";
             Instance.UserSetting.ReplaceWinR = true;
             Instance.UserSetting.WebSearches = Instance.UserSetting.LoadDefaultWebSearches();
-            Instance.UserSetting.Hotkey = "Alt + Space";
+            Instance.UserSetting.Hotkey = "Win + W";
         }
 
         public static CommonStorage Instance

@@ -1,0 +1,29 @@
+{
+  "UserSetting": {
+    "Hotkey": "Win + W",
+    "Theme": "Default",
+    "ReplaceWinR": true,
+    "WebSearches": [
+      {
+        "Title": "Google",
+        "ActionWord": "g",
+        "IconPath": "e:\\github\\wox\\Wox\\bin\\Debug\\Images\\websearch\\google.png",
+        "Url": "https://www.google.com/search?q={q}",
+        "Enabled": true
+      },
+      {
+        "Title": "Wikipedia",
+        "ActionWord": "wiki",
+        "IconPath": "e:\\github\\wox\\Wox\\bin\\Debug\\Images\\websearch\\wiki.png",
+        "Url": "http://en.wikipedia.org/wiki/{q}",
+        "Enabled": true
+      }
+    ],
+    "CustomPluginHotkeys": null,
+    "StartWoxOnSystemStartup": false
+  },
+  "UserSelectedRecords": {
+    "Records": {
+    }
+  }
+}
