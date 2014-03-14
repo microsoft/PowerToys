@@ -53,7 +53,6 @@ namespace Wox
             resultCtrl.OnMouseClickItem += AcceptSelect;
 
             ThreadPool.SetMaxThreads(30, 10);
-            InitProgressbarAnimation();
             try
             {
                 SetTheme(CommonStorage.Instance.UserSetting.Theme);
@@ -74,6 +73,8 @@ namespace Wox
             Left = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
             Top = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 3;
             Plugins.Init();
+
+            InitProgressbarAnimation();
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -140,8 +141,8 @@ namespace Wox
 
         private void InitProgressbarAnimation()
         {
-            var da = new DoubleAnimation(progressBar.X2, Width + 100, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
-            var da1 = new DoubleAnimation(progressBar.X1, Width, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
+            var da = new DoubleAnimation(progressBar.X2, ActualWidth + 100, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
+            var da1 = new DoubleAnimation(progressBar.X1, ActualWidth, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
             Storyboard.SetTargetProperty(da, new PropertyPath("(Line.X2)"));
             Storyboard.SetTargetProperty(da1, new PropertyPath("(Line.X1)"));
             progressBarStoryboard.Children.Add(da);
@@ -366,7 +367,7 @@ namespace Wox
         {
             var dict = new ResourceDictionary
             {
-                Source = new Uri("pack://application:,,,/Themes/" + themeName + ".xaml")
+                Source = new Uri(Path.Combine(Directory.GetCurrentDirectory(),"Themes\\"+themeName+".xaml") , UriKind.Absolute)
             };
 
             Application.Current.Resources.MergedDictionaries.Clear();

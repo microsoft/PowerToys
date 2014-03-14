@@ -67,7 +67,7 @@ namespace Wox
         private List<string> LoadAvailableThemes()
         {
             string themePath = Directory.GetCurrentDirectory() + "\\Themes\\";
-            return Directory.GetFiles(themePath).Where(filePath => filePath.EndsWith(".xaml")).ToList();
+            return Directory.GetFiles(themePath).Where(filePath => filePath.EndsWith(".xaml") && !filePath.EndsWith("Default.xaml")).ToList();
         }
 
         private void ThemeComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)

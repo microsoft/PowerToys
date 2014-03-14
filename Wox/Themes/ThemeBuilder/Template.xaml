@@ -6,13 +6,13 @@
     </ResourceDictionary.MergedDictionaries>
 
     <Style x:Key="QueryBoxStyle" BasedOn="{StaticResource BaseQueryBoxStyle}" TargetType="{x:Type TextBox}">
-        <Setter Property="Background" Value="#EBEBEB"/>
-        <Setter Property="Foreground" Value="#000000" />
+        <Setter Property="Background" Value="{%searchFieldBackgroundColor%}"/>
+        <Setter Property="Foreground" Value="{%searchFieldTextColor%}" />
     </Style>
     <Style x:Key="WindowBorderStyle" BasedOn="{StaticResource BaseWindowBorderStyle}" TargetType="{x:Type Border}">
-        <Setter Property="Background" Value="#FFFFFF"></Setter>
+        <Setter Property="Background" Value="{%backgroundColor%}"></Setter>
         <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="BorderBrush" Value="#AAAAAA" />
+        <Setter Property="BorderBrush" Value="{%borderColor%}" />
         <Setter Property="BorderThickness" Value="10" />
     </Style>
     <Style x:Key="WindowStyle" TargetType="{x:Type Window}" BasedOn="{StaticResource BaseWindowStyle}" >
@@ -23,25 +23,25 @@
 
     <!-- Item Style -->
     <Style x:Key="ItemTitleStyle" BasedOn="{StaticResource BaseItemTitleStyle}" TargetType="{x:Type TextBlock}" >
-        <Setter Property="Foreground" Value="#000000"></Setter>
+        <Setter Property="Foreground" Value="{%resultTextColor%}"></Setter>
     </Style>
     <Style x:Key="ItemSubTitleStyle" BasedOn="{StaticResource BaseItemSubTitleStyle}" TargetType="{x:Type TextBlock}" >
-        <Setter Property="Foreground"  Value="#000000"></Setter>
+        <Setter Property="Foreground"  Value="{%resultSubtextColor%}"></Setter>
     </Style>
     <Style x:Key="ItemTitleSelectedStyle" BasedOn="{StaticResource BaseItemTitleSelectedStyle}" TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#F6F6FF" />
+        <Setter Property="Foreground" Value="{%selectedResultForeground%}" />
     </Style>
     <Style x:Key="ItemSubTitleSelectedStyle" BasedOn="{StaticResource BaseItemSubTitleSelectedStyle}" TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#F6F6FF" />
+        <Setter Property="Foreground" Value="{%selectedSubtextForeground%}" />
     </Style>
-    <Color x:Key="ItemSelectedBackgroundColor">#3875D7</Color>
+    <Color x:Key="ItemSelectedBackgroundColor">{%selectedResultBackgroundColor%}</Color>
 
     <!-- button style in the middle of the scrollbar -->
     <Style x:Key="ThumbStyle" BasedOn="{StaticResource BaseThumbStyle}" TargetType="{x:Type Thumb}">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
-                    <Border CornerRadius="2" DockPanel.Dock="Right" Background="#DEDEDE" BorderBrush="Transparent" BorderThickness="0" />
+                    <Border CornerRadius="2" DockPanel.Dock="Right" Background="{%scrollbarColor%}" BorderBrush="Transparent" BorderThickness="0" />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

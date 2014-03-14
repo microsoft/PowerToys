@@ -11,12 +11,12 @@
     </UserControl.Resources>
 
     <Grid x:Name="gridContainer">
-        <ListBox x:Name="lbResults" PreviewMouseDown="LbResults_OnPreviewMouseDown" Style="{DynamicResource listboxStyle}" SelectionChanged ="lbResults_SelectionChanged"  Focusable="False"  KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
+        <ListBox x:Name="lbResults" PreviewMouseDown="LbResults_OnPreviewMouseDown" Style="{DynamicResource BaseListboxStyle}" SelectionChanged ="lbResults_SelectionChanged"  Focusable="False"  KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
             <ListBox.Resources>
                 <!--SelectedItem with focus-->
-                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{DynamicResource ResultItemHighlightBackgroundColor}"/>
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{DynamicResource ItemSelectedBackgroundColor}"/>
                 <!--SelectedItem without focus-->
-                <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource ResultItemHighlightBackgroundColor}"/>
+                <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource ItemSelectedBackgroundColor}"/>
             </ListBox.Resources>
             <ListBox.ItemTemplate>
                 <DataTemplate>
