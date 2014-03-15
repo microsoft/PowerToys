@@ -19,7 +19,7 @@ Screenshot
 Download
 =========
 
-Wox is still unstable, and plugin API changes frequently. When it comes stable, we will provide executable file download.
+Wox 1.0 beta has been released. [Check it out](https://github.com/qianlifeng/Wox/releases/tag/v1.0-beta)!
 
 
 Create and Share Plugin
