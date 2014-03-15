@@ -3,7 +3,7 @@
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
     <Style x:Key="BaseQueryBoxStyle" TargetType="{x:Type TextBox}">
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="FontSize" Value="36" />
+        <Setter Property="FontSize" Value="28" />
         <Setter Property="FontFamily" Value="Arial" />
         <Setter Property="FontWeight" Value="Medium" />
         <Setter Property="Height" Value="46" />
