@@ -9,8 +9,6 @@
     </Style>
     
     <Style x:Key="WindowBorderStyle" BasedOn="{StaticResource BaseWindowBorderStyle}" TargetType="{x:Type Border}">
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="CornerRadius" Value="5" />
     </Style>
     
     <Style x:Key="WindowStyle" BasedOn="{StaticResource BaseWindowStyle}" TargetType="{x:Type Window}">

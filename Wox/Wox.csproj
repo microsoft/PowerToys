@@ -129,6 +129,7 @@
       <DependentUpon>CustomPluginHotkeySetting.xaml</DependentUpon>
     </Compile>
     <Compile Include="DispatcherExtensions.cs" />
+    <Compile Include="Helper\DWMDropShadow.cs" />
     <Compile Include="Helper\Log.cs" />
     <Compile Include="Helper\PluginInstaller.cs" />
     <Compile Include="Helper\WoxException.cs" />
@@ -197,6 +198,10 @@
       <SubType>Designer</SubType>
     </None>
     <Page Include="Themes\Default.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Pink.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

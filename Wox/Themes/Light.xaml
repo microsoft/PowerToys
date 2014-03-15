@@ -10,13 +10,11 @@
         <Setter Property="Foreground" Value="#000000" />
     </Style>
     <Style x:Key="WindowBorderStyle" BasedOn="{StaticResource BaseWindowBorderStyle}" TargetType="{x:Type Border}">
-        <Setter Property="Background" Value="#FFFFFF"></Setter>
-        <Setter Property="CornerRadius" Value="8" />
         <Setter Property="BorderBrush" Value="#AAAAAA" />
-        <Setter Property="BorderThickness" Value="10" />
+        <Setter Property="BorderThickness" Value="5" />
+        <Setter Property="Background" Value="#ffffff"></Setter>
     </Style>
     <Style x:Key="WindowStyle" TargetType="{x:Type Window}" BasedOn="{StaticResource BaseWindowStyle}" >
-        <Setter Property="Width" Value="520"></Setter>
     </Style>
     <Style x:Key="PendingLineStyle" BasedOn="{StaticResource BasePendingLineStyle}" TargetType="{x:Type Line}" >
     </Style>

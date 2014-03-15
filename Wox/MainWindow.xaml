@@ -9,8 +9,6 @@
         WindowStyle="None"
         WindowStartupLocation="Manual"
         ShowInTaskbar="False"
-        AllowsTransparency="True"
-        Background="{x:Null}"
         Style="{DynamicResource WindowStyle}"
         Icon="Images\app.png"
         >

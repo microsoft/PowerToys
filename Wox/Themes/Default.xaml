@@ -13,14 +13,14 @@
         <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     </Style>
     <Style x:Key="BaseWindowBorderStyle" TargetType="{x:Type Border}">
-        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="0" />
         <Setter Property="Background" Value="#424242"></Setter>
         <Setter Property="Padding" Value="8 10 8 8" />
     </Style>
     <Style x:Key="BaseWindowStyle" TargetType="{x:Type Window}">
         <Setter Property="Height" Value="80" />
         <Setter Property="Width" Value="500" />
-        <Setter Property="Background" Value="#424242" />
     </Style>
 
     <Style x:Key="BasePendingLineStyle" TargetType="{x:Type Line}">

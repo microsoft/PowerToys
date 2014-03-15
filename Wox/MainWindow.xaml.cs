@@ -46,6 +46,7 @@ namespace Wox
             InitializeComponent();
             Initialized = true;
 
+
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
             progressBar.ToolTip = toolTip;
@@ -57,9 +58,9 @@ namespace Wox
             {
                 SetTheme(CommonStorage.Instance.UserSetting.Theme);
             }
-            catch (IOException)
+            catch (Exception)
             {
-                SetTheme(CommonStorage.Instance.UserSetting.Theme = "Default");
+                SetTheme(CommonStorage.Instance.UserSetting.Theme = "Dark");
             }
 
             SetHotkey(CommonStorage.Instance.UserSetting.Hotkey, OnHotkey);
@@ -75,6 +76,8 @@ namespace Wox
             Plugins.Init();
 
             InitProgressbarAnimation();
+            //only works for win7+
+            DwmDropShadow.DropShadowToWindow(this);
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
