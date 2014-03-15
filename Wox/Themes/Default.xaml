@@ -3,9 +3,9 @@
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
     <Style x:Key="BaseQueryBoxStyle" TargetType="{x:Type TextBox}">
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="FontSize" Value="25" />
+        <Setter Property="FontSize" Value="36" />
+        <Setter Property="FontFamily" Value="Arial" />
         <Setter Property="FontWeight" Value="Medium" />
-        <Setter Property="AllowDrop" Value="true" />
         <Setter Property="Height" Value="46" />
         <Setter Property="Background" Value="#616161" />
         <Setter Property="Foreground" Value="#E3E0E3" />
@@ -13,8 +13,6 @@
         <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     </Style>
     <Style x:Key="BaseWindowBorderStyle" TargetType="{x:Type Border}">
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="BorderBrush" Value="#616161" />
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Background" Value="#424242"></Setter>
         <Setter Property="Padding" Value="8 10 8 8" />
