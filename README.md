@@ -22,12 +22,15 @@ Download
 Wox is still unstable, and plugin API changes frequently. When it comes stable, we will provide executable file download.
 
 
-Create plugin
+Create and Share Plugin
 =========
 
 Currently, Wox support using C# and Python to write your plugins. Please refer to [Create-plugin](https://github.com/qianlifeng/Wox/wiki/Create-plugins) page for more infomation.
+You can share your plugin with <a href="http://www.getwox.com/plugin">WoxPlugins</a>. After you upload your plugin, other uses can download or search your plugin through `wpm install <plugin name>` command (this is a plugin for plugin management, which is one of the default plugins inside Wox).
 
-Share plugin
+
+Create and Share Theme
 =========
 
-Share your plugin through <a href="http://www.getwox.com/plugin">WoxPlugins</a>. After you upload your plugin, other uses can download or search your plugin through `plugin` command (this is a plugin for plugin management, which is one of the default plugins inside Wox).
+Wox provide an online theme editor [http://www.getwox.com/themebuilder](http://www.getwox.com/themebuilder), you build your own theme for wox.
+<img src="http://ww3.sinaimg.cn/large/5d7c1fa4gw1eegm4tvpu7j20zg0in412.jpg" />
