@@ -100,14 +100,6 @@ namespace Wox.Plugin.System
                     }
                 }
             }
-            else
-            {
-#if (DEBUG)
-                {
-                    MessageBox.Show("load chrome bookmark failed");
-                }
-#endif
-            }
         }
 
         private String DecodeUnicode(String dataStr)

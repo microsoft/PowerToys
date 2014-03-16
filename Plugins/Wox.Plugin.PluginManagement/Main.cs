@@ -248,7 +248,7 @@ namespace Wox.Plugin.PluginManagement
             {
                 results.Add(new Result()
                 {
-                    Title = plugin.Name,
+                    Title = plugin.Name + " - " + plugin.ActionKeyword,
                     SubTitle = plugin.Description,
                     IcoPath = "Images\\plugin.png"
                 });

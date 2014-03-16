@@ -343,6 +343,8 @@ namespace Wox
 
         public void OnUpdateResultView(List<Result> list)
         {
+            if (list == null) return;
+
             queryHasReturn = true;
             progressBar.Dispatcher.Invoke(new Action(StopProgress));
             if (list.Count > 0)
@@ -370,7 +372,7 @@ namespace Wox
         {
             var dict = new ResourceDictionary
             {
-                Source = new Uri(Path.Combine(Directory.GetCurrentDirectory(),"Themes\\"+themeName+".xaml") , UriKind.Absolute)
+                Source = new Uri(Path.Combine(Directory.GetCurrentDirectory(), "Themes\\" + themeName + ".xaml"), UriKind.Absolute)
             };
 
             Application.Current.Resources.MergedDictionaries.Clear();
@@ -435,6 +437,6 @@ namespace Wox
 
         #endregion
 
-    
+
     }
 }
