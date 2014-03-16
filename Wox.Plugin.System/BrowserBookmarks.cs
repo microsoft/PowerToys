@@ -17,16 +17,13 @@ namespace Wox.Plugin.System
 
         private List<Bookmark> bookmarks = new List<Bookmark>();
 
-        [DllImport("shell32.dll")]
-        static extern bool SHGetSpecialFolderPath(IntPtr hwndOwner, [Out] StringBuilder lpszPath, int nFolder, bool fCreate);
-        const int CSIDL_LOCAL_APPDATA = 0x001c;
-
         protected override List<Result> QueryInternal(Query query)
         {
             if (string.IsNullOrEmpty(query.RawQuery) || query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
 
-            List<Bookmark> returnList = bookmarks.Where(o => MatchProgram(o, query)).ToList();
-
+            var fuzzyMather = FuzzyMatcher.Create(query.RawQuery);
+            List<Bookmark> returnList = bookmarks.Where(o => MatchProgram(o, fuzzyMather)).ToList();
+            returnList = returnList.OrderByDescending(o => o.Score).ToList();
             return returnList.Select(c => new Result()
             {
                 Title = c.Name,
@@ -47,26 +44,27 @@ namespace Wox.Plugin.System
                 }
             }).ToList();
         }
-
-        private bool MatchProgram(Bookmark bookmark, Query query)
+        private bool MatchProgram(Bookmark bookmark, FuzzyMatcher matcher)
         {
-            if (bookmark.Name.ToLower().Contains(query.RawQuery.ToLower()) || bookmark.Url.ToLower().Contains(query.RawQuery.ToLower())) return true;
-            if (ChineseToPinYin.ToPinYin(bookmark.Name).Replace(" ", "").ToLower().Contains(query.RawQuery.ToLower())) return true;
+            if ((bookmark.Score = matcher.Score(bookmark.Name)) > 0) return true;
+            if ((bookmark.Score = matcher.Score(bookmark.PinyinName)) > 0) return true;
+            if ((bookmark.Score = matcher.Score(bookmark.Url) / 10) > 0) return true;
 
             return false;
         }
 
         protected override void InitInternal(PluginInitContext context)
         {
+            bookmarks.Clear();
             LoadChromeBookmarks();
+            bookmarks = bookmarks.Distinct().ToList();
         }
 
         private void LoadChromeBookmarks()
         {
-            StringBuilder platformPath = new StringBuilder(560);
-            SHGetSpecialFolderPath(IntPtr.Zero, platformPath, CSIDL_LOCAL_APPDATA, false);
+            String platformPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string path = global::System.IO.Path.Combine(platformPath, @"Google\Chrome\User Data\Default\Bookmarks");
 
-            string path = platformPath + @"\Google\Chrome\User Data\Default\Bookmarks";
             if (File.Exists(path))
             {
                 string all = File.ReadAllText(path);
@@ -91,6 +89,10 @@ namespace Wox.Plugin.System
                         string url = urls[urlIndex];
                         urlIndex++;
 
+                        if (url == null) continue;
+                        if (url.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase)) continue;
+                        if (url.StartsWith("vbscript:", StringComparison.OrdinalIgnoreCase)) continue;
+
                         bookmarks.Add(new Bookmark()
                         {
                             Name = name,
@@ -109,10 +111,50 @@ namespace Wox.Plugin.System
         }
     }
 
-    public class Bookmark
+    public class Bookmark : IEquatable<Bookmark>, IEqualityComparer<Bookmark>
     {
-        public string Name { get; set; }
+        private string m_Name;
+        public string Name { 
+            get{
+                return m_Name;
+            }
+            set
+            {
+                m_Name = value;
+                PinyinName = ChineseToPinYin.ToPinYin(m_Name).Replace(" ", "").ToLower();
+            }
+        }
+        public string PinyinName { get; private set; }
         public string Url { get; set; }
         public string Source { get; set; }
+        public int Score { get; set; }
+
+        /* TODO: since Source maybe unimportant, we just need to compare Name and Url */
+        public bool Equals(Bookmark other)
+        {
+            return Equals(this, other);
+        }
+
+        public bool Equals(Bookmark x, Bookmark y)
+        {
+            if (Object.ReferenceEquals(x, y)) return true;
+            if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
+                return false;
+
+            return x.Name == y.Name && x.Url == y.Url;
+        }
+
+        public int GetHashCode(Bookmark bookmark)
+        {
+            if (Object.ReferenceEquals(bookmark, null)) return 0;
+            int hashName = bookmark.Name == null ? 0 : bookmark.Name.GetHashCode();
+            int hashUrl = bookmark.Url == null ? 0 : bookmark.Url.GetHashCode();
+            return hashName ^ hashUrl;
+        }
+
+        public override int GetHashCode()
+        {
+            return GetHashCode(this);
+        }
     }
 }

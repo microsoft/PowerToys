@@ -14,10 +14,24 @@ namespace Wox.Plugin.System
 {
     public class Program
     {
-        public string Title { get; set; }
+        private string m_Title;
+        public string Title
+        {
+            get
+            {
+                return m_Title;
+            }
+            set
+            {
+                m_Title = value;
+                PinyinTitle = ChineseToPinYin.ToPinYin(m_Title).Replace(" ", "").ToLower();
+            }
+        }
+        public string PinyinTitle { get; private set; }
         public string IcoPath { get; set; }
         public string ExecutePath { get; set; }
         public int Score { get; set; }
+
     }
 
     public class Programs : BaseSystemPlugin
@@ -42,13 +56,12 @@ namespace Wox.Plugin.System
             //return ordered list instead of return the score, because programs scores will affect other
             //plugins, the weight of program should be less than the plugins when they showed at the same time.
             returnList = returnList.OrderByDescending(o => o.Score).ToList();
-            returnList.ForEach(o=>o.Score = 0);
 
             return returnList.Select(c => new Result()
             {
                 Title = c.Title,
                 IcoPath = c.IcoPath,
-                Score = c.Score,
+                Score = 0,
                 Action = (context) =>
                 {
                     if (string.IsNullOrEmpty(c.ExecutePath))
@@ -78,10 +91,8 @@ namespace Wox.Plugin.System
 
         private bool MatchProgram(Program program, FuzzyMatcher matcher)
         {
-            program.Score = matcher.Score(program.Title);
-            if (program.Score > 0) return true;
-            program.Score = matcher.Score(ChineseToPinYin.ToPinYin(program.Title).Replace(" ", ""));
-            if (program.Score > 0) return true;
+            if ((program.Score = matcher.Score(program.Title)) > 0) return true;
+            if ((program.Score = matcher.Score(program.PinyinTitle)) > 0) return true;
 
             return false;
         }
@@ -141,9 +152,7 @@ namespace Wox.Plugin.System
 
         private string getAppNameFromAppPath(string app)
         {
-            string temp = app.Substring(app.LastIndexOf('\\') + 1);
-            string name = temp.Substring(0, temp.LastIndexOf('.'));
-            return name;
+            return global::System.IO.Path.GetFileNameWithoutExtension(app);
         }
     }
 }
