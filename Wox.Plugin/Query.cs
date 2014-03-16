@@ -35,10 +35,11 @@ namespace Wox.Plugin
 
         public string GetAllRemainingParameter()
         {
-            string[] strings = RawQuery.Split(' ');
+
+            string[] strings = RawQuery.Split(new char[]{ ' ' }, 2, System.StringSplitOptions.None);
             if (strings.Length > 1)
             {
-                return RawQuery.Substring(RawQuery.IndexOf(' ') + 1);
+                return strings[1];
             }
 
             return string.Empty;
