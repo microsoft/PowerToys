@@ -315,6 +315,18 @@ namespace Wox
                     e.Handled = true;
                     break;
 
+                case Key.PageDown:
+                    resultCtrl.SelectNextPage();
+                    toolTip.IsOpen = false;
+                    e.Handled = true;
+                    break;
+
+                case Key.PageUp:
+                    resultCtrl.SelectPrevPage();
+                    toolTip.IsOpen = false;
+                    e.Handled = true;
+                    break;
+
                 case Key.Enter:
                     AcceptSelect(resultCtrl.AcceptSelect());
                     e.Handled = true;

@@ -162,5 +162,27 @@ namespace Wox
                 OnOnMouseClickItem(item.DataContext as Result);
             }
         }
+
+        public void SelectNextPage()
+        {
+            int index = lbResults.SelectedIndex;
+            index += 5;
+            if (index >= lbResults.Items.Count)
+            {
+                index = lbResults.Items.Count - 1;
+            }
+            Select(index);
+        }
+
+        public void SelectPrevPage()
+        {
+            int index = lbResults.SelectedIndex;
+            index -= 5;
+            if (index < 0)
+            {
+                index = 0;
+            }
+            Select(index);
+        }
     }
 }
