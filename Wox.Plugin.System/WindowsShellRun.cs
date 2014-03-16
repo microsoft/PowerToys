@@ -184,10 +184,7 @@ namespace Wox.Plugin.System
                 {
                     try
                     {
-                        //not right here.
-                        //e.g. If I input qs which is a shortcut in a folder, and this folder has been added to Path
-                        //After execute this, qs will trun to c:/xxxxxx/xxxxxxxx/qs, and give a file not find error.
-                        //pszOut = Path.GetFullPath(pszCommand); // PathQualifyDef(pszOut, pszDir, 0);
+                        pszOut = Path.GetFullPath(pszCommand); // PathQualifyDef(pszOut, pszDir, 0);
                     }
                     catch
                     {
@@ -199,7 +196,7 @@ namespace Wox.Plugin.System
                         return false;
                 }
             }
-
+            pszOut = pszCommand;
             return true;
         }
 
