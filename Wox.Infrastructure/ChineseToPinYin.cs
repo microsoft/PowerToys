@@ -77,6 +77,7 @@ namespace Wox.Infrastructure
         public static string ToPinYin(string txt)
         {
             txt = txt.Trim();
+            txt = Microsoft.VisualBasic.Strings.StrConv(txt, Microsoft.VisualBasic.VbStrConv.SimplifiedChinese, 0);
             byte[] arr = new byte[2];   //每个汉字为2字节 
             StringBuilder result = new StringBuilder();//使用StringBuilder优化字符串连接
             int charCode = 0;
