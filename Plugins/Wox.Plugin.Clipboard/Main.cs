@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
-using Newtonsoft.Json;
 
 namespace Wox.Plugin.Clipboard
 {
