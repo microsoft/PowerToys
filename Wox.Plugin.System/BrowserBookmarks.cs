@@ -22,8 +22,7 @@ namespace Wox.Plugin.System
             if (string.IsNullOrEmpty(query.RawQuery) || query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
 
             var fuzzyMather = FuzzyMatcher.Create(query.RawQuery);
-            List<Bookmark> returnList = bookmarks.Where(o => MatchProgram(o, fuzzyMather)).ToList();
-            returnList = returnList.OrderByDescending(o => o.Score).ToList();
+            List<Bookmark> returnList = bookmarks.Where(o => MatchProgram(o, query.RawQuery.ToLower())).ToList();
             return returnList.Select(c => new Result()
             {
                 Title = c.Name,
@@ -44,12 +43,11 @@ namespace Wox.Plugin.System
                 }
             }).ToList();
         }
-        private bool MatchProgram(Bookmark bookmark, FuzzyMatcher matcher)
+        private bool MatchProgram(Bookmark bookmark, String query)
         {
-            if ((bookmark.Score = matcher.Score(bookmark.Name)) > 0) return true;
-            if ((bookmark.Score = matcher.Score(bookmark.PinyinName)) > 0) return true;
-            if ((bookmark.Score = matcher.Score(bookmark.Url) / 10) > 0) return true;
-
+            if (bookmark.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0) return true;
+            if (bookmark.Url.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0) return true;
+            if (bookmark.PinyinName.Contains(query)) return true;
             return false;
         }
 
@@ -127,7 +125,6 @@ namespace Wox.Plugin.System
         public string PinyinName { get; private set; }
         public string Url { get; set; }
         public string Source { get; set; }
-        public int Score { get; set; }
 
         /* TODO: since Source maybe unimportant, we just need to compare Name and Url */
         public bool Equals(Bookmark other)
