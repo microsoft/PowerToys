@@ -8,11 +8,11 @@ using System.Windows;
 // 特性集控制。更改这些特性值可修改
 // 与程序集关联的信息。
 [assembly: AssemblyTitle("Wox")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("https://github.com/qianlifeng/Wox")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Wox")]
-[assembly: AssemblyCopyright("Copyright © qianlifeng 2014")]
+[assembly: AssemblyCopyright("The MIT License (MIT)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

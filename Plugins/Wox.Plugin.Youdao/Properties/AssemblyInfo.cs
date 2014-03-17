@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Wox.Plugin.Youdao")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("https://github.com/qianlifeng/Wox")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Oracle Corporation")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Wox.Plugin.Youdao")]
-[assembly: AssemblyCopyright("Copyright © Oracle Corporation 2014")]
+[assembly: AssemblyCopyright("The MIT License (MIT)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
