@@ -16,73 +16,16 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>.\bin\Debug\</OutputPath>
+    <OutputPath>..\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;PYTHON27,UCS2</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>.\bin\Release\</OutputPath>
+    <OutputPath>..\Release\</OutputPath>
     <DefineConstants>TRACE;PYTHON27, UCS2</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'EmbeddingTest|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\EmbeddingTest\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;PYTHON27,UCS2</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'UnitTests|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\UnitTests\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;PYTHON27,UCS2</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;PYTHON27,UCS2</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <NoWarn>1607</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE;PYTHON27,UCS2</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <NoWarn>1607</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'EmbeddingTest|x64' ">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\EmbeddingTest\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;PYTHON26,UCS2</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <NoWarn>1607</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'UnitTests|x64' ">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\UnitTests\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;PYTHON26,UCS2</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <NoWarn>1607</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -160,11 +103,9 @@
     <VisualStudio AllowExistingFolder="true" />
   </ProjectExtensions>
   <PropertyGroup>
-    <PostBuildEvent>call "$(ProjectDir)buildclrmodule.bat" $(Platform) "$(ProjectDir)" "$(TargetDir)clr.pyd"
-copy "$(TargetPath)" "$(SolutionDir)"
-copy "$(TargetDir)*.pdb" "$(SolutionDir)"
-copy "$(TargetDir)clr.pyd" "$(SolutionDir)"
-</PostBuildEvent>
-    <PreBuildEvent>del "$(TargetDir)clr.pyd"</PreBuildEvent>
+    <PostBuildEvent>call "$(ProjectDir)buildclrmodule.bat" AnyCPU "$(ProjectDir)" "$(TargetDir)clr.pyd"
+call "$(ProjectDir)buildclrmodule.bat" x64 "$(ProjectDir)" "$(TargetDir)clr64.pyd"</PostBuildEvent>
+    <PreBuildEvent>del "$(TargetDir)clr.pyd"
+del "$(TargetDir)clr64.pyd"</PreBuildEvent>
   </PropertyGroup>
 </Project>
