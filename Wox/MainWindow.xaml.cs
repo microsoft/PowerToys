@@ -77,7 +77,7 @@ namespace Wox
 
             InitProgressbarAnimation();
             //only works for win7+
-            DwmDropShadow.DropShadowToWindow(this);
+            //DwmDropShadow.DropShadowToWindow(this);
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
