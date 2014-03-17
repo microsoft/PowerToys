@@ -331,7 +331,8 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy  /Y  $(ProjectDir)Themes\*.* $(TargetDir)Themes\</PostBuildEvent>
+    <PostBuildEvent>xcopy  /Y  $(ProjectDir)Themes\*.* $(TargetDir)Themes\
+xcopy  /Y  $(ProjectDir)Images\*.* $(TargetDir)Images\</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
