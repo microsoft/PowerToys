@@ -35,6 +35,9 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.5.0.8\lib\net35\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="YAMP">
+      <HintPath>..\packages\YAMP.1.3.0\lib\net35\YAMP.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -47,6 +50,7 @@
   <ItemGroup>
     <Compile Include="BaseSystemPlugin.cs" />
     <Compile Include="BrowserBookmarks.cs" />
+    <Compile Include="Calculator.cs" />
     <Compile Include="WebSearchPlugin.cs" />
     <Compile Include="WindowsShellRun.cs" />
     <Compile Include="CMD.cs" />
