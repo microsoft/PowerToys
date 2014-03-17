@@ -148,7 +148,7 @@ namespace Wox
 
         private void lbResults_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (e.AddedItems.Count > 0)
+            if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
             {
                 lbResults.ScrollIntoView(e.AddedItems[0]);
             }
