@@ -104,7 +104,7 @@ namespace Wox
             }
             catch (Exception)
             {
-                MessageBox.Show("Registe hotkey: " + hotkeyStr + " failed.");
+                MessageBox.Show("Register hotkey: " + hotkeyStr + " failed.");
             }
         }
 
