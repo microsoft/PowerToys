@@ -632,6 +632,7 @@ namespace Python.Runtime {
     // This version avoids a managed <-> unmanaged transition. This one
     // does incref the returned type object.
 
+        [CLSCompliant(false)]
     public unsafe static IntPtr
     PyObject_Type(IntPtr op) {
         IntPtr tp = PyObject_TYPE(op);
@@ -838,6 +839,7 @@ namespace Python.Runtime {
     public unsafe static extern IntPtr
     PyLong_FromLong(long value);
 
+        [CLSCompliant(false)]
     [DllImport(Runtime.dll, CallingConvention=CallingConvention.Cdecl,
         ExactSpelling=true, CharSet=CharSet.Ansi)]
     public unsafe static extern IntPtr
@@ -853,6 +855,7 @@ namespace Python.Runtime {
     public unsafe static extern IntPtr
     PyLong_FromLongLong(long value);
 
+        [CLSCompliant(false)]
     [DllImport(Runtime.dll, CallingConvention=CallingConvention.Cdecl,
         ExactSpelling=true, CharSet=CharSet.Ansi)]
     public unsafe static extern IntPtr
@@ -868,6 +871,7 @@ namespace Python.Runtime {
     public unsafe static extern int
     PyLong_AsLong(IntPtr value);
 
+        [CLSCompliant(false)]
     [DllImport(Runtime.dll, CallingConvention=CallingConvention.Cdecl,
         ExactSpelling=true, CharSet=CharSet.Ansi)]
     public unsafe static extern uint
@@ -878,6 +882,7 @@ namespace Python.Runtime {
     public unsafe static extern long
     PyLong_AsLongLong(IntPtr value);
 
+        [CLSCompliant(false)]
     [DllImport(Runtime.dll, CallingConvention=CallingConvention.Cdecl,
         ExactSpelling=true, CharSet=CharSet.Ansi)]
     public unsafe static extern ulong
@@ -1046,6 +1051,7 @@ namespace Python.Runtime {
     public unsafe static extern int
     PyUnicode_GetSize(IntPtr ob);
 
+        [CLSCompliant(false)]
     [DllImport(Runtime.dll, CallingConvention=CallingConvention.Cdecl,
            EntryPoint="PyUnicodeUCS2_AsUnicode",
         ExactSpelling=true)]
@@ -1455,6 +1461,7 @@ namespace Python.Runtime {
     public unsafe static extern int
     PyType_Ready(IntPtr type);
 
+        [CLSCompliant(false)]
     [DllImport(Runtime.dll, CallingConvention=CallingConvention.Cdecl,
         ExactSpelling=true, CharSet=CharSet.Ansi)]
     public unsafe static extern IntPtr
@@ -1470,6 +1477,7 @@ namespace Python.Runtime {
     public unsafe static extern int
     PyObject_GenericSetAttr(IntPtr obj, IntPtr name, IntPtr value);
 
+        [CLSCompliant(false)]
     [DllImport(Runtime.dll, CallingConvention=CallingConvention.Cdecl,
         ExactSpelling=true, CharSet=CharSet.Ansi)]
     public unsafe static extern IntPtr

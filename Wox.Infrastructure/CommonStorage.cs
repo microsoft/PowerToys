@@ -46,7 +46,7 @@ namespace Wox.Infrastructure
                 {
                     storage = JsonConvert.DeserializeObject<CommonStorage>(json);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     LoadDefaultUserSetting();
                 }

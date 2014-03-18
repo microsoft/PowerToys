@@ -165,8 +165,6 @@ namespace Wox.Plugin.System
 
         static bool CopyCommand(string pszCommand, string pszDir, out string pszOut)
         {
-            bool fRet = true;
-
             pszOut = pszCommand;
             if (pszCommand[0] != '"')
             {

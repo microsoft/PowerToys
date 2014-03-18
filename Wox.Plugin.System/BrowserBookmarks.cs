@@ -35,7 +35,7 @@ namespace Wox.Plugin.System
                     {
                         Process.Start(c.Url);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         MessageBox.Show("open url failed:" + c.Url);
                     }

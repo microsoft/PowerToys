@@ -7,7 +7,7 @@ namespace Wox.Infrastructure.UserSettings
     [Serializable]
     public class UserSelectedRecords
     {
-        private static int hasAddedCount = 0;
+        // private static int hasAddedCount = 0;
 
         public Dictionary<string,int> Records = new  Dictionary<string, int>();
 

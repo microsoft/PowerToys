@@ -31,7 +31,7 @@ namespace Wox
     public partial class MainWindow
     {
         private static readonly object locker = new object();
-        public static bool Initialized = false;
+        public static bool initialized = false;
 
         private static readonly List<Result> waitShowResultList = new List<Result>();
         private readonly GloablHotkey globalHotkey = new GloablHotkey();
@@ -44,7 +44,7 @@ namespace Wox
         public MainWindow()
         {
             InitializeComponent();
-            Initialized = true;
+            initialized = true;
 
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
