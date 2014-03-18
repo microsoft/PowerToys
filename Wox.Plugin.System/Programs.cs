@@ -35,6 +35,7 @@ namespace Wox.Plugin.System
         public string AbbrTitle { get; private set; }
         public string IcoPath { get; set; }
         public string ExecutePath { get; set; }
+        public string ExecuteName { get; set; }
         public int Score { get; set; }
         public IProgramSource Source { get; set; }
     }
@@ -98,6 +99,7 @@ namespace Wox.Plugin.System
             if (program.AbbrTitle != null && (program.Score = matcher.Score(program.AbbrTitle)) > 0) return true;
             if ((program.Score = matcher.Score(program.Title)) > 0) return true;
             if ((program.Score = matcher.Score(program.PinyinTitle)) > 0) return true;
+            if (program.ExecuteName != null && (program.Score = matcher.Score(program.ExecuteName)) > 0) return true;
 
             return false;
         }

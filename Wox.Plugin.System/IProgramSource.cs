@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace Wox.Plugin.System
 {
@@ -29,6 +30,18 @@ namespace Wox.Plugin.System
                 ExecutePath = file
             };
 
+            switch (global::System.IO.Path.GetExtension(file).ToLower())
+            {
+                case ".exe":
+                    p.ExecuteName = global::System.IO.Path.GetFileNameWithoutExtension(file);
+                    try
+                    {
+                        FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(file);
+                        if (versionInfo.FileDescription != null && versionInfo.FileDescription != string.Empty) p.Title = versionInfo.FileDescription;
+                    }
+                    catch (Exception) { }
+                    break;
+            }
             return p;
         }
     }
