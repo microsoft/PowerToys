@@ -46,6 +46,17 @@ namespace Wox
                 CommonStorage.Instance.Save();
             };
 
+            cbEnablePythonPlugins.Checked += (o, e) =>
+            {
+                CommonStorage.Instance.UserSetting.EnablePythonPlugins = true;
+                CommonStorage.Instance.Save();
+            };
+            cbEnablePythonPlugins.Unchecked += (o, e) =>
+            {
+                CommonStorage.Instance.UserSetting.EnablePythonPlugins = false;
+                CommonStorage.Instance.Save();
+            };
+
 
             foreach (string theme in LoadAvailableThemes())
             {
@@ -57,6 +68,7 @@ namespace Wox
             cbReplaceWinR.IsChecked = CommonStorage.Instance.UserSetting.ReplaceWinR;
             webSearchView.ItemsSource = CommonStorage.Instance.UserSetting.WebSearches;
             lvCustomHotkey.ItemsSource = CommonStorage.Instance.UserSetting.CustomPluginHotkeys;
+            cbEnablePythonPlugins.IsChecked = CommonStorage.Instance.UserSetting.EnablePythonPlugins;
             cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
         }
 
