@@ -19,15 +19,16 @@ namespace Wox.Plugin.Everything
                 IEnumerable<string> enumerable = api.Search(query.ActionParameters[0], 0, 100);
                 foreach (string s in enumerable)
                 {
+                    var path = s;
                     Result r  = new Result();
-                    r.Title = Path.GetFileName(s);
-                    r.SubTitle = s;
+                    r.Title = Path.GetFileName(path);
+                    r.SubTitle = path;
                     r.Action = (c) =>
                     {
                         context.HideApp();
                         System.Diagnostics.ProcessStartInfo info = new System.Diagnostics.ProcessStartInfo();
                         info.UseShellExecute = true;
-                        info.FileName = s;
+                        info.FileName = path;
                         try
                         {
                             System.Diagnostics.Process.Start(info);
