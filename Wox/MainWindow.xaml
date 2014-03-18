@@ -12,8 +12,8 @@
         Style="{DynamicResource WindowStyle}"
         Icon="Images\app.png"
         >
-    <Border Style="{DynamicResource WindowBorderStyle}">
-        <Grid x:Name="grid">
+    <Border Style="{DynamicResource WindowBorderStyle}" MouseDown="Border_OnMouseDown">
+        <Grid x:Name="grid" >
             <Grid.RowDefinitions>
                 <RowDefinition ></RowDefinition>
                 <RowDefinition></RowDefinition>

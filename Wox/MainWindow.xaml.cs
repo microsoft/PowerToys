@@ -24,6 +24,7 @@ using ContextMenu = System.Windows.Forms.ContextMenu;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MenuItem = System.Windows.Forms.MenuItem;
 using MessageBox = System.Windows.MessageBox;
+using MouseButton = System.Windows.Input.MouseButton;
 using ToolTip = System.Windows.Controls.ToolTip;
 
 namespace Wox
@@ -196,6 +197,11 @@ namespace Wox
                         }, TimeSpan.FromSeconds(1), tbQuery.Text);
                     }
                 }, TimeSpan.FromMilliseconds(150));
+        }
+
+        private void Border_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left) DragMove();
         }
 
         private void StartProgress()
