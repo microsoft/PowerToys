@@ -48,9 +48,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppPathsProgramSource.cs" />
+    <Compile Include="IProgramSource.cs" />
     <Compile Include="BaseSystemPlugin.cs" />
     <Compile Include="BrowserBookmarks.cs" />
     <Compile Include="Calculator.cs" />
+    <Compile Include="FileSystemProgramSource.cs" />
     <Compile Include="WebSearchPlugin.cs" />
     <Compile Include="WindowsShellRun.cs" />
     <Compile Include="CMD.cs" />

@@ -36,15 +36,13 @@ namespace Wox.Plugin.System
         public string IcoPath { get; set; }
         public string ExecutePath { get; set; }
         public int Score { get; set; }
-
+        public IProgramSource Source { get; set; }
     }
 
     public class Programs : BaseSystemPlugin
     {
-        private List<string> indexDirectory = new List<string>();
-        private List<string> indexPostfix = new List<string> { "lnk", "exe" };
-
         List<Program> installedList = new List<Program>();
+        List<IProgramSource> sources = new List<IProgramSource>();
 
         [DllImport("shell32.dll")]
         static extern bool SHGetSpecialFolderPath(IntPtr hwndOwner,[Out] StringBuilder lpszPath, int nFolder, bool fCreate);
@@ -65,6 +63,7 @@ namespace Wox.Plugin.System
             return returnList.Select(c => new Result()
             {
                 Title = c.Title,
+                SubTitle = c.ExecutePath,
                 IcoPath = c.IcoPath,
                 Score = 0,
                 Action = (context) =>
@@ -105,47 +104,29 @@ namespace Wox.Plugin.System
 
         protected override void InitInternal(PluginInitContext context)
         {
-            indexDirectory.Add(Environment.GetFolderPath(Environment.SpecialFolder.Programs));
+            sources.Add(new FileSystemProgramSource(Environment.GetFolderPath(Environment.SpecialFolder.Programs)));
 
             StringBuilder commonStartMenuPath = new StringBuilder(560);
             SHGetSpecialFolderPath(IntPtr.Zero, commonStartMenuPath, CSIDL_COMMON_PROGRAMS, false);
-            indexDirectory.Add(commonStartMenuPath.ToString());
+            sources.Add(new FileSystemProgramSource(commonStartMenuPath.ToString()));
 
-            GetAppFromStartMenu();
-        }
+            sources.Add(new AppPathsProgramSource());
 
-        private void GetAppFromStartMenu()
-        {
-            foreach (string directory in indexDirectory)
+            foreach (var source in sources)
             {
-                GetAppFromDirectory(directory);
-            }
-        }
-
-        private void GetAppFromDirectory(string path)
-        {
-            foreach (string file in Directory.GetFiles(path))
-            {
-                if (indexPostfix.Any(o => file.EndsWith("." + o)))
+                var list = source.LoadPrograms();
+                list.ForEach(o =>
                 {
-                    Program p = new Program()
-                    {
-                        Title = getAppNameFromAppPath(file),
-                        IcoPath = file,
-                        ExecutePath = file
-                    };
-                    installedList.Add(p);
-                }
-            }
-
-            foreach (var subDirectory in Directory.GetDirectories(path))
-            {
-                GetAppFromDirectory(subDirectory);
+                    o.Source = source;
+                });
+                installedList.AddRange(list);
             }
         }
 
         private void ScoreFilter(Program p)
         {
+            p.Score += p.Source.BonusPoints;
+
             if (p.Title.Contains("启动") || p.Title.ToLower().Contains("start"))
                 p.Score += 10;
 
@@ -154,11 +135,6 @@ namespace Wox.Plugin.System
 
             if (p.Title.Contains("卸载") || p.Title.ToLower().Contains("uninstall"))
                 p.Score -= 20;
-        }
-
-        private string getAppNameFromAppPath(string app)
-        {
-            return global::System.IO.Path.GetFileNameWithoutExtension(app);
         }
     }
 }
