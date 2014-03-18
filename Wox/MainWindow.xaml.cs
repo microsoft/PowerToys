@@ -168,6 +168,7 @@ namespace Wox
             notifyIcon.ContextMenu = new ContextMenu(childen);
         }
 
+        private bool isCMDMode = false;
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             toolTip.IsOpen = false;
@@ -182,7 +183,7 @@ namespace Wox
                         // must clear the result. otherwise, it will be confused why the query changed, but the results
                         // didn't.
                         if (resultCtrl.Dirty) resultCtrl.Clear();
-                    }, TimeSpan.FromMilliseconds(30), null);
+                    }, TimeSpan.FromMilliseconds(100), null);
                     var q = new Query(tbQuery.Text);
                     CommandFactory.DispatchCommand(q);
                     queryHasReturn = false;
@@ -194,9 +195,9 @@ namespace Wox
                             {
                                 StartProgress();
                             }
-                        }, TimeSpan.FromSeconds(1), tbQuery.Text);
+                        }, TimeSpan.FromSeconds(0), tbQuery.Text);
                     }
-                }, TimeSpan.FromMilliseconds(150));
+                }, TimeSpan.FromMilliseconds((isCMDMode = tbQuery.Text.StartsWith(">")) ? 0 : 150));
         }
 
         private void Border_OnMouseDown(object sender, MouseButtonEventArgs e)
@@ -382,7 +383,7 @@ namespace Wox
                     List<Result> l = waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).ToList();
                     waitShowResultList.Clear();
                     resultCtrl.AddResults(l);
-                })), TimeSpan.FromMilliseconds(50));
+                })), TimeSpan.FromMilliseconds(isCMDMode ? 0 : 50));
             }
         }
 
