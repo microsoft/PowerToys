@@ -9,7 +9,6 @@ namespace Wox.Infrastructure.UserSettings
     public class ProgramSource
     {
         public string Location { get; set; }
-        public string Assembly { get; set; }
         public string Type { get; set; }
         public int BounsPoints { get; set; }
         public bool Enabled { get; set; }
