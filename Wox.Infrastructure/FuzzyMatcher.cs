@@ -14,7 +14,7 @@ namespace Wox.Infrastructure
 
         private FuzzyMatcher(string query)
         {
-            this.rawQuery = query;
+            this.rawQuery = query.Trim();
             this.reg = GetPattern(query);
         }
 

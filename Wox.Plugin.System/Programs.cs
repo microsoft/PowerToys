@@ -14,6 +14,7 @@ namespace Wox.Plugin.System
 {
     public class Program
     {
+        private static readonly global::System.Text.RegularExpressions.Regex AbbrRegexp = new global::System.Text.RegularExpressions.Regex("[^A-Z0-9]", global::System.Text.RegularExpressions.RegexOptions.Compiled);
         private string m_Title;
         public string Title
         {
@@ -24,10 +25,14 @@ namespace Wox.Plugin.System
             set
             {
                 m_Title = value;
-                PinyinTitle = ChineseToPinYin.ToPinYin(m_Title).Replace(" ", "").ToLower();
+                string pinyin = ChineseToPinYin.ToPinYin(m_Title);
+                PinyinTitle = pinyin.Replace(" ", "").ToLower();
+                AbbrTitle = AbbrRegexp.Replace(global::System.Threading.Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(pinyin), "");
+                if (AbbrTitle.Length < 2) AbbrTitle = null;
             }
         }
         public string PinyinTitle { get; private set; }
+        public string AbbrTitle { get; private set; }
         public string IcoPath { get; set; }
         public string ExecutePath { get; set; }
         public int Score { get; set; }
@@ -91,6 +96,7 @@ namespace Wox.Plugin.System
 
         private bool MatchProgram(Program program, FuzzyMatcher matcher)
         {
+            if (program.AbbrTitle != null && (program.Score = matcher.Score(program.AbbrTitle)) > 0) return true;
             if ((program.Score = matcher.Score(program.Title)) > 0) return true;
             if ((program.Score = matcher.Score(program.PinyinTitle)) > 0) return true;
 
@@ -141,13 +147,13 @@ namespace Wox.Plugin.System
         private void ScoreFilter(Program p)
         {
             if (p.Title.Contains("启动") || p.Title.ToLower().Contains("start"))
-            {
-                p.Score += 1;
-            }
+                p.Score += 10;
+
+            if (p.Title.Contains("帮助") || p.Title.ToLower().Contains("help") || p.Title.Contains("文档") || p.Title.ToLower().Contains("documentation"))
+                p.Score -= 10;
+
             if (p.Title.Contains("卸载") || p.Title.ToLower().Contains("uninstall"))
-            {
-                p.Score -= 1;
-            }
+                p.Score -= 20;
         }
 
         private string getAppNameFromAppPath(string app)
