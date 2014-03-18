@@ -46,6 +46,7 @@ namespace Wox
                 CommonStorage.Instance.Save();
             };
 
+
             foreach (string theme in LoadAvailableThemes())
             {
                 string themeName = theme.Substring(theme.LastIndexOf('\\') + 1).Replace(".xaml", "");
@@ -118,6 +119,8 @@ namespace Wox
         private void CbStartWithWindows_OnChecked(object sender, RoutedEventArgs e)
         {
             CreateStartupFolderShortcut();
+            CommonStorage.Instance.UserSetting.StartWoxOnSystemStartup = true;
+            CommonStorage.Instance.Save();
         }
 
         private void CbStartWithWindows_OnUnchecked(object sender, RoutedEventArgs e)
@@ -126,6 +129,9 @@ namespace Wox
             {
                 File.Delete(woxLinkPath);
             }
+
+            CommonStorage.Instance.UserSetting.StartWoxOnSystemStartup = false;
+            CommonStorage.Instance.Save();
         }
 
         private void CreateStartupFolderShortcut()
