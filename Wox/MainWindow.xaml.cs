@@ -35,7 +35,7 @@ namespace Wox
         public static bool initialized = false;
 
         private static readonly List<Result> waitShowResultList = new List<Result>();
-        private readonly GloablHotkey globalHotkey = new GloablHotkey();
+        private readonly GlobalHotkey globalHotkey = new GlobalHotkey();
         private readonly KeyboardSimulator keyboardSimulator = new KeyboardSimulator(new InputSimulator());
         private readonly Storyboard progressBarStoryboard = new Storyboard();
         private bool WinRStroked;
@@ -349,7 +349,7 @@ namespace Wox
                 {
                     bool hideWindow = result.Action(new ActionContext()
                     {
-                        SpecialKeyState = new GloablHotkey().CheckModifiers()
+                        SpecialKeyState = new GlobalHotkey().CheckModifiers()
                     });
                     if (hideWindow)
                     {
