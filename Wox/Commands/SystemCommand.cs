@@ -17,7 +17,7 @@ namespace Wox.Commands
             systemPlugins = Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System).ToList();
         }
 
-        public override void Dispatch(Query query,bool updateView = true)
+        public override void Dispatch(Query query)
         {
             foreach (PluginPair pair in systemPlugins)
             {
@@ -31,7 +31,7 @@ namespace Wox.Commands
                         result.OriginQuery = query;
                         result.AutoAjustScore = true;
                     }
-                    if(results.Count > 0 && updateView) UpdateResultView(results);
+                    if(results.Count > 0) UpdateResultView(results);
                 });
             }
         }

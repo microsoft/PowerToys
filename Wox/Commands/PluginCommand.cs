@@ -14,7 +14,7 @@ namespace Wox.Commands
         private string currentPythonModulePath = string.Empty;
         private IntPtr GIL;
 
-        public override void Dispatch(Query q,bool updateView = true)
+        public override void Dispatch(Query q)
         {
             PluginPair thirdPlugin = Plugins.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == q.ActionName);
             if (thirdPlugin != null && !string.IsNullOrEmpty(thirdPlugin.Metadata.ActionKeyword))
@@ -33,7 +33,7 @@ namespace Wox.Commands
                             o.PluginDirectory = thirdPlugin.Metadata.PluginDirecotry;
                             o.OriginQuery = q;
                         });
-                        if(updateView) UpdateResultView(r);
+                        UpdateResultView(r);
                     }
                     catch (Exception queryException)
                     {

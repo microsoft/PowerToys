@@ -8,7 +8,7 @@ namespace Wox.Commands
 {
     public abstract class BaseCommand
     {
-        public abstract void Dispatch(Query query, bool updateView  = true);
+        public abstract void Dispatch(Query query);
 
         protected void UpdateResultView(List<Result> results)
         {

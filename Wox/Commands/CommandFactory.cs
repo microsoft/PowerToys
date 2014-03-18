@@ -12,7 +12,7 @@ namespace Wox.Commands
         private static PluginCommand pluginCmd;
         private static SystemCommand systemCmd;
 
-        public static void DispatchCommand(Query query, bool updateView = true)
+        public static void DispatchCommand(Query query)
         {
             //lazy init command instance.
             if (pluginCmd == null)
@@ -24,8 +24,8 @@ namespace Wox.Commands
                 systemCmd = new SystemCommand();
             }
 
-            systemCmd.Dispatch(query,updateView);
-            pluginCmd.Dispatch(query,updateView);
+            systemCmd.Dispatch(query);
+            pluginCmd.Dispatch(query);
         }
     }
 }
