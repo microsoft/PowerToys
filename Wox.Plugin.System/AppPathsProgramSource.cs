@@ -5,11 +5,18 @@ using System.Text;
 
 namespace Wox.Plugin.System
 {
+    [global::System.ComponentModel.Browsable(false)]
     public class AppPathsProgramSource: AbstractProgramSource
     {
         public AppPathsProgramSource()
         {
             this.BonusPoints = -10;
+        }
+
+        public AppPathsProgramSource(Wox.Infrastructure.UserSettings.ProgramSource source)
+            : this()
+        {
+            this.BonusPoints = source.BounsPoints;
         }
 
         public override List<Program> LoadPrograms()

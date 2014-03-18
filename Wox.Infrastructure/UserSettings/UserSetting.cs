@@ -9,6 +9,7 @@ namespace Wox.Infrastructure.UserSettings
         public string Theme { get; set; }
         public bool ReplaceWinR { get; set; }
         public List<WebSearch> WebSearches { get; set; }
+        public List<ProgramSource> ProgramSources { get; set; }
         public List<CustomPluginHotkey> CustomPluginHotkeys { get; set; }
         public bool StartWoxOnSystemStartup { get; set; }
 
@@ -38,6 +39,30 @@ namespace Wox.Infrastructure.UserSettings
             webSearches.Add(wikiWebSearch);
 
             return webSearches;
+        }
+
+        public List<ProgramSource> LoadDefaultProgramSources()
+        {
+            var list = new List<ProgramSource>();
+            list.Add(new ProgramSource()
+            {
+                BounsPoints = 0,
+                Enabled = true,
+                Type = "CommonStartMenuProgramSource"
+            });
+            list.Add(new ProgramSource()
+            {
+                BounsPoints = 0,
+                Enabled = true,
+                Type = "UserStartMenuProgramSource"
+            });
+            list.Add(new ProgramSource()
+            {
+                BounsPoints = -10,
+                Enabled = true,
+                Type = "AppPathsProgramSource"
+            });
+            return list;
         }
     }
 }

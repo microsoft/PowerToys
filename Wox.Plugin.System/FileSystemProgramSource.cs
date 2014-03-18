@@ -22,6 +22,12 @@ namespace Wox.Plugin.System
             Suffixes = suffixes;
         }
 
+        public FileSystemProgramSource(Wox.Infrastructure.UserSettings.ProgramSource source)
+            : this(source.Location)
+        {
+            this.BonusPoints = source.BounsPoints;
+        }
+
         public override List<Program> LoadPrograms()
         {
             List<Program> list = new List<Program>();

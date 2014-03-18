@@ -44,11 +44,13 @@ namespace Wox.Plugin.System
     {
         List<Program> installedList = new List<Program>();
         List<IProgramSource> sources = new List<IProgramSource>();
-
-        [DllImport("shell32.dll")]
-        static extern bool SHGetSpecialFolderPath(IntPtr hwndOwner,[Out] StringBuilder lpszPath, int nFolder, bool fCreate);
-        const int CSIDL_COMMON_STARTMENU = 0x16;  // \Windows\Start Menu\Programs
-        const int CSIDL_COMMON_PROGRAMS = 0x17;
+        Dictionary<string, Type> sourceTypes = new Dictionary<string, Type>() { 
+            {"CommonStartMenuProgramSource", typeof(CommonStartMenuProgramSource)},
+            {"UserStartMenuProgramSource", typeof(UserStartMenuProgramSource)},
+            {"AppPathsProgramSource", typeof(AppPathsProgramSource)},
+            {"PortableAppsProgramSource", typeof(PortableAppsProgramSource)},
+            {"FileSystemProgramSource", typeof(FileSystemProgramSource)},
+        };
 
         protected override List<Result> QueryInternal(Query query)
         {
@@ -106,13 +108,26 @@ namespace Wox.Plugin.System
 
         protected override void InitInternal(PluginInitContext context)
         {
-            sources.Add(new FileSystemProgramSource(Environment.GetFolderPath(Environment.SpecialFolder.Programs)));
+            if (CommonStorage.Instance.UserSetting.ProgramSources == null)
+                CommonStorage.Instance.UserSetting.ProgramSources = CommonStorage.Instance.UserSetting.LoadDefaultProgramSources();
 
-            StringBuilder commonStartMenuPath = new StringBuilder(560);
-            SHGetSpecialFolderPath(IntPtr.Zero, commonStartMenuPath, CSIDL_COMMON_PROGRAMS, false);
-            sources.Add(new FileSystemProgramSource(commonStartMenuPath.ToString()));
-
-            sources.Add(new AppPathsProgramSource());
+            CommonStorage.Instance.UserSetting.ProgramSources.ForEach(source =>
+            {
+                if (source.Enabled)
+                {
+                    Type sourceClass;
+                    if (sourceTypes.TryGetValue(source.Type, out sourceClass))
+                    {
+                        sources.Add(sourceClass.GetConstructor(
+                            new Type[] { typeof(Wox.Infrastructure.UserSettings.ProgramSource) }
+                            ).Invoke(new object[] { source }) as IProgramSource);
+                    }
+                    else
+                    {
+                        // TODO: invalid class
+                    }
+                }
+            });
 
             foreach (var source in sources)
             {

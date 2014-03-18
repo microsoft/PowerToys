@@ -15,6 +15,12 @@ namespace Wox.Plugin.System
             BaseDirectory = baseDirectory;
         }
 
+        public PortableAppsProgramSource(Wox.Infrastructure.UserSettings.ProgramSource source)
+            : this(source.Location)
+        {
+            this.BonusPoints = source.BounsPoints;
+        }
+
         public override List<Program> LoadPrograms()
         {
             List<Program> list = new List<Program>();

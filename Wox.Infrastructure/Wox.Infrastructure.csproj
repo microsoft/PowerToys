@@ -56,6 +56,7 @@
     <Compile Include="IniParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UserSettings\PluginHotkey.cs" />
+    <Compile Include="UserSettings\ProgramSource.cs" />
     <Compile Include="UserSettings\UserSelectedRecords.cs" />
     <Compile Include="UserSettings\UserSetting.cs" />
     <Compile Include="UserSettings\WebSearch.cs" />

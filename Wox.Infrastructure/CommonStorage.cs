@@ -63,6 +63,7 @@ namespace Wox.Infrastructure
             Instance.UserSetting.Theme = "Dark";
             Instance.UserSetting.ReplaceWinR = true;
             Instance.UserSetting.WebSearches = Instance.UserSetting.LoadDefaultWebSearches();
+            Instance.UserSetting.ProgramSources = Instance.UserSetting.LoadDefaultProgramSources();
             Instance.UserSetting.Hotkey = "Win + W";
         }
 
