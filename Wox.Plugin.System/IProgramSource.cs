@@ -33,7 +33,7 @@ namespace Wox.Plugin.System
             switch (global::System.IO.Path.GetExtension(file).ToLower())
             {
                 case ".exe":
-                    p.ExecuteName = global::System.IO.Path.GetFileNameWithoutExtension(file);
+                    p.ExecuteName = global::System.IO.Path.GetFileName(file);
                     try
                     {
                         FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(file);

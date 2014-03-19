@@ -39,7 +39,11 @@ namespace Wox.Plugin.System
                     {
                         object path = key.GetValue("");
                         if (path is string && global::System.IO.File.Exists((string)path))
-                            list.Add(CreateEntry((string)path));
+                        {
+                            var entry = CreateEntry((string)path);
+                            entry.ExecuteName = item;
+                            list.Add(entry);
+                        }
 
                         key.Close();
                     }
