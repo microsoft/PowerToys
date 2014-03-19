@@ -16,7 +16,7 @@ namespace Wox.Infrastructure.UserSettings
 
         public UserSetting()
         {
-            EnablePythonPlugins = false;
+            EnablePythonPlugins = true;
         }
 
         public List<WebSearch> LoadDefaultWebSearches()
