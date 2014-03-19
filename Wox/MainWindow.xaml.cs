@@ -71,6 +71,14 @@ namespace Wox
             SetCustomPluginHotkey();
 
             globalHotkey.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
+
+            this.Closing += new System.ComponentModel.CancelEventHandler(MainWindow_Closing);
+        }
+
+        void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            this.HideWox();
+            e.Cancel = true;
         }
 
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
