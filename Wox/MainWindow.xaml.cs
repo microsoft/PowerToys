@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using WindowsInput;
 using WindowsInput.Native;
@@ -21,10 +22,12 @@ using Wox.Plugin;
 using Wox.PluginLoader;
 using Application = System.Windows.Application;
 using ContextMenu = System.Windows.Forms.ContextMenu;
+using Control = System.Windows.Controls.Control;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MenuItem = System.Windows.Forms.MenuItem;
 using MessageBox = System.Windows.MessageBox;
 using MouseButton = System.Windows.Input.MouseButton;
+using TextBox = System.Windows.Controls.TextBox;
 using ToolTip = System.Windows.Controls.ToolTip;
 
 namespace Wox
@@ -393,6 +396,27 @@ namespace Wox
             {
                 Source = new Uri(Path.Combine(Directory.GetCurrentDirectory(), "Themes\\" + themeName + ".xaml"), UriKind.Absolute)
             };
+
+
+            Style queryBoxStyle = dict["QueryBoxStyle"] as Style;
+            if (queryBoxStyle != null)
+            {
+                queryBoxStyle.Setters.Add(new Setter(TextBox.FontFamilyProperty, new FontFamily(CommonStorage.Instance.UserSetting.QueryBoxFont)));
+            }
+            Style resultItemStyle = dict["ItemTitleStyle"] as Style;
+            Style resultSubItemStyle = dict["ItemSubTitleStyle"] as Style;
+            Style resultItemSelectedStyle = dict["ItemTitleSelectedStyle"] as Style;
+            Style resultSubItemSelectedStyle = dict["ItemSubTitleSelectedStyle"] as Style;
+            if (resultItemStyle != null && resultSubItemStyle != null
+                && resultSubItemSelectedStyle != null && resultItemSelectedStyle != null)
+            {
+                Setter fontFamily = new Setter(TextBlock.FontFamilyProperty, new FontFamily(CommonStorage.Instance.UserSetting.ResultItemFont));
+
+                resultItemStyle.Setters.Add(fontFamily);
+                resultSubItemStyle.Setters.Add(fontFamily);
+                resultItemSelectedStyle.Setters.Add(fontFamily);
+                resultSubItemSelectedStyle.Setters.Add(fontFamily);
+            }
 
             Application.Current.Resources.MergedDictionaries.Clear();
             Application.Current.Resources.MergedDictionaries.Add(dict);

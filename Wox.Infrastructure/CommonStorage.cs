@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using Newtonsoft.Json;
@@ -45,6 +46,7 @@ namespace Wox.Infrastructure
                 try
                 {
                     storage = JsonConvert.DeserializeObject<CommonStorage>(json);
+                    ValidateConfigs();
                 }
                 catch (Exception)
                 {
@@ -54,6 +56,28 @@ namespace Wox.Infrastructure
             else
             {
                 LoadDefaultUserSetting();
+            }
+        }
+
+        private static void ValidateConfigs()
+        {
+            try
+            {
+                new FontFamily(storage.UserSetting.QueryBoxFont);
+            }
+            catch (Exception e)
+            {
+                storage.UserSetting.QueryBoxFont = FontFamily.GenericSansSerif.Name;
+
+            }
+
+            try
+            {
+                new FontFamily(storage.UserSetting.ResultItemFont);
+            }
+            catch (Exception)
+            {
+                storage.UserSetting.ResultItemFont = FontFamily.GenericSansSerif.Name;
             }
         }
 

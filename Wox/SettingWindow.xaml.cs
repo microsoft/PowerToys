@@ -5,9 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using IWshRuntimeLibrary;
 using Wox.Infrastructure;
 using Wox.Infrastructure.UserSettings;
+using Wox.Plugin;
 using Application = System.Windows.Forms.Application;
 using File = System.IO.File;
 using MessageBox = System.Windows.MessageBox;
@@ -57,6 +59,58 @@ namespace Wox
                 CommonStorage.Instance.Save();
             };
 
+            #region Load Theme Data
+
+            if (!string.IsNullOrEmpty(CommonStorage.Instance.UserSetting.QueryBoxFont) &&
+                Fonts.SystemFontFamilies.Count(o => o.FamilyNames.Values.Contains(CommonStorage.Instance.UserSetting.QueryBoxFont)) > 0)
+            {
+                cbQueryBoxFont.Text = CommonStorage.Instance.UserSetting.QueryBoxFont;
+            }
+            if (!string.IsNullOrEmpty(CommonStorage.Instance.UserSetting.ResultItemFont) &&
+     Fonts.SystemFontFamilies.Count(o => o.FamilyNames.Values.Contains(CommonStorage.Instance.UserSetting.ResultItemFont)) > 0)
+            {
+                cbResultItemFont.Text = CommonStorage.Instance.UserSetting.ResultItemFont;
+            }
+            resultPanelPreview.AddResults(new List<Result>()
+            {
+                new Result()
+                {
+                    Title = "Wox is an effective launcher for windows",
+                    SubTitle = "Wox provide bundles of features let you access infomations quickly.",
+                    IcoPath = "Images/work.png",
+                    PluginDirectory = AppDomain.CurrentDomain.BaseDirectory
+                },
+                new Result()
+                {
+                    Title = "Search applications",
+                    SubTitle = "Search applications, files (via everything plugin) and chrome bookmarks",
+                    IcoPath = "Images/work.png",
+                    PluginDirectory = AppDomain.CurrentDomain.BaseDirectory
+                },
+                new Result()
+                {
+                    Title = "Search web contents with shortcuts",
+                    SubTitle = "e.g. search google with g keyword or youtube keyword)",
+                    IcoPath = "Images/work.png",
+                    PluginDirectory = AppDomain.CurrentDomain.BaseDirectory
+                },
+                new Result()
+                {
+                    Title = "clipboard history ",
+                    IcoPath = "Images/work.png",
+                    PluginDirectory = AppDomain.CurrentDomain.BaseDirectory
+                },
+                new Result()
+                {
+                    Title = "Themes support",
+                    SubTitle = "get more themes from http://www.getwox.com/theme",
+                    IcoPath = "Images/work.png",
+                    PluginDirectory = AppDomain.CurrentDomain.BaseDirectory
+                }
+            });
+
+            #endregion
+
 
             foreach (string theme in LoadAvailableThemes())
             {
@@ -83,13 +137,7 @@ namespace Wox
             return Directory.GetFiles(themePath).Where(filePath => filePath.EndsWith(".xaml") && !filePath.EndsWith("Default.xaml")).ToList();
         }
 
-        private void ThemeComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            string themeName = themeComboBox.SelectedItem.ToString();
-            MainWindow.SetTheme(themeName);
-            CommonStorage.Instance.UserSetting.Theme = themeName;
-            CommonStorage.Instance.Save();
-        }
+
 
         private void btnAddWebSearch_OnClick(object sender, RoutedEventArgs e)
         {
@@ -231,5 +279,32 @@ namespace Wox
         {
             Process.Start("Wox.UAC.exe", "AssociatePluginInstaller");
         }
+
+        #region Theme
+        private void ThemeComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string themeName = themeComboBox.SelectedItem.ToString();
+            MainWindow.SetTheme(themeName);
+            CommonStorage.Instance.UserSetting.Theme = themeName;
+            CommonStorage.Instance.Save();
+        }
+
+        private void CbQueryBoxFont_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string queryBoxFontName = cbQueryBoxFont.SelectedItem.ToString();
+            CommonStorage.Instance.UserSetting.QueryBoxFont = queryBoxFontName;
+            CommonStorage.Instance.Save();
+            App.Window.SetTheme(CommonStorage.Instance.UserSetting.Theme);
+        }
+
+        private void CbResultItemFont_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string resultItemFont = cbResultItemFont.SelectedItem.ToString();
+            CommonStorage.Instance.UserSetting.ResultItemFont = resultItemFont;
+            CommonStorage.Instance.Save();
+            App.Window.SetTheme(CommonStorage.Instance.UserSetting.Theme);
+        }
+
+        #endregion
     }
 }

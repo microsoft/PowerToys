@@ -19,10 +19,6 @@
                     <CheckBox x:Name="cbReplaceWinR" />
                     <TextBlock Text="Replace Win+R" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="10">
-                    <TextBlock Text="Theme:" />
-                    <ComboBox x:Name="themeComboBox" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120"/>
-                </StackPanel>
             </StackPanel>
         </TabItem>
         <TabItem Header="Hotkey">
@@ -114,6 +110,49 @@
                     <Button x:Name="btnEnableInstaller" Click="BtnEnableInstaller_OnClick">enable plugin installer</Button>
                 </StackPanel>
             </StackPanel>
+        </TabItem>
+        <TabItem Header="Theme">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" Margin="10" Grid.Column="0">
+                    <TextBlock Text="Theme:" />
+                    <ComboBox x:Name="themeComboBox" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120"/>
+                </StackPanel>
+                <Grid Margin="10" Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition ></RowDefinition>
+                        <RowDefinition Height="40"></RowDefinition>
+                        <RowDefinition Height="40"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="0" Margin="10">
+                        <Border Width="500" Style="{DynamicResource WindowBorderStyle}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="50" ></RowDefinition>
+                                    <RowDefinition></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <TextBox Text="Hello Wox" IsReadOnly="True" Style="{DynamicResource QueryBoxStyle}" Grid.Row="0"/>
+                                <wox:ResultPanel Grid.Row="1" x:Name="resultPanelPreview"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0" Margin="10">
+                        <TextBlock Text="Query Box Font:" />
+                        <ComboBox x:Name="cbQueryBoxFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbQueryBoxFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="0" Margin="10">
+                        <TextBlock Text="Result Item Font:" />
+                        <ComboBox x:Name="cbResultItemFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbResultItemFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
         </TabItem>
     </TabControl>
 </Window>

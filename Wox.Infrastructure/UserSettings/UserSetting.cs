@@ -7,6 +7,8 @@ namespace Wox.Infrastructure.UserSettings
     {
         public string Hotkey { get; set; }
         public string Theme { get; set; }
+        public string QueryBoxFont { get; set; }
+        public string ResultItemFont { get; set; }
         public bool ReplaceWinR { get; set; }
         public List<WebSearch> WebSearches { get; set; }
         public List<ProgramSource> ProgramSources { get; set; }
