@@ -17,12 +17,12 @@ namespace Wox
 {
     public partial class CustomPluginHotkeySetting : Window
     {
-        private SettingWidow settingWidow;
+        private SettingWindow settingWidow;
         private bool update;
         private CustomPluginHotkey updateCustomHotkey;
 
 
-        public CustomPluginHotkeySetting(SettingWidow settingWidow)
+        public CustomPluginHotkeySetting(SettingWindow settingWidow)
         {
             this.settingWidow = settingWidow;
             InitializeComponent();

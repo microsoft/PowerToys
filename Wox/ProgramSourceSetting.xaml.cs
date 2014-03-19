@@ -20,13 +20,13 @@ namespace Wox
 {
     public partial class ProgramSourceSetting : Window
     {
-        private SettingWidow settingWidow;
+        private SettingWindow settingWindow;
         private bool update;
         private ProgramSource updateProgramSource;
 
-        public ProgramSourceSetting(SettingWidow settingWidow)
+        public ProgramSourceSetting(SettingWindow settingWidow)
         {
-            this.settingWidow = settingWidow;
+            this.settingWindow = settingWidow;
             InitializeComponent();
 
             this.cbType.ItemsSource = Wox.Plugin.System.Programs.SourceTypes.Select(o => o.Key).ToList();
@@ -106,7 +106,7 @@ namespace Wox
                 MessageBox.Show(string.Format("Update {0} program source successfully!", updateProgramSource.ToString()));
             }
             CommonStorage.Instance.Save();
-            settingWidow.ReloadProgramSourceView();
+            settingWindow.ReloadProgramSourceView();
             Close();
         }
 

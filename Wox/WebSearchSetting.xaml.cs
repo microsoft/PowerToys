@@ -20,13 +20,13 @@ namespace Wox
 {
     public partial class WebSearchSetting : Window
     {
-        private SettingWidow settingWidow;
+        private SettingWindow settingWindow;
         private bool update;
         private WebSearch updateWebSearch;
 
-        public WebSearchSetting(SettingWidow settingWidow)
+        public WebSearchSetting(SettingWindow settingWidow)
         {
-            this.settingWidow = settingWidow;
+            this.settingWindow = settingWidow;
             InitializeComponent();
         }
 
@@ -122,7 +122,7 @@ namespace Wox
                 MessageBox.Show(string.Format("Update {0} web search successfully!", title));
             }
             CommonStorage.Instance.Save();
-            settingWidow.ReloadWebSearchView();
+            settingWindow.ReloadWebSearchView();
             Close();
         }
 

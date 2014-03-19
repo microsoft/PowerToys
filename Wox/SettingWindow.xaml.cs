@@ -16,17 +16,17 @@ using MessageBox = System.Windows.MessageBox;
 
 namespace Wox
 {
-    public partial class SettingWidow : Window
+    public partial class SettingWindow : Window
     {
         string woxLinkPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "wox.lnk");
         public MainWindow MainWindow;
 
-        public SettingWidow()
+        public SettingWindow()
         {
             InitializeComponent();
         }
 
-        public SettingWidow(MainWindow mainWindow)
+        public SettingWindow(MainWindow mainWindow)
         {
             this.MainWindow = mainWindow;
             InitializeComponent();
