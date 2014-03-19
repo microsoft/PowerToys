@@ -32,9 +32,13 @@
                     <TextBlock VerticalAlignment="Center" Margin="0 0 10 0">Wox Hotkey:</TextBlock>
                     <wox:HotkeyControl x:Name="ctlHotkey"/>
                 </StackPanel>
-                <StackPanel  Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top">
-                    <TextBlock VerticalAlignment="Center" Margin="0 0 10 0">Custom Plugin Hotkey:</TextBlock>
-                    <ListView x:Name="lvCustomHotkey" Margin="0 5 0 0">
+                <Grid  Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="20"></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBlock VerticalAlignment="Center" Grid.Row="0" Margin="0 0 10 0">Custom Plugin Hotkey:</TextBlock>
+                    <ListView x:Name="lvCustomHotkey" Margin="0 5 0 0" Grid.Row="1">
                         <ListView.View>
                             <GridView>
                                 <GridView.Columns>
@@ -57,7 +61,7 @@
                         </ListView.View>
                     </ListView>
 
-                </StackPanel>
+                </Grid>
                 <StackPanel Grid.Row="2" HorizontalAlignment="Right" Orientation="Horizontal">
                     <Button x:Name="btnDeleteCustomHotkey" Click="BtnDeleteCustomHotkey_OnClick" Width="100" Margin="10">Delete</Button>
                     <Button x:Name="btnEditCustomHotkey" Click="BtnEditCustomHotkey_OnClick" Width="100" Margin="10">Edit</Button>
