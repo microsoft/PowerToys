@@ -180,8 +180,11 @@ namespace Wox
         }
 
         private bool isCMDMode = false;
+        private bool ignoreTextChange = false;
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
         {
+            if (ignoreTextChange) { ignoreTextChange = false; return; }
+
             toolTip.IsOpen = false;
             resultCtrl.Dirty = true;
             Dispatcher.DelayInvoke("UpdateSearch",
@@ -310,6 +313,17 @@ namespace Wox
             tbQuery.CaretIndex = tbQuery.Text.Length;
         }
 
+        private void updateCmdMode()
+        {
+            var selected = resultCtrl.AcceptSelect();
+            if (selected != null)
+            {
+                ignoreTextChange = true;
+                tbQuery.Text = ">" + selected.Title;
+                tbQuery.CaretIndex = tbQuery.Text.Length;
+            }
+        }
+
         private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             //when alt is pressed, the real key should be e.SystemKey
@@ -323,24 +337,28 @@ namespace Wox
 
                 case Key.Down:
                     resultCtrl.SelectNext();
+                    if (isCMDMode) updateCmdMode();
                     toolTip.IsOpen = false;
                     e.Handled = true;
                     break;
 
                 case Key.Up:
                     resultCtrl.SelectPrev();
+                    if (isCMDMode) updateCmdMode();
                     toolTip.IsOpen = false;
                     e.Handled = true;
                     break;
 
                 case Key.PageDown:
                     resultCtrl.SelectNextPage();
+                    if (isCMDMode) updateCmdMode();
                     toolTip.IsOpen = false;
                     e.Handled = true;
                     break;
 
                 case Key.PageUp:
                     resultCtrl.SelectPrevPage();
+                    if (isCMDMode) updateCmdMode();
                     toolTip.IsOpen = false;
                     e.Handled = true;
                     break;

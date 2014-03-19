@@ -51,23 +51,85 @@ namespace Wox.Plugin.System
                         return true;
                     }
                 };
+
+                try
+                {
+                    if (File.Exists(cmd) || Directory.Exists(cmd))
+                    {
+                        result.IcoPath = cmd;
+                    }
+                }
+                catch (Exception) { }
+
                 results.Add(result);
 
                 IEnumerable<Result> history = cmdHistory.Where(o => o.Key.Contains(cmd))
                     .OrderByDescending(o => o.Value)
-                    .Select(m => new Result
-                    {
-                        Title = m.Key,
-                        SubTitle = "this command has been executed " + m.Value + " times",
-                        IcoPath = "Images/cmd.png",
-                        Action = (c) =>
+                    .Select(m => {
+                        if (m.Key == cmd)
                         {
-                            ExecuteCmd(m.Key);
-                            return true;
+                            result.SubTitle = "this command has been executed " + m.Value + " times";
+                            return null;
                         }
-                    }).Take(4);
+
+                        var ret = new Result
+                        {
+                            Title = m.Key,
+                            SubTitle = "this command has been executed " + m.Value + " times",
+                            IcoPath = "Images/cmd.png",
+                            Action = (c) =>
+                            {
+                                ExecuteCmd(m.Key);
+                                return true;
+                            }
+                        };
+                        try
+                        {
+                            if (File.Exists(m.Key) || Directory.Exists(m.Key))
+                            {
+                                ret.IcoPath = m.Key;
+                            }
+                        }
+                        catch (Exception) { }
+
+                        return ret;
+                    }).Where(o => o != null).Take(4);
 
                 results.AddRange(history);
+                try
+                {
+                    string basedir = null;
+                    string dir = null;
+                    string excmd = Environment.ExpandEnvironmentVariables(cmd);
+                    if (Directory.Exists(excmd) && (cmd.EndsWith("/") || cmd.EndsWith(@"\")))
+                    {
+                        basedir = excmd;
+                        dir = cmd;
+                    }
+                    else if (Directory.Exists(Path.GetDirectoryName(excmd)))
+                    {
+                        basedir = Path.GetDirectoryName(excmd);
+                        var dirn = Path.GetDirectoryName(cmd);
+                        dir = (dirn.EndsWith("/") || dirn.EndsWith(@"\")) ? dirn : cmd.Substring(0, dirn.Length + 1);
+                    }
+
+                    if (basedir != null)
+                    {
+                        List<string> autocomplete = Directory.GetFileSystemEntries(basedir).Select(o => dir + Path.GetFileName(o)).Where(o => o.StartsWith(cmd, StringComparison.OrdinalIgnoreCase) && !results.Any(p => o.Equals(p.Title, StringComparison.OrdinalIgnoreCase))).ToList();
+                        autocomplete.Sort();
+                        results.AddRange(autocomplete.ConvertAll(m => new Result() {
+                            Title = m,
+                            SubTitle = "",
+                            IcoPath = m,
+                            Action = (c) =>
+                            {
+                                ExecuteCmd(m);
+                                return true;
+                            }
+                        }));
+                    }
+                }
+                catch (Exception) { }
             }
             return results;
         }
