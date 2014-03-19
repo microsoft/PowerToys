@@ -23,9 +23,6 @@
                     <TextBlock Text="Theme:" />
                     <ComboBox x:Name="themeComboBox" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="10">
-                    <Button x:Name="btnEnableInstaller" Click="BtnEnableInstaller_OnClick">enable plugin installer</Button>
-                </StackPanel>
             </StackPanel>
         </TabItem>
         <TabItem Header="Hotkey">
@@ -106,6 +103,17 @@
                     <Button x:Name="btnAddWebSearch" Click="btnAddWebSearch_OnClick" Width="100" Margin="10">Add</Button>
                 </StackPanel>
             </Grid>
+        </TabItem>
+        <TabItem Header="Plugins">
+            <StackPanel Orientation="Vertical" Margin="10">
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <CheckBox x:Name="cbEnablePythonPlugins" />
+                    <TextBlock Text="Enable Python Plugins" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button x:Name="btnEnableInstaller" Click="BtnEnableInstaller_OnClick">enable plugin installer</Button>
+                </StackPanel>
+            </StackPanel>
         </TabItem>
     </TabControl>
 </Window>

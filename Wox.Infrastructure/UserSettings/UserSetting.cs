@@ -12,6 +12,12 @@ namespace Wox.Infrastructure.UserSettings
         public List<ProgramSource> ProgramSources { get; set; }
         public List<CustomPluginHotkey> CustomPluginHotkeys { get; set; }
         public bool StartWoxOnSystemStartup { get; set; }
+        public bool EnablePythonPlugins { get; set; }
+
+        public UserSetting()
+        {
+            EnablePythonPlugins = false;
+        }
 
         public List<WebSearch> LoadDefaultWebSearches()
         {
