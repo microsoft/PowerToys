@@ -215,10 +215,15 @@ namespace Wox.Plugin.Everything
             if (maxCount < 0)
                 throw new ArgumentOutOfRangeException("maxCount");
 
+            if (keyWord.StartsWith("@"))
+            {
+                Everything_SetRegex(true);
+                keyWord = keyWord.Substring(1);
+            }
             Everything_SetSearch(keyWord);
             Everything_SetOffset(offset);
             Everything_SetMax(maxCount);
-            Everything_SetRegex(true);
+
 
             if (!Everything_Query(true))
             {
