@@ -171,7 +171,7 @@ namespace Wox.Plugin.Everything
         /// </summary>
         /// <param name="keyWord">The key word.</param>
         /// <returns></returns>
-        public IEnumerable<string> Search(string keyWord)
+        public IEnumerable<SearchResult> Search(string keyWord)
         {
             return Search(keyWord, 0, int.MaxValue);
         }
@@ -204,7 +204,7 @@ namespace Wox.Plugin.Everything
         /// <param name="offset">The offset.</param>
         /// <param name="maxCount">The max count.</param>
         /// <returns></returns>
-        public IEnumerable<string> Search(string keyWord, int offset, int maxCount)
+        public IEnumerable<SearchResult> Search(string keyWord, int offset, int maxCount)
         {
             if (string.IsNullOrEmpty(keyWord))
                 throw new ArgumentNullException("keyWord");
@@ -254,12 +254,31 @@ namespace Wox.Plugin.Everything
             for (int idx = 0; idx < Everything_GetNumResults(); ++idx)
             {
                 Everything_GetResultFullPathName(idx, buffer, bufferSize);
-                yield return buffer.ToString();
+
+                var result = new SearchResult() { FullPath = buffer.ToString() };
+                if (Everything_IsFolderResult(idx))
+                    result.Type = ResultType.Folder;
+                else if (Everything_IsFileResult(idx))
+                    result.Type = ResultType.File;
+
+                yield return result;
             }
         }
         #endregion
     }
 
+    public enum ResultType
+    {
+        Volume,
+        Folder,
+        File
+    }
+
+    public class SearchResult
+    {
+        public string FullPath { get; set; }
+        public ResultType Type { get; set; }
+    }
 
     /// <summary>
     /// 
