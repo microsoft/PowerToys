@@ -44,7 +44,7 @@ namespace Wox.Plugin.System
     {
         List<Program> installedList = new List<Program>();
         List<IProgramSource> sources = new List<IProgramSource>();
-        Dictionary<string, Type> sourceTypes = new Dictionary<string, Type>() { 
+        public static Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>() { 
             {"CommonStartMenuProgramSource", typeof(CommonStartMenuProgramSource)},
             {"UserStartMenuProgramSource", typeof(UserStartMenuProgramSource)},
             {"AppPathsProgramSource", typeof(AppPathsProgramSource)},
@@ -116,7 +116,7 @@ namespace Wox.Plugin.System
                 if (source.Enabled)
                 {
                     Type sourceClass;
-                    if (sourceTypes.TryGetValue(source.Type, out sourceClass))
+                    if (SourceTypes.TryGetValue(source.Type, out sourceClass))
                     {
                         sources.Add(sourceClass.GetConstructor(
                             new Type[] { typeof(Wox.Infrastructure.UserSettings.ProgramSource) }

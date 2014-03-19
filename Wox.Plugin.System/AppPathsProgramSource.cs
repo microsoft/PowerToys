@@ -16,7 +16,7 @@ namespace Wox.Plugin.System
         public AppPathsProgramSource(Wox.Infrastructure.UserSettings.ProgramSource source)
             : this()
         {
-            this.BonusPoints = source.BounsPoints;
+            this.BonusPoints = source.BonusPoints;
         }
 
         public override List<Program> LoadPrograms()
@@ -45,6 +45,11 @@ namespace Wox.Plugin.System
                     }
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            return typeof(AppPathsProgramSource).Name;
         }
     }
 }
