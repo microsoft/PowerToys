@@ -14,6 +14,7 @@ namespace Wox
     public class ImagePathConverter : IMultiValueConverter
     {
         private static Dictionary<string, object> imageCache = new Dictionary<string, object>();
+        private static List<string> imageExts = new List<string>() { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff" };
 
         private static ImageSource GetIcon(string fileName)
         {
@@ -36,9 +37,14 @@ namespace Wox
             string path = values[0].ToString();
             string pluginDirectory = values[1].ToString();
             string fullPath = Path.Combine(pluginDirectory, path);
+            string ext = Path.GetExtension(path).ToLower();
             if (imageCache.ContainsKey(fullPath))
             {
                 return imageCache[fullPath];
+            }
+            if (imageCache.ContainsKey(ext))
+            {
+                return imageCache[ext];
             }
 
             string resolvedPath = string.Empty;
@@ -51,18 +57,24 @@ namespace Wox
                 resolvedPath = fullPath;
             }
 
+            var cacheKey = fullPath;
             if (resolvedPath.ToLower().EndsWith(".exe") || resolvedPath.ToLower().EndsWith(".lnk"))
             {
                 img = GetIcon(resolvedPath);
             }
-            else if (!string.IsNullOrEmpty(resolvedPath) && File.Exists(resolvedPath))
+            else if (!string.IsNullOrEmpty(resolvedPath) && imageExts.Contains(ext) &&  File.Exists(resolvedPath))
             {
-                img  = new BitmapImage(new Uri(resolvedPath));
+                img = new BitmapImage(new Uri(resolvedPath));
+            }
+            else
+            {
+                img = GetIcon(resolvedPath);
+                cacheKey = ext;
             }
 
             if (img != null)
             {
-                imageCache.Add(fullPath, img);
+                imageCache.Add(cacheKey, img);
             }
 
             return img;
