@@ -52,19 +52,19 @@ namespace Wox.Infrastructure.UserSettings
             var list = new List<ProgramSource>();
             list.Add(new ProgramSource()
             {
-                BounsPoints = 0,
+                BonusPoints = 0,
                 Enabled = true,
                 Type = "CommonStartMenuProgramSource"
             });
             list.Add(new ProgramSource()
             {
-                BounsPoints = 0,
+                BonusPoints = 0,
                 Enabled = true,
                 Type = "UserStartMenuProgramSource"
             });
             list.Add(new ProgramSource()
             {
-                BounsPoints = -10,
+                BonusPoints = -10,
                 Enabled = true,
                 Type = "AppPathsProgramSource"
             });

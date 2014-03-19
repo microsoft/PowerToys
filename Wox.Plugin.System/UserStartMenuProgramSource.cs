@@ -16,7 +16,12 @@ namespace Wox.Plugin.System
         public UserStartMenuProgramSource(Wox.Infrastructure.UserSettings.ProgramSource source)
             : this()
         {
-            this.BonusPoints = source.BounsPoints;
+            this.BonusPoints = source.BonusPoints;
+        }
+
+        public override string ToString()
+        {
+            return typeof(UserStartMenuProgramSource).Name;
         }
     }
 }

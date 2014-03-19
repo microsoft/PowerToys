@@ -109,6 +109,11 @@ namespace Wox
             }
             else
             {
+                if (CommonStorage.Instance.UserSetting.WebSearches.Exists(o => o.ActionWord == action && o != updateWebSearch))
+                {
+                    MessageBox.Show("ActionWord has existed, please input a new one.");
+                    return;
+                }
                 updateWebSearch.ActionWord = action;
                 updateWebSearch.IconPath = tbIconPath.Text;
                 updateWebSearch.Enabled = cbEnable.IsChecked ?? false;

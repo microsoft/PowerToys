@@ -60,13 +60,14 @@ namespace Wox
 
             foreach (string theme in LoadAvailableThemes())
             {
-                string themeName = theme.Substring(theme.LastIndexOf('\\') + 1).Replace(".xaml", "");
+                string themeName = System.IO.Path.GetFileNameWithoutExtension(theme);
                 themeComboBox.Items.Add(themeName);
             }
 
             themeComboBox.SelectedItem = CommonStorage.Instance.UserSetting.Theme;
             cbReplaceWinR.IsChecked = CommonStorage.Instance.UserSetting.ReplaceWinR;
             webSearchView.ItemsSource = CommonStorage.Instance.UserSetting.WebSearches;
+            programSourceView.ItemsSource = CommonStorage.Instance.UserSetting.ProgramSources;
             lvCustomHotkey.ItemsSource = CommonStorage.Instance.UserSetting.CustomPluginHotkeys;
             cbEnablePythonPlugins.IsChecked = CommonStorage.Instance.UserSetting.EnablePythonPlugins;
             cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
@@ -75,6 +76,11 @@ namespace Wox
         public void ReloadWebSearchView()
         {
             webSearchView.Items.Refresh();
+        }
+
+        public void ReloadProgramSourceView()
+        {
+            programSourceView.Items.Refresh();
         }
 
         private List<string> LoadAvailableThemes()
@@ -125,6 +131,43 @@ namespace Wox
             else
             {
                 MessageBox.Show("Please select a web search");
+            }
+        }
+
+        private void btnAddProgramSource_OnClick(object sender, RoutedEventArgs e)
+        {
+            ProgramSourceSetting programSource = new ProgramSourceSetting(this);
+            programSource.ShowDialog();
+        }
+
+        private void btnDeleteProgramSource_OnClick(object sender, RoutedEventArgs e)
+        {
+            ProgramSource seletedProgramSource = programSourceView.SelectedItem as ProgramSource;
+            if (seletedProgramSource != null &&
+                MessageBox.Show("Are your sure to delete " + seletedProgramSource.ToString(), "Delete ProgramSource",
+                    MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                CommonStorage.Instance.UserSetting.ProgramSources.Remove(seletedProgramSource);
+                programSourceView.Items.Refresh();
+            }
+            else
+            {
+                MessageBox.Show("Please select a program source");
+            }
+        }
+
+        private void btnEditProgramSource_OnClick(object sender, RoutedEventArgs e)
+        {
+            ProgramSource seletedProgramSource = programSourceView.SelectedItem as ProgramSource;
+            if (seletedProgramSource != null)
+            {
+                ProgramSourceSetting programSource = new ProgramSourceSetting(this);
+                programSource.UpdateItem(seletedProgramSource);
+                programSource.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show("Please select a program source");
             }
         }
 

@@ -107,6 +107,9 @@
     <Compile Include="Commands\CommandFactory.cs" />
     <Compile Include="Commands\PluginCommand.cs" />
     <Compile Include="Commands\SystemCommand.cs" />
+    <Compile Include="ProgramSourceSetting.xaml.cs">
+      <DependentUpon>ProgramSourceSetting.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CustomPluginHotkeySetting.xaml.cs">
       <DependentUpon>CustomPluginHotkeySetting.xaml</DependentUpon>
     </Compile>
@@ -135,10 +138,15 @@
     <Compile Include="SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="StringEmptyConverter.cs" />
     <Compile Include="StringNullOrEmptyToVisibilityConverter.cs" />
     <Compile Include="WebSearchSetting.xaml.cs">
       <DependentUpon>WebSearchSetting.xaml</DependentUpon>
     </Compile>
+    <Page Include="ProgramSourceSetting.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="CustomPluginHotkeySetting.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

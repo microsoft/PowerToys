@@ -25,7 +25,7 @@ namespace Wox.Plugin.System
         public FileSystemProgramSource(Wox.Infrastructure.UserSettings.ProgramSource source)
             : this(source.Location)
         {
-            this.BonusPoints = source.BounsPoints;
+            this.BonusPoints = source.BonusPoints;
         }
 
         public override List<Program> LoadPrograms()
@@ -51,6 +51,11 @@ namespace Wox.Plugin.System
             {
                 GetAppFromDirectory(subDirectory, list);
             }
+        }
+
+        public override string ToString()
+        {
+            return typeof(FileSystemProgramSource).Name + ":" + this.BaseDirectory;
         }
     }
 }
