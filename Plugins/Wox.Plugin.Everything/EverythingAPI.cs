@@ -46,7 +46,7 @@ namespace Wox.Plugin.Everything
         [DllImport(EVERYTHING_DLL_NAME)]
         private static extern StateCode Everything_GetLastError();
 
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(EVERYTHING_DLL_NAME, EntryPoint = "Everything_QueryW")]
         private static extern bool Everything_Query(bool bWait);
 
         [DllImport(EVERYTHING_DLL_NAME)]
