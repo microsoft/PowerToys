@@ -16,7 +16,8 @@ namespace Wox.Plugin.Everything
             var results = new List<Result>();
             if (query.ActionParameters.Count > 0 && query.ActionParameters[0].Length > 0)
             {
-                IEnumerable<string> enumerable = api.Search(query.ActionParameters[0], 0, 100);
+                var keyword = string.Join(" ", query.ActionParameters.ToArray());
+                IEnumerable<string> enumerable = api.Search(keyword, 0, 100);
                 foreach (string s in enumerable)
                 {
                     var path = s;
