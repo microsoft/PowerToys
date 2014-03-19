@@ -20,7 +20,6 @@ namespace Wox.Plugin.System
                         @"==|~=|&&|\|\||" +
                         @"[ei]|[0-9]|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
                         @")+$", RegexOptions.Compiled);
-        private static Regex regHasNumber = new Regex(@"[0-9]", RegexOptions.Compiled);
         private static Regex regBrackets = new Regex(@"[\(\)\[\]]", RegexOptions.Compiled);
         private static ParseContext yampContext = null;
         private PluginInitContext context { get; set; }
@@ -36,7 +35,6 @@ namespace Wox.Plugin.System
         {
             if (string.IsNullOrEmpty(query.RawQuery)
                 || query.RawQuery.Length < 2          // don't affect when user only input "e" or "i" keyword
-                || !regHasNumber.IsMatch(query.RawQuery)  // must has one number
                 || !regValidExpressChar.IsMatch(query.RawQuery) 
                 || !IsBracketComplete(query.RawQuery)) return new List<Result>();
 
