@@ -205,7 +205,7 @@ namespace Wox.Infrastructure
                 //  there might be args in that command
                 args = PathGetArgs(cmd);
                 if (args != null)
-                    cmd = cmd.Substring(0, cmd.Length - args.Length - 1);
+                    cmd = cmd.Substring(0, cmd.Length - args.Length).Trim();
             }
             else
                 args = null;
