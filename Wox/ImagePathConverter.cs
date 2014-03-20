@@ -15,6 +15,11 @@ namespace Wox
     {
         private static Dictionary<string, object> imageCache = new Dictionary<string, object>();
         private static List<string> imageExts = new List<string>() { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico" };
+        private static List<string> selfExts = new List<string>() { 
+            ".exe", ".lnk",
+            ".ani", ".cur", 
+            ".sln"
+        };
 
         private static ImageSource GetIcon(string fileName)
         {
@@ -42,7 +47,7 @@ namespace Wox
             {
                 return imageCache[fullPath];
             }
-            if (imageCache.ContainsKey(ext))
+            if (!selfExts.Contains(ext) && imageCache.ContainsKey(ext))
             {
                 return imageCache[ext];
             }
@@ -56,9 +61,10 @@ namespace Wox
             {
                 resolvedPath = fullPath;
             }
+            string extn = Path.GetExtension(resolvedPath).ToLower();
 
             var cacheKey = fullPath;
-            if (resolvedPath.ToLower().EndsWith(".exe") || resolvedPath.ToLower().EndsWith(".lnk"))
+            if (selfExts.Contains(extn))
             {
                 img = GetIcon(resolvedPath);
             }
@@ -69,7 +75,7 @@ namespace Wox
             else
             {
                 img = GetIcon(resolvedPath);
-                cacheKey = ext;
+                if (!selfExts.Contains(ext)) cacheKey = ext;
             }
 
             if (img != null)
