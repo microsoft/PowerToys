@@ -4,56 +4,54 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:wox="clr-namespace:Wox"
-             mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="300">
+             mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100"
+             >
     <UserControl.Resources>
         <wox:ImagePathConverter x:Key="ImagePathConverter"/>
     </UserControl.Resources>
 
-    <Grid x:Name="gridContainer">
-        <!-- set max height of listbox to allow 6 results showed at once -->
-        <ListBox x:Name="lbResults" MaxHeight="300" PreviewMouseDown="LbResults_OnPreviewMouseDown" Style="{DynamicResource BaseListboxStyle}" SelectionChanged ="lbResults_SelectionChanged"  Focusable="False"  KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Standard">
-            <ListBox.Resources>
-                <!--SelectedItem with focus-->
-                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{DynamicResource ItemSelectedBackgroundColor}"/>
-                <!--SelectedItem without focus-->
-                <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource ItemSelectedBackgroundColor}"/>
-            </ListBox.Resources>
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <!-- a result item height is 50 including margin -->
-                    <Grid HorizontalAlignment="Stretch" Height="40" VerticalAlignment="Stretch" Margin="5"  Cursor="Hand">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="32"></ColumnDefinition>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
-                        <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" >
-                            <Image.Source>
-                                <MultiBinding Converter="{StaticResource ImagePathConverter}">
-                                    <MultiBinding.Bindings>
-                                        <Binding Path="IcoPath" />
-                                        <Binding Path="PluginDirectory" />
-                                    </MultiBinding.Bindings>
-                                </MultiBinding>
-                            </Image.Source>
-                        </Image>
-                        <Grid Margin="5 0 5 0" Grid.Column="1" HorizontalAlignment="Stretch">
-                            <Grid.RowDefinitions>
-                                <RowDefinition></RowDefinition>
-                                <RowDefinition Height="Auto" x:Name="SubTitleRowDefinition"></RowDefinition>
-                            </Grid.RowDefinitions>
-                            <TextBlock Style="{DynamicResource ItemTitleStyle}" VerticalAlignment="Center" ToolTip="{Binding Title}" x:Name="tbTitle" Text="{Binding Title}"></TextBlock>
-                            <TextBlock Style="{DynamicResource ItemSubTitleStyle}" ToolTip="{Binding SubTitle}" Visibility="{Binding SubTitle, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding SubTitle}"></TextBlock>
-                        </Grid>
+    <!-- set max height of listbox to allow 6 results showed at once -->
+    <ListBox x:Name="lbResults" MaxHeight="300" PreviewMouseDown="LbResults_OnPreviewMouseDown" Style="{DynamicResource BaseListboxStyle}" SelectionChanged ="lbResults_SelectionChanged"  Focusable="False"  KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Standard">
+        <ListBox.Resources>
+            <!--SelectedItem with focus-->
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{DynamicResource ItemSelectedBackgroundColor}"/>
+            <!--SelectedItem without focus-->
+            <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource ItemSelectedBackgroundColor}"/>
+        </ListBox.Resources>
+        <ListBox.ItemTemplate>
+            <DataTemplate>
+                <!-- a result item height is 50 including margin -->
+                <Grid HorizontalAlignment="Stretch" Height="40" VerticalAlignment="Stretch" Margin="5"  Cursor="Hand">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="32"></ColumnDefinition>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" >
+                        <Image.Source>
+                            <MultiBinding Converter="{StaticResource ImagePathConverter}">
+                                <MultiBinding.Bindings>
+                                    <Binding Path="IcoPath" />
+                                    <Binding Path="PluginDirectory" />
+                                </MultiBinding.Bindings>
+                            </MultiBinding>
+                        </Image.Source>
+                    </Image>
+                    <Grid Margin="5 0 5 0" Grid.Column="1" HorizontalAlignment="Stretch">
+                        <Grid.RowDefinitions>
+                            <RowDefinition></RowDefinition>
+                            <RowDefinition Height="Auto" x:Name="SubTitleRowDefinition"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock Style="{DynamicResource ItemTitleStyle}" VerticalAlignment="Center" ToolTip="{Binding Title}" x:Name="tbTitle" Text="{Binding Title}"></TextBlock>
+                        <TextBlock Style="{DynamicResource ItemSubTitleStyle}" ToolTip="{Binding SubTitle}" Visibility="{Binding SubTitle, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding SubTitle}"></TextBlock>
                     </Grid>
-                    <DataTemplate.Triggers>
-                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}}, Path=IsSelected}" Value="True">
-                            <Setter TargetName="tbTitle" Property="Style" Value="{DynamicResource ItemTitleSelectedStyle}"/>
-                            <Setter TargetName="tbSubTitle" Property="Style" Value="{DynamicResource ItemSubTitleSelectedStyle}"/>
-                        </DataTrigger>
-                    </DataTemplate.Triggers>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-    </Grid>
+                </Grid>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}}, Path=IsSelected}" Value="True">
+                        <Setter TargetName="tbTitle" Property="Style" Value="{DynamicResource ItemTitleSelectedStyle}"/>
+                        <Setter TargetName="tbSubTitle" Property="Style" Value="{DynamicResource ItemSubTitleSelectedStyle}"/>
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+    </ListBox>
 </UserControl>

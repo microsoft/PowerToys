@@ -39,7 +39,7 @@ namespace Wox
                 int position = GetInsertLocation(result.Score);
                 lbResults.Items.Insert(position, result);
             }
-            gridContainer.Margin = lbResults.Items.Count > 0 ? new Thickness { Top = 8 } : new Thickness { Top = 0 };
+            lbResults.Margin = lbResults.Items.Count > 0 ? new Thickness { Top = 8 } : new Thickness { Top = 0 };
             SelectFirst();
         }
 
@@ -150,7 +150,7 @@ namespace Wox
         public void Clear()
         {
             lbResults.Items.Clear();
-            gridContainer.Margin = new Thickness { Top = 0 };
+            lbResults.Margin = new Thickness { Top = 0 };
         }
 
         private void lbResults_SelectionChanged(object sender, SelectionChangedEventArgs e)

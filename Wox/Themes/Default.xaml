@@ -20,7 +20,6 @@
         <Setter Property="Padding" Value="8 10 8 8" />
     </Style>
     <Style x:Key="BaseWindowStyle" TargetType="{x:Type Window}">
-        <Setter Property="Height" Value="80" />
         <Setter Property="Width" Value="500" />
     </Style>
 
