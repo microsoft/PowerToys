@@ -21,7 +21,7 @@ Download
 
 Wox 1.0 beta has been released. [Check it out](https://github.com/qianlifeng/Wox/releases/tag/v1.0-beta)!
 
-**Only For XP users:** you need to install [.net framework 3.5](http://www.microsoft.com/en-us/download/details.aspx?id=21) if you has not installed yet.
+**Only For XP users:** you need to install [.net framework 3.5](http://www.microsoft.com/en-us/download/details.aspx?id=21) if you have not installed yet.
 
 
 Create and Share Plugin
