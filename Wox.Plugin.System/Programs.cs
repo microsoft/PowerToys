@@ -51,6 +51,7 @@ namespace Wox.Plugin.System
             {"PortableAppsProgramSource", typeof(PortableAppsProgramSource)},
             {"FileSystemProgramSource", typeof(FileSystemProgramSource)},
         };
+        private PluginInitContext context;
 
         protected override List<Result> QueryInternal(Query query)
         {
@@ -69,28 +70,10 @@ namespace Wox.Plugin.System
                 SubTitle = c.ExecutePath,
                 IcoPath = c.IcoPath,
                 Score = 0,
-                Action = (context) =>
+                Action = (e) =>
                 {
-                    if (string.IsNullOrEmpty(c.ExecutePath))
-                    {
-                        MessageBox.Show("couldn't start" + c.Title);
-                    }
-                    else
-                    {
-                        try
-                        {
-                            Process.Start(c.ExecutePath);
-                        }
-                        catch (Win32Exception)
-                        {
-                            //Do nothing.
-                            //It may be caused if UAC blocks the program.
-                        }
-                        catch (Exception e)
-                        {
-                            throw e;
-                        }
-                    }
+                    context.HideApp();
+                    context.ShellRun(c.ExecutePath);
                     return true;
                 }
             }).ToList();
@@ -108,6 +91,8 @@ namespace Wox.Plugin.System
 
         protected override void InitInternal(PluginInitContext context)
         {
+            this.context = context;
+
             if (CommonStorage.Instance.UserSetting.ProgramSources == null)
                 CommonStorage.Instance.UserSetting.ProgramSources = CommonStorage.Instance.UserSetting.LoadDefaultProgramSources();
 

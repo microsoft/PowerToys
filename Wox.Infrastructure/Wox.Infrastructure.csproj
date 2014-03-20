@@ -60,6 +60,7 @@
     <Compile Include="UserSettings\UserSelectedRecords.cs" />
     <Compile Include="UserSettings\UserSetting.cs" />
     <Compile Include="UserSettings\WebSearch.cs" />
+    <Compile Include="WindowsShellRun.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -61,7 +61,6 @@
     <Compile Include="FileSystemProgramSource.cs" />
     <Compile Include="UserStartMenuProgramSource.cs" />
     <Compile Include="WebSearchPlugin.cs" />
-    <Compile Include="WindowsShellRun.cs" />
     <Compile Include="CMD.cs" />
     <Compile Include="DirectoryIndicator.cs" />
     <Compile Include="ISystemPlugin.cs" />

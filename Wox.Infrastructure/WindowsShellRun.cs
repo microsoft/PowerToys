@@ -5,7 +5,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.IO;
 
-namespace Wox.Plugin.System
+namespace Wox.Infrastructure
 {
     /*
      * http://undoc.airesoft.co.uk/shell32.dll/ShellExecCmdLine.php

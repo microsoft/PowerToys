@@ -14,7 +14,7 @@ namespace Wox.Plugin.System
 {
     public class BrowserBookmarks : BaseSystemPlugin
     {
-
+        private PluginInitContext context;
         private List<Bookmark> bookmarks = new List<Bookmark>();
 
         protected override List<Result> QueryInternal(Query query)
@@ -29,16 +29,10 @@ namespace Wox.Plugin.System
                 SubTitle = "Bookmark: " + c.Url,
                 IcoPath = Directory.GetCurrentDirectory() + @"\Images\bookmark.png",
                 Score = 5,
-                Action = (context) =>
+                Action = (e) =>
                 {
-                    try
-                    {
-                        Process.Start(c.Url);
-                    }
-                    catch (Exception)
-                    {
-                        MessageBox.Show("open url failed:" + c.Url);
-                    }
+                    context.HideApp();
+                    context.ShellRun(c.Url);
                     return true;
                 }
             }).ToList();
@@ -57,6 +51,7 @@ namespace Wox.Plugin.System
             LoadChromeBookmarks();
          
             bookmarks = bookmarks.Distinct().ToList();
+            this.context = context;
         }
 
         private void ParseChromeBookmarks(String path, string source)

@@ -506,6 +506,21 @@ namespace Wox
 
         #endregion
 
+        public bool ShellRun(string cmd)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(cmd))
+                    throw new ArgumentNullException();
 
+                Wox.Infrastructure.WindowsShellRun.Start(cmd);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ShowMsg("Could not start " + cmd, ex.Message, null);
+            }
+            return false;
+        }
     }
 }
