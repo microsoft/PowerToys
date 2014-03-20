@@ -43,12 +43,6 @@ namespace Wox
             SelectFirst();
         }
 
-        public void AnimateListBoxResultChange()
-        {
-            //todo:
-            var da = new DoubleAnimation(lbResults.ActualHeight, ActualWidth + 100, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
-        }
-
         private int GetInsertLocation(int currentScore)
         {
             int location = lbResults.Items.Count;
