@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Plugin;
@@ -40,6 +41,12 @@ namespace Wox
             }
             gridContainer.Margin = lbResults.Items.Count > 0 ? new Thickness { Top = 8 } : new Thickness { Top = 0 };
             SelectFirst();
+        }
+
+        public void AnimateListBoxResultChange()
+        {
+            //todo:
+            var da = new DoubleAnimation(lbResults.ActualHeight, ActualWidth + 100, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
         }
 
         private int GetInsertLocation(int currentScore)
