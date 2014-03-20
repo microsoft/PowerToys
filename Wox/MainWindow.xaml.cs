@@ -305,12 +305,14 @@ namespace Wox
         private void OnWinRPressed()
         {
             ShowWox(false);
-            if (tbQuery.Text != ">")
+            if (!tbQuery.Text.StartsWith(">"))
             {
                 resultCtrl.Clear();
                 ChangeQuery(">");
             }
             tbQuery.CaretIndex = tbQuery.Text.Length;
+            tbQuery.SelectionStart = 1;
+            tbQuery.SelectionLength = tbQuery.Text.Length - 1;
         }
 
         private void updateCmdMode()
