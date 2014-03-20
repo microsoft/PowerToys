@@ -89,6 +89,8 @@ namespace Wox.Infrastructure
             Instance.UserSetting.WebSearches = Instance.UserSetting.LoadDefaultWebSearches();
             Instance.UserSetting.ProgramSources = Instance.UserSetting.LoadDefaultProgramSources();
             Instance.UserSetting.Hotkey = "Win + W";
+            Instance.UserSetting.QueryBoxFont = FontFamily.GenericSansSerif.Name;
+            Instance.UserSetting.ResultItemFont = FontFamily.GenericSansSerif.Name;
         }
 
         public static CommonStorage Instance

@@ -11,7 +11,7 @@ namespace Wox.Plugin.Everything
     {
         Wox.Plugin.PluginInitContext context;
         EverythingAPI api = new EverythingAPI();
-        private static List<string> imageExts = new List<string>() { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff" };
+        private static List<string> imageExts = new List<string>() { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico" };
 
         public List<Result> Query(Query query)
         {

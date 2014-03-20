@@ -14,7 +14,7 @@ namespace Wox
     public class ImagePathConverter : IMultiValueConverter
     {
         private static Dictionary<string, object> imageCache = new Dictionary<string, object>();
-        private static List<string> imageExts = new List<string>() { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff" };
+        private static List<string> imageExts = new List<string>() { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico" };
 
         private static ImageSource GetIcon(string fileName)
         {
