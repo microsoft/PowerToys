@@ -51,15 +51,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AppPathsProgramSource.cs" />
-    <Compile Include="CommonStartMenuProgramSource.cs" />
-    <Compile Include="PortableAppsProgramSource.cs" />
+    <Compile Include="ProgramSources\AppPathsProgramSource.cs" />
+    <Compile Include="ProgramSources\CommonStartMenuProgramSource.cs" />
+    <Compile Include="ProgramSources\PortableAppsProgramSource.cs" />
     <Compile Include="IProgramSource.cs" />
     <Compile Include="BaseSystemPlugin.cs" />
     <Compile Include="BrowserBookmarks.cs" />
     <Compile Include="Calculator.cs" />
-    <Compile Include="FileSystemProgramSource.cs" />
-    <Compile Include="UserStartMenuProgramSource.cs" />
+    <Compile Include="ProgramSources\FileSystemProgramSource.cs" />
+    <Compile Include="ProgramSources\UserStartMenuProgramSource.cs" />
     <Compile Include="WebSearchPlugin.cs" />
     <Compile Include="CMD.cs" />
     <Compile Include="DirectoryIndicator.cs" />

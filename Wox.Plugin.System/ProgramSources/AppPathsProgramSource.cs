@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Wox.Plugin.System
+namespace Wox.Plugin.System.ProgramSources
 {
     [global::System.ComponentModel.Browsable(false)]
     public class AppPathsProgramSource: AbstractProgramSource

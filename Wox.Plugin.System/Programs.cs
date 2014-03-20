@@ -9,6 +9,7 @@ using System.Text;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using Wox.Infrastructure;
+using Wox.Plugin.System.ProgramSources;
 
 namespace Wox.Plugin.System
 {
@@ -45,11 +46,11 @@ namespace Wox.Plugin.System
         List<Program> installedList = new List<Program>();
         List<IProgramSource> sources = new List<IProgramSource>();
         public static Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>() { 
+            {"FileSystemProgramSource", typeof(FileSystemProgramSource)},
+            {"PortableAppsProgramSource", typeof(PortableAppsProgramSource)},
             {"CommonStartMenuProgramSource", typeof(CommonStartMenuProgramSource)},
             {"UserStartMenuProgramSource", typeof(UserStartMenuProgramSource)},
             {"AppPathsProgramSource", typeof(AppPathsProgramSource)},
-            {"PortableAppsProgramSource", typeof(PortableAppsProgramSource)},
-            {"FileSystemProgramSource", typeof(FileSystemProgramSource)},
         };
         private PluginInitContext context;
 
