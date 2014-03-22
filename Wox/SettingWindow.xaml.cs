@@ -139,7 +139,7 @@ namespace Wox
 
         private List<string> LoadAvailableThemes()
         {
-            string themePath = Directory.GetCurrentDirectory() + "\\Themes\\";
+            string themePath = Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Themes");
             return Directory.GetFiles(themePath).Where(filePath => filePath.EndsWith(".xaml") && !filePath.EndsWith("Default.xaml")).ToList();
         }
 
@@ -244,9 +244,9 @@ namespace Wox
             IWshShortcut shortcut = (IWshShortcut)wshShell.CreateShortcut(woxLinkPath);
             shortcut.TargetPath = Application.ExecutablePath;
             shortcut.Arguments = "hideStart";
-            shortcut.WorkingDirectory = Application.StartupPath;
+            shortcut.WorkingDirectory = Path.GetDirectoryName(Application.ExecutablePath);
             shortcut.Description = "Launch Wox";
-            shortcut.IconLocation = Application.StartupPath + @"\App.ico";
+            shortcut.IconLocation = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "App.ico");
             shortcut.Save();
         }
 

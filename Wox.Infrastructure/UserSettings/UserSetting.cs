@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Windows.Forms;
 
 namespace Wox.Infrastructure.UserSettings
 {
@@ -29,7 +30,7 @@ namespace Wox.Infrastructure.UserSettings
             {
                 Title = "Google",
                 ActionWord = "g",
-                IconPath = Directory.GetCurrentDirectory() + @"\Images\websearch\google.png",
+                IconPath = Path.GetDirectoryName(Application.ExecutablePath) + @"\Images\websearch\google.png",
                 Url = "https://www.google.com/search?q={q}",
                 Enabled = true
             };
@@ -40,7 +41,7 @@ namespace Wox.Infrastructure.UserSettings
             {
                 Title = "Wikipedia",
                 ActionWord = "wiki",
-                IconPath = Directory.GetCurrentDirectory() + @"\Images\websearch\wiki.png",
+                IconPath = Path.GetDirectoryName(Application.ExecutablePath) + @"\Images\websearch\wiki.png",
                 Url = "http://en.wikipedia.org/wiki/{q}",
                 Enabled = true
             };

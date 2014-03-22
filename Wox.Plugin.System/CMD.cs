@@ -12,7 +12,7 @@ namespace Wox.Plugin.System
     public class CMD : BaseSystemPlugin
     {
         private Dictionary<string, int> cmdHistory = new Dictionary<string, int>();
-        private string filePath = Directory.GetCurrentDirectory() + "\\CMDHistory.dat";
+        private string filePath = Path.GetDirectoryName(Application.ExecutablePath) + "\\CMDHistory.dat";
         private PluginInitContext context;
 
         protected override List<Result> QueryInternal(Query query)
