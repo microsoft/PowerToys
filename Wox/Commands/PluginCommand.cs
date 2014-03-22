@@ -27,7 +27,7 @@ namespace Wox.Commands
                 {
                     try
                     {
-                        List<Result> r = thirdPlugin.Plugin.Query(q);
+                        List<Result> r = thirdPlugin.Plugin.Query(q) ?? new List<Result>();
                         r.ForEach(o =>
                         {
                             o.PluginDirectory = thirdPlugin.Metadata.PluginDirecotry;
