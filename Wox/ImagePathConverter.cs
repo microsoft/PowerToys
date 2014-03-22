@@ -18,7 +18,7 @@ namespace Wox
         private static List<string> selfExts = new List<string>() { 
             ".exe", ".lnk",
             ".ani", ".cur", 
-            ".sln"
+            ".sln", ".appref-ms"
         };
 
         private static ImageSource GetIcon(string fileName)

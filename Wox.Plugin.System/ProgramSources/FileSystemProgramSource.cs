@@ -9,7 +9,7 @@ namespace Wox.Plugin.System.ProgramSources
     public class FileSystemProgramSource : AbstractProgramSource
     {
         public string BaseDirectory;
-        public List<string> Suffixes = new List<string>() { "lnk", "exe" };
+        public List<string> Suffixes = new List<string>() { "lnk", "exe", "appref-ms" };
 
         public FileSystemProgramSource(string baseDirectory)
         {
