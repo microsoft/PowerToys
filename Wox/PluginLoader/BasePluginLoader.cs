@@ -13,7 +13,7 @@ namespace Wox.PluginLoader
 {
     public abstract class BasePluginLoader
     {
-        private static string PluginPath = AppDomain.CurrentDomain.BaseDirectory + "Plugins";
+        private static string PluginPath = Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Plugins");
         private static string PluginConfigName = "plugin.json";
         protected static List<PluginMetadata> pluginMetadatas = new List<PluginMetadata>();
         public abstract List<PluginPair> LoadPlugin();
@@ -23,6 +23,12 @@ namespace Wox.PluginLoader
             pluginMetadatas.Clear();
             ParseSystemPlugins();
             ParseThirdPartyPlugins();
+
+            if (Plugins.DebuggerMode != null)
+            {
+                PluginMetadata metadata = GetMetadataFromJson(Plugins.DebuggerMode);
+                if (metadata != null) pluginMetadatas.Add(metadata);
+            }
         }
 
         private static void ParseSystemPlugins()

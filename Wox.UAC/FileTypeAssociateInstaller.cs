@@ -60,8 +60,8 @@ namespace Wox.UAC
 
         public void RegisterInstaller()
         {
-            string filePath = Directory.GetCurrentDirectory() + "\\Wox.exe";
-            string iconPath = Directory.GetCurrentDirectory() + "\\app.ico";
+            string filePath = Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath),  "Wox.exe");
+            string iconPath = Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath),  "app.ico");
 
             SaveReg(filePath, ".wox", iconPath, true);
         }

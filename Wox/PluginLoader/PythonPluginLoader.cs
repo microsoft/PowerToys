@@ -47,7 +47,7 @@ namespace Wox.PluginLoader
 
         private void SetPythonHome()
         {
-            //Environment.SetEnvironmentVariable("PYTHONHOME",Path.Combine(Directory.GetCurrentDirectory(),"PythonHome"));
+            //Environment.SetEnvironmentVariable("PYTHONHOME",Path.Combine(Path.GetDirectoryName(Application.ExecutablePath),"PythonHome"));
             //PythonEngine.PythonHome = 
             //PythonEngine.ProgramName
         }

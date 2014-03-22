@@ -424,7 +424,7 @@ namespace Wox
         {
             var dict = new ResourceDictionary
             {
-                Source = new Uri(Path.Combine(Directory.GetCurrentDirectory(), "Themes\\" + themeName + ".xaml"), UriKind.Absolute)
+                Source = new Uri(Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Themes\\" + themeName + ".xaml"), UriKind.Absolute)
             };
 
 

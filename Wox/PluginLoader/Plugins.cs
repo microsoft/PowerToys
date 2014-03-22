@@ -12,6 +12,7 @@ namespace Wox.PluginLoader
 {
     public static class Plugins
     {
+        private static string debuggerMode = null;
         private static List<PluginPair> plugins = new List<PluginPair>();
 
         public static void Init()
@@ -67,6 +68,16 @@ namespace Wox.PluginLoader
             if (string.IsNullOrEmpty(query.ActionName)) return false;
 
             return plugins.Any(o => o.Metadata.PluginType == PluginType.ThirdParty && o.Metadata.ActionKeyword == query.ActionName);
+        }
+
+        public static void ActivatePluginDebugger(string path)
+        {
+            debuggerMode = path;    
+        }
+
+        public static String DebuggerMode
+        {
+            get { return debuggerMode; }
         }
     }
 }

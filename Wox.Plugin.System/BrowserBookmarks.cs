@@ -27,7 +27,7 @@ namespace Wox.Plugin.System
             {
                 Title = c.Name,
                 SubTitle = "Bookmark: " + c.Url,
-                IcoPath = Directory.GetCurrentDirectory() + @"\Images\bookmark.png",
+                IcoPath = Path.GetDirectoryName(Application.ExecutablePath) + @"\Images\bookmark.png",
                 Score = 5,
                 Action = (e) =>
                 {

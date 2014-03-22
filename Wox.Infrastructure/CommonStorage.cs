@@ -11,7 +11,7 @@ namespace Wox.Infrastructure
     [Serializable]
     public class CommonStorage
     {
-        private static string configPath = Directory.GetCurrentDirectory() + "\\config.json";
+        private static string configPath = Path.GetDirectoryName(Application.ExecutablePath) + "\\config.json";
         private static object locker = new object();
         private static CommonStorage storage;
 

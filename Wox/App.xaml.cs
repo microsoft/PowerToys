@@ -83,6 +83,11 @@ namespace Wox
                 return;
             }
 
+            if (e.Args.Length > 0 && e.Args[0].ToLower() == "plugindebugger")
+            {
+                var path = e.Args[1];
+                PluginLoader.Plugins.ActivatePluginDebugger(path);
+            }
 
             window = new MainWindow();
             if (e.Args.Length == 0 || e.Args[0].ToLower() != "hidestart")
