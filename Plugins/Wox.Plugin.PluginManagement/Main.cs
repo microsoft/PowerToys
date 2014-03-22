@@ -18,15 +18,16 @@ namespace Wox.Plugin.PluginManagement
 
     public class WoxPluginResult
     {
-        public string downloadUrl;
+        public string actionkeyword;
+        public string download;
         public string author;
         public string description;
         public string id;
-        public string language;
-        public int like;
+        public int star;
         public string name;
+        public string version;
+        public string website;
     }
-
 
     public class Main : IPlugin
     {
@@ -170,31 +171,37 @@ namespace Wox.Plugin.PluginManagement
                         IcoPath = "Images\\plugin.png",
                         Action = e =>
                         {
-                            string folder = Path.Combine(Path.GetTempPath(), "WoxPluginDownload");
-                            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-                            string filePath = Path.Combine(folder, Guid.NewGuid().ToString() + ".wox");
+                            DialogResult result = MessageBox.Show("Are your sure to install " + r.name + " plugin",
+                                "Install plugin", MessageBoxButtons.YesNo);
 
-                            context.StartLoadingBar();
-                            ThreadPool.QueueUserWorkItem(delegate
+                            if (result == DialogResult.Yes)
                             {
-                                using (WebClient Client = new WebClient())
+                                string folder = Path.Combine(Path.GetTempPath(), "WoxPluginDownload");
+                                if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+                                string filePath = Path.Combine(folder, Guid.NewGuid().ToString() + ".wox");
+
+                                context.StartLoadingBar();
+                                ThreadPool.QueueUserWorkItem(delegate
                                 {
-                                    try
+                                    using (WebClient Client = new WebClient())
                                     {
-                                        Client.DownloadFile(r1.downloadUrl, filePath);
-                                        context.InstallPlugin(filePath);
-                                        context.ReloadPlugins();
+                                        try
+                                        {
+                                            Client.DownloadFile(r1.download, filePath);
+                                            context.InstallPlugin(filePath);
+                                            context.ReloadPlugins();
+                                        }
+                                        catch (Exception exception)
+                                        {
+                                            MessageBox.Show("download plugin " + r.name + "failed. " + exception.Message);
+                                        }
+                                        finally
+                                        {
+                                            context.StopLoadingBar();
+                                        }
                                     }
-                                    catch (Exception exception)
-                                    {
-                                        MessageBox.Show("download plugin " + r.name + "failed. " + exception.Message);
-                                    }
-                                    finally
-                                    {
-                                        context.StopLoadingBar();
-                                    }
-                                }
-                            });
+                                });
+                            }
                             return false;
                         }
                     });
