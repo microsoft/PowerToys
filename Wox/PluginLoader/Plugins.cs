@@ -51,6 +51,7 @@ namespace Wox.PluginLoader
                         })),
                         StartLoadingBar = () => App.Window.Dispatcher.Invoke(new Action(() => App.Window.StartLoadingBar())),
                         StopLoadingBar = () => App.Window.Dispatcher.Invoke(new Action(() => App.Window.StopLoadingBar())),
+                        ShellRun = (cmd) => (bool) App.Window.Dispatcher.Invoke(new Func<bool>(() => App.Window.ShellRun(cmd))),
                     }));
                 }
             }

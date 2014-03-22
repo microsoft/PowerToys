@@ -5,7 +5,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.IO;
 
-namespace Wox.Plugin.System
+namespace Wox.Infrastructure
 {
     /*
      * http://undoc.airesoft.co.uk/shell32.dll/ShellExecCmdLine.php
@@ -205,7 +205,7 @@ namespace Wox.Plugin.System
                 //  there might be args in that command
                 args = PathGetArgs(cmd);
                 if (args != null)
-                    cmd = cmd.Substring(0, cmd.Length - args.Length);
+                    cmd = cmd.Substring(0, cmd.Length - args.Length).Trim();
             }
             else
                 args = null;

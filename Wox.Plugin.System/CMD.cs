@@ -137,15 +137,8 @@ namespace Wox.Plugin.System
 
         private void ExecuteCmd(string cmd)
         {
-            try
-            {
-                WindowsShellRun.Start(cmd);
+            if (context.ShellRun(cmd))
                 AddCmdHistory(cmd);
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("Wox cound't execute this command. \n\n" + e.Message);
-            }
         }
 
         protected override void InitInternal(PluginInitContext context)

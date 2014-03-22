@@ -30,17 +30,7 @@ namespace Wox.Plugin.Everything
                     r.Action = (c) =>
                     {
                         context.HideApp();
-                        System.Diagnostics.ProcessStartInfo info = new System.Diagnostics.ProcessStartInfo();
-                        info.UseShellExecute = true;
-                        info.FileName = path;
-                        try
-                        {
-                            System.Diagnostics.Process.Start(info);
-                        }
-                        catch (Exception ex)
-                        {
-                            context.ShowMsg("Could not start " + r.Title, ex.Message, null);
-                        }
+                        context.ShellRun(path);
                         return true;
                     };
                     results.Add(r);

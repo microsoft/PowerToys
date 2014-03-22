@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace Wox.Plugin.System
+namespace Wox.Plugin.System.ProgramSources
 {
     public class FileSystemProgramSource : AbstractProgramSource
     {

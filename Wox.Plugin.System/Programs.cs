@@ -9,6 +9,7 @@ using System.Text;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using Wox.Infrastructure;
+using Wox.Plugin.System.ProgramSources;
 
 namespace Wox.Plugin.System
 {
@@ -45,12 +46,13 @@ namespace Wox.Plugin.System
         List<Program> installedList = new List<Program>();
         List<IProgramSource> sources = new List<IProgramSource>();
         public static Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>() { 
+            {"FileSystemProgramSource", typeof(FileSystemProgramSource)},
+            {"PortableAppsProgramSource", typeof(PortableAppsProgramSource)},
             {"CommonStartMenuProgramSource", typeof(CommonStartMenuProgramSource)},
             {"UserStartMenuProgramSource", typeof(UserStartMenuProgramSource)},
             {"AppPathsProgramSource", typeof(AppPathsProgramSource)},
-            {"PortableAppsProgramSource", typeof(PortableAppsProgramSource)},
-            {"FileSystemProgramSource", typeof(FileSystemProgramSource)},
         };
+        private PluginInitContext context;
 
         protected override List<Result> QueryInternal(Query query)
         {
@@ -69,28 +71,10 @@ namespace Wox.Plugin.System
                 SubTitle = c.ExecutePath,
                 IcoPath = c.IcoPath,
                 Score = 0,
-                Action = (context) =>
+                Action = (e) =>
                 {
-                    if (string.IsNullOrEmpty(c.ExecutePath))
-                    {
-                        MessageBox.Show("couldn't start" + c.Title);
-                    }
-                    else
-                    {
-                        try
-                        {
-                            Process.Start(c.ExecutePath);
-                        }
-                        catch (Win32Exception)
-                        {
-                            //Do nothing.
-                            //It may be caused if UAC blocks the program.
-                        }
-                        catch (Exception e)
-                        {
-                            throw e;
-                        }
-                    }
+                    context.HideApp();
+                    context.ShellRun(c.ExecutePath);
                     return true;
                 }
             }).ToList();
@@ -108,6 +92,8 @@ namespace Wox.Plugin.System
 
         protected override void InitInternal(PluginInitContext context)
         {
+            this.context = context;
+
             if (CommonStorage.Instance.UserSetting.ProgramSources == null)
                 CommonStorage.Instance.UserSetting.ProgramSources = CommonStorage.Instance.UserSetting.LoadDefaultProgramSources();
 
