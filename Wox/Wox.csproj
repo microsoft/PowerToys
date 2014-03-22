@@ -107,6 +107,7 @@
     <Compile Include="Commands\CommandFactory.cs" />
     <Compile Include="Commands\PluginCommand.cs" />
     <Compile Include="Commands\SystemCommand.cs" />
+    <Compile Include="Helper\DataWebRequestFactory.cs" />
     <Compile Include="Helper\WindowIntelopHelper.cs" />
     <Compile Include="ProgramSourceSetting.xaml.cs">
       <DependentUpon>ProgramSourceSetting.xaml</DependentUpon>

@@ -8,6 +8,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace Wox
 {
@@ -40,6 +41,11 @@ namespace Wox
             if (values[0] == null) return null;
 
             string path = values[0].ToString();
+            if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            {
+                return new System.Windows.Media.Imaging.BitmapImage(new Uri(path));
+            }
+
             string pluginDirectory = values[1].ToString();
             string fullPath = Path.Combine(pluginDirectory, path);
             string ext = Path.GetExtension(path).ToLower();

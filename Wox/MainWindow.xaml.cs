@@ -50,7 +50,7 @@ namespace Wox
             InitializeComponent();
             initialized = true;
 
-
+            System.Net.WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
             progressBar.ToolTip = toolTip;
