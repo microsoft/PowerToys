@@ -124,6 +124,10 @@ namespace Wox.Plugin.System
                 });
                 installedList.AddRange(list);
             }
+
+            // filter duplicate program
+            installedList = installedList.GroupBy(x => new { x.ExecutePath, x.ExecuteName })
+                                         .Select(g => g.First()).ToList();
         }
 
         private void ScoreFilter(Program p)
