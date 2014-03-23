@@ -10,6 +10,7 @@ namespace Wox.Plugin.System
 {
     public class DirectoryIndicator : BaseSystemPlugin
     {
+        private PluginInitContext context;
         private static  List<string> driverNames = null;
         private static Dictionary<string, DirectoryInfo[]> parentDirectories = new Dictionary<string, DirectoryInfo[]>();
 
@@ -24,6 +25,8 @@ namespace Wox.Plugin.System
 
                 return results;
             }
+
+            InitialDriverList();
 
             var input = query.RawQuery.ToLower();
             if (driverNames.FirstOrDefault(x => input.StartsWith(x)) == null) return results;
@@ -49,12 +52,11 @@ namespace Wox.Plugin.System
                         Result result = new Result
                         {
                             Title = dir.Name,
-                            SubTitle = "Open this directory",
                             IcoPath = "Images/folder.png",
                             Action = (c) =>
                             {
-                                Process.Start(dirPath);
-                                return true;
+                                context.ChangeQuery(dirPath);
+                                return false;
                             }
                         };
                         results.Add(result);
@@ -64,9 +66,14 @@ namespace Wox.Plugin.System
                     {
                         Result result = new Result
                         {
-                            Title = "No files in this directory",
-                            SubTitle = "",
+                            Title = "Open this directory",
+                            SubTitle = "No files in this directory",
                             IcoPath = "Images/folder.png",
+                            Action = (c) =>
+                            {
+                                Process.Start(query.RawQuery);
+                                return true;
+                            }
                         };
                         results.Add(result);
                     }
@@ -111,12 +118,11 @@ namespace Wox.Plugin.System
                         Result result = new Result
                         {
                             Title = dir.Name,
-                            SubTitle = "Open this directory",
                             IcoPath = "Images/folder.png",
                             Action = (c) =>
                             {
-                                Process.Start(dirPath);
-                                return true;
+                                context.ChangeQuery(dirPath);
+                                return false;
                             }
                         };
                         results.Add(result);
@@ -128,7 +134,7 @@ namespace Wox.Plugin.System
             return results;
         }
 
-        protected override void InitInternal(PluginInitContext context)
+        private void InitialDriverList()
         {
             if (driverNames == null)
             {
@@ -139,6 +145,11 @@ namespace Wox.Plugin.System
                     driverNames.Add(driver.Name.ToLower().TrimEnd('\\'));
                 }
             }
+        }
+
+        protected override void InitInternal(PluginInitContext context)
+        {
+            this.context = context;
         }
 
     }
