@@ -42,7 +42,7 @@ namespace Wox.PluginLoader
             metadata.PluginType = PluginType.System;
             metadata.ActionKeyword = "*";
             metadata.ExecuteFileName = "Wox.Plugin.System.dll";
-            metadata.PluginDirecotry = AppDomain.CurrentDomain.BaseDirectory;
+            metadata.PluginDirecotry = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
             pluginMetadatas.Add(metadata);
         }
 
