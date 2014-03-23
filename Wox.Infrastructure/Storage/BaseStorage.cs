@@ -41,11 +41,8 @@ namespace Wox.Infrastructure.Storage
             string configPath = Path.Combine(configFolder, ConfigName + fileSuffix);
             if (!File.Exists(configPath))
             {
-                FileInfo fileInfo = new FileInfo(configFolder);
-                if (!fileInfo.Directory.Exists)
-                {
-                    fileInfo.Directory.Create();
-                }
+                if (!Directory.Exists(configFolder))
+                    Directory.CreateDirectory(configFolder);
                 File.Create(configPath).Close();
             }
             string json = File.ReadAllText(configPath);
