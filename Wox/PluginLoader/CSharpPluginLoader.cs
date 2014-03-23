@@ -25,7 +25,7 @@ namespace Wox.PluginLoader
                     List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract && (o.BaseType == typeof(BaseSystemPlugin) || o.GetInterfaces().Contains(typeof(IPlugin)))).ToList();
                     if (types.Count == 0)
                     {
-                        Log.Error(string.Format("Cound't load plugin {0}: didn't find the class who implement IPlugin",
+                        Log.Warn(string.Format("Cound't load plugin {0}: didn't find the class who implement IPlugin",
                             metadata.Name));
                         continue;
                     }

@@ -73,7 +73,7 @@ namespace Wox
 
             globalHotkey.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
 
-            this.Closing += new System.ComponentModel.CancelEventHandler(MainWindow_Closing);
+            this.Closing += MainWindow_Closing;
         }
 
         void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -93,6 +93,8 @@ namespace Wox
             //DwmDropShadow.DropShadowToWindow(this);
 
             WindowIntelopHelper.DisableControlBox(this);
+
+            throw new Exception();
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -100,11 +102,15 @@ namespace Wox
             if (!System.Diagnostics.Debugger.IsAttached)
             {
                 string error = "Wox has an error that can't be handled. " + e.ExceptionObject;
-                Log.Error(error);
                 if (e.IsTerminating)
                 {
                     notifyIcon.Visible = false;
                     MessageBox.Show(error);
+                    Log.Fatal(error);
+                }
+                else
+                {
+                    Log.Error(error);
                 }
             }
         }

@@ -39,7 +39,7 @@ namespace Wox.PluginLoader
                 PythonEngine.Shutdown();
             }
             catch {
-                Log.Error("Could't find python environment, all python plugins disabled.");
+                Log.Warn("Could't find python environment, all python plugins disabled.");
                 return false;
             }
             return true;

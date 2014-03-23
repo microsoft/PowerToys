@@ -71,7 +71,7 @@ namespace Wox.PluginLoader
 
             if (!File.Exists(configPath))
             {
-                Log.Error(string.Format("parse plugin {0} failed: didn't find config file.", configPath));
+                Log.Warn(string.Format("parse plugin {0} failed: didn't find config file.", configPath));
                 return null;
             }
 
@@ -84,7 +84,7 @@ namespace Wox.PluginLoader
             catch (Exception)
             {
                 string error = string.Format("Parse plugin config {0} failed: json format is not valid", configPath);
-                Log.Error(error);
+                Log.Warn(error);
 #if (DEBUG)
                 {
                     throw new WoxException(error);
@@ -98,7 +98,7 @@ namespace Wox.PluginLoader
             {
                 string error = string.Format("Parse plugin config {0} failed: invalid language {1}", configPath,
                     metadata.Language);
-                Log.Error(error);
+                Log.Warn(error);
 #if (DEBUG)
                 {
                     throw new WoxException(error);
@@ -110,7 +110,7 @@ namespace Wox.PluginLoader
             {
                 string error = string.Format("Parse plugin config {0} failed: ExecuteFile {1} didn't exist", configPath,
                     metadata.ExecuteFilePath);
-                Log.Error(error);
+                Log.Warn(error);
 #if (DEBUG)
                 {
                     throw new WoxException(error);
