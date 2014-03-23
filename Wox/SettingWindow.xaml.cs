@@ -80,34 +80,34 @@ namespace Wox
                     Title = "Wox is an effective launcher for windows",
                     SubTitle = "Wox provide bundles of features let you access infomations quickly.",
                     IcoPath = "Images/work.png",
-                    PluginDirectory = AppDomain.CurrentDomain.BaseDirectory
+                    PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
                 },
                 new Result()
                 {
                     Title = "Search applications",
                     SubTitle = "Search applications, files (via everything plugin) and chrome bookmarks",
                     IcoPath = "Images/work.png",
-                    PluginDirectory = AppDomain.CurrentDomain.BaseDirectory
+                    PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
                 },
                 new Result()
                 {
                     Title = "Search web contents with shortcuts",
                     SubTitle = "e.g. search google with g keyword or youtube keyword)",
                     IcoPath = "Images/work.png",
-                    PluginDirectory = AppDomain.CurrentDomain.BaseDirectory
+                    PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
                 },
                 new Result()
                 {
                     Title = "clipboard history ",
                     IcoPath = "Images/work.png",
-                    PluginDirectory = AppDomain.CurrentDomain.BaseDirectory
+                    PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
                 },
                 new Result()
                 {
                     Title = "Themes support",
                     SubTitle = "get more themes from http://www.getwox.com/theme",
                     IcoPath = "Images/work.png",
-                    PluginDirectory = AppDomain.CurrentDomain.BaseDirectory
+                    PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
                 }
             });
 

@@ -37,7 +37,7 @@ namespace Wox.Helper
                     return;
                 }
 
-                string pluginFolerPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
+                string pluginFolerPath = Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Plugins");
                 if (!Directory.Exists(pluginFolerPath))
                 {
                     Directory.CreateDirectory(pluginFolerPath);
@@ -81,7 +81,7 @@ namespace Wox.Helper
                     {
                         ProcessStartInfo Info = new ProcessStartInfo();
                         Info.Arguments = "/C ping 127.0.0.1 -n 1 && \"" +
-                                         Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wox.exe") + "\"";
+                                         System.Windows.Forms.Application.ExecutablePath + "\"";
                         Info.WindowStyle = ProcessWindowStyle.Hidden;
                         Info.CreateNoWindow = true;
                         Info.FileName = "cmd.exe";

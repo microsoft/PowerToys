@@ -1,4 +1,3 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Test", "Wox.Test\Wox.Test.csproj", "{FF742965-9A80-41A5-B042-D6C7D3A21708}"
@@ -11,23 +10,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox", "Wox\Wox.csproj", "{D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.System", "Wox.Plugin.System\Wox.Plugin.System.csproj", "{69CE0206-CB41-453D-88AF-DF86092EF9B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Fanyi", "Plugins\Wox.Plugin.Fanyi\Wox.Plugin.Fanyi.csproj", "{353769D3-D11C-4D86-BD06-AC8C1D68642B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Python.Runtime", "Pythonnet.Runtime\Python.Runtime.csproj", "{097B4AC0-74E9-4C58-BCF8-C69746EC8271}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Doc", "Plugins\Wox.Plugin.Doc\Wox.Plugin.Doc.csproj", "{6B6696B1-A547-4FD4-85EF-E1FD0F54AD2C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Infrastructure", "Wox.Infrastructure\Wox.Infrastructure.csproj", "{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Everything", "Plugins\Wox.Plugin.Everything\Wox.Plugin.Everything.csproj", "{230AE83F-E92E-4E69-8355-426B305DA9C0}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.UAC", "Wox.UAC\Wox.UAC.csproj", "{C9BC17A0-C2BC-4185-AC1F-32E3352C1233}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Clipboard", "Plugins\Wox.Plugin.Clipboard\Wox.Plugin.Clipboard.csproj", "{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.PluginManagement", "Plugins\Wox.Plugin.PluginManagement\Wox.Plugin.PluginManagement.csproj", "{049490F0-ECD2-4148-9B39-2135EC346EBE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Youdao", "Plugins\Wox.Plugin.Youdao\Wox.Plugin.Youdao.csproj", "{AE02E18E-2134-472B-9282-32CDE36B5F0C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,52 +40,27 @@ Global
 		{69CE0206-CB41-453D-88AF-DF86092EF9B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{69CE0206-CB41-453D-88AF-DF86092EF9B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69CE0206-CB41-453D-88AF-DF86092EF9B8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{353769D3-D11C-4D86-BD06-AC8C1D68642B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{353769D3-D11C-4D86-BD06-AC8C1D68642B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{353769D3-D11C-4D86-BD06-AC8C1D68642B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{353769D3-D11C-4D86-BD06-AC8C1D68642B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{097B4AC0-74E9-4C58-BCF8-C69746EC8271}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{097B4AC0-74E9-4C58-BCF8-C69746EC8271}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{097B4AC0-74E9-4C58-BCF8-C69746EC8271}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{097B4AC0-74E9-4C58-BCF8-C69746EC8271}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6B6696B1-A547-4FD4-85EF-E1FD0F54AD2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6B6696B1-A547-4FD4-85EF-E1FD0F54AD2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6B6696B1-A547-4FD4-85EF-E1FD0F54AD2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6B6696B1-A547-4FD4-85EF-E1FD0F54AD2C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{230AE83F-E92E-4E69-8355-426B305DA9C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{230AE83F-E92E-4E69-8355-426B305DA9C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{230AE83F-E92E-4E69-8355-426B305DA9C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{230AE83F-E92E-4E69-8355-426B305DA9C0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C9BC17A0-C2BC-4185-AC1F-32E3352C1233}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C9BC17A0-C2BC-4185-AC1F-32E3352C1233}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9BC17A0-C2BC-4185-AC1F-32E3352C1233}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9BC17A0-C2BC-4185-AC1F-32E3352C1233}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{049490F0-ECD2-4148-9B39-2135EC346EBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{049490F0-ECD2-4148-9B39-2135EC346EBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{049490F0-ECD2-4148-9B39-2135EC346EBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{049490F0-ECD2-4148-9B39-2135EC346EBE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AE02E18E-2134-472B-9282-32CDE36B5F0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AE02E18E-2134-472B-9282-32CDE36B5F0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AE02E18E-2134-472B-9282-32CDE36B5F0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AE02E18E-2134-472B-9282-32CDE36B5F0C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{353769D3-D11C-4D86-BD06-AC8C1D68642B} = {3A73F5A7-0335-40D8-BF7C-F20BE5D0BA87}
-		{6B6696B1-A547-4FD4-85EF-E1FD0F54AD2C} = {3A73F5A7-0335-40D8-BF7C-F20BE5D0BA87}
-		{230AE83F-E92E-4E69-8355-426B305DA9C0} = {3A73F5A7-0335-40D8-BF7C-F20BE5D0BA87}
-		{8C14DC11-2737-4DCB-A121-5D7BDD57FEA2} = {3A73F5A7-0335-40D8-BF7C-F20BE5D0BA87}
 		{049490F0-ECD2-4148-9B39-2135EC346EBE} = {3A73F5A7-0335-40D8-BF7C-F20BE5D0BA87}
-		{AE02E18E-2134-472B-9282-32CDE36B5F0C} = {3A73F5A7-0335-40D8-BF7C-F20BE5D0BA87}
 	EndGlobalSection
 EndGlobal
