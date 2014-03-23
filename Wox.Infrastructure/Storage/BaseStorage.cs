@@ -36,6 +36,8 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
+        protected virtual void LoadDefaultConfig() { }
+
         private void Load()
         {
             string configPath = Path.Combine(configFolder, ConfigName + fileSuffix);
@@ -55,7 +57,12 @@ namespace Wox.Infrastructure.Storage
                 catch (Exception)
                 {
                     //no-op
+                    LoadDefaultConfig();
                 }
+            }
+            else
+            {
+                LoadDefaultConfig();
             }
         }
 

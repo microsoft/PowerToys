@@ -39,18 +39,6 @@ namespace Wox.Infrastructure.Storage.UserSettings
         [JsonProperty]
         public bool EnablePythonPlugins { get; set; }
 
-        public UserSettingStorage()
-        {
-            EnablePythonPlugins = true;
-            Theme = "Dark";
-            ReplaceWinR = true;
-            WebSearches = LoadDefaultWebSearches();
-            ProgramSources = LoadDefaultProgramSources();
-            Hotkey = "Alt + Space";
-            QueryBoxFont = FontFamily.GenericSansSerif.Name;
-            ResultItemFont = FontFamily.GenericSansSerif.Name;
-        }
-
         public List<WebSearch> LoadDefaultWebSearches()
         {
             List<WebSearch> webSearches = new List<WebSearch>();
@@ -106,6 +94,18 @@ namespace Wox.Infrastructure.Storage.UserSettings
         protected override string ConfigName
         {
             get { return "config"; }
+        }
+
+        protected override void LoadDefaultConfig()
+        {
+            EnablePythonPlugins = true;
+            Theme = "Dark";
+            ReplaceWinR = true;
+            WebSearches = LoadDefaultWebSearches();
+            ProgramSources = LoadDefaultProgramSources();
+            Hotkey = "Alt + Space";
+            QueryBoxFont = FontFamily.GenericSansSerif.Name;
+            ResultItemFont = FontFamily.GenericSansSerif.Name;
         }
     }
 }
