@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Plugin.System.ProgramSources
 {
@@ -22,7 +23,7 @@ namespace Wox.Plugin.System.ProgramSources
             Suffixes = suffixes;
         }
 
-        public FileSystemProgramSource(Wox.Infrastructure.UserSettings.ProgramSource source)
+        public FileSystemProgramSource(ProgramSource source)
             : this(source.Location)
         {
             this.BonusPoints = source.BonusPoints;

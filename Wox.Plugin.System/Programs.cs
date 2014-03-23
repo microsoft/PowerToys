@@ -9,6 +9,8 @@ using System.Text;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Storage;
+using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin.System.ProgramSources;
 
 namespace Wox.Plugin.System
@@ -94,10 +96,10 @@ namespace Wox.Plugin.System
         {
             this.context = context;
 
-            if (CommonStorage.Instance.UserSetting.ProgramSources == null)
-                CommonStorage.Instance.UserSetting.ProgramSources = CommonStorage.Instance.UserSetting.LoadDefaultProgramSources();
+            if (UserSettingStorage.Instance.ProgramSources == null)
+                UserSettingStorage.Instance.ProgramSources = UserSettingStorage.Instance.LoadDefaultProgramSources();
 
-            CommonStorage.Instance.UserSetting.ProgramSources.ForEach(source =>
+            UserSettingStorage.Instance.ProgramSources.ForEach(source =>
             {
                 if (source.Enabled)
                 {
@@ -105,7 +107,7 @@ namespace Wox.Plugin.System
                     if (SourceTypes.TryGetValue(source.Type, out sourceClass))
                     {
                         sources.Add(sourceClass.GetConstructor(
-                            new Type[] { typeof(Wox.Infrastructure.UserSettings.ProgramSource) }
+                            new Type[] { typeof(ProgramSource) }
                             ).Invoke(new object[] { source }) as IProgramSource);
                     }
                     else

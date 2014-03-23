@@ -5,7 +5,8 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Wox.Infrastructure;
-using Wox.Infrastructure.UserSettings;
+using Wox.Infrastructure.Storage;
+using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Plugin.System
 {
@@ -17,7 +18,7 @@ namespace Wox.Plugin.System
             if (string.IsNullOrEmpty(query.ActionName)) return results;
 
             WebSearch webSearch =
-                CommonStorage.Instance.UserSetting.WebSearches.FirstOrDefault(o => o.ActionWord == query.ActionName && o.Enabled);
+                UserSettingStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionWord == query.ActionName && o.Enabled);
 
             if (webSearch != null)
             {

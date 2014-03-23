@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using IniParser;
+using Wox.Infrastructure.Storage.UserSettings;
+
 namespace Wox.Plugin.System.ProgramSources
 {
     public class PortableAppsProgramSource : AbstractProgramSource
@@ -15,7 +17,7 @@ namespace Wox.Plugin.System.ProgramSources
             BaseDirectory = baseDirectory;
         }
 
-        public PortableAppsProgramSource(Wox.Infrastructure.UserSettings.ProgramSource source)
+        public PortableAppsProgramSource(ProgramSource source)
             : this(source.Location)
         {
             this.BonusPoints = source.BonusPoints;

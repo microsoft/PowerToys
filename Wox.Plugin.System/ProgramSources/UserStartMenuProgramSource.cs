@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Plugin.System.ProgramSources
 {
@@ -13,7 +14,7 @@ namespace Wox.Plugin.System.ProgramSources
         {
         }
 
-        public UserStartMenuProgramSource(Wox.Infrastructure.UserSettings.ProgramSource source)
+        public UserStartMenuProgramSource(ProgramSource source)
             : this()
         {
             this.BonusPoints = source.BonusPoints;

@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using System.Windows.Forms;
 
-namespace Wox.Plugin.System
+namespace Wox.Plugin.System.CMD
 {
     public class CMD : BaseSystemPlugin
     {
-        private Dictionary<string, int> cmdHistory = new Dictionary<string, int>();
-        private string filePath = Path.GetDirectoryName(Application.ExecutablePath) + "\\CMDHistory.dat";
         private PluginInitContext context;
 
         protected override List<Result> QueryInternal(Query query)
@@ -20,7 +16,7 @@ namespace Wox.Plugin.System
             List<Result> results = new List<Result>();
             if (query.RawQuery == ">")
             {
-                IEnumerable<Result> history = cmdHistory.OrderByDescending(o => o.Value)
+                IEnumerable<Result> history = CMDStorage.Instance.CMDHistory.OrderByDescending(o => o.Value)
                  .Select(m => new Result
                  {
                      Title = m.Key,
@@ -63,9 +59,10 @@ namespace Wox.Plugin.System
 
                 results.Add(result);
 
-                IEnumerable<Result> history = cmdHistory.Where(o => o.Key.Contains(cmd))
+                IEnumerable<Result> history = CMDStorage.Instance.CMDHistory.Where(o => o.Key.Contains(cmd))
                     .OrderByDescending(o => o.Value)
-                    .Select(m => {
+                    .Select(m =>
+                    {
                         if (m.Key == cmd)
                         {
                             result.SubTitle = "this command has been executed " + m.Value + " times";
@@ -117,7 +114,8 @@ namespace Wox.Plugin.System
                     {
                         List<string> autocomplete = Directory.GetFileSystemEntries(basedir).Select(o => dir + Path.GetFileName(o)).Where(o => o.StartsWith(cmd, StringComparison.OrdinalIgnoreCase) && !results.Any(p => o.Equals(p.Title, StringComparison.OrdinalIgnoreCase))).ToList();
                         autocomplete.Sort();
-                        results.AddRange(autocomplete.ConvertAll(m => new Result() {
+                        results.AddRange(autocomplete.ConvertAll(m => new Result()
+                        {
                             Title = m,
                             SubTitle = "",
                             IcoPath = m,
@@ -138,55 +136,13 @@ namespace Wox.Plugin.System
         private void ExecuteCmd(string cmd)
         {
             if (context.ShellRun(cmd))
-                AddCmdHistory(cmd);
+                CMDStorage.Instance.AddCmdHistory(cmd);
         }
 
         protected override void InitInternal(PluginInitContext context)
         {
             this.context = context;
-            LoadCmdHistory();
         }
 
-        //todo:we need provide a common data persist interface for user?
-        private void AddCmdHistory(string cmdName)
-        {
-            if (cmdHistory.ContainsKey(cmdName))
-            {
-                cmdHistory[cmdName] += 1;
-            }
-            else
-            {
-                cmdHistory.Add(cmdName, 1);
-            }
-            PersistCmdHistory();
-        }
-
-        public void LoadCmdHistory()
-        {
-            if (File.Exists(filePath))
-            {
-                FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                BinaryFormatter b = new BinaryFormatter();
-                cmdHistory = (Dictionary<string, int>)b.Deserialize(fileStream);
-                fileStream.Close();
-            }
-
-            if (cmdHistory.Count > 1000)
-            {
-                List<string> onlyOnceKeys = (from c in cmdHistory where c.Value == 1 select c.Key).ToList();
-                foreach (string onlyOnceKey in onlyOnceKeys)
-                {
-                    cmdHistory.Remove(onlyOnceKey);
-                }
-            }
-        }
-
-        private void PersistCmdHistory()
-        {
-            FileStream fileStream = new FileStream(filePath, FileMode.Create);
-            BinaryFormatter b = new BinaryFormatter();
-            b.Serialize(fileStream, cmdHistory);
-            fileStream.Close();
-        }
     }
 }

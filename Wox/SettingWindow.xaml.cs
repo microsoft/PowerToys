@@ -7,8 +7,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using IWshRuntimeLibrary;
+using Microsoft.VisualBasic.ApplicationServices;
 using Wox.Infrastructure;
-using Wox.Infrastructure.UserSettings;
+using Wox.Infrastructure.Storage;
+using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Application = System.Windows.Forms.Application;
 using File = System.IO.File;
@@ -36,40 +38,40 @@ namespace Wox
         private void Setting_Loaded(object sender, RoutedEventArgs ev)
         {
             ctlHotkey.OnHotkeyChanged += ctlHotkey_OnHotkeyChanged;
-            ctlHotkey.SetHotkey(CommonStorage.Instance.UserSetting.Hotkey, false);
+            ctlHotkey.SetHotkey(UserSettingStorage.Instance.Hotkey, false);
             cbReplaceWinR.Checked += (o, e) =>
             {
-                CommonStorage.Instance.UserSetting.ReplaceWinR = true;
-                CommonStorage.Instance.Save();
+                UserSettingStorage.Instance.ReplaceWinR = true;
+                UserSettingStorage.Instance.Save();
             };
             cbReplaceWinR.Unchecked += (o, e) =>
             {
-                CommonStorage.Instance.UserSetting.ReplaceWinR = false;
-                CommonStorage.Instance.Save();
+                UserSettingStorage.Instance.ReplaceWinR = false;
+                UserSettingStorage.Instance.Save();
             };
 
             cbEnablePythonPlugins.Checked += (o, e) =>
             {
-                CommonStorage.Instance.UserSetting.EnablePythonPlugins = true;
-                CommonStorage.Instance.Save();
+                UserSettingStorage.Instance.EnablePythonPlugins = true;
+                UserSettingStorage.Instance.Save();
             };
             cbEnablePythonPlugins.Unchecked += (o, e) =>
             {
-                CommonStorage.Instance.UserSetting.EnablePythonPlugins = false;
-                CommonStorage.Instance.Save();
+                UserSettingStorage.Instance.EnablePythonPlugins = false;
+                UserSettingStorage.Instance.Save();
             };
 
             #region Load Theme Data
 
-            if (!string.IsNullOrEmpty(CommonStorage.Instance.UserSetting.QueryBoxFont) &&
-                Fonts.SystemFontFamilies.Count(o => o.FamilyNames.Values.Contains(CommonStorage.Instance.UserSetting.QueryBoxFont)) > 0)
+            if (!string.IsNullOrEmpty(UserSettingStorage.Instance.QueryBoxFont) &&
+                Fonts.SystemFontFamilies.Count(o => o.FamilyNames.Values.Contains(UserSettingStorage.Instance.QueryBoxFont)) > 0)
             {
-                cbQueryBoxFont.Text = CommonStorage.Instance.UserSetting.QueryBoxFont;
+                cbQueryBoxFont.Text = UserSettingStorage.Instance.QueryBoxFont;
             }
-            if (!string.IsNullOrEmpty(CommonStorage.Instance.UserSetting.ResultItemFont) &&
-     Fonts.SystemFontFamilies.Count(o => o.FamilyNames.Values.Contains(CommonStorage.Instance.UserSetting.ResultItemFont)) > 0)
+            if (!string.IsNullOrEmpty(UserSettingStorage.Instance.ResultItemFont) &&
+     Fonts.SystemFontFamilies.Count(o => o.FamilyNames.Values.Contains(UserSettingStorage.Instance.ResultItemFont)) > 0)
             {
-                cbResultItemFont.Text = CommonStorage.Instance.UserSetting.ResultItemFont;
+                cbResultItemFont.Text = UserSettingStorage.Instance.ResultItemFont;
             }
             resultPanelPreview.AddResults(new List<Result>()
             {
@@ -118,12 +120,12 @@ namespace Wox
                 themeComboBox.Items.Add(themeName);
             }
 
-            themeComboBox.SelectedItem = CommonStorage.Instance.UserSetting.Theme;
-            cbReplaceWinR.IsChecked = CommonStorage.Instance.UserSetting.ReplaceWinR;
-            webSearchView.ItemsSource = CommonStorage.Instance.UserSetting.WebSearches;
-            programSourceView.ItemsSource = CommonStorage.Instance.UserSetting.ProgramSources;
-            lvCustomHotkey.ItemsSource = CommonStorage.Instance.UserSetting.CustomPluginHotkeys;
-            cbEnablePythonPlugins.IsChecked = CommonStorage.Instance.UserSetting.EnablePythonPlugins;
+            themeComboBox.SelectedItem = UserSettingStorage.Instance.Theme;
+            cbReplaceWinR.IsChecked = UserSettingStorage.Instance.ReplaceWinR;
+            webSearchView.ItemsSource = UserSettingStorage.Instance.WebSearches;
+            programSourceView.ItemsSource = UserSettingStorage.Instance.ProgramSources;
+            lvCustomHotkey.ItemsSource = UserSettingStorage.Instance.CustomPluginHotkeys;
+            cbEnablePythonPlugins.IsChecked = UserSettingStorage.Instance.EnablePythonPlugins;
             cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
         }
 
@@ -158,7 +160,7 @@ namespace Wox
                 MessageBox.Show("Are your sure to delete " + seletedWebSearch.Title, "Delete WebSearch",
                     MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
-                CommonStorage.Instance.UserSetting.WebSearches.Remove(seletedWebSearch);
+                UserSettingStorage.Instance.WebSearches.Remove(seletedWebSearch);
                 webSearchView.Items.Refresh();
             }
             else
@@ -195,7 +197,7 @@ namespace Wox
                 MessageBox.Show("Are your sure to delete " + seletedProgramSource.ToString(), "Delete ProgramSource",
                     MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
-                CommonStorage.Instance.UserSetting.ProgramSources.Remove(seletedProgramSource);
+                UserSettingStorage.Instance.ProgramSources.Remove(seletedProgramSource);
                 programSourceView.Items.Refresh();
             }
             else
@@ -222,8 +224,8 @@ namespace Wox
         private void CbStartWithWindows_OnChecked(object sender, RoutedEventArgs e)
         {
             CreateStartupFolderShortcut();
-            CommonStorage.Instance.UserSetting.StartWoxOnSystemStartup = true;
-            CommonStorage.Instance.Save();
+            UserSettingStorage.Instance.StartWoxOnSystemStartup = true;
+            UserSettingStorage.Instance.Save();
         }
 
         private void CbStartWithWindows_OnUnchecked(object sender, RoutedEventArgs e)
@@ -233,8 +235,8 @@ namespace Wox
                 File.Delete(woxLinkPath);
             }
 
-            CommonStorage.Instance.UserSetting.StartWoxOnSystemStartup = false;
-            CommonStorage.Instance.Save();
+            UserSettingStorage.Instance.StartWoxOnSystemStartup = false;
+            UserSettingStorage.Instance.Save();
         }
 
         private void CreateStartupFolderShortcut()
@@ -265,9 +267,9 @@ namespace Wox
                         MainWindow.HideApp();
                     }
                 });
-                MainWindow.RemoveHotkey(CommonStorage.Instance.UserSetting.Hotkey);
-                CommonStorage.Instance.UserSetting.Hotkey = ctlHotkey.CurrentHotkey.ToString();
-                CommonStorage.Instance.Save();
+                MainWindow.RemoveHotkey(UserSettingStorage.Instance.Hotkey);
+                UserSettingStorage.Instance.Hotkey = ctlHotkey.CurrentHotkey.ToString();
+                UserSettingStorage.Instance.Save();
             }
         }
 
@@ -280,9 +282,9 @@ namespace Wox
                 MessageBox.Show("Are your sure to delete " + item.Hotkey + " plugin hotkey?", "Delete Custom Plugin Hotkey",
                     MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
-                CommonStorage.Instance.UserSetting.CustomPluginHotkeys.Remove(item);
+                UserSettingStorage.Instance.CustomPluginHotkeys.Remove(item);
                 lvCustomHotkey.Items.Refresh();
-                CommonStorage.Instance.Save();
+                UserSettingStorage.Instance.Save();
                 MainWindow.RemoveHotkey(item.Hotkey);
             }
             else
@@ -328,24 +330,24 @@ namespace Wox
         {
             string themeName = themeComboBox.SelectedItem.ToString();
             MainWindow.SetTheme(themeName);
-            CommonStorage.Instance.UserSetting.Theme = themeName;
-            CommonStorage.Instance.Save();
+            UserSettingStorage.Instance.Theme = themeName;
+            UserSettingStorage.Instance.Save();
         }
 
         private void CbQueryBoxFont_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string queryBoxFontName = cbQueryBoxFont.SelectedItem.ToString();
-            CommonStorage.Instance.UserSetting.QueryBoxFont = queryBoxFontName;
-            CommonStorage.Instance.Save();
-            App.Window.SetTheme(CommonStorage.Instance.UserSetting.Theme);
+            UserSettingStorage.Instance.QueryBoxFont = queryBoxFontName;
+            UserSettingStorage.Instance.Save();
+            App.Window.SetTheme(UserSettingStorage.Instance.Theme);
         }
 
         private void CbResultItemFont_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string resultItemFont = cbResultItemFont.SelectedItem.ToString();
-            CommonStorage.Instance.UserSetting.ResultItemFont = resultItemFont;
-            CommonStorage.Instance.Save();
-            App.Window.SetTheme(CommonStorage.Instance.UserSetting.Theme);
+            UserSettingStorage.Instance.ResultItemFont = resultItemFont;
+            UserSettingStorage.Instance.Save();
+            App.Window.SetTheme(UserSettingStorage.Instance.Theme);
         }
 
         #endregion

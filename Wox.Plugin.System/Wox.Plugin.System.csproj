@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CMD\CMDStorage.cs" />
     <Compile Include="ProgramSources\AppPathsProgramSource.cs" />
     <Compile Include="ProgramSources\CommonStartMenuProgramSource.cs" />
     <Compile Include="ProgramSources\PortableAppsProgramSource.cs" />
@@ -61,7 +62,7 @@
     <Compile Include="ProgramSources\FileSystemProgramSource.cs" />
     <Compile Include="ProgramSources\UserStartMenuProgramSource.cs" />
     <Compile Include="WebSearchPlugin.cs" />
-    <Compile Include="CMD.cs" />
+    <Compile Include="CMD\CMD.cs" />
     <Compile Include="DirectoryIndicator.cs" />
     <Compile Include="ISystemPlugin.cs" />
     <Compile Include="Programs.cs" />

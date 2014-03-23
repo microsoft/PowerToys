@@ -1,4 +1,4 @@
-﻿namespace Wox.Infrastructure.UserSettings
+﻿namespace Wox.Infrastructure.Storage.UserSettings
 {
     public class WebSearch
     {

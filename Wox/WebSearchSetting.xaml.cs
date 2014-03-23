@@ -13,7 +13,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Wox.Helper;
 using Wox.Infrastructure;
-using Wox.Infrastructure.UserSettings;
+using Wox.Infrastructure.Storage;
+using Wox.Infrastructure.Storage.UserSettings;
 using MessageBox = System.Windows.MessageBox;
 
 namespace Wox
@@ -32,7 +33,7 @@ namespace Wox
 
         public void UpdateItem(WebSearch webSearch)
         {
-            updateWebSearch = CommonStorage.Instance.UserSetting.WebSearches.FirstOrDefault(o => o == webSearch);
+            updateWebSearch = UserSettingStorage.Instance.WebSearches.FirstOrDefault(o => o == webSearch);
             if (updateWebSearch == null || string.IsNullOrEmpty(updateWebSearch.Url))
             {
                 MessageBox.Show("Invalid web search");
@@ -92,12 +93,12 @@ namespace Wox
 
             if (!update)
             {
-                if (CommonStorage.Instance.UserSetting.WebSearches.Exists(o => o.ActionWord == action))
+                if (UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == action))
                 {
                     MessageBox.Show("ActionWord has existed, please input a new one.");
                     return;
                 }
-                CommonStorage.Instance.UserSetting.WebSearches.Add(new WebSearch()
+                UserSettingStorage.Instance.WebSearches.Add(new WebSearch()
                 {
                     ActionWord = action,
                     Enabled = cbEnable.IsChecked ?? false,
@@ -109,7 +110,7 @@ namespace Wox
             }
             else
             {
-                if (CommonStorage.Instance.UserSetting.WebSearches.Exists(o => o.ActionWord == action && o != updateWebSearch))
+                if (UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == action && o != updateWebSearch))
                 {
                     MessageBox.Show("ActionWord has existed, please input a new one.");
                     return;
@@ -121,7 +122,7 @@ namespace Wox
                 updateWebSearch.Title= title;
                 MessageBox.Show(string.Format("Update {0} web search successfully!", title));
             }
-            CommonStorage.Instance.Save();
+            UserSettingStorage.Instance.Save();
             settingWindow.ReloadWebSearchView();
             Close();
         }

@@ -13,7 +13,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Wox.Helper;
 using Wox.Infrastructure;
-using Wox.Infrastructure.UserSettings;
+using Wox.Infrastructure.Storage;
+using Wox.Infrastructure.Storage.UserSettings;
 using MessageBox = System.Windows.MessageBox;
 
 namespace Wox
@@ -34,7 +35,7 @@ namespace Wox
 
         public void UpdateItem(ProgramSource programSource)
         {
-            updateProgramSource = CommonStorage.Instance.UserSetting.ProgramSources.FirstOrDefault(o => o == programSource);
+            updateProgramSource = UserSettingStorage.Instance.ProgramSources.FirstOrDefault(o => o == programSource);
             if (updateProgramSource == null)
             {
                 MessageBox.Show("Invalid program source");
@@ -84,17 +85,17 @@ namespace Wox
                     Type = type,
                     BonusPoints = bonusPoint
                 };
-                if (CommonStorage.Instance.UserSetting.ProgramSources.Exists(o => o.ToString() == p.ToString() && o != p))
+                if (UserSettingStorage.Instance.ProgramSources.Exists(o => o.ToString() == p.ToString() && o != p))
                 {
                     MessageBox.Show("Program source already exists!");
                     return;
                 }
-                CommonStorage.Instance.UserSetting.ProgramSources.Add(p);
+                UserSettingStorage.Instance.ProgramSources.Add(p);
                 MessageBox.Show(string.Format("Add {0} program source successfully!", p.ToString()));
             }
             else
             {
-                if (CommonStorage.Instance.UserSetting.ProgramSources.Exists(o => o.ToString() == updateProgramSource.ToString() && o != updateProgramSource))
+                if (UserSettingStorage.Instance.ProgramSources.Exists(o => o.ToString() == updateProgramSource.ToString() && o != updateProgramSource))
                 {
                     MessageBox.Show("Program source already exists!");
                     return;
@@ -105,7 +106,7 @@ namespace Wox
                 updateProgramSource.BonusPoints = bonusPoint;
                 MessageBox.Show(string.Format("Update {0} program source successfully!", updateProgramSource.ToString()));
             }
-            CommonStorage.Instance.Save();
+            UserSettingStorage.Instance.Save();
             settingWindow.ReloadProgramSourceView();
             Close();
         }

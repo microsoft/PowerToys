@@ -6,6 +6,8 @@ using System.Threading;
 using Microsoft.CSharp;
 using Wox.Helper;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Storage;
+using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 
 namespace Wox.PluginLoader
@@ -20,7 +22,7 @@ namespace Wox.PluginLoader
             plugins.Clear();
             BasePluginLoader.ParsePluginsConfig();
 
-            if (CommonStorage.Instance.UserSetting.EnablePythonPlugins)
+            if (UserSettingStorage.Instance.EnablePythonPlugins)
             {
                 plugins.AddRange(new PythonPluginLoader().LoadPlugin());    
             }

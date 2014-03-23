@@ -1,25 +1,54 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 
-namespace Wox.Infrastructure.UserSettings
+namespace Wox.Infrastructure.Storage.UserSettings
 {
-    public class UserSetting
+    public class UserSettingStorage : BaseStorage<UserSettingStorage>
     {
+        [JsonProperty]
         public string Hotkey { get; set; }
+
+        [JsonProperty]
         public string Theme { get; set; }
+
+
+        [JsonProperty]
         public string QueryBoxFont { get; set; }
+
+        [JsonProperty]
         public string ResultItemFont { get; set; }
+
+        [JsonProperty]
         public bool ReplaceWinR { get; set; }
+
+        [JsonProperty]
         public List<WebSearch> WebSearches { get; set; }
+
+        [JsonProperty]
         public List<ProgramSource> ProgramSources { get; set; }
+
+        [JsonProperty]
         public List<CustomPluginHotkey> CustomPluginHotkeys { get; set; }
+
+        [JsonProperty]
         public bool StartWoxOnSystemStartup { get; set; }
+
+        [JsonProperty]
         public bool EnablePythonPlugins { get; set; }
 
-        public UserSetting()
+        public UserSettingStorage()
         {
             EnablePythonPlugins = true;
+            Theme = "Dark";
+            ReplaceWinR = true;
+            WebSearches = LoadDefaultWebSearches();
+            ProgramSources = LoadDefaultProgramSources();
+            Hotkey = "Alt + Space";
+            QueryBoxFont = FontFamily.GenericSansSerif.Name;
+            ResultItemFont = FontFamily.GenericSansSerif.Name;
         }
 
         public List<WebSearch> LoadDefaultWebSearches()
@@ -36,7 +65,7 @@ namespace Wox.Infrastructure.UserSettings
             };
             webSearches.Add(googleWebSearch);
 
-            
+
             WebSearch wikiWebSearch = new WebSearch()
             {
                 Title = "Wikipedia",
@@ -72,6 +101,11 @@ namespace Wox.Infrastructure.UserSettings
                 Type = "AppPathsProgramSource"
             });
             return list;
+        }
+
+        protected override string ConfigName
+        {
+            get { return "config"; }
         }
     }
 }

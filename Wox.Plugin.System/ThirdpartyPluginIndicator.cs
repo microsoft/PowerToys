@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Storage;
+using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Plugin.System
 {
@@ -37,7 +39,7 @@ namespace Wox.Plugin.System
                 }
             }
 
-            results.AddRange(CommonStorage.Instance.UserSetting.WebSearches.Where(o => o.ActionWord.StartsWith(query.RawQuery) && o.Enabled).Select(n => new Result()
+            results.AddRange(UserSettingStorage.Instance.WebSearches.Where(o => o.ActionWord.StartsWith(query.RawQuery) && o.Enabled).Select(n => new Result()
             {
                 Title = n.ActionWord,
                 SubTitle = string.Format("Activate {0} web search", n.ActionWord),

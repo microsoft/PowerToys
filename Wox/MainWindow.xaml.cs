@@ -17,7 +17,8 @@ using NHotkey.Wpf;
 using Wox.Commands;
 using Wox.Helper;
 using Wox.Infrastructure;
-using Wox.Infrastructure.UserSettings;
+using Wox.Infrastructure.Storage;
+using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.PluginLoader;
 using Application = System.Windows.Application;
@@ -60,14 +61,14 @@ namespace Wox
             ThreadPool.SetMaxThreads(30, 10);
             try
             {
-                SetTheme(CommonStorage.Instance.UserSetting.Theme);
+                SetTheme(UserSettingStorage.Instance.Theme);
             }
             catch (Exception)
             {
-                SetTheme(CommonStorage.Instance.UserSetting.Theme = "Dark");
+                SetTheme(UserSettingStorage.Instance.Theme = "Dark");
             }
 
-            SetHotkey(CommonStorage.Instance.UserSetting.Hotkey, OnHotkey);
+            SetHotkey(UserSettingStorage.Instance.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
 
             globalHotkey.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
@@ -131,8 +132,8 @@ namespace Wox
 
         private void SetCustomPluginHotkey()
         {
-            if (CommonStorage.Instance.UserSetting.CustomPluginHotkeys == null) return;
-            foreach (CustomPluginHotkey hotkey in CommonStorage.Instance.UserSetting.CustomPluginHotkeys)
+            if (UserSettingStorage.Instance.CustomPluginHotkeys == null) return;
+            foreach (CustomPluginHotkey hotkey in UserSettingStorage.Instance.CustomPluginHotkeys)
             {
                 CustomPluginHotkey hotkey1 = hotkey;
                 SetHotkey(hotkey.Hotkey, delegate
@@ -285,7 +286,7 @@ namespace Wox
 
         private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)
         {
-            if (CommonStorage.Instance.UserSetting.ReplaceWinR)
+            if (UserSettingStorage.Instance.ReplaceWinR)
             {
                 //todo:need refatoring. move those codes to CMD file or expose events
                 if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
@@ -388,7 +389,8 @@ namespace Wox
                     {
                         HideWox();
                     }
-                    CommonStorage.Instance.UserSelectedRecords.Add(result);
+                    UserSelectedRecordStorage.Instance.Add(result);
+                    UserSelectedRecordStorage.Instance.Add(result);
                 }
             }
         }
@@ -405,7 +407,7 @@ namespace Wox
                 list.ForEach(
                     o =>
                     {
-                        if (o.AutoAjustScore) o.Score += CommonStorage.Instance.UserSelectedRecords.GetSelectedCount(o);
+                        if (o.AutoAjustScore) o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o);
                     });
                 lock (locker)
                 {
@@ -431,7 +433,7 @@ namespace Wox
             Style queryBoxStyle = dict["QueryBoxStyle"] as Style;
             if (queryBoxStyle != null)
             {
-                queryBoxStyle.Setters.Add(new Setter(TextBox.FontFamilyProperty, new FontFamily(CommonStorage.Instance.UserSetting.QueryBoxFont)));
+                queryBoxStyle.Setters.Add(new Setter(TextBox.FontFamilyProperty, new FontFamily(UserSettingStorage.Instance.QueryBoxFont)));
             }
             Style resultItemStyle = dict["ItemTitleStyle"] as Style;
             Style resultSubItemStyle = dict["ItemSubTitleStyle"] as Style;
@@ -440,7 +442,7 @@ namespace Wox
             if (resultItemStyle != null && resultSubItemStyle != null
                 && resultSubItemSelectedStyle != null && resultItemSelectedStyle != null)
             {
-                Setter fontFamily = new Setter(TextBlock.FontFamilyProperty, new FontFamily(CommonStorage.Instance.UserSetting.ResultItemFont));
+                Setter fontFamily = new Setter(TextBlock.FontFamilyProperty, new FontFamily(UserSettingStorage.Instance.ResultItemFont));
 
                 resultItemStyle.Setters.Add(fontFamily);
                 resultSubItemStyle.Setters.Add(fontFamily);
