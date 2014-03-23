@@ -41,7 +41,7 @@ namespace Wox
             Storyboard.SetTargetProperty(fadeOutAnimation, new PropertyPath(TopProperty));
             fadeOutStoryboard.Children.Add(fadeOutAnimation);
 
-            imgClose.Source = new BitmapImage(new Uri(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath) + "\\Images\\close.png"));
+            imgClose.Source = new BitmapImage(new Uri(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath) + "\\Images\\close.png"));
             imgClose.MouseUp += imgClose_MouseUp;
         }
 
@@ -65,7 +65,7 @@ namespace Wox
             tbSubTitle.Text = subTitle;
             if (!File.Exists(icopath))
             {
-                icopath = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath) + "Images\\app.png";
+                icopath = System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath) + "Images\\app.png";
             }
             imgIco.Source = new BitmapImage(new Uri(icopath));
             Show();
