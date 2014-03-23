@@ -12,6 +12,9 @@
         Style="{DynamicResource WindowStyle}"
         Icon="Images\app.png"
         >
+    <Window.Resources>
+        <ResourceDictionary Source="/PresentationFramework.Classic,Version=3.0.0.0,Culture=neutral,PublicKeyToken=31bf3856ad364e35,processorArchitecture=MSIL;component/themes/Classic.xaml"/>
+    </Window.Resources>
     <Border Style="{DynamicResource WindowBorderStyle}" MouseDown="Border_OnMouseDown">
         <StackPanel Orientation="Vertical">
             <TextBox Style="{DynamicResource QueryBoxStyle}" Grid.Row="0"  x:Name="tbQuery" PreviewKeyDown="TbQuery_OnPreviewKeyDown" TextChanged="TextBoxBase_OnTextChanged" />

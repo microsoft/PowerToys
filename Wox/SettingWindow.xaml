@@ -187,6 +187,9 @@
                         <ColumnDefinition></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="0" Margin="10">
+                        <StackPanel.Resources>
+                            <ResourceDictionary Source="/PresentationFramework.Classic,Version=3.0.0.0,Culture=neutral,PublicKeyToken=31bf3856ad364e35,processorArchitecture=MSIL;component/themes/Classic.xaml"/>
+                        </StackPanel.Resources>
                         <Border Width="500" Style="{DynamicResource WindowBorderStyle}">
                             <Grid>
                                 <Grid.RowDefinitions>
