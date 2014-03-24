@@ -84,10 +84,10 @@ namespace Wox.Plugin.System
 
         private bool MatchProgram(Program program, FuzzyMatcher matcher)
         {
-            if (program.AbbrTitle != null && (program.Score = matcher.Score(program.AbbrTitle)) > 0) return true;
-            if ((program.Score = matcher.Score(program.Title)) > 0) return true;
-            if ((program.Score = matcher.Score(program.PinyinTitle)) > 0) return true;
-            if (program.ExecuteName != null && (program.Score = matcher.Score(program.ExecuteName)) > 0) return true;
+            if (program.AbbrTitle != null && (program.Score = matcher.Evaluate(program.AbbrTitle).Score) > 0) return true;
+            if ((program.Score = matcher.Evaluate(program.Title).Score) > 0) return true;
+            if ((program.Score = matcher.Evaluate(program.PinyinTitle).Score) > 0) return true;
+            if (program.ExecuteName != null && (program.Score = matcher.Evaluate(program.ExecuteName).Score) > 0) return true;
 
             return false;
         }
