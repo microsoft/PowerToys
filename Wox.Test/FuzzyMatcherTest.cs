@@ -29,7 +29,7 @@ namespace Wox.Test
                 results.Add(new Plugin.Result()
                 {
                     Title = str,
-                    Score = FuzzyMatcher.Create("inst").Score(str)
+                    Score = FuzzyMatcher.Create("inst").Evaluate(str).Score
                 });
             }
 
