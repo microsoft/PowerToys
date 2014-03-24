@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Wox.Infrastructure;
 
 namespace Wox.Plugin.System
 {
@@ -104,14 +105,17 @@ namespace Wox.Plugin.System
                 parentDir = parentDir.TrimEnd('\\', '/');
                 if (parentDirectories.ContainsKey(parentDir))
                 {
+                    
                     var dirs = parentDirectories[parentDir];
                     var queryFileName = Path.GetFileName(query.RawQuery).ToLower();
+                    var fuzzy = FuzzyMatcher.Create(queryFileName);
                     foreach (var dir in dirs)
                     {
                         if ((dir.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
                             continue;
 
-                        if (!dir.Name.ToLower().StartsWith(queryFileName))
+                        var matchResult = fuzzy.Evaluate(dir.Name);
+                        if (!matchResult.Success)
                             continue;
 
                         var dirPath = dir.FullName;
@@ -119,6 +123,7 @@ namespace Wox.Plugin.System
                         {
                             Title = dir.Name,
                             IcoPath = "Images/folder.png",
+                            Score = matchResult.Score,
                             Action = (c) =>
                             {
                                 context.ChangeQuery(dirPath);
