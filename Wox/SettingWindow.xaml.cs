@@ -12,6 +12,7 @@ using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
+using Wox.Helper;
 using Application = System.Windows.Forms.Application;
 using File = System.IO.File;
 using MessageBox = System.Windows.MessageBox;
@@ -35,6 +36,7 @@ namespace Wox
             Loaded += Setting_Loaded;
         }
 
+        bool settingsLoaded = false;
         private void Setting_Loaded(object sender, RoutedEventArgs ev)
         {
             ctlHotkey.OnHotkeyChanged += ctlHotkey_OnHotkeyChanged;
@@ -67,11 +69,23 @@ namespace Wox
                 Fonts.SystemFontFamilies.Count(o => o.FamilyNames.Values.Contains(UserSettingStorage.Instance.QueryBoxFont)) > 0)
             {
                 cbQueryBoxFont.Text = UserSettingStorage.Instance.QueryBoxFont;
+
+                cbQueryBoxFontFaces.SelectedItem = SyntaxSugars.CallOrRescueDefault(() => ((FontFamily)cbQueryBoxFont.SelectedItem).ConvertFromInvariantStringsOrNormal(
+                    UserSettingStorage.Instance.QueryBoxFontStyle,
+                    UserSettingStorage.Instance.QueryBoxFontWeight,
+                    UserSettingStorage.Instance.QueryBoxFontStretch
+                    ));
             }
             if (!string.IsNullOrEmpty(UserSettingStorage.Instance.ResultItemFont) &&
-     Fonts.SystemFontFamilies.Count(o => o.FamilyNames.Values.Contains(UserSettingStorage.Instance.ResultItemFont)) > 0)
+                Fonts.SystemFontFamilies.Count(o => o.FamilyNames.Values.Contains(UserSettingStorage.Instance.ResultItemFont)) > 0)
             {
                 cbResultItemFont.Text = UserSettingStorage.Instance.ResultItemFont;
+
+                cbResultItemFontFaces.SelectedItem = SyntaxSugars.CallOrRescueDefault(() => ((FontFamily)cbResultItemFont.SelectedItem).ConvertFromInvariantStringsOrNormal(
+                    UserSettingStorage.Instance.ResultItemFontStyle,
+                    UserSettingStorage.Instance.ResultItemFontWeight,
+                    UserSettingStorage.Instance.ResultItemFontStretch
+                    ));
             }
             resultPanelPreview.AddResults(new List<Result>()
             {
@@ -127,6 +141,9 @@ namespace Wox
             lvCustomHotkey.ItemsSource = UserSettingStorage.Instance.CustomPluginHotkeys;
             cbEnablePythonPlugins.IsChecked = UserSettingStorage.Instance.EnablePythonPlugins;
             cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
+
+            settingsLoaded = true;
+            App.Window.SetTheme(UserSettingStorage.Instance.Theme);
         }
 
         public void ReloadWebSearchView()
@@ -336,20 +353,47 @@ namespace Wox
 
         private void CbQueryBoxFont_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (!settingsLoaded) return;
             string queryBoxFontName = cbQueryBoxFont.SelectedItem.ToString();
             UserSettingStorage.Instance.QueryBoxFont = queryBoxFontName;
+            this.cbQueryBoxFontFaces.SelectedItem = ((FontFamily)cbQueryBoxFont.SelectedItem).ChooseRegularFamilyTypeface();
+
+            UserSettingStorage.Instance.Save();
+            App.Window.SetTheme(UserSettingStorage.Instance.Theme);
+        }
+
+        private void CbQueryBoxFontFaces_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!settingsLoaded) return;
+            FamilyTypeface typeface = (FamilyTypeface) cbQueryBoxFontFaces.SelectedItem;
+            UserSettingStorage.Instance.QueryBoxFontStretch = typeface.Stretch.ToString();
+            UserSettingStorage.Instance.QueryBoxFontWeight = typeface.Weight.ToString();
+            UserSettingStorage.Instance.QueryBoxFontStyle = typeface.Style.ToString();
             UserSettingStorage.Instance.Save();
             App.Window.SetTheme(UserSettingStorage.Instance.Theme);
         }
 
         private void CbResultItemFont_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (!settingsLoaded) return;
             string resultItemFont = cbResultItemFont.SelectedItem.ToString();
             UserSettingStorage.Instance.ResultItemFont = resultItemFont;
+            this.cbResultItemFontFaces.SelectedItem = ((FontFamily)cbResultItemFont.SelectedItem).ChooseRegularFamilyTypeface();
+
             UserSettingStorage.Instance.Save();
             App.Window.SetTheme(UserSettingStorage.Instance.Theme);
         }
 
+        private void CbResultItemFontFaces_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!settingsLoaded) return;
+            FamilyTypeface typeface = (FamilyTypeface)cbResultItemFontFaces.SelectedItem;
+            UserSettingStorage.Instance.ResultItemFontStretch = typeface.Stretch.ToString();
+            UserSettingStorage.Instance.ResultItemFontWeight = typeface.Weight.ToString();
+            UserSettingStorage.Instance.ResultItemFontStyle = typeface.Style.ToString();
+            UserSettingStorage.Instance.Save();
+            App.Window.SetTheme(UserSettingStorage.Instance.Theme);
+        }
         #endregion
     }
 }

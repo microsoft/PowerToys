@@ -14,12 +14,29 @@ namespace Wox.Infrastructure.Storage.UserSettings
         [JsonProperty]
         public string Theme { get; set; }
 
-
         [JsonProperty]
         public string QueryBoxFont { get; set; }
 
         [JsonProperty]
+        public string QueryBoxFontStyle { get; set; }
+
+        [JsonProperty]
+        public string QueryBoxFontWeight { get; set; }
+
+        [JsonProperty]
+        public string QueryBoxFontStretch { get; set; }
+
+        [JsonProperty]
         public string ResultItemFont { get; set; }
+
+        [JsonProperty]
+        public string ResultItemFontStyle { get; set; }
+
+        [JsonProperty]
+        public string ResultItemFontWeight { get; set; }
+
+        [JsonProperty]
+        public string ResultItemFontStretch { get; set; }
 
         [JsonProperty]
         public bool ReplaceWinR { get; set; }

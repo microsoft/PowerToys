@@ -201,13 +201,43 @@
                             </Grid>
                         </Border>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0" Margin="10">
+                    <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  Margin="10">
                         <TextBlock Text="Query Box Font:" />
                         <ComboBox x:Name="cbQueryBoxFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbQueryBoxFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120"/>
+                        <ComboBox
+                          x:Name="cbQueryBoxFontFaces"
+                          ItemsSource="{Binding ElementName=cbQueryBoxFont,Path=SelectedValue.FamilyTypefaces}" SelectionChanged="CbQueryBoxFontFaces_OnSelectionChanged">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <ItemsControl ItemsSource="{Binding AdjustedFaceNames}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Value}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="0" Margin="10">
+                    <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="10">
                         <TextBlock Text="Result Item Font:" />
                         <ComboBox x:Name="cbResultItemFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbResultItemFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120"/>
+                        <ComboBox
+                          x:Name="cbResultItemFontFaces"
+                          ItemsSource="{Binding ElementName=cbResultItemFont,Path=SelectedValue.FamilyTypefaces}" SelectionChanged="CbResultItemFontFaces_OnSelectionChanged">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <ItemsControl ItemsSource="{Binding AdjustedFaceNames}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Value}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
                 </Grid>
             </Grid>

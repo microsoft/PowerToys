@@ -110,6 +110,8 @@
     <Compile Include="Commands\PluginCommand.cs" />
     <Compile Include="Commands\SystemCommand.cs" />
     <Compile Include="Helper\DataWebRequestFactory.cs" />
+    <Compile Include="Helper\FontHelper.cs" />
+    <Compile Include="Helper\SyntaxSugars.cs" />
     <Compile Include="Helper\WindowIntelopHelper.cs" />
     <Compile Include="ProgramSourceSetting.xaml.cs">
       <DependentUpon>ProgramSourceSetting.xaml</DependentUpon>

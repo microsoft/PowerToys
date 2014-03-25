@@ -438,7 +438,11 @@ namespace Wox
             if (queryBoxStyle != null)
             {
                 queryBoxStyle.Setters.Add(new Setter(TextBox.FontFamilyProperty, new FontFamily(UserSettingStorage.Instance.QueryBoxFont)));
+                queryBoxStyle.Setters.Add(new Setter(TextBox.FontStyleProperty, FontHelper.GetFontStyleFromInvariantStringOrNormal(UserSettingStorage.Instance.QueryBoxFontStyle)));
+                queryBoxStyle.Setters.Add(new Setter(TextBox.FontWeightProperty, FontHelper.GetFontWeightFromInvariantStringOrNormal(UserSettingStorage.Instance.QueryBoxFontWeight)));
+                queryBoxStyle.Setters.Add(new Setter(TextBox.FontStretchProperty, FontHelper.GetFontStretchFromInvariantStringOrNormal(UserSettingStorage.Instance.QueryBoxFontStretch)));
             }
+
             Style resultItemStyle = dict["ItemTitleStyle"] as Style;
             Style resultSubItemStyle = dict["ItemSubTitleStyle"] as Style;
             Style resultItemSelectedStyle = dict["ItemTitleSelectedStyle"] as Style;
@@ -447,11 +451,12 @@ namespace Wox
                 && resultSubItemSelectedStyle != null && resultItemSelectedStyle != null)
             {
                 Setter fontFamily = new Setter(TextBlock.FontFamilyProperty, new FontFamily(UserSettingStorage.Instance.ResultItemFont));
+                Setter fontStyle = new Setter(TextBlock.FontStyleProperty, FontHelper.GetFontStyleFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontStyle));
+                Setter fontWeight = new Setter(TextBlock.FontWeightProperty, FontHelper.GetFontWeightFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontWeight));
+                Setter fontStretch = new Setter(TextBlock.FontStretchProperty, FontHelper.GetFontStretchFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontStretch));
 
-                resultItemStyle.Setters.Add(fontFamily);
-                resultSubItemStyle.Setters.Add(fontFamily);
-                resultItemSelectedStyle.Setters.Add(fontFamily);
-                resultSubItemSelectedStyle.Setters.Add(fontFamily);
+                Setter[] setters = new Setter[] { fontFamily, fontStyle, fontWeight, fontStretch };
+                Array.ForEach(new Style[] { resultItemStyle, resultSubItemStyle, resultItemSelectedStyle, resultSubItemSelectedStyle }, o => Array.ForEach(setters, p => o.Setters.Add(p)));
             }
 
             Application.Current.Resources.MergedDictionaries.Clear();
