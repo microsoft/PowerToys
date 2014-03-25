@@ -1,0 +1,52 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<ResourceDictionary.MergedDictionaries>
+		<ResourceDictionary Source="Default.xaml"></ResourceDictionary>
+	</ResourceDictionary.MergedDictionaries>
+	<Style x:Key="QueryBoxStyle" BasedOn="{StaticResource BaseQueryBoxStyle}" TargetType="{x:Type TextBox}">
+		<Setter Property="Background" Value="#00ffffff"/>
+		<Setter Property="Foreground" Value="#000000" />
+		<Style.Resources>
+			<Style TargetType="ScrollViewer" >
+				<Setter Property="BitmapEffect">
+					<Setter.Value>
+						<OuterGlowBitmapEffect GlowColor="#ffffff" Opacity="0.6" GlowSize="3"/>
+					</Setter.Value>
+				</Setter>
+			</Style>
+		</Style.Resources>
+	</Style>
+	<Style x:Key="WindowBorderStyle" BasedOn="{StaticResource BaseWindowBorderStyle}" TargetType="{x:Type Border}">
+		<Setter Property="Background" Value="#00000000"></Setter>
+	</Style>
+	<Style x:Key="WindowStyle" TargetType="{x:Type Window}" BasedOn="{StaticResource BaseWindowStyle}" >
+	</Style>
+	<Style x:Key="PendingLineStyle" BasedOn="{StaticResource BasePendingLineStyle}" TargetType="{x:Type Line}" >
+	</Style>
+	<Style x:Key="ItemTitleStyle" BasedOn="{StaticResource BaseItemTitleStyle}" TargetType="{x:Type TextBlock}" >
+		<Setter Property="Foreground" Value="#000000"></Setter>
+		<Setter Property="BitmapEffect">
+			<Setter.Value>
+				<OuterGlowBitmapEffect GlowColor="#ffffff" Opacity="0.6" GlowSize="3"/>
+			</Setter.Value>
+		</Setter>
+	</Style>
+	<Style x:Key="ItemSubTitleStyle" BasedOn="{StaticResource BaseItemSubTitleStyle}" TargetType="{x:Type TextBlock}" >
+		<Setter Property="Foreground" Value="#3d3d3d"></Setter>
+		<Setter Property="BitmapEffect">
+			<Setter.Value>
+				<OuterGlowBitmapEffect GlowColor="#ffffff" Opacity="0.6" GlowSize="3"/>
+			</Setter.Value>
+		</Setter>
+	</Style>
+	<Style x:Key="ItemTitleSelectedStyle" BasedOn="{StaticResource BaseItemTitleSelectedStyle}" TargetType="{x:Type TextBlock}">
+		<Setter Property="Foreground" Value="#000000" />
+	</Style>
+	<Style x:Key="ItemSubTitleSelectedStyle" BasedOn="{StaticResource BaseItemSubTitleSelectedStyle}" TargetType="{x:Type TextBlock}">
+		<Setter Property="Foreground" Value="#3d3d3d" />
+	</Style>
+	<Color x:Key="ItemSelectedBackgroundColor">#77ffffff</Color>
+	<Style x:Key="ThumbStyle" BasedOn="{StaticResource BaseThumbStyle}" TargetType="{x:Type Thumb}">
+	</Style>
+	<Style x:Key="ScrollBarStyle" BasedOn="{StaticResource BaseScrollBarStyle}" TargetType="{x:Type ScrollBar}">
+	</Style>
+</ResourceDictionary>
