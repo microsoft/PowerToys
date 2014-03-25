@@ -16,9 +16,13 @@ namespace Wox.PluginLoader
     {
         private static string debuggerMode = null;
         private static List<PluginPair> plugins = new List<PluginPair>();
+        private static ManualResetEvent initializing = null;
 
         public static void Init()
         {
+            if (initializing != null) return;
+
+            initializing = new ManualResetEvent(false);
             plugins.Clear();
             BasePluginLoader.ParsePluginsConfig();
 
@@ -28,6 +32,7 @@ namespace Wox.PluginLoader
             }
 
             plugins.AddRange(new CSharpPluginLoader().LoadPlugin());
+            Forker forker = new Forker();
             foreach (IPlugin plugin in plugins.Select(pluginPair => pluginPair.Plugin))
             {
                 IPlugin plugin1 = plugin;
@@ -35,7 +40,7 @@ namespace Wox.PluginLoader
                 if (pluginPair != null)
                 {
                     PluginMetadata metadata = pluginPair.Metadata;
-                    ThreadPool.QueueUserWorkItem(o => plugin1.Init(new PluginInitContext()
+                    forker.Fork(() => plugin1.Init(new PluginInitContext()
                     {
                         Plugins = plugins,
                         CurrentPluginMetadata = metadata,
@@ -58,11 +63,26 @@ namespace Wox.PluginLoader
                     }));
                 }
             }
+
+            ThreadPool.QueueUserWorkItem(o =>
+            {
+                forker.Join();
+                initializing.Set();
+                initializing = null;
+            });
         }
 
         public static List<PluginPair> AllPlugins
         {
-            get { return plugins; }
+            get
+            {
+                var init = initializing;
+                if (init != null)
+                {
+                    init.WaitOne();
+                }
+                return plugins;
+            }
         }
 
         public static bool HitThirdpartyKeyword(Query query)

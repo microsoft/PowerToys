@@ -10,16 +10,9 @@ namespace Wox.Commands
 {
     public class SystemCommand : BaseCommand
     {
-        private List<PluginPair> systemPlugins;
-
-        public SystemCommand()
-        {
-            systemPlugins = Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System).ToList();
-        }
-
         public override void Dispatch(Query query)
         {
-            foreach (PluginPair pair in systemPlugins)
+            foreach (PluginPair pair in Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System))
             {
                 PluginPair pair1 = pair;
                 ThreadPool.QueueUserWorkItem(state =>
