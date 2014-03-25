@@ -90,7 +90,7 @@ namespace Wox
 
             InitProgressbarAnimation();
             //only works for win7+
-            //DwmDropShadow.DropShadowToWindow(this);
+            DwmDropShadow.DropShadowToWindow(this);
 
             WindowIntelopHelper.DisableControlBox(this);
         }
