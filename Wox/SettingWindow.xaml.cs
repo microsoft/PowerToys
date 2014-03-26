@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using IWshRuntimeLibrary;
 using Microsoft.VisualBasic.ApplicationServices;
 using Wox.Infrastructure;
@@ -99,7 +100,7 @@ namespace Wox
                 new Result()
                 {
                     Title = "Search applications",
-                    SubTitle = "Search applications, files (via everything plugin) and chrome bookmarks",
+                    SubTitle = "Search applications, files (via everything plugin) and browser bookmarks",
                     IcoPath = "Images/work.png",
                     PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
                 },
@@ -122,6 +123,20 @@ namespace Wox
                     SubTitle = "get more themes from http://www.getwox.com/theme",
                     IcoPath = "Images/work.png",
                     PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
+                },
+                new Result()
+                {
+                    Title = "Plugins support",
+                    SubTitle = "get more plugins from http://www.getwox.com/plugin",
+                    IcoPath = "Images/work.png",
+                    PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
+                },
+                new Result()
+                {
+                    Title = "Wox is an open-source software",
+                    SubTitle = "Wox benefits from the open-source community a lot",
+                    IcoPath = "Images/work.png",
+                    PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
                 }
             });
 
@@ -142,6 +157,20 @@ namespace Wox
             cbEnablePythonPlugins.IsChecked = UserSettingStorage.Instance.EnablePythonPlugins;
             cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
 
+            var wallpaper = WallpaperPathRetrieval.GetWallpaperPath();
+            if (wallpaper != null && File.Exists(wallpaper))
+            {
+                var brush = new ImageBrush(new BitmapImage(new Uri(wallpaper)));
+                brush.Stretch = Stretch.UniformToFill;
+                this.PreviewPanel.Background = brush;
+            }
+            else
+            {
+                var wallpaperColor = WallpaperPathRetrieval.GetWallpaperColor();
+                this.PreviewPanel.Background = new SolidColorBrush(wallpaperColor);
+            }
+
+            //PreviewPanel
             settingsLoaded = true;
             App.Window.SetTheme(UserSettingStorage.Instance.Theme);
         }
@@ -366,11 +395,21 @@ namespace Wox
         {
             if (!settingsLoaded) return;
             FamilyTypeface typeface = (FamilyTypeface) cbQueryBoxFontFaces.SelectedItem;
-            UserSettingStorage.Instance.QueryBoxFontStretch = typeface.Stretch.ToString();
-            UserSettingStorage.Instance.QueryBoxFontWeight = typeface.Weight.ToString();
-            UserSettingStorage.Instance.QueryBoxFontStyle = typeface.Style.ToString();
-            UserSettingStorage.Instance.Save();
-            App.Window.SetTheme(UserSettingStorage.Instance.Theme);
+            if (typeface == null)
+            {
+                if (cbQueryBoxFontFaces.Items.Count > 0)
+                    cbQueryBoxFontFaces.SelectedIndex = 0;
+
+                return;
+            }
+            else
+            {
+                UserSettingStorage.Instance.QueryBoxFontStretch = typeface.Stretch.ToString();
+                UserSettingStorage.Instance.QueryBoxFontWeight = typeface.Weight.ToString();
+                UserSettingStorage.Instance.QueryBoxFontStyle = typeface.Style.ToString();
+                UserSettingStorage.Instance.Save();
+                App.Window.SetTheme(UserSettingStorage.Instance.Theme);
+            }
         }
 
         private void CbResultItemFont_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -388,11 +427,21 @@ namespace Wox
         {
             if (!settingsLoaded) return;
             FamilyTypeface typeface = (FamilyTypeface)cbResultItemFontFaces.SelectedItem;
-            UserSettingStorage.Instance.ResultItemFontStretch = typeface.Stretch.ToString();
-            UserSettingStorage.Instance.ResultItemFontWeight = typeface.Weight.ToString();
-            UserSettingStorage.Instance.ResultItemFontStyle = typeface.Style.ToString();
-            UserSettingStorage.Instance.Save();
-            App.Window.SetTheme(UserSettingStorage.Instance.Theme);
+            if (typeface == null)
+            {
+                if (cbResultItemFontFaces.Items.Count > 0)
+                    cbResultItemFontFaces.SelectedIndex = 0;
+
+                return;
+            }
+            else
+            {
+                UserSettingStorage.Instance.ResultItemFontStretch = typeface.Stretch.ToString();
+                UserSettingStorage.Instance.ResultItemFontWeight = typeface.Weight.ToString();
+                UserSettingStorage.Instance.ResultItemFontStyle = typeface.Style.ToString();
+                UserSettingStorage.Instance.Save();
+                App.Window.SetTheme(UserSettingStorage.Instance.Theme);
+            }
         }
         #endregion
     }

@@ -113,6 +113,7 @@
     <Compile Include="Helper\FontHelper.cs" />
     <Compile Include="Helper\Forker.cs" />
     <Compile Include="Helper\SyntaxSugars.cs" />
+    <Compile Include="Helper\WallpaperPathRetrieval.cs" />
     <Compile Include="Helper\WindowIntelopHelper.cs" />
     <Compile Include="ProgramSourceSetting.xaml.cs">
       <DependentUpon>ProgramSourceSetting.xaml</DependentUpon>

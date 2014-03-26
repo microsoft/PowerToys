@@ -6,7 +6,7 @@
         Title="Wox Setting"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
-        Height="407.447" Width="843.989">
+        Height="600" Width="800">
 
     <TabControl Height="auto" >
         <TabItem Header="Basic">
@@ -172,11 +172,8 @@
                     <ColumnDefinition Width="200"></ColumnDefinition>
                     <ColumnDefinition></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal" Margin="10" Grid.Column="0">
-                    <TextBlock Text="Theme:" />
-                    <ComboBox x:Name="themeComboBox" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120"/>
-                </StackPanel>
-                <Grid Margin="10" Grid.Column="1">
+                <ListBox x:Name="themeComboBox" Grid.Column="0" Margin="10" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="180"/>
+                <Grid Margin="0" Grid.Column="1">
                     <Grid.RowDefinitions>
                         <RowDefinition ></RowDefinition>
                         <RowDefinition Height="40"></RowDefinition>
@@ -186,21 +183,24 @@
                         <ColumnDefinition></ColumnDefinition>
                         <ColumnDefinition></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="0" Margin="10">
-                        <StackPanel.Resources>
-                            <ResourceDictionary Source="/PresentationFramework.Classic,Version=3.0.0.0,Culture=neutral,PublicKeyToken=31bf3856ad364e35,processorArchitecture=MSIL;component/themes/Classic.xaml"/>
-                        </StackPanel.Resources>
-                        <Border Width="500" Style="{DynamicResource WindowBorderStyle}">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="50" ></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                </Grid.RowDefinitions>
-                                <TextBox Text="Hello Wox" IsReadOnly="True" Style="{DynamicResource QueryBoxStyle}" Grid.Row="0"/>
-                                <wox:ResultPanel Grid.Row="1" x:Name="resultPanelPreview"/>
-                            </Grid>
-                        </Border>
+                    <StackPanel x:Name="PreviewPanel" Grid.ColumnSpan="2" Grid.Row="0" Margin="0">
+                        <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StackPanel.Resources>
+                                <ResourceDictionary Source="/PresentationFramework.Classic,Version=3.0.0.0,Culture=neutral,PublicKeyToken=31bf3856ad364e35,processorArchitecture=MSIL;component/themes/Classic.xaml"/>
+                            </StackPanel.Resources>
+                            <Border Width="500" Style="{DynamicResource WindowBorderStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="50" ></RowDefinition>
+                                        <RowDefinition></RowDefinition>
+                                    </Grid.RowDefinitions>
+                                    <TextBox Text="Hello Wox" IsReadOnly="True" Style="{DynamicResource QueryBoxStyle}" Grid.Row="0"/>
+                                    <wox:ResultPanel Grid.Row="1" x:Name="resultPanelPreview"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
                     </StackPanel>
+                    
                     <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  Margin="10">
                         <TextBlock Text="Query Box Font:" />
                         <ComboBox x:Name="cbQueryBoxFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbQueryBoxFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="180"/>
