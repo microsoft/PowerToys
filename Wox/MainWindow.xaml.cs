@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using WindowsInput;
@@ -96,6 +97,9 @@ namespace Wox
             //only works for win7+
             if (UserSettingStorage.Instance.OpacityMode == OpacityMode.DWM)
                 DwmDropShadow.DropShadowToWindow(this);
+
+            this.Background = Brushes.Transparent;
+            HwndSource.FromHwnd(new WindowInteropHelper(this).Handle).CompositionTarget.BackgroundColor = Color.FromArgb(0, 0, 0, 0);  
 
             WindowIntelopHelper.DisableControlBox(this);
         }

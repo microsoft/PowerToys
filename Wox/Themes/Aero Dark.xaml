@@ -16,7 +16,7 @@
 		</Style.Resources>
 	</Style>
 	<Style x:Key="WindowBorderStyle" BasedOn="{StaticResource BaseWindowBorderStyle}" TargetType="{x:Type Border}">
-		<Setter Property="Background" Value="#00000000"></Setter>
+		<Setter Property="Background" Value="#01ffffff"></Setter>
 	</Style>
 	<Style x:Key="WindowStyle" TargetType="{x:Type Window}" BasedOn="{StaticResource BaseWindowStyle}" >
 	</Style>

@@ -50,10 +50,8 @@ namespace Wox.Helper
             {
                 WindowInteropHelper helper = new WindowInteropHelper(window);
                 int val = 2;
-                int ret1 = DwmSetWindowAttribute(helper.Handle, 2, ref val, 4);
-                window.Background = Brushes.Transparent;
-                HwndSource.FromHwnd(helper.Handle).CompositionTarget.BackgroundColor = Color.FromArgb(0, 0, 0, 0);  
-                
+                int ret1 = DwmSetWindowAttribute(helper.Handle, 2, ref val, 4);  
+
                 if (ret1 == 0)
                 {
                     Margins m = new Margins { Bottom = 0, Left = 0, Right = 0, Top = 0 };
