@@ -115,6 +115,7 @@
     <Compile Include="Helper\SyntaxSugars.cs" />
     <Compile Include="Helper\WallpaperPathRetrieval.cs" />
     <Compile Include="Helper\WindowIntelopHelper.cs" />
+    <Compile Include="OpacityModeConverter.cs" />
     <Compile Include="ProgramSourceSetting.xaml.cs">
       <DependentUpon>ProgramSourceSetting.xaml</DependentUpon>
     </Compile>

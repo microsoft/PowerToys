@@ -51,6 +51,9 @@ namespace Wox
             InitializeComponent();
             initialized = true;
 
+            if (UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow)
+                this.AllowsTransparency = true;
+
             System.Net.WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
@@ -89,8 +92,10 @@ namespace Wox
             Plugins.Init();
 
             InitProgressbarAnimation();
+
             //only works for win7+
-            DwmDropShadow.DropShadowToWindow(this);
+            if (UserSettingStorage.Instance.OpacityMode == OpacityMode.DWM)
+                DwmDropShadow.DropShadowToWindow(this);
 
             WindowIntelopHelper.DisableControlBox(this);
         }
@@ -461,6 +466,11 @@ namespace Wox
 
             Application.Current.Resources.MergedDictionaries.Clear();
             Application.Current.Resources.MergedDictionaries.Add(dict);
+
+            if (this.AllowsTransparency)
+                this.Opacity = UserSettingStorage.Instance.Opacity;
+            else
+                this.Opacity = 1;
         }
 
         #region Public API

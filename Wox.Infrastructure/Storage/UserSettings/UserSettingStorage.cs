@@ -56,6 +56,12 @@ namespace Wox.Infrastructure.Storage.UserSettings
         [JsonProperty]
         public bool EnablePythonPlugins { get; set; }
 
+        [JsonProperty]
+        public double Opacity { get; set; }
+
+        [JsonProperty]
+        public OpacityMode OpacityMode { get; set; }
+
         public List<WebSearch> LoadDefaultWebSearches()
         {
             List<WebSearch> webSearches = new List<WebSearch>();
@@ -123,6 +129,16 @@ namespace Wox.Infrastructure.Storage.UserSettings
             Hotkey = "Alt + Space";
             QueryBoxFont = FontFamily.GenericSansSerif.Name;
             ResultItemFont = FontFamily.GenericSansSerif.Name;
+            Opacity = 1;
+            OpacityMode = OpacityMode.Normal;
         }
+
+    }
+
+    public enum OpacityMode
+    {
+        Normal = 0,
+        LayeredWindow = 1,
+        DWM = 2
     }
 }

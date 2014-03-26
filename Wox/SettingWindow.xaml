@@ -1,7 +1,8 @@
-﻿<Window x:Class="Wox.SettingWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wox="clr-namespace:Wox"
+        xmlns:UserSettings="clr-namespace:Wox.Infrastructure.Storage.UserSettings;assembly=Wox.Infrastructure" x:Class="Wox.SettingWindow"
         Icon="Images\app.png"
         Title="Wox Setting"
         ResizeMode="NoResize"
@@ -24,48 +25,46 @@
         <TabItem Header="Hotkey">
             <Grid Margin="10">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="30"></RowDefinition>
-                    <RowDefinition></RowDefinition>
-                    <RowDefinition Height="50"></RowDefinition>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="50"/>
                 </Grid.RowDefinitions>
                 <StackPanel  Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock VerticalAlignment="Center" Margin="0 0 10 0">Wox Hotkey:</TextBlock>
+                    <TextBlock VerticalAlignment="Center" Margin="0 0 10 0"><Run Text="Wox Hotkey:"/></TextBlock>
                     <wox:HotkeyControl x:Name="ctlHotkey"/>
                 </StackPanel>
                 <Grid  Grid.Row="1">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20"></RowDefinition>
-                        <RowDefinition></RowDefinition>
+                        <RowDefinition Height="20"/>
+                        <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <TextBlock VerticalAlignment="Center" Grid.Row="0" Margin="0 0 10 0">Custom Plugin Hotkey:</TextBlock>
+                    <TextBlock VerticalAlignment="Center" Grid.Row="0" Margin="0 0 10 0"><Run Text="Custom Plugin Hotkey:"/></TextBlock>
                     <ListView x:Name="lvCustomHotkey" Margin="0 5 0 0" Grid.Row="1">
                         <ListView.View>
                             <GridView>
-                                <GridView.Columns>
-                                    <GridViewColumn Header="Hotkey"  Width="180">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Path= Hotkey}"></TextBlock>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                    <GridViewColumn Header="Action Keyword" Width="500">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Path= ActionKeyword}"></TextBlock>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                </GridView.Columns>
+                                <GridViewColumn Header="Hotkey"  Width="180">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Hotkey}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Action Keyword" Width="500">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding ActionKeyword}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
                             </GridView>
                         </ListView.View>
                     </ListView>
 
                 </Grid>
                 <StackPanel Grid.Row="2" HorizontalAlignment="Right" Orientation="Horizontal">
-                    <Button x:Name="btnDeleteCustomHotkey" Click="BtnDeleteCustomHotkey_OnClick" Width="100" Margin="10">Delete</Button>
-                    <Button x:Name="btnEditCustomHotkey" Click="BtnEditCustomHotkey_OnClick" Width="100" Margin="10">Edit</Button>
-                    <Button x:Name="btnAddCustomeHotkey" Click="BtnAddCustomeHotkey_OnClick" Width="100" Margin="10">Add</Button>
+                    <Button x:Name="btnDeleteCustomHotkey" Click="BtnDeleteCustomHotkey_OnClick" Width="100" Margin="10" Content="Delete"/>
+                    <Button x:Name="btnEditCustomHotkey" Click="BtnEditCustomHotkey_OnClick" Width="100" Margin="10" Content="Edit"/>
+                    <Button x:Name="btnAddCustomeHotkey" Click="BtnAddCustomeHotkey_OnClick" Width="100" Margin="10" Content="Add"/>
                 </StackPanel>
             </Grid>
         </TabItem>
@@ -73,49 +72,47 @@
         <TabItem Header="Programs">
             <Grid Margin="10">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"></RowDefinition>
-                    <RowDefinition Height="50"></RowDefinition>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="50"/>
                 </Grid.RowDefinitions>
                 <ListView x:Name="programSourceView" Grid.Row="0">
                     <ListView.View>
                         <GridView>
-                            <GridView.Columns>
-                                <GridViewColumn Header="Location"  Width="400">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Path=Location, Converter={wox:StringEmptyConverter}, ConverterParameter='(null)'}"></TextBlock>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Type" Width="150">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Path=Type}"></TextBlock>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Bonus Points" Width="100">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Path=BonusPoints}"></TextBlock>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Enabled" Width="100">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Path=Enabled}"></TextBlock>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView.Columns>
+                            <GridViewColumn Header="Location"  Width="400">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Location, ConverterParameter=(null), Converter={wox:StringEmptyConverter}}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Type" Width="150">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Type}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Bonus Points" Width="100">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding BonusPoints}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Enabled" Width="100">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Enabled}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
                         </GridView>
                     </ListView.View>
                 </ListView>
                 <StackPanel Grid.Row="1" HorizontalAlignment="Right" Orientation="Horizontal">
-                    <Button x:Name="btnDeleteProgramSource" Click="btnDeleteProgramSource_OnClick" Width="100" Margin="10">Delete</Button>
-                    <Button x:Name="btnEditProgramSource" Click="btnEditProgramSource_OnClick" Width="100" Margin="10">Edit</Button>
-                    <Button x:Name="btnAddProgramSource" Click="btnAddProgramSource_OnClick" Width="100" Margin="10">Add</Button>
+                    <Button x:Name="btnDeleteProgramSource" Click="btnDeleteProgramSource_OnClick" Width="100" Margin="10" Content="Delete"/>
+                    <Button x:Name="btnEditProgramSource" Click="btnEditProgramSource_OnClick" Width="100" Margin="10" Content="Edit"/>
+                    <Button x:Name="btnAddProgramSource" Click="btnAddProgramSource_OnClick" Width="100" Margin="10" Content="Add"/>
                 </StackPanel>
                 <TextBlock Grid.Row="1" Margin="10" HorizontalAlignment="Left" Text="* Restarting required" VerticalAlignment="Center" />
             </Grid>
@@ -123,35 +120,33 @@
         <TabItem Header="Web Search">
             <Grid Margin="10">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"></RowDefinition>
-                    <RowDefinition Height="50"></RowDefinition>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="50"/>
                 </Grid.RowDefinitions>
                 <ListView x:Name="webSearchView" Grid.Row="0">
                     <ListView.View>
                         <GridView>
-                            <GridView.Columns>
-                                <GridViewColumn Header="ActionWord"  Width="180">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Path=ActionWord}"></TextBlock>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Url" Width="500">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Path=Url}"></TextBlock>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView.Columns>
+                            <GridViewColumn Header="ActionWord"  Width="180">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding ActionWord}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Url" Width="500">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Url}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
                         </GridView>
                     </ListView.View>
                 </ListView>
                 <StackPanel Grid.Row="1" HorizontalAlignment="Right" Orientation="Horizontal">
-                    <Button x:Name="btnDeleteWebSearch" Click="btnDeleteWebSearch_OnClick" Width="100" Margin="10">Delete</Button>
-                    <Button x:Name="btnEditWebSearch" Click="btnEditWebSearch_OnClick" Width="100" Margin="10">Edit</Button>
-                    <Button x:Name="btnAddWebSearch" Click="btnAddWebSearch_OnClick" Width="100" Margin="10">Add</Button>
+                    <Button x:Name="btnDeleteWebSearch" Click="btnDeleteWebSearch_OnClick" Width="100" Margin="10" Content="Delete"/>
+                    <Button x:Name="btnEditWebSearch" Click="btnEditWebSearch_OnClick" Width="100" Margin="10" Content="Edit"/>
+                    <Button x:Name="btnAddWebSearch" Click="btnAddWebSearch_OnClick" Width="100" Margin="10" Content="Add"/>
                 </StackPanel>
             </Grid>
         </TabItem>
@@ -162,37 +157,36 @@
                     <TextBlock Text="Enable Python Plugins" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="10">
-                    <Button x:Name="btnEnableInstaller" Click="BtnEnableInstaller_OnClick">enable plugin installer</Button>
+                    <Button x:Name="btnEnableInstaller" Click="BtnEnableInstaller_OnClick" Content="enable plugin installer"/>
                 </StackPanel>
             </StackPanel>
         </TabItem>
         <TabItem Header="Theme">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200"></ColumnDefinition>
-                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <ListBox x:Name="themeComboBox" Grid.Column="0" Margin="10" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="180"/>
                 <Grid Margin="0" Grid.Column="1">
                     <Grid.RowDefinitions>
-                        <RowDefinition ></RowDefinition>
-                        <RowDefinition Height="40"></RowDefinition>
-                        <RowDefinition Height="40"></RowDefinition>
+                        <RowDefinition />
+                        <RowDefinition Height="80"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition></ColumnDefinition>
-                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="170" />
                     </Grid.ColumnDefinitions>
                     <StackPanel x:Name="PreviewPanel" Grid.ColumnSpan="2" Grid.Row="0" Margin="0">
-                        <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <StackPanel x:Name="PreviewMainPanel" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <StackPanel.Resources>
                                 <ResourceDictionary Source="/PresentationFramework.Classic,Version=3.0.0.0,Culture=neutral,PublicKeyToken=31bf3856ad364e35,processorArchitecture=MSIL;component/themes/Classic.xaml"/>
                             </StackPanel.Resources>
                             <Border Width="500" Style="{DynamicResource WindowBorderStyle}">
                                 <Grid>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="50" ></RowDefinition>
-                                        <RowDefinition></RowDefinition>
+                                        <RowDefinition Height="50" />
+                                        <RowDefinition/>
                                     </Grid.RowDefinitions>
                                     <TextBox Text="Hello Wox" IsReadOnly="True" Style="{DynamicResource QueryBoxStyle}" Grid.Row="0"/>
                                     <wox:ResultPanel Grid.Row="1" x:Name="resultPanelPreview"/>
@@ -200,44 +194,63 @@
                             </Border>
                         </StackPanel>
                     </StackPanel>
-                    
-                    <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  Margin="10">
-                        <TextBlock Text="Query Box Font:" />
-                        <ComboBox x:Name="cbQueryBoxFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbQueryBoxFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="180"/>
-                        <ComboBox
-                          x:Name="cbQueryBoxFontFaces"
-                          ItemsSource="{Binding ElementName=cbQueryBoxFont,Path=SelectedValue.FamilyTypefaces}" SelectionChanged="CbQueryBoxFontFaces_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <ItemsControl ItemsSource="{Binding AdjustedFaceNames}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Value}" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
+
+                    <StackPanel Grid.Row="1" Grid.Column="0"  Margin="10" Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal" Margin="2">
+                            <TextBlock Text="Query Box Font:" />
+                            <ComboBox x:Name="cbQueryBoxFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbQueryBoxFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
+                            <ComboBox
+								x:Name="cbQueryBoxFontFaces"
+								ItemsSource="{Binding SelectedValue.FamilyTypefaces, ElementName=cbQueryBoxFont}" SelectionChanged="CbQueryBoxFontFaces_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <ItemsControl ItemsSource="{Binding AdjustedFaceNames}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Value}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="2">
+                            <TextBlock Text="Result Item Font:" />
+                            <ComboBox x:Name="cbResultItemFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbResultItemFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
+                            <ComboBox
+								x:Name="cbResultItemFontFaces"
+								ItemsSource="{Binding SelectedValue.FamilyTypefaces, ElementName=cbResultItemFont}" SelectionChanged="CbResultItemFontFaces_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <ItemsControl ItemsSource="{Binding AdjustedFaceNames}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Value}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="10">
-                        <TextBlock Text="Result Item Font:" />
-                        <ComboBox x:Name="cbResultItemFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbResultItemFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="180"/>
-                        <ComboBox
-                          x:Name="cbResultItemFontFaces"
-                          ItemsSource="{Binding ElementName=cbResultItemFont,Path=SelectedValue.FamilyTypefaces}" SelectionChanged="CbResultItemFontFaces_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
+                    <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1" Margin="10">
+                        <TextBlock Text="Window Mode:" />
+                        <ComboBox Name="CbOpacityMode" SelectionChanged="CbOpacityMode_OnSelectionChanged">
+                            <UserSettings:OpacityMode>Normal</UserSettings:OpacityMode>
+                            <UserSettings:OpacityMode>LayeredWindow</UserSettings:OpacityMode>
+                            <UserSettings:OpacityMode>DWM</UserSettings:OpacityMode>
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <ItemsControl ItemsSource="{Binding AdjustedFaceNames}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Value}" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                                    <TextBlock Text="{Binding Converter={wox:OpacityModeConverter}}" />
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Opacity:" />
+                            <Slider x:Name="slOpacity" Maximum="1" Minimum="0" SmallChange="1" LargeChange="0.1" TickPlacement="BottomRight" TickFrequency="0.1" ValueChanged="slOpacity_ValueChanged" Width="100"/>
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
             </Grid>

@@ -157,6 +157,9 @@ namespace Wox
             cbEnablePythonPlugins.IsChecked = UserSettingStorage.Instance.EnablePythonPlugins;
             cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
 
+            slOpacity.Value = UserSettingStorage.Instance.Opacity;
+            CbOpacityMode.SelectedItem = UserSettingStorage.Instance.OpacityMode;
+
             var wallpaper = WallpaperPathRetrieval.GetWallpaperPath();
             if (wallpaper != null && File.Exists(wallpaper))
             {
@@ -443,6 +446,32 @@ namespace Wox
                 App.Window.SetTheme(UserSettingStorage.Instance.Theme);
             }
         }
+
+        private void slOpacity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            UserSettingStorage.Instance.Opacity = slOpacity.Value;
+            UserSettingStorage.Instance.Save();
+
+            if (UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow)
+                PreviewMainPanel.Opacity = UserSettingStorage.Instance.Opacity;
+            else
+                PreviewMainPanel.Opacity = 1;
+
+            App.Window.SetTheme(UserSettingStorage.Instance.Theme);
+        }
         #endregion
+
+        private void CbOpacityMode_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UserSettingStorage.Instance.OpacityMode = (OpacityMode) CbOpacityMode.SelectedItem;
+            UserSettingStorage.Instance.Save();
+
+            slOpacity.IsEnabled = UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow;
+
+            if (UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow)
+                PreviewMainPanel.Opacity = UserSettingStorage.Instance.Opacity;
+            else
+                PreviewMainPanel.Opacity = 1;
+        }
     }
 }
