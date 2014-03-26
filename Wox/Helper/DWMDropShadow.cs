@@ -56,7 +56,7 @@ namespace Wox.Helper
                 
                 if (ret1 == 0)
                 {
-                    Margins m = new Margins { Bottom = 0, Left = 0, Right = 1, Top = 1 };
+                    Margins m = new Margins { Bottom = 0, Left = 0, Right = 0, Top = 0 };
                     int ret2 = DwmExtendFrameIntoClientArea(helper.Handle, ref m);
                     return ret2 == 0;
                 }
