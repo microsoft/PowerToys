@@ -31,8 +31,7 @@ namespace Wox.Plugin.System.CMD
 
                 results.AddRange(history);
             }
-
-            if (query.RawQuery.StartsWith(">") && query.RawQuery.Length > 1)
+            else
             {
                 string cmd = query.RawQuery.Substring(1);
                 Result result = new Result
@@ -57,7 +56,7 @@ namespace Wox.Plugin.System.CMD
                 }
                 catch (Exception) { }
 
-                results.Add(result);
+                context.PushResults(new List<Result>() { result });
 
                 IEnumerable<Result> history = CMDStorage.Instance.CMDHistory.Where(o => o.Key.Contains(cmd))
                     .OrderByDescending(o => o.Value)
@@ -92,7 +91,8 @@ namespace Wox.Plugin.System.CMD
                         return ret;
                     }).Where(o => o != null).Take(4);
 
-                results.AddRange(history);
+                context.PushResults(history.ToList());
+
                 try
                 {
                     string basedir = null;

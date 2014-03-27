@@ -40,7 +40,7 @@ namespace Wox.PluginLoader
                 if (pluginPair != null)
                 {
                     PluginMetadata metadata = pluginPair.Metadata;
-                    forker.Fork(() => plugin1.Init(new PluginInitContext()
+                    pluginPair.InitContext = new PluginInitContext()
                     {
                         Plugins = plugins,
                         CurrentPluginMetadata = metadata,
@@ -60,7 +60,8 @@ namespace Wox.PluginLoader
                         StartLoadingBar = () => App.Window.Dispatcher.Invoke(new Action(() => App.Window.StartLoadingBar())),
                         StopLoadingBar = () => App.Window.Dispatcher.Invoke(new Action(() => App.Window.StopLoadingBar())),
                         ShellRun = (cmd) => (bool) App.Window.Dispatcher.Invoke(new Func<bool>(() => App.Window.ShellRun(cmd))),
-                    }));
+                    };
+                    forker.Fork(() => plugin1.Init(pluginPair.InitContext));
                 }
             }
 

@@ -31,5 +31,7 @@ namespace Wox.Plugin
         public Action StopLoadingBar { get; set; }
 
         public Func<string, bool> ShellRun { get; set; }
+
+        public Action<List<Result>> PushResults { get; set; }
     }
 }

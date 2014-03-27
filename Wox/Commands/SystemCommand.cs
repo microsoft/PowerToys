@@ -17,14 +17,20 @@ namespace Wox.Commands
                 PluginPair pair1 = pair;
                 ThreadPool.QueueUserWorkItem(state =>
                 {
-                    List<Result> results = pair1.Plugin.Query(query);
-                    foreach (Result result in results)
+                    pair1.InitContext.PushResults = r =>
                     {
-                        result.PluginDirectory = pair1.Metadata.PluginDirecotry;
-                        result.OriginQuery = query;
-                        result.AutoAjustScore = true;
-                    }
-                    if(results.Count > 0) UpdateResultView(results);
+                        if (r == null || r.Count == 0) return;
+                        foreach (Result result in r)
+                        {
+                            result.PluginDirectory = pair1.Metadata.PluginDirecotry;
+                            result.OriginQuery = query;
+                            result.AutoAjustScore = true;
+                        }
+                        UpdateResultView(r);
+                    };
+
+                    List<Result> results = pair1.Plugin.Query(query);
+                    pair1.InitContext.PushResults(results);
                 });
             }
         }
