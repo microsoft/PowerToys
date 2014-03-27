@@ -46,6 +46,7 @@ namespace Wox
         private bool WinRStroked;
         private NotifyIcon notifyIcon;
         private bool queryHasReturn;
+        private string lastQuery;
         private ToolTip toolTip = new ToolTip();
         public MainWindow()
         {
@@ -182,6 +183,7 @@ namespace Wox
         {
             if (ignoreTextChange) { ignoreTextChange = false; return; }
 
+            lastQuery = tbQuery.Text;
             toolTip.IsOpen = false;
             resultCtrl.Dirty = true;
             Dispatcher.DelayInvoke("UpdateSearch",
@@ -195,18 +197,18 @@ namespace Wox
                         // didn't.
                         if (resultCtrl.Dirty) resultCtrl.Clear();
                     }, TimeSpan.FromMilliseconds(100), null);
-                    var q = new Query(tbQuery.Text);
+                    var q = new Query(lastQuery);
                     CommandFactory.DispatchCommand(q);
                     queryHasReturn = false;
                     if (Plugins.HitThirdpartyKeyword(q))
                     {
                         Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
                         {
-                            if (!queryHasReturn && originQuery == tbQuery.Text)
+                            if (!queryHasReturn && originQuery == lastQuery)
                             {
                                 StartProgress();
                             }
-                        }, TimeSpan.FromSeconds(0), tbQuery.Text);
+                        }, TimeSpan.FromSeconds(0), lastQuery);
                     }
                 }, TimeSpan.FromMilliseconds((isCMDMode = tbQuery.Text.StartsWith(">")) ? 0 : 150));
         }
@@ -371,7 +373,7 @@ namespace Wox
 
         private void AcceptSelect(Result result)
         {
-            if (result != null)
+            if (!resultCtrl.Dirty && result != null)
             {
                 if (result.Action != null)
                 {
@@ -409,7 +411,7 @@ namespace Wox
                 }
                 Dispatcher.DelayInvoke("ShowResult", k => resultCtrl.Dispatcher.Invoke(new Action(() =>
                 {
-                    List<Result> l = waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == tbQuery.Text).ToList();
+                    List<Result> l = waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
                     waitShowResultList.Clear();
                     resultCtrl.AddResults(l);
                 })), TimeSpan.FromMilliseconds(isCMDMode ? 0 : 50));
