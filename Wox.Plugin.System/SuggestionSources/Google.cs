@@ -16,26 +16,32 @@ namespace Wox.Plugin.System.SuggestionSources
     {
         public override List<string> GetSuggestions(string query)
         {
-            var response =
-                HttpRequest.CreateGetHttpResponse("https://www.google.com/complete/search?output=chrome&q=" + Uri.EscapeUriString(query), null,
-                    null, null);
-            var stream = response.GetResponseStream();
-
-            if (stream != null)
+            try
             {
-                var body = new StreamReader(stream).ReadToEnd();
-                var json = JsonConvert.DeserializeObject(body) as JContainer;
-                if (json != null)
+                var response =
+                    HttpRequest.CreateGetHttpResponse(
+                        "https://www.google.com/complete/search?output=chrome&q=" + Uri.EscapeUriString(query), null,
+                        null, null);
+                var stream = response.GetResponseStream();
+
+                if (stream != null)
                 {
-                    var results = json[1] as JContainer;
-                    if (results != null)
+                    var body = new StreamReader(stream).ReadToEnd();
+                    var json = JsonConvert.DeserializeObject(body) as JContainer;
+                    if (json != null)
                     {
-                        var j = results.OfType<JValue>().Select(o => o.Value);
-                        return results.OfType<JValue>().Select(o => o.Value).OfType<string>().ToList();
+                        var results = json[1] as JContainer;
+                        if (results != null)
+                        {
+                            var j = results.OfType<JValue>().Select(o => o.Value);
+                            return results.OfType<JValue>().Select(o => o.Value).OfType<string>().ToList();
+                        }
                     }
                 }
             }
-
+            catch
+            { }
+            
             return null;
         }
     }
