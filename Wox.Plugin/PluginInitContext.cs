@@ -32,6 +32,6 @@ namespace Wox.Plugin
 
         public Func<string, bool> ShellRun { get; set; }
 
-        public Action<List<Result>> PushResults { get; set; }
+        public Action<Query, List<Result>> PushResults { get; set; }
     }
 }

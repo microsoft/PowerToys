@@ -27,17 +27,17 @@ namespace Wox.Commands
                 {
                     try
                     {
-                        thirdPlugin.InitContext.PushResults = r =>
+                        thirdPlugin.InitContext.PushResults = (qu, r) =>
                         {
                             r.ForEach(o =>
                             {
                                 o.PluginDirectory = thirdPlugin.Metadata.PluginDirecotry;
-                                o.OriginQuery = q;
+                                o.OriginQuery = qu;
                             });
                             UpdateResultView(r);
                         };
                         List<Result> results = thirdPlugin.Plugin.Query(q) ?? new List<Result>();
-                        thirdPlugin.InitContext.PushResults(results);
+                        thirdPlugin.InitContext.PushResults(q, results);
                     }
                     catch (Exception queryException)
                     {

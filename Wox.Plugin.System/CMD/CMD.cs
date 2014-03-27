@@ -57,7 +57,7 @@ namespace Wox.Plugin.System.CMD
                 }
                 catch (Exception) { }
 
-                context.PushResults(new List<Result>() { result });
+                context.PushResults(query, new List<Result>() { result });
 
                 IEnumerable<Result> history = CMDStorage.Instance.CMDHistory.Where(o => o.Key.Contains(cmd))
                     .OrderByDescending(o => o.Value)
@@ -92,7 +92,7 @@ namespace Wox.Plugin.System.CMD
                         return ret;
                     }).Where(o => o != null).Take(4);
 
-                context.PushResults(history.ToList());
+                context.PushResults(query, history.ToList());
 
                 try
                 {

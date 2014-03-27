@@ -70,6 +70,8 @@
     <Compile Include="Setting.cs" />
     <Compile Include="Sys.cs" />
     <Compile Include="ThirdpartyPluginIndicator.cs" />
+    <Compile Include="SuggestionSources\Google.cs" />
+    <Compile Include="SuggestionSources\ISuggestionSource.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj">

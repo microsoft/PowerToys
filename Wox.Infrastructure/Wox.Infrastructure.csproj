@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChineseToPinYin.cs" />
+    <Compile Include="HttpRequest.cs" />
     <Compile Include="Storage\BaseStorage.cs" />
     <Compile Include="FuzzyMatcher.cs" />
     <Compile Include="GlobalHotkey.cs" />
