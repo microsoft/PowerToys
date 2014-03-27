@@ -54,7 +54,6 @@
     <Compile Include="FuzzyMatcher.cs" />
     <Compile Include="GlobalHotkey.cs" />
     <Compile Include="HotkeyModel.cs" />
-    <Compile Include="IniParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Storage\UserSelectedRecordStorage.cs" />
     <Compile Include="Storage\UserSettings\UserSettingStorage.cs" />
