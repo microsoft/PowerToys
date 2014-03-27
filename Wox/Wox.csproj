@@ -110,6 +110,10 @@
     <Compile Include="Commands\PluginCommand.cs" />
     <Compile Include="Commands\SystemCommand.cs" />
     <Compile Include="Helper\DataWebRequestFactory.cs" />
+    <Compile Include="Helper\ErrorReporting\ErrorReporting.cs" />
+    <Compile Include="Helper\ErrorReporting\WPFErrorReportingDialog.xaml.cs">
+      <DependentUpon>WPFErrorReportingDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Helper\FontHelper.cs" />
     <Compile Include="Helper\Forker.cs" />
     <Compile Include="Helper\SyntaxSugars.cs" />
@@ -152,6 +156,10 @@
     <Compile Include="WebSearchSetting.xaml.cs">
       <DependentUpon>WebSearchSetting.xaml</DependentUpon>
     </Compile>
+    <Page Include="Helper\ErrorReporting\WPFErrorReportingDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ProgramSourceSetting.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

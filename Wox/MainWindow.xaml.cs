@@ -56,7 +56,6 @@ namespace Wox
                 this.AllowsTransparency = true;
 
             System.Net.WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
             progressBar.ToolTip = toolTip;
             InitialTray();
@@ -102,24 +101,6 @@ namespace Wox
             HwndSource.FromHwnd(new WindowInteropHelper(this).Handle).CompositionTarget.BackgroundColor = Color.FromArgb(0, 0, 0, 0);  
 
             WindowIntelopHelper.DisableControlBox(this);
-        }
-
-        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            if (!System.Diagnostics.Debugger.IsAttached)
-            {
-                string error = "Wox has an error that can't be handled. " + e.ExceptionObject;
-                if (e.IsTerminating)
-                {
-                    notifyIcon.Visible = false;
-                    MessageBox.Show(error);
-                    Log.Fatal(error);
-                }
-                else
-                {
-                    Log.Error(error);
-                }
-            }
         }
 
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)

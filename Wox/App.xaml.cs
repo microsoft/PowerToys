@@ -2,12 +2,21 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Windows;
+using System.Windows.Forms;
+using System.Windows.Threading;
 using Microsoft.VisualBasic.ApplicationServices;
+using Wox;
 using Wox.Commands;
 using Wox.Helper;
+using Wox.Helper.ErrorReporting;
+using Application = System.Windows.Application;
+using MessageBox = System.Windows.MessageBox;
+using MessageBoxOptions = System.Windows.Forms.MessageBoxOptions;
 using StartupEventArgs = System.Windows.StartupEventArgs;
+using UnhandledExceptionEventArgs = System.UnhandledExceptionEventArgs;
 
 namespace Wox
 {
@@ -16,6 +25,16 @@ namespace Wox
         [STAThread]
         public static void Main(string[] args)
         {
+            AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
+            System.Windows.Forms.Application.ThreadException += ErrorReporting.ThreadException;
+            
+            // don't combine Main and Entry since Microsoft.VisualBasic may be unable to load
+            // seperating them into two methods can make error reporting have the chance to catch exception
+            Entry(args);
+        }
+
+        
+        private static void Entry(string[] args){
             SingleInstanceManager manager = new SingleInstanceManager();
             manager.Run(args);
         }
@@ -66,6 +85,8 @@ namespace Wox
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            this.DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
+
             base.OnStartup(e);
 
             //for install plugin command when wox didn't start up
