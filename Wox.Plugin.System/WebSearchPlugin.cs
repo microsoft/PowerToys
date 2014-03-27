@@ -77,6 +77,9 @@ namespace Wox.Plugin.System
         protected override void InitInternal(PluginInitContext context)
         {
             this.context = context;
+
+            if (UserSettingStorage.Instance.WebSearches == null)
+                UserSettingStorage.Instance.WebSearches = UserSettingStorage.Instance.LoadDefaultWebSearches();
         }
     }
 }

@@ -64,6 +64,7 @@ namespace Wox.Infrastructure.Storage
             {
                 LoadDefaultConfig();
             }
+
         }
 
         public void Save()
