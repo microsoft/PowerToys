@@ -14,6 +14,7 @@ namespace Wox.Plugin.System.CMD
         protected override List<Result> QueryInternal(Query query)
         {
             List<Result> results = new List<Result>();
+            List<Result> pushedResults = new List<Result>();
             if (query.RawQuery == ">")
             {
                 IEnumerable<Result> history = CMDStorage.Instance.CMDHistory.OrderByDescending(o => o.Value)
@@ -58,6 +59,7 @@ namespace Wox.Plugin.System.CMD
                 catch (Exception) { }
 
                 context.PushResults(query, new List<Result>() { result });
+                pushedResults.Add(result);
 
                 IEnumerable<Result> history = CMDStorage.Instance.CMDHistory.Where(o => o.Key.Contains(cmd))
                     .OrderByDescending(o => o.Value)
@@ -93,6 +95,7 @@ namespace Wox.Plugin.System.CMD
                     }).Where(o => o != null).Take(4);
 
                 context.PushResults(query, history.ToList());
+                pushedResults.AddRange(history);
 
                 try
                 {
@@ -113,7 +116,7 @@ namespace Wox.Plugin.System.CMD
 
                     if (basedir != null)
                     {
-                        List<string> autocomplete = Directory.GetFileSystemEntries(basedir).Select(o => dir + Path.GetFileName(o)).Where(o => o.StartsWith(cmd, StringComparison.OrdinalIgnoreCase) && !results.Any(p => o.Equals(p.Title, StringComparison.OrdinalIgnoreCase))).ToList();
+                        List<string> autocomplete = Directory.GetFileSystemEntries(basedir).Select(o => dir + Path.GetFileName(o)).Where(o => o.StartsWith(cmd, StringComparison.OrdinalIgnoreCase) && !results.Any(p => o.Equals(p.Title, StringComparison.OrdinalIgnoreCase)) && !pushedResults.Any(p => o.Equals(p.Title, StringComparison.OrdinalIgnoreCase))).ToList();
                         autocomplete.Sort();
                         results.AddRange(autocomplete.ConvertAll(m => new Result()
                         {
