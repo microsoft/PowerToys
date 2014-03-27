@@ -31,7 +31,8 @@ namespace Wox.Plugin.System.CMD
 
                 results.AddRange(history);
             }
-            else
+            
+            if (query.RawQuery.StartsWith(">") && query.RawQuery.Length > 1)
             {
                 string cmd = query.RawQuery.Substring(1);
                 Result result = new Result
