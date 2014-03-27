@@ -33,7 +33,6 @@ namespace Wox.Plugin.System.SuggestionSources
                         var results = json[1] as JContainer;
                         if (results != null)
                         {
-                            var j = results.OfType<JValue>().Select(o => o.Value);
                             return results.OfType<JValue>().Select(o => o.Value).OfType<string>().ToList();
                         }
                     }
