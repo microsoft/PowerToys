@@ -386,7 +386,6 @@ namespace Wox
                         HideWox();
                     }
                     UserSelectedRecordStorage.Instance.Add(result);
-                    UserSelectedRecordStorage.Instance.Add(result);
                 }
             }
         }
