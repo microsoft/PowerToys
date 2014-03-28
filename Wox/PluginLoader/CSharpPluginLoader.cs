@@ -37,6 +37,13 @@ namespace Wox.PluginLoader
                             Plugin = Activator.CreateInstance(type) as IPlugin,
                             Metadata = metadata
                         };
+
+                        var sys = pair.Plugin as BaseSystemPlugin;
+                        if (sys != null)
+                        {
+                            sys.PluginDirectory = metadata.PluginDirecotry;
+                        }
+
                         plugins.Add(pair);
                     }
                 }

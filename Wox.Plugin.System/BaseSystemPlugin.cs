@@ -21,7 +21,7 @@ namespace Wox.Plugin.System
             InitInternal(context);
         }
 
-        public string Name
+        public virtual string Name
         {
             get
             {
@@ -29,12 +29,22 @@ namespace Wox.Plugin.System
             }
         }
 
-        public string Description
+        public virtual string Description
         {
             get
             {
                 return "System workflow";
             }
         }
+
+        public virtual string IcoPath
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        public string PluginDirectory { get; set; }
     }
 }

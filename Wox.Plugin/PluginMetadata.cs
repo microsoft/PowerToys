@@ -35,5 +35,7 @@ namespace Wox.Plugin
         public string PluginDirecotry { get; set; }
         public string ActionKeyword { get; set; }
         public PluginType PluginType { get; set; }
+
+        public string IcoPath { get; set; }
     }
 }

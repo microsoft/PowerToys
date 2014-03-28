@@ -121,6 +121,21 @@ namespace Wox.Plugin.System
             Regex reg = new Regex(@"(?i)\\[uU]([0-9a-f]{4})");
             return reg.Replace(dataStr, m => ((char)Convert.ToInt32(m.Groups[1].Value, 16)).ToString());
         }
+
+        public override string Name
+        {
+            get { return "Bookmarks"; }
+        }
+
+        public override string IcoPath
+        {
+            get { return @"Images\bookmark.png"; }
+        }
+
+        public override string Description
+        {
+            get { return base.Description; }
+        }
     }
 
     public class Bookmark : IEquatable<Bookmark>, IEqualityComparer<Bookmark>

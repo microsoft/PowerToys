@@ -3,12 +3,21 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wox="clr-namespace:Wox"
         xmlns:UserSettings="clr-namespace:Wox.Infrastructure.Storage.UserSettings;assembly=Wox.Infrastructure" x:Class="Wox.SettingWindow"
+        xmlns:woxPlugin="clr-namespace:Wox.Plugin;assembly=Wox.Plugin"
+        xmlns:system="clr-namespace:Wox.Plugin.System;assembly=Wox.Plugin.System"
         Icon="Images\app.png"
         Title="Wox Setting"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Height="600" Width="800">
-
+    <Window.Resources>
+        <wox:ImagePathConverter x:Key="ImagePathConverter"/>
+        <ListBoxItem HorizontalContentAlignment="Stretch"
+                    IsEnabled="False"
+                    IsHitTestVisible="False" x:Key="FeatureBoxSeperator">
+            <Separator Width="{Binding ElementName=featureBox, Path=ActualWidth}"/>
+        </ListBoxItem>
+    </Window.Resources>
     <TabControl Height="auto" >
         <TabItem Header="Basic">
             <StackPanel Orientation="Vertical" Margin="10">
@@ -251,6 +260,84 @@
                             <TextBlock Text="Opacity:" />
                             <Slider x:Name="slOpacity" Maximum="1" Minimum="0" SmallChange="1" LargeChange="0.1" TickPlacement="BottomRight" TickFrequency="0.1" ValueChanged="slOpacity_ValueChanged" Width="100"/>
                         </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </TabItem>
+
+        <TabItem Header="Features">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <ListBox x:Name="featureBox" Grid.Column="0" Margin="0" SelectionChanged="featureBox_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" >
+                    <ListBox.Resources>
+                        <DataTemplate DataType="{x:Type system:BaseSystemPlugin}">
+                            <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="32"></ColumnDefinition>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Image Width="32" Height="32" HorizontalAlignment="Left">
+                                    <Image.Source>
+                                        <MultiBinding Converter="{StaticResource ImagePathConverter}">
+                                            <MultiBinding.Bindings>
+                                                <Binding Path="IcoPath" />
+                                                <Binding Path="PluginDirectory" />
+                                            </MultiBinding.Bindings>
+                                        </MultiBinding>
+                                    </Image.Source>
+                                </Image>
+                                <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition></RowDefinition>
+                                        <RowDefinition Height="Auto"></RowDefinition>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock VerticalAlignment="Center" ToolTip="{Binding Name}" x:Name="tbTitle" Text="{Binding Name}"></TextBlock>
+                                    <TextBlock ToolTip="{Binding Description}" Visibility="{Binding Description, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Description}" Opacity="0.5"></TextBlock>
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type woxPlugin:PluginPair}">
+                            <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="32"></ColumnDefinition>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Image Width="32" Height="32" HorizontalAlignment="Left">
+                                    <Image.Source>
+                                        <MultiBinding Converter="{StaticResource ImagePathConverter}">
+                                            <MultiBinding.Bindings>
+                                                <Binding Path="Metadata.IcoPath" />
+                                                <Binding Path="Metadata.PluginDirecotry" />
+                                            </MultiBinding.Bindings>
+                                        </MultiBinding>
+                                    </Image.Source>
+                                </Image>
+                                <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition></RowDefinition>
+                                        <RowDefinition Height="Auto"></RowDefinition>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock VerticalAlignment="Center" ToolTip="{Binding Metadata.Name}" x:Name="tbTitle" Text="{Binding Metadata.Name}"></TextBlock>
+                                    <TextBlock ToolTip="{Binding Metadata.Description}" Visibility="{Binding Metadata.Description, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Metadata.Description}" Opacity="0.5"></TextBlock>
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.Resources>
+                </ListBox>
+                <Grid Margin="0" Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="80"/>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Grid.Column="0"  Margin="10" Orientation="Vertical">
+                    </StackPanel>
+
+                    <StackPanel x:Name="PluginContentPanel" Grid.ColumnSpan="1" Grid.Row="1" Margin="0">
+
                     </StackPanel>
                 </Grid>
             </Grid>

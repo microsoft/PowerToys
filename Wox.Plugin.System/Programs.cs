@@ -145,5 +145,21 @@ namespace Wox.Plugin.System
             if (p.Title.Contains("卸载") || p.Title.ToLower().Contains("uninstall"))
                 p.Score -= 20;
         }
+
+
+        public override string Name
+        {
+            get { return "Programs"; }
+        }
+
+        public override string IcoPath
+        {
+            get { return @"Images\app.png"; }
+        }
+
+        public override string Description
+        {
+            get { return base.Description; }
+        }
     }
 }

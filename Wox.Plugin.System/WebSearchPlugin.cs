@@ -81,5 +81,20 @@ namespace Wox.Plugin.System
             if (UserSettingStorage.Instance.WebSearches == null)
                 UserSettingStorage.Instance.WebSearches = UserSettingStorage.Instance.LoadDefaultWebSearches();
         }
+
+        public override string Name
+        {
+            get { return "Web Searches"; }
+        }
+
+        public override string IcoPath
+        {
+            get { return @"Images\app.png"; }
+        }
+
+        public override string Description
+        {
+            get { return base.Description; }
+        }
     }
 }

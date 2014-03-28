@@ -148,5 +148,19 @@ namespace Wox.Plugin.System.CMD
             this.context = context;
         }
 
+        public override string Name
+        {
+            get { return "Shell"; }
+        }
+
+        public override string IcoPath
+        {
+            get { return @"Images\cmd.png"; }
+        }
+
+        public override string Description
+        {
+            get { return base.Description; }
+        }
     }
 }

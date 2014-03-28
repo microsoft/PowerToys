@@ -67,7 +67,6 @@
     <Compile Include="ISystemPlugin.cs" />
     <Compile Include="Programs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Setting.cs" />
     <Compile Include="Sys.cs" />
     <Compile Include="ThirdpartyPluginIndicator.cs" />
     <Compile Include="SuggestionSources\Google.cs" />

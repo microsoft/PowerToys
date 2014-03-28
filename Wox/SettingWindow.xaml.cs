@@ -17,6 +17,7 @@ using Wox.Helper;
 using Application = System.Windows.Forms.Application;
 using File = System.IO.File;
 using MessageBox = System.Windows.MessageBox;
+using System.Windows.Data;
 
 namespace Wox
 {
@@ -156,6 +157,24 @@ namespace Wox
             lvCustomHotkey.ItemsSource = UserSettingStorage.Instance.CustomPluginHotkeys;
             cbEnablePythonPlugins.IsChecked = UserSettingStorage.Instance.EnablePythonPlugins;
             cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
+
+            var features = new CompositeCollection
+            {
+                new CollectionContainer()
+                {
+                    Collection =
+                        PluginLoader.Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System)
+                            .Select(o => o.Plugin)
+                            .Cast<Wox.Plugin.System.ISystemPlugin>()
+                },
+                FindResource("FeatureBoxSeperator"),
+                new CollectionContainer()
+                {
+                    Collection =
+                        PluginLoader.Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.ThirdParty)
+                }
+            };
+            featureBox.ItemsSource = features;
 
             slOpacity.Value = UserSettingStorage.Instance.Opacity;
             CbOpacityMode.SelectedItem = UserSettingStorage.Instance.OpacityMode;
@@ -472,6 +491,11 @@ namespace Wox
                 PreviewMainPanel.Opacity = UserSettingStorage.Instance.Opacity;
             else
                 PreviewMainPanel.Opacity = 1;
+        }
+
+        private void featureBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // throw new NotImplementedException();
         }
     }
 }

@@ -85,6 +85,34 @@ namespace Wox.Plugin.System
                     return true;
                 }
             });
+            availableResults.Add(new Result
+            {
+                Title = "Setting",
+                SubTitle = "Tweak this app",
+                Score = 40,
+                IcoPath = "Images\\app.png",
+                Action = (c) =>
+                {
+                    context.OpenSettingDialog();
+                    return true;
+                }
+            });
+        }
+
+
+        public override string Name
+        {
+            get { return "System Commands"; }
+        }
+
+        public override string IcoPath
+        {
+            get { return @"Images\lock.png"; }
+        }
+
+        public override string Description
+        {
+            get { return base.Description; }
         }
     }
 }

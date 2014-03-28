@@ -86,6 +86,19 @@ namespace Wox.Plugin.System
             this.context = context;
         }
 
-        
+        public override string Name
+        {
+            get { return "Calculator"; }
+        }
+
+        public override string IcoPath
+        {
+            get { return @"Images\calculator.png"; }
+        }
+
+        public override string Description
+        {
+            get { return base.Description; }
+        }
     }
 }

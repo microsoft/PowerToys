@@ -62,5 +62,19 @@ namespace Wox.Plugin.System
         }
 
 
+        public override string Name
+        {
+            get { return "Plugins"; }
+        }
+
+        public override string IcoPath
+        {
+            get { return @"Images\work.png"; }
+        }
+
+        public override string Description
+        {
+            get { return base.Description; }
+        }
     }
 }
