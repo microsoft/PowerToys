@@ -120,9 +120,6 @@
     <Compile Include="Helper\WallpaperPathRetrieval.cs" />
     <Compile Include="Helper\WindowIntelopHelper.cs" />
     <Compile Include="OpacityModeConverter.cs" />
-    <Compile Include="ProgramSourceSetting.xaml.cs">
-      <DependentUpon>ProgramSourceSetting.xaml</DependentUpon>
-    </Compile>
     <Compile Include="CustomPluginHotkeySetting.xaml.cs">
       <DependentUpon>CustomPluginHotkeySetting.xaml</DependentUpon>
     </Compile>
@@ -159,10 +156,6 @@
     <Page Include="Helper\ErrorReporting\WPFErrorReportingDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ProgramSourceSetting.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="CustomPluginHotkeySetting.xaml">
       <SubType>Designer</SubType>

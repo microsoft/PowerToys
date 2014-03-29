@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -11,21 +12,20 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
 using MessageBox = System.Windows.MessageBox;
 
-namespace Wox
+namespace Wox.Plugin.System
 {
     public partial class ProgramSourceSetting : Window
     {
-        private SettingWindow settingWindow;
+        private ProgramSetting settingWindow;
         private bool update;
         private ProgramSource updateProgramSource;
 
-        public ProgramSourceSetting(SettingWindow settingWidow)
+        public ProgramSourceSetting(ProgramSetting settingWidow)
         {
             this.settingWindow = settingWidow;
             InitializeComponent();
@@ -117,8 +117,8 @@ namespace Wox
             Type type;
             if (item != null && Wox.Plugin.System.Programs.SourceTypes.TryGetValue(item, out type))
             {
-                var attrs = type.GetCustomAttributes(typeof(System.ComponentModel.BrowsableAttribute), false);
-                if (attrs.Length > 0 && (attrs[0] as System.ComponentModel.BrowsableAttribute).Browsable == false)
+                var attrs = type.GetCustomAttributes(typeof(BrowsableAttribute), false);
+                if (attrs.Length > 0 && (attrs[0] as BrowsableAttribute).Browsable == false)
                 {
                     this.tbLocation.IsEnabled = false;
                     return;

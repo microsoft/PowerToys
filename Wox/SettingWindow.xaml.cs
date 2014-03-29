@@ -153,7 +153,6 @@ namespace Wox
             themeComboBox.SelectedItem = UserSettingStorage.Instance.Theme;
             cbReplaceWinR.IsChecked = UserSettingStorage.Instance.ReplaceWinR;
             webSearchView.ItemsSource = UserSettingStorage.Instance.WebSearches;
-            programSourceView.ItemsSource = UserSettingStorage.Instance.ProgramSources;
             lvCustomHotkey.ItemsSource = UserSettingStorage.Instance.CustomPluginHotkeys;
             cbEnablePythonPlugins.IsChecked = UserSettingStorage.Instance.EnablePythonPlugins;
             cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
@@ -202,10 +201,6 @@ namespace Wox
             webSearchView.Items.Refresh();
         }
 
-        public void ReloadProgramSourceView()
-        {
-            programSourceView.Items.Refresh();
-        }
 
         private List<string> LoadAvailableThemes()
         {
@@ -249,43 +244,6 @@ namespace Wox
             else
             {
                 MessageBox.Show("Please select a web search");
-            }
-        }
-
-        private void btnAddProgramSource_OnClick(object sender, RoutedEventArgs e)
-        {
-            ProgramSourceSetting programSource = new ProgramSourceSetting(this);
-            programSource.ShowDialog();
-        }
-
-        private void btnDeleteProgramSource_OnClick(object sender, RoutedEventArgs e)
-        {
-            ProgramSource seletedProgramSource = programSourceView.SelectedItem as ProgramSource;
-            if (seletedProgramSource != null &&
-                MessageBox.Show("Are your sure to delete " + seletedProgramSource.ToString(), "Delete ProgramSource",
-                    MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-            {
-                UserSettingStorage.Instance.ProgramSources.Remove(seletedProgramSource);
-                programSourceView.Items.Refresh();
-            }
-            else
-            {
-                MessageBox.Show("Please select a program source");
-            }
-        }
-
-        private void btnEditProgramSource_OnClick(object sender, RoutedEventArgs e)
-        {
-            ProgramSource seletedProgramSource = programSourceView.SelectedItem as ProgramSource;
-            if (seletedProgramSource != null)
-            {
-                ProgramSourceSetting programSource = new ProgramSourceSetting(this);
-                programSource.UpdateItem(seletedProgramSource);
-                programSource.ShowDialog();
-            }
-            else
-            {
-                MessageBox.Show("Please select a program source");
             }
         }
 
