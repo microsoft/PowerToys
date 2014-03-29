@@ -150,9 +150,6 @@
     </Compile>
     <Compile Include="StringEmptyConverter.cs" />
     <Compile Include="StringNullOrEmptyToVisibilityConverter.cs" />
-    <Compile Include="WebSearchSetting.xaml.cs">
-      <DependentUpon>WebSearchSetting.xaml</DependentUpon>
-    </Compile>
     <Page Include="Helper\ErrorReporting\WPFErrorReportingDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -224,10 +221,6 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Page Include="WebSearchSetting.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

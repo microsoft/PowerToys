@@ -11,21 +11,20 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
 using MessageBox = System.Windows.MessageBox;
 
-namespace Wox
+namespace Wox.Plugin.SystemPlugins
 {
     public partial class WebSearchSetting : Window
     {
-        private SettingWindow settingWindow;
+        private WebSearchesSetting settingWindow;
         private bool update;
         private WebSearch updateWebSearch;
 
-        public WebSearchSetting(SettingWindow settingWidow)
+        public WebSearchSetting(WebSearchesSetting settingWidow)
         {
             this.settingWindow = settingWidow;
             InitializeComponent();

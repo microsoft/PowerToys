@@ -1,0 +1,39 @@
+﻿<UserControl x:Class="Wox.Plugin.SystemPlugins.WebSearchesSetting"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <ListView x:Name="webSearchView" Grid.Row="0">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="ActionWord"  Width="180">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ActionWord}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Url" Width="500">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Url}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <StackPanel Grid.Row="1" HorizontalAlignment="Right" Orientation="Horizontal">
+            <Button x:Name="btnDeleteWebSearch" Click="btnDeleteWebSearch_OnClick" Width="100" Margin="10" Content="Delete"/>
+            <Button x:Name="btnEditWebSearch" Click="btnEditWebSearch_OnClick" Width="100" Margin="10" Content="Edit"/>
+            <Button x:Name="btnAddWebSearch" Click="btnAddWebSearch_OnClick" Width="100" Margin="10" Content="Add"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

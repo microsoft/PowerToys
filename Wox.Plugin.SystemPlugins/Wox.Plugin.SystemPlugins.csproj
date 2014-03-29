@@ -70,6 +70,9 @@
     <Compile Include="Calculator.cs" />
     <Compile Include="ProgramSources\FileSystemProgramSource.cs" />
     <Compile Include="ProgramSources\UserStartMenuProgramSource.cs" />
+    <Compile Include="WebSearchesSetting.xaml.cs">
+      <DependentUpon>WebSearchesSetting.xaml</DependentUpon>
+    </Compile>
     <Compile Include="WebSearchPlugin.cs" />
     <Compile Include="CMD\CMD.cs" />
     <Compile Include="DirectoryIndicator.cs" />
@@ -80,6 +83,9 @@
     <Compile Include="ThirdpartyPluginIndicator.cs" />
     <Compile Include="SuggestionSources\Google.cs" />
     <Compile Include="SuggestionSources\ISuggestionSource.cs" />
+    <Compile Include="WebSearchSetting.xaml.cs">
+      <DependentUpon>WebSearchSetting.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj">
@@ -100,6 +106,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ProgramSourceSetting.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="WebSearchesSetting.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="WebSearchSetting.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

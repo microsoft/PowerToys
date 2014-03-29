@@ -11,7 +11,7 @@ using Wox.Plugin.SystemPlugins.SuggestionSources;
 
 namespace Wox.Plugin.SystemPlugins
 {
-    public class WebSearchPlugin : BaseSystemPlugin
+    public class WebSearchPlugin : BaseSystemPlugin, ISettingProvider
     {
         private PluginInitContext context;
 
@@ -96,5 +96,14 @@ namespace Wox.Plugin.SystemPlugins
         {
             get { return base.Description; }
         }
+
+        #region ISettingProvider Members
+
+        public System.Windows.Controls.Control CreateSettingPanel()
+        {
+            return new WebSearchesSetting();
+        }
+
+        #endregion
     }
 }
