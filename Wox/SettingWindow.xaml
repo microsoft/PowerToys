@@ -19,7 +19,7 @@
         </ListBoxItem>
     </Window.Resources>
     <TabControl Height="auto" >
-        <TabItem Header="Basic">
+        <TabItem Header="General">
             <StackPanel Orientation="Vertical" Margin="10">
                 <StackPanel Orientation="Horizontal" Margin="10">
                     <CheckBox x:Name="cbStartWithWindows" Unchecked="CbStartWithWindows_OnUnchecked" Checked="CbStartWithWindows_OnChecked" />
@@ -31,62 +31,96 @@
                 </StackPanel>
             </StackPanel>
         </TabItem>
-        <TabItem Header="Hotkey">
-            <Grid Margin="10">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="30"/>
-                    <RowDefinition/>
-                    <RowDefinition Height="50"/>
-                </Grid.RowDefinitions>
-                <StackPanel  Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock VerticalAlignment="Center" Margin="0 0 10 0"><Run Text="Wox Hotkey:"/></TextBlock>
-                    <wox:HotkeyControl x:Name="ctlHotkey"/>
-                </StackPanel>
-                <Grid  Grid.Row="1">
+        <TabItem Header="Features">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <ListBox x:Name="featureBox" Grid.Column="0" Margin="0" SelectionChanged="featureBox_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" >
+                    <ListBox.Resources>
+                        <DataTemplate DataType="{x:Type system:BaseSystemPlugin}">
+                            <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="32"></ColumnDefinition>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Image Width="32" Height="32" HorizontalAlignment="Left">
+                                    <Image.Source>
+                                        <MultiBinding Converter="{StaticResource ImagePathConverter}">
+                                            <MultiBinding.Bindings>
+                                                <Binding Path="IcoPath" />
+                                                <Binding Path="PluginDirectory" />
+                                            </MultiBinding.Bindings>
+                                        </MultiBinding>
+                                    </Image.Source>
+                                </Image>
+                                <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition></RowDefinition>
+                                        <RowDefinition Height="Auto"></RowDefinition>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock VerticalAlignment="Center" ToolTip="{Binding Name}" x:Name="tbTitle" Text="{Binding Name}"></TextBlock>
+                                    <TextBlock ToolTip="{Binding Description}" Visibility="{Binding Description, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Description}" Opacity="0.5"></TextBlock>
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type woxPlugin:PluginPair}">
+                            <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="32"></ColumnDefinition>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Image Width="32" Height="32" HorizontalAlignment="Left">
+                                    <Image.Source>
+                                        <MultiBinding Converter="{StaticResource ImagePathConverter}">
+                                            <MultiBinding.Bindings>
+                                                <Binding Path="Metadata.IcoPath" />
+                                                <Binding Path="Metadata.PluginDirecotry" />
+                                            </MultiBinding.Bindings>
+                                        </MultiBinding>
+                                    </Image.Source>
+                                </Image>
+                                <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition></RowDefinition>
+                                        <RowDefinition Height="Auto"></RowDefinition>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock VerticalAlignment="Center" ToolTip="{Binding Metadata.Name}" x:Name="tbTitle" Text="{Binding Metadata.Name}"></TextBlock>
+                                    <TextBlock ToolTip="{Binding Metadata.Description}" Visibility="{Binding Metadata.Description, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Metadata.Description}" Opacity="0.5"></TextBlock>
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.Resources>
+                </ListBox>
+                <Grid Margin="0" Grid.Column="1">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>
-                        <RowDefinition/>
+                        <RowDefinition Height="58"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <TextBlock VerticalAlignment="Center" Grid.Row="0" Margin="0 0 10 0"><Run Text="Custom Plugin Hotkey:"/></TextBlock>
-                    <ListView x:Name="lvCustomHotkey" Margin="0 5 0 0" Grid.Row="1">
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="Hotkey"  Width="180">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Hotkey}"/>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Action Keyword" Width="500">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding ActionKeyword}"/>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
+                    <ContentControl x:Name="PluginInfoPanel" Grid.ColumnSpan="1" Grid.Row="0" Margin="10 10 10 0">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="48"></ColumnDefinition>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Image Width="48" Height="48" HorizontalAlignment="Left" x:Name="pluginIcon"/>
+                            <Grid Margin="10,0,0,0" Grid.Column="1" HorizontalAlignment="Stretch">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <TextBlock VerticalAlignment="Center" x:Name="pluginTitle" ToolTip="{Binding Source=pluginTitle, Path=Text}" FontSize="24"></TextBlock>
+                                <TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5" ToolTip="{Binding Source=pluginSubTitle, Path=Text}" Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" ></TextBlock>
+                            </Grid>
+                        </Grid>
+                    </ContentControl>
 
+                    <ContentControl x:Name="PluginContentPanel" Grid.ColumnSpan="1" Grid.Row="1" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+                    </ContentControl>
                 </Grid>
-                <StackPanel Grid.Row="2" HorizontalAlignment="Right" Orientation="Horizontal">
-                    <Button x:Name="btnDeleteCustomHotkey" Click="BtnDeleteCustomHotkey_OnClick" Width="100" Margin="10" Content="Delete"/>
-                    <Button x:Name="btnEditCustomHotkey" Click="BtnEditCustomHotkey_OnClick" Width="100" Margin="10" Content="Edit"/>
-                    <Button x:Name="btnAddCustomeHotkey" Click="BtnAddCustomeHotkey_OnClick" Width="100" Margin="10" Content="Add"/>
-                </StackPanel>
             </Grid>
-        </TabItem> 
-        <TabItem Header="Plugins">
-            <StackPanel Orientation="Vertical" Margin="10">
-                <StackPanel Orientation="Horizontal" Margin="10">
-                    <CheckBox x:Name="cbEnablePythonPlugins" />
-                    <TextBlock Text="Enable Python Plugins" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="10">
-                    <Button x:Name="btnEnableInstaller" Click="BtnEnableInstaller_OnClick" Content="enable plugin installer"/>
-                </StackPanel>
-            </StackPanel>
         </TabItem>
         <TabItem Header="Theme">
             <Grid>
@@ -182,96 +216,62 @@
                 </Grid>
             </Grid>
         </TabItem>
-        <TabItem Header="Features">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200"/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <ListBox x:Name="featureBox" Grid.Column="0" Margin="0" SelectionChanged="featureBox_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" >
-                    <ListBox.Resources>
-                        <DataTemplate DataType="{x:Type system:BaseSystemPlugin}">
-                            <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="32"></ColumnDefinition>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
-                                <Image Width="32" Height="32" HorizontalAlignment="Left">
-                                    <Image.Source>
-                                        <MultiBinding Converter="{StaticResource ImagePathConverter}">
-                                            <MultiBinding.Bindings>
-                                                <Binding Path="IcoPath" />
-                                                <Binding Path="PluginDirectory" />
-                                            </MultiBinding.Bindings>
-                                        </MultiBinding>
-                                    </Image.Source>
-                                </Image>
-                                <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition></RowDefinition>
-                                        <RowDefinition Height="Auto"></RowDefinition>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock VerticalAlignment="Center" ToolTip="{Binding Name}" x:Name="tbTitle" Text="{Binding Name}"></TextBlock>
-                                    <TextBlock ToolTip="{Binding Description}" Visibility="{Binding Description, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Description}" Opacity="0.5"></TextBlock>
-                                </Grid>
-                            </Grid>
-                        </DataTemplate>
-                        <DataTemplate DataType="{x:Type woxPlugin:PluginPair}">
-                            <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="32"></ColumnDefinition>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
-                                <Image Width="32" Height="32" HorizontalAlignment="Left">
-                                    <Image.Source>
-                                        <MultiBinding Converter="{StaticResource ImagePathConverter}">
-                                            <MultiBinding.Bindings>
-                                                <Binding Path="Metadata.IcoPath" />
-                                                <Binding Path="Metadata.PluginDirecotry" />
-                                            </MultiBinding.Bindings>
-                                        </MultiBinding>
-                                    </Image.Source>
-                                </Image>
-                                <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition></RowDefinition>
-                                        <RowDefinition Height="Auto"></RowDefinition>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock VerticalAlignment="Center" ToolTip="{Binding Metadata.Name}" x:Name="tbTitle" Text="{Binding Metadata.Name}"></TextBlock>
-                                    <TextBlock ToolTip="{Binding Metadata.Description}" Visibility="{Binding Metadata.Description, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Metadata.Description}" Opacity="0.5"></TextBlock>
-                                </Grid>
-                            </Grid>
-                        </DataTemplate>
-                    </ListBox.Resources>
-                </ListBox>
-                <Grid Margin="0" Grid.Column="1">
+        <TabItem Header="Hotkey">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="50"/>
+                </Grid.RowDefinitions>
+                <StackPanel  Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center" Margin="0 0 10 0"><Run Text="Wox Hotkey:"/></TextBlock>
+                    <wox:HotkeyControl x:Name="ctlHotkey"/>
+                </StackPanel>
+                <Grid  Grid.Row="1">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="58"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="20"/>
+                        <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <ContentControl x:Name="PluginInfoPanel" Grid.ColumnSpan="1" Grid.Row="0" Margin="10 10 10 0">
-                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="48"></ColumnDefinition>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Image Width="48" Height="48" HorizontalAlignment="Left" x:Name="pluginIcon"/>
-                            <Grid Margin="10,0,0,0" Grid.Column="1" HorizontalAlignment="Stretch">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition Height="Auto"></RowDefinition>
-                                </Grid.RowDefinitions>
-                                <TextBlock VerticalAlignment="Center" x:Name="pluginTitle" ToolTip="{Binding Source=pluginTitle, Path=Text}" FontSize="24"></TextBlock>
-                                <TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5" ToolTip="{Binding Source=pluginSubTitle, Path=Text}" Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" ></TextBlock>
-                            </Grid>
-                        </Grid>
-                    </ContentControl>
-                    
-                    <ContentControl x:Name="PluginContentPanel" Grid.ColumnSpan="1" Grid.Row="1" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock VerticalAlignment="Center" Grid.Row="0" Margin="0 0 10 0"><Run Text="Custom Plugin Hotkey:"/></TextBlock>
+                    <ListView x:Name="lvCustomHotkey" Margin="0 5 0 0" Grid.Row="1">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Hotkey"  Width="180">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Hotkey}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Action Keyword" Width="500">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding ActionKeyword}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
 
-                    </ContentControl>
                 </Grid>
+                <StackPanel Grid.Row="2" HorizontalAlignment="Right" Orientation="Horizontal">
+                    <Button x:Name="btnDeleteCustomHotkey" Click="BtnDeleteCustomHotkey_OnClick" Width="100" Margin="10" Content="Delete"/>
+                    <Button x:Name="btnEditCustomHotkey" Click="BtnEditCustomHotkey_OnClick" Width="100" Margin="10" Content="Edit"/>
+                    <Button x:Name="btnAddCustomeHotkey" Click="BtnAddCustomeHotkey_OnClick" Width="100" Margin="10" Content="Add"/>
+                </StackPanel>
             </Grid>
+        </TabItem> 
+        <TabItem Header="Plugins">
+            <StackPanel Orientation="Vertical" Margin="10">
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <CheckBox x:Name="cbEnablePythonPlugins" />
+                    <TextBlock Text="Enable Python Plugins" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button x:Name="btnEnableInstaller" Click="BtnEnableInstaller_OnClick" Content="enable plugin installer"/>
+                </StackPanel>
+            </StackPanel>
         </TabItem>
     </TabControl>
 </Window>
