@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -9,8 +10,8 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Shapes;
 using WindowsInput;
 using WindowsInput.Native;
 using NHotkey;
@@ -23,12 +24,18 @@ using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.PluginLoader;
 using Application = System.Windows.Application;
+using Brushes = System.Windows.Media.Brushes;
+using Color = System.Windows.Media.Color;
 using ContextMenu = System.Windows.Forms.ContextMenu;
 using Control = System.Windows.Controls.Control;
+using FontFamily = System.Windows.Media.FontFamily;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MenuItem = System.Windows.Forms.MenuItem;
 using MessageBox = System.Windows.MessageBox;
 using MouseButton = System.Windows.Input.MouseButton;
+using Path = System.IO.Path;
+using Point = System.Drawing.Point;
+using Rectangle = System.Drawing.Rectangle;
 using TextBox = System.Windows.Controls.TextBox;
 using ToolTip = System.Windows.Controls.ToolTip;
 
@@ -90,6 +97,7 @@ namespace Wox
         {
             Left = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
             Top = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 3;
+            
             Plugins.Init();
 
             InitProgressbarAnimation();
@@ -235,6 +243,16 @@ namespace Wox
 
         private void ShowWox(bool selectAll = true)
         {
+            if (!double.IsNaN(Left) && !double.IsNaN(Top))
+            {
+                var origScreen = Screen.FromRectangle(new Rectangle((int) Left, (int) Top, (int) ActualWidth, (int) ActualHeight));
+                var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+                var croodX = (Left + ActualWidth / 2.0 - (origScreen.Bounds.Left + origScreen.Bounds.Right) / 2.0) / origScreen.Bounds.Width;
+                var croodY = (Top + ActualHeight / 2.0 - (origScreen.Bounds.Top + origScreen.Bounds.Bottom) / 2.0) / origScreen.Bounds.Height;
+                Left = croodX * screen.Bounds.Width - ActualWidth / 2.0 + (screen.Bounds.Left + screen.Bounds.Right) / 2.0;
+                Top = croodY * screen.Bounds.Height - ActualHeight / 2.0 + (screen.Bounds.Top + screen.Bounds.Bottom) / 2.0;
+            }
+
             Show();
             Activate();
             Focus();
