@@ -56,6 +56,9 @@ namespace Wox.Infrastructure.Storage.UserSettings
         [JsonProperty]
         public bool EnablePythonPlugins { get; set; }
 
+		[JsonProperty]
+		public bool EnableBookmarkPlugin { get; set; }
+
         [JsonProperty]
         public double Opacity { get; set; }
 
@@ -122,6 +125,7 @@ namespace Wox.Infrastructure.Storage.UserSettings
         protected override void LoadDefaultConfig()
         {
             EnablePythonPlugins = true;
+			EnableBookmarkPlugin = true;
             Theme = "Dark";
             ReplaceWinR = true;
             WebSearches = LoadDefaultWebSearches();

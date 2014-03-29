@@ -63,6 +63,7 @@
     </Compile>
     <Compile Include="ProgramSources\AppPathsProgramSource.cs" />
     <Compile Include="ProgramSources\CommonStartMenuProgramSource.cs" />
+    <Compile Include="ProgramSources\FileSystemFolderSourceShallow.cs" />
     <Compile Include="ProgramSources\PortableAppsProgramSource.cs" />
     <Compile Include="IProgramSource.cs" />
     <Compile Include="BaseSystemPlugin.cs" />
