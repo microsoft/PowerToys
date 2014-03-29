@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Wox.Plugin.System")]
+[assembly: AssemblyTitle("Wox.Plugin.SystemPlugins")]
 [assembly: AssemblyDescription("https://github.com/qianlifeng/Wox")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Wox.Plugin.System")]
+[assembly: AssemblyProduct("Wox.Plugin.SystemPlugins")]
 [assembly: AssemblyCopyright("The MIT License (MIT)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

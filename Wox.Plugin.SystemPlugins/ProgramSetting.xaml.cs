@@ -13,7 +13,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Wox.Infrastructure.Storage.UserSettings;
 
-namespace Wox.Plugin.System
+namespace Wox.Plugin.SystemPlugins
 {
     /// <summary>
     /// Interaction logic for ProgramSetting.xaml

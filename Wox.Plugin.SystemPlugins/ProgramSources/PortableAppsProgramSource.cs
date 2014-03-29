@@ -6,7 +6,7 @@ using System.IO;
 using IniParser;
 using Wox.Infrastructure.Storage.UserSettings;
 
-namespace Wox.Plugin.System.ProgramSources
+namespace Wox.Plugin.SystemPlugins.ProgramSources
 {
     public class PortableAppsProgramSource : AbstractProgramSource
     {

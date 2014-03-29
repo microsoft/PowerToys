@@ -7,7 +7,7 @@ using System.Windows.Forms;
 using Newtonsoft.Json;
 using Wox.Helper;
 using Wox.Plugin;
-using Wox.Plugin.System;
+using Wox.Plugin.SystemPlugins;
 
 namespace Wox.PluginLoader
 {
@@ -41,7 +41,7 @@ namespace Wox.PluginLoader
             metadata.Version = "1.0";
             metadata.PluginType = PluginType.System;
             metadata.ActionKeyword = "*";
-            metadata.ExecuteFileName = "Wox.Plugin.System.dll";
+            metadata.ExecuteFileName = "Wox.Plugin.SystemPlugins.dll";
             metadata.PluginDirecotry = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
             pluginMetadatas.Add(metadata);
         }

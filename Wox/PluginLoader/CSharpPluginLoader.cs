@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Threading;
 using Wox.Helper;
 using Wox.Plugin;
-using Wox.Plugin.System;
+using Wox.Plugin.SystemPlugins;
 
 namespace Wox.PluginLoader
 {

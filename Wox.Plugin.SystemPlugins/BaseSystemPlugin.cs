@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Wox.Plugin.System
+namespace Wox.Plugin.SystemPlugins
 {
     public abstract class BaseSystemPlugin :ISystemPlugin
     {

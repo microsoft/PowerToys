@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using Wox.Infrastructure.Storage.UserSettings;
 
-namespace Wox.Plugin.System.ProgramSources
+namespace Wox.Plugin.SystemPlugins.ProgramSources
 {
     public class FileSystemProgramSource : AbstractProgramSource
     {

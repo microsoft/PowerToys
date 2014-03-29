@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Wox.Infrastructure.Storage.UserSettings;
 
-namespace Wox.Plugin.System.ProgramSources
+namespace Wox.Plugin.SystemPlugins.ProgramSources
 {
     [global::System.ComponentModel.Browsable(false)]
     public class AppPathsProgramSource: AbstractProgramSource

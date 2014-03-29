@@ -17,7 +17,7 @@ using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
 using MessageBox = System.Windows.MessageBox;
 
-namespace Wox.Plugin.System
+namespace Wox.Plugin.SystemPlugins
 {
     public partial class ProgramSourceSetting : Window
     {
@@ -30,7 +30,7 @@ namespace Wox.Plugin.System
             this.settingWindow = settingWidow;
             InitializeComponent();
 
-            this.cbType.ItemsSource = Wox.Plugin.System.Programs.SourceTypes.Select(o => o.Key).ToList();
+            this.cbType.ItemsSource = Wox.Plugin.SystemPlugins.Programs.SourceTypes.Select(o => o.Key).ToList();
         }
 
         public void UpdateItem(ProgramSource programSource)
@@ -115,7 +115,7 @@ namespace Wox.Plugin.System
         {
             string item = cbType.SelectedItem as String;
             Type type;
-            if (item != null && Wox.Plugin.System.Programs.SourceTypes.TryGetValue(item, out type))
+            if (item != null && Wox.Plugin.SystemPlugins.Programs.SourceTypes.TryGetValue(item, out type))
             {
                 var attrs = type.GetCustomAttributes(typeof(BrowsableAttribute), false);
                 if (attrs.Length > 0 && (attrs[0] as BrowsableAttribute).Browsable == false)

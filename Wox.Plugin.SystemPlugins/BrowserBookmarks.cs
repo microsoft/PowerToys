@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using Newtonsoft.Json;
 using Wox.Infrastructure;
 
-namespace Wox.Plugin.System
+namespace Wox.Plugin.SystemPlugins
 {
     public class BrowserBookmarks : BaseSystemPlugin
     {

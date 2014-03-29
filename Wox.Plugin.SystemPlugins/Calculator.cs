@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using YAMP;
 
-namespace Wox.Plugin.System
+namespace Wox.Plugin.SystemPlugins
 {
     public class Calculator : BaseSystemPlugin
     {

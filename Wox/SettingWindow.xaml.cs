@@ -14,6 +14,7 @@ using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.Helper;
+using Wox.Plugin.SystemPlugins;
 using Application = System.Windows.Forms.Application;
 using File = System.IO.File;
 using MessageBox = System.Windows.MessageBox;
@@ -25,6 +26,7 @@ namespace Wox
     {
         string woxLinkPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "wox.lnk");
         public MainWindow MainWindow;
+        private Dictionary<ISettingProvider, Control> featureControls = new Dictionary<ISettingProvider, Control>(); 
 
         public SettingWindow()
         {
@@ -164,7 +166,7 @@ namespace Wox
                     Collection =
                         PluginLoader.Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System)
                             .Select(o => o.Plugin)
-                            .Cast<Wox.Plugin.System.ISystemPlugin>()
+                            .Cast<Wox.Plugin.SystemPlugins.ISystemPlugin>()
                 },
                 FindResource("FeatureBoxSeperator"),
                 new CollectionContainer()
@@ -453,6 +455,54 @@ namespace Wox
 
         private void featureBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            ISettingProvider provider = null;
+            var pair = featureBox.SelectedItem as PluginPair;
+            if (pair != null)
+            {
+                provider = pair.Plugin as ISettingProvider;
+                pluginTitle.Text = pair.Metadata.Name;
+                pluginSubTitle.Text = pair.Metadata.Description;
+                SyntaxSugars.CallOrRescueDefault(
+                    () =>
+                        pluginIcon.Source =
+                            (ImageSource)
+                                new Wox.ImagePathConverter().Convert(
+                                    new object[] {pair.Metadata.IcoPath, pair.Metadata.PluginDirecotry}, null, null,
+                                    null));
+            }
+            else
+            {
+                provider = featureBox.SelectedItem as ISettingProvider;
+
+                var sys = featureBox.SelectedItem as BaseSystemPlugin;
+                if (sys != null)
+                {
+                    pluginTitle.Text = sys.Name;
+                    pluginSubTitle.Text = sys.Description;
+                    SyntaxSugars.CallOrRescueDefault(
+                        () =>
+                            pluginIcon.Source =
+                                (ImageSource)
+                                    new Wox.ImagePathConverter().Convert(
+                                        new object[] { sys.IcoPath, sys.PluginDirectory }, null, null,
+                                        null));
+                }
+            }
+
+            this.PluginContentPanel.Content = null;
+            if (provider != null)
+            {
+                Control control = null;
+                if (!featureControls.TryGetValue(provider, out control))
+                    featureControls.Add(provider, control = provider.CreateSettingPanel());
+
+                PluginContentPanel.Content = control;
+                control.HorizontalAlignment = HorizontalAlignment.Stretch;
+                control.VerticalAlignment = VerticalAlignment.Stretch;
+                control.Width = Double.NaN;
+                control.Height = Double.NaN;
+            }
+            // featureControls
             // throw new NotImplementedException();
         }
     }

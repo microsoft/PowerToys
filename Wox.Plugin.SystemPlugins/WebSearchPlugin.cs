@@ -7,9 +7,9 @@ using Newtonsoft.Json;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
-using Wox.Plugin.System.SuggestionSources;
+using Wox.Plugin.SystemPlugins.SuggestionSources;
 
-namespace Wox.Plugin.System
+namespace Wox.Plugin.SystemPlugins
 {
     public class WebSearchPlugin : BaseSystemPlugin
     {

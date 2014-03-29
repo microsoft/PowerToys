@@ -10,7 +10,7 @@ using Newtonsoft.Json.Serialization;
 using Wox.Infrastructure;
 using YAMP.Numerics;
 
-namespace Wox.Plugin.System.SuggestionSources
+namespace Wox.Plugin.SystemPlugins.SuggestionSources
 {
     public class Google : AbstractSuggestionSource
     {

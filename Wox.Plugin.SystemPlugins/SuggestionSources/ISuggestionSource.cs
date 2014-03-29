@@ -4,7 +4,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
-namespace Wox.Plugin.System.SuggestionSources
+namespace Wox.Plugin.SystemPlugins.SuggestionSources
 {
     public interface ISuggestionSource
     {

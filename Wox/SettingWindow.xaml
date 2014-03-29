@@ -4,7 +4,7 @@
         xmlns:wox="clr-namespace:Wox"
         xmlns:UserSettings="clr-namespace:Wox.Infrastructure.Storage.UserSettings;assembly=Wox.Infrastructure" x:Class="Wox.SettingWindow"
         xmlns:woxPlugin="clr-namespace:Wox.Plugin;assembly=Wox.Plugin"
-        xmlns:system="clr-namespace:Wox.Plugin.System;assembly=Wox.Plugin.System"
+        xmlns:system="clr-namespace:Wox.Plugin.SystemPlugins;assembly=Wox.Plugin.SystemPlugins"
         Icon="Images\app.png"
         Title="Wox Setting"
         ResizeMode="NoResize"
@@ -219,7 +219,7 @@
         <TabItem Header="Features">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <ListBox x:Name="featureBox" Grid.Column="0" Margin="0" SelectionChanged="featureBox_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" >
@@ -280,16 +280,30 @@
                 </ListBox>
                 <Grid Margin="0" Grid.Column="1">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="80"/>
-                        <RowDefinition />
+                        <RowDefinition Height="58"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
+                    <ContentControl x:Name="PluginInfoPanel" Grid.ColumnSpan="1" Grid.Row="0" Margin="10 10 10 0">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="48"></ColumnDefinition>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Image Width="48" Height="48" HorizontalAlignment="Left" x:Name="pluginIcon"/>
+                            <Grid Margin="10,0,0,0" Grid.Column="1" HorizontalAlignment="Stretch">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <TextBlock VerticalAlignment="Center" x:Name="pluginTitle" ToolTip="{Binding Source=pluginTitle, Path=Text}" FontSize="24"></TextBlock>
+                                <TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5" ToolTip="{Binding Source=pluginSubTitle, Path=Text}" Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" ></TextBlock>
+                            </Grid>
+                        </Grid>
+                    </ContentControl>
+                    
+                    <ContentControl x:Name="PluginContentPanel" Grid.ColumnSpan="1" Grid.Row="1" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
-                    <StackPanel Grid.Row="0" Grid.Column="0"  Margin="10" Orientation="Vertical">
-                    </StackPanel>
-
-                    <StackPanel x:Name="PluginContentPanel" Grid.ColumnSpan="1" Grid.Row="1" Margin="0">
-
-                    </StackPanel>
+                    </ContentControl>
                 </Grid>
             </Grid>
         </TabItem>

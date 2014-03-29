@@ -8,7 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugin", "Plugin", "{3A73F5
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox", "Wox\Wox.csproj", "{DB90F671-D861-46BB-93A3-F1304F5BA1C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.System", "Wox.Plugin.System\Wox.Plugin.System.csproj", "{69CE0206-CB41-453D-88AF-DF86092EF9B8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.SystemPlugins", "Wox.Plugin.SystemPlugins\Wox.Plugin.SystemPlugins.csproj", "{69CE0206-CB41-453D-88AF-DF86092EF9B8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Python.Runtime", "Pythonnet.Runtime\Python.Runtime.csproj", "{097B4AC0-74E9-4C58-BCF8-C69746EC8271}"
 EndProject

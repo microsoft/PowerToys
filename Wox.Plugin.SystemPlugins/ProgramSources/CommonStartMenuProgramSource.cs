@@ -5,7 +5,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using Wox.Infrastructure.Storage.UserSettings;
 
-namespace Wox.Plugin.System.ProgramSources
+namespace Wox.Plugin.SystemPlugins.ProgramSources
 {
     [global::System.ComponentModel.Browsable(false)]
     public class CommonStartMenuProgramSource : FileSystemProgramSource

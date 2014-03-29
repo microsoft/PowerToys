@@ -6,7 +6,7 @@ using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
 
-namespace Wox.Plugin.System
+namespace Wox.Plugin.SystemPlugins
 {
     public class ThirdpartyPluginIndicator : BaseSystemPlugin
     {

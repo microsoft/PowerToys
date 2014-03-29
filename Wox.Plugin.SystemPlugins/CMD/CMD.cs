@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 
-namespace Wox.Plugin.System.CMD
+namespace Wox.Plugin.SystemPlugins.CMD
 {
     public class CMD : BaseSystemPlugin
     {

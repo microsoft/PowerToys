@@ -11,9 +11,9 @@ using Microsoft.Win32;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
-using Wox.Plugin.System.ProgramSources;
+using Wox.Plugin.SystemPlugins.ProgramSources;
 
-namespace Wox.Plugin.System
+namespace Wox.Plugin.SystemPlugins
 {
     public class Program
     {
@@ -43,7 +43,7 @@ namespace Wox.Plugin.System
         public IProgramSource Source { get; set; }
     }
 
-    public class Programs : BaseSystemPlugin
+    public class Programs : BaseSystemPlugin, ISettingProvider
     {
         List<Program> installedList = new List<Program>();
         List<IProgramSource> sources = new List<IProgramSource>();
@@ -161,5 +161,14 @@ namespace Wox.Plugin.System
         {
             get { return base.Description; }
         }
+
+        #region ISettingProvider Members
+
+        public System.Windows.Controls.Control CreateSettingPanel()
+        {
+            return new ProgramSetting();
+        }
+
+        #endregion
     }
 }

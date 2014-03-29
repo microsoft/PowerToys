@@ -5,7 +5,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
 
-namespace Wox.Plugin.System.CMD
+namespace Wox.Plugin.SystemPlugins.CMD
 {
     public class CMDStorage : BaseStorage<CMDStorage>
     {

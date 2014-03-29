@@ -266,9 +266,9 @@
       <Project>{4fd29318-a8ab-4d8f-aa47-60bc241b8da3}</Project>
       <Name>Wox.Infrastructure</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Wox.Plugin.System\Wox.Plugin.System.csproj">
+    <ProjectReference Include="..\Wox.Plugin.SystemPlugins\Wox.Plugin.SystemPlugins.csproj">
       <Project>{69ce0206-cb41-453d-88af-df86092ef9b8}</Project>
-      <Name>Wox.Plugin.System</Name>
+      <Name>Wox.Plugin.SystemPlugins</Name>
     </ProjectReference>
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj">
       <Project>{8451ECDD-2EA4-4966-BB0A-7BBC40138E80}</Project>

@@ -7,7 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using Wox.Infrastructure;
 
-namespace Wox.Plugin.System
+namespace Wox.Plugin.SystemPlugins
 {
     public class DirectoryIndicator : BaseSystemPlugin
     {
