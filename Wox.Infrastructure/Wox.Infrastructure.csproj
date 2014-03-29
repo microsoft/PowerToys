@@ -49,6 +49,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Unidecoder.Characters.cs" />
     <Compile Include="ChineseToPinYin.cs" />
     <Compile Include="HttpRequest.cs" />
     <Compile Include="Storage\BaseStorage.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="Storage\UserSettings\WebSearch.cs" />
     <Compile Include="StringEmptyConverter.cs" />
     <Compile Include="StringNullOrEmptyToVisibilityConverter.cs" />
+    <Compile Include="Unidecoder.cs" />
     <Compile Include="WindowsShellRun.cs" />
   </ItemGroup>
   <ItemGroup>

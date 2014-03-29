@@ -28,8 +28,8 @@ namespace Wox.Plugin.SystemPlugins
             set
             {
                 m_Title = value;
-                string pinyin = ChineseToPinYin.ToPinYin(m_Title);
-                PinyinTitle = pinyin.Replace(" ", "").ToLower();
+                string pinyin = m_Title.Unidecode();
+                PinyinTitle = pinyin;
                 AbbrTitle = AbbrRegexp.Replace(global::System.Threading.Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(pinyin), "");
                 if (AbbrTitle.Length < 2) AbbrTitle = null;
             }

@@ -148,7 +148,7 @@ namespace Wox.Plugin.SystemPlugins
             set
             {
                 m_Name = value;
-                PinyinName = ChineseToPinYin.ToPinYin(m_Name).Replace(" ", "").ToLower();
+                PinyinName = m_Name.Unidecode();
             }
         }
         public string PinyinName { get; private set; }
