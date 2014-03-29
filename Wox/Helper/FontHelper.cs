@@ -60,7 +60,10 @@ namespace Wox.Helper
 
         public static FamilyTypeface ConvertFromInvariantStringsOrNormal(this FontFamily family, string style, string weight, string stretch)
         {
-            return family.FamilyTypefaces.FirstOrDefault(o => o.Style == GetFontStyleFromInvariantStringOrNormal(style) && o.Weight == GetFontWeightFromInvariantStringOrNormal(weight) && o.Stretch == GetFontStretchFromInvariantStringOrNormal(stretch))
+            var styleObj = GetFontStyleFromInvariantStringOrNormal(style);
+            var weightObj = GetFontWeightFromInvariantStringOrNormal(weight);
+            var stretchObj = GetFontStretchFromInvariantStringOrNormal(stretch);
+            return family.FamilyTypefaces.FirstOrDefault(o => o.Style == styleObj && o.Weight == weightObj && o.Stretch == stretchObj)
                 ?? family.ChooseRegularFamilyTypeface();
         }
 
