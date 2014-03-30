@@ -87,6 +87,24 @@ namespace Wox.Plugin.SystemPlugins
             });
             availableResults.Add(new Result
             {
+                Title = "Restart Wox",
+                SubTitle = "Restart Wox",
+                Score = 110,
+                IcoPath = "Images\\restart.png",
+                Action = (c) =>
+                {
+                    ProcessStartInfo Info = new ProcessStartInfo();
+                    Info.Arguments = "/C ping 127.0.0.1 -n 1 && \"" + Application.ExecutablePath + "\"";
+                    Info.WindowStyle = ProcessWindowStyle.Hidden;
+                    Info.CreateNoWindow = true;
+                    Info.FileName = "cmd.exe";
+                    Process.Start(Info);
+                    context.CloseApp();
+                    return true;
+                }
+            });
+            availableResults.Add(new Result
+            {
                 Title = "Setting",
                 SubTitle = "Tweak this app",
                 Score = 40,

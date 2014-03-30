@@ -247,10 +247,10 @@ namespace Wox
             {
                 var origScreen = Screen.FromRectangle(new Rectangle((int) Left, (int) Top, (int) ActualWidth, (int) ActualHeight));
                 var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-                var croodX = (Left + ActualWidth / 2.0 - (origScreen.Bounds.Left + origScreen.Bounds.Right) / 2.0) / origScreen.Bounds.Width;
-                var croodY = (Top + ActualHeight / 2.0 - (origScreen.Bounds.Top + origScreen.Bounds.Bottom) / 2.0) / origScreen.Bounds.Height;
-                Left = croodX * screen.Bounds.Width - ActualWidth / 2.0 + (screen.Bounds.Left + screen.Bounds.Right) / 2.0;
-                Top = croodY * screen.Bounds.Height - ActualHeight / 2.0 + (screen.Bounds.Top + screen.Bounds.Bottom) / 2.0;
+                var coordX = (Left - origScreen.WorkingArea.Left)/(origScreen.WorkingArea.Width - ActualWidth);
+                var coordY = (Top - origScreen.WorkingArea.Top)/(origScreen.WorkingArea.Height - ActualHeight);
+                Left = (screen.WorkingArea.Width - ActualWidth)*coordX + screen.WorkingArea.Left;
+                Top = (screen.WorkingArea.Height - ActualHeight)*coordY + screen.WorkingArea.Top;
             }
 
             Show();
