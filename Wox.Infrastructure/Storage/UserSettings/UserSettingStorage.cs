@@ -47,6 +47,9 @@ namespace Wox.Infrastructure.Storage.UserSettings
         [JsonProperty]
         public List<ProgramSource> ProgramSources { get; set; }
 
+		[JsonProperty]
+		public List<FolderLink> FolderLinks { get; set; }	//Aaron
+
         [JsonProperty]
         public List<CustomPluginHotkey> CustomPluginHotkeys { get; set; }
 

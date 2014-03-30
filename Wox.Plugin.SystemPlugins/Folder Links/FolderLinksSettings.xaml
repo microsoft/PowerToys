@@ -1,0 +1,32 @@
+﻿<UserControl x:Class="Wox.Plugin.SystemPlugins.Folder_Links.FolderLinksSettings"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+			 mc:Ignorable="d" 
+			 d:DesignHeight="300" d:DesignWidth="300">
+	<Grid Margin="10">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="50"/>
+		</Grid.RowDefinitions>
+		<ListView x:Name="lbxFolders" Grid.Row="0">
+			<ListView.View>
+				<GridView>
+					<GridViewColumn Header="Folder Path"  Width="180">
+						<GridViewColumn.CellTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Path}"/>
+							</DataTemplate>
+						</GridViewColumn.CellTemplate>
+					</GridViewColumn>
+				</GridView>
+			</ListView.View>
+		</ListView>
+		<StackPanel Grid.Row="1" HorizontalAlignment="Right" Orientation="Horizontal">
+			<Button x:Name="btnDelete" Click="btnDelete_Click" Width="100" Margin="10" Content="Delete"/>
+			<Button x:Name="btnEdit" Click="btnEdit_Click" Width="100" Margin="10" Content="Edit"/>
+			<Button x:Name="btnAdd" Click="btnAdd_Click" Width="100" Margin="10" Content="Add"/>
+		</StackPanel>
+	</Grid>
+</UserControl>

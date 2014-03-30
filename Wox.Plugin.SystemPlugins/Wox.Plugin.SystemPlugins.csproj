@@ -55,6 +55,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CMD\CMDStorage.cs" />
+    <Compile Include="Folder Links\FolderLinksPlugin.cs" />
+    <Compile Include="Folder Links\FolderLinksSettings.xaml.cs">
+      <DependentUpon>FolderLinksSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Program\ProgramSetting.xaml.cs">
       <DependentUpon>ProgramSetting.xaml</DependentUpon>
     </Compile>
@@ -99,6 +103,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Folder Links\FolderLinksSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Program\ProgramSetting.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -30,7 +30,8 @@ namespace Wox.Plugin.SystemPlugins
             InitialDriverList();
 
             var input = query.RawQuery.ToLower();
-            if (driverNames.FirstOrDefault(x => input.StartsWith(x)) == null) return results;
+			//if (driverNames.FirstOrDefault(x => input.StartsWith(x)) == null) return results;
+			if (!driverNames.Any(x => input.StartsWith(x))) return results;
 
             if (Directory.Exists(query.RawQuery))
             {

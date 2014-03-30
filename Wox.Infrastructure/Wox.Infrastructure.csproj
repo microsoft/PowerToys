@@ -49,6 +49,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Storage\UserSettings\FolderLink.cs" />
     <Compile Include="Unidecoder.Characters.cs" />
     <Compile Include="ChineseToPinYin.cs" />
     <Compile Include="HttpRequest.cs" />
