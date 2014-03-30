@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Runtime.InteropServices;
+using System.Text;
 using Wox.Infrastructure.Storage.UserSettings;
 
-namespace Wox.Plugin.SystemPlugins.ProgramSources
+namespace Wox.Plugin.SystemPlugins.Program.ProgramSources
 {
     [global::System.ComponentModel.Browsable(false)]
     public class CommonStartMenuProgramSource : FileSystemProgramSource

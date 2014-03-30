@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using Wox.Infrastructure;
 using Wox.Infrastructure.Storage.UserSettings;
-using Wox.Plugin.SystemPlugins;
-using Wox.Plugin.SystemPlugins.ProgramSources;
 
-namespace Wox.Plugin.SystemPlugins.ProgramSources {
+namespace Wox.Plugin.SystemPlugins.Program.ProgramSources {
 	//TODO: Create Deep Version that grabs all subfolders like FileSystemProgramSource
 
 	/// <summary>

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Diagnostics;
 
-namespace Wox.Plugin.SystemPlugins
+namespace Wox.Plugin.SystemPlugins.Program
 {
     public interface IProgramSource
     {
@@ -21,9 +19,9 @@ namespace Wox.Plugin.SystemPlugins
             get; set;
         }
 
-        protected Program CreateEntry(string file)
+        protected SystemPlugins.Program.Program CreateEntry(string file)
         {
-            Program p = new Program()
+            SystemPlugins.Program.Program p = new SystemPlugins.Program.Program()
             {
                 Title = global::System.IO.Path.GetFileNameWithoutExtension(file),
                 IcoPath = file,

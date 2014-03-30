@@ -1,23 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Forms;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using Wox.Infrastructure;
-using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
 using MessageBox = System.Windows.MessageBox;
 
-namespace Wox.Plugin.SystemPlugins
+namespace Wox.Plugin.SystemPlugins.Program
 {
     public partial class ProgramSourceSetting : Window
     {
@@ -30,7 +19,7 @@ namespace Wox.Plugin.SystemPlugins
             this.settingWindow = settingWidow;
             InitializeComponent();
 
-            this.cbType.ItemsSource = Wox.Plugin.SystemPlugins.Programs.SourceTypes.Select(o => o.Key).ToList();
+            this.cbType.ItemsSource = Programs.SourceTypes.Select(o => o.Key).ToList();
         }
 
         public void UpdateItem(ProgramSource programSource)
@@ -115,7 +104,7 @@ namespace Wox.Plugin.SystemPlugins
         {
             string item = cbType.SelectedItem as String;
             Type type;
-            if (item != null && Wox.Plugin.SystemPlugins.Programs.SourceTypes.TryGetValue(item, out type))
+            if (item != null && Programs.SourceTypes.TryGetValue(item, out type))
             {
                 var attrs = type.GetCustomAttributes(typeof(BrowsableAttribute), false);
                 if (attrs.Length > 0 && (attrs[0] as BrowsableAttribute).Browsable == false)

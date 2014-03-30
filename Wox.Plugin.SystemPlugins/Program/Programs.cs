@@ -1,19 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Windows.Forms;
-using Microsoft.Win32;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
-using Wox.Plugin.SystemPlugins.ProgramSources;
+using Wox.Plugin.SystemPlugins.Program.ProgramSources;
 
-namespace Wox.Plugin.SystemPlugins
+namespace Wox.Plugin.SystemPlugins.Program
 {
     public class Program
     {

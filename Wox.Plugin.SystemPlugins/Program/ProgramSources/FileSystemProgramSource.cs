@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Wox.Infrastructure.Storage.UserSettings;
 
-namespace Wox.Plugin.SystemPlugins.ProgramSources
+namespace Wox.Plugin.SystemPlugins.Program.ProgramSources
 {
     public class FileSystemProgramSource : AbstractProgramSource
     {
