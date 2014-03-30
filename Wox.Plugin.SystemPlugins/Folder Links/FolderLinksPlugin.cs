@@ -43,8 +43,26 @@ namespace Wox.Plugin.SystemPlugins.Folder_Links {
 			var Input_Name = input.Split(new string[] { @"\" }, StringSplitOptions.None).First().ToLower();
 			var Current_Path = Saved_Folders.FirstOrDefault(x =>
 				x.Split(new string[] { @"\" }, StringSplitOptions.None).Last().ToLower() == Input_Name);
-			if (Current_Path == null) return results;
 
+			foreach (var item in Saved_Folders) {
+				var Name = item.Split(new string[] { @"\" }, StringSplitOptions.None).Last();
+
+				if (Name.ToLower().StartsWith(input)) {
+					Result result = new Result {
+						Title = Name,
+						IcoPath = "Images/folder.png",
+						Action = (c) => {
+							context.ChangeQuery(item);
+							return false;
+						}
+					};
+
+					results.Add(result);
+				}
+			}
+
+
+			if (Current_Path == null) return results;
 			Current_Path += query.RawQuery.ToLower().Remove(0, Input_Name.Length);
 
 			if (Directory.Exists(Current_Path)) {
