@@ -166,6 +166,7 @@ namespace Wox
             lvCustomHotkey.ItemsSource = UserSettingStorage.Instance.CustomPluginHotkeys;
             cbEnablePythonPlugins.IsChecked = UserSettingStorage.Instance.EnablePythonPlugins;
             cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
+            cbEnableBookmarkPlugin.IsChecked = UserSettingStorage.Instance.EnableBookmarkPlugin;
 
             var features = new CompositeCollection
             {
