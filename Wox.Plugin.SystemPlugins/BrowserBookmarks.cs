@@ -49,6 +49,11 @@ namespace Wox.Plugin.SystemPlugins
 
         protected override void InitInternal(PluginInitContext context)
         {
+			if (!Wox.Infrastructure.Storage.UserSettings.UserSettingStorage.Instance.EnableBookmarkPlugin) 
+			{
+				return;
+			}
+
             bookmarks.Clear();
             LoadChromeBookmarks();
          

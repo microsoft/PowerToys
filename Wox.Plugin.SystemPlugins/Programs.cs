@@ -53,6 +53,7 @@ namespace Wox.Plugin.SystemPlugins
             {"CommonStartMenuProgramSource", typeof(CommonStartMenuProgramSource)},
             {"UserStartMenuProgramSource", typeof(UserStartMenuProgramSource)},
             {"AppPathsProgramSource", typeof(AppPathsProgramSource)},
+			{"FileSystemFolderSourceShallow", typeof(FileSystemFolderSourceShallow)},
         };
         private PluginInitContext context;
 

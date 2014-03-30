@@ -67,6 +67,15 @@ namespace Wox
                 UserSettingStorage.Instance.Save();
             };
 
+			cbEnableBookmarkPlugin.Checked += (o, e) => {
+				UserSettingStorage.Instance.EnableBookmarkPlugin = true;
+				UserSettingStorage.Instance.Save();
+			};
+			cbEnableBookmarkPlugin.Unchecked += (o, e) => {
+				UserSettingStorage.Instance.EnableBookmarkPlugin = false;
+				UserSettingStorage.Instance.Save();
+			};
+
             #region Load Theme Data
 
             if (!string.IsNullOrEmpty(UserSettingStorage.Instance.QueryBoxFont) &&
