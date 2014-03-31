@@ -19,6 +19,11 @@ namespace Wox.Plugin.SystemPlugins.Folder_Links {
 
 		protected override void InitInternal(PluginInitContext context) {
 			this.context = context;
+             if (UserSettingStorage.Instance.FolderLinks == null)
+             {
+                 UserSettingStorage.Instance.FolderLinks = new List<FolderLink>();
+                 UserSettingStorage.Instance.Save();
+             }
 		}
 
 		public System.Windows.Controls.Control CreateSettingPanel() {
