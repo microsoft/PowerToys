@@ -4,7 +4,7 @@ using System.Linq;
 using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Plugin.SystemPlugins.Program.ProgramSources {
-	//TODO: Create Deep Version that grabs all subfolders like FileSystemProgramSource
+	//TODO: Consider Removing
 
 	/// <summary>
 	/// 
