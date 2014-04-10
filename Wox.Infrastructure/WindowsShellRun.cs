@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.IO;
+using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Infrastructure
 {
@@ -102,7 +103,21 @@ namespace Wox.Infrastructure
                     startDir = dir;
             }
 
-            global::System.Diagnostics.ProcessStartInfo startInfo = new global::System.Diagnostics.ProcessStartInfo();
+	        if (UserSettingStorage.Instance.LeaveCmdOpen)
+	        {
+		        string cmdExe;
+		        string dummy;
+				EvaluateSystemAndUserCommandLine("cmd.exe", startDir, out cmdExe, out dummy, dwSeclFlags);
+
+				// check whether user typed >cmd, because we don't want to create 2 nested shells
+		        if (cmdExe != cmd)
+		        {
+			        args = string.Format("/k {0} {1}", cmd, args);
+			        cmd = cmdExe;
+		        }
+	        }
+
+	        global::System.Diagnostics.ProcessStartInfo startInfo = new global::System.Diagnostics.ProcessStartInfo();
             startInfo.UseShellExecute = true;
             startInfo.Arguments = args;
             startInfo.FileName = cmd;

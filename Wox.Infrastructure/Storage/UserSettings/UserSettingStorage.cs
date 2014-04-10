@@ -68,6 +68,9 @@ namespace Wox.Infrastructure.Storage.UserSettings
         [JsonProperty]
         public OpacityMode OpacityMode { get; set; }
 
+		[JsonProperty]
+		public bool LeaveCmdOpen { get; set; }
+
         public List<WebSearch> LoadDefaultWebSearches()
         {
             List<WebSearch> webSearches = new List<WebSearch>();
@@ -137,7 +140,8 @@ namespace Wox.Infrastructure.Storage.UserSettings
             QueryBoxFont = FontFamily.GenericSansSerif.Name;
             ResultItemFont = FontFamily.GenericSansSerif.Name;
             Opacity = 1;
-            OpacityMode = OpacityMode.Normal;
+	        OpacityMode = OpacityMode.Normal;
+	        LeaveCmdOpen = false;
         }
 
     }

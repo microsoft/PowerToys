@@ -76,6 +76,17 @@ namespace Wox
 				UserSettingStorage.Instance.Save();
 			};
 
+			cbLeaveCmdOpen.Checked += (o, e) => {
+				UserSettingStorage.Instance.LeaveCmdOpen = true;
+				UserSettingStorage.Instance.Save();
+			};
+
+			cbLeaveCmdOpen.Unchecked += (o, e) =>
+			{
+				UserSettingStorage.Instance.LeaveCmdOpen = false;
+				UserSettingStorage.Instance.Save();
+			};
+
             #region Load Theme Data
 
             if (!string.IsNullOrEmpty(UserSettingStorage.Instance.QueryBoxFont) &&
@@ -167,6 +178,7 @@ namespace Wox
             cbEnablePythonPlugins.IsChecked = UserSettingStorage.Instance.EnablePythonPlugins;
             cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
             cbEnableBookmarkPlugin.IsChecked = UserSettingStorage.Instance.EnableBookmarkPlugin;
+	        cbLeaveCmdOpen.IsChecked = UserSettingStorage.Instance.LeaveCmdOpen;
 
             var features = new CompositeCollection
             {
