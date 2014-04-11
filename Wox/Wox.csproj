@@ -119,6 +119,7 @@
     <Compile Include="Helper\SyntaxSugars.cs" />
     <Compile Include="Helper\WallpaperPathRetrieval.cs" />
     <Compile Include="Helper\WindowIntelopHelper.cs" />
+    <Compile Include="Helper\WindowOpener.cs" />
     <Compile Include="OpacityModeConverter.cs" />
     <Compile Include="CustomPluginHotkeySetting.xaml.cs">
       <DependentUpon>CustomPluginHotkeySetting.xaml</DependentUpon>

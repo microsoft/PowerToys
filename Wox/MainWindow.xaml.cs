@@ -517,7 +517,7 @@ namespace Wox
 
         public void OpenSettingDialog()
         {
-            new SettingWindow(this).Show();
+	        WindowOpener.Open<SettingWindow>(this);
         }
 
         public void ShowCurrentResultItemTooltip(string text)
