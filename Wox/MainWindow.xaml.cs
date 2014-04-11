@@ -23,6 +23,7 @@ using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.PluginLoader;
+using Wox.Properties;
 using Application = System.Windows.Application;
 using Brushes = System.Windows.Media.Brushes;
 using Color = System.Windows.Media.Color;
@@ -179,9 +180,11 @@ namespace Wox
             notifyIcon.Click += (o, e) => ShowWox();
             var open = new MenuItem("Open");
             open.Click += (o, e) => ShowWox();
+	        var setting = new MenuItem("Setting");
+	        setting.Click += (o, e) => OpenSettingDialog();
             var exit = new MenuItem("Exit");
             exit.Click += (o, e) => CloseApp();
-            MenuItem[] childen = { open, exit };
+            MenuItem[] childen = { open, setting, exit };
             notifyIcon.ContextMenu = new ContextMenu(childen);
         }
 
