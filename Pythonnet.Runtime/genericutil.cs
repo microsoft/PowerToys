@@ -38,6 +38,9 @@ namespace Python.Runtime {
 
         internal static void Register(Type t) {
             Dictionary<string, List<string>> nsmap = null;
+            //for Anonymous type, there is no namespace
+            if (t.Namespace == null) return;
+
             mapping.TryGetValue(t.Namespace, out nsmap);
             if (nsmap == null) {
                 nsmap = new Dictionary<string, List<string>>();
