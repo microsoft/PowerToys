@@ -80,7 +80,7 @@ namespace Wox.Infrastructure
 
         static void ShellExecCmdLine(IntPtr hInstance, IntPtr hwnd, string command, string startDir, global::System.Diagnostics.ProcessWindowStyle nShow, ShellExecCmdLineFlags dwSeclFlags)
         {
-            string cmd = command;
+	        string cmd = command;
             string args = null;
             if (UrlIs(command, URLIS_URL))
                 cmd = command;
@@ -103,17 +103,39 @@ namespace Wox.Infrastructure
                     startDir = dir;
             }
 
-	        if (UserSettingStorage.Instance.LeaveCmdOpen)
+	        if (UserSettingStorage.Instance.LeaveCmdOpen && File.Exists(cmd))
 	        {
-		        string cmdExe;
-		        string dummy;
-				EvaluateSystemAndUserCommandLine("cmd.exe", startDir, out cmdExe, out dummy, dwSeclFlags);
+		        bool needsCommandLine;
 
-				// check whether user typed >cmd, because we don't want to create 2 nested shells
-		        if (cmdExe != cmd)
+		        try
 		        {
-			        args = string.Format("/k {0} {1}", cmd, args);
-			        cmd = cmdExe;
+
+			        var peHeaderReader = new PeHeaderReader(cmd);
+
+			        if (peHeaderReader.Is32BitHeader)
+				        needsCommandLine = peHeaderReader.OptionalHeader32.Subsystem == 3; // IMAGE_SUBSYSTEM_WINDOWS_CUI == 3
+			        else
+				        needsCommandLine = peHeaderReader.OptionalHeader64.Subsystem == 3;
+		        }
+
+		        catch (Exception)
+		        {
+			        // Error reading the headers. We will try to run the command the standard way.
+			        needsCommandLine = false;
+		        }
+
+		        if (needsCommandLine)
+		        {
+			        string cmdExe;
+			        string dummy;
+			        EvaluateSystemAndUserCommandLine("cmd.exe", startDir, out cmdExe, out dummy, dwSeclFlags);
+
+			        // check whether user typed >cmd, because we don't want to create 2 nested shells
+			        if (cmdExe != cmd)
+			        {
+				        args = string.Format("/k {0} {1}", cmd, args);
+				        cmd = cmdExe;
+			        }
 		        }
 	        }
 
