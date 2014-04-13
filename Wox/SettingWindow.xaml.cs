@@ -339,7 +339,14 @@ namespace Wox
 
         private void BtnEnableInstaller_OnClick(object sender, RoutedEventArgs e)
         {
-            Process.Start("Wox.UAC.exe", "AssociatePluginInstaller");
+            try
+            {
+                Process.Start("Wox.UAC.exe", "AssociatePluginInstaller");
+            }
+            catch (Exception)
+            {
+                //throw an exception when user click cancel in UAC prompt window.
+            }
         }
 
         #region Theme
