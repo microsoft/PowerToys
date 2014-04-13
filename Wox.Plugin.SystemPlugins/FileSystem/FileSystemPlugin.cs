@@ -136,7 +136,13 @@ namespace Wox.Plugin.SystemPlugins.FileSystem
             }
 
             // change to search in current directory
-            var parentDir = Path.GetDirectoryName(input);
+            string parentDir = null;
+            try
+            {
+                parentDir = Path.GetDirectoryName(input);
+            }
+            catch {}
+
             if (!string.IsNullOrEmpty(parentDir) && results.Count == 0)
             {
                 parentDir = parentDir.TrimEnd('\\', '/');
