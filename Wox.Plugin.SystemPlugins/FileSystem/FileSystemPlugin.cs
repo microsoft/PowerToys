@@ -6,10 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Storage.UserSettings;
 
-namespace Wox.Plugin.SystemPlugins
+namespace Wox.Plugin.SystemPlugins.FileSystem
 {
-    public class DirectoryIndicator : BaseSystemPlugin
+    public class FileSystemPlugin : BaseSystemPlugin, ISettingProvider
     {
         private PluginInitContext context;
         private static  List<string> driverNames = null;
@@ -17,6 +18,7 @@ namespace Wox.Plugin.SystemPlugins
 
         protected override List<Result> QueryInternal(Query query)
         {
+            //TODO: Consider always clearing the cache
             List<Result> results = new List<Result>();
             if (string.IsNullOrEmpty(query.RawQuery))
             {
@@ -30,15 +32,49 @@ namespace Wox.Plugin.SystemPlugins
             InitialDriverList();
 
             var input = query.RawQuery.ToLower();
-			//if (driverNames.FirstOrDefault(x => input.StartsWith(x)) == null) return results;
-			if (!driverNames.Any(x => input.StartsWith(x))) return results;
+            var inputName = input.Split(new string[] { @"\" }, StringSplitOptions.None).First().ToLower();
 
-            if (Directory.Exists(query.RawQuery))
+            var link = UserSettingStorage.Instance.FolderLinks.FirstOrDefault(x =>
+                x.Nickname.Equals(inputName, StringComparison.OrdinalIgnoreCase));
+            var currentPath = link != null ? link.Path : null;
+
+            foreach (var item in UserSettingStorage.Instance.FolderLinks)
+            {
+                var Name = item.Nickname;
+
+                if (Name.StartsWith(input, StringComparison.OrdinalIgnoreCase) && Name.Length != input.Length)
+                {
+                    Result result = new Result
+                    {
+                        Title = Name,
+                        IcoPath = "Images/folder.png",
+                        Action = (c) =>
+                        {
+                            context.ChangeQuery(item.Nickname);
+                            return false;
+                        }
+                    };
+
+                    results.Add(result);
+                }
+            }
+
+            if (currentPath == null)
+            {
+                if (!driverNames.Any(input.StartsWith))
+                    return results;
+
+                currentPath = input;
+            }
+            else
+                currentPath += input.Remove(0, inputName.Length);
+
+            if (Directory.Exists(currentPath))
             {
                 // show all child directory
                 if (input.EndsWith("\\") || input.EndsWith("/"))
                 {
-                    var dirInfo = new DirectoryInfo(query.RawQuery);
+                    var dirInfo = new DirectoryInfo(currentPath);
                     var dirs = dirInfo.GetDirectories();
 
                     var parentDirKey = input.TrimEnd('\\', '/');
@@ -73,7 +109,7 @@ namespace Wox.Plugin.SystemPlugins
                             IcoPath = "Images/folder.png",
                             Action = (c) =>
                             {
-                                Process.Start(query.RawQuery);
+                                Process.Start(currentPath);
                                 return true;
                             }
                         };
@@ -85,12 +121,12 @@ namespace Wox.Plugin.SystemPlugins
                     Result result = new Result
                     {
                         Title = "Open this directory",
-                        SubTitle = string.Format("path: {0}", query.RawQuery),
+                        SubTitle = string.Format("path: {0}", currentPath),
                         Score = 50,
                         IcoPath = "Images/folder.png",
                         Action = (c) =>
                         {
-                            Process.Start(query.RawQuery);
+                            Process.Start(currentPath);
                             return true;
                         }
                     };
@@ -108,7 +144,7 @@ namespace Wox.Plugin.SystemPlugins
                 {
                     
                     var dirs = parentDirectories[parentDir];
-                    var queryFileName = Path.GetFileName(query.RawQuery).ToLower();
+                    var queryFileName = Path.GetFileName(currentPath).ToLower();
                     var fuzzy = FuzzyMatcher.Create(queryFileName);
                     foreach (var dir in dirs)
                     {
@@ -156,6 +192,12 @@ namespace Wox.Plugin.SystemPlugins
         protected override void InitInternal(PluginInitContext context)
         {
             this.context = context;
+
+            if (UserSettingStorage.Instance.FolderLinks == null)
+            {
+                UserSettingStorage.Instance.FolderLinks = new List<FolderLink>();
+                UserSettingStorage.Instance.Save();
+            }
         }
 
         public override string Name
@@ -166,6 +208,12 @@ namespace Wox.Plugin.SystemPlugins
         public override string IcoPath
         {
             get { return @"Images\folder.png"; }
+        }
+
+
+        public System.Windows.Controls.Control CreateSettingPanel()
+        {		
+            return new FileSystemSettings();
         }
 
         public override string Description

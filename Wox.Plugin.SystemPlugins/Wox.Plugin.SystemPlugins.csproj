@@ -55,9 +55,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CMD\CMDStorage.cs" />
-    <Compile Include="Folder Links\FolderLinksPlugin.cs" />
-    <Compile Include="Folder Links\FolderLinksSettings.xaml.cs">
-      <DependentUpon>FolderLinksSettings.xaml</DependentUpon>
+    <Compile Include="FileSystem\FileSystemSettings.xaml.cs">
+      <DependentUpon>FileSystemSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Program\ProgramSetting.xaml.cs">
       <DependentUpon>ProgramSetting.xaml</DependentUpon>
@@ -79,7 +78,7 @@
     </Compile>
     <Compile Include="WebSearch\WebSearchPlugin.cs" />
     <Compile Include="CMD\CMD.cs" />
-    <Compile Include="DirectoryIndicator.cs" />
+    <Compile Include="FileSystem\FileSystemPlugin.cs" />
     <Compile Include="ISystemPlugin.cs" />
     <Compile Include="Program\Programs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -102,7 +101,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Folder Links\FolderLinksSettings.xaml">
+    <Page Include="FileSystem\FileSystemSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
