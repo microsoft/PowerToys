@@ -299,7 +299,13 @@ namespace Wox
             }
         }
 
-
+        private void MainWindow_OnDeactivated(object sender, EventArgs e)
+        {
+            if (UserSettingStorage.Instance.HideWhenDeactive)
+            {
+                HideWox();
+            }
+        }
 
         private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)
         {
@@ -554,5 +560,7 @@ namespace Wox
             }
             return false;
         }
+
+
     }
 }

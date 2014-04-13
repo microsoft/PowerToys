@@ -71,6 +71,9 @@ namespace Wox.Infrastructure.Storage.UserSettings
 		[JsonProperty]
 		public bool LeaveCmdOpen { get; set; }
 
+        [JsonProperty]
+        public bool HideWhenDeactive { get; set; }
+
         public List<WebSearch> LoadDefaultWebSearches()
         {
             List<WebSearch> webSearches = new List<WebSearch>();
@@ -142,6 +145,7 @@ namespace Wox.Infrastructure.Storage.UserSettings
             Opacity = 1;
 	        OpacityMode = OpacityMode.Normal;
 	        LeaveCmdOpen = false;
+            HideWhenDeactive = false;
         }
 
     }

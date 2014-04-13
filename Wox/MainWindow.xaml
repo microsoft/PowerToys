@@ -6,6 +6,7 @@
         Loaded="MainWindow_OnLoaded"
         SizeToContent="Height"
         ResizeMode="NoResize"
+        Deactivated="MainWindow_OnDeactivated"
         WindowStyle="None"
         WindowStartupLocation="Manual"
         ShowInTaskbar="False"

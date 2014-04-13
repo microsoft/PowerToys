@@ -33,6 +33,10 @@
                     <CheckBox x:Name="cbLeaveCmdOpen" />
                     <TextBlock Text="Do not close Command Prompt after command execution" />
                 </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <CheckBox x:Name="cbHideWhenDeactive" />
+                    <TextBlock Text="Hide Wox when loses focus" />
+                </StackPanel>
             </StackPanel>
         </TabItem>
         <TabItem Header="Features">

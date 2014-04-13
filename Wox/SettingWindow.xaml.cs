@@ -87,6 +87,18 @@ namespace Wox
 				UserSettingStorage.Instance.Save();
 			};
 
+            cbHideWhenDeactive.Checked += (o, e) =>
+            {
+                UserSettingStorage.Instance.HideWhenDeactive = true;
+                UserSettingStorage.Instance.Save();
+            };
+
+            cbHideWhenDeactive.Unchecked += (o, e) =>
+            {
+                UserSettingStorage.Instance.HideWhenDeactive = false;
+                UserSettingStorage.Instance.Save();
+            };
+
             #region Load Theme Data
 
             if (!string.IsNullOrEmpty(UserSettingStorage.Instance.QueryBoxFont) &&
@@ -179,6 +191,7 @@ namespace Wox
             cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
             cbEnableBookmarkPlugin.IsChecked = UserSettingStorage.Instance.EnableBookmarkPlugin;
 	        cbLeaveCmdOpen.IsChecked = UserSettingStorage.Instance.LeaveCmdOpen;
+            cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
 
             var features = new CompositeCollection
             {
