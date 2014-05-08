@@ -24,7 +24,7 @@ namespace Wox.Helper
 
         static FontStyleConverter fontStyleConverter = new FontStyleConverter();
         public static FontStyle GetFontStyleFromInvariantStringOrNormal(string value)
-        {
+        {			
             try
             {
                 return (FontStyle)fontStyleConverter.ConvertFromInvariantString(value);
@@ -37,7 +37,7 @@ namespace Wox.Helper
 
         static FontStretchConverter fontStretchConverter = new FontStretchConverter();
         public static FontStretch GetFontStretchFromInvariantStringOrNormal(string value)
-        {
+        {		
             try
             {
                 return (FontStretch)fontStretchConverter.ConvertFromInvariantString(value);

@@ -57,7 +57,7 @@ namespace Wox
         {
             // First time app is launched
             app = new App();
-            app.InitializeComponent();
+			//app.InitializeComponent();
             app.Run();
             return true;
         }
