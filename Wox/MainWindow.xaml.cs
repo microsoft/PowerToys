@@ -442,7 +442,7 @@ namespace Wox {
 					if (hideWindow) {
 						HideWox();
 					}
-					//UserSelectedRecordStorage.Instance.Add(result);
+					UserSelectedRecordStorage.Instance.Add(result);
 				}
 			}
 		}
@@ -470,12 +470,6 @@ namespace Wox {
 		}
 
 		public void SetTheme(string themeName) {
-			//Uri uri = new Uri("Themes/Default.xaml", UriKind.Relative);
-			//System.Windows.Resources.StreamResourceInfo info = Application.GetResourceStream(uri);
-			//System.Windows.Markup.XamlReader reader = new System.Windows.Markup.XamlReader();
-
-
-
 			var dict = new ResourceDictionary {
 				Source = new Uri(Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Themes\\" + themeName + ".xaml"), UriKind.Absolute)
 			};
