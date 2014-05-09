@@ -114,3 +114,5 @@ UpgradeLog*.XML
 
 *.DotSettings
 /Python.Runtime.dll
+Wox/Images/websearch/Thumbs.db
+Wox/Images/Thumbs.db

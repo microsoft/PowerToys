@@ -361,6 +361,26 @@ namespace Wox {
 
 		private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e) {
 			//when alt is pressed, the real key should be e.SystemKey
+
+			Action Shift_GoBack = () => {
+				if (e.KeyboardDevice.IsKeyDown(Key.LeftShift) || e.KeyboardDevice.IsKeyDown(Key.RightShift)) {
+					if (tbQuery.Text.EndsWith("\\")) {
+						tbQuery.Text = tbQuery.Text.Remove(tbQuery.Text.Length - 1);
+					}
+
+					if (tbQuery.Text.Contains("\\")) {
+						var index = tbQuery.Text.LastIndexOf("\\");
+						tbQuery.Text = tbQuery.Text.Remove(index) + "\\";
+					}
+					else {
+						tbQuery.Text = "";
+						return;
+					}
+				}
+
+				tbQuery.CaretIndex = int.MaxValue;
+			};
+
 			Key key = (e.Key == Key.System ? e.SystemKey : e.Key);
 			switch (key) {
 				case Key.Escape:
@@ -397,22 +417,17 @@ namespace Wox {
 					break;
 
 				case Key.Enter:
+					Shift_GoBack();
 					AcceptSelect(resultCtrl.AcceptSelect());
 					e.Handled = true;
 					break;
 
 				case Key.Tab:
-					var SelectedItem = resultCtrl.lbResults.SelectedItem as Wox.Plugin.Result;
-					if (SelectedItem != null) {
-						if (tbQuery.Text.Contains("\\")) {
-							var index = tbQuery.Text.LastIndexOf("\\");
-							tbQuery.Text = tbQuery.Text.Remove(index) + "\\";
-						}
-
-						tbQuery.Text += SelectedItem.Title;
-						tbQuery.CaretIndex = int.MaxValue;
-					}
-
+					Shift_GoBack();
+					AcceptSelect(resultCtrl.AcceptSelect());
+					if (!tbQuery.Text.EndsWith("\\")) tbQuery.Text += "\\";
+					AcceptSelect(resultCtrl.AcceptSelect());
+					tbQuery.CaretIndex = int.MaxValue;
 					e.Handled = true;
 					break;
 			}
@@ -427,7 +442,7 @@ namespace Wox {
 					if (hideWindow) {
 						HideWox();
 					}
-					UserSelectedRecordStorage.Instance.Add(result);
+					//UserSelectedRecordStorage.Instance.Add(result);
 				}
 			}
 		}
