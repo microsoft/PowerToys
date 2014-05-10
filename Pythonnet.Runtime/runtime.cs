@@ -88,7 +88,8 @@ namespace Python.Runtime {
         PyTrue = Runtime.PyObject_GetAttrString(op, "True");
         PyFalse = Runtime.PyObject_GetAttrString(op, "False");
 
-        PyBoolType = Runtime.PyObject_Type(PyTrue);
+        PyBoolType = Runtime.PyObject_Type(PyTrue);>	Python.Runtime.Runtime.Initialize()	C#
+
         PyNoneType = Runtime.PyObject_Type(PyNone);
         PyTypeType = Runtime.PyObject_Type(PyNoneType);
 

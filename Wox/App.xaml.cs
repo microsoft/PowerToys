@@ -18,114 +18,98 @@ using MessageBoxOptions = System.Windows.Forms.MessageBoxOptions;
 using StartupEventArgs = System.Windows.StartupEventArgs;
 using UnhandledExceptionEventArgs = System.UnhandledExceptionEventArgs;
 
-namespace Wox
-{
-    public static class EntryPoint
-    {
-        [STAThread]
-        public static void Main(string[] args)
-        {
-            AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
-            System.Windows.Forms.Application.ThreadException += ErrorReporting.ThreadException;
-            
-            // don't combine Main and Entry since Microsoft.VisualBasic may be unable to load
-            // seperating them into two methods can make error reporting have the chance to catch exception
-            Entry(args);
-        }
+namespace Wox {
+	public static class EntryPoint {
+		[STAThread]
+		public static void Main(string[] args) {
+			AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
+			System.Windows.Forms.Application.ThreadException += ErrorReporting.ThreadException;
 
-        
-        private static void Entry(string[] args){
-            SingleInstanceManager manager = new SingleInstanceManager();
-            manager.Run(args);
-        }
-    }
+			// don't combine Main and Entry since Microsoft.VisualBasic may be unable to load
+			// seperating them into two methods can make error reporting have the chance to catch exception
+			Entry(args);
+		}
 
-    // Using VB bits to detect single instances and process accordingly:
-    //  * OnStartup is fired when the first instance loads
-    //  * OnStartupNextInstance is fired when the application is re-run again
-    //    NOTE: it is redirected to this instance thanks to IsSingleInstance
-    public class SingleInstanceManager : WindowsFormsApplicationBase
-    {
-        App app;
 
-        public SingleInstanceManager()
-        {
-            this.IsSingleInstance = true;
-        }
+		private static void Entry(string[] args) {
+			SingleInstanceManager manager = new SingleInstanceManager();
+			manager.Run(args);
+		}
+	}
 
-        protected override bool OnStartup(Microsoft.VisualBasic.ApplicationServices.StartupEventArgs e)
-        {
-            // First time app is launched
-            app = new App();
+	// Using VB bits to detect single instances and process accordingly:
+	//  * OnStartup is fired when the first instance loads
+	//  * OnStartupNextInstance is fired when the application is re-run again
+	//    NOTE: it is redirected to this instance thanks to IsSingleInstance
+	[System.Diagnostics.DebuggerStepThrough]
+	public class SingleInstanceManager : WindowsFormsApplicationBase {
+		App app;
+
+		public SingleInstanceManager() {
+			this.IsSingleInstance = true;
+		}
+
+		protected override bool OnStartup(Microsoft.VisualBasic.ApplicationServices.StartupEventArgs e) {
+			// First time app is launched
+			app = new App();
 			//app.InitializeComponent();
-            app.Run();
-            return true;
-        }
+			app.Run();
+			return true;
+		}
 
-        protected override void OnStartupNextInstance(StartupNextInstanceEventArgs eventArgs)
-        {
-            // Subsequent launches
-            base.OnStartupNextInstance(eventArgs);
-            app.Activate(eventArgs.CommandLine.ToArray());
-        }
-    }
+		protected override void OnStartupNextInstance(StartupNextInstanceEventArgs eventArgs) {
+			// Subsequent launches
+			base.OnStartupNextInstance(eventArgs);
+			app.Activate(eventArgs.CommandLine.ToArray());
+		}
+	}
 
-    public partial class App : Application
-    {
+	public partial class App : Application {
 
-        private static MainWindow window;
+		private static MainWindow window;
 
-        public static MainWindow Window
-        {
-            get
-            {
-                return window;
-            }
-        }
+		public static MainWindow Window {
+			get {
+				return window;
+			}
+		}
 
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            this.DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
+		protected override void OnStartup(StartupEventArgs e) {
+			this.DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
 
-            base.OnStartup(e);
+			base.OnStartup(e);
 
-            //for install plugin command when wox didn't start up
-            //we shouldn't init MainWindow, just intall plugin and exit.
-            if (e.Args.Length > 0 && e.Args[0].ToLower() == "installplugin")
-            {
-                var path = e.Args[1];
-                if (!File.Exists(path))
-                {
-                    MessageBox.Show("Plugin " + path + " didn't exist");
-                    return;
-                }
-                PluginInstaller.Install(path);
-                Environment.Exit(0);
-                return;
-            }
+			//for install plugin command when wox didn't start up
+			//we shouldn't init MainWindow, just intall plugin and exit.
+			if (e.Args.Length > 0 && e.Args[0].ToLower() == "installplugin") {
+				var path = e.Args[1];
+				if (!File.Exists(path)) {
+					MessageBox.Show("Plugin " + path + " didn't exist");
+					return;
+				}
+				PluginInstaller.Install(path);
+				Environment.Exit(0);
+				return;
+			}
 
-            if (e.Args.Length > 0 && e.Args[0].ToLower() == "plugindebugger")
-            {
-                var path = e.Args[1];
-                PluginLoader.Plugins.ActivatePluginDebugger(path);
-            }
+			if (e.Args.Length > 0 && e.Args[0].ToLower() == "plugindebugger") {
+				var path = e.Args[1];
+				PluginLoader.Plugins.ActivatePluginDebugger(path);
+			}
 
-            window = new MainWindow();
-            if (e.Args.Length == 0 || e.Args[0].ToLower() != "hidestart")
-            {
-                window.ShowApp();
-            }
+			window = new MainWindow();
+			if (e.Args.Length == 0 || e.Args[0].ToLower() != "hidestart") {
+				window.ShowApp();
+			}
 
-            window.ParseArgs(e.Args);
-        }
+			window.ParseArgs(e.Args);
+		}
 
-        public void Activate(string[] args)
-        {
-            if (args.Length == 0 || args[0].ToLower() != "hidestart")
-            {
-                window.ShowApp();
-            }
-            window.ParseArgs(args);
-        }
-    }
+		public void Activate(string[] args) {
+			if (args.Length == 0 || args[0].ToLower() != "hidestart") {
+				window.ShowApp();
+			}
+			window.ParseArgs(args);
+		}
+	}
 }

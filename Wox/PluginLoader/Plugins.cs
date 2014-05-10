@@ -24,7 +24,7 @@ namespace Wox.PluginLoader {
 			initializing = new ManualResetEvent(false);
 			plugins.Clear();
 			BasePluginLoader.ParsePluginsConfig();
-
+		
 			if (UserSettingStorage.Instance.EnablePythonPlugins) {
 				plugins.AddRange(new PythonPluginLoader().LoadPlugin());
 			}
