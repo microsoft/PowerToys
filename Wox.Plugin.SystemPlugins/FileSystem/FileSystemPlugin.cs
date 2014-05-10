@@ -40,35 +40,28 @@ namespace Wox.Plugin.SystemPlugins.FileSystem {
 		#endregion Misc
 
 		protected override List<Result> QueryInternal(Query query) {
-
-			#region 1
+			var results = new List<Result>();
+			var input = query.RawQuery.ToLower();
+			var inputName = input.Split(new string[] { @"\" }, StringSplitOptions.None).First().ToLower();
+			var link = UserSettingStorage.Instance.FolderLinks.FirstOrDefault(x => x.Nickname.Equals(inputName, StringComparison.OrdinalIgnoreCase));
+			var currentPath = link == null ? input : link.Path + input.Remove(0, inputName.Length);
+			InitialDriverList();
 
 			//TODO: Consider always clearing the cache
-			List<Result> results = new List<Result>();
+			//TODO: Prove the following was not ever actually used
 			//if (string.IsNullOrEmpty(query.RawQuery)) {
 			//	// clear the cache
 			//	if (parentDirectories.Count > 0) parentDirectories.Clear();
 			//	return results;
 			//}
 
-			#endregion 1
-
-			var input = query.RawQuery.ToLower();
-			var inputName = input.Split(new string[] { @"\" }, StringSplitOptions.None).First().ToLower();
-			var link = UserSettingStorage.Instance.FolderLinks.FirstOrDefault(x => x.Nickname.Equals(inputName, StringComparison.OrdinalIgnoreCase));
-			var currentPath = link == null ? input : link.Path + input.Remove(0, inputName.Length);
-
-			InitialDriverList();
-
 			foreach (var item in UserSettingStorage.Instance.FolderLinks.Where(x => x.Nickname.StartsWith(input, StringComparison.OrdinalIgnoreCase))) {
-				//if (item.Nickname.StartsWith(input, StringComparison.OrdinalIgnoreCase)) { //&& item.Nickname.Length != input.Length) {
 				results.Add(new Result(item.Nickname, "Images/folder.png") {
 					Action = (c) => {
 						context.ChangeQuery(item.Nickname);
 						return false;
 					}
 				});
-				//}
 			}
 
 			if (link == null && !driverNames.Any(input.StartsWith))
@@ -77,46 +70,6 @@ namespace Wox.Plugin.SystemPlugins.FileSystem {
 			QueryInternal_Directory_Exists(currentPath, input, results);
 
 			return results;
-
-			/*
-			// change to search in current directory
-			string parentDir = null;
-			try {
-				parentDir = Path.GetDirectoryName(input);
-			}
-			catch { }
-
-
-
-
-			return results;
-			if (!string.IsNullOrEmpty(parentDir) && results.Count == 0) {
-				parentDir = parentDir.TrimEnd('\\', '/');
-				//TODO: Why are we doing the following check
-
-				//FUCK THIS CODE o.O!!!!!!!
-
-				if (parentDirectories.ContainsKey(parentDir)) {
-					var fuzzy = FuzzyMatcher.Create(Path.GetFileName(currentPath).ToLower());
-					foreach (var dir in parentDirectories[parentDir]) {
-						if ((dir.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
-
-						var matchResult = fuzzy.Evaluate(dir.Name);
-						if (!matchResult.Success) continue;
-
-						results.Add(new Result(dir.Name, "Images/folder.png") {
-							Score = matchResult.Score,
-							Action = (c) => {
-								context.ChangeQuery(dir.FullName);
-								return false;
-							}
-						});
-					}
-				}
-			}
-
-			return results;
-			*/
 		}
 
 		private void InitialDriverList() {
@@ -157,29 +110,10 @@ namespace Wox.Plugin.SystemPlugins.FileSystem {
 
 					results.Add(result);
 				}
-
-				//if (results.Count == 0) {
-				//	results.Add(new Result("Open this directory", "Images/folder.png", "No files in this directory") {
-				//		Action = (c) => {
-				//			Process.Start(currentPath);
-				//			return true;
-				//		}
-				//	});
-				//}
 			}
 			else {
-				//results.Add(new Result("Open this directory", "Images/folder.png", string.Format("path: {0}", currentPath)) {
-				//	Score = 50,
-				//	Action = (c) => {
-				//		Process.Start(currentPath);
-				//		return true;
-				//	}
-				//});
+				//TODO: Make sure we do not need anything here
 			}
-
-
-			/**************************************************************/
-			/**************************************************************/
 
 			if (results.Count == 0) {
 				results.Add(new Result("Open this directory", "Images/folder.png", "No files in this directory") {
@@ -189,12 +123,6 @@ namespace Wox.Plugin.SystemPlugins.FileSystem {
 					}
 				});
 			}
-
-
-
-
-			/**************************************************************/
-			/**************************************************************/
 
 			var Folder = Path.GetDirectoryName(currentPath);
 			if (Folder != null) {
