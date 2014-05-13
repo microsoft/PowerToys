@@ -116,3 +116,4 @@ UpgradeLog*.XML
 /Python.Runtime.dll
 Wox/Images/websearch/Thumbs.db
 Wox/Images/Thumbs.db
+Wox/Wox.csproj
