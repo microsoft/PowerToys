@@ -324,7 +324,7 @@ namespace Wox {
 
 		private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state) {
 			if (UserSettingStorage.Instance.ReplaceWinR) {
-				//todo:need refatoring. move those codes to CMD file or expose events
+				//todo:need refactoring. move those codes to CMD file or expose events
 				if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed) {
 					WinRStroked = true;
 					Dispatcher.BeginInvoke(new Action(OnWinRPressed));
@@ -453,7 +453,7 @@ namespace Wox {
 			queryHasReturn = true;
 			progressBar.Dispatcher.Invoke(new Action(StopProgress));
 			if (list.Count > 0) {
-				//todo:this should be opened to users, it's their choise to use it or not in thier workflows
+				//todo:this should be opened to users, it's their choice to use it or not in their workflows
 				list.ForEach(
 					o => {
 						if (o.AutoAjustScore) o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o);

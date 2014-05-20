@@ -21,6 +21,7 @@ using UnhandledExceptionEventArgs = System.UnhandledExceptionEventArgs;
 namespace Wox {
 	public static class EntryPoint {
 		[STAThread]
+		[System.Diagnostics.DebuggerStepThrough]
 		public static void Main(string[] args) {
 			AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
 			System.Windows.Forms.Application.ThreadException += ErrorReporting.ThreadException;
@@ -30,7 +31,7 @@ namespace Wox {
 			Entry(args);
 		}
 
-
+		[System.Diagnostics.DebuggerStepThrough]
 		private static void Entry(string[] args) {
 			SingleInstanceManager manager = new SingleInstanceManager();
 			manager.Run(args);

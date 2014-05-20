@@ -47,14 +47,6 @@ namespace Wox.Plugin.SystemPlugins.FileSystem {
 			var currentPath = link == null ? input : link.Path + input.Remove(0, inputName.Length);
 			InitialDriverList();
 
-			//TODO: Consider always clearing the cache
-			//TODO: Prove the following was not ever actually used
-			//if (string.IsNullOrEmpty(query.RawQuery)) {
-			//	// clear the cache
-			//	if (parentDirectories.Count > 0) parentDirectories.Clear();
-			//	return results;
-			//}
-
 			foreach (var item in UserSettingStorage.Instance.FolderLinks.Where(x => x.Nickname.StartsWith(input, StringComparison.OrdinalIgnoreCase))) {
 				results.Add(new Result(item.Nickname, "Images/folder.png") {
 					Action = (c) => {
@@ -84,55 +76,61 @@ namespace Wox.Plugin.SystemPlugins.FileSystem {
 
 		private void QueryInternal_Directory_Exists(string currentPath, string input, List<Result> results) {
 			string path = Directory.Exists(currentPath) ? new DirectoryInfo(currentPath).FullName : Path.GetDirectoryName(input);
+			if (!System.IO.Directory.Exists(path)) return;
 
-			if (path != null) {
-				var dirs = new DirectoryInfo(path).GetDirectories();
-
-				var parentDirKey = input.TrimEnd('\\', '/');
-				if (!parentDirectories.ContainsKey(parentDirKey)) parentDirectories.Add(parentDirKey, dirs);
-
-				var fuzzy = FuzzyMatcher.Create(Path.GetFileName(currentPath).ToLower());
-				foreach (var dir in dirs) { //.Where(x => (x.Attributes & FileAttributes.Hidden) != 0)) {
-					if ((dir.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
-
-					var result = new Result(dir.Name, "Images/folder.png") {
-						Action = (c) => {
-							context.ChangeQuery(dir.FullName);
-							return false;
-						}
-					};
-
-					if (Path.GetFileName(currentPath).ToLower() != "") {
-						var matchResult = fuzzy.Evaluate(dir.Name);
-						result.Score = matchResult.Score;
-						if (!matchResult.Success) continue;
-					}
-
-					results.Add(result);
-				}
-			}
-			else {
-				//TODO: Make sure we do not need anything here
-			}
-
-			if (results.Count == 0) {
-				results.Add(new Result("Open this directory", "Images/folder.png", "No files in this directory") {
-					Action = (c) => {
+			results.Add(new Result("Open this directory", "Images/folder.png") {
+				Score = 100000,
+				Action = (c) => {
+					if (Directory.Exists(currentPath)) {
 						Process.Start(currentPath);
-						return true;
 					}
-				});
+					else if (currentPath.Contains("\\")) {
+						var index = currentPath.LastIndexOf("\\");
+						Process.Start(currentPath.Remove(index) + "\\");
+					}
+
+					return true;
+				}
+			});
+
+
+			//if (System.IO.Directory.Exists(input)) {
+			var dirs = new DirectoryInfo(path).GetDirectories();
+
+			var parentDirKey = input.TrimEnd('\\', '/');
+			if (!parentDirectories.ContainsKey(parentDirKey)) parentDirectories.Add(parentDirKey, dirs);
+
+			var fuzzy = FuzzyMatcher.Create(Path.GetFileName(currentPath).ToLower());
+			foreach (var dir in dirs) {				//.Where(x => (x.Attributes & FileAttributes.Hidden) != 0)) {
+				if ((dir.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
+
+				var result = new Result(dir.Name, "Images/folder.png") {
+					Action = (c) => {
+						//context.ChangeQuery(dir.FullName);
+						context.ChangeQuery(input + dir.Name + "\\");
+						return false;
+					}
+				};
+
+				if (Path.GetFileName(currentPath).ToLower() != "") {
+					var matchResult = fuzzy.Evaluate(dir.Name);
+					result.Score = matchResult.Score;
+					if (!matchResult.Success) continue;
+				}
+
+				results.Add(result);
 			}
+			//}
 
 			var Folder = Path.GetDirectoryName(currentPath);
 			if (Folder != null) {
-				var dirInfo1 = new DirectoryInfo(Folder);
-				var fuzzy = FuzzyMatcher.Create(Path.GetFileName(currentPath).ToLower());
-				foreach (var dir in dirInfo1.GetFiles()) { //.Where(x => (x.Attributes & FileAttributes.Hidden) != 0)) {
+
+				//var fuzzy = FuzzyMatcher.Create(Path.GetFileName(currentPath).ToLower());
+				foreach (var dir in new DirectoryInfo(Folder).GetFiles()) { //.Where(x => (x.Attributes & FileAttributes.Hidden) != 0)) {
 					if ((dir.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
 
 					var dirPath = dir.FullName;
-					Result result = new Result(System.IO.Path.GetFileNameWithoutExtension(dirPath), dirPath) {
+					Result result = new Result(Path.GetFileNameWithoutExtension(dirPath), dirPath) {
 						Action = (c) => {
 							try {
 								Process.Start(dirPath);
@@ -145,7 +143,7 @@ namespace Wox.Plugin.SystemPlugins.FileSystem {
 						}
 					};
 
-					if (Path.GetFileName(currentPath).ToLower() != "") {
+					if (Path.GetFileName(currentPath) != "") {
 						var matchResult = fuzzy.Evaluate(dir.Name);
 						result.Score = matchResult.Score;
 						if (!matchResult.Success) continue;
