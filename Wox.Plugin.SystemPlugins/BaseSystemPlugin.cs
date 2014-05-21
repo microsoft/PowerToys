@@ -1,50 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace Wox.Plugin.SystemPlugins
-{
-    public abstract class BaseSystemPlugin :ISystemPlugin
-    {
-        protected abstract List<Result> QueryInternal(Query query);
-        protected abstract void InitInternal(PluginInitContext context);
+namespace Wox.Plugin.SystemPlugins {
 
-        public List<Result> Query(Query query)
-        {
-            if (string.IsNullOrEmpty(query.RawQuery)) return new List<Result>();
-            return QueryInternal(query);
-        }
+	public abstract class BaseSystemPlugin : ISystemPlugin {
+		public string PluginDirectory { get; set; }
+		public virtual string Name { get { return "System workflow"; } }
+		public virtual string Description { get { return "System workflow"; } }
+		public virtual string IcoPath { get { return null; } }
 
-        public void Init(PluginInitContext context)
-        {
-            InitInternal(context);
-        }
+		protected abstract List<Result> QueryInternal(Query query);
 
-        public virtual string Name
-        {
-            get
-            {
-                return "System workflow";
-            }
-        }
+		protected abstract void InitInternal(PluginInitContext context);
 
-        public virtual string Description
-        {
-            get
-            {
-                return "System workflow";
-            }
-        }
+		public List<Result> Query(Query query) {
+			if (string.IsNullOrEmpty(query.RawQuery)) return new List<Result>();
+			return QueryInternal(query);
+		}
 
-        public virtual string IcoPath
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-        public string PluginDirectory { get; set; }
-    }
+		public void Init(PluginInitContext context) {
+			InitInternal(context);
+		}
+	}
 }
