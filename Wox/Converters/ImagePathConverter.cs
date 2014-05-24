@@ -3,23 +3,37 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 
-namespace Wox
+namespace Wox.Converters
 {
     public class ImagePathConverter : IMultiValueConverter
     {
-        private static Dictionary<string, object> imageCache = new Dictionary<string, object>();
-        private static List<string> imageExts = new List<string>() { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico" };
-        private static List<string> selfExts = new List<string>() { 
-            ".exe", ".lnk",
-            ".ani", ".cur", 
-            ".sln", ".appref-ms"
+        private static readonly Dictionary<string, object> imageCache = new Dictionary<string, object>();
+
+        private static readonly List<string> imageExts = new List<string>
+        {
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".gif",
+            ".bmp",
+            ".tiff",
+            ".ico"
+        };
+
+        private static readonly List<string> selfExts = new List<string>
+        {
+            ".exe",
+            ".lnk",
+            ".ani",
+            ".cur",
+            ".sln",
+            ".appref-ms"
         };
 
         private static ImageSource GetIcon(string fileName)
@@ -29,7 +43,8 @@ namespace Wox
 
             if (icon != null)
             {
-                return System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(icon.Handle, new Int32Rect(0, 0, icon.Width, icon.Height), BitmapSizeOptions.FromEmptyOptions());
+                return System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(icon.Handle,
+                    new Int32Rect(0, 0, icon.Width, icon.Height), BitmapSizeOptions.FromEmptyOptions());
             }
 
             return null;
@@ -37,13 +52,13 @@ namespace Wox
 
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            object img = null;
+            object img;
             if (values[0] == null) return null;
 
             string path = values[0].ToString();
             if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
             {
-                return new System.Windows.Media.Imaging.BitmapImage(new Uri(path));
+                return new BitmapImage(new Uri(path));
             }
 
             string pluginDirectory = values[1].ToString();
@@ -74,7 +89,7 @@ namespace Wox
             {
                 img = GetIcon(resolvedPath);
             }
-            else if (!string.IsNullOrEmpty(resolvedPath) && imageExts.Contains(ext) &&  File.Exists(resolvedPath))
+            else if (!string.IsNullOrEmpty(resolvedPath) && imageExts.Contains(ext) && File.Exists(resolvedPath))
             {
                 img = new BitmapImage(new Uri(resolvedPath));
             }
@@ -98,7 +113,7 @@ namespace Wox
         }
 
         // http://blogs.msdn.com/b/oldnewthing/archive/2011/01/27/10120844.aspx
-        public static System.Drawing.Icon GetFileIcon(string name)
+        public static Icon GetFileIcon(string name)
         {
             SHFILEINFO shfi = new SHFILEINFO();
             uint flags = SHGFI_SYSICONINDEX;
@@ -106,13 +121,13 @@ namespace Wox
             IntPtr himl = SHGetFileInfo(name,
                 FILE_ATTRIBUTE_NORMAL,
                 ref shfi,
-                (uint)System.Runtime.InteropServices.Marshal.SizeOf(shfi),
+                (uint) Marshal.SizeOf(shfi),
                 flags);
 
             if (himl != IntPtr.Zero)
             {
                 IntPtr hIcon = ImageList_GetIcon(himl, shfi.iIcon, ILD_NORMAL);
-                System.Drawing.Icon icon = (System.Drawing.Icon)System.Drawing.Icon.FromHandle(hIcon).Clone();
+                var icon = (Icon) Icon.FromHandle(hIcon).Clone();
                 DestroyIcon(hIcon);
                 return icon;
             }
@@ -124,12 +139,12 @@ namespace Wox
         private static extern IntPtr ImageList_GetIcon(IntPtr himl, int i, uint flags);
 
         private const int MAX_PATH = 256;
+
         [StructLayout(LayoutKind.Sequential)]
         private struct SHITEMID
         {
             public ushort cb;
-            [MarshalAs(UnmanagedType.LPArray)]
-            public byte[] abID;
+            [MarshalAs(UnmanagedType.LPArray)] public byte[] abID;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -144,8 +159,7 @@ namespace Wox
             public IntPtr hwndOwner;
             public IntPtr pidlRoot;
             public IntPtr pszDisplayName;
-            [MarshalAs(UnmanagedType.LPTStr)]
-            public string lpszTitle;
+            [MarshalAs(UnmanagedType.LPTStr)] public string lpszTitle;
             public uint ulFlags;
             public IntPtr lpfn;
             public int lParam;
@@ -174,30 +188,28 @@ namespace Wox
             public IntPtr hIcon;
             public int iIcon;
             public uint dwAttributes;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_PATH)]
-            public string szDisplayName;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NAMESIZE)]
-            public string szTypeName;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_PATH)] public string szDisplayName;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NAMESIZE)] public string szTypeName;
         };
 
-        private const uint SHGFI_ICON = 0x000000100;     // get icon
-        private const uint SHGFI_DISPLAYNAME = 0x000000200;     // get display name
-        private const uint SHGFI_TYPENAME = 0x000000400;     // get type name
-        private const uint SHGFI_ATTRIBUTES = 0x000000800;     // get attributes
-        private const uint SHGFI_ICONLOCATION = 0x000001000;     // get icon location
-        private const uint SHGFI_EXETYPE = 0x000002000;     // return exe type
-        private const uint SHGFI_SYSICONINDEX = 0x000004000;     // get system icon index
-        private const uint SHGFI_LINKOVERLAY = 0x000008000;     // put a link overlay on icon
-        private const uint SHGFI_SELECTED = 0x000010000;     // show icon in selected state
-        private const uint SHGFI_ATTR_SPECIFIED = 0x000020000;     // get only specified attributes
-        private const uint SHGFI_LARGEICON = 0x000000000;     // get large icon
-        private const uint SHGFI_SMALLICON = 0x000000001;     // get small icon
-        private const uint SHGFI_OPENICON = 0x000000002;     // get open icon
-        private const uint SHGFI_SHELLICONSIZE = 0x000000004;     // get shell size icon
-        private const uint SHGFI_PIDL = 0x000000008;     // pszPath is a pidl
-        private const uint SHGFI_USEFILEATTRIBUTES = 0x000000010;     // use passed dwFileAttribute
-        private const uint SHGFI_ADDOVERLAYS = 0x000000020;     // apply the appropriate overlays
-        private const uint SHGFI_OVERLAYINDEX = 0x000000040;     // Get the index of the overlay
+        private const uint SHGFI_ICON = 0x000000100; // get icon
+        private const uint SHGFI_DISPLAYNAME = 0x000000200; // get display name
+        private const uint SHGFI_TYPENAME = 0x000000400; // get type name
+        private const uint SHGFI_ATTRIBUTES = 0x000000800; // get attributes
+        private const uint SHGFI_ICONLOCATION = 0x000001000; // get icon location
+        private const uint SHGFI_EXETYPE = 0x000002000; // return exe type
+        private const uint SHGFI_SYSICONINDEX = 0x000004000; // get system icon index
+        private const uint SHGFI_LINKOVERLAY = 0x000008000; // put a link overlay on icon
+        private const uint SHGFI_SELECTED = 0x000010000; // show icon in selected state
+        private const uint SHGFI_ATTR_SPECIFIED = 0x000020000; // get only specified attributes
+        private const uint SHGFI_LARGEICON = 0x000000000; // get large icon
+        private const uint SHGFI_SMALLICON = 0x000000001; // get small icon
+        private const uint SHGFI_OPENICON = 0x000000002; // get open icon
+        private const uint SHGFI_SHELLICONSIZE = 0x000000004; // get shell size icon
+        private const uint SHGFI_PIDL = 0x000000008; // pszPath is a pidl
+        private const uint SHGFI_USEFILEATTRIBUTES = 0x000000010; // use passed dwFileAttribute
+        private const uint SHGFI_ADDOVERLAYS = 0x000000020; // apply the appropriate overlays
+        private const uint SHGFI_OVERLAYINDEX = 0x000000040; // Get the index of the overlay
 
         private const uint FILE_ATTRIBUTE_DIRECTORY = 0x00000010;
         private const uint FILE_ATTRIBUTE_NORMAL = 0x00000080;

@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Data;
-using System.Windows.Markup;
+using System.Globalization;
 using Wox.Infrastructure.Storage.UserSettings;
 
-namespace Wox
+namespace Wox.Converters
 {
-    public class OpacityModeConverter : MarkupExtension, IValueConverter
+    public class OpacityModeConverter : ConvertorBase<OpacityModeConverter>
     {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (!(value is OpacityMode)) return value.ToString();
-
             var mode = (OpacityMode) value;
             switch (mode)
             {
@@ -36,13 +31,6 @@ namespace Wox
             }
             return value.ToString();
         }
-
-        public object ConvertBack(
-              object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotSupportedException();
-        }
-
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
