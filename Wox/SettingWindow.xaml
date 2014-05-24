@@ -5,13 +5,14 @@
 		xmlns:UserSettings="clr-namespace:Wox.Infrastructure.Storage.UserSettings;assembly=Wox.Infrastructure" x:Class="Wox.SettingWindow"
 		xmlns:woxPlugin="clr-namespace:Wox.Plugin;assembly=Wox.Plugin"
 		xmlns:system="clr-namespace:Wox.Plugin.SystemPlugins;assembly=Wox.Plugin.SystemPlugins"
+		xmlns:converters="clr-namespace:Wox.Converters"
 		Icon="Images\app.png"
 		Title="Wox Setting"
 		ResizeMode="NoResize"
 		WindowStartupLocation="CenterScreen"
 		Height="600" Width="800">
 	<Window.Resources>
-		<wox:ImagePathConverter x:Key="ImagePathConverter"/>
+		<converters:ImagePathConverter x:Key="ImagePathConverter"/>
 		<ListBoxItem HorizontalContentAlignment="Stretch"
 					IsEnabled="False"
 					IsHitTestVisible="False" x:Key="FeatureBoxSeperator">
@@ -71,7 +72,7 @@
 										<RowDefinition Height="Auto"></RowDefinition>
 									</Grid.RowDefinitions>
 									<TextBlock VerticalAlignment="Center" ToolTip="{Binding Name}" x:Name="tbTitle" Text="{Binding Name}"></TextBlock>
-									<TextBlock ToolTip="{Binding Description}" Visibility="{Binding Description, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Description}" Opacity="0.5"></TextBlock>
+									<TextBlock ToolTip="{Binding Description}" Visibility="{Binding Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Description}" Opacity="0.5"></TextBlock>
 								</Grid>
 								<CheckBox Content="Enabled" />
 							</Grid>
@@ -98,7 +99,7 @@
 										<RowDefinition Height="Auto"></RowDefinition>
 									</Grid.RowDefinitions>
 									<TextBlock VerticalAlignment="Center" ToolTip="{Binding Metadata.Name}" x:Name="tbTitle" Text="{Binding Metadata.Name}"></TextBlock>
-									<TextBlock ToolTip="{Binding Metadata.Description}" Visibility="{Binding Metadata.Description, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Metadata.Description}" Opacity="0.5"></TextBlock>
+									<TextBlock ToolTip="{Binding Metadata.Description}" Visibility="{Binding Metadata.Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Metadata.Description}" Opacity="0.5"></TextBlock>
 								</Grid>
 							</Grid>
 						</DataTemplate>
@@ -122,7 +123,7 @@
 									<RowDefinition Height="Auto"></RowDefinition>
 								</Grid.RowDefinitions>
 								<TextBlock VerticalAlignment="Center" x:Name="pluginTitle" ToolTip="{Binding Source=pluginTitle, Path=Text}" FontSize="24"></TextBlock>
-								<TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5" ToolTip="{Binding Source=pluginSubTitle, Path=Text}" Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" ></TextBlock>
+								<TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5" ToolTip="{Binding Source=pluginSubTitle, Path=Text}" Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" ></TextBlock>
 							</Grid>
 						</Grid>
 					</ContentControl>
@@ -215,7 +216,7 @@
 							<UserSettings:OpacityMode>DWM</UserSettings:OpacityMode>
 							<ComboBox.ItemTemplate>
 								<DataTemplate>
-									<TextBlock Text="{Binding Converter={wox:OpacityModeConverter}}" />
+									<TextBlock Text="{Binding Converter={converters:OpacityModeConverter}}" />
 								</DataTemplate>
 							</ComboBox.ItemTemplate>
 						</ComboBox>

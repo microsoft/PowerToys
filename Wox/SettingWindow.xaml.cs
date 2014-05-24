@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using IWshRuntimeLibrary;
 using Microsoft.VisualBasic.ApplicationServices;
+using Wox.Converters;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
@@ -462,7 +463,7 @@ namespace Wox
                     () =>
                         pluginIcon.Source =
                             (ImageSource)
-                                new Wox.ImagePathConverter().Convert(
+                                new ImagePathConverter().Convert(
                                     new object[] {pair.Metadata.IcoPath, pair.Metadata.PluginDirecotry}, null, null,
                                     null));
             }
@@ -479,7 +480,7 @@ namespace Wox
                         () =>
                             pluginIcon.Source =
                                 (ImageSource)
-                                    new Wox.ImagePathConverter().Convert(
+                                    new ImagePathConverter().Convert(
                                         new object[] { sys.IcoPath, sys.PluginDirectory }, null, null,
                                         null));
                 }

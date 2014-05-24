@@ -109,6 +109,7 @@
     <Compile Include="Commands\CommandFactory.cs" />
     <Compile Include="Commands\PluginCommand.cs" />
     <Compile Include="Commands\SystemCommand.cs" />
+    <Compile Include="Converters\ConvertorBase.cs" />
     <Compile Include="Helper\DataWebRequestFactory.cs" />
     <Compile Include="Helper\ErrorReporting\ErrorReporting.cs" />
     <Compile Include="Helper\ErrorReporting\WPFErrorReportingDialog.xaml.cs">
@@ -120,7 +121,7 @@
     <Compile Include="Helper\WallpaperPathRetrieval.cs" />
     <Compile Include="Helper\WindowIntelopHelper.cs" />
     <Compile Include="Helper\WindowOpener.cs" />
-    <Compile Include="OpacityModeConverter.cs" />
+    <Compile Include="Converters\OpacityModeConverter.cs" />
     <Compile Include="CustomPluginHotkeySetting.xaml.cs">
       <DependentUpon>CustomPluginHotkeySetting.xaml</DependentUpon>
     </Compile>
@@ -133,7 +134,7 @@
     <Compile Include="HotkeyControl.xaml.cs">
       <DependentUpon>HotkeyControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ImagePathConverter.cs" />
+    <Compile Include="Converters\ImagePathConverter.cs" />
     <Compile Include="Msg.xaml.cs">
       <DependentUpon>Msg.xaml</DependentUpon>
     </Compile>
@@ -149,8 +150,8 @@
     <Compile Include="SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="StringEmptyConverter.cs" />
-    <Compile Include="StringNullOrEmptyToVisibilityConverter.cs" />
+    <Compile Include="Converters\StringEmptyConverter.cs" />
+    <Compile Include="Converters\StringNullOrEmptyToVisibilityConverter.cs" />
     <Page Include="Helper\ErrorReporting\WPFErrorReportingDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -3,11 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:wox="clr-namespace:Wox"
-             mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100"
-             >
+             xmlns:converters="clr-namespace:Wox.Converters"
+             mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100">
     <UserControl.Resources>
-        <wox:ImagePathConverter x:Key="ImagePathConverter"/>
+        <converters:ImagePathConverter x:Key="ImagePathConverter"/>
     </UserControl.Resources>
 
     <!-- set max height of listbox to allow 6 results showed at once -->
@@ -42,7 +41,7 @@
                             <RowDefinition Height="Auto" x:Name="SubTitleRowDefinition"></RowDefinition>
                         </Grid.RowDefinitions>
                         <TextBlock Style="{DynamicResource ItemTitleStyle}" VerticalAlignment="Center" ToolTip="{Binding Title}" x:Name="tbTitle" Text="{Binding Title}"></TextBlock>
-                        <TextBlock Style="{DynamicResource ItemSubTitleStyle}" ToolTip="{Binding SubTitle}" Visibility="{Binding SubTitle, Converter={wox:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding SubTitle}"></TextBlock>
+                        <TextBlock Style="{DynamicResource ItemSubTitleStyle}" ToolTip="{Binding SubTitle}" Visibility="{Binding SubTitle, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding SubTitle}"></TextBlock>
                     </Grid>
                 </Grid>
                 <DataTemplate.Triggers>
