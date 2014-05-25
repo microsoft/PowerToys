@@ -15,9 +15,12 @@ namespace Wox.Plugin.SystemPlugins {
 
 
 		public List<Result> Query(Query query) {
-			if (Enabled) {
-				if (string.IsNullOrEmpty(query.RawQuery)) return new List<Result>();
+			if (Enabled && string.IsNullOrEmpty(query.RawQuery)) {
+				//if (string.IsNullOrEmpty(query.RawQuery)) return new List<Result>();
 				return QueryInternal(query);
+			}
+			else {
+				new List<Result>();
 			}
 		}
 
