@@ -74,7 +74,7 @@
 									<TextBlock VerticalAlignment="Center" ToolTip="{Binding Name}" x:Name="tbTitle" Text="{Binding Name}"></TextBlock>
 									<TextBlock ToolTip="{Binding Description}" Visibility="{Binding Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Description}" Opacity="0.5"></TextBlock>
 								</Grid>
-								<CheckBox Content="Enabled" />
+								<CheckBox Content="Enabled" IsChecked="{Binding Enabled}"  />
 							</Grid>
 						</DataTemplate>
 						<DataTemplate DataType="{x:Type woxPlugin:PluginPair}">
