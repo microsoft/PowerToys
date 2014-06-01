@@ -458,6 +458,9 @@ namespace Wox
             {
                 provider = pair.Plugin as ISettingProvider;
                 pluginTitle.Text = pair.Metadata.Name;
+                pluginActionKeyword.Text = "ActionKeyword: " + pair.Metadata.ActionKeyword;
+                pluginAuthor.Text = "Author: " + pair.Metadata.Author;
+                pluginWebsite.Text = "Website: " + pair.Metadata.Website;
                 pluginSubTitle.Text = pair.Metadata.Description;
                 SyntaxSugars.CallOrRescueDefault(
                     () =>
@@ -476,6 +479,9 @@ namespace Wox
                 {
                     pluginTitle.Text = sys.Name;
                     pluginSubTitle.Text = sys.Description;
+                    pluginAuthor.Text = "Author: Wox";
+                    pluginActionKeyword.Text = "ActionKeyword: auto trigger";
+                    pluginWebsite.Text = "Website: http://www.getwox.com";
                     SyntaxSugars.CallOrRescueDefault(
                         () =>
                             pluginIcon.Source =
