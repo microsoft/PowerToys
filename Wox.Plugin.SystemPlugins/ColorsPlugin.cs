@@ -79,6 +79,21 @@ namespace Wox.Plugin.SystemPlugins
             return string.Format("{0}{1}.png", ColorsDirectory.FullName, name.Substring(1));
         }
 
+        public override string Name
+        {
+            get { return "Colors"; }
+        }
+
+        public override string Description
+        {
+            get { return string.Empty; }
+        }
+
+        public override string IcoPath
+        {
+            get { return "Images/color2.png"; }
+        }
+
         protected override void InitInternal(PluginInitContext context)
         {
         }
