@@ -51,9 +51,7 @@
 						<DataTemplate DataType="{x:Type system:BaseSystemPlugin}">
 							<Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
 								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="*"></ColumnDefinition>
-									<ColumnDefinition Width="*"></ColumnDefinition>
-									<ColumnDefinition Width="5"></ColumnDefinition>
+									<ColumnDefinition Width="32"></ColumnDefinition>
 									<ColumnDefinition/>
 								</Grid.ColumnDefinitions>
 								<Image Width="32" Height="32" HorizontalAlignment="Left">
@@ -74,7 +72,6 @@
 									<TextBlock VerticalAlignment="Center" ToolTip="{Binding Name}" x:Name="tbTitle" Text="{Binding Name}"></TextBlock>
 									<TextBlock ToolTip="{Binding Description}" Visibility="{Binding Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Description}" Opacity="0.5"></TextBlock>
 								</Grid>
-								<CheckBox Content="Enabled" />
 							</Grid>
 						</DataTemplate>
 						<DataTemplate DataType="{x:Type woxPlugin:PluginPair}">
@@ -107,7 +104,7 @@
 				</ListBox>
 				<Grid Margin="0" Grid.Column="1">
 					<Grid.RowDefinitions>
-						<RowDefinition Height="58"/>
+						<RowDefinition Height="Auto"/>
 						<RowDefinition Height="*"/>
 					</Grid.RowDefinitions>
 					<ContentControl x:Name="PluginInfoPanel" Grid.ColumnSpan="1" Grid.Row="0" Margin="10 10 10 0">
@@ -116,15 +113,24 @@
 								<ColumnDefinition Width="48"></ColumnDefinition>
 								<ColumnDefinition/>
 							</Grid.ColumnDefinitions>
-							<Image Width="48" Height="48" HorizontalAlignment="Left" x:Name="pluginIcon"/>
+							<Image Width="48" Height="48" HorizontalAlignment="Left" VerticalAlignment="Top" x:Name="pluginIcon"/>
 							<Grid Margin="10,0,0,0" Grid.Column="1" HorizontalAlignment="Stretch">
 								<Grid.RowDefinitions>
-									<RowDefinition></RowDefinition>
-									<RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition></RowDefinition>
+                                    <RowDefinition></RowDefinition>
+                                    <RowDefinition></RowDefinition>
+                                    <RowDefinition></RowDefinition>
+                                    <RowDefinition></RowDefinition>
 								</Grid.RowDefinitions>
-								<TextBlock VerticalAlignment="Center" x:Name="pluginTitle" ToolTip="{Binding Source=pluginTitle, Path=Text}" FontSize="24"></TextBlock>
-								<TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5" ToolTip="{Binding Source=pluginSubTitle, Path=Text}" Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" ></TextBlock>
-							</Grid>
+                                <TextBlock x:Name="pluginTitle" ToolTip="{Binding Source=pluginTitle, Path=Text}" FontSize="24"></TextBlock>
+                                <TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5" ToolTip="{Binding Source=pluginSubTitle, Path=Text}" Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" ></TextBlock>
+                                <TextBlock Grid.Row="2" Opacity="0.5" x:Name="pluginActionKeyword"></TextBlock>
+                                <DockPanel Grid.Row="3">
+                                    <TextBlock  Opacity="0.5" x:Name="pluginAuthor"></TextBlock>
+                                    <TextBlock  Opacity="0.5" x:Name="pluginWebsite" HorizontalAlignment="Right"></TextBlock>
+                                </DockPanel>
+                                <CheckBox Grid.Row="4" x:Name="pluginEnabled">Enable</CheckBox>
+                            </Grid>
 						</Grid>
 					</ContentControl>
 

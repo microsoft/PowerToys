@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.RightsManagement;
 using System.Text;
 
 namespace Wox.Plugin
@@ -25,6 +26,8 @@ namespace Wox.Plugin
         public string Version { get; set; }
         public string Language { get; set; }
         public string Description { get; set; }
+
+        public string Website { get; set; }
 
         public string ExecuteFilePath
         {

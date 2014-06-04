@@ -32,6 +32,7 @@ namespace Wox.PluginLoader {
 				Name = "System Plugins",
 				Author = "System",
 				Description = "system plugins collection",
+                Website = "http://www.getwox.com",
 				Language = AllowedLanguage.CSharp,
 				Version = "1.0",
 				PluginType = PluginType.System,
