@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Wox.Helper;
 using Wox.Plugin;
+using Wox.PluginLoader;
 
 namespace Wox.Commands
 {
@@ -24,8 +25,14 @@ namespace Wox.Commands
                 systemCmd = new SystemCommand();
             }
 
-            systemCmd.Dispatch(query);
-            pluginCmd.Dispatch(query);
+            if (Plugins.HitThirdpartyKeyword(query))
+            {
+                pluginCmd.Dispatch(query);
+            }
+            else
+            {
+                systemCmd.Dispatch(query);                
+            }
         }
     }
 }
