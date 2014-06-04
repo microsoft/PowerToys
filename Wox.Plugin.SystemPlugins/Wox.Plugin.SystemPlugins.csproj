@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CMD\CMDStorage.cs" />
+    <Compile Include="ColorsPlugin.cs" />
     <Compile Include="FileSystem\FileSystemSettings.xaml.cs">
       <DependentUpon>FileSystemSettings.xaml</DependentUpon>
     </Compile>
