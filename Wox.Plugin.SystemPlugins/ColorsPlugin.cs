@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Windows;
 
 namespace Wox.Plugin.SystemPlugins
 {
@@ -16,7 +17,7 @@ namespace Wox.Plugin.SystemPlugins
 
         public ColorsPlugin()
         {
-            if(!Directory.Exists(DIR_PATH))
+            if (!Directory.Exists(DIR_PATH))
             {
                 ColorsDirectory = Directory.CreateDirectory(DIR_PATH);
             }
@@ -29,16 +30,37 @@ namespace Wox.Plugin.SystemPlugins
         protected override List<Result> QueryInternal(Query query)
         {
             var raw = query.RawQuery;
-            if(!IsAvailable(raw)) return new List<Result>(0);
+            if (!IsAvailable(raw)) return new List<Result>(0);
             try
             {
                 var cached = Find(raw);
-                if(cached.Length == 0)
+                if (cached.Length == 0)
                 {
                     var path = CreateImage(raw);
-                    return new List<Result> {new Result(raw, path)};
+                    return new List<Result>
+                    {
+                        new Result
+                        {
+                            Title = raw,
+                            IcoPath = path,
+                            Action = _ =>
+                            {
+                                Clipboard.SetText(raw);
+                                return true;
+                            }
+                        }
+                    };
                 }
-                return cached.Select(x => new Result(raw, x.FullName)).ToList();
+                return cached.Select(x => new Result
+                {
+                    Title = raw,
+                    IcoPath = x.FullName,
+                    Action = _ =>
+                    {
+                        Clipboard.SetText(raw);
+                        return true;
+                    }
+                }).ToList();
             }
             catch (Exception exception)
             {
