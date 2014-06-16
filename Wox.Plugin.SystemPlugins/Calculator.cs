@@ -33,8 +33,7 @@ namespace Wox.Plugin.SystemPlugins
 
         protected override List<Result> QueryInternal(Query query)
         {
-            if (string.IsNullOrEmpty(query.RawQuery)
-                || query.RawQuery.Length <= 2          // don't affect when user only input "e" or "i" keyword
+            if (query.RawQuery.Length <= 2          // don't affect when user only input "e" or "i" keyword
                 || !regValidExpressChar.IsMatch(query.RawQuery) 
                 || !IsBracketComplete(query.RawQuery)) return new List<Result>();
 

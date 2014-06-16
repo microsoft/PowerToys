@@ -18,7 +18,6 @@ namespace Wox.Plugin.SystemPlugins
         protected override List<Result> QueryInternal(Query query)
         {
             List<Result> results = new List<Result>();
-            if (string.IsNullOrEmpty(query.ActionName)) return results;
 
             WebSearch webSearch =
                 UserSettingStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionWord == query.ActionName && o.Enabled);

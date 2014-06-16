@@ -25,7 +25,7 @@ namespace Wox.Plugin.SystemPlugins
 
         protected override List<Result> QueryInternal(Query query)
         {
-            if (string.IsNullOrEmpty(query.RawQuery) || query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
+            if (query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
 
             List<Result> results = new List<Result>();
 
