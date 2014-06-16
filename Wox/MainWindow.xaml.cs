@@ -140,13 +140,26 @@ namespace Wox {
 		}
 
 		void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
+			UserSettingStorage.Instance.WindowLeft = Left;
+			UserSettingStorage.Instance.WindowTop = Top;
+			UserSettingStorage.Instance.Save();
 			this.HideWox();
 			e.Cancel = true;
 		}
 
 		private void MainWindow_OnLoaded(object sender, RoutedEventArgs e) {
-			Left = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
-			Top = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 3;
+			if (UserSettingStorage.Instance.WindowLeft == 0
+				&& UserSettingStorage.Instance.WindowTop == 0)
+			{
+				Left = UserSettingStorage.Instance.WindowLeft 
+					 = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
+				Top = UserSettingStorage.Instance.WindowTop 
+					= (SystemParameters.PrimaryScreenHeight - ActualHeight) / 5;
+			}
+			else {
+				Left = UserSettingStorage.Instance.WindowLeft;
+				Top = UserSettingStorage.Instance.WindowTop;
+			}
 
 			Plugins.Init();
 

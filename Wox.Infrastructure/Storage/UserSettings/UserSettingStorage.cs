@@ -45,6 +45,12 @@ namespace Wox.Infrastructure.Storage.UserSettings
         public List<WebSearch> WebSearches { get; set; }
 
         [JsonProperty]
+        public double WindowLeft { get; set; }
+
+        [JsonProperty]
+        public double WindowTop { get; set; }
+
+        [JsonProperty]
         public List<ProgramSource> ProgramSources { get; set; }
 
 		[JsonProperty]

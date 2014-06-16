@@ -117,3 +117,5 @@ UpgradeLog*.XML
 Wox/Images/websearch/Thumbs.db
 Wox/Images/Thumbs.db
 Wox/Wox.csproj
+
+*.sublime-*
