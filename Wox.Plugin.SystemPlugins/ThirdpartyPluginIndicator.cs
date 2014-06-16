@@ -16,7 +16,6 @@ namespace Wox.Plugin.SystemPlugins
         protected override List<Result> QueryInternal(Query query)
         {
             List<Result> results = new List<Result>();
-            if (string.IsNullOrEmpty(query.RawQuery)) return results;
 
             foreach (PluginMetadata metadata in allPlugins.Select(o => o.Metadata))
             {

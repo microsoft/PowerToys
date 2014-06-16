@@ -25,7 +25,7 @@ namespace Wox.Plugin.SystemPlugins
 
         protected override List<Result> QueryInternal(Query query)
         {
-            if (string.IsNullOrEmpty(query.RawQuery) || query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
+            if (query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
 
             List<Result> results = new List<Result>();
 
@@ -94,7 +94,7 @@ namespace Wox.Plugin.SystemPlugins
                 Action = (c) =>
                 {
                     ProcessStartInfo Info = new ProcessStartInfo();
-                    Info.Arguments = "/C ping 127.0.0.1 -n 1 && \"" + Application.ExecutablePath + "\"";
+                    Info.Arguments = "/C sleep 1 && \"" + Application.ExecutablePath + "\"";
                     Info.WindowStyle = ProcessWindowStyle.Hidden;
                     Info.CreateNoWindow = true;
                     Info.FileName = "cmd.exe";
