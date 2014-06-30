@@ -15,8 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.SystemPlugins", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Infrastructure", "Wox.Infrastructure\Wox.Infrastructure.csproj", "{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.UAC", "Wox.UAC\Wox.UAC.csproj", "{C9BC17A0-C2BC-4185-AC1F-32E3352C1233}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.PluginManagement", "Plugins\Wox.Plugin.PluginManagement\Wox.Plugin.PluginManagement.csproj", "{049490F0-ECD2-4148-9B39-2135EC346EBE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.BrowserBookmark", "Plugins\Wox.Plugin.BrowserBookmark\Wox.Plugin.BrowserBookmark.csproj", "{9B130CC5-14FB-41FF-B310-0A95B6894C37}"
@@ -49,10 +47,6 @@ Global
 		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C9BC17A0-C2BC-4185-AC1F-32E3352C1233}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C9BC17A0-C2BC-4185-AC1F-32E3352C1233}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C9BC17A0-C2BC-4185-AC1F-32E3352C1233}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C9BC17A0-C2BC-4185-AC1F-32E3352C1233}.Release|Any CPU.Build.0 = Release|Any CPU
 		{049490F0-ECD2-4148-9B39-2135EC346EBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{049490F0-ECD2-4148-9B39-2135EC346EBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{049490F0-ECD2-4148-9B39-2135EC346EBE}.Release|Any CPU.ActiveCfg = Release|Any CPU

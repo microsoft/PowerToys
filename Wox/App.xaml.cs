@@ -90,7 +90,6 @@ namespace Wox {
 				}
 				PluginInstaller.Install(path);
 				Environment.Exit(0);
-				return;
 			}
 
 			if (e.Args.Length > 0 && e.Args[0].ToLower() == "plugindebugger") {

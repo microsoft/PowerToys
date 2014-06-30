@@ -24,6 +24,7 @@ using Application = System.Windows.Application;
 using Brushes = System.Windows.Media.Brushes;
 using Color = System.Windows.Media.Color;
 using ContextMenu = System.Windows.Forms.ContextMenu;
+using DragEventArgs = System.Windows.DragEventArgs;
 using FontFamily = System.Windows.Media.FontFamily;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MenuItem = System.Windows.Forms.MenuItem;
@@ -39,6 +40,10 @@ namespace Wox {
 
 		#region Properties
 
+        private static readonly object locker = new object();
+        public static bool initialized = false;
+
+        private static readonly List<Result> waitShowResultList = new List<Result>();
 		private readonly GlobalHotkey globalHotkey = new GlobalHotkey();
 		private readonly KeyboardSimulator keyboardSimulator = new KeyboardSimulator(new InputSimulator());
 		private readonly Storyboard progressBarStoryboard = new Storyboard();
@@ -454,16 +459,25 @@ namespace Wox {
 
 			queryHasReturn = true;
 			progressBar.Dispatcher.Invoke(new Action(StopProgress));
-			if (list.Count > 0) {
-				list.ForEach(
-					o => {
-						if (o.AutoAjustScore) o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o);
-					});
-				Dispatcher.DelayInvoke("ShowResult", k => resultCtrl.Dispatcher.Invoke(new Action(() => {
-					List<Result> results = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
-					resultCtrl.AddResults(results);
-				})), TimeSpan.FromMilliseconds(isCMDMode ? 0 : 50));
-			}
+            if (list.Count > 0)
+            {
+                //todo:this should be opened to users, it's their choice to use it or not in their workflows
+                list.ForEach(
+                    o =>
+                    {
+                        if (o.AutoAjustScore) o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o);
+                    });
+                lock (locker)
+                {
+                    waitShowResultList.AddRange(list);
+                }
+                Dispatcher.DelayInvoke("ShowResult", k => resultCtrl.Dispatcher.Invoke(new Action(() =>
+                {
+                    List<Result> l = waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
+                    waitShowResultList.Clear();
+                    resultCtrl.AddResults(l);
+                })), TimeSpan.FromMilliseconds(isCMDMode ? 0 : 50));
+            }
 		}
 
 		public void SetTheme(string themeName) {
@@ -514,5 +528,19 @@ namespace Wox {
 			return false;
 		}
 
+	    private void MainWindow_OnDrop(object sender, DragEventArgs e)
+	    {
+            if (e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop))
+            {
+                // Note that you can have more than one file.
+                string[] files = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
+                PluginInstaller.Install(files[0]);
+            }
+	    }
+
+	    private void TbQuery_OnPreviewDragOver(object sender, DragEventArgs e)
+	    {
+	        e.Handled = true;
+	    }
 	}
 }

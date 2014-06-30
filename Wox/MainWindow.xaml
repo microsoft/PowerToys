@@ -9,6 +9,8 @@
         Deactivated="MainWindow_OnDeactivated"
         WindowStyle="None"
         WindowStartupLocation="Manual"
+        Drop="MainWindow_OnDrop"
+        AllowDrop="True"
         ShowInTaskbar="False"
         Style="{DynamicResource WindowStyle}"
         Icon="Images\app.png"
@@ -18,7 +20,7 @@
     </Window.Resources>
     <Border Style="{DynamicResource WindowBorderStyle}" MouseDown="Border_OnMouseDown">
         <StackPanel Orientation="Vertical">
-            <TextBox Style="{DynamicResource QueryBoxStyle}" Grid.Row="0"  x:Name="tbQuery" PreviewKeyDown="TbQuery_OnPreviewKeyDown" TextChanged="TextBoxBase_OnTextChanged" />
+            <TextBox Style="{DynamicResource QueryBoxStyle}" PreviewDragOver="TbQuery_OnPreviewDragOver" AllowDrop="True" Grid.Row="0"  x:Name="tbQuery" PreviewKeyDown="TbQuery_OnPreviewKeyDown" TextChanged="TextBoxBase_OnTextChanged" />
             <Line Style="{DynamicResource PendingLineStyle}" x:Name="progressBar" Y1="0" Y2="0" X2="100" Grid.Row="1" Height="2" StrokeThickness="1"></Line>
             <wox:ResultPanel x:Name="resultCtrl" Grid.Row="2"/>
         </StackPanel>
