@@ -70,7 +70,6 @@
     <Compile Include="Program\ProgramSources\PortableAppsProgramSource.cs" />
     <Compile Include="Program\IProgramSource.cs" />
     <Compile Include="BaseSystemPlugin.cs" />
-    <Compile Include="BrowserBookmarks.cs" />
     <Compile Include="Calculator.cs" />
     <Compile Include="Program\ProgramSources\FileSystemProgramSource.cs" />
     <Compile Include="Program\ProgramSources\UserStartMenuProgramSource.cs" />

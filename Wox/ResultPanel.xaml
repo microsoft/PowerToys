@@ -5,9 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:converters="clr-namespace:Wox.Converters"
              mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100">
-    <UserControl.Resources>
-        <converters:ImagePathConverter x:Key="ImagePathConverter"/>
-    </UserControl.Resources>
 
     <!-- set max height of listbox to allow 6 results showed at once -->
     <ListBox x:Name="lbResults" MaxHeight="300" PreviewMouseDown="LbResults_OnPreviewMouseDown" Style="{DynamicResource BaseListboxStyle}" SelectionChanged ="lbResults_SelectionChanged"  Focusable="False"  KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Standard">
@@ -26,8 +23,11 @@
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" >
+                        <Image.Resources>
+                            <converters:ImagePathConverter x:Key="ImageConverter"/>
+                        </Image.Resources>
                         <Image.Source>
-                            <MultiBinding Converter="{StaticResource ImagePathConverter}">
+                            <MultiBinding Converter="{StaticResource ImageConverter}">
                                 <MultiBinding.Bindings>
                                     <Binding Path="IcoPath" />
                                     <Binding Path="PluginDirectory" />

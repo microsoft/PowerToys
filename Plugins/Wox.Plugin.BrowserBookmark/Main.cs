@@ -1,25 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
-using Newtonsoft.Json;
 using Wox.Infrastructure;
 
-namespace Wox.Plugin.SystemPlugins
+namespace Wox.Plugin.BrowserBookmark
 {
-    public class BrowserBookmarks : BaseSystemPlugin
+    public class Main : IPlugin
     {
         private PluginInitContext context;
         private List<Bookmark> bookmarks = new List<Bookmark>();
 
-        protected override List<Result> QueryInternal(Query query)
+
+        public void Init(PluginInitContext context)
         {
-            if (query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
+            if (!Wox.Infrastructure.Storage.UserSettings.UserSettingStorage.Instance.EnableBookmarkPlugin)
+            {
+                return;
+            }
+
+            bookmarks.Clear();
+            LoadChromeBookmarks();
+
+            bookmarks = bookmarks.Distinct().ToList();
+            this.context = context;
+        }
+
+        public List<Result> Query(Query query)
+        {
+            if (query.ActionParameters.Count == 0)
+            {
+                return bookmarks.Select(c => new Result()
+                {
+                    Title = c.Name,
+                    SubTitle = "Bookmark: " + c.Url,
+                    IcoPath = @"Images\bookmark.png",
+                    Score = 5,
+                    Action = (e) =>
+                    {
+                        context.HideApp();
+                        context.ShellRun(c.Url);
+                        return true;
+                    }
+                }).ToList();
+            }
+
 
             var fuzzyMather = FuzzyMatcher.Create(query.RawQuery);
             List<Bookmark> returnList = bookmarks.Where(o => MatchProgram(o, fuzzyMather)).ToList();
@@ -28,7 +55,7 @@ namespace Wox.Plugin.SystemPlugins
             {
                 Title = c.Name,
                 SubTitle = "Bookmark: " + c.Url,
-                IcoPath = Path.GetDirectoryName(Application.ExecutablePath) + @"\Images\bookmark.png",
+                IcoPath = @"Images\bookmark.png",
                 Score = 5,
                 Action = (e) =>
                 {
@@ -38,6 +65,7 @@ namespace Wox.Plugin.SystemPlugins
                 }
             }).ToList();
         }
+
         private bool MatchProgram(Bookmark bookmark, FuzzyMatcher matcher)
         {
             if ((bookmark.Score = matcher.Evaluate(bookmark.Name).Score) > 0) return true;
@@ -45,20 +73,6 @@ namespace Wox.Plugin.SystemPlugins
             if ((bookmark.Score = matcher.Evaluate(bookmark.Url).Score / 10) > 0) return true;
 
             return false;
-        }
-
-        protected override void InitInternal(PluginInitContext context)
-        {
-			if (!Wox.Infrastructure.Storage.UserSettings.UserSettingStorage.Instance.EnableBookmarkPlugin) 
-			{
-				return;
-			}
-
-            bookmarks.Clear();
-            LoadChromeBookmarks();
-         
-            bookmarks = bookmarks.Distinct().ToList();
-            this.context = context;
         }
 
         private void ParseChromeBookmarks(String path, string source)
@@ -127,66 +141,20 @@ namespace Wox.Plugin.SystemPlugins
             return reg.Replace(dataStr, m => ((char)Convert.ToInt32(m.Groups[1].Value, 16)).ToString());
         }
 
-        public override string Name
+        public string Name
         {
             get { return "Bookmarks"; }
         }
 
-        public override string IcoPath
+        public string IcoPath
         {
             get { return @"Images\bookmark.png"; }
         }
 
-        public override string Description
+        public string Description
         {
-            get { return base.Description; }
-        }
-    }
-
-    public class Bookmark : IEquatable<Bookmark>, IEqualityComparer<Bookmark>
-    {
-        private string m_Name;
-        public string Name { 
-            get{
-                return m_Name;
-            }
-            set
-            {
-                m_Name = value;
-                PinyinName = m_Name.Unidecode();
-            }
-        }
-        public string PinyinName { get; private set; }
-        public string Url { get; set; }
-        public string Source { get; set; }
-        public int Score { get; set; }
-
-        /* TODO: since Source maybe unimportant, we just need to compare Name and Url */
-        public bool Equals(Bookmark other)
-        {
-            return Equals(this, other);
+            get { return "System workflow"; }
         }
 
-        public bool Equals(Bookmark x, Bookmark y)
-        {
-            if (Object.ReferenceEquals(x, y)) return true;
-            if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
-                return false;
-
-            return x.Name == y.Name && x.Url == y.Url;
-        }
-
-        public int GetHashCode(Bookmark bookmark)
-        {
-            if (Object.ReferenceEquals(bookmark, null)) return 0;
-            int hashName = bookmark.Name == null ? 0 : bookmark.Name.GetHashCode();
-            int hashUrl = bookmark.Url == null ? 0 : bookmark.Url.GetHashCode();
-            return hashName ^ hashUrl;
-        }
-
-        public override int GetHashCode()
-        {
-            return GetHashCode(this);
-        }
     }
 }
