@@ -130,7 +130,7 @@ namespace Wox.Plugin.SystemPlugins
 
         public override string Description
         {
-            get { return base.Description; }
+            get { return "Provide System related commands. e.g. shutdown,lock,setting etc."; }
         }
     }
 }

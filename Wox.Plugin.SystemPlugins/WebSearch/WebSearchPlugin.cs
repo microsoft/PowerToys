@@ -88,12 +88,12 @@ namespace Wox.Plugin.SystemPlugins
 
         public override string IcoPath
         {
-            get { return @"Images\app.png"; }
+            get { return @"Images\web_search.png"; }
         }
 
         public override string Description
         {
-            get { return base.Description; }
+            get { return "Provide the web search ability."; }
         }
 
         #region ISettingProvider Members

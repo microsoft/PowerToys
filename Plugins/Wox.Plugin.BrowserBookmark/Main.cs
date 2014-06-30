@@ -13,7 +13,6 @@ namespace Wox.Plugin.BrowserBookmark
         private PluginInitContext context;
         private List<Bookmark> bookmarks = new List<Bookmark>();
 
-
         public void Init(PluginInitContext context)
         {
             bookmarks.Clear();

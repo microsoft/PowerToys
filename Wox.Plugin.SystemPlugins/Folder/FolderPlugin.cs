@@ -7,17 +7,23 @@ using System.Windows.Forms;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage.UserSettings;
 
-namespace Wox.Plugin.SystemPlugins.FileSystem {
+namespace Wox.Plugin.SystemPlugins.Folder {
 
-	public class FileSystemPlugin : BaseSystemPlugin, ISettingProvider {
+	public class FolderPlugin : BaseSystemPlugin, ISettingProvider {
 
 		#region Properties
 
 		private PluginInitContext context;
 		private static List<string> driverNames = null;
 		private static Dictionary<string, DirectoryInfo[]> parentDirectories = new Dictionary<string, DirectoryInfo[]>();
-		public override string Description { get { return base.Description; } }
-		public override string Name { get { return "File System"; } }
+		public override string Description {
+		    get
+		    {
+                return "Provide opening folder from wox directorily. You can add your favorite folders.";
+		    } 
+        }
+
+		public override string Name { get { return "Folder"; } }
 		public override string IcoPath { get { return @"Images\folder.png"; } }
 
 		#endregion Properties

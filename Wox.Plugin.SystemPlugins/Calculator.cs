@@ -97,7 +97,10 @@ namespace Wox.Plugin.SystemPlugins
 
         public override string Description
         {
-            get { return base.Description; }
+            get
+            {
+                return "Provide mathematical calculations.(Try 5*3-2 in Wox)";
+            }
         }
     }
 }

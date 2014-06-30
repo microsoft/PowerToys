@@ -160,7 +160,7 @@ namespace Wox.Plugin.SystemPlugins.CMD
 
         public override string Description
         {
-            get { return base.Description; }
+            get { return "Provide executing commands from Wox. Commands should start with >"; }
         }
     }
 }

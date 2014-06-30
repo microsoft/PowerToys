@@ -147,12 +147,12 @@ namespace Wox.Plugin.SystemPlugins.Program
 
         public override string IcoPath
         {
-            get { return @"Images\app.png"; }
+            get { return @"Images\program.png"; }
         }
 
         public override string Description
         {
-            get { return base.Description; }
+            get { return "Provide searching programs in your computer."; }
         }
 
         #region ISettingProvider Members

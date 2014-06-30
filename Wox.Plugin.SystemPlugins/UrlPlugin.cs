@@ -32,7 +32,7 @@ namespace Wox.Plugin.SystemPlugins
         }
 
         public override string Name { get { return "URL handler"; } }
-        public override string Description { get { return "Open the typed URL..."; } }
+        public override string Description { get { return "Provide Opening the typed URL from Wox."; } }
         public override string IcoPath { get { return "Images/url2.png"; } }
 
         protected override void InitInternal(PluginInitContext context)

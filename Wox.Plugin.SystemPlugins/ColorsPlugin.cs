@@ -10,7 +10,7 @@ namespace Wox.Plugin.SystemPlugins
 {
     public sealed class ColorsPlugin : BaseSystemPlugin
     {
-        private const string DIR_PATH = ".\\Plugins\\Colors\\";
+        private string DIR_PATH = Path.Combine(Path.GetTempPath(), @"Plugins\Colors\");
         private const int IMG_SIZE = 32;
 
         private DirectoryInfo ColorsDirectory { get; set; }
@@ -82,7 +82,7 @@ namespace Wox.Plugin.SystemPlugins
             return ColorsDirectory.GetFiles(file, SearchOption.TopDirectoryOnly);
         }
 
-        public string CreateImage(string name)
+        private string CreateImage(string name)
         {
             using (var bitmap = new Bitmap(IMG_SIZE, IMG_SIZE))
             using (var graphics = Graphics.FromImage(bitmap))
@@ -108,7 +108,10 @@ namespace Wox.Plugin.SystemPlugins
 
         public override string Description
         {
-            get { return string.Empty; }
+            get
+            {
+                return "Provide hex color preview.(Try #000 in Wox)";
+            }
         }
 
         public override string IcoPath

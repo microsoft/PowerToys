@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -27,6 +26,7 @@ namespace Wox
     {
         string woxLinkPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "wox.lnk");
         public MainWindow MainWindow;
+        bool settingsLoaded = false;
         private Dictionary<ISettingProvider, Control> featureControls = new Dictionary<ISettingProvider, Control>(); 
 
         public SettingWindow()
@@ -41,7 +41,6 @@ namespace Wox
             Loaded += Setting_Loaded;
         }
 
-        bool settingsLoaded = false;
         private void Setting_Loaded(object sender, RoutedEventArgs ev)
         {
             ctlHotkey.OnHotkeyChanged += ctlHotkey_OnHotkeyChanged;
@@ -80,7 +79,13 @@ namespace Wox
                 UserSettingStorage.Instance.Save();
             };
 
-            #region Load Theme Data
+            cbReplaceWinR.IsChecked = UserSettingStorage.Instance.ReplaceWinR;
+            lvCustomHotkey.ItemsSource = UserSettingStorage.Instance.CustomPluginHotkeys;
+            cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
+            cbLeaveCmdOpen.IsChecked = UserSettingStorage.Instance.LeaveCmdOpen;
+            cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
+
+            #region Load Theme
 
             if (!string.IsNullOrEmpty(UserSettingStorage.Instance.QueryBoxFont) &&
                 Fonts.SystemFontFamilies.Count(o => o.FamilyNames.Values.Contains(UserSettingStorage.Instance.QueryBoxFont)) > 0)
@@ -125,39 +130,36 @@ namespace Wox
                     Title = "Search web contents with shortcuts",
                     SubTitle = "e.g. search google with g keyword or youtube keyword)",
                     IcoPath = "Images/work.png",
-                    PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 },
                 new Result()
                 {
                     Title = "clipboard history ",
                     IcoPath = "Images/work.png",
-                    PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 },
                 new Result()
                 {
                     Title = "Themes support",
                     SubTitle = "get more themes from http://www.getwox.com/theme",
                     IcoPath = "Images/work.png",
-                    PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 },
                 new Result()
                 {
                     Title = "Plugins support",
                     SubTitle = "get more plugins from http://www.getwox.com/plugin",
                     IcoPath = "Images/work.png",
-                    PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 },
                 new Result()
                 {
                     Title = "Wox is an open-source software",
                     SubTitle = "Wox benefits from the open-source community a lot",
                     IcoPath = "Images/work.png",
-                    PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 }
             });
-
-            #endregion
-
 
             foreach (string theme in LoadAvailableThemes())
             {
@@ -166,30 +168,6 @@ namespace Wox
             }
 
             themeComboBox.SelectedItem = UserSettingStorage.Instance.Theme;
-            cbReplaceWinR.IsChecked = UserSettingStorage.Instance.ReplaceWinR;
-            lvCustomHotkey.ItemsSource = UserSettingStorage.Instance.CustomPluginHotkeys;
-            cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
-	        cbLeaveCmdOpen.IsChecked = UserSettingStorage.Instance.LeaveCmdOpen;
-            cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
-
-            var features = new CompositeCollection
-            {
-                new CollectionContainer()
-                {
-                    Collection =
-                        PluginLoader.Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System)
-                            .Select(o => o.Plugin)
-                            .Cast<Wox.Plugin.SystemPlugins.ISystemPlugin>()
-                },
-                FindResource("FeatureBoxSeperator"),
-                new CollectionContainer()
-                {
-                    Collection =
-                        PluginLoader.Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.ThirdParty)
-                }
-            };
-            lbPlugins.ItemsSource = features;
-
             slOpacity.Value = UserSettingStorage.Instance.Opacity;
             CbOpacityMode.SelectedItem = UserSettingStorage.Instance.OpacityMode;
 
@@ -198,13 +176,37 @@ namespace Wox
             {
                 var brush = new ImageBrush(new BitmapImage(new Uri(wallpaper)));
                 brush.Stretch = Stretch.UniformToFill;
-                this.PreviewPanel.Background = brush;
+                PreviewPanel.Background = brush;
             }
             else
             {
                 var wallpaperColor = WallpaperPathRetrieval.GetWallpaperColor();
-                this.PreviewPanel.Background = new SolidColorBrush(wallpaperColor);
+                PreviewPanel.Background = new SolidColorBrush(wallpaperColor);
             }
+            #endregion
+
+            #region Load Plugin
+
+            var plugins = new CompositeCollection
+            {
+                new CollectionContainer
+                {
+                    Collection =
+                        PluginLoader.Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System)
+                            .Select(o => o.Plugin)
+                            .Cast<ISystemPlugin>()
+                },
+                FindResource("FeatureBoxSeperator"),
+                new CollectionContainer
+                {
+                    Collection =
+                        PluginLoader.Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.ThirdParty)
+                }
+            };
+            lbPlugins.ItemsSource = plugins;
+            lbPlugins.SelectedIndex = 0;
+
+            #endregion
 
             //PreviewPanel
             settingsLoaded = true;
@@ -213,7 +215,7 @@ namespace Wox
 
         private List<string> LoadAvailableThemes()
         {
-            string themePath = Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Themes");
+            string themePath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Themes");
             return Directory.GetFiles(themePath).Where(filePath => filePath.EndsWith(".xaml") && !filePath.EndsWith("Default.xaml")).ToList();
         }
 
@@ -315,18 +317,6 @@ namespace Wox
         }
 
         #endregion
-
-        private void BtnEnableInstaller_OnClick(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                Process.Start("Wox.UAC.exe", "AssociatePluginInstaller");
-            }
-            catch (Exception)
-            {
-                //throw an exception when user click cancel in UAC prompt window.
-            }
-        }
 
         #region Theme
         private void ThemeComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -434,7 +424,11 @@ namespace Wox
             var pair = lbPlugins.SelectedItem as PluginPair;
             if (pair != null)
             {
+                //third-party plugin
                 provider = pair.Plugin as ISettingProvider;
+                pluginAuthor.Visibility = Visibility.Visible;
+                pluginActionKeyword.Visibility = Visibility.Visible;
+                pluginWebsite.Visibility = Visibility.Visible;
                 pluginTitle.Text = pair.Metadata.Name;
                 pluginActionKeyword.Text = "ActionKeyword: " + pair.Metadata.ActionKeyword;
                 pluginAuthor.Text = "Author: " + pair.Metadata.Author;
@@ -442,31 +436,33 @@ namespace Wox
                 pluginSubTitle.Text = pair.Metadata.Description;
                 SyntaxSugars.CallOrRescueDefault(
                     () =>
-                        pluginIcon.Source =
-                            (ImageSource)
-                                new ImagePathConverter().Convert(
-                                    new object[] {pair.Metadata.IcoPath, pair.Metadata.PluginDirecotry}, null, null,
+                        pluginIcon.Source = (ImageSource)new ImagePathConverter().Convert(
+                                    new object[]
+                                    {
+                                        pair.Metadata.IcoPath, 
+                                        pair.Metadata.PluginDirecotry
+                                    }, null, null,
                                     null));
             }
             else
             {
+                //system plugin
                 provider = lbPlugins.SelectedItem as ISettingProvider;
-
                 var sys = lbPlugins.SelectedItem as BaseSystemPlugin;
                 if (sys != null)
                 {
                     pluginTitle.Text = sys.Name;
                     pluginSubTitle.Text = sys.Description;
-                    pluginAuthor.Text = "Author: Wox";
-                    pluginActionKeyword.Text = "ActionKeyword: auto trigger";
-                    pluginWebsite.Text = "Website: http://www.getwox.com";
+                    pluginAuthor.Visibility = Visibility.Collapsed;
+                    pluginActionKeyword.Visibility = Visibility.Collapsed;
+                    pluginWebsite.Visibility = Visibility.Collapsed;
                     SyntaxSugars.CallOrRescueDefault(
                         () =>
-                            pluginIcon.Source =
-                                (ImageSource)
-                                    new ImagePathConverter().Convert(
-                                        new object[] { sys.IcoPath, sys.PluginDirectory }, null, null,
-                                        null));
+                            pluginIcon.Source = (ImageSource) new ImagePathConverter().Convert( new object[]
+                                {
+                                    sys.IcoPath, 
+                                    sys.PluginDirectory
+                                }, null, null,null));
                 }
             }
 

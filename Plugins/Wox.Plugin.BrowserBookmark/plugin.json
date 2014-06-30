@@ -8,5 +8,5 @@
     "Language":"csharp",
     "Website":"http://www.getwox.com/plugin",
     "ExecuteFileName":"Wox.Plugin.browserBookmark.dll",
-    "IcoPath":"Images\\plugin.png"
+    "IcoPath":"Images\\bookmark.png"
 }

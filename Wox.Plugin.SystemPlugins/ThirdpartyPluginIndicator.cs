@@ -63,17 +63,17 @@ namespace Wox.Plugin.SystemPlugins
 
         public override string Name
         {
-            get { return "Plugins"; }
+            get { return "Third-party Plugin Indicator"; }
         }
 
         public override string IcoPath
         {
-            get { return @"Images\work.png"; }
+            get { return @"Images\list.png"; }
         }
 
         public override string Description
         {
-            get { return base.Description; }
+            get { return "Provide Third-party plugin actionword suggeestion."; }
         }
     }
 }

@@ -63,12 +63,6 @@ namespace Wox.Infrastructure.Storage.UserSettings
         public bool StartWoxOnSystemStartup { get; set; }
 
         [JsonProperty]
-        public bool EnablePythonPlugins { get; set; }
-
-		[JsonProperty]
-		public bool EnableBookmarkPlugin { get; set; }
-
-        [JsonProperty]
         public double Opacity { get; set; }
 
         [JsonProperty]
@@ -105,6 +99,16 @@ namespace Wox.Infrastructure.Storage.UserSettings
             };
             webSearches.Add(wikiWebSearch);
 
+            WebSearch findIcon = new WebSearch()
+            {
+                Title = "FindIcon",
+                ActionWord = "findicon",
+                IconPath = Path.GetDirectoryName(Application.ExecutablePath) + @"\Images\websearch\pictures.png",
+                Url = "http://findicons.com/search/{q}",
+                Enabled = true
+            };
+            webSearches.Add(findIcon);
+
             return webSearches;
         }
 
@@ -139,8 +143,6 @@ namespace Wox.Infrastructure.Storage.UserSettings
 
         protected override void LoadDefaultConfig()
         {
-            EnablePythonPlugins = true;
-			EnableBookmarkPlugin = true;
             Theme = "Dark";
             ReplaceWinR = true;
             WebSearches = LoadDefaultWebSearches();
