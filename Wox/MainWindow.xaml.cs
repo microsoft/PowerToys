@@ -534,7 +534,14 @@ namespace Wox {
             {
                 // Note that you can have more than one file.
                 string[] files = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
-                PluginInstaller.Install(files[0]);
+                if (files[0].ToLower().EndsWith(".wox"))
+                {
+                    PluginInstaller.Install(files[0]);
+                }
+                else
+                {
+                    MessageBox.Show("incorrect wox plugin file.");
+                }
             }
 	    }
 
