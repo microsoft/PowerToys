@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,7 +9,6 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using WindowsInput;
 using WindowsInput.Native;
 using NHotkey;
@@ -23,19 +20,16 @@ using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.PluginLoader;
-using Wox.Properties;
 using Application = System.Windows.Application;
 using Brushes = System.Windows.Media.Brushes;
 using Color = System.Windows.Media.Color;
 using ContextMenu = System.Windows.Forms.ContextMenu;
-using Control = System.Windows.Controls.Control;
 using FontFamily = System.Windows.Media.FontFamily;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MenuItem = System.Windows.Forms.MenuItem;
 using MessageBox = System.Windows.MessageBox;
 using MouseButton = System.Windows.Input.MouseButton;
 using Path = System.IO.Path;
-using Point = System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;
 using TextBox = System.Windows.Controls.TextBox;
 using ToolTip = System.Windows.Controls.ToolTip;
@@ -45,10 +39,6 @@ namespace Wox {
 
 		#region Properties
 
-		private static readonly object locker = new object();
-		public static bool initialized = false;
-
-		private static readonly List<Result> waitShowResultList = new List<Result>();
 		private readonly GlobalHotkey globalHotkey = new GlobalHotkey();
 		private readonly KeyboardSimulator keyboardSimulator = new KeyboardSimulator(new InputSimulator());
 		private readonly Storyboard progressBarStoryboard = new Storyboard();
@@ -112,9 +102,8 @@ namespace Wox {
 
 		public MainWindow() {
 			InitializeComponent();
-			initialized = true;
 
-			if (UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow)
+		    if (UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow)
 				this.AllowsTransparency = true;
 
 			System.Net.WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
@@ -466,18 +455,13 @@ namespace Wox {
 			queryHasReturn = true;
 			progressBar.Dispatcher.Invoke(new Action(StopProgress));
 			if (list.Count > 0) {
-				//todo:this should be opened to users, it's their choice to use it or not in their workflows
 				list.ForEach(
 					o => {
 						if (o.AutoAjustScore) o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o);
 					});
-				lock (locker) {
-					waitShowResultList.AddRange(list);
-				}
 				Dispatcher.DelayInvoke("ShowResult", k => resultCtrl.Dispatcher.Invoke(new Action(() => {
-					List<Result> l = waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
-					waitShowResultList.Clear();
-					resultCtrl.AddResults(l);
+					List<Result> results = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
+					resultCtrl.AddResults(results);
 				})), TimeSpan.FromMilliseconds(isCMDMode ? 0 : 50));
 			}
 		}
