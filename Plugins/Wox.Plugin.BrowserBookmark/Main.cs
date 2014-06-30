@@ -16,11 +16,6 @@ namespace Wox.Plugin.BrowserBookmark
 
         public void Init(PluginInitContext context)
         {
-            if (!Wox.Infrastructure.Storage.UserSettings.UserSettingStorage.Instance.EnableBookmarkPlugin)
-            {
-                return;
-            }
-
             bookmarks.Clear();
             LoadChromeBookmarks();
 
@@ -48,7 +43,7 @@ namespace Wox.Plugin.BrowserBookmark
             }
 
 
-            var fuzzyMather = FuzzyMatcher.Create(query.RawQuery);
+            var fuzzyMather = FuzzyMatcher.Create(query.GetAllRemainingParameter());
             List<Bookmark> returnList = bookmarks.Where(o => MatchProgram(o, fuzzyMather)).ToList();
             returnList = returnList.OrderByDescending(o => o.Score).ToList();
             return returnList.Select(c => new Result()
