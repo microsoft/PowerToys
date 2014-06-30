@@ -16,7 +16,7 @@
 		<ListBoxItem HorizontalContentAlignment="Stretch"
 					IsEnabled="False"
 					IsHitTestVisible="False" x:Key="FeatureBoxSeperator">
-			<Separator Width="{Binding ElementName=featureBox, Path=ActualWidth}"/>
+			<Separator Width="{Binding ElementName=lbPlugins, Path=ActualWidth}"/>
 		</ListBoxItem>
 	</Window.Resources>
 	<TabControl Height="auto" >
@@ -40,13 +40,13 @@
 				</StackPanel>
 			</StackPanel>
 		</TabItem>
-		<TabItem Header="Features">
+		<TabItem Header="Plugin">
 			<Grid>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="200"/>
 					<ColumnDefinition/>
 				</Grid.ColumnDefinitions>
-				<ListBox x:Name="featureBox" Grid.Column="0" Margin="0" SelectionChanged="featureBox_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" >
+				<ListBox x:Name="lbPlugins" Grid.Column="0" Margin="0" SelectionChanged="lbPlugins_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" >
 					<ListBox.Resources>
 						<DataTemplate DataType="{x:Type system:BaseSystemPlugin}">
 							<Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
@@ -280,20 +280,5 @@
 				</StackPanel>
 			</Grid>
 		</TabItem> 
-		<TabItem Header="Plugins">
-			<StackPanel Orientation="Vertical" Margin="10">
-				<StackPanel Orientation="Horizontal" Margin="10">
-					<CheckBox x:Name="cbEnablePythonPlugins" />
-					<TextBlock Text="Enable Python Plugins" />
-				</StackPanel>
-				<StackPanel Orientation="Horizontal" Margin="10">
-					<Button x:Name="btnEnableInstaller" Click="BtnEnableInstaller_OnClick" Content="enable plugin installer"/>
-				</StackPanel>
-				<StackPanel Orientation="Horizontal" Margin="10">
-					<CheckBox x:Name="cbEnableBookmarkPlugin" />
-					<TextBlock Text="Enable Bookmark Plugin" />
-				</StackPanel>
-			</StackPanel>
-		</TabItem>
 	</TabControl>
 </Window>

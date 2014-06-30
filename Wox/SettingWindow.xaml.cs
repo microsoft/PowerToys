@@ -57,26 +57,6 @@ namespace Wox
                 UserSettingStorage.Instance.Save();
             };
 
-            cbEnablePythonPlugins.Checked += (o, e) =>
-            {
-                UserSettingStorage.Instance.EnablePythonPlugins = true;
-                UserSettingStorage.Instance.Save();
-            };
-            cbEnablePythonPlugins.Unchecked += (o, e) =>
-            {
-                UserSettingStorage.Instance.EnablePythonPlugins = false;
-                UserSettingStorage.Instance.Save();
-            };
-
-			cbEnableBookmarkPlugin.Checked += (o, e) => {
-				UserSettingStorage.Instance.EnableBookmarkPlugin = true;
-				UserSettingStorage.Instance.Save();
-			};
-			cbEnableBookmarkPlugin.Unchecked += (o, e) => {
-				UserSettingStorage.Instance.EnableBookmarkPlugin = false;
-				UserSettingStorage.Instance.Save();
-			};
-
 			cbLeaveCmdOpen.Checked += (o, e) => {
 				UserSettingStorage.Instance.LeaveCmdOpen = true;
 				UserSettingStorage.Instance.Save();
@@ -188,9 +168,7 @@ namespace Wox
             themeComboBox.SelectedItem = UserSettingStorage.Instance.Theme;
             cbReplaceWinR.IsChecked = UserSettingStorage.Instance.ReplaceWinR;
             lvCustomHotkey.ItemsSource = UserSettingStorage.Instance.CustomPluginHotkeys;
-            cbEnablePythonPlugins.IsChecked = UserSettingStorage.Instance.EnablePythonPlugins;
             cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
-            cbEnableBookmarkPlugin.IsChecked = UserSettingStorage.Instance.EnableBookmarkPlugin;
 	        cbLeaveCmdOpen.IsChecked = UserSettingStorage.Instance.LeaveCmdOpen;
             cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
 
@@ -210,7 +188,7 @@ namespace Wox
                         PluginLoader.Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.ThirdParty)
                 }
             };
-            featureBox.ItemsSource = features;
+            lbPlugins.ItemsSource = features;
 
             slOpacity.Value = UserSettingStorage.Instance.Opacity;
             CbOpacityMode.SelectedItem = UserSettingStorage.Instance.OpacityMode;
@@ -450,10 +428,10 @@ namespace Wox
                 PreviewMainPanel.Opacity = 1;
         }
 
-        private void featureBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void lbPlugins_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ISettingProvider provider = null;
-            var pair = featureBox.SelectedItem as PluginPair;
+            var pair = lbPlugins.SelectedItem as PluginPair;
             if (pair != null)
             {
                 provider = pair.Plugin as ISettingProvider;
@@ -472,9 +450,9 @@ namespace Wox
             }
             else
             {
-                provider = featureBox.SelectedItem as ISettingProvider;
+                provider = lbPlugins.SelectedItem as ISettingProvider;
 
-                var sys = featureBox.SelectedItem as BaseSystemPlugin;
+                var sys = lbPlugins.SelectedItem as BaseSystemPlugin;
                 if (sys != null)
                 {
                     pluginTitle.Text = sys.Name;
