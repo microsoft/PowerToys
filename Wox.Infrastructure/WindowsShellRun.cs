@@ -297,6 +297,9 @@ namespace Wox.Infrastructure
             int driveId = -1;
             if (PromptForMedia(cmd, out driveId))
             {
+                string oldCwd = Environment.CurrentDirectory;
+                string home = Environment.GetEnvironmentVariable("HOME");
+                Environment.CurrentDirectory = home;
                 ShellExecCmdLine(
                     IntPtr.Zero,
                     errorDialogHwnd,
@@ -305,6 +308,7 @@ namespace Wox.Infrastructure
                     global::System.Diagnostics.ProcessWindowStyle.Normal,
                     ShellExecCmdLineFlags.SECL__IGNORE_ERROR | ShellExecCmdLineFlags.SECL_USE_IDLIST | ShellExecCmdLineFlags.SECL_LOG_USAGE | (showErrorDialog ? 0 : ShellExecCmdLineFlags.SECL_NO_UI)
                 );
+                Environment.CurrentDirectory = oldCwd;
             }
             else
             {   // Device not ready 0x80070015
