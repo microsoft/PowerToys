@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Python.Runtime;
 using Wox.Helper;
+using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.PluginLoader;
 
@@ -19,6 +20,13 @@ namespace Wox.Commands
             PluginPair thirdPlugin = Plugins.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == q.ActionName);
             if (thirdPlugin != null && !string.IsNullOrEmpty(thirdPlugin.Metadata.ActionKeyword))
             {
+                var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == thirdPlugin.Metadata.ID);
+                if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
+                {
+                    UpdateResultView(null);
+                    return;
+                }
+
                 if (thirdPlugin.Metadata.Language == AllowedLanguage.Python)
                 {
                     SwitchPythonEnv(thirdPlugin);
@@ -29,12 +37,15 @@ namespace Wox.Commands
                     {
                         thirdPlugin.InitContext.PushResults = (qu, r) =>
                         {
-                            r.ForEach(o =>
+                            if (r != null)
                             {
-                                o.PluginDirectory = thirdPlugin.Metadata.PluginDirecotry;
-                                o.OriginQuery = qu;
-                            });
-                            UpdateResultView(r);
+                                r.ForEach(o =>
+                                {
+                                    o.PluginDirectory = thirdPlugin.Metadata.PluginDirecotry;
+                                    o.OriginQuery = qu;
+                                });
+                                UpdateResultView(r);
+                            }
                         };
                         List<Result> results = thirdPlugin.Plugin.Query(q) ?? new List<Result>();
                         thirdPlugin.InitContext.PushResults(q, results);

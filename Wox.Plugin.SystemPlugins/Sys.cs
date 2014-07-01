@@ -118,6 +118,11 @@ namespace Wox.Plugin.SystemPlugins
         }
 
 
+        public override string ID
+        {
+            get { return "CEA08895D2544B019B2E9C5009600DF4"; }
+        }
+
         public override string Name
         {
             get { return "System Commands"; }

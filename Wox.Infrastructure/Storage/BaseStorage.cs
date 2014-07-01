@@ -15,6 +15,14 @@ namespace Wox.Infrastructure.Storage
         private static object locker = new object();
         private static T storage;
 
+        public event Action<T> AfterLoadConfig;
+
+        protected virtual void OnAfterLoadConfig(T obj)
+        {
+            Action<T> handler = AfterLoadConfig;
+            if (handler != null) handler(obj);
+        }
+
         protected abstract string ConfigName { get; }
 
         public static T Instance
@@ -53,6 +61,7 @@ namespace Wox.Infrastructure.Storage
                 try
                 {
                     storage = JsonConvert.DeserializeObject<T>(json);
+                    OnAfterLoadConfig(storage);
                 }
                 catch (Exception)
                 {

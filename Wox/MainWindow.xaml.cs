@@ -246,9 +246,9 @@ namespace Wox {
 						// didn't.
 						if (resultCtrl.Dirty) resultCtrl.Clear();
 					}, TimeSpan.FromMilliseconds(100), null);
+                    queryHasReturn = false;
 					var q = new Query(lastQuery);
 					CommandFactory.DispatchCommand(q);
-					queryHasReturn = false;
 					if (Plugins.HitThirdpartyKeyword(q)) {
 						Dispatcher.DelayInvoke("ShowProgressbar", originQuery => {
 							if (!queryHasReturn && originQuery == lastQuery) {
@@ -455,10 +455,10 @@ namespace Wox {
 		}
 
 		public void OnUpdateResultView(List<Result> list) {
-			if (list == null) return;
+            queryHasReturn = true;
+            progressBar.Dispatcher.Invoke(new Action(StopProgress));
+			if (list == null || list.Count == 0) return;
 
-			queryHasReturn = true;
-			progressBar.Dispatcher.Invoke(new Action(StopProgress));
             if (list.Count > 0)
             {
                 //todo:this should be opened to users, it's their choice to use it or not in their workflows

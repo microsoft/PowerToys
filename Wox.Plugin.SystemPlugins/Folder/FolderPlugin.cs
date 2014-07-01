@@ -23,7 +23,12 @@ namespace Wox.Plugin.SystemPlugins.Folder {
 		    } 
         }
 
-		public override string Name { get { return "Folder"; } }
+	    public override string ID
+	    {
+            get { return "B4D3B69656E14D44865C8D818EAE47C4"; }
+	    }
+
+	    public override string Name { get { return "Folder"; } }
 		public override string IcoPath { get { return @"Images\folder.png"; } }
 
 		#endregion Properties

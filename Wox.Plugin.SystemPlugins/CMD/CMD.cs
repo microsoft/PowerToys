@@ -148,6 +148,11 @@ namespace Wox.Plugin.SystemPlugins.CMD
             this.context = context;
         }
 
+        public override string ID
+        {
+            get { return "D409510CD0D2481F853690A07E6DC426"; }
+        }
+
         public override string Name
         {
             get { return "Shell"; }

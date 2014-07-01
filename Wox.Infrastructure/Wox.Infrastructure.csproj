@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PeHeaderReader.cs" />
+    <Compile Include="Storage\UserSettings\CustomizedPluginConfig.cs" />
     <Compile Include="Storage\UserSettings\FolderLink.cs" />
     <Compile Include="Unidecoder.Characters.cs" />
     <Compile Include="ChineseToPinYin.cs" />

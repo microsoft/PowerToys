@@ -15,6 +15,7 @@ using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.Helper;
 using Wox.Plugin.SystemPlugins;
+using Wox.PluginLoader;
 using Application = System.Windows.Forms.Application;
 using File = System.IO.File;
 using MessageBox = System.Windows.MessageBox;
@@ -422,6 +423,8 @@ namespace Wox
         {
             ISettingProvider provider = null;
             var pair = lbPlugins.SelectedItem as PluginPair;
+            string pluginId = string.Empty;
+
             if (pair != null)
             {
                 //third-party plugin
@@ -434,6 +437,7 @@ namespace Wox
                 pluginAuthor.Text = "Author: " + pair.Metadata.Author;
                 pluginWebsite.Text = "Website: " + pair.Metadata.Website;
                 pluginSubTitle.Text = pair.Metadata.Description;
+                pluginId = pair.Metadata.ID;
                 SyntaxSugars.CallOrRescueDefault(
                     () =>
                         pluginIcon.Source = (ImageSource)new ImagePathConverter().Convert(
@@ -452,6 +456,7 @@ namespace Wox
                 if (sys != null)
                 {
                     pluginTitle.Text = sys.Name;
+                    pluginId = sys.ID;
                     pluginSubTitle.Text = sys.Description;
                     pluginAuthor.Visibility = Visibility.Collapsed;
                     pluginActionKeyword.Visibility = Visibility.Collapsed;
@@ -466,7 +471,10 @@ namespace Wox
                 }
             }
 
-            this.PluginContentPanel.Content = null;
+            var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == pluginId);
+            cbDisablePlugin.IsChecked = customizedPluginConfig != null && customizedPluginConfig.Disabled;
+
+            PluginContentPanel.Content = null;
             if (provider != null)
             {
                 Control control = null;
@@ -481,6 +489,48 @@ namespace Wox
             }
             // featureControls
             // throw new NotImplementedException();
+        }
+
+        private void CbDisablePlugin_OnClick(object sender, RoutedEventArgs e)
+        {
+            CheckBox cbDisabled = e.Source as CheckBox;
+            if (cbDisabled == null) return;
+
+            var pair = lbPlugins.SelectedItem as PluginPair;
+            var id = string.Empty;
+            var name = string.Empty;
+            if (pair != null)
+            {
+                //third-party plugin
+                id = pair.Metadata.ID;
+                name = pair.Metadata.Name;
+            }
+            else
+            {
+                //system plugin
+                var sys = lbPlugins.SelectedItem as BaseSystemPlugin;
+                if (sys != null)
+                {
+                    id = sys.ID;
+                    name = sys.Name;
+                }
+            }
+            var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == id);
+            if (customizedPluginConfig == null)
+            {
+                UserSettingStorage.Instance.CustomizedPluginConfigs.Add(new CustomizedPluginConfig()
+                {
+                    Disabled = cbDisabled.IsChecked ?? true,
+                    ID = id,
+                    Name = name,
+                    Actionword = string.Empty
+                });
+            }
+            else
+            {
+                customizedPluginConfig.Disabled = cbDisabled.IsChecked ?? true;
+            }
+            UserSettingStorage.Instance.Save();
         }
     }
 }

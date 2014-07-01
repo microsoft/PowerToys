@@ -129,7 +129,7 @@
                                     <TextBlock  Opacity="0.5" x:Name="pluginAuthor"></TextBlock>
                                     <TextBlock  Opacity="0.5" x:Name="pluginWebsite" HorizontalAlignment="Right"></TextBlock>
                                 </DockPanel>
-                                <CheckBox Grid.Row="4" x:Name="pluginEnabled">Enable</CheckBox>
+                                <CheckBox Grid.Row="4" x:Name="cbDisablePlugin" Click="CbDisablePlugin_OnClick">Disable</CheckBox>
                             </Grid>
 						</Grid>
 					</ContentControl>

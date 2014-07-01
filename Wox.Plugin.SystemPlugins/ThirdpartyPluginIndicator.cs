@@ -22,6 +22,12 @@ namespace Wox.Plugin.SystemPlugins
                 if (metadata.ActionKeyword.StartsWith(query.RawQuery))
                 {
                     PluginMetadata metadataCopy = metadata;
+                    var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == metadataCopy.ID);
+                    if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
+                    {
+                        continue;
+                    }
+
                     Result result = new Result
                     {
                         Title = metadata.ActionKeyword,
@@ -60,6 +66,11 @@ namespace Wox.Plugin.SystemPlugins
             changeQuery = context.ChangeQuery;
         }
 
+
+        public override string ID
+        {
+            get { return "6A122269676E40EB86EB543B945932B9"; }
+        }
 
         public override string Name
         {

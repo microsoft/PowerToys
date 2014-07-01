@@ -101,6 +101,11 @@ namespace Wox.Plugin.SystemPlugins
             return string.Format("{0}{1}.png", ColorsDirectory.FullName, name.Substring(1));
         }
 
+        public override string ID
+        {
+            get { return "9B36CE6181FC47FBB597AA2C29CD9B0A"; }
+        }
+
         public override string Name
         {
             get { return "Colors"; }

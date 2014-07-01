@@ -7,6 +7,7 @@ namespace Wox.Plugin.SystemPlugins
 {
     public interface ISystemPlugin : IPlugin
     {
+        string ID { get; }   
         string Name { get; }
         string Description { get; }
     }

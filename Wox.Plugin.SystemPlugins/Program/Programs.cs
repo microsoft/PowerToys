@@ -140,6 +140,11 @@ namespace Wox.Plugin.SystemPlugins.Program
         }
 
 
+        public override string ID
+        {
+            get { return "791FC278BA414111B8D1886DFE447410"; }
+        }
+
         public override string Name
         {
             get { return "Programs"; }

@@ -81,6 +81,11 @@ namespace Wox.Plugin.SystemPlugins
                 UserSettingStorage.Instance.WebSearches = UserSettingStorage.Instance.LoadDefaultWebSearches();
         }
 
+        public override string ID
+        {
+            get { return "565B73353DBF4806919830B9202EE3BF"; }
+        }
+
         public override string Name
         {
             get { return "Web Searches"; }

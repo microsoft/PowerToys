@@ -85,6 +85,11 @@ namespace Wox.Plugin.SystemPlugins
             this.context = context;
         }
 
+        public override string ID
+        {
+            get { return "CEA0FDFC6D3B4085823D60DC76F28855"; }
+        }
+
         public override string Name
         {
             get { return "Calculator"; }

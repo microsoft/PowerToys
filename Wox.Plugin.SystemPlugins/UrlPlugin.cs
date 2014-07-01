@@ -31,6 +31,11 @@ namespace Wox.Plugin.SystemPlugins
             return new List<Result>(0);
         }
 
+        public override string ID
+        {
+            get { return "0308FD86DE0A4DEE8D62B9B535370992"; }
+        }
+
         public override string Name { get { return "URL handler"; } }
         public override string Description { get { return "Provide Opening the typed URL from Wox."; } }
         public override string IcoPath { get { return "Images/url2.png"; } }

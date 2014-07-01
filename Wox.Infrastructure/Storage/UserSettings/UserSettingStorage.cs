@@ -56,6 +56,8 @@ namespace Wox.Infrastructure.Storage.UserSettings
 		[JsonProperty]
 		public List<FolderLink> FolderLinks { get; set; }	//Aaron
 
+        public List<CustomizedPluginConfig> CustomizedPluginConfigs { get; set; }
+
         [JsonProperty]
         public List<CustomPluginHotkey> CustomPluginHotkeys { get; set; }
 
@@ -147,6 +149,7 @@ namespace Wox.Infrastructure.Storage.UserSettings
             ReplaceWinR = true;
             WebSearches = LoadDefaultWebSearches();
             ProgramSources = LoadDefaultProgramSources();
+            CustomizedPluginConfigs = new List<CustomizedPluginConfig>();
             Hotkey = "Alt + Space";
             QueryBoxFont = FontFamily.GenericSansSerif.Name;
             ResultItemFont = FontFamily.GenericSansSerif.Name;
@@ -156,6 +159,13 @@ namespace Wox.Infrastructure.Storage.UserSettings
             HideWhenDeactive = false;
         }
 
+        protected override void OnAfterLoadConfig(UserSettingStorage storage)
+        {
+            if (storage.CustomizedPluginConfigs == null)
+            {
+                storage.CustomizedPluginConfigs = new List<CustomizedPluginConfig>();
+            }
+        }
     }
 
     public enum OpacityMode
