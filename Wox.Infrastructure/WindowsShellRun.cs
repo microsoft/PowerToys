@@ -299,7 +299,7 @@ namespace Wox.Infrastructure
             {
                 string oldCwd = Environment.CurrentDirectory;
                 string home = Environment.GetEnvironmentVariable("USERPROFILE");
-                Environment.CurrentDirectory = home;
+                if(!string.IsNullOrEmpty(home)) Environment.CurrentDirectory = home;
                 ShellExecCmdLine(
                     IntPtr.Zero,
                     errorDialogHwnd,
@@ -308,7 +308,7 @@ namespace Wox.Infrastructure
                     global::System.Diagnostics.ProcessWindowStyle.Normal,
                     ShellExecCmdLineFlags.SECL__IGNORE_ERROR | ShellExecCmdLineFlags.SECL_USE_IDLIST | ShellExecCmdLineFlags.SECL_LOG_USAGE | (showErrorDialog ? 0 : ShellExecCmdLineFlags.SECL_NO_UI)
                 );
-                Environment.CurrentDirectory = oldCwd;
+                if (!string.IsNullOrEmpty(home)) Environment.CurrentDirectory = oldCwd;
             }
             else
             {   // Device not ready 0x80070015
