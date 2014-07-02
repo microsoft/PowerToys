@@ -42,6 +42,10 @@ namespace Wox.Plugin.BrowserBookmark
         /// </summary>
         private List<Bookmark> GetResults(string query)
         {
+            // Return empty list if the places.sqlite file cannot be found
+            if (string.IsNullOrEmpty(PlacesPath) || !File.Exists(PlacesPath))
+                return new List<Bookmark>();
+
             // create the connection string and init the connection
             string dbPath = string.Format(dbPathFormat, PlacesPath);
             var dbConnection = new SQLiteConnection(dbPath);
@@ -66,6 +70,10 @@ namespace Wox.Plugin.BrowserBookmark
             get
             {
                 var profilesPath = Environment.ExpandEnvironmentVariables(@"%appdata%\Mozilla\Firefox\Profiles\");
+
+                // return null if the Profiles folder does not exist
+                if (!Directory.Exists(profilesPath)) return null;
+
                 var folders = new DirectoryInfo(profilesPath).GetDirectories().Select(x => x.FullName).ToList();
 
                 // Look for the default profile folder

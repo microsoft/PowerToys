@@ -22,6 +22,7 @@ namespace Wox.Plugin.BrowserBookmark
 
         public List<Bookmark> GetBookmarks(string search = null)
         {
+            //TODO: Maybe load bookmarks here instead of pre-loading them at startup?
             if (string.IsNullOrEmpty(search)) return bookmarks;
 
             var fuzzyMatcher = FuzzyMatcher.Create(search);
