@@ -1,10 +1,10 @@
 {
     "ID":"0ECADE17459B49F587BF81DC3A125110",
     "ActionKeyword":"b",
-    "Name":"Browser Bookmark",
+    "Name":"Browser Bookmarks",
     "Description":"Search your browser bookmarks",
-    "Author":"qianlifeng",
-    "Version":"1.0",
+    "Author":"qianlifeng, Ioannis G.",
+    "Version":"1.1",
     "Language":"csharp",
     "Website":"http://www.getwox.com/plugin",
     "ExecuteFileName":"Wox.Plugin.browserBookmark.dll",
