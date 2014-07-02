@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using Wox.Infrastructure;
 
 namespace Wox.Plugin.BrowserBookmark
@@ -11,40 +7,37 @@ namespace Wox.Plugin.BrowserBookmark
     public class Main : IPlugin
     {
         private PluginInitContext context;
-        private List<Bookmark> bookmarks = new List<Bookmark>();
+
+        private ChromeBookmarks chromeBookmarks = new ChromeBookmarks();
+        private FirefoxBookmarks mozBookmarks = new FirefoxBookmarks();
 
         public void Init(PluginInitContext context)
         {
-            bookmarks.Clear();
-            LoadChromeBookmarks();
-
-            bookmarks = bookmarks.Distinct().ToList();
             this.context = context;
         }
 
         public List<Result> Query(Query query)
         {
-            if (query.ActionParameters.Count == 0)
+            string param = query.GetAllRemainingParameter().TrimStart();
+
+            // Should top results be returned? (true if no search parameters have been passed)
+            var topResults = string.IsNullOrEmpty(param);
+
+            var returnList = new List<Bookmark>();
+
+            // Add Firefox bookmarks
+            returnList.AddRange(mozBookmarks.GetBookmarks(param, topResults));
+            // Add Chrome bookmarks
+            returnList.AddRange(chromeBookmarks.GetBookmarks(param));
+
+            if (!topResults)
             {
-                return bookmarks.Select(c => new Result()
-                {
-                    Title = c.Name,
-                    SubTitle = "Bookmark: " + c.Url,
-                    IcoPath = @"Images\bookmark.png",
-                    Score = 5,
-                    Action = (e) =>
-                    {
-                        context.HideApp();
-                        context.ShellRun(c.Url);
-                        return true;
-                    }
-                }).ToList();
+                // Since we mixed chrome and firefox bookmarks, we should order them again
+                var fuzzyMatcher = FuzzyMatcher.Create(param);
+                returnList = returnList.Where(o => MatchProgram(o, fuzzyMatcher)).ToList();
+                returnList = returnList.OrderByDescending(o => o.Score).ToList();
             }
-
-
-            var fuzzyMather = FuzzyMatcher.Create(query.GetAllRemainingParameter());
-            List<Bookmark> returnList = bookmarks.Where(o => MatchProgram(o, fuzzyMather)).ToList();
-            returnList = returnList.OrderByDescending(o => o.Score).ToList();
+            
             return returnList.Select(c => new Result()
             {
                 Title = c.Name,
@@ -68,87 +61,5 @@ namespace Wox.Plugin.BrowserBookmark
 
             return false;
         }
-
-        private void ParseChromeBookmarks(String path, string source)
-        {
-            if (!File.Exists(path)) return;
-
-            string all = File.ReadAllText(path);
-            Regex nameRegex = new Regex("\"name\": \"(?<name>.*?)\"");
-            MatchCollection nameCollection = nameRegex.Matches(all);
-            Regex typeRegex = new Regex("\"type\": \"(?<type>.*?)\"");
-            MatchCollection typeCollection = typeRegex.Matches(all);
-            Regex urlRegex = new Regex("\"url\": \"(?<url>.*?)\"");
-            MatchCollection urlCollection = urlRegex.Matches(all);
-
-            List<string> names = (from Match match in nameCollection select match.Groups["name"].Value).ToList();
-            List<string> types = (from Match match in typeCollection select match.Groups["type"].Value).ToList();
-            List<string> urls = (from Match match in urlCollection select match.Groups["url"].Value).ToList();
-
-            int urlIndex = 0;
-            for (int i = 0; i < names.Count; i++)
-            {
-                string name = DecodeUnicode(names[i]);
-                string type = types[i];
-                if (type == "url")
-                {
-                    string url = urls[urlIndex];
-                    urlIndex++;
-
-                    if (url == null) continue;
-                    if (url.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase)) continue;
-                    if (url.StartsWith("vbscript:", StringComparison.OrdinalIgnoreCase)) continue;
-
-                    bookmarks.Add(new Bookmark()
-                    {
-                        Name = name,
-                        Url = url,
-                        Source = source
-                    });
-                }
-            }
-        }
-
-        private void LoadChromeBookmarks(string path, string name)
-        {
-            if (!Directory.Exists(path)) return;
-            var paths = Directory.GetDirectories(path);
-
-            foreach (var profile in paths)
-            {
-                if (File.Exists(Path.Combine(profile, "Bookmarks")))
-                    ParseChromeBookmarks(Path.Combine(profile, "Bookmarks"), name + (Path.GetFileName(profile) == "Default" ? "" : (" (" + Path.GetFileName(profile) + ")")));
-            }
-        }
-
-        private void LoadChromeBookmarks()
-        {
-            String platformPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            LoadChromeBookmarks(Path.Combine(platformPath, @"Google\Chrome\User Data"), "Google Chrome");
-            LoadChromeBookmarks(Path.Combine(platformPath, @"Google\Chrome SxS\User Data"), "Google Chrome Canary");
-            LoadChromeBookmarks(Path.Combine(platformPath, @"Chromium\User Data"), "Chromium");
-        }
-
-        private String DecodeUnicode(String dataStr)
-        {
-            Regex reg = new Regex(@"(?i)\\[uU]([0-9a-f]{4})");
-            return reg.Replace(dataStr, m => ((char)Convert.ToInt32(m.Groups[1].Value, 16)).ToString());
-        }
-
-        public string Name
-        {
-            get { return "Bookmarks"; }
-        }
-
-        public string IcoPath
-        {
-            get { return @"Images\bookmark.png"; }
-        }
-
-        public string Description
-        {
-            get { return "System workflow"; }
-        }
-
     }
 }
