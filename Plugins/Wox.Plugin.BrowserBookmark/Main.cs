@@ -8,12 +8,24 @@ namespace Wox.Plugin.BrowserBookmark
     {
         private PluginInitContext context;
 
-        private ChromeBookmarks chromeBookmarks = new ChromeBookmarks();
-        private FirefoxBookmarks mozBookmarks = new FirefoxBookmarks();
+        // TODO: periodically refresh the cache?
+        private List<Bookmark> cachedBookmarks = new List<Bookmark>(); 
 
         public void Init(PluginInitContext context)
         {
             this.context = context;
+
+            // Cache all bookmarks
+            var chromeBookmarks = new ChromeBookmarks();
+            var mozBookmarks = new FirefoxBookmarks();
+
+            //TODO: Let the user select which browser's bookmarks are displayed
+            // Add Firefox bookmarks
+            cachedBookmarks.AddRange(mozBookmarks.GetBookmarks());
+            // Add Chrome bookmarks
+            cachedBookmarks.AddRange(chromeBookmarks.GetBookmarks());
+
+            cachedBookmarks = cachedBookmarks.Distinct().ToList();
         }
 
         public List<Result> Query(Query query)
@@ -22,20 +34,14 @@ namespace Wox.Plugin.BrowserBookmark
 
             // Should top results be returned? (true if no search parameters have been passed)
             var topResults = string.IsNullOrEmpty(param);
-
-            var returnList = new List<Bookmark>();
-
-            //TODO: Let the user select which browser's bookmarks are displayed
-            // Add Firefox bookmarks
-            returnList.AddRange(mozBookmarks.GetBookmarks(param, topResults));
-            // Add Chrome bookmarks
-            returnList.AddRange(chromeBookmarks.GetBookmarks(param));
+            
+            var returnList = cachedBookmarks;
 
             if (!topResults)
             {
                 // Since we mixed chrome and firefox bookmarks, we should order them again
                 var fuzzyMatcher = FuzzyMatcher.Create(param);
-                returnList = returnList.Where(o => MatchProgram(o, fuzzyMatcher)).ToList();
+                returnList = cachedBookmarks.Where(o => MatchProgram(o, fuzzyMatcher)).ToList();
                 returnList = returnList.OrderByDescending(o => o.Score).ToList();
             }
             

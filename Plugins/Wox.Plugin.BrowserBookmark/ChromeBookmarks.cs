@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using Wox.Infrastructure;
 
 namespace Wox.Plugin.BrowserBookmark
 {
@@ -12,32 +10,12 @@ namespace Wox.Plugin.BrowserBookmark
     {
         private List<Bookmark> bookmarks = new List<Bookmark>();
 
-        public ChromeBookmarks()
+        public List<Bookmark> GetBookmarks()
         {
             bookmarks.Clear();
             LoadChromeBookmarks();
 
-            bookmarks = bookmarks.Distinct().ToList();
-        }
-
-        public List<Bookmark> GetBookmarks(string search = null)
-        {
-            //TODO: Maybe load bookmarks here instead of pre-loading them at startup?
-            if (string.IsNullOrEmpty(search)) return bookmarks;
-
-            var fuzzyMatcher = FuzzyMatcher.Create(search);
-            var returnList = bookmarks.Where(o => MatchProgram(o, fuzzyMatcher)).ToList();
-
-            return returnList;
-        }
-
-        private bool MatchProgram(Bookmark bookmark, FuzzyMatcher matcher)
-        {
-            if ((bookmark.Score = matcher.Evaluate(bookmark.Name).Score) > 0) return true;
-            if ((bookmark.Score = matcher.Evaluate(bookmark.PinyinName).Score) > 0) return true;
-            if ((bookmark.Score = matcher.Evaluate(bookmark.Url).Score / 10) > 0) return true;
-
-            return false;
+            return bookmarks;
         }
 
         private void ParseChromeBookmarks(String path, string source)
