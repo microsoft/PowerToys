@@ -8,12 +8,12 @@ namespace Wox.Plugin.BrowserBookmark
 {
     public class FirefoxBookmarks
     {
-        private const string queryAllBookmarks = @"SELECT url, title
+        private const string queryAllBookmarks = @"SELECT moz_places.url, moz_bookmarks.title
               FROM moz_places
-              WHERE id in (
-                SELECT bm.fk FROM moz_bookmarks bm WHERE bm.fk NOT NULL
-              )
-              ORDER BY visit_count DESC
+              INNER JOIN moz_bookmarks ON (
+                moz_bookmarks.fk NOT NULL AND moz_bookmarks.fk = moz_places.id
+              )              
+              ORDER BY moz_places.visit_count DESC
             ";
 
         private const string dbPathFormat = "Data Source ={0};Version=3;New=False;Compress=True;";
