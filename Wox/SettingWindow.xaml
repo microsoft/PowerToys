@@ -11,277 +11,274 @@
 		ResizeMode="NoResize"
 		WindowStartupLocation="CenterScreen"
 		Height="600" Width="800">
-	<Window.Resources>
-		<converters:ImagePathConverter x:Key="ImagePathConverter"/>
-		<ListBoxItem HorizontalContentAlignment="Stretch"
+    <Window.Resources>
+        <converters:ImagePathConverter x:Key="ImagePathConverter"/>
+        <ListBoxItem HorizontalContentAlignment="Stretch"
 					IsEnabled="False"
 					IsHitTestVisible="False" x:Key="FeatureBoxSeperator">
-			<Separator Width="{Binding ElementName=lbPlugins, Path=ActualWidth}"/>
-		</ListBoxItem>
-	</Window.Resources>
-	<TabControl Height="auto" >
-		<TabItem Header="General">
-			<StackPanel Orientation="Vertical" Margin="10">
-				<StackPanel Orientation="Horizontal" Margin="10">
-					<CheckBox x:Name="cbStartWithWindows" Unchecked="CbStartWithWindows_OnUnchecked" Checked="CbStartWithWindows_OnChecked" />
-					<TextBlock Text="Start Wox on system startup" />
-				</StackPanel>
-				<StackPanel Orientation="Horizontal" Margin="10">
-					<CheckBox x:Name="cbReplaceWinR" />
-					<TextBlock Text="Replace Win+R" />
-				</StackPanel>
-				<StackPanel Orientation="Horizontal" Margin="10">
-					<CheckBox x:Name="cbLeaveCmdOpen" />
-					<TextBlock Text="Do not close Command Prompt after command execution" />
-				</StackPanel>
-				<StackPanel Orientation="Horizontal" Margin="10">
-					<CheckBox x:Name="cbHideWhenDeactive" />
-					<TextBlock Text="Hide Wox when loses focus" />
-				</StackPanel>
-			</StackPanel>
-		</TabItem>
-		<TabItem Header="Plugin">
-			<Grid>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="200"/>
-					<ColumnDefinition/>
-				</Grid.ColumnDefinitions>
-				<ListBox x:Name="lbPlugins" Grid.Column="0" Margin="0" SelectionChanged="lbPlugins_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" >
-					<ListBox.Resources>
-						<DataTemplate DataType="{x:Type system:BaseSystemPlugin}">
-							<Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="32"></ColumnDefinition>
-									<ColumnDefinition/>
-								</Grid.ColumnDefinitions>
-								<Image Width="32" Height="32" HorizontalAlignment="Left">
-									<Image.Source>
-										<MultiBinding Converter="{StaticResource ImagePathConverter}">
-											<MultiBinding.Bindings>
-												<Binding Path="IcoPath" />
-												<Binding Path="PluginDirectory" />
-											</MultiBinding.Bindings>
-										</MultiBinding>
-									</Image.Source>
-								</Image>
-								<Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
-									<Grid.RowDefinitions>
-										<RowDefinition></RowDefinition>
-										<RowDefinition Height="Auto"></RowDefinition>
-									</Grid.RowDefinitions>
-									<TextBlock VerticalAlignment="Center" ToolTip="{Binding Name}" x:Name="tbTitle" Text="{Binding Name}"></TextBlock>
-									<TextBlock ToolTip="{Binding Description}" Visibility="{Binding Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Description}" Opacity="0.5"></TextBlock>
-								</Grid>
-							</Grid>
-						</DataTemplate>
-						<DataTemplate DataType="{x:Type woxPlugin:PluginPair}">
-							<Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="32"></ColumnDefinition>
-									<ColumnDefinition/>
-								</Grid.ColumnDefinitions>
-								<Image Width="32" Height="32" HorizontalAlignment="Left">
-									<Image.Source>
-										<MultiBinding Converter="{StaticResource ImagePathConverter}">
-											<MultiBinding.Bindings>
-												<Binding Path="Metadata.IcoPath" />
-												<Binding Path="Metadata.PluginDirecotry" />
-											</MultiBinding.Bindings>
-										</MultiBinding>
-									</Image.Source>
-								</Image>
-								<Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
-									<Grid.RowDefinitions>
-										<RowDefinition></RowDefinition>
-										<RowDefinition Height="Auto"></RowDefinition>
-									</Grid.RowDefinitions>
-									<TextBlock VerticalAlignment="Center" ToolTip="{Binding Metadata.Name}" x:Name="tbTitle" Text="{Binding Metadata.Name}"></TextBlock>
-									<TextBlock ToolTip="{Binding Metadata.Description}" Visibility="{Binding Metadata.Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Metadata.Description}" Opacity="0.5"></TextBlock>
-								</Grid>
-							</Grid>
-						</DataTemplate>
-					</ListBox.Resources>
-				</ListBox>
-				<Grid Margin="0" Grid.Column="1">
-					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto"/>
-						<RowDefinition Height="*"/>
-					</Grid.RowDefinitions>
-					<ContentControl x:Name="PluginInfoPanel" Grid.ColumnSpan="1" Grid.Row="0" Margin="10 10 10 0">
-						<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="48"></ColumnDefinition>
-								<ColumnDefinition/>
-							</Grid.ColumnDefinitions>
-							<Image Width="48" Height="48" HorizontalAlignment="Left" VerticalAlignment="Top" x:Name="pluginIcon"/>
-							<Grid Margin="10,0,0,0" Grid.Column="1" HorizontalAlignment="Stretch">
-								<Grid.RowDefinitions>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-								</Grid.RowDefinitions>
-                                <TextBlock x:Name="pluginTitle" ToolTip="{Binding Source=pluginTitle, Path=Text}" FontSize="24"></TextBlock>
-                                <TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5" ToolTip="{Binding Source=pluginSubTitle, Path=Text}" Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" ></TextBlock>
-                                <StackPanel Grid.Row="2" Orientation="Horizontal">
-                                    <TextBlock>ActionKeyword: </TextBlock>
-                                    <TextBlock Cursor="Hand" MouseUp="PluginActionKeyword_OnMouseUp" Foreground="Blue" x:Name="pluginActionKeyword"></TextBlock>
-                                </StackPanel>
-                                <DockPanel Grid.Row="3">
-                                    <TextBlock  Opacity="0.5" x:Name="pluginAuthor"></TextBlock>
-                                    <TextBlock  Opacity="0.5" x:Name="pluginWebsite" HorizontalAlignment="Right"></TextBlock>
-                                </DockPanel>
-                                <CheckBox Grid.Row="4" x:Name="cbDisablePlugin" Click="CbDisablePlugin_OnClick">Disable</CheckBox>
+            <Separator Width="{Binding ElementName=lbPlugins, Path=ActualWidth}"/>
+        </ListBoxItem>
+    </Window.Resources>
+    <TabControl Height="auto" >
+        <TabItem Header="General">
+            <StackPanel Orientation="Vertical" Margin="10">
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <CheckBox x:Name="cbStartWithWindows" Unchecked="CbStartWithWindows_OnUnchecked" Checked="CbStartWithWindows_OnChecked" />
+                    <TextBlock Text="Start Wox on system startup" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <CheckBox x:Name="cbReplaceWinR" />
+                    <TextBlock Text="Replace Win+R" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <CheckBox x:Name="cbLeaveCmdOpen" />
+                    <TextBlock Text="Do not close Command Prompt after command execution" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <CheckBox x:Name="cbHideWhenDeactive" />
+                    <TextBlock Text="Hide Wox when loses focus" />
+                </StackPanel>
+            </StackPanel>
+        </TabItem>
+        <TabItem Header="Plugin">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <ListBox x:Name="lbPlugins" Grid.Column="0" Margin="0" SelectionChanged="lbPlugins_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" >
+                    <ListBox.Resources>
+                        <DataTemplate DataType="{x:Type system:BaseSystemPlugin}">
+                            <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="32"></ColumnDefinition>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Image Width="32" Height="32" HorizontalAlignment="Left">
+                                    <Image.Source>
+                                        <MultiBinding Converter="{StaticResource ImagePathConverter}">
+                                            <MultiBinding.Bindings>
+                                                <Binding Path="IcoPath" />
+                                                <Binding Path="PluginDirectory" />
+                                            </MultiBinding.Bindings>
+                                        </MultiBinding>
+                                    </Image.Source>
+                                </Image>
+                                <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition></RowDefinition>
+                                        <RowDefinition Height="Auto"></RowDefinition>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock VerticalAlignment="Center" ToolTip="{Binding Name}" x:Name="tbTitle" Text="{Binding Name}"></TextBlock>
+                                    <TextBlock ToolTip="{Binding Description}" Visibility="{Binding Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Description}" Opacity="0.5"></TextBlock>
+                                </Grid>
                             </Grid>
-						</Grid>
-					</ContentControl>
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type woxPlugin:PluginPair}">
+                            <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="32"></ColumnDefinition>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Image Width="32" Height="32" HorizontalAlignment="Left">
+                                    <Image.Source>
+                                        <MultiBinding Converter="{StaticResource ImagePathConverter}">
+                                            <MultiBinding.Bindings>
+                                                <Binding Path="Metadata.IcoPath" />
+                                                <Binding Path="Metadata.PluginDirecotry" />
+                                            </MultiBinding.Bindings>
+                                        </MultiBinding>
+                                    </Image.Source>
+                                </Image>
+                                <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition></RowDefinition>
+                                        <RowDefinition Height="Auto"></RowDefinition>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock VerticalAlignment="Center" ToolTip="{Binding Metadata.Name}" x:Name="tbTitle" Text="{Binding Metadata.Name}"></TextBlock>
+                                    <TextBlock ToolTip="{Binding Metadata.Description}" Visibility="{Binding Metadata.Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Metadata.Description}" Opacity="0.5"></TextBlock>
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.Resources>
+                </ListBox>
+                <Grid Margin="0" Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <ContentControl x:Name="PluginInfoPanel" Grid.ColumnSpan="1" Grid.Row="0" Margin="10 10 10 0">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="48"></ColumnDefinition>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Image Width="48" Height="48" HorizontalAlignment="Left" VerticalAlignment="Top" x:Name="pluginIcon"/>
+                            <Grid Margin="10,0,0,0" Grid.Column="1" HorizontalAlignment="Stretch">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition></RowDefinition>
+                                    <RowDefinition></RowDefinition>
+                                    <RowDefinition></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <DockPanel Grid.Row="0">
+                                    <TextBlock x:Name="pluginTitle" Text="Plugin Title" Cursor="Hand" MouseUp="PluginTitle_OnMouseUp" ToolTip="{Binding Source=pluginTitle, Path=Text}" FontSize="24"></TextBlock>
+                                    <TextBlock Opacity="0.5" VerticalAlignment="Bottom" HorizontalAlignment="Right" x:Name="pluginAuthor" Text="Author"></TextBlock>
+                                </DockPanel>
+                                <TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5" ToolTip="{Binding Source=pluginSubTitle, Path=Text}" Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" ></TextBlock>
+                                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0 8 0 0">
+                                    <CheckBox Margin="0 0 50 0" x:Name="cbDisablePlugin" Click="CbDisablePlugin_OnClick">Disable</CheckBox>
+                                    <TextBlock x:Name="pluginActionKeywordTitle" Margin="0 0 10 0">ActionKeyword:</TextBlock>
+                                    <TextBlock Margin="0 0 10 0" ToolTip="Change Action Keyword" Cursor="Hand" MouseUp="PluginActionKeyword_OnMouseUp" Foreground="Blue" Text="key" x:Name="pluginActionKeyword"></TextBlock>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </ContentControl>
 
-					<ContentControl x:Name="PluginContentPanel" Grid.ColumnSpan="1" Grid.Row="1" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <ContentControl x:Name="PluginContentPanel" Grid.ColumnSpan="1" Grid.Row="1" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
-					</ContentControl>
-				</Grid>
-			</Grid>
-		</TabItem>
-		<TabItem Header="Theme">
-			<Grid>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="200"/>
-					<ColumnDefinition/>
-				</Grid.ColumnDefinitions>
-				<ListBox x:Name="themeComboBox" Grid.Column="0" Margin="10" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="180"/>
-				<Grid Margin="0" Grid.Column="1">
-					<Grid.RowDefinitions>
-						<RowDefinition />
-						<RowDefinition Height="80"/>
-					</Grid.RowDefinitions>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition/>
-						<ColumnDefinition Width="170" />
-					</Grid.ColumnDefinitions>
-					<StackPanel x:Name="PreviewPanel" Grid.ColumnSpan="2" Grid.Row="0" Margin="0">
-						<StackPanel x:Name="PreviewMainPanel" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
-							<StackPanel.Resources>
-								<ResourceDictionary Source="/PresentationFramework.Classic,Version=3.0.0.0,Culture=neutral,PublicKeyToken=31bf3856ad364e35,processorArchitecture=MSIL;component/themes/Classic.xaml"/>
-							</StackPanel.Resources>
-							<Border Width="500" Style="{DynamicResource WindowBorderStyle}">
-								<Grid>
-									<Grid.RowDefinitions>
-										<RowDefinition Height="50" />
-										<RowDefinition/>
-									</Grid.RowDefinitions>
-									<TextBox Text="Hello Wox" IsReadOnly="True" Style="{DynamicResource QueryBoxStyle}" Grid.Row="0"/>
-									<wox:ResultPanel Grid.Row="1" x:Name="resultPanelPreview"/>
-								</Grid>
-							</Border>
-						</StackPanel>
-					</StackPanel>
+                    </ContentControl>
+                </Grid>
+            </Grid>
+        </TabItem>
+        <TabItem Header="Theme">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <ListBox x:Name="themeComboBox" Grid.Column="0" Margin="10" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="180"/>
+                <Grid Margin="0" Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="80"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="170" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel x:Name="PreviewPanel" Grid.ColumnSpan="2" Grid.Row="0" Margin="0">
+                        <StackPanel x:Name="PreviewMainPanel" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StackPanel.Resources>
+                                <ResourceDictionary Source="/PresentationFramework.Classic,Version=3.0.0.0,Culture=neutral,PublicKeyToken=31bf3856ad364e35,processorArchitecture=MSIL;component/themes/Classic.xaml"/>
+                            </StackPanel.Resources>
+                            <Border Width="500" Style="{DynamicResource WindowBorderStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="50" />
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <TextBox Text="Hello Wox" IsReadOnly="True" Style="{DynamicResource QueryBoxStyle}" Grid.Row="0"/>
+                                    <wox:ResultPanel Grid.Row="1" x:Name="resultPanelPreview"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
 
-					<StackPanel Grid.Row="1" Grid.Column="0"  Margin="10" Orientation="Vertical">
-						<StackPanel Orientation="Horizontal" Margin="2">
-							<TextBlock Text="Query Box Font:" />
-							<ComboBox x:Name="cbQueryBoxFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbQueryBoxFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
-							<ComboBox
+                    <StackPanel Grid.Row="1" Grid.Column="0"  Margin="10" Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal" Margin="2">
+                            <TextBlock Text="Query Box Font:" />
+                            <ComboBox x:Name="cbQueryBoxFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbQueryBoxFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
+                            <ComboBox
 								x:Name="cbQueryBoxFontFaces"
 								ItemsSource="{Binding SelectedValue.FamilyTypefaces, ElementName=cbQueryBoxFont}" SelectionChanged="CbQueryBoxFontFaces_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
-								<ComboBox.ItemTemplate>
-									<DataTemplate>
-										<ItemsControl ItemsSource="{Binding AdjustedFaceNames}">
-											<ItemsControl.ItemTemplate>
-												<DataTemplate>
-													<TextBlock Text="{Binding Value}" />
-												</DataTemplate>
-											</ItemsControl.ItemTemplate>
-										</ItemsControl>
-									</DataTemplate>
-								</ComboBox.ItemTemplate>
-							</ComboBox>
-						</StackPanel>
-						<StackPanel Orientation="Horizontal" Margin="2">
-							<TextBlock Text="Result Item Font:" />
-							<ComboBox x:Name="cbResultItemFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbResultItemFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
-							<ComboBox
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <ItemsControl ItemsSource="{Binding AdjustedFaceNames}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Value}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="2">
+                            <TextBlock Text="Result Item Font:" />
+                            <ComboBox x:Name="cbResultItemFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbResultItemFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
+                            <ComboBox
 								x:Name="cbResultItemFontFaces"
 								ItemsSource="{Binding SelectedValue.FamilyTypefaces, ElementName=cbResultItemFont}" SelectionChanged="CbResultItemFontFaces_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
-								<ComboBox.ItemTemplate>
-									<DataTemplate>
-										<ItemsControl ItemsSource="{Binding AdjustedFaceNames}">
-											<ItemsControl.ItemTemplate>
-												<DataTemplate>
-													<TextBlock Text="{Binding Value}" />
-												</DataTemplate>
-											</ItemsControl.ItemTemplate>
-										</ItemsControl>
-									</DataTemplate>
-								</ComboBox.ItemTemplate>
-							</ComboBox>
-						</StackPanel>
-					</StackPanel>
-					<StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1" Margin="10">
-						<TextBlock Text="Window Mode:" />
-						<ComboBox Name="CbOpacityMode" SelectionChanged="CbOpacityMode_OnSelectionChanged">
-							<UserSettings:OpacityMode>Normal</UserSettings:OpacityMode>
-							<UserSettings:OpacityMode>LayeredWindow</UserSettings:OpacityMode>
-							<UserSettings:OpacityMode>DWM</UserSettings:OpacityMode>
-							<ComboBox.ItemTemplate>
-								<DataTemplate>
-									<TextBlock Text="{Binding Converter={converters:OpacityModeConverter}}" />
-								</DataTemplate>
-							</ComboBox.ItemTemplate>
-						</ComboBox>
-						<StackPanel Orientation="Horizontal">
-							<TextBlock Text="Opacity:" />
-							<Slider x:Name="slOpacity" Maximum="1" Minimum="0" SmallChange="1" LargeChange="0.1" TickPlacement="BottomRight" TickFrequency="0.1" ValueChanged="slOpacity_ValueChanged" Width="100"/>
-						</StackPanel>
-					</StackPanel>
-				</Grid>
-			</Grid>
-		</TabItem>
-		<TabItem Header="Hotkey">
-			<Grid Margin="10">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="30"/>
-					<RowDefinition/>
-					<RowDefinition Height="50"/>
-				</Grid.RowDefinitions>
-				<StackPanel  Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
-					<TextBlock VerticalAlignment="Center" Margin="0 0 10 0"><Run Text="Wox Hotkey:"/></TextBlock>
-					<wox:HotkeyControl x:Name="ctlHotkey"/>
-				</StackPanel>
-				<Grid  Grid.Row="1">
-					<Grid.RowDefinitions>
-						<RowDefinition Height="20"/>
-						<RowDefinition/>
-					</Grid.RowDefinitions>
-					<TextBlock VerticalAlignment="Center" Grid.Row="0" Margin="0 0 10 0"><Run Text="Custom Plugin Hotkey:"/></TextBlock>
-					<ListView x:Name="lvCustomHotkey" Margin="0 5 0 0" Grid.Row="1">
-						<ListView.View>
-							<GridView>
-								<GridViewColumn Header="Hotkey"  Width="180">
-									<GridViewColumn.CellTemplate>
-										<DataTemplate>
-											<TextBlock Text="{Binding Hotkey}"/>
-										</DataTemplate>
-									</GridViewColumn.CellTemplate>
-								</GridViewColumn>
-								<GridViewColumn Header="Action Keyword" Width="500">
-									<GridViewColumn.CellTemplate>
-										<DataTemplate>
-											<TextBlock Text="{Binding ActionKeyword}"/>
-										</DataTemplate>
-									</GridViewColumn.CellTemplate>
-								</GridViewColumn>
-							</GridView>
-						</ListView.View>
-					</ListView>
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <ItemsControl ItemsSource="{Binding AdjustedFaceNames}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Value}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1" Margin="10">
+                        <TextBlock Text="Window Mode:" />
+                        <ComboBox Name="CbOpacityMode" SelectionChanged="CbOpacityMode_OnSelectionChanged">
+                            <UserSettings:OpacityMode>Normal</UserSettings:OpacityMode>
+                            <UserSettings:OpacityMode>LayeredWindow</UserSettings:OpacityMode>
+                            <UserSettings:OpacityMode>DWM</UserSettings:OpacityMode>
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={converters:OpacityModeConverter}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Opacity:" />
+                            <Slider x:Name="slOpacity" Maximum="1" Minimum="0" SmallChange="1" LargeChange="0.1" TickPlacement="BottomRight" TickFrequency="0.1" ValueChanged="slOpacity_ValueChanged" Width="100"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </TabItem>
+        <TabItem Header="Hotkey">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="50"/>
+                </Grid.RowDefinitions>
+                <StackPanel  Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center" Margin="0 0 10 0"><Run Text="Wox Hotkey:"/></TextBlock>
+                    <wox:HotkeyControl x:Name="ctlHotkey"/>
+                </StackPanel>
+                <Grid  Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="20"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <TextBlock VerticalAlignment="Center" Grid.Row="0" Margin="0 0 10 0"><Run Text="Custom Plugin Hotkey:"/></TextBlock>
+                    <ListView x:Name="lvCustomHotkey" Margin="0 5 0 0" Grid.Row="1">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Hotkey"  Width="180">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Hotkey}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Action Keyword" Width="500">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding ActionKeyword}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
 
-				</Grid>
-				<StackPanel Grid.Row="2" HorizontalAlignment="Right" Orientation="Horizontal">
-					<Button x:Name="btnDeleteCustomHotkey" Click="BtnDeleteCustomHotkey_OnClick" Width="100" Margin="10" Content="Delete"/>
-					<Button x:Name="btnEditCustomHotkey" Click="BtnEditCustomHotkey_OnClick" Width="100" Margin="10" Content="Edit"/>
-					<Button x:Name="btnAddCustomeHotkey" Click="BtnAddCustomeHotkey_OnClick" Width="100" Margin="10" Content="Add"/>
-				</StackPanel>
-			</Grid>
-		</TabItem> 
-	</TabControl>
+                </Grid>
+                <StackPanel Grid.Row="2" HorizontalAlignment="Right" Orientation="Horizontal">
+                    <Button x:Name="btnDeleteCustomHotkey" Click="BtnDeleteCustomHotkey_OnClick" Width="100" Margin="10" Content="Delete"/>
+                    <Button x:Name="btnEditCustomHotkey" Click="BtnEditCustomHotkey_OnClick" Width="100" Margin="10" Content="Edit"/>
+                    <Button x:Name="btnAddCustomeHotkey" Click="BtnAddCustomeHotkey_OnClick" Width="100" Margin="10" Content="Add"/>
+                </StackPanel>
+            </Grid>
+        </TabItem>
+    </TabControl>
 </Window>

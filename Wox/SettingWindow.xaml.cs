@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -432,11 +433,11 @@ namespace Wox
                 provider = pair.Plugin as ISettingProvider;
                 pluginAuthor.Visibility = Visibility.Visible;
                 pluginActionKeyword.Visibility = Visibility.Visible;
-                pluginWebsite.Visibility = Visibility.Visible;
+                pluginActionKeywordTitle.Visibility = Visibility.Visible;
                 pluginTitle.Text = pair.Metadata.Name;
+                pluginTitle.Cursor = Cursors.Hand;
                 pluginActionKeyword.Text = pair.Metadata.ActionKeyword;
-                pluginAuthor.Text = "Author: " + pair.Metadata.Author;
-                pluginWebsite.Text = "Website: " + pair.Metadata.Website;
+                pluginAuthor.Text = "By: " + pair.Metadata.Author;
                 pluginSubTitle.Text = pair.Metadata.Description;
                 pluginId = pair.Metadata.ID;
                 SyntaxSugars.CallOrRescueDefault(
@@ -461,7 +462,8 @@ namespace Wox
                     pluginSubTitle.Text = sys.Description;
                     pluginAuthor.Visibility = Visibility.Collapsed;
                     pluginActionKeyword.Visibility = Visibility.Collapsed;
-                    pluginWebsite.Visibility = Visibility.Collapsed;
+                    pluginActionKeywordTitle.Visibility = Visibility.Collapsed;
+                    pluginTitle.Cursor = Cursors.Arrow;
                     SyntaxSugars.CallOrRescueDefault(
                         () =>
                             pluginIcon.Source = (ImageSource) new ImagePathConverter().Convert( new object[]
@@ -547,6 +549,27 @@ namespace Wox
                     changeKeywordWindow.ShowDialog();
                     PluginPair plugin = Plugins.AllPlugins.FirstOrDefault(o => o.Metadata.ID == id);
                     if (plugin != null) pluginActionKeyword.Text = plugin.Metadata.ActionKeyword;
+                }
+            }
+        }
+
+        private void PluginTitle_OnMouseUp(object sender, MouseButtonEventArgs e)
+        {
+             if (e.ChangedButton == MouseButton.Left)
+            {
+                var pair = lbPlugins.SelectedItem as PluginPair;
+                if (pair != null)
+                {
+                    //third-party plugin
+                    if (!string.IsNullOrEmpty(pair.Metadata.Website))
+                    {
+                        try
+                        {
+                            Process.Start(pair.Metadata.Website);
+                        }
+                        catch
+                        { }
+                    }
                 }
             }
         }
