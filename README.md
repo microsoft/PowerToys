@@ -28,7 +28,7 @@ Create and Share Plugin
 =========
 
 Currently, Wox support using C# and Python to write your plugins. Please refer to [Create-plugin](https://github.com/qianlifeng/Wox/wiki/Create-plugins) page for more infomation.
-You can share your plugin with <a href="http://www.getwox.com/plugin">WoxPlugins</a>. After you upload your plugin, other uses can download or search your plugin through `wpm install <plugin name>` command (this is a plugin for plugin management, which is one of the default plugins inside Wox).
+You can share your plugin with <a href="http://www.getwox.com/plugin">WoxPlugins</a>. After you upload your plugin, other uses can download or search your plugin through `wpm install <plugin name>` command (this is a plugin for plugin management, which is one of the default plugins inside Wox). Please refer to [How-to-share-your-plugins](https://github.com/qianlifeng/Wox/wiki/How-to-share-your-plugins-in--getwox.com-plugin-page%3F) for details.
 
 
 Create and Share Theme
