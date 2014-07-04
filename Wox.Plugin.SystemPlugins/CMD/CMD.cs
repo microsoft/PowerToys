@@ -4,10 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
+using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.SystemPlugins.CMD
 {
-    public class CMD : BaseSystemPlugin
+    public class CMD : BaseSystemPlugin,ISettingProvider
     {
         private PluginInitContext context;
 
@@ -166,6 +167,11 @@ namespace Wox.Plugin.SystemPlugins.CMD
         public override string Description
         {
             get { return "Provide executing commands from Wox. Commands should start with >"; }
+        }
+
+        public Control CreateSettingPanel()
+        {
+             return new CMDSetting();
         }
     }
 }

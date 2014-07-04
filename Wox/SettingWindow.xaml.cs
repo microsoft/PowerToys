@@ -48,27 +48,6 @@ namespace Wox
         {
             ctlHotkey.OnHotkeyChanged += ctlHotkey_OnHotkeyChanged;
             ctlHotkey.SetHotkey(UserSettingStorage.Instance.Hotkey, false);
-            cbReplaceWinR.Checked += (o, e) =>
-            {
-                UserSettingStorage.Instance.ReplaceWinR = true;
-                UserSettingStorage.Instance.Save();
-            };
-            cbReplaceWinR.Unchecked += (o, e) =>
-            {
-                UserSettingStorage.Instance.ReplaceWinR = false;
-                UserSettingStorage.Instance.Save();
-            };
-
-			cbLeaveCmdOpen.Checked += (o, e) => {
-				UserSettingStorage.Instance.LeaveCmdOpen = true;
-				UserSettingStorage.Instance.Save();
-			};
-
-			cbLeaveCmdOpen.Unchecked += (o, e) =>
-			{
-				UserSettingStorage.Instance.LeaveCmdOpen = false;
-				UserSettingStorage.Instance.Save();
-			};
 
             cbHideWhenDeactive.Checked += (o, e) =>
             {
@@ -82,10 +61,8 @@ namespace Wox
                 UserSettingStorage.Instance.Save();
             };
 
-            cbReplaceWinR.IsChecked = UserSettingStorage.Instance.ReplaceWinR;
             lvCustomHotkey.ItemsSource = UserSettingStorage.Instance.CustomPluginHotkeys;
             cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
-            cbLeaveCmdOpen.IsChecked = UserSettingStorage.Instance.LeaveCmdOpen;
             cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
 
             #region Load Theme

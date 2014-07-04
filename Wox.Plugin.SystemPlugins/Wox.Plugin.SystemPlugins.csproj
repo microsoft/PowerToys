@@ -54,6 +54,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CMD\CMDSetting.xaml.cs">
+      <DependentUpon>CMDSetting.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CMD\CMDStorage.cs" />
     <Compile Include="ColorsPlugin.cs" />
     <Compile Include="Folder\FolderPluginSettings.xaml.cs">
@@ -102,6 +105,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="CMD\CMDSetting.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Folder\FolderPluginSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
