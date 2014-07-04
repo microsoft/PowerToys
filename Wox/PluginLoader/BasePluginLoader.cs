@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using Wox.Helper;
+using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.SystemPlugins;
 
@@ -103,6 +104,13 @@ namespace Wox.PluginLoader {
 #endif
 				return null;
 			}
+
+		    var customizedPluginConfig =
+		        UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == metadata.ID);
+		    if (customizedPluginConfig != null && !string.IsNullOrEmpty(customizedPluginConfig.Actionword))
+		    {
+		        metadata.ActionKeyword = customizedPluginConfig.Actionword;
+		    }
 
 			return metadata;
 		}

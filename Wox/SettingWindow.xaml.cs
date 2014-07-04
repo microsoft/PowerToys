@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using IWshRuntimeLibrary;
@@ -433,7 +434,7 @@ namespace Wox
                 pluginActionKeyword.Visibility = Visibility.Visible;
                 pluginWebsite.Visibility = Visibility.Visible;
                 pluginTitle.Text = pair.Metadata.Name;
-                pluginActionKeyword.Text = "ActionKeyword: " + pair.Metadata.ActionKeyword;
+                pluginActionKeyword.Text = pair.Metadata.ActionKeyword;
                 pluginAuthor.Text = "Author: " + pair.Metadata.Author;
                 pluginWebsite.Text = "Website: " + pair.Metadata.Website;
                 pluginSubTitle.Text = pair.Metadata.Description;
@@ -531,6 +532,23 @@ namespace Wox
                 customizedPluginConfig.Disabled = cbDisabled.IsChecked ?? true;
             }
             UserSettingStorage.Instance.Save();
+        }
+
+        private void PluginActionKeyword_OnMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                var pair = lbPlugins.SelectedItem as PluginPair;
+                if (pair != null)
+                {
+                    //third-party plugin
+                    string id = pair.Metadata.ID;
+                    ActionKeyword changeKeywordWindow = new ActionKeyword(id);
+                    changeKeywordWindow.ShowDialog();
+                    PluginPair plugin = Plugins.AllPlugins.FirstOrDefault(o => o.Metadata.ID == id);
+                    if (plugin != null) pluginActionKeyword.Text = plugin.Metadata.ActionKeyword;
+                }
+            }
         }
     }
 }

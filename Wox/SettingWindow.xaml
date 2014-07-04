@@ -124,7 +124,10 @@
 								</Grid.RowDefinitions>
                                 <TextBlock x:Name="pluginTitle" ToolTip="{Binding Source=pluginTitle, Path=Text}" FontSize="24"></TextBlock>
                                 <TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5" ToolTip="{Binding Source=pluginSubTitle, Path=Text}" Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" ></TextBlock>
-                                <TextBlock Grid.Row="2" Opacity="0.5" x:Name="pluginActionKeyword"></TextBlock>
+                                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                                    <TextBlock>ActionKeyword: </TextBlock>
+                                    <TextBlock Cursor="Hand" MouseUp="PluginActionKeyword_OnMouseUp" Foreground="Blue" x:Name="pluginActionKeyword"></TextBlock>
+                                </StackPanel>
                                 <DockPanel Grid.Row="3">
                                     <TextBlock  Opacity="0.5" x:Name="pluginAuthor"></TextBlock>
                                     <TextBlock  Opacity="0.5" x:Name="pluginWebsite" HorizontalAlignment="Right"></TextBlock>
