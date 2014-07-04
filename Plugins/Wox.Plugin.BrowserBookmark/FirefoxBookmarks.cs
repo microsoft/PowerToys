@@ -8,39 +8,20 @@ namespace Wox.Plugin.BrowserBookmark
 {
     public class FirefoxBookmarks
     {
-        private const string queryBookmarks = @"SELECT url, title
+        private const string queryAllBookmarks = @"SELECT moz_places.url, moz_bookmarks.title
               FROM moz_places
-              WHERE id in (
-                SELECT bm.fk FROM moz_bookmarks bm WHERE bm.fk NOT NULL
-              )
-              AND ( url LIKE '%{0}%' OR title LIKE '%{0}%' )
-              ORDER BY visit_count DESC
-              LIMIT 20
-            ";
-
-        private const string queryTopBookmarks = @"SELECT url, title
-              FROM moz_places
-              WHERE id in (
-                SELECT bm.fk FROM moz_bookmarks bm WHERE bm.fk NOT NULL
-              )
-              ORDER BY visit_count DESC
-              LIMIT 20
+              INNER JOIN moz_bookmarks ON (
+                moz_bookmarks.fk NOT NULL AND moz_bookmarks.fk = moz_places.id
+              )              
+              ORDER BY moz_places.visit_count DESC
             ";
 
         private const string dbPathFormat = "Data Source ={0};Version=3;New=False;Compress=True;";
 
-        public List<Bookmark> GetBookmarks(string search = null, bool top = false)
-        {
-            // Create the query command for the given case
-            string query = top ? queryTopBookmarks : string.Format(queryBookmarks, search);
-
-            return GetResults(query);
-        }
-
         /// <summary>
-        /// Searches the places.sqlite db based on the given query and returns the results
+        /// Searches the places.sqlite db and returns all bookmarks
         /// </summary>
-        private List<Bookmark> GetResults(string query)
+        public List<Bookmark> GetBookmarks()
         {
             // Return empty list if the places.sqlite file cannot be found
             if (string.IsNullOrEmpty(PlacesPath) || !File.Exists(PlacesPath))
@@ -52,7 +33,7 @@ namespace Wox.Plugin.BrowserBookmark
 
             // Open connection to the database file and execute the query
             dbConnection.Open();
-            var reader = new SQLiteCommand(query, dbConnection).ExecuteReader();
+            var reader = new SQLiteCommand(queryAllBookmarks, dbConnection).ExecuteReader();
 
             // return results in List<Bookmark> format
             return reader.Select(x => new Bookmark()
