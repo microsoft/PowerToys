@@ -19,19 +19,10 @@ namespace Wox.Commands
 
                 ThreadPool.QueueUserWorkItem(state =>
                 {
-                    pair1.InitContext.PushResults = (q, r) =>
-                    {
-                        foreach (Result result in r)
-                        {
-                            result.PluginDirectory = pair1.Metadata.PluginDirecotry;
-                            result.OriginQuery = q;
-                            result.AutoAjustScore = true;
-                        }
-                        UpdateResultView(r);
-                    };
-
                     List<Result> results = pair1.Plugin.Query(query);
-                    pair1.InitContext.PushResults(query, results);
+                    results.ForEach(o=> { o.AutoAjustScore = true; });
+
+                    App.Window.PushResults(query,pair1.Metadata,results);
                 });
             }
         }

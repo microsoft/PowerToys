@@ -15,40 +15,29 @@ namespace Wox.Commands
         private string currentPythonModulePath = string.Empty;
         private IntPtr GIL;
 
-        public override void Dispatch(Query q)
+        public override void Dispatch(Query query)
         {
-            PluginPair thirdPlugin = Plugins.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == q.ActionName);
+            PluginPair thirdPlugin = Plugins.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.ActionName);
             if (thirdPlugin != null && !string.IsNullOrEmpty(thirdPlugin.Metadata.ActionKeyword))
             {
                 var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == thirdPlugin.Metadata.ID);
                 if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
                 {
+                    //need to stop the loading animation
                     UpdateResultView(null);
                     return;
                 }
 
-                if (thirdPlugin.Metadata.Language == AllowedLanguage.Python)
-                {
-                    SwitchPythonEnv(thirdPlugin);
-                }
+                //if (thirdPlugin.Metadata.Language == AllowedLanguage.Python)
+                //{
+                //    SwitchPythonEnv(thirdPlugin);
+                //}
                 ThreadPool.QueueUserWorkItem(t =>
                 {
                     try
                     {
-                        thirdPlugin.InitContext.PushResults = (qu, r) =>
-                        {
-                            if (r != null)
-                            {
-                                r.ForEach(o =>
-                                {
-                                    o.PluginDirectory = thirdPlugin.Metadata.PluginDirecotry;
-                                    o.OriginQuery = qu;
-                                });
-                                UpdateResultView(r);
-                            }
-                        };
-                        List<Result> results = thirdPlugin.Plugin.Query(q) ?? new List<Result>();
-                        thirdPlugin.InitContext.PushResults(q, results);
+                        List<Result> results = thirdPlugin.Plugin.Query(query) ?? new List<Result>();
+                        App.Window.PushResults(query,thirdPlugin.Metadata,results);
                     }
                     catch (Exception queryException)
                     {

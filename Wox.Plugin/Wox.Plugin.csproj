@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="AllowedLanguage.cs" />
     <Compile Include="IPlugin.cs" />
+    <Compile Include="IPublicAPI.cs" />
     <Compile Include="ISettingProvider.cs" />
     <Compile Include="PluginPair.cs" />
     <Compile Include="PluginInitContext.cs" />

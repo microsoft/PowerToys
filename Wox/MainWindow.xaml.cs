@@ -35,429 +35,538 @@ using Rectangle = System.Drawing.Rectangle;
 using TextBox = System.Windows.Controls.TextBox;
 using ToolTip = System.Windows.Controls.ToolTip;
 
-namespace Wox {
-	public partial class MainWindow {
+namespace Wox
+{
+    public partial class MainWindow : IPublicAPI
+    {
 
-		#region Properties
+        #region Properties
 
         private static readonly object locker = new object();
         public static bool initialized = false;
 
         private static readonly List<Result> waitShowResultList = new List<Result>();
-		private readonly GlobalHotkey globalHotkey = new GlobalHotkey();
-		private readonly KeyboardSimulator keyboardSimulator = new KeyboardSimulator(new InputSimulator());
-		private readonly Storyboard progressBarStoryboard = new Storyboard();
-		private bool WinRStroked;
-		private NotifyIcon notifyIcon;
-		private bool queryHasReturn;
-		private string lastQuery;
-		private ToolTip toolTip = new ToolTip();
+        private readonly GlobalHotkey globalHotkey = new GlobalHotkey();
+        private readonly KeyboardSimulator keyboardSimulator = new KeyboardSimulator(new InputSimulator());
+        private readonly Storyboard progressBarStoryboard = new Storyboard();
+        private bool WinRStroked;
+        private NotifyIcon notifyIcon;
+        private bool queryHasReturn;
+        private string lastQuery;
+        private ToolTip toolTip = new ToolTip();
 
-		private bool isCMDMode = false;
-		private bool ignoreTextChange = false;
-		#endregion
+        private bool isCMDMode = false;
+        private bool ignoreTextChange = false;
+        #endregion
 
-		#region Public API
+        #region Public API
 
-		public void ChangeQuery(string query, bool requery = false) {
-			tbQuery.Text = query;
-			tbQuery.CaretIndex = tbQuery.Text.Length;
-			if (requery) {
-				TextBoxBase_OnTextChanged(null, null);
-			}
-		}
+        public void ChangeQuery(string query, bool requery = false)
+        {
+            Dispatcher.Invoke(new Action(() =>
+            {
+                tbQuery.Text = query;
+                tbQuery.CaretIndex = tbQuery.Text.Length;
+                if (requery)
+                {
+                    TextBoxBase_OnTextChanged(null, null);
+                }
+            }));
+        }
 
-		public void CloseApp() {
-			notifyIcon.Visible = false;
-			Close();
-			Environment.Exit(0);
-		}
+        public void CloseApp()
+        {
+            Dispatcher.Invoke(new Action(() =>
+            {
+                notifyIcon.Visible = false;
+                Close();
+                Environment.Exit(0);
+            }));
+        }
 
-		public void HideApp() {
-			HideWox();
-		}
+        public void HideApp()
+        {
+            Dispatcher.Invoke(new Action(HideWox));
+        }
 
-		public void ShowApp() {
-			ShowWox();
-		}
+        public void ShowApp()
+        {
+            Dispatcher.Invoke(new Action(() => ShowWox()));
+        }
 
-		public void ShowMsg(string title, string subTitle, string iconPath) {
-			var m = new Msg { Owner = GetWindow(this) };
-			m.Show(title, subTitle, iconPath);
-		}
+        public void ShowMsg(string title, string subTitle, string iconPath)
+        {
+            Dispatcher.Invoke(new Action(() =>
+            {
+                var m = new Msg {Owner = GetWindow(this)};
+                m.Show(title, subTitle, iconPath);
+            }));
+        }
 
-		public void OpenSettingDialog() {
-			WindowOpener.Open<SettingWindow>(this);
-		}
+        public void OpenSettingDialog()
+        {
+            Dispatcher.Invoke(new Action(() => WindowOpener.Open<SettingWindow>(this)));
+        }
 
-		public void ShowCurrentResultItemTooltip(string text) {
-			toolTip.Content = text;
-			toolTip.IsOpen = true;
-		}
+        public void ShowCurrentResultItemTooltip(string text)
+        {
+            Dispatcher.Invoke(new Action(() =>
+            {
+                toolTip.Content = text;
+                toolTip.IsOpen = true;
+            }));
+        }
 
-		public void StartLoadingBar() {
-			Dispatcher.Invoke(new Action(StartProgress));
-		}
+        public void StartLoadingBar()
+        {
+            Dispatcher.Invoke(new Action(StartProgress));
+        }
 
-		public void StopLoadingBar() {
-			Dispatcher.Invoke(new Action(StopProgress));
-		}
+        public void StopLoadingBar()
+        {
+            Dispatcher.Invoke(new Action(StopProgress));
+        }
 
-		#endregion
+        public void InstallPlugin(string path)
+        {
+            Dispatcher.Invoke(new Action(() => PluginInstaller.Install(path)));
+        }
 
-		public MainWindow() {
-			InitializeComponent();
+        public void ReloadPlugins()
+        {
+            Dispatcher.Invoke(new Action(Plugins.Init));
+        }
 
-		    if (UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow)
-				this.AllowsTransparency = true;
+        public List<PluginPair> GetAllPlugins()
+        {
+            return Plugins.AllPlugins;
+        }
 
-			System.Net.WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
+        public void PushResults(Query query, PluginMetadata plugin, List<Result> results)
+        {
+            results.ForEach(o =>
+            {
+                o.PluginDirectory = plugin.PluginDirecotry;
+                o.OriginQuery = query;
+            });
+            OnUpdateResultView(results);
+        }
 
-			progressBar.ToolTip = toolTip;
-			InitialTray();
-			resultCtrl.OnMouseClickItem += AcceptSelect;
+        #endregion
 
-			ThreadPool.SetMaxThreads(30, 10);
-			try {
-				SetTheme(UserSettingStorage.Instance.Theme);
-			}
-			catch (Exception) {
-				SetTheme(UserSettingStorage.Instance.Theme = "Dark");
-			}
 
-			SetHotkey(UserSettingStorage.Instance.Hotkey, OnHotkey);
-			SetCustomPluginHotkey();
+        public MainWindow()
+        {
+            InitializeComponent();
 
-			globalHotkey.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
+            if (UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow)
+                this.AllowsTransparency = true;
 
-			this.Closing += MainWindow_Closing;
-		}
+            System.Net.WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
 
-		void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
-			UserSettingStorage.Instance.WindowLeft = Left;
-			UserSettingStorage.Instance.WindowTop = Top;
-			UserSettingStorage.Instance.Save();
-			this.HideWox();
-			e.Cancel = true;
-		}
+            progressBar.ToolTip = toolTip;
+            InitialTray();
+            resultCtrl.OnMouseClickItem += AcceptSelect;
 
-		private void MainWindow_OnLoaded(object sender, RoutedEventArgs e) {
-			if (UserSettingStorage.Instance.WindowLeft == 0
-				&& UserSettingStorage.Instance.WindowTop == 0)
-			{
-				Left = UserSettingStorage.Instance.WindowLeft 
-					 = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
-				Top = UserSettingStorage.Instance.WindowTop 
-					= (SystemParameters.PrimaryScreenHeight - ActualHeight) / 5;
-			}
-			else {
-				Left = UserSettingStorage.Instance.WindowLeft;
-				Top = UserSettingStorage.Instance.WindowTop;
-			}
+            ThreadPool.SetMaxThreads(30, 10);
+            try
+            {
+                SetTheme(UserSettingStorage.Instance.Theme);
+            }
+            catch (Exception)
+            {
+                SetTheme(UserSettingStorage.Instance.Theme = "Dark");
+            }
 
-			Plugins.Init();
+            SetHotkey(UserSettingStorage.Instance.Hotkey, OnHotkey);
+            SetCustomPluginHotkey();
 
-			InitProgressbarAnimation();
+            globalHotkey.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
 
-			//only works for win7+
-			if (UserSettingStorage.Instance.OpacityMode == OpacityMode.DWM)
-				DwmDropShadow.DropShadowToWindow(this);
+            this.Closing += MainWindow_Closing;
+        }
 
-			this.Background = Brushes.Transparent;
-			HwndSource.FromHwnd(new WindowInteropHelper(this).Handle).CompositionTarget.BackgroundColor = Color.FromArgb(0, 0, 0, 0);
+        void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            UserSettingStorage.Instance.WindowLeft = Left;
+            UserSettingStorage.Instance.WindowTop = Top;
+            UserSettingStorage.Instance.Save();
+            this.HideWox();
+            e.Cancel = true;
+        }
 
-			WindowIntelopHelper.DisableControlBox(this);
-		}
+        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (UserSettingStorage.Instance.WindowLeft == 0
+                && UserSettingStorage.Instance.WindowTop == 0)
+            {
+                Left = UserSettingStorage.Instance.WindowLeft
+                     = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
+                Top = UserSettingStorage.Instance.WindowTop
+                    = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 5;
+            }
+            else
+            {
+                Left = UserSettingStorage.Instance.WindowLeft;
+                Top = UserSettingStorage.Instance.WindowTop;
+            }
 
-		public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action) {
-			var hotkey = new HotkeyModel(hotkeyStr);
-			try {
-				HotkeyManager.Current.AddOrReplace(hotkeyStr, hotkey.CharKey, hotkey.ModifierKeys, action);
-			}
-			catch (Exception) {
-				MessageBox.Show("Register hotkey: " + hotkeyStr + " failed.");
-			}
-		}
+            Plugins.Init();
 
-		public void RemoveHotkey(string hotkeyStr) {
-			if (!string.IsNullOrEmpty(hotkeyStr)) {
-				HotkeyManager.Current.Remove(hotkeyStr);
-			}
-		}
+            InitProgressbarAnimation();
 
-		private void SetCustomPluginHotkey() {
-			if (UserSettingStorage.Instance.CustomPluginHotkeys == null) return;
-			foreach (CustomPluginHotkey hotkey in UserSettingStorage.Instance.CustomPluginHotkeys) {
-				CustomPluginHotkey hotkey1 = hotkey;
-				SetHotkey(hotkey.Hotkey, delegate {
-					ShowApp();
-					ChangeQuery(hotkey1.ActionKeyword, true);
-				});
-			}
-		}
+            //only works for win7+
+            if (UserSettingStorage.Instance.OpacityMode == OpacityMode.DWM)
+                DwmDropShadow.DropShadowToWindow(this);
 
-		private void OnHotkey(object sender, HotkeyEventArgs e) {
-			if (!IsVisible) {
-				ShowWox();
-			}
-			else {
-				HideWox();
-			}
-			e.Handled = true;
-		}
+            this.Background = Brushes.Transparent;
+            HwndSource.FromHwnd(new WindowInteropHelper(this).Handle).CompositionTarget.BackgroundColor = Color.FromArgb(0, 0, 0, 0);
 
-		private void InitProgressbarAnimation() {
-			var da = new DoubleAnimation(progressBar.X2, ActualWidth + 100, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
-			var da1 = new DoubleAnimation(progressBar.X1, ActualWidth, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
-			Storyboard.SetTargetProperty(da, new PropertyPath("(Line.X2)"));
-			Storyboard.SetTargetProperty(da1, new PropertyPath("(Line.X1)"));
-			progressBarStoryboard.Children.Add(da);
-			progressBarStoryboard.Children.Add(da1);
-			progressBarStoryboard.RepeatBehavior = RepeatBehavior.Forever;
-			progressBar.Visibility = Visibility.Hidden;
-			progressBar.BeginStoryboard(progressBarStoryboard);
-		}
+            WindowIntelopHelper.DisableControlBox(this);
+        }
 
-		private void InitialTray() {
-			notifyIcon = new NotifyIcon { Text = "Wox", Icon = Properties.Resources.app, Visible = true };
-			notifyIcon.Click += (o, e) => ShowWox();
-			var open = new MenuItem("Open");
-			open.Click += (o, e) => ShowWox();
-			var setting = new MenuItem("Setting");
-			setting.Click += (o, e) => OpenSettingDialog();
-			var exit = new MenuItem("Exit");
-			exit.Click += (o, e) => CloseApp();
-			MenuItem[] childen = { open, setting, exit };
-			notifyIcon.ContextMenu = new ContextMenu(childen);
-		}
+        public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
+        {
+            var hotkey = new HotkeyModel(hotkeyStr);
+            try
+            {
+                HotkeyManager.Current.AddOrReplace(hotkeyStr, hotkey.CharKey, hotkey.ModifierKeys, action);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Register hotkey: " + hotkeyStr + " failed.");
+            }
+        }
 
-		private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e) {
-			if (ignoreTextChange) { ignoreTextChange = false; return; }
+        public void RemoveHotkey(string hotkeyStr)
+        {
+            if (!string.IsNullOrEmpty(hotkeyStr))
+            {
+                HotkeyManager.Current.Remove(hotkeyStr);
+            }
+        }
 
-			lastQuery = tbQuery.Text;
-			toolTip.IsOpen = false;
-			resultCtrl.Dirty = true;
-			Dispatcher.DelayInvoke("UpdateSearch",
-				o => {
-					Dispatcher.DelayInvoke("ClearResults", i => {
-						// first try to use clear method inside resultCtrl, which is more closer to the add new results
-						// and this will not bring splash issues.After waiting 30ms, if there still no results added, we
-						// must clear the result. otherwise, it will be confused why the query changed, but the results
-						// didn't.
-						if (resultCtrl.Dirty) resultCtrl.Clear();
-					}, TimeSpan.FromMilliseconds(100), null);
+        private void SetCustomPluginHotkey()
+        {
+            if (UserSettingStorage.Instance.CustomPluginHotkeys == null) return;
+            foreach (CustomPluginHotkey hotkey in UserSettingStorage.Instance.CustomPluginHotkeys)
+            {
+                CustomPluginHotkey hotkey1 = hotkey;
+                SetHotkey(hotkey.Hotkey, delegate
+                {
+                    ShowApp();
+                    ChangeQuery(hotkey1.ActionKeyword, true);
+                });
+            }
+        }
+
+        private void OnHotkey(object sender, HotkeyEventArgs e)
+        {
+            if (!IsVisible)
+            {
+                ShowWox();
+            }
+            else
+            {
+                HideWox();
+            }
+            e.Handled = true;
+        }
+
+        private void InitProgressbarAnimation()
+        {
+            var da = new DoubleAnimation(progressBar.X2, ActualWidth + 100, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
+            var da1 = new DoubleAnimation(progressBar.X1, ActualWidth, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
+            Storyboard.SetTargetProperty(da, new PropertyPath("(Line.X2)"));
+            Storyboard.SetTargetProperty(da1, new PropertyPath("(Line.X1)"));
+            progressBarStoryboard.Children.Add(da);
+            progressBarStoryboard.Children.Add(da1);
+            progressBarStoryboard.RepeatBehavior = RepeatBehavior.Forever;
+            progressBar.Visibility = Visibility.Hidden;
+            progressBar.BeginStoryboard(progressBarStoryboard);
+        }
+
+        private void InitialTray()
+        {
+            notifyIcon = new NotifyIcon { Text = "Wox", Icon = Properties.Resources.app, Visible = true };
+            notifyIcon.Click += (o, e) => ShowWox();
+            var open = new MenuItem("Open");
+            open.Click += (o, e) => ShowWox();
+            var setting = new MenuItem("Setting");
+            setting.Click += (o, e) => OpenSettingDialog();
+            var exit = new MenuItem("Exit");
+            exit.Click += (o, e) => CloseApp();
+            MenuItem[] childen = { open, setting, exit };
+            notifyIcon.ContextMenu = new ContextMenu(childen);
+        }
+
+        private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (ignoreTextChange) { ignoreTextChange = false; return; }
+
+            lastQuery = tbQuery.Text;
+            toolTip.IsOpen = false;
+            resultCtrl.Dirty = true;
+            Dispatcher.DelayInvoke("UpdateSearch",
+                o =>
+                {
+                    Dispatcher.DelayInvoke("ClearResults", i =>
+                    {
+                        // first try to use clear method inside resultCtrl, which is more closer to the add new results
+                        // and this will not bring splash issues.After waiting 30ms, if there still no results added, we
+                        // must clear the result. otherwise, it will be confused why the query changed, but the results
+                        // didn't.
+                        if (resultCtrl.Dirty) resultCtrl.Clear();
+                    }, TimeSpan.FromMilliseconds(100), null);
                     queryHasReturn = false;
-					var q = new Query(lastQuery);
-					CommandFactory.DispatchCommand(q);
-					if (Plugins.HitThirdpartyKeyword(q)) {
-						Dispatcher.DelayInvoke("ShowProgressbar", originQuery => {
-							if (!queryHasReturn && originQuery == lastQuery) {
-								StartProgress();
-							}
-						}, TimeSpan.FromSeconds(0), lastQuery);
-					}
-				}, TimeSpan.FromMilliseconds((isCMDMode = tbQuery.Text.StartsWith(">")) ? 0 : 150));
-		}
+                    var q = new Query(lastQuery);
+                    CommandFactory.DispatchCommand(q);
+                    if (Plugins.HitThirdpartyKeyword(q))
+                    {
+                        Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
+                        {
+                            if (!queryHasReturn && originQuery == lastQuery)
+                            {
+                                StartProgress();
+                            }
+                        }, TimeSpan.FromSeconds(0), lastQuery);
+                    }
+                }, TimeSpan.FromMilliseconds((isCMDMode = tbQuery.Text.StartsWith(">")) ? 0 : 150));
+        }
 
-		private void Border_OnMouseDown(object sender, MouseButtonEventArgs e) {
-			if (e.ChangedButton == MouseButton.Left) DragMove();
-		}
+        private void Border_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left) DragMove();
+        }
 
-		private void StartProgress() {
-			progressBar.Visibility = Visibility.Visible;
-		}
+        private void StartProgress()
+        {
+            progressBar.Visibility = Visibility.Visible;
+        }
 
-		private void StopProgress() {
-			progressBar.Visibility = Visibility.Hidden;
-		}
+        private void StopProgress()
+        {
+            progressBar.Visibility = Visibility.Hidden;
+        }
 
-		private void HideWox() {
-			Hide();
-		}
+        private void HideWox()
+        {
+            Hide();
+        }
 
-		private void ShowWox(bool selectAll = true) {
-			if (!double.IsNaN(Left) && !double.IsNaN(Top)) {
-				var origScreen = Screen.FromRectangle(new Rectangle((int)Left, (int)Top, (int)ActualWidth, (int)ActualHeight));
-				var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-				var coordX = (Left - origScreen.WorkingArea.Left) / (origScreen.WorkingArea.Width - ActualWidth);
-				var coordY = (Top - origScreen.WorkingArea.Top) / (origScreen.WorkingArea.Height - ActualHeight);
-				Left = (screen.WorkingArea.Width - ActualWidth) * coordX + screen.WorkingArea.Left;
-				Top = (screen.WorkingArea.Height - ActualHeight) * coordY + screen.WorkingArea.Top;
-			}
+        private void ShowWox(bool selectAll = true)
+        {
+            if (!double.IsNaN(Left) && !double.IsNaN(Top))
+            {
+                var origScreen = Screen.FromRectangle(new Rectangle((int)Left, (int)Top, (int)ActualWidth, (int)ActualHeight));
+                var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+                var coordX = (Left - origScreen.WorkingArea.Left) / (origScreen.WorkingArea.Width - ActualWidth);
+                var coordY = (Top - origScreen.WorkingArea.Top) / (origScreen.WorkingArea.Height - ActualHeight);
+                Left = (screen.WorkingArea.Width - ActualWidth) * coordX + screen.WorkingArea.Left;
+                Top = (screen.WorkingArea.Height - ActualHeight) * coordY + screen.WorkingArea.Top;
+            }
 
-			Show();
-			Activate();
-			Focus();
-			tbQuery.Focus();
-			if (selectAll) tbQuery.SelectAll();
-		}
+            Show();
+            Activate();
+            Focus();
+            tbQuery.Focus();
+            if (selectAll) tbQuery.SelectAll();
+        }
 
-		public void ParseArgs(string[] args) {
-			if (args != null && args.Length > 0) {
-				switch (args[0].ToLower()) {
-					case "reloadplugin":
-						Plugins.Init();
-						break;
+        public void ParseArgs(string[] args)
+        {
+            if (args != null && args.Length > 0)
+            {
+                switch (args[0].ToLower())
+                {
+                    case "reloadplugin":
+                        Plugins.Init();
+                        break;
 
-					case "query":
-						if (args.Length > 1) {
-							string query = args[1];
-							tbQuery.Text = query;
-							tbQuery.SelectAll();
-						}
-						break;
+                    case "query":
+                        if (args.Length > 1)
+                        {
+                            string query = args[1];
+                            tbQuery.Text = query;
+                            tbQuery.SelectAll();
+                        }
+                        break;
 
-					case "hidestart":
-						HideApp();
-						break;
+                    case "hidestart":
+                        HideApp();
+                        break;
 
-					case "installplugin":
-						var path = args[1];
-						if (!File.Exists(path)) {
-							MessageBox.Show("Plugin " + path + " didn't exist");
-							return;
-						}
-						PluginInstaller.Install(path);
-						break;
-				}
-			}
-		}
+                    case "installplugin":
+                        var path = args[1];
+                        if (!File.Exists(path))
+                        {
+                            MessageBox.Show("Plugin " + path + " didn't exist");
+                            return;
+                        }
+                        PluginInstaller.Install(path);
+                        break;
+                }
+            }
+        }
 
-		private void MainWindow_OnDeactivated(object sender, EventArgs e) {
-			if (UserSettingStorage.Instance.HideWhenDeactive) {
-				HideWox();
-			}
-		}
+        private void MainWindow_OnDeactivated(object sender, EventArgs e)
+        {
+            if (UserSettingStorage.Instance.HideWhenDeactive)
+            {
+                HideWox();
+            }
+        }
 
-		private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state) {
-			if (UserSettingStorage.Instance.ReplaceWinR) {
-				//todo:need refactoring. move those codes to CMD file or expose events
-				if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed) {
-					WinRStroked = true;
-					Dispatcher.BeginInvoke(new Action(OnWinRPressed));
-					return false;
-				}
-				if (keyevent == KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int)Keys.LWin) {
-					WinRStroked = false;
-					keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.CONTROL);
-					return false;
-				}
-			}
-			return true;
-		}
+        private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)
+        {
+            if (UserSettingStorage.Instance.ReplaceWinR)
+            {
+                //todo:need refactoring. move those codes to CMD file or expose events
+                if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
+                {
+                    WinRStroked = true;
+                    Dispatcher.BeginInvoke(new Action(OnWinRPressed));
+                    return false;
+                }
+                if (keyevent == KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int)Keys.LWin)
+                {
+                    WinRStroked = false;
+                    keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.CONTROL);
+                    return false;
+                }
+            }
+            return true;
+        }
 
-		private void OnWinRPressed() {
-			ShowWox(false);
-			if (!tbQuery.Text.StartsWith(">")) {
-				resultCtrl.Clear();
-				ChangeQuery(">");
-			}
-			tbQuery.CaretIndex = tbQuery.Text.Length;
-			tbQuery.SelectionStart = 1;
-			tbQuery.SelectionLength = tbQuery.Text.Length - 1;
-		}
+        private void OnWinRPressed()
+        {
+            ShowWox(false);
+            if (!tbQuery.Text.StartsWith(">"))
+            {
+                resultCtrl.Clear();
+                ChangeQuery(">");
+            }
+            tbQuery.CaretIndex = tbQuery.Text.Length;
+            tbQuery.SelectionStart = 1;
+            tbQuery.SelectionLength = tbQuery.Text.Length - 1;
+        }
 
-		private void updateCmdMode() {
-			var selected = resultCtrl.AcceptSelect();
-			if (selected != null) {
-				ignoreTextChange = true;
-				tbQuery.Text = ">" + selected.Title;
-				tbQuery.CaretIndex = tbQuery.Text.Length;
-			}
-		}
+        private void updateCmdMode()
+        {
+            var selected = resultCtrl.AcceptSelect();
+            if (selected != null)
+            {
+                ignoreTextChange = true;
+                tbQuery.Text = ">" + selected.Title;
+                tbQuery.CaretIndex = tbQuery.Text.Length;
+            }
+        }
 
-		private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e) {
-			//when alt is pressed, the real key should be e.SystemKey
+        private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            //when alt is pressed, the real key should be e.SystemKey
 
-			Action Shift_GoBack = () => {
-				if (e.KeyboardDevice.IsKeyDown(Key.LeftShift) || e.KeyboardDevice.IsKeyDown(Key.RightShift)) {
-					if (tbQuery.Text.EndsWith("\\")) {
-						tbQuery.Text = tbQuery.Text.Remove(tbQuery.Text.Length - 1);
-					}
+            Action Shift_GoBack = () =>
+            {
+                if (e.KeyboardDevice.IsKeyDown(Key.LeftShift) || e.KeyboardDevice.IsKeyDown(Key.RightShift))
+                {
+                    if (tbQuery.Text.EndsWith("\\"))
+                    {
+                        tbQuery.Text = tbQuery.Text.Remove(tbQuery.Text.Length - 1);
+                    }
 
-					if (tbQuery.Text.Contains("\\")) {
-						var index = tbQuery.Text.LastIndexOf("\\");
-						tbQuery.Text = tbQuery.Text.Remove(index) + "\\";
-					}
-					else {
-						tbQuery.Text = "";
-						return;
-					}
-				}
+                    if (tbQuery.Text.Contains("\\"))
+                    {
+                        var index = tbQuery.Text.LastIndexOf("\\");
+                        tbQuery.Text = tbQuery.Text.Remove(index) + "\\";
+                    }
+                    else
+                    {
+                        tbQuery.Text = "";
+                        return;
+                    }
+                }
 
-				tbQuery.CaretIndex = int.MaxValue;
-			};
+                tbQuery.CaretIndex = int.MaxValue;
+            };
 
-			Key key = (e.Key == Key.System ? e.SystemKey : e.Key);
-			switch (key) {
-				case Key.Escape:
-					HideWox();
-					e.Handled = true;
-					break;
+            Key key = (e.Key == Key.System ? e.SystemKey : e.Key);
+            switch (key)
+            {
+                case Key.Escape:
+                    HideWox();
+                    e.Handled = true;
+                    break;
 
-				case Key.Down:
-					resultCtrl.SelectNext();
-					if (isCMDMode) updateCmdMode();
-					toolTip.IsOpen = false;
-					e.Handled = true;
-					break;
+                case Key.Down:
+                    resultCtrl.SelectNext();
+                    if (isCMDMode) updateCmdMode();
+                    toolTip.IsOpen = false;
+                    e.Handled = true;
+                    break;
 
-				case Key.Up:
-					resultCtrl.SelectPrev();
-					if (isCMDMode) updateCmdMode();
-					toolTip.IsOpen = false;
-					e.Handled = true;
-					break;
+                case Key.Up:
+                    resultCtrl.SelectPrev();
+                    if (isCMDMode) updateCmdMode();
+                    toolTip.IsOpen = false;
+                    e.Handled = true;
+                    break;
 
-				case Key.PageDown:
-					resultCtrl.SelectNextPage();
-					if (isCMDMode) updateCmdMode();
-					toolTip.IsOpen = false;
-					e.Handled = true;
-					break;
+                case Key.PageDown:
+                    resultCtrl.SelectNextPage();
+                    if (isCMDMode) updateCmdMode();
+                    toolTip.IsOpen = false;
+                    e.Handled = true;
+                    break;
 
-				case Key.PageUp:
-					resultCtrl.SelectPrevPage();
-					if (isCMDMode) updateCmdMode();
-					toolTip.IsOpen = false;
-					e.Handled = true;
-					break;
+                case Key.PageUp:
+                    resultCtrl.SelectPrevPage();
+                    if (isCMDMode) updateCmdMode();
+                    toolTip.IsOpen = false;
+                    e.Handled = true;
+                    break;
 
-				case Key.Enter:
-					Shift_GoBack();
-					AcceptSelect(resultCtrl.AcceptSelect());
-					e.Handled = true;
-					break;
+                case Key.Enter:
+                    Shift_GoBack();
+                    AcceptSelect(resultCtrl.AcceptSelect());
+                    e.Handled = true;
+                    break;
 
-				case Key.Tab:
-					Shift_GoBack();
-					AcceptSelect(resultCtrl.AcceptSelect());
-					if (!tbQuery.Text.EndsWith("\\")) tbQuery.Text += "\\";
-					AcceptSelect(resultCtrl.AcceptSelect());
-					tbQuery.CaretIndex = int.MaxValue;
-					e.Handled = true;
-					break;
-			}
-		}
+                case Key.Tab:
+                    Shift_GoBack();
+                    AcceptSelect(resultCtrl.AcceptSelect());
+                    if (!tbQuery.Text.EndsWith("\\")) tbQuery.Text += "\\";
+                    AcceptSelect(resultCtrl.AcceptSelect());
+                    tbQuery.CaretIndex = int.MaxValue;
+                    e.Handled = true;
+                    break;
+            }
+        }
 
-		private void AcceptSelect(Result result) {
-			if (!resultCtrl.Dirty && result != null) {
-				if (result.Action != null) {
-					bool hideWindow = result.Action(new ActionContext() {
-						SpecialKeyState = new GlobalHotkey().CheckModifiers()
-					});
-					if (hideWindow) {
-						HideWox();
-					}
-					UserSelectedRecordStorage.Instance.Add(result);
-				}
-			}
-		}
+        private void AcceptSelect(Result result)
+        {
+            if (!resultCtrl.Dirty && result != null)
+            {
+                if (result.Action != null)
+                {
+                    bool hideWindow = result.Action(new ActionContext()
+                    {
+                        SpecialKeyState = new GlobalHotkey().CheckModifiers()
+                    });
+                    if (hideWindow)
+                    {
+                        HideWox();
+                    }
+                    UserSelectedRecordStorage.Instance.Add(result);
+                }
+            }
+        }
 
-		public void OnUpdateResultView(List<Result> list) {
+        public void OnUpdateResultView(List<Result> list)
+        {
             queryHasReturn = true;
             progressBar.Dispatcher.Invoke(new Action(StopProgress));
-			if (list == null || list.Count == 0) return;
+            if (list == null || list.Count == 0) return;
 
             if (list.Count > 0)
             {
@@ -478,58 +587,65 @@ namespace Wox {
                     resultCtrl.AddResults(l);
                 })), TimeSpan.FromMilliseconds(isCMDMode ? 0 : 50));
             }
-		}
+        }
 
-		public void SetTheme(string themeName) {
-			var dict = new ResourceDictionary {
-				Source = new Uri(Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Themes\\" + themeName + ".xaml"), UriKind.Absolute)
-			};
+        public void SetTheme(string themeName)
+        {
+            var dict = new ResourceDictionary
+            {
+                Source = new Uri(Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Themes\\" + themeName + ".xaml"), UriKind.Absolute)
+            };
 
 
-			Style queryBoxStyle = dict["QueryBoxStyle"] as Style;
-			if (queryBoxStyle != null) {
-				queryBoxStyle.Setters.Add(new Setter(TextBox.FontFamilyProperty, new FontFamily(UserSettingStorage.Instance.QueryBoxFont)));
-				queryBoxStyle.Setters.Add(new Setter(TextBox.FontStyleProperty, FontHelper.GetFontStyleFromInvariantStringOrNormal(UserSettingStorage.Instance.QueryBoxFontStyle)));
-				queryBoxStyle.Setters.Add(new Setter(TextBox.FontWeightProperty, FontHelper.GetFontWeightFromInvariantStringOrNormal(UserSettingStorage.Instance.QueryBoxFontWeight)));
-				queryBoxStyle.Setters.Add(new Setter(TextBox.FontStretchProperty, FontHelper.GetFontStretchFromInvariantStringOrNormal(UserSettingStorage.Instance.QueryBoxFontStretch)));
-			}
+            Style queryBoxStyle = dict["QueryBoxStyle"] as Style;
+            if (queryBoxStyle != null)
+            {
+                queryBoxStyle.Setters.Add(new Setter(TextBox.FontFamilyProperty, new FontFamily(UserSettingStorage.Instance.QueryBoxFont)));
+                queryBoxStyle.Setters.Add(new Setter(TextBox.FontStyleProperty, FontHelper.GetFontStyleFromInvariantStringOrNormal(UserSettingStorage.Instance.QueryBoxFontStyle)));
+                queryBoxStyle.Setters.Add(new Setter(TextBox.FontWeightProperty, FontHelper.GetFontWeightFromInvariantStringOrNormal(UserSettingStorage.Instance.QueryBoxFontWeight)));
+                queryBoxStyle.Setters.Add(new Setter(TextBox.FontStretchProperty, FontHelper.GetFontStretchFromInvariantStringOrNormal(UserSettingStorage.Instance.QueryBoxFontStretch)));
+            }
 
-			Style resultItemStyle = dict["ItemTitleStyle"] as Style;
-			Style resultSubItemStyle = dict["ItemSubTitleStyle"] as Style;
-			Style resultItemSelectedStyle = dict["ItemTitleSelectedStyle"] as Style;
-			Style resultSubItemSelectedStyle = dict["ItemSubTitleSelectedStyle"] as Style;
-			if (resultItemStyle != null && resultSubItemStyle != null && resultSubItemSelectedStyle != null && resultItemSelectedStyle != null) {
-				Setter fontFamily = new Setter(TextBlock.FontFamilyProperty, new FontFamily(UserSettingStorage.Instance.ResultItemFont));
-				Setter fontStyle = new Setter(TextBlock.FontStyleProperty, FontHelper.GetFontStyleFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontStyle));
-				Setter fontWeight = new Setter(TextBlock.FontWeightProperty, FontHelper.GetFontWeightFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontWeight));
-				Setter fontStretch = new Setter(TextBlock.FontStretchProperty, FontHelper.GetFontStretchFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontStretch));
+            Style resultItemStyle = dict["ItemTitleStyle"] as Style;
+            Style resultSubItemStyle = dict["ItemSubTitleStyle"] as Style;
+            Style resultItemSelectedStyle = dict["ItemTitleSelectedStyle"] as Style;
+            Style resultSubItemSelectedStyle = dict["ItemSubTitleSelectedStyle"] as Style;
+            if (resultItemStyle != null && resultSubItemStyle != null && resultSubItemSelectedStyle != null && resultItemSelectedStyle != null)
+            {
+                Setter fontFamily = new Setter(TextBlock.FontFamilyProperty, new FontFamily(UserSettingStorage.Instance.ResultItemFont));
+                Setter fontStyle = new Setter(TextBlock.FontStyleProperty, FontHelper.GetFontStyleFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontStyle));
+                Setter fontWeight = new Setter(TextBlock.FontWeightProperty, FontHelper.GetFontWeightFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontWeight));
+                Setter fontStretch = new Setter(TextBlock.FontStretchProperty, FontHelper.GetFontStretchFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontStretch));
 
-				Setter[] setters = new Setter[] { fontFamily, fontStyle, fontWeight, fontStretch };
-				Array.ForEach(new Style[] { resultItemStyle, resultSubItemStyle, resultItemSelectedStyle, resultSubItemSelectedStyle }, o => Array.ForEach(setters, p => o.Setters.Add(p)));
-			}
+                Setter[] setters = new Setter[] { fontFamily, fontStyle, fontWeight, fontStretch };
+                Array.ForEach(new Style[] { resultItemStyle, resultSubItemStyle, resultItemSelectedStyle, resultSubItemSelectedStyle }, o => Array.ForEach(setters, p => o.Setters.Add(p)));
+            }
 
-			Application.Current.Resources.MergedDictionaries.Clear();
-			Application.Current.Resources.MergedDictionaries.Add(dict);
+            Application.Current.Resources.MergedDictionaries.Clear();
+            Application.Current.Resources.MergedDictionaries.Add(dict);
 
-			this.Opacity = this.AllowsTransparency ? UserSettingStorage.Instance.Opacity : 1;
-		}
+            this.Opacity = this.AllowsTransparency ? UserSettingStorage.Instance.Opacity : 1;
+        }
 
-		public bool ShellRun(string cmd) {
-			try {
-				if (string.IsNullOrEmpty(cmd))
-					throw new ArgumentNullException();
+        public bool ShellRun(string cmd)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(cmd))
+                    throw new ArgumentNullException();
 
-				Wox.Infrastructure.WindowsShellRun.Start(cmd);
-				return true;
-			}
-			catch (Exception ex) {
-				ShowMsg("Could not start " + cmd, ex.Message, null);
-			}
-			return false;
-		}
+                Wox.Infrastructure.WindowsShellRun.Start(cmd);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ShowMsg("Could not start " + cmd, ex.Message, null);
+            }
+            return false;
+        }
 
-	    private void MainWindow_OnDrop(object sender, DragEventArgs e)
-	    {
+        private void MainWindow_OnDrop(object sender, DragEventArgs e)
+        {
             if (e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop))
             {
                 // Note that you can have more than one file.
@@ -543,11 +659,11 @@ namespace Wox {
                     MessageBox.Show("incorrect wox plugin file.");
                 }
             }
-	    }
+        }
 
-	    private void TbQuery_OnPreviewDragOver(object sender, DragEventArgs e)
-	    {
-	        e.Handled = true;
-	    }
-	}
+        private void TbQuery_OnPreviewDragOver(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
+        }
+    }
 }

@@ -32,7 +32,7 @@ namespace Wox.Plugin.SystemPlugins
                     title = subtitle;
                     subtitle = null;
                 }
-                context.PushResults(query, new List<Result>()
+                context.API.PushResults(query,context.CurrentPluginMetadata, new List<Result>()
                 {
                     new Result()
                     {
@@ -54,7 +54,7 @@ namespace Wox.Plugin.SystemPlugins
                     var result = sugg.GetSuggestions(keyword);
                     if (result != null)
                     {
-                        context.PushResults(query, result.Select(o => new Result()
+                        context.API.PushResults(query,context.CurrentPluginMetadata, result.Select(o => new Result()
                         {
                             Title = o,
                             SubTitle = subtitle,

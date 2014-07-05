@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 namespace Wox.Plugin {
+
 	public class Result {
 		public string Title { get; set; }
 		public string SubTitle { get; set; }
@@ -41,7 +42,6 @@ namespace Wox.Plugin {
 			return Title + SubTitle;
 		}
 
-
 		public Result() {
 
 		}
@@ -51,7 +51,6 @@ namespace Wox.Plugin {
 			this.IcoPath = IcoPath;
 			this.SubTitle = SubTitle;
 		}
-
 
 	}
 }

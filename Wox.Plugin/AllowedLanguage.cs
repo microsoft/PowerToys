@@ -17,9 +17,16 @@ namespace Wox.Plugin
             get { return "csharp"; }
         }
 
+        public static string ExecutableFile
+        {
+            get { return "ExecutableFile"; }
+        }
+
         public static bool IsAllowed(string language)
         {
-            return language.ToUpper() == Python.ToUpper() || language.ToUpper() == CSharp.ToUpper();
+            return language.ToUpper() == Python.ToUpper() 
+                || language.ToUpper() == CSharp.ToUpper()
+                || language.ToUpper() == ExecutableFile.ToUpper();
         }
     }
 }

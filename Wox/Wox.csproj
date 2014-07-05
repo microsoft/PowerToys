@@ -138,11 +138,15 @@
       <DependentUpon>HotkeyControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\ImagePathConverter.cs" />
+    <Compile Include="RPC\JsonRPC.cs" />
     <Compile Include="Msg.xaml.cs">
       <DependentUpon>Msg.xaml</DependentUpon>
     </Compile>
     <Compile Include="PluginLoader\BasePluginLoader.cs" />
     <Compile Include="PluginLoader\CSharpPluginLoader.cs" />
+    <Compile Include="PluginLoader\ExecutablePluginLoader.cs" />
+    <Compile Include="PluginLoader\ExecutablePluginWrapper.cs" />
+    <Compile Include="RPC\JsonPRCModel.cs" />
     <Compile Include="PluginLoader\Plugins.cs" />
     <Compile Include="PluginLoader\PythonPluginLoader.cs" />
     <Compile Include="PluginLoader\PythonPluginWrapper.cs" />
