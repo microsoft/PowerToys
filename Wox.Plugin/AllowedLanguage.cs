@@ -19,7 +19,7 @@ namespace Wox.Plugin
 
         public static string ExecutableFile
         {
-            get { return "ExecutableFile"; }
+            get { return "executablefile"; }
         }
 
         public static bool IsAllowed(string language)

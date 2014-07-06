@@ -1,142 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Threading;
 using Python.Runtime;
-using Wox.Helper;
 using Wox.Plugin;
+using Wox.Helper;
+using Wox.RPC;
 
 namespace Wox.PluginLoader
 {
-    public class PythonPluginWrapper : IPlugin
+    public class PythonPluginWrapper : BasePluginWrapper
     {
-        private PluginMetadata metadata;
-        private string moduleName;
+        private static string woxDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
 
-        public PythonPluginWrapper(PluginMetadata metadata)
+        public override List<string> GetAllowedLanguages()
         {
-            this.metadata = metadata;
-            moduleName = metadata.ExecuteFileName.Replace(".py", "");
+            return  new List<string>()
+            {
+                AllowedLanguage.Python
+            };
         }
 
-        public List<Result> Query(Query query)
+        protected override string GetFileName()
         {
-            try
-            {
-                string jsonResult = InvokeFunc("query", query.RawQuery);
-                if (string.IsNullOrEmpty(jsonResult))
-                {
-                    return new List<Result>();
-                }
-
-                List<PythonResult> o = JsonConvert.DeserializeObject<List<PythonResult>>(jsonResult);
-                List<Result> r = new List<Result>();
-                foreach (PythonResult pythonResult in o)
-                {
-                    PythonResult ps = pythonResult;
-                    if (!string.IsNullOrEmpty(ps.ActionName))
-                    {
-                        ps.Action = (context) =>
-                        {
-                            InvokeFunc(ps.ActionName, GetPythonActionContext(context), new PyString(ps.ActionPara));
-                            return true;
-                        };
-                    }
-                    r.Add(ps);
-                }
-                return r;
-            }
-            catch (Exception e)
-            {
-#if (DEBUG)
-                {
-                    throw new WoxPythonException(e.Message);
-                }
-#endif
-                Log.Error(string.Format("Python Plugin {0} query failed: {1}", metadata.Name, e.Message));
-            }
-
-            return new List<Result>();
+            return Path.Combine(woxDirectory, "PYTHONTHOME\\Scripts\\python.exe");
         }
 
-        private PyObject GetPythonActionContext(ActionContext context)
+        protected override string GetQueryArguments(Query query)
         {
-            PyDict dict = new PyDict();
-            PyDict specialKeyStateDict = new PyDict();
-            specialKeyStateDict["CtrlPressed"] = new PyString(context.SpecialKeyState.CtrlPressed.ToString());
-            specialKeyStateDict["AltPressed"] = new PyString(context.SpecialKeyState.AltPressed.ToString());
-            specialKeyStateDict["WinPressed"] = new PyString(context.SpecialKeyState.WinPressed.ToString());
-            specialKeyStateDict["ShiftPressed"] = new PyString(context.SpecialKeyState.ShiftPressed.ToString());
-
-            dict["SpecialKeyState"] = specialKeyStateDict;
-            return dict;
+            return string.Format("{0} \"{1}\"",
+                     context.CurrentPluginMetadata.ExecuteFilePath,
+                     JsonRPC.GetRPC("query", query.GetAllRemainingParameter()));
         }
 
-        private string InvokeFunc(string func, params PyObject[] paras)
+        protected override string GetActionJsonRPCArguments(ActionJsonRPCResult result)
         {
-            string json = null;
-
-            //if pythobn plugin folder name is chinese, here will deadlock.
-            IntPtr gs = PythonEngine.AcquireLock();
-
-            PyObject module = PythonEngine.ImportModule(moduleName);
-            if (module == null)
-            {
-                string error = string.Format("Python Invoke failed: {0} doesn't has module {1}",
-                   metadata.ExecuteFilePath, moduleName);
-                Log.Error(error);
-                return json;
-            }
-
-            if (module.HasAttr(func))
-            {
-                try
-                {
-                    PyObject res = paras.Length > 0 ? module.InvokeMethod(func, paras) : module.InvokeMethod(func);
-                    json = Runtime.GetManagedString(res.Handle);
-                }
-                catch (Exception e)
-                {
-                    string error = string.Format("Python Invoke failed: {0}", e.Message);
-                    Log.Error(error);
-#if (DEBUG)
-                    {
-                        throw new WoxPythonException(error);
-                    }
-#endif
-                }
-
-            }
-            else
-            {
-                string error = string.Format("Python Invoke failed: {0} doesn't has function {1}",
-                    metadata.ExecuteFilePath, func);
-                Log.Error(error);
-#if (DEBUG)
-                {
-                    throw new WoxPythonException(error);
-                }
-#endif
-            }
-
-            PythonEngine.ReleaseLock(gs);
-
-            return json;
-        }
-
-        private string InvokeFunc(string func, params string[] para)
-        {
-            PyObject[] paras = { };
-            if (para != null && para.Length > 0)
-            {
-                paras = para.Select(o => new PyString(o)).ToArray();
-            }
-            return InvokeFunc(func, paras);
-        }
-
-        public void Init(PluginInitContext context)
-        {
-
+            return string.Format("{0} \"{1}\"", context.CurrentPluginMetadata.ExecuteFilePath,
+                                  result.ActionJSONRPC);
         }
     }
 }

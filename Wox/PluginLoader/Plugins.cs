@@ -14,11 +14,10 @@ namespace Wox.PluginLoader
         public static void Init()
         {
             plugins.Clear();
-            BasePluginLoader.ParsePluginsConfig();
+            List<PluginMetadata> pluginMetadatas = PluginConfigLoader.ParsePluginsConfig();
 
-            plugins.AddRange(new PythonPluginLoader().LoadPlugin());
-            plugins.AddRange(new CSharpPluginLoader().LoadPlugin());
-            plugins.AddRange(new ExecutablePluginLoader().LoadPlugin());
+            plugins.AddRange(new CSharpPluginConfigLoader().LoadPlugin(pluginMetadatas));
+            plugins.AddRange(new BasePluginLoader<PythonPluginWrapper>().LoadPlugin(pluginMetadatas));
 
             Forker forker = new Forker();
             foreach (IPlugin plugin in plugins.Select(pluginPair => pluginPair.Plugin))

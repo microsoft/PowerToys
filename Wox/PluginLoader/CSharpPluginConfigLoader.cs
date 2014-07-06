@@ -8,9 +8,10 @@ using Wox.Plugin.SystemPlugins;
 
 namespace Wox.PluginLoader {
 
-	public class CSharpPluginLoader : BasePluginLoader {
-
-		public override List<PluginPair> LoadPlugin() {
+	public class CSharpPluginConfigLoader
+    {
+        public List<PluginPair> LoadPlugin(List<PluginMetadata> pluginMetadatas)
+        {
 			var plugins = new List<PluginPair>();
 
 			List<PluginMetadata> metadatas = pluginMetadatas.Where(o => o.Language.ToUpper() == AllowedLanguage.CSharp.ToUpper()).ToList();
