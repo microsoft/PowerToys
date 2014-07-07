@@ -15,33 +15,27 @@ namespace Wox.PluginLoader
         protected PluginInitContext context;
 
         public abstract List<string> GetAllowedLanguages();
-        protected abstract string GetFileName();
 
-        protected abstract string GetQueryArguments(Query query);
-
-        protected abstract string GetActionJsonRPCArguments(ActionJsonRPCResult result);
+        protected abstract string ExecuteQuery(Query query);
+        protected abstract string ExecuteAction(string rpcRequest);
 
         public List<Result> Query(Query query)
         {
-            string fileName = GetFileName();
-            string arguments = GetQueryArguments(query);
-            string output = Execute(fileName, arguments);
+            string output = ExecuteQuery(query);
             if (!string.IsNullOrEmpty(output))
             {
                 try
                 {
-                    JsonPRCModel rpc = JsonConvert.DeserializeObject<JsonPRCModel>(output);
-                    List<ActionJsonRPCResult> rpcresults =
-                        JsonConvert.DeserializeObject<List<ActionJsonRPCResult>>(rpc.result);
                     List<Result> results = new List<Result>();
-                    foreach (ActionJsonRPCResult result in rpcresults)
+
+                    JsonRPCQueryResponseModel queryResponseModel = JsonConvert.DeserializeObject<JsonRPCQueryResponseModel>(output);
+                    foreach (JsonRPCResult result in queryResponseModel.QueryResults)
                     {
-                        if (!string.IsNullOrEmpty(result.ActionJSONRPC))
+                        if (result.JSONRPCActionModel != null)
                         {
-                            ActionJsonRPCResult resultCopy = result;
                             result.Action = (c) =>
                             {
-                                Execute(fileName, GetActionJsonRPCArguments(resultCopy));
+                                ExecuteAction(result.JSONRPCAction);
                                 return true;
                             };
                         }
@@ -56,7 +50,13 @@ namespace Wox.PluginLoader
             return null;
         }
 
-        private string Execute(string fileName, string arguments)
+        /// <summary>
+        /// Execute external program and return the output
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="arguments"></param>
+        /// <returns></returns>
+        protected string Execute(string fileName, string arguments)
         {
             try
             {

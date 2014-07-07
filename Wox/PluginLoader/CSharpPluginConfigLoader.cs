@@ -8,7 +8,7 @@ using Wox.Plugin.SystemPlugins;
 
 namespace Wox.PluginLoader {
 
-	public class CSharpPluginConfigLoader
+    public class CSharpPluginConfigLoader : IPluginLoader
     {
         public List<PluginPair> LoadPlugin(List<PluginMetadata> pluginMetadatas)
         {

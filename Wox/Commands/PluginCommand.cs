@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Python.Runtime;
 using Wox.Helper;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
@@ -12,9 +11,6 @@ namespace Wox.Commands
 {
     public class PluginCommand : BaseCommand
     {
-        private string currentPythonModulePath = string.Empty;
-        private IntPtr GIL;
-
         public override void Dispatch(Query query)
         {
             PluginPair thirdPlugin = Plugins.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.ActionName);
@@ -28,10 +24,6 @@ namespace Wox.Commands
                     return;
                 }
 
-                //if (thirdPlugin.Metadata.Language == AllowedLanguage.Python)
-                //{
-                //    SwitchPythonEnv(thirdPlugin);
-                //}
                 ThreadPool.QueueUserWorkItem(t =>
                 {
                     try
@@ -50,25 +42,6 @@ namespace Wox.Commands
 #endif
                     }
                 });
-            }
-        }
-
-        private void SwitchPythonEnv(PluginPair thirdPlugin)
-        {
-            if (currentPythonModulePath != thirdPlugin.Metadata.PluginDirecotry)
-            {
-                currentPythonModulePath = thirdPlugin.Metadata.PluginDirecotry;
-
-                if (GIL != IntPtr.Zero)
-                {
-                    Runtime.PyEval_RestoreThread(GIL);
-                    PythonEngine.Shutdown();
-                }
-                PythonEngine.Initialize();
-                IntPtr pyStrPtr = Runtime.PyString_FromString(thirdPlugin.Metadata.PluginDirecotry);
-                IntPtr sysDotPath = Runtime.PySys_GetObject("path");
-                Runtime.PyList_Append(sysDotPath, pyStrPtr);
-                GIL = PythonEngine.BeginAllowThreads();
             }
         }
     }

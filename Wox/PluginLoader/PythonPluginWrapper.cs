@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading;
-using Python.Runtime;
 using Wox.Plugin;
-using Wox.Helper;
 using Wox.RPC;
 
 namespace Wox.PluginLoader
@@ -22,22 +17,20 @@ namespace Wox.PluginLoader
             };
         }
 
-        protected override string GetFileName()
+        protected override string ExecuteQuery(Query query)
         {
-            return Path.Combine(woxDirectory, "PYTHONTHOME\\Scripts\\python.exe");
+            string fileName = Path.Combine(woxDirectory, "PYTHONTHOME\\Scripts\\python.exe");
+            string parameters = string.Format("{0} \"{1}\"", context.CurrentPluginMetadata.ExecuteFilePath,
+                     JsonRPC.Send("query", query.GetAllRemainingParameter()));
+            return Execute(fileName, parameters);
         }
 
-        protected override string GetQueryArguments(Query query)
+        protected override string ExecuteAction(string rpcRequest)
         {
-            return string.Format("{0} \"{1}\"",
-                     context.CurrentPluginMetadata.ExecuteFilePath,
-                     JsonRPC.GetRPC("query", query.GetAllRemainingParameter()));
-        }
-
-        protected override string GetActionJsonRPCArguments(ActionJsonRPCResult result)
-        {
-            return string.Format("{0} \"{1}\"", context.CurrentPluginMetadata.ExecuteFilePath,
-                                  result.ActionJSONRPC);
+            string fileName = Path.Combine(woxDirectory, "PYTHONTHOME\\Scripts\\python.exe");
+            string parameters = string.Format("{0} \"{1}\"", context.CurrentPluginMetadata.ExecuteFilePath,
+                                              rpcRequest);
+            return Execute(fileName, parameters);
         }
     }
 }
