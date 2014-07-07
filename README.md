@@ -35,4 +35,17 @@ Create and Share Theme
 =========
 
 Wox provide an online theme editor [http://www.getwox.com/themebuilder](http://www.getwox.com/themebuilder), you build your own theme for wox.
-<img src="http://ww3.sinaimg.cn/large/5d7c1fa4gw1eegm4tvpu7j20zg0in412.jpg" />
+<img src="http://ww3.sinaimg.cn/large/5d7c1fa4gw1eegm4tvpu7j20zg0in412.jpg" />  
+
+
+Most Asked Questions  
+=========
+
+1. **How to install plugin?**  
+
+  Refer to [https://github.com/qianlifeng/Wox/wiki/How-to-install-Plugins](https://github.com/qianlifeng/Wox/wiki/How-to-install-Plugins)  
+
+
+2. **How to open setting dialog?**  
+
+  Refer to [https://github.com/qianlifeng/Wox/wiki/How-to-open-setting-dialog](https://github.com/qianlifeng/Wox/wiki/How-to-open-setting-dialog)  
