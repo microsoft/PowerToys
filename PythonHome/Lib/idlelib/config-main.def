@@ -1,0 +1,79 @@
+# IDLE reads several config files to determine user preferences.  This
+# file is the default config file for general idle settings.
+#
+# When IDLE starts, it will look in
+# the following two sets of files, in order:
+#
+#     default configuration
+#     ---------------------
+#     config-main.def         the default general config file
+#     config-extensions.def   the default extension config file
+#     config-highlight.def    the default highlighting config file
+#     config-keys.def         the default keybinding config file
+#
+#     user configuration
+#     -------------------
+#     ~/.idlerc/config-main.cfg            the user general config file
+#     ~/.idlerc/config-extensions.cfg      the user extension config file
+#     ~/.idlerc/config-highlight.cfg       the user highlighting config file
+#     ~/.idlerc/config-keys.cfg            the user keybinding config file
+#
+# On Windows2000 and Windows XP the .idlerc directory is at
+#     Documents and Settings\<username>\.idlerc
+#
+# On Windows98 it is at c:\.idlerc
+#
+# Any options the user saves through the config dialog will be saved to
+# the relevant user config file. Reverting any general setting to the
+# default causes that entry to be wiped from the user file and re-read
+# from the default file. User highlighting themes or keybinding sets are
+# retained unless specifically deleted within the config dialog. Choosing
+# one of the default themes or keysets just applies the relevant settings
+# from the default file.
+#
+# Additional help sources are listed in the [HelpFiles] section and must be
+# viewable by a web browser (or the Windows Help viewer in the case of .chm
+# files). These sources will be listed on the Help menu.  The pattern is
+# <sequence_number = menu item;/path/to/help/source>
+# You can't use a semi-colon in a menu item or path.  The path will be platform
+# specific because of path separators, drive specs etc.
+#
+# It is best to use the Configuration GUI to set up additional help sources!
+# Example:
+#1 = My Extra Help Source;/usr/share/doc/foo/index.html
+#2 = Another Help Source;/path/to/another.pdf
+
+[General]
+editor-on-startup= 0
+autosave= 0
+print-command-posix=lpr %s
+print-command-win=start /min notepad /p %s
+delete-exitfunc= 1
+
+[EditorWindow]
+width= 80
+height= 40
+font= courier
+font-size= 10
+font-bold= 0
+encoding= none
+
+[FormatParagraph]
+paragraph=72
+
+[Indent]
+use-spaces= 1
+num-spaces= 4
+
+[Theme]
+default= 1
+name= IDLE Classic
+
+[Keys]
+default= 1
+name= IDLE Classic Windows
+
+[History]
+cyclic=1
+
+[HelpFiles]

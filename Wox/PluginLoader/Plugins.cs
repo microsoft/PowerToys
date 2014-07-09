@@ -16,8 +16,8 @@ namespace Wox.PluginLoader
             plugins.Clear();
             List<PluginMetadata> pluginMetadatas = PluginConfigLoader.ParsePluginsConfig();
 
-            plugins.AddRange(new CSharpPluginConfigLoader().LoadPlugin(pluginMetadatas));
-            plugins.AddRange(new BasePluginLoader<PythonPluginWrapper>().LoadPlugin(pluginMetadatas));
+            plugins.AddRange(new CSharpPluginLoader().LoadPlugin(pluginMetadatas));
+            plugins.AddRange(new BasePluginLoader<PythonPlugin>().LoadPlugin(pluginMetadatas));
 
             Forker forker = new Forker();
             foreach (IPlugin plugin in plugins.Select(pluginPair => pluginPair.Plugin))

@@ -30,33 +30,31 @@ namespace Wox.RPC
 
     public class JsonRPCQueryResponseModel : JsonRPCResponseModel
     {
-        public List<JsonRPCResult> QueryResults
-        {
-            get
-            {
-                return JsonConvert.DeserializeObject<List<JsonRPCResult>>(Result);
-            }
-        }
+        public new List<JsonRPCResult> Result { get; set; }
     }
 
     public class JsonRPCRequestModel : JsonRPCModelBase
     {
         public string Method { get; set; }
 
-        /* 
-         * 1. c# can't use params as the variable name
-         * 2. all prarmeter should be string type
-         */
-        public List<string> Parameters { get; set; }
+        /// <summary>
+        /// counld be list<string> or string type
+        /// </summary>
+        public object Parameters { get; set; }
+
+        public override string ToString()
+        {
+            if (Parameters is string)
+            {
+                return string.Format(@"{{\""method\"":\""{0}\"",\""parameters\"":\""{1}\""}}", Method, Parameters);
+            }
+
+            return string.Empty;
+        }
     }
 
     public class JsonRPCResult : Result
     {
-        public string JSONRPCAction { get; set; }
-
-        public JsonRPCRequestModel JSONRPCActionModel
-        {
-            get { return null; }
-        }
+        public JsonRPCRequestModel JsonRPCAction { get; set; }
     }
 }

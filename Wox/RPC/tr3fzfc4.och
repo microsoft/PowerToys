@@ -1,0 +1,56 @@
+﻿using System.Collections.Generic;
+using System.Windows.Documents;
+using Newtonsoft.Json;
+using Wox.Plugin;
+
+namespace Wox.RPC
+{
+    public class JsonRPCErrorModel
+    {
+        public int Code { get; set; }
+
+        public string Message { get; set; }
+
+        public string Data { get; set; }
+    }
+
+    public class JsonRPCModelBase
+    {
+        public int Id { get; set; }
+
+        public string JsonRPC { get; set; }
+    }
+
+    public class JsonRPCResponseModel : JsonRPCModelBase
+    {
+        public string Result { get; set; }
+
+        public JsonRPCErrorModel Error { get; set; }
+    }
+
+    public class JsonRPCQueryResponseModel : JsonRPCResponseModel
+    {
+        public new List<JsonRPCResult> Result { get; set; }
+    }
+
+    public class JsonRPCRequestModel : JsonRPCModelBase
+    {
+        public string Method { get; set; }
+
+        /// <summary>
+        /// counld be list<string> or string type
+        /// </summary>
+        public object Parameters { get; set; }
+
+        public override string ToString()
+        {
+            if(typeof(Parameters))
+            return string.Format(@"{""method"":}",Method,Parameters);
+        }
+    }
+
+    public class JsonRPCResult : Result
+    {
+        public JsonRPCRequestModel JsonRPCAction { get; set; }
+    }
+}

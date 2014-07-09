@@ -7,7 +7,7 @@ using Wox.RPC;
 
 namespace Wox.PluginLoader
 {
-    public class BasePluginLoader<T> : IPluginLoader where T : BasePluginWrapper, new()
+    public class BasePluginLoader<T> : IPluginLoader where T : BasePlugin, new()
     {
         public virtual List<PluginPair> LoadPlugin(List<PluginMetadata> pluginMetadatas)
         {
