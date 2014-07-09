@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
+using Wox.JsonRPC;
 using Wox.Plugin;
-using Wox.RPC;
 
 namespace Wox.PluginLoader
 {
@@ -14,7 +14,7 @@ namespace Wox.PluginLoader
     {
         protected PluginInitContext context;
 
-        public abstract List<string> GetAllowedLanguages();
+        public abstract string SupportedLanguage { get; }
 
         protected abstract string ExecuteQuery(Query query);
         protected abstract string ExecuteAction(JsonRPCRequestModel rpcRequest);

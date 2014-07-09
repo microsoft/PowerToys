@@ -139,7 +139,6 @@
     </Compile>
     <Compile Include="Converters\ImagePathConverter.cs" />
     <Compile Include="PluginLoader\IPluginLoader.cs" />
-    <Compile Include="RPC\JsonRPC.cs" />
     <Compile Include="Msg.xaml.cs">
       <DependentUpon>Msg.xaml</DependentUpon>
     </Compile>
@@ -147,7 +146,7 @@
     <Compile Include="PluginLoader\CSharpPluginLoader.cs" />
     <Compile Include="PluginLoader\BasePluginLoader.cs" />
     <Compile Include="PluginLoader\BasePlugin.cs" />
-    <Compile Include="RPC\JsonPRCModel.cs" />
+    <Compile Include="JsonRPC\JsonPRCModel.cs" />
     <Compile Include="PluginLoader\Plugins.cs" />
     <Compile Include="PluginLoader\PythonPlugin.cs" />
     <Compile Include="Properties\Annotations.cs" />

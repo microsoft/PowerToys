@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Windows.Documents;
-using Newtonsoft.Json;
 using Wox.Plugin;
 
-namespace Wox.RPC
+namespace Wox.JsonRPC
 {
     public class JsonRPCErrorModel
     {
@@ -44,8 +42,12 @@ namespace Wox.RPC
 
         public override string ToString()
         {
-            if(typeof(Parameters))
-            return string.Format(@"{""method"":}",Method,Parameters);
+            if (Parameters is string)
+            {
+                return string.Format(@"{{\""method\"":\""{0}\"",\""parameters\"":\""{1}\""}}", Method, Parameters);
+            }
+
+            return string.Empty;
         }
     }
 

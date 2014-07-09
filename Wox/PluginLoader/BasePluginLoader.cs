@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Wox.Plugin;
-using Wox.RPC;
 
 namespace Wox.PluginLoader
 {
@@ -11,22 +10,14 @@ namespace Wox.PluginLoader
     {
         public virtual List<PluginPair> LoadPlugin(List<PluginMetadata> pluginMetadatas)
         {
-            List<PluginPair> plugins = new List<PluginPair>();
-
             T pluginWrapper = new T();
-            List<string> allowedLanguages = pluginWrapper.GetAllowedLanguages();
-            List<PluginMetadata> metadatas = pluginMetadatas.Where(o => allowedLanguages.Contains(o.Language.ToUpper())).ToList();
-            foreach (PluginMetadata metadata in metadatas)
-            {
-                PluginPair pair = new PluginPair()
-                {
-                    Plugin = pluginWrapper,
-                    Metadata = metadata
-                };
-                plugins.Add(pair);
-            }
+            List<PluginMetadata> metadatas = pluginMetadatas.Where(o => pluginWrapper.SupportedLanguage.ToUpper() == o.Language.ToUpper()).ToList();
 
-            return plugins;
+            return metadatas.Select(metadata => new PluginPair()
+            {
+                Plugin = pluginWrapper, 
+                Metadata = metadata
+            }).ToList();
         }
     }
 }
