@@ -23,8 +23,6 @@ namespace Wox.Plugin
 
         void OpenSettingDialog();
 
-        void ShowCurrentResultItemTooltip(string tooltip);
-
         void StartLoadingBar();
 
         void StopLoadingBar();

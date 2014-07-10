@@ -15,11 +15,21 @@ class Wox(object):
         methods = inspect.getmembers(self, predicate=inspect.ismethod)
 
         request_method = dict(methods)[request_method_name]
-        results = request_method(request_parameters)
-        print json.dumps({"result": results})
+        results = request_method(*request_parameters)
+        if request_method_name == "query":
+            print json.dumps({"result": results})
 
     def query(self,query):
         """
         sub class need to override this method
         """
         return []
+
+class WoxAPI(object):
+
+    @classmethod
+    def wox_change_query(cls,query,requery = False):
+        """
+        change wox query
+        """
+        print json.dumps({"method": "Wox.ChangeQuery","parameters":[query,requery]})

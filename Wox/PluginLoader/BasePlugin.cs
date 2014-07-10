@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Threading;
 using Newtonsoft.Json;
 using Wox.JsonRPC;
 using Wox.Plugin;
@@ -31,14 +33,32 @@ namespace Wox.PluginLoader
                     JsonRPCQueryResponseModel queryResponseModel = JsonConvert.DeserializeObject<JsonRPCQueryResponseModel>(output);
                     foreach (JsonRPCResult result in queryResponseModel.Result)
                     {
-                        if (result.JsonRPCAction != null)
+                        JsonRPCResult result1 = result;
+                        result.Action = (c) =>
                         {
-                            result.Action = (c) =>
+                            if (!string.IsNullOrEmpty(result1.JsonRPCAction.Method))
                             {
-                                string actionResponse = ExecuteAction(result.JsonRPCAction);
-                                return true;
-                            };
-                        }
+                                if (result1.JsonRPCAction.Method.StartsWith("Wox."))
+                                {
+                                    ExecuteWoxAPI(result1.JsonRPCAction.Method.Substring(4), result1.JsonRPCAction.Parameters);
+                                }
+                                else
+                                {
+                                    ThreadPool.QueueUserWorkItem(state =>
+                                    {
+                                        string actionReponse = ExecuteAction(result1.JsonRPCAction);
+                                        JsonRPCRequestModel jsonRpcRequestModel = JsonConvert.DeserializeObject<JsonRPCRequestModel>(actionReponse);
+                                        if (jsonRpcRequestModel != null 
+                                            && string.IsNullOrEmpty(jsonRpcRequestModel.Method) 
+                                            && jsonRpcRequestModel.Method.StartsWith("Wox."))
+                                        {
+                                            ExecuteWoxAPI(jsonRpcRequestModel.Method.Substring(4), jsonRpcRequestModel.Parameters);
+                                        }
+                                    });
+                                }
+                            }
+                            return !result1.JsonRPCAction.DontHideAfterAction;
+                        };
                         results.Add(result);
                     }
                     return results;
@@ -48,6 +68,26 @@ namespace Wox.PluginLoader
                 }
             }
             return null;
+        }
+
+        private void ExecuteWoxAPI(string method, object[] parameters)
+        {
+            MethodInfo methodInfo = App.Window.GetType().GetMethod(method);
+            if (methodInfo != null)
+            {
+                try
+                {
+                    methodInfo.Invoke(App.Window, parameters);
+                }
+                catch (Exception)
+                {
+#if (DEBUG)
+                    {
+                        throw;
+                    }
+#endif
+                }
+            }
         }
 
         /// <summary>

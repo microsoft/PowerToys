@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Wox.Plugin;
 
 namespace Wox.JsonRPC
@@ -38,16 +39,37 @@ namespace Wox.JsonRPC
         /// <summary>
         /// counld be list<string> or string type
         /// </summary>
-        public object Parameters { get; set; }
+        public object[] Parameters { get; set; }
+
+        public bool DontHideAfterAction { get; set; }
 
         public override string ToString()
         {
-            if (Parameters is string)
+            if (Parameters != null && Parameters.Length > 0)
             {
-                return string.Format(@"{{\""method\"":\""{0}\"",\""parameters\"":\""{1}\""}}", Method, Parameters);
+                string parameters = Parameters.Aggregate("[", (current, o) => current + (GetParamterByType(o) + ","));
+                parameters = parameters.Substring(0, parameters.Length - 1) + "]";
+                return string.Format(@"{{\""method\"":\""{0}\"",\""parameters\"":{1}}}", Method, parameters);
             }
 
-            return string.Empty;
+            return string.Format(@"{{\""method\"":\""{0}\"",\""parameters\"":[]}}",Method);
+        }
+
+        private string GetParamterByType(object paramter)
+        {
+            if (paramter is string)
+            {
+                return string.Format(@"\""{0}\""", paramter);
+            }
+            if (paramter is int || paramter is float || paramter is double)
+            {
+                return string.Format(@"{0}", paramter);
+            }
+            if (paramter is bool)
+            {
+                return string.Format(@"{0}", paramter.ToString().ToLower());
+            }
+            return paramter.ToString();
         }
     }
 

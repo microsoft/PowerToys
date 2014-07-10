@@ -22,7 +22,7 @@ namespace Wox.Plugin.SystemPlugins
                         Score = 8,
                         Action = _ =>
                         {
-                            Process.Start(raw);
+                            Process.Start(uri.AbsoluteUri);
                             return true;
                         }
                     }

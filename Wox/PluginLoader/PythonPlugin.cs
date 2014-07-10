@@ -18,7 +18,7 @@ namespace Wox.PluginLoader
         {
             string fileName = Path.Combine(woxDirectory, "PythonHome\\pythonw.exe");
             string parameters = string.Format("{0} \"{1}\"", context.CurrentPluginMetadata.ExecuteFilePath,
-                     string.Format(@"{{\""method\"": \""query\"", \""parameters\"": \""{0}\""}}",query.GetAllRemainingParameter()));
+                     string.Format(@"{{\""method\"": \""query\"", \""parameters\"": [\""{0}\""]}}",query.GetAllRemainingParameter()));
              
             return Execute(fileName, parameters);
         }

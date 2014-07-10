@@ -60,12 +60,6 @@ namespace Wox.Plugin
             API.OpenSettingDialog();
         }
 
-        [Obsolete("This method has been obsoleted, use API.ShowCurrentResultItemTooltip instead")]
-        public void ShowCurrentResultItemTooltip(string tooltip)
-        {
-            API.ShowCurrentResultItemTooltip(tooltip);
-        }
-
         [Obsolete("This method has been obsoleted, use API.StartLoadingBar instead")]
         public void StartLoadingBar()
         {

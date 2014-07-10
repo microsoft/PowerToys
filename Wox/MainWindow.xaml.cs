@@ -108,15 +108,6 @@ namespace Wox
             Dispatcher.Invoke(new Action(() => WindowOpener.Open<SettingWindow>(this)));
         }
 
-        public void ShowCurrentResultItemTooltip(string text)
-        {
-            Dispatcher.Invoke(new Action(() =>
-            {
-                toolTip.Content = text;
-                toolTip.IsOpen = true;
-            }));
-        }
-
         public void StartLoadingBar()
         {
             Dispatcher.Invoke(new Action(StartProgress));

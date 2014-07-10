@@ -1,11 +1,9 @@
 #encoding=utf8
 
-from __future__ import unicode_literals
 import requests
 from bs4 import BeautifulSoup
-import json
 import webbrowser
-from wox import Wox
+from wox import Wox,WoxAPI
 
 class HackerNews(Wox):
 
@@ -16,12 +14,16 @@ class HackerNews(Wox):
         for i in bs.select(".comhead"):
             title = i.previous_sibling.text
             url = i.previous_sibling["href"]
-            results.append({"Title": title ,"IcoPath":"Images/app.ico","JsonRPCAction":{"method": "openUrl", "parameters": url}})
+            #results.append({"Title": title ,"IcoPath":"Images/app.ico","JsonRPCAction":{"method": "Wox.ChangeQuery","parameters":[url,True]}})
+            results.append({"Title": title ,"IcoPath":"Images/app.ico","JsonRPCAction":{"method": "openUrl","parameters":[url],"dontHideAfterAction":True}})
+            #results.append({"Title": title ,"IcoPath":"Images/app.ico","JsonRPCAction":{"method": "Wox.ShowApp"}})
 
         return results
 
     def openUrl(self,url):
         webbrowser.open(url)
+        #todo:doesn't work when move this line up 
+        WoxAPI.change_query(url)
 
 if __name__ == "__main__":
     HackerNews()
