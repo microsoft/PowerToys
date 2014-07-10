@@ -119,7 +119,7 @@
                                 <TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5" ToolTip="{Binding Source=pluginSubTitle, Path=Text}" Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" ></TextBlock>
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0 8 0 0">
                                     <CheckBox x:Name="cbDisablePlugin" Click="CbDisablePlugin_OnClick"></CheckBox>
-                                    <TextBlock x:Name="pluginDisableTitle" Margin="3 -2 0 0">Disable</TextBlock>
+                                    <TextBlock x:Name="pluginDisableTitle" Margin="5 -2 0 0">Disable</TextBlock>
                                     <TextBlock x:Name="pluginActionKeywordTitle" Margin="50 -2 0 0">ActionKeyword:</TextBlock>
                                     <TextBlock Margin="5 -2 0 0" ToolTip="Change Action Keyword" Cursor="Hand" MouseUp="PluginActionKeyword_OnMouseUp" Foreground="Blue" Text="key" x:Name="pluginActionKeyword"></TextBlock>
                                 </StackPanel>
@@ -189,7 +189,7 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="2">
                             <TextBlock Text="Result Item Font:" />
-                            <ComboBox Margin="5.5 -2 5 0" x:Name="cbResultItemFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbResultItemFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
+                            <ComboBox Margin="5 -2 5 0" x:Name="cbResultItemFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbResultItemFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
                             <ComboBox Margin="0 -2 0 0"
 								x:Name="cbResultItemFontFaces"
 								ItemsSource="{Binding SelectedValue.FamilyTypefaces, ElementName=cbResultItemFont}" SelectionChanged="CbResultItemFontFaces_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
