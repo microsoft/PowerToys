@@ -36,12 +36,14 @@ namespace Wox.Plugin.SystemPlugins
         private void btnDeleteWebSearch_OnClick(object sender, RoutedEventArgs e)
         {
             WebSearch seletedWebSearch = webSearchView.SelectedItem as WebSearch;
-            if (seletedWebSearch != null &&
-                MessageBox.Show("Are your sure to delete " + seletedWebSearch.Title, "Delete WebSearch",
-                    MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            if (seletedWebSearch != null)
             {
-                UserSettingStorage.Instance.WebSearches.Remove(seletedWebSearch);
-                webSearchView.Items.Refresh();
+                if (MessageBox.Show("Are your sure to delete " + seletedWebSearch.Title, "Delete WebSearch",
+                    MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    UserSettingStorage.Instance.WebSearches.Remove(seletedWebSearch);
+                    webSearchView.Items.Refresh();
+                }
             }
             else
             {
