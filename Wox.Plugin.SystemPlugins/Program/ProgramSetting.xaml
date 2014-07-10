@@ -51,6 +51,6 @@
             <Button x:Name="btnEditProgramSource" Click="btnEditProgramSource_OnClick" Width="100" Margin="10" Content="Edit"/>
             <Button x:Name="btnAddProgramSource" Click="btnAddProgramSource_OnClick" Width="100" Margin="10" Content="Add"/>
         </StackPanel>
-        <TextBlock Grid.Row="1" Margin="10" HorizontalAlignment="Left" Text="* Restarting required" VerticalAlignment="Center" />
+        <TextBlock Grid.Row="1" Margin="10" HorizontalAlignment="Left" Text="* Restart required" VerticalAlignment="Center" />
     </Grid>
 </UserControl>

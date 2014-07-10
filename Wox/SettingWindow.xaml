@@ -24,11 +24,11 @@
             <StackPanel Orientation="Vertical" Margin="10">
                 <StackPanel Orientation="Horizontal" Margin="10">
                     <CheckBox x:Name="cbStartWithWindows" Unchecked="CbStartWithWindows_OnUnchecked" Checked="CbStartWithWindows_OnChecked" />
-                    <TextBlock Text="Start Wox on system startup" />
+                    <TextBlock Margin="5 -2 0 0" Text="Start Wox on system startup" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="10">
                     <CheckBox x:Name="cbHideWhenDeactive" />
-                    <TextBlock Text="Hide Wox when loses focus" />
+                    <TextBlock Margin="5 -2 0 0" Text="Hide Wox when loses focus" />
                 </StackPanel>
             </StackPanel>
         </TabItem>
@@ -118,9 +118,10 @@
                                 </DockPanel>
                                 <TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5" ToolTip="{Binding Source=pluginSubTitle, Path=Text}" Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" ></TextBlock>
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0 8 0 0">
-                                    <CheckBox Margin="0 0 50 0" x:Name="cbDisablePlugin" Click="CbDisablePlugin_OnClick">Disable</CheckBox>
-                                    <TextBlock x:Name="pluginActionKeywordTitle" Margin="0 0 10 0">ActionKeyword:</TextBlock>
-                                    <TextBlock Margin="0 0 10 0" ToolTip="Change Action Keyword" Cursor="Hand" MouseUp="PluginActionKeyword_OnMouseUp" Foreground="Blue" Text="key" x:Name="pluginActionKeyword"></TextBlock>
+                                    <CheckBox x:Name="cbDisablePlugin" Click="CbDisablePlugin_OnClick"></CheckBox>
+                                    <TextBlock x:Name="pluginDisableTitle" Margin="3 -2 0 0">Disable</TextBlock>
+                                    <TextBlock x:Name="pluginActionKeywordTitle" Margin="50 -2 0 0">ActionKeyword:</TextBlock>
+                                    <TextBlock Margin="5 -2 0 0" ToolTip="Change Action Keyword" Cursor="Hand" MouseUp="PluginActionKeyword_OnMouseUp" Foreground="Blue" Text="key" x:Name="pluginActionKeyword"></TextBlock>
                                 </StackPanel>
                             </Grid>
                         </Grid>
@@ -169,8 +170,8 @@
                     <StackPanel Grid.Row="1" Grid.Column="0"  Margin="10" Orientation="Vertical">
                         <StackPanel Orientation="Horizontal" Margin="2">
                             <TextBlock Text="Query Box Font:" />
-                            <ComboBox x:Name="cbQueryBoxFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbQueryBoxFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
-                            <ComboBox
+                            <ComboBox Margin="10 -2 5 0" x:Name="cbQueryBoxFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbQueryBoxFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
+                            <ComboBox Margin="0 -2 0 0"
 								x:Name="cbQueryBoxFontFaces"
 								ItemsSource="{Binding SelectedValue.FamilyTypefaces, ElementName=cbQueryBoxFont}" SelectionChanged="CbQueryBoxFontFaces_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
                                 <ComboBox.ItemTemplate>
@@ -188,8 +189,8 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="2">
                             <TextBlock Text="Result Item Font:" />
-                            <ComboBox x:Name="cbResultItemFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbResultItemFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
-                            <ComboBox
+                            <ComboBox Margin="5.5 -2 5 0" x:Name="cbResultItemFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbResultItemFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
+                            <ComboBox Margin="0 -2 0 0"
 								x:Name="cbResultItemFontFaces"
 								ItemsSource="{Binding SelectedValue.FamilyTypefaces, ElementName=cbResultItemFont}" SelectionChanged="CbResultItemFontFaces_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
                                 <ComboBox.ItemTemplate>
