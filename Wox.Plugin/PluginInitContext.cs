@@ -14,6 +14,8 @@ namespace Wox.Plugin
         /// </summary>
         public IPublicAPI API { get; set; }
 
+        public HttpProxy Proxy { get; set; }
+
         #region Legacy APIs
 
         [Obsolete("This method has been obsoleted, use API.ShellRun instead")]

@@ -20,21 +20,14 @@ namespace Wox.PluginLoader
             plugins.AddRange(new BasePluginLoader<PythonPlugin>().LoadPlugin(pluginMetadatas));
 
             Forker forker = new Forker();
-            foreach (IPlugin plugin in plugins.Select(pluginPair => pluginPair.Plugin))
+            foreach (PluginPair pluginPair in plugins)
             {
-                IPlugin plugin1 = plugin;
-                PluginPair pluginPair = plugins.FirstOrDefault(o => o.Plugin == plugin1);
-                if (pluginPair != null)
+                PluginPair pair = pluginPair;
+                forker.Fork(() => pair.Plugin.Init(new PluginInitContext()
                 {
-                    PluginMetadata metadata = pluginPair.Metadata;
-                    pluginPair.InitContext = new PluginInitContext()
-                    {
-                        CurrentPluginMetadata = metadata,
-                        API = App.Window
-                    };
-
-                    forker.Fork(() => plugin1.Init(pluginPair.InitContext));
-                }
+                    CurrentPluginMetadata = pair.Metadata,
+                    API = App.Window
+                }));
             }
 
             forker.Join();
