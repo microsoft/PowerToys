@@ -35,12 +35,14 @@ namespace Wox.Plugin.SystemPlugins.Program
         private void btnDeleteProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
             ProgramSource seletedProgramSource = programSourceView.SelectedItem as ProgramSource;
-            if (seletedProgramSource != null &&
-                MessageBox.Show("Are your sure to delete " + seletedProgramSource.ToString(), "Delete ProgramSource",
-                    MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            if (seletedProgramSource != null)
             {
-                UserSettingStorage.Instance.ProgramSources.Remove(seletedProgramSource);
-                programSourceView.Items.Refresh();
+                if (MessageBox.Show("Are your sure to delete " + seletedProgramSource.ToString(), "Delete ProgramSource",
+                     MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    UserSettingStorage.Instance.ProgramSources.Remove(seletedProgramSource);
+                    programSourceView.Items.Refresh();
+                }
             }
             else
             {
