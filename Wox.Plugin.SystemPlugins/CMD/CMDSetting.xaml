@@ -14,11 +14,11 @@
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0" Orientation="Horizontal">
                 <CheckBox x:Name="cbReplaceWinR" />
-                <TextBlock Text="Replace Win+R" />
+                <TextBlock Margin="5 -2 0 0" Text="Replace Win+R" />
             </StackPanel>
             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0 10 0 0">
                 <CheckBox x:Name="cbLeaveCmdOpen" />
-                <TextBlock Text="Do not close Command Prompt after command execution" />
+                <TextBlock Margin="5 -2 0 0" Text="Do not close Command Prompt after command execution" />
             </StackPanel>
         </Grid>
     </Border>

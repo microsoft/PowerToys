@@ -223,7 +223,7 @@ namespace Wox {
 			notifyIcon.Click += (o, e) => ShowWox();
 			var open = new MenuItem("Open");
 			open.Click += (o, e) => ShowWox();
-			var setting = new MenuItem("Setting");
+			var setting = new MenuItem("Settings");
 			setting.Click += (o, e) => OpenSettingDialog();
 			var exit = new MenuItem("Exit");
 			exit.Click += (o, e) => CloseApp();
