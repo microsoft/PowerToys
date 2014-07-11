@@ -10,12 +10,12 @@ namespace Wox.PluginLoader
     {
         public virtual List<PluginPair> LoadPlugin(List<PluginMetadata> pluginMetadatas)
         {
-            T pluginWrapper = new T();
-            List<PluginMetadata> metadatas = pluginMetadatas.Where(o => pluginWrapper.SupportedLanguage.ToUpper() == o.Language.ToUpper()).ToList();
+            string supportedLanguage = new T().SupportedLanguage;
+            List<PluginMetadata> metadatas = pluginMetadatas.Where(o => supportedLanguage.ToUpper() == o.Language.ToUpper()).ToList();
 
             return metadatas.Select(metadata => new PluginPair()
             {
-                Plugin = pluginWrapper, 
+                Plugin = new T(), 
                 Metadata = metadata
             }).ToList();
         }
