@@ -30,7 +30,7 @@ namespace Wox
         string woxLinkPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "wox.lnk");
         public MainWindow MainWindow;
         bool settingsLoaded = false;
-        private Dictionary<ISettingProvider, Control> featureControls = new Dictionary<ISettingProvider, Control>(); 
+        private Dictionary<ISettingProvider, Control> featureControls = new Dictionary<ISettingProvider, Control>();
 
         public SettingWindow()
         {
@@ -321,7 +321,7 @@ namespace Wox
         private void CbQueryBoxFontFaces_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!settingsLoaded) return;
-            FamilyTypeface typeface = (FamilyTypeface) cbQueryBoxFontFaces.SelectedItem;
+            FamilyTypeface typeface = (FamilyTypeface)cbQueryBoxFontFaces.SelectedItem;
             if (typeface == null)
             {
                 if (cbQueryBoxFontFaces.Items.Count > 0)
@@ -387,7 +387,7 @@ namespace Wox
 
         private void CbOpacityMode_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            UserSettingStorage.Instance.OpacityMode = (OpacityMode) CbOpacityMode.SelectedItem;
+            UserSettingStorage.Instance.OpacityMode = (OpacityMode)CbOpacityMode.SelectedItem;
             UserSettingStorage.Instance.Save();
 
             slOpacity.IsEnabled = UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow;
@@ -411,6 +411,7 @@ namespace Wox
                 pluginAuthor.Visibility = Visibility.Visible;
                 pluginActionKeyword.Visibility = Visibility.Visible;
                 pluginActionKeywordTitle.Visibility = Visibility.Visible;
+                tbOpenPluginDirecoty.Visibility = Visibility.Visible;
                 pluginTitle.Text = pair.Metadata.Name;
                 pluginTitle.Cursor = Cursors.Hand;
                 pluginActionKeyword.Text = pair.Metadata.ActionKeyword;
@@ -439,15 +440,16 @@ namespace Wox
                     pluginSubTitle.Text = sys.Description;
                     pluginAuthor.Visibility = Visibility.Collapsed;
                     pluginActionKeyword.Visibility = Visibility.Collapsed;
+                    tbOpenPluginDirecoty.Visibility = Visibility.Collapsed;
                     pluginActionKeywordTitle.Visibility = Visibility.Collapsed;
                     pluginTitle.Cursor = Cursors.Arrow;
                     SyntaxSugars.CallOrRescueDefault(
                         () =>
-                            pluginIcon.Source = (ImageSource) new ImagePathConverter().Convert( new object[]
+                            pluginIcon.Source = (ImageSource)new ImagePathConverter().Convert(new object[]
                                 {
                                     sys.IcoPath, 
                                     sys.PluginDirectory
-                                }, null, null,null));
+                                }, null, null, null));
                 }
             }
 
@@ -532,7 +534,7 @@ namespace Wox
 
         private void PluginTitle_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
-             if (e.ChangedButton == MouseButton.Left)
+            if (e.ChangedButton == MouseButton.Left)
             {
                 var pair = lbPlugins.SelectedItem as PluginPair;
                 if (pair != null)
@@ -543,6 +545,27 @@ namespace Wox
                         try
                         {
                             Process.Start(pair.Metadata.Website);
+                        }
+                        catch
+                        { }
+                    }
+                }
+            }
+        }
+
+        private void tbOpenPluginDirecoty_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                var pair = lbPlugins.SelectedItem as PluginPair;
+                if (pair != null)
+                {
+                    //third-party plugin
+                    if (!string.IsNullOrEmpty(pair.Metadata.Website))
+                    {
+                        try
+                        {
+                            Process.Start(pair.Metadata.PluginDirecotry);
                         }
                         catch
                         { }
