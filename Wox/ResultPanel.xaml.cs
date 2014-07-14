@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Wox.Helper;
 using Wox.Plugin;
 using UserControl = System.Windows.Controls.UserControl;
 
@@ -23,6 +26,7 @@ namespace Wox
 
         public void AddResults(List<Result> results)
         {
+
             if (Dirty)
             {
                 Dirty = false;
@@ -30,6 +34,10 @@ namespace Wox
             }
             foreach (var result in results)
             {
+                //ThreadPool.QueueUserWorkItem(delegate
+                //    {
+                //        ImageLoader.Load(Path.Combine(result.PluginDirectory, result.IcoPath));
+                //    });
                 int position = GetInsertLocation(result.Score);
                 lbResults.Items.Insert(position, result);
             }
