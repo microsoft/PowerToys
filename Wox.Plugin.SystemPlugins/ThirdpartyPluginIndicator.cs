@@ -11,11 +11,13 @@ namespace Wox.Plugin.SystemPlugins
     public class ThirdpartyPluginIndicator : BaseSystemPlugin
     {
         private List<PluginPair> allPlugins = new List<PluginPair>();
-        private Action<string> changeQuery;
+        private PluginInitContext context;
 
         protected override List<Result> QueryInternal(Query query)
         {
             List<Result> results = new List<Result>();
+            if(allPlugins.Count == 0) allPlugins = context.API.GetAllPlugins();
+
 
             foreach (PluginMetadata metadata in allPlugins.Select(o => o.Metadata))
             {
@@ -36,7 +38,7 @@ namespace Wox.Plugin.SystemPlugins
                         IcoPath = "Images/work.png",
                         Action = (c) =>
                         {
-                            changeQuery(metadataCopy.ActionKeyword + " ");
+                            context.ChangeQuery(metadataCopy.ActionKeyword + " ");
                             return false;
                         },
                     };
@@ -52,7 +54,7 @@ namespace Wox.Plugin.SystemPlugins
                 IcoPath = "Images/work.png",
                 Action = (c) =>
                 {
-                    changeQuery(n.ActionWord + " ");
+                    context.ChangeQuery(n.ActionWord + " ");
                     return false;
                 }
             }));
@@ -62,8 +64,7 @@ namespace Wox.Plugin.SystemPlugins
 
         protected override void InitInternal(PluginInitContext context)
         {
-            allPlugins = context.Plugins;
-            changeQuery = context.ChangeQuery;
+            this.context = context;
         }
 
 

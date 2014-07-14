@@ -9,17 +9,24 @@ namespace Wox.Plugin
     {
         public static string Python
         {
-            get { return "python"; }
+            get { return "PYTHON"; }
         }
 
         public static string CSharp
         {
-            get { return "csharp"; }
+            get { return "CSHARP"; }
+        }
+
+        public static string Executable
+        {
+            get { return "EXECUTABLE"; }
         }
 
         public static bool IsAllowed(string language)
         {
-            return language.ToUpper() == Python.ToUpper() || language.ToUpper() == CSharp.ToUpper();
+            return language.ToUpper() == Python.ToUpper() 
+                || language.ToUpper() == CSharp.ToUpper()
+                || language.ToUpper() == Executable.ToUpper();
         }
     }
 }

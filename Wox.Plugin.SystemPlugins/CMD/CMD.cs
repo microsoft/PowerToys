@@ -59,7 +59,7 @@ namespace Wox.Plugin.SystemPlugins.CMD
                 }
                 catch (Exception) { }
 
-                context.PushResults(query, new List<Result>() { result });
+                context.API.PushResults(query,context.CurrentPluginMetadata, new List<Result>() { result });
                 pushedResults.Add(result);
 
                 IEnumerable<Result> history = CMDStorage.Instance.CMDHistory.Where(o => o.Key.Contains(cmd))
@@ -95,7 +95,7 @@ namespace Wox.Plugin.SystemPlugins.CMD
                         return ret;
                     }).Where(o => o != null).Take(4);
 
-                context.PushResults(query, history.ToList());
+                context.API.PushResults(query,context.CurrentPluginMetadata,history.ToList());
                 pushedResults.AddRange(history);
 
                 try

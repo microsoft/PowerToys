@@ -120,6 +120,7 @@
     </Compile>
     <Compile Include="Helper\FontHelper.cs" />
     <Compile Include="Helper\Forker.cs" />
+    <Compile Include="Helper\ImageLoader.cs" />
     <Compile Include="Helper\SyntaxSugars.cs" />
     <Compile Include="Helper\WallpaperPathRetrieval.cs" />
     <Compile Include="Helper\WindowIntelopHelper.cs" />
@@ -138,14 +139,17 @@
       <DependentUpon>HotkeyControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\ImagePathConverter.cs" />
+    <Compile Include="PluginLoader\IPluginLoader.cs" />
     <Compile Include="Msg.xaml.cs">
       <DependentUpon>Msg.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PluginLoader\BasePluginLoader.cs" />
+    <Compile Include="PluginLoader\PluginConfigLoader.cs" />
     <Compile Include="PluginLoader\CSharpPluginLoader.cs" />
+    <Compile Include="PluginLoader\BasePluginLoader.cs" />
+    <Compile Include="PluginLoader\BasePlugin.cs" />
+    <Compile Include="JsonRPC\JsonPRCModel.cs" />
     <Compile Include="PluginLoader\Plugins.cs" />
-    <Compile Include="PluginLoader\PythonPluginLoader.cs" />
-    <Compile Include="PluginLoader\PythonPluginWrapper.cs" />
+    <Compile Include="PluginLoader\PythonPlugin.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="ResultPanel.xaml.cs">
       <DependentUpon>ResultPanel.xaml</DependentUpon>
@@ -260,10 +264,6 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Pythonnet.Runtime\Python.Runtime.csproj">
-      <Project>{097b4ac0-74e9-4c58-bcf8-c69746ec8271}</Project>
-      <Name>Python.Runtime</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj">
       <Project>{4fd29318-a8ab-4d8f-aa47-60bc241b8da3}</Project>
       <Name>Wox.Infrastructure</Name>

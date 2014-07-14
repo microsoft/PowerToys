@@ -22,7 +22,7 @@
                         <ColumnDefinition Width="32"></ColumnDefinition>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" >
+                    <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left">
                         <Image.Resources>
                             <converters:ImagePathConverter x:Key="ImageConverter"/>
                         </Image.Resources>
