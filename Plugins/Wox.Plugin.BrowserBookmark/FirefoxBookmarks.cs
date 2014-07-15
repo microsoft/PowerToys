@@ -50,17 +50,28 @@ namespace Wox.Plugin.BrowserBookmark
         {
             get
             {
-                var profilesPath = Environment.ExpandEnvironmentVariables(@"%appdata%\Mozilla\Firefox\Profiles\");
+                var profileFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Mozilla\Firefox");
+                var profileIni = Path.Combine(profileFolderPath, @"profiles.ini");
 
-                // return null if the Profiles folder does not exist
-                if (!Directory.Exists(profilesPath)) return null;
+                if (!File.Exists(profileIni))
+                    return string.Empty;
 
-                var folders = new DirectoryInfo(profilesPath).GetDirectories().Select(x => x.FullName).ToList();
+                // get firefox default profile directory from profiles.ini
+                string ini;
+                using (var sReader = new StreamReader(profileIni)) {
+                    ini = sReader.ReadToEnd();
+                }
+                var lines = ini.Split(new string[] { "\r\n" }, StringSplitOptions.None).ToList();
 
-                // Look for the default profile folder
-                return string.Format(@"{0}\places.sqlite",
-                                     folders.FirstOrDefault(d => File.Exists(d + @"\places.sqlite") && d.EndsWith(".default"))
-                                     ?? folders.First(d => File.Exists(d + @"\places.sqlite")));
+                var index = lines.IndexOf("Default=1");
+                if (index > 3) {
+                    var relative = lines[index - 2].Split('=')[1];
+                    var profiePath = lines[index - 1].Split('=')[1];
+                    return relative == "0"
+                        ? profiePath + @"\places.sqlite"
+                        : Path.Combine(profileFolderPath, profiePath) + @"\places.sqlite";
+                }
+                return string.Empty;
             }
         }
     }
