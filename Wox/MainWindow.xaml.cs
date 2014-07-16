@@ -137,7 +137,7 @@ namespace Wox
         {
             results.ForEach(o =>
             {
-                o.PluginDirectory = plugin.PluginDirecotry;
+                o.PluginDirectory = plugin.PluginDirectory;
                 o.OriginQuery = query;
             });
             OnUpdateResultView(results);

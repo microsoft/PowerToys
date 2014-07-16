@@ -32,7 +32,7 @@ namespace Wox.PluginLoader {
 
 						var sys = pair.Plugin as BaseSystemPlugin;
 						if (sys != null) {
-							sys.PluginDirectory = metadata.PluginDirecotry;
+							sys.PluginDirectory = metadata.PluginDirectory;
 						}
 
 						plugins.Add(pair);

@@ -13,17 +13,12 @@ namespace Wox.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value == null || value == DependencyProperty.UnsetValue) return null;
-
-            string fullPath = value.ToString();
-
-            if (fullPath.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            if (value == null || value == DependencyProperty.UnsetValue)
             {
-                return new BitmapImage(new Uri(fullPath));
+                return null;
             }
 
-            
-            return ImageLoader.Load(fullPath);
+            return ImageLoader.Load(value.ToString());
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

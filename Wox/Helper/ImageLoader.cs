@@ -55,28 +55,28 @@ namespace Wox.Helper
 
         public static ImageSource Load(string path)
         {
-            ImageSource img = null;
-            if (path == null) return null;
+            if (string.IsNullOrEmpty(path)) return null;
             if (imageCache.ContainsKey(path))
             {
                 return imageCache[path];
             }
 
+            ImageSource img = null;
             string ext = Path.GetExtension(path).ToLower();
-            string resolvedPath = string.Empty;
-            if (!string.IsNullOrEmpty(path) && path.Contains(":\\") && File.Exists(path))
+
+            if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
             {
-                resolvedPath = path;
+                img = new BitmapImage(new Uri(path));
+            }
+            else if (selfExts.Contains(ext))
+            {
+                img = GetIcon(path);
+            }
+            else if (!string.IsNullOrEmpty(path) && imageExts.Contains(ext) && File.Exists(path))
+            {
+                img = new BitmapImage(new Uri(path));
             }
 
-            if (selfExts.Contains(ext))
-            {
-                img = GetIcon(resolvedPath);
-            }
-            else if (!string.IsNullOrEmpty(resolvedPath) && imageExts.Contains(ext) && File.Exists(resolvedPath))
-            {
-                img = new BitmapImage(new Uri(resolvedPath));
-            }
 
             if (img != null)
             {

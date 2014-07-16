@@ -31,14 +31,27 @@ namespace Wox.Plugin
 
         public string ExecuteFilePath
         {
-            get { return Path.Combine(PluginDirecotry, ExecuteFileName); }
+            get { return Path.Combine(PluginDirectory, ExecuteFileName); }
         }
 
         public string ExecuteFileName { get; set; }
-        public string PluginDirecotry { get; set; }
+        public string PluginDirectory { get; set; }
         public string ActionKeyword { get; set; }
         public PluginType PluginType { get; set; }
 
         public string IcoPath { get; set; }
+
+        public string FullIcoPath
+        {
+            get
+            {
+                if (IcoPath.StartsWith("data:"))
+                {
+                    return IcoPath;
+                }
+
+                return Path.Combine(PluginDirectory, IcoPath);
+            }
+        }
     }
 }

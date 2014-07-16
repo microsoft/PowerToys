@@ -22,6 +22,7 @@ using Application = System.Windows.Forms.Application;
 using File = System.IO.File;
 using MessageBox = System.Windows.MessageBox;
 using System.Windows.Data;
+using Label = System.Windows.Forms.Label;
 
 namespace Wox
 {
@@ -31,11 +32,6 @@ namespace Wox
         public MainWindow MainWindow;
         bool settingsLoaded = false;
         private Dictionary<ISettingProvider, Control> featureControls = new Dictionary<ISettingProvider, Control>();
-
-        public SettingWindow()
-        {
-            InitializeComponent();
-        }
 
         public SettingWindow(MainWindow mainWindow)
         {
@@ -419,14 +415,7 @@ namespace Wox
                 pluginSubTitle.Text = pair.Metadata.Description;
                 pluginId = pair.Metadata.ID;
                 SyntaxSugars.CallOrRescueDefault(
-                    () =>
-                        pluginIcon.Source = (ImageSource)new ImagePathConverter().Convert(
-                                    new object[]
-                                    {
-                                        pair.Metadata.IcoPath, 
-                                        pair.Metadata.PluginDirecotry
-                                    }, null, null,
-                                    null));
+                    () => pluginIcon.Source = ImageLoader.Load(pair.Metadata.FullIcoPath));
             }
             else
             {
@@ -443,13 +432,7 @@ namespace Wox
                     tbOpenPluginDirecoty.Visibility = Visibility.Collapsed;
                     pluginActionKeywordTitle.Visibility = Visibility.Collapsed;
                     pluginTitle.Cursor = Cursors.Arrow;
-                    SyntaxSugars.CallOrRescueDefault(
-                        () =>
-                            pluginIcon.Source = (ImageSource)new ImagePathConverter().Convert(new object[]
-                                {
-                                    sys.IcoPath, 
-                                    sys.PluginDirectory
-                                }, null, null, null));
+                    SyntaxSugars.CallOrRescueDefault(() => pluginIcon.Source = ImageLoader.Load(sys.FullIcoPath));
                 }
             }
 
@@ -565,13 +548,23 @@ namespace Wox
                     {
                         try
                         {
-                            Process.Start(pair.Metadata.PluginDirecotry);
+                            Process.Start(pair.Metadata.PluginDirectory);
                         }
                         catch
                         { }
                     }
                 }
             }
+        }
+
+        private void tbMorePlugins_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            Process.Start("http://www.getwox.com/plugin");
+        }
+
+        private void tbMoreThemes_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            Process.Start("http://www.getwox.com/theme");
         }
     }
 }

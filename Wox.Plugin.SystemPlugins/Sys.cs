@@ -81,7 +81,7 @@ namespace Wox.Plugin.SystemPlugins
                 IcoPath = "Images\\app.png",
                 Action = (c) =>
                 {
-                    context.CloseApp();
+                    context.API.CloseApp();
                     return true;
                 }
             });
@@ -99,7 +99,7 @@ namespace Wox.Plugin.SystemPlugins
                     Info.CreateNoWindow = true;
                     Info.FileName = "cmd.exe";
                     Process.Start(Info);
-                    context.CloseApp();
+                    context.API.CloseApp();
                     return true;
                 }
             });
@@ -111,7 +111,7 @@ namespace Wox.Plugin.SystemPlugins
                 IcoPath = "Images\\app.png",
                 Action = (c) =>
                 {
-                    context.OpenSettingDialog();
+                    context.API.OpenSettingDialog();
                     return true;
                 }
             });

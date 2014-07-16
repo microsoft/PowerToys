@@ -60,9 +60,9 @@ namespace Wox.Helper
                     MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result == MessageBoxResult.Yes)
                 {
-                    if (existingPlugin != null && Directory.Exists(existingPlugin.Metadata.PluginDirecotry))
+                    if (existingPlugin != null && Directory.Exists(existingPlugin.Metadata.PluginDirectory))
                     {
-                        File.Create(Path.Combine(existingPlugin.Metadata.PluginDirecotry, "NeedDelete.txt")).Close();
+                        File.Create(Path.Combine(existingPlugin.Metadata.PluginDirectory, "NeedDelete.txt")).Close();
                     }
 
                     UnZip(path, newPluginPath, true);
@@ -106,7 +106,7 @@ namespace Wox.Helper
             {
                 metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
                 metadata.PluginType = PluginType.ThirdParty;
-                metadata.PluginDirecotry = pluginDirectory;
+                metadata.PluginDirectory = pluginDirectory;
             }
             catch (Exception)
             {

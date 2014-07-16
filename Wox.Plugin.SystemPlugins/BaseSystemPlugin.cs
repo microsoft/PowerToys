@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Wox.Infrastructure.Storage.UserSettings;
 
@@ -13,6 +14,19 @@ namespace Wox.Plugin.SystemPlugins
         public virtual string Name { get { return "System workflow"; } }
         public virtual string Description { get { return "System workflow"; } }
         public virtual string IcoPath { get { return null; } }
+
+        public string FullIcoPath
+        {
+            get
+            {
+                if (IcoPath.StartsWith("data:"))
+                {
+                    return IcoPath;
+                }
+
+                return Path.Combine(PluginDirectory, IcoPath);
+            }
+        }
 
         protected abstract List<Result> QueryInternal(Query query);
 

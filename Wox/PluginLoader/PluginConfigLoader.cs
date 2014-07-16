@@ -40,7 +40,7 @@ namespace Wox.PluginLoader {
 				PluginType = PluginType.System,
 				ActionKeyword = "*",
 				ExecuteFileName = "Wox.Plugin.SystemPlugins.dll",
-				PluginDirecotry = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
+				PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
 			});
 		}
 
@@ -71,7 +71,7 @@ namespace Wox.PluginLoader {
 			try {
 				metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
 				metadata.PluginType = PluginType.ThirdParty;
-				metadata.PluginDirecotry = pluginDirectory;
+				metadata.PluginDirectory = pluginDirectory;
 			}
 			catch (Exception) {
 				string error = string.Format("Parse plugin config {0} failed: json format is not valid", configPath);

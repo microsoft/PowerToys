@@ -182,7 +182,7 @@ namespace Wox.Plugin.PluginManagement {
 		private void UnInstalledPlugins(PluginMetadata plugin) {
 			string content = string.Format("Do you want to uninstall following plugin?\r\n\r\nName: {0}\r\nVersion: {1}\r\nAuthor: {2}", plugin.Name, plugin.Version, plugin.Author);
 			if (MessageBox.Show(content, "Wox", MessageBoxButtons.YesNo) == DialogResult.Yes) {
-				File.Create(Path.Combine(plugin.PluginDirecotry, "NeedDelete.txt")).Close();
+				File.Create(Path.Combine(plugin.PluginDirectory, "NeedDelete.txt")).Close();
 				MessageBox.Show("This plugin has been removed, restart Wox to take effect");
 			}
 		}
@@ -224,7 +224,7 @@ namespace Wox.Plugin.PluginManagement {
 			try {
 				metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
 				metadata.PluginType = PluginType.ThirdParty;
-				metadata.PluginDirecotry = pluginDirectory;
+				metadata.PluginDirectory = pluginDirectory;
 			}
 			catch (Exception) {
 				string error = string.Format("Parse plugin config {0} failed: json format is not valid", configPath);

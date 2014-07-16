@@ -12,12 +12,12 @@
 		WindowStartupLocation="CenterScreen"
 		Height="600" Width="800">
     <Window.Resources>
-        <converters:ImagePathConverter x:Key="ImagePathConverter"/>
         <ListBoxItem HorizontalContentAlignment="Stretch"
 					IsEnabled="False"
 					IsHitTestVisible="False" x:Key="FeatureBoxSeperator">
             <Separator Width="{Binding ElementName=lbPlugins, Path=ActualWidth}"/>
         </ListBoxItem>
+        <converters:ImagePathConverter x:Key="ImageConverter" />
     </Window.Resources>
     <TabControl Height="auto" >
         <TabItem Header="General">
@@ -38,62 +38,49 @@
                     <ColumnDefinition Width="200"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <ListBox x:Name="lbPlugins" Grid.Column="0" Margin="0" SelectionChanged="lbPlugins_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" >
-                    <ListBox.Resources>
-                        <DataTemplate DataType="{x:Type system:BaseSystemPlugin}">
-                            <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="32"></ColumnDefinition>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
-                                <Image Width="32" Height="32" HorizontalAlignment="Left">
-                                    <Image.Source>
-                                        <MultiBinding Converter="{StaticResource ImagePathConverter}">
-                                            <MultiBinding.Bindings>
-                                                <Binding Path="IcoPath" />
-                                                <Binding Path="PluginDirectory" />
-                                            </MultiBinding.Bindings>
-                                        </MultiBinding>
-                                    </Image.Source>
-                                </Image>
-                                <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition></RowDefinition>
-                                        <RowDefinition Height="Auto"></RowDefinition>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock VerticalAlignment="Center" ToolTip="{Binding Name}" x:Name="tbTitle" Text="{Binding Name}"></TextBlock>
-                                    <TextBlock ToolTip="{Binding Description}" Visibility="{Binding Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Description}" Opacity="0.5"></TextBlock>
+                <DockPanel Grid.Column="0" >
+                    <TextBlock DockPanel.Dock="Top" Margin="6" HorizontalAlignment="Left" Cursor="Hand" MouseUp="tbMorePlugins_MouseUp" x:Name="tbMorePlugins" Foreground="Blue" Text="Browse more plugins"></TextBlock>
+                    <ListBox x:Name="lbPlugins" Margin="0" SelectionChanged="lbPlugins_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" >
+                        <ListBox.Resources>
+                            <DataTemplate DataType="{x:Type system:BaseSystemPlugin}">
+                                <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="32"></ColumnDefinition>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image Width="32" Height="32" HorizontalAlignment="Left" Source="{Binding FullIcoPath,Converter={StaticResource ImageConverter},IsAsync=True}">
+                                    </Image>
+                                    <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition></RowDefinition>
+                                            <RowDefinition Height="Auto"></RowDefinition>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock VerticalAlignment="Center" ToolTip="{Binding Name}" x:Name="tbTitle" Text="{Binding Name}"></TextBlock>
+                                        <TextBlock ToolTip="{Binding Description}" Visibility="{Binding Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Description}" Opacity="0.5"></TextBlock>
+                                    </Grid>
                                 </Grid>
-                            </Grid>
-                        </DataTemplate>
-                        <DataTemplate DataType="{x:Type woxPlugin:PluginPair}">
-                            <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="32"></ColumnDefinition>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
-                                <Image Width="32" Height="32" HorizontalAlignment="Left">
-                                    <Image.Source>
-                                        <MultiBinding Converter="{StaticResource ImagePathConverter}">
-                                            <MultiBinding.Bindings>
-                                                <Binding Path="Metadata.IcoPath" />
-                                                <Binding Path="Metadata.PluginDirecotry" />
-                                            </MultiBinding.Bindings>
-                                        </MultiBinding>
-                                    </Image.Source>
-                                </Image>
-                                <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition></RowDefinition>
-                                        <RowDefinition Height="Auto"></RowDefinition>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock VerticalAlignment="Center" ToolTip="{Binding Metadata.Name}" x:Name="tbTitle" Text="{Binding Metadata.Name}"></TextBlock>
-                                    <TextBlock ToolTip="{Binding Metadata.Description}" Visibility="{Binding Metadata.Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Metadata.Description}" Opacity="0.5"></TextBlock>
+                            </DataTemplate>
+                            <DataTemplate DataType="{x:Type woxPlugin:PluginPair}">
+                                <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="32"></ColumnDefinition>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image Width="32" Height="32" HorizontalAlignment="Left" Source="{Binding Metadata.FullIcoPath,Converter={StaticResource ImageConverter},IsAsync=True}">
+                                    </Image>
+                                    <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition></RowDefinition>
+                                            <RowDefinition Height="Auto"></RowDefinition>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock VerticalAlignment="Center" ToolTip="{Binding Metadata.Name}" x:Name="tbTitle" Text="{Binding Metadata.Name}"></TextBlock>
+                                        <TextBlock ToolTip="{Binding Metadata.Description}" Visibility="{Binding Metadata.Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Metadata.Description}" Opacity="0.5"></TextBlock>
+                                    </Grid>
                                 </Grid>
-                            </Grid>
-                        </DataTemplate>
-                    </ListBox.Resources>
-                </ListBox>
+                            </DataTemplate>
+                        </ListBox.Resources>
+                    </ListBox>
+                </DockPanel>
                 <Grid Margin="0" Grid.Column="1">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -140,7 +127,10 @@
                     <ColumnDefinition Width="200"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <ListBox x:Name="themeComboBox" Grid.Column="0" Margin="10" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="180"/>
+                <DockPanel Grid.Column="0" >
+                    <TextBlock DockPanel.Dock="Top" Margin="6" HorizontalAlignment="Left" Cursor="Hand" MouseUp="tbMoreThemes_MouseUp" x:Name="tbMoreThemes" Foreground="Blue" Text="Browse more themes"></TextBlock>
+                    <ListBox x:Name="themeComboBox" Margin="0" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="180"/>
+                </DockPanel>
                 <Grid Margin="0" Grid.Column="1">
                     <Grid.RowDefinitions>
                         <RowDefinition />
