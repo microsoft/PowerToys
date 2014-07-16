@@ -1,30 +1,32 @@
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using Wox.Helper;
 
 namespace Wox.Converters
 {
-    public class ImagePathConverter : IMultiValueConverter
+    public class ImagePathConverter : IValueConverter
     {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (values[0] == null) return null;
+            if (value == null || value == DependencyProperty.UnsetValue) return null;
 
-            string relativePath = values[0].ToString();
-            string pluginDirectory = values[1].ToString();
-            string fullPath = Path.Combine(pluginDirectory, relativePath);
+            string fullPath = value.ToString();
 
-            if (relativePath.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            if (fullPath.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
             {
-                return new BitmapImage(new Uri(relativePath));
+                return new BitmapImage(new Uri(fullPath));
             }
+
+            
             return ImageLoader.Load(fullPath);
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return null;
         }

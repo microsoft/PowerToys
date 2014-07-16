@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Wox.Plugin {
 
@@ -8,6 +9,19 @@ namespace Wox.Plugin {
 		public string Title { get; set; }
 		public string SubTitle { get; set; }
 		public string IcoPath { get; set; }
+
+	    public string FullIcoPath
+	    {
+	        get
+	        {
+	            if (IcoPath.StartsWith("data:"))
+	            {
+	                return IcoPath;
+	            }
+
+                return Path.Combine(PluginDirectory, IcoPath);
+	        }
+	    }
 
 		/// <summary>
 		/// return true to hide wox after select result
@@ -37,6 +51,8 @@ namespace Wox.Plugin {
 			Result r = (Result)obj;
 			return r.Title == Title && r.SubTitle == SubTitle;
 		}
+
+
 
 		public override string ToString() {
 			return Title + SubTitle;

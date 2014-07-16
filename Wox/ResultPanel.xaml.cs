@@ -34,10 +34,6 @@ namespace Wox
             }
             foreach (var result in results)
             {
-                //ThreadPool.QueueUserWorkItem(delegate
-                //    {
-                //        ImageLoader.Load(Path.Combine(result.PluginDirectory, result.IcoPath));
-                //    });
                 int position = GetInsertLocation(result.Score);
                 lbResults.Items.Insert(position, result);
             }

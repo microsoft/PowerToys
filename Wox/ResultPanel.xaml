@@ -18,22 +18,14 @@
             <DataTemplate>
                 <!-- a result item height is 50 including margin -->
                 <Grid HorizontalAlignment="Stretch" Height="40" VerticalAlignment="Stretch" Margin="5"  Cursor="Hand">
+                    <Grid.Resources>
+                        <converters:ImagePathConverter x:Key="ImageConverter" />
+                    </Grid.Resources>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32"></ColumnDefinition>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left">
-                        <Image.Resources>
-                            <converters:ImagePathConverter x:Key="ImageConverter"/>
-                        </Image.Resources>
-                        <Image.Source>
-                            <MultiBinding Converter="{StaticResource ImageConverter}">
-                                <MultiBinding.Bindings>
-                                    <Binding Path="IcoPath" />
-                                    <Binding Path="PluginDirectory" />
-                                </MultiBinding.Bindings>
-                            </MultiBinding>
-                        </Image.Source>
+                    <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" Source="{Binding FullIcoPath,Converter={StaticResource ImageConverter},IsAsync=True}" >
                     </Image>
                     <Grid Margin="5 0 5 0" Grid.Column="1" HorizontalAlignment="Stretch">
                         <Grid.RowDefinitions>
