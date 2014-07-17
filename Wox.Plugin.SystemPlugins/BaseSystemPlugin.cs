@@ -19,6 +19,7 @@ namespace Wox.Plugin.SystemPlugins
         {
             get
             {
+                if (string.IsNullOrEmpty(IcoPath)) return string.Empty;
                 if (IcoPath.StartsWith("data:"))
                 {
                     return IcoPath;
