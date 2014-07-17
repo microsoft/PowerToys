@@ -64,24 +64,49 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
             {
                 if (item.LocalizedString.IndexOf(myQuery, StringComparison.OrdinalIgnoreCase) >= 0 || item.InfoTip.IndexOf(myQuery, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    results.Add(new Result()
+
+                    if (item.LocalizedString.IndexOf(myQuery, StringComparison.OrdinalIgnoreCase) >= 0) //Items with Query in title have higher score.
                     {
-                        Title = item.LocalizedString,
-                        SubTitle = item.InfoTip,
-                        IcoPath = "Images\\ControlPanelIcons\\" + item.ApplicationName + ".ico",  //Relative path to plugin directory
-                        Action = e =>
+                        results.Insert(0, new Result()
                         {
-                            try
+                            Title = item.LocalizedString,
+                            SubTitle = item.InfoTip,
+                            IcoPath = "Images\\ControlPanelIcons\\" + item.ApplicationName + ".ico",
+                            Action = e =>
                             {
-                                Process.Start(item.ExecutablePath);
+                                try
+                                {
+                                    Process.Start(item.ExecutablePath);
+                                }
+                                catch (Exception)
+                                {
+                                    //Silently Fail for now..
+                                }
+                                return true;
                             }
-                            catch (Exception)
+                        });
+                    }
+                    else
+                    {
+                        results.Add(new Result()
+                        {
+                            Title = item.LocalizedString,
+                            SubTitle = item.InfoTip,
+                            IcoPath = "Images\\ControlPanelIcons\\" + item.ApplicationName + ".ico",
+                            Action = e =>
                             {
-                                //Silently Fail for now..
+                                try
+                                {
+                                    Process.Start(item.ExecutablePath);
+                                }
+                                catch (Exception)
+                                {
+                                    //Silently Fail for now..
+                                }
+                                return true;
                             }
-                            return true;
-                        }
-                    });
+                        });
+                    }
                 }
             }
             return results;
