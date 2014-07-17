@@ -65,51 +65,47 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
 
             foreach (var item in controlPanelItems)
             {
-                if (item.LocalizedString.IndexOf(myQuery, StringComparison.OrdinalIgnoreCase) >= 0 || item.InfoTip.IndexOf(myQuery, StringComparison.OrdinalIgnoreCase) >= 0)
+                if (item.LocalizedString.IndexOf(myQuery, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-
-                    if (item.LocalizedString.IndexOf(myQuery, StringComparison.OrdinalIgnoreCase) >= 0) //Items with Query in title have higher score.
+                    results.Insert(0, new Result()
                     {
-                        results.Insert(0, new Result()
+                        Title = item.LocalizedString,
+                        SubTitle = item.InfoTip,
+                        IcoPath = "Images\\ControlPanelIcons\\" + item.ApplicationName + fileType,
+                        Action = e =>
                         {
-                            Title = item.LocalizedString,
-                            SubTitle = item.InfoTip,
-                            IcoPath = "Images\\ControlPanelIcons\\" + item.ApplicationName + fileType,
-                            Action = e =>
+                            try
                             {
-                                try
-                                {
-                                    Process.Start(item.ExecutablePath);
-                                }
-                                catch (Exception)
-                                {
-                                    //Silently Fail for now..
-                                }
-                                return true;
+                                Process.Start(item.ExecutablePath);
                             }
-                        });
-                    }
-                    else
+                            catch (Exception)
+                            {
+                                //Silently Fail for now..
+                            }
+                            return true;
+                        }
+                    });
+                }
+                else if (item.InfoTip.IndexOf(myQuery, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    results.Add(new Result()
                     {
-                        results.Add(new Result()
+                        Title = item.LocalizedString,
+                        SubTitle = item.InfoTip,
+                        IcoPath = "Images\\ControlPanelIcons\\" + item.ApplicationName + fileType,
+                        Action = e =>
                         {
-                            Title = item.LocalizedString,
-                            SubTitle = item.InfoTip,
-                            IcoPath = "Images\\ControlPanelIcons\\" + item.ApplicationName + fileType,
-                            Action = e =>
+                            try
                             {
-                                try
-                                {
-                                    Process.Start(item.ExecutablePath);
-                                }
-                                catch (Exception)
-                                {
-                                    //Silently Fail for now..
-                                }
-                                return true;
+                                Process.Start(item.ExecutablePath);
                             }
-                        });
-                    }
+                            catch (Exception)
+                            {
+                                //Silently Fail for now..
+                            }
+                            return true;
+                        }
+                    });
                 }
             }
             for (int i = 0; i < 2 && i < results.Count; i++)
