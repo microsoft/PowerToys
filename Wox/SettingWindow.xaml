@@ -23,12 +23,14 @@
         <TabItem Header="General">
             <StackPanel Orientation="Vertical" Margin="10">
                 <StackPanel Orientation="Horizontal" Margin="10">
-                    <CheckBox x:Name="cbStartWithWindows" Unchecked="CbStartWithWindows_OnUnchecked" Checked="CbStartWithWindows_OnChecked" />
-                    <TextBlock Margin="5 -2 0 0" Text="Start Wox on system startup" />
+                    <CheckBox x:Name="cbStartWithWindows" Unchecked="CbStartWithWindows_OnUnchecked" Checked="CbStartWithWindows_OnChecked" >
+                        Start Wox on system startup
+                    </CheckBox>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="10">
-                    <CheckBox x:Name="cbHideWhenDeactive" />
-                    <TextBlock Margin="5 -2 0 0" Text="Hide Wox when loses focus" />
+                    <CheckBox x:Name="cbHideWhenDeactive" >
+                        Hide Wox when loses focus
+                    </CheckBox>
                 </StackPanel>
             </StackPanel>
         </TabItem>
@@ -105,8 +107,7 @@
                                 </DockPanel>
                                 <TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5" ToolTip="{Binding Source=pluginSubTitle, Path=Text}" Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" ></TextBlock>
                                 <DockPanel Grid.Row="2" Margin="0 8 0 0">
-                                    <CheckBox x:Name="cbDisablePlugin" Click="CbDisablePlugin_OnClick"></CheckBox>
-                                    <TextBlock x:Name="pluginDisableTitle" Margin="5 -2 0 0">Disable</TextBlock>
+                                    <CheckBox x:Name="cbDisablePlugin" Click="CbDisablePlugin_OnClick">Disable</CheckBox>
                                     <TextBlock x:Name="pluginActionKeywordTitle" Margin="50 -2 0 0">ActionKeyword:</TextBlock>
                                     <TextBlock Margin="5 -2 0 0" ToolTip="Change Action Keyword" Cursor="Hand" MouseUp="PluginActionKeyword_OnMouseUp" Foreground="Blue" Text="key" x:Name="pluginActionKeyword"></TextBlock>
                                     <TextBlock HorizontalAlignment="Right" Cursor="Hand" MouseUp="tbOpenPluginDirecoty_MouseUp" Foreground="Blue" Text="Plugin Directory" x:Name="tbOpenPluginDirecoty"></TextBlock>
@@ -134,13 +135,12 @@
                 <Grid Margin="0" Grid.Column="1">
                     <Grid.RowDefinitions>
                         <RowDefinition />
-                        <RowDefinition Height="80"/>
+                        <RowDefinition Height="100"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
-                        <ColumnDefinition Width="170" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel x:Name="PreviewPanel" Grid.ColumnSpan="2" Grid.Row="0" Margin="0">
+                    <StackPanel x:Name="PreviewPanel" Grid.Row="0" Margin="0">
                         <StackPanel x:Name="PreviewMainPanel" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <StackPanel.Resources>
                                 <ResourceDictionary Source="/PresentationFramework.Classic,Version=3.0.0.0,Culture=neutral,PublicKeyToken=31bf3856ad364e35,processorArchitecture=MSIL;component/themes/Classic.xaml"/>
@@ -158,7 +158,7 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="1" Grid.Column="0"  Margin="10" Orientation="Vertical">
+                    <StackPanel Grid.Row="1" Margin="0 10 0 10" Orientation="Vertical">
                         <StackPanel Orientation="Horizontal" Margin="2">
                             <TextBlock Text="Query Box Font:" />
                             <ComboBox Margin="10 -2 5 0" x:Name="cbQueryBoxFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbQueryBoxFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
@@ -197,24 +197,25 @@
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
                         </StackPanel>
-                    </StackPanel>
-                    <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1" Margin="10">
-                        <TextBlock Text="Window Mode:" />
-                        <ComboBox Name="CbOpacityMode" SelectionChanged="CbOpacityMode_OnSelectionChanged">
-                            <UserSettings:OpacityMode>Normal</UserSettings:OpacityMode>
-                            <UserSettings:OpacityMode>LayeredWindow</UserSettings:OpacityMode>
-                            <UserSettings:OpacityMode>DWM</UserSettings:OpacityMode>
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Converter={converters:OpacityModeConverter}}" />
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Opacity:" />
-                            <Slider x:Name="slOpacity" Maximum="1" Minimum="0" SmallChange="1" LargeChange="0.1" TickPlacement="BottomRight" TickFrequency="0.1" ValueChanged="slOpacity_ValueChanged" Width="100"/>
+                        <StackPanel Orientation="Horizontal" Margin="2">
+                            <TextBlock Text="Window Mode:" />
+                            <ComboBox Name="CbOpacityMode" Margin="14 0 0 0" SelectionChanged="CbOpacityMode_OnSelectionChanged" Width="160">
+                                <UserSettings:OpacityMode>Normal</UserSettings:OpacityMode>
+                                <UserSettings:OpacityMode>LayeredWindow</UserSettings:OpacityMode>
+                                <UserSettings:OpacityMode>DWM</UserSettings:OpacityMode>
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={converters:OpacityModeConverter}}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <StackPanel Orientation="Horizontal" Margin="5 0 0 0" x:Name="spOpacity">
+                                <TextBlock Text="Opacity:" HorizontalAlignment="Center" />
+                                <Slider x:Name="slOpacity" Maximum="1" Minimum="0" SmallChange="1" LargeChange="0.1" TickPlacement="BottomRight" TickFrequency="0.1" ValueChanged="slOpacity_ValueChanged" Width="100"/>
+                            </StackPanel>
                         </StackPanel>
                     </StackPanel>
+                   
                 </Grid>
             </Grid>
         </TabItem>

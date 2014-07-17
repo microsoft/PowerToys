@@ -386,7 +386,7 @@ namespace Wox
             UserSettingStorage.Instance.OpacityMode = (OpacityMode)CbOpacityMode.SelectedItem;
             UserSettingStorage.Instance.Save();
 
-            slOpacity.IsEnabled = UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow;
+            spOpacity.Visibility = UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow ? Visibility.Visible : Visibility.Collapsed;
 
             if (UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow)
                 PreviewMainPanel.Opacity = UserSettingStorage.Instance.Opacity;
