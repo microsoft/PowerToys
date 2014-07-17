@@ -105,7 +105,7 @@ namespace Wox.Plugin.SystemPlugins
             });
             availableResults.Add(new Result
             {
-                Title = "Setting",
+                Title = "Settings",
                 SubTitle = "Tweak this app",
                 Score = 40,
                 IcoPath = "Images\\app.png",
