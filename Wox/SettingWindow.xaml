@@ -22,16 +22,12 @@
     <TabControl Height="auto" >
         <TabItem Header="General">
             <StackPanel Orientation="Vertical" Margin="10">
-                <StackPanel Orientation="Horizontal" Margin="10">
-                    <CheckBox x:Name="cbStartWithWindows" Unchecked="CbStartWithWindows_OnUnchecked" Checked="CbStartWithWindows_OnChecked" >
-                        Start Wox on system startup
-                    </CheckBox>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="10">
-                    <CheckBox x:Name="cbHideWhenDeactive" >
-                        Hide Wox when loses focus
-                    </CheckBox>
-                </StackPanel>
+                <CheckBox x:Name="cbStartWithWindows" Unchecked="CbStartWithWindows_OnUnchecked" Checked="CbStartWithWindows_OnChecked" Margin="10">
+                    Start Wox on system startup
+                </CheckBox>
+                <CheckBox x:Name="cbHideWhenDeactive" Margin="10">
+                    Hide Wox when loses focus
+                </CheckBox>
             </StackPanel>
         </TabItem>
         <TabItem Header="Plugin">
@@ -215,7 +211,7 @@
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
-                   
+
                 </Grid>
             </Grid>
         </TabItem>
@@ -264,6 +260,48 @@
                     <Button x:Name="btnAddCustomeHotkey" Click="BtnAddCustomeHotkey_OnClick" Width="100" Margin="10" Content="Add"/>
                 </StackPanel>
             </Grid>
+        </TabItem>
+        <TabItem Header="Proxy">
+            <StackPanel>
+                <CheckBox x:Name="cbEnableProxy" Margin="10">Enable Proxy</CheckBox>
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition ></RowDefinition>
+                        <RowDefinition ></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"></ColumnDefinition>
+                        <ColumnDefinition Width="220"></ColumnDefinition>
+                        <ColumnDefinition Width="80"></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Row="0" Grid.Column="0" Padding="5">
+                        <TextBlock >Server</TextBlock>
+                    </Border>
+                    <Border Grid.Row="0" Grid.Column="1" Padding="5">
+                        <TextBox  Width="200" HorizontalAlignment="Left"></TextBox>
+                    </Border>
+                    <Border Grid.Row="0" Grid.Column="2" Padding="5">
+                        <TextBlock>Port</TextBlock>
+                    </Border>
+                    <Border Grid.Row="0" Grid.Column="3" Padding="5">
+                        <TextBox Width="50" HorizontalAlignment="Left"></TextBox>
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="0" Padding="5">
+                        <TextBlock >UserName</TextBlock>
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="1" Padding="5">
+                        <TextBox Width="200" HorizontalAlignment="Left"></TextBox>
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="2" Padding="5">
+                        <TextBlock>Password</TextBlock>
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="3" Padding="5">
+                        <TextBox Width="200" HorizontalAlignment="Left"></TextBox>
+                    </Border>
+                </Grid>
+                <Button x:Name="btnTestProxy" Width="80" HorizontalAlignment="Left" Margin="10">Test Proxy</Button>
+            </StackPanel>
         </TabItem>
     </TabControl>
 </Window>
