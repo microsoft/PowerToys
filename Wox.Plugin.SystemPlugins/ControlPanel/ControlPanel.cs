@@ -55,11 +55,14 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
 
         protected override List<Result> QueryInternal(Query query)
         {
+            if (query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
+            string myQuery = query.RawQuery.Trim();
+
             List<Result> results = new List<Result>();
 
             foreach (var item in controlPanelItems)
             {
-                if (item.LocalizedString.IndexOf(query.RawQuery, StringComparison.OrdinalIgnoreCase) >= 0 || item.InfoTip.IndexOf(query.RawQuery, StringComparison.OrdinalIgnoreCase) >= 0)
+                if (item.LocalizedString.IndexOf(myQuery, StringComparison.OrdinalIgnoreCase) >= 0 || item.InfoTip.IndexOf(myQuery, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     results.Add(new Result()
                     {
