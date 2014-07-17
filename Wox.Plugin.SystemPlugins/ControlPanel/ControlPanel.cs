@@ -35,6 +35,7 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
 
         private List<ControlPanelItem> controlPanelItems;
         private string iconFolder;
+        private string fileType;
 
         #endregion Properties
 
@@ -43,12 +44,13 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
             this.context = context;
             controlPanelItems = WindowsControlPanelItems.List.Create(48);
             iconFolder = @"Images\ControlPanelIcons\";
+            fileType = ".bmp";
 
             foreach (ControlPanelItem item in controlPanelItems)
             {
-                if (!File.Exists(iconFolder + item.ApplicationName + ".ico"))
+                if (!File.Exists(iconFolder + item.ApplicationName + fileType))
                 {
-                    item.Icon.ToBitmap().Save(iconFolder + item.ApplicationName + ".ico"); //Wierd hack to not lose quality when saving as .ico
+                    item.Icon.ToBitmap().Save(iconFolder + item.ApplicationName + fileType);
                 }
             }
         }
@@ -72,7 +74,7 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
                         {
                             Title = item.LocalizedString,
                             SubTitle = item.InfoTip,
-                            IcoPath = "Images\\ControlPanelIcons\\" + item.ApplicationName + ".ico",
+                            IcoPath = "Images\\ControlPanelIcons\\" + item.ApplicationName + fileType,
                             Action = e =>
                             {
                                 try
@@ -93,7 +95,7 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
                         {
                             Title = item.LocalizedString,
                             SubTitle = item.InfoTip,
-                            IcoPath = "Images\\ControlPanelIcons\\" + item.ApplicationName + ".ico",
+                            IcoPath = "Images\\ControlPanelIcons\\" + item.ApplicationName + fileType,
                             Action = e =>
                             {
                                 try
