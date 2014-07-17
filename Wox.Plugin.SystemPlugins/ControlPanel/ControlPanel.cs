@@ -59,6 +59,7 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
             string myQuery = query.RawQuery.Trim();
 
             List<Result> results = new List<Result>();
+            List<Result> filteredResults = new List<Result>();
 
             foreach (var item in controlPanelItems)
             {
@@ -109,7 +110,12 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
                     }
                 }
             }
-            return results;
+            for (int i = 0; i < 2 && i < results.Count; i++)
+            {
+                filteredResults.Add(results[i]);
+            }
+
+            return filteredResults;
         }
     }
 }
