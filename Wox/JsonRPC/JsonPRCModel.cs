@@ -45,7 +45,7 @@ namespace Wox.JsonRPC
         public new List<JsonRPCResult> Result { get; set; }
     }
 
-    public abstract class JsonRPCRequestModel : JsonRPCModelBase
+    public class JsonRPCRequestModel : JsonRPCModelBase
     {
         public string Method { get; set; }
 
@@ -108,11 +108,17 @@ namespace Wox.JsonRPC
     }
 
     /// <summary>
-    /// Json RPC Request that client sent to Wox
+    /// Json RPC Request(in query response) that client sent to Wox
     /// </summary>
     public class JsonRPCClientRequestModel : JsonRPCRequestModel
     {
         public bool DontHideAfterAction { get; set; }
+
+        public override string ToString()
+        {
+            string rpc = base.ToString();
+            return rpc + "}";
+        }
     }
 
     /// <summary>

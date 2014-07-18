@@ -35,6 +35,8 @@ namespace Wox.PluginLoader
                     List<Result> results = new List<Result>();
 
                     JsonRPCQueryResponseModel queryResponseModel = JsonConvert.DeserializeObject<JsonRPCQueryResponseModel>(output);
+                    if (queryResponseModel.Result == null) return null;
+
                     foreach (JsonRPCResult result in queryResponseModel.Result)
                     {
                         JsonRPCResult result1 = result;
@@ -53,7 +55,7 @@ namespace Wox.PluginLoader
                                         string actionReponse = ExecuteAction(result1.JsonRPCAction);
                                         JsonRPCRequestModel jsonRpcRequestModel = JsonConvert.DeserializeObject<JsonRPCRequestModel>(actionReponse);
                                         if (jsonRpcRequestModel != null
-                                            && string.IsNullOrEmpty(jsonRpcRequestModel.Method)
+                                            && !string.IsNullOrEmpty(jsonRpcRequestModel.Method)
                                             && jsonRpcRequestModel.Method.StartsWith("Wox."))
                                         {
                                             ExecuteWoxAPI(jsonRpcRequestModel.Method.Substring(4), jsonRpcRequestModel.Parameters);

@@ -28,7 +28,7 @@ namespace Wox.PluginLoader
                 };
             string additionalPythonPath = string.Format("{0};{1}",
                                                         Path.Combine(woxDirectory, "PythonHome\\DLLs"),
-                                                        Path.Combine(woxDirectory, "PythonHome\\thirdparty"));
+                                                        Path.Combine(woxDirectory, "PythonHome\\Lib\\site-packages"));
             if (!startInfo.EnvironmentVariables.ContainsKey("PYTHONPATH"))
             {
 
