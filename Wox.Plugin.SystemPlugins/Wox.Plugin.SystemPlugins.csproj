@@ -41,9 +41,6 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsBase" />
-    <Reference Include="WindowsControlPanelItems">
-      <HintPath>..\packages\WindowsControlPanelItems.dll.1.0.0\lib\net35\WindowsControlPanelItems.dll</HintPath>
-    </Reference>
     <Reference Include="YAMP">
       <HintPath>..\packages\YAMP.1.3.0\lib\net35\YAMP.dll</HintPath>
     </Reference>
@@ -63,6 +60,8 @@
     <Compile Include="CMD\CMDStorage.cs" />
     <Compile Include="ColorsPlugin.cs" />
     <Compile Include="ControlPanel\ControlPanel.cs" />
+    <Compile Include="ControlPanel\ControlPanelItem.cs" />
+    <Compile Include="ControlPanel\ControlPanelList.cs" />
     <Compile Include="Folder\FolderPluginSettings.xaml.cs">
       <DependentUpon>FolderPluginSettings.xaml</DependentUpon>
     </Compile>

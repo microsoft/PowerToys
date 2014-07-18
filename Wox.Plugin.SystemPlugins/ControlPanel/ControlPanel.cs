@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Wox.Infrastructure;
-using Wox.Infrastructure.Storage.UserSettings;
-using WindowsControlPanelItems;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using Wox.Infrastructure;
 
 namespace Wox.Plugin.SystemPlugins.ControlPanel
 {
@@ -42,9 +39,15 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
         protected override void InitInternal(PluginInitContext context)
         {
             this.context = context;
-            controlPanelItems = WindowsControlPanelItems.List.Create(48);
+            controlPanelItems = ControlPanelList.Create(48);
             iconFolder = @"Images\ControlPanelIcons\";
             fileType = ".bmp";
+
+            if (!Directory.Exists(iconFolder))
+            {
+                Directory.CreateDirectory(iconFolder);
+            }
+
 
             foreach (ControlPanelItem item in controlPanelItems)
             {
@@ -61,37 +64,17 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
             string myQuery = query.RawQuery.Trim();
 
             List<Result> results = new List<Result>();
-            List<Result> filteredResults = new List<Result>();
 
             foreach (var item in controlPanelItems)
             {
-                if (item.LocalizedString.IndexOf(myQuery, StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    results.Insert(0, new Result()
-                    {
-                        Title = item.LocalizedString,
-                        SubTitle = item.InfoTip,
-                        IcoPath = "Images\\ControlPanelIcons\\" + item.ApplicationName + fileType,
-                        Action = e =>
-                        {
-                            try
-                            {
-                                Process.Start(item.ExecutablePath);
-                            }
-                            catch (Exception)
-                            {
-                                //Silently Fail for now..
-                            }
-                            return true;
-                        }
-                    });
-                }
-                else if (item.InfoTip.IndexOf(myQuery, StringComparison.OrdinalIgnoreCase) >= 0)
+                var fuzzyMather = FuzzyMatcher.Create(myQuery);
+                if (MatchProgram(item, fuzzyMather))
                 {
                     results.Add(new Result()
                     {
                         Title = item.LocalizedString,
                         SubTitle = item.InfoTip,
+                        Score = item.Score,
                         IcoPath = "Images\\ControlPanelIcons\\" + item.ApplicationName + fileType,
                         Action = e =>
                         {
@@ -108,12 +91,18 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
                     });
                 }
             }
-            for (int i = 0; i < 2 && i < results.Count; i++)
-            {
-                filteredResults.Add(results[i]);
-            }
 
-            return filteredResults;
+            return results.OrderByDescending(o => o.Score).Take(5).ToList();
+        }
+
+        private bool MatchProgram(ControlPanelItem item, FuzzyMatcher matcher)
+        {
+            if (item.LocalizedString != null && (item.Score = matcher.Evaluate(item.LocalizedString).Score) > 0) return true;
+            if (item.InfoTip != null && (item.Score = matcher.Evaluate(item.InfoTip).Score) > 0) return true;
+
+            if (item.LocalizedString != null && (item.Score = matcher.Evaluate(item.LocalizedString.Unidecode()).Score) > 0) return true;
+           
+            return false;
         }
     }
 }
