@@ -45,170 +45,236 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
 
         static Queue<IntPtr> iconQueue;
 
-        public static List<ControlPanelItem> Create(int iconSize)
-        {
-            List<ControlPanelItem> controlPanelItems = new List<ControlPanelItem>();
-            string applicationName;
-            string[] localizedString;
-            string[] infoTip = new string[1];
-            List<string> iconString;
-            IntPtr dataFilePointer;
-            uint stringTableIndex;
-            IntPtr iconIndex;
-            StringBuilder resource;
-            ProcessStartInfo executablePath;
-            IntPtr iconPtr = IntPtr.Zero;
-            Icon myIcon;
 
-            RegistryKey nameSpace = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ControlPanel\\NameSpace");
-            RegistryKey clsid = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Classes\\CLSID");
+        static RegistryKey nameSpace = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ControlPanel\\NameSpace");
+        static RegistryKey clsid = Registry.ClassesRoot.OpenSubKey("CLSID");
+
+        public static List<ControlPanelItem> Create(uint iconSize)
+        {
+            int size = (int)iconSize;
             RegistryKey currentKey;
+            ProcessStartInfo executablePath;
+            List<ControlPanelItem> controlPanelItems = new List<ControlPanelItem>();
+            string localizedString;
+            string infoTip;
+            Icon myIcon;
 
             foreach (string key in nameSpace.GetSubKeyNames())
             {
-                //todo:throw exceptions in my computer, need to check this,Silently Fail for now.
-                try
+                currentKey = clsid.OpenSubKey(key);
+                if (currentKey != null)
                 {
-                    currentKey = clsid.OpenSubKey(key);
-                    if (currentKey != null)
-                    {
-                        if (currentKey.GetValue("System.ApplicationName") != null &&
-                            currentKey.GetValue("LocalizedString") != null)
-                        {
-                            applicationName = currentKey.GetValue("System.ApplicationName").ToString();
-                            //Debug.WriteLine(key.ToString() + " (" + applicationName + ")");
-                            localizedString = currentKey.GetValue("LocalizedString")
-                                                        .ToString()
-                                                        .Split(new char[] {','}, 2);
-                            if (localizedString[0][0] == '@')
-                            {
-                                localizedString[0] = localizedString[0].Substring(1);
-                            }
-                            localizedString[0] = Environment.ExpandEnvironmentVariables(localizedString[0]);
-                            if (localizedString.Length > 1)
-                            {
-                                dataFilePointer = LoadLibraryEx(localizedString[0], IntPtr.Zero,
-                                                                LOAD_LIBRARY_AS_DATAFILE);
+                    executablePath = getExecutablePath(currentKey);
 
-                                stringTableIndex = sanitizeUint(localizedString[1]);
+                    if (executablePath == null)
+                        continue;  //Cannot have item without executable path
 
-                                resource = new StringBuilder(255);
-                                LoadString(dataFilePointer, stringTableIndex, resource, resource.Capacity + 1);
+                    localizedString = getLocalizedString(currentKey);
 
-                                localizedString[0] = resource.ToString();
+                    if (string.IsNullOrEmpty(localizedString))
+                        continue; //Cannot have item without Title
 
-                                if (currentKey.GetValue("InfoTip") != null)
-                                {
-                                    infoTip = currentKey.GetValue("InfoTip").ToString().Split(new char[] {','}, 2);
-                                    if (infoTip[0][0] == '@')
-                                    {
-                                        infoTip[0] = infoTip[0].Substring(1);
-                                    }
-                                    infoTip[0] = Environment.ExpandEnvironmentVariables(infoTip[0]);
+                    infoTip = getInfoTip(currentKey);
 
-                                    dataFilePointer = LoadLibraryEx(infoTip[0], IntPtr.Zero, LOAD_LIBRARY_AS_DATAFILE);
+                    myIcon = getIcon(currentKey, size);
 
-                                    stringTableIndex = sanitizeUint(infoTip[1]);
+                    controlPanelItems.Add(new ControlPanelItem(localizedString, infoTip, executablePath, myIcon));
 
-                                    resource = new StringBuilder(255);
-                                    LoadString(dataFilePointer, stringTableIndex, resource, resource.Capacity + 1);
-
-                                    infoTip[0] = resource.ToString();
-                                }
-                                else if (currentKey.GetValue(null) != null)
-                                {
-                                    infoTip[0] = currentKey.GetValue(null).ToString();
-                                }
-                                else
-                                {
-                                    infoTip[0] = "";
-                                }
-
-                                FreeLibrary(dataFilePointer);
-                                //We are finished with extracting strings. Prepare to load icon file.
-                                dataFilePointer = IntPtr.Zero;
-                                myIcon = null;
-                                iconPtr = IntPtr.Zero;
-
-                                if (currentKey.OpenSubKey("DefaultIcon") != null)
-                                {
-                                    if (currentKey.OpenSubKey("DefaultIcon").GetValue(null) != null)
-                                    {
-                                        iconString =
-                                            new List<string>(
-                                                currentKey.OpenSubKey("DefaultIcon")
-                                                          .GetValue(null)
-                                                          .ToString()
-                                                          .Split(new char[] {','}, 2));
-                                        if (iconString[0][0] == '@')
-                                        {
-                                            iconString[0] = iconString[0].Substring(1);
-                                        }
-
-                                        dataFilePointer = LoadLibraryEx(iconString[0], IntPtr.Zero,
-                                                                        LOAD_LIBRARY_AS_DATAFILE);
-
-                                        if (iconString.Count < 2)
-                                        {
-                                            iconString.Add("0");
-                                        }
-
-
-                                        iconIndex = (IntPtr) sanitizeUint(iconString[1]);
-
-                                        if (iconIndex == IntPtr.Zero)
-                                        {
-                                            iconQueue = new Queue<IntPtr>();
-                                            EnumResourceNamesWithID(dataFilePointer, GROUP_ICON,
-                                                                    new EnumResNameDelegate(EnumRes), IntPtr.Zero);
-                                            //Iterate through resources. 
-
-                                            while (iconPtr == IntPtr.Zero && iconQueue.Count > 0)
-                                            {
-                                                iconPtr = LoadImage(dataFilePointer, iconQueue.Dequeue(), 1, iconSize,
-                                                                    iconSize, 0);
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            iconPtr = LoadImage(dataFilePointer, iconIndex, 1, iconSize, iconSize, 0);
-                                        }
-
-                                        try
-                                        {
-                                            myIcon = Icon.FromHandle(iconPtr);
-                                        }
-                                        catch (Exception)
-                                        {
-                                            //Silently fail for now.
-                                        }
-                                    }
-                                }
-
-
-                                executablePath = new ProcessStartInfo();
-                                executablePath.FileName = Environment.ExpandEnvironmentVariables(CONTROL);
-                                executablePath.Arguments = "-name " + applicationName;
-                                controlPanelItems.Add(new ControlPanelItem(localizedString[0], infoTip[0],
-                                                                           applicationName, executablePath, myIcon));
-                                FreeLibrary(dataFilePointer);
-                                if (iconPtr != IntPtr.Zero)
-                                {
-                                    DestroyIcon(myIcon.Handle);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                catch (Exception e)
-                {
-                    Debug.Write(e);
                 }
             }
 
             return controlPanelItems;
+        }
+
+        private static ProcessStartInfo getExecutablePath(RegistryKey currentKey)
+        {
+            ProcessStartInfo executablePath = new ProcessStartInfo();
+            string applicationName;
+
+            if (currentKey.GetValue("System.ApplicationName") != null)
+            {
+                //CPL Files (usually native MS items)
+                applicationName = currentKey.GetValue("System.ApplicationName").ToString();
+                executablePath.FileName = Environment.ExpandEnvironmentVariables(CONTROL);
+                executablePath.Arguments = "-name " + applicationName;
+            }
+            else if (currentKey.OpenSubKey("Shell\\Open\\Command") != null && currentKey.OpenSubKey("Shell\\Open\\Command").GetValue(null) != null)
+            {
+                //Other files (usually third party items)
+                executablePath.FileName = Environment.ExpandEnvironmentVariables(currentKey.OpenSubKey("Shell\\Open\\Command").GetValue(null).ToString());
+            }
+            else
+            {
+                return null;
+            }
+
+            return executablePath;
+        }
+
+        private static string getLocalizedString(RegistryKey currentKey)
+        {
+            IntPtr dataFilePointer;
+            string[] localizedStringRaw;
+            uint stringTableIndex;
+            StringBuilder resource;
+            string localizedString;
+
+            if (currentKey.GetValue("LocalizedString") != null)
+            {
+                localizedStringRaw = currentKey.GetValue("LocalizedString").ToString().Split(new char[] { ',' }, 2);
+
+                if (localizedStringRaw.Length > 1)
+                {
+                    if (localizedStringRaw[0][0] == '@')
+                    {
+                        localizedStringRaw[0] = localizedStringRaw[0].Substring(1);
+                    }
+
+                    localizedStringRaw[0] = Environment.ExpandEnvironmentVariables(localizedStringRaw[0]);
+
+                    dataFilePointer = LoadLibraryEx(localizedStringRaw[0], IntPtr.Zero, LOAD_LIBRARY_AS_DATAFILE); //Load file with strings
+
+                    stringTableIndex = sanitizeUint(localizedStringRaw[1]);
+
+                    resource = new StringBuilder(255);
+                    LoadString(dataFilePointer, stringTableIndex, resource, resource.Capacity + 1); //Extract needed string
+                    FreeLibrary(dataFilePointer);
+
+                    localizedString = resource.ToString();
+
+                    /*This shouldn't be necessary, but some apps (e.g. Bootcamp)
+                     * don't follow Microsoft's standard. Have to make a choice whether
+                     * empty string == failure, or use default name. I'm using default name */
+
+                    if (String.IsNullOrEmpty(localizedString))
+                    {
+                        if (currentKey.GetValue(null) != null)
+                        {
+                            localizedString = currentKey.GetValue(null).ToString();
+                        }
+                        else
+                        {
+                            return null; //Cannot have item without title.
+                        }
+                    }
+                }
+                else
+                {
+                    localizedString = localizedStringRaw[0];
+                }
+            }
+            else if (currentKey.GetValue(null) != null)
+            {
+                localizedString = currentKey.GetValue(null).ToString();
+            }
+            else
+            {
+                return null; //Cannot have item without title.
+            }
+            return localizedString;
+        }
+
+        private static string getInfoTip(RegistryKey currentKey)
+        {
+            IntPtr dataFilePointer;
+            string[] infoTipRaw;
+            uint stringTableIndex;
+            StringBuilder resource;
+            string infoTip = "";
+
+            if (currentKey.GetValue("InfoTip") != null)
+            {
+                infoTipRaw = currentKey.GetValue("InfoTip").ToString().Split(new char[] { ',' }, 2);
+
+                if (infoTipRaw.Length == 2)
+                {
+                    if (infoTipRaw[0][0] == '@')
+                    {
+                        infoTipRaw[0] = infoTipRaw[0].Substring(1);
+                    }
+                    infoTipRaw[0] = Environment.ExpandEnvironmentVariables(infoTipRaw[0]);
+
+                    dataFilePointer = LoadLibraryEx(infoTipRaw[0], IntPtr.Zero, LOAD_LIBRARY_AS_DATAFILE); //Load file with strings
+
+                    stringTableIndex = sanitizeUint(infoTipRaw[1]);
+
+                    resource = new StringBuilder(255);
+                    LoadString(dataFilePointer, stringTableIndex, resource, resource.Capacity + 1); //Extract needed string
+                    FreeLibrary(dataFilePointer);
+
+                    infoTip = resource.ToString();
+                }
+            }
+            else
+            {
+                infoTip = "";
+            }
+
+            return infoTip;
+        }
+
+        private static Icon getIcon(RegistryKey currentKey, int iconSize)
+        {
+            IntPtr iconPtr = IntPtr.Zero;
+            List<string> iconString;
+            IntPtr dataFilePointer;
+            IntPtr iconIndex;
+            Icon myIcon = null;
+
+            if (currentKey.OpenSubKey("DefaultIcon") != null)
+            {
+                if (currentKey.OpenSubKey("DefaultIcon").GetValue(null) != null)
+                {
+                    iconString = new List<string>(currentKey.OpenSubKey("DefaultIcon").GetValue(null).ToString().Split(new char[] { ',' }, 2));
+                    if (iconString[0][0] == '@')
+                    {
+                        iconString[0] = iconString[0].Substring(1);
+                    }
+
+                    dataFilePointer = LoadLibraryEx(iconString[0], IntPtr.Zero, LOAD_LIBRARY_AS_DATAFILE);
+
+                    if (iconString.Count < 2)
+                    {
+                        iconString.Add("0");
+                    }
+
+
+                    iconIndex = (IntPtr)sanitizeUint(iconString[1]);
+
+                    if (iconIndex == IntPtr.Zero)
+                    {
+                        iconQueue = new Queue<IntPtr>();
+                        EnumResourceNamesWithID(dataFilePointer, GROUP_ICON, new EnumResNameDelegate(EnumRes), IntPtr.Zero); //Iterate through resources. 
+
+                        while (iconPtr == IntPtr.Zero && iconQueue.Count > 0)
+                        {
+                            iconPtr = LoadImage(dataFilePointer, iconQueue.Dequeue(), 1, iconSize, iconSize, 0);
+                        }
+                    }
+                    else
+                    {
+                        iconPtr = LoadImage(dataFilePointer, iconIndex, 1, iconSize, iconSize, 0);
+                    }
+
+                    FreeLibrary(dataFilePointer);
+
+                    try
+                    {
+                        myIcon = Icon.FromHandle(iconPtr);
+                        myIcon = (Icon)myIcon.Clone(); //Remove pointer dependancy.
+                    }
+                    catch
+                    {
+                        //Silently fail for now..
+                    }
+                }
+            }
+
+            if (iconPtr != IntPtr.Zero)
+            {
+                DestroyIcon(iconPtr);
+            }
+            return myIcon;
         }
 
         private static uint sanitizeUint(string args) //Remove all chars before and after first set of digits.
@@ -241,12 +307,14 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
                 return false;
             return true;
         }
+
         private static uint GET_RESOURCE_ID(IntPtr value)
         {
             if (IS_INTRESOURCE(value) == true)
                 return (uint)value;
             throw new System.NotSupportedException("value is not an ID!");
         }
+
         private static string GET_RESOURCE_NAME(IntPtr value)
         {
             if (IS_INTRESOURCE(value) == true)
