@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Wox.Helper;
+using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 
 namespace Wox.PluginLoader
@@ -26,6 +27,7 @@ namespace Wox.PluginLoader
                 forker.Fork(() => pair.Plugin.Init(new PluginInitContext()
                 {
                     CurrentPluginMetadata = pair.Metadata,
+                    Proxy = HttpProxy.Instance,
                     API = App.Window
                 }));
             }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -184,9 +185,45 @@ namespace Wox
 
             #endregion
 
+            #region Proxy
+
+            cbEnableProxy.Checked += (o, e) => EnableProxy();
+            cbEnableProxy.Unchecked += (o, e) => DisableProxy();
+            cbEnableProxy.IsChecked = UserSettingStorage.Instance.ProxyEnabled;
+            tbProxyServer.Text = UserSettingStorage.Instance.ProxyServer;
+            tbProxyPort.Text = UserSettingStorage.Instance.ProxyPort.ToString();
+            tbProxyUserName.Text = UserSettingStorage.Instance.ProxyUserName;
+            tbProxyPassword.Password = UserSettingStorage.Instance.ProxyPassword;
+            if (UserSettingStorage.Instance.ProxyEnabled)
+            {
+                EnableProxy();
+            }
+            else
+            {
+                DisableProxy();
+            }
+
+            #endregion
+
             //PreviewPanel
             settingsLoaded = true;
             App.Window.SetTheme(UserSettingStorage.Instance.Theme);
+        }
+
+        private void EnableProxy()
+        {
+            tbProxyPassword.IsEnabled = true;
+            tbProxyServer.IsEnabled = true;
+            tbProxyUserName.IsEnabled = true;
+            tbProxyPort.IsEnabled = true;
+        }
+
+        private void DisableProxy()
+        {
+            tbProxyPassword.IsEnabled = false;
+            tbProxyServer.IsEnabled = false;
+            tbProxyUserName.IsEnabled = false;
+            tbProxyPort.IsEnabled = false;
         }
 
         private List<string> LoadAvailableThemes()
@@ -564,6 +601,88 @@ namespace Wox
         private void tbMoreThemes_MouseUp(object sender, MouseButtonEventArgs e)
         {
             Process.Start("http://www.getwox.com/theme");
+        }
+
+        private void btnSaveProxy_Click(object sender, RoutedEventArgs e)
+        {
+            UserSettingStorage.Instance.ProxyEnabled = cbEnableProxy.IsChecked ?? false;
+
+            int port = 80;
+            if (UserSettingStorage.Instance.ProxyEnabled)
+            {
+                if (string.IsNullOrEmpty(tbProxyServer.Text))
+                {
+                    MessageBox.Show("Server can't be empty");
+                    return;
+                }
+                if (string.IsNullOrEmpty(tbProxyPort.Text))
+                {
+                    MessageBox.Show("Server port can't be empty");
+                    return;
+                }
+                if (!int.TryParse(tbProxyPort.Text, out port))
+                {
+                    MessageBox.Show("Invalid port format");
+                    return;
+                }
+            }
+
+            UserSettingStorage.Instance.ProxyServer = tbProxyServer.Text;
+            UserSettingStorage.Instance.ProxyPort = port;
+            UserSettingStorage.Instance.ProxyUserName = tbProxyUserName.Text;
+            UserSettingStorage.Instance.ProxyPassword = tbProxyPassword.Password;
+            UserSettingStorage.Instance.Save();
+
+            MessageBox.Show("Save Proxy Successfully");
+        }
+
+        private void btnTestProxy_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(tbProxyServer.Text))
+            {
+                MessageBox.Show("Server can't be empty");
+                return;
+            }
+            if (string.IsNullOrEmpty(tbProxyPort.Text))
+            {
+                MessageBox.Show("Server port can't be empty");
+                return;
+            }
+            int port;
+            if (!int.TryParse(tbProxyPort.Text, out port))
+            {
+                MessageBox.Show("Invalid port format");
+                return;
+            }
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://www.baidu.com");
+            request.Timeout = 1000 * 5;
+            request.ReadWriteTimeout = 1000 * 5;
+            if (string.IsNullOrEmpty(tbProxyUserName.Text))
+            {
+                request.Proxy = new WebProxy(tbProxyServer.Text, port);
+            }
+            else
+            {
+                request.Proxy = new WebProxy(tbProxyServer.Text, port);
+                request.Proxy.Credentials = new NetworkCredential(tbProxyUserName.Text, tbProxyPassword.Password);
+            }
+            try
+            {
+                HttpWebResponse response = (HttpWebResponse) request.GetResponse();
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    MessageBox.Show("Proxy is ok");
+                }
+                else
+                {
+                    MessageBox.Show("Proxy connect failed.");
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Proxy connect failed.");
+            }
         }
     }
 }

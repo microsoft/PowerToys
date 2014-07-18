@@ -6,9 +6,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 using Newtonsoft.Json;
+using Wox.Helper;
+using Wox.Helper.ErrorReporting;
 using Wox.JsonRPC;
 using Wox.Plugin;
+using MessageBox = System.Windows.MessageBox;
 
 namespace Wox.PluginLoader
 {
@@ -48,8 +52,8 @@ namespace Wox.PluginLoader
                                     {
                                         string actionReponse = ExecuteAction(result1.JsonRPCAction);
                                         JsonRPCRequestModel jsonRpcRequestModel = JsonConvert.DeserializeObject<JsonRPCRequestModel>(actionReponse);
-                                        if (jsonRpcRequestModel != null 
-                                            && string.IsNullOrEmpty(jsonRpcRequestModel.Method) 
+                                        if (jsonRpcRequestModel != null
+                                            && string.IsNullOrEmpty(jsonRpcRequestModel.Method)
                                             && jsonRpcRequestModel.Method.StartsWith("Wox."))
                                         {
                                             ExecuteWoxAPI(jsonRpcRequestModel.Method.Substring(4), jsonRpcRequestModel.Parameters);
@@ -63,8 +67,10 @@ namespace Wox.PluginLoader
                     }
                     return results;
                 }
-                catch
+                catch (Exception e)
                 {
+                    ErrorReporting.TryShowErrorMessageBox(e.Message, e);
+                    Wox.Helper.Log.Error(e.Message);
                 }
             }
             return null;
@@ -98,21 +104,44 @@ namespace Wox.PluginLoader
         /// <returns></returns>
         protected string Execute(string fileName, string arguments)
         {
+            ProcessStartInfo start = new ProcessStartInfo();
+            start.FileName = fileName;
+            start.Arguments = arguments;
+            start.UseShellExecute = false;
+            start.CreateNoWindow = true;
+            start.RedirectStandardOutput = true;
+            start.RedirectStandardError = true;
+            return Execute(start);
+        }
+
+        protected string Execute(ProcessStartInfo startInfo)
+        {
             try
             {
-                ProcessStartInfo start = new ProcessStartInfo();
-                start.FileName = fileName;
-                start.Arguments = arguments;
-                start.UseShellExecute = false;
-                start.CreateNoWindow = true;
-                start.RedirectStandardOutput = true;
-                using (Process process = Process.Start(start))
+                using (Process process = Process.Start(startInfo))
                 {
                     if (process != null)
                     {
                         using (StreamReader reader = process.StandardOutput)
                         {
-                            return reader.ReadToEnd();
+                            string result = reader.ReadToEnd();
+                            if (result.StartsWith("DEBUG:"))
+                            {
+                                System.Windows.Forms.MessageBox.Show(new Form { TopMost = true }, result.Substring(6));
+                                return "";
+                            }
+                            if (string.IsNullOrEmpty(result))
+                            {
+                                using (StreamReader errorReader = process.StandardError)
+                                {
+                                    string error = errorReader.ReadToEnd();
+                                    if (!string.IsNullOrEmpty(error))
+                                    {
+                                        ErrorReporting.TryShowErrorMessageBox(error, new WoxJsonPRCException(error));
+                                    }
+                                }
+                            }
+                            return result;
                         }
                     }
                 }

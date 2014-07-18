@@ -121,6 +121,7 @@
     </Compile>
     <Compile Include="Helper\FontHelper.cs" />
     <Compile Include="Helper\Forker.cs" />
+    <Compile Include="Helper\HttpProxy.cs" />
     <Compile Include="Helper\ImageLoader.cs" />
     <Compile Include="Helper\SyntaxSugars.cs" />
     <Compile Include="Helper\WallpaperPathRetrieval.cs" />
@@ -130,7 +131,7 @@
     <Compile Include="CustomPluginHotkeySetting.xaml.cs">
       <DependentUpon>CustomPluginHotkeySetting.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DispatcherExtensions.cs" />
+    <Compile Include="Helper\DispatcherExtensions.cs" />
     <Compile Include="Helper\DWMDropShadow.cs" />
     <Compile Include="Helper\Log.cs" />
     <Compile Include="Helper\PluginInstaller.cs" />

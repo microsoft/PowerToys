@@ -1,4 +1,19 @@
-﻿using System.Collections.Generic;
+﻿
+/* We basically follow the Json-RPC 2.0 spec (http://www.jsonrpc.org/specification) to invoke methods between Wox and other plugins, 
+ * like python or other self-execute program. But, we added addtional infos (proxy and so on) into rpc request. Also, we didn't use the
+ * "id" and "jsonrpc" in the request, since it's not so useful in our request model.
+ * 
+ * When execute a query:
+ *      Wox -------JsonRPCServerRequestModel--------> client
+ *      Wox <------JsonRPCQueryResponseModel--------- client
+ *      
+ * When execute a action (which mean user select an item in reulst item):
+ *      Wox -------JsonRPCServerRequestModel--------> client
+ *      Wox <------JsonRPCResponseModel-------------- client
+ * 
+ */
+
+using System.Collections.Generic;
 using System.Linq;
 using Wox.Plugin;
 
@@ -16,8 +31,6 @@ namespace Wox.JsonRPC
     public class JsonRPCModelBase
     {
         public int Id { get; set; }
-
-        public string JsonRPC { get; set; }
     }
 
     public class JsonRPCResponseModel : JsonRPCModelBase
@@ -32,28 +45,33 @@ namespace Wox.JsonRPC
         public new List<JsonRPCResult> Result { get; set; }
     }
 
-    public class JsonRPCRequestModel : JsonRPCModelBase
+    public abstract class JsonRPCRequestModel : JsonRPCModelBase
     {
         public string Method { get; set; }
 
         public object[] Parameters { get; set; }
 
-        public bool DontHideAfterAction { get; set; }
-
         public override string ToString()
         {
+            string rpc = string.Empty;
             if (Parameters != null && Parameters.Length > 0)
             {
                 string parameters = Parameters.Aggregate("[", (current, o) => current + (GetParamterByType(o) + ","));
                 parameters = parameters.Substring(0, parameters.Length - 1) + "]";
-                return string.Format(@"{{\""method\"":\""{0}\"",\""parameters\"":{1}}}", Method, parameters);
+                rpc = string.Format(@"{{\""method\"":\""{0}\"",\""parameters\"":{1}", Method, parameters);
+            }
+            else
+            {
+                rpc = string.Format(@"{{\""method\"":\""{0}\"",\""parameters\"":[]", Method);
             }
 
-            return string.Format(@"{{\""method\"":\""{0}\"",\""parameters\"":[]}}",Method);
+            return rpc;
+
         }
 
         private string GetParamterByType(object paramter)
         {
+
             if (paramter is string)
             {
                 return string.Format(@"\""{0}\""", paramter);
@@ -70,8 +88,40 @@ namespace Wox.JsonRPC
         }
     }
 
+    /// <summary>
+    /// Json RPC Request that Wox sent to client
+    /// </summary>
+    public class JsonRPCServerRequestModel : JsonRPCRequestModel
+    {
+        public IHttpProxy HttpProxy { get; set; }
+
+        public override string ToString()
+        {
+            string rpc = base.ToString();
+            if (HttpProxy != null)
+            {
+                rpc += string.Format(@",\""proxy\"":{{\""enabled\"":{0},\""server\"":\""{1}\"",\""port\"":{2},\""username\"":\""{3}\"",\""password\"":\""{4}\""}}",
+                    HttpProxy.Enabled.ToString().ToLower(), HttpProxy.Server, HttpProxy.Port, HttpProxy.UserName, HttpProxy.Password);
+            }
+            return rpc + "}";
+        }
+    }
+
+    /// <summary>
+    /// Json RPC Request that client sent to Wox
+    /// </summary>
+    public class JsonRPCClientRequestModel : JsonRPCRequestModel
+    {
+        public bool DontHideAfterAction { get; set; }
+    }
+
+    /// <summary>
+    /// Represent the json-rpc result item that client send to Wox
+    /// Typically, we will send back this request model to client after user select the result item
+    /// But if the request method starts with "Wox.", we will invoke the public APIs we expose.
+    /// </summary>
     public class JsonRPCResult : Result
     {
-        public JsonRPCRequestModel JsonRPCAction { get; set; }
+        public JsonRPCClientRequestModel JsonRPCAction { get; set; }
     }
 }

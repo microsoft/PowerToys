@@ -14,7 +14,7 @@ namespace Wox.Plugin
         /// </summary>
         public IPublicAPI API { get; set; }
 
-        public HttpProxy Proxy { get; set; }
+        public IHttpProxy Proxy { get; set; }
 
         #region Legacy APIs
 

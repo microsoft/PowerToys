@@ -279,28 +279,31 @@
                         <TextBlock >Server</TextBlock>
                     </Border>
                     <Border Grid.Row="0" Grid.Column="1" Padding="5">
-                        <TextBox  Width="200" HorizontalAlignment="Left"></TextBox>
+                        <TextBox  Width="200" HorizontalAlignment="Left" x:Name="tbProxyServer"></TextBox>
                     </Border>
                     <Border Grid.Row="0" Grid.Column="2" Padding="5">
                         <TextBlock>Port</TextBlock>
                     </Border>
                     <Border Grid.Row="0" Grid.Column="3" Padding="5">
-                        <TextBox Width="50" HorizontalAlignment="Left"></TextBox>
+                        <TextBox Width="50" HorizontalAlignment="Left" x:Name="tbProxyPort"></TextBox>
                     </Border>
                     <Border Grid.Row="1" Grid.Column="0" Padding="5">
                         <TextBlock >UserName</TextBlock>
                     </Border>
                     <Border Grid.Row="1" Grid.Column="1" Padding="5">
-                        <TextBox Width="200" HorizontalAlignment="Left"></TextBox>
+                        <TextBox Width="200" HorizontalAlignment="Left" x:Name="tbProxyUserName"></TextBox>
                     </Border>
                     <Border Grid.Row="1" Grid.Column="2" Padding="5">
                         <TextBlock>Password</TextBlock>
                     </Border>
                     <Border Grid.Row="1" Grid.Column="3" Padding="5">
-                        <TextBox Width="200" HorizontalAlignment="Left"></TextBox>
+                        <PasswordBox Width="200" HorizontalAlignment="Left" x:Name="tbProxyPassword" />
                     </Border>
                 </Grid>
-                <Button x:Name="btnTestProxy" Width="80" HorizontalAlignment="Left" Margin="10">Test Proxy</Button>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="btnTestProxy" Width="80" HorizontalAlignment="Left" Margin="10" Click="btnTestProxy_Click">Test Proxy</Button>
+                    <Button x:Name="btnSaveProxy" Width="80" HorizontalAlignment="Left" Margin="10" Click="btnSaveProxy_Click">Save</Button>
+                </StackPanel>
             </StackPanel>
         </TabItem>
     </TabControl>

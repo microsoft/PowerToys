@@ -5,9 +5,10 @@ using System.Text;
 
 namespace Wox.Helper
 {
-    public class WoxPythonException : WoxException
+    public class WoxJsonPRCException : WoxException
     {
-        public WoxPythonException(string msg) : base(msg)
+        public WoxJsonPRCException(string msg)
+            : base(msg)
         {
         }
     }

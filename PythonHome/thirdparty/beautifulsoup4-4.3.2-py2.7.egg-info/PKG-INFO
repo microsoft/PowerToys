@@ -1,0 +1,20 @@
+Metadata-Version: 1.1
+Name: beautifulsoup4
+Version: 4.3.2
+Summary: UNKNOWN
+Home-page: http://www.crummy.com/software/BeautifulSoup/bs4/
+Author: Leonard Richardson
+Author-email: leonardr@segfault.org
+License: MIT
+Download-URL: http://www.crummy.com/software/BeautifulSoup/bs4/download/
+Description: Beautiful Soup sits atop an HTML or XML parser, providing Pythonic idioms for iterating, searching, and modifying the parse tree.
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Text Processing :: Markup :: HTML
+Classifier: Topic :: Text Processing :: Markup :: XML
+Classifier: Topic :: Text Processing :: Markup :: SGML
+Classifier: Topic :: Software Development :: Libraries :: Python Modules

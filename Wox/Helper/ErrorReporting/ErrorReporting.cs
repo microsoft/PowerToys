@@ -16,20 +16,15 @@ namespace Wox.Helper.ErrorReporting
         public static void UnhandledExceptionHandle(object sender, System.UnhandledExceptionEventArgs e)
         {
             if (System.Diagnostics.Debugger.IsAttached) return;
-            
+
             string error = CreateExceptionReport("System.AppDomain.UnhandledException", e.ExceptionObject);
 
-            if (e.IsTerminating)
-            {
-                Log.Fatal(error);
-                TryShowErrorMessageBox(error, e.ExceptionObject, true);
-                Environment.Exit(0);
-            }
-            else
-            {
-                Log.Error(error);
-            }
+            //e.IsTerminating is always true in most times, so try to avoid use this property
+            //http://stackoverflow.com/questions/10982443/what-causes-the-unhandledexceptioneventargs-isterminating-flag-to-be-true-or-fal
+            Log.Error(error);
+            TryShowErrorMessageBox(error, e.ExceptionObject);
         }
+
         public static void DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             if (System.Diagnostics.Debugger.IsAttached) return;
@@ -38,7 +33,7 @@ namespace Wox.Helper.ErrorReporting
             string error = CreateExceptionReport("System.Windows.Application.DispatcherUnhandledException", e.Exception);
 
             Log.Error(error);
-            if (TryShowErrorMessageBox(error, e.Exception, false))
+            if (TryShowErrorMessageBox(error, e.Exception))
             {
                 Environment.Exit(0);
             }
@@ -50,7 +45,7 @@ namespace Wox.Helper.ErrorReporting
             string error = CreateExceptionReport("System.Windows.Forms.Application.ThreadException", e.Exception);
 
             Log.Fatal(error);
-            TryShowErrorMessageBox(error, e.Exception, true);
+            TryShowErrorMessageBox(error, e.Exception);
             Environment.Exit(0);
         }
 
@@ -72,7 +67,7 @@ namespace Wox.Helper.ErrorReporting
                     exsb.Append(ex.GetType().FullName);
                     exsb.Append(": ");
                     exsb.AppendLine(ex.Message);
-                    if (ex.Source != null) 
+                    if (ex.Source != null)
                     {
                         exsb.Append("   Source: ");
                         exsb.AppendLine(ex.Source);
@@ -80,7 +75,7 @@ namespace Wox.Helper.ErrorReporting
                     if (ex.TargetSite != null)
                     {
                         exsb.Append("   TargetAssembly: ");
-                        exsb.AppendLine(ex.TargetSite.Module.Assembly.ToString()); 
+                        exsb.AppendLine(ex.TargetSite.Module.Assembly.ToString());
                         exsb.Append("   TargetModule: ");
                         exsb.AppendLine(ex.TargetSite.Module.ToString());
                         exsb.Append("   TargetSite: ");
@@ -169,7 +164,7 @@ namespace Wox.Helper.ErrorReporting
             foreach (ProcessThread th in process.Threads)
             {
                 sb.Append("* ");
-                sb.AppendLine(string.Format("{0}, {1} {2}, Started: {3}, StartAddress: 0x{4:X16}", th.Id, th.ThreadState,th.PriorityLevel, th.StartTime, th.StartAddress.ToInt64()));
+                sb.AppendLine(string.Format("{0}, {1} {2}, Started: {3}, StartAddress: 0x{4:X16}", th.Id, th.ThreadState, th.PriorityLevel, th.StartTime, th.StartAddress.ToInt64()));
             }
 
             return sb.ToString();
@@ -244,7 +239,7 @@ namespace Wox.Helper.ErrorReporting
 
         }
 
-        private static bool TryShowErrorMessageBox(string error, object exceptionObject, bool isTerminating = true)
+        public static bool TryShowErrorMessageBox(string error, object exceptionObject)
         {
             var title = "Wox - Unhandled Exception";
 
@@ -255,8 +250,7 @@ namespace Wox.Helper.ErrorReporting
             }
             catch { }
 
-            error = "Wox has occured an error that can't be handled. " + Environment.NewLine + Environment.NewLine +
-                    error;
+            error = "Wox has occured an error that can't be handled. " + Environment.NewLine + Environment.NewLine + error;
 
             try
             {

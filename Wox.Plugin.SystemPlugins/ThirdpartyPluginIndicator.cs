@@ -34,7 +34,7 @@ namespace Wox.Plugin.SystemPlugins
                     {
                         Title = metadata.ActionKeyword,
                         SubTitle = string.Format("Activate {0} plugin", metadata.Name),
-                        Score = 50,
+                        Score = 100,
                         IcoPath = "Images/work.png",
                         Action = (c) =>
                         {
@@ -50,7 +50,7 @@ namespace Wox.Plugin.SystemPlugins
             {
                 Title = n.ActionWord,
                 SubTitle = string.Format("Activate {0} web search", n.ActionWord),
-                Score = 50,
+                Score = 100,
                 IcoPath = "Images/work.png",
                 Action = (c) =>
                 {

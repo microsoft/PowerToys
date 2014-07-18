@@ -53,8 +53,8 @@ namespace Wox.Infrastructure.Storage.UserSettings
         [JsonProperty]
         public List<ProgramSource> ProgramSources { get; set; }
 
-		[JsonProperty]
-		public List<FolderLink> FolderLinks { get; set; }	//Aaron
+        [JsonProperty]
+        public List<FolderLink> FolderLinks { get; set; }	//Aaron
 
         public List<CustomizedPluginConfig> CustomizedPluginConfigs { get; set; }
 
@@ -70,11 +70,26 @@ namespace Wox.Infrastructure.Storage.UserSettings
         [JsonProperty]
         public OpacityMode OpacityMode { get; set; }
 
-		[JsonProperty]
-		public bool LeaveCmdOpen { get; set; }
+        [JsonProperty]
+        public bool LeaveCmdOpen { get; set; }
 
         [JsonProperty]
         public bool HideWhenDeactive { get; set; }
+
+        [JsonProperty]
+        public string ProxyServer { get; set; }
+
+        [JsonProperty]
+        public bool ProxyEnabled { get; set; }
+
+        [JsonProperty]
+        public int ProxyPort { get; set; }
+
+        [JsonProperty]
+        public string ProxyUserName { get; set; }
+
+        [JsonProperty]
+        public string ProxyPassword { get; set; }
 
         public List<WebSearch> LoadDefaultWebSearches()
         {
@@ -154,8 +169,8 @@ namespace Wox.Infrastructure.Storage.UserSettings
             QueryBoxFont = FontFamily.GenericSansSerif.Name;
             ResultItemFont = FontFamily.GenericSansSerif.Name;
             Opacity = 1;
-	        OpacityMode = OpacityMode.Normal;
-	        LeaveCmdOpen = false;
+            OpacityMode = OpacityMode.Normal;
+            LeaveCmdOpen = false;
             HideWhenDeactive = false;
         }
 
