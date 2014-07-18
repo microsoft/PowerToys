@@ -7,7 +7,7 @@
 		xmlns:system="clr-namespace:Wox.Plugin.SystemPlugins;assembly=Wox.Plugin.SystemPlugins"
 		xmlns:converters="clr-namespace:Wox.Converters"
 		Icon="Images\app.png"
-		Title="Wox Setting"
+		Title="Wox Settings"
 		ResizeMode="NoResize"
 		WindowStartupLocation="CenterScreen"
 		Height="600" Width="800">
