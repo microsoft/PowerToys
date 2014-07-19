@@ -298,7 +298,12 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
                 args = args.Remove(x);
             }
 
-            return Convert.ToUInt32(args);
+            uint size;
+            if (uint.TryParse(args, out size))
+            {
+                return size;
+            }
+            return 0;
         }
 
         private static bool IS_INTRESOURCE(IntPtr value)

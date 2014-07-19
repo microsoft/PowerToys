@@ -13,6 +13,8 @@ namespace Wox.Helper
         static FontWeightConverter fontWeightConverter = new FontWeightConverter();
         public static FontWeight GetFontWeightFromInvariantStringOrNormal(string value)
         {
+            if (value == null) return FontWeights.Normal;
+
             try
             {
                 return (FontWeight) fontWeightConverter.ConvertFromInvariantString(value);
@@ -24,7 +26,9 @@ namespace Wox.Helper
 
         static FontStyleConverter fontStyleConverter = new FontStyleConverter();
         public static FontStyle GetFontStyleFromInvariantStringOrNormal(string value)
-        {			
+        {
+            if (value == null) return FontStyles.Normal;
+
             try
             {
                 return (FontStyle)fontStyleConverter.ConvertFromInvariantString(value);
@@ -37,7 +41,8 @@ namespace Wox.Helper
 
         static FontStretchConverter fontStretchConverter = new FontStretchConverter();
         public static FontStretch GetFontStretchFromInvariantStringOrNormal(string value)
-        {		
+        {
+            if (value == null) return FontStretches.Normal;
             try
             {
                 return (FontStretch)fontStretchConverter.ConvertFromInvariantString(value);

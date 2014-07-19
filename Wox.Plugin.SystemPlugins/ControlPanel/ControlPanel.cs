@@ -51,7 +51,7 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
 
             foreach (ControlPanelItem item in controlPanelItems)
             {
-                if (!File.Exists(iconFolder + item.LocalizedString + fileType))
+                if (!File.Exists(iconFolder + item.LocalizedString + fileType) && item.Icon != null)
                 {
                     item.Icon.ToBitmap().Save(iconFolder + item.LocalizedString + fileType);
                 }
@@ -101,7 +101,7 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
             if (item.InfoTip != null && (item.Score = matcher.Evaluate(item.InfoTip).Score) > 0) return true;
 
             if (item.LocalizedString != null && (item.Score = matcher.Evaluate(item.LocalizedString.Unidecode()).Score) > 0) return true;
-           
+
             return false;
         }
     }
