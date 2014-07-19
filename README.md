@@ -14,7 +14,7 @@ Screenshot
 =========
 
 <a href="https://github.com/qianlifeng/Wox/wiki/Screenshot">More screenshot</a>
-<img src="http://ww2.sinaimg.cn/large/5d7c1fa4gw1ee59flj7t7g20zk0m8npd.gif" />
+<img src="http://ww3.sinaimg.cn/large/dce48faejw1eihx6ffo8eg20zk0m8hdt.gif" />
 
 Download
 =========
