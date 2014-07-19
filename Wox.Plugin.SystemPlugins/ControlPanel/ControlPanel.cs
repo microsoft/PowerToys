@@ -51,9 +51,9 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
 
             foreach (ControlPanelItem item in controlPanelItems)
             {
-                if (!File.Exists(iconFolder + item.LocalizedString + fileType) && item.Icon != null)
+                if (!File.Exists(iconFolder + item.GUID + fileType) && item.Icon != null)
                 {
-                    item.Icon.ToBitmap().Save(iconFolder + item.LocalizedString + fileType);
+                    item.Icon.ToBitmap().Save(iconFolder + item.GUID + fileType);
                 }
             }
         }
@@ -75,7 +75,7 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
                         Title = item.LocalizedString,
                         SubTitle = item.InfoTip,
                         Score = item.Score,
-                        IcoPath = "Images\\ControlPanelIcons\\" + item.LocalizedString + fileType,
+                        IcoPath = "Images\\ControlPanelIcons\\" + item.GUID + fileType,
                         Action = e =>
                         {
                             try

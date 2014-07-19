@@ -78,7 +78,7 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
 
                     myIcon = getIcon(currentKey, size);
 
-                    controlPanelItems.Add(new ControlPanelItem(localizedString, infoTip, executablePath, myIcon));
+                    controlPanelItems.Add(new ControlPanelItem(localizedString, infoTip, key, executablePath, myIcon));
 
                 }
             }
