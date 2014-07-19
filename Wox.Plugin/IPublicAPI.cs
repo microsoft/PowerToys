@@ -32,5 +32,7 @@ namespace Wox.Plugin
         void ReloadPlugins();
 
         List<PluginPair> GetAllPlugins();
+
+        event WoxKeyDownEventHandler BackKeyDownEvent;
     }
 }

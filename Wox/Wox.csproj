@@ -377,8 +377,7 @@
     <Resource Include="Images\color2.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\url1.png" />
-    <Resource Include="Images\url2.png" />
+    <Resource Include="Images\url.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

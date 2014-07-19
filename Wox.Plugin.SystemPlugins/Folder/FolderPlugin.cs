@@ -4,165 +4,208 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Wox.Infrastructure;
 using Wox.Infrastructure.Storage.UserSettings;
+using Control = System.Windows.Controls.Control;
 
-namespace Wox.Plugin.SystemPlugins.Folder {
+namespace Wox.Plugin.SystemPlugins.Folder
+{
+    public class FolderPlugin : BaseSystemPlugin, ISettingProvider
+    {
+        #region Properties
 
-	public class FolderPlugin : BaseSystemPlugin, ISettingProvider {
+        private static List<string> driverNames;
+        private PluginInitContext context;
 
-		#region Properties
-
-		private PluginInitContext context;
-		private static List<string> driverNames = null;
-		private static Dictionary<string, DirectoryInfo[]> parentDirectories = new Dictionary<string, DirectoryInfo[]>();
-		public override string Description {
-		    get
-		    {
-                return "Provide opening folder from wox directorily. You can add your favorite folders.";
-		    } 
+        public override string Description
+        {
+            get { return "Provide opening folder from wox directorily. You can add your favorite folders."; }
         }
 
-	    public override string ID
-	    {
+        public override string ID
+        {
             get { return "B4D3B69656E14D44865C8D818EAE47C4"; }
-	    }
+        }
 
-	    public override string Name { get { return "Folder"; } }
-		public override string IcoPath { get { return @"Images\folder.png"; } }
+        public override string Name
+        {
+            get { return "Folder"; }
+        }
 
-		#endregion Properties
+        public override string IcoPath
+        {
+            get { return @"Images\folder.png"; }
+        }
 
-		#region Misc
+        #endregion Properties
 
-		protected override void InitInternal(PluginInitContext context) {
-			this.context = context;
+        public Control CreateSettingPanel()
+        {
+            return new FileSystemSettings();
+        }
 
-			if (UserSettingStorage.Instance.FolderLinks == null) {
-				UserSettingStorage.Instance.FolderLinks = new List<FolderLink>();
-				UserSettingStorage.Instance.Save();
-			}
-		}
+        protected override void InitInternal(PluginInitContext context)
+        {
+            this.context = context;
+            this.context.API.BackKeyDownEvent += ApiBackKeyDownEvent;
+            InitialDriverList();
+            if (UserSettingStorage.Instance.FolderLinks == null)
+            {
+                UserSettingStorage.Instance.FolderLinks = new List<FolderLink>();
+                UserSettingStorage.Instance.Save();
+            }
+        }
 
-		public System.Windows.Controls.Control CreateSettingPanel() {
-			return new FileSystemSettings();
-		}
+        private void ApiBackKeyDownEvent(object sender, WoxKeyDownEventArgs e)
+        {
+            string query = e.Query;
+            if (Directory.Exists(query))
+            {
+                if (query.EndsWith("\\"))
+                {
+                    query = query.Remove(query.Length - 1);
+                }
 
-		#endregion Misc
+                if (query.Contains("\\"))
+                {
+                    int index = query.LastIndexOf("\\");
+                    query = query.Remove(index) + "\\";
+                }
 
-		protected override List<Result> QueryInternal(Query query) {
-			var results = new List<Result>();
-			var input = query.RawQuery.ToLower();
-			var inputName = input.Split(new string[] { @"\" }, StringSplitOptions.None).First().ToLower();
-			var link = UserSettingStorage.Instance.FolderLinks.FirstOrDefault(x => x.Nickname.Equals(inputName, StringComparison.OrdinalIgnoreCase));
-			var currentPath = link == null ? input : link.Path + input.Remove(0, inputName.Length);
-			InitialDriverList();
+                context.API.ChangeQuery(query);
+            }
+        }
 
-			foreach (var item in UserSettingStorage.Instance.FolderLinks.Where(x => x.Nickname.StartsWith(input, StringComparison.OrdinalIgnoreCase))) {
-				results.Add(new Result(item.Nickname, "Images/folder.png") {
-					Action = (c) => {
-						context.ChangeQuery(item.Nickname);
-						return false;
-					}
-				});
-			}
+        protected override List<Result> QueryInternal(Query query)
+        {
+            string input = query.RawQuery.ToLower();
 
-			if (link == null && !driverNames.Any(input.StartsWith))
-				return results;
+            List<FolderLink> userFolderLinks = UserSettingStorage.Instance.FolderLinks.Where(
+                x => x.Nickname.StartsWith(input, StringComparison.OrdinalIgnoreCase)).ToList();
+            List<Result> results =
+                userFolderLinks.Select(
+                    item => new Result(item.Nickname, "Images/folder.png", "Ctrl + Enter to open the directory")
+                    {
+                        Action = c =>
+                        {
+                            if (c.SpecialKeyState.CtrlPressed)
+                            {
+                                try
+                                {
+                                    Process.Start(item.Path);
+                                    return true;
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show(ex.Message, "Could not start " + item.Path);
+                                    return false;
+                                }
+                            }
+                            context.API.ChangeQuery(item.Path);
+                            return false;
+                        }
+                    }).ToList();
 
-			QueryInternal_Directory_Exists(currentPath, input, results);
+            if (!driverNames.Any(input.StartsWith))
+                return results;
 
-			return results;
-		}
+            if (!input.EndsWith("\\"))
+            {
+                //"c:" means "the current directory on the C drive" whereas @"c:\" means "root of the C drive"
+                input = input + "\\";
+            }
+            results.AddRange(QueryInternal_Directory_Exists(input));
 
-		private void InitialDriverList() {
-			if (driverNames == null) {
-				driverNames = new List<string>();
-				var allDrives = DriveInfo.GetDrives();
-				foreach (var driver in allDrives) {
-					driverNames.Add(driver.Name.ToLower().TrimEnd('\\'));
-				}
-			}
-		}
+            return results;
+        }
 
-		private void QueryInternal_Directory_Exists(string currentPath, string input, List<Result> results) {
-			string path = Directory.Exists(currentPath) ? new DirectoryInfo(currentPath).FullName : Path.GetDirectoryName(input);
-			if (!System.IO.Directory.Exists(path)) return;
+        private void InitialDriverList()
+        {
+            if (driverNames == null)
+            {
+                driverNames = new List<string>();
+                DriveInfo[] allDrives = DriveInfo.GetDrives();
+                foreach (DriveInfo driver in allDrives)
+                {
+                    driverNames.Add(driver.Name.ToLower().TrimEnd('\\'));
+                }
+            }
+        }
 
-			results.Add(new Result("Open this directory", "Images/folder.png") {
-				Score = 100000,
-				Action = (c) => {
-					if (Directory.Exists(currentPath)) {
-						Process.Start(currentPath);
-					}
-					else if (currentPath.Contains("\\")) {
-						var index = currentPath.LastIndexOf("\\");
-						Process.Start(currentPath.Remove(index) + "\\");
-					}
+        private List<Result> QueryInternal_Directory_Exists(string rawQuery)
+        {
+            var results = new List<Result>();
+            if (!Directory.Exists(rawQuery)) return results;
 
-					return true;
-				}
-			});
+            results.Add(new Result("Open current directory", "Images/folder.png")
+            {
+                Score = 10000,
+                Action = c =>
+                {
+                    Process.Start(rawQuery);
+                    return true;
+                }
+            });
 
+            //Add children directories
+            DirectoryInfo[] dirs = new DirectoryInfo(rawQuery).GetDirectories();
+            foreach (DirectoryInfo dir in dirs)
+            {
+                if ((dir.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
 
-			//if (System.IO.Directory.Exists(input)) {
-			var dirs = new DirectoryInfo(path).GetDirectories();
+                DirectoryInfo dirCopy = dir;
+                var result = new Result(dir.Name, "Images/folder.png", "Ctrl + Enter to open the directory")
+                {
+                    Action = c =>
+                    {
+                        if (c.SpecialKeyState.CtrlPressed)
+                        {
+                            try
+                            {
+                                Process.Start(dirCopy.FullName);
+                                return true;
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show(ex.Message, "Could not start " + dirCopy.FullName);
+                                return false;
+                            }
+                        }
+                        context.API.ChangeQuery(dirCopy.FullName + "\\");
+                        return false;
+                    }
+                };
 
-			var parentDirKey = input.TrimEnd('\\', '/');
-			if (!parentDirectories.ContainsKey(parentDirKey)) parentDirectories.Add(parentDirKey, dirs);
+                results.Add(result);
+            }
 
-			var fuzzy = FuzzyMatcher.Create(Path.GetFileName(currentPath).ToLower());
-			foreach (var dir in dirs) {				//.Where(x => (x.Attributes & FileAttributes.Hidden) != 0)) {
-				if ((dir.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
+            //Add children files
+            FileInfo[] files = new DirectoryInfo(rawQuery).GetFiles();
+            foreach (FileInfo file in files)
+            {
+                if ((file.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
 
-				var result = new Result(dir.Name, "Images/folder.png") {
-					Action = (c) => {
-						//context.ChangeQuery(dir.FullName);
-						context.ChangeQuery(input + dir.Name + "\\");
-						return false;
-					}
-				};
+                string filePath = file.FullName;
+                var result = new Result(Path.GetFileName(filePath), "Images/file.png")
+                {
+                    Action = c =>
+                    {
+                        try
+                        {
+                            Process.Start(filePath);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, "Could not start " + filePath);
+                        }
 
-				if (Path.GetFileName(currentPath).ToLower() != "") {
-					var matchResult = fuzzy.Evaluate(dir.Name);
-					result.Score = matchResult.Score;
-					if (!matchResult.Success) continue;
-				}
+                        return true;
+                    }
+                };
 
-				results.Add(result);
-			}
-			//}
+                results.Add(result);
+            }
 
-			var Folder = Path.GetDirectoryName(currentPath);
-			if (Folder != null) {
-
-				//var fuzzy = FuzzyMatcher.Create(Path.GetFileName(currentPath).ToLower());
-				foreach (var dir in new DirectoryInfo(Folder).GetFiles()) { //.Where(x => (x.Attributes & FileAttributes.Hidden) != 0)) {
-					if ((dir.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
-
-					var dirPath = dir.FullName;
-					Result result = new Result(Path.GetFileNameWithoutExtension(dirPath), dirPath) {
-						Action = (c) => {
-							try {
-								Process.Start(dirPath);
-							}
-							catch (Exception ex) {
-								MessageBox.Show(ex.Message, "Could not start " + dir.Name);
-							}
-
-							return true;
-						}
-					};
-
-					if (Path.GetFileName(currentPath) != "") {
-						var matchResult = fuzzy.Evaluate(dir.Name);
-						result.Score = matchResult.Score;
-						if (!matchResult.Success) continue;
-					}
-
-					results.Add(result);
-				}
-			}
-		}
-	}
+            return results;
+        }
+    }
 }
