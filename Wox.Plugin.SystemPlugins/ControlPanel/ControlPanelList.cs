@@ -243,31 +243,32 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
 
                     iconIndex = (IntPtr)sanitizeUint(iconString[1]);
 
-                    if (iconIndex == IntPtr.Zero)
+                    iconPtr = LoadImage(dataFilePointer, iconIndex, 1, iconSize, iconSize, 0);
+
+                    if (iconPtr == IntPtr.Zero)
                     {
                         iconQueue = new Queue<IntPtr>();
-                        EnumResourceNamesWithID(dataFilePointer, GROUP_ICON, new EnumResNameDelegate(EnumRes), IntPtr.Zero); //Iterate through resources. 
+                        EnumResourceNamesWithID(dataFilePointer, 3, new EnumResNameDelegate(EnumRes), IntPtr.Zero); //Iterate through resources. 
 
                         while (iconPtr == IntPtr.Zero && iconQueue.Count > 0)
                         {
                             iconPtr = LoadImage(dataFilePointer, iconQueue.Dequeue(), 1, iconSize, iconSize, 0);
                         }
                     }
-                    else
-                    {
-                        iconPtr = LoadImage(dataFilePointer, iconIndex, 1, iconSize, iconSize, 0);
-                    }
 
                     FreeLibrary(dataFilePointer);
 
-                    try
+                    if (iconPtr != IntPtr.Zero)
                     {
-                        myIcon = Icon.FromHandle(iconPtr);
-                        myIcon = (Icon)myIcon.Clone(); //Remove pointer dependancy.
-                    }
-                    catch
-                    {
-                        //Silently fail for now..
+                        try
+                        {
+                            myIcon = Icon.FromHandle(iconPtr);
+                            myIcon = (Icon)myIcon.Clone(); //Remove pointer dependancy.
+                        }
+                        catch
+                        {
+                            //Silently fail for now.
+                        }
                     }
                 }
             }
