@@ -101,20 +101,10 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
             else if (currentKey.OpenSubKey("Shell\\Open\\Command") != null && currentKey.OpenSubKey("Shell\\Open\\Command").GetValue(null) != null)
             {
                 //Other files (usually third party items)
-                string value = Environment.ExpandEnvironmentVariables(currentKey.OpenSubKey("Shell\\Open\\Command").GetValue(null).ToString());
-
-                if (value[0] == '"')
-                {
-                    for (int x = 1; x < value.Length && value[x] != '"'; x++)
-                    {
-                        executablePath.FileName += value[x];
-                    }
-                    executablePath.Arguments = value.Remove(0, executablePath.FileName.Length + 2).Trim();
-                }
-                else
-                {
-                    executablePath.FileName = value;
-                }
+                string input = "\"" + Environment.ExpandEnvironmentVariables(currentKey.OpenSubKey("Shell\\Open\\Command").GetValue(null).ToString()) + "\"";
+                executablePath.FileName = "cmd.exe";
+                executablePath.Arguments = "/C " + input;
+                executablePath.WindowStyle = ProcessWindowStyle.Hidden;   
             }
             else
             {
