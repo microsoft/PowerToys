@@ -78,7 +78,7 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
 
                     myIcon = getIcon(currentKey, size);
 
-                    controlPanelItems.Add(new ControlPanelItem(localizedString, infoTip, executablePath, myIcon));
+                    controlPanelItems.Add(new ControlPanelItem(localizedString, infoTip, key, executablePath, myIcon));
 
                 }
             }
@@ -101,7 +101,20 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
             else if (currentKey.OpenSubKey("Shell\\Open\\Command") != null && currentKey.OpenSubKey("Shell\\Open\\Command").GetValue(null) != null)
             {
                 //Other files (usually third party items)
-                executablePath.FileName = Environment.ExpandEnvironmentVariables(currentKey.OpenSubKey("Shell\\Open\\Command").GetValue(null).ToString());
+                string value = Environment.ExpandEnvironmentVariables(currentKey.OpenSubKey("Shell\\Open\\Command").GetValue(null).ToString());
+
+                if (value[0] == '"')
+                {
+                    for (int x = 1; x < value.Length && value[x] != '"'; x++)
+                    {
+                        executablePath.FileName += value[x];
+                    }
+                    executablePath.Arguments = value.Remove(0, executablePath.FileName.Length + 2).Trim();
+                }
+                else
+                {
+                    executablePath.FileName = value;
+                }
             }
             else
             {
@@ -121,7 +134,7 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
 
             if (currentKey.GetValue("LocalizedString") != null)
             {
-                localizedStringRaw = currentKey.GetValue("LocalizedString").ToString().Split(new char[] { ',' }, 2);
+                localizedStringRaw = currentKey.GetValue("LocalizedString").ToString().Split(new string[] { ",-" }, StringSplitOptions.None);
 
                 if (localizedStringRaw.Length > 1)
                 {
@@ -142,9 +155,7 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
 
                     localizedString = resource.ToString();
 
-                    /*This shouldn't be necessary, but some apps (e.g. Bootcamp)
-                     * don't follow Microsoft's standard. Have to make a choice whether
-                     * empty string == failure, or use default name. I'm using default name */
+                    //Some apps don't return a string, although they do have a stringIndex. Use Default value.
 
                     if (String.IsNullOrEmpty(localizedString))
                     {
@@ -184,7 +195,7 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
 
             if (currentKey.GetValue("InfoTip") != null)
             {
-                infoTipRaw = currentKey.GetValue("InfoTip").ToString().Split(new char[] { ',' }, 2);
+                infoTipRaw = currentKey.GetValue("InfoTip").ToString().Split(new string[] { ",-" }, StringSplitOptions.None);
 
                 if (infoTipRaw.Length == 2)
                 {
@@ -203,6 +214,10 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
                     FreeLibrary(dataFilePointer);
 
                     infoTip = resource.ToString();
+                }
+                else
+                {
+                    infoTip = currentKey.GetValue("InfoTip").ToString();
                 }
             }
             else
@@ -241,31 +256,32 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
 
                     iconIndex = (IntPtr)sanitizeUint(iconString[1]);
 
-                    if (iconIndex == IntPtr.Zero)
+                    iconPtr = LoadImage(dataFilePointer, iconIndex, 1, iconSize, iconSize, 0);
+
+                    if (iconPtr == IntPtr.Zero)
                     {
                         iconQueue = new Queue<IntPtr>();
-                        EnumResourceNamesWithID(dataFilePointer, GROUP_ICON, new EnumResNameDelegate(EnumRes), IntPtr.Zero); //Iterate through resources. 
+                        EnumResourceNamesWithID(dataFilePointer, 3, new EnumResNameDelegate(EnumRes), IntPtr.Zero); //Iterate through resources. 
 
                         while (iconPtr == IntPtr.Zero && iconQueue.Count > 0)
                         {
                             iconPtr = LoadImage(dataFilePointer, iconQueue.Dequeue(), 1, iconSize, iconSize, 0);
                         }
                     }
-                    else
-                    {
-                        iconPtr = LoadImage(dataFilePointer, iconIndex, 1, iconSize, iconSize, 0);
-                    }
 
                     FreeLibrary(dataFilePointer);
 
-                    try
+                    if (iconPtr != IntPtr.Zero)
                     {
-                        myIcon = Icon.FromHandle(iconPtr);
-                        myIcon = (Icon)myIcon.Clone(); //Remove pointer dependancy.
-                    }
-                    catch
-                    {
-                        //Silently fail for now..
+                        try
+                        {
+                            myIcon = Icon.FromHandle(iconPtr);
+                            myIcon = (Icon)myIcon.Clone(); //Remove pointer dependancy.
+                        }
+                        catch
+                        {
+                            //Silently fail for now.
+                        }
                     }
                 }
             }
@@ -298,12 +314,10 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
                 args = args.Remove(x);
             }
 
-            uint size;
-            if (uint.TryParse(args, out size))
-            {
-                return size;
-            }
-            return 0;
+            /*If the logic is correct, this should never through an exception.
+             * If there is an exception, then need to analyze what the input is.
+             * Returning the wrong number will cause more errors */
+            return Convert.ToUInt32(args);
         }
 
         private static bool IS_INTRESOURCE(IntPtr value)
