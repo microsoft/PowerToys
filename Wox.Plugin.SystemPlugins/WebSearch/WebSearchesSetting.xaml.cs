@@ -29,7 +29,6 @@ namespace Wox.Plugin.SystemPlugins
             List<ComboBoxItem> items = new List<ComboBoxItem>()
             {
                 new ComboBoxItem() {Content = "Google"},
-                new ComboBoxItem() {Content = "Bing" },
                 new ComboBoxItem() {Content = "Baidu"},
             };
             ComboBoxItem selected = items.FirstOrDefault(o => o.Content.ToString() == UserSettingStorage.Instance.WebSearchSuggestionSource);
