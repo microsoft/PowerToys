@@ -19,12 +19,10 @@ Screenshot
 Download
 =========
 
-Wox 1.0 beta has been released. [Check it out](https://github.com/qianlifeng/Wox/releases/tag/v1.0-beta)!
+Download from [release page](https://github.com/qianlifeng/Wox/releases).
 
 * **Windows XP users:** You have to install [.NET Framework 3.5](http://www.microsoft.com/download/details.aspx?id=22) if you have not installed yet.
 * **Windows 8 users:** You have to [enable the .NET Framework 3.5 in Control Panel](http://msdn.microsoft.com/library/hh506443.aspx).
-
-[Backup Download Link](http://woxrelease.qiniudn.com/Wox.1.0.0.185-beta.zip)
 
 Create and Share Plugin
 =========
