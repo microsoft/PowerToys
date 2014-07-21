@@ -32,7 +32,7 @@ namespace Wox.Plugin.SystemPlugins
                     title = subtitle;
                     subtitle = null;
                 }
-                context.API.PushResults(query,context.CurrentPluginMetadata, new List<Result>()
+                context.API.PushResults(query, context.CurrentPluginMetadata, new List<Result>()
                 {
                     new Result()
                     {
@@ -48,24 +48,29 @@ namespace Wox.Plugin.SystemPlugins
                     }
                 });
 
-                if (!string.IsNullOrEmpty(keyword))
+                if (UserSettingStorage.Instance.EnableWebSearchSuggestion && !string.IsNullOrEmpty(keyword))
                 {
-                    ISuggestionSource sugg = new Google();
-                    var result = sugg.GetSuggestions(keyword);
-                    if (result != null)
+                    ISuggestionSource sugg = SuggestionSourceFactory.GetSuggestionSource(
+                            UserSettingStorage.Instance.WebSearchSuggestionSource);
+                    if (sugg != null)
                     {
-                        context.API.PushResults(query,context.CurrentPluginMetadata, result.Select(o => new Result()
+                        var result = sugg.GetSuggestions(keyword);
+                        if (result != null)
                         {
-                            Title = o,
-                            SubTitle = subtitle,
-                            Score = 5,
-                            IcoPath = webSearch.IconPath,
-                            Action = (c) =>
-                            {
-                                Process.Start(webSearch.Url.Replace("{q}", o));
-                                return true;
-                            }
-                        }).ToList());
+                            context.API.PushResults(query, context.CurrentPluginMetadata,
+                                result.Select(o => new Result()
+                                {
+                                    Title = o,
+                                    SubTitle = subtitle,
+                                    Score = 5,
+                                    IcoPath = webSearch.IconPath,
+                                    Action = (c) =>
+                                    {
+                                        Process.Start(webSearch.Url.Replace("{q}", o));
+                                        return true;
+                                    }
+                                }).ToList());
+                        }
                     }
                 }
             }

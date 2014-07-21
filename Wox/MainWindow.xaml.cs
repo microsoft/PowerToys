@@ -55,7 +55,6 @@ namespace Wox
         private string lastQuery;
         private ToolTip toolTip = new ToolTip();
 
-        private bool isCMDMode = false;
         private bool ignoreTextChange = false;
         #endregion
 
@@ -98,7 +97,7 @@ namespace Wox
         {
             Dispatcher.Invoke(new Action(() =>
             {
-                var m = new Msg {Owner = GetWindow(this)};
+                var m = new Msg { Owner = GetWindow(this) };
                 m.Show(title, subTitle, iconPath);
             }));
         }
@@ -324,8 +323,37 @@ namespace Wox
                             }
                         }, TimeSpan.FromSeconds(0), lastQuery);
                     }
-                }, TimeSpan.FromMilliseconds((isCMDMode = tbQuery.Text.StartsWith(">")) ? 0 : 150));
+                }, TimeSpan.FromMilliseconds(ShouldNotDelayQuery ? 0 : 150));
         }
+        private bool ShouldNotDelayQuery
+        {
+            get
+            {
+                return (bool)Dispatcher.Invoke(new Func<bool>(() =>
+                {
+                    return IsCMDMode || IsWebSearchMode;
+                }));
+            }
+        }
+
+        private bool IsCMDMode
+        {
+            get
+            {
+                return tbQuery.Text.StartsWith(">");
+            }
+        }
+
+        private bool IsWebSearchMode
+        {
+            get
+            {
+                Query q = new Query(tbQuery.Text);
+                return !UserSettingStorage.Instance.EnableWebSearchSuggestion &&
+     UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == q.ActionName && o.Enabled);
+            }
+        }
+
 
         private void Border_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -446,11 +474,11 @@ namespace Wox
 
         private void updateCmdMode()
         {
-            var selected = resultCtrl.AcceptSelect();
-            if (selected != null)
+            var currentSelectedItem = resultCtrl.GetActiveResult();
+            if (currentSelectedItem != null)
             {
                 ignoreTextChange = true;
-                tbQuery.Text = ">" + selected.Title;
+                tbQuery.Text = ">" + currentSelectedItem.Title;
                 tbQuery.CaretIndex = tbQuery.Text.Length;
             }
         }
@@ -468,41 +496,41 @@ namespace Wox
 
                 case Key.Down:
                     resultCtrl.SelectNext();
-                    if (isCMDMode) updateCmdMode();
+                    if (IsCMDMode) updateCmdMode();
                     toolTip.IsOpen = false;
                     e.Handled = true;
                     break;
 
                 case Key.Up:
                     resultCtrl.SelectPrev();
-                    if (isCMDMode) updateCmdMode();
+                    if (IsCMDMode) updateCmdMode();
                     toolTip.IsOpen = false;
                     e.Handled = true;
                     break;
 
                 case Key.PageDown:
                     resultCtrl.SelectNextPage();
-                    if (isCMDMode) updateCmdMode();
+                    if (IsCMDMode) updateCmdMode();
                     toolTip.IsOpen = false;
                     e.Handled = true;
                     break;
 
                 case Key.PageUp:
                     resultCtrl.SelectPrevPage();
-                    if (isCMDMode) updateCmdMode();
+                    if (IsCMDMode) updateCmdMode();
                     toolTip.IsOpen = false;
                     e.Handled = true;
                     break;
 
                 case Key.Enter:
-                    AcceptSelect(resultCtrl.AcceptSelect());
+                    AcceptSelect(resultCtrl.GetActiveResult());
                     e.Handled = true;
                     break;
 
                 case Key.Back:
                     if (BackKeyDownEvent != null)
                     {
-                        BackKeyDownEvent(tbQuery,new WoxKeyDownEventArgs()
+                        BackKeyDownEvent(tbQuery, new WoxKeyDownEventArgs()
                         {
                             Query = tbQuery.Text,
                             keyEventArgs = e
@@ -511,7 +539,7 @@ namespace Wox
                     break;
 
                 case Key.Tab:
-                    AcceptSelect(resultCtrl.AcceptSelect());
+                    AcceptSelect(resultCtrl.GetActiveResult());
                     e.Handled = true;
                     break;
             }
@@ -559,7 +587,7 @@ namespace Wox
                     List<Result> l = waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
                     waitShowResultList.Clear();
                     resultCtrl.AddResults(l);
-                })), TimeSpan.FromMilliseconds(isCMDMode ? 0 : 50));
+                })), TimeSpan.FromMilliseconds(ShouldNotDelayQuery ? 0 : 50));
             }
         }
 

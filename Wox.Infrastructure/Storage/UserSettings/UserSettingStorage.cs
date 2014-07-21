@@ -71,6 +71,12 @@ namespace Wox.Infrastructure.Storage.UserSettings
         public OpacityMode OpacityMode { get; set; }
 
         [JsonProperty]
+        public bool EnableWebSearchSuggestion { get; set; }
+
+        [JsonProperty]
+        public string WebSearchSuggestionSource { get; set; }
+
+        [JsonProperty]
         public bool LeaveCmdOpen { get; set; }
 
         [JsonProperty]

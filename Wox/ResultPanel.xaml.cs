@@ -126,7 +126,7 @@ namespace Wox
             }
         }
 
-        public Result AcceptSelect()
+        public Result GetActiveResult()
         {
             int index = lbResults.SelectedIndex;
             if (index < 0) return null;

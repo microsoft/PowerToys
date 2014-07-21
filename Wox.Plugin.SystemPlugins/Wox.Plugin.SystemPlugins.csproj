@@ -79,6 +79,8 @@
     <Compile Include="Calculator.cs" />
     <Compile Include="Program\ProgramSources\FileSystemProgramSource.cs" />
     <Compile Include="Program\ProgramSources\UserStartMenuProgramSource.cs" />
+    <Compile Include="SuggestionSources\Baidu.cs" />
+    <Compile Include="SuggestionSources\SuggestionSourceFactory.cs" />
     <Compile Include="UrlPlugin.cs" />
     <Compile Include="WebSearch\WebSearchesSetting.xaml.cs">
       <DependentUpon>WebSearchesSetting.xaml</DependentUpon>
