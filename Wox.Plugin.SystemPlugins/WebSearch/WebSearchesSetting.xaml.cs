@@ -101,8 +101,12 @@ namespace Wox.Plugin.SystemPlugins
 
         private void ComboBoxSuggestionSource_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            UserSettingStorage.Instance.WebSearchSuggestionSource = ((ComboBoxItem)e.AddedItems[0]).Content.ToString();
-            UserSettingStorage.Instance.Save();
+            if (e.AddedItems.Count > 0)
+            {
+                UserSettingStorage.Instance.WebSearchSuggestionSource =
+                    ((ComboBoxItem) e.AddedItems[0]).Content.ToString();
+                UserSettingStorage.Instance.Save();
+            }
         }
     }
 }
