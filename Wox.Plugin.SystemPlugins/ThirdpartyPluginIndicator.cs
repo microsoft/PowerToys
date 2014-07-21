@@ -38,7 +38,7 @@ namespace Wox.Plugin.SystemPlugins
                         IcoPath = "Images/work.png",
                         Action = (c) =>
                         {
-                            context.ChangeQuery(metadataCopy.ActionKeyword + " ");
+                            context.API.ChangeQuery(metadataCopy.ActionKeyword + " ");
                             return false;
                         },
                     };
@@ -54,7 +54,7 @@ namespace Wox.Plugin.SystemPlugins
                 IcoPath = "Images/work.png",
                 Action = (c) =>
                 {
-                    context.ChangeQuery(n.ActionWord + " ");
+                    context.API.ChangeQuery(n.ActionWord + " ");
                     return false;
                 }
             }));

@@ -140,7 +140,7 @@ namespace Wox.Plugin.SystemPlugins.CMD
 
         private void ExecuteCmd(string cmd)
         {
-            if (context.ShellRun(cmd))
+            if (context.API.ShellRun(cmd))
                 CMDStorage.Instance.AddCmdHistory(cmd);
         }
 

@@ -53,8 +53,8 @@ namespace Wox.Plugin.BrowserBookmark
                 Score = 5,
                 Action = (e) =>
                 {
-                    context.HideApp();
-                    context.ShellRun(c.Url);
+                    context.API.HideApp();
+                    context.API.ShellRun(c.Url);
                     return true;
                 }
             }).ToList();

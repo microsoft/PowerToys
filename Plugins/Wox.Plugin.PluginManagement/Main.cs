@@ -45,7 +45,7 @@ namespace Wox.Plugin.PluginManagement
                 {
                     Action = e =>
                     {
-                        context.ChangeQuery("wpm install ");
+                        context.API.ChangeQuery("wpm install ");
                         return false;
                     }
                 });
@@ -53,7 +53,7 @@ namespace Wox.Plugin.PluginManagement
                 {
                     Action = e =>
                     {
-                        context.ChangeQuery("wpm uninstall ");
+                        context.API.ChangeQuery("wpm uninstall ");
                         return false;
                     }
                 });
@@ -61,7 +61,7 @@ namespace Wox.Plugin.PluginManagement
                 {
                     Action = e =>
                     {
-                        context.ChangeQuery("wpm list");
+                        context.API.ChangeQuery("wpm list");
                         return false;
                     }
                 });
@@ -179,7 +179,7 @@ namespace Wox.Plugin.PluginManagement
                                         }
                                         finally
                                         {
-                                            context.StopLoadingBar();
+                                            context.API.StopLoadingBar();
                                         }
                                     }
                                 });

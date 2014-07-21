@@ -68,8 +68,8 @@ namespace Wox.Plugin.SystemPlugins.Program
                 Score = 0,
                 Action = (e) =>
                 {
-                    context.HideApp();
-                    context.ShellRun(c.ExecutePath);
+                    context.API.HideApp();
+                    context.API.ShellRun(c.ExecutePath);
                     return true;
                 }
             }).ToList();
