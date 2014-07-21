@@ -92,7 +92,9 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
                 }
             }
 
-            return results.OrderByDescending(o => o.Score).Take(5).ToList();
+            List<Result> panelItems = results.OrderByDescending(o => o.Score).Take(5).ToList();
+            panelItems.ForEach(o => o.Score = 0);
+            return panelItems;
         }
 
         private bool MatchProgram(ControlPanelItem item, FuzzyMatcher matcher)
