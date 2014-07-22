@@ -43,7 +43,7 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
         [DllImport("kernel32.dll")]
         static extern IntPtr FindResource(IntPtr hModule, IntPtr lpName, IntPtr lpType);
 
-        static Queue<IntPtr> iconQueue;
+        static IntPtr defaultIconPtr;
 
 
         static RegistryKey nameSpace = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ControlPanel\\NameSpace");
@@ -237,25 +237,19 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
 
                     dataFilePointer = LoadLibraryEx(iconString[0], IntPtr.Zero, LOAD_LIBRARY_AS_DATAFILE);
 
-                    if (iconString.Count < 2)
+                    if (iconString.Count == 2)
                     {
-                        iconString.Add("0");
+                        iconIndex = (IntPtr)sanitizeUint(iconString[1]);
+
+                        iconPtr = LoadImage(dataFilePointer, iconIndex, 1, iconSize, iconSize, 0);
                     }
-
-
-                    iconIndex = (IntPtr)sanitizeUint(iconString[1]);
-
-                    iconPtr = LoadImage(dataFilePointer, iconIndex, 1, iconSize, iconSize, 0);
 
                     if (iconPtr == IntPtr.Zero)
                     {
-                        iconQueue = new Queue<IntPtr>();
+                        defaultIconPtr = IntPtr.Zero;
                         EnumResourceNamesWithID(dataFilePointer, GROUP_ICON, new EnumResNameDelegate(EnumRes), IntPtr.Zero); //Iterate through resources. 
 
-                        while (iconPtr == IntPtr.Zero && iconQueue.Count > 0)
-                        {
-                            iconPtr = LoadImage(dataFilePointer, iconQueue.Dequeue(), 1, iconSize, iconSize, 0);
-                        }
+                        iconPtr = LoadImage(dataFilePointer, defaultIconPtr, 1, iconSize, iconSize, 0);
                     }
 
                     FreeLibrary(dataFilePointer);
@@ -334,8 +328,8 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
         {
             //Debug.WriteLine("Type: " + GET_RESOURCE_NAME(lpszType));
             //Debug.WriteLine("Name: " + GET_RESOURCE_NAME(lpszName));
-            iconQueue.Enqueue(lpszName);
-            return true;
+            defaultIconPtr = lpszName;
+            return false;
         }
     }
 }
