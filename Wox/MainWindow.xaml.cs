@@ -297,7 +297,8 @@ namespace Wox {
 		private bool IsWebSearchMode {
 			get {
 				Query q = new Query(tbQuery.Text);
-				return !UserSettingStorage.Instance.EnableWebSearchSuggestion &&UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == q.ActionName && o.Enabled);
+				return !UserSettingStorage.Instance.EnableWebSearchSuggestion && 
+						UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == q.ActionName && o.Enabled);
 			}
 		}
 
@@ -444,7 +445,7 @@ namespace Wox {
 					if (IsCMDMode) updateCmdMode();
 					toolTip.IsOpen = false;
 					e.Handled = true;
-					break;
+					break;				
 
 				case Key.Back:
 					if (BackKeyDownEvent != null) {
@@ -455,8 +456,8 @@ namespace Wox {
 					}
 					break;
 
-				case Key.Tab:
 				case Key.Enter:
+				case Key.Tab:
 					AcceptSelect(resultCtrl.GetActiveResult());
 					e.Handled = true;
 					break;
