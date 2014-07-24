@@ -350,7 +350,7 @@ namespace Wox
             {
                 Query q = new Query(tbQuery.Text);
                 return !UserSettingStorage.Instance.EnableWebSearchSuggestion &&
-     UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == q.ActionName && o.Enabled);
+						UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == q.ActionName && o.Enabled);
             }
         }
 
@@ -521,12 +521,7 @@ namespace Wox
                     toolTip.IsOpen = false;
                     e.Handled = true;
                     break;
-
-                case Key.Enter:
-                    AcceptSelect(resultCtrl.GetActiveResult());
-                    e.Handled = true;
-                    break;
-
+                
                 case Key.Back:
                     if (BackKeyDownEvent != null)
                     {
@@ -538,6 +533,7 @@ namespace Wox
                     }
                     break;
 
+				case Key.Enter:
                 case Key.Tab:
                     AcceptSelect(resultCtrl.GetActiveResult());
                     e.Handled = true;
