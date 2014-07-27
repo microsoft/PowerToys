@@ -325,14 +325,12 @@ namespace Wox
                     }
                 }, TimeSpan.FromMilliseconds(ShouldNotDelayQuery ? 0 : 150));
         }
+
         private bool ShouldNotDelayQuery
         {
             get
             {
-                return (bool)Dispatcher.Invoke(new Func<bool>(() =>
-                {
-                    return IsCMDMode || IsWebSearchMode;
-                }));
+                return IsCMDMode || IsWebSearchMode;
             }
         }
 
@@ -350,10 +348,9 @@ namespace Wox
             {
                 Query q = new Query(tbQuery.Text);
                 return !UserSettingStorage.Instance.EnableWebSearchSuggestion &&
-						UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == q.ActionName && o.Enabled);
+                        UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == q.ActionName && o.Enabled);
             }
         }
-
 
         private void Border_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -521,7 +518,7 @@ namespace Wox
                     toolTip.IsOpen = false;
                     e.Handled = true;
                     break;
-                
+
                 case Key.Back:
                     if (BackKeyDownEvent != null)
                     {
@@ -533,7 +530,7 @@ namespace Wox
                     }
                     break;
 
-				case Key.Enter:
+                case Key.Enter:
                 case Key.Tab:
                     AcceptSelect(resultCtrl.GetActiveResult());
                     e.Handled = true;
@@ -578,12 +575,10 @@ namespace Wox
                 {
                     waitShowResultList.AddRange(list);
                 }
-                Dispatcher.DelayInvoke("ShowResult", k => resultCtrl.Dispatcher.Invoke(new Action(() =>
-                {
-                    List<Result> l = waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
-                    waitShowResultList.Clear();
-                    resultCtrl.AddResults(l);
-                })), TimeSpan.FromMilliseconds(ShouldNotDelayQuery ? 0 : 50));
+                List<Result> l = waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
+                waitShowResultList.Clear();
+
+                Dispatcher.Invoke(new Action(() => resultCtrl.AddResults(l)));
             }
         }
 
