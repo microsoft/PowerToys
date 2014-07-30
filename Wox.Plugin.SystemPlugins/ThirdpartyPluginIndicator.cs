@@ -85,7 +85,7 @@ namespace Wox.Plugin.SystemPlugins
 
         public override string Description
         {
-            get { return "Provide Third-party plugin actionword suggeestion."; }
+            get { return "Provide Third-party plugin actionword suggestion."; }
         }
     }
 }
