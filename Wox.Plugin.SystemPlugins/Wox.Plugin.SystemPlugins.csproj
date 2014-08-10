@@ -65,15 +65,12 @@
     <Compile Include="Folder\FolderPluginSettings.xaml.cs">
       <DependentUpon>FolderPluginSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Program\Program.cs" />
     <Compile Include="Program\ProgramSetting.xaml.cs">
       <DependentUpon>ProgramSetting.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Program\ProgramSourceSetting.xaml.cs">
-      <DependentUpon>ProgramSourceSetting.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Program\ProgramSources\AppPathsProgramSource.cs" />
     <Compile Include="Program\ProgramSources\CommonStartMenuProgramSource.cs" />
-    <Compile Include="Program\ProgramSources\PortableAppsProgramSource.cs" />
     <Compile Include="Program\IProgramSource.cs" />
     <Compile Include="BaseSystemPlugin.cs" />
     <Compile Include="Calculator.cs" />
@@ -124,10 +121,6 @@
     <Page Include="Program\ProgramSetting.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Program\ProgramSourceSetting.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Sys\SysSettings.xaml">
       <SubType>Designer</SubType>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 
 namespace Wox.Plugin.SystemPlugins.Program
 {
@@ -19,23 +20,26 @@ namespace Wox.Plugin.SystemPlugins.Program
             get; set;
         }
 
-        protected SystemPlugins.Program.Program CreateEntry(string file)
+        protected Program CreateEntry(string file)
         {
-            SystemPlugins.Program.Program p = new SystemPlugins.Program.Program()
+            var p = new Program()
             {
-                Title = global::System.IO.Path.GetFileNameWithoutExtension(file),
+                Title = Path.GetFileNameWithoutExtension(file),
                 IcoPath = file,
                 ExecutePath = file
             };
 
-            switch (global::System.IO.Path.GetExtension(file).ToLower())
+            switch (Path.GetExtension(file).ToLower())
             {
                 case ".exe":
                     p.ExecuteName = global::System.IO.Path.GetFileName(file);
                     try
                     {
                         FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(file);
-                        if (versionInfo.FileDescription != null && versionInfo.FileDescription != string.Empty) p.Title = versionInfo.FileDescription;
+                        if (!string.IsNullOrEmpty(versionInfo.FileDescription))
+                        {
+                            p.Title = versionInfo.FileDescription;
+                        }
                     }
                     catch (Exception) { }
                     break;

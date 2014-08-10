@@ -135,30 +135,6 @@ namespace Wox.Infrastructure.Storage.UserSettings
             return webSearches;
         }
 
-        public List<ProgramSource> LoadDefaultProgramSources()
-        {
-            var list = new List<ProgramSource>();
-            list.Add(new ProgramSource()
-            {
-                BonusPoints = 0,
-                Enabled = true,
-                Type = "CommonStartMenuProgramSource"
-            });
-            list.Add(new ProgramSource()
-            {
-                BonusPoints = 0,
-                Enabled = true,
-                Type = "UserStartMenuProgramSource"
-            });
-            list.Add(new ProgramSource()
-            {
-                BonusPoints = -10,
-                Enabled = true,
-                Type = "AppPathsProgramSource"
-            });
-            return list;
-        }
-
         protected override string ConfigName
         {
             get { return "config"; }
@@ -169,7 +145,7 @@ namespace Wox.Infrastructure.Storage.UserSettings
             Theme = "Dark";
             ReplaceWinR = true;
             WebSearches = LoadDefaultWebSearches();
-            ProgramSources = LoadDefaultProgramSources();
+            ProgramSources = new List<ProgramSource>();
             CustomizedPluginConfigs = new List<CustomizedPluginConfig>();
             Hotkey = "Alt + Space";
             QueryBoxFont = FontFamily.GenericSansSerif.Name;

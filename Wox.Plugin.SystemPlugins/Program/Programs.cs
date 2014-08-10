@@ -1,51 +1,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin.SystemPlugins.Program.ProgramSources;
 
 namespace Wox.Plugin.SystemPlugins.Program
 {
-    public class Program
-    {
-        private static readonly global::System.Text.RegularExpressions.Regex AbbrRegexp = new global::System.Text.RegularExpressions.Regex("[^A-Z0-9]", global::System.Text.RegularExpressions.RegexOptions.Compiled);
-        private string m_Title;
-        public string Title
-        {
-            get
-            {
-                return m_Title;
-            }
-            set
-            {
-                m_Title = value;
-                string pinyin = m_Title.Unidecode();
-                PinyinTitle = pinyin;
-                AbbrTitle = AbbrRegexp.Replace(global::System.Threading.Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(pinyin), "");
-                if (AbbrTitle.Length < 2) AbbrTitle = null;
-            }
-        }
-        public string PinyinTitle { get; private set; }
-        public string AbbrTitle { get; private set; }
-        public string IcoPath { get; set; }
-        public string ExecutePath { get; set; }
-        public string ExecuteName { get; set; }
-        public int Score { get; set; }
-        public IProgramSource Source { get; set; }
-    }
-
     public class Programs : BaseSystemPlugin, ISettingProvider
     {
-        List<Program> installedList = new List<Program>();
-        List<IProgramSource> sources = new List<IProgramSource>();
-        public static Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>() { 
+        public static bool Initing = false;
+        private static object lockObject = new object();
+        private static List<Program> programs = new List<Program>();
+        private static List<IProgramSource> sources = new List<IProgramSource>();
+        private static Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>() { 
             {"FileSystemProgramSource", typeof(FileSystemProgramSource)},
-            {"PortableAppsProgramSource", typeof(PortableAppsProgramSource)},
             {"CommonStartMenuProgramSource", typeof(CommonStartMenuProgramSource)},
             {"UserStartMenuProgramSource", typeof(UserStartMenuProgramSource)},
             {"AppPathsProgramSource", typeof(AppPathsProgramSource)},
-			//{"FileSystemFolderSourceShallow", typeof(FileSystemFolderSourceShallow)},
         };
         private PluginInitContext context;
 
@@ -54,10 +27,8 @@ namespace Wox.Plugin.SystemPlugins.Program
             if (query.RawQuery.Trim().Length <= 1) return new List<Result>();
 
             var fuzzyMather = FuzzyMatcher.Create(query.RawQuery);
-            List<Program> returnList = installedList.Where(o => MatchProgram(o, fuzzyMather)).ToList();
+            List<Program> returnList = programs.Where(o => MatchProgram(o, fuzzyMather)).ToList();
             returnList.ForEach(ScoreFilter);
-            //return ordered list instead of return the score, because programs scores will affect other
-            //plugins, the weight of program should be less than the plugins when they showed at the same time.
             returnList = returnList.OrderByDescending(o => o.Score).ToList();
 
             return returnList.Select(c => new Result()
@@ -88,41 +59,83 @@ namespace Wox.Plugin.SystemPlugins.Program
         protected override void InitInternal(PluginInitContext context)
         {
             this.context = context;
+            LoadPrograms();
+        }
 
-            if (UserSettingStorage.Instance.ProgramSources == null)
-                UserSettingStorage.Instance.ProgramSources = UserSettingStorage.Instance.LoadDefaultProgramSources();
-
-            UserSettingStorage.Instance.ProgramSources.ForEach(source =>
+        public static void LoadPrograms()
+        {
+            lock (lockObject)
             {
-                if (source.Enabled)
+                Initing = true;
+
+                List<ProgramSource> programSources = new List<ProgramSource>();
+                programSources.AddRange(LoadDeaultProgramSources());
+                if (UserSettingStorage.Instance.ProgramSources != null &&
+                    UserSettingStorage.Instance.ProgramSources.Count(o => o.Enabled) > 0)
+                {
+                    programSources.AddRange(UserSettingStorage.Instance.ProgramSources.Where(o => o.Enabled));
+                }
+
+                programSources.ForEach(source =>
                 {
                     Type sourceClass;
                     if (SourceTypes.TryGetValue(source.Type, out sourceClass))
                     {
-                        sources.Add(sourceClass.GetConstructor(
-                            new Type[] { typeof(ProgramSource) }
-                            ).Invoke(new object[] { source }) as IProgramSource);
+                        ConstructorInfo constructorInfo = sourceClass.GetConstructor(new[] { typeof(ProgramSource) });
+                        if (constructorInfo != null)
+                        {
+                            IProgramSource programSource =
+                                constructorInfo.Invoke(new object[] { source }) as IProgramSource;
+                            sources.Add(programSource);
+                        }
                     }
-                    else
-                    {
-                        // TODO: invalid class
-                    }
-                }
-            });
-
-            foreach (var source in sources)
-            {
-                var list = source.LoadPrograms();
-                list.ForEach(o =>
-                {
-                    o.Source = source;
                 });
-                installedList.AddRange(list);
-            }
 
-            // filter duplicate program
-            installedList = installedList.GroupBy(x => new { x.ExecutePath, x.ExecuteName })
-                                         .Select(g => g.First()).ToList();
+                var tempPrograms = new List<Program>();
+                foreach (var source in sources)
+                {
+                    var list = source.LoadPrograms();
+                    list.ForEach(o =>
+                    {
+                        o.Source = source;
+                    });
+                    tempPrograms.AddRange(list);
+                }
+
+                // filter duplicate program
+                tempPrograms = tempPrograms.GroupBy(x => new { x.ExecutePath, x.ExecuteName })
+                    .Select(g => g.First()).ToList();
+
+                programs = tempPrograms;
+                Initing = false;
+            }
+        }
+
+        /// <summary>
+        /// Load program sources that wox always provide
+        /// </summary>
+        private static List<ProgramSource> LoadDeaultProgramSources()
+        {
+            var list = new List<ProgramSource>();
+            list.Add(new ProgramSource()
+            {
+                BonusPoints = 0,
+                Enabled = true,
+                Type = "CommonStartMenuProgramSource"
+            });
+            list.Add(new ProgramSource()
+            {
+                BonusPoints = 0,
+                Enabled = true,
+                Type = "UserStartMenuProgramSource"
+            });
+            list.Add(new ProgramSource()
+            {
+                BonusPoints = -10,
+                Enabled = true,
+                Type = "AppPathsProgramSource"
+            });
+            return list;
         }
 
         private void ScoreFilter(Program p)
@@ -138,7 +151,6 @@ namespace Wox.Plugin.SystemPlugins.Program
             if (p.Title.Contains("卸载") || p.Title.ToLower().Contains("uninstall"))
                 p.Score -= 20;
         }
-
 
         public override string ID
         {
