@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -528,6 +529,10 @@ namespace Wox
                             keyEventArgs = e
                         });
                     }
+                    break;
+
+                case Key.F1:
+                    Process.Start("https://github.com/qianlifeng/Wox/wiki/Wox-Function-Guide");
                     break;
 
                 case Key.Enter:
