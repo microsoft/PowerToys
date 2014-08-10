@@ -16,7 +16,7 @@ namespace Wox.Plugin.SystemPlugins
         protected override List<Result> QueryInternal(Query query)
         {
             var raw = query.RawQuery;
-            if (reg.IsMatch(raw))
+            if (reg.Match(raw).Value == raw)
             {
                 return new List<Result>
                 {
