@@ -51,13 +51,10 @@ namespace Wox.Plugin.SystemPlugins.Sys
 
 		#endregion
 
-
         public System.Windows.Controls.Control CreateSettingPanel()
         {
             return new SysSettings(availableResults);
         }
-
-
 
         protected override List<Result> QueryInternal(Query query)
         {
@@ -96,7 +93,7 @@ namespace Wox.Plugin.SystemPlugins.Sys
 				{
 				    Title = "Log off",
 				    SubTitle = "Log off current user",
-				    Score = 20,
+				    Score = 100,
 				    IcoPath = "Images\\logoff.png",
 				    Action = (c) => ExitWindowsEx(EWX_LOGOFF, 0)
 				},
@@ -104,7 +101,7 @@ namespace Wox.Plugin.SystemPlugins.Sys
 				{
 				    Title = "Lock",
 				    SubTitle = "Lock this computer",
-				    Score = 20,
+				    Score = 100,
 				    IcoPath = "Images\\lock.png",
 				    Action = (c) =>
 				    {
@@ -146,7 +143,7 @@ namespace Wox.Plugin.SystemPlugins.Sys
 				{
 				    Title = "Settings",
 				    SubTitle = "Tweak this app",
-				    Score = 40,
+				    Score = 100,
 				    IcoPath = "Images\\app.png",
 				    Action = (c) =>
 				    {

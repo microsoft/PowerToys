@@ -65,7 +65,7 @@ namespace Wox.Plugin.SystemPlugins.Program
                 Title = c.Title,
                 SubTitle = c.ExecutePath,
                 IcoPath = c.IcoPath,
-                Score = 0,
+                Score = c.Score,
                 Action = (e) =>
                 {
                     context.API.HideApp();
@@ -77,9 +77,9 @@ namespace Wox.Plugin.SystemPlugins.Program
 
         private bool MatchProgram(Program program, FuzzyMatcher matcher)
         {
-            if (program.AbbrTitle != null && (program.Score = matcher.Evaluate(program.AbbrTitle).Score) > 0) return true;
             if ((program.Score = matcher.Evaluate(program.Title).Score) > 0) return true;
             if ((program.Score = matcher.Evaluate(program.PinyinTitle).Score) > 0) return true;
+            if (program.AbbrTitle != null && (program.Score = matcher.Evaluate(program.AbbrTitle).Score) > 0) return true;
             if (program.ExecuteName != null && (program.Score = matcher.Evaluate(program.ExecuteName).Score) > 0) return true;
 
             return false;

@@ -93,7 +93,6 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
             }
 
             List<Result> panelItems = results.OrderByDescending(o => o.Score).Take(5).ToList();
-            panelItems.ForEach(o => o.Score = 0);
             return panelItems;
         }
 
