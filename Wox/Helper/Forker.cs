@@ -105,8 +105,19 @@ namespace Wox.Helper
             ThreadPool.QueueUserWorkItem(delegate
             {
                 Exception exception = null;
-                try { action(); }
-                catch (Exception ex) { exception = ex; }
+                try
+                {
+                    action();
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+#if (DEBUG)
+                    {
+                        throw;
+                    }
+#endif
+                }
                 OnItemComplete(state, exception);
             });
             return this;

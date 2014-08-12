@@ -30,8 +30,10 @@ namespace Wox.Plugin.SystemPlugins.Program.ProgramSources
         public override List<Program> LoadPrograms()
         {
             List<Program> list = new List<Program>();
-            GetAppFromDirectory(BaseDirectory, list);
-
+            if (Directory.Exists(BaseDirectory))
+            {
+                GetAppFromDirectory(BaseDirectory, list);
+            }
             return list;
         }
 
