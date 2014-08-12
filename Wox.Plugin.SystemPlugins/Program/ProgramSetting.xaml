@@ -12,10 +12,14 @@
     </UserControl.Resources>
     <Grid Margin="10">
         <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
-        <ListView x:Name="programSourceView" Grid.Row="0">
+        <DockPanel Grid.Row="0">
+            <Button Height="30" HorizontalAlignment="Right" x:Name="btnReindex" Width="100" Click="btnReindex_Click">Re-Index</Button>
+        </DockPanel>
+        <ListView x:Name="programSourceView" Grid.Row="1">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Location"  Width="400">
@@ -28,7 +32,7 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <DockPanel  Grid.Row="1">
+        <DockPanel  Grid.Row="2">
             <StackPanel x:Name="indexingPanel" Visibility="Hidden" HorizontalAlignment="Left" Orientation="Horizontal">
                 <ProgressBar x:Name="progressBarIndexing" Height="20" Width="80" Minimum="0" Maximum="100" IsIndeterminate="True"></ProgressBar>
                 <TextBlock Margin="10 0 0 0" Height="20" HorizontalAlignment="Center">Indexing</TextBlock>

@@ -90,5 +90,10 @@ namespace Wox.Plugin.SystemPlugins.Program
                 MessageBox.Show("Please select a program source");
             }
         }
+
+        private void btnReindex_Click(object sender, RoutedEventArgs e)
+        {
+            ReIndexing();
+        }
     }
 }
