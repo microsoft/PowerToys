@@ -76,6 +76,9 @@
     <Compile Include="Calculator.cs" />
     <Compile Include="Program\ProgramSources\FileSystemProgramSource.cs" />
     <Compile Include="Program\ProgramSources\UserStartMenuProgramSource.cs" />
+    <Compile Include="Program\ProgramSuffixes.xaml.cs">
+      <DependentUpon>ProgramSuffixes.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SuggestionSources\Baidu.cs" />
     <Compile Include="SuggestionSources\SuggestionSourceFactory.cs" />
     <Compile Include="Sys\SysSettings.xaml.cs">
@@ -119,6 +122,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Program\ProgramSetting.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Program\ProgramSuffixes.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

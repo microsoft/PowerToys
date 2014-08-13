@@ -16,9 +16,10 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
-        <DockPanel Grid.Row="0">
-            <Button Height="30" HorizontalAlignment="Right" x:Name="btnReindex" Width="100" Click="btnReindex_Click">Re-Index</Button>
-        </DockPanel>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Height="30" HorizontalAlignment="Right" x:Name="btnProgramSuffixes" Width="130" Click="BtnProgramSuffixes_OnClick">Index File Type</Button>
+            <Button Height="30" HorizontalAlignment="Right" Margin="10 0 0 0" x:Name="btnReindex" Width="100" Click="btnReindex_Click">Re-Index</Button>
+        </StackPanel>
         <ListView x:Name="programSourceView" Grid.Row="1">
             <ListView.View>
                 <GridView>

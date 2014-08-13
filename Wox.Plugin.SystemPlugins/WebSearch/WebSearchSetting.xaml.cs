@@ -131,8 +131,7 @@ namespace Wox.Plugin.SystemPlugins
             var dlg = new Microsoft.Win32.OpenFileDialog
             {
                 DefaultExt = ".png",
-                Filter =
-                    "JPEG Files (*.jpeg)|*.jpeg|PNG Files (*.png)|*.png|JPG Files (*.jpg)|*.jpg|GIF Files (*.gif)|*.gif"
+                Filter ="Image files (*.jpg, *.jpeg, *.gif, *.png, *.bmp) | *.jpg; *.jpeg; *.gif; *.png, *.bmp"
             };
 
             bool? result = dlg.ShowDialog();

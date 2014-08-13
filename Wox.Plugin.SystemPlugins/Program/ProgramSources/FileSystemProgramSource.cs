@@ -8,17 +8,10 @@ namespace Wox.Plugin.SystemPlugins.Program.ProgramSources
     public class FileSystemProgramSource : AbstractProgramSource
     {
         public string BaseDirectory;
-        public List<string> Suffixes = new List<string>() { "lnk", "exe", "appref-ms" };
 
         public FileSystemProgramSource(string baseDirectory)
         {
             BaseDirectory = baseDirectory;
-        }
-
-        public FileSystemProgramSource(string baseDirectory, List<string> suffixes)
-            : this(baseDirectory)
-        {
-            Suffixes = suffixes;
         }
 
         public FileSystemProgramSource(ProgramSource source)
@@ -41,7 +34,7 @@ namespace Wox.Plugin.SystemPlugins.Program.ProgramSources
         {
             foreach (string file in Directory.GetFiles(path))
             {
-                if (Suffixes.Any(o => file.EndsWith("." + o)))
+                if (UserSettingStorage.Instance.ProgramSuffixes.Any(o => file.EndsWith("." + o)))
                 {
                     Program p = CreateEntry(file);
                     list.Add(p);

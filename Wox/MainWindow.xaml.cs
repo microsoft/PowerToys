@@ -576,13 +576,7 @@ namespace Wox
                     {
                         if (o.AutoAjustScore) o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o);
                     });
-                lock (locker)
-                {
-                    waitShowResultList.AddRange(list);
-                }
-                List<Result> l = waitShowResultList.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
-                waitShowResultList.Clear();
-
+                List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
                 Dispatcher.Invoke(new Action(() => resultCtrl.AddResults(l)));
             }
         }

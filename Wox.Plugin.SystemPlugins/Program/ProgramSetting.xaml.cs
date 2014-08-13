@@ -95,5 +95,12 @@ namespace Wox.Plugin.SystemPlugins.Program
         {
             ReIndexing();
         }
+
+        private void BtnProgramSuffixes_OnClick(object sender, RoutedEventArgs e)
+        {
+            
+            ProgramSuffixes p = new ProgramSuffixes();
+            p.ShowDialog();
+        }
     }
 }
