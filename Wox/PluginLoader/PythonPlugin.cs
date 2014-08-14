@@ -50,7 +50,7 @@ namespace Wox.PluginLoader
                 };
             //Add -B flag to tell python don't write .py[co] files. Because .pyc contains location infos which will prevent python portable
             startInfo.FileName = Path.Combine(woxDirectory, "PythonHome\\pythonw.exe");
-            startInfo.Arguments = string.Format("-B {0} \"{1}\"", context.CurrentPluginMetadata.ExecuteFilePath, request);
+            startInfo.Arguments = string.Format("-B \"{0}\" \"{1}\"", context.CurrentPluginMetadata.ExecuteFilePath, request);
 
             return Execute(startInfo);
         }
@@ -58,7 +58,7 @@ namespace Wox.PluginLoader
         protected override string ExecuteAction(JsonRPCRequestModel rpcRequest)
         {
             startInfo.FileName = Path.Combine(woxDirectory, "PythonHome\\pythonw.exe");
-            startInfo.Arguments = string.Format("-B {0} \"{1}\"", context.CurrentPluginMetadata.ExecuteFilePath, rpcRequest);
+            startInfo.Arguments = string.Format("-B \"{0}\" \"{1}\"", context.CurrentPluginMetadata.ExecuteFilePath, rpcRequest);
             return Execute(startInfo);
         }
     }
