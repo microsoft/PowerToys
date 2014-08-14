@@ -68,7 +68,7 @@ namespace Wox.Infrastructure.Storage.UserSettings
         public double Opacity { get; set; }
 
         [JsonProperty]
-        public List<string> ProgramSuffixes { get; set; }
+        public string ProgramSuffixes { get; set; }
 
         [JsonProperty]
         public OpacityMode OpacityMode { get; set; }
@@ -165,16 +165,10 @@ namespace Wox.Infrastructure.Storage.UserSettings
             {
                 storage.CustomizedPluginConfigs = new List<CustomizedPluginConfig>();
             }
-            if (storage.ProgramSuffixes == null || storage.ProgramSuffixes.Count == 0)
+            if (string.IsNullOrEmpty(storage.ProgramSuffixes))
             {
-                storage.ProgramSuffixes = new List<string>()
-                {
-                    "lnk", 
-                    "exe", 
-                    "appref-ms",
-                    "bat"
-                };
-            }
+                storage.ProgramSuffixes = "lnk;exe;appref-ms;bat";
+            }   
         }
     }
 

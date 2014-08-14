@@ -34,7 +34,7 @@ namespace Wox.Plugin.SystemPlugins.Program.ProgramSources
         {
             foreach (string file in Directory.GetFiles(path))
             {
-                if (UserSettingStorage.Instance.ProgramSuffixes.Any(o => file.EndsWith("." + o)))
+                if (UserSettingStorage.Instance.ProgramSuffixes.Split(';').Any(o => file.EndsWith("." + o)))
                 {
                     Program p = CreateEntry(file);
                     list.Add(p);

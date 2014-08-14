@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Plugin.SystemPlugins.Program
 {
@@ -22,21 +23,20 @@ namespace Wox.Plugin.SystemPlugins.Program
         public ProgramSuffixes()
         {
             InitializeComponent();
+
+            tbSuffixes.Text = UserSettingStorage.Instance.ProgramSuffixes;
         }
 
-        private void btnDelete_OnClick(object sender, RoutedEventArgs e)
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
-            
-        }
+            if (string.IsNullOrEmpty(tbSuffixes.Text))
+            {
+                MessageBox.Show("File suffixes can't be empty");
+                return;
+            }
 
-        private void btnEdit_OnClick(object sender, RoutedEventArgs e)
-        {
-            
-        }
-
-        private void btnAdd_OnClick(object sender, RoutedEventArgs e)
-        {
-            
+            UserSettingStorage.Instance.ProgramSuffixes = tbSuffixes.Text;
+            MessageBox.Show("Sucessfully update file suffixes");
         }
     }
 }
