@@ -65,6 +65,7 @@
     <Compile Include="Folder\FolderPluginSettings.xaml.cs">
       <DependentUpon>FolderPluginSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Program\FileChangeWatcher.cs" />
     <Compile Include="Program\Program.cs" />
     <Compile Include="Program\ProgramSetting.xaml.cs">
       <DependentUpon>ProgramSetting.xaml</DependentUpon>

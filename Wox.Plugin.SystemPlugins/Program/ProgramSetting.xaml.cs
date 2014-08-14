@@ -28,7 +28,7 @@ namespace Wox.Plugin.SystemPlugins.Program
             ThreadPool.QueueUserWorkItem(t =>
             {
                 Dispatcher.Invoke(new Action(() => { indexingPanel.Visibility = Visibility.Visible; }));
-                Programs.LoadPrograms();
+                Programs.IndexPrograms();
                 Dispatcher.Invoke(new Action(() => { indexingPanel.Visibility = Visibility.Hidden; }));
             });
         }

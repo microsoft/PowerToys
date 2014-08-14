@@ -22,7 +22,6 @@ namespace Wox.Plugin.SystemPlugins.Program.ProgramSources
             var list = new List<Program>();
             ReadAppPaths(@"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths", list);
             ReadAppPaths(@"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\App Paths", list); //TODO: need test more on 64-bit
-
             return list;
         }
 

@@ -10,7 +10,7 @@ namespace Wox.Plugin.SystemPlugins.Program
 {
     public class Programs : BaseSystemPlugin, ISettingProvider
     {
-        public static bool Initing = false;
+        private static bool initing;
         private static object lockObject = new object();
         private static List<Program> programs = new List<Program>();
         private static List<IProgramSource> sources = new List<IProgramSource>();
@@ -59,55 +59,59 @@ namespace Wox.Plugin.SystemPlugins.Program
         protected override void InitInternal(PluginInitContext context)
         {
             this.context = context;
-            LoadPrograms();
+            IndexPrograms();
         }
 
-        public static void LoadPrograms()
+        public static void IndexPrograms()
         {
-            lock (lockObject)
+            if (!initing)
             {
-                Initing = true;
-
-                List<ProgramSource> programSources = new List<ProgramSource>();
-                programSources.AddRange(LoadDeaultProgramSources());
-                if (UserSettingStorage.Instance.ProgramSources != null &&
-                    UserSettingStorage.Instance.ProgramSources.Count(o => o.Enabled) > 0)
+                lock (lockObject)
                 {
-                    programSources.AddRange(UserSettingStorage.Instance.ProgramSources.Where(o => o.Enabled));
-                }
+                    initing = true;
 
-                programSources.ForEach(source =>
-                {
-                    Type sourceClass;
-                    if (SourceTypes.TryGetValue(source.Type, out sourceClass))
+                    List<ProgramSource> programSources = new List<ProgramSource>();
+                    programSources.AddRange(LoadDeaultProgramSources());
+                    if (UserSettingStorage.Instance.ProgramSources != null &&
+                        UserSettingStorage.Instance.ProgramSources.Count(o => o.Enabled) > 0)
                     {
-                        ConstructorInfo constructorInfo = sourceClass.GetConstructor(new[] { typeof(ProgramSource) });
-                        if (constructorInfo != null)
-                        {
-                            IProgramSource programSource =
-                                constructorInfo.Invoke(new object[] { source }) as IProgramSource;
-                            sources.Add(programSource);
-                        }
+                        programSources.AddRange(UserSettingStorage.Instance.ProgramSources.Where(o => o.Enabled));
                     }
-                });
 
-                var tempPrograms = new List<Program>();
-                foreach (var source in sources)
-                {
-                    var list = source.LoadPrograms();
-                    list.ForEach(o =>
+                    sources.Clear();
+                    programSources.ForEach(source =>
                     {
-                        o.Source = source;
+                        Type sourceClass;
+                        if (SourceTypes.TryGetValue(source.Type, out sourceClass))
+                        {
+                            ConstructorInfo constructorInfo = sourceClass.GetConstructor(new[] {typeof (ProgramSource)});
+                            if (constructorInfo != null)
+                            {
+                                IProgramSource programSource =
+                                    constructorInfo.Invoke(new object[] {source}) as IProgramSource;
+                                sources.Add(programSource);
+                            }
+                        }
                     });
-                    tempPrograms.AddRange(list);
+
+                    var tempPrograms = new List<Program>();
+                    foreach (var source in sources)
+                    {
+                        var list = source.LoadPrograms();
+                        list.ForEach(o =>
+                        {
+                            o.Source = source;
+                        });
+                        tempPrograms.AddRange(list);
+                    }
+
+                    // filter duplicate program
+                    tempPrograms = tempPrograms.GroupBy(x => new {x.ExecutePath, x.ExecuteName})
+                        .Select(g => g.First()).ToList();
+
+                    programs = tempPrograms;
+                    initing = false;
                 }
-
-                // filter duplicate program
-                tempPrograms = tempPrograms.GroupBy(x => new { x.ExecutePath, x.ExecuteName })
-                    .Select(g => g.First()).ToList();
-
-                programs = tempPrograms;
-                Initing = false;
             }
         }
 

@@ -10,7 +10,6 @@ namespace Wox.Plugin.SystemPlugins.Program.ProgramSources
     {
         [DllImport("shell32.dll")]
         static extern bool SHGetSpecialFolderPath(IntPtr hwndOwner, [Out] StringBuilder lpszPath, int nFolder, bool fCreate);
-        const int CSIDL_COMMON_STARTMENU = 0x16;  // \Windows\Start Menu\Programs
         const int CSIDL_COMMON_PROGRAMS = 0x17;
 
         private static string getPath()
