@@ -36,6 +36,13 @@ namespace Wox.Plugin
 
         public string ExecuteFileName { get; set; }
         public string PluginDirectory { get; set; }
+
+        [Obsolete("This property has been obsoleted, use PluginDirectory instead")]
+        public string PluginDirecotry
+        {
+            get { return PluginDirectory; }
+        }
+
         public string ActionKeyword { get; set; }
         public PluginType PluginType { get; set; }
 
