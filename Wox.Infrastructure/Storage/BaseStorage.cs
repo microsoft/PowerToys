@@ -44,7 +44,10 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        protected virtual void LoadDefaultConfig() { }
+        protected virtual T LoadDefaultConfig()
+        {
+            return storage;
+        }
 
         private void Load()
         {
@@ -61,19 +64,17 @@ namespace Wox.Infrastructure.Storage
                 try
                 {
                     storage = JsonConvert.DeserializeObject<T>(json);
-                    OnAfterLoadConfig(storage);
                 }
                 catch (Exception)
                 {
-                    //no-op
-                    LoadDefaultConfig();
+                    storage = LoadDefaultConfig();
                 }
             }
             else
             {
-                LoadDefaultConfig();
+                storage = LoadDefaultConfig();
             }
-
+            OnAfterLoadConfig(storage);
         }
 
         public void Save()

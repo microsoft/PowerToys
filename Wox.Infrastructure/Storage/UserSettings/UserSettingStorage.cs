@@ -143,7 +143,7 @@ namespace Wox.Infrastructure.Storage.UserSettings
             get { return "config"; }
         }
 
-        protected override void LoadDefaultConfig()
+        protected override UserSettingStorage LoadDefaultConfig()
         {
             Theme = "Dark";
             ReplaceWinR = true;
@@ -157,6 +157,8 @@ namespace Wox.Infrastructure.Storage.UserSettings
             OpacityMode = OpacityMode.Normal;
             LeaveCmdOpen = false;
             HideWhenDeactive = false;
+
+            return this;
         }
 
         protected override void OnAfterLoadConfig(UserSettingStorage storage)
