@@ -384,7 +384,8 @@
   <PropertyGroup>
     <PostBuildEvent>xcopy  /Y  $(ProjectDir)Themes\* $(TargetDir)Themes\
 xcopy  /Y /E  $(ProjectDir)Images\* $(TargetDir)Images\
-del /s /q "$(TargetDir)*.xml"</PostBuildEvent>
+del /s /q "$(TargetDir)*.xml"
+xcopy /Y /D /E $(SolutionDir)PythonHome\* $(TargetDir)PythonHome\</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
