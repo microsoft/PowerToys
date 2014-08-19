@@ -492,17 +492,25 @@ namespace Wox
                     e.Handled = true;
                     break;
 
+                case Key.Tab:
+                    if (globalHotkey.CheckModifiers().ShiftPressed)
+                    {
+                        SelectPrevItem();
+                    }
+                    else
+                    {
+                        SelectNextItem();
+                    }
+                    e.Handled = true;
+                    break;
+
                 case Key.Down:
-                    resultCtrl.SelectNext();
-                    if (IsCMDMode) updateCmdMode();
-                    toolTip.IsOpen = false;
+                    SelectNextItem();
                     e.Handled = true;
                     break;
 
                 case Key.Up:
-                    resultCtrl.SelectPrev();
-                    if (IsCMDMode) updateCmdMode();
-                    toolTip.IsOpen = false;
+                    SelectPrevItem();
                     e.Handled = true;
                     break;
 
@@ -536,11 +544,24 @@ namespace Wox
                     break;
 
                 case Key.Enter:
-                case Key.Tab:
                     AcceptSelect(resultCtrl.GetActiveResult());
                     e.Handled = true;
                     break;
             }
+        }
+
+        private void SelectPrevItem()
+        {
+            resultCtrl.SelectPrev();
+            if (IsCMDMode) updateCmdMode();
+            toolTip.IsOpen = false;
+        }
+
+        private void SelectNextItem()
+        {
+            resultCtrl.SelectNext();
+            if (IsCMDMode) updateCmdMode();
+            toolTip.IsOpen = false;
         }
 
         private void AcceptSelect(Result result)
@@ -551,7 +572,7 @@ namespace Wox
                 {
                     bool hideWindow = result.Action(new ActionContext()
                     {
-                        SpecialKeyState = new GlobalHotkey().CheckModifiers()
+                        SpecialKeyState = globalHotkey.CheckModifiers()
                     });
                     if (hideWindow)
                     {
