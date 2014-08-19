@@ -24,6 +24,16 @@ Download from [release page](https://github.com/qianlifeng/Wox/releases).
 * **Windows XP users:** You have to install [.NET Framework 3.5](http://www.microsoft.com/download/details.aspx?id=22) if you have not installed yet.
 * **Windows 8 users:** You have to [enable the .NET Framework 3.5 in Control Panel](http://msdn.microsoft.com/library/hh506443.aspx).
 
+
+Contribute  
+=========
+
+If you are a developer, please feel free to send a pull request to **Dev** branch. We still have a lot functions and bugs need to do now. Just pick one from [issues page](https://github.com/qianlifeng/Wox/issues) that you think you can fix.  
+
+If you are not a developer, you can also help Wox by contributing the Wox wiki page, for example [Wox Function Guide](https://github.com/qianlifeng/Wox/wiki/Wox-Function-Guide).
+
+
+
 Create and Share Plugin
 =========
 
