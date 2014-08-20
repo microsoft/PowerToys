@@ -49,8 +49,16 @@ namespace Wox.Plugin.SystemPlugins
                         SubTitle = "Copy this number to the clipboard", 
                         Action = (c) =>
                         {
-                            Clipboard.SetText(result.Result);
-                            return true;
+                            try
+                            {
+                                Clipboard.SetText(result.Result);
+                                return true;
+                            }
+                            catch (System.Runtime.InteropServices.ExternalException e)
+                            {
+                                MessageBox.Show("Copy failed, please try later");
+                                return false;
+                            }
                         }
                     } };
                 }
