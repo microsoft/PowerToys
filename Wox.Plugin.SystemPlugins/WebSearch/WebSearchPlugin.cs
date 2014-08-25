@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -42,7 +42,7 @@ namespace Wox.Plugin.SystemPlugins
                         IcoPath = webSearch.IconPath,
                         Action = (c) =>
                         {
-                            Process.Start(webSearch.Url.Replace("{q}", keyword));
+                            Process.Start(webSearch.Url.Replace("{q}", Uri.EscapeDataString(keyword)));
                             return true;
                         }
                     }
@@ -66,7 +66,7 @@ namespace Wox.Plugin.SystemPlugins
                                     IcoPath = webSearch.IconPath,
                                     Action = (c) =>
                                     {
-                                        Process.Start(webSearch.Url.Replace("{q}", o));
+                                        Process.Start(webSearch.Url.Replace("{q}", Uri.EscapeDataString(o)));
                                         return true;
                                     }
                                 }).ToList());
