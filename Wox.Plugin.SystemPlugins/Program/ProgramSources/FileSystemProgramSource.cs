@@ -52,7 +52,11 @@ namespace Wox.Plugin.SystemPlugins.Program.ProgramSources
             }
             catch (UnauthorizedAccessException e)
             {
-                Debug.WriteLine(string.Format("Can't access to directory {0}",path),"WoxDebug");
+                Debug.WriteLine(string.Format("Can't access to directory {0}", path), "WoxDebug");
+            }
+            catch (DirectoryNotFoundException e)
+            {
+                //no-operation
             }
         }
 
