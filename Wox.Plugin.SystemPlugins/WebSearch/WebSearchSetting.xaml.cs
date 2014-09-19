@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -20,6 +21,7 @@ namespace Wox.Plugin.SystemPlugins
 {
     public partial class WebSearchSetting : Window
     {
+        private string defaultWebSearchImageDirectory = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Images\\websearch");
         private WebSearchesSetting settingWindow;
         private bool update;
         private WebSearch updateWebSearch;
@@ -128,10 +130,16 @@ namespace Wox.Plugin.SystemPlugins
 
         private void BtnSelectIcon_OnClick(object sender, RoutedEventArgs e)
         {
+            if(!Directory.Exists(defaultWebSearchImageDirectory))
+            {
+                defaultWebSearchImageDirectory =
+                    System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
+            }
+
             var dlg = new Microsoft.Win32.OpenFileDialog
             {
-                DefaultExt = ".png",
-                Filter ="Image files (*.jpg, *.jpeg, *.gif, *.png, *.bmp) | *.jpg; *.jpeg; *.gif; *.png, *.bmp"
+                InitialDirectory = defaultWebSearchImageDirectory,
+                Filter ="Image files (*.jpg, *.jpeg, *.gif, *.png, *.bmp) |*.jpg; *.jpeg; *.gif; *.png; *.bmp"
             };
 
             bool? result = dlg.ShowDialog();
