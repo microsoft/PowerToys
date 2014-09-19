@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using Wox.Helper;
+using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.SystemPlugins;

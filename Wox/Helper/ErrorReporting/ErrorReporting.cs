@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Windows.Threading;
 using System.Xml;
 using Microsoft.Win32;
+using Wox.Infrastructure.Logger;
 
 namespace Wox.Helper.ErrorReporting
 {

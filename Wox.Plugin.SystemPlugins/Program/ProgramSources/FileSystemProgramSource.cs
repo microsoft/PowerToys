@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using log4net.Repository.Hierarchy;
 using Wox.Infrastructure.Storage.UserSettings;
+using Log = Wox.Infrastructure.Logger.Log;
 
 namespace Wox.Plugin.SystemPlugins.Program.ProgramSources
 {
@@ -52,11 +54,15 @@ namespace Wox.Plugin.SystemPlugins.Program.ProgramSources
             }
             catch (UnauthorizedAccessException e)
             {
-                Debug.WriteLine(string.Format("Can't access to directory {0}", path), "WoxDebug");
+                Log.Warn(string.Format("Can't access to directory {0}", path));
             }
             catch (DirectoryNotFoundException e)
             {
-                //no-operation
+                Log.Warn(string.Format("Directory {0} doesn't exist", path));
+            }
+            catch (PathTooLongException e)
+            {
+                Log.Warn(string.Format("File path too long: {0}", e.Message));
             }
         }
 

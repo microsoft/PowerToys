@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using log4net;
 
-namespace Wox.Helper
+namespace Wox.Infrastructure.Logger
 {
     public class Log
     {

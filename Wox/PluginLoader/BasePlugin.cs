@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using Newtonsoft.Json;
 using Wox.Helper;
 using Wox.Helper.ErrorReporting;
+using Wox.Infrastructure.Logger;
 using Wox.JsonRPC;
 using Wox.Plugin;
 using MessageBox = System.Windows.MessageBox;
@@ -72,7 +73,7 @@ namespace Wox.PluginLoader
                 catch (Exception e)
                 {
                     ErrorReporting.TryShowErrorMessageBox(e.Message, e);
-                    Wox.Helper.Log.Error(e.Message);
+                    Log.Error(e.Message);
                 }
             }
             return null;

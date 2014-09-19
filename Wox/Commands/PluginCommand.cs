@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Wox.Helper;
+using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.PluginLoader;
