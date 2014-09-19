@@ -28,26 +28,22 @@ namespace Wox.Helper.ErrorReporting
 
         public static void DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            if (System.Diagnostics.Debugger.IsAttached) return;
+            if (Debugger.IsAttached) return;
 
             e.Handled = true;
             string error = CreateExceptionReport("System.Windows.Application.DispatcherUnhandledException", e.Exception);
 
             Log.Error(error);
-            if (TryShowErrorMessageBox(error, e.Exception))
-            {
-                Environment.Exit(0);
-            }
+            TryShowErrorMessageBox(error, e.Exception);
         }
         public static void ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
-            if (System.Diagnostics.Debugger.IsAttached) return;
+            if (Debugger.IsAttached) return;
 
             string error = CreateExceptionReport("System.Windows.Forms.Application.ThreadException", e.Exception);
 
             Log.Fatal(error);
             TryShowErrorMessageBox(error, e.Exception);
-            Environment.Exit(0);
         }
 
         private static string CreateExceptionReport(string ev, object exceptionObject)
@@ -98,7 +94,7 @@ namespace Wox.Helper.ErrorReporting
             else
             {
                 sb.AppendLine(exceptionObject.GetType().FullName);
-                sb.AppendLine(new System.Diagnostics.StackTrace().ToString());
+                sb.AppendLine(new StackTrace().ToString());
                 sb.AppendLine("```");
                 sb.AppendLine();
             }

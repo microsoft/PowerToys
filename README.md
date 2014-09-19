@@ -2,4 +2,4 @@ Wox   [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e
 =========
 
 This is Wox Dev branch. We will develop new feature here and merge to master when we want to release a new version.  
-**Please send pull request to this branch if you wanto to contribute codes**
+**Please send pull request to this branch if you want to contribute codes**
