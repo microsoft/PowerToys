@@ -1,5 +1,4 @@
 #encoding=utf8
-
 import json
 import sys
 import inspect
@@ -10,7 +9,7 @@ class Wox(object):
     """
 
     def __init__(self):
-        rpc_request = json.loads(sys.argv[1])
+        rpc_request = json.loads(sys.argv[1],encoding="gb2312")
         self.proxy = rpc_request.get("proxy",{})
         request_method_name = rpc_request.get("method")
         request_parameters = rpc_request.get("parameters")
@@ -31,7 +30,7 @@ class Wox(object):
         """
         alert msg
         """
-        print "DEBUG:" + str(msg)
+        print "DEBUG:{}".format(msg)
         sys.exit()
 
 class WoxAPI(object):
