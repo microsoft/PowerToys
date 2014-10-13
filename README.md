@@ -59,4 +59,3 @@ Most Asked Questions
 2. **How to open setting dialog?**  
 
   Refer to [https://github.com/qianlifeng/Wox/wiki/How-to-open-setting-dialog](https://github.com/qianlifeng/Wox/wiki/How-to-open-setting-dialog)  
-
