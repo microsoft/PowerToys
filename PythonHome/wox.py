@@ -25,7 +25,7 @@ class Wox(object):
         sub class need to override this method
         """
         return []
-    
+
     def debug(self,msg):
         """
         alert msg

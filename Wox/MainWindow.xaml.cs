@@ -392,42 +392,6 @@ namespace Wox
             if (selectAll) tbQuery.SelectAll();
         }
 
-        public void ParseArgs(string[] args)
-        {
-            if (args != null && args.Length > 0)
-            {
-                switch (args[0].ToLower())
-                {
-                    case "reloadplugin":
-                        Plugins.Init();
-                        break;
-
-                    case "query":
-                        if (args.Length > 1)
-                        {
-                            string query = args[1];
-                            tbQuery.Text = query;
-                            tbQuery.SelectAll();
-                        }
-                        break;
-
-                    case "hidestart":
-                        HideApp();
-                        break;
-
-                    case "installplugin":
-                        var path = args[1];
-                        if (!File.Exists(path))
-                        {
-                            MessageBox.Show("Plugin " + path + " didn't exist");
-                            return;
-                        }
-                        PluginInstaller.Install(path);
-                        break;
-                }
-            }
-        }
-
         private void MainWindow_OnDeactivated(object sender, EventArgs e)
         {
             if (UserSettingStorage.Instance.HideWhenDeactive)

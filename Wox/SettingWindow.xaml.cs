@@ -10,10 +10,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using IWshRuntimeLibrary;
-using Microsoft.VisualBasic.ApplicationServices;
-using Wox.Converters;
-using Wox.Infrastructure;
-using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.Helper;
@@ -23,7 +19,6 @@ using Application = System.Windows.Forms.Application;
 using File = System.IO.File;
 using MessageBox = System.Windows.MessageBox;
 using System.Windows.Data;
-using Label = System.Windows.Forms.Label;
 
 namespace Wox
 {
