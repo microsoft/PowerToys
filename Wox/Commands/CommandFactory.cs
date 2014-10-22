@@ -10,21 +10,11 @@ namespace Wox.Commands
 {
     internal static class CommandFactory
     {
-        private static PluginCommand pluginCmd;
-        private static SystemCommand systemCmd;
+        private static PluginCommand pluginCmd = new PluginCommand();
+        private static SystemCommand systemCmd = new SystemCommand();
 
         public static void DispatchCommand(Query query)
         {
-            //lazy init command instance.
-            if (pluginCmd == null)
-            {
-                pluginCmd = new PluginCommand();
-            }
-            if (systemCmd == null)
-            {
-                systemCmd = new SystemCommand();
-            }
-
             if (Plugins.HitThirdpartyKeyword(query))
             {
                 pluginCmd.Dispatch(query);

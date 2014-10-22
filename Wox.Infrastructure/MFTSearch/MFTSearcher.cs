@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -30,13 +31,26 @@ namespace Wox.Infrastructure.MFTSearch
         {
             foreach (DriveInfo drive in DriveInfo.GetDrives())
             {
-                IndexVolume(drive.VolumeLabel);
+                IndexVolume(drive.Name.Replace("\\", ""));
             }
+        }
+
+        public static long IndexedFileCount
+        {
+            get { return cache.FileCount; }
+        }
+        public static long IndexedFolderCount
+        {
+            get { return cache.FolderCount; }
         }
 
         public static List<MFTSearchRecord> Search(string item)
         {
-            return null;
+            if (string.IsNullOrEmpty(item)) return new List<MFTSearchRecord>();
+
+            List<USNRecord> found = cache.FindByName(item);
+            found.ForEach(x => FillPath(x.VolumeName, x, cache));
+            return found.ConvertAll(o => new MFTSearchRecord(o));
         }
 
         private static void AddVolumeRootRecord(string volumeName, ref List<USNRecord> folders)

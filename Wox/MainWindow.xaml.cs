@@ -17,6 +17,7 @@ using NHotkey.Wpf;
 using Wox.Commands;
 using Wox.Helper;
 using Wox.Infrastructure;
+using Wox.Infrastructure.MFTSearch;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;

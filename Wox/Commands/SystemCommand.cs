@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Wox.Infrastructure.MFTSearch;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.SystemPlugins;
@@ -12,9 +13,10 @@ namespace Wox.Commands
 {
     public class SystemCommand : BaseCommand
     {
+        private IEnumerable<PluginPair> allSytemPlugins = Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System);
+
         public override void Dispatch(Query query)
         {
-            var allSytemPlugins = Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System);
             if (UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == query.ActionName && o.Enabled))
             {
                 //websearch mode

@@ -85,21 +85,18 @@ namespace Wox.Infrastructure.MFTSearch
                 return false;
             }
         }
-        public List<USNRecord> FindByName(string filename, out long foundFileCnt, out long fountFolderCnt)
+        public List<USNRecord> FindByName(string filename)
         {
-
+            filename = filename.ToLower();
             var fileQuery = from filesInVolumeDic in _volumes_files.Values
                             from eachFilePair in filesInVolumeDic
-                            where eachFilePair.Value.Name.Contains(filename)
+                            where eachFilePair.Value.Name.ToLower().Contains(filename)
                             select eachFilePair.Value;
 
             var folderQuery = from fldsInVolumeDic in _volumes_folders.Values
                               from eachFldPair in fldsInVolumeDic
-                              where eachFldPair.Value.Name.Contains(filename)
+                              where eachFldPair.Value.Name.ToLower().Contains(filename)
                               select eachFldPair.Value;
-
-            foundFileCnt = fileQuery.Count();
-            fountFolderCnt = folderQuery.Count();
 
             List<USNRecord> result = new List<USNRecord>();
 

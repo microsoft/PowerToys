@@ -32,7 +32,8 @@ namespace Wox.PluginLoader
                 }));
             }
 
-            forker.Join();
+            //if plugin init do heavy works, join here will block the UI
+            //forker.Join();
         }
 
         public static List<PluginPair> AllPlugins

@@ -58,6 +58,9 @@
   <PropertyGroup>
     <StartupObject>Wox.EntryPoint</StartupObject>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Accessibility" />
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
@@ -202,6 +205,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <None Include="app.manifest" />
     <None Include="Themes\Aero Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -379,6 +383,14 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\url.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ControlPanel.png" />
+    <Resource Include="Images\file.png" />
+    <Resource Include="Images\list.png" />
+    <Resource Include="Images\program.png" />
+    <Resource Include="Images\restart.png" />
+    <Resource Include="Images\web_search.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
