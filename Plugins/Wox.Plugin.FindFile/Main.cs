@@ -36,7 +36,7 @@ namespace Wox.Plugin.FindFile
             MFTSearcher.IndexAllVolumes();
             initial = true;
             var searchtimeend = DateTime.Now;
-            Debug.WriteLine(string.Format("{0} file, indexed, {1}ms has spent.", MFTSearcher.IndexedRecordsCount, searchtimeend.Subtract(searchtimestart).TotalMilliseconds));
+            Debug.WriteLine(string.Format("{0} file, indexed, {1}ms has spent.", MFTSearcher.IndexedFileCount, searchtimeend.Subtract(searchtimestart).TotalMilliseconds));
         }
 
         private Result ConvertMFTSearch(MFTSearchRecord record, string query)
