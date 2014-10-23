@@ -9,7 +9,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using MyEverything;
 
 namespace Wox.Infrastructure.MFTSearch
 {
@@ -23,8 +22,8 @@ namespace Wox.Infrastructure.MFTSearch
             List<USNRecord> files;
             List<USNRecord> folders;
             EnumerateVolume(volume, out files, out folders);
-            cache.AddRecord(volume, files, USNRecordType.File);
-            cache.AddRecord(volume, folders, USNRecordType.Folder);
+            //cache.AddRecord(files);
+            //cache.AddRecord(folders);
         }
 
         public static void IndexAllVolumes()
@@ -35,13 +34,9 @@ namespace Wox.Infrastructure.MFTSearch
             }
         }
 
-        public static long IndexedFileCount
+        public static long IndexedRecordsCount
         {
-            get { return cache.FileCount; }
-        }
-        public static long IndexedFolderCount
-        {
-            get { return cache.FolderCount; }
+            get { return cache.RecordsCount; }
         }
 
         public static List<MFTSearchRecord> Search(string item)
@@ -49,7 +44,7 @@ namespace Wox.Infrastructure.MFTSearch
             if (string.IsNullOrEmpty(item)) return new List<MFTSearchRecord>();
 
             List<USNRecord> found = cache.FindByName(item);
-            found.ForEach(x => FillPath(x.VolumeName, x, cache));
+            found.ForEach(x => FillPath(x, cache));
             return found.ConvertAll(o => new MFTSearchRecord(o));
         }
 
@@ -255,14 +250,16 @@ namespace Wox.Infrastructure.MFTSearch
             }
             Marshal.FreeHGlobal(pData);
         }
-        internal static void FillPath(string volume, USNRecord record, MFTSearcherCache db)
+
+        internal static void FillPath(USNRecord record, MFTSearcherCache db)
         {
             if (record == null) return;
-            var fdSource = db.GetFolderSource(volume);
+            var fdSource = db.GetAllRecords();
             string fullpath = record.Name;
             FindRecordPath(record, ref fullpath, fdSource);
             record.FullPath = fullpath;
         }
+
         private static void FindRecordPath(USNRecord curRecord, ref string fullpath, Dictionary<ulong, USNRecord> fdSource)
         {
             if (curRecord.IsVolumeRoot) return;

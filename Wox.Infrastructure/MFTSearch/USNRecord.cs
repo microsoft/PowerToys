@@ -1,5 +1,4 @@
 ﻿using System;
-using MyEverything;
 
 namespace Wox.Infrastructure.MFTSearch
 {

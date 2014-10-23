@@ -17,7 +17,7 @@
         <ListBox.ItemTemplate>
             <DataTemplate>
                 <!-- a result item height is 50 including margin -->
-                <Grid HorizontalAlignment="Stretch" Height="40" VerticalAlignment="Stretch" Margin="5"  Cursor="Hand">
+                <Grid HorizontalAlignment="Stretch" Height="40" VerticalAlignment="Stretch" Margin="5" Cursor="Hand">
                     <Grid.Resources>
                         <converters:ImagePathConverter x:Key="ImageConverter" />
                     </Grid.Resources>

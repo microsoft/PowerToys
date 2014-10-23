@@ -17,16 +17,17 @@ namespace Wox.Commands
 
         public override void Dispatch(Query query)
         {
+            var queryPlugins = allSytemPlugins;
             if (UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == query.ActionName && o.Enabled))
             {
                 //websearch mode
-                allSytemPlugins = new List<PluginPair>()
+                queryPlugins = new List<PluginPair>()
                 {
                     allSytemPlugins.First(o => ((ISystemPlugin)o.Plugin).ID == "565B73353DBF4806919830B9202EE3BF")
                 };
             }
 
-            foreach (PluginPair pair in allSytemPlugins)
+            foreach (PluginPair pair in queryPlugins)
             {
                 PluginPair pair1 = pair;
                 ThreadPool.QueueUserWorkItem(state =>

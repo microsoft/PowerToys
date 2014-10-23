@@ -36,7 +36,7 @@ namespace Wox.Plugin.FindFile
             MFTSearcher.IndexAllVolumes();
             initial = true;
             var searchtimeend = DateTime.Now;
-            Debug.WriteLine(string.Format("{0} file, {1} folder indexed, {2}ms has spent.", MFTSearcher.IndexedFileCount, MFTSearcher.IndexedFolderCount, searchtimeend.Subtract(searchtimestart).TotalMilliseconds));
+            Debug.WriteLine(string.Format("{0} file, indexed, {1}ms has spent.", MFTSearcher.IndexedRecordsCount, searchtimeend.Subtract(searchtimestart).TotalMilliseconds));
         }
 
         private Result ConvertMFTSearch(MFTSearchRecord record, string query)
@@ -67,8 +67,57 @@ namespace Wox.Plugin.FindFile
                         return false;
                     }
                     return true;
-                }
+                },
+                ContextMenu = GetContextMenu(record)
             };
+        }
+
+        private List<Result> GetContextMenu(MFTSearchRecord record)
+        {
+            List<Result> contextMenus = new List<Result>();
+
+            contextMenus.Add(new Result()
+            {
+                Title = "Open",
+                Action = _ =>
+                {
+                    try
+                    {
+                        Process.Start(record.FullPath);
+                    }
+                    catch
+                    {
+                        context.API.ShowMsg("Can't open " + record.FullPath, string.Empty, string.Empty);
+                        return false;
+                    }
+                    return true;
+                },
+                IcoPath = "Images/edit.png"
+            });
+
+            if (!record.IsFolder)
+            {
+                contextMenus.Add(new Result()
+                {
+                    Title = "Open Containing Folder",
+                    Action = _ =>
+                    {
+                        try
+                        {
+                            Process.Start("explorer.exe", string.Format("/select, \"{0}\"", record.FullPath));
+                        }
+                        catch
+                        {
+                            context.API.ShowMsg("Can't open " + record.FullPath, string.Empty, string.Empty);
+                            return false;
+                        }
+                        return true;
+                    },
+                    IcoPath = "Images/folder.png"
+                });
+            }
+
+            return contextMenus;
         }
     }
 }

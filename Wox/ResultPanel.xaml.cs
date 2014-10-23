@@ -14,11 +14,18 @@ namespace Wox
 {
     public partial class ResultPanel : UserControl
     {
-        public event Action<Result> OnMouseClickItem;
+        public event Action<Result> LeftMouseClickEvent;
+        public event Action<Result> RightMouseClickEvent;
 
-        protected virtual void OnOnMouseClickItem(Result result)
+        protected virtual void OnRightMouseClick(Result result)
         {
-            Action<Result> handler = OnMouseClickItem;
+            Action<Result> handler = RightMouseClickEvent;
+            if (handler != null) handler(result);
+        }
+
+        protected virtual void OnLeftMouseClick(Result result)
+        {
+            Action<Result> handler = LeftMouseClickEvent;
             if (handler != null) handler(result);
         }
 
@@ -133,9 +140,13 @@ namespace Wox
         private void LbResults_OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             var item = ItemsControl.ContainerFromElement(lbResults, e.OriginalSource as DependencyObject) as ListBoxItem;
-            if (item != null)
+            if (item != null && e.ChangedButton == MouseButton.Left)
             {
-                OnOnMouseClickItem(item.DataContext as Result);
+                OnLeftMouseClick(item.DataContext as Result);
+            }
+            if (item != null && e.ChangedButton == MouseButton.Right)
+            {
+                OnRightMouseClick(item.DataContext as Result);
             }
         }
 
