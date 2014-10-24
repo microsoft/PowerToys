@@ -47,18 +47,7 @@ namespace Wox.Plugin.SystemPlugins.Program
                 {
                     new Result()
                     {
-                        Title = "Open",
-                        Action = _ =>
-                        {
-                            context.API.HideApp();
-                            context.API.ShellRun(c.ExecutePath);
-                            return true;
-                        },
-                        IcoPath = "Images/open.png"
-                    },
-                    new Result()
-                    {
-                        Title = "Open With Administrator",
+                        Title = "Run As Administrator",
                         Action = _ =>
                         {
                             context.API.HideApp();

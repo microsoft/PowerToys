@@ -76,25 +76,6 @@ namespace Wox.Plugin.FindFile
         {
             List<Result> contextMenus = new List<Result>();
 
-            contextMenus.Add(new Result()
-            {
-                Title = "Open",
-                Action = _ =>
-                {
-                    try
-                    {
-                        Process.Start(record.FullPath);
-                    }
-                    catch
-                    {
-                        context.API.ShowMsg("Can't open " + record.FullPath, string.Empty, string.Empty);
-                        return false;
-                    }
-                    return true;
-                },
-                IcoPath = "Images/open.png"
-            });
-
             if (!record.IsFolder)
             {
                 contextMenus.Add(new Result()
