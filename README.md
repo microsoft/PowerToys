@@ -6,7 +6,7 @@ Features
 =========
 1. Search applications, files (via everything plugin) and chrome bookmarks
 2. Search web contents with shortcuts (e.g. search google with `g keyword` or `youtube keyword`)
-3. Search clipboard history (via clipboard plugin)
+3. Search clipboard history (via clipboard plugin) 
 4. Themes support, get more themes from [http://www.getwox.com/theme](http://www.getwox.com/theme)
 5. Plugin support, get more plugins from [http://www.getwox.com/plugin](http://www.getwox.com/plugin)
 

@@ -9,7 +9,7 @@ namespace Wox.Plugin
 
         void PushResults(Query query,PluginMetadata plugin, List<Result> results);
 
-        bool ShellRun(string cmd);
+        bool ShellRun(string cmd, bool runAsAdministrator = false);
 
         void ChangeQuery(string query, bool requery = false);
 

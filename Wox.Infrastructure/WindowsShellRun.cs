@@ -78,7 +78,7 @@ namespace Wox.Infrastructure
         [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
         static extern bool UrlIs(string pszUrl, int UrlIs);
 
-        static void ShellExecCmdLine(IntPtr hInstance, IntPtr hwnd, string command, string startDir, global::System.Diagnostics.ProcessWindowStyle nShow, ShellExecCmdLineFlags dwSeclFlags)
+        static void ShellExecCmdLine(IntPtr hInstance, IntPtr hwnd, string command, string startDir, global::System.Diagnostics.ProcessWindowStyle nShow, ShellExecCmdLineFlags dwSeclFlags,bool runAsAdministrator = false)
         {
 	        string cmd = command;
             string args = null;
@@ -143,6 +143,7 @@ namespace Wox.Infrastructure
             startInfo.UseShellExecute = true;
             startInfo.Arguments = args;
             startInfo.FileName = cmd;
+            if (runAsAdministrator) startInfo.Verb = "runas";
             startInfo.WindowStyle = global::System.Diagnostics.ProcessWindowStyle.Normal;
             startInfo.ErrorDialog = (dwSeclFlags | ShellExecCmdLineFlags.SECL_NO_UI) == 0;
             startInfo.ErrorDialogParentHandle = hwnd;
@@ -280,17 +281,12 @@ namespace Wox.Infrastructure
                 hresult);
         }
 
-        public static void Start(string cmd)
+        public static void Start(string cmd, bool runAsAdministrator = false)
         {
-            Start(cmd, false);
+            Start(cmd, false, IntPtr.Zero,runAsAdministrator);
         }
 
-        public static void Start(string cmd, bool showErrorDialog)
-        {
-            Start(cmd, false, IntPtr.Zero);
-        }
-
-        public static void Start(string cmd, bool showErrorDialog, IntPtr errorDialogHwnd)
+        public static void Start(string cmd, bool showErrorDialog, IntPtr errorDialogHwnd, bool runAsAdministrator = false)
         {
             cmd = cmd.Trim(); // PathRemoveBlanks
             cmd = Environment.ExpandEnvironmentVariables(cmd); // SHExpandEnvironmentStrings
@@ -306,7 +302,8 @@ namespace Wox.Infrastructure
                     cmd,
                     null, // i have no ideas about this field
                     global::System.Diagnostics.ProcessWindowStyle.Normal,
-                    ShellExecCmdLineFlags.SECL__IGNORE_ERROR | ShellExecCmdLineFlags.SECL_USE_IDLIST | ShellExecCmdLineFlags.SECL_LOG_USAGE | (showErrorDialog ? 0 : ShellExecCmdLineFlags.SECL_NO_UI)
+                    ShellExecCmdLineFlags.SECL__IGNORE_ERROR | ShellExecCmdLineFlags.SECL_USE_IDLIST | ShellExecCmdLineFlags.SECL_LOG_USAGE | (showErrorDialog ? 0 : ShellExecCmdLineFlags.SECL_NO_UI),
+                    runAsAdministrator
                 );
                 if (!string.IsNullOrEmpty(home) && Directory.Exists(home)) Environment.CurrentDirectory = oldCwd;
             }
