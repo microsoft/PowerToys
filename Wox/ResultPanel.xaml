@@ -7,7 +7,7 @@
              mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100">
 
     <!-- set max height of listbox to allow 6 results showed at once -->
-    <ListBox x:Name="lbResults" MaxHeight="300" PreviewMouseDown="LbResults_OnPreviewMouseDown" Style="{DynamicResource BaseListboxStyle}" SelectionChanged ="lbResults_SelectionChanged"  Focusable="False"  KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Standard">
+    <ListBox x:Name="lbResults" MaxHeight="300" HorizontalContentAlignment="Stretch" PreviewMouseDown="LbResults_OnPreviewMouseDown" Style="{DynamicResource BaseListboxStyle}" SelectionChanged ="lbResults_SelectionChanged"  Focusable="False"  KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Standard">
         <ListBox.Resources>
             <!--SelectedItem with focus-->
             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{DynamicResource ItemSelectedBackgroundColor}"/>
@@ -24,6 +24,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32"></ColumnDefinition>
                         <ColumnDefinition/>
+                        <ColumnDefinition x:Name="contextMenuDefinition" Width="0"/>
                     </Grid.ColumnDefinitions>
                     <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" Source="{Binding FullIcoPath,Converter={StaticResource ImageConverter},IsAsync=True}" >
                     </Image>
@@ -32,14 +33,16 @@
                             <RowDefinition></RowDefinition>
                             <RowDefinition Height="Auto" x:Name="SubTitleRowDefinition"></RowDefinition>
                         </Grid.RowDefinitions>
-                        <TextBlock Style="{DynamicResource ItemTitleStyle}" VerticalAlignment="Center" ToolTip="{Binding Title}" x:Name="tbTitle" Text="{Binding Title}"></TextBlock>
+                        <TextBlock Style="{DynamicResource ItemTitleStyle}" DockPanel.Dock="Left" VerticalAlignment="Center" ToolTip="{Binding Title}" x:Name="tbTitle" Text="{Binding Title}"></TextBlock>
                         <TextBlock Style="{DynamicResource ItemSubTitleStyle}" ToolTip="{Binding SubTitle}" Visibility="{Binding SubTitle, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding SubTitle}"></TextBlock>
                     </Grid>
+                    <Image Grid.Column="2" VerticalAlignment="Center" Margin="5 0 0 0" Width="12" x:Name="contextMenu" Source="Images/menu.png" ToolTip="Shift + Enter to open context menu"></Image>
                 </Grid>
                 <DataTemplate.Triggers>
                     <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}}, Path=IsSelected}" Value="True">
                         <Setter TargetName="tbTitle" Property="Style" Value="{DynamicResource ItemTitleSelectedStyle}"/>
                         <Setter TargetName="tbSubTitle" Property="Style" Value="{DynamicResource ItemSubTitleSelectedStyle}"/>
+                        <Setter TargetName="contextMenuDefinition" Property="Width" Value="{Binding ContextMenu, Converter={converters:ContextMenuEmptyToWidthConverter}}"/>
                     </DataTrigger>
                 </DataTemplate.Triggers>
             </DataTemplate>

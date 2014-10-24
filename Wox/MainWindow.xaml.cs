@@ -720,14 +720,14 @@ namespace Wox
             this.Opacity = this.AllowsTransparency ? UserSettingStorage.Instance.Opacity : 1;
         }
 
-        public bool ShellRun(string cmd)
+        public bool ShellRun(string cmd, bool runAsAdministrator = false)
         {
             try
             {
                 if (string.IsNullOrEmpty(cmd))
                     throw new ArgumentNullException();
 
-                Wox.Infrastructure.WindowsShellRun.Start(cmd);
+                WindowsShellRun.Start(cmd, runAsAdministrator);
                 return true;
             }
             catch (Exception ex)

@@ -92,7 +92,7 @@ namespace Wox.Plugin.FindFile
                     }
                     return true;
                 },
-                IcoPath = "Images/edit.png"
+                IcoPath = "Images/open.png"
             });
 
             if (!record.IsFolder)
