@@ -16,7 +16,7 @@ namespace Wox.Test
             var searchtimestart = DateTime.Now;
             MFTSearcher.IndexAllVolumes();
             var searchtimeend = DateTime.Now;
-            Console.WriteLine(string.Format("{0} file indexed, {1}ms has spent.", MFTSearcher.IndexedRecordsCount, searchtimeend.Subtract(searchtimestart).TotalMilliseconds));
+            Console.WriteLine(string.Format("{0} file indexed, {1}ms has spent.", MFTSearcher.IndexedFileCount, searchtimeend.Subtract(searchtimestart).TotalMilliseconds));
 
             searchtimestart = DateTime.Now;
             List<MFTSearchRecord> mftSearchRecords = MFTSearcher.Search("q");
