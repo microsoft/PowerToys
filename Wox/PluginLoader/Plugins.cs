@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Wox.Helper;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
@@ -20,20 +21,16 @@ namespace Wox.PluginLoader
             plugins.AddRange(new CSharpPluginLoader().LoadPlugin(pluginMetadatas));
             plugins.AddRange(new BasePluginLoader<PythonPlugin>().LoadPlugin(pluginMetadatas));
 
-            Forker forker = new Forker();
             foreach (PluginPair pluginPair in plugins)
             {
                 PluginPair pair = pluginPair;
-                forker.Fork(() => pair.Plugin.Init(new PluginInitContext()
+                ThreadPool.QueueUserWorkItem(o => pair.Plugin.Init(new PluginInitContext()
                 {
                     CurrentPluginMetadata = pair.Metadata,
                     Proxy = HttpProxy.Instance,
                     API = App.Window
                 }));
             }
-
-            //if plugin init do heavy works, join here will block the UI
-            //forker.Join();
         }
 
         public static List<PluginPair> AllPlugins

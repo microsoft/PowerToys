@@ -56,7 +56,7 @@
     <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>Wox.EntryPoint</StartupObject>
+    <StartupObject>Wox.App</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -71,7 +71,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\log4net.2.0.3\lib\net35-full\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net35\Newtonsoft.Json.dll</HintPath>
@@ -90,6 +89,7 @@
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Printing" />
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
@@ -106,13 +106,20 @@
     <Reference Include="WPFToolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
+    <Page Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </ApplicationDefinition>
+    </Page>
     <Compile Include="ActionKeyword.xaml.cs">
       <DependentUpon>ActionKeyword.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CommandArgs\CommandArgsFactory.cs" />
+    <Compile Include="CommandArgs\HideStartCommandArg.cs" />
+    <Compile Include="CommandArgs\ICommandArg.cs" />
+    <Compile Include="CommandArgs\InstallPluginCommandArg.cs" />
+    <Compile Include="CommandArgs\PluginDebuggerCommandArg.cs" />
+    <Compile Include="CommandArgs\QueryCommandArg.cs" />
+    <Compile Include="CommandArgs\ReloadPluginCommandArg.cs" />
     <Compile Include="Commands\BaseCommand.cs" />
     <Compile Include="Commands\CommandFactory.cs" />
     <Compile Include="Commands\PluginCommand.cs" />
@@ -125,9 +132,9 @@
       <DependentUpon>WPFErrorReportingDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helper\FontHelper.cs" />
-    <Compile Include="Helper\Forker.cs" />
     <Compile Include="Helper\HttpProxy.cs" />
     <Compile Include="Helper\ImageLoader.cs" />
+    <Compile Include="Helper\SingleInstance.cs" />
     <Compile Include="Helper\SyntaxSugars.cs" />
     <Compile Include="Helper\WallpaperPathRetrieval.cs" />
     <Compile Include="Helper\WindowIntelopHelper.cs" />

@@ -43,6 +43,8 @@ namespace Wox.PluginLoader
                         JsonRPCResult result1 = result;
                         result.Action = (c) =>
                         {
+                            if (result1.JsonRPCAction == null) return false;
+
                             if (!string.IsNullOrEmpty(result1.JsonRPCAction.Method))
                             {
                                 if (result1.JsonRPCAction.Method.StartsWith("Wox."))
