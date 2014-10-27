@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Wox.Infrastructure.MFTSearch
+namespace Wox.Plugin.FindFile.MFTSearch
 {
     internal class USNChangeReason
     {

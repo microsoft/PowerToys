@@ -2,29 +2,24 @@
  *  Thanks to the https://github.com/yiwenshengmei/MyEverything, we can bring MFT search to Wox
  * 
  */
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using MyEverything;
 
-namespace Wox.Infrastructure.MFTSearch
+namespace Wox.Plugin.FindFile.MFTSearch
 {
 
     public class MFTSearcher
     {
         private static MFTSearcherCache cache = new MFTSearcherCache();
 
-        public static void IndexVolume(string volume)
+        private static void IndexVolume(string volume)
         {
-            List<USNRecord> files;
-            List<USNRecord> folders;
-            EnumerateVolume(volume, out files, out folders);
-            cache.AddRecord(volume, files, USNRecordType.File);
-            cache.AddRecord(volume, folders, USNRecordType.Folder);
+            cache.CheckHashTableKey(volume);
+            EnumerateVolume(volume,cache.VolumeRecords[volume]);
         }
 
         public static void IndexAllVolumes()
@@ -37,11 +32,7 @@ namespace Wox.Infrastructure.MFTSearch
 
         public static long IndexedFileCount
         {
-            get { return cache.FileCount; }
-        }
-        public static long IndexedFolderCount
-        {
-            get { return cache.FolderCount; }
+            get { return cache.RecordsCount; }
         }
 
         public static List<MFTSearchRecord> Search(string item)
@@ -53,7 +44,7 @@ namespace Wox.Infrastructure.MFTSearch
             return found.ConvertAll(o => new MFTSearchRecord(o));
         }
 
-        private static void AddVolumeRootRecord(string volumeName, ref List<USNRecord> folders)
+        private static void AddVolumeRootRecord(string volumeName, Dictionary<ulong, USNRecord> files)
         {
             string rightVolumeName = string.Concat("\\\\.\\", volumeName);
             rightVolumeName = string.Concat(rightVolumeName, Path.DirectorySeparatorChar);
@@ -74,7 +65,7 @@ namespace Wox.Infrastructure.MFTSearch
                     UInt64 fileIndexHigh = (UInt64)fi.FileIndexHigh;
                     UInt64 indexRoot = (fileIndexHigh << 32) | fi.FileIndexLow;
 
-                    folders.Add(new USNRecord
+                    files.Add(indexRoot,new USNRecord
                     {
                         FRN = indexRoot,
                         Name = volumeName,
@@ -96,20 +87,19 @@ namespace Wox.Infrastructure.MFTSearch
                 throw new IOException("Unable to get root frn entry", new Win32Exception(Marshal.GetLastWin32Error()));
             }
         }
-        private static void EnumerateVolume(string volumeName, out List<USNRecord> files, out List<USNRecord> flds)
+
+        private static void EnumerateVolume(string volumeName, Dictionary<ulong, USNRecord> files)
         {
-            files = new List<USNRecord>();
-            flds = new List<USNRecord>();
             IntPtr medBuffer = IntPtr.Zero;
             IntPtr pVolume = IntPtr.Zero;
             try
             {
-                AddVolumeRootRecord(volumeName, ref flds);
+                AddVolumeRootRecord(volumeName,files);
                 pVolume = GetVolumeJournalHandle(volumeName);
                 EnableVomuleJournal(pVolume);
 
                 SetupMFTEnumInBuffer(ref medBuffer, pVolume);
-                EnumerateFiles(volumeName, pVolume, medBuffer, ref files, ref flds);
+                EnumerateFiles(volumeName, pVolume, medBuffer, files);
             }
             catch (Exception e)
             {
@@ -134,6 +124,7 @@ namespace Wox.Infrastructure.MFTSearch
                 }
             }
         }
+
         internal static IntPtr GetVolumeJournalHandle(string volumeName)
         {
             string vol = string.Concat("\\\\.\\", volumeName);
@@ -210,7 +201,8 @@ namespace Wox.Infrastructure.MFTSearch
                 throw new IOException("DeviceIoControl() returned false", new Win32Exception(Marshal.GetLastWin32Error()));
             }
         }
-        unsafe private static void EnumerateFiles(string volumeName, IntPtr pVolume, IntPtr medBuffer, ref List<USNRecord> files, ref List<USNRecord> folders)
+
+        unsafe private static void EnumerateFiles(string volumeName, IntPtr pVolume, IntPtr medBuffer, Dictionary<ulong, USNRecord> files)
         {
             IntPtr pData = Marshal.AllocHGlobal(sizeof(UInt64) + 0x10000);
             PInvokeWin32.ZeroMemory(pData, sizeof(UInt64) + 0x10000);
@@ -225,28 +217,14 @@ namespace Wox.Infrastructure.MFTSearch
                 {
                     PInvokeWin32.USN_RECORD usn = new PInvokeWin32.USN_RECORD(pUsnRecord);
 
-                    if (usn.IsFolder)
+                    files.Add(usn.FRN,new USNRecord
                     {
-                        folders.Add(new USNRecord
-                        {
-                            Name = usn.FileName,
-                            ParentFrn = usn.ParentFRN,
-                            FRN = usn.FRN,
-                            IsFolder = true,
-                            VolumeName = volumeName
-                        });
-                    }
-                    else
-                    {
-                        files.Add(new USNRecord
-                        {
-                            Name = usn.FileName,
-                            ParentFrn = usn.ParentFRN,
-                            FRN = usn.FRN,
-                            IsFolder = false,
-                            VolumeName = volumeName
-                        });
-                    }
+                        Name = usn.FileName,
+                        ParentFrn = usn.ParentFRN,
+                        FRN = usn.FRN,
+                        IsFolder = usn.IsFolder,
+                        VolumeName = volumeName
+                    });
 
                     pUsnRecord = new IntPtr(pUsnRecord.ToInt32() + usn.RecordLength);
                     outBytesReturned -= usn.RecordLength;
@@ -255,14 +233,16 @@ namespace Wox.Infrastructure.MFTSearch
             }
             Marshal.FreeHGlobal(pData);
         }
+
         internal static void FillPath(string volume, USNRecord record, MFTSearcherCache db)
         {
             if (record == null) return;
-            var fdSource = db.GetFolderSource(volume);
+            var fdSource = db.GetVolumeRecords(volume);
             string fullpath = record.Name;
             FindRecordPath(record, ref fullpath, fdSource);
             record.FullPath = fullpath;
         }
+
         private static void FindRecordPath(USNRecord curRecord, ref string fullpath, Dictionary<ulong, USNRecord> fdSource)
         {
             if (curRecord.IsVolumeRoot) return;

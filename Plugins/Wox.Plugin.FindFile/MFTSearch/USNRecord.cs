@@ -1,7 +1,6 @@
 ﻿using System;
-using MyEverything;
 
-namespace Wox.Infrastructure.MFTSearch
+namespace Wox.Plugin.FindFile.MFTSearch
 {
     public class USNRecord
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace Wox.Infrastructure.MFTSearch {
+namespace Wox.Plugin.FindFile.MFTSearch {
     public class PInvokeWin32
     {
 

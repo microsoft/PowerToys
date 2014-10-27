@@ -49,7 +49,6 @@
     <Compile Include="MFTSearch\PInvokeWin32.cs" />
     <Compile Include="MFTSearch\USNChangeReason.cs" />
     <Compile Include="MFTSearch\USNRecord.cs" />
-    <Compile Include="MFTSearch\USNRecordType.cs" />
     <Compile Include="MFTSearch\VolumeMonitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

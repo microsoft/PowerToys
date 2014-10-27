@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Diagnostics;
-using System.IO;
-using Wox.Infrastructure.MFTSearch;
 
-namespace MyEverything
+namespace Wox.Plugin.FindFile.MFTSearch
 {
     internal class VolumeMonitor
     {
-
         public Action<USNRecord> RecordAddedEvent;
         public Action<USNRecord> RecordDeletedEvent;
         public Action<USNRecord, USNRecord> RecordRenameEvent;
@@ -32,7 +27,7 @@ namespace MyEverything
             IntPtr pMonitorVolume = MFTSearcher.GetVolumeJournalHandle(volume);
             uint bytesReturned = 0;
             PInvokeWin32.USN_JOURNAL_DATA ujd = new PInvokeWin32.USN_JOURNAL_DATA();
-            Wox.Infrastructure.MFTSearch.MFTSearcher.QueryUSNJournal(pMonitorVolume, out ujd, out bytesReturned);
+            MFTSearcher.QueryUSNJournal(pMonitorVolume, out ujd, out bytesReturned);
 
             // 构建输入参数
             PInvokeWin32.READ_USN_JOURNAL_DATA rujd = new PInvokeWin32.READ_USN_JOURNAL_DATA();
@@ -62,7 +57,7 @@ namespace MyEverything
                 Marshal.StructureToPtr(rujd, prujd, true);
 
                 Debug.WriteLine(string.Format("\nMoniting on {0}......", volume));
-                IntPtr pVolume = Wox.Infrastructure.MFTSearch.MFTSearcher.GetVolumeJournalHandle(volume);
+                IntPtr pVolume = MFTSearcher.GetVolumeJournalHandle(volume);
 
                 bool fok = PInvokeWin32.DeviceIoControl(pVolume,
                     PInvokeWin32.FSCTL_READ_USN_JOURNAL,
@@ -89,7 +84,7 @@ namespace MyEverything
         private void ProcessUSN(PInvokeWin32.USN_RECORD usn, string volume, MFTSearcherCache db)
         {
             var dbCached = db.FindByFrn(volume, usn.FRN);
-            Wox.Infrastructure.MFTSearch.MFTSearcher.FillPath(volume, dbCached, db);
+            MFTSearcher.FillPath(volume, dbCached, db);
             Debug.WriteLine(string.Format("------USN[frn={0}]------", usn.FRN));
             Debug.WriteLine(string.Format("FileName={0}, USNChangeReason={1}", usn.FileName, USNChangeReason.ReasonPrettyFormat(usn.Reason)));
             Debug.WriteLine(string.Format("FileName[Cached]={0}", dbCached == null ? "NoCache" : dbCached.FullPath));
@@ -111,7 +106,7 @@ namespace MyEverything
             }
             else
             {
-                Wox.Infrastructure.MFTSearch.MFTSearcher.FillPath(volume, cached, db);
+                MFTSearcher.FillPath(volume, cached, db);
                 var deleteok = db.DeleteRecord(volume, usn.FRN);
                 Debug.WriteLine(string.Format(">>>> File {0} deleted {1}.", cached.FullPath, deleteok ? "successful" : "fail"));
                 if (RecordDeletedEvent != null)
@@ -122,14 +117,13 @@ namespace MyEverything
         {
             USNRecord newRecord = USNRecord.ParseUSN(volume, usn);
             //string fullpath = newRecord.Name;
-            //db.FindRecordPath(newRecord, ref fullpath, db.GetFolderSource(volume));
+            //db.FindRecordPath(newRecord, ref fullpath, db.GetVolumeRecords(volume));
             //newRecord.FullPath = fullpath;
             var oldRecord = db.FindByFrn(volume, usn.FRN);
-            Wox.Infrastructure.MFTSearch.MFTSearcher.FillPath(volume, oldRecord, db);
-            Wox.Infrastructure.MFTSearch.MFTSearcher.FillPath(volume, newRecord, db);
+            MFTSearcher.FillPath(volume, oldRecord, db);
+            MFTSearcher.FillPath(volume, newRecord, db);
             Debug.WriteLine(string.Format(">>>> RenameFile {0} to {1}", oldRecord.FullPath, newRecord.FullPath));
-            db.UpdateRecord(volume, newRecord,
-                usn.IsFolder ? USNRecordType.Folder : USNRecordType.File);
+            db.UpdateRecord(volume, newRecord);
             if (RecordRenameEvent != null) RecordRenameEvent(oldRecord, newRecord);
             if (newRecord.FullPath.Contains("$RECYCLE.BIN"))
             {
@@ -140,10 +134,10 @@ namespace MyEverything
         {
             USNRecord record = USNRecord.ParseUSN(volume, usn);
             //string fullpath = record.Name;
-            //db.FindRecordPath(record, ref fullpath, db.GetFolderSource(volume));
+            //db.FindRecordPath(record, ref fullpath, db.GetVolumeRecords(volume));
             //record.FullPath = fullpath;
-            db.AddRecord(volume, record, usn.IsFolder ? USNRecordType.Folder : USNRecordType.File);
-            Wox.Infrastructure.MFTSearch.MFTSearcher.FillPath(volume, record, db);
+            db.AddRecord(volume, record);
+            MFTSearcher.FillPath(volume, record, db);
             Debug.WriteLine(string.Format(">>>> NewFile: {0}", record.FullPath));
             if (RecordAddedEvent != null)
                 RecordAddedEvent(record);

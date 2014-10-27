@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Wox.Infrastructure.MFTSearch
+﻿namespace Wox.Plugin.FindFile.MFTSearch
 {
     public class MFTSearchRecord
     {

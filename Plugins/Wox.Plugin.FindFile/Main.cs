@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Wox.Infrastructure;
-using Wox.Infrastructure.MFTSearch;
+using Wox.Plugin.FindFile.MFTSearch;
 
 namespace Wox.Plugin.FindFile
 {
