@@ -52,6 +52,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Plugins\Wox.Plugin.FindFile\Wox.Plugin.FindFile.csproj">
+      <Project>{84EA88B4-71F2-4A3D-9771-D7B0244C0D81}</Project>
+      <Name>Wox.Plugin.FindFile</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj">
       <Project>{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}</Project>
       <Name>Wox.Infrastructure</Name>

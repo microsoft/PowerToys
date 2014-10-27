@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Wox.Infrastructure.MFTSearch;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.SystemPlugins;

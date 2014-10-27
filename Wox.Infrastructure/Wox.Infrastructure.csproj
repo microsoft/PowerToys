@@ -31,7 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
@@ -57,14 +57,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Logger\Log.cs" />
-    <Compile Include="MFTSearch\MFTSearcher.cs" />
-    <Compile Include="MFTSearch\MFTSearcherCache.cs" />
-    <Compile Include="MFTSearch\MFTSearchRecord.cs" />
-    <Compile Include="MFTSearch\USNRecord.cs" />
-    <Compile Include="MFTSearch\USNRecordType.cs" />
-    <Compile Include="MFTSearch\PInvokeWin32.cs" />
-    <Compile Include="MFTSearch\USNChangeReason.cs" />
-    <Compile Include="MFTSearch\VolumeMonitor.cs" />
     <Compile Include="PeHeaderReader.cs" />
     <Compile Include="Storage\UserSettings\CustomizedPluginConfig.cs" />
     <Compile Include="Storage\UserSettings\FolderLink.cs" />

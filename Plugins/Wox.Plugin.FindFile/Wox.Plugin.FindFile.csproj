@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -41,6 +43,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Main.cs" />
+    <Compile Include="MFTSearch\MFTSearcher.cs" />
+    <Compile Include="MFTSearch\MFTSearcherCache.cs" />
+    <Compile Include="MFTSearch\MFTSearchRecord.cs" />
+    <Compile Include="MFTSearch\PInvokeWin32.cs" />
+    <Compile Include="MFTSearch\USNChangeReason.cs" />
+    <Compile Include="MFTSearch\USNRecord.cs" />
+    <Compile Include="MFTSearch\USNRecordType.cs" />
+    <Compile Include="MFTSearch\VolumeMonitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
