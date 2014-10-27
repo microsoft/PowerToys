@@ -34,6 +34,7 @@ namespace Wox.Test
         {
             long oldWorkingSet = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
             MFTSearcher.IndexAllVolumes();
+            GC.Collect();
             long newWorkingSet = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
             Console.WriteLine(string.Format("Index: {0}M", (newWorkingSet - oldWorkingSet)/(1024*1024)));
 
