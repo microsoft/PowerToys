@@ -5,12 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Windows.Controls;
 using Wox.Infrastructure;
 using Wox.Plugin.FindFile.MFTSearch;
 
 namespace Wox.Plugin.FindFile
 {
-    public class Main : IPlugin
+    public class Main : IPlugin, ISettingProvider
     {
         private PluginInitContext context;
         private bool initial = false;
@@ -78,27 +79,36 @@ namespace Wox.Plugin.FindFile
 
             if (!record.IsFolder)
             {
-                contextMenus.Add(new Result()
+                foreach (ContextMenu contextMenu in FindFileContextMenuStorage.Instance.ContextMenus)
                 {
-                    Title = "Open Containing Folder",
-                    Action = _ =>
+                    contextMenus.Add(new Result()
                     {
-                        try
+                        Title = contextMenu.Name,
+                        Action = _ =>
                         {
-                            Process.Start("explorer.exe", string.Format("/select, \"{0}\"", record.FullPath));
-                        }
-                        catch
-                        {
-                            context.API.ShowMsg("Can't open " + record.FullPath, string.Empty, string.Empty);
-                            return false;
-                        }
-                        return true;
-                    },
-                    IcoPath = "Images/folder.png"
-                });
+                            string argument = contextMenu.Argument.Replace("{path}", record.FullPath);
+                            try
+                            {
+                                Process.Start(contextMenu.Command,argument);
+                            }
+                            catch
+                            {
+                                context.API.ShowMsg("Can't start " + record.FullPath, string.Empty, string.Empty);
+                                return false;
+                            }
+                            return true;
+                        },
+                        IcoPath = "Images/list.png"
+                    });
+                }
             }
 
             return contextMenus;
+        }
+
+        public Control CreateSettingPanel()
+        {
+            return new Setting();
         }
     }
 }

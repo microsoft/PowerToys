@@ -71,17 +71,22 @@ namespace Wox.Plugin.FindFile.MFTSearch
             }
         }
 
-        public List<USNRecord> FindByName(string filename)
+        public List<USNRecord> FindByName(string filename, long maxResult = -1)
         {
-            filename = filename.ToLower();
-            var fileQuery = from filesInVolumeDic in VolumeRecords.Values
-                            from eachFilePair in filesInVolumeDic
-                            where eachFilePair.Value.Name.ToLower().Contains(filename)
-                            select eachFilePair.Value;
-
             List<USNRecord> result = new List<USNRecord>();
 
-            result.AddRange(fileQuery);
+            foreach (Dictionary<ulong, USNRecord> dictionary in VolumeRecords.Values)
+            {
+                foreach (var usnRecord in dictionary)
+                {
+                    if (usnRecord.Value.Name.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        result.Add(usnRecord.Value);
+                        if (maxResult > 0 && result.Count() >= maxResult) break;
+                    }
+                    if (maxResult > 0 && result.Count() >= maxResult) break;
+                }
+            }
 
             return result;
         }

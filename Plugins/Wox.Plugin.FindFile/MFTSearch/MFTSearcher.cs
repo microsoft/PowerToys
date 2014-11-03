@@ -39,7 +39,7 @@ namespace Wox.Plugin.FindFile.MFTSearch
         {
             if (string.IsNullOrEmpty(item)) return new List<MFTSearchRecord>();
 
-            List<USNRecord> found = cache.FindByName(item);
+            List<USNRecord> found = cache.FindByName(item,100);
             found.ForEach(x => FillPath(x.VolumeName, x, cache));
             return found.ConvertAll(o => new MFTSearchRecord(o));
         }

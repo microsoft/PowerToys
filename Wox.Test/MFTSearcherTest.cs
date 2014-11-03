@@ -39,9 +39,10 @@ namespace Wox.Test
             Console.WriteLine(string.Format("Index: {0}M", (newWorkingSet - oldWorkingSet)/(1024*1024)));
 
             oldWorkingSet = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
-            MFTSearcher.Search("q");
+            List<MFTSearchRecord> mftSearchRecords = MFTSearcher.Search("q");
             newWorkingSet = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
             Console.WriteLine(string.Format("Search: {0}M", (newWorkingSet - oldWorkingSet) / (1024 * 1024)));
+            Console.WriteLine(string.Format("Search results: {0}",mftSearchRecords.Count));
         }
     }
 }
