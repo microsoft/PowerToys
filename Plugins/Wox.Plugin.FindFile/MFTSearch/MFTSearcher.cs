@@ -15,11 +15,13 @@ namespace Wox.Plugin.FindFile.MFTSearch
     public class MFTSearcher
     {
         private static MFTSearcherCache cache = new MFTSearcherCache();
+        private static VolumeMonitor monitor = new VolumeMonitor();
 
         private static void IndexVolume(string volume)
         {
-            cache.CheckHashTableKey(volume);
-            EnumerateVolume(volume,cache.VolumeRecords[volume]);
+            cache.EnsureVolumeExistInHashTable(volume);
+            EnumerateVolume(volume, cache.VolumeRecords[volume]);
+            monitor.Monitor(volume,cache);
         }
 
         public static void IndexAllVolumes()
@@ -39,7 +41,7 @@ namespace Wox.Plugin.FindFile.MFTSearch
         {
             if (string.IsNullOrEmpty(item)) return new List<MFTSearchRecord>();
 
-            List<USNRecord> found = cache.FindByName(item,100);
+            List<USNRecord> found = cache.FindByName(item, 100);
             found.ForEach(x => FillPath(x.VolumeName, x, cache));
             return found.ConvertAll(o => new MFTSearchRecord(o));
         }
@@ -65,7 +67,7 @@ namespace Wox.Plugin.FindFile.MFTSearch
                     UInt64 fileIndexHigh = (UInt64)fi.FileIndexHigh;
                     UInt64 indexRoot = (fileIndexHigh << 32) | fi.FileIndexLow;
 
-                    files.Add(indexRoot,new USNRecord
+                    files.Add(indexRoot, new USNRecord
                     {
                         FRN = indexRoot,
                         Name = volumeName,
@@ -94,7 +96,7 @@ namespace Wox.Plugin.FindFile.MFTSearch
             IntPtr pVolume = IntPtr.Zero;
             try
             {
-                AddVolumeRootRecord(volumeName,files);
+                AddVolumeRootRecord(volumeName, files);
                 pVolume = GetVolumeJournalHandle(volumeName);
                 EnableVomuleJournal(pVolume);
 
@@ -217,7 +219,7 @@ namespace Wox.Plugin.FindFile.MFTSearch
                 {
                     PInvokeWin32.USN_RECORD usn = new PInvokeWin32.USN_RECORD(pUsnRecord);
 
-                    files.Add(usn.FRN,new USNRecord
+                    files.Add(usn.FRN, new USNRecord
                     {
                         Name = usn.FileName,
                         ParentFrn = usn.ParentFRN,

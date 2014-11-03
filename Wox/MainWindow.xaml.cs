@@ -184,7 +184,10 @@ namespace Wox
 
             globalHotkey.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
 
-            this.Closing += MainWindow_Closing;
+            Closing += MainWindow_Closing;
+            //since MainWIndow implement IPublicAPI, so we need to finish ctor MainWindow object before
+            //PublicAPI invoke in plugin init methods. E.g FolderPlugin
+            ThreadPool.QueueUserWorkItem(o => Plugins.Init());
         }
 
         void pnlResult_RightMouseClickEvent(Result result)
@@ -216,8 +219,6 @@ namespace Wox
                 Left = UserSettingStorage.Instance.WindowLeft;
                 Top = UserSettingStorage.Instance.WindowTop;
             }
-
-            Plugins.Init();
 
             InitProgressbarAnimation();
 

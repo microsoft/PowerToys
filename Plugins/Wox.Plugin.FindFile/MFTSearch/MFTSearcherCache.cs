@@ -17,17 +17,20 @@ namespace Wox.Plugin.FindFile.MFTSearch
 
         public void AddRecord(string volume, List<USNRecord> r)
         {
-            CheckHashTableKey(volume);
+            EnsureVolumeExistInHashTable(volume);
             r.ForEach(x => VolumeRecords[volume].Add(x.FRN, x));
         }
 
         public void AddRecord(string volume, USNRecord record)
         {
-            CheckHashTableKey(volume);
-            VolumeRecords[volume].Add(record.FRN, record);
+            EnsureVolumeExistInHashTable(volume);
+            if (!VolumeRecords[volume].ContainsKey(record.FRN))
+            {
+                VolumeRecords[volume].Add(record.FRN, record);
+            }
         }
 
-        public void CheckHashTableKey(string volume)
+        public void EnsureVolumeExistInHashTable(string volume)
         {
             if (!VolumeRecords.ContainsKey(volume))
                 VolumeRecords.Add(volume, new Dictionary<ulong, USNRecord>());

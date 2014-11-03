@@ -16,12 +16,18 @@ namespace Wox.Plugin.FindFile.MFTSearch
         {
             foreach (var volume in volumes)
             {
-                if (string.IsNullOrEmpty(volume)) throw new InvalidOperationException("Volume cant't be null or empty string.");
-                if (!db.ContainsVolume(volume)) throw new InvalidOperationException(string.Format("Volume {0} must be scaned first."));
-                Thread th = new Thread(new ParameterizedThreadStart(MonitorThread));
-                th.Start(new Dictionary<string, object> { { "Volume", volume }, { "MFTSearcherCache", db } });
+                Monitor(volume, db);
             }
         }
+
+        public void Monitor(string volume, MFTSearcherCache db)
+        {
+            if (string.IsNullOrEmpty(volume)) throw new InvalidOperationException("Volume cant't be null or empty string.");
+            if (!db.ContainsVolume(volume)) throw new InvalidOperationException(string.Format("Volume {0} must be scaned first."));
+
+            ThreadPool.QueueUserWorkItem(o => MonitorThread(volume, db));
+        }
+
         private PInvokeWin32.READ_USN_JOURNAL_DATA SetupInputData4JournalRead(string volume, uint reason)
         {
             IntPtr pMonitorVolume = MFTSearcher.GetVolumeJournalHandle(volume);
@@ -40,11 +46,9 @@ namespace Wox.Plugin.FindFile.MFTSearch
 
             return rujd;
         }
-        private void MonitorThread(object param)
-        {
 
-            MFTSearcherCache db = (param as Dictionary<string, object>)["MFTSearcherCache"] as MFTSearcherCache;
-            string volume = (param as Dictionary<string, object>)["Volume"] as string;
+        private void MonitorThread(string volume, MFTSearcherCache db)
+        {
             IntPtr pbuffer = Marshal.AllocHGlobal(0x1000);
             PInvokeWin32.READ_USN_JOURNAL_DATA rujd = SetupInputData4JournalRead(volume, 0xFFFFFFFF);
             UInt32 cbRead;
@@ -56,7 +60,6 @@ namespace Wox.Plugin.FindFile.MFTSearch
                 PInvokeWin32.ZeroMemory(prujd, Marshal.SizeOf(rujd));
                 Marshal.StructureToPtr(rujd, prujd, true);
 
-                Debug.WriteLine(string.Format("\nMoniting on {0}......", volume));
                 IntPtr pVolume = MFTSearcher.GetVolumeJournalHandle(volume);
 
                 bool fok = PInvokeWin32.DeviceIoControl(pVolume,
@@ -81,15 +84,9 @@ namespace Wox.Plugin.FindFile.MFTSearch
                 rujd.StartUsn = Marshal.ReadInt64(pbuffer);
             }
         }
+
         private void ProcessUSN(PInvokeWin32.USN_RECORD usn, string volume, MFTSearcherCache db)
         {
-            var dbCached = db.FindByFrn(volume, usn.FRN);
-            MFTSearcher.FillPath(volume, dbCached, db);
-            Debug.WriteLine(string.Format("------USN[frn={0}]------", usn.FRN));
-            Debug.WriteLine(string.Format("FileName={0}, USNChangeReason={1}", usn.FileName, USNChangeReason.ReasonPrettyFormat(usn.Reason)));
-            Debug.WriteLine(string.Format("FileName[Cached]={0}", dbCached == null ? "NoCache" : dbCached.FullPath));
-            Debug.WriteLine("--------------------------------------");
-
             if (MaskEqual(usn.Reason, USNChangeReason.USN_REASONS["USN_REASON_RENAME_NEW_NAME"]))
                 ProcessRenameNewName(usn, volume, db);
             if ((usn.Reason & USNChangeReason.USN_REASONS["USN_REASON_FILE_CREATE"]) != 0)
@@ -97,47 +94,37 @@ namespace Wox.Plugin.FindFile.MFTSearch
             if (MaskEqual(usn.Reason, USNChangeReason.USN_REASONS["USN_REASON_FILE_DELETE"]))
                 ProcessFileDelete(usn, volume, db);
         }
+
         private void ProcessFileDelete(PInvokeWin32.USN_RECORD usn, string volume, MFTSearcherCache db)
         {
             var cached = db.FindByFrn(volume, usn.FRN);
-            if (cached == null)
-            {
-                return;
-            }
-            else
+            if (cached != null)
             {
                 MFTSearcher.FillPath(volume, cached, db);
                 var deleteok = db.DeleteRecord(volume, usn.FRN);
-                Debug.WriteLine(string.Format(">>>> File {0} deleted {1}.", cached.FullPath, deleteok ? "successful" : "fail"));
+                Debug.WriteLine(string.Format(">>>> DeleteFIle {0} {1}.", cached.FullPath, deleteok ? "successful" : "fail"));
                 if (RecordDeletedEvent != null)
                     RecordDeletedEvent(cached);
             }
         }
+
         private void ProcessRenameNewName(PInvokeWin32.USN_RECORD usn, string volume, MFTSearcherCache db)
         {
             USNRecord newRecord = USNRecord.ParseUSN(volume, usn);
-            //string fullpath = newRecord.Name;
-            //db.FindRecordPath(newRecord, ref fullpath, db.GetVolumeRecords(volume));
-            //newRecord.FullPath = fullpath;
-            var oldRecord = db.FindByFrn(volume, usn.FRN);
-            MFTSearcher.FillPath(volume, oldRecord, db);
-            MFTSearcher.FillPath(volume, newRecord, db);
-            Debug.WriteLine(string.Format(">>>> RenameFile {0} to {1}", oldRecord.FullPath, newRecord.FullPath));
             db.UpdateRecord(volume, newRecord);
-            if (RecordRenameEvent != null) RecordRenameEvent(oldRecord, newRecord);
-            if (newRecord.FullPath.Contains("$RECYCLE.BIN"))
+
+            var oldRecord = db.FindByFrn(volume, usn.FRN);
+            if (oldRecord != null)
             {
-                Debug.WriteLine(string.Format(">>>> Means {0} moved to recycle.", oldRecord.FullPath));
+                Debug.WriteLine(string.Format(">>>> RenameFile {0} to {1}", oldRecord.FullPath, newRecord.FullPath));
+                if (RecordRenameEvent != null) RecordRenameEvent(oldRecord, newRecord);
             }
         }
+
         private void ProcessFileCreate(PInvokeWin32.USN_RECORD usn, string volume, MFTSearcherCache db)
         {
             USNRecord record = USNRecord.ParseUSN(volume, usn);
-            //string fullpath = record.Name;
-            //db.FindRecordPath(record, ref fullpath, db.GetVolumeRecords(volume));
-            //record.FullPath = fullpath;
             db.AddRecord(volume, record);
-            MFTSearcher.FillPath(volume, record, db);
             Debug.WriteLine(string.Format(">>>> NewFile: {0}", record.FullPath));
             if (RecordAddedEvent != null)
                 RecordAddedEvent(record);
