@@ -7,6 +7,7 @@ namespace Wox.Plugin.FindFile.MFTSearch
     internal class MFTSearcherCache
     {
         public Dictionary<string, Dictionary<ulong, USNRecord>> VolumeRecords = new Dictionary<string, Dictionary<ulong, USNRecord>>();
+        public static object locker = new object();
 
         public MFTSearcherCache() { }
 
@@ -26,7 +27,10 @@ namespace Wox.Plugin.FindFile.MFTSearch
             EnsureVolumeExistInHashTable(volume);
             if (!VolumeRecords[volume].ContainsKey(record.FRN))
             {
-                VolumeRecords[volume].Add(record.FRN, record);
+                lock (locker)
+                {
+                    VolumeRecords[volume].Add(record.FRN, record);
+                }
             }
         }
 
@@ -47,7 +51,10 @@ namespace Wox.Plugin.FindFile.MFTSearch
         {
             if (hashtable.ContainsKey(volume) && hashtable[volume].ContainsKey(frn))
             {
-                hashtable[volume].Remove(frn);
+                lock (locker)
+                {
+                    hashtable[volume].Remove(frn);
+                }
                 return true;
             }
             else
@@ -65,7 +72,10 @@ namespace Wox.Plugin.FindFile.MFTSearch
         {
             if (source.ContainsKey(volume) && source[volume].ContainsKey(record.FRN))
             {
-                source[volume][record.FRN] = record;
+                lock (locker)
+                {
+                    source[volume][record.FRN] = record;
+                }
                 return true;
             }
             else
@@ -77,20 +87,21 @@ namespace Wox.Plugin.FindFile.MFTSearch
         public List<USNRecord> FindByName(string filename, long maxResult = -1)
         {
             List<USNRecord> result = new List<USNRecord>();
-
-            foreach (Dictionary<ulong, USNRecord> dictionary in VolumeRecords.Values)
+            lock (locker)
             {
-                foreach (var usnRecord in dictionary)
+                foreach (Dictionary<ulong, USNRecord> dictionary in VolumeRecords.Values)
                 {
-                    if (usnRecord.Value.Name.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0)
+                    foreach (var usnRecord in dictionary)
                     {
-                        result.Add(usnRecord.Value);
+                        if (usnRecord.Value.Name.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            result.Add(usnRecord.Value);
+                            if (maxResult > 0 && result.Count() >= maxResult) break;
+                        }
                         if (maxResult > 0 && result.Count() >= maxResult) break;
                     }
-                    if (maxResult > 0 && result.Count() >= maxResult) break;
                 }
             }
-
             return result;
         }
 
