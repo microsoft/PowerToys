@@ -209,7 +209,7 @@ namespace Wox.Plugin.PluginManagement
                 {
                     Title = plugin.Name,
                     SubTitle = plugin.Description,
-                    IcoPath = "Images\\plugin.png",
+                    IcoPath = plugin.FullIcoPath,
                     Action = e =>
                     {
                         UnInstalledPlugins(plugin);
@@ -239,7 +239,7 @@ namespace Wox.Plugin.PluginManagement
                 {
                     Title = plugin.Name + " - " + plugin.ActionKeyword,
                     SubTitle = plugin.Description,
-                    IcoPath = "Images\\plugin.png"
+                    IcoPath = plugin.FullIcoPath
                 });
             }
             return results;
