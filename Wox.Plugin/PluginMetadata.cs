@@ -52,7 +52,9 @@ namespace Wox.Plugin
         {
             get
             {
-                if (string.IsNullOrEmpty(IcoPath)) return string.Empty;
+                // Return the default icon if IcoPath is empty
+                if (string.IsNullOrEmpty(IcoPath))
+                    return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images\\work.png");
 
                 if (IcoPath.StartsWith("data:"))
                 {
