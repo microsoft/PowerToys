@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Wox.Plugin</id>
+    <version>$version$</version>
+    <authors>qianlifeng</authors>
+    <licenseUrl>https://github.com/qianlifeng/Wox/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/qianlifeng/wox</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Reference this library if you want to develop a wox plugin</description>
+    <tags>wox</tags>
+  </metadata>
+  <files>
+      <file src="..\..\Output\Debug\Wox.Plugin.dll" target="lib\net35" />
+  </files>
+</package>

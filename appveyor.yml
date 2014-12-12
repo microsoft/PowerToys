@@ -1,0 +1,20 @@
+version: 1.1.0
+
+assembly_info:
+  patch: true
+  file: AssemblyInfo.*
+  assembly_version: "{version}"
+  assembly_file_version: "{version}"
+  assembly_informational_version: "{version}"
+
+build:
+    project: Wox.sln
+
+after_test:
+    ps: .\nuget\pack.ps1
+
+deploy:
+  provider: NuGet
+  api_key:
+    secure: yybUOFgBuGVpbmOVZxsurC8OpkClzt9dR+/54WpMWcq6b6oyMatciaelRPnXsjRn
+  artifact: /.*\.nupkg/
