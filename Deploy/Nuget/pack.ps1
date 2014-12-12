@@ -1,4 +1,5 @@
-$root = (split-path -parent $MyInvocation.MyCommand.Definition) + '\..'
+$root = (split-path -parent $MyInvocation.MyCommand.Definition) + '\..\..'
+Write-Host $root
 $version = [System.Reflection.Assembly]::LoadFile("$root\Output\Release\Wox.Plugin.dll").GetName().Version
 $versionStr = "{0}.{1}.{2}" -f ($version.Major, $version.Minor, $version.Build)
 
