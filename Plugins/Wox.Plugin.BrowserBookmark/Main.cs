@@ -8,7 +8,7 @@ namespace Wox.Plugin.BrowserBookmark
     {
         private PluginInitContext context;
 
-        // TODO: periodically refresh the cache?
+        // TODO: periodically refresh the Cache?
         private List<Bookmark> cachedBookmarks = new List<Bookmark>(); 
 
         public void Init(PluginInitContext context)

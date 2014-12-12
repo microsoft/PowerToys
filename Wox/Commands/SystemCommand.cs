@@ -12,19 +12,21 @@ namespace Wox.Commands
 {
     public class SystemCommand : BaseCommand
     {
+        private IEnumerable<PluginPair> allSytemPlugins = Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System);
+
         public override void Dispatch(Query query)
         {
-            var allSytemPlugins = Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System);
+            var queryPlugins = allSytemPlugins;
             if (UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == query.ActionName && o.Enabled))
             {
                 //websearch mode
-                allSytemPlugins = new List<PluginPair>()
+                queryPlugins = new List<PluginPair>()
                 {
                     allSytemPlugins.First(o => ((ISystemPlugin)o.Plugin).ID == "565B73353DBF4806919830B9202EE3BF")
                 };
             }
 
-            foreach (PluginPair pair in allSytemPlugins)
+            foreach (PluginPair pair in queryPlugins)
             {
                 PluginPair pair1 = pair;
                 ThreadPool.QueueUserWorkItem(state =>

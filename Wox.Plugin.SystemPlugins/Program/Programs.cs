@@ -42,6 +42,20 @@ namespace Wox.Plugin.SystemPlugins.Program
                     context.API.HideApp();
                     context.API.ShellRun(c.ExecutePath);
                     return true;
+                },
+                ContextMenu = new List<Result>()
+                {
+                    new Result()
+                    {
+                        Title = "Run As Administrator",
+                        Action = _ =>
+                        {
+                            context.API.HideApp();
+                            context.API.ShellRun(c.ExecutePath,true);
+                            return true;
+                        },
+                        IcoPath = "Images/cmd.png"
+                    }
                 }
             }).ToList();
         }
@@ -84,11 +98,11 @@ namespace Wox.Plugin.SystemPlugins.Program
                         Type sourceClass;
                         if (SourceTypes.TryGetValue(source.Type, out sourceClass))
                         {
-                            ConstructorInfo constructorInfo = sourceClass.GetConstructor(new[] {typeof (ProgramSource)});
+                            ConstructorInfo constructorInfo = sourceClass.GetConstructor(new[] { typeof(ProgramSource) });
                             if (constructorInfo != null)
                             {
                                 IProgramSource programSource =
-                                    constructorInfo.Invoke(new object[] {source}) as IProgramSource;
+                                    constructorInfo.Invoke(new object[] { source }) as IProgramSource;
                                 sources.Add(programSource);
                             }
                         }
@@ -106,7 +120,7 @@ namespace Wox.Plugin.SystemPlugins.Program
                     }
 
                     // filter duplicate program
-                    tempPrograms = tempPrograms.GroupBy(x => new {x.ExecutePath, x.ExecuteName})
+                    tempPrograms = tempPrograms.GroupBy(x => new { x.ExecutePath, x.ExecuteName })
                         .Select(g => g.First()).ToList();
 
                     programs = tempPrograms;
