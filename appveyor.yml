@@ -26,5 +26,5 @@ artifacts:
     - path: Output\Release
       name: release-binary 
 
-    - path: '**\*.nupkg'
+    - path: '*.nupkg'
       name: nugetpackage
