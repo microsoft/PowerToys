@@ -11,6 +11,6 @@
     <tags>wox</tags>
   </metadata>
   <files>
-      <file src="..\..\Output\Debug\Wox.Plugin.dll" target="lib\net35" />
+      <file src="..\..\Output\Release\Wox.Plugin.dll" target="lib\net35" />
   </files>
 </package>
