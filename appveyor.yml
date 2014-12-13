@@ -20,8 +20,12 @@ deploy:
     provider: NuGet
     api_key:
         secure: yybUOFgBuGVpbmOVZxsurC8OpkClzt9dR+/54WpMWcq6b6oyMatciaelRPnXsjRn
-    artifact: /.*\.nupkg/
+    artifact: nugetpackage
+
 
 artifacts:
     path: Output\Release
     name: release-binary 
+
+    path: *.nupkg
+    name: nugetpackage
