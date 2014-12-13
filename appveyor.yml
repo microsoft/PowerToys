@@ -21,3 +21,7 @@ deploy:
     api_key:
         secure: yybUOFgBuGVpbmOVZxsurC8OpkClzt9dR+/54WpMWcq6b6oyMatciaelRPnXsjRn
     artifact: /.*\.nupkg/
+
+artifacts:
+    path: Output\Release
+    name: release-binary 
