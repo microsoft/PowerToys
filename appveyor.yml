@@ -21,6 +21,8 @@ deploy:
     api_key:
         secure: yybUOFgBuGVpbmOVZxsurC8OpkClzt9dR+/54WpMWcq6b6oyMatciaelRPnXsjRn
     artifact: nugetpackage
+    on:
+        branch: master
 
 artifacts:
     - path: Output\Release
