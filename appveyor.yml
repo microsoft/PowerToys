@@ -24,8 +24,8 @@ deploy:
 
 
 artifacts:
-    path: Output\Release
-    name: release-binary 
+    - path: Output\Release
+      name: release-binary 
 
-    path: *.nupkg
-    name: nugetpackage
+    - path: *.nupkg
+      name: nugetpackage
