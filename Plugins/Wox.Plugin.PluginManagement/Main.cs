@@ -10,30 +10,21 @@ using Newtonsoft.Json;
 
 namespace Wox.Plugin.PluginManagement
 {
-    public class WoxPlugin
-    {
-        public int apiVersion { get; set; }
-        public List<WoxPluginResult> result { get; set; }
-    }
-
     public class WoxPluginResult
     {
-        public string actionkeyword;
-        public string download;
-        public string author;
+        public string plugin_file;
         public string description;
-        public string id;
-        public int star;
+        public int liked_count;
         public string name;
         public string version;
-        public string website;
     }
 
     public class Main : IPlugin
     {
+        private static string APIBASE = "https://api.getwox.com";
         private static string PluginPath = AppDomain.CurrentDomain.BaseDirectory + "Plugins";
         private static string PluginConfigName = "plugin.json";
-        private static string pluginSearchUrl = "http://www.getwox.com/api/plugin/search/";
+        private static string pluginSearchUrl = APIBASE +"/plugin/search/";
         private PluginInitContext context;
 
         public List<Result> Query(Query query)
@@ -142,8 +133,18 @@ namespace Wox.Plugin.PluginManagement
             {
                 StreamReader reader = new StreamReader(s, Encoding.UTF8);
                 string json = reader.ReadToEnd();
-                WoxPlugin o = JsonConvert.DeserializeObject<WoxPlugin>(json);
-                foreach (WoxPluginResult r in o.result)
+                List<WoxPluginResult> searchedPlugins = null;
+                try
+                {
+                    searchedPlugins = JsonConvert.DeserializeObject<List<WoxPluginResult>>(json);
+                }
+                catch
+                {
+                    context.API.ShowMsg("Coundn't parse api search results", "Please update your Wox!",string.Empty);
+                    return results;
+                }
+
+                foreach (WoxPluginResult r in searchedPlugins)
                 {
                     WoxPluginResult r1 = r;
                     results.Add(new Result()
@@ -169,7 +170,8 @@ namespace Wox.Plugin.PluginManagement
                                     {
                                         try
                                         {
-                                            Client.DownloadFile(r1.download, filePath);
+                                            string pluginUrl = APIBASE + "/media/" + r1.plugin_file;
+                                            Client.DownloadFile(pluginUrl, filePath);
                                             context.API.InstallPlugin(filePath);
                                             context.API.ReloadPlugins();
                                         }
