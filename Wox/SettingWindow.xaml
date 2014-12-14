@@ -28,6 +28,9 @@
                 <CheckBox x:Name="cbHideWhenDeactive" Margin="10">
                     Hide Wox when loses focus
                 </CheckBox>
+                <CheckBox x:Name="cbDontPromptUpdateMsg" Margin="10">
+                    Don't show upgrade msg if new version available
+                </CheckBox>
             </StackPanel>
         </TabItem>
         <TabItem Header="Plugin">
