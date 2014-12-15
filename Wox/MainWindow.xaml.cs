@@ -626,7 +626,7 @@ namespace Wox
                 list.ForEach(
                     o =>
                     {
-                        if (o.AutoAjustScore) o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o);
+                        if (o.AutoAjustScore) o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o) * 5;
                     });
                 List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
                 Dispatcher.Invoke(new Action(() =>
