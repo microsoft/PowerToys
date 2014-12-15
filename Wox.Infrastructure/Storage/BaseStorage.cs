@@ -2,89 +2,91 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 
 namespace Wox.Infrastructure.Storage
 {
-    public abstract class BaseStorage<T> where T : class, new()
+    [Serializable]
+    public abstract class BaseStorage<T> : IStorage where T : class,IStorage,new()
     {
-        private string configFolder = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Config");
-        private string fileSuffix = ".json";
-        private static object locker = new object();
-        private static T storage;
+        private readonly string configFolder = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Config");
 
-        public event Action<T> AfterLoadConfig;
-
-        protected virtual void OnAfterLoadConfig(T obj)
+        protected string ConfigPath
         {
-            Action<T> handler = AfterLoadConfig;
-            if (handler != null) handler(obj);
+            get
+            {
+                return Path.Combine(configFolder, ConfigName + FileSuffix);
+            }
         }
+        
+        protected abstract string FileSuffix { get; }
 
         protected abstract string ConfigName { get; }
+
+        private static object locker = new object();
+        protected static T serializedObject;
+
+        public event Action<T> AfterLoad;
+
+        protected virtual void OnAfterLoad(T obj)
+        {
+            Action<T> handler = AfterLoad;
+            if (handler != null) handler(obj);
+        }
 
         public static T Instance
         {
             get
             {
-                if (storage == null)
+                if (serializedObject == null)
                 {
                     lock (locker)
                     {
-                        if (storage == null)
+                        if (serializedObject == null)
                         {
-                            storage = new T();
-                            (storage as BaseStorage<T>).Load();
+                            serializedObject = new T();
+                            serializedObject.Load();
                         }
                     }
                 }
-                return storage;
+                return serializedObject;
             }
         }
 
-        protected virtual T LoadDefaultConfig()
+        /// <summary>
+        /// if loading storage failed, we will try to load default
+        /// </summary>
+        /// <returns></returns>
+        protected virtual T LoadDefault()
         {
-            return storage;
+            return serializedObject;
         }
 
-        private void Load()
+        protected abstract void LoadInternal();
+        protected abstract void SaveInternal();
+
+        public void Load()
         {
-            string configPath = Path.Combine(configFolder, ConfigName + fileSuffix);
-            if (!File.Exists(configPath))
+            if (!File.Exists(ConfigPath))
             {
                 if (!Directory.Exists(configFolder))
+                {
                     Directory.CreateDirectory(configFolder);
-                File.Create(configPath).Close();
-            }
-            string json = File.ReadAllText(configPath);
-            if (!string.IsNullOrEmpty(json))
-            {
-                try
-                {
-                    storage = JsonConvert.DeserializeObject<T>(json);
                 }
-                catch (Exception)
-                {
-                    storage = LoadDefaultConfig();
-                }
+                File.Create(ConfigPath).Close();
             }
-            else
-            {
-                storage = LoadDefaultConfig();
-            }
-            OnAfterLoadConfig(storage);
+            LoadInternal();
+            OnAfterLoad(serializedObject);
         }
 
         public void Save()
         {
             lock (locker)
             {
-                //json is a good choise, readable and flexiable
-                string configPath = Path.Combine(configFolder, ConfigName + fileSuffix);
-                string json = JsonConvert.SerializeObject(storage, Formatting.Indented);
-                File.WriteAllText(configPath, json);
+                SaveInternal();
             }
         }
     }

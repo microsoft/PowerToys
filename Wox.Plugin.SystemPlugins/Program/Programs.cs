@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Windows.Forms;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin.SystemPlugins.Program.ProgramSources;
@@ -73,6 +77,10 @@ namespace Wox.Plugin.SystemPlugins.Program
         protected override void InitInternal(PluginInitContext context)
         {
             this.context = context;
+            using (new Timeit("Loading Program Index Cache"))
+            {
+                programs = ProgramCacheStorage.Instance.Programs;
+            }
             IndexPrograms();
         }
 
@@ -82,6 +90,7 @@ namespace Wox.Plugin.SystemPlugins.Program
             {
                 lock (lockObject)
                 {
+                   
                     initing = true;
 
                     List<ProgramSource> programSources = new List<ProgramSource>();
@@ -125,6 +134,9 @@ namespace Wox.Plugin.SystemPlugins.Program
 
                     programs = tempPrograms;
                     initing = false;
+                  
+                    ProgramCacheStorage.Instance.Programs = programs;
+                    ProgramCacheStorage.Instance.Save();
                 }
             }
         }

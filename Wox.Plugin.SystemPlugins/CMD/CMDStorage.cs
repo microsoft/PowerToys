@@ -7,7 +7,7 @@ using Wox.Infrastructure.Storage;
 
 namespace Wox.Plugin.SystemPlugins.CMD
 {
-    public class CMDStorage : BaseStorage<CMDStorage>
+    public class CMDStorage : JsonStrorage<CMDStorage>
     {
         [JsonProperty]
         public Dictionary<string, int> CMDHistory = new Dictionary<string, int>();

@@ -9,6 +9,7 @@ using Log = Wox.Infrastructure.Logger.Log;
 
 namespace Wox.Plugin.SystemPlugins.Program.ProgramSources
 {
+    [Serializable]
     public class FileSystemProgramSource : AbstractProgramSource
     {
         private string baseDirectory;

@@ -11,6 +11,7 @@ namespace Wox.Plugin.SystemPlugins.Program
         int BonusPoints { get; set; }
     }
 
+    [Serializable]
     public abstract class AbstractProgramSource : IProgramSource
     {
         public abstract List<Program> LoadPrograms();

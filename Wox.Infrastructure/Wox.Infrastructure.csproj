@@ -58,8 +58,12 @@
   <ItemGroup>
     <Compile Include="Logger\Log.cs" />
     <Compile Include="PeHeaderReader.cs" />
+    <Compile Include="Storage\BinaryStorage.cs" />
+    <Compile Include="Storage\IStorage.cs" />
+    <Compile Include="Storage\JsonStrorage.cs" />
     <Compile Include="Storage\UserSettings\CustomizedPluginConfig.cs" />
     <Compile Include="Storage\UserSettings\FolderLink.cs" />
+    <Compile Include="Timeit.cs" />
     <Compile Include="Unidecoder.Characters.cs" />
     <Compile Include="ChineseToPinYin.cs" />
     <Compile Include="HttpRequest.cs" />

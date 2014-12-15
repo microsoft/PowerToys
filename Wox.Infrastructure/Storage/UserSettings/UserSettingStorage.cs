@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace Wox.Infrastructure.Storage.UserSettings
 {
-    public class UserSettingStorage : BaseStorage<UserSettingStorage>
+    public class UserSettingStorage : JsonStrorage<UserSettingStorage>
     {
         [JsonProperty]
         public bool DontPromptUpdateMsg { get; set; }
@@ -146,7 +146,7 @@ namespace Wox.Infrastructure.Storage.UserSettings
             get { return "config"; }
         }
 
-        protected override UserSettingStorage LoadDefaultConfig()
+        protected override UserSettingStorage LoadDefault()
         {
             DontPromptUpdateMsg = false;
             Theme = "Dark";
@@ -165,7 +165,7 @@ namespace Wox.Infrastructure.Storage.UserSettings
             return this;
         }
 
-        protected override void OnAfterLoadConfig(UserSettingStorage storage)
+        protected override void OnAfterLoad(UserSettingStorage storage)
         {
             if (storage.CustomizedPluginConfigs == null)
             {

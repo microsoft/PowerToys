@@ -1,7 +1,9 @@
+using System;
 using Wox.Infrastructure;
 
 namespace Wox.Plugin.SystemPlugins.Program
 {
+    [Serializable]
     public class Program
     {
         private static readonly global::System.Text.RegularExpressions.Regex AbbrRegexp = new global::System.Text.RegularExpressions.Regex("[^A-Z0-9]", global::System.Text.RegularExpressions.RegexOptions.Compiled);

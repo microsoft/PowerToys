@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Plugin.SystemPlugins.Program.ProgramSources
 {
+    [Serializable]
     [global::System.ComponentModel.Browsable(false)]
     public class AppPathsProgramSource: AbstractProgramSource
     {

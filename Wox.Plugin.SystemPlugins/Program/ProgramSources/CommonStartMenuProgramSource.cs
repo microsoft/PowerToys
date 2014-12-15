@@ -5,6 +5,7 @@ using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Plugin.SystemPlugins.Program.ProgramSources
 {
+    [Serializable]
     [global::System.ComponentModel.Browsable(false)]
     public class CommonStartMenuProgramSource : FileSystemProgramSource
     {

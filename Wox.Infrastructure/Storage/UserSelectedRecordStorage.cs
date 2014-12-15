@@ -8,7 +8,7 @@ using Wox.Plugin;
 
 namespace Wox.Infrastructure.Storage
 {
-    public class UserSelectedRecordStorage : BaseStorage<UserSelectedRecordStorage>
+    public class UserSelectedRecordStorage : JsonStrorage<UserSelectedRecordStorage>
     {
         [JsonProperty]
         private Dictionary<string, int> records = new Dictionary<string, int>();
