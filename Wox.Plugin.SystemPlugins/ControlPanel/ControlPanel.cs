@@ -30,7 +30,7 @@ namespace Wox.Plugin.SystemPlugins.ControlPanel
 
         public override string IcoPath { get { return @"Images\ControlPanel.png"; } }
 
-        private List<ControlPanelItem> controlPanelItems;
+        private List<ControlPanelItem> controlPanelItems = new List<ControlPanelItem>();
         private string iconFolder;
         private string fileType;
 
