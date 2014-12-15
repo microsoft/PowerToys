@@ -8,7 +8,7 @@ using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.SystemPlugins.CMD
 {
-    public class CMD : BaseSystemPlugin,ISettingProvider
+    public class CMD : BaseSystemPlugin, ISettingProvider
     {
         private PluginInitContext context;
 
@@ -28,12 +28,13 @@ namespace Wox.Plugin.SystemPlugins.CMD
                      {
                          ExecuteCmd(m.Key);
                          return true;
-                     }
+                     },
+                     ContextMenu = GetContextMenus(m.Key)
                  }).Take(5);
 
                 results.AddRange(history);
             }
-            
+
             if (query.RawQuery.StartsWith(">") && query.RawQuery.Length > 1)
             {
                 string cmd = query.RawQuery.Substring(1);
@@ -47,7 +48,8 @@ namespace Wox.Plugin.SystemPlugins.CMD
                     {
                         ExecuteCmd(cmd);
                         return true;
-                    }
+                    },
+                    ContextMenu = GetContextMenus(cmd)
                 };
 
                 try
@@ -59,7 +61,7 @@ namespace Wox.Plugin.SystemPlugins.CMD
                 }
                 catch (Exception) { }
 
-                context.API.PushResults(query,context.CurrentPluginMetadata, new List<Result>() { result });
+                context.API.PushResults(query, context.CurrentPluginMetadata, new List<Result>() { result });
                 pushedResults.Add(result);
 
                 IEnumerable<Result> history = CMDStorage.Instance.CMDHistory.Where(o => o.Key.Contains(cmd))
@@ -81,7 +83,8 @@ namespace Wox.Plugin.SystemPlugins.CMD
                             {
                                 ExecuteCmd(m.Key);
                                 return true;
-                            }
+                            },
+                            ContextMenu = GetContextMenus(m.Key)
                         };
                         try
                         {
@@ -95,7 +98,7 @@ namespace Wox.Plugin.SystemPlugins.CMD
                         return ret;
                     }).Where(o => o != null).Take(4);
 
-                context.API.PushResults(query,context.CurrentPluginMetadata,history.ToList());
+                context.API.PushResults(query, context.CurrentPluginMetadata, history.ToList());
                 pushedResults.AddRange(history);
 
                 try
@@ -128,7 +131,8 @@ namespace Wox.Plugin.SystemPlugins.CMD
                             {
                                 ExecuteCmd(m);
                                 return true;
-                            }
+                            },
+                            ContextMenu = GetContextMenus(m)
                         }));
                     }
                 }
@@ -137,10 +141,27 @@ namespace Wox.Plugin.SystemPlugins.CMD
             return results;
         }
 
-
-        private void ExecuteCmd(string cmd)
+        private List<Result> GetContextMenus(string cmd)
         {
-            if (context.API.ShellRun(cmd))
+            return new List<Result>()
+                     {
+                        new Result()
+                        {
+                            Title = "Run As Administrator",
+                            Action = c =>
+                            {
+                                context.API.HideApp();
+                                ExecuteCmd(cmd, true);
+                                return true;
+                            },
+                            IcoPath = "Images/cmd.png"
+                        }
+                     };
+        }
+
+        private void ExecuteCmd(string cmd, bool runAsAdministrator = false)
+        {
+            if (context.API.ShellRun(cmd, runAsAdministrator))
                 CMDStorage.Instance.AddCmdHistory(cmd);
         }
 
@@ -171,7 +192,7 @@ namespace Wox.Plugin.SystemPlugins.CMD
 
         public Control CreateSettingPanel()
         {
-             return new CMDSetting();
+            return new CMDSetting();
         }
     }
 }
