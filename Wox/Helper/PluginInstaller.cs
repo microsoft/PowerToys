@@ -43,7 +43,17 @@ namespace Wox.Helper
                     Directory.CreateDirectory(pluginFolerPath);
                 }
 
-                string newPluginPath = Path.Combine(pluginFolerPath, Guid.NewGuid().ToString());
+                string newPluginName = plugin.Name
+                    .Replace("/", "_")
+                    .Replace("\\", "_")
+                    .Replace(":", "_")
+                    .Replace("<", "_")
+                    .Replace(">", "_")
+                    .Replace("?", "_")
+                    .Replace("*", "_")
+                    .Replace("|", "_")
+                    + "-" + Guid.NewGuid();
+                string newPluginPath = Path.Combine(pluginFolerPath,newPluginName);
                 string content = string.Format(
                         "Do you want to install following plugin?\r\n\r\nName: {0}\r\nVersion: {1}\r\nAuthor: {2}",
                         plugin.Name, plugin.Version, plugin.Author);
@@ -62,6 +72,7 @@ namespace Wox.Helper
                 {
                     if (existingPlugin != null && Directory.Exists(existingPlugin.Metadata.PluginDirectory))
                     {
+                        //when plugin is in use, we can't delete them. That's why we need to make plugin folder a random name
                         File.Create(Path.Combine(existingPlugin.Metadata.PluginDirectory, "NeedDelete.txt")).Close();
                     }
 
