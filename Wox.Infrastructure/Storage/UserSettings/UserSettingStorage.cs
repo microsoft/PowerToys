@@ -9,6 +9,9 @@ namespace Wox.Infrastructure.Storage.UserSettings
     public class UserSettingStorage : BaseStorage<UserSettingStorage>
     {
         [JsonProperty]
+        public bool DontPromptUpdateMsg { get; set; }
+
+        [JsonProperty]
         public string Hotkey { get; set; }
 
         [JsonProperty]
@@ -145,6 +148,7 @@ namespace Wox.Infrastructure.Storage.UserSettings
 
         protected override UserSettingStorage LoadDefaultConfig()
         {
+            DontPromptUpdateMsg = false;
             Theme = "Dark";
             ReplaceWinR = true;
             WebSearches = LoadDefaultWebSearches();

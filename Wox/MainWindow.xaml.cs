@@ -21,6 +21,7 @@ using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.PluginLoader;
+using Wox.Update;
 using Application = System.Windows.Application;
 using Brushes = System.Windows.Media.Brushes;
 using Color = System.Windows.Media.Color;
@@ -188,11 +189,22 @@ namespace Wox
             //since MainWIndow implement IPublicAPI, so we need to finish ctor MainWindow object before
             //PublicAPI invoke in plugin init methods. E.g FolderPlugin
             ThreadPool.QueueUserWorkItem(o => Plugins.Init());
+
+            ThreadPool.QueueUserWorkItem(o => checkUpdate());
         }
 
         void pnlResult_RightMouseClickEvent(Result result)
         {
             ShowContextMenu(result);
+        }
+
+        void checkUpdate()
+        {
+            Release release = new UpdateChecker().CheckUpgrade();
+            if (release != null && !UserSettingStorage.Instance.DontPromptUpdateMsg)
+            {
+                ShowMsg(string.Format("New version {0} available!",release.version),string.Empty,string.Empty);
+            }
         }
 
         void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)

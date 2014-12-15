@@ -8,6 +8,6 @@ Write-Host "Setting .nuspec version tag to $versionStr"
 $content = (Get-Content $root\Deploy\NuGet\wox.plugin.nuspec) 
 $content = $content -replace '\$version\$',$versionStr
 
-$content | Out-File $root\wox.plugin.nuspec
+$content | Out-File $root\deploy\nuget\wox.plugin.nuspec
 
 & $root\.nuget\NuGet.exe pack $root\deploy\nuget\wox.plugin.nuspec

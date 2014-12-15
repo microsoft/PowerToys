@@ -38,8 +38,7 @@ namespace Wox
 
         private void Setting_Loaded(object sender, RoutedEventArgs ev)
         {
-            ctlHotkey.OnHotkeyChanged += ctlHotkey_OnHotkeyChanged;
-            ctlHotkey.SetHotkey(UserSettingStorage.Instance.Hotkey, false);
+            #region General
 
             cbHideWhenDeactive.Checked += (o, e) =>
             {
@@ -53,11 +52,25 @@ namespace Wox
                 UserSettingStorage.Instance.Save();
             };
 
-            lvCustomHotkey.ItemsSource = UserSettingStorage.Instance.CustomPluginHotkeys;
+            cbDontPromptUpdateMsg.Checked += (o, e) =>
+            {
+                UserSettingStorage.Instance.DontPromptUpdateMsg = true;
+                UserSettingStorage.Instance.Save();
+            };
+
+            cbDontPromptUpdateMsg.Unchecked += (o, e) =>
+            {
+                UserSettingStorage.Instance.DontPromptUpdateMsg = false;
+                UserSettingStorage.Instance.Save();
+            };
+
             cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
             cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
+            cbDontPromptUpdateMsg.IsChecked = UserSettingStorage.Instance.DontPromptUpdateMsg;
 
-            #region Load Theme
+            #endregion
+
+            #region Theme
 
             if (!string.IsNullOrEmpty(UserSettingStorage.Instance.QueryBoxFont) &&
                 Fonts.SystemFontFamilies.Count(o => o.FamilyNames.Values.Contains(UserSettingStorage.Instance.QueryBoxFont)) > 0)
@@ -155,9 +168,17 @@ namespace Wox
                 var wallpaperColor = WallpaperPathRetrieval.GetWallpaperColor();
                 PreviewPanel.Background = new SolidColorBrush(wallpaperColor);
             }
+
+            //PreviewPanel
+            App.Window.SetTheme(UserSettingStorage.Instance.Theme);
+
             #endregion
 
-            #region Load Plugin
+            #region Plugin
+
+            ctlHotkey.OnHotkeyChanged += ctlHotkey_OnHotkeyChanged;
+            ctlHotkey.SetHotkey(UserSettingStorage.Instance.Hotkey, false);
+            lvCustomHotkey.ItemsSource = UserSettingStorage.Instance.CustomPluginHotkeys;
 
             var plugins = new CompositeCollection
             {
@@ -200,9 +221,7 @@ namespace Wox
 
             #endregion
 
-            //PreviewPanel
             settingsLoaded = true;
-            App.Window.SetTheme(UserSettingStorage.Instance.Theme);
         }
 
         private void EnableProxy()

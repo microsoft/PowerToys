@@ -9,12 +9,38 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 //From:http://blog.csdn.net/zhoufoxcn/article/details/6404236
+using Wox.Plugin;
+
 namespace Wox.Infrastructure
 {
     public class HttpRequest
     {
         private static readonly string DefaultUserAgent = "Wox/" + Assembly.GetEntryAssembly().GetName().Version.ToString() + " (+https://github.com/qianlifeng/Wox)";
 
+
+        public static HttpWebResponse CreateGetHttpResponse(string url, IHttpProxy proxy)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                throw new ArgumentNullException("url");
+            }
+            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+            if (proxy != null && proxy.Enabled && !string.IsNullOrEmpty(proxy.Server))
+            {
+                if (string.IsNullOrEmpty(proxy.UserName) || string.IsNullOrEmpty(proxy.Password))
+                {
+                    request.Proxy = new WebProxy(proxy.Server, proxy.Port);
+                }
+                else
+                {
+                    request.Proxy = new WebProxy(proxy.Server, proxy.Port);
+                    request.Proxy.Credentials = new NetworkCredential(proxy.UserName, proxy.Password);
+                }
+            }
+            request.Method = "GET";
+            request.UserAgent = DefaultUserAgent;
+            return request.GetResponse() as HttpWebResponse;
+        }
 
         public static HttpWebResponse CreateGetHttpResponse(string url, int? timeout, string userAgent, CookieCollection cookies)
         {
