@@ -13,16 +13,19 @@ namespace Wox.Update
 {
     public class UpdateChecker
     {
-        private string updateURL = "https://api.getwox.com/release/latest/";
+        private const string updateURL = "https://api.getwox.com/release/latest/";
+        private static Release newRelease;
+        private static bool checkedUpdate = false;
 
         /// <summary>
         /// If new release is available, then return the new release
         /// otherwise, return null
         /// </summary>
         /// <returns></returns>
-        public Release CheckUpgrade()
+        public Release CheckUpgrade(bool forceCheck = false)
         {
-            Release release = null;
+            if (checkedUpdate && !forceCheck) return newRelease;
+
             HttpWebResponse response = HttpRequest.CreateGetHttpResponse(updateURL, HttpProxy.Instance);
             Stream s = response.GetResponseStream();
             if (s != null)
@@ -31,20 +34,20 @@ namespace Wox.Update
                 string json = reader.ReadToEnd();
                 try
                 {
-                    release = JsonConvert.DeserializeObject<Release>(json);
+                    newRelease = JsonConvert.DeserializeObject<Release>(json);
                 }
                 catch
                 {
-                    return null;
                 }
             }
 
-            if (!IsNewerThanCurrent(release))
+            if (!IsNewerThanCurrent(newRelease))
             {
-                return null;
+                newRelease = null;
             }
 
-            return release;
+            checkedUpdate = true;
+            return newRelease;
         }
 
         private bool IsNewerThanCurrent(Release release)

@@ -309,5 +309,26 @@
                 </StackPanel>
             </StackPanel>
         </TabItem>
+        <TabItem Header="About">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"></RowDefinition>
+                    <RowDefinition Height="30"></RowDefinition>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Column="0" Grid.Row="0" Margin="6">Website:</TextBlock>
+                <TextBlock Grid.Column="1" Grid.Row="0" Margin="6" HorizontalAlignment="Left" Cursor="Hand" MouseUp="tbWebsite_MouseUp" x:Name="tbWebsite" Foreground="Blue" Text="http://www.getwox.com"></TextBlock>
+
+                <TextBlock Grid.Column="0" Grid.Row="1" Margin="6">Version:</TextBlock>
+                <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal">
+                    <TextBlock  Margin="6" HorizontalAlignment="Left" x:Name="tbVersion" Text="1.0.0"></TextBlock>
+                    <TextBlock  Margin="6" HorizontalAlignment="Left" Cursor="Hand" MouseUp="tbNewVersionAvailable_MouseUp" x:Name="tbNewVersionAvailable" Foreground="Blue" Text="1.1.0 Available"></TextBlock>
+                </StackPanel>
+            </Grid>
+        </TabItem>
     </TabControl>
 </Window>

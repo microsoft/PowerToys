@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,7 @@ using Wox.Plugin;
 using Wox.Helper;
 using Wox.Plugin.SystemPlugins;
 using Wox.PluginLoader;
+using Wox.Update;
 using Application = System.Windows.Forms.Application;
 using File = System.IO.File;
 using MessageBox = System.Windows.MessageBox;
@@ -217,6 +219,21 @@ namespace Wox
             else
             {
                 DisableProxy();
+            }
+
+            #endregion
+
+            #region About
+
+            tbVersion.Text = ConfigurationManager.AppSettings["version"];
+            Release newRelease = new UpdateChecker().CheckUpgrade();
+            if (newRelease == null)
+            {
+                tbNewVersionAvailable.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                tbNewVersionAvailable.Text = newRelease.version + " available";
             }
 
             #endregion
@@ -696,6 +713,20 @@ namespace Wox
             catch
             {
                 MessageBox.Show("Proxy connect failed.");
+            }
+        }
+
+        private void tbWebsite_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            Process.Start("http://www.getwox.com");
+        }
+
+        private void tbNewVersionAvailable_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            Release newRelease = new UpdateChecker().CheckUpgrade();
+            if (newRelease != null)
+            {
+                Process.Start("http://www.getwox.com/release/" + newRelease.version);
             }
         }
     }
