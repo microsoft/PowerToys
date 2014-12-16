@@ -104,6 +104,9 @@
     <Reference Include="WPFToolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Update\NewVersionWindow.xaml.cs">
+      <DependentUpon>NewVersionWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Update\Release.cs" />
     <Compile Include="Update\UpdateChecker.cs" />
     <Page Include="App.xaml">
@@ -237,6 +240,10 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Include="Update\NewVersionWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

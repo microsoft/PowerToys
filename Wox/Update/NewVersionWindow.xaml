@@ -1,0 +1,23 @@
+﻿<Window x:Class="Wox.Update.NewVersionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="..\Images\app.png"
+        Topmost="True"
+        WindowStartupLocation="CenterScreen"
+        Title="New Version Found" Height="120" Width="300">
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="120"></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"></RowDefinition>
+            <RowDefinition Height="30"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Column="0" Grid.Row="0" Margin="6" HorizontalAlignment="Left" Text="Current Version"></TextBlock>
+        <TextBlock Grid.Column="1" Grid.Row="0" Margin="6" HorizontalAlignment="Left" x:Name="tbCurrentVersion" Text="1.0.0"></TextBlock>
+        <TextBlock Grid.Column="0" Grid.Row="1" Margin="6" HorizontalAlignment="Left" Text="New Version"></TextBlock>
+        <TextBlock Grid.Column="1" Grid.Row="1" Margin="6" HorizontalAlignment="Left" x:Name="tbNewVersion"  Foreground="Blue" Cursor="Hand" MouseUp="tbNewVersion_MouseUp" Text="1.0.0"></TextBlock>
+    </Grid>
+</Window>

@@ -203,7 +203,11 @@ namespace Wox
             Release release = new UpdateChecker().CheckUpgrade();
             if (release != null && !UserSettingStorage.Instance.DontPromptUpdateMsg)
             {
-                ShowMsg(string.Format("New version {0} available!",release.version),string.Empty,string.Empty);
+                Dispatcher.Invoke(new Action(() =>
+                {
+                    NewVersionWindow newVersinoWindow = new NewVersionWindow();
+                    newVersinoWindow.Show();
+                }));
             }
         }
 

@@ -726,7 +726,7 @@ namespace Wox
             Release newRelease = new UpdateChecker().CheckUpgrade();
             if (newRelease != null)
             {
-                Process.Start("http://www.getwox.com/release/" + newRelease.version);
+                Process.Start("http://www.getwox.com/release/version/" + newRelease.version);
             }
         }
     }
