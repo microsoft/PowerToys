@@ -104,6 +104,7 @@
     <Reference Include="WPFToolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ImageLoader\ImageCacheStroage.cs" />
     <Compile Include="Update\NewVersionWindow.xaml.cs">
       <DependentUpon>NewVersionWindow.xaml</DependentUpon>
     </Compile>
@@ -136,7 +137,7 @@
     </Compile>
     <Compile Include="Helper\FontHelper.cs" />
     <Compile Include="Helper\HttpProxy.cs" />
-    <Compile Include="Helper\ImageLoader.cs" />
+    <Compile Include="ImageLoader\ImageLoader.cs" />
     <Compile Include="Helper\SingleInstance.cs" />
     <Compile Include="Helper\SyntaxSugars.cs" />
     <Compile Include="Helper\WallpaperPathRetrieval.cs" />

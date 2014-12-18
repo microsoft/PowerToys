@@ -482,7 +482,7 @@ namespace Wox
                 pluginAuthor.Text = "By: " + pair.Metadata.Author;
                 pluginSubTitle.Text = pair.Metadata.Description;
                 pluginId = pair.Metadata.ID;
-                pluginIcon.Source = ImageLoader.Load(pair.Metadata.FullIcoPath);
+                pluginIcon.Source = ImageLoader.ImageLoader.Load(pair.Metadata.FullIcoPath);
             }
             else
             {
@@ -499,7 +499,7 @@ namespace Wox
                     tbOpenPluginDirecoty.Visibility = Visibility.Collapsed;
                     pluginActionKeywordTitle.Visibility = Visibility.Collapsed;
                     pluginTitle.Cursor = Cursors.Arrow;
-                    pluginIcon.Source = ImageLoader.Load(sys.FullIcoPath);
+                    pluginIcon.Source = ImageLoader.ImageLoader.Load(sys.FullIcoPath);
                 }
             }
 

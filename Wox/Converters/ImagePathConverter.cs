@@ -18,7 +18,7 @@ namespace Wox.Converters
                 return null;
             }
 
-            return ImageLoader.Load(value.ToString());
+            return ImageLoader.ImageLoader.Load(value.ToString());
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

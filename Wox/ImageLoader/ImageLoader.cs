@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Wox.Infrastructure;
 
-namespace Wox.Helper
+namespace Wox.ImageLoader
 {
     public class ImageLoader
     {
@@ -53,9 +50,42 @@ namespace Wox.Helper
             return null;
         }
 
-        public static ImageSource Load(string path)
+        public static void PreloadImages()
+        {
+            //ImageCacheStroage.Instance.TopUsedImages can be changed during foreach, so we need to make a copy
+            var imageList = new Dictionary<string, int>(ImageCacheStroage.Instance.TopUsedImages);
+            using (new Timeit(string.Format("Preload {0} images",imageList.Count)))
+            {
+                foreach (var image in imageList)
+                {
+                    ImageSource img = Load(image.Key, false);
+                    if (img != null)
+                    {
+                        img.Freeze(); //to make it copy to UI thread
+                        if (!imageCache.ContainsKey(image.Key))
+                        {
+                            lock (locker)
+                            {
+                                if (!imageCache.ContainsKey(image.Key))
+                                {
+                                    KeyValuePair<string, int> copyedImg = image;
+                                    App.Window.Dispatcher.Invoke(new Action(() => imageCache.Add(copyedImg.Key, img)));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public static ImageSource Load(string path,bool addToCache = true)
         {
             if (string.IsNullOrEmpty(path)) return null;
+            if (addToCache)
+            {
+                ImageCacheStroage.Instance.Add(path);
+            }
+
             if (imageCache.ContainsKey(path))
             {
                 return imageCache[path];
@@ -78,7 +108,7 @@ namespace Wox.Helper
             }
 
 
-            if (img != null)
+            if (img != null && addToCache)
             {
                 if (!imageCache.ContainsKey(path))
                 {

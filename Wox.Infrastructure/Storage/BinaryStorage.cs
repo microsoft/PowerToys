@@ -10,6 +10,7 @@ namespace Wox.Infrastructure.Storage
     /// <summary>
     /// Stroage object using binary data
     /// Normally, it has better performance, but not readable
+    /// You MUST mark implement class as Serializable
     /// </summary>
     [Serializable]
     public abstract class BinaryStorage<T> : BaseStorage<T> where T : class, IStorage, new()

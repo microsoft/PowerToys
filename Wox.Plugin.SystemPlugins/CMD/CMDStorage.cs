@@ -29,5 +29,6 @@ namespace Wox.Plugin.SystemPlugins.CMD
             }
             Save();
         }
+
     }
 }

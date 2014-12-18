@@ -16,6 +16,7 @@ using NHotkey;
 using NHotkey.Wpf;
 using Wox.Commands;
 using Wox.Helper;
+using Wox.ImageLoader;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
@@ -188,9 +189,22 @@ namespace Wox
             Closing += MainWindow_Closing;
             //since MainWIndow implement IPublicAPI, so we need to finish ctor MainWindow object before
             //PublicAPI invoke in plugin init methods. E.g FolderPlugin
-            ThreadPool.QueueUserWorkItem(o => Plugins.Init());
+            ThreadPool.QueueUserWorkItem(o =>
+            {
+                Thread.Sleep(50);
+                Plugins.Init();
+            });
+            ThreadPool.QueueUserWorkItem(o =>
+            {
+                Thread.Sleep(50);
+                PreLoadImages();
+            });
+            ThreadPool.QueueUserWorkItem(o => CheckUpdate());
+        }
 
-            ThreadPool.QueueUserWorkItem(o => checkUpdate());
+        private void PreLoadImages()
+        {
+            ImageLoader.ImageLoader.PreloadImages();
         }
 
         void pnlResult_RightMouseClickEvent(Result result)
@@ -198,7 +212,7 @@ namespace Wox
             ShowContextMenu(result);
         }
 
-        void checkUpdate()
+        void CheckUpdate()
         {
             Release release = new UpdateChecker().CheckUpgrade();
             if (release != null && !UserSettingStorage.Instance.DontPromptUpdateMsg)
