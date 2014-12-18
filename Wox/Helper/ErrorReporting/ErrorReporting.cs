@@ -9,28 +9,15 @@ using System.Windows.Threading;
 using System.Xml;
 using Microsoft.Win32;
 using Wox.Infrastructure.Logger;
-using CrashReporterDotNET;
 
 namespace Wox.Helper.ErrorReporting
 {
     public static class ErrorReporting
     {
-        private static void ReportCrash(Exception exception)
-        {
-            var reportCrash = new ReportCrash
-            {
-                ToEmail = "qianlf2008@163.com"
-            };
-
-            reportCrash.Send(exception);
-        }
-
         public static void UnhandledExceptionHandle(object sender, System.UnhandledExceptionEventArgs e)
         {
             if (System.Diagnostics.Debugger.IsAttached) return;
 
-            ReportCrash((Exception)e.ExceptionObject);
-            return;
             string error = CreateExceptionReport("System.AppDomain.UnhandledException", e.ExceptionObject);
 
             //e.IsTerminating is always true in most times, so try to avoid use this property
@@ -43,9 +30,6 @@ namespace Wox.Helper.ErrorReporting
         {
             if (Debugger.IsAttached) return;
 
-            ReportCrash(e.Exception);
-            return;
-
             e.Handled = true;
             string error = CreateExceptionReport("System.Windows.Application.DispatcherUnhandledException", e.Exception);
 
@@ -55,8 +39,7 @@ namespace Wox.Helper.ErrorReporting
         public static void ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
             if (Debugger.IsAttached) return;
-            ReportCrash(e.Exception);
-            return;
+
             string error = CreateExceptionReport("System.Windows.Forms.Application.ThreadException", e.Exception);
 
             Log.Fatal(error);
@@ -288,7 +271,6 @@ namespace Wox.Helper.ErrorReporting
             var dialog = new WPFErrorReportingDialog(error, title, exceptionObject);
             dialog.ShowDialog();
         }
-
         private static void ShowWPFMessageBox(string error, string title)
         {
             System.Windows.MessageBox.Show(error, title, MessageBoxButton.OK, MessageBoxImage.Error,

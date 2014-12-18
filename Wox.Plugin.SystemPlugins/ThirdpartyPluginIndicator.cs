@@ -80,7 +80,7 @@ namespace Wox.Plugin.SystemPlugins
 
         public override string IcoPath
         {
-            get { return @"Images\work.png"; }
+            get { return @"Images\list.png"; }
         }
 
         public override string Description

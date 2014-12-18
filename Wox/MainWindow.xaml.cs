@@ -222,12 +222,13 @@ namespace Wox
 
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
-            if (UserSettingStorage.Instance.WindowLeft == 0 && UserSettingStorage.Instance.WindowTop == 0)
+            if (UserSettingStorage.Instance.WindowLeft == 0
+                && UserSettingStorage.Instance.WindowTop == 0)
             {
                 Left = UserSettingStorage.Instance.WindowLeft
                      = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
                 Top = UserSettingStorage.Instance.WindowTop
-                    = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 6;
+                    = (SystemParameters.PrimaryScreenHeight - ActualHeight) / 5;
             }
             else
             {
@@ -547,7 +548,7 @@ namespace Wox
                     break;
 
                 case Key.F1:
-                    Process.Start("http://doc.getwox.com");
+                    Process.Start("https://github.com/qianlifeng/Wox/wiki/Wox-Function-Guide");
                     break;
 
                 case Key.Enter:
