@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Http;
 using YAMP.Numerics;
 
 namespace Wox.Plugin.SystemPlugins.SuggestionSources
@@ -19,36 +20,30 @@ namespace Wox.Plugin.SystemPlugins.SuggestionSources
 
         public override List<string> GetSuggestions(string query)
         {
-            try
-            {
-                var response =
-                    HttpRequest.CreateGetHttpResponse(
-                        "http://suggestion.baidu.com/su?json=1&wd=" + Uri.EscapeUriString(query), null,
-                        null, null);
-                var stream = response.GetResponseStream();
+            var result = HttpRequest.Get("http://suggestion.baidu.com/su?json=1&wd=" + Uri.EscapeUriString(query), "GB2312");
+            if (string.IsNullOrEmpty(result)) return new List<string>();
 
-                if (stream != null)
+            Match match = reg.Match(result);
+            if (match.Success)
+            {
+                JContainer json = null;
+                try
                 {
-                    var body = new StreamReader(stream, Encoding.GetEncoding("GB2312")).ReadToEnd();
-                    Match m = reg.Match(body);
-                    if (m.Success)
+                    json =JsonConvert.DeserializeObject(match.Groups[1].Value) as JContainer;
+                }
+                catch{}
+
+                if (json != null)
+                {
+                    var results = json["s"] as JArray;
+                    if (results != null)
                     {
-                        var json = JsonConvert.DeserializeObject(m.Groups[1].Value) as JContainer;
-                        if (json != null)
-                        {
-                            var results = json["s"] as JArray;
-                            if (results != null)
-                            {
-                                return results.OfType<JValue>().Select(o => o.Value).OfType<string>().ToList();
-                            }
-                        }
+                        return results.OfType<JValue>().Select(o => o.Value).OfType<string>().ToList();
                     }
                 }
             }
-            catch
-            { }
 
-            return null;
+            return new List<string>();
         }
     }
 }

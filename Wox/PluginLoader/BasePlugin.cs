@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using Newtonsoft.Json;
 using Wox.Helper;
 using Wox.Helper.ErrorReporting;
+using Wox.Infrastructure.Exceptions;
 using Wox.Infrastructure.Logger;
 using Wox.JsonRPC;
 using Wox.Plugin;
@@ -142,7 +143,7 @@ namespace Wox.PluginLoader
                                     string error = errorReader.ReadToEnd();
                                     if (!string.IsNullOrEmpty(error))
                                     {
-                                        ErrorReporting.TryShowErrorMessageBox(error, new WoxJsonPRCException(error));
+                                        ErrorReporting.TryShowErrorMessageBox(error, new WoxJsonRPCException(error));
                                     }
                                 }
                             }

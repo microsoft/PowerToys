@@ -8,6 +8,7 @@ using NHotkey;
 using NHotkey.Wpf;
 using Wox.Helper;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using UserControl = System.Windows.Controls.UserControl;

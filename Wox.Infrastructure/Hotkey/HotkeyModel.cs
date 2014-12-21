@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows.Input;
-using System.Windows.Media.Animation;
 
-namespace Wox.Infrastructure
+namespace Wox.Infrastructure.Hotkey
 {
     public class HotkeyModel
     {

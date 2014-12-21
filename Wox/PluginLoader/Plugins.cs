@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Wox.Helper;
+using Wox.Infrastructure;
+using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 

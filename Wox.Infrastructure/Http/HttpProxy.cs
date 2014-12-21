@@ -1,7 +1,7 @@
 ﻿using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 
-namespace Wox.Helper
+namespace Wox.Infrastructure.Http
 {
     public class HttpProxy : IHttpProxy
     {

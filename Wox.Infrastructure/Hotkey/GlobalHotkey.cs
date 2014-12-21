@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Wox.Plugin;
 
-namespace Wox.Infrastructure
+namespace Wox.Infrastructure.Hotkey
 {
     public enum KeyEvent : int
     {

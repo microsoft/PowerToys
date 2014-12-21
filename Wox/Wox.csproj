@@ -136,7 +136,6 @@
       <DependentUpon>WPFErrorReportingDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helper\FontHelper.cs" />
-    <Compile Include="Helper\HttpProxy.cs" />
     <Compile Include="ImageLoader\ImageLoader.cs" />
     <Compile Include="Helper\SingleInstance.cs" />
     <Compile Include="Helper\SyntaxSugars.cs" />
@@ -150,8 +149,6 @@
     <Compile Include="Helper\DispatcherExtensions.cs" />
     <Compile Include="Helper\DWMDropShadow.cs" />
     <Compile Include="Helper\PluginInstaller.cs" />
-    <Compile Include="Helper\WoxException.cs" />
-    <Compile Include="Helper\WoxPythonException.cs" />
     <Compile Include="HotkeyControl.xaml.cs">
       <DependentUpon>HotkeyControl.xaml</DependentUpon>
     </Compile>

@@ -55,7 +55,6 @@
     <Compile Include="PluginMetadata.cs" />
     <Compile Include="PluginType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PythonResult.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="Result.cs" />
     <Compile Include="ActionContext.cs" />

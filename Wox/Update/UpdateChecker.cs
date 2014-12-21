@@ -8,6 +8,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Wox.Helper;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Http;
 
 namespace Wox.Update
 {
@@ -25,28 +26,20 @@ namespace Wox.Update
         public Release CheckUpgrade(bool forceCheck = false)
         {
             if (checkedUpdate && !forceCheck) return newRelease;
+            string json = HttpRequest.Get(updateURL);
+            if (string.IsNullOrEmpty(json)) return null;
 
-            HttpWebResponse response = HttpRequest.CreateGetHttpResponse(updateURL, HttpProxy.Instance);
-            Stream s = response.GetResponseStream();
-            if (s != null)
+            try
             {
-                StreamReader reader = new StreamReader(s, Encoding.UTF8);
-                string json = reader.ReadToEnd();
-                try
+                newRelease = JsonConvert.DeserializeObject<Release>(json);
+                if (!IsNewerThanCurrent(newRelease))
                 {
-                    newRelease = JsonConvert.DeserializeObject<Release>(json);
+                    newRelease = null;
                 }
-                catch
-                {
-                }
+                checkedUpdate = true;
             }
+            catch{}
 
-            if (!IsNewerThanCurrent(newRelease))
-            {
-                newRelease = null;
-            }
-
-            checkedUpdate = true;
             return newRelease;
         }
 

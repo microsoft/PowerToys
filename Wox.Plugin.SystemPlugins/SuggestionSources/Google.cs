@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Http;
 using YAMP.Numerics;
 
 namespace Wox.Plugin.SystemPlugins.SuggestionSources
@@ -16,32 +17,24 @@ namespace Wox.Plugin.SystemPlugins.SuggestionSources
     {
         public override List<string> GetSuggestions(string query)
         {
+            var result = HttpRequest.Get("https://www.google.com/complete/search?output=chrome&q=" + Uri.EscapeUriString(query));
+            if (string.IsNullOrEmpty(result)) return new List<string>();
+
             try
             {
-                var response =
-                    HttpRequest.CreateGetHttpResponse(
-                        "https://www.google.com/complete/search?output=chrome&q=" + Uri.EscapeUriString(query), null,
-                        null, null);
-                var stream = response.GetResponseStream();
-
-                if (stream != null)
+                JContainer json = JsonConvert.DeserializeObject(result) as JContainer;
+                if (json != null)
                 {
-                    var body = new StreamReader(stream).ReadToEnd();
-                    var json = JsonConvert.DeserializeObject(body) as JContainer;
-                    if (json != null)
+                    var results = json[1] as JContainer;
+                    if (results != null)
                     {
-                        var results = json[1] as JContainer;
-                        if (results != null)
-                        {
-                            return results.OfType<JValue>().Select(o => o.Value).OfType<string>().ToList();
-                        }
+                        return results.OfType<JValue>().Select(o => o.Value).OfType<string>().ToList();
                     }
                 }
             }
-            catch
-            { }
-            
-            return null;
+            catch { }
+
+            return new List<string>();
         }
     }
 }

@@ -57,7 +57,7 @@ namespace Wox.Infrastructure.Storage.UserSettings
         public List<ProgramSource> ProgramSources { get; set; }
 
         [JsonProperty]
-        public List<FolderLink> FolderLinks { get; set; }	//Aaron
+        public List<FolderLink> FolderLinks { get; set; }
 
         public List<CustomizedPluginConfig> CustomizedPluginConfigs { get; set; }
 

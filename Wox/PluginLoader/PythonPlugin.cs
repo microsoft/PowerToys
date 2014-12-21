@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.IO;
 using Wox.Helper;
+using Wox.Infrastructure;
+using Wox.Infrastructure.Http;
 using Wox.JsonRPC;
 using Wox.Plugin;
 

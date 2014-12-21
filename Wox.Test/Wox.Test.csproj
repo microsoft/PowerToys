@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FuzzyMatcherTest.cs" />
+    <Compile Include="Infrastructure\HttpRequestTest.cs" />
     <Compile Include="QueryTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UrlPluginTest.cs" />

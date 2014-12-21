@@ -18,6 +18,7 @@ using Wox.Commands;
 using Wox.Helper;
 using Wox.ImageLoader;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
