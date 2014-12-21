@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using Wox.Infrastructure.Logger;
 
 namespace Wox.Infrastructure.Storage
 {
@@ -24,7 +25,7 @@ namespace Wox.Infrastructure.Storage
         {
             try
             {
-                FileStream fileStream = new FileStream(ConfigPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                FileStream fileStream = new FileStream(ConfigPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 BinaryFormatter binaryFormatter = new BinaryFormatter();
                 serializedObject = binaryFormatter.Deserialize(fileStream) as T;
                 fileStream.Close();
@@ -37,10 +38,22 @@ namespace Wox.Infrastructure.Storage
 
         protected override void SaveInternal()
         {
-            FileStream fileStream = new FileStream(ConfigPath, FileMode.Create);
-            BinaryFormatter binaryFormatter = new BinaryFormatter();
-            binaryFormatter.Serialize(fileStream, serializedObject);
-            fileStream.Close();
+            try
+            {
+                FileStream fileStream = new FileStream(ConfigPath, FileMode.Create);
+                BinaryFormatter binaryFormatter = new BinaryFormatter();
+                binaryFormatter.Serialize(fileStream, serializedObject);
+                fileStream.Close();
+            }
+            catch (Exception e)
+            {
+                Log.Error(e.Message);
+                #if (DEBUG)
+                {  
+                    throw e;
+                }
+                #endif
+            }
         }
     }
 }

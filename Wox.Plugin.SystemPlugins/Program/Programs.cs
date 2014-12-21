@@ -15,6 +15,7 @@ namespace Wox.Plugin.SystemPlugins.Program
     public class Programs : BaseSystemPlugin, ISettingProvider
     {
         private static object lockObject = new object();
+        private static List<Program> programs = new List<Program>();
         private static List<IProgramSource> sources = new List<IProgramSource>();
         private static Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>() { 
             {"FileSystemProgramSource", typeof(FileSystemProgramSource)},
@@ -29,7 +30,7 @@ namespace Wox.Plugin.SystemPlugins.Program
             if (query.RawQuery.Trim().Length <= 1) return new List<Result>();
 
             var fuzzyMather = FuzzyMatcher.Create(query.RawQuery);
-            List<Program> returnList = ProgramCacheStorage.Instance.Programs.Where(o => MatchProgram(o, fuzzyMather)).ToList();
+            List<Program> returnList = programs.Where(o => MatchProgram(o, fuzzyMather)).ToList();
             returnList.ForEach(ScoreFilter);
             returnList = returnList.OrderByDescending(o => o.Score).ToList();
 
@@ -75,6 +76,7 @@ namespace Wox.Plugin.SystemPlugins.Program
         protected override void InitInternal(PluginInitContext context)
         {
             this.context = context;
+            programs = ProgramCacheStorage.Instance.Programs;
             using (new Timeit("Program Index"))
             {
                 IndexPrograms();
@@ -121,10 +123,10 @@ namespace Wox.Plugin.SystemPlugins.Program
                 }
 
                 // filter duplicate program
-                tempPrograms = tempPrograms.GroupBy(x => new { x.ExecutePath, x.ExecuteName })
+                programs = tempPrograms.GroupBy(x => new { x.ExecutePath, x.ExecuteName })
                     .Select(g => g.First()).ToList();
 
-                ProgramCacheStorage.Instance.Programs = tempPrograms;
+                ProgramCacheStorage.Instance.Programs = programs;
                 ProgramCacheStorage.Instance.Save();
             }
         }
