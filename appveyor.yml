@@ -14,8 +14,8 @@ build:
     project: Wox.sln
 
 after_test:
-    ps: .\deploy\nuget\pack.ps1
-    ps: .\deploy\Installer\pack.ps1
+    - ps: .\deploy\nuget\pack.ps1
+    - ps: .\deploy\Installer\pack.ps1
 
 deploy:
     provider: NuGet
