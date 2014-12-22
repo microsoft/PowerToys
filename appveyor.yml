@@ -15,6 +15,7 @@ build:
 
 after_test:
     ps: .\deploy\nuget\pack.ps1
+    ps: .\deploy\Installer\pack.ps1
 
 deploy:
     provider: NuGet
@@ -30,3 +31,6 @@ artifacts:
 
     - path: '*.nupkg'
       name: nugetpackage
+
+    - path: Output\Wox-setup.exe
+      name: setup 
