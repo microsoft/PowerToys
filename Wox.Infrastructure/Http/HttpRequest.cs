@@ -8,7 +8,7 @@ namespace Wox.Infrastructure.Http
 {
     public class HttpRequest
     {
-        public static string Get(string url, string encoding = "UTF8")
+        public static string Get(string url, string encoding = "UTF-8")
         {
             return Get(url, encoding, HttpProxy.Instance);
         }
