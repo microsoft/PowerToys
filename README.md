@@ -32,7 +32,7 @@ If you are not a developer, you can also help Wox by contributing the [Wox doc](
 Doc
 =========
 
-If you have any questions, please read [Wox Documentation](http://doc.getwox.com) first. Wox documentation is a good place for users to understand Wox.
+If you have any questions about how to use Wox, please read [Wox Documentation](http://doc.getwox.com) first. Wox documentation is a good place for users to understand Wox.
 
 
 Discussion
