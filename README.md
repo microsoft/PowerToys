@@ -1,14 +1,13 @@
 Wox   [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e103)](https://ci.appveyor.com/project/qianlifeng/wox)
 =========
-[Wox](http://www.getwox.com) is an effective launcher for windows, which was inspired by [Alfred](http://www.alfredapp.com/) and [Launchy](http://www.launchy.net/). Wox provide bundles of features let you access infomations quickly. 
+[Wox](http://www.getwox.com) is a launcher for windows, which was inspired by [Alfred](http://www.alfredapp.com/) and [Launchy](http://www.launchy.net/). Wox provide an entry to search everything you want. 
 
 Features
 =========
-1. Search applications, files (via plugin) and browser bookmarks
+1. Search applications, files and browser bookmarks (via plugin)
 2. Search web contents with shortcuts (e.g. search google with `g keyword` or `youtube keyword`)
-3. Search clipboard history (via clipboard plugin) 
-4. Themes support, get more themes from [http://www.getwox.com/theme/builder](http://www.getwox.com/theme/builder)
-5. Plugin support, get more plugins from [http://www.getwox.com/plugin](http://www.getwox.com/plugin)
+3. Themes support, get more themes from [http://www.getwox.com/theme/builder](http://www.getwox.com/theme/builder)
+4. Plugin support, get more plugins from [http://www.getwox.com/plugin](http://www.getwox.com/plugin)
 
 Screenshot
 =========
@@ -24,34 +23,19 @@ Download from [release page](https://github.com/qianlifeng/Wox/releases).
 Contribute  
 =========
 
-If you are a developer, please feel free to send a pull request to **Dev** branch. We still have a lot functions and bugs need to do now. Just pick one from [issues page](https://github.com/qianlifeng/Wox/issues) that you think you can fix.  
+If you are a developer, feel free to send a pull request to **Dev** branch. We still have a lot functions and bugs need to do now. Just pick one from [issues page](https://github.com/qianlifeng/Wox/issues) that you think you can fix.  
 
 If you are not a developer, you can also help Wox by contributing the [Wox doc](http://doc.getwox.com).
 
 
 
-Create and Share Plugin
+Doc
 =========
 
-Currently, Wox support using C# and Python to write your plugins. Please refer to [Create-plugin](https://github.com/qianlifeng/Wox/wiki/Create-plugins) page for more infomation.
-You can share your plugin with <a href="http://www.getwox.com/plugin">WoxPlugins</a>. After you upload your plugin, other uses can download or search your plugin through `wpm install <plugin name>` command (this is a plugin for plugin management, which is one of the default plugins inside Wox). Please refer to [How-to-share-your-plugins](https://github.com/qianlifeng/Wox/wiki/How-to-share-your-plugins-in--getwox.com-plugin-page%3F) for details.
+If you have any questions, please read [Wox Documentation](http://doc.getwox.com) first. Wox documentation is a good place for users to understand Wox.
 
 
-Create and Share Theme
+Discussion
 =========
 
-Wox provide an online theme editor [http://www.getwox.com/themebuilder](http://www.getwox.com/themebuilder), you build your own theme for wox.
-<img src="http://ww3.sinaimg.cn/large/5d7c1fa4gw1eegm4tvpu7j20zg0in412.jpg" />  
-
-
-Most Asked Questions  
-=========
-
-1. **How to install plugin?**  
-
-  Refer to [https://github.com/qianlifeng/Wox/wiki/How-to-install-Plugins](https://github.com/qianlifeng/Wox/wiki/How-to-install-Plugins)  
-
-
-2. **How to open setting dialog?**  
-
-  Refer to [https://github.com/qianlifeng/Wox/wiki/How-to-open-setting-dialog](https://github.com/qianlifeng/Wox/wiki/How-to-open-setting-dialog)  
+We build a [Wox Fourms](http://discussion.getwox.com), so users can talk about everything about Wox there.
