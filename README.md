@@ -4,10 +4,10 @@ Wox   [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e
 
 Features
 =========
-1. Search applications, files (via everything plugin) and chrome bookmarks
+1. Search applications, files (via plugin) and browser bookmarks
 2. Search web contents with shortcuts (e.g. search google with `g keyword` or `youtube keyword`)
 3. Search clipboard history (via clipboard plugin) 
-4. Themes support, get more themes from [http://www.getwox.com/theme](http://www.getwox.com/theme)
+4. Themes support, get more themes from [http://www.getwox.com/theme/builder](http://www.getwox.com/theme/builder)
 5. Plugin support, get more plugins from [http://www.getwox.com/plugin](http://www.getwox.com/plugin)
 
 Screenshot
@@ -21,15 +21,12 @@ Download
 
 Download from [release page](https://github.com/qianlifeng/Wox/releases).
 
-* **Windows 8 users:** You have to [enable the .NET Framework 3.5 in Control Panel](http://msdn.microsoft.com/library/hh506443.aspx).
-
-
 Contribute  
 =========
 
 If you are a developer, please feel free to send a pull request to **Dev** branch. We still have a lot functions and bugs need to do now. Just pick one from [issues page](https://github.com/qianlifeng/Wox/issues) that you think you can fix.  
 
-If you are not a developer, you can also help Wox by contributing the Wox wiki page, for example [Wox Function Guide](https://github.com/qianlifeng/Wox/wiki/Wox-Function-Guide).
+If you are not a developer, you can also help Wox by contributing the [Wox doc](http://doc.getwox.com).
 
 
 
