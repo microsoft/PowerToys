@@ -2,26 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Wox.Core.Plugin;
-using Wox.Helper;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 
-namespace Wox.Commands
+namespace Wox.Core.Plugin.QueryDispatcher
 {
-    public class PluginCommand : BaseCommand
+    public class UserPluginQueryDispatcher : IQueryDispatcher
     {
-        public override void Dispatch(Query query)
+        public void Dispatch(Query query)
         {
-            PluginPair thirdPlugin = PluginManager.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.ActionName);
-            if (thirdPlugin != null && !string.IsNullOrEmpty(thirdPlugin.Metadata.ActionKeyword))
+            PluginPair userPlugin = PluginManager.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.ActionName);
+            if (userPlugin != null && !string.IsNullOrEmpty(userPlugin.Metadata.ActionKeyword))
             {
-                var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == thirdPlugin.Metadata.ID);
+                var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == userPlugin.Metadata.ID);
                 if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
                 {
                     //need to stop the loading animation
-                    UpdateResultView(null);
+                    PluginManager.API.StopLoadingBar();
                     return;
                 }
 
@@ -29,12 +27,12 @@ namespace Wox.Commands
                 {
                     try
                     {
-                        List<Result> results = thirdPlugin.Plugin.Query(query) ?? new List<Result>();
-                        App.Window.PushResults(query,thirdPlugin.Metadata,results);
+                        List<Result> results = userPlugin.Plugin.Query(query) ?? new List<Result>();
+                        PluginManager.API.PushResults(query,userPlugin.Metadata,results);
                     }
                     catch (Exception queryException)
                     {
-                        Log.Error(string.Format("Plugin {0} query failed: {1}", thirdPlugin.Metadata.Name,
+                        Log.Error(string.Format("Plugin {0} query failed: {1}", userPlugin.Metadata.Name,
                             queryException.Message));
 #if (DEBUG)
                         {

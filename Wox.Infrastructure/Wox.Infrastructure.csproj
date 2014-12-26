@@ -67,21 +67,18 @@
     <Compile Include="Storage\JsonStrorage.cs" />
     <Compile Include="Storage\UserSettings\CustomizedPluginConfig.cs" />
     <Compile Include="Storage\UserSettings\FolderLink.cs" />
+    <Compile Include="Storage\UserSettings\PluginHotkey.cs" />
+    <Compile Include="Storage\UserSettings\ProgramSource.cs" />
+    <Compile Include="Storage\UserSettings\UserSettingStorage.cs" />
+    <Compile Include="Storage\UserSettings\WebSearch.cs" />
     <Compile Include="Timeit.cs" />
     <Compile Include="Unidecoder.Characters.cs" />
-    <Compile Include="ChineseToPinYin.cs" />
     <Compile Include="Http\HttpRequest.cs" />
     <Compile Include="Storage\BaseStorage.cs" />
     <Compile Include="FuzzyMatcher.cs" />
     <Compile Include="Hotkey\GlobalHotkey.cs" />
     <Compile Include="Hotkey\HotkeyModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Storage\UserSelectedRecordStorage.cs" />
-    <Compile Include="Storage\UserSettings\UserSettingStorage.cs" />
-    <Compile Include="Storage\UserSettings\PluginHotkey.cs" />
-    <Compile Include="Storage\UserSettings\ProgramSource.cs" />
-    <Compile Include="Storage\UserSettings\WebSearch.cs" />
-    <Compile Include="StringEmptyConverter.cs" />
     <Compile Include="Unidecoder.cs" />
     <Compile Include="WindowsShellRun.cs" />
   </ItemGroup>

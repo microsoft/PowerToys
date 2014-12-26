@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 
-namespace Wox.Infrastructure.Storage
+namespace Wox.Storage
 {
     public class UserSelectedRecordStorage : JsonStrorage<UserSelectedRecordStorage>
     {

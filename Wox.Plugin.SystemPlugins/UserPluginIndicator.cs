@@ -8,7 +8,7 @@ using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Plugin.SystemPlugins
 {
-    public class ThirdpartyPluginIndicator : BaseSystemPlugin
+    public class UserPluginIndicator : BaseSystemPlugin
     {
         private List<PluginPair> allPlugins = new List<PluginPair>();
         private PluginInitContext context;

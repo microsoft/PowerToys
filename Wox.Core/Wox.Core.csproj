@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\Output\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -38,12 +38,17 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Plugin\QueryDispatcher\IQueryDispatcher.cs" />
+    <Compile Include="Plugin\QueryDispatcher\QueryDispatcher.cs" />
+    <Compile Include="Plugin\QueryDispatcher\UserPluginQueryDispatcher.cs" />
+    <Compile Include="Plugin\QueryDispatcher\SystemPluginQueryDispatcher.cs" />
     <Compile Include="Plugin\JsonRPCPlugin.cs" />
     <Compile Include="Plugin\JsonRPCPluginLoader.cs" />
     <Compile Include="Plugin\CSharpPluginLoader.cs" />

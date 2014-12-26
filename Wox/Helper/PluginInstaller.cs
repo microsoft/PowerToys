@@ -116,7 +116,7 @@ namespace Wox.Helper
             try
             {
                 metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
-                metadata.PluginType = PluginType.ThirdParty;
+                metadata.PluginType = PluginType.User;
                 metadata.PluginDirectory = pluginDirectory;
             }
             catch (Exception)

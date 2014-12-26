@@ -195,7 +195,7 @@ namespace Wox
                 new CollectionContainer
                 {
                     Collection =
-                        PluginManager.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.ThirdParty)
+                        PluginManager.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.User)
                 }
             };
             lbPlugins.ItemsSource = plugins;

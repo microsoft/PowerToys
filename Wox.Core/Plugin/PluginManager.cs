@@ -15,8 +15,10 @@ namespace Wox.Core.Plugin
     public static class PluginManager
     {
         public static String DebuggerMode { get; private set; }
+        public static IPublicAPI API { get; private set; }
+
         private static List<PluginPair> plugins = new List<PluginPair>();
-        
+
         /// <summary>
         /// Directories that will hold Wox plugin directory
         /// </summary>
@@ -26,10 +28,14 @@ namespace Wox.Core.Plugin
         {
             pluginDirectories.Add(
                 Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Plugins"));
-            pluginDirectories.Add(
-                Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), ".Wox"),"Plugins"));
 
-            MakesurePluginDirectoriesExist();   
+            string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
+            if (userProfilePath != null)
+            {
+                pluginDirectories.Add(Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Plugins"));
+            }
+
+            MakesurePluginDirectoriesExist();
         }
 
         private static void MakesurePluginDirectoriesExist()
@@ -46,8 +52,9 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// Load and init all Wox plugins
         /// </summary>
-        public static void Init()
+        public static void Init(IPublicAPI api)
         {
+            API = api;
             plugins.Clear();
 
             List<PluginMetadata> pluginMetadatas = PluginConfig.Parse(pluginDirectories);
@@ -61,9 +68,14 @@ namespace Wox.Core.Plugin
                 {
                     CurrentPluginMetadata = pair.Metadata,
                     Proxy = HttpProxy.Instance,
-                    API = App.Window
+                    API = API
                 }));
             }
+        }
+
+        public static void Query(Query query)
+        {
+            QueryDispatcher.QueryDispatcher.Dispatch(query);
         }
 
         public static List<PluginPair> AllPlugins
@@ -74,11 +86,11 @@ namespace Wox.Core.Plugin
             }
         }
 
-        public static bool HitThirdpartyKeyword(Query query)
+        public static bool IsUserPluginQuery(Query query)
         {
             if (string.IsNullOrEmpty(query.ActionName)) return false;
 
-            return plugins.Any(o => o.Metadata.PluginType == PluginType.ThirdParty && o.Metadata.ActionKeyword == query.ActionName);
+            return plugins.Any(o => o.Metadata.PluginType == PluginType.User && o.Metadata.ActionKeyword == query.ActionName);
         }
 
         public static void ActivatePluginDebugger(string path)

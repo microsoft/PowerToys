@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:infrastructure="clr-namespace:Wox.Infrastructure;assembly=Wox.Infrastructure"
+             xmlns:program="clr-namespace:Wox.Plugin.SystemPlugins.Program"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="600">
 
@@ -26,7 +27,7 @@
                     <GridViewColumn Header="Location"  Width="400">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Location, ConverterParameter=(null), Converter={infrastructure:StringEmptyConverter}}"/>
+                                <TextBlock Text="{Binding Location, ConverterParameter=(null), Converter={program:StringEmptyConverter}}"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>

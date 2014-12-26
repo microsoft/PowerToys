@@ -14,7 +14,6 @@ using WindowsInput;
 using WindowsInput.Native;
 using NHotkey;
 using NHotkey.Wpf;
-using Wox.Commands;
 using Wox.Core.Plugin;
 using Wox.Helper;
 using Wox.Infrastructure;
@@ -22,6 +21,7 @@ using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
+using Wox.Storage;
 using Wox.Update;
 using Application = System.Windows.Application;
 using Brushes = System.Windows.Media.Brushes;
@@ -127,7 +127,7 @@ namespace Wox
 
         public void ReloadPlugins()
         {
-            Dispatcher.Invoke(new Action(PluginManager.Init));
+            Dispatcher.Invoke(new Action(()=> PluginManager.Init(this)));
         }
 
         public List<PluginPair> GetAllPlugins()
@@ -192,7 +192,7 @@ namespace Wox
             ThreadPool.QueueUserWorkItem(o =>
             {
                 Thread.Sleep(50);
-                PluginManager.Init();
+                PluginManager.Init(this);
             });
             ThreadPool.QueueUserWorkItem(o =>
             {
@@ -357,9 +357,9 @@ namespace Wox
                     }, TimeSpan.FromMilliseconds(100), null);
                     queryHasReturn = false;
                     var q = new Query(lastQuery);
-                    CommandFactory.DispatchCommand(q);
+                    PluginManager.Query(q);
                     BackToResultMode();
-                    if (PluginManager.HitThirdpartyKeyword(q))
+                    if (PluginManager.IsUserPluginQuery(q))
                     {
                         Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
                         {

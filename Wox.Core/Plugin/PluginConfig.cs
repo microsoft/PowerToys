@@ -28,7 +28,7 @@ namespace Wox.Core.Plugin
             ParseSystemPlugins();
             foreach (string pluginDirectory in pluginDirectories)
             {
-                ParseThirdPartyPlugins(pluginDirectory);
+                ParseUserPlugins(pluginDirectory);
             }
 
             if (PluginManager.DebuggerMode != null)
@@ -56,7 +56,7 @@ namespace Wox.Core.Plugin
             });
         }
 
-        private static void ParseThirdPartyPlugins(string pluginDirectory)
+        private static void ParseUserPlugins(string pluginDirectory)
         {
 
             string[] directories = Directory.GetDirectories(pluginDirectory);
@@ -88,7 +88,7 @@ namespace Wox.Core.Plugin
             try
             {
                 metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
-                metadata.PluginType = PluginType.ThirdParty;
+                metadata.PluginType = PluginType.User;
                 metadata.PluginDirectory = pluginDirectory;
             }
             catch (Exception)

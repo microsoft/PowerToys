@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading;
+using System.Windows.Forms;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Exceptions;
 using Wox.Infrastructure.Logger;
@@ -74,7 +75,6 @@ namespace Wox.Core.Plugin
                 }
                 catch (Exception e)
                 {
-                    ErrorReporting.TryShowErrorMessageBox(e.Message, e);
                     Log.Error(e.Message);
                 }
             }
@@ -83,12 +83,12 @@ namespace Wox.Core.Plugin
 
         private void ExecuteWoxAPI(string method, object[] parameters)
         {
-            MethodInfo methodInfo = App.Window.GetType().GetMethod(method);
-            if (methodInfo != null)
+            MethodInfo methodInfo = PluginManager.API.GetType().GetMethod(method);
+            if (methodInfo != null) 
             {
                 try
                 {
-                    methodInfo.Invoke(App.Window, parameters);
+                    methodInfo.Invoke(PluginManager.API, parameters);
                 }
                 catch (Exception)
                 {
@@ -132,7 +132,7 @@ namespace Wox.Core.Plugin
                             string result = reader.ReadToEnd();
                             if (result.StartsWith("DEBUG:"))
                             {
-                                System.Windows.Forms.MessageBox.Show(new Form { TopMost = true }, result.Substring(6));
+                                MessageBox.Show(new Form { TopMost = true }, result.Substring(6));
                                 return "";
                             }
                             if (string.IsNullOrEmpty(result))
@@ -142,7 +142,8 @@ namespace Wox.Core.Plugin
                                     string error = errorReader.ReadToEnd();
                                     if (!string.IsNullOrEmpty(error))
                                     {
-                                        ErrorReporting.TryShowErrorMessageBox(error, new WoxJsonRPCException(error));
+                                        //todo:
+                                       // ErrorReporting.TryShowErrorMessageBox(error, new WoxJsonRPCException(error));
                                     }
                                 }
                             }

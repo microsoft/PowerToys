@@ -15,7 +15,7 @@ namespace Wox.CommandArgs
 
         public void Execute(IList<string> args)
         {
-            PluginManager.Init();
+            PluginManager.Init(App.Window);
         }
     }
 }

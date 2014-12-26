@@ -1,4 +1,4 @@
 ﻿What does Wox.Core do?
 
 * Handle Query
-* Loading Plugins
+* Loading Plugins (including system plugin and user plugin)
