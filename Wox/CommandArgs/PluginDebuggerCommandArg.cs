@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Input;
+using Wox.Core.Plugin;
 
 namespace Wox.CommandArgs
 {
@@ -18,7 +19,7 @@ namespace Wox.CommandArgs
             if (args.Count > 0)
             {
                 var pluginFolderPath = args[0];
-                PluginLoader.Plugins.ActivatePluginDebugger(pluginFolderPath);
+                PluginManager.ActivatePluginDebugger(pluginFolderPath);
             }
         }
     }

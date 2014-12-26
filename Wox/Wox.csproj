@@ -153,17 +153,9 @@
       <DependentUpon>HotkeyControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\ImagePathConverter.cs" />
-    <Compile Include="PluginLoader\IPluginLoader.cs" />
     <Compile Include="Msg.xaml.cs">
       <DependentUpon>Msg.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PluginLoader\PluginConfigLoader.cs" />
-    <Compile Include="PluginLoader\CSharpPluginLoader.cs" />
-    <Compile Include="PluginLoader\BasePluginLoader.cs" />
-    <Compile Include="PluginLoader\BasePlugin.cs" />
-    <Compile Include="JsonRPC\JsonPRCModel.cs" />
-    <Compile Include="PluginLoader\Plugins.cs" />
-    <Compile Include="PluginLoader\PythonPlugin.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="ResultPanel.xaml.cs">
       <DependentUpon>ResultPanel.xaml</DependentUpon>
@@ -272,6 +264,10 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Wox.Core\Wox.Core.csproj">
+      <Project>{B749F0DB-8E75-47DB-9E5E-265D16D0C0D2}</Project>
+      <Name>Wox.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj">
       <Project>{4fd29318-a8ab-4d8f-aa47-60bc241b8da3}</Project>
       <Name>Wox.Infrastructure</Name>

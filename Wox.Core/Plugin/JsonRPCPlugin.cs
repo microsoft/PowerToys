@@ -2,30 +2,29 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
-using System.Windows.Forms;
 using Newtonsoft.Json;
-using Wox.Helper;
-using Wox.Helper.ErrorReporting;
 using Wox.Infrastructure.Exceptions;
 using Wox.Infrastructure.Logger;
-using Wox.JsonRPC;
 using Wox.Plugin;
-using MessageBox = System.Windows.MessageBox;
 
-namespace Wox.PluginLoader
+namespace Wox.Core.Plugin
 {
-    public abstract class BasePlugin : IPlugin
+    /// <summary>
+    /// Represent the plugin that using JsonPRC
+    /// </summary>
+    internal abstract class JsonRPCPlugin : IPlugin
     {
         protected PluginInitContext context;
 
+        /// <summary>
+        /// The language this JsonRPCPlugin support
+        /// </summary>
         public abstract string SupportedLanguage { get; }
 
         protected abstract string ExecuteQuery(Query query);
-        protected abstract string ExecuteAction(JsonRPCRequestModel rpcRequest);
+        protected abstract string ExecuteCallback(JsonRPCRequestModel rpcRequest);
 
         public List<Result> Query(Query query)
         {
@@ -56,7 +55,7 @@ namespace Wox.PluginLoader
                                 {
                                     ThreadPool.QueueUserWorkItem(state =>
                                     {
-                                        string actionReponse = ExecuteAction(result1.JsonRPCAction);
+                                        string actionReponse = ExecuteCallback(result1.JsonRPCAction);
                                         JsonRPCRequestModel jsonRpcRequestModel = JsonConvert.DeserializeObject<JsonRPCRequestModel>(actionReponse);
                                         if (jsonRpcRequestModel != null
                                             && !string.IsNullOrEmpty(jsonRpcRequestModel.Method)
@@ -161,7 +160,7 @@ namespace Wox.PluginLoader
 
         public void Init(PluginInitContext ctx)
         {
-            this.context = ctx;
+            context = ctx;
         }
     }
 }

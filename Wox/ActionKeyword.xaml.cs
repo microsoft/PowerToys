@@ -11,9 +11,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Wox.Core.Plugin;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
-using Wox.PluginLoader;
 using MessageBox = System.Windows.MessageBox;
 
 namespace Wox
@@ -25,7 +25,7 @@ namespace Wox
         public ActionKeyword(string pluginId)
         {
             InitializeComponent();
-            PluginPair plugin = Plugins.AllPlugins.FirstOrDefault(o => o.Metadata.ID == pluginId);
+            PluginPair plugin = PluginManager.GetPlugin(pluginId);
             if (plugin == null)
             {
                 MessageBox.Show("Can't find specific plugin");
@@ -56,7 +56,7 @@ namespace Wox
             }
 
             //check new action keyword didn't used by other plugin
-            if (Plugins.AllPlugins.Exists(o => o.Metadata.ActionKeyword == tbAction.Text.Trim()))
+            if (PluginManager.AllPlugins.Exists(o => o.Metadata.ActionKeyword == tbAction.Text.Trim()))
             {
                 MessageBox.Show("New ActionKeyword has been assigned to other plugin, please assign another new action keyword");
                 return;

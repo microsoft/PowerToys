@@ -11,11 +11,11 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using IWshRuntimeLibrary;
+using Wox.Core.Plugin;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.Helper;
 using Wox.Plugin.SystemPlugins;
-using Wox.PluginLoader;
 using Wox.Update;
 using Application = System.Windows.Forms.Application;
 using File = System.IO.File;
@@ -187,7 +187,7 @@ namespace Wox
                 new CollectionContainer
                 {
                     Collection =
-                        PluginLoader.Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System)
+                        PluginManager.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System)
                             .Select(o => o.Plugin)
                             .Cast<ISystemPlugin>()
                 },
@@ -195,7 +195,7 @@ namespace Wox
                 new CollectionContainer
                 {
                     Collection =
-                        PluginLoader.Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.ThirdParty)
+                        PluginManager.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.ThirdParty)
                 }
             };
             lbPlugins.ItemsSource = plugins;
@@ -576,7 +576,7 @@ namespace Wox
                     string id = pair.Metadata.ID;
                     ActionKeyword changeKeywordWindow = new ActionKeyword(id);
                     changeKeywordWindow.ShowDialog();
-                    PluginPair plugin = Plugins.AllPlugins.FirstOrDefault(o => o.Metadata.ID == id);
+                    PluginPair plugin = PluginManager.GetPlugin(id);
                     if (plugin != null) pluginActionKeyword.Text = plugin.Metadata.ActionKeyword;
                 }
             }

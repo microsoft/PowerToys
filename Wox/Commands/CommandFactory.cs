@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Wox.Core.Plugin;
 using Wox.Helper;
 using Wox.Plugin;
-using Wox.PluginLoader;
 
 namespace Wox.Commands
 {
@@ -15,7 +15,7 @@ namespace Wox.Commands
 
         public static void DispatchCommand(Query query)
         {
-            if (Plugins.HitThirdpartyKeyword(query))
+            if (PluginManager.HitThirdpartyKeyword(query))
             {
                 pluginCmd.Dispatch(query);
             }

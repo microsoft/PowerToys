@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Wox.PluginLoader;
+using Wox.Core.Plugin;
 
 namespace Wox.CommandArgs
 {
@@ -15,7 +15,7 @@ namespace Wox.CommandArgs
 
         public void Execute(IList<string> args)
         {
-            Plugins.Init();
+            PluginManager.Init();
         }
     }
 }

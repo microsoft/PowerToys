@@ -1,17 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
-using Wox.Helper;
-using Wox.Infrastructure;
+using System.Reflection;
 using Wox.Infrastructure.Http;
-using Wox.JsonRPC;
 using Wox.Plugin;
 
-namespace Wox.PluginLoader
+namespace Wox.Core.Plugin
 {
-    public class PythonPlugin : BasePlugin
+    internal class PythonPlugin : JsonRPCPlugin
     {
-        private static string woxDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
+        private static string woxDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         private ProcessStartInfo startInfo;
 
         public override string SupportedLanguage
@@ -57,7 +54,7 @@ namespace Wox.PluginLoader
             return Execute(startInfo);
         }
 
-        protected override string ExecuteAction(JsonRPCRequestModel rpcRequest)
+        protected override string ExecuteCallback(JsonRPCRequestModel rpcRequest)
         {
             startInfo.FileName = Path.Combine(woxDirectory, "PythonHome\\pythonw.exe");
             startInfo.Arguments = string.Format("-B \"{0}\" \"{1}\"", context.CurrentPluginMetadata.ExecuteFilePath, rpcRequest);

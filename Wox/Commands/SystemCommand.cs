@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Wox.Core.Plugin;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.SystemPlugins;
-using Wox.PluginLoader;
 
 namespace Wox.Commands
 {
     public class SystemCommand : BaseCommand
     {
-        private IEnumerable<PluginPair> allSytemPlugins = Plugins.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System);
+        private IEnumerable<PluginPair> allSytemPlugins = PluginManager.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System);
 
         public override void Dispatch(Query query)
         {

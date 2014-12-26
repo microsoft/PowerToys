@@ -15,14 +15,13 @@ using WindowsInput.Native;
 using NHotkey;
 using NHotkey.Wpf;
 using Wox.Commands;
+using Wox.Core.Plugin;
 using Wox.Helper;
-using Wox.ImageLoader;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
-using Wox.PluginLoader;
 using Wox.Update;
 using Application = System.Windows.Application;
 using Brushes = System.Windows.Media.Brushes;
@@ -128,12 +127,12 @@ namespace Wox
 
         public void ReloadPlugins()
         {
-            Dispatcher.Invoke(new Action(Plugins.Init));
+            Dispatcher.Invoke(new Action(PluginManager.Init));
         }
 
         public List<PluginPair> GetAllPlugins()
         {
-            return Plugins.AllPlugins;
+            return PluginManager.AllPlugins;
         }
 
         public event WoxKeyDownEventHandler BackKeyDownEvent;
@@ -193,7 +192,7 @@ namespace Wox
             ThreadPool.QueueUserWorkItem(o =>
             {
                 Thread.Sleep(50);
-                Plugins.Init();
+                PluginManager.Init();
             });
             ThreadPool.QueueUserWorkItem(o =>
             {
@@ -360,7 +359,7 @@ namespace Wox
                     var q = new Query(lastQuery);
                     CommandFactory.DispatchCommand(q);
                     BackToResultMode();
-                    if (Plugins.HitThirdpartyKeyword(q))
+                    if (PluginManager.HitThirdpartyKeyword(q))
                     {
                         Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
                         {

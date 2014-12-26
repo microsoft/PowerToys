@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Wox.Plugin;
 
-namespace Wox.JsonRPC
+namespace Wox.Core.Plugin
 {
     public class JsonRPCErrorModel
     {
