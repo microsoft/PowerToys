@@ -24,16 +24,30 @@ namespace Wox.Core.Plugin
         /// </summary>
         private static List<string> pluginDirectories = new List<string>();
 
+
+        /// <summary>
+        /// Default plugin directory
+        /// new plugin will be installed to this directory
+        /// </summary>
+        public static string DefaultPluginDirectory
+        {
+            get
+            {
+                string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
+                if (userProfilePath != null)
+                {
+                    return Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Plugins");
+                }
+
+                return string.Empty;
+            }
+        }
+
         static PluginManager()
         {
+            pluginDirectories.Add(DefaultPluginDirectory);
             pluginDirectories.Add(
                 Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Plugins"));
-
-            string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
-            if (userProfilePath != null)
-            {
-                pluginDirectories.Add(Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Plugins"));
-            }
 
             MakesurePluginDirectoriesExist();
         }
@@ -71,6 +85,11 @@ namespace Wox.Core.Plugin
                     API = API
                 }));
             }
+        }
+
+        public static void InstallPlugin(string path)
+        {
+            PluginInstaller.Install(path);
         }
 
         public static void Query(Query query)

@@ -19,7 +19,7 @@ namespace Wox.Core.Plugin.QueryDispatcher
                 //websearch mode
                 queryPlugins = new List<PluginPair>()
                 {
-                    allSytemPlugins.First(o => ((ISystemPlugin)o.Plugin).ID == "565B73353DBF4806919830B9202EE3BF")
+                    allSytemPlugins.First(o => o.Metadata.ID == "565B73353DBF4806919830B9202EE3BF")
                 };
             }
 

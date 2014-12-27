@@ -122,7 +122,7 @@ namespace Wox
 
         public void InstallPlugin(string path)
         {
-            Dispatcher.Invoke(new Action(() => PluginInstaller.Install(path)));
+            Dispatcher.Invoke(new Action(() => PluginManager.InstallPlugin(path)));
         }
 
         public void ReloadPlugins()
@@ -172,14 +172,8 @@ namespace Wox
             pnlResult.RightMouseClickEvent += pnlResult_RightMouseClickEvent;
 
             ThreadPool.SetMaxThreads(30, 10);
-            try
-            {
-                SetTheme(UserSettingStorage.Instance.Theme);
-            }
-            catch (Exception)
-            {
-                SetTheme(UserSettingStorage.Instance.Theme = "Dark");
-            }
+            ThemeManager.ChangeTheme(UserSettingStorage.Instance.Theme);
+
 
             SetHotkey(UserSettingStorage.Instance.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
@@ -676,44 +670,6 @@ namespace Wox
             }
         }
 
-        public void SetTheme(string themeName)
-        {
-            var dict = new ResourceDictionary
-            {
-                Source = new Uri(Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Themes\\" + themeName + ".xaml"), UriKind.Absolute)
-            };
-
-
-            Style queryBoxStyle = dict["QueryBoxStyle"] as Style;
-            if (queryBoxStyle != null)
-            {
-                queryBoxStyle.Setters.Add(new Setter(TextBox.FontFamilyProperty, new FontFamily(UserSettingStorage.Instance.QueryBoxFont)));
-                queryBoxStyle.Setters.Add(new Setter(TextBox.FontStyleProperty, FontHelper.GetFontStyleFromInvariantStringOrNormal(UserSettingStorage.Instance.QueryBoxFontStyle)));
-                queryBoxStyle.Setters.Add(new Setter(TextBox.FontWeightProperty, FontHelper.GetFontWeightFromInvariantStringOrNormal(UserSettingStorage.Instance.QueryBoxFontWeight)));
-                queryBoxStyle.Setters.Add(new Setter(TextBox.FontStretchProperty, FontHelper.GetFontStretchFromInvariantStringOrNormal(UserSettingStorage.Instance.QueryBoxFontStretch)));
-            }
-
-            Style resultItemStyle = dict["ItemTitleStyle"] as Style;
-            Style resultSubItemStyle = dict["ItemSubTitleStyle"] as Style;
-            Style resultItemSelectedStyle = dict["ItemTitleSelectedStyle"] as Style;
-            Style resultSubItemSelectedStyle = dict["ItemSubTitleSelectedStyle"] as Style;
-            if (resultItemStyle != null && resultSubItemStyle != null && resultSubItemSelectedStyle != null && resultItemSelectedStyle != null)
-            {
-                Setter fontFamily = new Setter(TextBlock.FontFamilyProperty, new FontFamily(UserSettingStorage.Instance.ResultItemFont));
-                Setter fontStyle = new Setter(TextBlock.FontStyleProperty, FontHelper.GetFontStyleFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontStyle));
-                Setter fontWeight = new Setter(TextBlock.FontWeightProperty, FontHelper.GetFontWeightFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontWeight));
-                Setter fontStretch = new Setter(TextBlock.FontStretchProperty, FontHelper.GetFontStretchFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontStretch));
-
-                Setter[] setters = new Setter[] { fontFamily, fontStyle, fontWeight, fontStretch };
-                Array.ForEach(new Style[] { resultItemStyle, resultSubItemStyle, resultItemSelectedStyle, resultSubItemSelectedStyle }, o => Array.ForEach(setters, p => o.Setters.Add(p)));
-            }
-
-            Application.Current.Resources.MergedDictionaries.Clear();
-            Application.Current.Resources.MergedDictionaries.Add(dict);
-
-            this.Opacity = this.AllowsTransparency ? UserSettingStorage.Instance.Opacity : 1;
-        }
-
         public bool ShellRun(string cmd, bool runAsAdministrator = false)
         {
             try
@@ -739,7 +695,7 @@ namespace Wox
                 string[] files = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
                 if (files[0].ToLower().EndsWith(".wox"))
                 {
-                    PluginInstaller.Install(files[0]);
+                    PluginManager.InstallPlugin(files[0]);
                 }
                 else
                 {
