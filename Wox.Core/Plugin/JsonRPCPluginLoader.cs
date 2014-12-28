@@ -13,7 +13,7 @@ namespace Wox.Core.Plugin
 
             return jsonRPCPluginMetadatas.Select(metadata => new PluginPair()
             {
-                Plugin = jsonRPCPlugin, 
+                Plugin = new T(),  //every JsonRPC plugin should has its own plugin instance
                 Metadata = metadata
             }).ToList();
         }

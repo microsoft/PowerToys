@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using Newtonsoft.Json;
-using Wox.Infrastructure.Exceptions;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
@@ -73,7 +72,7 @@ namespace Wox.Core.Plugin
                     }
                     return results;
                 }
-                catch (Exception e)
+                catch (System.Exception e)
                 {
                     Log.Error(e.Message);
                 }
@@ -90,7 +89,7 @@ namespace Wox.Core.Plugin
                 {
                     methodInfo.Invoke(PluginManager.API, parameters);
                 }
-                catch (Exception)
+                catch (System.Exception)
                 {
 #if (DEBUG)
                     {

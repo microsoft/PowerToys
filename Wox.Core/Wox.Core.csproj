@@ -49,6 +49,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exception\WoxCritialException.cs" />
+    <Compile Include="Exception\WoxException.cs" />
+    <Compile Include="Exception\WoxHttpException.cs" />
+    <Compile Include="Exception\WoxJsonRPCException.cs" />
     <Compile Include="Plugin\PluginInstaller.cs" />
     <Compile Include="Plugin\QueryDispatcher\IQueryDispatcher.cs" />
     <Compile Include="Plugin\QueryDispatcher\QueryDispatcher.cs" />

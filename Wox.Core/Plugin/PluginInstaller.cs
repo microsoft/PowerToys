@@ -114,12 +114,12 @@ namespace Wox.Core.Plugin
                 metadata.PluginType = PluginType.User;
                 metadata.PluginDirectory = pluginDirectory;
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 string error = string.Format("Parse plugin config {0} failed: json format is not valid", configPath);
 #if (DEBUG)
                 {
-                    throw new Exception(error);
+                    throw new System.Exception(error);
                 }
 #endif
                 return null;
@@ -132,7 +132,7 @@ namespace Wox.Core.Plugin
                     metadata.Language);
 #if (DEBUG)
                 {
-                    throw new Exception(error);
+                    throw new System.Exception(error);
                 }
 #endif
                 return null;
@@ -143,7 +143,7 @@ namespace Wox.Core.Plugin
                     metadata.ExecuteFilePath);
 #if (DEBUG)
                 {
-                    throw new Exception(error);
+                    throw new System.Exception(error);
                 }
 #endif
                 return null;

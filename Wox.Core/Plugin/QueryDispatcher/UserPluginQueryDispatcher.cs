@@ -30,7 +30,7 @@ namespace Wox.Core.Plugin.QueryDispatcher
                         List<Result> results = userPlugin.Plugin.Query(query) ?? new List<Result>();
                         PluginManager.API.PushResults(query,userPlugin.Metadata,results);
                     }
-                    catch (Exception queryException)
+                    catch (System.Exception queryException)
                     {
                         Log.Error(string.Format("Plugin {0} query failed: {1}", userPlugin.Metadata.Name,
                             queryException.Message));

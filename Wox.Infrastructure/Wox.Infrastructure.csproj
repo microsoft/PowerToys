@@ -56,9 +56,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Exceptions\WoxException.cs" />
-    <Compile Include="Exceptions\WoxHttpException.cs" />
-    <Compile Include="Exceptions\WoxJsonRPCException.cs" />
     <Compile Include="Http\HttpProxy.cs" />
     <Compile Include="Logger\Log.cs" />
     <Compile Include="PeHeaderReader.cs" />

@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
-using Wox.Infrastructure.Exceptions;
+using Wox.Core.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
@@ -91,7 +91,7 @@ namespace Wox.Core.Plugin
                 metadata.PluginType = PluginType.User;
                 metadata.PluginDirectory = pluginDirectory;
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 string error = string.Format("Parse plugin config {0} failed: json format is not valid", configPath);
                 Log.Warn(error);
