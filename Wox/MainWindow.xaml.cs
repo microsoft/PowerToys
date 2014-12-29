@@ -37,6 +37,7 @@ using Path = System.IO.Path;
 using Rectangle = System.Drawing.Rectangle;
 using TextBox = System.Windows.Controls.TextBox;
 using ToolTip = System.Windows.Controls.ToolTip;
+using Wox.Infrastructure.Logger;
 
 namespace Wox
 {

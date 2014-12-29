@@ -18,9 +18,6 @@ namespace Wox
 
         static ThemeManager()
         {
-            themeDirectories.Add(
-            Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Themes"));
-
             string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
             if (userProfilePath != null)
             {

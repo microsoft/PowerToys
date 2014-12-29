@@ -46,9 +46,6 @@ namespace Wox.Core.Plugin
         static PluginManager()
         {
             pluginDirectories.Add(DefaultPluginDirectory);
-            pluginDirectories.Add(
-                Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Plugins"));
-
             MakesurePluginDirectoriesExist();
         }
 
