@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Wox.Helper;
+using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox
@@ -18,6 +19,8 @@ namespace Wox
 
         static ThemeManager()
         {
+            themeDirectories.Add(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Themes"));
+
             string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
             if (userProfilePath != null)
             {
@@ -33,7 +36,14 @@ namespace Wox
             {
                 if (!Directory.Exists(pluginDirectory))
                 {
-                    Directory.CreateDirectory(pluginDirectory);
+                    try
+                    {
+                        Directory.CreateDirectory(pluginDirectory);
+                    }
+                    catch(Exception e)
+                    {
+                        Log.Error(e.Message);
+                    }
                 }
             }
         }

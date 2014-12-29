@@ -58,6 +58,7 @@ namespace Wox.Core.Plugin
 
         private static void ParseUserPlugins(string pluginDirectory)
         {
+            if (!Directory.Exists(pluginDirectory)) return;
 
             string[] directories = Directory.GetDirectories(pluginDirectory);
             foreach (string directory in directories)

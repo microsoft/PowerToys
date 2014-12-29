@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Wox.Infrastructure.Http;
+using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
 namespace Wox.Core.Plugin
@@ -46,6 +47,9 @@ namespace Wox.Core.Plugin
         static PluginManager()
         {
             pluginDirectories.Add(DefaultPluginDirectory);
+            pluginDirectories.Add(
+                Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Plugins"));
+
             MakesurePluginDirectoriesExist();
         }
 
@@ -55,7 +59,14 @@ namespace Wox.Core.Plugin
             {
                 if (!Directory.Exists(pluginDirectory))
                 {
-                    Directory.CreateDirectory(pluginDirectory);
+                    try
+                    {
+                        Directory.CreateDirectory(pluginDirectory);
+                    }
+                    catch (System.Exception e)
+                    {
+                        Log.Error(e.Message);
+                    }
                 }
             }
         }
