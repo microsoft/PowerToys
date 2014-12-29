@@ -41,6 +41,13 @@ namespace Wox.Core.Plugin
 
         private static void ParseSystemPlugins()
         {
+            string systemPluginPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                "Wox.Plugin.SystemPlugins.dll");
+            if (!File.Exists(systemPluginPath))
+            {
+                throw new WoxCritialException("System Plugin DLL is missing.");
+            }
+
             pluginMetadatas.Add(new PluginMetadata()
             {
                 Name = "System Plugins",
@@ -65,8 +72,15 @@ namespace Wox.Core.Plugin
             {
                 if (File.Exists((Path.Combine(directory, "NeedDelete.txt"))))
                 {
-                    Directory.Delete(directory, true);
-                    continue;
+                    try
+                    {
+                        Directory.Delete(directory, true);
+                        continue;
+                    }
+                    catch (System.Exception e)
+                    {
+                        Log.Error(ExceptionFormatter.FormatExcpetion(e));
+                    }
                 }
                 PluginMetadata metadata = GetPluginMetadata(directory);
                 if (metadata != null)

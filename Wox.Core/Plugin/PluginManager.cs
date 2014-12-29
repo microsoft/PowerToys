@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Wox.Core.Exception;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
@@ -35,17 +36,19 @@ namespace Wox.Core.Plugin
             get
             {
                 string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
-                if (userProfilePath != null)
+                if (string.IsNullOrEmpty(userProfilePath))
                 {
-                    return Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Plugins");
+                    throw new WoxCritialException("Wox Can't Find Environment Variable UserProfile");
                 }
 
-                return string.Empty;
+                return Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Plugins");
             }
         }
 
-        static PluginManager()
+        private static void SetupPluginDirectories()
         {
+            pluginDirectories.Clear();
+
             pluginDirectories.Add(DefaultPluginDirectory);
             pluginDirectories.Add(
                 Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Plugins"));
@@ -76,6 +79,9 @@ namespace Wox.Core.Plugin
         /// </summary>
         public static void Init(IPublicAPI api)
         {
+            if (api == null) throw new WoxCritialException("api is null");
+
+            SetupPluginDirectories();
             API = api;
             plugins.Clear();
 

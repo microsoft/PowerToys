@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exception\ExceptionFormatter.cs" />
     <Compile Include="Exception\WoxCritialException.cs" />
     <Compile Include="Exception\WoxException.cs" />
     <Compile Include="Exception\WoxHttpException.cs" />
