@@ -9,8 +9,8 @@ namespace Wox.ImageLoader
     [Serializable]
     public class ImageCacheStroage : BinaryStorage<ImageCacheStroage>
     {
-        public int counter = 0;
-        public const int maxCached = 200;
+        private int counter = 0;
+        private const int maxCached = 200;
         public Dictionary<string, int> TopUsedImages = new Dictionary<string, int>();
 
         protected override string ConfigName

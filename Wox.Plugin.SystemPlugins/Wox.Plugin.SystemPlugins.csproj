@@ -86,6 +86,7 @@
     <Compile Include="Program\ProgramSuffixes.xaml.cs">
       <DependentUpon>ProgramSuffixes.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Program\StringEmptyConverter.cs" />
     <Compile Include="SuggestionSources\Baidu.cs" />
     <Compile Include="SuggestionSources\SuggestionSourceFactory.cs" />
     <Compile Include="Sys\SysSettings.xaml.cs">
@@ -102,7 +103,7 @@
     <Compile Include="Program\Programs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sys\Sys.cs" />
-    <Compile Include="ThirdpartyPluginIndicator.cs" />
+    <Compile Include="UserPluginIndicator.cs" />
     <Compile Include="SuggestionSources\Google.cs" />
     <Compile Include="SuggestionSources\ISuggestionSource.cs" />
     <Compile Include="WebSearch\WebSearchSetting.xaml.cs">

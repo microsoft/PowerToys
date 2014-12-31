@@ -6,7 +6,12 @@ namespace Wox.Plugin
 {
     public interface IPublicAPI
     {
-
+        /// <summary>
+        /// Push result to query window
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="plugin"></param>
+        /// <param name="results"></param>
         void PushResults(Query query,PluginMetadata plugin, List<Result> results);
 
         bool ShellRun(string cmd, bool runAsAdministrator = false);

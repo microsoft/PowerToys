@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
-using Wox.Infrastructure.Exceptions;
+using Wox.Core.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
@@ -28,7 +28,7 @@ namespace Wox.Core.Plugin
             ParseSystemPlugins();
             foreach (string pluginDirectory in pluginDirectories)
             {
-                ParseThirdPartyPlugins(pluginDirectory);
+                ParseUserPlugins(pluginDirectory);
             }
 
             if (PluginManager.DebuggerMode != null)
@@ -41,6 +41,13 @@ namespace Wox.Core.Plugin
 
         private static void ParseSystemPlugins()
         {
+            string systemPluginPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                "Wox.Plugin.SystemPlugins.dll");
+            if (!File.Exists(systemPluginPath))
+            {
+                throw new WoxCritialException("System Plugin DLL is missing.");
+            }
+
             pluginMetadatas.Add(new PluginMetadata()
             {
                 Name = "System Plugins",
@@ -56,16 +63,24 @@ namespace Wox.Core.Plugin
             });
         }
 
-        private static void ParseThirdPartyPlugins(string pluginDirectory)
+        private static void ParseUserPlugins(string pluginDirectory)
         {
+            if (!Directory.Exists(pluginDirectory)) return;
 
             string[] directories = Directory.GetDirectories(pluginDirectory);
             foreach (string directory in directories)
             {
                 if (File.Exists((Path.Combine(directory, "NeedDelete.txt"))))
                 {
-                    Directory.Delete(directory, true);
-                    continue;
+                    try
+                    {
+                        Directory.Delete(directory, true);
+                        continue;
+                    }
+                    catch (System.Exception e)
+                    {
+                        Log.Error(ExceptionFormatter.FormatExcpetion(e));
+                    }
                 }
                 PluginMetadata metadata = GetPluginMetadata(directory);
                 if (metadata != null)
@@ -88,10 +103,10 @@ namespace Wox.Core.Plugin
             try
             {
                 metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
-                metadata.PluginType = PluginType.ThirdParty;
+                metadata.PluginType = PluginType.User;
                 metadata.PluginDirectory = pluginDirectory;
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 string error = string.Format("Parse plugin config {0} failed: json format is not valid", configPath);
                 Log.Warn(error);

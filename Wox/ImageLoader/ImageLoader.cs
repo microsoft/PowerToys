@@ -13,7 +13,6 @@ namespace Wox.ImageLoader
     public class ImageLoader
     {
         private static readonly Dictionary<string, ImageSource> imageCache = new Dictionary<string, ImageSource>();
-        private static object locker = new object();
 
         private static readonly List<string> imageExts = new List<string>
         {
@@ -54,23 +53,20 @@ namespace Wox.ImageLoader
         {
             //ImageCacheStroage.Instance.TopUsedImages can be changed during foreach, so we need to make a copy
             var imageList = new Dictionary<string, int>(ImageCacheStroage.Instance.TopUsedImages);
-            using (new Timeit(string.Format("Preload {0} images",imageList.Count)))
+            using (new Timeit(string.Format("Preload {0} images", imageList.Count)))
             {
                 foreach (var image in imageList)
                 {
-                    ImageSource img = Load(image.Key, false);
-                    if (img != null)
+                    if (!imageCache.ContainsKey(image.Key))
                     {
-                        img.Freeze(); //to make it copy to UI thread
-                        if (!imageCache.ContainsKey(image.Key))
+                        ImageSource img = Load(image.Key, false);
+                        if (img != null)
                         {
-                            lock (locker)
+                            img.Freeze(); //to make it copy to UI thread
+                            if (!imageCache.ContainsKey(image.Key))
                             {
-                                if (!imageCache.ContainsKey(image.Key))
-                                {
-                                    KeyValuePair<string, int> copyedImg = image;
-                                    App.Window.Dispatcher.Invoke(new Action(() => imageCache.Add(copyedImg.Key, img)));
-                                }
+                                KeyValuePair<string, int> copyedImg = image;
+                                App.Window.Dispatcher.Invoke(new Action(() => imageCache.Add(copyedImg.Key, img)));
                             }
                         }
                     }
@@ -78,7 +74,7 @@ namespace Wox.ImageLoader
             }
         }
 
-        public static ImageSource Load(string path,bool addToCache = true)
+        public static ImageSource Load(string path, bool addToCache = true)
         {
             if (string.IsNullOrEmpty(path)) return null;
             if (addToCache)
@@ -112,13 +108,7 @@ namespace Wox.ImageLoader
             {
                 if (!imageCache.ContainsKey(path))
                 {
-                    lock (locker)
-                    {
-                        if (!imageCache.ContainsKey(path))
-                        {
-                            imageCache.Add(path, img);
-                        }
-                    }
+                    imageCache.Add(path, img);
                 }
             }
 

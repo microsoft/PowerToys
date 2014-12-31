@@ -104,7 +104,10 @@
     <Reference Include="WPFToolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helper\WoxLogPathConverter.cs" />
     <Compile Include="ImageLoader\ImageCacheStroage.cs" />
+    <Compile Include="Storage\UserSelectedRecordStorage.cs" />
+    <Compile Include="ThemeManager.cs" />
     <Compile Include="Update\NewVersionWindow.xaml.cs">
       <DependentUpon>NewVersionWindow.xaml</DependentUpon>
     </Compile>
@@ -124,11 +127,6 @@
     <Compile Include="CommandArgs\PluginDebuggerCommandArg.cs" />
     <Compile Include="CommandArgs\QueryCommandArg.cs" />
     <Compile Include="CommandArgs\ReloadPluginCommandArg.cs" />
-    <Compile Include="Commands\BaseCommand.cs" />
-    <Compile Include="Commands\CommandFactory.cs" />
-    <Compile Include="Commands\PluginCommand.cs" />
-    <Compile Include="Commands\SystemCommand.cs" />
-    <Compile Include="Converters\AsyncConverter.cs" />
     <Compile Include="Converters\ConvertorBase.cs" />
     <Compile Include="Helper\DataWebRequestFactory.cs" />
     <Compile Include="Helper\ErrorReporting\ErrorReporting.cs" />
@@ -148,7 +146,6 @@
     </Compile>
     <Compile Include="Helper\DispatcherExtensions.cs" />
     <Compile Include="Helper\DWMDropShadow.cs" />
-    <Compile Include="Helper\PluginInstaller.cs" />
     <Compile Include="HotkeyControl.xaml.cs">
       <DependentUpon>HotkeyControl.xaml</DependentUpon>
     </Compile>
@@ -205,11 +202,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <None Include="Themes\Dark.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Themes\Light.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -230,6 +222,10 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Include="Themes\Dark.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Update\NewVersionWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

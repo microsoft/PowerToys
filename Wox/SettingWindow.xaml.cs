@@ -172,8 +172,7 @@ namespace Wox
             }
 
             //PreviewPanel
-            App.Window.SetTheme(UserSettingStorage.Instance.Theme);
-
+            ThemeManager.ChangeTheme(UserSettingStorage.Instance.Theme);
             #endregion
 
             #region Plugin
@@ -195,7 +194,7 @@ namespace Wox
                 new CollectionContainer
                 {
                     Collection =
-                        PluginManager.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.ThirdParty)
+                        PluginManager.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.User)
                 }
             };
             lbPlugins.ItemsSource = plugins;
@@ -366,7 +365,7 @@ namespace Wox
         private void ThemeComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string themeName = themeComboBox.SelectedItem.ToString();
-            MainWindow.SetTheme(themeName);
+            ThemeManager.ChangeTheme(themeName);
             UserSettingStorage.Instance.Theme = themeName;
             UserSettingStorage.Instance.Save();
         }
@@ -379,7 +378,7 @@ namespace Wox
             this.cbQueryBoxFontFaces.SelectedItem = ((FontFamily)cbQueryBoxFont.SelectedItem).ChooseRegularFamilyTypeface();
 
             UserSettingStorage.Instance.Save();
-            App.Window.SetTheme(UserSettingStorage.Instance.Theme);
+            ThemeManager.ChangeTheme(UserSettingStorage.Instance.Theme);
         }
 
         private void CbQueryBoxFontFaces_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -399,7 +398,7 @@ namespace Wox
                 UserSettingStorage.Instance.QueryBoxFontWeight = typeface.Weight.ToString();
                 UserSettingStorage.Instance.QueryBoxFontStyle = typeface.Style.ToString();
                 UserSettingStorage.Instance.Save();
-                App.Window.SetTheme(UserSettingStorage.Instance.Theme);
+                ThemeManager.ChangeTheme(UserSettingStorage.Instance.Theme);
             }
         }
 
@@ -411,7 +410,7 @@ namespace Wox
             this.cbResultItemFontFaces.SelectedItem = ((FontFamily)cbResultItemFont.SelectedItem).ChooseRegularFamilyTypeface();
 
             UserSettingStorage.Instance.Save();
-            App.Window.SetTheme(UserSettingStorage.Instance.Theme);
+            ThemeManager.ChangeTheme(UserSettingStorage.Instance.Theme);
         }
 
         private void CbResultItemFontFaces_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -422,8 +421,6 @@ namespace Wox
             {
                 if (cbResultItemFontFaces.Items.Count > 0)
                     cbResultItemFontFaces.SelectedIndex = 0;
-
-                return;
             }
             else
             {
@@ -431,7 +428,7 @@ namespace Wox
                 UserSettingStorage.Instance.ResultItemFontWeight = typeface.Weight.ToString();
                 UserSettingStorage.Instance.ResultItemFontStyle = typeface.Style.ToString();
                 UserSettingStorage.Instance.Save();
-                App.Window.SetTheme(UserSettingStorage.Instance.Theme);
+                ThemeManager.ChangeTheme(UserSettingStorage.Instance.Theme);
             }
         }
 
@@ -445,7 +442,7 @@ namespace Wox
             else
                 PreviewMainPanel.Opacity = 1;
 
-            App.Window.SetTheme(UserSettingStorage.Instance.Theme);
+            ThemeManager.ChangeTheme(UserSettingStorage.Instance.Theme);
         }
         #endregion
 

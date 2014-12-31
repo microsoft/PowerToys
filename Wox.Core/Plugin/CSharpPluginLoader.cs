@@ -44,7 +44,7 @@ namespace Wox.Core.Plugin
                         plugins.Add(pair);
                     }
                 }
-                catch (Exception e)
+                catch (System.Exception e)
                 {
                     Log.Error(string.Format("Couldn't load plugin {0}: {1}", metadata.Name, e.Message));
 #if (DEBUG)

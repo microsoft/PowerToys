@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Moq">
+      <HintPath>..\packages\Moq.4.2.1409.1722\lib\net35\Moq.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
@@ -44,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FuzzyMatcherTest.cs" />
+    <Compile Include="Plugins\PluginInitTest.cs" />
     <Compile Include="QueryTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UrlPluginTest.cs" />
@@ -52,6 +56,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Wox.Core\Wox.Core.csproj">
+      <Project>{B749F0DB-8E75-47DB-9E5E-265D16D0C0D2}</Project>
+      <Name>Wox.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj">
       <Project>{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}</Project>
       <Name>Wox.Infrastructure</Name>

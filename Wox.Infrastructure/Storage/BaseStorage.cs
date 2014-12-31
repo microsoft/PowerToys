@@ -10,18 +10,35 @@ using Newtonsoft.Json;
 namespace Wox.Infrastructure.Storage
 {
     [Serializable]
-    public abstract class BaseStorage<T> : IStorage where T : class,IStorage,new()
+    public abstract class BaseStorage<T> : IStorage where T : class,IStorage, new()
     {
-        private readonly string configFolder = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Config");
+        private string configFolder;
+
+        private string ConfigFolder
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(configFolder))
+                {
+                    string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
+                    if (userProfilePath == null)
+                    {
+                        throw new ArgumentException("Environment variable USERPROFILE is empty");
+                    }
+                    configFolder = Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Config");
+                }
+                return configFolder;
+            }
+        }
 
         protected string ConfigPath
         {
             get
             {
-                return Path.Combine(configFolder, ConfigName + FileSuffix);
+                return Path.Combine(ConfigFolder, ConfigName + FileSuffix);
             }
         }
-        
+
         protected abstract string FileSuffix { get; }
 
         protected abstract string ConfigName { get; }
@@ -72,9 +89,9 @@ namespace Wox.Infrastructure.Storage
         {
             if (!File.Exists(ConfigPath))
             {
-                if (!Directory.Exists(configFolder))
+                if (!Directory.Exists(ConfigFolder))
                 {
-                    Directory.CreateDirectory(configFolder);
+                    Directory.CreateDirectory(ConfigFolder);
                 }
                 File.Create(ConfigPath).Close();
             }

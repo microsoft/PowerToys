@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using Wox.Core.Plugin;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.SystemPlugins;
 
-namespace Wox.Commands
+namespace Wox.Core.Plugin.QueryDispatcher
 {
-    public class SystemCommand : BaseCommand
+    public class SystemPluginQueryDispatcher : IQueryDispatcher
     {
         private IEnumerable<PluginPair> allSytemPlugins = PluginManager.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System);
 
-        public override void Dispatch(Query query)
+        public void Dispatch(Query query)
         {
             var queryPlugins = allSytemPlugins;
             if (UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == query.ActionName && o.Enabled))
@@ -22,7 +19,7 @@ namespace Wox.Commands
                 //websearch mode
                 queryPlugins = new List<PluginPair>()
                 {
-                    allSytemPlugins.First(o => ((ISystemPlugin)o.Plugin).ID == "565B73353DBF4806919830B9202EE3BF")
+                    allSytemPlugins.First(o => o.Metadata.ID == "565B73353DBF4806919830B9202EE3BF")
                 };
             }
 
@@ -34,7 +31,7 @@ namespace Wox.Commands
                     List<Result> results = pair1.Plugin.Query(query);
                     results.ForEach(o => { o.AutoAjustScore = true; });
 
-                    App.Window.PushResults(query, pair1.Metadata, results);
+                    PluginManager.API.PushResults(query, pair1.Metadata, results);
                 });
             }
         }

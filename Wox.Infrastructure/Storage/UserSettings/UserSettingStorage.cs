@@ -174,7 +174,15 @@ namespace Wox.Infrastructure.Storage.UserSettings
             if (string.IsNullOrEmpty(storage.ProgramSuffixes))
             {
                 storage.ProgramSuffixes = "lnk;exe;appref-ms;bat";
-            }   
+            }
+            if (storage.QueryBoxFont == null)
+            {
+                storage.QueryBoxFont = FontFamily.GenericSansSerif.Name;
+            }
+            if (storage.ResultItemFont == null)
+            {
+                storage.ResultItemFont = FontFamily.GenericSansSerif.Name;
+            }
         }
     }
 

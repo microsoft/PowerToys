@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Windows;
+using System.Windows.Forms;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json;
-using Wox.Core.Plugin;
 using Wox.Plugin;
 
-namespace Wox.Helper
+namespace Wox.Core.Plugin
 {
-    public class PluginInstaller
+    internal class PluginInstaller
     {
-        public static void Install(string path)
+        internal static void Install(string path)
         {
             if (File.Exists(path))
             {
@@ -37,11 +36,7 @@ namespace Wox.Helper
                     return;
                 }
 
-                string pluginFolerPath = Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Plugins");
-                if (!Directory.Exists(pluginFolerPath))
-                {
-                    Directory.CreateDirectory(pluginFolerPath);
-                }
+                string pluginFolerPath = PluginManager.DefaultPluginDirectory;
 
                 string newPluginName = plugin.Name
                     .Replace("/", "_")
@@ -66,9 +61,9 @@ namespace Wox.Helper
                         plugin.Name, existingPlugin.Metadata.Version, plugin.Version, plugin.Author);
                 }
 
-                MessageBoxResult result = MessageBox.Show(content, "Install plugin",
-                    MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (result == MessageBoxResult.Yes)
+                DialogResult result = MessageBox.Show(content, "Install plugin", MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+                if (result == DialogResult.Yes)
                 {
                     if (existingPlugin != null && Directory.Exists(existingPlugin.Metadata.PluginDirectory))
                     {
@@ -88,7 +83,7 @@ namespace Wox.Helper
                     //    Plugins.Init();
                     //}
                     if (MessageBox.Show("You have installed plugin " + plugin.Name + " successfully.\r\n Restart Wox to take effect?", "Install plugin",
-                            MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                            MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         ProcessStartInfo Info = new ProcessStartInfo();
                         Info.Arguments = "/C ping 127.0.0.1 -n 1 && \"" +
@@ -97,7 +92,7 @@ namespace Wox.Helper
                         Info.CreateNoWindow = true;
                         Info.FileName = "cmd.exe";
                         Process.Start(Info);
-                        App.Window.CloseApp();
+                        PluginManager.API.CloseApp();
                     }
                 }
             }
@@ -116,15 +111,15 @@ namespace Wox.Helper
             try
             {
                 metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
-                metadata.PluginType = PluginType.ThirdParty;
+                metadata.PluginType = PluginType.User;
                 metadata.PluginDirectory = pluginDirectory;
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 string error = string.Format("Parse plugin config {0} failed: json format is not valid", configPath);
 #if (DEBUG)
                 {
-                    throw new Exception(error);
+                    throw new System.Exception(error);
                 }
 #endif
                 return null;
@@ -137,7 +132,7 @@ namespace Wox.Helper
                     metadata.Language);
 #if (DEBUG)
                 {
-                    throw new Exception(error);
+                    throw new System.Exception(error);
                 }
 #endif
                 return null;
@@ -148,7 +143,7 @@ namespace Wox.Helper
                     metadata.ExecuteFilePath);
 #if (DEBUG)
                 {
-                    throw new Exception(error);
+                    throw new System.Exception(error);
                 }
 #endif
                 return null;

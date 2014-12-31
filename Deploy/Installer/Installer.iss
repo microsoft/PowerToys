@@ -29,11 +29,13 @@ Name: english; MessagesFile: compiler:Default.isl
 Type: files; Name: "{commonstartup}\{#MyAppName}.lnk"
 
 [Tasks]
-Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:AdditionalIcons}; Flags: unchecked
+Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:AdditionalIcons};
 Name: startupfolder; Description: Startup with Windows;
 
 [Files]
-Source: {#MyAppPath}\*; DestDir: {app}; Flags: ignoreversion recursesubdirs
+Source: {#MyAppPath}\*; Excludes: Plugins\*,Themes\*; DestDir: {app}; Flags: ignoreversion recursesubdirs
+Source: {#MyAppPath}\Plugins\*; DestDir: {%USERPROFILE}\.Wox\Plugins; Flags: ignoreversion recursesubdirs
+Source: {#MyAppPath}\Themes\*; DestDir: {%USERPROFILE}\.Wox\Themes; Flags: ignoreversion recursesubdirs
 
 [Icons]
 Name: {group}\{#MyAppName}; Filename: {app}\{#MyAppExeName}
@@ -42,4 +44,10 @@ Name: {userdesktop}\{#MyAppName}; Filename: {app}\{#MyAppExeName}; Tasks: deskto
 Name: {userstartup}\{#MyAppName}; Filename: {app}\{#MyAppExeName}; Tasks: startupfolder
 
 [Run]
-Filename: {app}\{#MyAppExeName}; Description: {cm:LaunchProgram,{#MyAppName}}; Flags: nowait postinstall skipifsilent
+Filename: {app}\{#MyAppExeName}; Description: {cm:LaunchProgram,{#MyAppName}}; Flags: nowait postinstall skipifsilent unchecked
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{%USERPROFILE}\.Wox"
+
+[UninstallRun]
+Filename: {sys}\taskkill.exe; Parameters: "/f /im Wox.exe"; Flags: skipifdoesntexist runhidden

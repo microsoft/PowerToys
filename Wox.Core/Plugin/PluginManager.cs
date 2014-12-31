@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Wox.Core.Exception;
 using Wox.Infrastructure.Http;
+using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
 namespace Wox.Core.Plugin
@@ -15,21 +17,43 @@ namespace Wox.Core.Plugin
     public static class PluginManager
     {
         public static String DebuggerMode { get; private set; }
+        public static IPublicAPI API { get; private set; }
+
         private static List<PluginPair> plugins = new List<PluginPair>();
-        
+
         /// <summary>
         /// Directories that will hold Wox plugin directory
         /// </summary>
         private static List<string> pluginDirectories = new List<string>();
 
-        static PluginManager()
+
+        /// <summary>
+        /// Default plugin directory
+        /// new plugin will be installed to this directory
+        /// </summary>
+        public static string DefaultPluginDirectory
         {
+            get
+            {
+                string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
+                if (string.IsNullOrEmpty(userProfilePath))
+                {
+                    throw new WoxCritialException("Wox Can't Find Environment Variable UserProfile");
+                }
+
+                return Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Plugins");
+            }
+        }
+
+        private static void SetupPluginDirectories()
+        {
+            pluginDirectories.Clear();
+
+            pluginDirectories.Add(DefaultPluginDirectory);
             pluginDirectories.Add(
                 Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Plugins"));
-            pluginDirectories.Add(
-                Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), ".Wox"),"Plugins"));
 
-            MakesurePluginDirectoriesExist();   
+            MakesurePluginDirectoriesExist();
         }
 
         private static void MakesurePluginDirectoriesExist()
@@ -38,7 +62,14 @@ namespace Wox.Core.Plugin
             {
                 if (!Directory.Exists(pluginDirectory))
                 {
-                    Directory.CreateDirectory(pluginDirectory);
+                    try
+                    {
+                        Directory.CreateDirectory(pluginDirectory);
+                    }
+                    catch (System.Exception e)
+                    {
+                        Log.Error(e.Message);
+                    }
                 }
             }
         }
@@ -46,8 +77,12 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// Load and init all Wox plugins
         /// </summary>
-        public static void Init()
+        public static void Init(IPublicAPI api)
         {
+            if (api == null) throw new WoxCritialException("api is null");
+
+            SetupPluginDirectories();
+            API = api;
             plugins.Clear();
 
             List<PluginMetadata> pluginMetadatas = PluginConfig.Parse(pluginDirectories);
@@ -61,9 +96,19 @@ namespace Wox.Core.Plugin
                 {
                     CurrentPluginMetadata = pair.Metadata,
                     Proxy = HttpProxy.Instance,
-                    API = App.Window
+                    API = API
                 }));
             }
+        }
+
+        public static void InstallPlugin(string path)
+        {
+            PluginInstaller.Install(path);
+        }
+
+        public static void Query(Query query)
+        {
+            QueryDispatcher.QueryDispatcher.Dispatch(query);
         }
 
         public static List<PluginPair> AllPlugins
@@ -74,11 +119,11 @@ namespace Wox.Core.Plugin
             }
         }
 
-        public static bool HitThirdpartyKeyword(Query query)
+        public static bool IsUserPluginQuery(Query query)
         {
             if (string.IsNullOrEmpty(query.ActionName)) return false;
 
-            return plugins.Any(o => o.Metadata.PluginType == PluginType.ThirdParty && o.Metadata.ActionKeyword == query.ActionName);
+            return plugins.Any(o => o.Metadata.PluginType == PluginType.User && o.Metadata.ActionKeyword == query.ActionName);
         }
 
         public static void ActivatePluginDebugger(string path)

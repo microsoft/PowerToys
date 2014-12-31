@@ -1,4 +1,4 @@
-﻿namespace Wox.Infrastructure.Exceptions
+﻿namespace Wox.Core.Exception
 {
     public class WoxJsonRPCException : WoxException
     {
