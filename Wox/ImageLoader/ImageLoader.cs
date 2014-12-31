@@ -98,7 +98,7 @@ namespace Wox.ImageLoader
             {
                 img = new BitmapImage(new Uri(path));
             }
-            else if (selfExts.Contains(ext))
+            else if (selfExts.Contains(ext) && File.Exists(path))
             {
                 img = GetIcon(path);
             }
