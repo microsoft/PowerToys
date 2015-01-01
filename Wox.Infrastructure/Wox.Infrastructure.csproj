@@ -61,7 +61,7 @@
     <Compile Include="PeHeaderReader.cs" />
     <Compile Include="Storage\BinaryStorage.cs" />
     <Compile Include="Storage\IStorage.cs" />
-    <Compile Include="Storage\JsonStrorage.cs" />
+    <Compile Include="Storage\JsonStorage.cs" />
     <Compile Include="Storage\UserSettings\CustomizedPluginConfig.cs" />
     <Compile Include="Storage\UserSettings\FolderLink.cs" />
     <Compile Include="Storage\UserSettings\PluginHotkey.cs" />
