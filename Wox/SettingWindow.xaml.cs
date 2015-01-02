@@ -70,6 +70,8 @@ namespace Wox
             cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
             cbDontPromptUpdateMsg.IsChecked = UserSettingStorage.Instance.DontPromptUpdateMsg;
 
+            LoadLanguages();
+
             #endregion
 
             #region Theme
@@ -148,7 +150,7 @@ namespace Wox
                 }
             });
 
-            foreach (string theme in LoadAvailableThemes())
+            foreach (string theme in ThemeManager.LoadAvailableThemes())
             {
                 string themeName = System.IO.Path.GetFileNameWithoutExtension(theme);
                 themeComboBox.Items.Add(themeName);
@@ -240,6 +242,19 @@ namespace Wox
             settingsLoaded = true;
         }
 
+        private void LoadLanguages()
+        {
+            cbLanguages.ItemsSource = LanguageManager.LoadAvailableLanguages();
+            cbLanguages.SelectedValue = UserSettingStorage.Instance.Language;
+            cbLanguages.SelectionChanged += cbLanguages_SelectionChanged;
+        }
+
+        void cbLanguages_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string language = cbLanguages.SelectedValue.ToString();
+            LanguageManager.ChangeLanguage(language);
+        }
+
         private void EnableProxy()
         {
             tbProxyPassword.IsEnabled = true;
@@ -254,12 +269,6 @@ namespace Wox
             tbProxyServer.IsEnabled = false;
             tbProxyUserName.IsEnabled = false;
             tbProxyPort.IsEnabled = false;
-        }
-
-        private List<string> LoadAvailableThemes()
-        {
-            string themePath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Themes");
-            return Directory.GetFiles(themePath).Where(filePath => filePath.EndsWith(".xaml") && !filePath.EndsWith("Default.xaml")).ToList();
         }
 
         private void CbStartWithWindows_OnChecked(object sender, RoutedEventArgs e)
@@ -319,18 +328,19 @@ namespace Wox
         private void BtnDeleteCustomHotkey_OnClick(object sender, RoutedEventArgs e)
         {
             CustomPluginHotkey item = lvCustomHotkey.SelectedItem as CustomPluginHotkey;
-            if (item != null &&
-                MessageBox.Show("Are your sure to delete " + item.Hotkey + " plugin hotkey?", "Delete Custom Plugin Hotkey",
-                    MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            if (item == null)
+            {
+                MessageBox.Show(LanguageManager.GetTranslation("pleaseSelectAnItem"));
+                return;
+            }
+
+            string deleteWarning = string.Format(LanguageManager.GetTranslation("deleteCustomHotkeyWarning"), item.Hotkey);
+            if (MessageBox.Show(deleteWarning, LanguageManager.GetTranslation("delete"), MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 UserSettingStorage.Instance.CustomPluginHotkeys.Remove(item);
                 lvCustomHotkey.Items.Refresh();
                 UserSettingStorage.Instance.Save();
                 MainWindow.RemoveHotkey(item.Hotkey);
-            }
-            else
-            {
-                MessageBox.Show("Please select an item");
             }
         }
 
@@ -345,7 +355,7 @@ namespace Wox
             }
             else
             {
-                MessageBox.Show("Please select an item");
+                MessageBox.Show(LanguageManager.GetTranslation("pleaseSelectAnItem"));
             }
         }
 
@@ -640,17 +650,17 @@ namespace Wox
             {
                 if (string.IsNullOrEmpty(tbProxyServer.Text))
                 {
-                    MessageBox.Show("Server can't be empty");
+                    MessageBox.Show(LanguageManager.GetTranslation("serverCantBeEmpty"));
                     return;
                 }
                 if (string.IsNullOrEmpty(tbProxyPort.Text))
                 {
-                    MessageBox.Show("Server port can't be empty");
+                    MessageBox.Show(LanguageManager.GetTranslation("portCantBeEmpty"));
                     return;
                 }
                 if (!int.TryParse(tbProxyPort.Text, out port))
                 {
-                    MessageBox.Show("Invalid port format");
+                    MessageBox.Show(LanguageManager.GetTranslation("invalidPortFormat"));
                     return;
                 }
             }
@@ -661,25 +671,25 @@ namespace Wox
             UserSettingStorage.Instance.ProxyPassword = tbProxyPassword.Password;
             UserSettingStorage.Instance.Save();
 
-            MessageBox.Show("Save Proxy Successfully");
+            MessageBox.Show(LanguageManager.GetTranslation("saveProxySuccessfully"));
         }
 
         private void btnTestProxy_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(tbProxyServer.Text))
             {
-                MessageBox.Show("Server can't be empty");
+                MessageBox.Show(LanguageManager.GetTranslation("serverCantBeEmpty"));
                 return;
             }
             if (string.IsNullOrEmpty(tbProxyPort.Text))
             {
-                MessageBox.Show("Server port can't be empty");
+                MessageBox.Show(LanguageManager.GetTranslation("portCantBeEmpty"));
                 return;
             }
             int port;
             if (!int.TryParse(tbProxyPort.Text, out port))
             {
-                MessageBox.Show("Invalid port format");
+                MessageBox.Show(LanguageManager.GetTranslation("invalidPortFormat"));
                 return;
             }
 
@@ -697,10 +707,10 @@ namespace Wox
             }
             try
             {
-                HttpWebResponse response = (HttpWebResponse) request.GetResponse();
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    MessageBox.Show("Proxy is ok");
+                    MessageBox.Show(LanguageManager.GetTranslation("proxyIsCorrect"));
                 }
                 else
                 {

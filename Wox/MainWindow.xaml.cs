@@ -174,7 +174,7 @@ namespace Wox
 
             ThreadPool.SetMaxThreads(30, 10);
             ThemeManager.ChangeTheme(UserSettingStorage.Instance.Theme);
-
+            LanguageManager.ChangeLanguage(UserSettingStorage.Instance.Language);
 
             SetHotkey(UserSettingStorage.Instance.Hotkey, OnHotkey);
             SetCustomPluginHotkey();

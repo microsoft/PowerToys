@@ -15,6 +15,9 @@ namespace Wox.Infrastructure.Storage.UserSettings
         public string Hotkey { get; set; }
 
         [JsonProperty]
+        public string Language { get; set; }
+
+        [JsonProperty]
         public string Theme { get; set; }
 
         [JsonProperty]
@@ -150,6 +153,7 @@ namespace Wox.Infrastructure.Storage.UserSettings
         {
             DontPromptUpdateMsg = false;
             Theme = "Dark";
+            Language = "English";
             ReplaceWinR = true;
             WebSearches = LoadDefaultWebSearches();
             ProgramSources = new List<ProgramSource>();
@@ -182,6 +186,10 @@ namespace Wox.Infrastructure.Storage.UserSettings
             if (storage.ResultItemFont == null)
             {
                 storage.ResultItemFont = FontFamily.GenericSansSerif.Name;
+            }
+            if (storage.Language == null)
+            {
+                storage.Language = "English";
             }
         }
     }

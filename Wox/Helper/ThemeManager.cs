@@ -40,7 +40,7 @@ namespace Wox
                     {
                         Directory.CreateDirectory(pluginDirectory);
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         Log.Error(e.Message);
                     }
@@ -60,9 +60,17 @@ namespace Wox
                 }
             }
 
+            UserSettingStorage.Instance.Theme = themeName;
+            UserSettingStorage.Instance.Save();
+
+            ResourceMerger.ApplyResources();
+        }
+
+        internal static ResourceDictionary GetResourceDictionary()
+        {
             var dict = new ResourceDictionary
             {
-                Source = new Uri(themePath, UriKind.Absolute)
+                Source = new Uri(GetThemePath(UserSettingStorage.Instance.Theme), UriKind.Absolute)
             };
 
             Style queryBoxStyle = dict["QueryBoxStyle"] as Style;
@@ -89,9 +97,20 @@ namespace Wox
                 Array.ForEach(new Style[] { resultItemStyle, resultSubItemStyle, resultItemSelectedStyle, resultSubItemSelectedStyle }, o => Array.ForEach(setters, p => o.Setters.Add(p)));
             }
 
-            Application.Current.Resources.MergedDictionaries.Clear();
-            Application.Current.Resources.MergedDictionaries.Add(dict);
+            return dict;
+        }
 
+        public static List<string> LoadAvailableThemes()
+        {
+            List<string> themes = new List<string>();
+            foreach (var themeDirectory in themeDirectories)
+            {
+                themes.AddRange(
+                    Directory.GetFiles(themeDirectory)
+                        .Where(filePath => filePath.EndsWith(".xaml") && !filePath.EndsWith("Default.xaml"))
+                        .ToList());
+            }
+            return themes;
         }
 
         private static string GetThemePath(string themeName)
