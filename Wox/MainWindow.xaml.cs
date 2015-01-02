@@ -14,7 +14,9 @@ using WindowsInput;
 using WindowsInput.Native;
 using NHotkey;
 using NHotkey.Wpf;
+using Wox.Core.i18n;
 using Wox.Core.Plugin;
+using Wox.Core.Theme;
 using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
@@ -128,7 +130,7 @@ namespace Wox
 
         public void ReloadPlugins()
         {
-            Dispatcher.Invoke(new Action(()=> PluginManager.Init(this)));
+            Dispatcher.Invoke(new Action(() => PluginManager.Init(this)));
         }
 
         public List<PluginPair> GetAllPlugins()
@@ -173,8 +175,8 @@ namespace Wox
             pnlResult.RightMouseClickEvent += pnlResult_RightMouseClickEvent;
 
             ThreadPool.SetMaxThreads(30, 10);
-            ThemeManager.ChangeTheme(UserSettingStorage.Instance.Theme);
-            LanguageManager.ChangeLanguage(UserSettingStorage.Instance.Language);
+            ThemeManager.Instance.ChangeTheme(UserSettingStorage.Instance.Theme);
+            InternationalizationManager.Instance.ChangeLanguage(UserSettingStorage.Instance.Language);
 
             SetHotkey(UserSettingStorage.Instance.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
@@ -266,7 +268,8 @@ namespace Wox
             }
             catch (Exception)
             {
-                MessageBox.Show("Register hotkey: " + hotkeyStr + " failed.");
+                string errorMsg = string.Format(InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
+                MessageBox.Show(errorMsg);
             }
         }
 
@@ -557,7 +560,7 @@ namespace Wox
                     break;
 
                 case Key.F1:
-                    Process.Start("https://github.com/qianlifeng/Wox/wiki/Wox-Function-Guide");
+                    Process.Start("http://doc.getwox.com");
                     break;
 
                 case Key.Enter:
@@ -568,7 +571,7 @@ namespace Wox
                     }
                     else
                     {
-                        SelectResult(activeResult);                        
+                        SelectResult(activeResult);
                     }
                     e.Handled = true;
                     break;
@@ -590,7 +593,7 @@ namespace Wox
             {
                 return pnlResult.GetActiveResult();
             }
-        } 
+        }
 
         private void SelectPrevItem()
         {
@@ -683,7 +686,8 @@ namespace Wox
             }
             catch (Exception ex)
             {
-                ShowMsg("Could not start " + cmd, ex.Message, null);
+                string errorMsg = string.Format(InternationalizationManager.Instance.GetTranslation("couldnotStartCmd"), cmd);
+                ShowMsg(errorMsg, ex.Message, null);
             }
             return false;
         }
@@ -700,7 +704,7 @@ namespace Wox
                 }
                 else
                 {
-                    MessageBox.Show("incorrect wox plugin file.");
+                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("invalidWoxPluginFileFormat"));
                 }
             }
         }

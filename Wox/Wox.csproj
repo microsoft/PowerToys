@@ -113,12 +113,9 @@
     <Reference Include="WPFToolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Helper\ResourceMerger.cs" />
     <Compile Include="Helper\WoxLogPathConverter.cs" />
     <Compile Include="ImageLoader\ImageCacheStroage.cs" />
-    <Compile Include="Helper\LanguageManager.cs" />
     <Compile Include="Storage\UserSelectedRecordStorage.cs" />
-    <Compile Include="Helper\ThemeManager.cs" />
     <Compile Include="Update\NewVersionWindow.xaml.cs">
       <DependentUpon>NewVersionWindow.xaml</DependentUpon>
     </Compile>
@@ -144,7 +141,6 @@
     <Compile Include="Helper\ErrorReporting\WPFErrorReportingDialog.xaml.cs">
       <DependentUpon>WPFErrorReportingDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Helper\FontHelper.cs" />
     <Compile Include="ImageLoader\ImageLoader.cs" />
     <Compile Include="Helper\SingleInstance.cs" />
     <Compile Include="Helper\SyntaxSugars.cs" />
@@ -152,8 +148,8 @@
     <Compile Include="Helper\WindowIntelopHelper.cs" />
     <Compile Include="Helper\WindowOpener.cs" />
     <Compile Include="Converters\OpacityModeConverter.cs" />
-    <Compile Include="CustomPluginHotkeySetting.xaml.cs">
-      <DependentUpon>CustomPluginHotkeySetting.xaml</DependentUpon>
+    <Compile Include="CustomQueryHotkeySetting.xaml.cs">
+      <DependentUpon>CustomQueryHotkeySetting.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helper\DispatcherExtensions.cs" />
     <Compile Include="Helper\DWMDropShadow.cs" />
@@ -181,7 +177,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="CustomPluginHotkeySetting.xaml">
+    <Page Include="CustomQueryHotkeySetting.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

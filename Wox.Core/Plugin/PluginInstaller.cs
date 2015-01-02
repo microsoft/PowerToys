@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json;
 using Wox.Plugin;
+using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace Wox.Core.Plugin
 {
@@ -61,7 +62,7 @@ namespace Wox.Core.Plugin
                         plugin.Name, existingPlugin.Metadata.Version, plugin.Version, plugin.Author);
                 }
 
-                DialogResult result = MessageBox.Show(content, "Install plugin", MessageBoxButtons.YesNo,
+                DialogResult result = System.Windows.Forms.MessageBox.Show(content, "Install plugin", MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question);
                 if (result == DialogResult.Yes)
                 {

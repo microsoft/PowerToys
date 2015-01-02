@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Http\HttpProxy.cs" />
+    <Compile Include="ISingleton.cs" />
     <Compile Include="Logger\Log.cs" />
     <Compile Include="PeHeaderReader.cs" />
     <Compile Include="Storage\BinaryStorage.cs" />

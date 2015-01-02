@@ -2,4 +2,6 @@
 =====
 
 * Handle Query
-* Loading Plugins (including system plugin and user plugin)
+* Manage Plugins (including system plugin and user plugin)
+* Manage Themes
+* Manage i18n

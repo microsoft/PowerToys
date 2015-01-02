@@ -1,6 +1,12 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
+    <!--主窗体-->
+    <system:String x:Key="registerHotkeyFailed">注册热键：{0} 失败</system:String>
+    <system:String x:Key="couldnotStartCmd">启动命令 {0} 失败</system:String>
+    <system:String x:Key="invalidWoxPluginFileFormat">不是合法的Wox插件格式</system:String>
+
+
     <!--设置，通用-->
     <system:String x:Key="general">通用</system:String>
     <system:String x:Key="startWoxOnSystemStartup">开机启动</system:String>
@@ -32,6 +38,8 @@
     <system:String x:Key="delete">删除</system:String>
     <system:String x:Key="edit">编辑</system:String>
     <system:String x:Key="add">增加</system:String>
+    <system:String x:Key="pleaseSelectAnItem">请选择一项</system:String>
+    <system:String x:Key="deleteCustomHotkeyWarning">你确定要删除插件 {0} 的热键吗？</system:String>
 
     <!--设置，代理-->
     <system:String x:Key="proxy">代理</system:String>
@@ -42,10 +50,36 @@
     <system:String x:Key="password">密码</system:String>
     <system:String x:Key="testProxy">测试代理</system:String>
     <system:String x:Key="save">保存</system:String>
-
+    <system:String x:Key="serverCantBeEmpty">服务器不能为空</system:String>
+    <system:String x:Key="portCantBeEmpty">端口不能为空</system:String>
+    <system:String x:Key="invalidPortFormat">非法的端口格式</system:String>
+    <system:String x:Key="saveProxySuccessfully">保存代理设置成功</system:String>
+    <system:String x:Key="proxyIsCorrect">代理设置正确</system:String>
+    <system:String x:Key="proxyConnectFailed">代理连接失败</system:String>
+    
     <!--设置，版本-->
     <system:String x:Key="about">关于</system:String>
     <system:String x:Key="website">网站</system:String>
     <system:String x:Key="version">版本</system:String>
+
+
+    <!--Action Keyword 设置对话框-->
+    <system:String x:Key="oldActionKeyword">旧触发关键字</system:String>
+    <system:String x:Key="newActionKeyword">新触发关键字</system:String>
+    <system:String x:Key="cancel">取消</system:String>
+    <system:String x:Key="done">确定</system:String>
+    <system:String x:Key="cannotFindSpecifiedPlugin">找不到指定的插件</system:String>
+    <system:String x:Key="newActionKeywordCannotBeEmpty">新触发关键字不能为空</system:String>
+    <system:String x:Key="newActionKeywordHasBeenAssigned">新触发关键字已经被指派给其他插件了，请重新选择一个关键字</system:String>
+    <system:String x:Key="succeed">成功</system:String>
+
+    <!--Custom Query Hotkey 对话框-->
+    <system:String x:Key="preview">预览</system:String>
+    <system:String x:Key="hotkeyIsNotUnavailable">热键不可用，请选择一个新的热键</system:String>
+    <system:String x:Key="invalidPluginHotkey">插件热键不合法</system:String>
+    <system:String x:Key="update">更新</system:String>
+
+    <!--Hotkey 控件-->
+    <system:String x:Key="hotkeyUnavailable">热键不可用</system:String>
 
 </ResourceDictionary>

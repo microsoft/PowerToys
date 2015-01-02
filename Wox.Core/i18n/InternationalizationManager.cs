@@ -3,20 +3,40 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using Wox.Helper;
+using Wox.Core.UI;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage.UserSettings;
 
-namespace Wox
+namespace Wox.Core.i18n
 {
-    public class LanguageManager
+    public class InternationalizationManager : IUIResource
     {
         private static List<string> languageDirectories = new List<string>();
+        private static InternationalizationManager instance;
+        private static object syncObject = new object();
 
-        static LanguageManager()
+        private InternationalizationManager() { }
+
+        public static InternationalizationManager Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    lock (syncObject)
+                    {
+                        if (instance == null)
+                        {
+                            instance = new InternationalizationManager();
+                        }
+                    }
+                }
+                return instance;
+            }
+        }
+
+        static InternationalizationManager()
         {
             languageDirectories.Add(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages"));
 
@@ -39,7 +59,7 @@ namespace Wox
                     {
                         Directory.CreateDirectory(pluginDirectory);
                     }
-                    catch (Exception e)
+                    catch (System.Exception e)
                     {
                         Log.Error(e.Message);
                     }
@@ -47,7 +67,7 @@ namespace Wox
             }
         }
 
-        public static void ChangeLanguage(string name)
+        public void ChangeLanguage(string name)
         {
             string path = GetLanguagePath(name);
             if (string.IsNullOrEmpty(path))
@@ -55,7 +75,7 @@ namespace Wox
                 path = GetLanguagePath("English");
                 if (string.IsNullOrEmpty(path))
                 {
-                    throw new Exception("Change Language failed");
+                    throw new System.Exception("Change Language failed");
                 }
             }
 
@@ -64,7 +84,7 @@ namespace Wox
             ResourceMerger.ApplyResources();
         }
 
-        internal static ResourceDictionary GetResourceDictionary()
+        public ResourceDictionary GetResourceDictionary()
         {
             return new ResourceDictionary
             {
@@ -72,7 +92,7 @@ namespace Wox
             };
         }
 
-        public static List<string> LoadAvailableLanguages()
+        public List<string> LoadAvailableLanguages()
         {
             List<string> themes = new List<string>();
             foreach (var directory in languageDirectories)
@@ -86,7 +106,7 @@ namespace Wox
             return themes;
         }
 
-        public static string GetTranslation(string key)
+        public string GetTranslation(string key)
         {
             try
             {
@@ -104,7 +124,7 @@ namespace Wox
 
         }
 
-        private static string GetLanguagePath(string name)
+        private string GetLanguagePath(string name)
         {
             foreach (string directory in languageDirectories)
             {

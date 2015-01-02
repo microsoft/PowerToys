@@ -1,6 +1,12 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
+    <!--MainWindow-->
+    <system:String x:Key="registerHotkeyFailed">Register hotkey: {0} failed</system:String>
+    <system:String x:Key="couldnotStartCmd">Could not start {0}</system:String>
+    <system:String x:Key="invalidWoxPluginFileFormat">Invalid wox plugin file format</system:String>
+
+    
     <!--Setting General-->
     <system:String x:Key="general">General</system:String>
     <system:String x:Key="startWoxOnSystemStartup">Start Wox on system startup</system:String>
@@ -49,11 +55,30 @@
     <system:String x:Key="invalidPortFormat">Invalid port format</system:String>
     <system:String x:Key="saveProxySuccessfully">Save proxy successfully</system:String>
     <system:String x:Key="proxyIsCorrect">Proxy is correct</system:String>
-    
+    <system:String x:Key="proxyConnectFailed">Proxy connect failed</system:String>
 
     <!--Setting About-->
     <system:String x:Key="about">About</system:String>
     <system:String x:Key="website">Website</system:String>
     <system:String x:Key="version">Version</system:String>
+
+    <!--Action Keyword Setting Dialog-->
+    <system:String x:Key="oldActionKeyword">Old Action Keyword</system:String>
+    <system:String x:Key="newActionKeyword">New Action Keyword</system:String>
+    <system:String x:Key="cancel">Cancel</system:String>
+    <system:String x:Key="done">Done</system:String>
+    <system:String x:Key="cannotFindSpecifiedPlugin">Can't find specified plugin</system:String>
+    <system:String x:Key="newActionKeywordCannotBeEmpty">New Action Keyword can't be empty</system:String>
+    <system:String x:Key="newActionKeywordHasBeenAssigned">New ActionKeyword has been assigned to other plugin, please assign another new action keyword</system:String>
+    <system:String x:Key="succeed">Succeed</system:String>
+    
+    <!--Custom Query Hotkey Dialog-->
+    <system:String x:Key="preview">Preview</system:String>
+    <system:String x:Key="hotkeyIsNotUnavailable">Hotkey is unavailable, please select a new hotkey</system:String>
+    <system:String x:Key="invalidPluginHotkey">Invalid plugin hotkey</system:String>
+    <system:String x:Key="update">Update</system:String>
+    
+    <!--Hotkey Control-->
+    <system:String x:Key="hotkeyUnavailable">Hotkey unavailable</system:String>
     
 </ResourceDictionary>

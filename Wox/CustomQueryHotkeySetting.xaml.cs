@@ -1,17 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using Wox.Core.i18n;
 using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox
 {
-    public partial class CustomPluginHotkeySetting : Window
+    public partial class CustomQueryHotkeySetting : Window
     {
         private SettingWindow settingWidow;
         private bool update;
         private CustomPluginHotkey updateCustomHotkey;
 
-        public CustomPluginHotkeySetting(SettingWindow settingWidow)
+        public CustomQueryHotkeySetting(SettingWindow settingWidow)
         {
             this.settingWidow = settingWidow;
             InitializeComponent();
@@ -28,7 +29,7 @@ namespace Wox
             {
                 if (!ctlHotkey.CurrentHotkeyAvailable)
                 {
-                    MessageBox.Show("Hotkey is unavailable, please select a new hotkey");
+                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("hotkeyIsNotUnavailable"));
                     return;
                 }
 
@@ -48,13 +49,13 @@ namespace Wox
                     settingWidow.MainWindow.ChangeQuery(pluginHotkey.ActionKeyword);
                     settingWidow.MainWindow.ShowApp();
                 });
-                MessageBox.Show("Add hotkey successfully!");
+                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
             }
             else
             {
                 if (updateCustomHotkey.Hotkey != ctlHotkey.CurrentHotkey.ToString() && !ctlHotkey.CurrentHotkeyAvailable)
                 {
-                    MessageBox.Show("Hotkey is unavailable, please select a new hotkey");
+                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("hotkeyIsNotUnavailable"));
                     return;
                 }
                 var oldHotkey = updateCustomHotkey.Hotkey;
@@ -67,7 +68,7 @@ namespace Wox
                     settingWidow.MainWindow.ShowApp();
                     settingWidow.MainWindow.ChangeQuery(updateCustomHotkey.ActionKeyword);
                 });
-                MessageBox.Show("Update successfully!");
+                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
             }
 
             UserSettingStorage.Instance.Save();
@@ -80,7 +81,7 @@ namespace Wox
             updateCustomHotkey = UserSettingStorage.Instance.CustomPluginHotkeys.FirstOrDefault(o => o.ActionKeyword == item.ActionKeyword && o.Hotkey == item.Hotkey);
             if (updateCustomHotkey == null)
             {
-                MessageBox.Show("Invalid plugin hotkey");
+                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("invalidPluginHotkey"));
                 Close();
                 return;
             }
@@ -88,7 +89,7 @@ namespace Wox
             tbAction.Text = updateCustomHotkey.ActionKeyword;
             ctlHotkey.SetHotkey(updateCustomHotkey.Hotkey, false);
             update = true;
-            lblAdd.Text = "Update";
+            lblAdd.Text = InternationalizationManager.Instance.GetTranslation("update");
         }
 
         private void BtnTestActionKeyword_OnClick(object sender, RoutedEventArgs e)

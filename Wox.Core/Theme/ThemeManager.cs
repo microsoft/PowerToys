@@ -3,19 +3,40 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Wox.Helper;
+using Wox.Core.UI;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage.UserSettings;
 
-namespace Wox
+namespace Wox.Core.Theme
 {
-    internal class ThemeManager
+    public class ThemeManager : IUIResource
     {
         private static List<string> themeDirectories = new List<string>();
+        private static ThemeManager instance;
+        private static object syncObject = new object();
+
+        private ThemeManager() { }
+
+        public static ThemeManager Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    lock (syncObject)
+                    {
+                        if (instance == null)
+                        {
+                            instance = new ThemeManager();
+                        }
+                    }
+                }
+                return instance;
+            }
+        }
 
         static ThemeManager()
         {
@@ -40,7 +61,7 @@ namespace Wox
                     {
                         Directory.CreateDirectory(pluginDirectory);
                     }
-                    catch (Exception e)
+                    catch (System.Exception e)
                     {
                         Log.Error(e.Message);
                     }
@@ -48,7 +69,7 @@ namespace Wox
             }
         }
 
-        public static void ChangeTheme(string themeName)
+        public void ChangeTheme(string themeName)
         {
             string themePath = GetThemePath(themeName);
             if (string.IsNullOrEmpty(themePath))
@@ -56,7 +77,7 @@ namespace Wox
                 themePath = GetThemePath("Dark");
                 if (string.IsNullOrEmpty(themePath))
                 {
-                    throw new Exception("Change theme failed");
+                    throw new System.Exception("Change theme failed");
                 }
             }
 
@@ -66,7 +87,7 @@ namespace Wox
             ResourceMerger.ApplyResources();
         }
 
-        internal static ResourceDictionary GetResourceDictionary()
+        public ResourceDictionary GetResourceDictionary()
         {
             var dict = new ResourceDictionary
             {
@@ -100,20 +121,20 @@ namespace Wox
             return dict;
         }
 
-        public static List<string> LoadAvailableThemes()
+        public List<string> LoadAvailableThemes()
         {
             List<string> themes = new List<string>();
             foreach (var themeDirectory in themeDirectories)
             {
                 themes.AddRange(
                     Directory.GetFiles(themeDirectory)
-                        .Where(filePath => filePath.EndsWith(".xaml") && !filePath.EndsWith("Default.xaml"))
+                        .Where(filePath => filePath.EndsWith(".xaml") && !filePath.EndsWith("Base.xaml"))
                         .ToList());
             }
             return themes;
         }
 
-        private static string GetThemePath(string themeName)
+        private string GetThemePath(string themeName)
         {
             foreach (string themeDirectory in themeDirectories)
             {

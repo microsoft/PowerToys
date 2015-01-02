@@ -20,7 +20,7 @@
         <converters:ImagePathConverter x:Key="ImageConverter" />
     </Window.Resources>
     <TabControl Height="auto" >
-        <TabItem Header="{DynamicResource general}" Height="23" VerticalAlignment="Top">
+        <TabItem Header="{DynamicResource general}">
             <StackPanel Orientation="Vertical" Margin="10">
                 <CheckBox x:Name="cbStartWithWindows"  Unchecked="CbStartWithWindows_OnUnchecked" Checked="CbStartWithWindows_OnChecked" Margin="10">
                     <TextBlock Text="{DynamicResource startWoxOnSystemStartup}" ></TextBlock>
@@ -33,7 +33,7 @@
                 </CheckBox>
                 <StackPanel Margin="10" Orientation="Horizontal">
                     <TextBlock  Text="{DynamicResource language}"></TextBlock>
-                    <ComboBox Margin="10 0 0 0" Width="200" x:Name="cbLanguages" />
+                    <ComboBox Margin="10 0 0 0" Width="100" x:Name="cbLanguages" />
                 </StackPanel>
             </StackPanel>
         </TabItem>

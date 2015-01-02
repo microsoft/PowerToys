@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Media;
-using Wox.Helper;
 
-namespace Wox.Helper
+namespace Wox.Core.Theme
 {
     public static class FontHelper
     {
