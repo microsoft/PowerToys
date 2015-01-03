@@ -1,0 +1,25 @@
+﻿<UserControl x:Class="Wox.Plugin.CMD.CMDSetting"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             Loaded="CMDSetting_OnLoaded"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Border BorderBrush="Gray" Margin="10" BorderThickness="1">
+        <Grid Margin="10" VerticalAlignment="Top" >
+            <Grid.RowDefinitions>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                <CheckBox x:Name="cbReplaceWinR" >Replace Win+R</CheckBox>
+            </StackPanel>
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0 10 0 0">
+                <CheckBox x:Name="cbLeaveCmdOpen" >
+                    Do not close Command Prompt after command execution
+                </CheckBox>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

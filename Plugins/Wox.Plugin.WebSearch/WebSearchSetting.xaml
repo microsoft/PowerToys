@@ -1,0 +1,43 @@
+﻿<Window x:Class="Wox.Plugin.WebSearch.WebSearchSetting"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Title="WebSearchSetting" Height="350" Width="674.766">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="60"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="120"></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <TextBlock Margin="10" FontSize="14" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Title:</TextBlock>
+        <TextBox x:Name="tbTitle" Margin="10" Grid.Row="0" Width="400" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left"></TextBox>
+
+        <TextBlock Margin="10" FontSize="14" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">URL:</TextBlock>
+        <TextBox x:Name="tbUrl" Margin="10" Grid.Row="1" Width="400" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left"></TextBox>
+
+        <TextBlock Margin="10" FontSize="14" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">ActionWord:</TextBlock>
+        <TextBox x:Name="tbActionword" Margin="10" Grid.Row="2" Width="400" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left"></TextBox>
+
+        <TextBlock Margin="10" FontSize="14" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Enable:</TextBlock>
+        <CheckBox x:Name="cbEnable" IsChecked="True" Margin="10" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center"></CheckBox>
+
+        <TextBlock Margin="10" FontSize="14" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Icon:</TextBlock>
+        <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="1" Margin="10">
+            <Image x:Name="imgIcon" Width="24" Height="24" Margin="0 0 10 0" />
+            <Button x:Name="btnSelectIcon" Height="24" Click="BtnSelectIcon_OnClick">Select Icon</Button>
+            <TextBlock x:Name="tbIconPath" Visibility="Hidden"></TextBlock>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="5" Grid.Column="1">
+            <Button x:Name="btnCancel" Click="BtnCancel_OnClick" Margin="10 0 10 0" Width="80" Height="25">Cancel</Button>
+            <Button x:Name="btnAdd" Margin="10 0 10 0"  Width="80" Height="25" Click="btnAdd_OnClick"><TextBlock x:Name="lblAdd">Add</TextBlock></Button>
+        </StackPanel>
+    </Grid>
+</Window>

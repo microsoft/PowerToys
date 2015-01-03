@@ -175,8 +175,8 @@ namespace Wox
             pnlResult.RightMouseClickEvent += pnlResult_RightMouseClickEvent;
 
             ThreadPool.SetMaxThreads(30, 10);
-            ThemeManager.Instance.ChangeTheme(UserSettingStorage.Instance.Theme);
-            InternationalizationManager.Instance.ChangeLanguage(UserSettingStorage.Instance.Language);
+            ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
+            InternationalizationManager.Internationalization.ChangeLanguage(UserSettingStorage.Instance.Language);
 
             SetHotkey(UserSettingStorage.Instance.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
@@ -268,7 +268,7 @@ namespace Wox
             }
             catch (Exception)
             {
-                string errorMsg = string.Format(InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
+                string errorMsg = string.Format(InternationalizationManager.Internationalization.GetTranslation("registerHotkeyFailed"), hotkeyStr);
                 MessageBox.Show(errorMsg);
             }
         }
@@ -686,7 +686,7 @@ namespace Wox
             }
             catch (Exception ex)
             {
-                string errorMsg = string.Format(InternationalizationManager.Instance.GetTranslation("couldnotStartCmd"), cmd);
+                string errorMsg = string.Format(InternationalizationManager.Internationalization.GetTranslation("couldnotStartCmd"), cmd);
                 ShowMsg(errorMsg, ex.Message, null);
             }
             return false;
@@ -704,7 +704,7 @@ namespace Wox
                 }
                 else
                 {
-                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("invalidWoxPluginFileFormat"));
+                    MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("invalidWoxPluginFileFormat"));
                 }
             }
         }

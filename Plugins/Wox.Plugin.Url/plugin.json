@@ -1,0 +1,12 @@
+{
+    "ID":"0308FD86DE0A4DEE8D62B9B535370992",
+    "ActionKeyword":"*",
+    "Name":"URL handler",
+    "Description":"Provide Opening the typed URL from Wox.",
+    "Author":"qianlifeng",
+    "Version":"1.0.0",
+    "Language":"csharp",
+    "Website":"http://www.getwox.com/plugin",
+    "ExecuteFileName":"Wox.Plugin.Url.dll",
+    "IcoPath":"Images\\url.png"
+}

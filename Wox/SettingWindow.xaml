@@ -4,7 +4,6 @@
 		xmlns:wox="clr-namespace:Wox"
 		xmlns:UserSettings="clr-namespace:Wox.Infrastructure.Storage.UserSettings;assembly=Wox.Infrastructure" x:Class="Wox.SettingWindow"
 		xmlns:woxPlugin="clr-namespace:Wox.Plugin;assembly=Wox.Plugin"
-		xmlns:system="clr-namespace:Wox.Plugin.SystemPlugins;assembly=Wox.Plugin.SystemPlugins"
 		xmlns:converters="clr-namespace:Wox.Converters"
 		Icon="Images\app.png"
 		Title="Wox Settings"
@@ -47,24 +46,6 @@
                     <TextBlock DockPanel.Dock="Top" Margin="6" HorizontalAlignment="Left" Cursor="Hand" MouseUp="tbMorePlugins_MouseUp" x:Name="tbMorePlugins" Foreground="Blue" Text="{DynamicResource browserMorePlugins}"></TextBlock>
                     <ListBox x:Name="lbPlugins" Margin="0" SelectionChanged="lbPlugins_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" >
                         <ListBox.Resources>
-                            <DataTemplate DataType="{x:Type system:BaseSystemPlugin}">
-                                <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="32"></ColumnDefinition>
-                                        <ColumnDefinition/>
-                                    </Grid.ColumnDefinitions>
-                                    <Image Width="32" Height="32" HorizontalAlignment="Left" Source="{Binding FullIcoPath,Converter={StaticResource ImageConverter},IsAsync=True}">
-                                    </Image>
-                                    <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition></RowDefinition>
-                                            <RowDefinition Height="Auto"></RowDefinition>
-                                        </Grid.RowDefinitions>
-                                        <TextBlock VerticalAlignment="Center" ToolTip="{Binding Name}" x:Name="tbTitle" Text="{Binding Name}"></TextBlock>
-                                        <TextBlock ToolTip="{Binding Description}" Visibility="{Binding Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Description}" Opacity="0.5"></TextBlock>
-                                    </Grid>
-                                </Grid>
-                            </DataTemplate>
                             <DataTemplate DataType="{x:Type woxPlugin:PluginPair}">
                                 <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
                                     <Grid.ColumnDefinitions>

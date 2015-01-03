@@ -3,13 +3,13 @@ using System.Linq;
 using System.Threading;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
-using Wox.Plugin.SystemPlugins;
+//using Wox.Plugin.SystemPlugins;
 
 namespace Wox.Core.Plugin.QueryDispatcher
 {
     public class SystemPluginQueryDispatcher : IQueryDispatcher
     {
-        private IEnumerable<PluginPair> allSytemPlugins = PluginManager.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System);
+        private IEnumerable<PluginPair> allSytemPlugins = PluginManager.AllPlugins.Where(o => o.Metadata.ActionKeyword == "*");
 
         public void Dispatch(Query query)
         {

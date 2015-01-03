@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
-using Wox.Plugin.SystemPlugins;
+//using Wox.Plugin.SystemPlugins;
 
 namespace Wox.Core.Plugin
 {
@@ -20,7 +20,7 @@ namespace Wox.Core.Plugin
                 try
                 {
                     Assembly asm = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
-                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract && (o.BaseType == typeof(BaseSystemPlugin) || o.GetInterfaces().Contains(typeof(IPlugin)))).ToList();
+                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract &&  o.GetInterfaces().Contains(typeof(IPlugin))).ToList();
                     if (types.Count == 0)
                     {
                         Log.Warn(string.Format("Couldn't load plugin {0}: didn't find the class that implement IPlugin", metadata.Name));
@@ -35,11 +35,11 @@ namespace Wox.Core.Plugin
                             Metadata = metadata
                         };
 
-                        var sys = pair.Plugin as BaseSystemPlugin;
-                        if (sys != null)
-                        {
-                            sys.PluginDirectory = metadata.PluginDirectory;
-                        }
+                        //var sys = pair.Plugin as BaseSystemPlugin;
+                        //if (sys != null)
+                        //{
+                        //    sys.PluginDirectory = metadata.PluginDirectory;
+                        //}
 
                         plugins.Add(pair);
                     }

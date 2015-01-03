@@ -15,7 +15,6 @@ using Wox.Core.Plugin;
 using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.Helper;
-using Wox.Plugin.SystemPlugins;
 using Wox.Update;
 using Application = System.Windows.Forms.Application;
 using File = System.IO.File;
@@ -152,7 +151,7 @@ namespace Wox
                 }
             });
 
-            foreach (string theme in ThemeManager.Instance.LoadAvailableThemes())
+            foreach (string theme in ThemeManager.Theme.LoadAvailableThemes())
             {
                 string themeName = System.IO.Path.GetFileNameWithoutExtension(theme);
                 themeComboBox.Items.Add(themeName);
@@ -176,7 +175,7 @@ namespace Wox
             }
 
             //PreviewPanel
-            ThemeManager.Instance.ChangeTheme(UserSettingStorage.Instance.Theme);
+            ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
             #endregion
 
             #region Plugin
@@ -189,16 +188,7 @@ namespace Wox
             {
                 new CollectionContainer
                 {
-                    Collection =
-                        PluginManager.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.System)
-                            .Select(o => o.Plugin)
-                            .Cast<ISystemPlugin>()
-                },
-                FindResource("FeatureBoxSeperator"),
-                new CollectionContainer
-                {
-                    Collection =
-                        PluginManager.AllPlugins.Where(o => o.Metadata.PluginType == PluginType.User)
+                    Collection = PluginManager.AllPlugins
                 }
             };
             lbPlugins.ItemsSource = plugins;
@@ -246,15 +236,16 @@ namespace Wox
 
         private void LoadLanguages()
         {
-            cbLanguages.ItemsSource = InternationalizationManager.Instance.LoadAvailableLanguages();
+            cbLanguages.ItemsSource = InternationalizationManager.Internationalization.LoadAvailableLanguages();
+            cbLanguages.DisplayMemberPath = "Display";
+            cbLanguages.SelectedValuePath = "LanguageCode";
             cbLanguages.SelectedValue = UserSettingStorage.Instance.Language;
             cbLanguages.SelectionChanged += cbLanguages_SelectionChanged;
         }
 
         void cbLanguages_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            string language = cbLanguages.SelectedValue.ToString();
-            InternationalizationManager.Instance.ChangeLanguage(language);
+            InternationalizationManager.Internationalization.ChangeLanguage(cbLanguages.SelectedItem as Language);
         }
 
         private void EnableProxy()
@@ -332,12 +323,12 @@ namespace Wox
             CustomPluginHotkey item = lvCustomHotkey.SelectedItem as CustomPluginHotkey;
             if (item == null)
             {
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("pleaseSelectAnItem"));
+                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("pleaseSelectAnItem"));
                 return;
             }
 
-            string deleteWarning = string.Format(InternationalizationManager.Instance.GetTranslation("deleteCustomHotkeyWarning"), item.Hotkey);
-            if (MessageBox.Show(deleteWarning, InternationalizationManager.Instance.GetTranslation("delete"), MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            string deleteWarning = string.Format(InternationalizationManager.Internationalization.GetTranslation("deleteCustomHotkeyWarning"), item.Hotkey);
+            if (MessageBox.Show(deleteWarning, InternationalizationManager.Internationalization.GetTranslation("delete"), MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 UserSettingStorage.Instance.CustomPluginHotkeys.Remove(item);
                 lvCustomHotkey.Items.Refresh();
@@ -357,7 +348,7 @@ namespace Wox
             }
             else
             {
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("pleaseSelectAnItem"));
+                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("pleaseSelectAnItem"));
             }
         }
 
@@ -377,7 +368,7 @@ namespace Wox
         private void ThemeComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string themeName = themeComboBox.SelectedItem.ToString();
-            ThemeManager.Instance.ChangeTheme(themeName);
+            ThemeManager.Theme.ChangeTheme(themeName);
             UserSettingStorage.Instance.Theme = themeName;
             UserSettingStorage.Instance.Save();
         }
@@ -390,7 +381,7 @@ namespace Wox
             this.cbQueryBoxFontFaces.SelectedItem = ((FontFamily)cbQueryBoxFont.SelectedItem).ChooseRegularFamilyTypeface();
 
             UserSettingStorage.Instance.Save();
-            ThemeManager.Instance.ChangeTheme(UserSettingStorage.Instance.Theme);
+            ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
         }
 
         private void CbQueryBoxFontFaces_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -410,7 +401,7 @@ namespace Wox
                 UserSettingStorage.Instance.QueryBoxFontWeight = typeface.Weight.ToString();
                 UserSettingStorage.Instance.QueryBoxFontStyle = typeface.Style.ToString();
                 UserSettingStorage.Instance.Save();
-                ThemeManager.Instance.ChangeTheme(UserSettingStorage.Instance.Theme);
+                ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
             }
         }
 
@@ -422,7 +413,7 @@ namespace Wox
             this.cbResultItemFontFaces.SelectedItem = ((FontFamily)cbResultItemFont.SelectedItem).ChooseRegularFamilyTypeface();
 
             UserSettingStorage.Instance.Save();
-            ThemeManager.Instance.ChangeTheme(UserSettingStorage.Instance.Theme);
+            ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
         }
 
         private void CbResultItemFontFaces_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -440,7 +431,7 @@ namespace Wox
                 UserSettingStorage.Instance.ResultItemFontWeight = typeface.Weight.ToString();
                 UserSettingStorage.Instance.ResultItemFontStyle = typeface.Style.ToString();
                 UserSettingStorage.Instance.Save();
-                ThemeManager.Instance.ChangeTheme(UserSettingStorage.Instance.Theme);
+                ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
             }
         }
 
@@ -453,7 +444,7 @@ namespace Wox
             else
                 PreviewMainPanel.Opacity = 1;
 
-            ThemeManager.Instance.ChangeTheme(UserSettingStorage.Instance.Theme);
+            ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
             Dispatcher.DelayInvoke("delaySaveUserSetting", o =>
             {
                 UserSettingStorage.Instance.Save();
@@ -500,19 +491,6 @@ namespace Wox
             {
                 //system plugin
                 provider = lbPlugins.SelectedItem as ISettingProvider;
-                var sys = lbPlugins.SelectedItem as BaseSystemPlugin;
-                if (sys != null)
-                {
-                    pluginTitle.Text = sys.Name;
-                    pluginId = sys.ID;
-                    pluginSubTitle.Text = sys.Description;
-                    pluginAuthor.Visibility = Visibility.Collapsed;
-                    pluginActionKeyword.Visibility = Visibility.Collapsed;
-                    tbOpenPluginDirecoty.Visibility = Visibility.Collapsed;
-                    pluginActionKeywordTitle.Visibility = Visibility.Collapsed;
-                    pluginTitle.Cursor = Cursors.Arrow;
-                    pluginIcon.Source = ImageLoader.ImageLoader.Load(sys.FullIcoPath);
-                }
             }
 
             var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == pluginId);
@@ -548,16 +526,6 @@ namespace Wox
                 //third-party plugin
                 id = pair.Metadata.ID;
                 name = pair.Metadata.Name;
-            }
-            else
-            {
-                //system plugin
-                var sys = lbPlugins.SelectedItem as BaseSystemPlugin;
-                if (sys != null)
-                {
-                    id = sys.ID;
-                    name = sys.Name;
-                }
             }
             var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == id);
             if (customizedPluginConfig == null)
@@ -655,17 +623,17 @@ namespace Wox
             {
                 if (string.IsNullOrEmpty(tbProxyServer.Text))
                 {
-                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("serverCantBeEmpty"));
+                    MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("serverCantBeEmpty"));
                     return;
                 }
                 if (string.IsNullOrEmpty(tbProxyPort.Text))
                 {
-                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("portCantBeEmpty"));
+                    MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("portCantBeEmpty"));
                     return;
                 }
                 if (!int.TryParse(tbProxyPort.Text, out port))
                 {
-                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("invalidPortFormat"));
+                    MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("invalidPortFormat"));
                     return;
                 }
             }
@@ -676,25 +644,25 @@ namespace Wox
             UserSettingStorage.Instance.ProxyPassword = tbProxyPassword.Password;
             UserSettingStorage.Instance.Save();
 
-            MessageBox.Show(InternationalizationManager.Instance.GetTranslation("saveProxySuccessfully"));
+            MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("saveProxySuccessfully"));
         }
 
         private void btnTestProxy_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(tbProxyServer.Text))
             {
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("serverCantBeEmpty"));
+                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("serverCantBeEmpty"));
                 return;
             }
             if (string.IsNullOrEmpty(tbProxyPort.Text))
             {
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("portCantBeEmpty"));
+                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("portCantBeEmpty"));
                 return;
             }
             int port;
             if (!int.TryParse(tbProxyPort.Text, out port))
             {
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("invalidPortFormat"));
+                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("invalidPortFormat"));
                 return;
             }
 
@@ -715,16 +683,16 @@ namespace Wox
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("proxyIsCorrect"));
+                    MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("proxyIsCorrect"));
                 }
                 else
                 {
-                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("proxyConnectFailed"));
+                    MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("proxyConnectFailed"));
                 }
             }
             catch
             {
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("proxyConnectFailed"));
+                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("proxyConnectFailed"));
             }
         }
 

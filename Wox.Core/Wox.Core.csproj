@@ -56,8 +56,15 @@
     <Compile Include="Exception\WoxCritialException.cs" />
     <Compile Include="Exception\WoxException.cs" />
     <Compile Include="Exception\WoxHttpException.cs" />
+    <Compile Include="Exception\WoxI18nException.cs" />
     <Compile Include="Exception\WoxJsonRPCException.cs" />
+    <Compile Include="i18n\AvailableLanguages.cs" />
+    <Compile Include="i18n\IInternationalization.cs" />
+    <Compile Include="i18n\Internationalization.cs" />
     <Compile Include="i18n\InternationalizationManager.cs" />
+    <Compile Include="i18n\Language.cs" />
+    <Compile Include="Theme\ITheme.cs" />
+    <Compile Include="Theme\ThemeManager.cs" />
     <Compile Include="UI\IUIResource.cs" />
     <Compile Include="UI\ResourceMerger.cs" />
     <Compile Include="Plugin\PluginInstaller.cs" />
@@ -75,19 +82,16 @@
     <Compile Include="Plugin\PythonPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Theme\FontHelper.cs" />
-    <Compile Include="Theme\ThemeManager.cs" />
+    <Compile Include="Theme\Theme.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Plugin\README.md" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj">
       <Project>{4fd29318-a8ab-4d8f-aa47-60bc241b8da3}</Project>
       <Name>Wox.Infrastructure</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Wox.Plugin.SystemPlugins\Wox.Plugin.SystemPlugins.csproj">
-      <Project>{69ce0206-cb41-453d-88af-df86092ef9b8}</Project>
-      <Name>Wox.Plugin.SystemPlugins</Name>
     </ProjectReference>
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj">
       <Project>{8451ecdd-2ea4-4966-bb0a-7bbc40138e80}</Project>

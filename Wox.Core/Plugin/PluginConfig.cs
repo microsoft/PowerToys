@@ -25,10 +25,9 @@ namespace Wox.Core.Plugin
         public static List<PluginMetadata> Parse(List<string> pluginDirectories)
         {
             pluginMetadatas.Clear();
-            ParseSystemPlugins();
             foreach (string pluginDirectory in pluginDirectories)
             {
-                ParseUserPlugins(pluginDirectory);
+                ParsePluginConfigs(pluginDirectory);
             }
 
             if (PluginManager.DebuggerMode != null)
@@ -39,31 +38,7 @@ namespace Wox.Core.Plugin
             return pluginMetadatas;
         }
 
-        private static void ParseSystemPlugins()
-        {
-            string systemPluginPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                "Wox.Plugin.SystemPlugins.dll");
-            if (!File.Exists(systemPluginPath))
-            {
-                throw new WoxCritialException("System Plugin DLL is missing.");
-            }
-
-            pluginMetadatas.Add(new PluginMetadata()
-            {
-                Name = "System Plugins",
-                Author = "System",
-                Description = "system plugins collection",
-                Website = "http://www.getwox.com",
-                Language = AllowedLanguage.CSharp,
-                Version = "1.0.0",
-                PluginType = PluginType.System,
-                ActionKeyword = "*",
-                ExecuteFileName = "Wox.Plugin.SystemPlugins.dll",
-                PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-            });
-        }
-
-        private static void ParseUserPlugins(string pluginDirectory)
+        private static void ParsePluginConfigs(string pluginDirectory)
         {
             if (!Directory.Exists(pluginDirectory)) return;
 

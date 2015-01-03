@@ -29,7 +29,7 @@ namespace Wox
             PluginPair plugin = PluginManager.GetPlugin(pluginId);
             if (plugin == null)
             {
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("cannotFindSpecifiedPlugin"));
+                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("cannotFindSpecifiedPlugin"));
                 Close();
                 return;
             }
@@ -52,14 +52,14 @@ namespace Wox
         {
             if (string.IsNullOrEmpty(tbAction.Text))
             {
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("newActionKeywordCannotBeEmpty"));
+                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("newActionKeywordCannotBeEmpty"));
                 return;
             }
 
             //check new action keyword didn't used by other plugin
             if (PluginManager.AllPlugins.Exists(o => o.Metadata.ActionKeyword == tbAction.Text.Trim()))
             {
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("newActionKeywordHasBeenAssigned"));
+                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("newActionKeywordHasBeenAssigned"));
                 return;
             }
 
@@ -81,7 +81,7 @@ namespace Wox
                 customizedPluginConfig.Actionword = tbAction.Text.Trim();
             }
             UserSettingStorage.Instance.Save();
-            MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
+            MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("succeed"));
             Close();
         }
     }
