@@ -9,7 +9,7 @@ namespace Wox.Core.Plugin.QueryDispatcher
 {
     public class SystemPluginQueryDispatcher : IQueryDispatcher
     {
-        private IEnumerable<PluginPair> allSytemPlugins = PluginManager.AllPlugins.Where(o => o.Metadata.ActionKeyword == "*");
+        private IEnumerable<PluginPair> allSytemPlugins = PluginManager.AllPlugins.Where(o => PluginManager.IsSystemPlugin(o.Metadata));
 
         public void Dispatch(Query query)
         {

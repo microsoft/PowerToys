@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
-//using Wox.Plugin.SystemPlugins;
 
 namespace Wox.Core.Plugin
 {
@@ -34,12 +33,6 @@ namespace Wox.Core.Plugin
                             Plugin = Activator.CreateInstance(type) as IPlugin,
                             Metadata = metadata
                         };
-
-                        //var sys = pair.Plugin as BaseSystemPlugin;
-                        //if (sys != null)
-                        //{
-                        //    sys.PluginDirectory = metadata.PluginDirectory;
-                        //}
 
                         plugins.Add(pair);
                     }

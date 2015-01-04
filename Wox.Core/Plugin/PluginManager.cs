@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Wox.Core.Exception;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
@@ -92,12 +93,19 @@ namespace Wox.Core.Plugin
             foreach (PluginPair pluginPair in plugins)
             {
                 PluginPair pair = pluginPair;
-                ThreadPool.QueueUserWorkItem(o => pair.Plugin.Init(new PluginInitContext()
+                ThreadPool.QueueUserWorkItem(o =>
                 {
-                    CurrentPluginMetadata = pair.Metadata,
-                    Proxy = HttpProxy.Instance,
-                    API = API
-                }));
+                    using (new Timeit("Init Plugin: " + pair.Metadata.Name))
+                    {
+                        pair.Plugin.Init(new PluginInitContext()
+                        {
+                            CurrentPluginMetadata = pair.Metadata,
+                            Proxy = HttpProxy.Instance,
+                            API = API
+                        });
+                    }
+                })
+                ;
             }
         }
 
@@ -124,6 +132,11 @@ namespace Wox.Core.Plugin
             if (string.IsNullOrEmpty(query.ActionName)) return false;
 
             return plugins.Any(o => o.Metadata.PluginType == PluginType.User && o.Metadata.ActionKeyword == query.ActionName);
+        }
+
+        public static bool IsSystemPlugin(PluginMetadata metadata)
+        {
+            return metadata.ActionKeyword == "*";
         }
 
         public static void ActivatePluginDebugger(string path)

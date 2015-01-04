@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Wox.Core.Plugin;
 using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Plugin.PluginIndicator
@@ -16,7 +17,7 @@ namespace Wox.Plugin.PluginIndicator
 
             if (allPlugins.Count == 0)
             {
-                allPlugins = context.API.GetAllPlugins().Where(o => o.Metadata.ActionKeyword != "*").ToList();
+                allPlugins = context.API.GetAllPlugins().Where(o => !PluginManager.IsSystemPlugin(o.Metadata)).ToList();
             }
 
             foreach (PluginMetadata metadata in allPlugins.Select(o => o.Metadata))

@@ -3,7 +3,7 @@
     "ActionKeyword":"*",
     "Name":"Calculator",
     "Description":"Provide mathematical calculations.(Try 5*3-2 in Wox)",
-    "Author":"qianlifeng",
+    "Author":"cxfksword",
     "Version":"1.0.0",
     "Language":"csharp",
     "Website":"http://www.getwox.com/plugin",
