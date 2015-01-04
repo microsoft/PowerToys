@@ -79,7 +79,7 @@ namespace Wox.Infrastructure.Storage
         /// <returns></returns>
         protected virtual T LoadDefault()
         {
-            return serializedObject;
+            return new T();
         }
 
         protected abstract void LoadInternal();

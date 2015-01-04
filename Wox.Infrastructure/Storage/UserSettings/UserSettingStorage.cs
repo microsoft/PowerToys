@@ -153,7 +153,7 @@ namespace Wox.Infrastructure.Storage.UserSettings
         {
             DontPromptUpdateMsg = false;
             Theme = "Dark";
-            Language = "English";
+            Language = "en";
             ReplaceWinR = true;
             WebSearches = LoadDefaultWebSearches();
             ProgramSources = new List<ProgramSource>();
@@ -189,7 +189,7 @@ namespace Wox.Infrastructure.Storage.UserSettings
             }
             if (storage.Language == null)
             {
-                storage.Language = "English";
+                storage.Language = "en";
             }
         }
     }

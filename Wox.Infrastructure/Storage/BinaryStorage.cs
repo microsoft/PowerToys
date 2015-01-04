@@ -25,10 +25,20 @@ namespace Wox.Infrastructure.Storage
         {
             try
             {
-                FileStream fileStream = new FileStream(ConfigPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                BinaryFormatter binaryFormatter = new BinaryFormatter();
-                serializedObject = binaryFormatter.Deserialize(fileStream) as T;
-                fileStream.Close();
+                using (FileStream fileStream = new FileStream(ConfigPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    BinaryFormatter binaryFormatter = new BinaryFormatter();
+                    serializedObject = binaryFormatter.Deserialize(fileStream) as T;
+                    if (serializedObject == null)
+                    {
+                        serializedObject = LoadDefault();
+#if (DEBUG)
+                        {
+                            throw new Exception("deserialize failed");
+                        }
+#endif
+                    }
+                }
             }
             catch (Exception)
             {
