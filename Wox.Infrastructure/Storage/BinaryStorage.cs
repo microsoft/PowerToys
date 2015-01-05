@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Wox.Infrastructure.Logger;
@@ -23,6 +24,8 @@ namespace Wox.Infrastructure.Storage
 
         protected override void LoadInternal()
         {
+            //http://stackoverflow.com/questions/2120055/binaryformatter-deserialize-gives-serializationexception
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             try
             {
                 using (FileStream fileStream = new FileStream(ConfigPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -43,7 +46,32 @@ namespace Wox.Infrastructure.Storage
             catch (Exception)
             {
                 serializedObject = LoadDefault();
+#if (DEBUG)
+                {
+                    throw;
+                }
+#endif
             }
+            finally
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+            }
+        }
+
+        private System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            Assembly ayResult = null;
+            string sShortAssemblyName = args.Name.Split(',')[0];
+            Assembly[] ayAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (Assembly ayAssembly in ayAssemblies)
+            {
+                if (sShortAssemblyName == ayAssembly.FullName.Split(',')[0])
+                {
+                    ayResult = ayAssembly;
+                    break;
+                }
+            }
+            return ayResult;
         }
 
         protected override void SaveInternal()
@@ -58,11 +86,11 @@ namespace Wox.Infrastructure.Storage
             catch (Exception e)
             {
                 Log.Error(e.Message);
-                #if (DEBUG)
-                {  
-                    throw e;
+#if (DEBUG)
+                {
+                    throw;
                 }
-                #endif
+#endif
             }
         }
     }
