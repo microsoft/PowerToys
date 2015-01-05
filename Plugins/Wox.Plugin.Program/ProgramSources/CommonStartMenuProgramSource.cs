@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Plugin.Program.ProgramSources
 {

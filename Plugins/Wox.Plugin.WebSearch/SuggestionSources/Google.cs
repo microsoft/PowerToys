@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Wox.Core.UserSettings;
 using Wox.Infrastructure.Http;
 
 namespace Wox.Plugin.WebSearch.SuggestionSources
@@ -11,7 +12,7 @@ namespace Wox.Plugin.WebSearch.SuggestionSources
     {
         public override List<string> GetSuggestions(string query)
         {
-            var result = HttpRequest.Get("https://www.google.com/complete/search?output=chrome&q=" + Uri.EscapeUriString(query));
+            var result = HttpRequest.Get("https://www.google.com/complete/search?output=chrome&q=" + Uri.EscapeUriString(query),HttpProxy.Instance);
             if (string.IsNullOrEmpty(result)) return new List<string>();
 
             try

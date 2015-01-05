@@ -1,5 +1,8 @@
-﻿namespace Wox.Infrastructure.Storage.UserSettings
+﻿using System;
+
+namespace Wox.Core.UserSettings
 {
+    [Serializable]
     public class CustomPluginHotkey
     {
         public string Hotkey { get; set; }

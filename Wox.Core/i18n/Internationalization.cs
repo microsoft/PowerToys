@@ -7,8 +7,8 @@ using System.Text;
 using System.Windows;
 using Wox.Core.Exception;
 using Wox.Core.UI;
+using Wox.Core.UserSettings;
 using Wox.Infrastructure.Logger;
-using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Core.i18n
 {

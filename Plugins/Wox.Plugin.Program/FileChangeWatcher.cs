@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Plugin.Program
 {
@@ -21,7 +20,7 @@ namespace Wox.Plugin.Program
             }
 
             watchedPath.Add(path);
-            foreach (string fileType in UserSettingStorage.Instance.ProgramSuffixes.Split(';'))
+            foreach (string fileType in ProgramStorage.Instance.ProgramSuffixes.Split(';'))
             {
                 FileSystemWatcher watcher = new FileSystemWatcher
                 {

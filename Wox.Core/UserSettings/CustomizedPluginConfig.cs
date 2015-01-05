@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Wox.Infrastructure.Storage.UserSettings
+namespace Wox.Core.UserSettings
 {
+    [Serializable]
     public class CustomizedPluginConfig
     {
         public string ID { get; set; }

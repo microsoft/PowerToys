@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using Newtonsoft.Json;
+using Wox.Infrastructure.Storage;
+using Wox.Plugin;
+using System.Drawing;
 
-namespace Wox.Infrastructure.Storage.UserSettings
+namespace Wox.Core.UserSettings
 {
     public class UserSettingStorage : JsonStrorage<UserSettingStorage>
     {
@@ -45,9 +48,6 @@ namespace Wox.Infrastructure.Storage.UserSettings
         public string ResultItemFontStretch { get; set; }
 
         [JsonProperty]
-        public bool ReplaceWinR { get; set; }
-
-        [JsonProperty]
         public List<WebSearch> WebSearches { get; set; }
 
         [JsonProperty]
@@ -55,12 +55,6 @@ namespace Wox.Infrastructure.Storage.UserSettings
 
         [JsonProperty]
         public double WindowTop { get; set; }
-
-        [JsonProperty]
-        public List<ProgramSource> ProgramSources { get; set; }
-
-        [JsonProperty]
-        public List<FolderLink> FolderLinks { get; set; }
 
         public List<CustomizedPluginConfig> CustomizedPluginConfigs { get; set; }
 
@@ -72,9 +66,6 @@ namespace Wox.Infrastructure.Storage.UserSettings
 
         [JsonProperty]
         public double Opacity { get; set; }
-
-        [JsonProperty]
-        public string ProgramSuffixes { get; set; }
 
         [JsonProperty]
         public OpacityMode OpacityMode { get; set; }
@@ -144,6 +135,19 @@ namespace Wox.Infrastructure.Storage.UserSettings
             return webSearches;
         }
 
+        protected override string ConfigFolder
+        {
+            get
+            {
+                string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
+                if (userProfilePath == null)
+                {
+                    throw new ArgumentException("Environment variable USERPROFILE is empty");
+                }
+                return Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Config");
+            }
+        }
+
         protected override string ConfigName
         {
             get { return "config"; }
@@ -154,9 +158,7 @@ namespace Wox.Infrastructure.Storage.UserSettings
             DontPromptUpdateMsg = false;
             Theme = "Dark";
             Language = "en";
-            ReplaceWinR = true;
             WebSearches = LoadDefaultWebSearches();
-            ProgramSources = new List<ProgramSource>();
             CustomizedPluginConfigs = new List<CustomizedPluginConfig>();
             Hotkey = "Alt + Space";
             QueryBoxFont = FontFamily.GenericSansSerif.Name;
@@ -174,10 +176,6 @@ namespace Wox.Infrastructure.Storage.UserSettings
             if (storage.CustomizedPluginConfigs == null)
             {
                 storage.CustomizedPluginConfigs = new List<CustomizedPluginConfig>();
-            }
-            if (string.IsNullOrEmpty(storage.ProgramSuffixes))
-            {
-                storage.ProgramSuffixes = "lnk;exe;appref-ms;bat";
             }
             if (storage.QueryBoxFont == null)
             {

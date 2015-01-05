@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using Wox.Core.UserSettings;
 using Wox.Infrastructure.Http;
 using Wox.Plugin;
 

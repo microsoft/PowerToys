@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
 
-namespace Wox.Infrastructure.Storage.UserSettings
+namespace Wox.Plugin.Folder
 {
+    [Serializable]
     public class FolderLink
     {
         [JsonProperty]

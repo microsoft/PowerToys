@@ -41,7 +41,7 @@
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net35\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.7\lib\net35\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -59,18 +59,11 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Http\HttpProxy.cs" />
     <Compile Include="Logger\Log.cs" />
     <Compile Include="PeHeaderReader.cs" />
     <Compile Include="Storage\BinaryStorage.cs" />
     <Compile Include="Storage\IStorage.cs" />
     <Compile Include="Storage\JsonStorage.cs" />
-    <Compile Include="Storage\UserSettings\CustomizedPluginConfig.cs" />
-    <Compile Include="Storage\UserSettings\FolderLink.cs" />
-    <Compile Include="Storage\UserSettings\PluginHotkey.cs" />
-    <Compile Include="Storage\UserSettings\ProgramSource.cs" />
-    <Compile Include="Storage\UserSettings\UserSettingStorage.cs" />
-    <Compile Include="Storage\UserSettings\WebSearch.cs" />
     <Compile Include="Timeit.cs" />
     <Compile Include="Unidecoder.Characters.cs" />
     <Compile Include="Http\HttpRequest.cs" />
@@ -90,9 +83,6 @@
       <Project>{8451ecdd-2ea4-4966-bb0a-7bbc40138e80}</Project>
       <Name>Wox.Plugin</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

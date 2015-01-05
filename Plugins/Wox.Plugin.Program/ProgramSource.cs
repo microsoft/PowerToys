@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Wox.Infrastructure.Storage.UserSettings
+namespace Wox.Plugin.Program
 {
     [Serializable]
     public class ProgramSource

@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Windows;
 using Wox.Core.UI;
 using Wox.Infrastructure.Logger;
-using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Core.i18n
 {

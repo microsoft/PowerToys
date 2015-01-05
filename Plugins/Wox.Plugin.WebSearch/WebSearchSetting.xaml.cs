@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
-using Wox.Infrastructure.Storage.UserSettings;
+using Wox.Core.UserSettings;
 
 namespace Wox.Plugin.WebSearch
 {
@@ -14,7 +14,7 @@ namespace Wox.Plugin.WebSearch
         private string defaultWebSearchImageDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Images\\websearch");
         private WebSearchesSetting settingWindow;
         private bool update;
-        private Infrastructure.Storage.UserSettings.WebSearch updateWebSearch;
+        private Core.UserSettings.WebSearch updateWebSearch;
 
         public WebSearchSetting(WebSearchesSetting settingWidow)
         {
@@ -22,7 +22,7 @@ namespace Wox.Plugin.WebSearch
             InitializeComponent();
         }
 
-        public void UpdateItem(Infrastructure.Storage.UserSettings.WebSearch webSearch)
+        public void UpdateItem(Core.UserSettings.WebSearch webSearch)
         {
             updateWebSearch = UserSettingStorage.Instance.WebSearches.FirstOrDefault(o => o == webSearch);
             if (updateWebSearch == null || string.IsNullOrEmpty(updateWebSearch.Url))
@@ -89,7 +89,7 @@ namespace Wox.Plugin.WebSearch
                     MessageBox.Show("ActionWord has existed, please input a new one.");
                     return;
                 }
-                UserSettingStorage.Instance.WebSearches.Add(new Infrastructure.Storage.UserSettings.WebSearch()
+                UserSettingStorage.Instance.WebSearches.Add(new Core.UserSettings.WebSearch()
                 {
                     ActionWord = action,
                     Enabled = cbEnable.IsChecked ?? false,

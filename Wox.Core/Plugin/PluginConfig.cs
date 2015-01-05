@@ -5,8 +5,8 @@ using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 using Wox.Core.Exception;
+using Wox.Core.UserSettings;
 using Wox.Infrastructure.Logger;
-using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 
 namespace Wox.Core.Plugin

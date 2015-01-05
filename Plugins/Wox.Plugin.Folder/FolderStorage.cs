@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Text;
+using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
+using System.IO;
 
-namespace Wox.Plugin.Program
+namespace Wox.Plugin.Folder
 {
-    [Serializable]
-    public class ProgramCacheStorage : BinaryStorage<ProgramCacheStorage>
+    public class FolderStorage : JsonStrorage<FolderStorage>
     {
-        public List<Program> Programs = new List<Program>();
-
+        [JsonProperty]
+        public List<FolderLink> FolderLinks { get; set; }
         protected override string ConfigFolder
         {
             get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
@@ -18,7 +20,7 @@ namespace Wox.Plugin.Program
 
         protected override string ConfigName
         {
-            get { return "ProgramIndexCache"; }
+            get { return "setting"; }
         }
     }
 }

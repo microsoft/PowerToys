@@ -1,10 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin.Program.ProgramSources;
 
 namespace Wox.Plugin.Program
@@ -90,10 +89,10 @@ namespace Wox.Plugin.Program
             {
                 List<ProgramSource> programSources = new List<ProgramSource>();
                 programSources.AddRange(LoadDeaultProgramSources());
-                if (UserSettingStorage.Instance.ProgramSources != null &&
-                    UserSettingStorage.Instance.ProgramSources.Count(o => o.Enabled) > 0)
+                if (ProgramStorage.Instance.ProgramSources != null &&
+                    ProgramStorage.Instance.ProgramSources.Count(o => o.Enabled) > 0)
                 {
-                    programSources.AddRange(UserSettingStorage.Instance.ProgramSources.Where(o => o.Enabled));
+                    programSources.AddRange(ProgramStorage.Instance.ProgramSources.Where(o => o.Enabled));
                 }
 
                 sources.Clear();

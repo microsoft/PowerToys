@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Plugin.Program
 {
@@ -19,7 +18,7 @@ namespace Wox.Plugin.Program
 
         private void Setting_Loaded(object sender, RoutedEventArgs e)
         {
-            programSourceView.ItemsSource = UserSettingStorage.Instance.ProgramSources;
+            programSourceView.ItemsSource = ProgramStorage.Instance.ProgramSources;
         }
 
         private void ReIndexing()
@@ -40,13 +39,13 @@ namespace Wox.Plugin.Program
             {
                 string path = folderBrowserDialog.SelectedPath;
 
-                UserSettingStorage.Instance.ProgramSources.Add(new ProgramSource()
+                ProgramStorage.Instance.ProgramSources.Add(new ProgramSource()
                 {
                     Location = path,
                     Type = "FileSystemProgramSource",
                     Enabled = true
                 });
-                UserSettingStorage.Instance.Save();
+                ProgramStorage.Instance.Save();
                 ReIndexing();
             }
         }
@@ -59,8 +58,8 @@ namespace Wox.Plugin.Program
                 if (MessageBox.Show("Are your sure to delete " + selectedProgramSource.Location, "Delete ProgramSource",
                     MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
-                    UserSettingStorage.Instance.ProgramSources.Remove(selectedProgramSource);
-                    UserSettingStorage.Instance.Save();
+                    ProgramStorage.Instance.ProgramSources.Remove(selectedProgramSource);
+                    ProgramStorage.Instance.Save();
                     ReIndexing();
                 }
             }
@@ -81,7 +80,7 @@ namespace Wox.Plugin.Program
                 {
                     string path = folderBrowserDialog.SelectedPath;
                     selectedProgramSource.Location = path;
-                    UserSettingStorage.Instance.Save();
+                    ProgramStorage.Instance.Save();
                     ReIndexing();
                 }
             }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -8,9 +9,9 @@ namespace Wox.Infrastructure.Http
 {
     public class HttpRequest
     {
-        public static string Get(string url, string encoding = "UTF-8")
+        public static string Get(string url, IHttpProxy proxy, string encoding = "UTF-8")
         {
-            return Get(url, encoding, HttpProxy.Instance);
+            return Get(url, encoding, proxy);
         }
 
         private static string Get(string url, string encoding, IHttpProxy proxy)

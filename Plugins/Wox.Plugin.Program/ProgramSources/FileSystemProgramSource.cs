@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Wox.Infrastructure.Storage.UserSettings;
 using Log = Wox.Infrastructure.Logger.Log;
 
 namespace Wox.Plugin.Program.ProgramSources
@@ -39,7 +38,7 @@ namespace Wox.Plugin.Program.ProgramSources
             {
                 foreach (string file in Directory.GetFiles(path))
                 {
-                    if (UserSettingStorage.Instance.ProgramSuffixes.Split(';').Any(o => file.EndsWith("." + o)))
+                    if (ProgramStorage.Instance.ProgramSuffixes.Split(';').Any(o => file.EndsWith("." + o)))
                     {
                         Program p = CreateEntry(file);
                         list.Add(p);

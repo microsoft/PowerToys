@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Wox.Core.i18n;
 using Wox.Core.Plugin;
-using Wox.Infrastructure.Storage.UserSettings;
+using Wox.Core.UserSettings;
 using Wox.Plugin;
 using MessageBox = System.Windows.MessageBox;
 

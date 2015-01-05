@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using Newtonsoft.Json;
+using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Http;
@@ -26,7 +27,7 @@ namespace Wox.Update
         public Release CheckUpgrade(bool forceCheck = false)
         {
             if (checkedUpdate && !forceCheck) return newRelease;
-            string json = HttpRequest.Get(updateURL);
+            string json = HttpRequest.Get(updateURL,HttpProxy.Instance);
             if (string.IsNullOrEmpty(json)) return null;
 
             try
