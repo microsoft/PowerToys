@@ -10,8 +10,11 @@ namespace Wox.Plugin.Program
     /// </summary>
     public partial class ProgramSetting : UserControl
     {
-        public ProgramSetting()
+        private PluginInitContext context;
+
+        public ProgramSetting(PluginInitContext context)
         {
+            this.context = context;
             InitializeComponent();
             Loaded += Setting_Loaded;
         }
@@ -55,8 +58,9 @@ namespace Wox.Plugin.Program
             ProgramSource selectedProgramSource = programSourceView.SelectedItem as ProgramSource;
             if (selectedProgramSource != null)
             {
-                if (MessageBox.Show("Are your sure to delete " + selectedProgramSource.Location, "Delete ProgramSource",
-                    MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                string msg = string.Format(context.API.GetTranslation("wox_plugin_program_delete_program_source"), selectedProgramSource.Location);
+
+                if (MessageBox.Show(msg, string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
                     ProgramStorage.Instance.ProgramSources.Remove(selectedProgramSource);
                     ProgramStorage.Instance.Save();
@@ -65,7 +69,8 @@ namespace Wox.Plugin.Program
             }
             else
             {
-                MessageBox.Show("Please select a program source");
+                string msg = context.API.GetTranslation("wox_plugin_program_pls_select_program_source");
+                MessageBox.Show(msg);
             }
         }
 
@@ -86,7 +91,8 @@ namespace Wox.Plugin.Program
             }
             else
             {
-                MessageBox.Show("Please select a program source");
+                string msg = context.API.GetTranslation("wox_plugin_program_pls_select_program_source");
+                MessageBox.Show(msg);
             }
         }
 
@@ -97,8 +103,7 @@ namespace Wox.Plugin.Program
 
         private void BtnProgramSuffixes_OnClick(object sender, RoutedEventArgs e)
         {
-            
-            ProgramSuffixes p = new ProgramSuffixes();
+            ProgramSuffixes p = new ProgramSuffixes(context);
             p.ShowDialog();
         }
     }

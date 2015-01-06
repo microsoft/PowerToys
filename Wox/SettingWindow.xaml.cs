@@ -482,7 +482,7 @@ namespace Wox
                 pluginTitle.Text = pair.Metadata.Name;
                 pluginTitle.Cursor = Cursors.Hand;
                 pluginActionKeyword.Text = pair.Metadata.ActionKeyword;
-                pluginAuthor.Text = "By: " + pair.Metadata.Author;
+                pluginAuthor.Text = InternationalizationManager.Internationalization.GetTranslation("author") + ": " + pair.Metadata.Author;
                 pluginSubTitle.Text = pair.Metadata.Description;
                 pluginId = pair.Metadata.ID;
                 pluginIcon.Source = ImageLoader.ImageLoader.Load(pair.Metadata.FullIcoPath);
@@ -509,8 +509,6 @@ namespace Wox
                 control.Width = Double.NaN;
                 control.Height = Double.NaN;
             }
-            // featureControls
-            // throw new NotImplementedException();
         }
 
         private void CbDisablePlugin_OnClick(object sender, RoutedEventArgs e)

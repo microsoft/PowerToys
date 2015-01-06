@@ -137,16 +137,8 @@ namespace Wox.Core.i18n
                 {
                     return english;
                 }
-                else
-                {
-                    string file = Directory.GetFiles(folder).FirstOrDefault(o => o.EndsWith("xaml"));
-                    if (string.IsNullOrEmpty(file))
-                    {
-                        throw new WoxI18nException(string.Format("Couldn't find language file from:{0}, current selected language:{1}"));
-                    }
 
-                    return Path.Combine(folder, file);
-                }
+                return string.Empty;
             }
 
         }

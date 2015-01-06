@@ -36,6 +36,8 @@ namespace Wox.Plugin
 
         void ReloadPlugins();
 
+        string GetTranslation(string key);
+
         List<PluginPair> GetAllPlugins();
 
         event WoxKeyDownEventHandler BackKeyDownEvent;

@@ -178,7 +178,7 @@ namespace Wox.Plugin.Program
 
         public System.Windows.Controls.Control CreateSettingPanel()
         {
-            return new ProgramSetting();
+            return new ProgramSetting(context);
         }
 
         #endregion

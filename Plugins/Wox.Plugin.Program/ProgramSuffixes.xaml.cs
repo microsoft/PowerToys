@@ -7,8 +7,11 @@ namespace Wox.Plugin.Program
     /// </summary>
     public partial class ProgramSuffixes
     {
-        public ProgramSuffixes()
+        private PluginInitContext context;
+
+        public ProgramSuffixes(PluginInitContext context)
         {
+            this.context = context;
             InitializeComponent();
 
             tbSuffixes.Text = ProgramStorage.Instance.ProgramSuffixes;
@@ -18,12 +21,14 @@ namespace Wox.Plugin.Program
         {
             if (string.IsNullOrEmpty(tbSuffixes.Text))
             {
-                MessageBox.Show("File suffixes can't be empty");
+                string warning = context.API.GetTranslation("wox_plugin_program_suffixes_cannot_empty");
+                MessageBox.Show(warning);
                 return;
             }
 
             ProgramStorage.Instance.ProgramSuffixes = tbSuffixes.Text;
-            MessageBox.Show("Sucessfully update file suffixes");
+            string msg = context.API.GetTranslation("wox_plugin_program_update_file_suffixes");
+            MessageBox.Show(msg);
         }
     }
 }

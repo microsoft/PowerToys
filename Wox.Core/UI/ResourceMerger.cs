@@ -12,8 +12,8 @@ namespace Wox.Core.UI
         public static void ApplyResources()
         {
             Application.Current.Resources.MergedDictionaries.Clear();
-            ApplyUIResources();
             ApplyPluginLanguages();
+            ApplyUIResources();
         }
 
         private static void ApplyUIResources()
@@ -37,13 +37,17 @@ namespace Wox.Core.UI
                 .SelectMany(s => s.GetTypes())
                 .Where(p => p.IsClass && !p.IsAbstract && pluginI18nType.IsAssignableFrom(p));
 
-            foreach (IPluginI18n pluginI18n in pluginI18ns)
+            foreach (var pluginI18n in pluginI18ns)
             {
-                string languageFile = InternationalizationManager.Internationalization.GetLanguageFile(pluginI18n.GetLanguagesFolder());
-                Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
+                string languageFile = InternationalizationManager.Internationalization.GetLanguageFile(
+                    ((IPluginI18n)Activator.CreateInstance(pluginI18n)).GetLanguagesFolder());
+                if (!string.IsNullOrEmpty(languageFile))
                 {
-                    Source = new Uri(languageFile, UriKind.Absolute)
-                });
+                    Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
+                    {
+                        Source = new Uri(languageFile, UriKind.Absolute)
+                    });
+                }
             }
         }
     }

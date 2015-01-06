@@ -132,6 +132,11 @@ namespace Wox
             Dispatcher.Invoke(new Action(() => PluginManager.Init(this)));
         }
 
+        public string GetTranslation(string key)
+        {
+            return InternationalizationManager.Internationalization.GetTranslation(key);
+        }
+
         public List<PluginPair> GetAllPlugins()
         {
             return PluginManager.AllPlugins;

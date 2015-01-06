@@ -14,7 +14,7 @@ namespace Wox.Core.i18n
         /// <summary>
         /// Get language file for current user selected language
         /// if couldn't find the current selected language file, it will first try to load en.xaml 
-        /// if en.xaml couldn't find, it will pick up first *.xaml file
+        /// if en.xaml couldn't find, return empty string
         /// </summary>
         /// <param name="folder"></param>
         /// <returns></returns>
