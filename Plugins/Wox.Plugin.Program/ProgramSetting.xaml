@@ -40,7 +40,7 @@
                 <TextBlock Margin="10 0 0 0" Height="20" HorizontalAlignment="Center">Indexing</TextBlock>
             </StackPanel>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                <Button x:Name="btnDeleteProgramSource" Click="btnDeleteProgramSource_OnClick" Width="100" Margin="10" Content="Delete"/>
+                <Button x:Name="btnDeleteProgramSource" Click="btnDeleteProgramSource_OnClick" Width="100" Margin="10" Content="{DynamicResource wox_plugin_porgram_delete}"/>
                 <Button x:Name="btnEditProgramSource" Click="btnEditProgramSource_OnClick" Width="100" Margin="10" Content="Edit"/>
                 <Button x:Name="btnAddProgramSource" Click="btnAddProgramSource_OnClick" Width="100" Margin="10" Content="Add"/>
             </StackPanel>

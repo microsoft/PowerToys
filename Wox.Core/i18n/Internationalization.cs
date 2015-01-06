@@ -14,28 +14,24 @@ namespace Wox.Core.i18n
 {
     public class Internationalization : IInternationalization, IUIResource
     {
-        private static List<string> languageDirectories = new List<string>();
+        private static string DefaultLanguageDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
 
         static Internationalization()
         {
-            languageDirectories.Add(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages"));
             MakesureThemeDirectoriesExist();
         }
 
         private static void MakesureThemeDirectoriesExist()
         {
-            foreach (string pluginDirectory in languageDirectories)
+            if (!Directory.Exists(DefaultLanguageDirectory))
             {
-                if (!Directory.Exists(pluginDirectory))
+                try
                 {
-                    try
-                    {
-                        Directory.CreateDirectory(pluginDirectory);
-                    }
-                    catch (System.Exception e)
-                    {
-                        Log.Error(e.Message);
-                    }
+                    Directory.CreateDirectory(DefaultLanguageDirectory);
+                }
+                catch (System.Exception e)
+                {
+                    Log.Error(e.Message);
                 }
             }
         }
@@ -59,7 +55,7 @@ namespace Wox.Core.i18n
 
         public void ChangeLanguage(Language language)
         {
-            if(language == null) throw new WoxI18nException("language can't be null");
+            if (language == null) throw new WoxI18nException("language can't be null");
 
             string path = GetLanguagePath(language);
             if (string.IsNullOrEmpty(path))
@@ -80,7 +76,7 @@ namespace Wox.Core.i18n
         {
             return new ResourceDictionary
             {
-                Source = new Uri(GetLanguagePath(UserSettingStorage.Instance.Language), UriKind.Absolute)
+                Source = new Uri(GetLanguageFile(DefaultLanguageDirectory), UriKind.Absolute)
             };
         }
 
@@ -115,16 +111,44 @@ namespace Wox.Core.i18n
 
         private string GetLanguagePath(Language language)
         {
-            foreach (string directory in languageDirectories)
+            string path = Path.Combine(DefaultLanguageDirectory, language.LanguageCode + ".xaml");
+            if (File.Exists(path))
             {
-                string path = Path.Combine(directory, language.LanguageCode + ".xaml");
-                if (File.Exists(path))
-                {
-                    return path;
-                }
+                return path;
             }
 
             return string.Empty;
+        }
+
+
+        public string GetLanguageFile(string folder)
+        {
+            if (!Directory.Exists(folder)) return string.Empty;
+
+            string path = Path.Combine(folder, UserSettingStorage.Instance.Language + ".xaml");
+            if (File.Exists(path))
+            {
+                return path;
+            }
+            else
+            {
+                string english = Path.Combine(folder, "en.xaml");
+                if (File.Exists(english))
+                {
+                    return english;
+                }
+                else
+                {
+                    string file = Directory.GetFiles(folder).FirstOrDefault(o => o.EndsWith("xaml"));
+                    if (string.IsNullOrEmpty(file))
+                    {
+                        throw new WoxI18nException(string.Format("Couldn't find language file from:{0}, current selected language:{1}"));
+                    }
+
+                    return Path.Combine(folder, file);
+                }
+            }
+
         }
     }
 }

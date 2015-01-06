@@ -31,19 +31,26 @@ namespace Wox.Infrastructure.Storage
             {
                 using (FileStream fileStream = new FileStream(ConfigPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    BinaryFormatter binaryFormatter = new BinaryFormatter
+                    if (fileStream.Length > 0)
                     {
-                        AssemblyFormat = FormatterAssemblyStyle.Simple
-                    };
-                    serializedObject = binaryFormatter.Deserialize(fileStream) as T;
-                    if (serializedObject == null)
+                        BinaryFormatter binaryFormatter = new BinaryFormatter
+                        {
+                            AssemblyFormat = FormatterAssemblyStyle.Simple
+                        };
+                        serializedObject = binaryFormatter.Deserialize(fileStream) as T;
+                        if (serializedObject == null)
+                        {
+                            serializedObject = LoadDefault();
+#if (DEBUG)
+                            {
+                                throw new Exception("deserialize failed");
+                            }
+#endif
+                        }
+                    }
+                    else
                     {
                         serializedObject = LoadDefault();
-#if (DEBUG)
-                        {
-                            throw new Exception("deserialize failed");
-                        }
-#endif
                     }
                 }
             }

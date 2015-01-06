@@ -47,6 +47,7 @@
     <Compile Include="AllowedLanguage.cs" />
     <Compile Include="EventHandler.cs" />
     <Compile Include="IHttpProxy.cs" />
+    <Compile Include="IPluginI18n.cs" />
     <Compile Include="IPlugin.cs" />
     <Compile Include="IPublicAPI.cs" />
     <Compile Include="ISettingProvider.cs" />

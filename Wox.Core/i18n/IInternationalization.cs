@@ -11,6 +11,15 @@ namespace Wox.Core.i18n
 
         string GetTranslation(string key);
 
+        /// <summary>
+        /// Get language file for current user selected language
+        /// if couldn't find the current selected language file, it will first try to load en.xaml 
+        /// if en.xaml couldn't find, it will pick up first *.xaml file
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <returns></returns>
+        string GetLanguageFile(string folder);
+
         void ChangeLanguage(Language language);
 
         void ChangeLanguage(string languageCode);

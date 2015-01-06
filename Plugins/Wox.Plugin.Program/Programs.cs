@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Windows;
 using Wox.Infrastructure;
 using Wox.Plugin.Program.ProgramSources;
 
 namespace Wox.Plugin.Program
 {
-    public class Programs : ISettingProvider,IPlugin
+    public class Programs : ISettingProvider, IPlugin, IPluginI18n
     {
         private static object lockObject = new object();
         private static List<Program> programs = new List<Program>();
@@ -76,7 +78,7 @@ namespace Wox.Plugin.Program
             {
                 programs = ProgramCacheStorage.Instance.Programs;
             }
-            Debug.WriteLine(string.Format("Preload {0} programs from cache",programs.Count),"Wox");
+            Debug.WriteLine(string.Format("Preload {0} programs from cache", programs.Count), "Wox");
             using (new Timeit("Program Index"))
             {
                 IndexPrograms();
@@ -180,5 +182,10 @@ namespace Wox.Plugin.Program
         }
 
         #endregion
+
+        public string GetLanguagesFolder()
+        {
+            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+        }
     }
 }
