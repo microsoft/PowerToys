@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Wox.Infrastructure.Storage.UserSettings;
+using Wox.Core.UserSettings;
 
 namespace Wox.Plugin.WebSearch
 {
@@ -54,7 +54,7 @@ namespace Wox.Plugin.WebSearch
 
         private void btnDeleteWebSearch_OnClick(object sender, RoutedEventArgs e)
         {
-            Infrastructure.Storage.UserSettings.WebSearch selectedWebSearch = webSearchView.SelectedItem as Infrastructure.Storage.UserSettings.WebSearch;
+            Core.UserSettings.WebSearch selectedWebSearch = webSearchView.SelectedItem as Core.UserSettings.WebSearch;
             if (selectedWebSearch != null)
             {
                 if (MessageBox.Show("Are your sure to delete " + selectedWebSearch.Title, "Delete WebSearch",
@@ -72,7 +72,7 @@ namespace Wox.Plugin.WebSearch
 
         private void btnEditWebSearch_OnClick(object sender, RoutedEventArgs e)
         {
-            Infrastructure.Storage.UserSettings.WebSearch selectedWebSearch = webSearchView.SelectedItem as Infrastructure.Storage.UserSettings.WebSearch;
+            Core.UserSettings.WebSearch selectedWebSearch = webSearchView.SelectedItem as Core.UserSettings.WebSearch;
             if (selectedWebSearch != null)
             {
                 WebSearchSetting webSearch = new WebSearchSetting(this);

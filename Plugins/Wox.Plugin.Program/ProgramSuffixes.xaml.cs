@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Plugin.Program
 {
@@ -12,7 +11,7 @@ namespace Wox.Plugin.Program
         {
             InitializeComponent();
 
-            tbSuffixes.Text = UserSettingStorage.Instance.ProgramSuffixes;
+            tbSuffixes.Text = ProgramStorage.Instance.ProgramSuffixes;
         }
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
@@ -23,7 +22,7 @@ namespace Wox.Plugin.Program
                 return;
             }
 
-            UserSettingStorage.Instance.ProgramSuffixes = tbSuffixes.Text;
+            ProgramStorage.Instance.ProgramSuffixes = tbSuffixes.Text;
             MessageBox.Show("Sucessfully update file suffixes");
         }
     }

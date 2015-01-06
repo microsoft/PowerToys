@@ -59,10 +59,12 @@
     <Compile Include="ProgramSetting.xaml.cs">
       <DependentUpon>ProgramSetting.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ProgramSource.cs" />
     <Compile Include="ProgramSources\AppPathsProgramSource.cs" />
     <Compile Include="ProgramSources\CommonStartMenuProgramSource.cs" />
     <Compile Include="ProgramSources\FileSystemProgramSource.cs" />
     <Compile Include="ProgramSources\UserStartMenuProgramSource.cs" />
+    <Compile Include="ProgramStorage.cs" />
     <Compile Include="ProgramSuffixes.xaml.cs">
       <DependentUpon>ProgramSuffixes.xaml</DependentUpon>
     </Compile>

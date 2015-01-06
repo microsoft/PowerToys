@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Windows.Forms;
@@ -12,24 +13,7 @@ namespace Wox.Infrastructure.Storage
     [Serializable]
     public abstract class BaseStorage<T> : IStorage where T : class,IStorage, new()
     {
-        private string configFolder;
-
-        private string ConfigFolder
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(configFolder))
-                {
-                    string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
-                    if (userProfilePath == null)
-                    {
-                        throw new ArgumentException("Environment variable USERPROFILE is empty");
-                    }
-                    configFolder = Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Config");
-                }
-                return configFolder;
-            }
-        }
+        protected abstract string ConfigFolder { get; }
 
         protected string ConfigPath
         {

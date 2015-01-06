@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Wox.Infrastructure.Storage;
@@ -12,6 +13,19 @@ namespace Wox.ImageLoader
         private int counter = 0;
         private const int maxCached = 200;
         public Dictionary<string, int> TopUsedImages = new Dictionary<string, int>();
+
+        protected override string ConfigFolder
+        {
+            get
+            {
+                string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
+                if (userProfilePath == null)
+                {
+                    throw new ArgumentException("Environment variable USERPROFILE is empty");
+                }
+                return Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Config");
+            }
+        }
 
         protected override string ConfigName
         {

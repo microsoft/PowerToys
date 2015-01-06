@@ -12,7 +12,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using IWshRuntimeLibrary;
 using Wox.Core.Plugin;
-using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.Helper;
 using Wox.Update;
@@ -22,6 +21,7 @@ using MessageBox = System.Windows.MessageBox;
 using System.Windows.Data;
 using Wox.Core.i18n;
 using Wox.Core.Theme;
+using Wox.Core.UserSettings;
 
 namespace Wox
 {

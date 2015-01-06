@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Wox.Core.UserSettings;
 using Wox.Infrastructure.Logger;
-using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 
 namespace Wox.Core.Plugin.QueryDispatcher

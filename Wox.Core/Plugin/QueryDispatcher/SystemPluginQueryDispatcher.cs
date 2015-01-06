@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Wox.Infrastructure.Storage.UserSettings;
+using Wox.Core.UserSettings;
 using Wox.Plugin;
 //using Wox.Plugin.SystemPlugins;
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Wox.Infrastructure.Logger;
@@ -30,7 +31,10 @@ namespace Wox.Infrastructure.Storage
             {
                 using (FileStream fileStream = new FileStream(ConfigPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    BinaryFormatter binaryFormatter = new BinaryFormatter();
+                    BinaryFormatter binaryFormatter = new BinaryFormatter
+                    {
+                        AssemblyFormat = FormatterAssemblyStyle.Simple
+                    };
                     serializedObject = binaryFormatter.Deserialize(fileStream) as T;
                     if (serializedObject == null)
                     {
@@ -79,7 +83,10 @@ namespace Wox.Infrastructure.Storage
             try
             {
                 FileStream fileStream = new FileStream(ConfigPath, FileMode.Create);
-                BinaryFormatter binaryFormatter = new BinaryFormatter();
+                BinaryFormatter binaryFormatter = new BinaryFormatter
+                {
+                    AssemblyFormat = FormatterAssemblyStyle.Simple
+                };
                 binaryFormatter.Serialize(fileStream, serializedObject);
                 fileStream.Close();
             }

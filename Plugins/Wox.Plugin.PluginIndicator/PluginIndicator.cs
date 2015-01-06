@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Wox.Core.Plugin;
-using Wox.Infrastructure.Storage.UserSettings;
+using Wox.Core.UserSettings;
 
 namespace Wox.Plugin.PluginIndicator
 {

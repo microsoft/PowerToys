@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.IO;
-using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Infrastructure
 {
@@ -78,7 +77,7 @@ namespace Wox.Infrastructure
         [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
         static extern bool UrlIs(string pszUrl, int UrlIs);
 
-        static void ShellExecCmdLine(IntPtr hInstance, IntPtr hwnd, string command, string startDir, global::System.Diagnostics.ProcessWindowStyle nShow, ShellExecCmdLineFlags dwSeclFlags,bool runAsAdministrator = false)
+        static void ShellExecCmdLine(IntPtr hInstance, IntPtr hwnd, string command, string startDir, global::System.Diagnostics.ProcessWindowStyle nShow, ShellExecCmdLineFlags dwSeclFlags,bool runAsAdministrator = false,bool leaveCmdOpen = false)
         {
 	        string cmd = command;
             string args = null;
@@ -103,7 +102,7 @@ namespace Wox.Infrastructure
                     startDir = dir;
             }
 
-	        if (UserSettingStorage.Instance.LeaveCmdOpen && File.Exists(cmd))
+            if (leaveCmdOpen && File.Exists(cmd))
 	        {
 		        bool needsCommandLine;
 

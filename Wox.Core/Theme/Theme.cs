@@ -7,8 +7,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Wox.Core.UI;
+using Wox.Core.UserSettings;
 using Wox.Infrastructure.Logger;
-using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Core.Theme
 {

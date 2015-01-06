@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Windows;
 using Wox.Core.i18n;
-using Wox.Infrastructure.Storage.UserSettings;
+using Wox.Core.UserSettings;
 
 namespace Wox
 {

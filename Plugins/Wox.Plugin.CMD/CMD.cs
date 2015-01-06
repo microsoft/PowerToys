@@ -2,13 +2,20 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
+using WindowsInput;
+using WindowsInput.Native;
+using Wox.Infrastructure.Hotkey;
 using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.CMD
 {
     public class CMD : IPlugin, ISettingProvider
     {
+        private readonly GlobalHotkey globalHotkey = new GlobalHotkey();
         private PluginInitContext context;
+        private bool WinRStroked;
+        private readonly KeyboardSimulator keyboardSimulator = new KeyboardSimulator(new InputSimulator());
 
         public List<Result> Query(Query query)
         {
@@ -166,6 +173,33 @@ namespace Wox.Plugin.CMD
         public void Init(PluginInitContext context)
         {
             this.context = context;
+            globalHotkey.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
+        }
+
+        private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)
+        {
+            if (CMDStorage.Instance.ReplaceWinR)
+            {
+                if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
+                {
+                    WinRStroked = true;
+                    OnWinRPressed();
+                    return false;
+                }
+                if (keyevent == KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int)Keys.LWin)
+                {
+                    WinRStroked = false;
+                    keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.CONTROL);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private void OnWinRPressed()
+        {
+            context.API.ShowApp();
+            context.API.ChangeQuery(">");
         }
 
         public Control CreateSettingPanel()

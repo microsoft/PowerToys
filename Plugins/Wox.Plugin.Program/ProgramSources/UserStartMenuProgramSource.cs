@@ -1,5 +1,4 @@
 ﻿using System;
-using Wox.Infrastructure.Storage.UserSettings;
 
 namespace Wox.Plugin.Program.ProgramSources
 {

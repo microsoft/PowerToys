@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
-using Wox.Infrastructure.Storage.UserSettings;
 using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.Folder
@@ -24,10 +23,10 @@ namespace Wox.Plugin.Folder
             this.context = context;
             this.context.API.BackKeyDownEvent += ApiBackKeyDownEvent;
             InitialDriverList();
-            if (UserSettingStorage.Instance.FolderLinks == null)
+            if (FolderStorage.Instance.FolderLinks == null)
             {
-                UserSettingStorage.Instance.FolderLinks = new List<FolderLink>();
-                UserSettingStorage.Instance.Save();
+                FolderStorage.Instance.FolderLinks = new List<FolderLink>();
+                FolderStorage.Instance.Save();
             }
         }
 
@@ -56,7 +55,7 @@ namespace Wox.Plugin.Folder
             if(string.IsNullOrEmpty(query.RawQuery)) return new List<Result>();
             string input = query.RawQuery.ToLower();
 
-            List<FolderLink> userFolderLinks = UserSettingStorage.Instance.FolderLinks.Where(
+            List<FolderLink> userFolderLinks = FolderStorage.Instance.FolderLinks.Where(
                 x => x.Nickname.StartsWith(input, StringComparison.OrdinalIgnoreCase)).ToList();
             List<Result> results =
                 userFolderLinks.Select(

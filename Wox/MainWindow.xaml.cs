@@ -17,11 +17,11 @@ using NHotkey.Wpf;
 using Wox.Core.i18n;
 using Wox.Core.Plugin;
 using Wox.Core.Theme;
+using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Storage;
-using Wox.Infrastructure.Storage.UserSettings;
 using Wox.Plugin;
 using Wox.Storage;
 using Wox.Update;
@@ -52,16 +52,15 @@ namespace Wox
         public static bool initialized = false;
 
         private static readonly List<Result> waitShowResultList = new List<Result>();
-        private readonly GlobalHotkey globalHotkey = new GlobalHotkey();
-        private readonly KeyboardSimulator keyboardSimulator = new KeyboardSimulator(new InputSimulator());
         private readonly Storyboard progressBarStoryboard = new Storyboard();
-        private bool WinRStroked;
         private NotifyIcon notifyIcon;
         private bool queryHasReturn;
         private string lastQuery;
         private ToolTip toolTip = new ToolTip();
 
         private bool ignoreTextChange = false;
+        private readonly GlobalHotkey globalHotkey = new GlobalHotkey();
+
         #endregion
 
         #region Public API
@@ -181,7 +180,6 @@ namespace Wox
             SetHotkey(UserSettingStorage.Instance.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
 
-            globalHotkey.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
 
             Closing += MainWindow_Closing;
             //since MainWIndow implement IPublicAPI, so we need to finish ctor MainWindow object before
@@ -447,40 +445,6 @@ namespace Wox
             {
                 HideWox();
             }
-        }
-
-        private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)
-        {
-            if (UserSettingStorage.Instance.ReplaceWinR)
-            {
-                //todo:need refactoring. move those codes to CMD file or expose events
-                if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
-                {
-                    WinRStroked = true;
-                    Dispatcher.BeginInvoke(new Action(OnWinRPressed));
-                    return false;
-                }
-                if (keyevent == KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int)Keys.LWin)
-                {
-                    WinRStroked = false;
-                    keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.CONTROL);
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        private void OnWinRPressed()
-        {
-            ShowWox(false);
-            if (!tbQuery.Text.StartsWith(">"))
-            {
-                pnlResult.Clear();
-                ChangeQuery(">");
-            }
-            tbQuery.CaretIndex = tbQuery.Text.Length;
-            tbQuery.SelectionStart = 1;
-            tbQuery.SelectionLength = tbQuery.Text.Length - 1;
         }
 
         private void updateCmdMode()

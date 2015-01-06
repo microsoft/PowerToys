@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Wox.Infrastructure.Storage.UserSettings;
+using Wox.Core.UserSettings;
 using Wox.Plugin.WebSearch.SuggestionSources;
 
 namespace Wox.Plugin.WebSearch
@@ -15,7 +15,7 @@ namespace Wox.Plugin.WebSearch
         {
             List<Result> results = new List<Result>();
 
-            Infrastructure.Storage.UserSettings.WebSearch webSearch =
+            Core.UserSettings.WebSearch webSearch =
                 UserSettingStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionWord == query.ActionName && o.Enabled);
 
             if (webSearch != null)
