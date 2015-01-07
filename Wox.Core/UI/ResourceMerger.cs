@@ -13,10 +13,10 @@ namespace Wox.Core.UI
         {
             Application.Current.Resources.MergedDictionaries.Clear();
             ApplyPluginLanguages();
-            ApplyUIResources();
+            ApplyThemeAndLanguageResources();
         }
 
-        private static void ApplyUIResources()
+        private static void ApplyThemeAndLanguageResources()
         {
             var UIResourceType = typeof(IUIResource);
             var UIResources = AppDomain.CurrentDomain.GetAssemblies()
@@ -30,7 +30,7 @@ namespace Wox.Core.UI
             }
         }
 
-        private static void ApplyPluginLanguages()
+        public static void ApplyPluginLanguages()
         {
             var pluginI18nType = typeof(IPluginI18n);
             var pluginI18ns = AppDomain.CurrentDomain.GetAssemblies()

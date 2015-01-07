@@ -1,0 +1,15 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="wox_plugin_sys_command">命令</system:String>
+    <system:String x:Key="wox_plugin_sys_desc">描述</system:String>
+
+    <system:String x:Key="wox_plugin_sys_shutdown_computer">关闭电脑</system:String>
+    <system:String x:Key="wox_plugin_sys_log_off">注销</system:String>
+    <system:String x:Key="wox_plugin_sys_lock">锁定这台电脑</system:String>
+    <system:String x:Key="wox_plugin_sys_exit">退出Wox</system:String>
+    <system:String x:Key="wox_plugin_sys_restart">重启Wox</system:String>
+    <system:String x:Key="wox_plugin_sys_setting">设置</system:String>
+
+</ResourceDictionary>
