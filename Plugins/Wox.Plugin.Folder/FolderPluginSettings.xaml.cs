@@ -13,8 +13,11 @@ namespace Wox.Plugin.Folder
     /// </summary>
     public partial class FileSystemSettings : UserControl
     {
-        public FileSystemSettings()
+        PluginInitContext context;
+
+        public FileSystemSettings(PluginInitContext context)
         {
+            this.context = context;
             InitializeComponent();
             lbxFolders.ItemsSource = FolderStorage.Instance.FolderLinks;
         }
@@ -29,7 +32,8 @@ namespace Wox.Plugin.Folder
             }
             else
             {
-                MessageBox.Show("Please select a folder link!");
+                string warning = context.API.GetTranslation("wox_plugin_folder_select_folder_link_warning");
+                MessageBox.Show(warning);
             }
         }
 
@@ -52,7 +56,8 @@ namespace Wox.Plugin.Folder
             }
             else
             {
-                MessageBox.Show("Please select a folder link!");
+                string warning = context.API.GetTranslation("wox_plugin_folder_select_folder_link_warning");
+                MessageBox.Show(warning);
             }
         }
 

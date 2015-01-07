@@ -3,19 +3,20 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.Folder
 {
-    public class FolderPlugin : IPlugin, ISettingProvider
+    public class FolderPlugin : IPlugin, ISettingProvider,IPluginI18n
     {
         private static List<string> driverNames;
         private PluginInitContext context;
 
         public Control CreateSettingPanel()
         {
-            return new FileSystemSettings();
+            return new FileSystemSettings(context);
         }
 
         public void Init(PluginInitContext context)
@@ -182,6 +183,11 @@ namespace Wox.Plugin.Folder
             }
 
             return results;
+        }
+
+        public string GetLanguagesFolder()
+        {
+            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
         }
     }
 }
