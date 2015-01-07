@@ -15,9 +15,11 @@ namespace Wox.Plugin.WebSearch
         private WebSearchesSetting settingWindow;
         private bool update;
         private Core.UserSettings.WebSearch updateWebSearch;
+        private PluginInitContext context;
 
-        public WebSearchSetting(WebSearchesSetting settingWidow)
+        public WebSearchSetting(WebSearchesSetting settingWidow,PluginInitContext context)
         {
+            this.context = context;
             this.settingWindow = settingWidow;
             InitializeComponent();
         }
@@ -27,7 +29,9 @@ namespace Wox.Plugin.WebSearch
             updateWebSearch = UserSettingStorage.Instance.WebSearches.FirstOrDefault(o => o == webSearch);
             if (updateWebSearch == null || string.IsNullOrEmpty(updateWebSearch.Url))
             {
-                MessageBox.Show("Invalid web search");
+
+                string warning = context.API.GetTranslation("wox_plugin_websearch_invalid_web_search");
+                MessageBox.Show(warning);
                 Close();
                 return;
             }
@@ -63,21 +67,24 @@ namespace Wox.Plugin.WebSearch
             string title = tbTitle.Text;
             if (string.IsNullOrEmpty(title))
             {
-                MessageBox.Show("Please input Title field");
+                string warning = context.API.GetTranslation("wox_plugin_websearch_input_title");
+                MessageBox.Show(warning);
                 return;
             }
 
             string url = tbUrl.Text;
             if (string.IsNullOrEmpty(url))
             {
-                MessageBox.Show("Please input URL field");
+                string warning = context.API.GetTranslation("wox_plugin_websearch_input_url");
+                MessageBox.Show(warning);
                 return;
             }
 
             string action = tbActionword.Text;
             if (string.IsNullOrEmpty(action))
             {
-                MessageBox.Show("Please input ActionWord field");
+                string warning = context.API.GetTranslation("wox_plugin_websearch_input_action_keyword");
+                MessageBox.Show(warning);
                 return;
             }
 
@@ -86,7 +93,8 @@ namespace Wox.Plugin.WebSearch
             {
                 if (UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == action))
                 {
-                    MessageBox.Show("ActionWord has existed, please input a new one.");
+                    string warning = context.API.GetTranslation("wox_plugin_websearch_action_keyword_exist");
+                    MessageBox.Show(warning);
                     return;
                 }
                 UserSettingStorage.Instance.WebSearches.Add(new Core.UserSettings.WebSearch()
@@ -97,13 +105,15 @@ namespace Wox.Plugin.WebSearch
                     Url = url,
                     Title = title
                 });
-                MessageBox.Show(string.Format("Add {0} web search successfully!", title));
+                string msg = context.API.GetTranslation("wox_plugin_websearch_succeed");
+                MessageBox.Show(msg);
             }
             else
             {
                 if (UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == action && o != updateWebSearch))
                 {
-                    MessageBox.Show("ActionWord has existed, please input a new one.");
+                    string warning = context.API.GetTranslation("wox_plugin_websearch_action_keyword_exist");
+                    MessageBox.Show(warning);
                     return;
                 }
                 updateWebSearch.ActionWord = action;
@@ -111,7 +121,8 @@ namespace Wox.Plugin.WebSearch
                 updateWebSearch.Enabled = cbEnable.IsChecked ?? false;
                 updateWebSearch.Url = url;
                 updateWebSearch.Title= title;
-                MessageBox.Show(string.Format("Update {0} web search successfully!", title));
+                string msg = context.API.GetTranslation("wox_plugin_websearch_succeed");
+                MessageBox.Show(msg);
             }
             UserSettingStorage.Instance.Save();
             settingWindow.ReloadWebSearchView();

@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using Wox.Core.UserSettings;
 using Wox.Plugin.WebSearch.SuggestionSources;
 
 namespace Wox.Plugin.WebSearch
 {
-    public class WebSearchPlugin : IPlugin, ISettingProvider
+    public class WebSearchPlugin : IPlugin, ISettingProvider,IPluginI18n
     {
         private PluginInitContext context;
 
@@ -86,9 +88,14 @@ namespace Wox.Plugin.WebSearch
 
         public System.Windows.Controls.Control CreateSettingPanel()
         {
-            return new WebSearchesSetting();
+            return new WebSearchesSetting(context);
         }
 
         #endregion
+
+        public string GetLanguagesFolder()
+        {
+            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+        }
     }
 }

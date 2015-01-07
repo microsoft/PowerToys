@@ -7,7 +7,7 @@
 #define MyAppVer = GetFileVersion(MyAppPath + "\Wox.exe")
 
 [Setup]
-AppId={{A5AF4C34-70A7-4D3B-BA18-E49C0AEEA5E6}
+AppId=05700E94-3DAD-4827-8AAA-9908178DE132-Wox
 AppMutex=DBDE24E4-91F6-11DF-B495-C536DFD72085-Wox
 AppName={#MyAppName}
 AppVerName={#MyAppName} v{#MyAppVer}
@@ -21,6 +21,8 @@ OutputBaseFilename=Wox-setup
 OutputDir={#OutputPath}
 Compression=lzma
 SolidCompression=yes
+DisableDirPage=auto
+DisableProgramGroupPage=auto
 
 [Languages]
 Name: english; MessagesFile: compiler:Default.isl

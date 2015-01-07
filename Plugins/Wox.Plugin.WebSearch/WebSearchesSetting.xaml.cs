@@ -11,8 +11,12 @@ namespace Wox.Plugin.WebSearch
     /// </summary>
     public partial class WebSearchesSetting : UserControl
     {
-        public WebSearchesSetting()
+        PluginInitContext context;
+
+        public WebSearchesSetting(PluginInitContext context)
         {
+            this.context = context;
+
             InitializeComponent();
 
             Loaded += Setting_Loaded;
@@ -48,7 +52,7 @@ namespace Wox.Plugin.WebSearch
 
         private void btnAddWebSearch_OnClick(object sender, RoutedEventArgs e)
         {
-            WebSearchSetting webSearch = new WebSearchSetting(this);
+            WebSearchSetting webSearch = new WebSearchSetting(this,context);
             webSearch.ShowDialog();
         }
 
@@ -57,8 +61,9 @@ namespace Wox.Plugin.WebSearch
             Core.UserSettings.WebSearch selectedWebSearch = webSearchView.SelectedItem as Core.UserSettings.WebSearch;
             if (selectedWebSearch != null)
             {
-                if (MessageBox.Show("Are your sure to delete " + selectedWebSearch.Title, "Delete WebSearch",
-                    MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                string msg = string.Format(context.API.GetTranslation("wox_plugin_websearch_delete_warning"),selectedWebSearch.Title);
+                    
+                if (MessageBox.Show(msg,string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
                     UserSettingStorage.Instance.WebSearches.Remove(selectedWebSearch);
                     webSearchView.Items.Refresh();
@@ -66,7 +71,8 @@ namespace Wox.Plugin.WebSearch
             }
             else
             {
-                MessageBox.Show("Please select a web search");
+                string warning =context.API.GetTranslation("wox_plugin_websearch_pls_select_web_search");
+                MessageBox.Show(warning);
             }
         }
 
@@ -75,13 +81,14 @@ namespace Wox.Plugin.WebSearch
             Core.UserSettings.WebSearch selectedWebSearch = webSearchView.SelectedItem as Core.UserSettings.WebSearch;
             if (selectedWebSearch != null)
             {
-                WebSearchSetting webSearch = new WebSearchSetting(this);
+                WebSearchSetting webSearch = new WebSearchSetting(this,context);
                 webSearch.UpdateItem(selectedWebSearch);
                 webSearch.ShowDialog();
             }
             else
             {
-                MessageBox.Show("Please select a web search");
+                string warning = context.API.GetTranslation("wox_plugin_websearch_pls_select_web_search");
+                MessageBox.Show(warning);
             }
         }
 
