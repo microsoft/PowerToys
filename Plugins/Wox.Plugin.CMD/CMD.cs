@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
@@ -10,7 +11,7 @@ using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.CMD
 {
-    public class CMD : IPlugin, ISettingProvider
+    public class CMD : IPlugin, ISettingProvider,IPluginI18n
     {
         private readonly GlobalHotkey globalHotkey = new GlobalHotkey();
         private PluginInitContext context;
@@ -205,6 +206,11 @@ namespace Wox.Plugin.CMD
         public Control CreateSettingPanel()
         {
             return new CMDSetting();
+        }
+
+        public string GetLanguagesFolder()
+        {
+            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
         }
     }
 }

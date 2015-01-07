@@ -13,11 +13,11 @@
                 <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0" Orientation="Horizontal">
-                <CheckBox x:Name="cbReplaceWinR" >Replace Win+R</CheckBox>
+                <CheckBox x:Name="cbReplaceWinR" Content="{DynamicResource wox_plugin_cmd_relace_winr}" ></CheckBox>
             </StackPanel>
             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0 10 0 0">
-                <CheckBox x:Name="cbLeaveCmdOpen" >
-                    Do not close Command Prompt after command execution
+                <CheckBox x:Name="cbLeaveCmdOpen" Content="{DynamicResource wox_plugin_cmd_leave_cmd_open}">
+                    
                 </CheckBox>
             </StackPanel>
         </Grid>
