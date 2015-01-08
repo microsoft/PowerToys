@@ -13,7 +13,6 @@ namespace Wox.Plugin.CMD
 {
     public class CMD : IPlugin, ISettingProvider,IPluginI18n
     {
-        private readonly GlobalHotkey globalHotkey = new GlobalHotkey();
         private PluginInitContext context;
         private bool WinRStroked;
         private readonly KeyboardSimulator keyboardSimulator = new KeyboardSimulator(new InputSimulator());
@@ -174,20 +173,20 @@ namespace Wox.Plugin.CMD
         public void Init(PluginInitContext context)
         {
             this.context = context;
-            globalHotkey.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
+            context.API.GlobalKeyboardEvent += API_GlobalKeyboardEvent;
         }
 
-        private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)
+        bool API_GlobalKeyboardEvent(int keyevent, int vkcode, SpecialKeyState state)
         {
             if (CMDStorage.Instance.ReplaceWinR)
             {
-                if (keyevent == KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
+                if (keyevent == (int)KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
                 {
                     WinRStroked = true;
                     OnWinRPressed();
                     return false;
                 }
-                if (keyevent == KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int)Keys.LWin)
+                if (keyevent == (int)KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int)Keys.LWin)
                 {
                     WinRStroked = false;
                     keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.CONTROL);

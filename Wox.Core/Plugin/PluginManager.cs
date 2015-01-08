@@ -100,7 +100,7 @@ namespace Wox.Core.Plugin
                 PluginPair pair = pluginPair;
                 ThreadPool.QueueUserWorkItem(o =>
                 {
-                    using (new Timeit("Init Plugin: " + pair.Metadata.Name))
+                    using (new Timeit(string.Format("Init {0}", pair.Metadata.Name)))
                     {
                         pair.Plugin.Init(new PluginInitContext()
                         {
@@ -109,8 +109,7 @@ namespace Wox.Core.Plugin
                             API = API
                         });
                     }
-                })
-                ;
+                });
             }
         }
 

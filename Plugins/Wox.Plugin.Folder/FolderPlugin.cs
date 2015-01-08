@@ -82,7 +82,7 @@ namespace Wox.Plugin.Folder
                         }
                     }).ToList();
 
-            if (!driverNames.Any(input.StartsWith))
+            if (driverNames != null && !driverNames.Any(input.StartsWith))
                 return results;
 
             if (!input.EndsWith("\\"))

@@ -59,6 +59,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Hotkey\InterceptKeys.cs" />
+    <Compile Include="Hotkey\KeyEvent.cs" />
     <Compile Include="Logger\Log.cs" />
     <Compile Include="PeHeaderReader.cs" />
     <Compile Include="Storage\BinaryStorage.cs" />

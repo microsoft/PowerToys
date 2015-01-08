@@ -105,48 +105,48 @@ namespace Wox
                 {
                     Title = "Wox is an effective launcher for windows",
                     SubTitle = "Wox provide bundles of features let you access infomations quickly.",
-                    IcoPath = "Images/work.png",
+                    IcoPath = "Images/app.png",
                     PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
                 },
                 new Result()
                 {
                     Title = "Search applications",
                     SubTitle = "Search applications, files (via everything plugin) and browser bookmarks",
-                    IcoPath = "Images/work.png",
+                    IcoPath = "Images/app.png",
                     PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
                 },
                 new Result()
                 {
                     Title = "Search web contents with shortcuts",
                     SubTitle = "e.g. search google with g keyword or youtube keyword)",
-                    IcoPath = "Images/work.png",
+                    IcoPath = "Images/app.png",
                     PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 },
                 new Result()
                 {
                     Title = "clipboard history ",
-                    IcoPath = "Images/work.png",
+                    IcoPath = "Images/app.png",
                     PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 },
                 new Result()
                 {
                     Title = "Themes support",
                     SubTitle = "get more themes from http://www.getwox.com/theme",
-                    IcoPath = "Images/work.png",
+                    IcoPath = "Images/app.png",
                     PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 },
                 new Result()
                 {
                     Title = "Plugins support",
                     SubTitle = "get more plugins from http://www.getwox.com/plugin",
-                    IcoPath = "Images/work.png",
+                    IcoPath = "Images/app.png",
                     PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 },
                 new Result()
                 {
                     Title = "Wox is an open-source software",
                     SubTitle = "Wox benefits from the open-source community a lot",
-                    IcoPath = "Images/work.png",
+                    IcoPath = "Images/app.png",
                     PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 }
             });

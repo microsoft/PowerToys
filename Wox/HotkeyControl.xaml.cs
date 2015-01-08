@@ -43,7 +43,7 @@ namespace Wox
             Key key = (e.Key == Key.System ? e.SystemKey : e.Key);
 
             string text = string.Empty;
-            SpecialKeyState specialKeyState = new GlobalHotkey().CheckModifiers();
+            SpecialKeyState specialKeyState = GlobalHotkey.Instance.CheckModifiers();
             if (specialKeyState.AltPressed)
             {
                 text += "Alt";
