@@ -35,9 +35,9 @@ Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:Ad
 Name: startupfolder; Description: Startup with Windows;
 
 [Files]
-Source: {#MyAppPath}\*; Excludes: Plugins\*,Themes\*; DestDir: {app}; Flags: ignoreversion recursesubdirs
+Source: {#MyAppPath}\*; Excludes: Plugins\*; DestDir: {app}; Flags: ignoreversion recursesubdirs
 Source: {#MyAppPath}\Plugins\*; DestDir: {%USERPROFILE}\.Wox\Plugins; Flags: ignoreversion recursesubdirs
-Source: {#MyAppPath}\Themes\*; DestDir: {%USERPROFILE}\.Wox\Themes; Flags: ignoreversion recursesubdirs
+Source: {#MyAppPath}\Themes\Base.xaml; DestDir: {%USERPROFILE}\.Wox\Themes; Flags: ignoreversion recursesubdirs
 
 [Icons]
 Name: {group}\{#MyAppName}; Filename: {app}\{#MyAppExeName}
