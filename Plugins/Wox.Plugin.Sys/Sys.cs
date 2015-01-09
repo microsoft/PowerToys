@@ -1,13 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace Wox.Plugin.Sys
 {
-    public class Sys : IPlugin, ISettingProvider 
+    public class Sys : IPlugin, ISettingProvider ,IPluginI18n
 	{
 		List<Result> availableResults = new List<Result>();
+        private PluginInitContext context;
 
 		#region DllImport
 		
@@ -32,9 +35,12 @@ namespace Wox.Plugin.Sys
         public List<Result> Query(Query query)
         {
             if (query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
+            if (availableResults.Count == 0)
+            {
+                LoadCommands();
+            }
 
             List<Result> results = new List<Result>();
-
             foreach (Result availableResult in availableResults)
             {
                 if (availableResult.Title.ToLower().StartsWith(query.RawQuery.ToLower()))
@@ -47,11 +53,16 @@ namespace Wox.Plugin.Sys
 
         public void Init(PluginInitContext context)
         {
-			availableResults.AddRange(new Result[] { 
+            this.context = context;
+        }
+
+        private void LoadCommands()
+        {
+            availableResults.AddRange(new Result[] { 
 				new Result
 				{
 					Title = "Shutdown",
-					SubTitle = "Shutdown Computer",
+					SubTitle = context.API.GetTranslation("wox_plugin_sys_shutdown_computer"),
 					Score = 100,
 					IcoPath = "Images\\exit.png",
 					Action = (c) =>
@@ -65,7 +76,7 @@ namespace Wox.Plugin.Sys
 				new Result
 				{
 				    Title = "Log off",
-				    SubTitle = "Log off current user",
+                    SubTitle = context.API.GetTranslation("wox_plugin_sys_log_off"),
 				    Score = 100,
 				    IcoPath = "Images\\logoff.png",
 				    Action = (c) => ExitWindowsEx(EWX_LOGOFF, 0)
@@ -73,7 +84,7 @@ namespace Wox.Plugin.Sys
 				new Result
 				{
 				    Title = "Lock",
-				    SubTitle = "Lock this computer",
+                    SubTitle = context.API.GetTranslation("wox_plugin_sys_lock"),
 				    Score = 100,
 				    IcoPath = "Images\\lock.png",
 				    Action = (c) =>
@@ -85,7 +96,7 @@ namespace Wox.Plugin.Sys
 				new Result
 				{
 				    Title = "Exit",
-				    SubTitle = "Close this app",
+                    SubTitle = context.API.GetTranslation("wox_plugin_sys_exit"),
 				    Score = 110,
 				    IcoPath = "Images\\app.png",
 				    Action = (c) =>
@@ -97,7 +108,7 @@ namespace Wox.Plugin.Sys
 				new Result
 				{
 				    Title = "Restart Wox",
-				    SubTitle = "Restart Wox",
+                    SubTitle = context.API.GetTranslation("wox_plugin_sys_restart"),
 				    Score = 110,
 				    IcoPath = "Images\\restart.png",
 				    Action = (c) =>
@@ -115,7 +126,7 @@ namespace Wox.Plugin.Sys
 				new Result
 				{
 				    Title = "Settings",
-				    SubTitle = "Tweak this app",
+                    SubTitle = context.API.GetTranslation("wox_plugin_sys_setting"),
 				    Score = 100,
 				    IcoPath = "Images\\app.png",
 				    Action = (c) =>
@@ -127,7 +138,10 @@ namespace Wox.Plugin.Sys
 			});
         }
 
+        public string GetLanguagesFolder()
+        {
+            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
 
-
+        }
     }
 }

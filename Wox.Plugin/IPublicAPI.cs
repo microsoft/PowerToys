@@ -41,5 +41,7 @@ namespace Wox.Plugin
         List<PluginPair> GetAllPlugins();
 
         event WoxKeyDownEventHandler BackKeyDownEvent;
+
+        event WoxGlobalKeyboardEventHandler GlobalKeyboardEvent;
     }
 }

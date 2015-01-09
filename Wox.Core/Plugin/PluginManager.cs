@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Wox.Core.Exception;
+using Wox.Core.UI;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Http;
@@ -91,12 +92,15 @@ namespace Wox.Core.Plugin
             plugins.AddRange(new CSharpPluginLoader().LoadPlugin(pluginMetadatas));
             plugins.AddRange(new JsonRPCPluginLoader<PythonPlugin>().LoadPlugin(pluginMetadatas));
 
+            //load plugin i18n languages
+            ResourceMerger.ApplyPluginLanguages();
+
             foreach (PluginPair pluginPair in plugins)
             {
                 PluginPair pair = pluginPair;
                 ThreadPool.QueueUserWorkItem(o =>
                 {
-                    using (new Timeit("Init Plugin: " + pair.Metadata.Name))
+                    using (new Timeit(string.Format("Init {0}", pair.Metadata.Name)))
                     {
                         pair.Plugin.Init(new PluginInitContext()
                         {
@@ -105,8 +109,7 @@ namespace Wox.Core.Plugin
                             API = API
                         });
                     }
-                })
-                ;
+                });
             }
         }
 

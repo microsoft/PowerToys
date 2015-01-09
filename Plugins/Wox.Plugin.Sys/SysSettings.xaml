@@ -9,14 +9,14 @@
 		<ListView x:Name="lbxCommands" Grid.Row="0">
 			<ListView.View>
 				<GridView>
-					<GridViewColumn Header="Command"  Width="150">
+					<GridViewColumn Header="{DynamicResource wox_plugin_sys_command}"  Width="150">
 						<GridViewColumn.CellTemplate>
 							<DataTemplate>
 								<TextBlock Text="{Binding Title}"/>
 							</DataTemplate>
 						</GridViewColumn.CellTemplate>
 					</GridViewColumn>
-					<GridViewColumn Header="Description"  Width="Auto">
+                    <GridViewColumn Header="{DynamicResource wox_plugin_sys_desc}"  Width="Auto">
 						<GridViewColumn.CellTemplate>
 							<DataTemplate>
 								<TextBlock Text="{Binding SubTitle}"/>
