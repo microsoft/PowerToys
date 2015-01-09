@@ -16,7 +16,9 @@
             <Button Height="30" HorizontalAlignment="Right" x:Name="btnProgramSuffixes" Width="130" Click="BtnProgramSuffixes_OnClick" Content="{DynamicResource wox_plugin_program_suffixes}"></Button>
             <Button Height="30" HorizontalAlignment="Right" Margin="10 0 0 0" x:Name="btnReindex" Width="100" Click="btnReindex_Click" Content="{DynamicResource wox_plugin_program_reindex}"></Button>
         </StackPanel>
-        <ListView x:Name="programSourceView" Grid.Row="1">
+        <ListView x:Name="programSourceView" Grid.Row="1" AllowDrop="True"
+            DragEnter="programSourceView_DragEnter"
+            Drop="programSourceView_Drop" >
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="{DynamicResource wox_plugin_program_location}"  Width="400">

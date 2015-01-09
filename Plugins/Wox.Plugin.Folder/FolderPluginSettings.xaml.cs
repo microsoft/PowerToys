@@ -27,8 +27,13 @@ namespace Wox.Plugin.Folder
             var selectedFolder = lbxFolders.SelectedItem as FolderLink;
             if (selectedFolder != null)
             {
-                FolderStorage.Instance.FolderLinks.Remove(selectedFolder);
-                lbxFolders.Items.Refresh();
+                string msg = string.Format(context.API.GetTranslation("wox_plugin_folder_delete_folder_link"), selectedFolder.Path);
+
+                if (MessageBox.Show(msg, string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    FolderStorage.Instance.FolderLinks.Remove(selectedFolder);
+                    lbxFolders.Items.Refresh();
+                }
             }
             else
             {
@@ -81,6 +86,47 @@ namespace Wox.Plugin.Folder
             }
 
             lbxFolders.Items.Refresh();
+        }
+
+        private void lbxFolders_Drop(object sender, System.Windows.DragEventArgs e)
+        {
+            string[] files = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
+
+            if (files != null && files.Count() > 0)
+            {
+                if (FolderStorage.Instance.FolderLinks == null)
+                {
+                    FolderStorage.Instance.FolderLinks = new List<FolderLink>();
+                }
+
+                foreach (string s in files)
+                {
+                    if (System.IO.Directory.Exists(s) == true)
+                    {
+                        var newFolder = new FolderLink()
+                        {
+                            Path = s
+                        };
+
+                        FolderStorage.Instance.FolderLinks.Add(newFolder);
+                        FolderStorage.Instance.Save();
+                    }
+
+                    lbxFolders.Items.Refresh();
+                }
+            }
+        }
+
+        private void lbxFolders_DragEnter(object sender, System.Windows.DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop))
+            {
+                e.Effects = System.Windows.DragDropEffects.Link;
+            }
+            else
+            {
+                e.Effects = System.Windows.DragDropEffects.None;
+            }
         }
     }
 }

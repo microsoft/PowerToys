@@ -10,8 +10,10 @@
 			<RowDefinition Height="*"/>
 			<RowDefinition Height="50"/>
 		</Grid.RowDefinitions>
-		<ListView x:Name="lbxFolders" Grid.Row="0">
-			<ListView.View>
+        <ListView x:Name="lbxFolders" Grid.Row="0" AllowDrop="True"
+                 Drop="lbxFolders_Drop"
+                 DragEnter="lbxFolders_DragEnter">
+            <ListView.View>
 				<GridView>
 					<GridViewColumn Header="{DynamicResource wox_plugin_folder_folder_path}"  Width="180">
 						<GridViewColumn.CellTemplate>
