@@ -106,5 +106,41 @@ namespace Wox.Plugin.Program
             ProgramSuffixes p = new ProgramSuffixes(context);
             p.ShowDialog();
         }
+
+        private void programSourceView_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.Link;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+            }
+        }
+
+        private void programSourceView_Drop(object sender, DragEventArgs e)
+        {
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+            if (files != null && files.Length > 0)
+            {
+                foreach (string s in files)
+                {
+                    if (System.IO.Directory.Exists(s) == true)
+                    {
+                        ProgramStorage.Instance.ProgramSources.Add(new ProgramSource()
+                        {
+                            Location = s,
+                            Type = "FileSystemProgramSource",
+                            Enabled = true
+                        });
+
+                        ProgramStorage.Instance.Save();
+                        ReIndexing();
+                    }
+                }
+            }
+        }
     }
 }
