@@ -132,10 +132,7 @@
     <Compile Include="CommandArgs\QueryCommandArg.cs" />
     <Compile Include="CommandArgs\ReloadPluginCommandArg.cs" />
     <Compile Include="Helper\DataWebRequestFactory.cs" />
-    <Compile Include="Helper\ErrorReporting\ErrorReporting.cs" />
-    <Compile Include="Helper\ErrorReporting\WPFErrorReportingDialog.xaml.cs">
-      <DependentUpon>WPFErrorReportingDialog.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="Helper\ErrorReporting.cs" />
     <Compile Include="ImageLoader\ImageLoader.cs" />
     <Compile Include="Helper\SingleInstance.cs" />
     <Compile Include="Helper\SyntaxSugars.cs" />
@@ -161,10 +158,6 @@
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
     <Page Include="ActionKeyword.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Helper\ErrorReporting\WPFErrorReportingDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -277,6 +270,10 @@
     <ProjectReference Include="..\Wox.Core\Wox.Core.csproj">
       <Project>{B749F0DB-8E75-47DB-9E5E-265D16D0C0D2}</Project>
       <Name>Wox.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Wox.CrashReporter\Wox.CrashReporter.csproj">
+      <Project>{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}</Project>
+      <Name>Wox.CrashReporter</Name>
     </ProjectReference>
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj">
       <Project>{4fd29318-a8ab-4d8f-aa47-60bc241b8da3}</Project>

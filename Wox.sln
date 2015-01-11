@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Test", "Wox.Test\Wox.Test.csproj", "{FF742965-9A80-41A5-B042-D6C7D3A21708}"
 EndProject
@@ -36,6 +36,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Url", "Plugins\Wox.Plugin.Url\Wox.Plugin.Url.csproj", "{A3DCCBCA-ACC1-421D-B16E-210896234C26}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Color", "Plugins\Wox.Plugin.Color\Wox.Plugin.Color.csproj", "{F35190AA-4758-4D9E-A193-E3BDF6AD3567}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.CrashReporter", "Wox.CrashReporter\Wox.CrashReporter.csproj", "{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -107,6 +109,10 @@ Global
 		{F35190AA-4758-4D9E-A193-E3BDF6AD3567}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F35190AA-4758-4D9E-A193-E3BDF6AD3567}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F35190AA-4758-4D9E-A193-E3BDF6AD3567}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

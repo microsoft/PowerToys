@@ -12,19 +12,17 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Wox.Core.Version;
 
 namespace Wox.Update
 {
-    /// <summary>
-    /// NewVersionWindow.xaml 的交互逻辑
-    /// </summary>
     public partial class NewVersionWindow : Window
     {
         public NewVersionWindow()
         {
             InitializeComponent();
 
-            tbCurrentVersion.Text = ConfigurationManager.AppSettings["version"];
+            tbCurrentVersion.Text = VersionManager.Instance.CurrentVersion.ToString();
             Release newRelease = new UpdateChecker().CheckUpgrade();
             if (newRelease == null)
             {

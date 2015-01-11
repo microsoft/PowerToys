@@ -13,6 +13,11 @@ namespace Wox.Infrastructure.Logger
             fileLogger.Error(msg);
         }
 
+        public static void Error(Exception e)
+        {
+            fileLogger.Error(e.Message + "\r\n" + e.StackTrace);
+        }
+
         public static void Debug(string msg)
         {
             fileLogger.Debug(msg);

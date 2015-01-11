@@ -53,6 +53,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="APIServer.cs" />
     <Compile Include="Exception\ExceptionFormatter.cs" />
     <Compile Include="Exception\WoxCritialException.cs" />
     <Compile Include="Exception\WoxException.cs" />
@@ -89,6 +90,8 @@
     <Compile Include="UserSettings\PluginHotkey.cs" />
     <Compile Include="UserSettings\UserSettingStorage.cs" />
     <Compile Include="UserSettings\WebSearch.cs" />
+    <Compile Include="Version\SemanticVersion.cs" />
+    <Compile Include="Version\VersionManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Plugin\README.md" />
