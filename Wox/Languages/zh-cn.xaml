@@ -82,4 +82,19 @@
     <!--Hotkey 控件-->
     <system:String x:Key="hotkeyUnavailable">热键不可用</system:String>
 
+    <!--崩溃报告窗体-->
+    <system:String x:Key="reportWindow_version">版本</system:String>
+    <system:String x:Key="reportWindow_time">时间</system:String>
+    <system:String x:Key="reportWindow_reproduce">请告诉我们如何重现此问题，以便我们进行修复</system:String>
+    <system:String x:Key="reportWindow_send_report">发送报告</system:String>
+    <system:String x:Key="reportWindow_cancel">取消</system:String>
+    <system:String x:Key="reportWindow_general">基本信息</system:String>
+    <system:String x:Key="reportWindow_exceptions">异常信息</system:String>
+    <system:String x:Key="reportWindow_exception_type">异常类型</system:String>
+    <system:String x:Key="reportWindow_source">异常源</system:String>
+    <system:String x:Key="reportWindow_stack_trace">堆栈信息</system:String>
+    <system:String x:Key="reportWindow_sending">发送中</system:String>
+    <system:String x:Key="reportWindow_report_succeed">发送成功</system:String>
+    <system:String x:Key="reportWindow_report_failed">发送失败</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">Wox出错啦</system:String>
 </ResourceDictionary>

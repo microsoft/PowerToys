@@ -13,6 +13,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Wox.Core;
 using Wox.Core.Exception;
+using Wox.Core.i18n;
 using Wox.Core.UI;
 using Wox.Core.UserSettings;
 using Wox.Core.Version;
@@ -20,7 +21,7 @@ using Wox.Infrastructure.Http;
 
 namespace Wox.CrashReporter
 {
-    internal partial class ReportWindow : IUIResource
+    internal partial class ReportWindow
     {
         private Exception exception;
 
@@ -41,17 +42,22 @@ namespace Wox.CrashReporter
             tbType.Text = exception.GetType().ToString();
         }
 
-        public ResourceDictionary GetResourceDictionary()
-        {
-            return null;
-        }
-
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
-            tbSendReport.Content = "Sending";
+            string sendingMsg = InternationalizationManager.Internationalization.GetTranslation("reportWindow_sending");
+            tbSendReport.Content = sendingMsg;
             btnSend.IsEnabled = false;
             string error = string.Format("{{\"data\":{0}}}", ExceptionFormatter.FormatExcpetion(exception));
             string response = HttpRequest.Post(APIServer.ErrorReportURL, error, HttpProxy.Instance);
+            if (response.ToLower() == "ok")
+            {
+                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("reportWindow_report_succeed"));
+            }
+            else
+            {
+                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("reportWindow_report_failed"));
+            }
+            Close();
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)

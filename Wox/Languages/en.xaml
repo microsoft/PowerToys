@@ -81,4 +81,21 @@
     <!--Hotkey Control-->
     <system:String x:Key="hotkeyUnavailable">Hotkey unavailable</system:String>
     
+    
+    <!--Crash Reporter-->
+    <system:String x:Key="reportWindow_version">Version</system:String>
+    <system:String x:Key="reportWindow_time">Time</system:String>
+    <system:String x:Key="reportWindow_reproduce">Please tell us how application crashed so we can fix it</system:String>
+    <system:String x:Key="reportWindow_send_report">Send Report</system:String>
+    <system:String x:Key="reportWindow_cancel">Cancel</system:String>
+    <system:String x:Key="reportWindow_general">General</system:String>
+    <system:String x:Key="reportWindow_exceptions">Exceptions</system:String>
+    <system:String x:Key="reportWindow_exception_type">Exception Type</system:String>
+    <system:String x:Key="reportWindow_source">Source</system:String>
+    <system:String x:Key="reportWindow_stack_trace">Stack Trace</system:String>
+    <system:String x:Key="reportWindow_sending">Sending</system:String>
+    <system:String x:Key="reportWindow_report_succeed">Report succeed</system:String>
+    <system:String x:Key="reportWindow_report_failed">Report failed</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">Wox got an error</system:String>
+
 </ResourceDictionary>
