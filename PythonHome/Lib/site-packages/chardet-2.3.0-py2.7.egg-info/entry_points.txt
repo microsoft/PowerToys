@@ -1,0 +1,3 @@
+[console_scripts]
+chardetect = chardet.chardetect:main
+
