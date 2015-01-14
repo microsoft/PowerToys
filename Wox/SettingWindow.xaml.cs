@@ -10,7 +10,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using IWshRuntimeLibrary;
 using Wox.Core.Plugin;
 using Wox.Plugin;
 using Wox.Helper;
@@ -19,6 +18,7 @@ using Application = System.Windows.Forms.Application;
 using File = System.IO.File;
 using MessageBox = System.Windows.MessageBox;
 using System.Windows.Data;
+using Microsoft.Win32;
 using Wox.Core.i18n;
 using Wox.Core.Theme;
 using Wox.Core.UserSettings;
@@ -27,7 +27,6 @@ namespace Wox
 {
     public partial class SettingWindow : Window
     {
-        string woxLinkPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "wox.lnk");
         public MainWindow MainWindow;
         bool settingsLoaded = false;
         private Dictionary<ISettingProvider, Control> featureControls = new Dictionary<ISettingProvider, Control>();
@@ -67,7 +66,7 @@ namespace Wox
                 UserSettingStorage.Instance.Save();
             };
 
-            cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
+            cbStartWithWindows.IsChecked = CheckApplicationIsStartupWithWindow();
             cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
             cbDontPromptUpdateMsg.IsChecked = UserSettingStorage.Instance.DontPromptUpdateMsg;
 
@@ -266,33 +265,40 @@ namespace Wox
 
         private void CbStartWithWindows_OnChecked(object sender, RoutedEventArgs e)
         {
-            CreateStartupFolderShortcut();
+            AddApplicationToStartup();
             UserSettingStorage.Instance.StartWoxOnSystemStartup = true;
             UserSettingStorage.Instance.Save();
         }
 
         private void CbStartWithWindows_OnUnchecked(object sender, RoutedEventArgs e)
         {
-            if (File.Exists(woxLinkPath))
-            {
-                File.Delete(woxLinkPath);
-            }
-
+            RemoveApplicationFromStartup();
             UserSettingStorage.Instance.StartWoxOnSystemStartup = false;
             UserSettingStorage.Instance.Save();
         }
 
-        private void CreateStartupFolderShortcut()
+        private void AddApplicationToStartup()
         {
-            WshShellClass wshShell = new WshShellClass();
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+            {
+                key.SetValue("Wox", "\"" + Application.ExecutablePath + "\" --hidestart");
+            }
+        }
 
-            IWshShortcut shortcut = (IWshShortcut)wshShell.CreateShortcut(woxLinkPath);
-            shortcut.TargetPath = Application.ExecutablePath;
-            shortcut.Arguments = "hideStart";
-            shortcut.WorkingDirectory = Path.GetDirectoryName(Application.ExecutablePath);
-            shortcut.Description = "Launch Wox";
-            shortcut.IconLocation = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "App.ico");
-            shortcut.Save();
+        private void RemoveApplicationFromStartup()
+        {
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+            {
+                key.DeleteValue("Wox", false);
+            }
+        }
+
+        private bool CheckApplicationIsStartupWithWindow()
+        {
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+            {
+                return key.GetValue("Wox") != null;
+            }
         }
 
         void ctlHotkey_OnHotkeyChanged(object sender, System.EventArgs e)
