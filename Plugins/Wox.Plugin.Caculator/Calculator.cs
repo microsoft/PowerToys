@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Windows;
 using YAMP;
 
-namespace Wox.Plugin.SystemPlugins
+namespace Wox.Plugin.Caculator
 {
     public class Calculator : IPlugin
     {
