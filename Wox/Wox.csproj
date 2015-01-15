@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Wox</RootNamespace>
     <AssemblyName>Wox</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -68,19 +68,19 @@
     </Reference>
     <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+      <HintPath>..\packages\log4net.2.0.3\lib\net35-full\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.7\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.7\lib\net35\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NHotkey">
+      <HintPath>..\packages\NHotkey.1.1.0.0\lib\NHotkey.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NHotkey, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NHotkey.1.1.0.0\lib\NHotkey.dll</HintPath>
-    </Reference>
-    <Reference Include="NHotkey.Wpf, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="NHotkey.Wpf">
       <HintPath>..\packages\NHotkey.Wpf.1.1.0.0\lib\NHotkey.Wpf.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="PresentationFramework.Classic" />
     <Reference Include="PresentationUI, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
