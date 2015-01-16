@@ -33,7 +33,6 @@ namespace Wox
             base.OnStartup(e);
             DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
             AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
-            System.Windows.Forms.Application.ThreadException += ErrorReporting.ThreadException;
 
             Window = new MainWindow();
             CommandArgsFactory.Execute(e.Args.ToList());

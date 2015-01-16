@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -47,6 +48,11 @@ namespace Wox.CrashReporter
             string sendingMsg = InternationalizationManager.Internationalization.GetTranslation("reportWindow_sending");
             tbSendReport.Content = sendingMsg;
             btnSend.IsEnabled = false;
+            ThreadPool.QueueUserWorkItem(o => SendReport());
+        }
+
+        private void SendReport()
+        {
             string error = string.Format("{{\"data\":{0}}}", ExceptionFormatter.FormatExcpetion(exception));
             string response = HttpRequest.Post(APIServer.ErrorReportURL, error, HttpProxy.Instance);
             if (response.ToLower() == "ok")
@@ -57,7 +63,7 @@ namespace Wox.CrashReporter
             {
                 MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("reportWindow_report_failed"));
             }
-            Close();
+            Dispatcher.Invoke(new Action(Close));
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)

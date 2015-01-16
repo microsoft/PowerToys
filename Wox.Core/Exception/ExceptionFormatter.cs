@@ -10,21 +10,19 @@ namespace Wox.Core.Exception
 {
     public class ExceptionFormatter
     {
-        public static string FormatExcpetion(object exception)
+        public static string FormatExcpetion(System.Exception exception)
         {
             return CreateExceptionReport(exception);
         }
 
-        private static string CreateExceptionReport(object exceptionObject)
+        private static string CreateExceptionReport(System.Exception ex)
         {
             var sb = new StringBuilder();
+            sb.AppendLine();
             sb.AppendLine("## Exception");
             sb.AppendLine();
             sb.AppendLine("```");
 
-            var ex = exceptionObject as System.Exception;
-            if (ex != null)
-            {
                 var exlist = new List<StringBuilder>();
 
                 while (ex != null)
@@ -59,14 +57,6 @@ namespace Wox.Core.Exception
                 }
                 sb.AppendLine("```");
                 sb.AppendLine();
-            }
-            else
-            {
-                sb.AppendLine(exceptionObject.GetType().FullName);
-                sb.AppendLine(new StackTrace().ToString());
-                sb.AppendLine("```");
-                sb.AppendLine();
-            }
 
             sb.AppendLine("## Environment");
             sb.AppendLine();
@@ -88,47 +78,15 @@ namespace Wox.Core.Exception
             }
 
             sb.AppendLine();
-            sb.AppendLine("## Assemblies - " + System.AppDomain.CurrentDomain.FriendlyName);
+            sb.AppendLine("## Assemblies - " + AppDomain.CurrentDomain.FriendlyName);
             sb.AppendLine();
-            foreach (var ass in System.AppDomain.CurrentDomain.GetAssemblies().OrderBy(o => o.GlobalAssemblyCache ? 100 : 0))
+            foreach (var ass in AppDomain.CurrentDomain.GetAssemblies().OrderBy(o => o.GlobalAssemblyCache ? 50 : 0))
             {
                 sb.Append("* ");
                 sb.Append(ass.FullName);
                 sb.Append(" (");
                 sb.Append(string.IsNullOrEmpty(ass.Location) ? "not supported" : ass.Location);
                 sb.AppendLine(")");
-            }
-
-            var process = System.Diagnostics.Process.GetCurrentProcess();
-            sb.AppendLine();
-            sb.AppendLine("## Modules - " + process.ProcessName);
-            sb.AppendLine();
-            foreach (ProcessModule mod in process.Modules)
-            {
-                sb.Append("* ");
-                sb.Append(mod.FileName);
-                sb.Append(" (");
-                sb.Append(mod.FileVersionInfo.FileDescription);
-                sb.Append(", ");
-                sb.Append(mod.FileVersionInfo.FileVersion);
-                sb.Append(", ");
-                sb.Append(mod.FileVersionInfo.ProductName);
-                sb.Append(", ");
-                sb.Append(mod.FileVersionInfo.ProductVersion);
-                sb.Append(", ");
-                sb.Append(mod.FileVersionInfo.CompanyName);
-                sb.Append("), ");
-                sb.Append(string.Format("0x{0:X16}", mod.BaseAddress.ToInt64()));
-                sb.AppendLine();
-            }
-
-            sb.AppendLine();
-            sb.AppendLine("## Threads - " + process.Threads.Count);
-            sb.AppendLine();
-            foreach (ProcessThread th in process.Threads)
-            {
-                sb.Append("* ");
-                sb.AppendLine(string.Format("{0}, {1} {2}, Started: {3}, StartAddress: 0x{4:X16}", th.Id, th.ThreadState, th.PriorityLevel, th.StartTime, th.StartAddress.ToInt64()));
             }
 
             return sb.ToString();

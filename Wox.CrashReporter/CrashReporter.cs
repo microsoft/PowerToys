@@ -18,6 +18,10 @@ namespace Wox.CrashReporter
         {
             if (exception == null) return;
 
+            if (exception.InnerException != null)
+            {
+                exception = exception.InnerException;
+            }
             ReportWindow reportWindow = new ReportWindow(exception);
             reportWindow.Show();
         }

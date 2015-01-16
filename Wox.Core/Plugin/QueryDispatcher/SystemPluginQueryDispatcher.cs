@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Wox.Core.Exception;
 using Wox.Core.UserSettings;
+using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 //using Wox.Plugin.SystemPlugins;
 
@@ -28,10 +30,17 @@ namespace Wox.Core.Plugin.QueryDispatcher
                 PluginPair pair1 = pair;
                 ThreadPool.QueueUserWorkItem(state =>
                 {
-                    List<Result> results = pair1.Plugin.Query(query);
-                    results.ForEach(o => { o.AutoAjustScore = true; });
+                    try
+                    {
+                        List<Result> results = pair1.Plugin.Query(query);
+                        results.ForEach(o => { o.AutoAjustScore = true; });
 
-                    PluginManager.API.PushResults(query, pair1.Metadata, results);
+                        PluginManager.API.PushResults(query, pair1.Metadata, results);
+                    }
+                    catch (System.Exception e)
+                    {
+                        throw new WoxPluginException(pair1.Metadata.Name,e);
+                    }
                 });
             }
         }

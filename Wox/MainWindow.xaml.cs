@@ -353,26 +353,36 @@ namespace Wox
                     Dispatcher.DelayInvoke("ClearResults", i =>
                     {
                         // first try to use clear method inside pnlResult, which is more closer to the add new results
-                        // and this will not bring splash issues.After waiting 30ms, if there still no results added, we
+                        // and this will not bring splash issues.After waiting 100ms, if there still no results added, we
                         // must clear the result. otherwise, it will be confused why the query changed, but the results
                         // didn't.
                         if (pnlResult.Dirty) pnlResult.Clear();
                     }, TimeSpan.FromMilliseconds(100), null);
                     queryHasReturn = false;
                     var q = new Query(lastQuery);
-                    PluginManager.Query(q);
+                    Query(q);
                     BackToResultMode();
-                    if (PluginManager.IsUserPluginQuery(q))
+                    Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
                     {
-                        Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
+                        if (!queryHasReturn && originQuery == lastQuery)
                         {
-                            if (!queryHasReturn && originQuery == lastQuery)
-                            {
-                                StartProgress();
-                            }
-                        }, TimeSpan.FromSeconds(0), lastQuery);
-                    }
+                            StartProgress();
+                        }
+                    }, TimeSpan.FromMilliseconds(150), lastQuery);
                 }, TimeSpan.FromMilliseconds(ShouldNotDelayQuery ? 0 : 200));
+        }
+
+        private void Query(Query q)
+        {
+            try
+            {
+                PluginManager.Query(q);
+            }
+            catch (Exception e)
+            {
+                StopProgress();
+                ErrorReporting.Report(e);
+            }
         }
 
         private void BackToResultMode()

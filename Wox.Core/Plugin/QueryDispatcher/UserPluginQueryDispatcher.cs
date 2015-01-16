@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Wox.Core.Exception;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
@@ -30,15 +31,9 @@ namespace Wox.Core.Plugin.QueryDispatcher
                         List<Result> results = userPlugin.Plugin.Query(query) ?? new List<Result>();
                         PluginManager.API.PushResults(query,userPlugin.Metadata,results);
                     }
-                    catch (System.Exception queryException)
+                    catch (System.Exception e)
                     {
-                        Log.Error(string.Format("Plugin {0} query failed: {1}", userPlugin.Metadata.Name,
-                            queryException.Message));
-#if (DEBUG)
-                        {
-                            throw;
-                        }
-#endif
+                        throw new WoxPluginException(userPlugin.Metadata.Name, e);
                     }
                 });
             }

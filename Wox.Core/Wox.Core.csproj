@@ -64,6 +64,7 @@
     <Compile Include="Exception\WoxHttpException.cs" />
     <Compile Include="Exception\WoxI18nException.cs" />
     <Compile Include="Exception\WoxJsonRPCException.cs" />
+    <Compile Include="Exception\WoxPluginException.cs" />
     <Compile Include="UserSettings\HttpProxy.cs" />
     <Compile Include="i18n\AvailableLanguages.cs" />
     <Compile Include="i18n\IInternationalization.cs" />
