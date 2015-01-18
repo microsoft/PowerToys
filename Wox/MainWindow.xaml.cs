@@ -132,8 +132,10 @@ namespace Wox
 
         public event WoxKeyDownEventHandler BackKeyDownEvent;
         public event WoxGlobalKeyboardEventHandler GlobalKeyboardEvent;
+        public event AfterWoxQueryEventHandler AfterWoxQueryEvent;
+        public event AfterWoxQueryEventHandler BeforeWoxQueryEvent;
 
-        public void PushResults(Query query, PluginMetadata plugin, List<Result> results)
+        public void PushResults(Query query, PluginMetadata plugin, List<Result> results, bool clearBeforeInsert = false)
         {
             results.ForEach(o =>
             {
@@ -147,7 +149,7 @@ namespace Wox
                 }
                 o.OriginQuery = query;
             });
-            OnUpdateResultView(results);
+            OnUpdateResultView(results, clearBeforeInsert);
         }
 
         #endregion
@@ -360,6 +362,7 @@ namespace Wox
                     }, TimeSpan.FromMilliseconds(100), null);
                     queryHasReturn = false;
                     var q = new Query(lastQuery);
+                    FireBeforeWoxQueryEvent(q);
                     Query(q);
                     BackToResultMode();
                     Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
@@ -369,7 +372,40 @@ namespace Wox
                             StartProgress();
                         }
                     }, TimeSpan.FromMilliseconds(150), lastQuery);
+                    FireAfterWoxQueryEvent(q);
                 }, TimeSpan.FromMilliseconds(ShouldNotDelayQuery ? 0 : 200));
+        }
+
+        private void FireAfterWoxQueryEvent(Query q)
+        {
+            if (AfterWoxQueryEvent != null)
+            {
+                //We shouldn't let those events slow down real query
+                //so I put it in the new thread
+                ThreadPool.QueueUserWorkItem(o =>
+                {
+                    AfterWoxQueryEvent(new WoxQueryEventArgs()
+                    {
+                        Query = q
+                    });
+                });
+            }
+        }
+
+        private void FireBeforeWoxQueryEvent(Query q)
+        {
+            if (BeforeWoxQueryEvent != null)
+            {
+                //We shouldn't let those events slow down real query
+                //so I put it in the new thread
+                ThreadPool.QueueUserWorkItem(o =>
+                {
+                    BeforeWoxQueryEvent(new WoxQueryEventArgs()
+                    {
+                        Query = q
+                    });
+                });
+            }
         }
 
         private void Query(Query q)
@@ -532,7 +568,7 @@ namespace Wox
                 case Key.Back:
                     if (BackKeyDownEvent != null)
                     {
-                        BackKeyDownEvent(tbQuery, new WoxKeyDownEventArgs()
+                        BackKeyDownEvent(new WoxKeyDownEventArgs()
                         {
                             Query = tbQuery.Text,
                             keyEventArgs = e
@@ -623,7 +659,7 @@ namespace Wox
             }
         }
 
-        private void OnUpdateResultView(List<Result> list)
+        private void OnUpdateResultView(List<Result> list, bool clearBeforeInsert = false)
         {
             queryHasReturn = true;
             progressBar.Dispatcher.Invoke(new Action(StopProgress));
@@ -639,8 +675,13 @@ namespace Wox
                     });
                 List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
                 Dispatcher.Invoke(new Action(() =>
-                   pnlResult.AddResults(l))
-                );
+                {
+                    if (clearBeforeInsert)
+                    {
+                        pnlResult.Clear();
+                    }
+                    pnlResult.AddResults(l);
+                }));
             }
         }
 

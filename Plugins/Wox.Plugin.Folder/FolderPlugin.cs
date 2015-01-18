@@ -31,7 +31,7 @@ namespace Wox.Plugin.Folder
             }
         }
 
-        private void ApiBackKeyDownEvent(object sender, WoxKeyDownEventArgs e)
+        private void ApiBackKeyDownEvent(WoxKeyDownEventArgs e)
         {
             string query = e.Query;
             if (Directory.Exists(query))

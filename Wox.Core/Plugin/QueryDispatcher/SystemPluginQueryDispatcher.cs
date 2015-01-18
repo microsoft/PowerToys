@@ -16,15 +16,6 @@ namespace Wox.Core.Plugin.QueryDispatcher
         public void Dispatch(Query query)
         {
             var queryPlugins = allSytemPlugins;
-            if (UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == query.ActionName && o.Enabled))
-            {
-                //websearch mode
-                queryPlugins = new List<PluginPair>()
-                {
-                    allSytemPlugins.First(o => o.Metadata.ID == "565B73353DBF4806919830B9202EE3BF")
-                };
-            }
-
             foreach (PluginPair pair in queryPlugins)
             {
                 PluginPair pair1 = pair;

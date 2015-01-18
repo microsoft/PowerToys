@@ -12,7 +12,8 @@ namespace Wox.Plugin
         /// <param name="query"></param>
         /// <param name="plugin"></param>
         /// <param name="results"></param>
-        void PushResults(Query query,PluginMetadata plugin, List<Result> results);
+        /// <param name="clearBeforeInsert"></param>
+        void PushResults(Query query,PluginMetadata plugin, List<Result> results,bool clearBeforeInsert = false);
 
         bool ShellRun(string cmd, bool runAsAdministrator = false);
 
@@ -43,5 +44,15 @@ namespace Wox.Plugin
         event WoxKeyDownEventHandler BackKeyDownEvent;
 
         event WoxGlobalKeyboardEventHandler GlobalKeyboardEvent;
+
+        /// <summary>
+        /// fired after wox execute a query
+        /// </summary>
+        event AfterWoxQueryEventHandler AfterWoxQueryEvent;
+
+        /// <summary>
+        /// fired before wox start to execute a query
+        /// </summary>
+        event AfterWoxQueryEventHandler BeforeWoxQueryEvent;
     }
 }
