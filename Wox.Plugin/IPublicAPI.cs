@@ -4,10 +4,13 @@ using System.Windows.Documents;
 
 namespace Wox.Plugin
 {
+    /// <summary>
+    /// Public APIs that plugin can use
+    /// </summary>
     public interface IPublicAPI
     {
         /// <summary>
-        /// Push result to query window
+        /// Push result to query box
         /// </summary>
         /// <param name="query"></param>
         /// <param name="plugin"></param>
@@ -15,43 +18,106 @@ namespace Wox.Plugin
         /// <param name="clearBeforeInsert"></param>
         void PushResults(Query query,PluginMetadata plugin, List<Result> results,bool clearBeforeInsert = false);
 
+        /// <summary>
+        /// Execute command
+        /// a replacement to RUN(win+r) function
+        /// </summary>
+        /// <param name="cmd">command that want to execute</param>
+        /// <param name="runAsAdministrator">run as administrator</param>
+        /// <returns></returns>
         bool ShellRun(string cmd, bool runAsAdministrator = false);
 
+        /// <summary>
+        /// Change Wox query
+        /// </summary>
+        /// <param name="query">query text</param>
+        /// <param name="requery">
+        /// force requery By default, Wox will not fire query if your query is same with existing one. 
+        /// Set this to true to force Wox requerying
+        /// </param>
         void ChangeQuery(string query, bool requery = false);
 
+        /// <summary>
+        /// Close Wox
+        /// </summary>
         void CloseApp();
 
+        /// <summary>
+        /// Hide Wox
+        /// </summary>
         void HideApp();
 
+        /// <summary>
+        /// Show Wox
+        /// </summary>
         void ShowApp();
 
+        /// <summary>
+        /// Show message box
+        /// </summary>
+        /// <param name="title">Message title</param>
+        /// <param name="subTitle">Message subtitle</param>
+        /// <param name="iconPath">Message icon path (relative path to your plugin folder)</param>
         void ShowMsg(string title, string subTitle, string iconPath);
 
+        /// <summary>
+        /// Open setting dialog
+        /// </summary>
         void OpenSettingDialog();
-
+        
+        /// <summary>
+        /// Show loading animation
+        /// </summary>
         void StartLoadingBar();
 
+        /// <summary>
+        /// Stop loading animation
+        /// </summary>
         void StopLoadingBar();
 
+        /// <summary>
+        /// Install Wox plugin
+        /// </summary>
+        /// <param name="path">Plugin path (ends with .wox)</param>
         void InstallPlugin(string path);
 
+        /// <summary>
+        /// Reload all plugins
+        /// </summary>
         void ReloadPlugins();
 
+        /// <summary>
+        /// Get translation of current language
+        /// You need to implement IPluginI18n if you want to support multiple languages for your plugin
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         string GetTranslation(string key);
 
+        /// <summary>
+        /// Get all loaded plugins 
+        /// </summary>
+        /// <returns></returns>
         List<PluginPair> GetAllPlugins();
 
+        /// <summary>
+        /// Fired after Back key down in the Wox query box
+        /// </summary>
         event WoxKeyDownEventHandler BackKeyDownEvent;
 
+        /// <summary>
+        /// Fired after global keyboard events
+        /// if you want to hook something like Ctrl+R, you should use this event
+        /// </summary>
         event WoxGlobalKeyboardEventHandler GlobalKeyboardEvent;
 
         /// <summary>
-        /// fired after wox execute a query
+        /// Fired after wox execute a query
         /// </summary>
         event AfterWoxQueryEventHandler AfterWoxQueryEvent;
 
         /// <summary>
-        /// fired before wox start to execute a query
+        /// Fired before wox start to execute a query
         /// </summary>
         event AfterWoxQueryEventHandler BeforeWoxQueryEvent;
     }

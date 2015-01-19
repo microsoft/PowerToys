@@ -364,7 +364,6 @@ namespace Wox
                     var q = new Query(lastQuery);
                     FireBeforeWoxQueryEvent(q);
                     Query(q);
-                    BackToResultMode();
                     Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
                     {
                         if (!queryHasReturn && originQuery == lastQuery)
@@ -373,7 +372,7 @@ namespace Wox
                         }
                     }, TimeSpan.FromMilliseconds(150), lastQuery);
                     FireAfterWoxQueryEvent(q);
-                }, TimeSpan.FromMilliseconds(ShouldNotDelayQuery ? 0 : 200));
+                }, TimeSpan.FromMilliseconds(200));
         }
 
         private void FireAfterWoxQueryEvent(Query q)
@@ -410,37 +409,15 @@ namespace Wox
 
         private void Query(Query q)
         {
-            try
-            {
-                PluginManager.Query(q);
-            }
-            catch (Exception e)
-            {
-                StopProgress();
-                ErrorReporting.Report(e);
-            }
+            PluginManager.Query(q);
+            StopProgress();
+            BackToResultMode();
         }
 
         private void BackToResultMode()
         {
             pnlResult.Visibility = Visibility.Visible;
             pnlContextMenu.Visibility = Visibility.Collapsed;
-        }
-
-        private bool ShouldNotDelayQuery
-        {
-            get
-            {
-                return IsCMDMode || IsWebSearchMode;
-            }
-        }
-
-        private bool IsCMDMode
-        {
-            get
-            {
-                return tbQuery.Text.StartsWith(">");
-            }
         }
 
         private bool IsWebSearchMode
@@ -500,17 +477,6 @@ namespace Wox
             }
         }
 
-        private void updateCmdMode()
-        {
-            var currentSelectedItem = pnlResult.GetActiveResult();
-            if (currentSelectedItem != null)
-            {
-                ignoreTextChange = true;
-                tbQuery.Text = ">" + currentSelectedItem.Title;
-                tbQuery.CaretIndex = tbQuery.Text.Length;
-            }
-        }
-
         private void TbQuery_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             //when alt is pressed, the real key should be e.SystemKey
@@ -553,14 +519,12 @@ namespace Wox
 
                 case Key.PageDown:
                     pnlResult.SelectNextPage();
-                    if (IsCMDMode) updateCmdMode();
                     toolTip.IsOpen = false;
                     e.Handled = true;
                     break;
 
                 case Key.PageUp:
                     pnlResult.SelectPrevPage();
-                    if (IsCMDMode) updateCmdMode();
                     toolTip.IsOpen = false;
                     e.Handled = true;
                     break;
@@ -621,7 +585,6 @@ namespace Wox
             else
             {
                 pnlResult.SelectPrev();
-                if (IsCMDMode) updateCmdMode();
             }
             toolTip.IsOpen = false;
         }
@@ -635,7 +598,6 @@ namespace Wox
             else
             {
                 pnlResult.SelectNext();
-                if (IsCMDMode) updateCmdMode();
             }
             toolTip.IsOpen = false;
         }
