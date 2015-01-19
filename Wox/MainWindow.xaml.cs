@@ -17,6 +17,7 @@ using NHotkey.Wpf;
 using Wox.Core.i18n;
 using Wox.Core.Plugin;
 using Wox.Core.Theme;
+using Wox.Core.Updater;
 using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure;
@@ -264,6 +265,7 @@ namespace Wox
             HwndSource.FromHwnd(new WindowInteropHelper(this).Handle).CompositionTarget.BackgroundColor = Color.FromArgb(0, 0, 0, 0);
 
             WindowIntelopHelper.DisableControlBox(this);
+            UpdaterManager.Instance.CheckUpdate();
         }
 
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
