@@ -30,33 +30,15 @@ namespace Wox.Core.Plugin
         private static List<string> pluginDirectories = new List<string>();
 
 
-        /// <summary>
-        /// Default plugin directory
-        /// new plugin will be installed to this directory
-        /// </summary>
-        public static string DefaultPluginDirectory
-        {
-            get
-            {
-                string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
-                if (string.IsNullOrEmpty(userProfilePath))
-                {
-                    throw new WoxCritialException("Wox Can't Find Environment Variable UserProfile");
-                }
-
-                return Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Plugins");
-            }
-        }
-
         private static void SetupPluginDirectories()
         {
-            pluginDirectories.Clear();
-
-            pluginDirectories.Add(DefaultPluginDirectory);
-            pluginDirectories.Add(
-                Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Plugins"));
-
+            pluginDirectories.Add(PluginDirectory);
             MakesurePluginDirectoriesExist();
+        }
+
+        public static string PluginDirectory
+        {
+            get { return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Plugins"); }
         }
 
         private static void MakesurePluginDirectoriesExist()

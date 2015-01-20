@@ -34,6 +34,7 @@ using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MenuItem = System.Windows.Forms.MenuItem;
 using MessageBox = System.Windows.MessageBox;
 using ToolTip = System.Windows.Controls.ToolTip;
+using Wox.Infrastructure.Logger;
 
 namespace Wox
 {

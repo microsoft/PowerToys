@@ -19,13 +19,6 @@ namespace Wox.Core.Theme
         static Theme()
         {
             themeDirectories.Add(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Themes"));
-
-            string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
-            if (userProfilePath != null)
-            {
-                themeDirectories.Add(Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Themes"));
-            }
-
             MakesureThemeDirectoriesExist();
         }
 
