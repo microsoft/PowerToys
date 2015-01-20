@@ -120,3 +120,4 @@ Wox/Images/Thumbs.db
 Wox/Wox.csproj
 
 *.sublime-*
+*.dgml

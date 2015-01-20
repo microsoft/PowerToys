@@ -1,0 +1,12 @@
+{
+    "ID":"D409510CD0D2481F853690A07E6DC426",
+    "ActionKeyword":"*",
+    "Name":"Shell",
+    "Description":"Provide executing commands from Wox. Commands should start with >",
+    "Author":"qianlifeng",
+    "Version":"1.0.0",
+    "Language":"csharp",
+    "Website":"http://www.getwox.com/plugin",
+    "ExecuteFileName":"Wox.Plugin.CMD.dll",
+    "IcoPath":"Images\\cmd.png"
+}

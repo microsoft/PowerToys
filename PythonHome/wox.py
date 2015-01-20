@@ -2,6 +2,7 @@
 import json
 import sys
 import inspect
+import chardet
 
 class Wox(object):
     """
@@ -9,7 +10,7 @@ class Wox(object):
     """
 
     def __init__(self):
-        rpc_request = json.loads(sys.argv[1],encoding="gb2312")
+        rpc_request = json.loads(sys.argv[1],encoding=chardet.detect(sys.argv[1])["encoding"])
         self.proxy = rpc_request.get("proxy",{})
         request_method_name = rpc_request.get("method")
         request_parameters = rpc_request.get("parameters")

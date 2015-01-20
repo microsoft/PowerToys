@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using Wox.Core.Plugin;
 using Wox.Helper;
 
 namespace Wox.CommandArgs
@@ -25,7 +26,7 @@ namespace Wox.CommandArgs
                     MessageBox.Show("Plugin " + path + " didn't exist");
                     return;
                 }
-                PluginInstaller.Install(path);
+                PluginManager.InstallPlugin(path);
             }
         }
     }

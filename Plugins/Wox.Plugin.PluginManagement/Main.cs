@@ -197,7 +197,7 @@ namespace Wox.Plugin.PluginManagement
         private List<Result> ListUnInstalledPlugins(Query query)
         {
             List<Result> results = new List<Result>();
-            List<PluginMetadata> allInstalledPlugins = ParseThirdPartyPlugins();
+            List<PluginMetadata> allInstalledPlugins = ParseUserPlugins();
             if (query.ActionParameters.Count > 1)
             {
                 string pluginName = query.ActionParameters[1];
@@ -235,7 +235,7 @@ namespace Wox.Plugin.PluginManagement
         private List<Result> ListInstalledPlugins()
         {
             List<Result> results = new List<Result>();
-            foreach (PluginMetadata plugin in ParseThirdPartyPlugins())
+            foreach (PluginMetadata plugin in ParseUserPlugins())
             {
                 results.Add(new Result()
                 {
@@ -247,7 +247,7 @@ namespace Wox.Plugin.PluginManagement
             return results;
         }
 
-        private static List<PluginMetadata> ParseThirdPartyPlugins()
+        private static List<PluginMetadata> ParseUserPlugins()
         {
             List<PluginMetadata> pluginMetadatas = new List<PluginMetadata>();
             if (!Directory.Exists(PluginPath))
@@ -276,7 +276,7 @@ namespace Wox.Plugin.PluginManagement
             try
             {
                 metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
-                metadata.PluginType = PluginType.ThirdParty;
+                metadata.PluginType = PluginType.User;
                 metadata.PluginDirectory = pluginDirectory;
             }
             catch (Exception)

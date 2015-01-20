@@ -17,18 +17,18 @@
             <ColumnDefinition Width="200"></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <TextBlock Margin="10" FontSize="14" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Old ActionKeyword:</TextBlock>
+        <TextBlock Margin="10" FontSize="14" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="{DynamicResource oldActionKeyword}"></TextBlock>
         <TextBlock x:Name="tbOldActionKeyword" Margin="10" FontSize="14" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left">Old ActionKeyword:</TextBlock>
 
-        <TextBlock Margin="10" FontSize="14" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">New ActionKeyword:</TextBlock>
+        <TextBlock Margin="10" FontSize="14" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="{DynamicResource newActionKeyword}"></TextBlock>
         <StackPanel Grid.Row="1" Orientation="Horizontal"  Grid.Column="1" >
             <TextBox x:Name="tbAction" Margin="10"  Width="400" VerticalAlignment="Center" HorizontalAlignment="Left"></TextBox>
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="2" Grid.Column="1">
-            <Button x:Name="btnCancel" Click="BtnCancel_OnClick" Margin="10 0 10 0" Width="80" Height="25">Cancel</Button>
+            <Button x:Name="btnCancel" Click="BtnCancel_OnClick" Margin="10 0 10 0" Width="80" Height="25" Content="{DynamicResource cancel}"></Button>
             <Button x:Name="btnDone" Margin="10 0 10 0"  Width="80" Height="25" Click="btnDone_OnClick">
-                <TextBlock x:Name="lblAdd">Done</TextBlock>
+                <TextBlock x:Name="lblAdd" Text="{DynamicResource done}"></TextBlock>
             </Button>
         </StackPanel>
     </Grid>

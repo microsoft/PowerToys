@@ -1,0 +1,45 @@
+﻿<UserControl x:Class="Wox.Plugin.WebSearch.WebSearchesSetting"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="500">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="42"/>
+            <RowDefinition/>
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <CheckBox x:Name="cbEnableWebSearchSuggestion" Unchecked="CbEnableWebSearchSuggestion_OnUnchecked" Checked="CbEnableWebSearchSuggestion_OnChecked" Margin="0 10 10 10" Content="{DynamicResource wox_plugin_websearch_enable_suggestion}"></CheckBox>
+            <ComboBox x:Name="comboBoxSuggestionSource" SelectionChanged="ComboBoxSuggestionSource_OnSelectionChanged" Margin="10">
+            </ComboBox>
+        </StackPanel>
+        <ListView x:Name="webSearchView" Grid.Row="1">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="{DynamicResource wox_plugin_websearch_action_keyword}"  Width="180">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ActionWord}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="{DynamicResource wox_plugin_websearch_url}"  Width="500">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Url}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <StackPanel Grid.Row="2" HorizontalAlignment="Right" Orientation="Horizontal">
+            <Button x:Name="btnDeleteWebSearch" Click="btnDeleteWebSearch_OnClick" Width="100" Margin="10" Content="{DynamicResource wox_plugin_websearch_delete}"/>
+            <Button x:Name="btnEditWebSearch" Click="btnEditWebSearch_OnClick" Width="100" Margin="10" Content="{DynamicResource wox_plugin_websearch_edit}"/>
+            <Button x:Name="btnAddWebSearch" Click="btnAddWebSearch_OnClick" Width="100" Margin="10" Content="{DynamicResource wox_plugin_websearch_add}"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

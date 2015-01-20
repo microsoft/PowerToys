@@ -8,6 +8,6 @@ namespace Wox.Plugin
     public enum PluginType
     {
         System,
-        ThirdParty
+        User
     }
 }

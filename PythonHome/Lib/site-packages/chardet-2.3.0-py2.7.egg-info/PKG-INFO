@@ -1,0 +1,70 @@
+Metadata-Version: 1.1
+Name: chardet
+Version: 2.3.0
+Summary: Universal encoding detector for Python 2 and 3
+Home-page: https://github.com/chardet/chardet
+Author: Ian Cordasco
+Author-email: graffatcolmingov@gmail.com
+License: LGPL
+Description: Chardet: The Universal Character Encoding Detector
+        --------------------------------------------------
+        
+        Detects
+         - ASCII, UTF-8, UTF-16 (2 variants), UTF-32 (4 variants)
+         - Big5, GB2312, EUC-TW, HZ-GB-2312, ISO-2022-CN (Traditional and Simplified Chinese)
+         - EUC-JP, SHIFT_JIS, CP932, ISO-2022-JP (Japanese)
+         - EUC-KR, ISO-2022-KR (Korean)
+         - KOI8-R, MacCyrillic, IBM855, IBM866, ISO-8859-5, windows-1251 (Cyrillic)
+         - ISO-8859-2, windows-1250 (Hungarian)
+         - ISO-8859-5, windows-1251 (Bulgarian)
+         - windows-1252 (English)
+         - ISO-8859-7, windows-1253 (Greek)
+         - ISO-8859-8, windows-1255 (Visual and Logical Hebrew)
+         - TIS-620 (Thai)
+        
+        Requires Python 2.6 or later
+        
+        Installation
+        ------------
+        
+        Install from `PyPI <https://pypi.python.org/pypi/chardet>`_::
+        
+            pip install chardet
+        
+        
+        Command-line Tool
+        -----------------
+        
+        chardet comes with a command-line script which reports on the encodings of one
+        or more files::
+        
+            % chardetect somefile someotherfile
+            somefile: windows-1252 with confidence 0.5
+            someotherfile: ascii with confidence 1.0
+        
+        About
+        -----
+        
+        This is a continuation of Mark Pilgrim's excellent chardet. Previously, two
+        versions needed to be maintained: one that supported python 2.x and one that
+        supported python 3.x.  We've recently merged with `Ian Cordasco <https://github.com/sigmavirus24>`_'s
+        `charade <https://github.com/sigmavirus24/charade>`_ fork, so now we have one
+        coherent version that works for Python 2.6+.
+        
+        :maintainer: Dan Blanchard
+        
+Keywords: encoding,i18n,xml
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Text Processing :: Linguistic

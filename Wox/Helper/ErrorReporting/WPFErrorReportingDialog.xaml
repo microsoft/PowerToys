@@ -1,9 +1,0 @@
-﻿<Window x:Class="Wox.Helper.ErrorReporting.WPFErrorReportingDialog"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="ErrorReportingDialog" WindowStartupLocation="CenterScreen">
-    <DockPanel>
-        <TextBlock Margin="10"  TextWrapping="Wrap" DockPanel.Dock="Top" Text="Wox has occured an error that can't be handled. "/>
-        <TextBox x:Name="tbErrorReport" IsReadOnly="True" IsUndoEnabled="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" />
-    </DockPanel>
-</Window>

@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using NHotkey;
 using NHotkey.Wpf;
+using Wox.Core.i18n;
 using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
@@ -42,7 +43,7 @@ namespace Wox
             Key key = (e.Key == Key.System ? e.SystemKey : e.Key);
 
             string text = string.Empty;
-            SpecialKeyState specialKeyState = new GlobalHotkey().CheckModifiers();
+            SpecialKeyState specialKeyState = GlobalHotkey.Instance.CheckModifiers();
             if (specialKeyState.AltPressed)
             {
                 text += "Alt";
@@ -98,12 +99,12 @@ namespace Wox
                 if (!CurrentHotkeyAvailable)
                 {
                     tbMsg.Foreground = new SolidColorBrush(Colors.Red);
-                    tbMsg.Text = "hotkey unavailable";
+                    tbMsg.Text = InternationalizationManager.Internationalization.GetTranslation("hotkeyUnavailable");
                 }
                 else
                 {
                     tbMsg.Foreground = new SolidColorBrush(Colors.Green);
-                    tbMsg.Text = "succeed";
+                    tbMsg.Text = InternationalizationManager.Internationalization.GetTranslation("succeed");
                 }
                 OnOnHotkeyChanged();
             }

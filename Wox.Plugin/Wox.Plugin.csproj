@@ -47,6 +47,7 @@
     <Compile Include="AllowedLanguage.cs" />
     <Compile Include="EventHandler.cs" />
     <Compile Include="IHttpProxy.cs" />
+    <Compile Include="IPluginI18n.cs" />
     <Compile Include="IPlugin.cs" />
     <Compile Include="IPublicAPI.cs" />
     <Compile Include="ISettingProvider.cs" />
@@ -58,6 +59,9 @@
     <Compile Include="Query.cs" />
     <Compile Include="Result.cs" />
     <Compile Include="ActionContext.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

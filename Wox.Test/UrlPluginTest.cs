@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
-using Wox.Plugin.SystemPlugins;
+using Wox.Plugin.Url;
 
 namespace Wox.Test
 {

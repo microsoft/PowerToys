@@ -1,35 +1,41 @@
-﻿using System.Reflection;
-using log4net;
+﻿using System;
+using System.Reflection;
+using NLog;
 
 namespace Wox.Infrastructure.Logger
 {
     public class Log
     {
-        private static ILog fileLogger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
         public static void Error(string msg)
         {
-            fileLogger.Error(msg);
+            logger.Error(msg);
+        }
+
+        public static void Error(Exception e)
+        {
+            logger.Error(e.Message + "\r\n" + e.StackTrace);
         }
 
         public static void Debug(string msg)
         {
-            fileLogger.Debug(msg);
+            logger.Debug(msg);
         }
 
         public static void Info(string msg)
         {
-            fileLogger.Info(msg);
+            logger.Info(msg);
         }
 
         public static void Warn(string msg)
         {
-            fileLogger.Warn(msg);
+            logger.Warn(msg);
         }
 
         public static void Fatal(string msg)
         {
-            fileLogger.Fatal(msg);
+            logger.Fatal(msg);
         }
     }
 }

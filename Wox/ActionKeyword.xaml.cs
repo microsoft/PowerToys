@@ -11,9 +11,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using Wox.Infrastructure.Storage.UserSettings;
+using Wox.Core.i18n;
+using Wox.Core.Plugin;
+using Wox.Core.UserSettings;
 using Wox.Plugin;
-using Wox.PluginLoader;
 using MessageBox = System.Windows.MessageBox;
 
 namespace Wox
@@ -25,10 +26,10 @@ namespace Wox
         public ActionKeyword(string pluginId)
         {
             InitializeComponent();
-            PluginPair plugin = Plugins.AllPlugins.FirstOrDefault(o => o.Metadata.ID == pluginId);
+            PluginPair plugin = PluginManager.GetPlugin(pluginId);
             if (plugin == null)
             {
-                MessageBox.Show("Can't find specific plugin");
+                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("cannotFindSpecifiedPlugin"));
                 Close();
                 return;
             }
@@ -51,14 +52,14 @@ namespace Wox
         {
             if (string.IsNullOrEmpty(tbAction.Text))
             {
-                MessageBox.Show("New ActionKeyword can't be empty");
+                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("newActionKeywordCannotBeEmpty"));
                 return;
             }
 
             //check new action keyword didn't used by other plugin
-            if (Plugins.AllPlugins.Exists(o => o.Metadata.ActionKeyword == tbAction.Text.Trim()))
+            if (PluginManager.AllPlugins.Exists(o => o.Metadata.ActionKeyword == tbAction.Text.Trim()))
             {
-                MessageBox.Show("New ActionKeyword has been assigned to other plugin, please assign another new action keyword");
+                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("newActionKeywordHasBeenAssigned"));
                 return;
             }
 
@@ -80,10 +81,8 @@ namespace Wox
                 customizedPluginConfig.Actionword = tbAction.Text.Trim();
             }
             UserSettingStorage.Instance.Save();
-            MessageBox.Show("Sucessfully applied the new action keyword");
+            MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("succeed"));
             Close();
         }
-
-     
     }
 }

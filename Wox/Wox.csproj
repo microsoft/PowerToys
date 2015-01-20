@@ -42,6 +42,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>true</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -51,6 +52,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Resources\app.ico</ApplicationIcon>
@@ -64,19 +66,17 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\log4net.2.0.3\lib\net35-full\log4net.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net35\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net35\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="NHotkey">
-      <HintPath>..\packages\NHotkey.1.1.0.0\lib\NHotkey.dll</HintPath>
+    <Reference Include="NHotkey, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\NHotkey.1.2.1\lib\net20\NHotkey.dll</HintPath>
     </Reference>
     <Reference Include="NHotkey.Wpf">
-      <HintPath>..\packages\NHotkey.Wpf.1.1.0.0\lib\NHotkey.Wpf.dll</HintPath>
+      <HintPath>..\packages\NHotkey.Wpf.1.2.1\lib\net35\NHotkey.Wpf.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="PresentationFramework.Classic" />
     <Reference Include="PresentationUI, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
@@ -89,6 +89,7 @@
     <Reference Include="System.Printing" />
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -98,13 +99,20 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="WindowsInput">
+    <Reference Include="WindowsInput, Version=1.0.4.0, Culture=neutral, PublicKeyToken=9b287f7dc5073cad, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\InputSimulator.1.0.4.0\lib\net20\WindowsInput.dll</HintPath>
     </Reference>
     <Reference Include="WPFToolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Converters\ConvertorBase.cs" />
+    <Compile Include="Converters\ImagePathConverter.cs" />
+    <Compile Include="Converters\OpacityModeConverter.cs" />
+    <Compile Include="Converters\StringEmptyConverter.cs" />
+    <Compile Include="Converters\StringNullOrEmptyToVisibilityConverter.cs" />
     <Compile Include="ImageLoader\ImageCacheStroage.cs" />
+    <Compile Include="Storage\UserSelectedRecordStorage.cs" />
     <Compile Include="Update\NewVersionWindow.xaml.cs">
       <DependentUpon>NewVersionWindow.xaml</DependentUpon>
     </Compile>
@@ -124,46 +132,25 @@
     <Compile Include="CommandArgs\PluginDebuggerCommandArg.cs" />
     <Compile Include="CommandArgs\QueryCommandArg.cs" />
     <Compile Include="CommandArgs\ReloadPluginCommandArg.cs" />
-    <Compile Include="Commands\BaseCommand.cs" />
-    <Compile Include="Commands\CommandFactory.cs" />
-    <Compile Include="Commands\PluginCommand.cs" />
-    <Compile Include="Commands\SystemCommand.cs" />
-    <Compile Include="Converters\AsyncConverter.cs" />
-    <Compile Include="Converters\ConvertorBase.cs" />
     <Compile Include="Helper\DataWebRequestFactory.cs" />
-    <Compile Include="Helper\ErrorReporting\ErrorReporting.cs" />
-    <Compile Include="Helper\ErrorReporting\WPFErrorReportingDialog.xaml.cs">
-      <DependentUpon>WPFErrorReportingDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Helper\FontHelper.cs" />
+    <Compile Include="Helper\ErrorReporting.cs" />
     <Compile Include="ImageLoader\ImageLoader.cs" />
     <Compile Include="Helper\SingleInstance.cs" />
     <Compile Include="Helper\SyntaxSugars.cs" />
     <Compile Include="Helper\WallpaperPathRetrieval.cs" />
     <Compile Include="Helper\WindowIntelopHelper.cs" />
     <Compile Include="Helper\WindowOpener.cs" />
-    <Compile Include="Converters\OpacityModeConverter.cs" />
-    <Compile Include="CustomPluginHotkeySetting.xaml.cs">
-      <DependentUpon>CustomPluginHotkeySetting.xaml</DependentUpon>
+    <Compile Include="CustomQueryHotkeySetting.xaml.cs">
+      <DependentUpon>CustomQueryHotkeySetting.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helper\DispatcherExtensions.cs" />
     <Compile Include="Helper\DWMDropShadow.cs" />
-    <Compile Include="Helper\PluginInstaller.cs" />
     <Compile Include="HotkeyControl.xaml.cs">
       <DependentUpon>HotkeyControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converters\ImagePathConverter.cs" />
-    <Compile Include="PluginLoader\IPluginLoader.cs" />
     <Compile Include="Msg.xaml.cs">
       <DependentUpon>Msg.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PluginLoader\PluginConfigLoader.cs" />
-    <Compile Include="PluginLoader\CSharpPluginLoader.cs" />
-    <Compile Include="PluginLoader\BasePluginLoader.cs" />
-    <Compile Include="PluginLoader\BasePlugin.cs" />
-    <Compile Include="JsonRPC\JsonPRCModel.cs" />
-    <Compile Include="PluginLoader\Plugins.cs" />
-    <Compile Include="PluginLoader\PythonPlugin.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="ResultPanel.xaml.cs">
       <DependentUpon>ResultPanel.xaml</DependentUpon>
@@ -171,17 +158,11 @@
     <Compile Include="SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converters\StringEmptyConverter.cs" />
-    <Compile Include="Converters\StringNullOrEmptyToVisibilityConverter.cs" />
     <Page Include="ActionKeyword.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Helper\ErrorReporting\WPFErrorReportingDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="CustomPluginHotkeySetting.xaml">
+    <Page Include="CustomQueryHotkeySetting.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -189,6 +170,21 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <None Include="Languages\zh-cn.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="Languages\en.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="Languages\zh-tw.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -213,21 +209,17 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <None Include="Themes\Dark.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="packages.config" />
     <None Include="Themes\Light.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Themes\Default.xaml">
+    <Content Include="Themes\Base.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
     <None Include="Themes\Pink.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -238,6 +230,11 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Content Include="Themes\Dark.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Page Include="Update\NewVersionWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -262,9 +259,6 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="App.config" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -272,13 +266,17 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Wox.Core\Wox.Core.csproj">
+      <Project>{B749F0DB-8E75-47DB-9E5E-265D16D0C0D2}</Project>
+      <Name>Wox.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Wox.CrashReporter\Wox.CrashReporter.csproj">
+      <Project>{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}</Project>
+      <Name>Wox.CrashReporter</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj">
       <Project>{4fd29318-a8ab-4d8f-aa47-60bc241b8da3}</Project>
       <Name>Wox.Infrastructure</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Wox.Plugin.SystemPlugins\Wox.Plugin.SystemPlugins.csproj">
-      <Project>{69ce0206-cb41-453d-88af-df86092ef9b8}</Project>
-      <Name>Wox.Plugin.SystemPlugins</Name>
     </ProjectReference>
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj">
       <Project>{8451ECDD-2EA4-4966-BB0A-7BBC40138E80}</Project>
@@ -307,41 +305,8 @@
     <Resource Include="Images\app.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Images\close.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\cmd.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\exit.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\folder.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\lock.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\logoff.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\work.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\calculator.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
   </ItemGroup>
   <ItemGroup>
-    <COMReference Include="IWshRuntimeLibrary">
-      <Guid>{F935DC20-1CF0-11D0-ADB9-00C04FD58A0B}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
     <COMReference Include="Shell32">
       <Guid>{50A7E9B0-70EF-11D1-B75A-00A0C90564FE}</Guid>
       <VersionMajor>1</VersionMajor>
@@ -353,27 +318,6 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\websearch\google.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\websearch\wiki.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\color2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\url.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\ControlPanel.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
     <Resource Include="Images\file.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
@@ -381,15 +325,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\open.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\program.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\restart.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\web_search.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Globalization;
-using Wox.Infrastructure.Storage.UserSettings;
+using Wox.Core.UserSettings;
 
 namespace Wox.Converters
 {
