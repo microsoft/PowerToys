@@ -6,6 +6,7 @@ using System.Windows.Threading;
 using NAppUpdate.Framework;
 using NAppUpdate.Framework.Common;
 using NAppUpdate.Framework.Sources;
+using Wox.Infrastructure.Logger;
 
 namespace Wox.Core.Updater
 {
@@ -40,7 +41,16 @@ namespace Wox.Core.Updater
                 if (asyncResult.IsCompleted)
                 {
                     // still need to check for caught exceptions if any and rethrow
-                    ((UpdateProcessAsyncResult)asyncResult).EndInvoke();
+                    try
+                    {
+                        ((UpdateProcessAsyncResult) asyncResult).EndInvoke();
+                    }
+                    catch(System.Exception e)
+                    {
+                        Log.Error(e);
+                        updManager.CleanUp();
+                        return;
+                    }
 
                     // No updates were found, or an error has occured. We might want to check that...
                     if (updManager.UpdatesAvailable == 0)

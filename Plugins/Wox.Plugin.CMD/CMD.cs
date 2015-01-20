@@ -11,7 +11,7 @@ using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.CMD
 {
-    public class CMD : IPlugin, ISettingProvider,IPluginI18n
+    public class CMD : IPlugin, ISettingProvider, IPluginI18n
     {
         private PluginInitContext context;
         private bool WinRStroked;
@@ -23,87 +23,18 @@ namespace Wox.Plugin.CMD
             List<Result> pushedResults = new List<Result>();
             if (query.RawQuery == ">")
             {
-                IEnumerable<Result> history = CMDStorage.Instance.CMDHistory.OrderByDescending(o => o.Value)
-                 .Select(m => new Result
-                 {
-                     Title = m.Key,
-                     SubTitle = "this command has been executed " + m.Value + " times",
-                     IcoPath = "Images/cmd.png",
-                     Action = (c) =>
-                     {
-                         ExecuteCmd(m.Key);
-                         return true;
-                     },
-                     ContextMenu = GetContextMenus(m.Key)
-                 }).Take(5);
-
-                results.AddRange(history);
+                return GetAllHistoryCmds();
             }
 
             if (query.RawQuery.StartsWith(">") && query.RawQuery.Length > 1)
             {
                 string cmd = query.RawQuery.Substring(1);
-                Result result = new Result
-                {
-                    Title = cmd,
-                    Score = 5000,
-                    SubTitle = "execute command through command shell",
-                    IcoPath = "Images/cmd.png",
-                    Action = (c) =>
-                    {
-                        ExecuteCmd(cmd);
-                        return true;
-                    },
-                    ContextMenu = GetContextMenus(cmd)
-                };
+                var queryCmd = GetCurrentCmd(cmd);
+                context.API.PushResults(query, context.CurrentPluginMetadata, new List<Result>() { queryCmd });
+                pushedResults.Add(queryCmd);
 
-                try
-                {
-                    if (File.Exists(cmd) || Directory.Exists(cmd))
-                    {
-                        result.IcoPath = cmd;
-                    }
-                }
-                catch (Exception) { }
-
-                context.API.PushResults(query, context.CurrentPluginMetadata, new List<Result>() { result });
-                pushedResults.Add(result);
-
-                IEnumerable<Result> history = CMDStorage.Instance.CMDHistory.Where(o => o.Key.Contains(cmd))
-                    .OrderByDescending(o => o.Value)
-                    .Select(m =>
-                    {
-                        if (m.Key == cmd)
-                        {
-                            result.SubTitle = "this command has been executed " + m.Value + " times";
-                            return null;
-                        }
-
-                        var ret = new Result
-                        {
-                            Title = m.Key,
-                            SubTitle = "this command has been executed " + m.Value + " times",
-                            IcoPath = "Images/cmd.png",
-                            Action = (c) =>
-                            {
-                                ExecuteCmd(m.Key);
-                                return true;
-                            },
-                            ContextMenu = GetContextMenus(m.Key)
-                        };
-                        try
-                        {
-                            if (File.Exists(m.Key) || Directory.Exists(m.Key))
-                            {
-                                ret.IcoPath = m.Key;
-                            }
-                        }
-                        catch (Exception) { }
-
-                        return ret;
-                    }).Where(o => o != null).Take(4);
-
-                context.API.PushResults(query, context.CurrentPluginMetadata, history.ToList());
+                var history = GetHistoryCmds(cmd, queryCmd);
+                context.API.PushResults(query, context.CurrentPluginMetadata, history);
                 pushedResults.AddRange(history);
 
                 try
@@ -130,8 +61,7 @@ namespace Wox.Plugin.CMD
                         results.AddRange(autocomplete.ConvertAll(m => new Result()
                         {
                             Title = m,
-                            SubTitle = "",
-                            IcoPath = m,
+                            IcoPath = "Images/cmd.png",
                             Action = (c) =>
                             {
                                 ExecuteCmd(m);
@@ -144,6 +74,72 @@ namespace Wox.Plugin.CMD
                 catch (Exception) { }
             }
             return results;
+        }
+
+        private List<Result> GetHistoryCmds(string cmd, Result result)
+        {
+            IEnumerable<Result> history = CMDStorage.Instance.CMDHistory.Where(o => o.Key.Contains(cmd))
+                .OrderByDescending(o => o.Value)
+                .Select(m =>
+                {
+                    if (m.Key == cmd)
+                    {
+                        result.SubTitle = "this command has been executed " + m.Value + " times";
+                        return null;
+                    }
+
+                    var ret = new Result
+                    {
+                        Title = m.Key,
+                        SubTitle = "this command has been executed " + m.Value + " times",
+                        IcoPath = "Images/cmd.png",
+                        Action = (c) =>
+                        {
+                            ExecuteCmd(m.Key);
+                            return true;
+                        },
+                        ContextMenu = GetContextMenus(m.Key)
+                    };
+                    return ret;
+                }).Where(o => o != null).Take(4);
+            return history.ToList();
+        }
+
+        private Result GetCurrentCmd(string cmd)
+        {
+            Result result = new Result
+            {
+                Title = cmd,
+                Score = 5000,
+                SubTitle = "execute command through command shell",
+                IcoPath = "Images/cmd.png",
+                Action = (c) =>
+                {
+                    ExecuteCmd(cmd);
+                    return true;
+                },
+                ContextMenu = GetContextMenus(cmd)
+            };
+
+            return result;
+        }
+
+        private List<Result> GetAllHistoryCmds()
+        {
+            IEnumerable<Result> history = CMDStorage.Instance.CMDHistory.OrderByDescending(o => o.Value)
+                .Select(m => new Result
+                {
+                    Title = m.Key,
+                    SubTitle = "this command has been executed " + m.Value + " times",
+                    IcoPath = "Images/cmd.png",
+                    Action = (c) =>
+                    {
+                        ExecuteCmd(m.Key);
+                        return true;
+                    },
+                    ContextMenu = GetContextMenus(m.Key)
+                }).Take(5);
+            return history.ToList();
         }
 
         private List<Result> GetContextMenus(string cmd)
