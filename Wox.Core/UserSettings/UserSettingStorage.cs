@@ -15,6 +15,9 @@ namespace Wox.Core.UserSettings
         public bool DontPromptUpdateMsg { get; set; }
 
         [JsonProperty]
+        public bool EnableUpdateLog { get; set; }
+
+        [JsonProperty]
         public string Hotkey { get; set; }
 
         [JsonProperty]

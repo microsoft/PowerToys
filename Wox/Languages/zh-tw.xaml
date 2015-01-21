@@ -98,4 +98,9 @@
     <system:String x:Key="reportWindow_report_failed">發送失敗</system:String>
     <system:String x:Key="reportWindow_wox_got_an_error">Wox出錯啦</system:String>
 
+    <!--更新-->
+    <system:String x:Key="update_wox_update_ready">Wox更新</system:String>
+    <system:String x:Key="update_wox_update_install">Wox更新啦！{0}個文件會被添加和替換，並且在此過程中可能會重啟Wox。你確定需要更新嗎？</system:String>
+    <system:String x:Key="update_wox_update_error">更新Wox出錯</system:String>
+
 </ResourceDictionary>

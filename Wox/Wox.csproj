@@ -113,11 +113,6 @@
     <Compile Include="Converters\StringNullOrEmptyToVisibilityConverter.cs" />
     <Compile Include="ImageLoader\ImageCacheStroage.cs" />
     <Compile Include="Storage\UserSelectedRecordStorage.cs" />
-    <Compile Include="Update\NewVersionWindow.xaml.cs">
-      <DependentUpon>NewVersionWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Update\Release.cs" />
-    <Compile Include="Update\UpdateChecker.cs" />
     <Page Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -235,10 +230,6 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Page Include="Update\NewVersionWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

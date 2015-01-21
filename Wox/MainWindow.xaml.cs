@@ -24,7 +24,6 @@ using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
 using Wox.Storage;
-using Wox.Update;
 using Brushes = System.Windows.Media.Brushes;
 using Color = System.Windows.Media.Color;
 using ContextMenu = System.Windows.Forms.ContextMenu;
@@ -124,7 +123,7 @@ namespace Wox
 
         public string GetTranslation(string key)
         {
-            return InternationalizationManager.Internationalization.GetTranslation(key);
+            return InternationalizationManager.Instance.GetTranslation(key);
         }
 
         public List<PluginPair> GetAllPlugins()
@@ -175,7 +174,7 @@ namespace Wox
             pnlResult.RightMouseClickEvent += pnlResult_RightMouseClickEvent;
 
             ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
-            InternationalizationManager.Internationalization.ChangeLanguage(UserSettingStorage.Instance.Language);
+            InternationalizationManager.Instance.ChangeLanguage(UserSettingStorage.Instance.Language);
 
             SetHotkey(UserSettingStorage.Instance.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
@@ -193,7 +192,6 @@ namespace Wox
                 Thread.Sleep(50);
                 PreLoadImages();
             });
-            CheckUpdate();
         }
 
         private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)
@@ -213,22 +211,6 @@ namespace Wox
         void pnlResult_RightMouseClickEvent(Result result)
         {
             ShowContextMenu(result);
-        }
-
-        void CheckUpdate()
-        {
-            ThreadPool.QueueUserWorkItem(o =>
-            {
-                Release release = new UpdateChecker().CheckUpgrade();
-                if (release != null && !UserSettingStorage.Instance.DontPromptUpdateMsg)
-                {
-                    Dispatcher.Invoke(new Action(() =>
-                    {
-                        NewVersionWindow newVersinoWindow = new NewVersionWindow();
-                        newVersinoWindow.Show();
-                    }));
-                }
-            });
         }
 
         void MainWindow_Closing(object sender, CancelEventArgs e)
@@ -278,7 +260,7 @@ namespace Wox
             }
             catch (Exception)
             {
-                string errorMsg = string.Format(InternationalizationManager.Internationalization.GetTranslation("registerHotkeyFailed"), hotkeyStr);
+                string errorMsg = string.Format(InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
                 MessageBox.Show(errorMsg);
             }
         }
@@ -673,7 +655,7 @@ namespace Wox
             }
             catch (Exception ex)
             {
-                string errorMsg = string.Format(InternationalizationManager.Internationalization.GetTranslation("couldnotStartCmd"), cmd);
+                string errorMsg = string.Format(InternationalizationManager.Instance.GetTranslation("couldnotStartCmd"), cmd);
                 ShowMsg(errorMsg, ex.Message, null);
             }
             return false;
@@ -691,7 +673,7 @@ namespace Wox
                 }
                 else
                 {
-                    MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("invalidWoxPluginFileFormat"));
+                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("invalidWoxPluginFileFormat"));
                 }
             }
         }

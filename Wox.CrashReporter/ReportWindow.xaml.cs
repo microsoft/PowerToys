@@ -45,7 +45,7 @@ namespace Wox.CrashReporter
 
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
-            string sendingMsg = InternationalizationManager.Internationalization.GetTranslation("reportWindow_sending");
+            string sendingMsg = InternationalizationManager.Instance.GetTranslation("reportWindow_sending");
             tbSendReport.Content = sendingMsg;
             btnSend.IsEnabled = false;
             ThreadPool.QueueUserWorkItem(o => SendReport());
@@ -57,11 +57,11 @@ namespace Wox.CrashReporter
             string response = HttpRequest.Post(APIServer.ErrorReportURL, error, HttpProxy.Instance);
             if (response.ToLower() == "ok")
             {
-                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("reportWindow_report_succeed"));
+                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("reportWindow_report_succeed"));
             }
             else
             {
-                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("reportWindow_report_failed"));
+                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("reportWindow_report_failed"));
             }
             Dispatcher.Invoke(new Action(Close));
         }

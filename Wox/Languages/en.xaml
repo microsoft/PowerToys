@@ -98,4 +98,9 @@
     <system:String x:Key="reportWindow_report_failed">Report failed</system:String>
     <system:String x:Key="reportWindow_wox_got_an_error">Wox got an error</system:String>
 
+    <!--update-->
+    <system:String x:Key="update_wox_update_ready">Wox updates available</system:String>
+    <system:String x:Key="update_wox_update_install">Wox updates are ready to install. {0} files will be added and replaced, this operation may restart Wox. Do you wish to install them now?</system:String>
+    <system:String x:Key="update_wox_update_error">An error occurred while trying to install software updates</system:String>
+    
 </ResourceDictionary>

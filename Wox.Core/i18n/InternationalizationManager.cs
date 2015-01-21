@@ -14,7 +14,7 @@ namespace Wox.Core.i18n
         private static Internationalization instance;
         private static object syncObject = new object();
 
-        public static Internationalization Internationalization
+        public static Internationalization Instance
         {
             get
             {

@@ -318,7 +318,6 @@
                 <TextBlock Grid.Column="0" Grid.Row="1" Margin="6" Text="{DynamicResource version}"></TextBlock>
                 <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal">
                     <TextBlock  Margin="6" HorizontalAlignment="Left" x:Name="tbVersion" Text="1.0.0"></TextBlock>
-                    <TextBlock  Margin="6" HorizontalAlignment="Left" Cursor="Hand" MouseUp="tbNewVersionAvailable_MouseUp" x:Name="tbNewVersionAvailable" Foreground="Blue" Text="1.1.0 Available"></TextBlock>
                 </StackPanel>
             </Grid>
         </TabItem>

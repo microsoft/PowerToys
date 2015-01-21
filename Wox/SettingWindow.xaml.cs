@@ -13,7 +13,6 @@ using System.Windows.Media.Imaging;
 using Wox.Core.Plugin;
 using Wox.Plugin;
 using Wox.Helper;
-using Wox.Update;
 using Application = System.Windows.Forms.Application;
 using File = System.IO.File;
 using MessageBox = System.Windows.MessageBox;
@@ -218,15 +217,6 @@ namespace Wox
             #region About
 
             tbVersion.Text = ConfigurationManager.AppSettings["version"];
-            Release newRelease = new UpdateChecker().CheckUpgrade();
-            if (newRelease == null)
-            {
-                tbNewVersionAvailable.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                tbNewVersionAvailable.Text = newRelease.version + " available";
-            }
 
             #endregion
 
@@ -235,7 +225,7 @@ namespace Wox
 
         private void LoadLanguages()
         {
-            cbLanguages.ItemsSource = InternationalizationManager.Internationalization.LoadAvailableLanguages();
+            cbLanguages.ItemsSource = InternationalizationManager.Instance.LoadAvailableLanguages();
             cbLanguages.DisplayMemberPath = "Display";
             cbLanguages.SelectedValuePath = "LanguageCode";
             cbLanguages.SelectedValue = UserSettingStorage.Instance.Language;
@@ -244,7 +234,7 @@ namespace Wox
 
         void cbLanguages_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            InternationalizationManager.Internationalization.ChangeLanguage(cbLanguages.SelectedItem as Language);
+            InternationalizationManager.Instance.ChangeLanguage(cbLanguages.SelectedItem as Language);
         }
 
         private void EnableProxy()
@@ -329,12 +319,12 @@ namespace Wox
             CustomPluginHotkey item = lvCustomHotkey.SelectedItem as CustomPluginHotkey;
             if (item == null)
             {
-                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("pleaseSelectAnItem"));
+                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("pleaseSelectAnItem"));
                 return;
             }
 
-            string deleteWarning = string.Format(InternationalizationManager.Internationalization.GetTranslation("deleteCustomHotkeyWarning"), item.Hotkey);
-            if (MessageBox.Show(deleteWarning, InternationalizationManager.Internationalization.GetTranslation("delete"), MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            string deleteWarning = string.Format(InternationalizationManager.Instance.GetTranslation("deleteCustomHotkeyWarning"), item.Hotkey);
+            if (MessageBox.Show(deleteWarning, InternationalizationManager.Instance.GetTranslation("delete"), MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 UserSettingStorage.Instance.CustomPluginHotkeys.Remove(item);
                 lvCustomHotkey.Items.Refresh();
@@ -354,7 +344,7 @@ namespace Wox
             }
             else
             {
-                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("pleaseSelectAnItem"));
+                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("pleaseSelectAnItem"));
             }
         }
 
@@ -488,7 +478,7 @@ namespace Wox
                 pluginTitle.Text = pair.Metadata.Name;
                 pluginTitle.Cursor = Cursors.Hand;
                 pluginActionKeyword.Text = pair.Metadata.ActionKeyword;
-                pluginAuthor.Text = InternationalizationManager.Internationalization.GetTranslation("author") + ": " + pair.Metadata.Author;
+                pluginAuthor.Text = InternationalizationManager.Instance.GetTranslation("author") + ": " + pair.Metadata.Author;
                 pluginSubTitle.Text = pair.Metadata.Description;
                 pluginId = pair.Metadata.ID;
                 pluginIcon.Source = ImageLoader.ImageLoader.Load(pair.Metadata.FullIcoPath);
@@ -627,17 +617,17 @@ namespace Wox
             {
                 if (string.IsNullOrEmpty(tbProxyServer.Text))
                 {
-                    MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("serverCantBeEmpty"));
+                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("serverCantBeEmpty"));
                     return;
                 }
                 if (string.IsNullOrEmpty(tbProxyPort.Text))
                 {
-                    MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("portCantBeEmpty"));
+                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("portCantBeEmpty"));
                     return;
                 }
                 if (!int.TryParse(tbProxyPort.Text, out port))
                 {
-                    MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("invalidPortFormat"));
+                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("invalidPortFormat"));
                     return;
                 }
             }
@@ -648,25 +638,25 @@ namespace Wox
             UserSettingStorage.Instance.ProxyPassword = tbProxyPassword.Password;
             UserSettingStorage.Instance.Save();
 
-            MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("saveProxySuccessfully"));
+            MessageBox.Show(InternationalizationManager.Instance.GetTranslation("saveProxySuccessfully"));
         }
 
         private void btnTestProxy_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(tbProxyServer.Text))
             {
-                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("serverCantBeEmpty"));
+                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("serverCantBeEmpty"));
                 return;
             }
             if (string.IsNullOrEmpty(tbProxyPort.Text))
             {
-                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("portCantBeEmpty"));
+                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("portCantBeEmpty"));
                 return;
             }
             int port;
             if (!int.TryParse(tbProxyPort.Text, out port))
             {
-                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("invalidPortFormat"));
+                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("invalidPortFormat"));
                 return;
             }
 
@@ -687,31 +677,22 @@ namespace Wox
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("proxyIsCorrect"));
+                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("proxyIsCorrect"));
                 }
                 else
                 {
-                    MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("proxyConnectFailed"));
+                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("proxyConnectFailed"));
                 }
             }
             catch
             {
-                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("proxyConnectFailed"));
+                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("proxyConnectFailed"));
             }
         }
 
         private void tbWebsite_MouseUp(object sender, MouseButtonEventArgs e)
         {
             Process.Start("http://www.getwox.com");
-        }
-
-        private void tbNewVersionAvailable_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            Release newRelease = new UpdateChecker().CheckUpgrade();
-            if (newRelease != null)
-            {
-                Process.Start("http://www.getwox.com/release/version/" + newRelease.version);
-            }
         }
     }
 }

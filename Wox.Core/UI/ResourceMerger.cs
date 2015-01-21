@@ -39,7 +39,7 @@ namespace Wox.Core.UI
 
             foreach (var pluginI18n in pluginI18ns)
             {
-                string languageFile = InternationalizationManager.Internationalization.GetLanguageFile(
+                string languageFile = InternationalizationManager.Instance.GetLanguageFile(
                     ((IPluginI18n)Activator.CreateInstance(pluginI18n)).GetLanguagesFolder());
                 if (!string.IsNullOrEmpty(languageFile))
                 {

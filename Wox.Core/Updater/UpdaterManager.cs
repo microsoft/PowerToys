@@ -6,6 +6,8 @@ using System.Windows.Threading;
 using NAppUpdate.Framework;
 using NAppUpdate.Framework.Common;
 using NAppUpdate.Framework.Sources;
+using Wox.Core.i18n;
+using Wox.Core.UserSettings;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Core.Updater
@@ -31,11 +33,14 @@ namespace Wox.Core.Updater
             UpdateManager.Instance.UpdateSource = GetUpdateSource();
         }
 
+        public bool IsUpdateAvailable()
+        {
+            return UpdateManager.Instance.UpdatesAvailable > 0;
+        }
+
         public void CheckUpdate()
         {
-            // Get a local pointer to the UpdateManager instance
             UpdateManager updManager = UpdateManager.Instance;
-
             updManager.BeginCheckForUpdates(asyncResult =>
             {
                 if (asyncResult.IsCompleted)
@@ -43,9 +48,9 @@ namespace Wox.Core.Updater
                     // still need to check for caught exceptions if any and rethrow
                     try
                     {
-                        ((UpdateProcessAsyncResult) asyncResult).EndInvoke();
+                        ((UpdateProcessAsyncResult)asyncResult).EndInvoke();
                     }
-                    catch(System.Exception e)
+                    catch (System.Exception e)
                     {
                         Log.Error(e);
                         updManager.CleanUp();
@@ -55,7 +60,6 @@ namespace Wox.Core.Updater
                     // No updates were found, or an error has occured. We might want to check that...
                     if (updManager.UpdatesAvailable == 0)
                     {
-                        MessageBox.Show("All is up to date!");
                         return;
                     }
                 }
@@ -63,53 +67,44 @@ namespace Wox.Core.Updater
                 updManager.BeginPrepareUpdates(result =>
                 {
                     ((UpdateProcessAsyncResult)result).EndInvoke();
+                    string updateReady = InternationalizationManager.Instance.GetTranslation("update_wox_update_ready");
+                    string updateInstall = InternationalizationManager.Instance.GetTranslation("update_wox_update_install");
+                    updateInstall = string.Format(updateInstall, updManager.UpdatesAvailable);
+                    DialogResult dr = MessageBox.Show(updateInstall, updateReady, MessageBoxButtons.YesNo);
 
-                    // ApplyUpdates is a synchronous method by design. Make sure to save all user work before calling
-                    // it as it might restart your application
-                    // get out of the way so the console window isn't obstructed
-                    try
+                    if (dr == DialogResult.Yes)
                     {
-                        updManager.ApplyUpdates(true,false,true);
-                    }
-                    catch
-                    {
-                        // this.WindowState = WindowState.Normal;
-                        MessageBox.Show(
-                            "An error occurred while trying to install software updates");
-                    }
 
-                    updManager.CleanUp();
+                        // ApplyUpdates is a synchronous method by design. Make sure to save all user work before calling
+                        // it as it might restart your application
+                        // get out of the way so the console window isn't obstructed
+                        try
+                        {
+                            updManager.ApplyUpdates(true, UserSettingStorage.Instance.EnableUpdateLog, false);
+                        }
+                        catch (System.Exception e)
+                        {
+                            string updateError =
+                                InternationalizationManager.Instance.GetTranslation("update_wox_update_error");
+                            Log.Error(e);
+                            MessageBox.Show(updateError);
+                        }
+
+                        updManager.CleanUp();
+                    }
+                    else
+                    {
+                        updManager.CleanUp();
+                    }
                 }, null);
             }, null);
-        }
-
-        public void Reinstall()
-        {
-            UpdateManager.Instance.ReinstateIfRestarted();
-        }
-
-        private void OnPrepareUpdatesCompleted(bool obj)
-        {
-            UpdateManager updManager = UpdateManager.Instance;
-
-            DialogResult dr = MessageBox.Show(
-                    "Updates are ready to install. Do you wish to install them now?",
-                    "Software updates ready",
-                     MessageBoxButtons.YesNo);
-
-            if (dr == DialogResult.Yes)
-            {
-                // This is a synchronous method by design, make sure to save all user work before calling
-                // it as it might restart your application
-                updManager.ApplyUpdates(true,true,true);
-            }
         }
 
         private IUpdateSource GetUpdateSource()
         {
             // Normally this would be a web based source.
             // But for the demo app, we prepare an in-memory source.
-            var source = new NAppUpdate.Framework.Sources.SimpleWebSource("http://127.0.0.1:8888/Update.xml");
+            var source = new SimpleWebSource("http://127.0.0.1:8888/Update.xml");
             return source;
         }
     }
