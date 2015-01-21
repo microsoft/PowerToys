@@ -15,14 +15,6 @@ namespace Wox.Test.Plugins
     public class PluginInitTest
     {
         [Test]
-        public void CouldNotFindUserProfileTest()
-        {
-            var api = new Mock<IPublicAPI>();
-            Environment.SetEnvironmentVariable("USERPROFILE", "");
-            Assert.Throws(typeof(WoxCritialException), () => PluginManager.Init(api.Object));
-        }
-
-        [Test]
         public void PublicAPIIsNullTest()
         {
             Assert.Throws(typeof(WoxCritialException), () => PluginManager.Init(null));
