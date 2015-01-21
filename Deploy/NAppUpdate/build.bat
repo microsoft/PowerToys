@@ -1,1 +1,1 @@
-%~dp0FeedBuilder.exe "FeedBuilder.config" -Build
+%~dp0FeedBuilder.exe "%~dp0FeedBuilder.config" -Build
