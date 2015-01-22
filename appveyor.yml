@@ -1,5 +1,4 @@
 version: 1.1.1.{build}
-os: unstable
 configuration:
     Release
 
@@ -15,7 +14,7 @@ build:
 
 after_test:
     - ps: .\deploy\nuget\pack.ps1
-    - cmd: .\deploy\NAppUpdate\build.bat
+    - cmd: .\deploy\UpdateGenerator\build.bat
 
 deploy:
     provider: NuGet
