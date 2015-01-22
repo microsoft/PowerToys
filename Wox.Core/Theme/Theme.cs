@@ -102,7 +102,7 @@ namespace Wox.Core.Theme
                         .Where(filePath => filePath.EndsWith(".xaml") && !filePath.EndsWith("Base.xaml"))
                         .ToList());
             }
-            return themes;
+            return themes.OrderBy(o => o).ToList();
         }
 
         private string GetThemePath(string themeName)

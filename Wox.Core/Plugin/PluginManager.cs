@@ -109,7 +109,7 @@ namespace Wox.Core.Plugin
         {
             get
             {
-                return plugins;
+                return plugins.OrderBy(o => o.Metadata.Name).ToList();
             }
         }
 
