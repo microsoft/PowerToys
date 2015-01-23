@@ -7,7 +7,7 @@
 		xmlns:converters="clr-namespace:Wox.Converters"
 		xmlns:userSettings="clr-namespace:Wox.Core.UserSettings;assembly=Wox.Core"
 		Icon="Images\app.png"
-		Title="Wox Settings"
+		Title="{DynamicResource woxsettings}"
 		ResizeMode="NoResize"
 		WindowStartupLocation="CenterScreen"
 		Height="600" Width="800">
@@ -310,6 +310,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="30"></RowDefinition>
                     <RowDefinition Height="30"></RowDefinition>
+                    <RowDefinition Height="30"></RowDefinition>
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Column="0" Grid.Row="0" Margin="6" Text="{DynamicResource website}"></TextBlock>
@@ -319,6 +320,8 @@
                 <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal">
                     <TextBlock  Margin="6" HorizontalAlignment="Left" x:Name="tbVersion" Text="1.0.0"></TextBlock>
                 </StackPanel>
+                
+                <TextBlock x:Name="tbActivatedTimes" Grid.Row="2" Margin="6" Grid.ColumnSpan="2" Text="{DynamicResource about_activate_times}"></TextBlock>
             </Grid>
         </TabItem>
     </TabControl>

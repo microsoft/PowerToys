@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using System.Drawing;
+using System.Reflection;
 
 namespace Wox.Core.UserSettings
 {
@@ -13,6 +14,10 @@ namespace Wox.Core.UserSettings
     {
         [JsonProperty]
         public bool DontPromptUpdateMsg { get; set; }
+
+        [JsonProperty]
+        public int ActivateTimes { get; set; }
+
 
         [JsonProperty]
         public bool EnableUpdateLog { get; set; }
@@ -140,20 +145,21 @@ namespace Wox.Core.UserSettings
 
         protected override string ConfigFolder
         {
-            get
-            {
-                string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
-                if (userProfilePath == null)
-                {
-                    throw new ArgumentException("Environment variable USERPROFILE is empty");
-                }
-                return Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Config");
-            }
+            get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
         }
 
         protected override string ConfigName
         {
             get { return "config"; }
+        }
+
+        public void IncreaseActivateTimes()
+        {
+            ActivateTimes++;
+            if (ActivateTimes % 15 == 0)
+            {
+                Save();
+            }
         }
 
         protected override UserSettingStorage LoadDefault()

@@ -21,6 +21,7 @@ using Microsoft.Win32;
 using Wox.Core.i18n;
 using Wox.Core.Theme;
 using Wox.Core.UserSettings;
+using Wox.Core.Version;
 
 namespace Wox
 {
@@ -216,7 +217,10 @@ namespace Wox
 
             #region About
 
-            tbVersion.Text = ConfigurationManager.AppSettings["version"];
+            tbVersion.Text = VersionManager.Instance.CurrentVersion.ToString();
+            string activateTimes = string.Format(InternationalizationManager.Instance.GetTranslation("about_activate_times"),
+                UserSettingStorage.Instance.ActivateTimes);
+            tbActivatedTimes.Text = activateTimes;
 
             #endregion
 

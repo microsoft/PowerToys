@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using System.IO;
+using System.Reflection;
 
 namespace Wox.Storage
 {
@@ -14,15 +15,7 @@ namespace Wox.Storage
 
         protected override string ConfigFolder
         {
-            get
-            {
-                string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
-                if (userProfilePath == null)
-                {
-                    throw new ArgumentException("Environment variable USERPROFILE is empty");
-                }
-                return Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Config");
-            }
+            get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
         }
 
         protected override string ConfigName

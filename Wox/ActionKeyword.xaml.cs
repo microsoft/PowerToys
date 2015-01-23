@@ -57,7 +57,7 @@ namespace Wox
             }
 
             //check new action keyword didn't used by other plugin
-            if (PluginManager.AllPlugins.Exists(o => o.Metadata.ActionKeyword == tbAction.Text.Trim()))
+            if (tbAction.Text.Trim() != PluginManager.ActionKeywordWildcard && PluginManager.AllPlugins.Exists(o => o.Metadata.ActionKeyword == tbAction.Text.Trim()))
             {
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("newActionKeywordHasBeenAssigned"));
                 return;

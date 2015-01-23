@@ -292,6 +292,7 @@ namespace Wox
             if (!IsVisible)
             {
                 ShowWox();
+                UserSettingStorage.Instance.IncreaseActivateTimes();
             }
             else
             {

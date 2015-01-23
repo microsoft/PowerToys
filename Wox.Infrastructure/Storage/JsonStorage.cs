@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Newtonsoft.Json;
 
 namespace Wox.Infrastructure.Storage
@@ -12,6 +13,7 @@ namespace Wox.Infrastructure.Storage
     /// </summary>
     public abstract class JsonStrorage<T> : BaseStorage<T> where T : class, IStorage, new()
     {
+        private static object syncObject = new object();
         protected override string FileSuffix
         {
             get { return ".json"; }
@@ -39,8 +41,14 @@ namespace Wox.Infrastructure.Storage
 
         protected override void SaveInternal()
         {
-            string json = JsonConvert.SerializeObject(serializedObject, Formatting.Indented);
-            File.WriteAllText(ConfigPath, json);
+            ThreadPool.QueueUserWorkItem(o =>
+            {
+                lock (syncObject)
+                {
+                    string json = JsonConvert.SerializeObject(serializedObject, Formatting.Indented);
+                    File.WriteAllText(ConfigPath, json);
+                }
+            });
         }
     }
 }

@@ -8,6 +8,7 @@
 
     
     <!--Setting General-->
+    <system:String x:Key="woxsettings">Wox Settings</system:String>
     <system:String x:Key="general">General</system:String>
     <system:String x:Key="startWoxOnSystemStartup">Start Wox on system startup</system:String>
     <system:String x:Key="hideWoxWhenLoseFocus">Hide Wox when loses focus</system:String>
@@ -61,6 +62,7 @@
     <system:String x:Key="about">About</system:String>
     <system:String x:Key="website">Website</system:String>
     <system:String x:Key="version">Version</system:String>
+    <system:String x:Key="about_activate_times">You have activated Wox {0} times</system:String>
 
     <!--Action Keyword Setting Dialog-->
     <system:String x:Key="oldActionKeyword">Old Action Keyword</system:String>
@@ -71,6 +73,8 @@
     <system:String x:Key="newActionKeywordCannotBeEmpty">New Action Keyword can't be empty</system:String>
     <system:String x:Key="newActionKeywordHasBeenAssigned">New ActionKeyword has been assigned to other plugin, please assign another new action keyword</system:String>
     <system:String x:Key="succeed">Succeed</system:String>
+    <system:String x:Key="actionkeyword_tips">Use * if you don't want to specify a action keyword</system:String>
+    
     
     <!--Custom Query Hotkey Dialog-->
     <system:String x:Key="preview">Preview</system:String>
