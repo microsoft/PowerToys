@@ -197,7 +197,7 @@ namespace Wox.Plugin.PluginManagement
         private List<Result> ListUnInstalledPlugins(Query query)
         {
             List<Result> results = new List<Result>();
-            List<PluginMetadata> allInstalledPlugins = ParseUserPlugins();
+            List<PluginMetadata> allInstalledPlugins = ParseRegularPlugins();
             if (query.ActionParameters.Count > 1)
             {
                 string pluginName = query.ActionParameters[1];
@@ -235,7 +235,7 @@ namespace Wox.Plugin.PluginManagement
         private List<Result> ListInstalledPlugins()
         {
             List<Result> results = new List<Result>();
-            foreach (PluginMetadata plugin in ParseUserPlugins())
+            foreach (PluginMetadata plugin in ParseRegularPlugins())
             {
                 results.Add(new Result()
                 {
@@ -247,7 +247,7 @@ namespace Wox.Plugin.PluginManagement
             return results;
         }
 
-        private static List<PluginMetadata> ParseUserPlugins()
+        private static List<PluginMetadata> ParseRegularPlugins()
         {
             List<PluginMetadata> pluginMetadatas = new List<PluginMetadata>();
             if (!Directory.Exists(PluginPath))

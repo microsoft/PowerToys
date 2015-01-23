@@ -9,14 +9,14 @@ using Wox.Plugin;
 
 namespace Wox.Core.Plugin.QueryDispatcher
 {
-    public class UserPluginQueryDispatcher : IQueryDispatcher
+    public class RegularPluginQueryDispatcher : IQueryDispatcher
     {
         public void Dispatch(Query query)
         {
-            PluginPair userPlugin = PluginManager.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.ActionName);
-            if (userPlugin != null && !string.IsNullOrEmpty(userPlugin.Metadata.ActionKeyword))
+            PluginPair regularPlugin = PluginManager.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.ActionName);
+            if (regularPlugin != null && !string.IsNullOrEmpty(regularPlugin.Metadata.ActionKeyword))
             {
-                var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == userPlugin.Metadata.ID);
+                var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == regularPlugin.Metadata.ID);
                 if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
                 {
                     //need to stop the loading animation
@@ -28,12 +28,12 @@ namespace Wox.Core.Plugin.QueryDispatcher
                 {
                     try
                     {
-                        List<Result> results = userPlugin.Plugin.Query(query) ?? new List<Result>();
-                        PluginManager.API.PushResults(query,userPlugin.Metadata,results);
+                        List<Result> results = regularPlugin.Plugin.Query(query) ?? new List<Result>();
+                        PluginManager.API.PushResults(query,regularPlugin.Metadata,results);
                     }
                     catch (System.Exception e)
                     {
-                        throw new WoxPluginException(userPlugin.Metadata.Name, e);
+                        throw new WoxPluginException(regularPlugin.Metadata.Name, e);
                     }
                 });
             }

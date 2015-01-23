@@ -17,7 +17,7 @@ namespace Wox.Plugin.PluginIndicator
 
             if (allPlugins.Count == 0)
             {
-                allPlugins = context.API.GetAllPlugins().Where(o => !PluginManager.IsSystemPlugin(o.Metadata)).ToList();
+                allPlugins = context.API.GetAllPlugins().Where(o => !PluginManager.IsWildcardPlugin(o.Metadata)).ToList();
             }
 
             foreach (PluginMetadata metadata in allPlugins.Select(o => o.Metadata))

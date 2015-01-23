@@ -5,13 +5,12 @@ using Wox.Core.Exception;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
-//using Wox.Plugin.SystemPlugins;
 
 namespace Wox.Core.Plugin.QueryDispatcher
 {
-    public class SystemPluginQueryDispatcher : IQueryDispatcher
+    public class WildcardPluginQueryDispatcher : IQueryDispatcher
     {
-        private IEnumerable<PluginPair> allSytemPlugins = PluginManager.AllPlugins.Where(o => PluginManager.IsSystemPlugin(o.Metadata));
+        private IEnumerable<PluginPair> allSytemPlugins = PluginManager.AllPlugins.Where(o => PluginManager.IsWildcardPlugin(o.Metadata));
 
         public void Dispatch(Query query)
         {

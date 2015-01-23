@@ -19,6 +19,8 @@ namespace Wox.Core.Plugin
     /// </summary>
     public static class PluginManager
     {
+        public const string ActionKeywordWildcard = "*";
+
         public static String DebuggerMode { get; private set; }
         public static IPublicAPI API { get; private set; }
 
@@ -113,16 +115,16 @@ namespace Wox.Core.Plugin
             }
         }
 
-        public static bool IsUserPluginQuery(Query query)
+        public static bool IsRegularPluginQuery(Query query)
         {
             if (string.IsNullOrEmpty(query.ActionName)) return false;
 
             return plugins.Any(o => o.Metadata.PluginType == PluginType.User && o.Metadata.ActionKeyword == query.ActionName);
         }
 
-        public static bool IsSystemPlugin(PluginMetadata metadata)
+        public static bool IsWildcardPlugin(PluginMetadata metadata)
         {
-            return metadata.ActionKeyword == "*";
+            return metadata.ActionKeyword == ActionKeywordWildcard;
         }
 
         public static void ActivatePluginDebugger(string path)

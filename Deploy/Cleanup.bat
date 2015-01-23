@@ -1,3 +1,4 @@
+echo "start clean"
 cd /d %~dp0
 
 REM Clean Plugins

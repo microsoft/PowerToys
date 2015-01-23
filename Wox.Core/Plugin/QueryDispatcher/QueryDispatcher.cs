@@ -3,12 +3,12 @@ namespace Wox.Core.Plugin.QueryDispatcher
 {
     internal static class QueryDispatcher
     {
-        private static IQueryDispatcher pluginCmd = new UserPluginQueryDispatcher();
-        private static IQueryDispatcher systemCmd = new SystemPluginQueryDispatcher();
+        private static IQueryDispatcher pluginCmd = new RegularPluginQueryDispatcher();
+        private static IQueryDispatcher systemCmd = new WildcardPluginQueryDispatcher();
 
         public static void Dispatch(Wox.Plugin.Query query)
         {
-            if (PluginManager.IsUserPluginQuery(query))
+            if (PluginManager.IsRegularPluginQuery(query))
             {
                 pluginCmd.Dispatch(query);
             }
