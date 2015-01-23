@@ -1,6 +1,7 @@
 cd /d %~dp0
 
 REM Clean Plugins
+echo "clean plugins"
 cd ..\Output\Release\Plugins
 del NLog.dll /s
 del NLog.config /s
@@ -16,5 +17,6 @@ del Newtonsoft.Json.dll /s
 del WindowsInput.dll /s
 
 REM Clean Wox
+echo "wox"
 cd ..
 del *.xml
