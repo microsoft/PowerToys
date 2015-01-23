@@ -50,9 +50,8 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
-    <Reference Include="WindowsInput, Version=0.2.0.0, Culture=neutral, PublicKeyToken=9b287f7dc5073cad, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\WindowsInput.0.2.0.0\lib\net20\WindowsInput.dll</HintPath>
+    <Reference Include="WindowsInput">
+      <HintPath>..\..\packages\InputSimulator.1.0.4.0\lib\net20\WindowsInput.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
