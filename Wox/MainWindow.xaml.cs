@@ -541,6 +541,44 @@ namespace Wox
                     }
                     e.Handled = true;
                     break;
+
+                case Key.D1:
+                    SelectItem(1);
+                    break;
+
+                case Key.D2:
+                    SelectItem(2);
+                    break;
+
+                case Key.D3:
+                    SelectItem(3);
+                    break;
+
+                case Key.D4:
+                    SelectItem(4);
+                    break;
+
+                case Key.D5:
+                    SelectItem(5);
+                    break;
+                case Key.D6:
+                    SelectItem(6);
+                    break;
+
+            }
+        }
+
+        private void SelectItem(int index)
+        {
+            int zeroBasedIndex = index - 1;
+            SpecialKeyState keyState = GlobalHotkey.Instance.CheckModifiers();
+            if (keyState.AltPressed || keyState.CtrlPressed)
+            {
+                List<Result> visibleResults = pnlResult.GetVisibleResults();
+                if (zeroBasedIndex < visibleResults.Count)
+                {
+                    SelectResult(visibleResults[zeroBasedIndex]);
+                }
             }
         }
 
