@@ -9,18 +9,6 @@ namespace Wox.Plugin
 {
     public class PluginMetadata
     {
-        private int configVersion = 1;
-
-        /// <summary>
-        /// if we need to change the plugin config in the futher, use this to
-        /// indicate config version
-        /// </summary>
-        [Obsolete]
-        public int ConfigVersion
-        {
-            get { return configVersion; }
-            set { configVersion = value; }
-        }
         public string ID { get; set; }
         public string Name { get; set; }
         public string Author { get; set; }
@@ -37,12 +25,6 @@ namespace Wox.Plugin
 
         public string ExecuteFileName { get; set; }
         public string PluginDirectory { get; set; }
-
-        [Obsolete("This property has been obsoleted, use PluginDirectory instead")]
-        public string PluginDirecotry
-        {
-            get { return PluginDirectory; }
-        }
 
         public string ActionKeyword { get; set; }
         public PluginType PluginType { get; set; }
