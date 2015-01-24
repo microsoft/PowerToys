@@ -8,7 +8,6 @@ namespace Wox.Plugin
 
     public class Result
     {
-
         public string Title { get; set; }
         public string SubTitle { get; set; }
         public string IcoPath { get; set; }
@@ -35,20 +34,14 @@ namespace Wox.Plugin
         public int Score { get; set; }
 
         /// <summary>
-        /// Auto add scores for MRU items
-        /// </summary>
-        public bool AutoAjustScore { get; set; }
-
-        //todo: this should be controlled by system, not visible to users
-        /// <summary>
         /// Only resulsts that originQuery match with curren query will be displayed in the panel
         /// </summary>
-        public Query OriginQuery { get; set; }
+        internal Query OriginQuery { get; set; }
 
         /// <summary>
-        /// Don't set this property if you are developing a plugin
+        /// Plugin directory
         /// </summary>
-        public string PluginDirectory { get; set; }
+        public string PluginDirectory { get; internal set; }
 
         public new bool Equals(object obj)
         {
@@ -75,6 +68,14 @@ namespace Wox.Plugin
             this.SubTitle = SubTitle;
         }
 
-        public List<Result> ContextMenu { get; set; } 
+        /// <summary>
+        /// Context menus associate with this result
+        /// </summary>
+        public List<Result> ContextMenu { get; set; }
+
+        /// <summary>
+        /// Plugin ID that generate this result
+        /// </summary>
+        public string PluginID { get; set; }
     }
 }

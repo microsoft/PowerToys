@@ -653,12 +653,10 @@ namespace Wox
 
             if (list.Count > 0)
             {
-                //todo:this should be opened to users, it's their choice to use it or not in their workflows
-                list.ForEach(
-                    o =>
-                    {
-                        if (o.AutoAjustScore) o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o) * 5;
-                    });
+                list.ForEach(o =>
+                {
+                    o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o) * 5;
+                });
                 List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
                 Dispatcher.Invoke(new Action(() =>
                 {

@@ -23,7 +23,10 @@ namespace Wox.Core.Plugin.QueryDispatcher
                     try
                     {
                         List<Result> results = pair1.Plugin.Query(query);
-                        results.ForEach(o => { o.AutoAjustScore = true; });
+                        results.ForEach(o =>
+                        {
+                            o.PluginID = pair1.Metadata.ID;
+                        });
 
                         PluginManager.API.PushResults(query, pair1.Metadata, results);
                     }

@@ -15,7 +15,7 @@ namespace Wox.Storage
 
         protected override string ConfigFolder
         {
-            get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
+            get { return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Config"); }
         }
 
         protected override string ConfigName

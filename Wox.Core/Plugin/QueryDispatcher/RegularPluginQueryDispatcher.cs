@@ -29,7 +29,11 @@ namespace Wox.Core.Plugin.QueryDispatcher
                     try
                     {
                         List<Result> results = regularPlugin.Plugin.Query(query) ?? new List<Result>();
-                        PluginManager.API.PushResults(query,regularPlugin.Metadata,results);
+                        results.ForEach(o =>
+                        {
+                            o.PluginID = regularPlugin.Metadata.ID;
+                        });
+                        PluginManager.API.PushResults(query, regularPlugin.Metadata, results);
                     }
                     catch (System.Exception e)
                     {

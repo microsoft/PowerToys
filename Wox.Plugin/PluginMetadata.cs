@@ -15,6 +15,7 @@ namespace Wox.Plugin
         /// if we need to change the plugin config in the futher, use this to
         /// indicate config version
         /// </summary>
+        [Obsolete]
         public int ConfigVersion
         {
             get { return configVersion; }
