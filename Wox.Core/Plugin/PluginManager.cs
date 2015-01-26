@@ -121,13 +121,10 @@ namespace Wox.Core.Plugin
         public static bool IsUserPluginQuery(Query query)
         {
             if (string.IsNullOrEmpty(query.RawQuery)) return false;
-
             var strings = query.RawQuery.Split(' ');
-            var actionKeyword = string.Empty;
-            if (strings.Length > 0)
-            {
-                actionKeyword = strings[0].Trim();
-            }
+            if(strings.Length == 1) return false;
+
+            var actionKeyword = strings[0].Trim();
             if (string.IsNullOrEmpty(actionKeyword)) return false;
 
             return plugins.Any(o => o.Metadata.PluginType == PluginType.User && o.Metadata.ActionKeyword == actionKeyword);

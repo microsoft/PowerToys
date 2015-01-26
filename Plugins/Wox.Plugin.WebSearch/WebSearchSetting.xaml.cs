@@ -14,7 +14,7 @@ namespace Wox.Plugin.WebSearch
         private string defaultWebSearchImageDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Images\\websearch");
         private WebSearchesSetting settingWindow;
         private bool update;
-        private Core.UserSettings.WebSearch updateWebSearch;
+        private WebSearch updateWebSearch;
         private PluginInitContext context;
 
         public WebSearchSetting(WebSearchesSetting settingWidow,PluginInitContext context)
@@ -24,9 +24,9 @@ namespace Wox.Plugin.WebSearch
             InitializeComponent();
         }
 
-        public void UpdateItem(Core.UserSettings.WebSearch webSearch)
+        public void UpdateItem(WebSearch webSearch)
         {
-            updateWebSearch = UserSettingStorage.Instance.WebSearches.FirstOrDefault(o => o == webSearch);
+            updateWebSearch = WebSearchStorage.Instance.WebSearches.FirstOrDefault(o => o == webSearch);
             if (updateWebSearch == null || string.IsNullOrEmpty(updateWebSearch.Url))
             {
 
@@ -91,13 +91,13 @@ namespace Wox.Plugin.WebSearch
 
             if (!update)
             {
-                if (UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == action))
+                if (WebSearchStorage.Instance.WebSearches.Exists(o => o.ActionWord == action))
                 {
                     string warning = context.API.GetTranslation("wox_plugin_websearch_action_keyword_exist");
                     MessageBox.Show(warning);
                     return;
                 }
-                UserSettingStorage.Instance.WebSearches.Add(new Core.UserSettings.WebSearch()
+                WebSearchStorage.Instance.WebSearches.Add(new WebSearch()
                 {
                     ActionWord = action,
                     Enabled = cbEnable.IsChecked ?? false,
@@ -110,7 +110,7 @@ namespace Wox.Plugin.WebSearch
             }
             else
             {
-                if (UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == action && o != updateWebSearch))
+                if (WebSearchStorage.Instance.WebSearches.Exists(o => o.ActionWord == action && o != updateWebSearch))
                 {
                     string warning = context.API.GetTranslation("wox_plugin_websearch_action_keyword_exist");
                     MessageBox.Show(warning);

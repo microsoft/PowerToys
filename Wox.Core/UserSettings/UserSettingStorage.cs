@@ -56,9 +56,6 @@ namespace Wox.Core.UserSettings
         public string ResultItemFontStretch { get; set; }
 
         [JsonProperty]
-        public List<WebSearch> WebSearches { get; set; }
-
-        [JsonProperty]
         public double WindowLeft { get; set; }
 
         [JsonProperty]
@@ -72,17 +69,13 @@ namespace Wox.Core.UserSettings
         [JsonProperty]
         public bool StartWoxOnSystemStartup { get; set; }
 
+        [Obsolete]
         [JsonProperty]
         public double Opacity { get; set; }
 
+        [Obsolete]
         [JsonProperty]
         public OpacityMode OpacityMode { get; set; }
-
-        [JsonProperty]
-        public bool EnableWebSearchSuggestion { get; set; }
-
-        [JsonProperty]
-        public string WebSearchSuggestionSource { get; set; }
 
         [JsonProperty]
         public bool LeaveCmdOpen { get; set; }
@@ -104,44 +97,6 @@ namespace Wox.Core.UserSettings
 
         [JsonProperty]
         public string ProxyPassword { get; set; }
-
-        public List<WebSearch> LoadDefaultWebSearches()
-        {
-            List<WebSearch> webSearches = new List<WebSearch>();
-
-            WebSearch googleWebSearch = new WebSearch()
-            {
-                Title = "Google",
-                ActionWord = "g",
-                IconPath = Path.GetDirectoryName(Application.ExecutablePath) + @"\Images\websearch\google.png",
-                Url = "https://www.google.com/search?q={q}",
-                Enabled = true
-            };
-            webSearches.Add(googleWebSearch);
-
-
-            WebSearch wikiWebSearch = new WebSearch()
-            {
-                Title = "Wikipedia",
-                ActionWord = "wiki",
-                IconPath = Path.GetDirectoryName(Application.ExecutablePath) + @"\Images\websearch\wiki.png",
-                Url = "http://en.wikipedia.org/wiki/{q}",
-                Enabled = true
-            };
-            webSearches.Add(wikiWebSearch);
-
-            WebSearch findIcon = new WebSearch()
-            {
-                Title = "FindIcon",
-                ActionWord = "findicon",
-                IconPath = Path.GetDirectoryName(Application.ExecutablePath) + @"\Images\websearch\pictures.png",
-                Url = "http://findicons.com/search/{q}",
-                Enabled = true
-            };
-            webSearches.Add(findIcon);
-
-            return webSearches;
-        }
 
         protected override string ConfigFolder
         {
@@ -167,7 +122,6 @@ namespace Wox.Core.UserSettings
             DontPromptUpdateMsg = false;
             Theme = "Dark";
             Language = "en";
-            WebSearches = LoadDefaultWebSearches();
             CustomizedPluginConfigs = new List<CustomizedPluginConfig>();
             Hotkey = "Alt + Space";
             QueryBoxFont = FontFamily.GenericSansSerif.Name;

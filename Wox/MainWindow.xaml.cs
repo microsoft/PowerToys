@@ -162,10 +162,6 @@ namespace Wox
             InitializeComponent();
             ThreadPool.SetMaxThreads(30, 10);
             ThreadPool.SetMinThreads(10, 5);
-            if (UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow)
-            {
-                this.AllowsTransparency = true;
-            }
 
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
             GlobalHotkey.Instance.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
@@ -241,14 +237,6 @@ namespace Wox
             }
 
             InitProgressbarAnimation();
-
-            //only works for win7+
-            if (UserSettingStorage.Instance.OpacityMode == OpacityMode.DWM)
-                DwmDropShadow.DropShadowToWindow(this);
-
-            this.Background = Brushes.Transparent;
-            HwndSource.FromHwnd(new WindowInteropHelper(this).Handle).CompositionTarget.BackgroundColor = Color.FromArgb(0, 0, 0, 0);
-
             WindowIntelopHelper.DisableControlBox(this);
             UpdaterManager.Instance.CheckUpdate();
         }
@@ -354,7 +342,7 @@ namespace Wox
                     Query(q);
                     Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
                     {
-                        if (!queryHasReturn && originQuery == lastQuery)
+                        if (!queryHasReturn && originQuery == lastQuery && !string.IsNullOrEmpty(lastQuery))
                         {
                             StartProgress();
                         }

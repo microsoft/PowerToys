@@ -24,9 +24,9 @@ namespace Wox.Plugin.WebSearch
 
         private void Setting_Loaded(object sender, RoutedEventArgs e)
         {
-            webSearchView.ItemsSource = UserSettingStorage.Instance.WebSearches;
-            cbEnableWebSearchSuggestion.IsChecked = UserSettingStorage.Instance.EnableWebSearchSuggestion;
-            comboBoxSuggestionSource.Visibility = UserSettingStorage.Instance.EnableWebSearchSuggestion
+            webSearchView.ItemsSource = WebSearchStorage.Instance.WebSearches;
+            cbEnableWebSearchSuggestion.IsChecked = WebSearchStorage.Instance.EnableWebSearchSuggestion;
+            comboBoxSuggestionSource.Visibility = WebSearchStorage.Instance.EnableWebSearchSuggestion
                 ? Visibility.Visible
                 : Visibility.Collapsed;
                 
@@ -35,7 +35,7 @@ namespace Wox.Plugin.WebSearch
                 new ComboBoxItem() {Content = "Google"},
                 new ComboBoxItem() {Content = "Baidu"},
             };
-            ComboBoxItem selected = items.FirstOrDefault(o => o.Content.ToString() == UserSettingStorage.Instance.WebSearchSuggestionSource);
+            ComboBoxItem selected = items.FirstOrDefault(o => o.Content.ToString() == WebSearchStorage.Instance.WebSearchSuggestionSource);
             if (selected == null)
             {
                 selected = items[0];
@@ -58,14 +58,14 @@ namespace Wox.Plugin.WebSearch
 
         private void btnDeleteWebSearch_OnClick(object sender, RoutedEventArgs e)
         {
-            Core.UserSettings.WebSearch selectedWebSearch = webSearchView.SelectedItem as Core.UserSettings.WebSearch;
+            WebSearch selectedWebSearch = webSearchView.SelectedItem as WebSearch;
             if (selectedWebSearch != null)
             {
                 string msg = string.Format(context.API.GetTranslation("wox_plugin_websearch_delete_warning"),selectedWebSearch.Title);
                     
                 if (MessageBox.Show(msg,string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
-                    UserSettingStorage.Instance.WebSearches.Remove(selectedWebSearch);
+                    WebSearchStorage.Instance.WebSearches.Remove(selectedWebSearch);
                     webSearchView.Items.Refresh();
                 }
             }
@@ -78,7 +78,7 @@ namespace Wox.Plugin.WebSearch
 
         private void btnEditWebSearch_OnClick(object sender, RoutedEventArgs e)
         {
-            Core.UserSettings.WebSearch selectedWebSearch = webSearchView.SelectedItem as Core.UserSettings.WebSearch;
+            WebSearch selectedWebSearch = webSearchView.SelectedItem as WebSearch;
             if (selectedWebSearch != null)
             {
                 WebSearchSetting webSearch = new WebSearchSetting(this,context);
@@ -95,23 +95,22 @@ namespace Wox.Plugin.WebSearch
         private void CbEnableWebSearchSuggestion_OnChecked(object sender, RoutedEventArgs e)
         {
             comboBoxSuggestionSource.Visibility = Visibility.Visible;
-            UserSettingStorage.Instance.EnableWebSearchSuggestion = true;
-            UserSettingStorage.Instance.Save();
+            WebSearchStorage.Instance.EnableWebSearchSuggestion = true;
+            WebSearchStorage.Instance.Save();
         }
 
         private void CbEnableWebSearchSuggestion_OnUnchecked(object sender, RoutedEventArgs e)
         {
             comboBoxSuggestionSource.Visibility = Visibility.Collapsed;
-            UserSettingStorage.Instance.EnableWebSearchSuggestion = false;
-            UserSettingStorage.Instance.Save();
+            WebSearchStorage.Instance.EnableWebSearchSuggestion = false;
+            WebSearchStorage.Instance.Save();
         }
 
         private void ComboBoxSuggestionSource_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count > 0)
             {
-                UserSettingStorage.Instance.WebSearchSuggestionSource =
-                    ((ComboBoxItem) e.AddedItems[0]).Content.ToString();
+                WebSearchStorage.Instance.WebSearchSuggestionSource = ((ComboBoxItem) e.AddedItems[0]).Content.ToString();
                 UserSettingStorage.Instance.Save();
             }
         }

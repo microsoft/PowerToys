@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Wox.Core.UserSettings
+namespace Wox.Plugin.WebSearch
 {
     [Serializable]
     public class WebSearch

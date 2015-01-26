@@ -17,8 +17,8 @@ namespace Wox.Plugin.WebSearch
         {
             List<Result> results = new List<Result>();
 
-            Core.UserSettings.WebSearch webSearch =
-                UserSettingStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionWord == query.FirstSearch.Trim() && o.Enabled);
+            WebSearch webSearch =
+                WebSearchStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionWord == query.FirstSearch.Trim() && o.Enabled);
 
             if (webSearch != null)
             {
@@ -46,10 +46,10 @@ namespace Wox.Plugin.WebSearch
                     }
                 });
 
-                if (UserSettingStorage.Instance.EnableWebSearchSuggestion && !string.IsNullOrEmpty(keyword))
+                if (WebSearchStorage.Instance.EnableWebSearchSuggestion && !string.IsNullOrEmpty(keyword))
                 {
                     ISuggestionSource sugg = SuggestionSourceFactory.GetSuggestionSource(
-                            UserSettingStorage.Instance.WebSearchSuggestionSource);
+                            WebSearchStorage.Instance.WebSearchSuggestionSource);
                     if (sugg != null)
                     {
                         var result = sugg.GetSuggestions(keyword);
@@ -80,8 +80,8 @@ namespace Wox.Plugin.WebSearch
         {
             this.context = context;
 
-            if (UserSettingStorage.Instance.WebSearches == null)
-                UserSettingStorage.Instance.WebSearches = UserSettingStorage.Instance.LoadDefaultWebSearches();
+            if (WebSearchStorage.Instance.WebSearches == null)
+                WebSearchStorage.Instance.WebSearches = WebSearchStorage.Instance.LoadDefaultWebSearches();
         }
 
         #region ISettingProvider Members

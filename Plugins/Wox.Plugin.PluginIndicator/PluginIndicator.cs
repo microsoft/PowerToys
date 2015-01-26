@@ -45,18 +45,18 @@ namespace Wox.Plugin.PluginIndicator
                 }
             }
 
-            results.AddRange(UserSettingStorage.Instance.WebSearches.Where(o => o.ActionWord.StartsWith(query.Search) && o.Enabled).Select(n => new Result()
-            {
-                Title = n.ActionWord,
-                SubTitle = string.Format("Activate {0} web search", n.ActionWord),
-                Score = 100,
-                IcoPath = "Images/work.png",
-                Action = (c) =>
-                {
-                    context.API.ChangeQuery(n.ActionWord + " ");
-                    return false;
-                }
-            }));
+            //results.AddRange(UserSettingStorage.Instance.WebSearches.Where(o => o.ActionWord.StartsWith(query.Search) && o.Enabled).Select(n => new Result()
+            //{
+            //    Title = n.ActionWord,
+            //    SubTitle = string.Format("Activate {0} web search", n.ActionWord),
+            //    Score = 100,
+            //    IcoPath = "Images/work.png",
+            //    Action = (c) =>
+            //    {
+            //        context.API.ChangeQuery(n.ActionWord + " ");
+            //        return false;
+            //    }
+            //}));
 
             return results;
         }
