@@ -44,7 +44,7 @@ namespace Wox.Plugin.WebSearch
                             return true;
                         }
                     }
-                },true);
+                });
 
                 if (UserSettingStorage.Instance.EnableWebSearchSuggestion && !string.IsNullOrEmpty(keyword))
                 {

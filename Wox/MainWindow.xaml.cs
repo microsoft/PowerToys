@@ -136,21 +136,23 @@ namespace Wox
         public event AfterWoxQueryEventHandler AfterWoxQueryEvent;
         public event AfterWoxQueryEventHandler BeforeWoxQueryEvent;
 
-        public void PushResults(Query query, PluginMetadata plugin, List<Result> results, bool clearBeforeInsert = false)
+        public void PushResults(Query query, PluginMetadata plugin, List<Result> results)
         {
             results.ForEach(o =>
             {
                 o.PluginDirectory = plugin.PluginDirectory;
+                o.PluginID = plugin.ID;
+                o.OriginQuery = query;
                 if (o.ContextMenu != null)
                 {
                     o.ContextMenu.ForEach(t =>
                     {
                         t.PluginDirectory = plugin.PluginDirectory;
+                        t.PluginID = plugin.ID;
                     });
                 }
-                o.OriginQuery = query;
             });
-            OnUpdateResultView(results, clearBeforeInsert);
+            UpdateResultView(results);
         }
 
         #endregion
@@ -635,7 +637,7 @@ namespace Wox
             }
         }
 
-        private void OnUpdateResultView(List<Result> list, bool clearBeforeInsert = false)
+        private void UpdateResultView(List<Result> list)
         {
             queryHasReturn = true;
             progressBar.Dispatcher.Invoke(new Action(StopProgress));
@@ -650,10 +652,6 @@ namespace Wox
                 List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
                 Dispatcher.Invoke(new Action(() =>
                 {
-                    if (clearBeforeInsert)
-                    {
-                        pnlResult.Clear();
-                    }
                     pnlResult.AddResults(l);
                 }));
             }
