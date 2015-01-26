@@ -28,13 +28,13 @@ namespace Wox.Plugin.Caculator
 
         public List<Result> Query(Query query)
         {
-            if (query.RawQuery.Length <= 2          // don't affect when user only input "e" or "i" keyword
-                || !regValidExpressChar.IsMatch(query.RawQuery) 
-                || !IsBracketComplete(query.RawQuery)) return new List<Result>();
+            if (query.Search.Length <= 2          // don't affect when user only input "e" or "i" keyword
+                || !regValidExpressChar.IsMatch(query.Search)
+                || !IsBracketComplete(query.Search)) return new List<Result>();
 
             try
             {
-                var result = yampContext.Run(query.RawQuery);
+                var result = yampContext.Run(query.Search);
                 if (result.Output != null && !string.IsNullOrEmpty(result.Result))
                 {
                     return new List<Result>() { new Result() { 

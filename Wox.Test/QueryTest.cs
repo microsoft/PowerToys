@@ -10,22 +10,27 @@ namespace Wox.Test
     public class QueryTest
     {
         [Test]
-        public void QueryActionTest()
+        public void UserPluginQueryTest()
         {
-            Query q = new Query("this");
+            Query q = new Query("f file.txt file2 file3");
+            q.Search = "file.txt file2 file3";
 
-            q = new Query("ev file.txt");
-            Assert.AreEqual(q.ActionName,"ev");
-            Assert.AreEqual(q.ActionParameters.Count,1);
-            Assert.AreEqual(q.ActionParameters[0],"file.txt");
+            Assert.AreEqual(q.FirstSearch, "file.txt");
+            Assert.AreEqual(q.SecondSearch, "file2");
+            Assert.AreEqual(q.ThirdSearch, "file3");
+            Assert.AreEqual(q.SecondToEndSearch, "file2 file3");
+        }
 
-            q = new Query("ev file.txt file2.txt");
-            Assert.AreEqual(q.ActionName,"ev");
-            Assert.AreEqual(q.ActionParameters.Count,2);
-            Assert.AreEqual(q.ActionParameters[1],"file2.txt");
+        [Test]
+        public void SystemPluginQueryTest()
+        {
+            Query q = new Query("file.txt file2 file3");
+            q.Search = q.RawQuery;
 
-            q = new Query("ev file.txt file2.tx st");
-            Assert.AreEqual(q.GetAllRemainingParameter(), "file.txt file2.tx st");
+            Assert.AreEqual(q.FirstSearch, "file.txt");
+            Assert.AreEqual(q.SecondSearch, "file2");
+            Assert.AreEqual(q.ThirdSearch, "file3");
+            Assert.AreEqual(q.SecondToEndSearch, "file2 file3");
         }
     }
 }

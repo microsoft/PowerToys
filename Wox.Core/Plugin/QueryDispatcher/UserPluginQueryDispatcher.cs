@@ -9,14 +9,14 @@ using Wox.Plugin;
 
 namespace Wox.Core.Plugin.QueryDispatcher
 {
-    public class RegularPluginQueryDispatcher : IQueryDispatcher
+    public class UserPluginQueryDispatcher : IQueryDispatcher
     {
         public void Dispatch(Query query)
         {
-            PluginPair regularPlugin = PluginManager.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.ActionName);
-            if (regularPlugin != null && !string.IsNullOrEmpty(regularPlugin.Metadata.ActionKeyword))
+            PluginPair userPlugin = PluginManager.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.GetActionKeyword());
+            if (userPlugin != null && !string.IsNullOrEmpty(userPlugin.Metadata.ActionKeyword))
             {
-                var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == regularPlugin.Metadata.ID);
+                var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == userPlugin.Metadata.ID);
                 if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
                 {
                     //need to stop the loading animation
@@ -28,16 +28,16 @@ namespace Wox.Core.Plugin.QueryDispatcher
                 {
                     try
                     {
-                        List<Result> results = regularPlugin.Plugin.Query(query) ?? new List<Result>();
+                        List<Result> results = userPlugin.Plugin.Query(query) ?? new List<Result>();
                         results.ForEach(o =>
                         {
-                            o.PluginID = regularPlugin.Metadata.ID;
+                            o.PluginID = userPlugin.Metadata.ID;
                         });
-                        PluginManager.API.PushResults(query, regularPlugin.Metadata, results);
+                        PluginManager.API.PushResults(query, userPlugin.Metadata, results);
                     }
                     catch (System.Exception e)
                     {
-                        throw new WoxPluginException(regularPlugin.Metadata.Name, e);
+                        throw new WoxPluginException(userPlugin.Metadata.Name, e);
                     }
                 });
             }

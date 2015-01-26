@@ -18,11 +18,11 @@ namespace Wox.Plugin.WebSearch
             List<Result> results = new List<Result>();
 
             Core.UserSettings.WebSearch webSearch =
-                UserSettingStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionWord == query.ActionName && o.Enabled);
+                UserSettingStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionWord == query.FirstSearch.Trim() && o.Enabled);
 
             if (webSearch != null)
             {
-                string keyword = query.ActionParameters.Count > 0 ? query.GetAllRemainingParameter() : "";
+                string keyword = query.SecondToEndSearch;
                 string title = keyword;
                 string subtitle = "Search " + webSearch.Title;
                 if (string.IsNullOrEmpty(keyword))

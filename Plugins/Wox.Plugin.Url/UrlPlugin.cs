@@ -45,9 +45,7 @@ namespace Wox.Plugin.Url
 
         public List<Result> Query(Query query)
         {
-            if(string.IsNullOrEmpty(query.RawQuery)) return  new List<Result>();
-
-            var raw = query.RawQuery;
+            var raw = query.Search;
             if (IsURL(raw))
             {
                 return new List<Result>

@@ -51,6 +51,7 @@
     <Compile Include="HttpRequest.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WoxPluginResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj">

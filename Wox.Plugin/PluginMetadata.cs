@@ -31,6 +31,11 @@ namespace Wox.Plugin
 
         public string IcoPath { get; set; }
 
+        public override string ToString()
+        {
+            return Name;
+        }
+
         public string FullIcoPath
         {
             get

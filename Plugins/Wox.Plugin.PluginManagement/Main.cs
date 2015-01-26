@@ -10,59 +10,37 @@ using Newtonsoft.Json;
 
 namespace Wox.Plugin.PluginManagement
 {
-    public class WoxPluginResult
-    {
-        public string plugin_file;
-        public string description;
-        public int liked_count;
-        public string name;
-        public string version;
-    }
-
     public class Main : IPlugin
     {
         private static string APIBASE = "https://api.getwox.com";
-        private static string PluginPath = AppDomain.CurrentDomain.BaseDirectory + "Plugins";
         private static string PluginConfigName = "plugin.json";
-        private static string pluginSearchUrl = APIBASE +"/plugin/search/";
+        private static string pluginSearchUrl = APIBASE + "/plugin/search/";
         private PluginInitContext context;
 
         public List<Result> Query(Query query)
         {
             List<Result> results = new List<Result>();
-            if (query.ActionParameters.Count == 0)
+            if (string.IsNullOrEmpty(query.Search))
             {
-                results.Add(new Result("wpm install <pluginName>", "Images\\plugin.png", "search and install wox plugins")
+                results.Add(new Result("install <pluginName>", "Images\\plugin.png", "search and install wox plugins")
                 {
-                    Action = e =>
-                    {
-                        context.API.ChangeQuery("wpm install ");
-                        return false;
-                    }
+                    Action = e => ChangeToInstallCommand()
                 });
-                results.Add(new Result("wpm uninstall <pluginName>", "Images\\plugin.png", "uninstall plugin")
+                results.Add(new Result("uninstall <pluginName>", "Images\\plugin.png", "uninstall plugin")
                 {
-                    Action = e =>
-                    {
-                        context.API.ChangeQuery("wpm uninstall ");
-                        return false;
-                    }
+                    Action = e => ChangeToUninstallCommand()
                 });
-                results.Add(new Result("wpm list", "Images\\plugin.png", "list plugins installed")
+                results.Add(new Result("list", "Images\\plugin.png", "list plugins installed")
                 {
-                    Action = e =>
-                    {
-                        context.API.ChangeQuery("wpm list");
-                        return false;
-                    }
+                    Action = e => ChangeToListCommand()
                 });
                 return results;
             }
 
-            if (query.ActionParameters.Count > 0)
+            if (!string.IsNullOrEmpty(query.FirstSearch))
             {
                 bool hit = false;
-                switch (query.ActionParameters[0].ToLower())
+                switch (query.FirstSearch.ToLower())
                 {
                     case "list":
                         hit = true;
@@ -71,51 +49,39 @@ namespace Wox.Plugin.PluginManagement
 
                     case "uninstall":
                         hit = true;
-                        results = ListUnInstalledPlugins(query);
+                        results = UnInstallPlugins(query);
                         break;
 
                     case "install":
                         hit = true;
-                        if (query.ActionParameters.Count > 1)
+                        if (!string.IsNullOrEmpty(query.SecondSearch))
                         {
-                            results = InstallPlugin(query);
+                            results = InstallPlugin(query.SecondSearch);
                         }
                         break;
                 }
 
                 if (!hit)
                 {
-                    if ("install".Contains(query.ActionParameters[0].ToLower()))
+                    if ("install".Contains(query.FirstSearch.ToLower()))
                     {
-                        results.Add(new Result("wpm install <pluginName>", "Images\\plugin.png", "search and install wox plugins")
+                        results.Add(new Result("install <pluginName>", "Images\\plugin.png", "search and install wox plugins")
                         {
-                            Action = e =>
-                            {
-                                context.API.ChangeQuery("wpm install ");
-                                return false;
-                            }
+                            Action = e => ChangeToInstallCommand()
                         });
                     }
-                    if ("uninstall".Contains(query.ActionParameters[0].ToLower()))
+                    if ("uninstall".Contains(query.FirstSearch.ToLower()))
                     {
-                        results.Add(new Result("wpm uninstall <pluginName>", "Images\\plugin.png", "uninstall plugin")
+                        results.Add(new Result("uninstall <pluginName>", "Images\\plugin.png", "uninstall plugin")
                         {
-                            Action = e =>
-                            {
-                                context.API.ChangeQuery("wpm uninstall ");
-                                return false;
-                            }
+                            Action = e => ChangeToUninstallCommand()
                         });
                     }
-                    if ("list".Contains(query.ActionParameters[0].ToLower()))
+                    if ("list".Contains(query.FirstSearch.ToLower()))
                     {
-                        results.Add(new Result("wpm list", "Images\\plugin.png", "list plugins installed")
+                        results.Add(new Result("list", "Images\\plugin.png", "list plugins installed")
                         {
-                            Action = e =>
-                            {
-                                context.API.ChangeQuery("wpm list");
-                                return false;
-                            }
+                            Action = e => ChangeToListCommand()
                         });
                     }
                 }
@@ -124,10 +90,49 @@ namespace Wox.Plugin.PluginManagement
             return results;
         }
 
-        private List<Result> InstallPlugin(Query query)
+        private bool ChangeToListCommand()
+        {
+            if (context.CurrentPluginMetadata.ActionKeyword == "*")
+            {
+                context.API.ChangeQuery("list ");
+            }
+            else
+            {
+                context.API.ChangeQuery(string.Format("{0} list ", context.CurrentPluginMetadata.ActionKeyword));
+            }
+            return false;
+        }
+
+        private bool ChangeToUninstallCommand()
+        {
+            if (context.CurrentPluginMetadata.ActionKeyword == "*")
+            {
+                context.API.ChangeQuery("uninstall ");
+            }
+            else
+            {
+                context.API.ChangeQuery(string.Format("{0} uninstall ", context.CurrentPluginMetadata.ActionKeyword));
+            }
+            return false;
+        }
+
+        private bool ChangeToInstallCommand()
+        {
+            if (context.CurrentPluginMetadata.ActionKeyword == "*")
+            {
+                context.API.ChangeQuery("install ");
+            }
+            else
+            {
+                context.API.ChangeQuery(string.Format("{0} install ", context.CurrentPluginMetadata.ActionKeyword));
+            }
+            return false;
+        }
+
+        private List<Result> InstallPlugin(string queryPluginName)
         {
             List<Result> results = new List<Result>();
-            HttpWebResponse response = HttpRequest.CreateGetHttpResponse(pluginSearchUrl + query.ActionParameters[1], context.Proxy);
+            HttpWebResponse response = HttpRequest.CreateGetHttpResponse(pluginSearchUrl + queryPluginName, context.Proxy);
             Stream s = response.GetResponseStream();
             if (s != null)
             {
@@ -140,7 +145,7 @@ namespace Wox.Plugin.PluginManagement
                 }
                 catch
                 {
-                    context.API.ShowMsg("Coundn't parse api search results", "Please update your Wox!",string.Empty);
+                    context.API.ShowMsg("Coundn't parse api search results", "Please update your Wox!", string.Empty);
                     return results;
                 }
 
@@ -194,19 +199,19 @@ namespace Wox.Plugin.PluginManagement
             return results;
         }
 
-        private List<Result> ListUnInstalledPlugins(Query query)
+        private List<Result> UnInstallPlugins(Query query)
         {
             List<Result> results = new List<Result>();
-            List<PluginMetadata> allInstalledPlugins = ParseRegularPlugins();
-            if (query.ActionParameters.Count > 1)
+            List<PluginMetadata> allInstalledPlugins = context.API.GetAllPlugins().Select(o => o.Metadata).ToList();
+            if (!string.IsNullOrEmpty(query.SecondSearch))
             {
-                string pluginName = query.ActionParameters[1];
                 allInstalledPlugins =
-                    allInstalledPlugins.Where(o => o.Name.ToLower().Contains(pluginName.ToLower())).ToList();
+                    allInstalledPlugins.Where(o => o.Name.ToLower().Contains(query.SecondSearch.ToLower())).ToList();
             }
 
             foreach (PluginMetadata plugin in allInstalledPlugins)
             {
+                var plugin1 = plugin;
                 results.Add(new Result()
                 {
                     Title = plugin.Name,
@@ -214,7 +219,7 @@ namespace Wox.Plugin.PluginManagement
                     IcoPath = plugin.FullIcoPath,
                     Action = e =>
                     {
-                        UnInstalledPlugins(plugin);
+                        UnInstallPlugin(plugin1);
                         return false;
                     }
                 });
@@ -222,7 +227,7 @@ namespace Wox.Plugin.PluginManagement
             return results;
         }
 
-        private void UnInstalledPlugins(PluginMetadata plugin)
+        private void UnInstallPlugin(PluginMetadata plugin)
         {
             string content = string.Format("Do you want to uninstall following plugin?\r\n\r\nName: {0}\r\nVersion: {1}\r\nAuthor: {2}", plugin.Name, plugin.Version, plugin.Author);
             if (MessageBox.Show(content, "Wox", MessageBoxButtons.YesNo) == DialogResult.Yes)
@@ -235,7 +240,7 @@ namespace Wox.Plugin.PluginManagement
         private List<Result> ListInstalledPlugins()
         {
             List<Result> results = new List<Result>();
-            foreach (PluginMetadata plugin in ParseRegularPlugins())
+            foreach (PluginMetadata plugin in context.API.GetAllPlugins().Select(o => o.Metadata))
             {
                 results.Add(new Result()
                 {
@@ -245,61 +250,6 @@ namespace Wox.Plugin.PluginManagement
                 });
             }
             return results;
-        }
-
-        private static List<PluginMetadata> ParseRegularPlugins()
-        {
-            List<PluginMetadata> pluginMetadatas = new List<PluginMetadata>();
-            if (!Directory.Exists(PluginPath))
-                Directory.CreateDirectory(PluginPath);
-
-            string[] directories = Directory.GetDirectories(PluginPath);
-            foreach (string directory in directories)
-            {
-                PluginMetadata metadata = GetMetadataFromJson(directory);
-                if (metadata != null) pluginMetadatas.Add(metadata);
-            }
-
-            return pluginMetadatas;
-        }
-
-        private static PluginMetadata GetMetadataFromJson(string pluginDirectory)
-        {
-            string configPath = Path.Combine(pluginDirectory, PluginConfigName);
-            PluginMetadata metadata;
-
-            if (!File.Exists(configPath))
-            {
-                return null;
-            }
-
-            try
-            {
-                metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
-                metadata.PluginType = PluginType.User;
-                metadata.PluginDirectory = pluginDirectory;
-            }
-            catch (Exception)
-            {
-                string error = string.Format("Parse plugin config {0} failed: json format is not valid", configPath);
-                return null;
-            }
-
-
-            if (!AllowedLanguage.IsAllowed(metadata.Language))
-            {
-                string error = string.Format("Parse plugin config {0} failed: invalid language {1}", configPath,
-                    metadata.Language);
-                return null;
-            }
-            if (!File.Exists(metadata.ExecuteFilePath))
-            {
-                string error = string.Format("Parse plugin config {0} failed: ExecuteFile {1} didn't exist", configPath,
-                    metadata.ExecuteFilePath);
-                return null;
-            }
-
-            return metadata;
         }
 
         public void Init(PluginInitContext context)

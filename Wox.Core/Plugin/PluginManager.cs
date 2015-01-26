@@ -19,7 +19,7 @@ namespace Wox.Core.Plugin
     /// </summary>
     public static class PluginManager
     {
-        public const string ActionKeywordWildcard = "*";
+        public const string ActionKeywordWildcardSign = "*";
 
         public static String DebuggerMode { get; private set; }
         public static IPublicAPI API { get; private set; }
@@ -104,7 +104,10 @@ namespace Wox.Core.Plugin
 
         public static void Query(Query query)
         {
-            QueryDispatcher.QueryDispatcher.Dispatch(query);
+            if (!string.IsNullOrEmpty(query.RawQuery.Trim()))
+            {
+                QueryDispatcher.QueryDispatcher.Dispatch(query);
+            }
         }
 
         public static List<PluginPair> AllPlugins
@@ -115,16 +118,24 @@ namespace Wox.Core.Plugin
             }
         }
 
-        public static bool IsRegularPluginQuery(Query query)
+        public static bool IsUserPluginQuery(Query query)
         {
-            if (string.IsNullOrEmpty(query.ActionName)) return false;
+            if (string.IsNullOrEmpty(query.RawQuery)) return false;
 
-            return plugins.Any(o => o.Metadata.PluginType == PluginType.User && o.Metadata.ActionKeyword == query.ActionName);
+            var strings = query.RawQuery.Split(' ');
+            var actionKeyword = string.Empty;
+            if (strings.Length > 0)
+            {
+                actionKeyword = strings[0].Trim();
+            }
+            if (string.IsNullOrEmpty(actionKeyword)) return false;
+
+            return plugins.Any(o => o.Metadata.PluginType == PluginType.User && o.Metadata.ActionKeyword == actionKeyword);
         }
 
-        public static bool IsWildcardPlugin(PluginMetadata metadata)
+        public static bool IsSystemPlugin(PluginMetadata metadata)
         {
-            return metadata.ActionKeyword == ActionKeywordWildcard;
+            return metadata.ActionKeyword == ActionKeywordWildcardSign;
         }
 
         public static void ActivatePluginDebugger(string path)

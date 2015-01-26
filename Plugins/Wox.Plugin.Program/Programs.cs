@@ -26,9 +26,7 @@ namespace Wox.Plugin.Program
 
         public List<Result> Query(Query query)
         {
-            if (query.RawQuery.Trim().Length <= 1) return new List<Result>();
-
-            var fuzzyMather = FuzzyMatcher.Create(query.RawQuery);
+            var fuzzyMather = FuzzyMatcher.Create(query.Search);
             List<Program> returnList = programs.Where(o => MatchProgram(o, fuzzyMather)).ToList();
             returnList.ForEach(ScoreFilter);
             returnList = returnList.OrderByDescending(o => o.Score).ToList();

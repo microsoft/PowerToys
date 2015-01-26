@@ -406,16 +406,6 @@ namespace Wox
             pnlContextMenu.Visibility = Visibility.Collapsed;
         }
 
-        private bool IsWebSearchMode
-        {
-            get
-            {
-                Query q = new Query(tbQuery.Text);
-                return !UserSettingStorage.Instance.EnableWebSearchSuggestion &&
-                        UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == q.ActionName && o.Enabled);
-            }
-        }
-
         private void Border_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left) DragMove();

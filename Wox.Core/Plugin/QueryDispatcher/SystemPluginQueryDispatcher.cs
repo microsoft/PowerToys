@@ -8,9 +8,9 @@ using Wox.Plugin;
 
 namespace Wox.Core.Plugin.QueryDispatcher
 {
-    public class WildcardPluginQueryDispatcher : IQueryDispatcher
+    public class SystemPluginQueryDispatcher : IQueryDispatcher
     {
-        private IEnumerable<PluginPair> allSytemPlugins = PluginManager.AllPlugins.Where(o => PluginManager.IsWildcardPlugin(o.Metadata));
+        private IEnumerable<PluginPair> allSytemPlugins = PluginManager.AllPlugins.Where(o => PluginManager.IsSystemPlugin(o.Metadata));
 
         public void Dispatch(Query query)
         {

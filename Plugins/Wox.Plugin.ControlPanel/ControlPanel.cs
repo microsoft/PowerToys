@@ -38,9 +38,7 @@ namespace Wox.Plugin.ControlPanel
 
         public List<Result> Query(Query query)
         {
-            if (query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
-            string myQuery = query.RawQuery.Trim();
-
+            string myQuery = query.Search.Trim();
             List<Result> results = new List<Result>();
 
             foreach (var item in controlPanelItems)

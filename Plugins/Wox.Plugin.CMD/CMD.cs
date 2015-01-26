@@ -21,14 +21,14 @@ namespace Wox.Plugin.CMD
         {
             List<Result> results = new List<Result>();
             List<Result> pushedResults = new List<Result>();
-            if (query.RawQuery == ">")
+            if (query.Search == ">")
             {
                 return GetAllHistoryCmds();
             }
 
-            if (query.RawQuery.StartsWith(">") && query.RawQuery.Length > 1)
+            if (query.Search.StartsWith(">") && query.Search.Length > 1)
             {
-                string cmd = query.RawQuery.Substring(1);
+                string cmd = query.Search.Substring(1);
                 var queryCmd = GetCurrentCmd(cmd);
                 context.API.PushResults(query, context.CurrentPluginMetadata, new List<Result>() { queryCmd });
                 pushedResults.Add(queryCmd);
