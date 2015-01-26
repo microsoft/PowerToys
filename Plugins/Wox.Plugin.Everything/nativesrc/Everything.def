@@ -1,0 +1,51 @@
+LIBRARY Everything
+
+EXPORTS
+
+	Everything_GetLastError
+
+	Everything_SetSearchA
+	Everything_SetSearchW
+	Everything_SetMatchPath
+	Everything_SetMatchCase
+	Everything_SetMatchWholeWord
+	Everything_SetRegex
+	Everything_SetMax
+	Everything_SetOffset
+
+	Everything_GetSearchA
+	Everything_GetSearchW
+	Everything_GetMatchPath
+	Everything_GetMatchCase
+	Everything_GetMatchWholeWord
+	Everything_GetRegex
+	Everything_GetMax
+	Everything_GetOffset
+
+	Everything_QueryA
+	Everything_QueryW
+	
+	Everything_IsQueryReply
+
+	Everything_SortResultsByPath
+	
+	Everything_GetNumFileResults
+	Everything_GetNumFolderResults
+	Everything_GetNumResults
+	Everything_GetTotFileResults
+	Everything_GetTotFolderResults
+	Everything_GetTotResults
+	
+	Everything_IsVolumeResult
+	Everything_IsFolderResult
+	Everything_IsFileResult
+
+	Everything_GetResultFileNameA
+	Everything_GetResultFileNameW
+	Everything_GetResultPathA
+	Everything_GetResultPathW
+	Everything_GetResultFullPathNameA
+	Everything_GetResultFullPathNameW
+	
+	Everything_Reset
+	
