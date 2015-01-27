@@ -9,7 +9,7 @@ using Wox.Plugin.WebSearch.SuggestionSources;
 
 namespace Wox.Plugin.WebSearch
 {
-    public class WebSearchPlugin : IPlugin, ISettingProvider,IPluginI18n
+    public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantSearch
     {
         private PluginInitContext context;
 
@@ -96,6 +96,17 @@ namespace Wox.Plugin.WebSearch
         public string GetLanguagesFolder()
         {
             return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+        }
+
+        public bool IsInstantSearch(string query)
+        {
+            var strings = query.Split(' ');
+            if (strings.Length > 1)
+            {
+                return WebSearchStorage.Instance.EnableWebSearchSuggestion &&
+                       WebSearchStorage.Instance.WebSearches.Exists(o => o.ActionWord == strings[0] && o.Enabled);
+            }
+            return false;
         }
     }
 }

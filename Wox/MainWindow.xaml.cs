@@ -337,18 +337,27 @@ namespace Wox
                         if (pnlResult.Dirty) pnlResult.Clear();
                     }, TimeSpan.FromMilliseconds(100), null);
                     queryHasReturn = false;
-                    var q = new Query(lastQuery);
-                    FireBeforeWoxQueryEvent(q);
-                    Query(q);
+                    Query query = new Query(lastQuery);
+                    FireBeforeWoxQueryEvent(query);
+                    Query(query);
                     Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
                     {
-                        if (!queryHasReturn && originQuery == lastQuery && !string.IsNullOrEmpty(lastQuery))
+                        if (!queryHasReturn && originQuery == tbQuery.Text && !string.IsNullOrEmpty(lastQuery))
                         {
                             StartProgress();
                         }
-                    }, TimeSpan.FromMilliseconds(150), lastQuery);
-                    FireAfterWoxQueryEvent(q);
-                }, TimeSpan.FromMilliseconds(200));
+                    }, TimeSpan.FromMilliseconds(150), tbQuery.Text);
+                    FireAfterWoxQueryEvent(query);
+                }, TimeSpan.FromMilliseconds(GetSearchDelay(lastQuery)));
+        }
+
+        private int GetSearchDelay(string query)
+        {
+            if (!string.IsNullOrEmpty(query) && PluginManager.IsInstantSearch(query))
+            {
+                return 0;
+            }
+            return 200;
         }
 
         private void FireAfterWoxQueryEvent(Query q)
