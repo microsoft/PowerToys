@@ -1,13 +1,15 @@
-﻿
-using System;
+﻿using System;
 using System.IO;
+using System.Reflection;
 using System.Windows.Forms;
 using System.Windows.Threading;
 using NAppUpdate.Framework;
 using NAppUpdate.Framework.Common;
 using NAppUpdate.Framework.Sources;
+using Newtonsoft.Json;
 using Wox.Core.i18n;
 using Wox.Core.UserSettings;
+using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Core.Updater
@@ -15,6 +17,9 @@ namespace Wox.Core.Updater
     public class UpdaterManager
     {
         private static UpdaterManager instance;
+        private const string VersionCheckURL = "https://api.getwox.com/release/latest/";
+        private const string UpdateFeedURL = "http://127.0.0.1:8888/Update.xml";
+        private static SemanticVersion currentVersion;
 
         public static UpdaterManager Instance
         {
@@ -33,12 +38,45 @@ namespace Wox.Core.Updater
             UpdateManager.Instance.UpdateSource = GetUpdateSource();
         }
 
-        public bool IsUpdateAvailable()
+        public SemanticVersion CurrentVersion
         {
-            return UpdateManager.Instance.UpdatesAvailable > 0;
+            get
+            {
+                if (currentVersion == null)
+                {
+                    currentVersion = new SemanticVersion(Assembly.GetExecutingAssembly().GetName().Version);
+                }
+                return currentVersion;
+            }
+        }
+
+        private bool IsNewerThanCurrent(Release release)
+        {
+            if (release == null) return false;
+
+            return new SemanticVersion(release.version) > CurrentVersion;
         }
 
         public void CheckUpdate()
+        {
+            string json = HttpRequest.Get(VersionCheckURL, HttpProxy.Instance);
+            if (!string.IsNullOrEmpty(json))
+            {
+                try
+                {
+                    Release newRelease = JsonConvert.DeserializeObject<Release>(json);
+                    if (IsNewerThanCurrent(newRelease))
+                    {
+                        StartUpdate();
+                    }
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private void StartUpdate()
         {
             UpdateManager updManager = UpdateManager.Instance;
             updManager.BeginCheckForUpdates(asyncResult =>
@@ -104,7 +142,7 @@ namespace Wox.Core.Updater
         {
             // Normally this would be a web based source.
             // But for the demo app, we prepare an in-memory source.
-            var source = new SimpleWebSource("http://127.0.0.1:8888/Update.xml");
+            var source = new SimpleWebSource(UpdateFeedURL);
             return source;
         }
     }

@@ -16,8 +16,8 @@ using Wox.Core;
 using Wox.Core.Exception;
 using Wox.Core.i18n;
 using Wox.Core.UI;
+using Wox.Core.Updater;
 using Wox.Core.UserSettings;
-using Wox.Core.Version;
 using Wox.Infrastructure.Http;
 
 namespace Wox.CrashReporter
@@ -36,7 +36,7 @@ namespace Wox.CrashReporter
         private void SetException(Exception exception)
         {
             tbSummary.AppendText(exception.Message);
-            tbVersion.Text = VersionManager.Instance.CurrentVersion.ToString();
+            tbVersion.Text = UpdaterManager.Instance.CurrentVersion.ToString();
             tbDatetime.Text = DateTime.Now.ToString();
             tbStackTrace.AppendText(exception.StackTrace);
             tbSource.Text = exception.Source;
