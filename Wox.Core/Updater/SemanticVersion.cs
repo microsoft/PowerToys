@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Wox.Core.Exception;
 
-namespace Wox.Core.Version
+namespace Wox.Core.Updater
 {
     public class SemanticVersion : IComparable
     {
