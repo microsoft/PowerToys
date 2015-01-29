@@ -14,6 +14,7 @@ namespace Wox.CommandArgs
 
         public void Execute(IList<string> args)
         {
+            Console.WriteLine("test");
             if (args.Count > 0)
             {
                 string query = args[0];

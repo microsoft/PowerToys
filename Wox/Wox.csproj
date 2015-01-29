@@ -105,6 +105,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandArgs\ToggleCommandArg.cs" />
     <Compile Include="Converters\ConvertorBase.cs" />
     <Compile Include="Converters\ImagePathConverter.cs" />
     <Compile Include="Converters\OpacityModeConverter.cs" />

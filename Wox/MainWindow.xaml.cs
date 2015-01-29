@@ -243,9 +243,6 @@ namespace Wox
 
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
         {
-            AHKHotkey ahk = new AHKHotkey();
-            ahk.RegisterHotkey("#R",null);
-            return;
             var hotkey = new HotkeyModel(hotkeyStr);
             try
             {
@@ -282,16 +279,20 @@ namespace Wox
 
         private void OnHotkey(object sender, HotkeyEventArgs e)
         {
+            ToggleWox();
+            e.Handled = true;
+        }
+
+        public void ToggleWox()
+        {
             if (!IsVisible)
             {
                 ShowWox();
-                UserSettingStorage.Instance.IncreaseActivateTimes();
             }
             else
             {
                 HideWox();
             }
-            e.Handled = true;
         }
 
         private void InitProgressbarAnimation()
@@ -430,6 +431,7 @@ namespace Wox
 
         private void ShowWox(bool selectAll = true)
         {
+            UserSettingStorage.Instance.IncreaseActivateTimes();
             if (!double.IsNaN(Left) && !double.IsNaN(Top))
             {
                 var origScreen = Screen.FromRectangle(new Rectangle((int)Left, (int)Top, (int)ActualWidth, (int)ActualHeight));
