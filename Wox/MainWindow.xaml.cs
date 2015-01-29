@@ -243,6 +243,9 @@ namespace Wox
 
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
         {
+            AHKHotkey ahk = new AHKHotkey();
+            ahk.RegisterHotkey("#R",null);
+            return;
             var hotkey = new HotkeyModel(hotkeyStr);
             try
             {

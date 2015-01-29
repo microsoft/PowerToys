@@ -319,6 +319,7 @@ xcopy /Y /D /E $(SolutionDir)PythonHome\* $(TargetDir)PythonHome\
  
 cd "$(TargetDir)" &amp; del /s /q *.xml
 
+if $(ConfigurationName) == Release (
 cd "$(TargetDir)Plugins" &amp; del /s /q NLog.dll
 cd "$(TargetDir)Plugins" &amp; del /s /q NLog.config
 cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Plugin.pdb
@@ -330,7 +331,8 @@ cd "$(TargetDir)Plugins" &amp; del /s /q NAppUpdate.Framework.dll
 cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Infrastructure.dll
 cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Infrastructure.pdb
 cd "$(TargetDir)Plugins" &amp; del /s /q Newtonsoft.Json.dll
-cd "$(TargetDir)Plugins" &amp; del /s /q WindowsInput.dll</PostBuildEvent>
+cd "$(TargetDir)Plugins" &amp; del /s /q WindowsInput.dll
+)</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
