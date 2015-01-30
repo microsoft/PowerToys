@@ -63,9 +63,6 @@ namespace Wox.Plugin.Program
                         Action = _ =>
                         {
                             context.API.HideApp();
-                            context.API.ShellRun(c.ExecutePath,true);
-
-                            context.API.HideApp();
                             String Path=c.ExecutePath;
                             //check if shortcut
                             if (Path.EndsWith(".lnk"))
@@ -76,7 +73,7 @@ namespace Wox.Plugin.Program
                             //get parent folder
                             Path=System.IO.Directory.GetParent(Path).FullName;
                             //open the folder
-                            context.API.ShellRun("explorer.exe "+Path,true);
+                            context.API.ShellRun("explorer.exe "+Path,false);
                             return true;
                         },
                         IcoPath = "Images/folder.png"
