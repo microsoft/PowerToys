@@ -16,8 +16,8 @@ using Wox.Core;
 using Wox.Core.Exception;
 using Wox.Core.i18n;
 using Wox.Core.UI;
+using Wox.Core.Updater;
 using Wox.Core.UserSettings;
-using Wox.Core.Version;
 using Wox.Infrastructure.Http;
 
 namespace Wox.CrashReporter
@@ -36,7 +36,7 @@ namespace Wox.CrashReporter
         private void SetException(Exception exception)
         {
             tbSummary.AppendText(exception.Message);
-            tbVersion.Text = VersionManager.Instance.CurrentVersion.ToString();
+            tbVersion.Text = UpdaterManager.Instance.CurrentVersion.ToString();
             tbDatetime.Text = DateTime.Now.ToString();
             tbStackTrace.AppendText(exception.StackTrace);
             tbSource.Text = exception.Source;
@@ -45,7 +45,7 @@ namespace Wox.CrashReporter
 
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
-            string sendingMsg = InternationalizationManager.Internationalization.GetTranslation("reportWindow_sending");
+            string sendingMsg = InternationalizationManager.Instance.GetTranslation("reportWindow_sending");
             tbSendReport.Content = sendingMsg;
             btnSend.IsEnabled = false;
             ThreadPool.QueueUserWorkItem(o => SendReport());
@@ -57,11 +57,11 @@ namespace Wox.CrashReporter
             string response = HttpRequest.Post(APIServer.ErrorReportURL, error, HttpProxy.Instance);
             if (response.ToLower() == "ok")
             {
-                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("reportWindow_report_succeed"));
+                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("reportWindow_report_succeed"));
             }
             else
             {
-                MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("reportWindow_report_failed"));
+                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("reportWindow_report_failed"));
             }
             Dispatcher.Invoke(new Action(Close));
         }

@@ -99,12 +99,12 @@ namespace Wox
                 if (!CurrentHotkeyAvailable)
                 {
                     tbMsg.Foreground = new SolidColorBrush(Colors.Red);
-                    tbMsg.Text = InternationalizationManager.Internationalization.GetTranslation("hotkeyUnavailable");
+                    tbMsg.Text = InternationalizationManager.Instance.GetTranslation("hotkeyUnavailable");
                 }
                 else
                 {
                     tbMsg.Foreground = new SolidColorBrush(Colors.Green);
-                    tbMsg.Text = InternationalizationManager.Internationalization.GetTranslation("succeed");
+                    tbMsg.Text = InternationalizationManager.Instance.GetTranslation("succeed");
                 }
                 OnOnHotkeyChanged();
             }

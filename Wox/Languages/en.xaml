@@ -8,6 +8,7 @@
 
     
     <!--Setting General-->
+    <system:String x:Key="woxsettings">Wox Settings</system:String>
     <system:String x:Key="general">General</system:String>
     <system:String x:Key="startWoxOnSystemStartup">Start Wox on system startup</system:String>
     <system:String x:Key="hideWoxWhenLoseFocus">Hide Wox when loses focus</system:String>
@@ -61,6 +62,7 @@
     <system:String x:Key="about">About</system:String>
     <system:String x:Key="website">Website</system:String>
     <system:String x:Key="version">Version</system:String>
+    <system:String x:Key="about_activate_times">You have activated Wox {0} times</system:String>
 
     <!--Action Keyword Setting Dialog-->
     <system:String x:Key="oldActionKeyword">Old Action Keyword</system:String>
@@ -71,6 +73,8 @@
     <system:String x:Key="newActionKeywordCannotBeEmpty">New Action Keyword can't be empty</system:String>
     <system:String x:Key="newActionKeywordHasBeenAssigned">New ActionKeyword has been assigned to other plugin, please assign another new action keyword</system:String>
     <system:String x:Key="succeed">Succeed</system:String>
+    <system:String x:Key="actionkeyword_tips">Use * if you don't want to specify a action keyword</system:String>
+    
     
     <!--Custom Query Hotkey Dialog-->
     <system:String x:Key="preview">Preview</system:String>
@@ -97,5 +101,16 @@
     <system:String x:Key="reportWindow_report_succeed">Report succeed</system:String>
     <system:String x:Key="reportWindow_report_failed">Report failed</system:String>
     <system:String x:Key="reportWindow_wox_got_an_error">Wox got an error</system:String>
+
+    <!--update-->
+    <system:String x:Key="update_wox_update_new_version_available">Wox new version V{0} is available</system:String>
+    <system:String x:Key="update_wox_update_error">An error occurred while trying to install software updates</system:String>
+    <system:String x:Key="update_wox_update">Update</system:String>
+    <system:String x:Key="update_wox_update_cancel">Cancel</system:String>
+    <system:String x:Key="update_wox_update_restart_wox_tip">This upgrade will restart Wox</system:String>
+    <system:String x:Key="update_wox_update_upadte_files">Following files will be updated</system:String>
+    <system:String x:Key="update_wox_update_files">Update files</system:String>
+    <system:String x:Key="update_wox_update_upadte_description">Update description</system:String>
+    
 
 </ResourceDictionary>

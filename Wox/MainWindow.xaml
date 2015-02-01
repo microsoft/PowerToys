@@ -13,15 +13,15 @@
         AllowDrop="True"
         ShowInTaskbar="False"
         Style="{DynamicResource WindowStyle}"
-        Icon="Images\app.png"
-        >
+        Icon="Images\app.png">
     <Window.Resources>
         <ResourceDictionary Source="/PresentationFramework.Classic,Version=3.0.0.0,Culture=neutral,PublicKeyToken=31bf3856ad364e35,processorArchitecture=MSIL;component/themes/Classic.xaml"/>
     </Window.Resources>
     <Border Style="{DynamicResource WindowBorderStyle}" MouseDown="Border_OnMouseDown">
         <StackPanel Orientation="Vertical">
-            <TextBox Style="{DynamicResource QueryBoxStyle}" PreviewDragOver="TbQuery_OnPreviewDragOver" AllowDrop="True" Grid.Row="0"  x:Name="tbQuery" PreviewKeyDown="TbQuery_OnPreviewKeyDown" TextChanged="TextBoxBase_OnTextChanged" />
-            <Line Style="{DynamicResource PendingLineStyle}" x:Name="progressBar" Y1="0" Y2="0" X2="100" Grid.Row="1" Height="2" StrokeThickness="1"></Line>
+            <TextBox Style="{DynamicResource QueryBoxStyle}" PreviewDragOver="TbQuery_OnPreviewDragOver" AllowDrop="True"
+                     x:Name="tbQuery" PreviewKeyDown="TbQuery_OnPreviewKeyDown" TextChanged="TextBoxBase_OnTextChanged" />
+            <Line Style="{DynamicResource PendingLineStyle}" x:Name="progressBar" Y1="0" Y2="0" X2="100" Height="2" StrokeThickness="1"></Line>
             <wox:ResultPanel x:Name="pnlResult" />
             <wox:ResultPanel x:Name="pnlContextMenu" Visibility="Collapsed" />
         </StackPanel>

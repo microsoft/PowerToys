@@ -34,7 +34,6 @@ namespace Wox.Plugin.Sys
 
         public List<Result> Query(Query query)
         {
-            if (query.RawQuery.EndsWith(" ") || query.RawQuery.Length <= 1) return new List<Result>();
             if (availableResults.Count == 0)
             {
                 LoadCommands();
@@ -43,7 +42,7 @@ namespace Wox.Plugin.Sys
             List<Result> results = new List<Result>();
             foreach (Result availableResult in availableResults)
             {
-                if (availableResult.Title.ToLower().StartsWith(query.RawQuery.ToLower()))
+                if (availableResult.Title.ToLower().StartsWith(query.Search.ToLower()))
                 {
                     results.Add(availableResult);
                 }

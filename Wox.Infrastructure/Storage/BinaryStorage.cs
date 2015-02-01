@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.Serialization.Formatters;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Threading;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Infrastructure.Storage
@@ -18,6 +19,7 @@ namespace Wox.Infrastructure.Storage
     [Serializable]
     public abstract class BinaryStorage<T> : BaseStorage<T> where T : class, IStorage, new()
     {
+        private static object syncObject = new object();
         protected override string FileSuffix
         {
             get { return ".dat"; }
@@ -87,25 +89,31 @@ namespace Wox.Infrastructure.Storage
 
         protected override void SaveInternal()
         {
-            try
+            ThreadPool.QueueUserWorkItem(o =>
             {
-                FileStream fileStream = new FileStream(ConfigPath, FileMode.Create);
-                BinaryFormatter binaryFormatter = new BinaryFormatter
+                lock (syncObject)
                 {
-                    AssemblyFormat = FormatterAssemblyStyle.Simple
-                };
-                binaryFormatter.Serialize(fileStream, serializedObject);
-                fileStream.Close();
-            }
-            catch (Exception e)
-            {
-                Log.Error(e.Message);
+                    try
+                    {
+                        FileStream fileStream = new FileStream(ConfigPath, FileMode.Create);
+                        BinaryFormatter binaryFormatter = new BinaryFormatter
+                        {
+                            AssemblyFormat = FormatterAssemblyStyle.Simple
+                        };
+                        binaryFormatter.Serialize(fileStream, serializedObject);
+                        fileStream.Close();
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error(e);
 #if (DEBUG)
-                {
-                    throw;
-                }
+                        {
+                            throw;
+                        }
 #endif
-            }
+                    }
+                }
+            });
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Wox.Plugin.QueryHistory
         public List<Result> Query(Query query)
         {
             var histories = QueryHistoryStorage.Instance.GetHistory();
-            string filter = query.GetAllRemainingParameter();
+            string filter = query.Search;
             if (!string.IsNullOrEmpty(filter))
             {
                 histories = histories.Where(o => o.Query.Contains(filter)).ToList();

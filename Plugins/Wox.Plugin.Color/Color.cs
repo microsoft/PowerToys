@@ -29,7 +29,7 @@ namespace Wox.Plugin.Color
 
         public List<Result> Query(Query query)
         {
-            var raw = query.RawQuery;
+            var raw = query.Search;
             if (!IsAvailable(raw)) return new List<Result>(0);
             try
             {

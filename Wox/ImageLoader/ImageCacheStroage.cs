@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Wox.Infrastructure.Storage;
 
@@ -16,15 +17,7 @@ namespace Wox.ImageLoader
 
         protected override string ConfigFolder
         {
-            get
-            {
-                string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
-                if (userProfilePath == null)
-                {
-                    throw new ArgumentException("Environment variable USERPROFILE is empty");
-                }
-                return Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Config");
-            }
+            get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
         }
 
         protected override string ConfigName

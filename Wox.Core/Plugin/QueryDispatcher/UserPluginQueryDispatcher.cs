@@ -13,7 +13,7 @@ namespace Wox.Core.Plugin.QueryDispatcher
     {
         public void Dispatch(Query query)
         {
-            PluginPair userPlugin = PluginManager.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.ActionName);
+            PluginPair userPlugin = PluginManager.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.GetActionKeyword());
             if (userPlugin != null && !string.IsNullOrEmpty(userPlugin.Metadata.ActionKeyword))
             {
                 var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == userPlugin.Metadata.ID);
@@ -29,7 +29,11 @@ namespace Wox.Core.Plugin.QueryDispatcher
                     try
                     {
                         List<Result> results = userPlugin.Plugin.Query(query) ?? new List<Result>();
-                        PluginManager.API.PushResults(query,userPlugin.Metadata,results);
+                        results.ForEach(o =>
+                        {
+                            o.PluginID = userPlugin.Metadata.ID;
+                        });
+                        PluginManager.API.PushResults(query, userPlugin.Metadata, results);
                     }
                     catch (System.Exception e)
                     {

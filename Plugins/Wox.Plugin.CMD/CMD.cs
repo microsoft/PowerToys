@@ -6,12 +6,13 @@ using System.Reflection;
 using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.CMD
 {
-    public class CMD : IPlugin, ISettingProvider, IPluginI18n
+    public class CMD : IPlugin, ISettingProvider, IPluginI18n, IInstantSearch
     {
         private PluginInitContext context;
         private bool WinRStroked;
@@ -21,14 +22,14 @@ namespace Wox.Plugin.CMD
         {
             List<Result> results = new List<Result>();
             List<Result> pushedResults = new List<Result>();
-            if (query.RawQuery == ">")
+            if (query.Search == ">")
             {
                 return GetAllHistoryCmds();
             }
 
-            if (query.RawQuery.StartsWith(">") && query.RawQuery.Length > 1)
+            if (query.Search.StartsWith(">") && query.Search.Length > 1)
             {
-                string cmd = query.RawQuery.Substring(1);
+                string cmd = query.Search.Substring(1);
                 var queryCmd = GetCurrentCmd(cmd);
                 context.API.PushResults(query, context.CurrentPluginMetadata, new List<Result>() { queryCmd });
                 pushedResults.Add(queryCmd);
@@ -36,6 +37,7 @@ namespace Wox.Plugin.CMD
                 var history = GetHistoryCmds(cmd, queryCmd);
                 context.API.PushResults(query, context.CurrentPluginMetadata, history);
                 pushedResults.AddRange(history);
+
 
                 try
                 {
@@ -72,6 +74,7 @@ namespace Wox.Plugin.CMD
                     }
                 }
                 catch (Exception) { }
+
             }
             return results;
         }
@@ -206,6 +209,12 @@ namespace Wox.Plugin.CMD
         public string GetLanguagesFolder()
         {
             return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+        }
+
+        public bool IsInstantSearch(string query)
+        {
+            if (query.StartsWith(">")) return true;
+            return false;
         }
     }
 }

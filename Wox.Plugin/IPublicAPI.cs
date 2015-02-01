@@ -15,8 +15,7 @@ namespace Wox.Plugin
         /// <param name="query"></param>
         /// <param name="plugin"></param>
         /// <param name="results"></param>
-        /// <param name="clearBeforeInsert"></param>
-        void PushResults(Query query,PluginMetadata plugin, List<Result> results,bool clearBeforeInsert = false);
+        void PushResults(Query query,PluginMetadata plugin, List<Result> results);
 
         /// <summary>
         /// Execute command

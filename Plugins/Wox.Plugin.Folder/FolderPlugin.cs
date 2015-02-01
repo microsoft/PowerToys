@@ -53,8 +53,7 @@ namespace Wox.Plugin.Folder
 
         public List<Result> Query(Query query)
         {
-            if(string.IsNullOrEmpty(query.RawQuery)) return new List<Result>();
-            string input = query.RawQuery.ToLower();
+            string input = query.Search.ToLower();
 
             List<FolderLink> userFolderLinks = FolderStorage.Instance.FolderLinks.Where(
                 x => x.Nickname.StartsWith(input, StringComparison.OrdinalIgnoreCase)).ToList();

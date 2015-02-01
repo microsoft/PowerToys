@@ -8,6 +8,7 @@ using System.Threading;
 using System.Windows;
 using Wox.Infrastructure;
 using Wox.Plugin.Program.ProgramSources;
+using IWshRuntimeLibrary;
 
 namespace Wox.Plugin.Program
 {
@@ -26,9 +27,7 @@ namespace Wox.Plugin.Program
 
         public List<Result> Query(Query query)
         {
-            if (query.RawQuery.Trim().Length <= 1) return new List<Result>();
-
-            var fuzzyMather = FuzzyMatcher.Create(query.RawQuery);
+            var fuzzyMather = FuzzyMatcher.Create(query.Search);
             List<Program> returnList = programs.Where(o => MatchProgram(o, fuzzyMather)).ToList();
             returnList.ForEach(ScoreFilter);
             returnList = returnList.OrderByDescending(o => o.Score).ToList();
@@ -57,9 +56,38 @@ namespace Wox.Plugin.Program
                             return true;
                         },
                         IcoPath = "Images/cmd.png"
+                    },
+                    new Result()
+                    {
+                        Title = "Open Containing Folder",
+                        Action = _ =>
+                        {
+                            context.API.HideApp();
+                            String Path=c.ExecutePath;
+                            //check if shortcut
+                            if (Path.EndsWith(".lnk"))
+                            {
+                                //get location of shortcut
+                                Path = ResolveShortcut(Path);
+                            }
+                            //get parent folder
+                            Path=System.IO.Directory.GetParent(Path).FullName;
+                            //open the folder
+                            context.API.ShellRun("explorer.exe "+Path,false);
+                            return true;
+                        },
+                        IcoPath = "Images/folder.png"
                     }
                 }
             }).ToList();
+        }
+
+        static string ResolveShortcut(string filePath)
+        {
+            // IWshRuntimeLibrary is in the COM library "Windows Script Host Object Model"
+            IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
+            IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(filePath);
+            return shortcut.TargetPath;
         }
 
         private bool MatchProgram(Program program, FuzzyMatcher matcher)

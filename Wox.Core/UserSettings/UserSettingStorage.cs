@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using System.Drawing;
+using System.Reflection;
 
 namespace Wox.Core.UserSettings
 {
@@ -13,6 +14,13 @@ namespace Wox.Core.UserSettings
     {
         [JsonProperty]
         public bool DontPromptUpdateMsg { get; set; }
+
+        [JsonProperty]
+        public int ActivateTimes { get; set; }
+
+
+        [JsonProperty]
+        public bool EnableUpdateLog { get; set; }
 
         [JsonProperty]
         public string Hotkey { get; set; }
@@ -48,9 +56,6 @@ namespace Wox.Core.UserSettings
         public string ResultItemFontStretch { get; set; }
 
         [JsonProperty]
-        public List<WebSearch> WebSearches { get; set; }
-
-        [JsonProperty]
         public double WindowLeft { get; set; }
 
         [JsonProperty]
@@ -64,17 +69,13 @@ namespace Wox.Core.UserSettings
         [JsonProperty]
         public bool StartWoxOnSystemStartup { get; set; }
 
+        [Obsolete]
         [JsonProperty]
         public double Opacity { get; set; }
 
+        [Obsolete]
         [JsonProperty]
         public OpacityMode OpacityMode { get; set; }
-
-        [JsonProperty]
-        public bool EnableWebSearchSuggestion { get; set; }
-
-        [JsonProperty]
-        public string WebSearchSuggestionSource { get; set; }
 
         [JsonProperty]
         public bool LeaveCmdOpen { get; set; }
@@ -97,55 +98,9 @@ namespace Wox.Core.UserSettings
         [JsonProperty]
         public string ProxyPassword { get; set; }
 
-        public List<WebSearch> LoadDefaultWebSearches()
-        {
-            List<WebSearch> webSearches = new List<WebSearch>();
-
-            WebSearch googleWebSearch = new WebSearch()
-            {
-                Title = "Google",
-                ActionWord = "g",
-                IconPath = Path.GetDirectoryName(Application.ExecutablePath) + @"\Images\websearch\google.png",
-                Url = "https://www.google.com/search?q={q}",
-                Enabled = true
-            };
-            webSearches.Add(googleWebSearch);
-
-
-            WebSearch wikiWebSearch = new WebSearch()
-            {
-                Title = "Wikipedia",
-                ActionWord = "wiki",
-                IconPath = Path.GetDirectoryName(Application.ExecutablePath) + @"\Images\websearch\wiki.png",
-                Url = "http://en.wikipedia.org/wiki/{q}",
-                Enabled = true
-            };
-            webSearches.Add(wikiWebSearch);
-
-            WebSearch findIcon = new WebSearch()
-            {
-                Title = "FindIcon",
-                ActionWord = "findicon",
-                IconPath = Path.GetDirectoryName(Application.ExecutablePath) + @"\Images\websearch\pictures.png",
-                Url = "http://findicons.com/search/{q}",
-                Enabled = true
-            };
-            webSearches.Add(findIcon);
-
-            return webSearches;
-        }
-
         protected override string ConfigFolder
         {
-            get
-            {
-                string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
-                if (userProfilePath == null)
-                {
-                    throw new ArgumentException("Environment variable USERPROFILE is empty");
-                }
-                return Path.Combine(Path.Combine(userProfilePath, ".Wox"), "Config");
-            }
+            get { return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Config"); }
         }
 
         protected override string ConfigName
@@ -153,12 +108,20 @@ namespace Wox.Core.UserSettings
             get { return "config"; }
         }
 
+        public void IncreaseActivateTimes()
+        {
+            ActivateTimes++;
+            if (ActivateTimes % 15 == 0)
+            {
+                Save();
+            }
+        }
+
         protected override UserSettingStorage LoadDefault()
         {
             DontPromptUpdateMsg = false;
             Theme = "Dark";
             Language = "en";
-            WebSearches = LoadDefaultWebSearches();
             CustomizedPluginConfigs = new List<CustomizedPluginConfig>();
             Hotkey = "Alt + Space";
             QueryBoxFont = FontFamily.GenericSansSerif.Name;

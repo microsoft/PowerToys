@@ -110,6 +110,43 @@ namespace Wox
             }
         }
 
+        public List<Result> GetVisibleResults()
+        {
+            var theStackPanel = GetInnerStackPanel(lbResults);
+            List<Result> visibleElements = new List<Result>();
+
+            for (int i = 0; i < theStackPanel.Children.Count; i++)
+            {
+
+                if (i >= theStackPanel.VerticalOffset && i <= theStackPanel.VerticalOffset + theStackPanel.ViewportHeight)
+                {
+                    FrameworkElement element = theStackPanel.Children[i] as FrameworkElement;
+                    visibleElements.Add(element.DataContext as Result);
+                }
+            }
+            return visibleElements;
+        }
+
+        private VirtualizingStackPanel GetInnerStackPanel(FrameworkElement element)
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
+            {
+                var child = VisualTreeHelper.GetChild(element, i) as FrameworkElement;
+
+                if (child == null) continue;
+
+                if (child is VirtualizingStackPanel) return child as VirtualizingStackPanel;
+
+                var panel = GetInnerStackPanel(child);
+
+                if (panel != null)
+                    return panel;
+            }
+
+            return null;
+
+        }
+
         public Result GetActiveResult()
         {
             int index = lbResults.SelectedIndex;

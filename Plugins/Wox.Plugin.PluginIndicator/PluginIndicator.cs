@@ -13,8 +13,6 @@ namespace Wox.Plugin.PluginIndicator
         public List<Result> Query(Query query)
         {
             List<Result> results = new List<Result>();
-            if (string.IsNullOrEmpty(query.RawQuery)) return results;
-
             if (allPlugins.Count == 0)
             {
                 allPlugins = context.API.GetAllPlugins().Where(o => !PluginManager.IsSystemPlugin(o.Metadata)).ToList();
@@ -22,7 +20,7 @@ namespace Wox.Plugin.PluginIndicator
 
             foreach (PluginMetadata metadata in allPlugins.Select(o => o.Metadata))
             {
-                if (metadata.ActionKeyword.StartsWith(query.RawQuery))
+                if (metadata.ActionKeyword.StartsWith(query.Search))
                 {
                     PluginMetadata metadataCopy = metadata;
                     var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == metadataCopy.ID);
@@ -47,18 +45,18 @@ namespace Wox.Plugin.PluginIndicator
                 }
             }
 
-            results.AddRange(UserSettingStorage.Instance.WebSearches.Where(o => o.ActionWord.StartsWith(query.RawQuery) && o.Enabled).Select(n => new Result()
-            {
-                Title = n.ActionWord,
-                SubTitle = string.Format("Activate {0} web search", n.ActionWord),
-                Score = 100,
-                IcoPath = "Images/work.png",
-                Action = (c) =>
-                {
-                    context.API.ChangeQuery(n.ActionWord + " ");
-                    return false;
-                }
-            }));
+            //results.AddRange(UserSettingStorage.Instance.WebSearches.Where(o => o.ActionWord.StartsWith(query.Search) && o.Enabled).Select(n => new Result()
+            //{
+            //    Title = n.ActionWord,
+            //    SubTitle = string.Format("Activate {0} web search", n.ActionWord),
+            //    Score = 100,
+            //    IcoPath = "Images/work.png",
+            //    Action = (c) =>
+            //    {
+            //        context.API.ChangeQuery(n.ActionWord + " ");
+            //        return false;
+            //    }
+            //}));
 
             return results;
         }

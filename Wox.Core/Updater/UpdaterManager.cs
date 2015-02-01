@@ -1,11 +1,19 @@
-﻿
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Reflection;
 using System.Windows.Forms;
 using System.Windows.Threading;
 using NAppUpdate.Framework;
 using NAppUpdate.Framework.Common;
 using NAppUpdate.Framework.Sources;
+using NAppUpdate.Framework.Tasks;
+using Newtonsoft.Json;
+using Wox.Core.i18n;
+using Wox.Core.UserSettings;
+using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Core.Updater
@@ -13,6 +21,15 @@ namespace Wox.Core.Updater
     public class UpdaterManager
     {
         private static UpdaterManager instance;
+        private const string VersionCheckURL = "https://api.getwox.com/release/latest/";
+        //private const string UpdateFeedURL = "http://upgrade.getwox.com/update.xml";
+        private const string UpdateFeedURL = "http://127.0.0.1:8888/update.xml";
+        private static SemanticVersion currentVersion;
+
+        public event EventHandler PrepareUpdateReady;
+        public event EventHandler UpdateError;
+
+        public Release NewRelease { get; set; }
 
         public static UpdaterManager Instance
         {
@@ -31,11 +48,61 @@ namespace Wox.Core.Updater
             UpdateManager.Instance.UpdateSource = GetUpdateSource();
         }
 
+        public SemanticVersion CurrentVersion
+        {
+            get
+            {
+                if (currentVersion == null)
+                {
+                    currentVersion = new SemanticVersion(Assembly.GetExecutingAssembly().GetName().Version);
+                }
+                return currentVersion;
+            }
+        }
+
+        private bool IsNewerThanCurrent(Release release)
+        {
+            if (release == null) return false;
+
+            return new SemanticVersion(release.version) > CurrentVersion;
+        }
+
+        public List<string> GetAvailableUpdateFiles()
+        {
+            List<string> files = new List<string>();
+            foreach (var task in UpdateManager.Instance.Tasks)
+            {
+                if (task is FileUpdateTask)
+                {
+                    files.Add(((FileUpdateTask)task).LocalPath);
+                }
+            }
+            return files;
+        }
+
         public void CheckUpdate()
         {
-            // Get a local pointer to the UpdateManager instance
-            UpdateManager updManager = UpdateManager.Instance;
+            string json = HttpRequest.Get(VersionCheckURL, HttpProxy.Instance);
+            if (!string.IsNullOrEmpty(json))
+            {
+                try
+                {
+                    NewRelease = JsonConvert.DeserializeObject<Release>(json);
+                    if (IsNewerThanCurrent(NewRelease) && !UserSettingStorage.Instance.DontPromptUpdateMsg)
+                    {
+                        StartUpdate();
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Log.Error(e);
+                }
+            }
+        }
 
+        private void StartUpdate()
+        {
+            UpdateManager updManager = UpdateManager.Instance;
             updManager.BeginCheckForUpdates(asyncResult =>
             {
                 if (asyncResult.IsCompleted)
@@ -43,9 +110,9 @@ namespace Wox.Core.Updater
                     // still need to check for caught exceptions if any and rethrow
                     try
                     {
-                        ((UpdateProcessAsyncResult) asyncResult).EndInvoke();
+                        ((UpdateProcessAsyncResult)asyncResult).EndInvoke();
                     }
-                    catch(System.Exception e)
+                    catch (System.Exception e)
                     {
                         Log.Error(e);
                         updManager.CleanUp();
@@ -55,7 +122,6 @@ namespace Wox.Core.Updater
                     // No updates were found, or an error has occured. We might want to check that...
                     if (updManager.UpdatesAvailable == 0)
                     {
-                        MessageBox.Show("All is up to date!");
                         return;
                     }
                 }
@@ -63,54 +129,52 @@ namespace Wox.Core.Updater
                 updManager.BeginPrepareUpdates(result =>
                 {
                     ((UpdateProcessAsyncResult)result).EndInvoke();
-
-                    // ApplyUpdates is a synchronous method by design. Make sure to save all user work before calling
-                    // it as it might restart your application
-                    // get out of the way so the console window isn't obstructed
-                    try
-                    {
-                        updManager.ApplyUpdates(true,false,true);
-                    }
-                    catch
-                    {
-                        // this.WindowState = WindowState.Normal;
-                        MessageBox.Show(
-                            "An error occurred while trying to install software updates");
-                    }
-
-                    updManager.CleanUp();
+                    OnPrepareUpdateReady();
                 }, null);
             }, null);
         }
 
-        public void Reinstall()
+        public void CleanUp()
         {
-            UpdateManager.Instance.ReinstateIfRestarted();
+            UpdateManager.Instance.CleanUp();
         }
 
-        private void OnPrepareUpdatesCompleted(bool obj)
+        public void ApplyUpdates()
         {
-            UpdateManager updManager = UpdateManager.Instance;
-
-            DialogResult dr = MessageBox.Show(
-                    "Updates are ready to install. Do you wish to install them now?",
-                    "Software updates ready",
-                     MessageBoxButtons.YesNo);
-
-            if (dr == DialogResult.Yes)
+            // ApplyUpdates is a synchronous method by design. Make sure to save all user work before calling
+            // it as it might restart your application
+            // get out of the way so the console window isn't obstructed
+            try
             {
-                // This is a synchronous method by design, make sure to save all user work before calling
-                // it as it might restart your application
-                updManager.ApplyUpdates(true,true,true);
+                UpdateManager.Instance.ApplyUpdates(true, UserSettingStorage.Instance.EnableUpdateLog, false);
             }
+            catch (System.Exception e)
+            {
+                string updateError = InternationalizationManager.Instance.GetTranslation("update_wox_update_error");
+                Log.Error(e);
+                MessageBox.Show(updateError);
+                OnUpdateError();
+            }
+
+            UpdateManager.Instance.CleanUp();
         }
 
         private IUpdateSource GetUpdateSource()
         {
-            // Normally this would be a web based source.
-            // But for the demo app, we prepare an in-memory source.
-            var source = new NAppUpdate.Framework.Sources.SimpleWebSource("http://127.0.0.1:8888/Update.xml");
+            var source = new WoxUpdateSource(UpdateFeedURL, HttpRequest.GetWebProxy(HttpProxy.Instance));
             return source;
+        }
+
+        protected virtual void OnPrepareUpdateReady()
+        {
+            var handler = PrepareUpdateReady;
+            if (handler != null) handler(this, EventArgs.Empty);
+        }
+
+        protected virtual void OnUpdateError()
+        {
+            var handler = UpdateError;
+            if (handler != null) handler(this, EventArgs.Empty);
         }
     }
 }

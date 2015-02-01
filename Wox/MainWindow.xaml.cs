@@ -24,7 +24,6 @@ using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
 using Wox.Storage;
-using Wox.Update;
 using Brushes = System.Windows.Media.Brushes;
 using Color = System.Windows.Media.Color;
 using ContextMenu = System.Windows.Forms.ContextMenu;
@@ -124,7 +123,7 @@ namespace Wox
 
         public string GetTranslation(string key)
         {
-            return InternationalizationManager.Internationalization.GetTranslation(key);
+            return InternationalizationManager.Instance.GetTranslation(key);
         }
 
         public List<PluginPair> GetAllPlugins()
@@ -137,21 +136,23 @@ namespace Wox
         public event AfterWoxQueryEventHandler AfterWoxQueryEvent;
         public event AfterWoxQueryEventHandler BeforeWoxQueryEvent;
 
-        public void PushResults(Query query, PluginMetadata plugin, List<Result> results, bool clearBeforeInsert = false)
+        public void PushResults(Query query, PluginMetadata plugin, List<Result> results)
         {
             results.ForEach(o =>
             {
                 o.PluginDirectory = plugin.PluginDirectory;
+                o.PluginID = plugin.ID;
+                o.OriginQuery = query;
                 if (o.ContextMenu != null)
                 {
                     o.ContextMenu.ForEach(t =>
                     {
                         t.PluginDirectory = plugin.PluginDirectory;
+                        t.PluginID = plugin.ID;
                     });
                 }
-                o.OriginQuery = query;
             });
-            OnUpdateResultView(results, clearBeforeInsert);
+            UpdateResultView(results);
         }
 
         #endregion
@@ -161,10 +162,6 @@ namespace Wox
             InitializeComponent();
             ThreadPool.SetMaxThreads(30, 10);
             ThreadPool.SetMinThreads(10, 5);
-            if (UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow)
-            {
-                this.AllowsTransparency = true;
-            }
 
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
             GlobalHotkey.Instance.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
@@ -175,7 +172,7 @@ namespace Wox
             pnlResult.RightMouseClickEvent += pnlResult_RightMouseClickEvent;
 
             ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
-            InternationalizationManager.Internationalization.ChangeLanguage(UserSettingStorage.Instance.Language);
+            InternationalizationManager.Instance.ChangeLanguage(UserSettingStorage.Instance.Language);
 
             SetHotkey(UserSettingStorage.Instance.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
@@ -193,7 +190,6 @@ namespace Wox
                 Thread.Sleep(50);
                 PreLoadImages();
             });
-            CheckUpdate();
         }
 
         private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)
@@ -213,22 +209,6 @@ namespace Wox
         void pnlResult_RightMouseClickEvent(Result result)
         {
             ShowContextMenu(result);
-        }
-
-        void CheckUpdate()
-        {
-            ThreadPool.QueueUserWorkItem(o =>
-            {
-                Release release = new UpdateChecker().CheckUpgrade();
-                if (release != null && !UserSettingStorage.Instance.DontPromptUpdateMsg)
-                {
-                    Dispatcher.Invoke(new Action(() =>
-                    {
-                        NewVersionWindow newVersinoWindow = new NewVersionWindow();
-                        newVersinoWindow.Show();
-                    }));
-                }
-            });
         }
 
         void MainWindow_Closing(object sender, CancelEventArgs e)
@@ -257,16 +237,29 @@ namespace Wox
             }
 
             InitProgressbarAnimation();
-
-            //only works for win7+
-            if (UserSettingStorage.Instance.OpacityMode == OpacityMode.DWM)
-                DwmDropShadow.DropShadowToWindow(this);
-
-            this.Background = Brushes.Transparent;
-            HwndSource.FromHwnd(new WindowInteropHelper(this).Handle).CompositionTarget.BackgroundColor = Color.FromArgb(0, 0, 0, 0);
-
             WindowIntelopHelper.DisableControlBox(this);
+            CheckUpdate();
+        }
+
+        private void CheckUpdate()
+        {
+            UpdaterManager.Instance.PrepareUpdateReady+=OnPrepareUpdateReady;
+            UpdaterManager.Instance.UpdateError += OnUpdateError;
             UpdaterManager.Instance.CheckUpdate();
+        }
+
+        void OnUpdateError(object sender, EventArgs e)
+        {
+            string updateError = InternationalizationManager.Instance.GetTranslation("update_wox_update_error");
+            MessageBox.Show(updateError);
+        }
+
+        private void OnPrepareUpdateReady(object sender, EventArgs e)
+        {
+            Dispatcher.Invoke(new Action(() =>
+            {
+                new WoxUpdate().ShowDialog();
+            }));
         }
 
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
@@ -278,7 +271,7 @@ namespace Wox
             }
             catch (Exception)
             {
-                string errorMsg = string.Format(InternationalizationManager.Internationalization.GetTranslation("registerHotkeyFailed"), hotkeyStr);
+                string errorMsg = string.Format(InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
                 MessageBox.Show(errorMsg);
             }
         }
@@ -307,6 +300,12 @@ namespace Wox
 
         private void OnHotkey(object sender, HotkeyEventArgs e)
         {
+            ToggleWox();
+            e.Handled = true;
+        }
+
+        public void ToggleWox()
+        {
             if (!IsVisible)
             {
                 ShowWox();
@@ -315,7 +314,6 @@ namespace Wox
             {
                 HideWox();
             }
-            e.Handled = true;
         }
 
         private void InitProgressbarAnimation()
@@ -364,18 +362,27 @@ namespace Wox
                         if (pnlResult.Dirty) pnlResult.Clear();
                     }, TimeSpan.FromMilliseconds(100), null);
                     queryHasReturn = false;
-                    var q = new Query(lastQuery);
-                    FireBeforeWoxQueryEvent(q);
-                    Query(q);
+                    Query query = new Query(lastQuery);
+                    FireBeforeWoxQueryEvent(query);
+                    Query(query);
                     Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
                     {
-                        if (!queryHasReturn && originQuery == lastQuery)
+                        if (!queryHasReturn && originQuery == tbQuery.Text && !string.IsNullOrEmpty(lastQuery))
                         {
                             StartProgress();
                         }
-                    }, TimeSpan.FromMilliseconds(150), lastQuery);
-                    FireAfterWoxQueryEvent(q);
-                }, TimeSpan.FromMilliseconds(200));
+                    }, TimeSpan.FromMilliseconds(150), tbQuery.Text);
+                    FireAfterWoxQueryEvent(query);
+                }, TimeSpan.FromMilliseconds(GetSearchDelay(lastQuery)));
+        }
+
+        private int GetSearchDelay(string query)
+        {
+            if (!string.IsNullOrEmpty(query) && PluginManager.IsInstantSearch(query))
+            {
+                return 0;
+            }
+            return 200;
         }
 
         private void FireAfterWoxQueryEvent(Query q)
@@ -423,16 +430,6 @@ namespace Wox
             pnlContextMenu.Visibility = Visibility.Collapsed;
         }
 
-        private bool IsWebSearchMode
-        {
-            get
-            {
-                Query q = new Query(tbQuery.Text);
-                return !UserSettingStorage.Instance.EnableWebSearchSuggestion &&
-                        UserSettingStorage.Instance.WebSearches.Exists(o => o.ActionWord == q.ActionName && o.Enabled);
-            }
-        }
-
         private void Border_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left) DragMove();
@@ -455,6 +452,7 @@ namespace Wox
 
         private void ShowWox(bool selectAll = true)
         {
+            UserSettingStorage.Instance.IncreaseActivateTimes();
             if (!double.IsNaN(Left) && !double.IsNaN(Top))
             {
                 var origScreen = Screen.FromRectangle(new Rectangle((int)Left, (int)Top, (int)ActualWidth, (int)ActualHeight));
@@ -559,6 +557,44 @@ namespace Wox
                     }
                     e.Handled = true;
                     break;
+
+                case Key.D1:
+                    SelectItem(1);
+                    break;
+
+                case Key.D2:
+                    SelectItem(2);
+                    break;
+
+                case Key.D3:
+                    SelectItem(3);
+                    break;
+
+                case Key.D4:
+                    SelectItem(4);
+                    break;
+
+                case Key.D5:
+                    SelectItem(5);
+                    break;
+                case Key.D6:
+                    SelectItem(6);
+                    break;
+
+            }
+        }
+
+        private void SelectItem(int index)
+        {
+            int zeroBasedIndex = index - 1;
+            SpecialKeyState keyState = GlobalHotkey.Instance.CheckModifiers();
+            if (keyState.AltPressed || keyState.CtrlPressed)
+            {
+                List<Result> visibleResults = pnlResult.GetVisibleResults();
+                if (zeroBasedIndex < visibleResults.Count)
+                {
+                    SelectResult(visibleResults[zeroBasedIndex]);
+                }
             }
         }
 
@@ -624,7 +660,7 @@ namespace Wox
             }
         }
 
-        private void OnUpdateResultView(List<Result> list, bool clearBeforeInsert = false)
+        private void UpdateResultView(List<Result> list)
         {
             queryHasReturn = true;
             progressBar.Dispatcher.Invoke(new Action(StopProgress));
@@ -632,19 +668,13 @@ namespace Wox
 
             if (list.Count > 0)
             {
-                //todo:this should be opened to users, it's their choice to use it or not in their workflows
-                list.ForEach(
-                    o =>
-                    {
-                        if (o.AutoAjustScore) o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o) * 5;
-                    });
+                list.ForEach(o =>
+                {
+                    o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o) * 5;
+                });
                 List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
                 Dispatcher.Invoke(new Action(() =>
                 {
-                    if (clearBeforeInsert)
-                    {
-                        pnlResult.Clear();
-                    }
                     pnlResult.AddResults(l);
                 }));
             }
@@ -673,7 +703,7 @@ namespace Wox
             }
             catch (Exception ex)
             {
-                string errorMsg = string.Format(InternationalizationManager.Internationalization.GetTranslation("couldnotStartCmd"), cmd);
+                string errorMsg = string.Format(InternationalizationManager.Instance.GetTranslation("couldnotStartCmd"), cmd);
                 ShowMsg(errorMsg, ex.Message, null);
             }
             return false;
@@ -691,7 +721,7 @@ namespace Wox
                 }
                 else
                 {
-                    MessageBox.Show(InternationalizationManager.Internationalization.GetTranslation("invalidWoxPluginFileFormat"));
+                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("invalidWoxPluginFileFormat"));
                 }
             }
         }

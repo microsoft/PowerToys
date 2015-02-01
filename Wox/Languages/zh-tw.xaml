@@ -8,6 +8,7 @@
 
 
     <!--設置，通用-->
+    <system:String x:Key="woxsettings">Wox設置</system:String>
     <system:String x:Key="general">通用</system:String>
     <system:String x:Key="startWoxOnSystemStartup">開機啟動</system:String>
     <system:String x:Key="hideWoxWhenLoseFocus">失去焦點時自動隱藏Wox</system:String>
@@ -61,7 +62,7 @@
     <system:String x:Key="about">關於</system:String>
     <system:String x:Key="website">網站</system:String>
     <system:String x:Key="version">版本</system:String>
-
+    <system:String x:Key="about_activate_times">你已經激活了Wox {0} 次</system:String>
 
     <!--Action Keyword 設置對話框-->
     <system:String x:Key="oldActionKeyword">舊觸發關鍵字</system:String>
@@ -72,6 +73,7 @@
     <system:String x:Key="newActionKeywordCannotBeEmpty">新觸發關鍵字不能為空</system:String>
     <system:String x:Key="newActionKeywordHasBeenAssigned">新觸發關鍵字已經被指派給其他插件了，請重新選擇一個關鍵字</system:String>
     <system:String x:Key="succeed">成功</system:String>
+    <system:String x:Key="actionkeyword_tips">如果你不想設置觸發關鍵字，可以使用*代替</system:String>
 
     <!--Custom Query Hotkey 對話框-->
     <system:String x:Key="preview">預覽</system:String>
@@ -97,5 +99,15 @@
     <system:String x:Key="reportWindow_report_succeed">發送成功</system:String>
     <system:String x:Key="reportWindow_report_failed">發送失敗</system:String>
     <system:String x:Key="reportWindow_wox_got_an_error">Wox出錯啦</system:String>
+
+    <!--更新-->
+    <system:String x:Key="update_wox_update_new_version_available">發現Wox新版本 V{0}</system:String>
+    <system:String x:Key="update_wox_update_error">更新Wox出錯</system:String>
+    <system:String x:Key="update_wox_update">更新</system:String>
+    <system:String x:Key="update_wox_update_cancel">取消</system:String>
+    <system:String x:Key="update_wox_update_restart_wox_tip">此更新需要重啟Wox</system:String>
+    <system:String x:Key="update_wox_update_upadte_files">下列文件會被更新</system:String>
+    <system:String x:Key="update_wox_update_files">更新文件</system:String>
+    <system:String x:Key="update_wox_update_upadte_description">更新日誌</system:String>
 
 </ResourceDictionary>

@@ -3,18 +3,20 @@ namespace Wox.Core.Plugin.QueryDispatcher
 {
     internal static class QueryDispatcher
     {
-        private static IQueryDispatcher pluginCmd = new UserPluginQueryDispatcher();
-        private static IQueryDispatcher systemCmd = new SystemPluginQueryDispatcher();
+        private static readonly IQueryDispatcher UserPluginDispatcher = new UserPluginQueryDispatcher();
+        private static readonly IQueryDispatcher SystemPluginDispatcher = new SystemPluginQueryDispatcher();
 
         public static void Dispatch(Wox.Plugin.Query query)
         {
             if (PluginManager.IsUserPluginQuery(query))
             {
-                pluginCmd.Dispatch(query);
+                query.Search = query.RawQuery.Substring(query.RawQuery.IndexOf(' ') + 1);
+                UserPluginDispatcher.Dispatch(query);
             }
             else
             {
-                systemCmd.Dispatch(query);                
+                query.Search = query.RawQuery;
+                SystemPluginDispatcher.Dispatch(query);
             }
         }
     }

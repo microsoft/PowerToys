@@ -9,7 +9,7 @@ using Wox.Plugin.WebSearch.SuggestionSources;
 
 namespace Wox.Plugin.WebSearch
 {
-    public class WebSearchPlugin : IPlugin, ISettingProvider,IPluginI18n
+    public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantSearch
     {
         private PluginInitContext context;
 
@@ -17,12 +17,12 @@ namespace Wox.Plugin.WebSearch
         {
             List<Result> results = new List<Result>();
 
-            Core.UserSettings.WebSearch webSearch =
-                UserSettingStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionWord == query.ActionName && o.Enabled);
+            WebSearch webSearch =
+                WebSearchStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionWord == query.FirstSearch.Trim() && o.Enabled);
 
             if (webSearch != null)
             {
-                string keyword = query.ActionParameters.Count > 0 ? query.GetAllRemainingParameter() : "";
+                string keyword = query.SecondToEndSearch;
                 string title = keyword;
                 string subtitle = "Search " + webSearch.Title;
                 if (string.IsNullOrEmpty(keyword))
@@ -44,12 +44,12 @@ namespace Wox.Plugin.WebSearch
                             return true;
                         }
                     }
-                },true);
+                });
 
-                if (UserSettingStorage.Instance.EnableWebSearchSuggestion && !string.IsNullOrEmpty(keyword))
+                if (WebSearchStorage.Instance.EnableWebSearchSuggestion && !string.IsNullOrEmpty(keyword))
                 {
                     ISuggestionSource sugg = SuggestionSourceFactory.GetSuggestionSource(
-                            UserSettingStorage.Instance.WebSearchSuggestionSource);
+                            WebSearchStorage.Instance.WebSearchSuggestionSource);
                     if (sugg != null)
                     {
                         var result = sugg.GetSuggestions(keyword);
@@ -80,8 +80,8 @@ namespace Wox.Plugin.WebSearch
         {
             this.context = context;
 
-            if (UserSettingStorage.Instance.WebSearches == null)
-                UserSettingStorage.Instance.WebSearches = UserSettingStorage.Instance.LoadDefaultWebSearches();
+            if (WebSearchStorage.Instance.WebSearches == null)
+                WebSearchStorage.Instance.WebSearches = WebSearchStorage.Instance.LoadDefaultWebSearches();
         }
 
         #region ISettingProvider Members
@@ -96,6 +96,17 @@ namespace Wox.Plugin.WebSearch
         public string GetLanguagesFolder()
         {
             return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+        }
+
+        public bool IsInstantSearch(string query)
+        {
+            var strings = query.Split(' ');
+            if (strings.Length > 1)
+            {
+                return WebSearchStorage.Instance.EnableWebSearchSuggestion &&
+                       WebSearchStorage.Instance.WebSearches.Exists(o => o.ActionWord == strings[0] && o.Enabled);
+            }
+            return false;
         }
     }
 }

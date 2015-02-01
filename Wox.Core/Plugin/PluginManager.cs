@@ -19,6 +19,11 @@ namespace Wox.Core.Plugin
     /// </summary>
     public static class PluginManager
     {
+        public const string ActionKeywordWildcardSign = "*";
+        private static List<PluginMetadata> pluginMetadatas;
+        private static List<IInstantSearch> instantSearches = new List<IInstantSearch>();
+
+
         public static String DebuggerMode { get; private set; }
         public static IPublicAPI API { get; private set; }
 
@@ -28,7 +33,6 @@ namespace Wox.Core.Plugin
         /// Directories that will hold Wox plugin directory
         /// </summary>
         private static List<string> pluginDirectories = new List<string>();
-
 
         private static void SetupPluginDirectories()
         {
@@ -70,7 +74,7 @@ namespace Wox.Core.Plugin
             API = api;
             plugins.Clear();
 
-            List<PluginMetadata> pluginMetadatas = PluginConfig.Parse(pluginDirectories);
+            pluginMetadatas = PluginConfig.Parse(pluginDirectories);
             plugins.AddRange(new CSharpPluginLoader().LoadPlugin(pluginMetadatas));
             plugins.AddRange(new JsonRPCPluginLoader<PythonPlugin>().LoadPlugin(pluginMetadatas));
 
@@ -93,6 +97,8 @@ namespace Wox.Core.Plugin
                     }
                 });
             }
+
+            LoadInstantSearches();
         }
 
         public static void InstallPlugin(string path)
@@ -102,32 +108,80 @@ namespace Wox.Core.Plugin
 
         public static void Query(Query query)
         {
-            QueryDispatcher.QueryDispatcher.Dispatch(query);
+            if (!string.IsNullOrEmpty(query.RawQuery.Trim()))
+            {
+                QueryDispatcher.QueryDispatcher.Dispatch(query);
+            }
         }
 
         public static List<PluginPair> AllPlugins
         {
             get
             {
-                return plugins;
+                return plugins.OrderBy(o => o.Metadata.Name).ToList();
             }
         }
 
         public static bool IsUserPluginQuery(Query query)
         {
-            if (string.IsNullOrEmpty(query.ActionName)) return false;
+            if (string.IsNullOrEmpty(query.RawQuery)) return false;
+            var strings = query.RawQuery.Split(' ');
+            if(strings.Length == 1) return false;
 
-            return plugins.Any(o => o.Metadata.PluginType == PluginType.User && o.Metadata.ActionKeyword == query.ActionName);
+            var actionKeyword = strings[0].Trim();
+            if (string.IsNullOrEmpty(actionKeyword)) return false;
+
+            return plugins.Any(o => o.Metadata.PluginType == PluginType.User && o.Metadata.ActionKeyword == actionKeyword);
         }
 
         public static bool IsSystemPlugin(PluginMetadata metadata)
         {
-            return metadata.ActionKeyword == "*";
+            return metadata.ActionKeyword == ActionKeywordWildcardSign;
         }
 
         public static void ActivatePluginDebugger(string path)
         {
             DebuggerMode = path;
+        }
+
+        public static bool IsInstantSearch(string query)
+        {
+            return LoadInstantSearches().Any(o => o.IsInstantSearch(query));
+        }
+
+        private static List<IInstantSearch> LoadInstantSearches()
+        {
+            if (instantSearches.Count > 0) return instantSearches;
+            List<PluginMetadata> CSharpPluginMetadatas = pluginMetadatas.Where(o => o.Language.ToUpper() == AllowedLanguage.CSharp.ToUpper()).ToList();
+
+            foreach (PluginMetadata metadata in CSharpPluginMetadatas)
+            {
+                try
+                {
+                    Assembly asm = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
+                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IInstantSearch))).ToList();
+                    if (types.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    foreach (Type type in types)
+                    {
+                        instantSearches.Add(Activator.CreateInstance(type) as IInstantSearch);
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Log.Error(string.Format("Couldn't load plugin {0}: {1}", metadata.Name, e.Message));
+#if (DEBUG)
+                    {
+                        throw;
+                    }
+#endif
+                }
+            }
+
+            return instantSearches;
         }
 
         /// <summary>

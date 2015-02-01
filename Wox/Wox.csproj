@@ -66,6 +66,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
+    <Reference Include="MarkdownSharp">
+      <HintPath>..\packages\MarkdownSharp.1.13.0.0\lib\35\MarkdownSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net35\Newtonsoft.Json.dll</HintPath>
@@ -103,9 +106,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\InputSimulator.1.0.4.0\lib\net20\WindowsInput.dll</HintPath>
     </Reference>
-    <Reference Include="WPFToolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandArgs\ToggleCommandArg.cs" />
     <Compile Include="Converters\ConvertorBase.cs" />
     <Compile Include="Converters\ImagePathConverter.cs" />
     <Compile Include="Converters\OpacityModeConverter.cs" />
@@ -113,11 +116,9 @@
     <Compile Include="Converters\StringNullOrEmptyToVisibilityConverter.cs" />
     <Compile Include="ImageLoader\ImageCacheStroage.cs" />
     <Compile Include="Storage\UserSelectedRecordStorage.cs" />
-    <Compile Include="Update\NewVersionWindow.xaml.cs">
-      <DependentUpon>NewVersionWindow.xaml</DependentUpon>
+    <Compile Include="WoxUpdate.xaml.cs">
+      <DependentUpon>WoxUpdate.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Update\Release.cs" />
-    <Compile Include="Update\UpdateChecker.cs" />
     <Page Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -175,6 +176,9 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Resource Include="Images\update.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Content Include="Languages\en.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -235,7 +239,7 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Page Include="Update\NewVersionWindow.xaml">
+    <Page Include="WoxUpdate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -307,17 +311,6 @@
     </Resource>
   </ItemGroup>
   <ItemGroup>
-    <COMReference Include="Shell32">
-      <Guid>{50A7E9B0-70EF-11D1-B75A-00A0C90564FE}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Images\file.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
@@ -334,10 +327,26 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy  /Y  $(ProjectDir)Themes\* $(TargetDir)Themes\
-xcopy  /Y /E  $(ProjectDir)Images\* $(TargetDir)Images\
-del /s /q "$(TargetDir)*.xml"
-xcopy /Y /D /E $(SolutionDir)PythonHome\* $(TargetDir)PythonHome\</PostBuildEvent>
+    <PostBuildEvent>xcopy /Y  $(ProjectDir)Themes\* $(TargetDir)Themes\
+xcopy /Y /E  $(ProjectDir)Images\* $(TargetDir)Images\
+xcopy /Y /D /E $(SolutionDir)PythonHome\* $(TargetDir)PythonHome\
+ 
+cd "$(TargetDir)" &amp; del /s /q *.xml
+
+if $(ConfigurationName) == Release (
+cd "$(TargetDir)Plugins" &amp; del /s /q NLog.dll
+cd "$(TargetDir)Plugins" &amp; del /s /q NLog.config
+cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Plugin.pdb
+cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Plugin.dll
+cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Core.dll
+cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Core.pdb
+cd "$(TargetDir)Plugins" &amp; del /s /q ICSharpCode.SharpZipLib.dll
+cd "$(TargetDir)Plugins" &amp; del /s /q NAppUpdate.Framework.dll
+cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Infrastructure.dll
+cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Infrastructure.pdb
+cd "$(TargetDir)Plugins" &amp; del /s /q Newtonsoft.Json.dll
+cd "$(TargetDir)Plugins" &amp; del /s /q WindowsInput.dll
+)</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

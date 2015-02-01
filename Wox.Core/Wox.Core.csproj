@@ -69,7 +69,9 @@
     <Compile Include="Exception\WoxI18nException.cs" />
     <Compile Include="Exception\WoxJsonRPCException.cs" />
     <Compile Include="Exception\WoxPluginException.cs" />
+    <Compile Include="Updater\Release.cs" />
     <Compile Include="Updater\UpdaterManager.cs" />
+    <Compile Include="Updater\WoxUpdateSource.cs" />
     <Compile Include="UserSettings\HttpProxy.cs" />
     <Compile Include="i18n\AvailableLanguages.cs" />
     <Compile Include="i18n\IInternationalization.cs" />
@@ -99,9 +101,7 @@
     <Compile Include="UserSettings\CustomizedPluginConfig.cs" />
     <Compile Include="UserSettings\PluginHotkey.cs" />
     <Compile Include="UserSettings\UserSettingStorage.cs" />
-    <Compile Include="UserSettings\WebSearch.cs" />
-    <Compile Include="Version\SemanticVersion.cs" />
-    <Compile Include="Version\VersionManager.cs" />
+    <Compile Include="Updater\SemanticVersion.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
