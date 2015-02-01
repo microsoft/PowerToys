@@ -101,8 +101,13 @@
     <system:String x:Key="reportWindow_wox_got_an_error">Wox出錯啦</system:String>
 
     <!--更新-->
-    <system:String x:Key="update_wox_update_ready">Wox更新</system:String>
-    <system:String x:Key="update_wox_update_install">Wox更新啦！{0}個文件會被添加和替換，並且在此過程中可能會重啟Wox。你確定需要更新嗎？</system:String>
+    <system:String x:Key="update_wox_update_new_version_available">發現Wox新版本 V{0}</system:String>
     <system:String x:Key="update_wox_update_error">更新Wox出錯</system:String>
+    <system:String x:Key="update_wox_update">更新</system:String>
+    <system:String x:Key="update_wox_update_cancel">取消</system:String>
+    <system:String x:Key="update_wox_update_restart_wox_tip">此更新需要重啟Wox</system:String>
+    <system:String x:Key="update_wox_update_upadte_files">下列文件會被更新</system:String>
+    <system:String x:Key="update_wox_update_files">更新文件</system:String>
+    <system:String x:Key="update_wox_update_upadte_description">更新日誌</system:String>
 
 </ResourceDictionary>

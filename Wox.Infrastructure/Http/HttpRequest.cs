@@ -14,6 +14,24 @@ namespace Wox.Infrastructure.Http
             return Get(url, encoding, proxy);
         }
 
+        public static WebProxy GetWebProxy(IHttpProxy proxy)
+        {
+            if (proxy != null && proxy.Enabled && !string.IsNullOrEmpty(proxy.Server))
+            {
+                if (string.IsNullOrEmpty(proxy.UserName) || string.IsNullOrEmpty(proxy.Password))
+                {
+                    return new WebProxy(proxy.Server, proxy.Port);
+                }
+
+                return new WebProxy(proxy.Server, proxy.Port)
+                {
+                    Credentials = new NetworkCredential(proxy.UserName, proxy.Password)
+                };
+            }
+
+            return null;
+        }
+
         private static string Get(string url, string encoding, IHttpProxy proxy)
         {
             if (string.IsNullOrEmpty(url)) return string.Empty;
@@ -21,20 +39,7 @@ namespace Wox.Infrastructure.Http
             HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
             request.Method = "GET";
             request.Timeout = 10 * 1000;
-            if (proxy != null && proxy.Enabled && !string.IsNullOrEmpty(proxy.Server))
-            {
-                if (string.IsNullOrEmpty(proxy.UserName) || string.IsNullOrEmpty(proxy.Password))
-                {
-                    request.Proxy = new WebProxy(proxy.Server, proxy.Port);
-                }
-                else
-                {
-                    request.Proxy = new WebProxy(proxy.Server, proxy.Port)
-                    {
-                        Credentials = new NetworkCredential(proxy.UserName, proxy.Password)
-                    };
-                }
-            }
+            request.Proxy = GetWebProxy(proxy);
 
             try
             {

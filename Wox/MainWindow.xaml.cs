@@ -238,7 +238,28 @@ namespace Wox
 
             InitProgressbarAnimation();
             WindowIntelopHelper.DisableControlBox(this);
+            CheckUpdate();
+        }
+
+        private void CheckUpdate()
+        {
+            UpdaterManager.Instance.PrepareUpdateReady+=OnPrepareUpdateReady;
+            UpdaterManager.Instance.UpdateError += OnUpdateError;
             UpdaterManager.Instance.CheckUpdate();
+        }
+
+        void OnUpdateError(object sender, EventArgs e)
+        {
+            string updateError = InternationalizationManager.Instance.GetTranslation("update_wox_update_error");
+            MessageBox.Show(updateError);
+        }
+
+        private void OnPrepareUpdateReady(object sender, EventArgs e)
+        {
+            Dispatcher.Invoke(new Action(() =>
+            {
+                new WoxUpdate().ShowDialog();
+            }));
         }
 
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
