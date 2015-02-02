@@ -103,6 +103,7 @@ namespace Wox.Plugin.Program
         public void Init(PluginInitContext context)
         {
             this.context = context;
+            this.context.API.ResultItemDropEvent += API_ResultItemDropEvent;
             using (new Timeit("Preload programs"))
             {
                 programs = ProgramCacheStorage.Instance.Programs;
@@ -112,6 +113,11 @@ namespace Wox.Plugin.Program
             {
                 IndexPrograms();
             }
+        }
+
+        void API_ResultItemDropEvent(Result result, IDataObject dropObject)
+        {
+            
         }
 
         public static void IndexPrograms()

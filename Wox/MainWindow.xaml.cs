@@ -34,6 +34,7 @@ using MenuItem = System.Windows.Forms.MenuItem;
 using MessageBox = System.Windows.MessageBox;
 using ToolTip = System.Windows.Controls.ToolTip;
 using Wox.Infrastructure.Logger;
+using IDataObject = System.Windows.IDataObject;
 
 namespace Wox
 {
@@ -135,6 +136,7 @@ namespace Wox
         public event WoxGlobalKeyboardEventHandler GlobalKeyboardEvent;
         public event AfterWoxQueryEventHandler AfterWoxQueryEvent;
         public event AfterWoxQueryEventHandler BeforeWoxQueryEvent;
+        public event ResultItemDropEventHandler ResultItemDropEvent;
 
         public void PushResults(Query query, PluginMetadata plugin, List<Result> results)
         {
@@ -168,6 +170,7 @@ namespace Wox
             progressBar.ToolTip = toolTip;
             InitialTray();
             pnlResult.LeftMouseClickEvent += SelectResult;
+            pnlResult.ItemDropEvent += pnlResult_ItemDropEvent;
             pnlContextMenu.LeftMouseClickEvent += SelectResult;
             pnlResult.RightMouseClickEvent += pnlResult_RightMouseClickEvent;
 
@@ -190,6 +193,19 @@ namespace Wox
                 Thread.Sleep(50);
                 PreLoadImages();
             });
+        }
+
+        void pnlResult_ItemDropEvent(Result result, IDataObject dropDataObject)
+        {
+            if (ResultItemDropEvent != null)
+            {
+                PluginPair pluginPair = PluginManager.AllPlugins.FirstOrDefault(o => o.Plugin == ResultItemDropEvent.Target);
+                if (pluginPair != null)
+                {
+                    //todo:
+                    ResultItemDropEvent(result, dropDataObject);
+                }
+            }
         }
 
         private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)

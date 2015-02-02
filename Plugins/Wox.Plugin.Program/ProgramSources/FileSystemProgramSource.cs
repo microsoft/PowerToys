@@ -16,7 +16,8 @@ namespace Wox.Plugin.Program.ProgramSources
             this.baseDirectory = baseDirectory;
         }
 
-        public FileSystemProgramSource(ProgramSource source):this(source.Location)
+        public FileSystemProgramSource(ProgramSource source)
+            : this(source.Location)
         {
             this.BonusPoints = source.BonusPoints;
         }
@@ -50,17 +51,9 @@ namespace Wox.Plugin.Program.ProgramSources
                     GetAppFromDirectory(subDirectory, list);
                 }
             }
-            catch (UnauthorizedAccessException e)
+            catch (Exception e)
             {
-                Log.Warn(string.Format("Can't access to directory {0}", path));
-            }
-            catch (DirectoryNotFoundException e)
-            {
-                Log.Warn(string.Format("Directory {0} doesn't exist", path));
-            }
-            catch (PathTooLongException e)
-            {
-                Log.Warn(string.Format("File path too long: {0}", e.Message));
+                Log.Warn(string.Format("GetAppFromDirectory failed: {0} - {1}", path, e.Message));
             }
         }
 

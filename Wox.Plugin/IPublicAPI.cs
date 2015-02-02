@@ -119,5 +119,10 @@ namespace Wox.Plugin
         /// Fired before wox start to execute a query
         /// </summary>
         event AfterWoxQueryEventHandler BeforeWoxQueryEvent;
+
+        /// <summary>
+        /// Fired after drop to result item of current plugin 
+        /// </summary>
+        event ResultItemDropEventHandler ResultItemDropEvent;
     }
 }
