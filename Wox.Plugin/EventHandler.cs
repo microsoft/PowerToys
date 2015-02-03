@@ -10,7 +10,7 @@ namespace Wox.Plugin
     public delegate void WoxKeyDownEventHandler(WoxKeyDownEventArgs e);
     public delegate void AfterWoxQueryEventHandler(WoxQueryEventArgs e);
 
-    public delegate void ResultItemDropEventHandler(Result result, IDataObject dropObject);
+    public delegate void ResultItemDropEventHandler(Result result, IDataObject dropObject, DragEventArgs e);
 
     /// <summary>
     /// Global keyboard events

@@ -19,6 +19,7 @@ using Wox.Core.UI;
 using Wox.Core.Updater;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure.Http;
+using Wox.Infrastructure.Logger;
 
 namespace Wox.CrashReporter
 {
@@ -53,15 +54,12 @@ namespace Wox.CrashReporter
 
         private void SendReport()
         {
+            Hide();
             string error = string.Format("{{\"data\":{0}}}", ExceptionFormatter.FormatExcpetion(exception));
             string response = HttpRequest.Post(APIServer.ErrorReportURL, error, HttpProxy.Instance);
-            if (response.ToLower() == "ok")
+            if (response.ToLower() != "ok")
             {
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("reportWindow_report_succeed"));
-            }
-            else
-            {
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("reportWindow_report_failed"));
+                Log.Warn("sending crash report failed: " + response);
             }
             Dispatcher.Invoke(new Action(Close));
         }

@@ -195,15 +195,17 @@ namespace Wox
             });
         }
 
-        void pnlResult_ItemDropEvent(Result result, IDataObject dropDataObject)
+        void pnlResult_ItemDropEvent(Result result, IDataObject dropDataObject, DragEventArgs args)
         {
-            if (ResultItemDropEvent != null)
+            PluginPair pluginPair = PluginManager.AllPlugins.FirstOrDefault(o => o.Metadata.ID == result.PluginID);
+            if (ResultItemDropEvent != null && pluginPair != null)
             {
-                PluginPair pluginPair = PluginManager.AllPlugins.FirstOrDefault(o => o.Plugin == ResultItemDropEvent.Target);
-                if (pluginPair != null)
+                foreach (var delegateHandler in ResultItemDropEvent.GetInvocationList())
                 {
-                    //todo:
-                    ResultItemDropEvent(result, dropDataObject);
+                    if (delegateHandler.Target == pluginPair.Plugin)
+                    {
+                        delegateHandler.DynamicInvoke(result, dropDataObject, args);
+                    }
                 }
             }
         }

@@ -23,12 +23,18 @@ namespace Wox.Plugin.Folder
         {
             this.context = context;
             this.context.API.BackKeyDownEvent += ApiBackKeyDownEvent;
+            this.context.API.ResultItemDropEvent += API_ResultItemDropEvent;
             InitialDriverList();
             if (FolderStorage.Instance.FolderLinks == null)
             {
                 FolderStorage.Instance.FolderLinks = new List<FolderLink>();
                 FolderStorage.Instance.Save();
             }
+        }
+
+        void API_ResultItemDropEvent(Result result, IDataObject dropObject,DragEventArgs e)
+        {
+            e.Handled = true;
         }
 
         private void ApiBackKeyDownEvent(WoxKeyDownEventArgs e)

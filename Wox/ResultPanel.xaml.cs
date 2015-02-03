@@ -16,7 +16,7 @@ namespace Wox
     {
         public event Action<Result> LeftMouseClickEvent;
         public event Action<Result> RightMouseClickEvent;
-        public event Action<Result,IDataObject> ItemDropEvent;
+        public event Action<Result, IDataObject, DragEventArgs> ItemDropEvent;
 
         protected virtual void OnRightMouseClick(Result result)
         {
@@ -215,14 +215,14 @@ namespace Wox
             var item = ItemsControl.ContainerFromElement(lbResults, e.OriginalSource as DependencyObject) as ListBoxItem;
             if (item != null)
             {
-                OnItemDropEvent(item.DataContext as Result,e.Data);
+                OnItemDropEvent(item.DataContext as Result, e.Data, e);
             }
         }
 
-        protected virtual void OnItemDropEvent(Result obj, IDataObject data)
+        protected virtual void OnItemDropEvent(Result obj, IDataObject data, DragEventArgs e)
         {
             var handler = ItemDropEvent;
-            if (handler != null) handler(obj,data);
+            if (handler != null) handler(obj, data, e);
         }
     }
 }

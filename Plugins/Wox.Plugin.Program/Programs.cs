@@ -115,9 +115,9 @@ namespace Wox.Plugin.Program
             }
         }
 
-        void API_ResultItemDropEvent(Result result, IDataObject dropObject)
+        void API_ResultItemDropEvent(Result result, IDataObject dropObject, DragEventArgs args)
         {
-            
+            args.Handled = true;
         }
 
         public static void IndexPrograms()
