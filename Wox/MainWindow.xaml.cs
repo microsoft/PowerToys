@@ -508,6 +508,36 @@ namespace Wox
                     e.Handled = true;
                     break;
 
+                case Key.N:
+                case Key.J:
+                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
+                    {
+                        SelectNextItem();
+                    }
+                    break;
+
+                case Key.P:
+                case Key.K:
+                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
+                    {
+                        SelectPrevItem();
+                    }
+                    break;
+
+                case Key.O:
+                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
+                    {
+                        if (IsInContextMenuMode)
+                        {
+                            BackToResultMode();
+                        }
+                        else
+                        {
+                            ShowContextMenu(GetActiveResult());
+                        }
+                    }
+                    break;
+
                 case Key.Down:
                     SelectNextItem();
                     e.Handled = true;
@@ -518,15 +548,27 @@ namespace Wox
                     e.Handled = true;
                     break;
 
+                case Key.D:
+                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
+                    {
+                        pnlResult.SelectNextPage();
+                    }
+                    break;
+
                 case Key.PageDown:
                     pnlResult.SelectNextPage();
-                    toolTip.IsOpen = false;
                     e.Handled = true;
+                    break;
+
+                case Key.U:
+                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
+                    {
+                        pnlResult.SelectPrevPage();
+                    }
                     break;
 
                 case Key.PageUp:
                     pnlResult.SelectPrevPage();
-                    toolTip.IsOpen = false;
                     e.Handled = true;
                     break;
 
