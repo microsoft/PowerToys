@@ -74,6 +74,11 @@ namespace Wox.Plugin
         public List<Result> ContextMenu { get; set; }
 
         /// <summary>
+        /// Additional data associate with this result
+        /// </summary>
+        public object ContextData { get; set; }
+
+        /// <summary>
         /// Plugin ID that generate this result
         /// </summary>
         public string PluginID { get; set; }

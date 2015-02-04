@@ -20,7 +20,7 @@ namespace Wox.Infrastructure
         public void Dispose()
         {
             stopwatch.Stop();
-            Debug.WriteLine(name + ":" + stopwatch.ElapsedMilliseconds + "ms","Wox");
+            DebugHelper.WriteLine(name + ":" + stopwatch.ElapsedMilliseconds + "ms");
         }
     }
 }

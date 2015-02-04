@@ -15,7 +15,13 @@ namespace Wox.Plugin
         /// <param name="query"></param>
         /// <param name="plugin"></param>
         /// <param name="results"></param>
-        void PushResults(Query query,PluginMetadata plugin, List<Result> results);
+        void PushResults(Query query, PluginMetadata plugin, List<Result> results);
+
+        /// <summary>
+        /// Show context menu with giving results
+        /// </summary>
+        /// <param name="results"></param>
+        void ShowContextMenu(PluginMetadata plugin, List<Result> results);
 
         /// <summary>
         /// Execute command
@@ -63,7 +69,7 @@ namespace Wox.Plugin
         /// Open setting dialog
         /// </summary>
         void OpenSettingDialog();
-        
+
         /// <summary>
         /// Show loading animation
         /// </summary>

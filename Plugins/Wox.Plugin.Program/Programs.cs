@@ -108,16 +108,17 @@ namespace Wox.Plugin.Program
             {
                 programs = ProgramCacheStorage.Instance.Programs;
             }
-            Debug.WriteLine(string.Format("Preload {0} programs from cache", programs.Count), "Wox");
+            DebugHelper.WriteLine(string.Format("Preload {0} programs from cache", programs.Count));
             using (new Timeit("Program Index"))
             {
                 IndexPrograms();
             }
         }
 
-        void API_ResultItemDropEvent(Result result, IDataObject dropObject, DragEventArgs args)
+        void API_ResultItemDropEvent(Result result, IDataObject dropObject, DragEventArgs e)
         {
-            args.Handled = true;
+           
+            e.Handled = true;
         }
 
         public static void IndexPrograms()

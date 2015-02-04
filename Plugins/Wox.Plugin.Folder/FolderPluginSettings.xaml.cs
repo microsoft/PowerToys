@@ -13,11 +13,11 @@ namespace Wox.Plugin.Folder
     /// </summary>
     public partial class FileSystemSettings : UserControl
     {
-        PluginInitContext context;
+        private IPublicAPI woxAPI;
 
-        public FileSystemSettings(PluginInitContext context)
+        public FileSystemSettings(IPublicAPI woxAPI)
         {
-            this.context = context;
+            this.woxAPI = woxAPI;
             InitializeComponent();
             lbxFolders.ItemsSource = FolderStorage.Instance.FolderLinks;
         }
@@ -27,7 +27,7 @@ namespace Wox.Plugin.Folder
             var selectedFolder = lbxFolders.SelectedItem as FolderLink;
             if (selectedFolder != null)
             {
-                string msg = string.Format(context.API.GetTranslation("wox_plugin_folder_delete_folder_link"), selectedFolder.Path);
+                string msg = string.Format(woxAPI.GetTranslation("wox_plugin_folder_delete_folder_link"), selectedFolder.Path);
 
                 if (MessageBox.Show(msg, string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
@@ -37,7 +37,7 @@ namespace Wox.Plugin.Folder
             }
             else
             {
-                string warning = context.API.GetTranslation("wox_plugin_folder_select_folder_link_warning");
+                string warning = woxAPI.GetTranslation("wox_plugin_folder_select_folder_link_warning");
                 MessageBox.Show(warning);
             }
         }
@@ -61,7 +61,7 @@ namespace Wox.Plugin.Folder
             }
             else
             {
-                string warning = context.API.GetTranslation("wox_plugin_folder_select_folder_link_warning");
+                string warning = woxAPI.GetTranslation("wox_plugin_folder_select_folder_link_warning");
                 MessageBox.Show(warning);
             }
         }

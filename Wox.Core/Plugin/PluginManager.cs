@@ -21,7 +21,7 @@ namespace Wox.Core.Plugin
     {
         public const string ActionKeywordWildcardSign = "*";
         private static List<PluginMetadata> pluginMetadatas;
-        private static List<IInstantSearch> instantSearches = new List<IInstantSearch>();
+        private static List<KeyValuePair<PluginMetadata,IInstantSearch>> instantSearches;
 
 
         public static String DebuggerMode { get; private set; }
@@ -98,7 +98,10 @@ namespace Wox.Core.Plugin
                 });
             }
 
-            LoadInstantSearches();
+            ThreadPool.QueueUserWorkItem(o =>
+            {
+                LoadInstantSearches();
+            });
         }
 
         public static void InstallPlugin(string path)
@@ -146,12 +149,38 @@ namespace Wox.Core.Plugin
 
         public static bool IsInstantSearch(string query)
         {
-            return LoadInstantSearches().Any(o => o.IsInstantSearch(query));
+            return LoadInstantSearches().Any(o => o.Value.IsInstantSearch(query));
         }
 
-        private static List<IInstantSearch> LoadInstantSearches()
+        public static bool IsInstantSearchPlugin(PluginMetadata pluginMetadata)
         {
-            if (instantSearches.Count > 0) return instantSearches;
+            //todo:to improve performance, any instant search plugin that takes long than 200ms will not consider a instant plugin anymore
+            return pluginMetadata.Language.ToUpper() == AllowedLanguage.CSharp &&
+                   LoadInstantSearches().Any(o => o.Key.ID == pluginMetadata.ID);
+        }
+
+        internal static void ExecutePluginQuery(PluginPair pair, Query query)
+        {
+            try
+            {
+                List<Result> results = pair.Plugin.Query(query) ?? new List<Result>();
+                results.ForEach(o =>
+                {
+                    o.PluginID = pair.Metadata.ID;
+                });
+                API.PushResults(query, pair.Metadata, results);
+            }
+            catch (System.Exception e)
+            {
+                throw new WoxPluginException(pair.Metadata.Name, e);
+            }
+        }
+
+        private static List<KeyValuePair<PluginMetadata,IInstantSearch>> LoadInstantSearches()
+        {
+            if (instantSearches != null) return instantSearches;
+
+            instantSearches = new List<KeyValuePair<PluginMetadata, IInstantSearch>>();
             List<PluginMetadata> CSharpPluginMetadatas = pluginMetadatas.Where(o => o.Language.ToUpper() == AllowedLanguage.CSharp.ToUpper()).ToList();
 
             foreach (PluginMetadata metadata in CSharpPluginMetadatas)
@@ -167,7 +196,7 @@ namespace Wox.Core.Plugin
 
                     foreach (Type type in types)
                     {
-                        instantSearches.Add(Activator.CreateInstance(type) as IInstantSearch);
+                        instantSearches.Add(new KeyValuePair<PluginMetadata, IInstantSearch>(metadata,Activator.CreateInstance(type) as IInstantSearch));
                     }
                 }
                 catch (System.Exception e)

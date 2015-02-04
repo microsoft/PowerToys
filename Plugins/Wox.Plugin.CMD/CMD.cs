@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -20,6 +21,9 @@ namespace Wox.Plugin.CMD
 
         public List<Result> Query(Query query)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             List<Result> results = new List<Result>();
             List<Result> pushedResults = new List<Result>();
             if (query.Search == ">")
@@ -76,6 +80,8 @@ namespace Wox.Plugin.CMD
                 catch (Exception) { }
 
             }
+            stopwatch.Stop();
+            DebugHelper.WriteLine("CMD:" + stopwatch.ElapsedMilliseconds + "ms");
             return results;
         }
 

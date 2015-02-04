@@ -157,6 +157,23 @@ namespace Wox
             UpdateResultView(results);
         }
 
+        public void ShowContextMenu(PluginMetadata plugin, List<Result> results)
+        {
+            if (results != null && results.Count > 0)
+            {
+                results.ForEach(o =>
+                {
+                    o.PluginDirectory = plugin.PluginDirectory;
+                    o.PluginID = plugin.ID;
+                    o.ContextMenu = null;
+                });
+                pnlContextMenu.Clear();
+                pnlContextMenu.AddResults(results);
+                pnlContextMenu.Visibility = Visibility.Visible;
+                pnlResult.Visibility = Visibility.Collapsed;
+            }
+        }
+
         #endregion
 
         public MainWindow()
@@ -226,7 +243,7 @@ namespace Wox
 
         void pnlResult_RightMouseClickEvent(Result result)
         {
-            ShowContextMenu(result);
+            ShowContextMenuFromResult(result);
         }
 
         void MainWindow_Closing(object sender, CancelEventArgs e)
@@ -261,7 +278,7 @@ namespace Wox
 
         private void CheckUpdate()
         {
-            UpdaterManager.Instance.PrepareUpdateReady+=OnPrepareUpdateReady;
+            UpdaterManager.Instance.PrepareUpdateReady += OnPrepareUpdateReady;
             UpdaterManager.Instance.UpdateError += OnUpdateError;
             UpdaterManager.Instance.CheckUpdate();
         }
@@ -368,6 +385,8 @@ namespace Wox
             lastQuery = tbQuery.Text;
             toolTip.IsOpen = false;
             pnlResult.Dirty = true;
+            int searchDelay = GetSearchDelay(lastQuery);
+
             Dispatcher.DelayInvoke("UpdateSearch",
                 o =>
                 {
@@ -381,6 +400,7 @@ namespace Wox
                     }, TimeSpan.FromMilliseconds(100), null);
                     queryHasReturn = false;
                     Query query = new Query(lastQuery);
+                    query.IsIntantQuery = searchDelay == 0;
                     FireBeforeWoxQueryEvent(query);
                     Query(query);
                     Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
@@ -391,15 +411,18 @@ namespace Wox
                         }
                     }, TimeSpan.FromMilliseconds(150), tbQuery.Text);
                     FireAfterWoxQueryEvent(query);
-                }, TimeSpan.FromMilliseconds(GetSearchDelay(lastQuery)));
+                }, TimeSpan.FromMilliseconds(searchDelay));
         }
 
         private int GetSearchDelay(string query)
         {
             if (!string.IsNullOrEmpty(query) && PluginManager.IsInstantSearch(query))
             {
+                DebugHelper.WriteLine("execute query without delay");
                 return 0;
             }
+
+            DebugHelper.WriteLine("execute query with 200ms delay");
             return 200;
         }
 
@@ -551,7 +574,7 @@ namespace Wox
                         }
                         else
                         {
-                            ShowContextMenu(GetActiveResult());
+                            ShowContextMenuFromResult(GetActiveResult());
                         }
                     }
                     break;
@@ -609,7 +632,7 @@ namespace Wox
                     Result activeResult = GetActiveResult();
                     if (GlobalHotkey.Instance.CheckModifiers().ShiftPressed)
                     {
-                        ShowContextMenu(activeResult);
+                        ShowContextMenuFromResult(activeResult);
                     }
                     else
                     {
@@ -740,7 +763,7 @@ namespace Wox
             }
         }
 
-        private void ShowContextMenu(Result result)
+        private void ShowContextMenuFromResult(Result result)
         {
             if (result.ContextMenu != null && result.ContextMenu.Count > 0)
             {

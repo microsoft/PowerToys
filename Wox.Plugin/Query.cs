@@ -33,6 +33,8 @@ namespace Wox.Plugin
             return string.Empty;
         }
 
+        internal bool IsIntantQuery { get; set; }
+
         /// <summary>
         /// Return first search split by space if it has
         /// </summary>

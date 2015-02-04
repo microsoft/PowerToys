@@ -9,38 +9,29 @@ using Wox.Plugin;
 
 namespace Wox.Core.Plugin.QueryDispatcher
 {
-    public class UserPluginQueryDispatcher : IQueryDispatcher
+    public class UserPluginQueryDispatcher : BaseQueryDispatcher
     {
-        public void Dispatch(Query query)
+        protected override List<PluginPair> GetPlugins(Query query)
         {
+            List<PluginPair> plugins = new List<PluginPair>();
+            //only first plugin that matches action keyword will get executed
             PluginPair userPlugin = PluginManager.AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.GetActionKeyword());
-            if (userPlugin != null && !string.IsNullOrEmpty(userPlugin.Metadata.ActionKeyword))
+            if (userPlugin != null)
             {
-                var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == userPlugin.Metadata.ID);
+                var customizedPluginConfig = UserSettingStorage.Instance.
+                    CustomizedPluginConfigs.FirstOrDefault(o => o.ID == userPlugin.Metadata.ID);
                 if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
                 {
                     //need to stop the loading animation
                     PluginManager.API.StopLoadingBar();
-                    return;
                 }
-
-                ThreadPool.QueueUserWorkItem(t =>
+                else
                 {
-                    try
-                    {
-                        List<Result> results = userPlugin.Plugin.Query(query) ?? new List<Result>();
-                        results.ForEach(o =>
-                        {
-                            o.PluginID = userPlugin.Metadata.ID;
-                        });
-                        PluginManager.API.PushResults(query, userPlugin.Metadata, results);
-                    }
-                    catch (System.Exception e)
-                    {
-                        throw new WoxPluginException(userPlugin.Metadata.Name, e);
-                    }
-                });
+                    plugins.Add(userPlugin);
+                }
             }
+
+            return plugins;
         }
     }
 }
