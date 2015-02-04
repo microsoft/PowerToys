@@ -477,6 +477,10 @@ namespace Wox
                 provider = pair.Plugin as ISettingProvider;
                 pluginAuthor.Visibility = Visibility.Visible;
                 pluginActionKeyword.Visibility = Visibility.Visible;
+                pluginInitTime.Text =
+                    string.Format(InternationalizationManager.Instance.GetTranslation("plugin_init_time"), pair.InitTime);
+                pluginQueryTime.Text =
+                    string.Format(InternationalizationManager.Instance.GetTranslation("plugin_query_time"), pair.AvgQueryTime);
                 pluginActionKeywordTitle.Visibility = Visibility.Visible;
                 tbOpenPluginDirecoty.Visibility = Visibility.Visible;
                 pluginTitle.Text = pair.Metadata.Name;

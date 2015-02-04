@@ -21,9 +21,6 @@ namespace Wox.Plugin.CMD
 
         public List<Result> Query(Query query)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             List<Result> results = new List<Result>();
             List<Result> pushedResults = new List<Result>();
             if (query.Search == ">")
@@ -80,8 +77,6 @@ namespace Wox.Plugin.CMD
                 catch (Exception) { }
 
             }
-            stopwatch.Stop();
-            DebugHelper.WriteLine("CMD:" + stopwatch.ElapsedMilliseconds + "ms");
             return results;
         }
 

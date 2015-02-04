@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -21,7 +22,7 @@ namespace Wox.Core.Plugin
     {
         public const string ActionKeywordWildcardSign = "*";
         private static List<PluginMetadata> pluginMetadatas;
-        private static List<KeyValuePair<PluginMetadata,IInstantSearch>> instantSearches;
+        private static List<KeyValuePair<PluginMetadata, IInstantSearch>> instantSearches;
 
 
         public static String DebuggerMode { get; private set; }
@@ -86,15 +87,17 @@ namespace Wox.Core.Plugin
                 PluginPair pair = pluginPair;
                 ThreadPool.QueueUserWorkItem(o =>
                 {
-                    using (new Timeit(string.Format("Init {0}", pair.Metadata.Name)))
+                    Stopwatch sw = new Stopwatch();
+                    sw.Start();
+                    pair.Plugin.Init(new PluginInitContext()
                     {
-                        pair.Plugin.Init(new PluginInitContext()
-                        {
-                            CurrentPluginMetadata = pair.Metadata,
-                            Proxy = HttpProxy.Instance,
-                            API = API
-                        });
-                    }
+                        CurrentPluginMetadata = pair.Metadata,
+                        Proxy = HttpProxy.Instance,
+                        API = API
+                    });
+                    sw.Stop();
+                    DebugHelper.WriteLine(string.Format("Plugin init:{0} - {1}", pair.Metadata.Name, sw.ElapsedMilliseconds));
+                    pair.InitTime = sw.ElapsedMilliseconds;
                 });
             }
 
@@ -129,7 +132,7 @@ namespace Wox.Core.Plugin
         {
             if (string.IsNullOrEmpty(query.RawQuery)) return false;
             var strings = query.RawQuery.Split(' ');
-            if(strings.Length == 1) return false;
+            if (strings.Length == 1) return false;
 
             var actionKeyword = strings[0].Trim();
             if (string.IsNullOrEmpty(actionKeyword)) return false;
@@ -163,11 +166,24 @@ namespace Wox.Core.Plugin
         {
             try
             {
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
                 List<Result> results = pair.Plugin.Query(query) ?? new List<Result>();
                 results.ForEach(o =>
                 {
                     o.PluginID = pair.Metadata.ID;
                 });
+                sw.Stop();
+                DebugHelper.WriteLine(string.Format("Plugin query: {0} - {1}", pair.Metadata.Name, sw.ElapsedMilliseconds));
+                pair.QueryCount += 1;
+                if (pair.QueryCount == 1)
+                {
+                    pair.AvgQueryTime = sw.ElapsedMilliseconds;
+                }
+                else
+                {
+                    pair.AvgQueryTime = (pair.AvgQueryTime + sw.ElapsedMilliseconds) / 2;
+                }
                 API.PushResults(query, pair.Metadata, results);
             }
             catch (System.Exception e)
@@ -176,7 +192,7 @@ namespace Wox.Core.Plugin
             }
         }
 
-        private static List<KeyValuePair<PluginMetadata,IInstantSearch>> LoadInstantSearches()
+        private static List<KeyValuePair<PluginMetadata, IInstantSearch>> LoadInstantSearches()
         {
             if (instantSearches != null) return instantSearches;
 
@@ -196,7 +212,7 @@ namespace Wox.Core.Plugin
 
                     foreach (Type type in types)
                     {
-                        instantSearches.Add(new KeyValuePair<PluginMetadata, IInstantSearch>(metadata,Activator.CreateInstance(type) as IInstantSearch));
+                        instantSearches.Add(new KeyValuePair<PluginMetadata, IInstantSearch>(metadata, Activator.CreateInstance(type) as IInstantSearch));
                     }
                 }
                 catch (System.Exception e)

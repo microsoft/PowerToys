@@ -22,6 +22,8 @@
     <system:String x:Key="actionKeyword">Action keyword</system:String>
     <system:String x:Key="pluginDirectory">Plugin Directory</system:String>
     <system:String x:Key="author">Author</system:String>
+    <system:String x:Key="plugin_init_time">Init time: {0}ms</system:String>
+    <system:String x:Key="plugin_query_time">Query time: {0}ms</system:String>
 
     <!--Setting Theme-->
     <system:String x:Key="theme">Theme</system:String>
