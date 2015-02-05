@@ -6,28 +6,18 @@ namespace Wox.Core.Plugin.QueryDispatcher
 {
     internal static class QueryDispatcher
     {
-        private static readonly IQueryDispatcher UserPluginDispatcher = new UserPluginQueryDispatcher();
-        private static readonly IQueryDispatcher SystemPluginDispatcher = new SystemPluginQueryDispatcher();
+        private static readonly IQueryDispatcher exclusivePluginDispatcher = new ExclusiveQueryDispatcher();
+        private static readonly IQueryDispatcher genericQueryDispatcher = new GenericQueryDispatcher();
 
-        public static void Dispatch(Wox.Plugin.Query query)
+        public static void Dispatch(Query query)
         {
-            PluginPair exclusiveSearchPlugin = PluginManager.GetExclusiveSearchPlugin(query);
-            if (exclusiveSearchPlugin != null)
+            if (PluginManager.IsExclusivePluginQuery(query))
             {
-                ThreadPool.QueueUserWorkItem(state =>
-                {
-                    PluginManager.ExecutePluginQuery(exclusiveSearchPlugin, query);
-                });
-                return;
-            }
-
-            if (PluginManager.IsUserPluginQuery(query))
-            {
-                UserPluginDispatcher.Dispatch(query);
+                exclusivePluginDispatcher.Dispatch(query);
             }
             else
             {
-                SystemPluginDispatcher.Dispatch(query);
+                genericQueryDispatcher.Dispatch(query);
             }
         }
     }

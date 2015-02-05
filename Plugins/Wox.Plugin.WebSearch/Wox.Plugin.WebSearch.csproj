@@ -60,7 +60,7 @@
     <Compile Include="WebSearchesSetting.xaml.cs">
       <DependentUpon>WebSearchesSetting.xaml</DependentUpon>
     </Compile>
-    <Compile Include="WebSearchPlugin.cs" />
+    <Compile Include="WebQueryPlugin.cs" />
     <Compile Include="WebSearchSetting.xaml.cs">
       <DependentUpon>WebSearchSetting.xaml</DependentUpon>
     </Compile>

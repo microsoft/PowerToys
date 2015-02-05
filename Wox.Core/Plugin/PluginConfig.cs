@@ -78,7 +78,6 @@ namespace Wox.Core.Plugin
             try
             {
                 metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
-                metadata.PluginType = PluginType.User;
                 metadata.PluginDirectory = pluginDirectory;
             }
             catch (System.Exception)

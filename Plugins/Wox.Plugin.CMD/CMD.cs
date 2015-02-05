@@ -14,7 +14,7 @@ using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.CMD
 {
-    public class CMD : IPlugin, ISettingProvider, IPluginI18n, IInstantSearch,IExclusiveSearch
+    public class CMD : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IExclusiveQuery
     {
         private PluginInitContext context;
         private bool WinRStroked;
@@ -213,13 +213,13 @@ namespace Wox.Plugin.CMD
             return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
         }
 
-        public bool IsInstantSearch(string query)
+        public bool IsInstantQuery(string query)
         {
             if (query.StartsWith(">")) return true;
             return false;
         }
 
-        public bool IsExclusiveSearch(Query query)
+        public bool IsExclusiveQuery(Query query)
         {
             return query.Search.StartsWith(">");
         }

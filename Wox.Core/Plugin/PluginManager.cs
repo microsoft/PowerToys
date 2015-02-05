@@ -23,8 +23,8 @@ namespace Wox.Core.Plugin
     {
         public const string ActionKeywordWildcardSign = "*";
         private static List<PluginMetadata> pluginMetadatas;
-        private static List<KeyValuePair<PluginMetadata, IInstantSearch>> instantSearches;
-        private static List<KeyValuePair<PluginPair,IExclusiveSearch>> exclusiveSearchPlugins;
+        private static List<KeyValuePair<PluginMetadata, IInstantQuery>> instantSearches;
+        private static List<KeyValuePair<PluginPair, IExclusiveQuery>> exclusiveSearchPlugins;
 
         public static String DebuggerMode { get; private set; }
         public static IPublicAPI API { get; private set; }
@@ -117,7 +117,7 @@ namespace Wox.Core.Plugin
         {
             if (!string.IsNullOrEmpty(query.RawQuery.Trim()))
             {
-                query.Search = IsUserPluginQuery(query) ? query.RawQuery.Substring(query.RawQuery.IndexOf(' ') + 1) : query.RawQuery;
+                query.Search = IsActionKeywordQuery(query) ? query.RawQuery.Substring(query.RawQuery.IndexOf(' ') + 1) : query.RawQuery;
                 QueryDispatcher.QueryDispatcher.Dispatch(query);
             }
         }
@@ -130,7 +130,12 @@ namespace Wox.Core.Plugin
             }
         }
 
-        public static bool IsUserPluginQuery(Query query)
+        /// <summary>
+        /// Check if a query contains action keyword
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public static bool IsActionKeywordQuery(Query query)
         {
             if (string.IsNullOrEmpty(query.RawQuery)) return false;
             var strings = query.RawQuery.Split(' ');
@@ -139,10 +144,10 @@ namespace Wox.Core.Plugin
             var actionKeyword = strings[0].Trim();
             if (string.IsNullOrEmpty(actionKeyword)) return false;
 
-            return plugins.Any(o => o.Metadata.PluginType == PluginType.User && o.Metadata.ActionKeyword == actionKeyword);
+            return plugins.Any(o => o.Metadata.ActionKeyword == actionKeyword);
         }
 
-        public static bool IsSystemPlugin(PluginMetadata metadata)
+        public static bool IsGenericPlugin(PluginMetadata metadata)
         {
             return metadata.ActionKeyword == ActionKeywordWildcardSign;
         }
@@ -152,9 +157,9 @@ namespace Wox.Core.Plugin
             DebuggerMode = path;
         }
 
-        public static bool IsInstantSearch(string query)
+        public static bool IsInstantQuery(string query)
         {
-            return LoadInstantSearches().Any(o => o.Value.IsInstantSearch(query));
+            return LoadInstantSearches().Any(o => o.Value.IsInstantQuery(query));
         }
 
         public static bool IsInstantSearchPlugin(PluginMetadata pluginMetadata)
@@ -194,11 +199,11 @@ namespace Wox.Core.Plugin
             }
         }
 
-        private static List<KeyValuePair<PluginMetadata, IInstantSearch>> LoadInstantSearches()
+        private static List<KeyValuePair<PluginMetadata, IInstantQuery>> LoadInstantSearches()
         {
             if (instantSearches != null) return instantSearches;
 
-            instantSearches = new List<KeyValuePair<PluginMetadata, IInstantSearch>>();
+            instantSearches = new List<KeyValuePair<PluginMetadata, IInstantQuery>>();
             List<PluginMetadata> CSharpPluginMetadatas = pluginMetadatas.Where(o => o.Language.ToUpper() == AllowedLanguage.CSharp.ToUpper()).ToList();
 
             foreach (PluginMetadata metadata in CSharpPluginMetadatas)
@@ -206,7 +211,7 @@ namespace Wox.Core.Plugin
                 try
                 {
                     Assembly asm = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
-                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IInstantSearch))).ToList();
+                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IInstantQuery))).ToList();
                     if (types.Count == 0)
                     {
                         continue;
@@ -214,7 +219,7 @@ namespace Wox.Core.Plugin
 
                     foreach (Type type in types)
                     {
-                        instantSearches.Add(new KeyValuePair<PluginMetadata, IInstantSearch>(metadata, Activator.CreateInstance(type) as IInstantSearch));
+                        instantSearches.Add(new KeyValuePair<PluginMetadata, IInstantQuery>(metadata, Activator.CreateInstance(type) as IInstantQuery));
                     }
                 }
                 catch (System.Exception e)
@@ -241,11 +246,11 @@ namespace Wox.Core.Plugin
             return AllPlugins.FirstOrDefault(o => o.Metadata.ID == id);
         }
 
-        internal static List<KeyValuePair<PluginPair, IExclusiveSearch>> LoadExclusiveSearchPlugins()
+        internal static List<KeyValuePair<PluginPair, IExclusiveQuery>> LoadExclusiveSearchPlugins()
         {
             if (exclusiveSearchPlugins != null) return exclusiveSearchPlugins;
 
-            exclusiveSearchPlugins = new List<KeyValuePair<PluginPair, IExclusiveSearch>>();
+            exclusiveSearchPlugins = new List<KeyValuePair<PluginPair, IExclusiveQuery>>();
             List<PluginMetadata> CSharpPluginMetadatas = pluginMetadatas.Where(o => o.Language.ToUpper() == AllowedLanguage.CSharp.ToUpper()).ToList();
 
             foreach (PluginMetadata metadata in CSharpPluginMetadatas)
@@ -253,7 +258,7 @@ namespace Wox.Core.Plugin
                 try
                 {
                     Assembly asm = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
-                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IExclusiveSearch))).ToList();
+                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IExclusiveQuery))).ToList();
                     if (types.Count == 0)
                     {
                         continue;
@@ -261,8 +266,8 @@ namespace Wox.Core.Plugin
 
                     foreach (Type type in types)
                     {
-                        exclusiveSearchPlugins.Add(new KeyValuePair<PluginPair, IExclusiveSearch>(AllPlugins.First(o => o.Metadata.ID == metadata.ID),
-                            Activator.CreateInstance(type) as IExclusiveSearch));
+                        exclusiveSearchPlugins.Add(new KeyValuePair<PluginPair, IExclusiveQuery>(AllPlugins.First(o => o.Metadata.ID == metadata.ID),
+                            Activator.CreateInstance(type) as IExclusiveQuery));
                     }
                 }
                 catch (System.Exception e)
@@ -279,12 +284,31 @@ namespace Wox.Core.Plugin
             return exclusiveSearchPlugins;
         }
 
-        internal static PluginPair GetExclusiveSearchPlugin(Query query)
+        internal static PluginPair GetExclusivePlugin(Query query)
         {
-            KeyValuePair<PluginPair, IExclusiveSearch> plugin = LoadExclusiveSearchPlugins().FirstOrDefault(o => o.Value.IsExclusiveSearch((query)));
-            if (plugin.Key != null) return plugin.Key;
+            KeyValuePair<PluginPair, IExclusiveQuery> plugin = LoadExclusiveSearchPlugins().FirstOrDefault(o => o.Value.IsExclusiveQuery((query)));
+            return plugin.Key;
+        }
+
+        internal static PluginPair GetActionKeywordPlugin(Query query)
+        {
+            PluginPair exclusivePluginPair = AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.GetActionKeyword());
+            if (exclusivePluginPair != null)
+            {
+                var customizedPluginConfig = UserSettingStorage.Instance.
+                    CustomizedPluginConfigs.FirstOrDefault(o => o.ID == exclusivePluginPair.Metadata.ID);
+                if (customizedPluginConfig != null && !customizedPluginConfig.Disabled)
+                {
+                    return exclusivePluginPair;
+                }
+            }
 
             return null;
+        }
+
+        internal static bool IsExclusivePluginQuery(Query query)
+        {
+            return GetExclusivePlugin(query) != null || GetActionKeywordPlugin(query) != null;
         }
     }
 }

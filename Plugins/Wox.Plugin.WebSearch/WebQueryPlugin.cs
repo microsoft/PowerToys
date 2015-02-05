@@ -5,11 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Wox.Core.UserSettings;
+using Wox.Plugin.Features;
 using Wox.Plugin.WebSearch.SuggestionSources;
 
 namespace Wox.Plugin.WebSearch
 {
-    public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantSearch
+    public class WebQueryPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IExclusiveQuery
     {
         private PluginInitContext context;
 
@@ -18,7 +19,7 @@ namespace Wox.Plugin.WebSearch
             List<Result> results = new List<Result>();
 
             WebSearch webSearch =
-                WebSearchStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionWord == query.FirstSearch.Trim() && o.Enabled);
+                WebSearchStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionWord == query.FirstSearch.Trim() && !string.IsNullOrEmpty(query.SecondSearch) && o.Enabled);
 
             if (webSearch != null)
             {
@@ -98,15 +99,19 @@ namespace Wox.Plugin.WebSearch
             return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
         }
 
-        public bool IsInstantSearch(string query)
+        public bool IsInstantQuery(string query)
         {
             var strings = query.Split(' ');
             if (strings.Length > 1)
             {
-                return WebSearchStorage.Instance.EnableWebSearchSuggestion &&
-                       WebSearchStorage.Instance.WebSearches.Exists(o => o.ActionWord == strings[0] && o.Enabled);
+                return WebSearchStorage.Instance.WebSearches.Exists(o => o.ActionWord == strings[0] && o.Enabled);
             }
             return false;
+        }
+
+        public bool IsExclusiveQuery(Query query)
+        {
+            return IsInstantQuery(query.RawQuery);
         }
     }
 }

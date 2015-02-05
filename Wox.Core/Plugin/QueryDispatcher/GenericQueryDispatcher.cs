@@ -8,14 +8,11 @@ using Wox.Plugin;
 
 namespace Wox.Core.Plugin.QueryDispatcher
 {
-    public class SystemPluginQueryDispatcher : BaseQueryDispatcher
+    public class GenericQueryDispatcher : BaseQueryDispatcher
     {
-        private readonly List<PluginPair> allSytemPlugins =
-            PluginManager.AllPlugins.Where(o => PluginManager.IsSystemPlugin(o.Metadata)).ToList();
-
         protected override List<PluginPair> GetPlugins(Query query)
         {
-            return allSytemPlugins;
+            return PluginManager.AllPlugins.Where(o => PluginManager.IsGenericPlugin(o.Metadata)).ToList();
         }
     }
 }

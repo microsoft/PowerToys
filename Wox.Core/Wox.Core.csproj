@@ -86,8 +86,8 @@
     <Compile Include="Plugin\PluginInstaller.cs" />
     <Compile Include="Plugin\QueryDispatcher\IQueryDispatcher.cs" />
     <Compile Include="Plugin\QueryDispatcher\QueryDispatcher.cs" />
-    <Compile Include="Plugin\QueryDispatcher\UserPluginQueryDispatcher.cs" />
-    <Compile Include="Plugin\QueryDispatcher\SystemPluginQueryDispatcher.cs" />
+    <Compile Include="Plugin\QueryDispatcher\ExclusiveQueryDispatcher.cs" />
+    <Compile Include="Plugin\QueryDispatcher\GenericQueryDispatcher.cs" />
     <Compile Include="Plugin\JsonRPCPlugin.cs" />
     <Compile Include="Plugin\JsonRPCPluginLoader.cs" />
     <Compile Include="Plugin\CSharpPluginLoader.cs" />

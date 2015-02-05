@@ -15,7 +15,7 @@ namespace Wox.Plugin.PluginIndicator
             List<Result> results = new List<Result>();
             if (allPlugins.Count == 0)
             {
-                allPlugins = context.API.GetAllPlugins().Where(o => !PluginManager.IsSystemPlugin(o.Metadata)).ToList();
+                allPlugins = context.API.GetAllPlugins().Where(o => !PluginManager.IsGenericPlugin(o.Metadata)).ToList();
             }
 
             foreach (PluginMetadata metadata in allPlugins.Select(o => o.Metadata))
@@ -44,19 +44,6 @@ namespace Wox.Plugin.PluginIndicator
                     results.Add(result);
                 }
             }
-
-            //results.AddRange(UserSettingStorage.Instance.WebSearches.Where(o => o.ActionWord.StartsWith(query.Search) && o.Enabled).Select(n => new Result()
-            //{
-            //    Title = n.ActionWord,
-            //    SubTitle = string.Format("Activate {0} web search", n.ActionWord),
-            //    Score = 100,
-            //    IcoPath = "Images/work.png",
-            //    Action = (c) =>
-            //    {
-            //        context.API.ChangeQuery(n.ActionWord + " ");
-            //        return false;
-            //    }
-            //}));
 
             return results;
         }

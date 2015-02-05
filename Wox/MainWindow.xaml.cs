@@ -416,7 +416,7 @@ namespace Wox
 
         private int GetSearchDelay(string query)
         {
-            if (!string.IsNullOrEmpty(query) && PluginManager.IsInstantSearch(query))
+            if (!string.IsNullOrEmpty(query) && PluginManager.IsInstantQuery(query))
             {
                 DebugHelper.WriteLine("execute query without delay");
                 return 0;

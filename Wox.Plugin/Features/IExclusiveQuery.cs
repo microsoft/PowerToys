@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Wox.Plugin.Features
 {
-    public interface IExclusiveSearch
+    public interface IExclusiveQuery
     {
-        bool IsExclusiveSearch(Query query);
+        bool IsExclusiveQuery(Query query);
     }
 }

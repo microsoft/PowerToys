@@ -11,7 +11,7 @@ namespace Wox.Test
     public class QueryTest
     {
         [Test]
-        public void UserPluginQueryTest()
+        public void ExclusivePluginQueryTest()
         {
             Query q = new Query("f file.txt file2 file3");
             q.Search = "file.txt file2 file3";
@@ -23,7 +23,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void SystemPluginQueryTest()
+        public void GenericPluginQueryTest()
         {
             Query q = new Query("file.txt file2 file3");
             q.Search = q.RawQuery;
