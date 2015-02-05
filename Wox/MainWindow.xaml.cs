@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -35,6 +36,7 @@ using MessageBox = System.Windows.MessageBox;
 using ToolTip = System.Windows.Controls.ToolTip;
 using Wox.Infrastructure.Logger;
 using IDataObject = System.Windows.IDataObject;
+using System.IO;
 
 namespace Wox
 {
@@ -754,12 +756,47 @@ namespace Wox
                 list.ForEach(o =>
                 {
                     o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o) * 5;
+                    if (o.ContextMenu == null)
+                    {
+                        o.ContextMenu = new List<Result>();
+                    }
+                    HanleTopMost(o);
                 });
                 List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
                 Dispatcher.Invoke(new Action(() =>
                 {
                     pnlResult.AddResults(l);
                 }));
+            }
+        }
+
+        private void HanleTopMost(Result result)
+        {
+            if (TopMostRecordStorage.Instance.IsTopMost(result))
+            {
+                result.ContextMenu.Add(new Result("Remove top most in this query", "Images\\topmost.png")
+                {
+                    PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    Action = _ =>
+                    {
+                        TopMostRecordStorage.Instance.Remove(result);
+                        ShowMsg("Succeed", "", "");
+                        return false;
+                    }
+                });
+            }
+            else
+            {
+                result.ContextMenu.Add(new Result("Set as top most in this query", "Images\\topmost.png")
+                {
+                    PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    Action = _ =>
+                    {
+                        TopMostRecordStorage.Instance.Add(result);
+                        ShowMsg("Succeed", "", "");
+                        return false;
+                    }
+                });
             }
         }
 

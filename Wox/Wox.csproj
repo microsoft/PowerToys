@@ -115,6 +115,7 @@
     <Compile Include="Converters\StringEmptyConverter.cs" />
     <Compile Include="Converters\StringNullOrEmptyToVisibilityConverter.cs" />
     <Compile Include="ImageLoader\ImageCacheStroage.cs" />
+    <Compile Include="Storage\TopMostRecordStorage.cs" />
     <Compile Include="Storage\UserSelectedRecordStorage.cs" />
     <Compile Include="WoxUpdate.xaml.cs">
       <DependentUpon>WoxUpdate.xaml</DependentUpon>
@@ -179,6 +180,9 @@
     <Resource Include="Images\update.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
+    <None Include="Images\topmost.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Content Include="Languages\en.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
