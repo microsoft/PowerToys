@@ -12,6 +12,7 @@ using Wox.Infrastructure;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using Wox.Plugin.Features;
 
 namespace Wox.Core.Plugin
 {
@@ -23,7 +24,7 @@ namespace Wox.Core.Plugin
         public const string ActionKeywordWildcardSign = "*";
         private static List<PluginMetadata> pluginMetadatas;
         private static List<KeyValuePair<PluginMetadata, IInstantSearch>> instantSearches;
-
+        private static List<KeyValuePair<PluginPair,IExclusiveSearch>> exclusiveSearchPlugins;
 
         public static String DebuggerMode { get; private set; }
         public static IPublicAPI API { get; private set; }
@@ -116,6 +117,7 @@ namespace Wox.Core.Plugin
         {
             if (!string.IsNullOrEmpty(query.RawQuery.Trim()))
             {
+                query.Search = IsUserPluginQuery(query) ? query.RawQuery.Substring(query.RawQuery.IndexOf(' ') + 1) : query.RawQuery;
                 QueryDispatcher.QueryDispatcher.Dispatch(query);
             }
         }
@@ -237,6 +239,52 @@ namespace Wox.Core.Plugin
         public static PluginPair GetPlugin(string id)
         {
             return AllPlugins.FirstOrDefault(o => o.Metadata.ID == id);
+        }
+
+        internal static List<KeyValuePair<PluginPair, IExclusiveSearch>> LoadExclusiveSearchPlugins()
+        {
+            if (exclusiveSearchPlugins != null) return exclusiveSearchPlugins;
+
+            exclusiveSearchPlugins = new List<KeyValuePair<PluginPair, IExclusiveSearch>>();
+            List<PluginMetadata> CSharpPluginMetadatas = pluginMetadatas.Where(o => o.Language.ToUpper() == AllowedLanguage.CSharp.ToUpper()).ToList();
+
+            foreach (PluginMetadata metadata in CSharpPluginMetadatas)
+            {
+                try
+                {
+                    Assembly asm = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
+                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IExclusiveSearch))).ToList();
+                    if (types.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    foreach (Type type in types)
+                    {
+                        exclusiveSearchPlugins.Add(new KeyValuePair<PluginPair, IExclusiveSearch>(AllPlugins.First(o => o.Metadata.ID == metadata.ID),
+                            Activator.CreateInstance(type) as IExclusiveSearch));
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Log.Error(string.Format("Couldn't load plugin {0}: {1}", metadata.Name, e.Message));
+#if (DEBUG)
+                    {
+                        throw;
+                    }
+#endif
+                }
+            }
+
+            return exclusiveSearchPlugins;
+        }
+
+        internal static PluginPair GetExclusiveSearchPlugin(Query query)
+        {
+            KeyValuePair<PluginPair, IExclusiveSearch> plugin = LoadExclusiveSearchPlugins().FirstOrDefault(o => o.Value.IsExclusiveSearch((query)));
+            if (plugin.Key != null) return plugin.Key;
+
+            return null;
         }
     }
 }

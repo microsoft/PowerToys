@@ -9,11 +9,12 @@ using WindowsInput;
 using WindowsInput.Native;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
+using Wox.Plugin.Features;
 using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.CMD
 {
-    public class CMD : IPlugin, ISettingProvider, IPluginI18n, IInstantSearch
+    public class CMD : IPlugin, ISettingProvider, IPluginI18n, IInstantSearch,IExclusiveSearch
     {
         private PluginInitContext context;
         private bool WinRStroked;
@@ -216,6 +217,11 @@ namespace Wox.Plugin.CMD
         {
             if (query.StartsWith(">")) return true;
             return false;
+        }
+
+        public bool IsExclusiveSearch(Query query)
+        {
+            return query.Search.StartsWith(">");
         }
     }
 }

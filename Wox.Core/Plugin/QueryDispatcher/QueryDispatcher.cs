@@ -1,4 +1,7 @@
 ﻿
+using System.Threading;
+using Wox.Plugin;
+
 namespace Wox.Core.Plugin.QueryDispatcher
 {
     internal static class QueryDispatcher
@@ -8,14 +11,22 @@ namespace Wox.Core.Plugin.QueryDispatcher
 
         public static void Dispatch(Wox.Plugin.Query query)
         {
+            PluginPair exclusiveSearchPlugin = PluginManager.GetExclusiveSearchPlugin(query);
+            if (exclusiveSearchPlugin != null)
+            {
+                ThreadPool.QueueUserWorkItem(state =>
+                {
+                    PluginManager.ExecutePluginQuery(exclusiveSearchPlugin, query);
+                });
+                return;
+            }
+
             if (PluginManager.IsUserPluginQuery(query))
             {
-                query.Search = query.RawQuery.Substring(query.RawQuery.IndexOf(' ') + 1);
                 UserPluginDispatcher.Dispatch(query);
             }
             else
             {
-                query.Search = query.RawQuery;
                 SystemPluginDispatcher.Dispatch(query);
             }
         }

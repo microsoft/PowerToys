@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="AllowedLanguage.cs" />
     <Compile Include="EventHandler.cs" />
+    <Compile Include="Features\IExclusiveSearch.cs" />
     <Compile Include="IInstantSearch.cs" />
     <Compile Include="IHttpProxy.cs" />
     <Compile Include="IPluginI18n.cs" />
