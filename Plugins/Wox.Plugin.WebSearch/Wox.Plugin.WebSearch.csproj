@@ -67,6 +67,9 @@
     <Compile Include="WebSearchStorage.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Images\websearch\pictures.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Content Include="Languages\en.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -10,16 +10,20 @@ using Wox.Plugin.WebSearch.SuggestionSources;
 
 namespace Wox.Plugin.WebSearch
 {
-    public class WebQueryPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IExclusiveQuery
+    public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IExclusiveQuery
     {
         private PluginInitContext context;
 
         public List<Result> Query(Query query)
         {
             List<Result> results = new List<Result>();
+            if (!query.Search.Contains(' '))
+            {
+                return results;
+            }
 
             WebSearch webSearch =
-                WebSearchStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionWord == query.FirstSearch.Trim() && !string.IsNullOrEmpty(query.SecondSearch) && o.Enabled);
+                WebSearchStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionWord == query.FirstSearch.Trim() && o.Enabled);
 
             if (webSearch != null)
             {

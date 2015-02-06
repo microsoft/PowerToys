@@ -131,7 +131,7 @@ namespace Wox.Core.Plugin
         }
 
         /// <summary>
-        /// Check if a query contains action keyword
+        /// Check if a query contains valid action keyword
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
@@ -144,7 +144,19 @@ namespace Wox.Core.Plugin
             var actionKeyword = strings[0].Trim();
             if (string.IsNullOrEmpty(actionKeyword)) return false;
 
-            return plugins.Any(o => o.Metadata.ActionKeyword == actionKeyword);
+            PluginPair pair = plugins.FirstOrDefault(o => o.Metadata.ActionKeyword == actionKeyword);
+            if (pair != null)
+            {
+                var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == pair.Metadata.ID);
+                if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         public static bool IsGenericPlugin(PluginMetadata metadata)
@@ -292,15 +304,17 @@ namespace Wox.Core.Plugin
 
         internal static PluginPair GetActionKeywordPlugin(Query query)
         {
-            PluginPair exclusivePluginPair = AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.GetActionKeyword());
-            if (exclusivePluginPair != null)
+            PluginPair actionKeywordPluginPair = AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.GetActionKeyword());
+            if (actionKeywordPluginPair != null)
             {
                 var customizedPluginConfig = UserSettingStorage.Instance.
-                    CustomizedPluginConfigs.FirstOrDefault(o => o.ID == exclusivePluginPair.Metadata.ID);
-                if (customizedPluginConfig != null && !customizedPluginConfig.Disabled)
+                    CustomizedPluginConfigs.FirstOrDefault(o => o.ID == actionKeywordPluginPair.Metadata.ID);
+                if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
                 {
-                    return exclusivePluginPair;
+                    return null;
                 }
+
+                return actionKeywordPluginPair;
             }
 
             return null;

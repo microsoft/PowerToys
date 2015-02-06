@@ -31,6 +31,7 @@ namespace Wox.Test
 
             Assert.IsFalse(urlPlugin.IsURL("wwww"));
             Assert.IsFalse(urlPlugin.IsURL("wwww.c"));
+            Assert.IsFalse(urlPlugin.IsURL("wwww.c"));
         }
     }
 }
