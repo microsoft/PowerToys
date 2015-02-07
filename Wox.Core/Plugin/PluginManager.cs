@@ -248,6 +248,9 @@ namespace Wox.Core.Plugin
 
         internal static PluginPair GetActionKeywordPlugin(Query query)
         {
+            //if a query doesn't contain at least one space, it should not be a action keword plugin query
+            if (!query.RawQuery.Contains(" ")) return null;
+
             PluginPair actionKeywordPluginPair = AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.GetActionKeyword());
             if (actionKeywordPluginPair != null)
             {
