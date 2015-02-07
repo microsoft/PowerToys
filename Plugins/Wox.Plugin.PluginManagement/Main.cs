@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -234,7 +235,19 @@ namespace Wox.Plugin.PluginManagement
             if (MessageBox.Show(content, "Wox", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 File.Create(Path.Combine(plugin.PluginDirectory, "NeedDelete.txt")).Close();
-                MessageBox.Show("This plugin has been removed, restart Wox to take effect");
+                if (MessageBox.Show(
+                    "You have uninstalled plugin " + plugin.Name + " successfully.\r\n Restart Wox to take effect?",
+                    "Install plugin",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    ProcessStartInfo Info = new ProcessStartInfo();
+                    Info.Arguments = "/C ping 127.0.0.1 -n 1 && \"" + Application.ExecutablePath + "\"";
+                    Info.WindowStyle = ProcessWindowStyle.Hidden;
+                    Info.CreateNoWindow = true;
+                    Info.FileName = "cmd.exe";
+                    Process.Start(Info);
+                    context.API.CloseApp();
+                }
             }
         }
 
