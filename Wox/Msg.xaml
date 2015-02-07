@@ -27,7 +27,7 @@
         <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" ></Image>
         <Grid HorizontalAlignment="Stretch" Margin="5 0 0 0" Grid.Column="1" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
-                <RowDefinition Height="29"></RowDefinition>
+                <RowDefinition></RowDefinition>
                 <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
             <TextBlock x:Name="tbTitle" FontSize="16" Foreground="#37392c" FontWeight="Medium">Title</TextBlock>

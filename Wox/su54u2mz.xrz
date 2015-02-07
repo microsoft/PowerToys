@@ -48,8 +48,6 @@ namespace Wox
         private ToolTip toolTip = new ToolTip();
 
         private bool ignoreTextChange = false;
-        private List<Result> CurrentContextMenus = new List<Result>();
-        private string textBeforeEnterContextMenuMode;
 
         #endregion
 
@@ -65,16 +63,6 @@ namespace Wox
                 {
                     TextBoxBase_OnTextChanged(null, null);
                 }
-            }));
-        }
-
-        public void ChangeQueryText(string query)
-        {
-            Dispatcher.Invoke(new Action(() =>
-            {
-                ignoreTextChange = true;
-                tbQuery.Text = query;
-                tbQuery.CaretIndex = tbQuery.Text.Length;
             }));
         }
 
@@ -388,43 +376,13 @@ namespace Wox
             notifyIcon.ContextMenu = new ContextMenu(childen);
         }
 
-        private void QueryContextMenu()
-        {
-            pnlContextMenu.Clear();
-            var query = tbQuery.Text.ToLower();
-            if (string.IsNullOrEmpty(query))
-            {
-                pnlContextMenu.AddResults(CurrentContextMenus);
-            }
-            else
-            {
-                List<Result> filterResults = new List<Result>();
-                foreach (Result contextMenu in CurrentContextMenus)
-                {
-                    if (StringMatcher.IsMatch(contextMenu.Title, query) 
-                        || StringMatcher.IsMatch(contextMenu.SubTitle, query))
-                    {
-                        filterResults.Add(contextMenu);
-                    }
-                }
-                pnlContextMenu.AddResults(filterResults);
-            }
-        }
-
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             if (ignoreTextChange) { ignoreTextChange = false; return; }
 
+            lastQuery = tbQuery.Text;
             toolTip.IsOpen = false;
             pnlResult.Dirty = true;
-
-            if (IsInContextMenuMode)
-            {
-                QueryContextMenu();
-                return;
-            }
-
-            lastQuery = tbQuery.Text;
             int searchDelay = GetSearchDelay(lastQuery);
 
             Dispatcher.DelayInvoke("UpdateSearch",
@@ -502,11 +460,11 @@ namespace Wox
         {
             PluginManager.Query(q);
             StopProgress();
+            BackToResultMode();
         }
 
         private void BackToResultMode()
         {
-            ChangeQueryText(textBeforeEnterContextMenuMode);
             pnlResult.Visibility = Visibility.Visible;
             pnlContextMenu.Visibility = Visibility.Collapsed;
         }
@@ -528,7 +486,6 @@ namespace Wox
 
         private void HideWox()
         {
-            BackToResultMode();
             Hide();
         }
 
@@ -631,7 +588,7 @@ namespace Wox
                     break;
 
                 case Key.D:
-                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
+                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
                     {
                         pnlResult.SelectNextPage();
                     }
@@ -643,7 +600,7 @@ namespace Wox
                     break;
 
                 case Key.U:
-                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
+                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
                     {
                         pnlResult.SelectPrevPage();
                     }
@@ -813,7 +770,7 @@ namespace Wox
         {
             if (TopMostRecordStorage.Instance.IsTopMost(result))
             {
-                result.ContextMenu.Add(new Result(GetTranslation("cancelTopMostInThisQuery"), "Images\\down.png")
+                result.ContextMenu.Add(new Result("Remove top most in this query", "Images\\down.png")
                 {
                     PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                     Action = _ =>
@@ -826,7 +783,7 @@ namespace Wox
             }
             else
             {
-                result.ContextMenu.Add(new Result(GetTranslation("setAsTopMostInThisQuery"), "Images\\up.png")
+                result.ContextMenu.Add(new Result("Set as top most in this query", "Images\\up.png")
                 {
                     PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                     Action = _ =>
@@ -843,11 +800,8 @@ namespace Wox
         {
             if (result.ContextMenu != null && result.ContextMenu.Count > 0)
             {
-                textBeforeEnterContextMenuMode = tbQuery.Text;
-                ChangeQueryText("");
                 pnlContextMenu.Clear();
                 pnlContextMenu.AddResults(result.ContextMenu);
-                CurrentContextMenus = result.ContextMenu;
                 pnlContextMenu.Visibility = Visibility.Visible;
                 pnlResult.Visibility = Visibility.Collapsed;
             }

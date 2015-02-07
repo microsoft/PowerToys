@@ -9,7 +9,7 @@ using Wox.Plugin.Everything.Everything;
 
 namespace Wox.Plugin.Everything
 {
-    public class Main : IPlugin
+    public class Main : IPlugin, IPluginI18n
     {
         PluginInitContext context;
         EverythingAPI api = new EverythingAPI();
@@ -59,7 +59,7 @@ namespace Wox.Plugin.Everything
                     StartEverything();
                     results.Add(new Result()
                     {
-                        Title = "Everything is not running, we already run it for you now. Try search again",
+                        Title = context.API.GetTranslation("wox_plugin_everything_is_not_running"),
                         IcoPath = "Images\\warning.png"
                     });
                 }
@@ -67,12 +67,12 @@ namespace Wox.Plugin.Everything
                 {
                     results.Add(new Result()
                     {
-                        Title = "Everything plugin has an error (enter to copy error message)",
+                        Title = context.API.GetTranslation("wox_plugin_everything_query_error"),
                         SubTitle = e.Message,
                         Action = _ =>
                         {
                             System.Windows.Clipboard.SetText(e.Message + "\r\n" + e.StackTrace);
-                            context.API.ShowMsg("Copied", "Error message has copied to your clipboard", string.Empty);
+                            context.API.ShowMsg(context.API.GetTranslation("wox_plugin_everything_copied"), null, string.Empty);
                             return false;
                         },
                         IcoPath = "Images\\error.png"
@@ -114,9 +114,13 @@ namespace Wox.Plugin.Everything
         {
             List<Result> contextMenus = new List<Result>();
 
+            List<ContextMenu> availableContextMenus = new List<ContextMenu>();
+            availableContextMenus.AddRange(GetDefaultContextMenu());
+            availableContextMenus.AddRange(ContextMenuStorage.Instance.ContextMenus);
+
             if (record.Type == ResultType.File)
             {
-                foreach (ContextMenu contextMenu in ContextMenuStorage.Instance.ContextMenus)
+                foreach (ContextMenu contextMenu in availableContextMenus)
                 {
                     contextMenus.Add(new Result()
                     {
@@ -126,11 +130,11 @@ namespace Wox.Plugin.Everything
                             string argument = contextMenu.Argument.Replace("{path}", record.FullPath);
                             try
                             {
-                                System.Diagnostics.Process.Start(contextMenu.Command, argument);
+                                Process.Start(contextMenu.Command, argument);
                             }
                             catch
                             {
-                                context.API.ShowMsg("Can't start " + record.FullPath, string.Empty, string.Empty);
+                                context.API.ShowMsg(string.Format(context.API.GetTranslation("wox_plugin_everything_canot_start"), record.FullPath), string.Empty, string.Empty);
                                 return false;
                             }
                             return true;
@@ -143,9 +147,25 @@ namespace Wox.Plugin.Everything
             return contextMenus;
         }
 
+        private List<ContextMenu> GetDefaultContextMenu()
+        {
+            List<ContextMenu> defaultContextMenus = new List<ContextMenu>();
+            ContextMenu openFolderContextMenu = new ContextMenu()
+                   {
+                       Name = context.API.GetTranslation("wox_plugin_everything_open_containing_folder"),
+                       Command = "explorer.exe",
+                       Argument = " /select,\"{path}\"",
+                       ImagePath = "Images\\folder.png"
+                   };
+
+            defaultContextMenus.Add(openFolderContextMenu);
+            return defaultContextMenus;
+        }
+
         public void Init(PluginInitContext context)
         {
             this.context = context;
+            ContextMenuStorage.Instance.API = context.API;
 
             LoadLibrary(Path.Combine(
                 Path.Combine(context.CurrentPluginMetadata.PluginDirectory, (IntPtr.Size == 4) ? "x86" : "x64"),
@@ -159,12 +179,20 @@ namespace Wox.Plugin.Everything
         {
             if (!CheckEverythingIsRunning())
             {
-                Process p = new Process();
-                p.StartInfo.Verb = "runas";
-                p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                p.StartInfo.FileName = GetEverythingPath();
-                p.StartInfo.UseShellExecute = true;
-                p.Start();
+                try
+                {
+                    Process p = new Process();
+                    p.StartInfo.Verb = "runas";
+                    p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                    p.StartInfo.FileName = GetEverythingPath();
+                    p.StartInfo.UseShellExecute = true;
+                    p.Start();
+                }
+                catch (Exception e)
+                {
+                    context.API.ShowMsg("Start Everything failed");
+                }
+
             }
         }
 
@@ -177,6 +205,11 @@ namespace Wox.Plugin.Everything
         {
             string everythingFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "PortableEverything");
             return Path.Combine(everythingFolder, "Everything.exe");
+        }
+
+        public string GetLanguagesFolder()
+        {
+            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
         }
     }
 }

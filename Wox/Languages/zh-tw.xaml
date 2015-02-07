@@ -5,7 +5,8 @@
     <system:String x:Key="registerHotkeyFailed">註冊熱鍵：{0} 失敗</system:String>
     <system:String x:Key="couldnotStartCmd">啟動命令 {0} 失敗</system:String>
     <system:String x:Key="invalidWoxPluginFileFormat">不是合法的Wox插件格式</system:String>
-
+    <system:String x:Key="setAsTopMostInThisQuery">在當前查詢中置頂</system:String>
+    <system:String x:Key="cancelTopMostInThisQuery">取消置頂</system:String>
 
     <!--設置，通用-->
     <system:String x:Key="woxsettings">Wox設置</system:String>

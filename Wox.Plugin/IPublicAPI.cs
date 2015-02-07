@@ -43,6 +43,12 @@ namespace Wox.Plugin
         void ChangeQuery(string query, bool requery = false);
 
         /// <summary>
+        /// Just change the query text, this won't raise search
+        /// </summary>
+        /// <param name="query"></param>
+        void ChangeQueryText(string query);
+
+        /// <summary>
         /// Close Wox
         /// </summary>
         void CloseApp();
@@ -63,7 +69,7 @@ namespace Wox.Plugin
         /// <param name="title">Message title</param>
         /// <param name="subTitle">Message subtitle</param>
         /// <param name="iconPath">Message icon path (relative path to your plugin folder)</param>
-        void ShowMsg(string title, string subTitle, string iconPath);
+        void ShowMsg(string title, string subTitle = "", string iconPath = "");
 
         /// <summary>
         /// Open setting dialog

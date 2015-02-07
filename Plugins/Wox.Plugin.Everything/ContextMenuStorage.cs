@@ -11,12 +11,12 @@ namespace Wox.Plugin.Everything
 {
     public class ContextMenuStorage : JsonStrorage<ContextMenuStorage>
     {
-        [JsonProperty]
-        public List<ContextMenu> ContextMenus = new List<ContextMenu>();
-
+        [JsonProperty] public List<ContextMenu> ContextMenus = new List<ContextMenu>();
 
         [JsonProperty]
         public int MaxSearchCount { get; set; }
+
+        public IPublicAPI API { get; set; }
 
         protected override string ConfigName
         {
@@ -28,20 +28,14 @@ namespace Wox.Plugin.Everything
             get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
         }
 
+        protected override void OnAfterLoad(ContextMenuStorage obj)
+        {
+           
+        }
+
         protected override ContextMenuStorage LoadDefault()
         {
-            ContextMenus = new List<ContextMenu>()
-            {
-                new ContextMenu()
-                {
-                    Name = "Open Containing Folder",
-                    Command = "explorer.exe",
-                    Argument = " /select,\"{path}\"",
-                    ImagePath ="Images\\folder.png"
-                }
-            };
             MaxSearchCount = 100;
-            Save();
             return this;
         }
     }

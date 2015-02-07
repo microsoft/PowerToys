@@ -48,7 +48,7 @@ namespace Wox.Plugin.Program
                 {
                     new Result()
                     {
-                        Title = "Run As Administrator",
+                        Title = context.API.GetTranslation("wox_plugin_program_run_as_administrator"),
                         Action = _ =>
                         {
                             context.API.HideApp();
@@ -59,7 +59,7 @@ namespace Wox.Plugin.Program
                     },
                     new Result()
                     {
-                        Title = "Open Containing Folder",
+                        Title = context.API.GetTranslation("wox_plugin_program_open_containing_folder"),
                         Action = _ =>
                         {
                             context.API.HideApp();
@@ -85,8 +85,8 @@ namespace Wox.Plugin.Program
         static string ResolveShortcut(string filePath)
         {
             // IWshRuntimeLibrary is in the COM library "Windows Script Host Object Model"
-            IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
-            IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(filePath);
+            WshShell shell = new WshShell();
+            IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(filePath);
             return shortcut.TargetPath;
         }
 

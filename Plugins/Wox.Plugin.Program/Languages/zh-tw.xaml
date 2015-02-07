@@ -20,5 +20,7 @@
     <system:String x:Key="wox_plugin_program_split_by_tip">（每個後綴以英文狀態下的分號分隔）</system:String>
     <system:String x:Key="wox_plugin_program_update_file_suffixes">成功更新索引文件後綴</system:String>
     <system:String x:Key="wox_plugin_program_suffixes_cannot_empty">文件後綴不能為空</system:String>
-
+    
+    <system:String x:Key="wox_plugin_program_run_as_administrator">以管理員身份運行</system:String>
+    <system:String x:Key="wox_plugin_program_open_containing_folder">打開所屬文件夾</system:String>
 </ResourceDictionary>
