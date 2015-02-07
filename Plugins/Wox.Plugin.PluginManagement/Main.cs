@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -10,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace Wox.Plugin.PluginManagement
 {
-    public class Main : IPlugin
+    public class Main : IPlugin,IPluginI18n
     {
         private static string APIBASE = "https://api.getwox.com";
         private static string PluginConfigName = "plugin.json";
@@ -255,6 +256,21 @@ namespace Wox.Plugin.PluginManagement
         public void Init(PluginInitContext context)
         {
             this.context = context;
+        }
+
+        public string GetLanguagesFolder()
+        {
+            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+        }
+
+        public string GetTranslatedPluginTitle()
+        {
+            return context.API.GetTranslation("wox_plugin_plugin_management_plugin_name");
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return context.API.GetTranslation("wox_plugin_plugin_management_plugin_description");
         }
     }
 }

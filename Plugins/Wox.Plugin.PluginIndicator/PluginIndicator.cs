@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using Wox.Core.Plugin;
 using Wox.Core.UserSettings;
 
 namespace Wox.Plugin.PluginIndicator
 {
-    public class PluginIndicator : IPlugin
+    public class PluginIndicator : IPlugin,IPluginI18n
     {
         private List<PluginPair> allPlugins = new List<PluginPair>();
         private PluginInitContext context;
@@ -51,6 +53,21 @@ namespace Wox.Plugin.PluginIndicator
         public void Init(PluginInitContext context)
         {
             this.context = context;
+        }
+
+        public string GetLanguagesFolder()
+        {
+            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+        }
+
+        public string GetTranslatedPluginTitle()
+        {
+            return context.API.GetTranslation("wox_plugin_pluginindicator_plugin_name");
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return context.API.GetTranslation("wox_plugin_luginindicator_plugin_description");
         }
     }
 }

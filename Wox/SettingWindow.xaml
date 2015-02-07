@@ -19,7 +19,7 @@
         </ListBoxItem>
         <converters:ImagePathConverter x:Key="ImageConverter" />
     </Window.Resources>
-    <TabControl Height="auto" >
+    <TabControl Height="auto" x:Name="settingTab">
         <TabItem Header="{DynamicResource general}">
             <StackPanel Orientation="Vertical" Margin="10">
                 <CheckBox x:Name="cbStartWithWindows"  Unchecked="CbStartWithWindows_OnUnchecked" Checked="CbStartWithWindows_OnChecked" Margin="10">
@@ -37,7 +37,7 @@
                 </StackPanel>
             </StackPanel>
         </TabItem>
-        <TabItem Header="{DynamicResource plugin}">
+        <TabItem Header="{DynamicResource plugin}" x:Name="tabPlugin" PreviewMouseLeftButtonDown="TabPlugin_OnPreviewMouseLeftButtonDown">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="200"/>
@@ -113,7 +113,7 @@
                 </Grid>
             </Grid>
         </TabItem>
-        <TabItem Header="{DynamicResource theme}">
+        <TabItem Header="{DynamicResource theme}" PreviewMouseLeftButtonDown="TabTheme_OnPreviewMouseLeftButtonDown"  x:Name="tabTheme">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="200"/>
@@ -210,7 +210,7 @@
                 </Grid>
             </Grid>
         </TabItem>
-        <TabItem Header="{DynamicResource hotkey}">
+        <TabItem Header="{DynamicResource hotkey}" x:Name="tabHotkey" PreviewMouseLeftButtonDown="TabHotkey_OnPreviewMouseLeftButtonDown">
             <Grid Margin="10">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="30"/>
