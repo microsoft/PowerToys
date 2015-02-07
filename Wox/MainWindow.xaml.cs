@@ -155,14 +155,6 @@ namespace Wox
                 o.PluginDirectory = plugin.PluginDirectory;
                 o.PluginID = plugin.ID;
                 o.OriginQuery = query;
-                if (o.ContextMenu != null)
-                {
-                    o.ContextMenu.ForEach(t =>
-                    {
-                        t.PluginDirectory = plugin.PluginDirectory;
-                        t.PluginID = plugin.ID;
-                    });
-                }
             });
             UpdateResultView(results);
         }
@@ -253,7 +245,7 @@ namespace Wox
 
         void pnlResult_RightMouseClickEvent(Result result)
         {
-            ShowContextMenuFromResult(result);
+            ShowContextMenu(result);
         }
 
         void MainWindow_Closing(object sender, CancelEventArgs e)
@@ -401,7 +393,7 @@ namespace Wox
                 List<Result> filterResults = new List<Result>();
                 foreach (Result contextMenu in CurrentContextMenus)
                 {
-                    if (StringMatcher.IsMatch(contextMenu.Title, query) 
+                    if (StringMatcher.IsMatch(contextMenu.Title, query)
                         || StringMatcher.IsMatch(contextMenu.SubTitle, query))
                     {
                         filterResults.Add(contextMenu);
@@ -528,7 +520,10 @@ namespace Wox
 
         private void HideWox()
         {
-            BackToResultMode();
+            if (IsInContextMenuMode)
+            {
+                BackToResultMode();
+            }
             Hide();
         }
 
@@ -615,7 +610,7 @@ namespace Wox
                         }
                         else
                         {
-                            ShowContextMenuFromResult(GetActiveResult());
+                            ShowContextMenu(GetActiveResult());
                         }
                     }
                     break;
@@ -673,7 +668,7 @@ namespace Wox
                     Result activeResult = GetActiveResult();
                     if (GlobalHotkey.Instance.CheckModifiers().ShiftPressed)
                     {
-                        ShowContextMenuFromResult(activeResult);
+                        ShowContextMenu(activeResult);
                     }
                     else
                     {
@@ -795,11 +790,6 @@ namespace Wox
                 list.ForEach(o =>
                 {
                     o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o) * 5;
-                    if (o.ContextMenu == null)
-                    {
-                        o.ContextMenu = new List<Result>();
-                    }
-                    HanleTopMost(o);
                 });
                 List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
                 Dispatcher.Invoke(new Action(() =>
@@ -809,11 +799,11 @@ namespace Wox
             }
         }
 
-        private void HanleTopMost(Result result)
+        private Result GetTopMostContextMenu(Result result)
         {
             if (TopMostRecordStorage.Instance.IsTopMost(result))
             {
-                result.ContextMenu.Add(new Result(GetTranslation("cancelTopMostInThisQuery"), "Images\\down.png")
+                return new Result(GetTranslation("cancelTopMostInThisQuery"), "Images\\down.png")
                 {
                     PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                     Action = _ =>
@@ -822,11 +812,11 @@ namespace Wox
                         ShowMsg("Succeed", "", "");
                         return false;
                     }
-                });
+                };
             }
             else
             {
-                result.ContextMenu.Add(new Result(GetTranslation("setAsTopMostInThisQuery"), "Images\\up.png")
+                return new Result(GetTranslation("setAsTopMostInThisQuery"), "Images\\up.png")
                 {
                     PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                     Action = _ =>
@@ -835,22 +825,29 @@ namespace Wox
                         ShowMsg("Succeed", "", "");
                         return false;
                     }
-                });
+                };
             }
         }
 
-        private void ShowContextMenuFromResult(Result result)
+        private void ShowContextMenu(Result result)
         {
-            if (result.ContextMenu != null && result.ContextMenu.Count > 0)
+            List<Result> results = PluginManager.GetPluginContextMenus(result);
+            results.ForEach(o =>
             {
-                textBeforeEnterContextMenuMode = tbQuery.Text;
-                ChangeQueryText("");
-                pnlContextMenu.Clear();
-                pnlContextMenu.AddResults(result.ContextMenu);
-                CurrentContextMenus = result.ContextMenu;
-                pnlContextMenu.Visibility = Visibility.Visible;
-                pnlResult.Visibility = Visibility.Collapsed;
-            }
+                o.PluginDirectory = PluginManager.GetPlugin(result.PluginID).Metadata.PluginDirectory;
+                o.PluginID = result.PluginID;
+                o.OriginQuery = result.OriginQuery;
+            });
+
+            results.Add(GetTopMostContextMenu(result));
+
+            textBeforeEnterContextMenuMode = tbQuery.Text;
+            ChangeQueryText("");
+            pnlContextMenu.Clear();
+            pnlContextMenu.AddResults(results);
+            CurrentContextMenus = results;
+            pnlContextMenu.Visibility = Visibility.Visible;
+            pnlResult.Visibility = Visibility.Collapsed;
         }
 
         public bool ShellRun(string cmd, bool runAsAdministrator = false)

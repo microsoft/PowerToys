@@ -14,7 +14,7 @@ using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.CMD
 {
-    public class CMD : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IExclusiveQuery
+    public class CMD : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IExclusiveQuery,IContextMenu
     {
         private PluginInitContext context;
         private bool WinRStroked;
@@ -70,8 +70,7 @@ namespace Wox.Plugin.CMD
                             {
                                 ExecuteCmd(m);
                                 return true;
-                            },
-                            ContextMenu = GetContextMenus(m)
+                            }
                         }));
                     }
                 }
@@ -102,8 +101,7 @@ namespace Wox.Plugin.CMD
                         {
                             ExecuteCmd(m.Key);
                             return true;
-                        },
-                        ContextMenu = GetContextMenus(m.Key)
+                        }
                     };
                     return ret;
                 }).Where(o => o != null).Take(4);
@@ -122,8 +120,7 @@ namespace Wox.Plugin.CMD
                 {
                     ExecuteCmd(cmd);
                     return true;
-                },
-                ContextMenu = GetContextMenus(cmd)
+                }
             };
 
             return result;
@@ -141,28 +138,9 @@ namespace Wox.Plugin.CMD
                     {
                         ExecuteCmd(m.Key);
                         return true;
-                    },
-                    ContextMenu = GetContextMenus(m.Key)
+                    }
                 }).Take(5);
             return history.ToList();
-        }
-
-        private List<Result> GetContextMenus(string cmd)
-        {
-            return new List<Result>()
-                     {
-                        new Result()
-                        {
-                            Title = "Run As Administrator",
-                            Action = c =>
-                            {
-                                context.API.HideApp();
-                                ExecuteCmd(cmd, true);
-                                return true;
-                            },
-                            IcoPath = "Images/cmd.png"
-                        }
-                     };
         }
 
         private void ExecuteCmd(string cmd, bool runAsAdministrator = false)
@@ -232,6 +210,24 @@ namespace Wox.Plugin.CMD
         public bool IsExclusiveQuery(Query query)
         {
             return query.Search.StartsWith(">");
+        }
+
+        public List<Result> LoadContextMenus(Result selectedResult)
+        {
+            return new List<Result>()
+                     {
+                        new Result()
+                        {
+                            Title = "Run As Administrator",
+                            Action = c =>
+                            {
+                                context.API.HideApp();
+                                ExecuteCmd(selectedResult.Title, true);
+                                return true;
+                            },
+                            IcoPath = "Images/cmd.png"
+                        }
+                     };
         }
     }
 }

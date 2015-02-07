@@ -6,10 +6,11 @@ using System.Linq;
 using Wox.Infrastructure;
 using System.Reflection;
 using Wox.Plugin.Everything.Everything;
+using Wox.Plugin.Features;
 
 namespace Wox.Plugin.Everything
 {
-    public class Main : IPlugin, IPluginI18n
+    public class Main : IPlugin, IPluginI18n,IContextMenu
     {
         PluginInitContext context;
         EverythingAPI api = new EverythingAPI();
@@ -24,7 +25,7 @@ namespace Wox.Plugin.Everything
                 var keyword = query.Search;
                 if (ContextMenuStorage.Instance.MaxSearchCount <= 0)
                 {
-                    ContextMenuStorage.Instance.MaxSearchCount = 100;
+                    ContextMenuStorage.Instance.MaxSearchCount = 50;
                     ContextMenuStorage.Instance.Save();
                 }
 
@@ -50,7 +51,7 @@ namespace Wox.Plugin.Everything
                             context.API.ShellRun(path);
                             return true;
                         };
-                        r.ContextMenu = GetContextMenu(s);
+                        r.ContextData = s;
                         results.Add(r);
                     }
                 }
@@ -109,43 +110,6 @@ namespace Wox.Plugin.Everything
 
         [System.Runtime.InteropServices.DllImport("kernel32.dll")]
         private static extern int LoadLibrary(string name);
-
-        private List<Result> GetContextMenu(SearchResult record)
-        {
-            List<Result> contextMenus = new List<Result>();
-
-            List<ContextMenu> availableContextMenus = new List<ContextMenu>();
-            availableContextMenus.AddRange(GetDefaultContextMenu());
-            availableContextMenus.AddRange(ContextMenuStorage.Instance.ContextMenus);
-
-            if (record.Type == ResultType.File)
-            {
-                foreach (ContextMenu contextMenu in availableContextMenus)
-                {
-                    contextMenus.Add(new Result()
-                    {
-                        Title = contextMenu.Name,
-                        Action = _ =>
-                        {
-                            string argument = contextMenu.Argument.Replace("{path}", record.FullPath);
-                            try
-                            {
-                                Process.Start(contextMenu.Command, argument);
-                            }
-                            catch
-                            {
-                                context.API.ShowMsg(string.Format(context.API.GetTranslation("wox_plugin_everything_canot_start"), record.FullPath), string.Empty, string.Empty);
-                                return false;
-                            }
-                            return true;
-                        },
-                        IcoPath = contextMenu.ImagePath
-                    });
-                }
-            }
-
-            return contextMenus;
-        }
 
         private List<ContextMenu> GetDefaultContextMenu()
         {
@@ -220,6 +184,46 @@ namespace Wox.Plugin.Everything
         public string GetTranslatedPluginDescription()
         {
             return context.API.GetTranslation("wox_plugin_everything_plugin_description");
+        }
+
+        public List<Result> LoadContextMenus(Result selectedResult)
+        {
+            SearchResult record = selectedResult.ContextData as SearchResult;
+            List<Result> contextMenus = new List<Result>();
+            if(record == null) return contextMenus;
+
+            List<ContextMenu> availableContextMenus = new List<ContextMenu>();
+            availableContextMenus.AddRange(GetDefaultContextMenu());
+            availableContextMenus.AddRange(ContextMenuStorage.Instance.ContextMenus);
+
+            if (record.Type == ResultType.File)
+            {
+                foreach (ContextMenu contextMenu in availableContextMenus)
+                {
+                    var menu = contextMenu;
+                    contextMenus.Add(new Result()
+                    {
+                        Title = contextMenu.Name,
+                        Action = _ =>
+                        {
+                            string argument = menu.Argument.Replace("{path}", record.FullPath);
+                            try
+                            {
+                                Process.Start(menu.Command, argument);
+                            }
+                            catch
+                            {
+                                context.API.ShowMsg(string.Format(context.API.GetTranslation("wox_plugin_everything_canot_start"), record.FullPath), string.Empty, string.Empty);
+                                return false;
+                            }
+                            return true;
+                        },
+                        IcoPath = contextMenu.ImagePath
+                    });
+                }
+            }
+
+            return contextMenus;
         }
     }
 }

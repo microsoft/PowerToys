@@ -26,6 +26,7 @@ namespace Wox.Core.Plugin
         private static List<PluginMetadata> pluginMetadatas;
         private static List<KeyValuePair<PluginPair, IInstantQuery>> instantSearches;
         private static List<KeyValuePair<PluginPair, IExclusiveQuery>> exclusiveSearchPlugins;
+        private static List<KeyValuePair<PluginPair, IContextMenu>> contextMenuPlugins;
 
         public static String DebuggerMode { get; private set; }
         public static IPublicAPI API { get; private set; }
@@ -266,6 +267,35 @@ namespace Wox.Core.Plugin
         internal static bool IsExclusivePluginQuery(Query query)
         {
             return GetExclusivePlugin(query) != null || GetActionKeywordPlugin(query) != null;
+        }
+
+        public static List<Result> GetPluginContextMenus(Result result)
+        {
+            List<Result> contextContextMenus = new List<Result>();
+            if (contextMenuPlugins == null)
+            {
+                contextMenuPlugins = AssemblyHelper.LoadPluginInterfaces<IContextMenu>();
+            }
+
+            var contextMenuPlugin = contextMenuPlugins.FirstOrDefault(o => o.Key.Metadata.ID == result.PluginID);
+            if (contextMenuPlugin.Value != null)
+            {
+                try
+                {
+                    return contextMenuPlugin.Value.LoadContextMenus(result);
+                }
+                catch (System.Exception e)
+                {
+                    Log.Error(string.Format("Couldn't load plugin context menus {0}: {1}", contextMenuPlugin.Key.Metadata.Name, e.Message));
+#if (DEBUG)
+                    {
+                        throw;
+                    }
+#endif
+                }
+            }
+
+            return contextContextMenus;
         }
     }
 }

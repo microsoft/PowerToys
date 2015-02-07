@@ -9,10 +9,11 @@ using System.Windows;
 using Wox.Infrastructure;
 using Wox.Plugin.Program.ProgramSources;
 using IWshRuntimeLibrary;
+using Wox.Plugin.Features;
 
 namespace Wox.Plugin.Program
 {
-    public class Programs : ISettingProvider, IPlugin, IPluginI18n
+    public class Programs : ISettingProvider, IPlugin, IPluginI18n, IContextMenu
     {
         private static object lockObject = new object();
         private static List<Program> programs = new List<Program>();
@@ -38,46 +39,12 @@ namespace Wox.Plugin.Program
                 SubTitle = c.ExecutePath,
                 IcoPath = c.IcoPath,
                 Score = c.Score,
+                ContextData = c,
                 Action = (e) =>
                 {
                     context.API.HideApp();
                     context.API.ShellRun(c.ExecutePath);
                     return true;
-                },
-                ContextMenu = new List<Result>()
-                {
-                    new Result()
-                    {
-                        Title = context.API.GetTranslation("wox_plugin_program_run_as_administrator"),
-                        Action = _ =>
-                        {
-                            context.API.HideApp();
-                            context.API.ShellRun(c.ExecutePath,true);
-                            return true;
-                        },
-                        IcoPath = "Images/cmd.png"
-                    },
-                    new Result()
-                    {
-                        Title = context.API.GetTranslation("wox_plugin_program_open_containing_folder"),
-                        Action = _ =>
-                        {
-                            context.API.HideApp();
-                            String Path=c.ExecutePath;
-                            //check if shortcut
-                            if (Path.EndsWith(".lnk"))
-                            {
-                                //get location of shortcut
-                                Path = ResolveShortcut(Path);
-                            }
-                            //get parent folder
-                            Path=System.IO.Directory.GetParent(Path).FullName;
-                            //open the folder
-                            context.API.ShellRun("explorer.exe "+Path,false);
-                            return true;
-                        },
-                        IcoPath = "Images/folder.png"
-                    }
                 }
             }).ToList();
         }
@@ -117,7 +84,7 @@ namespace Wox.Plugin.Program
 
         void API_ResultItemDropEvent(Result result, IDataObject dropObject, DragEventArgs e)
         {
-           
+
             e.Handled = true;
         }
 
@@ -231,6 +198,47 @@ namespace Wox.Plugin.Program
         public string GetTranslatedPluginDescription()
         {
             return context.API.GetTranslation("wox_plugin_program_plugin_description");
+        }
+
+        public List<Result> LoadContextMenus(Result selectedResult)
+        {
+            Program p = selectedResult.ContextData as Program;
+            List<Result> contextMenus = new List<Result>()
+            {
+                new Result()
+                {
+                    Title = context.API.GetTranslation("wox_plugin_program_run_as_administrator"),
+                    Action = _ =>
+                    {
+                        context.API.HideApp();
+                        context.API.ShellRun(p.ExecutePath, true);
+                        return true;
+                    },
+                    IcoPath = "Images/cmd.png"
+                },
+                new Result()
+                {
+                    Title = context.API.GetTranslation("wox_plugin_program_open_containing_folder"),
+                    Action = _ =>
+                    {
+                        context.API.HideApp();
+                        String Path = p.ExecutePath;
+                        //check if shortcut
+                        if (Path.EndsWith(".lnk"))
+                        {
+                            //get location of shortcut
+                            Path = ResolveShortcut(Path);
+                        }
+                        //get parent folder
+                        Path = Directory.GetParent(Path).FullName;
+                        //open the folder
+                        context.API.ShellRun("explorer.exe " + Path, false);
+                        return true;
+                    },
+                    IcoPath = "Images/folder.png"
+                }
+            };
+            return contextMenus;
         }
     }
 }

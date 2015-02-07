@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="AllowedLanguage.cs" />
     <Compile Include="EventHandler.cs" />
+    <Compile Include="Features\IContextMenu.cs" />
     <Compile Include="Features\IExclusiveQuery.cs" />
     <Compile Include="Features\IInstantQuery.cs" />
     <Compile Include="IHttpProxy.cs" />
