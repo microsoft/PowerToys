@@ -22,5 +22,8 @@
 
     <system:String x:Key="wox_plugin_program_run_as_administrator">Run As Administrator</system:String>
     <system:String x:Key="wox_plugin_program_open_containing_folder">Open containing folder</system:String>
-    
+
+    <system:String x:Key="wox_plugin_program_plugin_name">Program</system:String>
+    <system:String x:Key="wox_plugin_program_plugin_description">Search programs in Wox</system:String>
+
 </ResourceDictionary>

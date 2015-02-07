@@ -7,5 +7,8 @@
     <system:String x:Key="wox_plugin_everything_copied">Copied</system:String>
     <system:String x:Key="wox_plugin_everything_canot_start">Can't start {0}</system:String>
     <system:String x:Key="wox_plugin_everything_open_containing_folder">Open containing folder</system:String>
+    
+    <system:String x:Key="wox_plugin_everything_plugin_name">Everything</system:String>
+    <system:String x:Key="wox_plugin_everything_plugin_description">Search disk files using Everything</system:String>
 
 </ResourceDictionary>

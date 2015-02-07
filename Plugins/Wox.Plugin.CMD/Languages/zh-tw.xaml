@@ -4,5 +4,7 @@
 
     <system:String x:Key="wox_plugin_cmd_relace_winr">替換 Win+R</system:String>
     <system:String x:Key="wox_plugin_cmd_leave_cmd_open">執行後不關閉命令窗口</system:String>
+    <system:String x:Key="wox_plugin_cmd_plugin_name">命令行</system:String>
+    <system:String x:Key="wox_plugin_cmd_plugin_description">提供從Wox中執行命令行的能力，命令應該以>開頭</system:String>
 
 </ResourceDictionary>

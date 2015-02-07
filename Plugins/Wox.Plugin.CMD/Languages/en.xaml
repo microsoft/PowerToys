@@ -4,5 +4,7 @@
 
     <system:String x:Key="wox_plugin_cmd_relace_winr">Replace Win+R</system:String>
     <system:String x:Key="wox_plugin_cmd_leave_cmd_open">Do not close Command Prompt after command execution</system:String>
+    <system:String x:Key="wox_plugin_cmd_plugin_name">Shell</system:String>
+    <system:String x:Key="wox_plugin_cmd_plugin_description">Provide executing commands from Wox. Commands should start with ></system:String>
     
 </ResourceDictionary>

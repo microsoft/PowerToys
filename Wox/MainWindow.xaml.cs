@@ -831,7 +831,7 @@ namespace Wox
                     PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                     Action = _ =>
                     {
-                        TopMostRecordStorage.Instance.Add(result);
+                        TopMostRecordStorage.Instance.AddOrUpdate(result);
                         ShowMsg("Succeed", "", "");
                         return false;
                     }

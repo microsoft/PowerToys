@@ -2,7 +2,7 @@
     "ID":"565B73353DBF4806919830B9202EE3BF",
     "ActionKeyword":"*",
     "Name":"Web Searches",
-    "Description":"Provide the web search ability.",
+    "Description":"Provide the web search ability",
     "Author":"qianlifeng",
     "Version":"1.0.0",
     "Language":"csharp",

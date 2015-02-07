@@ -213,6 +213,16 @@ namespace Wox.Plugin.CMD
             return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
         }
 
+        public string GetTranslatedPluginTitle()
+        {
+            return context.API.GetTranslation("wox_plugin_cmd_plugin_name");
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return context.API.GetTranslation("wox_plugin_cmd_plugin_description");
+        }
+
         public bool IsInstantQuery(string query)
         {
             if (query.StartsWith(">")) return true;

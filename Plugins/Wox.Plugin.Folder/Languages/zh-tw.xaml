@@ -9,4 +9,7 @@
     <system:String x:Key="wox_plugin_folder_select_folder_link_warning">請選擇一個文件夾</system:String>
     <system:String x:Key="wox_plugin_folder_delete_folder_link">你確認要刪除{0}嗎？</system:String>
 
+    <system:String x:Key="wox_plugin_folder_plugin_name">文件夾</system:String>
+    <system:String x:Key="wox_plugin_folder_plugin_description">在Wox中直接打開收藏的文件夾</system:String>
+
 </ResourceDictionary>

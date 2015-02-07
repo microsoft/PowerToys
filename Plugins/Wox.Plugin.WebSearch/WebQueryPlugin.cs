@@ -103,6 +103,16 @@ namespace Wox.Plugin.WebSearch
             return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
         }
 
+        public string GetTranslatedPluginTitle()
+        {
+            return context.API.GetTranslation("wox_plugin_websearch_plugin_name");
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return context.API.GetTranslation("wox_plugin_websearch_plugin_description");
+        }
+
         public bool IsInstantQuery(string query)
         {
             var strings = query.Split(' ');

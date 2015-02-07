@@ -26,7 +26,8 @@ namespace Wox.Storage
         {
             return records.Any(o => o.Value.Title == result.Title
                 && o.Value.SubTitle == result.SubTitle
-                && o.Value.PluginID == result.PluginID);
+                && o.Value.PluginID == result.PluginID
+                && o.Key == result.OriginQuery.RawQuery);
         }
 
         internal void Remove(Plugin.Result result)
@@ -38,7 +39,7 @@ namespace Wox.Storage
             }
         }
 
-        internal void Add(Plugin.Result result)
+        internal void AddOrUpdate(Plugin.Result result)
         {
             if (records.ContainsKey(result.OriginQuery.RawQuery))
             {

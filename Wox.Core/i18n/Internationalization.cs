@@ -9,6 +9,7 @@ using Wox.Core.Exception;
 using Wox.Core.UI;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure.Logger;
+using Wox.Plugin;
 
 namespace Wox.Core.i18n
 {
@@ -40,6 +41,7 @@ namespace Wox.Core.i18n
         {
             Language language = GetLanguageByLanguageCode(languageCode);
             ChangeLanguage(language);
+            UpdateAllPluginMetadataTranslations();
         }
 
         private Language GetLanguageByLanguageCode(string languageCode)
@@ -107,6 +109,36 @@ namespace Wox.Core.i18n
         {
             Language language = GetLanguageByLanguageCode(languageCode);
             return GetLanguagePath(language);
+        }
+
+
+        internal void UpdateAllPluginMetadataTranslations()
+        {
+            List<KeyValuePair<PluginPair, IPluginI18n>> plugins = AssemblyHelper.LoadPluginInterfaces<IPluginI18n>();
+            foreach (var plugin in plugins)
+            {
+                UpdatePluginMetadataTranslations(plugin.Key);
+            }
+        }
+
+        internal void UpdatePluginMetadataTranslations(PluginPair pluginPair)
+        {
+            var pluginI18n = pluginPair.Plugin as IPluginI18n;
+            if (pluginI18n == null) return;
+            try
+            {
+                pluginPair.Metadata.Name = pluginI18n.GetTranslatedPluginTitle();
+                pluginPair.Metadata.Description = pluginI18n.GetTranslatedPluginDescription();
+            }
+            catch (System.Exception e)
+            {
+                Log.Warn("Update Plugin metadata translation failed:" + e.Message);
+#if (DEBUG)
+                {
+                    throw;
+                }
+#endif
+            }
         }
 
         private string GetLanguagePath(Language language)

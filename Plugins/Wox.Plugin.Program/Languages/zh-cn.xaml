@@ -24,4 +24,7 @@
     <system:String x:Key="wox_plugin_program_run_as_administrator">以管理员身份运行</system:String>
     <system:String x:Key="wox_plugin_program_open_containing_folder">打开所属文件夹</system:String>
 
+    <system:String x:Key="wox_plugin_program_plugin_name">程序</system:String>
+    <system:String x:Key="wox_plugin_program_plugin_description">在Wox中搜索程序</system:String>
+
 </ResourceDictionary>

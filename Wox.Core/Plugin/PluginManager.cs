@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Wox.Core.Exception;
+using Wox.Core.i18n;
 using Wox.Core.UI;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure;
@@ -23,7 +24,7 @@ namespace Wox.Core.Plugin
     {
         public const string ActionKeywordWildcardSign = "*";
         private static List<PluginMetadata> pluginMetadatas;
-        private static List<KeyValuePair<PluginMetadata, IInstantQuery>> instantSearches;
+        private static List<KeyValuePair<PluginPair, IInstantQuery>> instantSearches;
         private static List<KeyValuePair<PluginPair, IExclusiveQuery>> exclusiveSearchPlugins;
 
         public static String DebuggerMode { get; private set; }
@@ -99,6 +100,7 @@ namespace Wox.Core.Plugin
                     sw.Stop();
                     DebugHelper.WriteLine(string.Format("Plugin init:{0} - {1}", pair.Metadata.Name, sw.ElapsedMilliseconds));
                     pair.InitTime = sw.ElapsedMilliseconds;
+                    InternationalizationManager.Instance.UpdatePluginMetadataTranslations(pair);
                 });
             }
 
@@ -178,7 +180,7 @@ namespace Wox.Core.Plugin
         {
             //todo:to improve performance, any instant search plugin that takes long than 200ms will not consider a instant plugin anymore
             return pluginMetadata.Language.ToUpper() == AllowedLanguage.CSharp &&
-                   LoadInstantSearches().Any(o => o.Key.ID == pluginMetadata.ID);
+                   LoadInstantSearches().Any(o => o.Key.Metadata.ID == pluginMetadata.ID);
         }
 
         internal static void ExecutePluginQuery(PluginPair pair, Query query)
@@ -211,39 +213,11 @@ namespace Wox.Core.Plugin
             }
         }
 
-        private static List<KeyValuePair<PluginMetadata, IInstantQuery>> LoadInstantSearches()
+        private static List<KeyValuePair<PluginPair, IInstantQuery>> LoadInstantSearches()
         {
             if (instantSearches != null) return instantSearches;
 
-            instantSearches = new List<KeyValuePair<PluginMetadata, IInstantQuery>>();
-            List<PluginMetadata> CSharpPluginMetadatas = pluginMetadatas.Where(o => o.Language.ToUpper() == AllowedLanguage.CSharp.ToUpper()).ToList();
-
-            foreach (PluginMetadata metadata in CSharpPluginMetadatas)
-            {
-                try
-                {
-                    Assembly asm = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
-                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IInstantQuery))).ToList();
-                    if (types.Count == 0)
-                    {
-                        continue;
-                    }
-
-                    foreach (Type type in types)
-                    {
-                        instantSearches.Add(new KeyValuePair<PluginMetadata, IInstantQuery>(metadata, Activator.CreateInstance(type) as IInstantQuery));
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    Log.Error(string.Format("Couldn't load plugin {0}: {1}", metadata.Name, e.Message));
-#if (DEBUG)
-                    {
-                        throw;
-                    }
-#endif
-                }
-            }
+            instantSearches = AssemblyHelper.LoadPluginInterfaces<IInstantQuery>();
 
             return instantSearches;
         }
@@ -261,38 +235,7 @@ namespace Wox.Core.Plugin
         internal static List<KeyValuePair<PluginPair, IExclusiveQuery>> LoadExclusiveSearchPlugins()
         {
             if (exclusiveSearchPlugins != null) return exclusiveSearchPlugins;
-
-            exclusiveSearchPlugins = new List<KeyValuePair<PluginPair, IExclusiveQuery>>();
-            List<PluginMetadata> CSharpPluginMetadatas = pluginMetadatas.Where(o => o.Language.ToUpper() == AllowedLanguage.CSharp.ToUpper()).ToList();
-
-            foreach (PluginMetadata metadata in CSharpPluginMetadatas)
-            {
-                try
-                {
-                    Assembly asm = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
-                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IExclusiveQuery))).ToList();
-                    if (types.Count == 0)
-                    {
-                        continue;
-                    }
-
-                    foreach (Type type in types)
-                    {
-                        exclusiveSearchPlugins.Add(new KeyValuePair<PluginPair, IExclusiveQuery>(AllPlugins.First(o => o.Metadata.ID == metadata.ID),
-                            Activator.CreateInstance(type) as IExclusiveQuery));
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    Log.Error(string.Format("Couldn't load plugin {0}: {1}", metadata.Name, e.Message));
-#if (DEBUG)
-                    {
-                        throw;
-                    }
-#endif
-                }
-            }
-
+            exclusiveSearchPlugins = AssemblyHelper.LoadPluginInterfaces<IExclusiveQuery>();
             return exclusiveSearchPlugins;
         }
 

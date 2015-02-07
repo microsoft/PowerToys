@@ -69,6 +69,7 @@
     <Compile Include="Exception\WoxI18nException.cs" />
     <Compile Include="Exception\WoxJsonRPCException.cs" />
     <Compile Include="Exception\WoxPluginException.cs" />
+    <Compile Include="AssemblyHelper.cs" />
     <Compile Include="Plugin\QueryDispatcher\BaseQueryDispatcher.cs" />
     <Compile Include="Updater\Release.cs" />
     <Compile Include="Updater\UpdaterManager.cs" />
