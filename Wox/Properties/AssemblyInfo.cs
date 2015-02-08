@@ -20,3 +20,4 @@ using System.Windows;
 )]
 [assembly: AssemblyVersion("1.1.0")]
 [assembly: AssemblyFileVersion("1.1.0")]
+[assembly: Exceptionless.Configuration.Exceptionless("13462a93b5e843c7bae7da13a86bc00b", EnableLogging = true, LogPath = "E:\\exceptionless.log")]

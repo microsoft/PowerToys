@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Exceptionless;
 using Wox.Core;
 using Wox.Core.Exception;
 using Wox.Core.i18n;
@@ -49,19 +50,18 @@ namespace Wox.CrashReporter
             string sendingMsg = InternationalizationManager.Instance.GetTranslation("reportWindow_sending");
             tbSendReport.Content = sendingMsg;
             btnSend.IsEnabled = false;
-            ThreadPool.QueueUserWorkItem(o => SendReport());
+            SendReport();
         }
 
         private void SendReport()
         {
-            Hide();
-            string error = string.Format("{{\"data\":{0}}}", ExceptionFormatter.FormatExcpetion(exception));
-            string response = HttpRequest.Post(APIServer.ErrorReportURL, error, HttpProxy.Instance);
-            if (response.ToLower() != "ok")
-            {
-                Log.Warn("sending crash report failed: " + response);
-            }
-            Dispatcher.Invoke(new Action(Close));
+            string reproduceSteps =
+                new TextRange(tbReproduceSteps.Document.ContentStart, tbReproduceSteps.Document.ContentEnd).Text;
+            exception.ToExceptionless()
+                .SetUserDescription(reproduceSteps)
+                .Submit();
+            ExceptionlessClient.Current.ProcessQueue();
+            Close();
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)

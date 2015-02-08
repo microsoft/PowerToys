@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.ServiceProcess;
 using Wox.Infrastructure;
 using System.Reflection;
 using Wox.Plugin.Everything.Everything;
@@ -10,7 +11,7 @@ using Wox.Plugin.Features;
 
 namespace Wox.Plugin.Everything
 {
-    public class Main : IPlugin, IPluginI18n,IContextMenu
+    public class Main : IPlugin, IPluginI18n, IContextMenu
     {
         PluginInitContext context;
         EverythingAPI api = new EverythingAPI();
@@ -141,23 +142,67 @@ namespace Wox.Plugin.Everything
 
         private void StartEverything()
         {
-            if (!CheckEverythingIsRunning())
+            if (!CheckEverythingSericeRunning())
             {
-                try
+                if (InstallAndRunEverythingService())
                 {
-                    Process p = new Process();
-                    p.StartInfo.Verb = "runas";
-                    p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                    p.StartInfo.FileName = GetEverythingPath();
-                    p.StartInfo.UseShellExecute = true;
-                    p.Start();
+                    StartEverythingClient();
                 }
-                catch (Exception e)
-                {
-                    context.API.ShowMsg("Start Everything failed");
-                }
+            }
+            else
+            {
+                StartEverythingClient();
+            }
+        }
+
+        private bool InstallAndRunEverythingService()
+        {
+            try
+            {
+                Process p = new Process();
+                p.StartInfo.Verb = "runas";
+                p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                p.StartInfo.FileName = GetEverythingPath();
+                p.StartInfo.UseShellExecute = true;
+                p.StartInfo.Arguments = "-install-service";
+                p.Start();
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        private void StartEverythingClient()
+        {
+            try
+            {
+                Process p = new Process();
+                p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                p.StartInfo.FileName = GetEverythingPath();
+                p.StartInfo.UseShellExecute = true;
+                p.StartInfo.Arguments = "-startup";
+                p.Start();
+            }
+            catch (Exception e)
+            {
+                context.API.ShowMsg("Start Everything failed");
+            }
+        }
+
+        private bool CheckEverythingSericeRunning()
+        {
+            try
+            {
+                ServiceController sc = new ServiceController("Everything");
+                return sc.Status == ServiceControllerStatus.Running;
+            }
+            catch
+            {
 
             }
+            return false;
         }
 
         private bool CheckEverythingIsRunning()
@@ -190,7 +235,7 @@ namespace Wox.Plugin.Everything
         {
             SearchResult record = selectedResult.ContextData as SearchResult;
             List<Result> contextMenus = new List<Result>();
-            if(record == null) return contextMenus;
+            if (record == null) return contextMenus;
 
             List<ContextMenu> availableContextMenus = new List<ContextMenu>();
             availableContextMenus.AddRange(GetDefaultContextMenu());

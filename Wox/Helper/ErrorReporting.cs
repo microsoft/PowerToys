@@ -13,7 +13,6 @@ namespace Wox.Helper
     {
         public static void Report(Exception e)
         {
-            if (Debugger.IsAttached) return;
             Log.Error(ExceptionFormatter.FormatExcpetion(e));
             new CrashReporter.CrashReporter(e).Show();
         }

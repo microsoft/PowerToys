@@ -67,7 +67,7 @@ namespace Wox.Plugin.PluginIndicator
 
         public string GetTranslatedPluginDescription()
         {
-            return context.API.GetTranslation("wox_plugin_luginindicator_plugin_description");
+            return context.API.GetTranslation("wox_plugin_pluginindicator_plugin_description");
         }
     }
 }
