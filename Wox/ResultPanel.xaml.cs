@@ -130,19 +130,56 @@ namespace Wox
 
         public List<Result> GetVisibleResults()
         {
-            var theStackPanel = GetInnerStackPanel(lbResults);
             List<Result> visibleElements = new List<Result>();
-
-            for (int i = 0; i < theStackPanel.Children.Count; i++)
+            VirtualizingStackPanel virtualizingStackPanel = GetInnerStackPanel(lbResults);
+            for (int i = (int)virtualizingStackPanel.VerticalOffset; i <= virtualizingStackPanel.VerticalOffset + virtualizingStackPanel.ViewportHeight; i++)
             {
-
-                if (i >= theStackPanel.VerticalOffset && i <= theStackPanel.VerticalOffset + theStackPanel.ViewportHeight)
+                ListBoxItem item = lbResults.ItemContainerGenerator.ContainerFromIndex(i) as ListBoxItem;
+                if (item != null)
                 {
-                    FrameworkElement element = theStackPanel.Children[i] as FrameworkElement;
-                    visibleElements.Add(element.DataContext as Result);
+                    visibleElements.Add(item.DataContext as Result);
                 }
             }
             return visibleElements;
+        }
+
+        private void UpdateItemNumber()
+        {
+            VirtualizingStackPanel virtualizingStackPanel = GetInnerStackPanel(lbResults);
+            int index = 0;
+            for (int i = (int)virtualizingStackPanel.VerticalOffset; i <= virtualizingStackPanel.VerticalOffset + virtualizingStackPanel.ViewportHeight; i++)
+            {
+                index++;
+                ListBoxItem item = lbResults.ItemContainerGenerator.ContainerFromIndex(i) as ListBoxItem;
+                if (item != null)
+                {
+                    ContentPresenter myContentPresenter = FindVisualChild<ContentPresenter>(item);
+                    if (myContentPresenter != null)
+                    {
+                        DataTemplate dataTemplate = myContentPresenter.ContentTemplate;
+                        TextBlock tbItemNumber = (TextBlock)dataTemplate.FindName("tbItemNumber", myContentPresenter);
+                        tbItemNumber.Text = index.ToString();
+                    }
+                }
+            }
+        }
+
+
+        private childItem FindVisualChild<childItem>(DependencyObject obj) where childItem : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
+                if (child != null && child is childItem)
+                    return (childItem)child;
+                else
+                {
+                    childItem childOfChild = FindVisualChild<childItem>(child);
+                    if (childOfChild != null)
+                        return childOfChild;
+                }
+            }
+            return null;
         }
 
         private VirtualizingStackPanel GetInnerStackPanel(FrameworkElement element)
@@ -189,6 +226,10 @@ namespace Wox
             if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
             {
                 lbResults.ScrollIntoView(e.AddedItems[0]);
+                Dispatcher.DelayInvoke("UpdateItemNumber", o =>
+                {
+                    UpdateItemNumber();
+                }, TimeSpan.FromMilliseconds(3));
             }
         }
 

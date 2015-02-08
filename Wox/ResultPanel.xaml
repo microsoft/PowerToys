@@ -24,7 +24,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32"></ColumnDefinition>
                         <ColumnDefinition/>
-                        <ColumnDefinition x:Name="contextMenuDefinition" Width="0"/>
+                        <ColumnDefinition Width="32" />
                     </Grid.ColumnDefinitions>
                     <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" Source="{Binding FullIcoPath,Converter={StaticResource ImageConverter},IsAsync=True}" >
                     </Image>
@@ -36,13 +36,12 @@
                         <TextBlock Style="{DynamicResource ItemTitleStyle}" DockPanel.Dock="Left" VerticalAlignment="Center" ToolTip="{Binding Title}" x:Name="tbTitle" Text="{Binding Title}"></TextBlock>
                         <TextBlock Style="{DynamicResource ItemSubTitleStyle}" ToolTip="{Binding SubTitle}" Visibility="{Binding SubTitle, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding SubTitle}"></TextBlock>
                     </Grid>
-                    <Image Grid.Column="2" VerticalAlignment="Center" Margin="5 0 0 0" Width="12" x:Name="contextMenu" Source="Images/menu.png" ToolTip="Shift + Enter to open context menu"></Image>
+                    <TextBlock Grid.Column="2" x:Name="tbItemNumber" Style="{DynamicResource ItemNumberStyle}" Text="9"></TextBlock>
                 </Grid>
                 <DataTemplate.Triggers>
                     <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}}, Path=IsSelected}" Value="True">
                         <Setter TargetName="tbTitle" Property="Style" Value="{DynamicResource ItemTitleSelectedStyle}"/>
                         <Setter TargetName="tbSubTitle" Property="Style" Value="{DynamicResource ItemSubTitleSelectedStyle}"/>
-                        <Setter TargetName="contextMenuDefinition" Property="Width" Value="{Binding ContextMenu, Converter={converters:ContextMenuEmptyToWidthConverter}}"/>
                     </DataTrigger>
                 </DataTemplate.Triggers>
             </DataTemplate>
