@@ -30,6 +30,21 @@ namespace Wox.Plugin.Everything
                     ContextMenuStorage.Instance.Save();
                 }
 
+                if (keyword == "uninstalleverything")
+                {
+                    Result r = new Result();
+                    r.Title = "Uninstall Everything";
+                    r.SubTitle = "You need to uninstall everything service if you can not move/delete wox folder";
+                    r.IcoPath = "Images\\find.png";
+                    r.Action = (c) =>
+                    {
+                        UnInstallEverything();
+                        return true;
+                    };
+                    r.Score = 2000;
+                    results.Add(r);
+                }
+
                 try
                 {
                     var searchList = api.Search(keyword, maxCount: ContextMenuStorage.Instance.MaxSearchCount).ToList();
@@ -142,7 +157,7 @@ namespace Wox.Plugin.Everything
 
         private void StartEverything()
         {
-            if (!CheckEverythingSericeRunning())
+            if (!CheckEverythingServiceRunning())
             {
                 if (InstallAndRunEverythingService())
                 {
@@ -174,6 +189,31 @@ namespace Wox.Plugin.Everything
             }
         }
 
+        private bool UnInstallEverything()
+        {
+            try
+            {
+                Process p = new Process();
+                p.StartInfo.Verb = "runas";
+                p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                p.StartInfo.FileName = GetEverythingPath();
+                p.StartInfo.UseShellExecute = true;
+                p.StartInfo.Arguments = "-uninstall-service";
+                p.Start();
+
+                Process[] proc = Process.GetProcessesByName("Everything");
+                foreach (Process process in proc)
+                {
+                    process.Kill();
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
         private void StartEverythingClient()
         {
             try
@@ -191,7 +231,7 @@ namespace Wox.Plugin.Everything
             }
         }
 
-        private bool CheckEverythingSericeRunning()
+        private bool CheckEverythingServiceRunning()
         {
             try
             {
