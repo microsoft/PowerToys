@@ -41,7 +41,6 @@ namespace Wox.Core.i18n
         {
             Language language = GetLanguageByLanguageCode(languageCode);
             ChangeLanguage(language);
-            UpdateAllPluginMetadataTranslations();
         }
 
         private Language GetLanguageByLanguageCode(string languageCode)
@@ -72,6 +71,7 @@ namespace Wox.Core.i18n
             UserSettingStorage.Instance.Language = language.LanguageCode;
             UserSettingStorage.Instance.Save();
             ResourceMerger.ApplyResources();
+            UpdateAllPluginMetadataTranslations();
         }
 
         public ResourceDictionary GetResourceDictionary()

@@ -188,23 +188,6 @@
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="2">
-                            <TextBlock Text="{DynamicResource windowMode}" />
-                            <ComboBox Name="CbOpacityMode" Margin="14 0 0 0" SelectionChanged="CbOpacityMode_OnSelectionChanged" Width="160">
-                                <userSettings:OpacityMode>Normal</userSettings:OpacityMode>
-                                <userSettings:OpacityMode>LayeredWindow</userSettings:OpacityMode>
-                                <userSettings:OpacityMode>DWM</userSettings:OpacityMode>
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Converter={converters:OpacityModeConverter}}" />
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                            <StackPanel Orientation="Horizontal" Margin="5 0 0 0" x:Name="spOpacity">
-                                <TextBlock Text="{DynamicResource opacity}" HorizontalAlignment="Center" />
-                                <Slider x:Name="slOpacity" Maximum="1" Minimum="0" SmallChange="1" LargeChange="0.1" TickPlacement="BottomRight" TickFrequency="0.1" ValueChanged="slOpacity_ValueChanged" Width="100"/>
-                            </StackPanel>
-                        </StackPanel>
                     </StackPanel>
 
                 </Grid>

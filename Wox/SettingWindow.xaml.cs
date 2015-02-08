@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -23,6 +24,7 @@ using Wox.Core.i18n;
 using Wox.Core.Theme;
 using Wox.Core.Updater;
 using Wox.Core.UserSettings;
+using Wox.Infrastructure;
 using CheckBox = System.Windows.Controls.CheckBox;
 using Control = System.Windows.Controls.Control;
 using Cursors = System.Windows.Input.Cursors;
@@ -262,23 +264,13 @@ namespace Wox
             Process.Start("http://www.getwox.com/theme");
         }
 
-
-        private void CbOpacityMode_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            UserSettingStorage.Instance.OpacityMode = (OpacityMode)CbOpacityMode.SelectedItem;
-            UserSettingStorage.Instance.Save();
-
-            spOpacity.Visibility = UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow ? Visibility.Visible : Visibility.Collapsed;
-
-            if (UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow)
-                PreviewMainPanel.Opacity = UserSettingStorage.Instance.Opacity;
-            else
-                PreviewMainPanel.Opacity = 1;
-        }
-
-
         private void OnThemeTabSelected()
         {
+            using (new Timeit("theme load"))
+            {
+                var s = Fonts.SystemFontFamilies;
+            }
+
             if (themeTabLoaded) return;
 
             themeTabLoaded = true;
@@ -304,6 +296,7 @@ namespace Wox
                     UserSettingStorage.Instance.ResultItemFontStretch
                     ));
             }
+
             resultPanelPreview.AddResults(new List<Result>()
             {
                 new Result()
@@ -363,8 +356,6 @@ namespace Wox
             }
 
             themeComboBox.SelectedItem = UserSettingStorage.Instance.Theme;
-            slOpacity.Value = UserSettingStorage.Instance.Opacity;
-            CbOpacityMode.SelectedItem = UserSettingStorage.Instance.OpacityMode;
 
             var wallpaper = WallpaperPathRetrieval.GetWallpaperPath();
             if (wallpaper != null && File.Exists(wallpaper))
@@ -379,8 +370,6 @@ namespace Wox
                 PreviewPanel.Background = new SolidColorBrush(wallpaperColor);
             }
 
-            //PreviewPanel
-            ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
         }
 
         private void TabTheme_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -396,8 +385,8 @@ namespace Wox
         private void ThemeComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string themeName = themeComboBox.SelectedItem.ToString();
-            ThemeManager.Theme.ChangeTheme(themeName);
             UserSettingStorage.Instance.Theme = themeName;
+            DelayChangeTheme();
             UserSettingStorage.Instance.Save();
         }
 
@@ -407,9 +396,16 @@ namespace Wox
             string queryBoxFontName = cbQueryBoxFont.SelectedItem.ToString();
             UserSettingStorage.Instance.QueryBoxFont = queryBoxFontName;
             this.cbQueryBoxFontFaces.SelectedItem = ((FontFamily)cbQueryBoxFont.SelectedItem).ChooseRegularFamilyTypeface();
-
+            DelayChangeTheme();
             UserSettingStorage.Instance.Save();
-            ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
+        }
+
+        private void DelayChangeTheme()
+        {
+            Dispatcher.DelayInvoke("delayChangeTheme", o =>
+            {
+                ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
+            }, TimeSpan.FromMilliseconds(100));
         }
 
         private void CbQueryBoxFontFaces_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -429,7 +425,7 @@ namespace Wox
                 UserSettingStorage.Instance.QueryBoxFontWeight = typeface.Weight.ToString();
                 UserSettingStorage.Instance.QueryBoxFontStyle = typeface.Style.ToString();
                 UserSettingStorage.Instance.Save();
-                ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
+                DelayChangeTheme();
             }
         }
 
@@ -441,7 +437,7 @@ namespace Wox
             this.cbResultItemFontFaces.SelectedItem = ((FontFamily)cbResultItemFont.SelectedItem).ChooseRegularFamilyTypeface();
 
             UserSettingStorage.Instance.Save();
-            ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
+            DelayChangeTheme();
         }
 
         private void CbResultItemFontFaces_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -459,29 +455,13 @@ namespace Wox
                 UserSettingStorage.Instance.ResultItemFontWeight = typeface.Weight.ToString();
                 UserSettingStorage.Instance.ResultItemFontStyle = typeface.Style.ToString();
                 UserSettingStorage.Instance.Save();
-                ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
+                DelayChangeTheme();
             }
         }
 
-        private void slOpacity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            UserSettingStorage.Instance.Opacity = slOpacity.Value;
-
-            if (UserSettingStorage.Instance.OpacityMode == OpacityMode.LayeredWindow)
-                PreviewMainPanel.Opacity = UserSettingStorage.Instance.Opacity;
-            else
-                PreviewMainPanel.Opacity = 1;
-
-            ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
-            Dispatcher.DelayInvoke("delaySaveUserSetting", o =>
-            {
-                UserSettingStorage.Instance.Save();
-            }, TimeSpan.FromMilliseconds(1000));
-        }
         #endregion
 
         #region Plugin
-
 
         private void lbPlugins_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
