@@ -24,7 +24,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32"></ColumnDefinition>
                         <ColumnDefinition/>
-                        <ColumnDefinition Width="32" />
+                        <ColumnDefinition Width="0" />
                     </Grid.ColumnDefinitions>
                     <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" Source="{Binding FullIcoPath,Converter={StaticResource ImageConverter},IsAsync=True}" >
                     </Image>

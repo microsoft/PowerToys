@@ -46,7 +46,7 @@ namespace Wox.Plugin
         /// Just change the query text, this won't raise search
         /// </summary>
         /// <param name="query"></param>
-        void ChangeQueryText(string query);
+        void ChangeQueryText(string query, bool selectAll = false);
 
         /// <summary>
         /// Close Wox
@@ -121,16 +121,6 @@ namespace Wox.Plugin
         /// if you want to hook something like Ctrl+R, you should use this event
         /// </summary>
         event WoxGlobalKeyboardEventHandler GlobalKeyboardEvent;
-
-        /// <summary>
-        /// Fired after wox execute a query
-        /// </summary>
-        event AfterWoxQueryEventHandler AfterWoxQueryEvent;
-
-        /// <summary>
-        /// Fired before wox start to execute a query
-        /// </summary>
-        event AfterWoxQueryEventHandler BeforeWoxQueryEvent;
 
         /// <summary>
         /// Fired after drop to result item of current plugin 

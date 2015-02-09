@@ -68,13 +68,17 @@ namespace Wox
             }));
         }
 
-        public void ChangeQueryText(string query)
+        public void ChangeQueryText(string query, bool selectAll = false)
         {
             Dispatcher.Invoke(new Action(() =>
             {
                 ignoreTextChange = true;
                 tbQuery.Text = query;
                 tbQuery.CaretIndex = tbQuery.Text.Length;
+                if (selectAll)
+                {
+                    tbQuery.SelectAll();
+                }
             }));
         }
 
@@ -144,8 +148,6 @@ namespace Wox
 
         public event WoxKeyDownEventHandler BackKeyDownEvent;
         public event WoxGlobalKeyboardEventHandler GlobalKeyboardEvent;
-        public event AfterWoxQueryEventHandler AfterWoxQueryEvent;
-        public event AfterWoxQueryEventHandler BeforeWoxQueryEvent;
         public event ResultItemDropEventHandler ResultItemDropEvent;
 
         public void PushResults(Query query, PluginMetadata plugin, List<Result> results)
@@ -433,7 +435,6 @@ namespace Wox
                     queryHasReturn = false;
                     Query query = new Query(lastQuery);
                     query.IsIntantQuery = searchDelay == 0;
-                    FireBeforeWoxQueryEvent(query);
                     Query(query);
                     Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
                     {
@@ -442,10 +443,15 @@ namespace Wox
                             StartProgress();
                         }
                     }, TimeSpan.FromMilliseconds(150), tbQuery.Text);
-                    FireAfterWoxQueryEvent(query);
+                    //reset query history index after user start new query
+                    ResetQueryHistoryIndex();
                 }, TimeSpan.FromMilliseconds(searchDelay));
         }
 
+        private void ResetQueryHistoryIndex()
+        {
+            QueryHistoryStorage.Instance.Reset();
+        }
         private int GetSearchDelay(string query)
         {
             if (!string.IsNullOrEmpty(query) && PluginManager.IsInstantQuery(query))
@@ -456,38 +462,6 @@ namespace Wox
 
             DebugHelper.WriteLine("execute query with 200ms delay");
             return 200;
-        }
-
-        private void FireAfterWoxQueryEvent(Query q)
-        {
-            if (AfterWoxQueryEvent != null)
-            {
-                //We shouldn't let those events slow down real query
-                //so I put it in the new thread
-                ThreadPool.QueueUserWorkItem(o =>
-                {
-                    AfterWoxQueryEvent(new WoxQueryEventArgs()
-                    {
-                        Query = q
-                    });
-                });
-            }
-        }
-
-        private void FireBeforeWoxQueryEvent(Query q)
-        {
-            if (BeforeWoxQueryEvent != null)
-            {
-                //We shouldn't let those events slow down real query
-                //so I put it in the new thread
-                ThreadPool.QueueUserWorkItem(o =>
-                {
-                    BeforeWoxQueryEvent(new WoxQueryEventArgs()
-                    {
-                        Query = q
-                    });
-                });
-            }
         }
 
         private void Query(Query q)
@@ -544,6 +518,7 @@ namespace Wox
             Activate();
             Focus();
             tbQuery.Focus();
+            ResetQueryHistoryIndex();
             if (selectAll) tbQuery.SelectAll();
         }
 
@@ -616,12 +591,26 @@ namespace Wox
                     break;
 
                 case Key.Down:
-                    SelectNextItem();
+                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
+                    {
+                        DisplayNextQuery();
+                    }
+                    else
+                    {
+                        SelectNextItem();
+                    }
                     e.Handled = true;
                     break;
 
                 case Key.Up:
-                    SelectPrevItem();
+                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
+                    {
+                        DisplayPrevQuery();
+                    }
+                    else
+                    {
+                        SelectPrevItem();
+                    }
                     e.Handled = true;
                     break;
 
@@ -703,6 +692,40 @@ namespace Wox
             }
         }
 
+        private void DisplayPrevQuery()
+        {
+            var prev = QueryHistoryStorage.Instance.Previous();
+            DisplayQueryHistory(prev);
+        }
+
+        private void DisplayNextQuery()
+        {
+            var nextQuery = QueryHistoryStorage.Instance.Next();
+            DisplayQueryHistory(nextQuery);
+        }
+
+        private void DisplayQueryHistory(HistoryItem history)
+        {
+            if (history != null)
+            {
+                ChangeQueryText(history.Query, true);
+                pnlResult.Dirty = true;
+                UpdateResultViewInternal(new List<Result>()
+                {
+                    new Result(){
+                        Title = "Execute " + history.Query+ " query",
+                        SubTitle = "Last Execute Time: " + history.ExecutedDateTime,
+                        IcoPath = "Images\\history.png",
+                        PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                        Action = _ =>{
+                            ChangeQuery(history.Query,true);
+                            return false;
+                        }
+                    }
+                });
+            }
+        }
+
         private void SelectItem(int index)
         {
             int zeroBasedIndex = index - 1;
@@ -775,6 +798,7 @@ namespace Wox
                         HideWox();
                     }
                     UserSelectedRecordStorage.Instance.Add(result);
+                    QueryHistoryStorage.Instance.Add(tbQuery.Text);
                 }
             }
         }
@@ -792,11 +816,16 @@ namespace Wox
                     o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o) * 5;
                 });
                 List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
-                Dispatcher.Invoke(new Action(() =>
-                {
-                    pnlResult.AddResults(l);
-                }));
+                UpdateResultViewInternal(l);
             }
+        }
+
+        private void UpdateResultViewInternal(List<Result> list)
+        {
+            Dispatcher.Invoke(new Action(() =>
+            {
+                pnlResult.AddResults(list);
+            }));
         }
 
         private Result GetTopMostContextMenu(Result result)

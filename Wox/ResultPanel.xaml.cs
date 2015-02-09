@@ -145,25 +145,24 @@ namespace Wox
 
         private void UpdateItemNumber()
         {
-            VirtualizingStackPanel virtualizingStackPanel = GetInnerStackPanel(lbResults);
-            int index = 0;
-            for (int i = (int)virtualizingStackPanel.VerticalOffset; i <= virtualizingStackPanel.VerticalOffset + virtualizingStackPanel.ViewportHeight; i++)
-            {
-                index++;
-                ListBoxItem item = lbResults.ItemContainerGenerator.ContainerFromIndex(i) as ListBoxItem;
-                if (item != null)
-                {
-                    ContentPresenter myContentPresenter = FindVisualChild<ContentPresenter>(item);
-                    if (myContentPresenter != null)
-                    {
-                        DataTemplate dataTemplate = myContentPresenter.ContentTemplate;
-                        TextBlock tbItemNumber = (TextBlock)dataTemplate.FindName("tbItemNumber", myContentPresenter);
-                        tbItemNumber.Text = index.ToString();
-                    }
-                }
-            }
+            //VirtualizingStackPanel virtualizingStackPanel = GetInnerStackPanel(lbResults);
+            //int index = 0;
+            //for (int i = (int)virtualizingStackPanel.VerticalOffset; i <= virtualizingStackPanel.VerticalOffset + virtualizingStackPanel.ViewportHeight; i++)
+            //{
+            //    index++;
+            //    ListBoxItem item = lbResults.ItemContainerGenerator.ContainerFromIndex(i) as ListBoxItem;
+            //    if (item != null)
+            //    {
+            //        ContentPresenter myContentPresenter = FindVisualChild<ContentPresenter>(item);
+            //        if (myContentPresenter != null)
+            //        {
+            //            DataTemplate dataTemplate = myContentPresenter.ContentTemplate;
+            //            TextBlock tbItemNumber = (TextBlock)dataTemplate.FindName("tbItemNumber", myContentPresenter);
+            //            tbItemNumber.Text = index.ToString();
+            //        }
+            //    }
+            //}
         }
-
 
         private childItem FindVisualChild<childItem>(DependencyObject obj) where childItem : DependencyObject
         {

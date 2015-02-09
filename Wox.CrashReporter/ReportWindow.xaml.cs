@@ -55,13 +55,18 @@ namespace Wox.CrashReporter
 
         private void SendReport()
         {
-            string reproduceSteps =
-                new TextRange(tbReproduceSteps.Document.ContentStart, tbReproduceSteps.Document.ContentEnd).Text;
-            exception.ToExceptionless()
-                .SetUserDescription(reproduceSteps)
-                .Submit();
-            ExceptionlessClient.Current.ProcessQueue();
-            Close();
+            ThreadPool.QueueUserWorkItem(o =>
+            {
+                string reproduceSteps = new TextRange(tbReproduceSteps.Document.ContentStart, tbReproduceSteps.Document.ContentEnd).Text;
+                exception.ToExceptionless()
+                    .SetUserDescription(reproduceSteps)
+                    .Submit();
+                ExceptionlessClient.Current.ProcessQueue();
+                Dispatcher.Invoke(new Action(() =>
+                {
+                    Close();
+                }));
+            });
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
