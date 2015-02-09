@@ -7,7 +7,8 @@
     <system:String x:Key="invalidWoxPluginFileFormat">不是合法的Wox插件格式</system:String>
     <system:String x:Key="setAsTopMostInThisQuery">在当前查询中置顶</system:String>
     <system:String x:Key="cancelTopMostInThisQuery">取消置顶</system:String>
-
+    <system:String x:Key="executeQuery">执行查询：{0}</system:String>
+    <system:String x:Key="lastExecuteTime">上次执行时间：{0}</system:String>
 
     <!--设置，通用-->
     <system:String x:Key="woxsettings">Wox设置</system:String>

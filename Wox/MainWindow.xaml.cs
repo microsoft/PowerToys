@@ -710,11 +710,13 @@ namespace Wox
             {
                 ChangeQueryText(history.Query, true);
                 pnlResult.Dirty = true;
+                var executeQueryHistoryTitle = GetTranslation("executeQuery");
+                var lastExecuteTime = GetTranslation("lastExecuteTime");
                 UpdateResultViewInternal(new List<Result>()
                 {
                     new Result(){
-                        Title = "Execute " + history.Query+ " query",
-                        SubTitle = "Last Execute Time: " + history.ExecutedDateTime,
+                        Title = string.Format(executeQueryHistoryTitle,history.Query),
+                        SubTitle = string.Format(lastExecuteTime,history.ExecutedDateTime),
                         IcoPath = "Images\\history.png",
                         PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                         Action = _ =>{
