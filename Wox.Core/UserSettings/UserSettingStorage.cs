@@ -130,14 +130,7 @@ namespace Wox.Core.UserSettings
             OpacityMode = OpacityMode.Normal;
             LeaveCmdOpen = false;
             HideWhenDeactive = false;
-            CustomPluginHotkeys = new List<CustomPluginHotkey>()
-            {
-                new CustomPluginHotkey()
-                {
-                    ActionKeyword = "history ",
-                    Hotkey = "Alt + H"
-                }
-            };
+            CustomPluginHotkeys = new List<CustomPluginHotkey>();
             return this;
         }
 

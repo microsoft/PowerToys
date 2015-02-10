@@ -56,8 +56,9 @@ namespace Wox.Infrastructure.Storage
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Log.Error(e);
                 serializedObject = LoadDefault();
 #if (DEBUG)
                 {

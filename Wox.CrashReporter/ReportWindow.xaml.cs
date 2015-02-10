@@ -55,6 +55,7 @@ namespace Wox.CrashReporter
 
         private void SendReport()
         {
+            Hide();
             ThreadPool.QueueUserWorkItem(o =>
             {
                 string reproduceSteps = new TextRange(tbReproduceSteps.Document.ContentStart, tbReproduceSteps.Document.ContentEnd).Text;
