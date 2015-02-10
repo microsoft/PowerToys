@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 
 namespace Wox.Plugin.Url
 {
-    public class UrlPlugin : IPlugin
+    public class UrlPlugin : IPlugin, IPluginI18n
     {
         //based on https://gist.github.com/dperini/729294
-        private const string urlPattern ="^" +
+        private const string urlPattern = "^" +
             // protocol identifier
             "(?:(?:https?|ftp)://|)" +
             // user:pass authentication
@@ -42,6 +44,7 @@ namespace Wox.Plugin.Url
             "(?:/\\S*)?" +
             "$";
         Regex reg = new Regex(urlPattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private PluginInitContext context;
 
         public List<Result> Query(Query query)
         {
@@ -53,7 +56,7 @@ namespace Wox.Plugin.Url
                     new Result
                     {
                         Title = raw,
-                        SubTitle = "Open " +  raw,
+                        SubTitle = string.Format(context.API.GetTranslation("wox_plugin_url_open_url"),raw),
                         IcoPath = "Images/url.png",
                         Score = 8,
                         Action = _ =>
@@ -69,7 +72,7 @@ namespace Wox.Plugin.Url
                             }
                             catch(Exception ex)
                             {
-                                MessageBox.Show(ex.Message, "Could not open " +  raw);
+                                context.API.ShowMsg(string.Format(context.API.GetTranslation("wox_plugin_url_canot_open_url"), raw));
                                 return false;
                             }
                         }
@@ -98,7 +101,22 @@ namespace Wox.Plugin.Url
 
         public void Init(PluginInitContext context)
         {
+            this.context = context;
+        }
 
+        public string GetLanguagesFolder()
+        {
+            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+        }
+
+        public string GetTranslatedPluginTitle()
+        {
+            return context.API.GetTranslation("wox_plugin_url_plugin_name");
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return context.API.GetTranslation("wox_plugin_url_plugin_description");
         }
     }
 }

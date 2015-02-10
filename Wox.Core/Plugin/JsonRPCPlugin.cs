@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using Wox.Core.Exception;
 
 namespace Wox.Core.Plugin
 {
@@ -83,7 +84,7 @@ namespace Wox.Core.Plugin
         private void ExecuteWoxAPI(string method, object[] parameters)
         {
             MethodInfo methodInfo = PluginManager.API.GetType().GetMethod(method);
-            if (methodInfo != null) 
+            if (methodInfo != null)
             {
                 try
                 {
@@ -141,8 +142,7 @@ namespace Wox.Core.Plugin
                                     string error = errorReader.ReadToEnd();
                                     if (!string.IsNullOrEmpty(error))
                                     {
-                                        //todo:
-                                       // ErrorReporting.TryShowErrorMessageBox(error, new WoxJsonRPCException(error));
+                                        throw new WoxJsonRPCException(error);
                                     }
                                 }
                             }
@@ -151,9 +151,9 @@ namespace Wox.Core.Plugin
                     }
                 }
             }
-            catch
+            catch(System.Exception e)
             {
-                return null;
+                throw new WoxJsonRPCException(e.Message);
             }
             return null;
         }

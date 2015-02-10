@@ -8,5 +8,8 @@
     <system:String x:Key="wox_plugin_folder_folder_path">文件夹路径</system:String>
     <system:String x:Key="wox_plugin_folder_select_folder_link_warning">请选择一个文件夹</system:String>
     <system:String x:Key="wox_plugin_folder_delete_folder_link">你确定要删除{0}吗？</system:String>
-    
+
+    <system:String x:Key="wox_plugin_folder_plugin_name">文件夹</system:String>
+    <system:String x:Key="wox_plugin_folder_plugin_description">在Wox中直接打开收藏的文件夹</system:String>
+
 </ResourceDictionary>

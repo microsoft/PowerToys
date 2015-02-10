@@ -4,13 +4,15 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 
 namespace Wox.Plugin.Color
 {
-    public sealed class ColorsPlugin : IPlugin
+    public sealed class ColorsPlugin : IPlugin, IPluginI18n
     {
         private string DIR_PATH = Path.Combine(Path.GetTempPath(), @"Plugins\Colors\");
+        private PluginInitContext context;
         private const int IMG_SIZE = 32;
 
         private DirectoryInfo ColorsDirectory { get; set; }
@@ -103,6 +105,23 @@ namespace Wox.Plugin.Color
 
         public void Init(PluginInitContext context)
         {
+            this.context = context;
+        }
+
+
+        public string GetLanguagesFolder()
+        {
+            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+        }
+
+        public string GetTranslatedPluginTitle()
+        {
+            return context.API.GetTranslation("wox_plugin_color_plugin_name");
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return context.API.GetTranslation("wox_plugin_color_plugin_description");
         }
     }
 }

@@ -15,7 +15,13 @@ namespace Wox.Plugin
         /// <param name="query"></param>
         /// <param name="plugin"></param>
         /// <param name="results"></param>
-        void PushResults(Query query,PluginMetadata plugin, List<Result> results);
+        void PushResults(Query query, PluginMetadata plugin, List<Result> results);
+
+        /// <summary>
+        /// Show context menu with giving results
+        /// </summary>
+        /// <param name="results"></param>
+        void ShowContextMenu(PluginMetadata plugin, List<Result> results);
 
         /// <summary>
         /// Execute command
@@ -35,6 +41,12 @@ namespace Wox.Plugin
         /// Set this to true to force Wox requerying
         /// </param>
         void ChangeQuery(string query, bool requery = false);
+
+        /// <summary>
+        /// Just change the query text, this won't raise search
+        /// </summary>
+        /// <param name="query"></param>
+        void ChangeQueryText(string query, bool selectAll = false);
 
         /// <summary>
         /// Close Wox
@@ -57,13 +69,13 @@ namespace Wox.Plugin
         /// <param name="title">Message title</param>
         /// <param name="subTitle">Message subtitle</param>
         /// <param name="iconPath">Message icon path (relative path to your plugin folder)</param>
-        void ShowMsg(string title, string subTitle, string iconPath);
+        void ShowMsg(string title, string subTitle = "", string iconPath = "");
 
         /// <summary>
         /// Open setting dialog
         /// </summary>
         void OpenSettingDialog();
-        
+
         /// <summary>
         /// Show loading animation
         /// </summary>
@@ -111,13 +123,8 @@ namespace Wox.Plugin
         event WoxGlobalKeyboardEventHandler GlobalKeyboardEvent;
 
         /// <summary>
-        /// Fired after wox execute a query
+        /// Fired after drop to result item of current plugin 
         /// </summary>
-        event AfterWoxQueryEventHandler AfterWoxQueryEvent;
-
-        /// <summary>
-        /// Fired before wox start to execute a query
-        /// </summary>
-        event AfterWoxQueryEventHandler BeforeWoxQueryEvent;
+        event ResultItemDropEventHandler ResultItemDropEvent;
     }
 }

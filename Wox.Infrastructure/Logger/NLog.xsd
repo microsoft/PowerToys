@@ -855,7 +855,7 @@
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
-  <xs:complexType name="Debugger">
+  <xs:complexType name="DebugHelper">
     <xs:complexContent>
       <xs:extension base="Target">
         <xs:choice minOccurs="0" maxOccurs="unbounded">

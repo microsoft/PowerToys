@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.ServiceProcess;
 using Wox.Infrastructure;
 using System.Reflection;
 using Wox.Plugin.Everything.Everything;
+using Wox.Plugin.Features;
 
 namespace Wox.Plugin.Everything
 {
-    public class Main : IPlugin
+    public class Main : IPlugin, IPluginI18n, IContextMenu
     {
         PluginInitContext context;
         EverythingAPI api = new EverythingAPI();
@@ -24,8 +26,23 @@ namespace Wox.Plugin.Everything
                 var keyword = query.Search;
                 if (ContextMenuStorage.Instance.MaxSearchCount <= 0)
                 {
-                    ContextMenuStorage.Instance.MaxSearchCount = 100;
+                    ContextMenuStorage.Instance.MaxSearchCount = 50;
                     ContextMenuStorage.Instance.Save();
+                }
+
+                if (keyword == "uninstalleverything")
+                {
+                    Result r = new Result();
+                    r.Title = "Uninstall Everything";
+                    r.SubTitle = "You need to uninstall everything service if you can not move/delete wox folder";
+                    r.IcoPath = "Images\\find.png";
+                    r.Action = (c) =>
+                    {
+                        UnInstallEverything();
+                        return true;
+                    };
+                    r.Score = 2000;
+                    results.Add(r);
                 }
 
                 try
@@ -50,7 +67,7 @@ namespace Wox.Plugin.Everything
                             context.API.ShellRun(path);
                             return true;
                         };
-                        r.ContextMenu = GetContextMenu(s);
+                        r.ContextData = s;
                         results.Add(r);
                     }
                 }
@@ -59,7 +76,7 @@ namespace Wox.Plugin.Everything
                     StartEverything();
                     results.Add(new Result()
                     {
-                        Title = "Everything is not running, we already run it for you now. Try search again",
+                        Title = context.API.GetTranslation("wox_plugin_everything_is_not_running"),
                         IcoPath = "Images\\warning.png"
                     });
                 }
@@ -67,12 +84,12 @@ namespace Wox.Plugin.Everything
                 {
                     results.Add(new Result()
                     {
-                        Title = "Everything plugin has an error (enter to copy error message)",
+                        Title = context.API.GetTranslation("wox_plugin_everything_query_error"),
                         SubTitle = e.Message,
                         Action = _ =>
                         {
                             System.Windows.Clipboard.SetText(e.Message + "\r\n" + e.StackTrace);
-                            context.API.ShowMsg("Copied", "Error message has copied to your clipboard", string.Empty);
+                            context.API.ShowMsg(context.API.GetTranslation("wox_plugin_everything_copied"), null, string.Empty);
                             return false;
                         },
                         IcoPath = "Images\\error.png"
@@ -110,42 +127,25 @@ namespace Wox.Plugin.Everything
         [System.Runtime.InteropServices.DllImport("kernel32.dll")]
         private static extern int LoadLibrary(string name);
 
-        private List<Result> GetContextMenu(SearchResult record)
+        private List<ContextMenu> GetDefaultContextMenu()
         {
-            List<Result> contextMenus = new List<Result>();
+            List<ContextMenu> defaultContextMenus = new List<ContextMenu>();
+            ContextMenu openFolderContextMenu = new ContextMenu()
+                   {
+                       Name = context.API.GetTranslation("wox_plugin_everything_open_containing_folder"),
+                       Command = "explorer.exe",
+                       Argument = " /select,\"{path}\"",
+                       ImagePath = "Images\\folder.png"
+                   };
 
-            if (record.Type == ResultType.File)
-            {
-                foreach (ContextMenu contextMenu in ContextMenuStorage.Instance.ContextMenus)
-                {
-                    contextMenus.Add(new Result()
-                    {
-                        Title = contextMenu.Name,
-                        Action = _ =>
-                        {
-                            string argument = contextMenu.Argument.Replace("{path}", record.FullPath);
-                            try
-                            {
-                                System.Diagnostics.Process.Start(contextMenu.Command, argument);
-                            }
-                            catch
-                            {
-                                context.API.ShowMsg("Can't start " + record.FullPath, string.Empty, string.Empty);
-                                return false;
-                            }
-                            return true;
-                        },
-                        IcoPath = contextMenu.ImagePath
-                    });
-                }
-            }
-
-            return contextMenus;
+            defaultContextMenus.Add(openFolderContextMenu);
+            return defaultContextMenus;
         }
 
         public void Init(PluginInitContext context)
         {
             this.context = context;
+            ContextMenuStorage.Instance.API = context.API;
 
             LoadLibrary(Path.Combine(
                 Path.Combine(context.CurrentPluginMetadata.PluginDirectory, (IntPtr.Size == 4) ? "x86" : "x64"),
@@ -157,15 +157,92 @@ namespace Wox.Plugin.Everything
 
         private void StartEverything()
         {
-            if (!CheckEverythingIsRunning())
+            if (!CheckEverythingServiceRunning())
+            {
+                if (InstallAndRunEverythingService())
+                {
+                    StartEverythingClient();
+                }
+            }
+            else
+            {
+                StartEverythingClient();
+            }
+        }
+
+        private bool InstallAndRunEverythingService()
+        {
+            try
             {
                 Process p = new Process();
                 p.StartInfo.Verb = "runas";
                 p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 p.StartInfo.FileName = GetEverythingPath();
                 p.StartInfo.UseShellExecute = true;
+                p.StartInfo.Arguments = "-install-service";
+                p.Start();
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        private bool UnInstallEverything()
+        {
+            try
+            {
+                Process p = new Process();
+                p.StartInfo.Verb = "runas";
+                p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                p.StartInfo.FileName = GetEverythingPath();
+                p.StartInfo.UseShellExecute = true;
+                p.StartInfo.Arguments = "-uninstall-service";
+                p.Start();
+
+                Process[] proc = Process.GetProcessesByName("Everything");
+                foreach (Process process in proc)
+                {
+                    process.Kill();
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        private void StartEverythingClient()
+        {
+            try
+            {
+                Process p = new Process();
+                p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                p.StartInfo.FileName = GetEverythingPath();
+                p.StartInfo.UseShellExecute = true;
+                p.StartInfo.Arguments = "-startup";
                 p.Start();
             }
+            catch (Exception e)
+            {
+                context.API.ShowMsg("Start Everything failed");
+            }
+        }
+
+        private bool CheckEverythingServiceRunning()
+        {
+            try
+            {
+                ServiceController sc = new ServiceController("Everything");
+                return sc.Status == ServiceControllerStatus.Running;
+            }
+            catch
+            {
+
+            }
+            return false;
         }
 
         private bool CheckEverythingIsRunning()
@@ -177,6 +254,61 @@ namespace Wox.Plugin.Everything
         {
             string everythingFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "PortableEverything");
             return Path.Combine(everythingFolder, "Everything.exe");
+        }
+
+        public string GetLanguagesFolder()
+        {
+            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+        }
+
+        public string GetTranslatedPluginTitle()
+        {
+            return context.API.GetTranslation("wox_plugin_everything_plugin_name");
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return context.API.GetTranslation("wox_plugin_everything_plugin_description");
+        }
+
+        public List<Result> LoadContextMenus(Result selectedResult)
+        {
+            SearchResult record = selectedResult.ContextData as SearchResult;
+            List<Result> contextMenus = new List<Result>();
+            if (record == null) return contextMenus;
+
+            List<ContextMenu> availableContextMenus = new List<ContextMenu>();
+            availableContextMenus.AddRange(GetDefaultContextMenu());
+            availableContextMenus.AddRange(ContextMenuStorage.Instance.ContextMenus);
+
+            if (record.Type == ResultType.File)
+            {
+                foreach (ContextMenu contextMenu in availableContextMenus)
+                {
+                    var menu = contextMenu;
+                    contextMenus.Add(new Result()
+                    {
+                        Title = contextMenu.Name,
+                        Action = _ =>
+                        {
+                            string argument = menu.Argument.Replace("{path}", record.FullPath);
+                            try
+                            {
+                                Process.Start(menu.Command, argument);
+                            }
+                            catch
+                            {
+                                context.API.ShowMsg(string.Format(context.API.GetTranslation("wox_plugin_everything_canot_start"), record.FullPath), string.Empty, string.Empty);
+                                return false;
+                            }
+                            return true;
+                        },
+                        IcoPath = contextMenu.ImagePath
+                    });
+                }
+            }
+
+            return contextMenus;
         }
     }
 }

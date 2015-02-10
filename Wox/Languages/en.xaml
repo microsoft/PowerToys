@@ -5,8 +5,12 @@
     <system:String x:Key="registerHotkeyFailed">Register hotkey: {0} failed</system:String>
     <system:String x:Key="couldnotStartCmd">Could not start {0}</system:String>
     <system:String x:Key="invalidWoxPluginFileFormat">Invalid wox plugin file format</system:String>
-
+    <system:String x:Key="setAsTopMostInThisQuery">Set as topmost in this query</system:String>
+    <system:String x:Key="cancelTopMostInThisQuery">Cancel topmost in this query</system:String>
+    <system:String x:Key="executeQuery">Execute query:{0}</system:String>
+    <system:String x:Key="lastExecuteTime">Last execute time:{0}</system:String>
     
+
     <!--Setting General-->
     <system:String x:Key="woxsettings">Wox Settings</system:String>
     <system:String x:Key="general">General</system:String>
@@ -22,6 +26,8 @@
     <system:String x:Key="actionKeyword">Action keyword</system:String>
     <system:String x:Key="pluginDirectory">Plugin Directory</system:String>
     <system:String x:Key="author">Author</system:String>
+    <system:String x:Key="plugin_init_time">Init time: {0}ms</system:String>
+    <system:String x:Key="plugin_query_time">Query time: {0}ms</system:String>
 
     <!--Setting Theme-->
     <system:String x:Key="theme">Theme</system:String>

@@ -24,10 +24,10 @@ namespace Wox.Plugin
         }
 
         public string ExecuteFileName { get; set; }
+
         public string PluginDirectory { get; set; }
 
         public string ActionKeyword { get; set; }
-        public PluginType PluginType { get; set; }
 
         public string IcoPath { get; set; }
 

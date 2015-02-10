@@ -5,7 +5,10 @@
     <system:String x:Key="registerHotkeyFailed">注册热键：{0} 失败</system:String>
     <system:String x:Key="couldnotStartCmd">启动命令 {0} 失败</system:String>
     <system:String x:Key="invalidWoxPluginFileFormat">不是合法的Wox插件格式</system:String>
-
+    <system:String x:Key="setAsTopMostInThisQuery">在当前查询中置顶</system:String>
+    <system:String x:Key="cancelTopMostInThisQuery">取消置顶</system:String>
+    <system:String x:Key="executeQuery">执行查询：{0}</system:String>
+    <system:String x:Key="lastExecuteTime">上次执行时间：{0}</system:String>
 
     <!--设置，通用-->
     <system:String x:Key="woxsettings">Wox设置</system:String>
@@ -22,7 +25,9 @@
     <system:String x:Key="actionKeyword">触发关键字</system:String>
     <system:String x:Key="pluginDirectory">插件目录</system:String>
     <system:String x:Key="author">作者</system:String>
-
+    <system:String x:Key="plugin_init_time">加载耗时：{0}ms</system:String>
+    <system:String x:Key="plugin_query_time">查询耗时：{0}ms</system:String>
+    
     <!--设置，主题-->
     <system:String x:Key="theme">主题</system:String>
     <system:String x:Key="browserMoreThemes">浏览更多主题</system:String>

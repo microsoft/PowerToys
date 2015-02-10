@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Wox.Infrastructure;
 
 namespace Wox.Plugin.Sys
 {
@@ -42,7 +43,7 @@ namespace Wox.Plugin.Sys
             List<Result> results = new List<Result>();
             foreach (Result availableResult in availableResults)
             {
-                if (availableResult.Title.ToLower().StartsWith(query.Search.ToLower()))
+                if (StringMatcher.IsMatch(availableResult.Title, query.Search) || StringMatcher.IsMatch(availableResult.SubTitle, query.Search))
                 {
                     results.Add(availableResult);
                 }
@@ -142,5 +143,15 @@ namespace Wox.Plugin.Sys
             return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
 
         }
-    }
+
+        public string GetTranslatedPluginTitle()
+        {
+            return context.API.GetTranslation("wox_plugin_sys_plugin_name");
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return context.API.GetTranslation("wox_plugin_sys_plugin_description");
+        }
+	}
 }

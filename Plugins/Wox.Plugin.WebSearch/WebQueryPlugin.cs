@@ -5,17 +5,22 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Wox.Core.UserSettings;
+using Wox.Plugin.Features;
 using Wox.Plugin.WebSearch.SuggestionSources;
 
 namespace Wox.Plugin.WebSearch
 {
-    public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantSearch
+    public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IExclusiveQuery
     {
         private PluginInitContext context;
 
         public List<Result> Query(Query query)
         {
             List<Result> results = new List<Result>();
+            if (!query.Search.Contains(' '))
+            {
+                return results;
+            }
 
             WebSearch webSearch =
                 WebSearchStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionWord == query.FirstSearch.Trim() && o.Enabled);
@@ -98,15 +103,29 @@ namespace Wox.Plugin.WebSearch
             return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
         }
 
-        public bool IsInstantSearch(string query)
+        public string GetTranslatedPluginTitle()
+        {
+            return context.API.GetTranslation("wox_plugin_websearch_plugin_name");
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return context.API.GetTranslation("wox_plugin_websearch_plugin_description");
+        }
+
+        public bool IsInstantQuery(string query)
         {
             var strings = query.Split(' ');
             if (strings.Length > 1)
             {
-                return WebSearchStorage.Instance.EnableWebSearchSuggestion &&
-                       WebSearchStorage.Instance.WebSearches.Exists(o => o.ActionWord == strings[0] && o.Enabled);
+                return WebSearchStorage.Instance.WebSearches.Exists(o => o.ActionWord == strings[0] && o.Enabled);
             }
             return false;
+        }
+
+        public bool IsExclusiveQuery(Query query)
+        {
+            return IsInstantQuery(query.RawQuery);
         }
     }
 }

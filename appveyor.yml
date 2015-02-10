@@ -1,4 +1,4 @@
-version: 1.1.1.{build}
+version: 1.2.0.{build}
 configuration:
     Release
 
@@ -15,7 +15,6 @@ build:
 after_test:
     - ps: .\deploy\nuget\pack.ps1
     - cmd: .\deploy\UpdateGenerator\build.bat
-    #- cmd: .\deploy\Cleanup.bat
 
 deploy:
     provider: NuGet

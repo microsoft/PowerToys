@@ -38,6 +38,12 @@
         <Setter Property="Foreground" Value="#D9D9D4" />
         <Setter Property="FontFamily" Value="Arial, Serif" />
     </Style>
+    <Style x:Key="BaseItemNumberStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="3 0 0 0" />
+        <Setter Property="FontSize" Value="22" />
+    </Style>
     <Style x:Key="BaseItemTitleSelectedStyle" TargetType="{x:Type TextBlock}" >
         <Setter Property="Foreground" Value="#FFFFF8" />
         <Setter Property="FontSize" Value="16" />
@@ -55,9 +61,9 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBox">
-                <ScrollViewer Focusable="false" Template="{DynamicResource ScrollViewerControlTemplate}">
-                    <VirtualizingStackPanel IsItemsHost="True" />
-                </ScrollViewer>
+                    <ScrollViewer Focusable="false" Template="{DynamicResource ScrollViewerControlTemplate}">
+                        <VirtualizingStackPanel IsItemsHost="True" />
+                    </ScrollViewer>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

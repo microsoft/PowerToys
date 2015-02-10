@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using Wox.Core.Plugin;
 using Wox.Core.UserSettings;
 
 namespace Wox.Plugin.PluginIndicator
 {
-    public class PluginIndicator : IPlugin
+    public class PluginIndicator : IPlugin,IPluginI18n
     {
         private List<PluginPair> allPlugins = new List<PluginPair>();
         private PluginInitContext context;
@@ -15,7 +17,7 @@ namespace Wox.Plugin.PluginIndicator
             List<Result> results = new List<Result>();
             if (allPlugins.Count == 0)
             {
-                allPlugins = context.API.GetAllPlugins().Where(o => !PluginManager.IsSystemPlugin(o.Metadata)).ToList();
+                allPlugins = context.API.GetAllPlugins().Where(o => !PluginManager.IsGenericPlugin(o.Metadata)).ToList();
             }
 
             foreach (PluginMetadata metadata in allPlugins.Select(o => o.Metadata))
@@ -45,25 +47,27 @@ namespace Wox.Plugin.PluginIndicator
                 }
             }
 
-            //results.AddRange(UserSettingStorage.Instance.WebSearches.Where(o => o.ActionWord.StartsWith(query.Search) && o.Enabled).Select(n => new Result()
-            //{
-            //    Title = n.ActionWord,
-            //    SubTitle = string.Format("Activate {0} web search", n.ActionWord),
-            //    Score = 100,
-            //    IcoPath = "Images/work.png",
-            //    Action = (c) =>
-            //    {
-            //        context.API.ChangeQuery(n.ActionWord + " ");
-            //        return false;
-            //    }
-            //}));
-
             return results;
         }
 
         public void Init(PluginInitContext context)
         {
             this.context = context;
+        }
+
+        public string GetLanguagesFolder()
+        {
+            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+        }
+
+        public string GetTranslatedPluginTitle()
+        {
+            return context.API.GetTranslation("wox_plugin_pluginindicator_plugin_name");
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return context.API.GetTranslation("wox_plugin_pluginindicator_plugin_description");
         }
     }
 }

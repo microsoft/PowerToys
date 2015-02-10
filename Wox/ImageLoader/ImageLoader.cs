@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -79,42 +80,49 @@ namespace Wox.ImageLoader
 
         public static ImageSource Load(string path, bool addToCache = true)
         {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
             if (string.IsNullOrEmpty(path)) return null;
             if (addToCache)
             {
                 ImageCacheStroage.Instance.Add(path);
             }
 
+            ImageSource img = null;
             if (imageCache.ContainsKey(path))
             {
-                return imageCache[path];
+                img = imageCache[path];
             }
-
-            ImageSource img = null;
-            string ext = Path.GetExtension(path).ToLower();
-
-            if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            else
             {
-                img = new BitmapImage(new Uri(path));
-            }
-            else if (selfExts.Contains(ext) && File.Exists(path))
-            {
-                img = GetIcon(path);
-            }
-            else if (!string.IsNullOrEmpty(path) && imageExts.Contains(ext) && File.Exists(path))
-            {
-                img = new BitmapImage(new Uri(path));
-            }
+                string ext = Path.GetExtension(path).ToLower();
 
-
-            if (img != null && addToCache)
-            {
-                if (!imageCache.ContainsKey(path))
+                if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
                 {
-                    imageCache.Add(path, img);
+                    img = new BitmapImage(new Uri(path));
+                }
+                else if (selfExts.Contains(ext) && File.Exists(path))
+                {
+                    img = GetIcon(path);
+                }
+                else if (!string.IsNullOrEmpty(path) && imageExts.Contains(ext) && File.Exists(path))
+                {
+                    img = new BitmapImage(new Uri(path));
+                }
+
+
+                if (img != null && addToCache)
+                {
+                    if (!imageCache.ContainsKey(path))
+                    {
+                        imageCache.Add(path, img);
+                    }
                 }
             }
 
+            sw.Stop();
+            DebugHelper.WriteLine(string.Format("Loading image path: {0} - {1}ms",path,sw.ElapsedMilliseconds));
             return img;
         }
 

@@ -13,8 +13,8 @@ namespace Wox.Plugin
 
         /// <summary>
         /// Search part of a query.
-        /// This will not include action keyword if regular plugin gets it, and if a system plugin gets it, it should be same as RawQuery.
-        /// Since we allow user to switch a regular plugin to system plugin, so this property will always give you the "real" query part of
+        /// This will not include action keyword if exclusive plugin gets it, otherwise it should be same as RawQuery.
+        /// Since we allow user to switch a exclusive plugin to generic plugin, so this property will always give you the "real" query part of
         /// the query
         /// </summary>
         public string Search { get; internal set; }
@@ -32,6 +32,8 @@ namespace Wox.Plugin
 
             return string.Empty;
         }
+
+        internal bool IsIntantQuery { get; set; }
 
         /// <summary>
         /// Return first search split by space if it has

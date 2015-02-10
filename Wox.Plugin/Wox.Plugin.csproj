@@ -46,7 +46,9 @@
   <ItemGroup>
     <Compile Include="AllowedLanguage.cs" />
     <Compile Include="EventHandler.cs" />
-    <Compile Include="IInstantSearch.cs" />
+    <Compile Include="Features\IContextMenu.cs" />
+    <Compile Include="Features\IExclusiveQuery.cs" />
+    <Compile Include="Features\IInstantQuery.cs" />
     <Compile Include="IHttpProxy.cs" />
     <Compile Include="IPluginI18n.cs" />
     <Compile Include="IPlugin.cs" />
@@ -55,7 +57,6 @@
     <Compile Include="PluginPair.cs" />
     <Compile Include="PluginInitContext.cs" />
     <Compile Include="PluginMetadata.cs" />
-    <Compile Include="PluginType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="Result.cs" />

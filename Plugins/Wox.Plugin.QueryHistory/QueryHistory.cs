@@ -34,8 +34,6 @@ namespace Wox.Plugin.QueryHistory
         public void Init(PluginInitContext context)
         {
             this.context = context;
-            context.API.AfterWoxQueryEvent += API_AfterWoxQueryEvent;
-            context.API.BeforeWoxQueryEvent += API_BeforeWoxQueryEvent;
         }
 
         void API_BeforeWoxQueryEvent(WoxQueryEventArgs e)

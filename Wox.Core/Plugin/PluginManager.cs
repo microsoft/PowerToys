@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Wox.Core.Exception;
+using Wox.Core.i18n;
 using Wox.Core.UI;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using Wox.Plugin.Features;
 
 namespace Wox.Core.Plugin
 {
@@ -21,8 +24,9 @@ namespace Wox.Core.Plugin
     {
         public const string ActionKeywordWildcardSign = "*";
         private static List<PluginMetadata> pluginMetadatas;
-        private static List<IInstantSearch> instantSearches = new List<IInstantSearch>();
-
+        private static List<KeyValuePair<PluginPair, IInstantQuery>> instantSearches;
+        private static List<KeyValuePair<PluginPair, IExclusiveQuery>> exclusiveSearchPlugins;
+        private static List<KeyValuePair<PluginPair, IContextMenu>> contextMenuPlugins;
 
         public static String DebuggerMode { get; private set; }
         public static IPublicAPI API { get; private set; }
@@ -86,19 +90,25 @@ namespace Wox.Core.Plugin
                 PluginPair pair = pluginPair;
                 ThreadPool.QueueUserWorkItem(o =>
                 {
-                    using (new Timeit(string.Format("Init {0}", pair.Metadata.Name)))
+                    Stopwatch sw = new Stopwatch();
+                    sw.Start();
+                    pair.Plugin.Init(new PluginInitContext()
                     {
-                        pair.Plugin.Init(new PluginInitContext()
-                        {
-                            CurrentPluginMetadata = pair.Metadata,
-                            Proxy = HttpProxy.Instance,
-                            API = API
-                        });
-                    }
+                        CurrentPluginMetadata = pair.Metadata,
+                        Proxy = HttpProxy.Instance,
+                        API = API
+                    });
+                    sw.Stop();
+                    DebugHelper.WriteLine(string.Format("Plugin init:{0} - {1}", pair.Metadata.Name, sw.ElapsedMilliseconds));
+                    pair.InitTime = sw.ElapsedMilliseconds;
+                    InternationalizationManager.Instance.UpdatePluginMetadataTranslations(pair);
                 });
             }
 
-            LoadInstantSearches();
+            ThreadPool.QueueUserWorkItem(o =>
+            {
+                LoadInstantSearches();
+            });
         }
 
         public static void InstallPlugin(string path)
@@ -110,6 +120,7 @@ namespace Wox.Core.Plugin
         {
             if (!string.IsNullOrEmpty(query.RawQuery.Trim()))
             {
+                query.Search = IsActionKeywordQuery(query) ? query.RawQuery.Substring(query.RawQuery.IndexOf(' ') + 1) : query.RawQuery;
                 QueryDispatcher.QueryDispatcher.Dispatch(query);
             }
         }
@@ -122,19 +133,36 @@ namespace Wox.Core.Plugin
             }
         }
 
-        public static bool IsUserPluginQuery(Query query)
+        /// <summary>
+        /// Check if a query contains valid action keyword
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public static bool IsActionKeywordQuery(Query query)
         {
             if (string.IsNullOrEmpty(query.RawQuery)) return false;
             var strings = query.RawQuery.Split(' ');
-            if(strings.Length == 1) return false;
+            if (strings.Length == 1) return false;
 
             var actionKeyword = strings[0].Trim();
             if (string.IsNullOrEmpty(actionKeyword)) return false;
 
-            return plugins.Any(o => o.Metadata.PluginType == PluginType.User && o.Metadata.ActionKeyword == actionKeyword);
+            PluginPair pair = plugins.FirstOrDefault(o => o.Metadata.ActionKeyword == actionKeyword);
+            if (pair != null)
+            {
+                var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == pair.Metadata.ID);
+                if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
-        public static bool IsSystemPlugin(PluginMetadata metadata)
+        public static bool IsGenericPlugin(PluginMetadata metadata)
         {
             return metadata.ActionKeyword == ActionKeywordWildcardSign;
         }
@@ -144,42 +172,53 @@ namespace Wox.Core.Plugin
             DebuggerMode = path;
         }
 
-        public static bool IsInstantSearch(string query)
+        public static bool IsInstantQuery(string query)
         {
-            return LoadInstantSearches().Any(o => o.IsInstantSearch(query));
+            return LoadInstantSearches().Any(o => o.Value.IsInstantQuery(query));
         }
 
-        private static List<IInstantSearch> LoadInstantSearches()
+        public static bool IsInstantSearchPlugin(PluginMetadata pluginMetadata)
         {
-            if (instantSearches.Count > 0) return instantSearches;
-            List<PluginMetadata> CSharpPluginMetadatas = pluginMetadatas.Where(o => o.Language.ToUpper() == AllowedLanguage.CSharp.ToUpper()).ToList();
+            //todo:to improve performance, any instant search plugin that takes long than 200ms will not consider a instant plugin anymore
+            return pluginMetadata.Language.ToUpper() == AllowedLanguage.CSharp &&
+                   LoadInstantSearches().Any(o => o.Key.Metadata.ID == pluginMetadata.ID);
+        }
 
-            foreach (PluginMetadata metadata in CSharpPluginMetadatas)
+        internal static void ExecutePluginQuery(PluginPair pair, Query query)
+        {
+            try
             {
-                try
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                List<Result> results = pair.Plugin.Query(query) ?? new List<Result>();
+                results.ForEach(o =>
                 {
-                    Assembly asm = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
-                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IInstantSearch))).ToList();
-                    if (types.Count == 0)
-                    {
-                        continue;
-                    }
-
-                    foreach (Type type in types)
-                    {
-                        instantSearches.Add(Activator.CreateInstance(type) as IInstantSearch);
-                    }
-                }
-                catch (System.Exception e)
+                    o.PluginID = pair.Metadata.ID;
+                });
+                sw.Stop();
+                DebugHelper.WriteLine(string.Format("Plugin query: {0} - {1}", pair.Metadata.Name, sw.ElapsedMilliseconds));
+                pair.QueryCount += 1;
+                if (pair.QueryCount == 1)
                 {
-                    Log.Error(string.Format("Couldn't load plugin {0}: {1}", metadata.Name, e.Message));
-#if (DEBUG)
-                    {
-                        throw;
-                    }
-#endif
+                    pair.AvgQueryTime = sw.ElapsedMilliseconds;
                 }
+                else
+                {
+                    pair.AvgQueryTime = (pair.AvgQueryTime + sw.ElapsedMilliseconds) / 2;
+                }
+                API.PushResults(query, pair.Metadata, results);
             }
+            catch (System.Exception e)
+            {
+                throw new WoxPluginException(pair.Metadata.Name, e);
+            }
+        }
+
+        private static List<KeyValuePair<PluginPair, IInstantQuery>> LoadInstantSearches()
+        {
+            if (instantSearches != null) return instantSearches;
+
+            instantSearches = AssemblyHelper.LoadPluginInterfaces<IInstantQuery>();
 
             return instantSearches;
         }
@@ -192,6 +231,74 @@ namespace Wox.Core.Plugin
         public static PluginPair GetPlugin(string id)
         {
             return AllPlugins.FirstOrDefault(o => o.Metadata.ID == id);
+        }
+
+        internal static List<KeyValuePair<PluginPair, IExclusiveQuery>> LoadExclusiveSearchPlugins()
+        {
+            if (exclusiveSearchPlugins != null) return exclusiveSearchPlugins;
+            exclusiveSearchPlugins = AssemblyHelper.LoadPluginInterfaces<IExclusiveQuery>();
+            return exclusiveSearchPlugins;
+        }
+
+        internal static PluginPair GetExclusivePlugin(Query query)
+        {
+            KeyValuePair<PluginPair, IExclusiveQuery> plugin = LoadExclusiveSearchPlugins().FirstOrDefault(o => o.Value.IsExclusiveQuery((query)));
+            return plugin.Key;
+        }
+
+        internal static PluginPair GetActionKeywordPlugin(Query query)
+        {
+            //if a query doesn't contain at least one space, it should not be a action keword plugin query
+            if (!query.RawQuery.Contains(" ")) return null;
+
+            PluginPair actionKeywordPluginPair = AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.GetActionKeyword());
+            if (actionKeywordPluginPair != null)
+            {
+                var customizedPluginConfig = UserSettingStorage.Instance.
+                    CustomizedPluginConfigs.FirstOrDefault(o => o.ID == actionKeywordPluginPair.Metadata.ID);
+                if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
+                {
+                    return null;
+                }
+
+                return actionKeywordPluginPair;
+            }
+
+            return null;
+        }
+
+        internal static bool IsExclusivePluginQuery(Query query)
+        {
+            return GetExclusivePlugin(query) != null || GetActionKeywordPlugin(query) != null;
+        }
+
+        public static List<Result> GetPluginContextMenus(Result result)
+        {
+            List<Result> contextContextMenus = new List<Result>();
+            if (contextMenuPlugins == null)
+            {
+                contextMenuPlugins = AssemblyHelper.LoadPluginInterfaces<IContextMenu>();
+            }
+
+            var contextMenuPlugin = contextMenuPlugins.FirstOrDefault(o => o.Key.Metadata.ID == result.PluginID);
+            if (contextMenuPlugin.Value != null)
+            {
+                try
+                {
+                    return contextMenuPlugin.Value.LoadContextMenus(result);
+                }
+                catch (System.Exception e)
+                {
+                    Log.Error(string.Format("Couldn't load plugin context menus {0}: {1}", contextMenuPlugin.Key.Metadata.Name, e.Message));
+#if (DEBUG)
+                    {
+                        throw;
+                    }
+#endif
+                }
+            }
+
+            return contextContextMenus;
         }
     }
 }

@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Wox.Infrastructure;
 
 namespace Wox.Plugin.ControlPanel
 {
-    public class ControlPanel : IPlugin
+    public class ControlPanel : IPlugin,IPluginI18n
     {
         private PluginInitContext context;
         private List<ControlPanelItem> controlPanelItems = new List<ControlPanelItem>();
@@ -80,6 +81,21 @@ namespace Wox.Plugin.ControlPanel
             if (item.LocalizedString != null && (item.Score = matcher.Evaluate(item.LocalizedString.Unidecode()).Score) > 0) return true;
 
             return false;
+        }
+
+        public string GetLanguagesFolder()
+        {
+            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+        }
+
+        public string GetTranslatedPluginTitle()
+        {
+            return context.API.GetTranslation("wox_plugin_controlpanel_plugin_name");
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return context.API.GetTranslation("wox_plugin_controlpanel_plugin_description");
         }
     }
 }

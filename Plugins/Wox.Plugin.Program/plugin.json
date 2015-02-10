@@ -2,7 +2,7 @@
     "ID":"791FC278BA414111B8D1886DFE447410",
     "ActionKeyword":"*",
     "Name":"Program",
-    "Description":"Provide programs search for Wox.",
+    "Description":"Search programs in Wox",
     "Author":"qianlifeng",
     "Version":"1.0.0",
     "Language":"csharp",

@@ -25,4 +25,7 @@
     <system:String x:Key="wox_plugin_websearch_action_keyword_exist">觸發關鍵字已經存在，請選擇一個新的關鍵字</system:String>
     <system:String x:Key="wox_plugin_websearch_succeed">操作成功</system:String>
 
+    <system:String x:Key="wox_plugin_websearch_plugin_name">網頁搜索</system:String>
+    <system:String x:Key="wox_plugin_websearch_plugin_description">提供網頁搜索能力</system:String>
+    
 </ResourceDictionary>

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using Wox.Core.i18n;
+using Wox.Core.Plugin;
 using Wox.Core.Theme;
 using Wox.Plugin;
 
@@ -9,38 +11,28 @@ namespace Wox.Core.UI
 {
     public class ResourceMerger
     {
-        public static void ApplyResources()
+        internal static void ApplyResources()
         {
             Application.Current.Resources.MergedDictionaries.Clear();
             ApplyPluginLanguages();
             ApplyThemeAndLanguageResources();
         }
 
-        private static void ApplyThemeAndLanguageResources()
+        internal static void ApplyThemeAndLanguageResources()
         {
-            var UIResourceType = typeof(IUIResource);
-            var UIResources = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(p => p.IsClass && !p.IsAbstract && UIResourceType.IsAssignableFrom(p));
-
+            var UIResources = AssemblyHelper.LoadInterfacesFromAppDomain<IUIResource>();
             foreach (var uiResource in UIResources)
             {
-                Application.Current.Resources.MergedDictionaries.Add(
-                    ((IUIResource)Activator.CreateInstance(uiResource)).GetResourceDictionary());
+                Application.Current.Resources.MergedDictionaries.Add(uiResource.GetResourceDictionary());
             }
         }
 
-        public static void ApplyPluginLanguages()
+        internal static void ApplyPluginLanguages()
         {
-            var pluginI18nType = typeof(IPluginI18n);
-            var pluginI18ns = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(p => p.IsClass && !p.IsAbstract && pluginI18nType.IsAssignableFrom(p));
-
+            var pluginI18ns = AssemblyHelper.LoadInterfacesFromAppDomain<IPluginI18n>();
             foreach (var pluginI18n in pluginI18ns)
             {
-                string languageFile = InternationalizationManager.Instance.GetLanguageFile(
-                    ((IPluginI18n)Activator.CreateInstance(pluginI18n)).GetLanguagesFolder());
+                string languageFile = InternationalizationManager.Instance.GetLanguageFile(pluginI18n.GetLanguagesFolder());
                 if (!string.IsNullOrEmpty(languageFile))
                 {
                     Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
@@ -50,5 +42,7 @@ namespace Wox.Core.UI
                 }
             }
         }
+
+      
     }
 }

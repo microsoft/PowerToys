@@ -12,5 +12,9 @@ namespace Wox.Plugin
     public interface IPluginI18n
     {
         string GetLanguagesFolder();
+
+        string GetTranslatedPluginTitle();
+
+        string GetTranslatedPluginDescription();
     }
 }

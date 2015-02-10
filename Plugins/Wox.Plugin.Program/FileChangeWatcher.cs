@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using Wox.Infrastructure;
 
 namespace Wox.Plugin.Program
 {
@@ -15,7 +16,7 @@ namespace Wox.Plugin.Program
             if (watchedPath.Contains(path)) return;
             if (!Directory.Exists(path))
             {
-                Debug.WriteLine(string.Format("FileChangeWatcher: {0} doesn't exist", path),"WoxDebug");
+                DebugHelper.WriteLine(string.Format("FileChangeWatcher: {0} doesn't exist", path));
                 return;
             }
 

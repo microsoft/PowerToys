@@ -1,22 +1,23 @@
 ﻿
+using System.Threading;
+using Wox.Plugin;
+
 namespace Wox.Core.Plugin.QueryDispatcher
 {
     internal static class QueryDispatcher
     {
-        private static readonly IQueryDispatcher UserPluginDispatcher = new UserPluginQueryDispatcher();
-        private static readonly IQueryDispatcher SystemPluginDispatcher = new SystemPluginQueryDispatcher();
+        private static readonly IQueryDispatcher exclusivePluginDispatcher = new ExclusiveQueryDispatcher();
+        private static readonly IQueryDispatcher genericQueryDispatcher = new GenericQueryDispatcher();
 
-        public static void Dispatch(Wox.Plugin.Query query)
+        public static void Dispatch(Query query)
         {
-            if (PluginManager.IsUserPluginQuery(query))
+            if (PluginManager.IsExclusivePluginQuery(query))
             {
-                query.Search = query.RawQuery.Substring(query.RawQuery.IndexOf(' ') + 1);
-                UserPluginDispatcher.Dispatch(query);
+                exclusivePluginDispatcher.Dispatch(query);
             }
             else
             {
-                query.Search = query.RawQuery;
-                SystemPluginDispatcher.Dispatch(query);
+                genericQueryDispatcher.Dispatch(query);
             }
         }
     }

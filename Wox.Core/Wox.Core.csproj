@@ -69,6 +69,8 @@
     <Compile Include="Exception\WoxI18nException.cs" />
     <Compile Include="Exception\WoxJsonRPCException.cs" />
     <Compile Include="Exception\WoxPluginException.cs" />
+    <Compile Include="AssemblyHelper.cs" />
+    <Compile Include="Plugin\QueryDispatcher\BaseQueryDispatcher.cs" />
     <Compile Include="Updater\Release.cs" />
     <Compile Include="Updater\UpdaterManager.cs" />
     <Compile Include="Updater\WoxUpdateSource.cs" />
@@ -85,8 +87,8 @@
     <Compile Include="Plugin\PluginInstaller.cs" />
     <Compile Include="Plugin\QueryDispatcher\IQueryDispatcher.cs" />
     <Compile Include="Plugin\QueryDispatcher\QueryDispatcher.cs" />
-    <Compile Include="Plugin\QueryDispatcher\UserPluginQueryDispatcher.cs" />
-    <Compile Include="Plugin\QueryDispatcher\SystemPluginQueryDispatcher.cs" />
+    <Compile Include="Plugin\QueryDispatcher\ExclusiveQueryDispatcher.cs" />
+    <Compile Include="Plugin\QueryDispatcher\GenericQueryDispatcher.cs" />
     <Compile Include="Plugin\JsonRPCPlugin.cs" />
     <Compile Include="Plugin\JsonRPCPluginLoader.cs" />
     <Compile Include="Plugin\CSharpPluginLoader.cs" />

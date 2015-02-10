@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using YAMP;
 
 namespace Wox.Plugin.Caculator
 {
-    public class Calculator : IPlugin
+    public class Calculator : IPlugin, IPluginI18n
     {
         private static Regex regValidExpressChar = new Regex(
                         @"^(" +
@@ -86,6 +88,21 @@ namespace Wox.Plugin.Caculator
         public void Init(PluginInitContext context)
         {
             this.context = context;
+        }
+
+        public string GetLanguagesFolder()
+        {
+            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+        }
+
+        public string GetTranslatedPluginTitle()
+        {
+            return context.API.GetTranslation("wox_plugin_caculator_plugin_name");
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return context.API.GetTranslation("wox_plugin_caculator_plugin_description");
         }
     }
 }

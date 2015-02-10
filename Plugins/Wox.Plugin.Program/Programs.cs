@@ -9,10 +9,11 @@ using System.Windows;
 using Wox.Infrastructure;
 using Wox.Plugin.Program.ProgramSources;
 using IWshRuntimeLibrary;
+using Wox.Plugin.Features;
 
 namespace Wox.Plugin.Program
 {
-    public class Programs : ISettingProvider, IPlugin, IPluginI18n
+    public class Programs : ISettingProvider, IPlugin, IPluginI18n, IContextMenu
     {
         private static object lockObject = new object();
         private static List<Program> programs = new List<Program>();
@@ -38,46 +39,12 @@ namespace Wox.Plugin.Program
                 SubTitle = c.ExecutePath,
                 IcoPath = c.IcoPath,
                 Score = c.Score,
+                ContextData = c,
                 Action = (e) =>
                 {
                     context.API.HideApp();
                     context.API.ShellRun(c.ExecutePath);
                     return true;
-                },
-                ContextMenu = new List<Result>()
-                {
-                    new Result()
-                    {
-                        Title = "Run As Administrator",
-                        Action = _ =>
-                        {
-                            context.API.HideApp();
-                            context.API.ShellRun(c.ExecutePath,true);
-                            return true;
-                        },
-                        IcoPath = "Images/cmd.png"
-                    },
-                    new Result()
-                    {
-                        Title = "Open Containing Folder",
-                        Action = _ =>
-                        {
-                            context.API.HideApp();
-                            String Path=c.ExecutePath;
-                            //check if shortcut
-                            if (Path.EndsWith(".lnk"))
-                            {
-                                //get location of shortcut
-                                Path = ResolveShortcut(Path);
-                            }
-                            //get parent folder
-                            Path=System.IO.Directory.GetParent(Path).FullName;
-                            //open the folder
-                            context.API.ShellRun("explorer.exe "+Path,false);
-                            return true;
-                        },
-                        IcoPath = "Images/folder.png"
-                    }
                 }
             }).ToList();
         }
@@ -85,8 +52,8 @@ namespace Wox.Plugin.Program
         static string ResolveShortcut(string filePath)
         {
             // IWshRuntimeLibrary is in the COM library "Windows Script Host Object Model"
-            IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
-            IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(filePath);
+            WshShell shell = new WshShell();
+            IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(filePath);
             return shortcut.TargetPath;
         }
 
@@ -103,15 +70,22 @@ namespace Wox.Plugin.Program
         public void Init(PluginInitContext context)
         {
             this.context = context;
+            this.context.API.ResultItemDropEvent += API_ResultItemDropEvent;
             using (new Timeit("Preload programs"))
             {
                 programs = ProgramCacheStorage.Instance.Programs;
             }
-            Debug.WriteLine(string.Format("Preload {0} programs from cache", programs.Count), "Wox");
+            DebugHelper.WriteLine(string.Format("Preload {0} programs from cache", programs.Count));
             using (new Timeit("Program Index"))
             {
                 IndexPrograms();
             }
+        }
+
+        void API_ResultItemDropEvent(Result result, IDataObject dropObject, DragEventArgs e)
+        {
+
+            e.Handled = true;
         }
 
         public static void IndexPrograms()
@@ -215,6 +189,56 @@ namespace Wox.Plugin.Program
         public string GetLanguagesFolder()
         {
             return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+        }
+        public string GetTranslatedPluginTitle()
+        {
+            return context.API.GetTranslation("wox_plugin_program_plugin_name");
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return context.API.GetTranslation("wox_plugin_program_plugin_description");
+        }
+
+        public List<Result> LoadContextMenus(Result selectedResult)
+        {
+            Program p = selectedResult.ContextData as Program;
+            List<Result> contextMenus = new List<Result>()
+            {
+                new Result()
+                {
+                    Title = context.API.GetTranslation("wox_plugin_program_run_as_administrator"),
+                    Action = _ =>
+                    {
+                        context.API.HideApp();
+                        context.API.ShellRun(p.ExecutePath, true);
+                        return true;
+                    },
+                    IcoPath = "Images/cmd.png"
+                },
+                new Result()
+                {
+                    Title = context.API.GetTranslation("wox_plugin_program_open_containing_folder"),
+                    Action = _ =>
+                    {
+                        context.API.HideApp();
+                        String Path = p.ExecutePath;
+                        //check if shortcut
+                        if (Path.EndsWith(".lnk"))
+                        {
+                            //get location of shortcut
+                            Path = ResolveShortcut(Path);
+                        }
+                        //get parent folder
+                        Path = Directory.GetParent(Path).FullName;
+                        //open the folder
+                        context.API.ShellRun("explorer.exe " + Path, false);
+                        return true;
+                    },
+                    IcoPath = "Images/folder.png"
+                }
+            };
+            return contextMenus;
         }
     }
 }

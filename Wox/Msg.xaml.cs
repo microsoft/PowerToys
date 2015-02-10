@@ -57,8 +57,11 @@ namespace Wox {
 		public void Show(string title, string subTitle, string icopath) {
 			tbTitle.Text = title;
 			tbSubTitle.Text = subTitle;
+		    if (string.IsNullOrEmpty(subTitle))
+		    {
+		        tbSubTitle.Visibility = Visibility.Collapsed;
+		    }
 			if (!File.Exists(icopath)) {
-				//icopath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Images\\app.png");
 				imgIco.Source = new BitmapImage(new Uri("Images\\app.png", UriKind.Relative));
 			}
 			else {

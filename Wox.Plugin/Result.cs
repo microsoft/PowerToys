@@ -68,10 +68,16 @@ namespace Wox.Plugin
             this.SubTitle = SubTitle;
         }
 
+        [Obsolete("Use IContextMenu instead")]
         /// <summary>
         /// Context menus associate with this result
         /// </summary>
         public List<Result> ContextMenu { get; set; }
+
+        /// <summary>
+        /// Additional data associate with this result
+        /// </summary>
+        public object ContextData { get; set; }
 
         /// <summary>
         /// Plugin ID that generate this result

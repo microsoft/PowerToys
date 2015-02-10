@@ -60,13 +60,16 @@
     <Compile Include="WebSearchesSetting.xaml.cs">
       <DependentUpon>WebSearchesSetting.xaml</DependentUpon>
     </Compile>
-    <Compile Include="WebSearchPlugin.cs" />
+    <Compile Include="WebQueryPlugin.cs" />
     <Compile Include="WebSearchSetting.xaml.cs">
       <DependentUpon>WebSearchSetting.xaml</DependentUpon>
     </Compile>
     <Compile Include="WebSearchStorage.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Images\websearch\pictures.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Content Include="Languages\en.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
