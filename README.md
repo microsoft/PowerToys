@@ -1,4 +1,4 @@
-Wox   [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e103)](https://ci.appveyor.com/project/qianlifeng/wox) <a href="https://chocolatey.org/packages/wox"><img src="https://img.shields.io/badge/chocolatey-wox-b4884f.svg?style=flat" style="height:auto; width: 100%"></a>
+Wox   [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e103)](https://ci.appveyor.com/project/qianlifeng/wox) <a href="https://chocolatey.org/packages/wox"><img src="https://img.shields.io/badge/chocolatey-wox-b4884f.svg?style=flat" style="height:auto; width: 100%"></a> [![Bountysource](https://www.bountysource.com/badge/team?team_id=39433&style=bounties_received)](https://www.bountysource.com/teams/wox/issues?utm_source=Wox&utm_medium=shield&utm_campaign=bounties_received)
 =========
 [Wox](http://www.getwox.com) is a launcher for windows, which was inspired by [Alfred](http://www.alfredapp.com/) and [Launchy](http://www.launchy.net/). Wox provide an entry to search everything you want. 
 
