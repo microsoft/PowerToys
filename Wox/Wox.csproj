@@ -122,8 +122,15 @@
     <Compile Include="Converters\OpacityModeConverter.cs" />
     <Compile Include="Converters\StringEmptyConverter.cs" />
     <Compile Include="Converters\StringNullOrEmptyToVisibilityConverter.cs" />
-    <Compile Include="Helper\SendToManager.cs" />
     <Compile Include="ImageLoader\ImageCacheStroage.cs" />
+    <Compile Include="ShellContext\ShellContextMenuManager.cs" />
+    <Compile Include="ShellContext\ShellAPI.cs" />
+    <Compile Include="ShellContext\Enums.cs" />
+    <Compile Include="ShellContext\Guids.cs" />
+    <Compile Include="ShellContext\IContextMenu.cs" />
+    <Compile Include="ShellContext\IEnumIDList.cs" />
+    <Compile Include="ShellContext\IShellFolder.cs" />
+    <Compile Include="ShellContext\Structs.cs" />
     <Compile Include="Storage\QueryHistoryStorage.cs" />
     <Compile Include="Storage\TopMostRecordStorage.cs" />
     <Compile Include="Storage\UserSelectedRecordStorage.cs" />

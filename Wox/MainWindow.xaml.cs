@@ -24,6 +24,7 @@ using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
+using Wox.ShellContext;
 using Wox.Storage;
 using ContextMenu = System.Windows.Forms.ContextMenu;
 using DataFormats = System.Windows.DataFormats;
@@ -278,6 +279,7 @@ namespace Wox
             InitProgressbarAnimation();
             WindowIntelopHelper.DisableControlBox(this);
             CheckUpdate();
+            new ShellContextMenuManager().GetContextMenus(@"c:\Windows\write.exe");
         }
 
         private void CheckUpdate()
