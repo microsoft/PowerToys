@@ -22,6 +22,26 @@ namespace Wox.ShellContext
         [DllImport("user32.dll")]
         public static extern int GetMenuItemCount(IntPtr hMenu);
 
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        public class MENUITEMINFO
+        {
+            public int cbSize = Marshal.SizeOf(typeof(MENUITEMINFO));
+            public int fMask;
+            public int fType;
+            public int fState;
+            public int wID;
+            public IntPtr hSubMenu;
+            public IntPtr hbmpChecked;
+            public IntPtr hbmpUnchecked;
+            public IntPtr dwItemData;
+            public string dwTypeData;
+            public int cch;
+        }
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern bool GetMenuItemInfo(HandleRef hMenu, int uItem, bool fByPosition, [In, Out] MENUITEMINFO lpmii);
+
+
         [DllImport("user32.dll")]
         public static extern int GetMenuString(IntPtr hMenu, uint uIDItem, [Out, MarshalAs(UnmanagedType.LPStr)] StringBuilder lpString, int nMaxCount, uint uFlag);
 

@@ -13,7 +13,7 @@ namespace Wox.ShellContext
             IntPtr desktopPtr;
             IShellFolder desktop = ShellAPI.GetDesktopFolder(out desktopPtr);
 
-            IntPtr ownerHwnd =IntPtr.Zero;
+            IntPtr ownerHwnd = IntPtr.Zero;
             IShellFolder Root;
             string FolderPath = Directory.GetParent(path).FullName;
             IntPtr Pidl = IntPtr.Zero;
@@ -60,20 +60,39 @@ namespace Wox.ShellContext
 
                         IntPtr contextMenu = ShellAPI.CreatePopupMenu();
                         iContextMenu.QueryContextMenu(contextMenu, 0, ShellAPI.CMD_FIRST, ShellAPI.CMD_LAST, CMF.NORMAL | CMF.EXPLORE);
-
-                        var menuItemCount = ShellAPI.GetMenuItemCount(contextMenu);
-                        for (int k = 0; k < menuItemCount - 1; k++)
-                        {
-                            StringBuilder menuName = new StringBuilder(0x20);
-                            ShellAPI.GetMenuString(contextMenu, i, menuName, 0x20, ShellAPI.MF_BYPOSITION);
-                            Debug.WriteLine(menuName.Replace("&",""));
-                            ShellAPI.DeleteMenu(contextMenu, i, ShellAPI.MF_BYPOSITION);
-                        }
+                        ParseMenu(contextMenu);
                     }
                 }
             }
 
             Marshal.ReleaseComObject(Root);
+        }
+
+        private void ParseMenu(IntPtr contextMenu)
+        {
+            var menuItemCount = ShellAPI.GetMenuItemCount(contextMenu);
+            for (uint k = 0; k < menuItemCount - 1; k++)
+            {
+                StringBuilder menuName = new StringBuilder(320);
+                ShellAPI.GetMenuString(contextMenu, k, menuName, 320, ShellAPI.MF_BYPOSITION);
+                Debug.WriteLine(menuName.Replace("&", ""));
+
+                //https://msdn.microsoft.com/en-us/library/windows/desktop/ms647578(v=vs.85).aspx
+                ShellAPI.MENUITEMINFO menuiteminfo_t;
+                int MIIM_SUBMENU = 0x00000004;
+                int MIIM_STRING = 0x00000040;
+                int MIIM_FTYPE = 0x00000100;
+                menuiteminfo_t = new ShellAPI.MENUITEMINFO();
+                menuiteminfo_t.fMask = MIIM_SUBMENU | MIIM_STRING | MIIM_FTYPE;
+                menuiteminfo_t.dwTypeData = new string('\0', 320);
+                menuiteminfo_t.cch = menuiteminfo_t.dwTypeData.Length - 1;
+                bool result = ShellAPI.GetMenuItemInfo(new HandleRef(null, contextMenu), (int)k, true, menuiteminfo_t);
+                if (menuiteminfo_t.hSubMenu != IntPtr.Zero)
+                {
+                    ParseMenu(menuiteminfo_t.hSubMenu);
+                }
+                ShellAPI.DeleteMenu(contextMenu, k, ShellAPI.MF_BYPOSITION);
+            }
         }
     }
 }
