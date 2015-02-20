@@ -62,6 +62,18 @@ namespace Wox
                 UserSettingStorage.Instance.Save();
             };
 
+            cbRememberLastLocation.Checked += (o, e) =>
+            {
+                UserSettingStorage.Instance.RememberLastLaunchLocation = true;
+                UserSettingStorage.Instance.Save();
+            };
+
+            cbRememberLastLocation.Unchecked += (o, e) =>
+            {
+                UserSettingStorage.Instance.RememberLastLaunchLocation = false;
+                UserSettingStorage.Instance.Save();
+            };
+
             cbDontPromptUpdateMsg.Checked += (o, e) =>
             {
                 UserSettingStorage.Instance.DontPromptUpdateMsg = true;
@@ -77,6 +89,7 @@ namespace Wox
             cbStartWithWindows.IsChecked = CheckApplicationIsStartupWithWindow();
             cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
             cbDontPromptUpdateMsg.IsChecked = UserSettingStorage.Instance.DontPromptUpdateMsg;
+            cbRememberLastLocation.IsChecked = UserSettingStorage.Instance.RememberLastLaunchLocation;
 
             LoadLanguages();
 

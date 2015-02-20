@@ -31,6 +31,9 @@
                 <CheckBox x:Name="cbDontPromptUpdateMsg" Margin="10">
                     <TextBlock Text="{DynamicResource dontPromptUpdateMsg}" ></TextBlock>
                 </CheckBox>
+                <CheckBox x:Name="cbRememberLastLocation" Margin="10">
+                    <TextBlock Text="{DynamicResource rememberLastLocation}" ></TextBlock>
+                </CheckBox>
                 <StackPanel Margin="10" Orientation="Horizontal">
                     <TextBlock  Text="{DynamicResource language}"></TextBlock>
                     <ComboBox Margin="10 0 0 0" Width="100" x:Name="cbLanguages" />

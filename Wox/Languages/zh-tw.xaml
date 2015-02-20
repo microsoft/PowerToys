@@ -16,6 +16,7 @@
     <system:String x:Key="startWoxOnSystemStartup">開機啟動</system:String>
     <system:String x:Key="hideWoxWhenLoseFocus">失去焦點時自動隱藏Wox</system:String>
     <system:String x:Key="dontPromptUpdateMsg">不顯示新版本提示</system:String>
+    <system:String x:Key="rememberLastLocation">记住上次启动位置</system:String>
     <system:String x:Key="language">語言</system:String>
 
     <!--設置，插件-->

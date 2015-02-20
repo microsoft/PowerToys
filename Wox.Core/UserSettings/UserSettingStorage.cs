@@ -84,6 +84,9 @@ namespace Wox.Core.UserSettings
         public bool HideWhenDeactive { get; set; }
 
         [JsonProperty]
+        public bool RememberLastLaunchLocation { get; set; }
+
+        [JsonProperty]
         public string ProxyServer { get; set; }
 
         [JsonProperty]
@@ -131,6 +134,7 @@ namespace Wox.Core.UserSettings
             LeaveCmdOpen = false;
             HideWhenDeactive = false;
             CustomPluginHotkeys = new List<CustomPluginHotkey>();
+            RememberLastLaunchLocation = false;
             return this;
         }
 

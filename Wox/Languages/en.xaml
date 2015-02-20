@@ -9,7 +9,6 @@
     <system:String x:Key="cancelTopMostInThisQuery">Cancel topmost in this query</system:String>
     <system:String x:Key="executeQuery">Execute query:{0}</system:String>
     <system:String x:Key="lastExecuteTime">Last execute time:{0}</system:String>
-    
 
     <!--Setting General-->
     <system:String x:Key="woxsettings">Wox Settings</system:String>
@@ -17,8 +16,10 @@
     <system:String x:Key="startWoxOnSystemStartup">Start Wox on system startup</system:String>
     <system:String x:Key="hideWoxWhenLoseFocus">Hide Wox when loses focus</system:String>
     <system:String x:Key="dontPromptUpdateMsg">Don't show upgrade msg if new version available</system:String>
+    <system:String x:Key="rememberLastLocation">Remember last launch location</system:String>
     <system:String x:Key="language">Language</system:String>
     
+
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Plugin</system:String>
     <system:String x:Key="browserMorePlugins">Browse more plugins</system:String>
