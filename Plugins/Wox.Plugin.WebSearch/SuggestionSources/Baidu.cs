@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Wox.Core.UserSettings;
 using Wox.Infrastructure.Http;
 
 namespace Wox.Plugin.WebSearch.SuggestionSources
@@ -15,7 +14,7 @@ namespace Wox.Plugin.WebSearch.SuggestionSources
 
         public override List<string> GetSuggestions(string query)
         {
-            var result = HttpRequest.Get("http://suggestion.baidu.com/su?json=1&wd=" + Uri.EscapeUriString(query), HttpProxy.Instance, "GB2312");
+            var result = HttpRequest.Get("http://suggestion.baidu.com/su?json=1&wd=" + Uri.EscapeUriString(query), Proxy, "GB2312");
             if (string.IsNullOrEmpty(result)) return new List<string>();
 
             Match match = reg.Match(result);
@@ -39,6 +38,10 @@ namespace Wox.Plugin.WebSearch.SuggestionSources
             }
 
             return new List<string>();
+        }
+
+        public Baidu(IHttpProxy httpProxy) : base(httpProxy)
+        {
         }
     }
 }

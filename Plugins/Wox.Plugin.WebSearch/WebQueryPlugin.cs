@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Wox.Core.UserSettings;
 using Wox.Plugin.Features;
 using Wox.Plugin.WebSearch.SuggestionSources;
 
@@ -54,7 +53,7 @@ namespace Wox.Plugin.WebSearch
                 if (WebSearchStorage.Instance.EnableWebSearchSuggestion && !string.IsNullOrEmpty(keyword))
                 {
                     ISuggestionSource sugg = SuggestionSourceFactory.GetSuggestionSource(
-                            WebSearchStorage.Instance.WebSearchSuggestionSource);
+                            WebSearchStorage.Instance.WebSearchSuggestionSource,context);
                     if (sugg != null)
                     {
                         var result = sugg.GetSuggestions(keyword);

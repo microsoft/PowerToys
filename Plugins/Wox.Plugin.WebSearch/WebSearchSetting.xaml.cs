@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
-using Wox.Core.UserSettings;
 
 namespace Wox.Plugin.WebSearch
 {
@@ -124,7 +123,7 @@ namespace Wox.Plugin.WebSearch
                 string msg = context.API.GetTranslation("wox_plugin_websearch_succeed");
                 MessageBox.Show(msg);
             }
-            UserSettingStorage.Instance.Save();
+            WebSearchStorage.Instance.Save();
             settingWindow.ReloadWebSearchView();
             Close();
         }

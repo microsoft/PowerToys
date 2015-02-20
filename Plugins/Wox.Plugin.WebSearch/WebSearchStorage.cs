@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Newtonsoft.Json;
-using Wox.Core.UserSettings;
 using Wox.Infrastructure.Storage;
 
 namespace Wox.Plugin.WebSearch

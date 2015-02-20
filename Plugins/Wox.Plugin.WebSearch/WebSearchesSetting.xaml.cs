@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Wox.Core.UserSettings;
 
 namespace Wox.Plugin.WebSearch
 {
@@ -111,7 +110,7 @@ namespace Wox.Plugin.WebSearch
             if (e.AddedItems.Count > 0)
             {
                 WebSearchStorage.Instance.WebSearchSuggestionSource = ((ComboBoxItem) e.AddedItems[0]).Content.ToString();
-                UserSettingStorage.Instance.Save();
+                WebSearchStorage.Instance.Save();
             }
         }
     }

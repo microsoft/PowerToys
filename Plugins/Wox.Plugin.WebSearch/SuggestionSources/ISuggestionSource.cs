@@ -9,6 +9,13 @@ namespace Wox.Plugin.WebSearch.SuggestionSources
 
     public abstract class AbstractSuggestionSource : ISuggestionSource
     {
+        public IHttpProxy Proxy { get; set; }
+
+        public AbstractSuggestionSource(IHttpProxy httpProxy)
+        {
+            Proxy = httpProxy;
+        }
+
         public abstract List<string> GetSuggestions(string query);
     }
 }
