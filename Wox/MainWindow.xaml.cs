@@ -299,7 +299,7 @@ namespace Wox
             }
             else
             {
-                UserSettingStorage.Instance.WindowTop = (screen.WorkingArea.Height - ActualHeight) / 4 + screen.WorkingArea.Top;
+                UserSettingStorage.Instance.WindowTop = (screen.WorkingArea.Height - tbQuery.ActualHeight) / 4 + screen.WorkingArea.Top;
             }
             return UserSettingStorage.Instance.WindowTop;
         }
