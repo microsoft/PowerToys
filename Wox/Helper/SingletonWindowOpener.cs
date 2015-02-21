@@ -6,7 +6,7 @@ using System.Windows;
 
 namespace Wox.Helper
 {
-	public static class WindowOpener
+	public static class SingletonWindowOpener
 	{
 		public static T Open<T>(params object[] args) where T : Window
 		{

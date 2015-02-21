@@ -9,6 +9,10 @@
     <system:String x:Key="cancelTopMostInThisQuery">Cancel topmost in this query</system:String>
     <system:String x:Key="executeQuery">Execute query:{0}</system:String>
     <system:String x:Key="lastExecuteTime">Last execute time:{0}</system:String>
+    <system:String x:Key="iconTrayOpen">Open</system:String>
+    <system:String x:Key="iconTraySettings">Settings</system:String>
+    <system:String x:Key="iconTrayAbout">About</system:String>
+    <system:String x:Key="iconTrayExit">Exit</system:String>
 
     <!--Setting General-->
     <system:String x:Key="woxsettings">Wox Settings</system:String>

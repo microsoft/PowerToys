@@ -112,9 +112,13 @@ namespace Wox
             }));
         }
 
-        public void OpenSettingDialog()
+        public void OpenSettingDialog(string tabName = "general")
         {
-            Dispatcher.Invoke(new Action(() => WindowOpener.Open<SettingWindow>(this)));
+            Dispatcher.Invoke(new Action(() =>
+            {
+                SettingWindow sw = SingletonWindowOpener.Open<SettingWindow>(this);
+                sw.SwitchTo(tabName);
+            }));
         }
 
         public void StartLoadingBar()
@@ -190,7 +194,6 @@ namespace Wox
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
             GlobalHotkey.Instance.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
             progressBar.ToolTip = toolTip;
-            InitialTray();
             pnlResult.LeftMouseClickEvent += SelectResult;
             pnlResult.ItemDropEvent += pnlResult_ItemDropEvent;
             pnlContextMenu.LeftMouseClickEvent += SelectResult;
@@ -201,6 +204,7 @@ namespace Wox
 
             SetHotkey(UserSettingStorage.Instance.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
+            InitialTray();
 
             Closing += MainWindow_Closing;
             //since MainWIndow implement IPublicAPI, so we need to finish ctor MainWindow object before
@@ -396,13 +400,15 @@ namespace Wox
         {
             notifyIcon = new NotifyIcon { Text = "Wox", Icon = Properties.Resources.app, Visible = true };
             notifyIcon.Click += (o, e) => ShowWox();
-            var open = new MenuItem("Open");
+            var open = new MenuItem(GetTranslation("iconTrayOpen"));
             open.Click += (o, e) => ShowWox();
-            var setting = new MenuItem("Settings");
+            var setting = new MenuItem(GetTranslation("iconTraySettings"));
             setting.Click += (o, e) => OpenSettingDialog();
-            var exit = new MenuItem("Exit");
+            var about = new MenuItem(GetTranslation("iconTrayAbout"));
+            about.Click += (o, e) => OpenSettingDialog("about");
+            var exit = new MenuItem(GetTranslation("iconTrayExit"));
             exit.Click += (o, e) => CloseApp();
-            MenuItem[] childen = { open, setting, exit };
+            MenuItem[] childen = { open, setting, about, exit };
             notifyIcon.ContextMenu = new ContextMenu(childen);
         }
 

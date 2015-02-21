@@ -127,6 +127,31 @@ namespace Wox
             settingsLoaded = true;
         }
 
+        public void SwitchTo(string tabName)
+        {
+            switch (tabName)
+            {
+                case "general":
+                    settingTab.SelectedIndex = 0;
+                    break;
+                case "plugin":
+                    settingTab.SelectedIndex = 1;
+                    break;
+                case "theme":
+                    settingTab.SelectedIndex = 2;
+                    break;
+                case "hotkey":
+                    settingTab.SelectedIndex = 3;
+                    break;
+                case "proxy":
+                    settingTab.SelectedIndex = 4;
+                    break;
+                case "about":
+                    settingTab.SelectedIndex = 5;
+                    break;
+            }
+        }
+
         #region General
 
         private void LoadLanguages()
