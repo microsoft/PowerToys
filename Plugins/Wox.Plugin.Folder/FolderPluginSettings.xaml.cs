@@ -8,9 +8,6 @@ using UserControl = System.Windows.Controls.UserControl;
 namespace Wox.Plugin.Folder
 {
 
-    /// <summary>
-    /// Interaction logic for FileSystemSettings.xaml
-    /// </summary>
     public partial class FileSystemSettings : UserControl
     {
         private IPublicAPI woxAPI;
@@ -33,6 +30,7 @@ namespace Wox.Plugin.Folder
                 {
                     FolderStorage.Instance.FolderLinks.Remove(selectedFolder);
                     lbxFolders.Items.Refresh();
+                    FolderStorage.Instance.Save();
                 }
             }
             else
