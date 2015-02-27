@@ -32,6 +32,8 @@ namespace Wox.Infrastructure
 
         public MatchResult Evaluate(string str)
         {
+            if (string.IsNullOrEmpty(str) || string.IsNullOrEmpty(query)) return new MatchResult() { Success = false };
+
             var len = str.Length;
             var compareString = opt.IgnoreCase ? str.ToLower() : str;
             var pattern = opt.IgnoreCase ? query.ToLower() : query;
