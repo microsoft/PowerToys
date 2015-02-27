@@ -8,13 +8,13 @@ using Wox.Infrastructure;
 
 namespace Wox.Plugin.Sys
 {
-    public class Sys : IPlugin, ISettingProvider ,IPluginI18n
-	{
-		List<Result> availableResults = new List<Result>();
+    public class Sys : IPlugin, ISettingProvider, IPluginI18n
+    {
+        List<Result> availableResults = new List<Result>();
         private PluginInitContext context;
 
-		#region DllImport
-		
+        #region DllImport
+
         internal const int EWX_LOGOFF = 0x00000000;
         internal const int EWX_SHUTDOWN = 0x00000001;
         internal const int EWX_REBOOT = 0x00000002;
@@ -26,7 +26,7 @@ namespace Wox.Plugin.Sys
         [DllImport("user32")]
         private static extern void LockWorkStation();
 
-		#endregion
+        #endregion
 
         public System.Windows.Controls.Control CreateSettingPanel()
         {
@@ -35,11 +35,6 @@ namespace Wox.Plugin.Sys
 
         public List<Result> Query(Query query)
         {
-            if (availableResults.Count == 0)
-            {
-                LoadCommands();
-            }
-
             List<Result> results = new List<Result>();
             foreach (Result availableResult in availableResults)
             {
@@ -54,6 +49,7 @@ namespace Wox.Plugin.Sys
         public void Init(PluginInitContext context)
         {
             this.context = context;
+            LoadCommands();
         }
 
         private void LoadCommands()
@@ -153,5 +149,5 @@ namespace Wox.Plugin.Sys
         {
             return context.API.GetTranslation("wox_plugin_sys_plugin_description");
         }
-	}
+    }
 }

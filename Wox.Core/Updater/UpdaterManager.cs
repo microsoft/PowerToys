@@ -15,6 +15,7 @@ using Wox.Core.i18n;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Logger;
+using System.Threading;
 
 namespace Wox.Core.Updater
 {
@@ -82,22 +83,25 @@ namespace Wox.Core.Updater
 
         public void CheckUpdate()
         {
-            string json = HttpRequest.Get(VersionCheckURL, HttpProxy.Instance);
-            if (!string.IsNullOrEmpty(json))
+            ThreadPool.QueueUserWorkItem(o =>
             {
-                try
+                string json = HttpRequest.Get(VersionCheckURL, HttpProxy.Instance);
+                if (!string.IsNullOrEmpty(json))
                 {
-                    NewRelease = JsonConvert.DeserializeObject<Release>(json);
-                    if (IsNewerThanCurrent(NewRelease) && !UserSettingStorage.Instance.DontPromptUpdateMsg)
+                    try
                     {
-                        StartUpdate();
+                        NewRelease = JsonConvert.DeserializeObject<Release>(json);
+                        if (IsNewerThanCurrent(NewRelease) && !UserSettingStorage.Instance.DontPromptUpdateMsg)
+                        {
+                            StartUpdate();
+                        }
+                    }
+                    catch (System.Exception e)
+                    {
+                        Log.Error(e);
                     }
                 }
-                catch (System.Exception e)
-                {
-                    Log.Error(e);
-                }
-            }
+            });
         }
 
         private void StartUpdate()
