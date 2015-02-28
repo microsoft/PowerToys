@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Timers;
+using System.Windows.Threading;
 using Wox.Plugin.Features;
 using Wox.Plugin.WebSearch.SuggestionSources;
 
@@ -12,6 +14,7 @@ namespace Wox.Plugin.WebSearch
     public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IExclusiveQuery
     {
         private PluginInitContext context;
+        private IDisposable suggestionTimer;
 
         public List<Result> Query(Query query)
         {
@@ -28,7 +31,7 @@ namespace Wox.Plugin.WebSearch
             {
                 string keyword = query.SecondToEndSearch;
                 string title = keyword;
-                string subtitle = "Search " + webSearch.Title;
+                string subtitle = context.API.GetTranslation("wox_plugin_websearch_search") + " " + webSearch.Title;
                 if (string.IsNullOrEmpty(keyword))
                 {
                     title = subtitle;
@@ -52,32 +55,40 @@ namespace Wox.Plugin.WebSearch
 
                 if (WebSearchStorage.Instance.EnableWebSearchSuggestion && !string.IsNullOrEmpty(keyword))
                 {
-                    ISuggestionSource sugg = SuggestionSourceFactory.GetSuggestionSource(
-                            WebSearchStorage.Instance.WebSearchSuggestionSource,context);
-                    if (sugg != null)
+                    if (suggestionTimer != null)
                     {
-                        var result = sugg.GetSuggestions(keyword);
-                        if (result != null)
-                        {
-                            context.API.PushResults(query, context.CurrentPluginMetadata,
-                                result.Select(o => new Result()
-                                {
-                                    Title = o,
-                                    SubTitle = subtitle,
-                                    Score = 5,
-                                    IcoPath = webSearch.IconPath,
-                                    Action = (c) =>
-                                    {
-                                        Process.Start(webSearch.Url.Replace("{q}", Uri.EscapeDataString(o)));
-                                        return true;
-                                    }
-                                }).ToList());
-                        }
+                        suggestionTimer.Dispose();
                     }
+                    suggestionTimer = EasyTimer.SetTimeout(() => { QuerySuggestions(keyword, query, subtitle, webSearch); }, 350);
                 }
             }
 
             return results;
+        }
+
+        private void QuerySuggestions(string keyword, Query query, string subtitle, WebSearch webSearch)
+        {
+            ISuggestionSource sugg = SuggestionSourceFactory.GetSuggestionSource(WebSearchStorage.Instance.WebSearchSuggestionSource, context);
+            if (sugg != null)
+            {
+                var result = sugg.GetSuggestions(keyword);
+                if (result != null)
+                {
+                    context.API.PushResults(query, context.CurrentPluginMetadata,
+                        result.Select(o => new Result()
+                        {
+                            Title = o,
+                            SubTitle = subtitle,
+                            Score = 5,
+                            IcoPath = webSearch.IconPath,
+                            Action = (c) =>
+                            {
+                                Process.Start(webSearch.Url.Replace("{q}", Uri.EscapeDataString(o)));
+                                return true;
+                            }
+                        }).ToList());
+                }
+            }
         }
 
         public void Init(PluginInitContext context)

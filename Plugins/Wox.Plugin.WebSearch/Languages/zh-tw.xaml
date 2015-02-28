@@ -7,6 +7,7 @@
     <system:String x:Key="wox_plugin_websearch_add">添加</system:String>
     <system:String x:Key="wox_plugin_websearch_action_keyword">觸發關鍵字</system:String>
     <system:String x:Key="wox_plugin_websearch_url">URL</system:String>
+    <system:String x:Key="wox_plugin_websearch_search">搜索</system:String>
     <system:String x:Key="wox_plugin_websearch_enable_suggestion">啟用搜索建議</system:String>
     <system:String x:Key="wox_plugin_websearch_pls_select_web_search">請選擇一項</system:String>
     <system:String x:Key="wox_plugin_websearch_delete_warning">你確定要刪除 {0} 嗎？</system:String>
