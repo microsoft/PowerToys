@@ -14,7 +14,7 @@ using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.CMD
 {
-    public class CMD : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IExclusiveQuery,IContextMenu
+    public class CMD : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IExclusiveQuery, IContextMenu
     {
         private PluginInitContext context;
         private bool WinRStroked;
@@ -88,14 +88,14 @@ namespace Wox.Plugin.CMD
                 {
                     if (m.Key == cmd)
                     {
-                        result.SubTitle = "this command has been executed " + m.Value + " times";
+                        result.SubTitle = string.Format(context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value);
                         return null;
                     }
 
                     var ret = new Result
                     {
                         Title = m.Key,
-                        SubTitle = "this command has been executed " + m.Value + " times",
+                        SubTitle =  string.Format(context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
                         IcoPath = "Images/cmd.png",
                         Action = (c) =>
                         {
@@ -114,7 +114,7 @@ namespace Wox.Plugin.CMD
             {
                 Title = cmd,
                 Score = 5000,
-                SubTitle = "execute command through command shell",
+                SubTitle = context.API.GetTranslation("wox_plugin_cmd_execute_through_shell"),
                 IcoPath = "Images/cmd.png",
                 Action = (c) =>
                 {
@@ -132,7 +132,7 @@ namespace Wox.Plugin.CMD
                 .Select(m => new Result
                 {
                     Title = m.Key,
-                    SubTitle = "this command has been executed " + m.Value + " times",
+                    SubTitle =  string.Format(context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
                     IcoPath = "Images/cmd.png",
                     Action = (c) =>
                     {
@@ -218,7 +218,7 @@ namespace Wox.Plugin.CMD
                      {
                         new Result()
                         {
-                            Title = "Run As Administrator",
+                            Title = context.API.GetTranslation("wox_plugin_cmd_run_as_administrator"),
                             Action = c =>
                             {
                                 context.API.HideApp();
