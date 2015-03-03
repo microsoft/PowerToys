@@ -74,7 +74,7 @@ namespace Wox.Core.Plugin
 
             if (paramter is string)
             {
-                return string.Format(@"\""{0}\""", paramter);
+                return string.Format(@"\""{0}\""", RepalceEscapes(paramter.ToString()));
             }
             if (paramter is int || paramter is float || paramter is double)
             {
@@ -85,6 +85,13 @@ namespace Wox.Core.Plugin
                 return string.Format(@"{0}", paramter.ToString().ToLower());
             }
             return paramter.ToString();
+        }
+
+        private string RepalceEscapes(string str)
+        {
+            return str.Replace(@"\", @"\\")  //Escapes in ProcessStartInfo
+                      .Replace(@"\", @"\\");  //Escapes itself when passed to client
+            //todo: replace "
         }
     }
 
