@@ -272,7 +272,6 @@ namespace Wox
             InitProgressbarAnimation();
             WindowIntelopHelper.DisableControlBox(this);
             CheckUpdate();
-            new ShellContextMenuManager().GetContextMenus(@"c:\Windows\write.exe");
         }
 
         private double GetWindowsLeft()
