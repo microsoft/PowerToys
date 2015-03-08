@@ -89,9 +89,9 @@ namespace Wox.Core.Plugin
 
         private string RepalceEscapes(string str)
         {
-            return str.Replace(@"\", @"\\")  //Escapes in ProcessStartInfo
-                      .Replace(@"\", @"\\");  //Escapes itself when passed to client
-            //todo: replace "
+            return str.Replace(@"\", @"\\") //Escapes in ProcessStartInfo
+                .Replace(@"\", @"\\") //Escapes itself when passed to client
+                .Replace(@"""", @"\\""""");
         }
     }
 
