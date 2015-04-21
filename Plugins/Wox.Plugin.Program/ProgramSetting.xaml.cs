@@ -37,20 +37,8 @@ namespace Wox.Plugin.Program
 
         private void btnAddProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
-            var folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
-            if (folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                string path = folderBrowserDialog.SelectedPath;
-
-                ProgramStorage.Instance.ProgramSources.Add(new ProgramSource()
-                {
-                    Location = path,
-                    Type = "FileSystemProgramSource",
-                    Enabled = true
-                });
-                ProgramStorage.Instance.Save();
-                ReIndexing();
-            }
+            var add = new AddProgramSource(this.ReIndexing);
+            add.Show();
         }
 
         private void btnDeleteProgramSource_OnClick(object sender, RoutedEventArgs e)

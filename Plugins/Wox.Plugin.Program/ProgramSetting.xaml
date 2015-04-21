@@ -21,10 +21,24 @@
             Drop="programSourceView_Drop" >
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="{DynamicResource wox_plugin_program_location}"  Width="400">
+                    <GridViewColumn Header="{DynamicResource wox_plugin_program_location}"  Width="250">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Location, ConverterParameter=(null), Converter={program:StringEmptyConverter}}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Suffixes"  Width="250">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Suffixes, ConverterParameter=(null), Converter={program:StringEmptyConverter}}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Max Depth"  Width="75">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding MaxDepth, ConverterParameter=(null)}"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
