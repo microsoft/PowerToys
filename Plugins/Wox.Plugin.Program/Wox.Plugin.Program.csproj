@@ -44,7 +44,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -52,7 +51,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AddProgramSource.xaml" />
+    <Page Include="AddProgramSource.xaml" />
     <Compile Include="AddProgramSource.xaml.cs">
       <DependentUpon>AddProgramSource.xaml</DependentUpon>
     </Compile>

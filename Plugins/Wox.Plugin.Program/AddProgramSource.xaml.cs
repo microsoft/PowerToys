@@ -17,7 +17,7 @@ namespace Wox.Plugin.Program
     /// <summary>
     /// Interaction logic for AddProgramSource.xaml
     /// </summary>
-    public partial class AddProgramSource : Window
+    public partial class AddProgramSource
     {
         private Action reindex;
 
