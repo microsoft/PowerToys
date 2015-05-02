@@ -12,7 +12,11 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <StackPanel Orientation="Vertical" Width="310">
+                <CheckBox Name="StartMenuEnabled" Click="StartMenuEnabled_Click" Margin="5">Index Start Menu</CheckBox>
+                <CheckBox Name="RegistryEnabled" Click="RegistryEnabled_Click"  Margin="5">Index Registry</CheckBox>
+            </StackPanel>
             <Button Height="30" HorizontalAlignment="Right" x:Name="btnProgramSuffixes" Width="130" Click="BtnProgramSuffixes_OnClick" Content="{DynamicResource wox_plugin_program_suffixes}"></Button>
             <Button Height="30" HorizontalAlignment="Right" Margin="10 0 0 0" x:Name="btnReindex" Width="100" Click="btnReindex_Click" Content="{DynamicResource wox_plugin_program_reindex}"></Button>
         </StackPanel>
@@ -28,7 +32,7 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="Suffixes"  Width="250">
+                    <GridViewColumn Header="Suffixes"  Width="220">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Suffixes, ConverterParameter=(null), Converter={program:StringEmptyConverter}}"/>

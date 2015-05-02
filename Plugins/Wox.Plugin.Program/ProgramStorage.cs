@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
+using System.ComponentModel;
 
 namespace Wox.Plugin.Program
 {
@@ -17,6 +18,14 @@ namespace Wox.Plugin.Program
         [JsonProperty]
         public string ProgramSuffixes { get; set; }
 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(true)]
+        public bool EnableStartMenuSource { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(true)]
+        public bool EnableRegistrySource { get; set; }
+
         protected override string ConfigFolder
         {
             get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
@@ -25,6 +34,8 @@ namespace Wox.Plugin.Program
         protected override ProgramStorage LoadDefault()
         {
             ProgramSources = new List<ProgramSource>();
+            EnableStartMenuSource = true;
+            EnableRegistrySource = true;
             return this;
         }
 

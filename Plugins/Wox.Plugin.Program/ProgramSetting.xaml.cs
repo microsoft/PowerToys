@@ -22,6 +22,8 @@ namespace Wox.Plugin.Program
         private void Setting_Loaded(object sender, RoutedEventArgs e)
         {
             programSourceView.ItemsSource = ProgramStorage.Instance.ProgramSources;
+            StartMenuEnabled.IsChecked = ProgramStorage.Instance.EnableStartMenuSource;
+            RegistryEnabled.IsChecked = ProgramStorage.Instance.EnableRegistrySource;
         }
 
         private void ReIndexing()
@@ -129,6 +131,20 @@ namespace Wox.Plugin.Program
                     }
                 }
             }
+        }
+
+        private void StartMenuEnabled_Click(object sender, RoutedEventArgs e)
+        {
+            ProgramStorage.Instance.EnableStartMenuSource = StartMenuEnabled.IsChecked ?? false;
+            ProgramStorage.Instance.Save();
+            ReIndexing();
+        }
+
+        private void RegistryEnabled_Click(object sender, RoutedEventArgs e)
+        {
+            ProgramStorage.Instance.EnableRegistrySource = RegistryEnabled.IsChecked ?? false;
+            ProgramStorage.Instance.Save();
+            ReIndexing();
         }
     }
 }
