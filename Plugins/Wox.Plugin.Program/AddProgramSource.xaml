@@ -10,16 +10,16 @@
              d:DesignHeight="400" d:DesignWidth="300">
     <StackPanel Orientation="Vertical">
         <StackPanel Orientation="Horizontal">
-            <Label Content="Directory:"/>
+            <Label Content="{DynamicResource wox_plugin_program_directory}"/>
             <TextBox Name="Directory" VerticalAlignment="Center" Width="238" Margin="0,7" />
-            <Button Name="BrowseButton" Content="Browse" HorizontalAlignment="Left" VerticalAlignment="Center" Width="75" Click="BrowseButton_Click" />
+            <Button Name="BrowseButton" Content="{DynamicResource wox_plugin_program_browse}" HorizontalAlignment="Left" VerticalAlignment="Center" Width="75" Click="BrowseButton_Click" />
         </StackPanel>
         <StackPanel Orientation="Horizontal">
-            <Label Content="File Suffixes:" />
+            <Label Content="{DynamicResource wox_plugin_program_file_suffixes}" />
             <TextBox x:Name="Suffixes" VerticalAlignment="Center" Width="297" Margin="0,7" />
         </StackPanel>
         <StackPanel Orientation="Horizontal">
-            <Label Content="Maximum Search Depth (-1 is unlimited):" />
+            <Label Content="{DynamicResource wox_plugin_program_max_search_depth}" />
             <TextBox Name="MaxDepth" Text="-1" VerticalAlignment="Center" Width="146" Margin="0,7" />
         </StackPanel>
         <Button VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10" Height="20" Width="70"  Click="ButtonAdd_OnClick"  Content="{DynamicResource wox_plugin_program_update}"   />
