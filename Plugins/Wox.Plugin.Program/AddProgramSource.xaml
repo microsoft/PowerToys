@@ -8,28 +8,20 @@
                 Height="180"
         WindowStartupLocation="CenterScreen"
              d:DesignHeight="400" d:DesignWidth="300">
-    <Grid Margin="10,10,10,0" VerticalAlignment="Top" Height="129" >
-        <Grid.RowDefinitions>
-            <RowDefinition></RowDefinition>
-            <RowDefinition></RowDefinition>
-            <RowDefinition></RowDefinition>
-            <RowDefinition></RowDefinition>
-        </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
+    <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Horizontal">
             <Label Content="Directory:"/>
             <TextBox Name="Directory" VerticalAlignment="Center" Width="238" Margin="0,7" />
             <Button Name="BrowseButton" Content="Browse" HorizontalAlignment="Left" VerticalAlignment="Center" Width="75" Click="BrowseButton_Click" />
         </StackPanel>
-        <StackPanel Grid.Row="1" Orientation="Horizontal">
+        <StackPanel Orientation="Horizontal">
             <Label Content="File Suffixes:" />
             <TextBox x:Name="Suffixes" VerticalAlignment="Center" Width="297" Margin="0,7" />
         </StackPanel>
-        <StackPanel Grid.Row="2" Orientation="Horizontal">
+        <StackPanel Orientation="Horizontal">
             <Label Content="Maximum Search Depth (-1 is unlimited):" />
             <TextBox Name="MaxDepth" Text="-1" VerticalAlignment="Center" Width="146" Margin="0,7" />
         </StackPanel>
-        <StackPanel Grid.Row="3" Orientation="Horizontal">
-            <Button VerticalAlignment="Center" Height="20" Width="70"  Click="ButtonAdd_OnClick"  Content="{DynamicResource wox_plugin_program_update}"  Margin="300,0"  />
-        </StackPanel>
-    </Grid>
+        <Button VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10" Height="20" Width="70"  Click="ButtonAdd_OnClick"  Content="{DynamicResource wox_plugin_program_update}"   />
+    </StackPanel>
 </Window>

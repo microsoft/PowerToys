@@ -19,12 +19,19 @@ namespace Wox.Plugin.Program
     /// </summary>
     public partial class AddProgramSource
     {
-        private Action reindex;
+        private ProgramSource _editing;
 
-        public AddProgramSource(Action reindex)
+        public AddProgramSource()
         {
-            this.reindex = reindex;
             InitializeComponent();
+        }
+
+        public AddProgramSource(ProgramSource edit) : this()
+        {
+            this._editing = edit;
+            this.Directory.Text = this._editing.Location;
+            this.MaxDepth.Text = this._editing.MaxDepth.ToString();
+            this.Suffixes.Text = this._editing.Suffixes;
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -44,16 +51,27 @@ namespace Wox.Plugin.Program
             {
                 max = -1;
             }
-            ProgramStorage.Instance.ProgramSources.Add(new ProgramSource()
+
+            if(this._editing == null)
             {
-                Location = this.Directory.Text,
-                MaxDepth = max,
-                Suffixes = this.Suffixes.Text,
-                Type = "FileSystemProgramSource",
-                Enabled = true
-            });
+                ProgramStorage.Instance.ProgramSources.Add(new ProgramSource()
+                {
+                    Location = this.Directory.Text,
+                    MaxDepth = max,
+                    Suffixes = this.Suffixes.Text,
+                    Type = "FileSystemProgramSource",
+                    Enabled = true
+                });
+            }
+            else
+            {
+                this._editing.Location = this.Directory.Text;
+                this._editing.MaxDepth = max;
+                this._editing.Suffixes = this.Suffixes.Text;
+            }
+
             ProgramStorage.Instance.Save();
-            reindex();
+            this.DialogResult = true;
             this.Close();
         }
     }

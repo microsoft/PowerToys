@@ -39,8 +39,11 @@ namespace Wox.Plugin.Program
 
         private void btnAddProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
-            var add = new AddProgramSource(this.ReIndexing);
-            add.Show();
+            var add = new AddProgramSource();
+            if(add.ShowDialog() ?? false)
+            {
+                this.ReIndexing();
+            }
         }
 
         private void btnDeleteProgramSource_OnClick(object sender, RoutedEventArgs e)
@@ -69,14 +72,10 @@ namespace Wox.Plugin.Program
             ProgramSource selectedProgramSource = programSourceView.SelectedItem as ProgramSource;
             if (selectedProgramSource != null)
             {
-                //todo: update
-                var folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
-                if (folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                var add = new AddProgramSource(selectedProgramSource);
+                if (add.ShowDialog() ?? false)
                 {
-                    string path = folderBrowserDialog.SelectedPath;
-                    selectedProgramSource.Location = path;
-                    ProgramStorage.Instance.Save();
-                    ReIndexing();
+                    this.ReIndexing();
                 }
             }
             else
