@@ -28,6 +28,7 @@ namespace Wox.Plugin.Program
 
         public List<Result> Query(Query query)
         {
+            
             var fuzzyMather = FuzzyMatcher.Create(query.Search);
             List<Program> returnList = programs.Where(o => MatchProgram(o, fuzzyMather)).ToList();
             returnList.ForEach(ScoreFilter);
@@ -97,11 +98,11 @@ namespace Wox.Plugin.Program
                 if (ProgramStorage.Instance.ProgramSources != null &&
                     ProgramStorage.Instance.ProgramSources.Count(o => o.Enabled) > 0)
                 {
-                    programSources.AddRange(ProgramStorage.Instance.ProgramSources.Where(o => o.Enabled));
+                    programSources.AddRange(ProgramStorage.Instance.ProgramSources);
                 }
 
                 sources.Clear();
-                programSources.ForEach(source =>
+                foreach(var source in programSources.Where(o => o.Enabled))
                 {
                     Type sourceClass;
                     if (SourceTypes.TryGetValue(source.Type, out sourceClass))
@@ -114,7 +115,7 @@ namespace Wox.Plugin.Program
                             sources.Add(programSource);
                         }
                     }
-                });
+                }
 
                 var tempPrograms = new List<Program>();
                 foreach (var source in sources)
@@ -145,19 +146,19 @@ namespace Wox.Plugin.Program
             list.Add(new ProgramSource()
             {
                 BonusPoints = 0,
-                Enabled = true,
+                Enabled = ProgramStorage.Instance.EnableStartMenuSource,
                 Type = "CommonStartMenuProgramSource"
             });
             list.Add(new ProgramSource()
             {
                 BonusPoints = 0,
-                Enabled = true,
+                Enabled = ProgramStorage.Instance.EnableStartMenuSource,
                 Type = "UserStartMenuProgramSource"
             });
             list.Add(new ProgramSource()
             {
                 BonusPoints = -10,
-                Enabled = true,
+                Enabled = ProgramStorage.Instance.EnableRegistrySource,
                 Type = "AppPathsProgramSource"
             });
             return list;

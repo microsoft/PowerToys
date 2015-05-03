@@ -10,6 +10,15 @@
     <system:String x:Key="wox_plugin_program_suffixes">Index file suffixes</system:String>
     <system:String x:Key="wox_plugin_program_reindex">Reindex</system:String>
     <system:String x:Key="wox_plugin_program_indexing">Indexing</system:String>
+    <system:String x:Key="wox_plugin_program_index_start">Index Start Menu</system:String>
+    <system:String x:Key="wox_plugin_program_index_registry">Index Registry</system:String>
+    <system:String x:Key="wox_plugin_program_suffixes_header">Suffixes</system:String>
+    <system:String x:Key="wox_plugin_program_max_depth_header">Max Depth</system:String>
+
+    <system:String x:Key="wox_plugin_program_directory">Directory:</system:String>
+    <system:String x:Key="wox_plugin_program_browse">Browse</system:String>
+    <system:String x:Key="wox_plugin_program_file_suffixes">File Suffixes:</system:String>
+    <system:String x:Key="wox_plugin_program_max_search_depth">Maximum Search Depth (-1 is unlimited):</system:String>
 
     <system:String x:Key="wox_plugin_program_pls_select_program_source">Please select a program source</system:String>
     <system:String x:Key="wox_plugin_program_delete_program_source">Are your sure to delete {0}?</system:String>
