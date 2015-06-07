@@ -331,6 +331,12 @@ namespace Wox
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
         {
             var hotkey = new HotkeyModel(hotkeyStr);
+            SetHotkey(hotkey, action);
+        }
+
+        public void SetHotkey(HotkeyModel hotkey, EventHandler<HotkeyEventArgs> action)
+        {
+            string hotkeyStr = hotkey.ToString();
             try
             {
                 HotkeyManager.Current.AddOrReplace(hotkeyStr, hotkey.CharKey, hotkey.ModifierKeys, action);
