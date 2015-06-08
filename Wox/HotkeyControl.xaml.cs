@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Drawing;
-using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using NHotkey;
 using NHotkey.Wpf;
 using Wox.Core.i18n;
-using Wox.Helper;
-using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
-using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-using UserControl = System.Windows.Controls.UserControl;
 
 namespace Wox
 {
@@ -21,11 +15,11 @@ namespace Wox
         public HotkeyModel CurrentHotkey { get; private set; }
         public bool CurrentHotkeyAvailable { get; private set; }
 
-        public event EventHandler OnHotkeyChanged;
+        public event EventHandler HotkeyChanged;
 
-        protected virtual void OnOnHotkeyChanged()
+        protected virtual void OnHotkeyChanged()
         {
-            EventHandler handler = OnHotkeyChanged;
+            EventHandler handler = HotkeyChanged;
             if (handler != null) handler(this, EventArgs.Empty);
         }
 
@@ -34,7 +28,7 @@ namespace Wox
             InitializeComponent();
         }
 
-        private void TbHotkey_OnPreviewKeyDown(object sender, KeyEventArgs e)
+        void TbHotkey_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             e.Handled = true;
             tbMsg.Visibility = Visibility.Hidden;
@@ -42,60 +36,40 @@ namespace Wox
             //when alt is pressed, the real key should be e.SystemKey
             Key key = (e.Key == Key.System ? e.SystemKey : e.Key);
 
-            string text = string.Empty;
             SpecialKeyState specialKeyState = GlobalHotkey.Instance.CheckModifiers();
-            if (specialKeyState.AltPressed)
-            {
-                text += "Alt";
-            }
-            if (specialKeyState.CtrlPressed)
-            {
-                text += string.IsNullOrEmpty(text) ? "Ctrl" : " + Ctrl";
-            }
-            if (specialKeyState.ShiftPressed)
-            {
-                text += string.IsNullOrEmpty(text) ? "Shift" : " + Shift";
-            }
-            if (specialKeyState.WinPressed)
-            {
-                text += string.IsNullOrEmpty(text) ? "Win" : " + Win";
-            }
-            if (string.IsNullOrEmpty(text))
-            {
-                text += "Ctrl + Alt";
-            }
 
-            if (IsKeyACharOrNumber(key))
-            {
-                text += " + " + key;
-            }
-            else if (key == Key.Space)
-            {
-                text += " + Space";
-            }
-            else
+            var hotkeyModel = new HotkeyModel(
+                specialKeyState.AltPressed, 
+                specialKeyState.ShiftPressed, 
+                specialKeyState.WinPressed, 
+                specialKeyState.CtrlPressed, 
+                key);
+
+            var hotkeyString = hotkeyModel.ToString();
+
+            if (hotkeyString == tbHotkey.Text)
             {
                 return;
             }
 
-            if (text == tbHotkey.Text)
-            {
-                return;
-            }
-
-            Dispatcher.DelayInvoke("HotkeyAvailableTest", o => SetHotkey(text), TimeSpan.FromMilliseconds(300));
+            Dispatcher.DelayInvoke("HotkeyAvailabilityTest", 
+                o =>
+                {
+                    SetHotkey(hotkeyModel);
+                },
+                TimeSpan.FromMilliseconds(500));
         }
 
-        public void SetHotkey(string keyStr, bool triggerValidate = true)
+        public void SetHotkey(HotkeyModel keyModel, bool triggerValidate = true)
         {
-            tbMsg.Visibility = Visibility.Visible;
-            tbHotkey.Text = keyStr;
+            CurrentHotkey = keyModel;
+
+            tbHotkey.Text = CurrentHotkey.ToString();
             tbHotkey.Select(tbHotkey.Text.Length, 0);
-            CurrentHotkey = new HotkeyModel(keyStr);
 
             if (triggerValidate)
             {
-                CurrentHotkeyAvailable = CheckHotAvailabel(CurrentHotkey);
+                CurrentHotkeyAvailable = CheckHotkeyAvailability();
                 if (!CurrentHotkeyAvailable)
                 {
                     tbMsg.Foreground = new SolidColorBrush(Colors.Red);
@@ -106,15 +80,21 @@ namespace Wox
                     tbMsg.Foreground = new SolidColorBrush(Colors.Green);
                     tbMsg.Text = InternationalizationManager.Instance.GetTranslation("succeed");
                 }
-                OnOnHotkeyChanged();
+                tbMsg.Visibility = Visibility.Visible;
+                OnHotkeyChanged();
             }
         }
 
-        private bool CheckHotAvailabel(HotkeyModel hotkey)
+        public void SetHotkey(string keyStr, bool triggerValidate = true)
+        {
+            SetHotkey(new HotkeyModel(keyStr), triggerValidate);
+        }
+
+        private bool CheckHotkeyAvailability()
         {
             try
             {
-                HotkeyManager.Current.AddOrReplace("HotkeyAvailableTest", hotkey.CharKey, hotkey.ModifierKeys, OnHotkey);
+                HotkeyManager.Current.AddOrReplace("HotkeyAvailabilityTest", CurrentHotkey.CharKey, CurrentHotkey.ModifierKeys, (sender, e) => {});
 
                 return true;
             }
@@ -123,20 +103,10 @@ namespace Wox
             }
             finally
             {
-                HotkeyManager.Current.Remove("HotkeyAvailableTest");
+                HotkeyManager.Current.Remove("HotkeyAvailabilityTest");
             }
 
             return false;
-        }
-
-        private void OnHotkey(object sender, HotkeyEventArgs e)
-        {
-
-        }
-
-        private static bool IsKeyACharOrNumber(Key key)
-        {
-            return (key >= Key.A && key <= Key.Z) || (key >= Key.D0 && key <= Key.D9);
         }
     }
 }

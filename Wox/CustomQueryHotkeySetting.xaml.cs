@@ -44,7 +44,7 @@ namespace Wox
                     ActionKeyword = tbAction.Text
                 };
                 UserSettingStorage.Instance.CustomPluginHotkeys.Add(pluginHotkey);
-                settingWidow.MainWindow.SetHotkey(ctlHotkey.CurrentHotkey.ToString(), delegate
+                settingWidow.MainWindow.SetHotkey(ctlHotkey.CurrentHotkey, delegate
                 {
                     settingWidow.MainWindow.ChangeQuery(pluginHotkey.ActionKeyword);
                     settingWidow.MainWindow.ShowApp();

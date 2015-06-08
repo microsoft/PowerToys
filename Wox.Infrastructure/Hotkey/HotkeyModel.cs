@@ -13,6 +13,13 @@ namespace Wox.Infrastructure.Hotkey
         public bool Ctrl { get; set; }
         public Key CharKey { get; set; }
 
+
+        Dictionary<Key, string> specialSymbolDictionary = new Dictionary<Key, string>
+        {
+            {Key.Space, "Space"},
+            {Key.Oem3, "~"}
+        };
+
         public ModifierKeys ModifierKeys
         {
             get
@@ -38,11 +45,9 @@ namespace Wox.Infrastructure.Hotkey
             }
         }
 
-        public HotkeyModel() { }
-
         public HotkeyModel(string hotkeyString)
         {
-            ParseHotkey(hotkeyString);
+            Parse(hotkeyString);
         }
 
         public HotkeyModel(bool alt, bool shift, bool win, bool ctrl, Key key)
@@ -54,39 +59,48 @@ namespace Wox.Infrastructure.Hotkey
             CharKey = key;
         }
 
-        private void ParseHotkey(string hotkeyString)
+        private void Parse(string hotkeyString)
         {
-            if (!string.IsNullOrEmpty(hotkeyString))
+            if (string.IsNullOrEmpty(hotkeyString))
             {
-                List<string> keys = hotkeyString.Replace(" ", "").Split('+').ToList();
-                if (keys.Contains("Alt"))
+                return;
+            }
+            List<string> keys = hotkeyString.Replace(" ", "").Split('+').ToList();
+            if (keys.Contains("Alt"))
+            {
+                Alt = true;
+                keys.Remove("Alt");
+            }
+            if (keys.Contains("Shift"))
+            {
+                Shift = true;
+                keys.Remove("Shift");
+            }
+            if (keys.Contains("Win"))
+            {
+                Win = true;
+                keys.Remove("Win");
+            }
+            if (keys.Contains("Ctrl"))
+            {
+                Ctrl = true;
+                keys.Remove("Ctrl");
+            }
+            if (keys.Count > 0)
+            {
+                string charKey = keys[0];
+                KeyValuePair<Key, string>? specialSymbolPair = specialSymbolDictionary.FirstOrDefault(pair => pair.Value == charKey);
+                if (specialSymbolPair.Value.Value != null)
                 {
-                    Alt = true;
-                    keys.Remove("Alt");
+                    CharKey = specialSymbolPair.Value.Key;
                 }
-                if (keys.Contains("Shift"))
+                else
                 {
-                    Shift = true;
-                    keys.Remove("Shift");
-                }
-                if (keys.Contains("Win"))
-                {
-                    Win = true;
-                    keys.Remove("Win");
-                }
-                if (keys.Contains("Ctrl"))
-                {
-                    Ctrl = true;
-                    keys.Remove("Ctrl");
-                }
-                if (keys.Count > 0)
-                {
-                    string charKey = keys[0];
                     try
                     {
-                        CharKey = (Key)Enum.Parse(typeof(Key), charKey);
+                        CharKey = (Key) Enum.Parse(typeof (Key), charKey);
                     }
-                    catch
+                    catch (ArgumentException)
                     {
 
                     }
@@ -99,23 +113,30 @@ namespace Wox.Infrastructure.Hotkey
             string text = string.Empty;
             if (Ctrl)
             {
-                text += "Ctrl";
+                text += "Ctrl + ";
             }
             if (Alt)
             {
-                text += string.IsNullOrEmpty(text) ? "Alt" : " + Alt";
+                text += "Alt + ";
             }
             if (Shift)
             {
-                text += string.IsNullOrEmpty(text) ? "Shift" : " + Shift";
+                text += "Shift + ";
             }
             if (Win)
             {
-                text += string.IsNullOrEmpty(text) ? "Win" : " + Win";
+                text += "Win + ";
             }
-            if (!string.IsNullOrEmpty(CharKey.ToString()))
+
+            if (CharKey != Key.None)
             {
-                text += string.IsNullOrEmpty(text) ? CharKey.ToString() : " + " + CharKey;
+                text += specialSymbolDictionary.ContainsKey(CharKey)
+                    ? specialSymbolDictionary[CharKey].ToString()
+                    : CharKey.ToString();
+            }
+            else if (!string.IsNullOrEmpty(text))
+            {
+                text = text.Remove(text.Length - 3);
             }
 
             return text;

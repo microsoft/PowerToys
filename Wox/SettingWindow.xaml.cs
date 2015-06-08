@@ -214,7 +214,7 @@ namespace Wox
         {
             if (ctlHotkey.CurrentHotkeyAvailable)
             {
-                MainWindow.SetHotkey(ctlHotkey.CurrentHotkey.ToString(), delegate
+                MainWindow.SetHotkey(ctlHotkey.CurrentHotkey, delegate
                 {
                     if (!MainWindow.IsVisible)
                     {
@@ -244,7 +244,7 @@ namespace Wox
 
         private void OnHotkeyTabSelected()
         {
-            ctlHotkey.OnHotkeyChanged += ctlHotkey_OnHotkeyChanged;
+            ctlHotkey.HotkeyChanged += ctlHotkey_OnHotkeyChanged;
             ctlHotkey.SetHotkey(UserSettingStorage.Instance.Hotkey, false);
             lvCustomHotkey.ItemsSource = UserSettingStorage.Instance.CustomPluginHotkeys;
         }
