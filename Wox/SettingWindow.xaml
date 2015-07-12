@@ -6,6 +6,7 @@
 		xmlns:woxPlugin="clr-namespace:Wox.Plugin;assembly=Wox.Plugin"
 		xmlns:system="clr-namespace:Wox.Plugin.SystemPlugins;assembly=Wox.Plugin.SystemPlugins"
 		xmlns:converters="clr-namespace:Wox.Converters"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
 		Icon="Images\app.png"
 		Title="Wox Settings"
 		ResizeMode="NoResize"
@@ -31,6 +32,10 @@
                 <CheckBox x:Name="cbDontPromptUpdateMsg" Margin="10">
                     Don't show upgrade msg if new version available
                 </CheckBox>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <ComboBox Name="comboMaxResultsToShow"/>
+                    <Label>Maximum number of results to show at a time</Label>
+                </StackPanel>
             </StackPanel>
         </TabItem>
         <TabItem Header="Plugin">

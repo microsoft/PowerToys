@@ -66,9 +66,20 @@ namespace Wox
                 UserSettingStorage.Instance.Save();
             };
 
+            comboMaxResultsToShow.SelectionChanged += (o, e) =>
+            {
+                UserSettingStorage.Instance.MaxResultsToShow = (int)comboMaxResultsToShow.SelectedItem;
+                UserSettingStorage.Instance.Save();
+                MainWindow.pnlResult.lbResults.GetBindingExpression(MaxHeightProperty).UpdateTarget();
+            };
+
             cbStartWithWindows.IsChecked = File.Exists(woxLinkPath);
             cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
             cbDontPromptUpdateMsg.IsChecked = UserSettingStorage.Instance.DontPromptUpdateMsg;
+
+            comboMaxResultsToShow.ItemsSource = Enumerable.Range(2, 16);
+            var maxResults = UserSettingStorage.Instance.MaxResultsToShow;
+            comboMaxResultsToShow.SelectedItem = maxResults == 0 ? 6 : maxResults;
 
             #endregion
 
