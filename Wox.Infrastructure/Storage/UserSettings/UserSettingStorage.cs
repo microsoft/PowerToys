@@ -103,6 +103,9 @@ namespace Wox.Infrastructure.Storage.UserSettings
         [JsonProperty]
         public string ProxyPassword { get; set; }
 
+        [JsonProperty]
+        public int MaxResultsToShow { get; set; }
+
         public List<WebSearch> LoadDefaultWebSearches()
         {
             List<WebSearch> webSearches = new List<WebSearch>();
@@ -161,6 +164,7 @@ namespace Wox.Infrastructure.Storage.UserSettings
             OpacityMode = OpacityMode.Normal;
             LeaveCmdOpen = false;
             HideWhenDeactive = false;
+            MaxResultsToShow = 6;
 
             return this;
         }
