@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
+using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.SystemPlugins.Sys
 {
@@ -51,7 +49,7 @@ namespace Wox.Plugin.SystemPlugins.Sys
 
 		#endregion
 
-        public System.Windows.Controls.Control CreateSettingPanel()
+        public Control CreateSettingPanel()
         {
             return new SysSettings(availableResults);
         }
@@ -109,7 +107,15 @@ namespace Wox.Plugin.SystemPlugins.Sys
 				        return true;
 				    }
 				},
-				new Result
+                new Result
+                {
+                    Title = "Sleep",
+                    SubTitle = "Put computer to sleep",
+                    Score = 100,
+                    IcoPath = "Images\\sleep.png",
+                    Action = (c) => Application.SetSuspendState(PowerState.Suspend, false, false)
+                },
+                new Result
 				{
 				    Title = "Exit",
 				    SubTitle = "Close this app",

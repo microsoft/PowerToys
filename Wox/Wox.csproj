@@ -396,6 +396,11 @@
   <ItemGroup>
     <None Include="Resources\app.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\sleep.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <PropertyGroup>
