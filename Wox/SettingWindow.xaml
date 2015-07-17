@@ -37,11 +37,11 @@
                 </CheckBox>
                 <StackPanel Margin="10" Orientation="Horizontal">
                     <TextBlock  Text="{DynamicResource language}"></TextBlock>
-                    <ComboBox Margin="10 0 0 0" Width="100" x:Name="cbLanguages" />
+                    <ComboBox Margin="10 0 0 0" Width="120" x:Name="cbLanguages" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="10">
-                    <ComboBox Name="comboMaxResultsToShow"/>
-                    <Label>Maximum number of results to show at a time</Label>
+                    <TextBlock  Text="{DynamicResource maxShowResults}"></TextBlock>
+                    <ComboBox Margin="10 0 0 0" Width="45" Name="comboMaxResultsToShow"/>
                 </StackPanel>
             </StackPanel>
         </TabItem>
