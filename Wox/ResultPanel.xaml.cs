@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Wox.Helper;
+using Wox.Core.UserSettings;
 using Wox.Plugin;
 using Wox.Storage;
 using UserControl = System.Windows.Controls.UserControl;
@@ -32,6 +30,8 @@ namespace Wox
         }
 
         public bool Dirty { get; set; }
+
+        public int MaxResultsToShow { get { return UserSettingStorage.Instance.MaxResultsToShow * 50; } }
 
         public void AddResults(List<Result> results)
         {

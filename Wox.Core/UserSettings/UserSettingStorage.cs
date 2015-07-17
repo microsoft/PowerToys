@@ -101,6 +101,9 @@ namespace Wox.Core.UserSettings
         [JsonProperty]
         public string ProxyPassword { get; set; }
 
+        [JsonProperty]
+        public int MaxResultsToShow { get; set; }
+
         protected override string ConfigFolder
         {
             get { return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Config"); }
@@ -114,7 +117,7 @@ namespace Wox.Core.UserSettings
         public void IncreaseActivateTimes()
         {
             ActivateTimes++;
-            if (ActivateTimes % 15 == 0)
+            if (ActivateTimes%15 == 0)
             {
                 Save();
             }
@@ -135,6 +138,7 @@ namespace Wox.Core.UserSettings
             HideWhenDeactive = false;
             CustomPluginHotkeys = new List<CustomPluginHotkey>();
             RememberLastLaunchLocation = false;
+            MaxResultsToShow = 6;
             return this;
         }
 

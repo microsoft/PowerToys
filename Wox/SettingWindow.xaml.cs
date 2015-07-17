@@ -87,11 +87,21 @@ namespace Wox
             };
 
             cbStartWithWindows.IsChecked = CheckApplicationIsStartupWithWindow();
+            comboMaxResultsToShow.SelectionChanged += (o, e) =>
+            {
+                UserSettingStorage.Instance.MaxResultsToShow = (int)comboMaxResultsToShow.SelectedItem;
+                UserSettingStorage.Instance.Save();
+                MainWindow.pnlResult.lbResults.GetBindingExpression(MaxHeightProperty).UpdateTarget();
+            };
+
             cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
             cbDontPromptUpdateMsg.IsChecked = UserSettingStorage.Instance.DontPromptUpdateMsg;
             cbRememberLastLocation.IsChecked = UserSettingStorage.Instance.RememberLastLaunchLocation;
 
             LoadLanguages();
+            comboMaxResultsToShow.ItemsSource = Enumerable.Range(2, 16);
+            var maxResults = UserSettingStorage.Instance.MaxResultsToShow;
+            comboMaxResultsToShow.SelectedItem = maxResults == 0 ? 6 : maxResults;
 
             #endregion
 
