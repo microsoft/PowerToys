@@ -11,6 +11,7 @@
     <system:String x:Key="wox_plugin_sys_exit">Close Wox</system:String>
     <system:String x:Key="wox_plugin_sys_restart">Restart Wox</system:String>
     <system:String x:Key="wox_plugin_sys_setting">Tweak this app</system:String>
+    <system:String x:Key="wox_plugin_sys_sleep">Put computer to sleep</system:String>
 
     <system:String x:Key="wox_plugin_sys_plugin_name">System Commands</system:String>
     <system:String x:Key="wox_plugin_sys_plugin_description">Provide System related commands. e.g. shutdown,lock,setting etc.</system:String>
