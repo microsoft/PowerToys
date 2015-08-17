@@ -146,7 +146,7 @@ namespace Wox.Infrastructure
             startInfo.WindowStyle = global::System.Diagnostics.ProcessWindowStyle.Normal;
             startInfo.ErrorDialog = (dwSeclFlags | ShellExecCmdLineFlags.SECL_NO_UI) == 0;
             startInfo.ErrorDialogParentHandle = hwnd;
-
+            startInfo.WorkingDirectory = startDir;
             try
             {
                 global::System.Diagnostics.Process.Start(startInfo);
