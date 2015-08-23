@@ -118,11 +118,11 @@ namespace Wox.Plugin.Folder
             if (driverNames != null && !driverNames.Any(input.StartsWith))
                 return results;
 
-            if (!input.EndsWith("\\"))
-            {
-                //"c:" means "the current directory on the C drive" whereas @"c:\" means "root of the C drive"
-                input = input + "\\";
-            }
+            //if (!input.EndsWith("\\"))
+            //{
+            //    //"c:" means "the current directory on the C drive" whereas @"c:\" means "root of the C drive"
+            //    input = input + "\\";
+            //}
             results.AddRange(QueryInternal_Directory_Exists(input));
 
             return results;
@@ -142,9 +142,34 @@ namespace Wox.Plugin.Folder
         private List<Result> QueryInternal_Directory_Exists(string rawQuery)
         {
             var results = new List<Result>();
-            if (!Directory.Exists(rawQuery)) return results;
+            
+            string incompleteName = "";
+            if (!Directory.Exists(rawQuery + "\\"))
+            {
+                //if the last component of the path is incomplete,
+                //then make auto complete for it.
+                int index = rawQuery.LastIndexOf('\\');
+                if (index > 0 && index < (rawQuery.Length - 1))
+                {
+                    incompleteName = rawQuery.Substring(index + 1);
+                    incompleteName = incompleteName.ToLower();
+                    rawQuery = rawQuery.Substring(0, index + 1);
+                    if (!Directory.Exists(rawQuery))
+                        return results;
+                }
+                else
+                    return results;
+            }
+            else
+            {
+                if (!rawQuery.EndsWith("\\"))
+                    rawQuery += "\\";
+            }
 
-            results.Add(new Result("Open current directory", "Images/folder.png")
+            string firstResult = "Open current directory";
+            if (incompleteName.Length > 0)
+                firstResult = "Open " + rawQuery;
+            results.Add(new Result(firstResult, "Images/folder.png")
             {
                 Score = 10000,
                 Action = c =>
@@ -160,6 +185,8 @@ namespace Wox.Plugin.Folder
             {
                 if ((dir.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
 
+                if (incompleteName.Length != 0 && !dir.Name.ToLower().StartsWith(incompleteName))
+                    continue;
                 DirectoryInfo dirCopy = dir;
                 var result = new Result(dir.Name, "Images/folder.png", "Ctrl + Enter to open the directory")
                 {
@@ -191,7 +218,8 @@ namespace Wox.Plugin.Folder
             foreach (FileInfo file in files)
             {
                 if ((file.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
-
+                if (incompleteName.Length != 0 && !file.Name.ToLower().StartsWith(incompleteName))
+                    continue;
                 string filePath = file.FullName;
                 var result = new Result(Path.GetFileName(filePath), "Images/file.png")
                 {
