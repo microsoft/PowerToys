@@ -31,8 +31,8 @@
     <system:String x:Key="actionKeyword">触发关键字</system:String>
     <system:String x:Key="pluginDirectory">插件目录</system:String>
     <system:String x:Key="author">作者</system:String>
-    <system:String x:Key="plugin_init_time">加载耗时：{0}ms</system:String>
-    <system:String x:Key="plugin_query_time">查询耗时：{0}ms</system:String>
+    <system:String x:Key="plugin_init_time">加载耗时 {0}ms</system:String>
+    <system:String x:Key="plugin_query_time">查询耗时 {0}ms</system:String>
     
     <!--设置，主题-->
     <system:String x:Key="theme">主题</system:String>
