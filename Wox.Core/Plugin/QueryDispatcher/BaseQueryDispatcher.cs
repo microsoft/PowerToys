@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using Wox.Infrastructure;
 using Wox.Plugin;
+using Wox.Core.UserSettings;
 
 namespace Wox.Core.Plugin.QueryDispatcher
 {
@@ -17,6 +18,12 @@ namespace Wox.Core.Plugin.QueryDispatcher
         {
             foreach (PluginPair pair in GetPlugins(query))
             {
+                var customizedPluginConfig = UserSettingStorage.Instance.
+                    CustomizedPluginConfigs.FirstOrDefault(o => o.ID == pair.Metadata.ID);
+                if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
+                {
+                    return;
+                }
                 PluginPair localPair = pair;
                 if (query.IsIntantQuery && PluginManager.IsInstantSearchPlugin(pair.Metadata))
                 {
