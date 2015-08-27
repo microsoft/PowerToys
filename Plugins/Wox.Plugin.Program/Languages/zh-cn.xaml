@@ -10,8 +10,8 @@
     <system:String x:Key="wox_plugin_program_suffixes">索引文件后缀</system:String>
     <system:String x:Key="wox_plugin_program_reindex">重新索引</system:String>
     <system:String x:Key="wox_plugin_program_indexing">索引中</system:String>
-    <system:String x:Key="wox_plugin_program_index_start">指数开始菜单</system:String>
-    <system:String x:Key="wox_plugin_program_index_registry">指数注册</system:String>
+    <system:String x:Key="wox_plugin_program_index_start">索引开始菜单</system:String>
+    <system:String x:Key="wox_plugin_program_index_registry">索引注册表</system:String>
     <system:String x:Key="wox_plugin_program_suffixes_header">后缀</system:String>
     <system:String x:Key="wox_plugin_program_max_depth_header">最大深度</system:String>
 
