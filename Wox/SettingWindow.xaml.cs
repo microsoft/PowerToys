@@ -111,7 +111,9 @@ namespace Wox
             cbEnableProxy.Unchecked += (o, e) => DisableProxy();
             cbEnableProxy.IsChecked = UserSettingStorage.Instance.ProxyEnabled;
             tbProxyServer.Text = UserSettingStorage.Instance.ProxyServer;
-            tbProxyPort.Text = UserSettingStorage.Instance.ProxyPort.ToString();
+            if (UserSettingStorage.Instance.ProxyPort != 0) {
+                tbProxyPort.Text = UserSettingStorage.Instance.ProxyPort.ToString();
+            }
             tbProxyUserName.Text = UserSettingStorage.Instance.ProxyUserName;
             tbProxyPassword.Password = UserSettingStorage.Instance.ProxyPassword;
             if (UserSettingStorage.Instance.ProxyEnabled)
