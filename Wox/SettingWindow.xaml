@@ -11,7 +11,7 @@
 		Title="{DynamicResource woxsettings}"
 		ResizeMode="NoResize"
 		WindowStartupLocation="CenterScreen"
-		Height="600" Width="800">
+		Height="600" Width="800" PreviewKeyDown="Window_PreviewKeyDown">
     <Window.Resources>
         <ListBoxItem HorizontalContentAlignment="Stretch"
 					IsEnabled="False"

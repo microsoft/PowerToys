@@ -774,5 +774,14 @@ namespace Wox
         }
 
         #endregion
+
+        private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            // Hide window with ESC, but make sure it is not pressed as a hotkey
+            if (e.Key == Key.Escape && !ctlHotkey.IsFocused)
+            {
+                Close();
+            }
+        }
     }
 }
