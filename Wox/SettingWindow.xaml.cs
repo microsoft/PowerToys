@@ -164,6 +164,24 @@ namespace Wox
             }
         }
 
+        private void settingTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Update controls inside the selected tab
+
+            if (tabPlugin.IsSelected)
+            {
+                OnPluginTabSelected();
+            }
+            else if (tabTheme.IsSelected)
+            {
+                OnThemeTabSelected();
+            }
+            else if (tabHotkey.IsSelected)
+            {
+                OnHotkeyTabSelected();
+            }
+        }
+
         #region General
 
         private void LoadLanguages()
@@ -240,17 +258,6 @@ namespace Wox
                 MainWindow.RemoveHotkey(UserSettingStorage.Instance.Hotkey);
                 UserSettingStorage.Instance.Hotkey = ctlHotkey.CurrentHotkey.ToString();
                 UserSettingStorage.Instance.Save();
-            }
-        }
-
-
-        private void TabHotkey_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            var tabItem = sender as TabItem;
-            var clickingBody = (tabItem.Content as UIElement).IsMouseOver;
-            if (!clickingBody)
-            {
-                OnHotkeyTabSelected();
             }
         }
 
@@ -420,16 +427,6 @@ namespace Wox
                 PreviewPanel.Background = new SolidColorBrush(wallpaperColor);
             }
 
-        }
-
-        private void TabTheme_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            var tabItem = sender as TabItem;
-            var clickingBody = (tabItem.Content as UIElement).IsMouseOver;
-            if (!clickingBody)
-            {
-                OnThemeTabSelected();
-            }
         }
 
         private void ThemeComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -666,17 +663,6 @@ namespace Wox
             lbPlugins.SelectedIndex = 0;
         }
 
-        private void TabPlugin_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            var tabItem = sender as TabItem;
-            var clickingBody = (tabItem.Content as UIElement).IsMouseOver;
-            if (!clickingBody)
-            {
-                OnPluginTabSelected();
-            }
-        }
-
-
         #endregion
 
         #region Proxy
@@ -788,5 +774,14 @@ namespace Wox
         }
 
         #endregion
+
+        private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            // Hide window with ESC, but make sure it is not pressed as a hotkey
+            if (e.Key == Key.Escape && !ctlHotkey.IsFocused)
+            {
+                Close();
+            }
+        }
     }
 }

@@ -108,5 +108,10 @@ namespace Wox
 
             return false;
         }
+
+        public new bool IsFocused
+        {
+            get { return tbHotkey.IsFocused; }
+        }
     }
 }

@@ -11,7 +11,7 @@
 		Title="{DynamicResource woxsettings}"
 		ResizeMode="NoResize"
 		WindowStartupLocation="CenterScreen"
-		Height="600" Width="800">
+		Height="600" Width="800" PreviewKeyDown="Window_PreviewKeyDown">
     <Window.Resources>
         <ListBoxItem HorizontalContentAlignment="Stretch"
 					IsEnabled="False"
@@ -20,7 +20,7 @@
         </ListBoxItem>
         <converters:ImagePathConverter x:Key="ImageConverter" />
     </Window.Resources>
-    <TabControl Height="auto" x:Name="settingTab">
+    <TabControl Height="auto" x:Name="settingTab" SelectionChanged="settingTab_SelectionChanged">
         <TabItem Header="{DynamicResource general}">
             <StackPanel Orientation="Vertical" Margin="10">
                 <CheckBox x:Name="cbStartWithWindows"  Unchecked="CbStartWithWindows_OnUnchecked" Checked="CbStartWithWindows_OnChecked" Margin="10">
@@ -45,7 +45,7 @@
                 </StackPanel>
             </StackPanel>
         </TabItem>
-        <TabItem Header="{DynamicResource plugin}" x:Name="tabPlugin" PreviewMouseLeftButtonDown="TabPlugin_OnPreviewMouseLeftButtonDown">
+        <TabItem Header="{DynamicResource plugin}" x:Name="tabPlugin">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="200"/>
@@ -121,7 +121,7 @@
                 </Grid>
             </Grid>
         </TabItem>
-        <TabItem Header="{DynamicResource theme}" PreviewMouseLeftButtonDown="TabTheme_OnPreviewMouseLeftButtonDown"  x:Name="tabTheme">
+        <TabItem Header="{DynamicResource theme}" x:Name="tabTheme">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="200"/>
@@ -201,7 +201,7 @@
                 </Grid>
             </Grid>
         </TabItem>
-        <TabItem Header="{DynamicResource hotkey}" x:Name="tabHotkey" PreviewMouseLeftButtonDown="TabHotkey_OnPreviewMouseLeftButtonDown">
+        <TabItem Header="{DynamicResource hotkey}" x:Name="tabHotkey">
             <Grid Margin="10">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="30"/>
