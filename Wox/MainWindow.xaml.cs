@@ -363,7 +363,7 @@ namespace Wox
         private bool ShouldIgnoreHotkeys()
         {
             //double if to omit calling win32 function
-            if (UserSettingStorage.Instance.IgnoreHotkeysOnTopMostFocus)
+            if (UserSettingStorage.Instance.IgnoreHotkeysOnFullscreen)
                 if(WindowIntelopHelper.IsWindowFullscreen())
                     return true;
 

@@ -85,16 +85,16 @@ namespace Wox
                 UserSettingStorage.Instance.Save();
             };
 
-            cbIgnoreHotkeysIfWindowIsTopmost.Checked += (o, e) =>
+            cbIgnoreHotkeysOnFullscreen.Checked += (o, e) =>
             {
-                UserSettingStorage.Instance.IgnoreHotkeysOnTopMostFocus = true;
+                UserSettingStorage.Instance.IgnoreHotkeysOnFullscreen = true;
                 UserSettingStorage.Instance.Save();
             };
 
 
-            cbIgnoreHotkeysIfWindowIsTopmost.Unchecked += (o, e) =>
+            cbIgnoreHotkeysOnFullscreen.Unchecked += (o, e) =>
             {
-                UserSettingStorage.Instance.IgnoreHotkeysOnTopMostFocus = false;
+                UserSettingStorage.Instance.IgnoreHotkeysOnFullscreen = false;
                 UserSettingStorage.Instance.Save();
             };
 
@@ -110,7 +110,7 @@ namespace Wox
             cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
             cbDontPromptUpdateMsg.IsChecked = UserSettingStorage.Instance.DontPromptUpdateMsg;
             cbRememberLastLocation.IsChecked = UserSettingStorage.Instance.RememberLastLaunchLocation;
-            cbIgnoreHotkeysIfWindowIsTopmost.IsChecked = UserSettingStorage.Instance.IgnoreHotkeysOnTopMostFocus;
+            cbIgnoreHotkeysOnFullscreen.IsChecked = UserSettingStorage.Instance.IgnoreHotkeysOnFullscreen;
 
             LoadLanguages();
             comboMaxResultsToShow.ItemsSource = Enumerable.Range(2, 16);

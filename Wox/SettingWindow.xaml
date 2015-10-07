@@ -35,8 +35,8 @@
                 <CheckBox x:Name="cbRememberLastLocation" Margin="10">
                     <TextBlock Text="{DynamicResource rememberLastLocation}" ></TextBlock>
                 </CheckBox>
-                <CheckBox x:Name="cbIgnoreHotkeysIfWindowIsTopmost" Margin="10">
-                    <TextBlock Text="{DynamicResource ignoreHotkeysIfWindowIsTopmost}" ></TextBlock>
+                <CheckBox x:Name="cbIgnoreHotkeysOnFullscreen" Margin="10">
+                    <TextBlock Text="{DynamicResource ignoreHotkeysOnFullscreen}" ></TextBlock>
                 </CheckBox>
                 <StackPanel Margin="10" Orientation="Horizontal">
                     <TextBlock  Text="{DynamicResource language}"></TextBlock>
