@@ -167,6 +167,7 @@ namespace Wox
         private void settingTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // Update controls inside the selected tab
+            if (e.OriginalSource != settingTab) return;
 
             if (tabPlugin.IsSelected)
             {
