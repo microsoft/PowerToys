@@ -362,11 +362,11 @@ namespace Wox
         /// <returns></returns>
         private bool ShouldIgnoreHotkeys()
         {
-            
-            if (!IsVisible 
-                && UserSettingStorage.Instance.IgnoreHotkeysOnTopMostFocus
-                && WindowIntelopHelper.IsForegroundWindowTopMost())
-                return true;
+            //double if to omit calling win32 function
+            if (UserSettingStorage.Instance.IgnoreHotkeysOnTopMostFocus)
+                if(WindowIntelopHelper.IsWindowFullscreen())
+                    return true;
+
             return false;
         }
 
