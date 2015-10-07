@@ -23,6 +23,7 @@
     <system:String x:Key="rememberLastLocation">Remember last launch location</system:String>
     <system:String x:Key="language">Language</system:String>
     <system:String x:Key="maxShowResults">Maximum show results</system:String>
+    <system:String x:Key="ignoreHotkeysIfWindowIsTopmost">Ignore hotkeys if foreground window is TopMost</system:String>
     
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Plugin</system:String>

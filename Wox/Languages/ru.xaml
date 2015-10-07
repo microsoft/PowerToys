@@ -23,6 +23,7 @@
     <system:String x:Key="rememberLastLocation">Запомнить последнее место запуска</system:String>
     <system:String x:Key="language">Язык</system:String>
     <system:String x:Key="maxShowResults">Максимальное количество результатов</system:String>
+    <system:String x:Key="ignoreHotkeysIfWindowIsTopmost">Игнорировать горячие клавиши, если окно в фокусе самое верхнее</system:String>
     
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Плагины</system:String>
