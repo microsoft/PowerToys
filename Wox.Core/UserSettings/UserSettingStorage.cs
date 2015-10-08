@@ -87,6 +87,9 @@ namespace Wox.Core.UserSettings
         public bool RememberLastLaunchLocation { get; set; }
 
         [JsonProperty]
+        public bool IgnoreHotkeysOnFullscreen { get; set; }
+
+        [JsonProperty]
         public string ProxyServer { get; set; }
 
         [JsonProperty]

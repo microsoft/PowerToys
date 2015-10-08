@@ -356,6 +356,20 @@ namespace Wox
             }
         }
 
+        /// <summary>
+        /// Checks if Wox should ignore any hotkeys
+        /// </summary>
+        /// <returns></returns>
+        private bool ShouldIgnoreHotkeys()
+        {
+            //double if to omit calling win32 function
+            if (UserSettingStorage.Instance.IgnoreHotkeysOnFullscreen)
+                if(WindowIntelopHelper.IsWindowFullscreen())
+                    return true;
+
+            return false;
+        }
+
         private void SetCustomPluginHotkey()
         {
             if (UserSettingStorage.Instance.CustomPluginHotkeys == null) return;
@@ -364,6 +378,7 @@ namespace Wox
                 CustomPluginHotkey hotkey1 = hotkey;
                 SetHotkey(hotkey.Hotkey, delegate
                 {
+                    if (ShouldIgnoreHotkeys()) return;
                     ShowApp();
                     ChangeQuery(hotkey1.ActionKeyword, true);
                 });
@@ -372,6 +387,7 @@ namespace Wox
 
         private void OnHotkey(object sender, HotkeyEventArgs e)
         {
+            if (ShouldIgnoreHotkeys()) return;
             ToggleWox();
             e.Handled = true;
         }

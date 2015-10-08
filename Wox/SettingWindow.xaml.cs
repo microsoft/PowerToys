@@ -49,7 +49,6 @@ namespace Wox
         private void Setting_Loaded(object sender, RoutedEventArgs ev)
         {
             #region General
-
             cbHideWhenDeactive.Checked += (o, e) =>
             {
                 UserSettingStorage.Instance.HideWhenDeactive = true;
@@ -86,6 +85,20 @@ namespace Wox
                 UserSettingStorage.Instance.Save();
             };
 
+            cbIgnoreHotkeysOnFullscreen.Checked += (o, e) =>
+            {
+                UserSettingStorage.Instance.IgnoreHotkeysOnFullscreen = true;
+                UserSettingStorage.Instance.Save();
+            };
+
+
+            cbIgnoreHotkeysOnFullscreen.Unchecked += (o, e) =>
+            {
+                UserSettingStorage.Instance.IgnoreHotkeysOnFullscreen = false;
+                UserSettingStorage.Instance.Save();
+            };
+
+
             cbStartWithWindows.IsChecked = CheckApplicationIsStartupWithWindow();
             comboMaxResultsToShow.SelectionChanged += (o, e) =>
             {
@@ -97,6 +110,7 @@ namespace Wox
             cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
             cbDontPromptUpdateMsg.IsChecked = UserSettingStorage.Instance.DontPromptUpdateMsg;
             cbRememberLastLocation.IsChecked = UserSettingStorage.Instance.RememberLastLaunchLocation;
+            cbIgnoreHotkeysOnFullscreen.IsChecked = UserSettingStorage.Instance.IgnoreHotkeysOnFullscreen;
 
             LoadLanguages();
             comboMaxResultsToShow.ItemsSource = Enumerable.Range(2, 16);

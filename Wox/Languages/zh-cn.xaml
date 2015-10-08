@@ -23,6 +23,7 @@
     <system:String x:Key="rememberLastLocation">记住上次启动位置</system:String>
     <system:String x:Key="language">语言</system:String>
     <system:String x:Key="maxShowResults">最大结果显示个数</system:String>
+    <system:String x:Key="ignoreHotkeysOnFullscreen">Ignore hotkeys if foreground window is TopMost</system:String>
 
     <!--设置，插件-->
     <system:String x:Key="plugin">插件</system:String>
