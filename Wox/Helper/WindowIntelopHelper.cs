@@ -13,21 +13,21 @@ namespace Wox.Helper
         private const int WS_SYSMENU = 0x80000; //WPF's Message code for System Menu
         private static IntPtr _hwnd_shell;
         private static IntPtr _hwnd_desktop;
-        
+
         //Accessors for shell and desktop handlers
         //Will set the variables once and then will return them
         private static IntPtr HWND_SHELL
         {
             get
             {
-                return _hwnd_shell != null ? _hwnd_shell : _hwnd_shell = GetShellWindow();
+                return _hwnd_shell != IntPtr.Zero ? _hwnd_shell : _hwnd_shell = GetShellWindow();
             }
         }
         private static IntPtr HWND_DESKTOP
         {
             get
             {
-                return _hwnd_desktop != null ? _hwnd_desktop : _hwnd_desktop = GetDesktopWindow();
+                return _hwnd_desktop != IntPtr.Zero ? _hwnd_desktop : _hwnd_desktop = GetDesktopWindow();
             }
         }
 
