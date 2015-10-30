@@ -71,11 +71,11 @@ namespace Wox {
 			Show();
 
 			Dispatcher.DelayInvoke("ShowMsg",
-								   o => {
-									   if (!closing) {
-										   closing = true;
-										   Dispatcher.Invoke(new Action(fadeOutStoryboard.Begin));
-									   }
+								   () => {
+								            if (!closing) {
+								                closing = true;
+								                Dispatcher.Invoke(new Action(fadeOutStoryboard.Begin));
+								            }
 								   }, TimeSpan.FromSeconds(3));
 		}
 	}

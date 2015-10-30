@@ -12,20 +12,13 @@ namespace Wox
             new Dictionary<string, DispatcherTimer>();
         private static readonly object syncRoot = new object();
 
-        public static string DelayInvoke(this Dispatcher dispatcher, string namedInvocation,
-            Action<string> action, TimeSpan delay,
-            DispatcherPriority priority = DispatcherPriority.Normal)
-        {
-            return DelayInvoke(dispatcher, namedInvocation, action, delay, string.Empty, priority);
-        }
-
-        public static string DelayInvoke(this Dispatcher dispatcher, string namedInvocation,
-            Action<string> action, TimeSpan delay, string arg,
+        public static void DelayInvoke(this Dispatcher dispatcher, string namedInvocation,
+            Action action, TimeSpan delay,
             DispatcherPriority priority = DispatcherPriority.Normal)
         {
             lock (syncRoot)
             {
-                if (String.IsNullOrEmpty(namedInvocation))
+                if (string.IsNullOrEmpty(namedInvocation))
                 {
                     namedInvocation = Guid.NewGuid().ToString();
                 }
@@ -36,11 +29,10 @@ namespace Wox
                 var timer = new DispatcherTimer(delay, priority, (s, e) =>
                 {
                     RemoveTimer(namedInvocation);
-                    action(arg);
+                    action();
                 }, dispatcher);
                 timer.Start();
                 timers.Add(namedInvocation, timer);
-                return namedInvocation;
             }
         }
 

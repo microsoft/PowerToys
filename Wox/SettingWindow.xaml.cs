@@ -464,7 +464,7 @@ namespace Wox
 
         private void DelayChangeTheme()
         {
-            Dispatcher.DelayInvoke("delayChangeTheme", o =>
+            Dispatcher.DelayInvoke("delayChangeTheme", () =>
             {
                 ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
             }, TimeSpan.FromMilliseconds(100));

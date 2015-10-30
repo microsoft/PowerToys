@@ -457,27 +457,27 @@ namespace Wox
             int searchDelay = GetSearchDelay(lastQuery);
 
             Dispatcher.DelayInvoke("UpdateSearch",
-                o =>
+                () =>
                 {
-                    Dispatcher.DelayInvoke("ClearResults", i =>
+                    Dispatcher.DelayInvoke("ClearResults", () =>
                     {
                         // first try to use clear method inside pnlResult, which is more closer to the add new results
                         // and this will not bring splash issues.After waiting 100ms, if there still no results added, we
                         // must clear the result. otherwise, it will be confused why the query changed, but the results
                         // didn't.
                         if (pnlResult.Dirty) pnlResult.Clear();
-                    }, TimeSpan.FromMilliseconds(100), null);
+                    }, TimeSpan.FromMilliseconds(100));
                     queryHasReturn = false;
                     Query query = new Query(lastQuery);
                     query.IsIntantQuery = searchDelay == 0;
                     Query(query);
-                    Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
+                    Dispatcher.DelayInvoke("ShowProgressbar", () =>
                     {
-                        if (!queryHasReturn && originQuery == tbQuery.Text && !string.IsNullOrEmpty(lastQuery))
+                        if (!queryHasReturn && !string.IsNullOrEmpty(lastQuery))
                         {
                             StartProgress();
                         }
-                    }, TimeSpan.FromMilliseconds(150), tbQuery.Text);
+                    }, TimeSpan.FromMilliseconds(150));
                     //reset query history index after user start new query
                     ResetQueryHistoryIndex();
                 }, TimeSpan.FromMilliseconds(searchDelay));

@@ -225,7 +225,7 @@ namespace Wox
             if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
             {
                 lbResults.ScrollIntoView(e.AddedItems[0]);
-                Dispatcher.DelayInvoke("UpdateItemNumber", o =>
+                Dispatcher.DelayInvoke("UpdateItemNumber", () =>
                 {
                     UpdateItemNumber();
                 }, TimeSpan.FromMilliseconds(3));
