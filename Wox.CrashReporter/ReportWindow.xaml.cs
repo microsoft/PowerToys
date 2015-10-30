@@ -19,8 +19,6 @@ using Wox.Core.i18n;
 using Wox.Core.UI;
 using Wox.Core.Updater;
 using Wox.Core.UserSettings;
-using Wox.Infrastructure.Http;
-using Wox.Infrastructure.Logger;
 
 namespace Wox.CrashReporter
 {

@@ -38,14 +38,10 @@
     <Reference Include="Exceptionless">
       <HintPath>..\packages\Exceptionless.1.5.2121\lib\net35\Exceptionless.dll</HintPath>
     </Reference>
-    <Reference Include="Exceptionless.Models">
-      <HintPath>..\packages\Exceptionless.1.5.2121\lib\net35\Exceptionless.Models.dll</HintPath>
-    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -69,14 +65,6 @@
     <ProjectReference Include="..\Wox.Core\Wox.Core.csproj">
       <Project>{B749F0DB-8E75-47DB-9E5E-265D16D0C0D2}</Project>
       <Name>Wox.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj">
-      <Project>{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}</Project>
-      <Name>Wox.Infrastructure</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj">
-      <Project>{8451ECDD-2EA4-4966-BB0A-7BBC40138E80}</Project>
-      <Name>Wox.Plugin</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

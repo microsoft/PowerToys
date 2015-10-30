@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
-using System.Windows.Forms;
 using Newtonsoft.Json;
 
 namespace Wox.Infrastructure.Storage
