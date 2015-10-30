@@ -460,8 +460,8 @@ namespace Wox
                 {
                     Dispatcher.DelayInvoke("ClearResults", () =>
                     {
-                        // first try to use clear method inside pnlResult, which is more closer to the add new results
-                        // and this will not bring splash issues.After waiting 100ms, if there still no results added, we
+                        // Delay the invocation of clear method of pnlResult, minimize the time-span between clear results and add new results. 
+                        // So this will reduce splash issues. After waiting 100ms, if there still no results added, we
                         // must clear the result. otherwise, it will be confused why the query changed, but the results
                         // didn't.
                         if (pnlResult.Dirty) pnlResult.Clear();
