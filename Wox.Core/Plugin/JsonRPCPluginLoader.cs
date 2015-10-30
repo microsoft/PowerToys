@@ -6,7 +6,7 @@ namespace Wox.Core.Plugin
 {
     internal class JsonRPCPluginLoader<T> : IPluginLoader where T : JsonRPCPlugin, new()
     {
-        public virtual IEnumerable<PluginPair> LoadPlugin(List<PluginMetadata> pluginMetadatas)
+        public IEnumerable<PluginPair> LoadPlugin(List<PluginMetadata> pluginMetadatas)
         {
             T jsonRPCPlugin = new T();
             List<PluginMetadata> jsonRPCPluginMetadatas = pluginMetadatas.Where(o => o.Language.ToUpper() == jsonRPCPlugin.SupportedLanguage.ToUpper()).ToList();
