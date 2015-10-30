@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Newtonsoft.Json;
-using Wox.Infrastructure.Storage;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Newtonsoft.Json;
+using Wox.Infrastructure.Storage;
 
 namespace Wox.Plugin.Everything
 {

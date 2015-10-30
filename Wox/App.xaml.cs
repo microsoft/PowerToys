@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Windows;
 using Wox.CommandArgs;
 using Wox.Core.Plugin;
 using Wox.Helper;
-using Application = System.Windows.Application;
-using MessageBox = System.Windows.MessageBox;
-using StartupEventArgs = System.Windows.StartupEventArgs;
 
 namespace Wox
 {

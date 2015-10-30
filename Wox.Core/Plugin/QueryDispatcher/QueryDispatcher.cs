@@ -1,5 +1,4 @@
 ﻿
-using System.Threading;
 using Wox.Plugin;
 
 namespace Wox.Core.Plugin.QueryDispatcher

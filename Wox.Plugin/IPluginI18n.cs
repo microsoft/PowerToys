@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-namespace Wox.Plugin
+﻿namespace Wox.Plugin
 {
     /// <summary>
     /// Represent plugins that support internationalization

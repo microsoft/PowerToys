@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows.Documents;
+﻿using System.Collections.Generic;
 
 namespace Wox.Plugin
 {

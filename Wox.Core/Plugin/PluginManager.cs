@@ -10,7 +10,6 @@ using Wox.Core.i18n;
 using Wox.Core.UI;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 using Wox.Plugin.Features;

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Windows;
 using System.Windows.Forms;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json;
 using Wox.Plugin;
-using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace Wox.Core.Plugin
 {

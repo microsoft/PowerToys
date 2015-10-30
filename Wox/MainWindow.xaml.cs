@@ -24,7 +24,6 @@ using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
-using Wox.ShellContext;
 using Wox.Storage;
 using ContextMenu = System.Windows.Forms.ContextMenu;
 using DataFormats = System.Windows.DataFormats;

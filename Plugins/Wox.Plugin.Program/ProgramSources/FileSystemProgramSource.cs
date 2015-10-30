@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Log = Wox.Infrastructure.Logger.Log;
+using Wox.Infrastructure.Logger;
 
 namespace Wox.Plugin.Program.ProgramSources
 {

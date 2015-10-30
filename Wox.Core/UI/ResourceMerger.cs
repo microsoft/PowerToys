@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using Wox.Core.i18n;
-using Wox.Core.Plugin;
-using Wox.Core.Theme;
 using Wox.Plugin;
 
 namespace Wox.Core.UI

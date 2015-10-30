@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Windows;
-using Wox.Infrastructure;
-using Wox.Plugin.Program.ProgramSources;
 using IWshRuntimeLibrary;
+using Wox.Infrastructure;
 using Wox.Plugin.Features;
+using Wox.Plugin.Program.ProgramSources;
 
 namespace Wox.Plugin.Program
 {

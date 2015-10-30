@@ -1,9 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using Wox.Core.Exception;
-using Wox.Core.UserSettings;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
 namespace Wox.Core.Plugin.QueryDispatcher

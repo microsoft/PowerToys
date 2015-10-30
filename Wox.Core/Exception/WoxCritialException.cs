@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Wox.Core.Exception
+﻿namespace Wox.Core.Exception
 {
     /// <summary>
     /// Represent exceptions that wox can't handle and MUST close running Wox.

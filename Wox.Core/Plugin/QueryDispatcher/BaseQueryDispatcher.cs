@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
+using Wox.Core.UserSettings;
 using Wox.Infrastructure;
 using Wox.Plugin;
-using Wox.Core.UserSettings;
 
 namespace Wox.Core.Plugin.QueryDispatcher
 {

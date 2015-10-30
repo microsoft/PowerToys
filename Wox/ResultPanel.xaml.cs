@@ -7,7 +7,6 @@ using System.Windows.Media;
 using Wox.Core.UserSettings;
 using Wox.Plugin;
 using Wox.Storage;
-using UserControl = System.Windows.Controls.UserControl;
 
 namespace Wox
 {

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Wox.Core
+﻿namespace Wox.Core
 {
     public static class APIServer
     {

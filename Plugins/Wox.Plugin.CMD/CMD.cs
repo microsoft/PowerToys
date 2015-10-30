@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
-using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin.Features;
 using Control = System.Windows.Controls.Control;

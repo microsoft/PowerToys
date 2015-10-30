@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Wox.Core.Plugin;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
 namespace Wox.Core
