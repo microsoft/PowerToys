@@ -207,18 +207,7 @@ namespace Wox
             InitialTray();
 
             Closing += MainWindow_Closing;
-            //since MainWIndow implement IPublicAPI, so we need to finish ctor MainWindow object before
-            //PublicAPI invoke in plugin init methods. E.g FolderPlugin
-            ThreadPool.QueueUserWorkItem(o =>
-            {
-                Thread.Sleep(50);
-                PluginManager.Init(this);
-            });
-            ThreadPool.QueueUserWorkItem(o =>
-            {
-                Thread.Sleep(50);
-                PreLoadImages();
-            });
+
         }
 
         void pnlResult_ItemDropEvent(Result result, IDataObject dropDataObject, DragEventArgs args)
@@ -243,11 +232,6 @@ namespace Wox
                 return GlobalKeyboardEvent((int)keyevent, vkcode, state);
             }
             return true;
-        }
-
-        private void PreLoadImages()
-        {
-            ImageLoader.ImageLoader.PreloadImages();
         }
 
         void pnlResult_RightMouseClickEvent(Result result)
