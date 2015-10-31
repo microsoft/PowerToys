@@ -14,7 +14,6 @@
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
     <TargetFrameworkProfile />
     <PublishUrl>发布\</PublishUrl>
     <Install>true</Install>
@@ -346,7 +345,6 @@
     </Resource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /Y  $(ProjectDir)Themes\* $(TargetDir)Themes\
 xcopy /Y /E  $(ProjectDir)Images\* $(TargetDir)Images\
@@ -377,3 +375,4 @@ cd "$(TargetDir)Plugins" &amp; del /s /q WindowsInput.dll
   </Target>
   -->
 </Project>
+
