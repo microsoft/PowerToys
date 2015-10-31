@@ -22,6 +22,7 @@ namespace Wox.Core.Plugin
     public static class PluginManager
     {
         public const string ActionKeywordWildcardSign = "*";
+
         private static List<PluginMetadata> pluginMetadatas;
         private static List<KeyValuePair<PluginPair, IInstantQuery>> instantSearches;
         private static List<KeyValuePair<PluginPair, IExclusiveQuery>> exclusiveSearchPlugins;
@@ -117,11 +118,18 @@ namespace Wox.Core.Plugin
 
         public static void Query(Query query)
         {
-            if (!string.IsNullOrEmpty(query.RawQuery.Trim()))
+            query.ActionKeyword = string.Empty;
+            query.Search = query.RawQuery;
+            if (query.Terms.Length == 0) return;
+            if (IsVailldActionKeyword(query.Terms[0]))
             {
-                query.Search = IsActionKeywordQuery(query) ? query.RawQuery.Substring(query.RawQuery.IndexOf(' ') + 1) : query.RawQuery;
-                QueryDispatcher.QueryDispatcher.Dispatch(query);
+                query.ActionKeyword = query.Terms[0];
             }
+            if (!string.IsNullOrEmpty(query.ActionKeyword))
+            {
+                query.Search = string.Join(Wox.Plugin.Query.Seperater, query.Terms.Skip(1).ToArray());
+            }
+            QueryDispatcher.QueryDispatcher.Dispatch(query);
         }
 
         public static List<PluginPair> AllPlugins
@@ -135,17 +143,10 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// Check if a query contains valid action keyword
         /// </summary>
-        /// <param name="query"></param>
+        /// <param name="actionKeyword"></param>
         /// <returns></returns>
-        public static bool IsActionKeywordQuery(Query query)
+        private static bool IsVailldActionKeyword(string actionKeyword)
         {
-            if (string.IsNullOrEmpty(query.RawQuery)) return false;
-            var strings = query.RawQuery.Split(' ');
-            if (strings.Length == 1) return false;
-
-            var actionKeyword = strings[0].Trim();
-            if (string.IsNullOrEmpty(actionKeyword)) return false;
-
             PluginPair pair = plugins.FirstOrDefault(o => o.Metadata.ActionKeyword == actionKeyword);
             if (pair != null)
             {
@@ -247,10 +248,10 @@ namespace Wox.Core.Plugin
 
         internal static PluginPair GetActionKeywordPlugin(Query query)
         {
-            //if a query doesn't contain at least one space, it should not be a action keword plugin query
-            if (!query.RawQuery.Contains(" ")) return null;
+            //if a query doesn't contain a vaild action keyword, it should not be a action keword plugin query
+            if (string.IsNullOrEmpty(query.ActionKeyword)) return null;
 
-            PluginPair actionKeywordPluginPair = AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.GetActionKeyword());
+            PluginPair actionKeywordPluginPair = AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.ActionKeyword);
             if (actionKeywordPluginPair != null)
             {
                 var customizedPluginConfig = UserSettingStorage.Instance.

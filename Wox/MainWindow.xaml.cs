@@ -452,8 +452,11 @@ namespace Wox
                 return;
             }
 
-            lastQuery = tbQuery.Text;
+            queryHasReturn = false;
+            Query query = new Query(tbQuery.Text);
+            lastQuery = query.RawQuery;
             int searchDelay = GetSearchDelay(lastQuery);
+            query.IsIntantQuery = searchDelay == 0;
 
             Dispatcher.DelayInvoke("UpdateSearch",
                 () =>
@@ -466,9 +469,6 @@ namespace Wox
                         // didn't.
                         if (pnlResult.Dirty) pnlResult.Clear();
                     }, TimeSpan.FromMilliseconds(100));
-                    queryHasReturn = false;
-                    Query query = new Query(lastQuery);
-                    query.IsIntantQuery = searchDelay == 0;
                     Query(query);
                     Dispatcher.DelayInvoke("ShowProgressbar", () =>
                     {
