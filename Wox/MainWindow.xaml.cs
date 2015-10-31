@@ -63,7 +63,7 @@ namespace Wox
                 tbQuery.CaretIndex = tbQuery.Text.Length;
                 if (requery)
                 {
-                    TextBoxBase_OnTextChanged(null, null);
+                    TbQuery_OnTextChanged(null, null);
                 }
             }));
         }
@@ -439,7 +439,7 @@ namespace Wox
             }
         }
 
-        private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
+        private void TbQuery_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             if (ignoreTextChange) { ignoreTextChange = false; return; }
 
