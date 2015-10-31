@@ -134,7 +134,6 @@
     <Compile Include="CommandArgs\HideStartCommandArg.cs" />
     <Compile Include="CommandArgs\ICommandArg.cs" />
     <Compile Include="CommandArgs\InstallPluginCommandArg.cs" />
-    <Compile Include="CommandArgs\PluginDebuggerCommandArg.cs" />
     <Compile Include="CommandArgs\QueryCommandArg.cs" />
     <Compile Include="CommandArgs\ReloadPluginCommandArg.cs" />
     <Compile Include="Helper\DataWebRequestFactory.cs" />

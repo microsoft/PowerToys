@@ -28,11 +28,6 @@ namespace Wox.Core.Plugin
                 ParsePluginConfigs(pluginDirectory);
             }
 
-            if (PluginManager.DebuggerMode != null)
-            {
-                PluginMetadata metadata = GetPluginMetadata(PluginManager.DebuggerMode);
-                if (metadata != null) pluginMetadatas.Add(metadata);
-            }
             return pluginMetadatas;
         }
 

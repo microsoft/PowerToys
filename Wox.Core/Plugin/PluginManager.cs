@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -28,7 +27,6 @@ namespace Wox.Core.Plugin
         private static List<KeyValuePair<PluginPair, IExclusiveQuery>> exclusiveSearchPlugins;
         private static List<KeyValuePair<PluginPair, IContextMenu>> contextMenuPlugins;
 
-        public static String DebuggerMode { get; private set; }
         public static IPublicAPI API { get; private set; }
 
         private static List<PluginPair> plugins = new List<PluginPair>();
@@ -165,11 +163,6 @@ namespace Wox.Core.Plugin
         public static bool IsGenericPlugin(PluginMetadata metadata)
         {
             return metadata.ActionKeyword == ActionKeywordWildcardSign;
-        }
-
-        public static void ActivatePluginDebugger(string path)
-        {
-            DebuggerMode = path;
         }
 
         public static bool IsInstantQuery(string query)
