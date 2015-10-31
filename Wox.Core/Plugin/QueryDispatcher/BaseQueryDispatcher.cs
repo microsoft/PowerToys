@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Wox.Core.UserSettings;
@@ -24,7 +25,7 @@ namespace Wox.Core.Plugin.QueryDispatcher
                 PluginPair localPair = pair;
                 if (query.IsIntantQuery && PluginManager.IsInstantSearchPlugin(pair.Metadata))
                 {
-                    DebugHelper.WriteLine(string.Format("Plugin {0} is executing instant search.", pair.Metadata.Name));
+                    Debug.WriteLine(string.Format("Plugin {0} is executing instant search.", pair.Metadata.Name));
                     using (new Timeit("  => instant search took: "))
                     {
                         PluginManager.ExecutePluginQuery(localPair, query);

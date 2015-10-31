@@ -122,7 +122,7 @@ namespace Wox.ImageLoader
             }
 
             sw.Stop();
-            DebugHelper.WriteLine(string.Format("Loading image path: {0} - {1}ms",path,sw.ElapsedMilliseconds));
+            Debug.WriteLine(string.Format("Loading image path: {0} - {1}ms",path,sw.ElapsedMilliseconds));
             return img;
         }
 

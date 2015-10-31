@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -74,7 +75,7 @@ namespace Wox.Plugin.Program
             {
                 programs = ProgramCacheStorage.Instance.Programs;
             }
-            DebugHelper.WriteLine(string.Format("Preload {0} programs from cache", programs.Count));
+            Debug.WriteLine(string.Format("Preload {0} programs from cache", programs.Count));
             using (new Timeit("Program Index"))
             {
                 IndexPrograms();

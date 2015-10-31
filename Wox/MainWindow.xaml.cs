@@ -491,11 +491,11 @@ namespace Wox
         {
             if (!string.IsNullOrEmpty(query) && PluginManager.IsInstantQuery(query))
             {
-                DebugHelper.WriteLine("execute query without delay");
+                Debug.WriteLine("execute query without delay");
                 return 0;
             }
 
-            DebugHelper.WriteLine("execute query with 200ms delay");
+            Debug.WriteLine("execute query with 200ms delay");
             return 200;
         }
 

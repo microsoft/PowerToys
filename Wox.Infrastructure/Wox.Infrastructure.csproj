@@ -49,7 +49,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DebugHelper.cs" />
     <Compile Include="Hotkey\InterceptKeys.cs" />
     <Compile Include="Hotkey\KeyEvent.cs" />
     <Compile Include="Logger\Log.cs" />

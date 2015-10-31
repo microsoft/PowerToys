@@ -99,7 +99,7 @@ namespace Wox.Core.Plugin
                         API = API
                     });
                     sw.Stop();
-                    DebugHelper.WriteLine(string.Format("Plugin init:{0} - {1}", pair.Metadata.Name, sw.ElapsedMilliseconds));
+                    Debug.WriteLine(string.Format("Plugin init:{0} - {1}", pair.Metadata.Name, sw.ElapsedMilliseconds));
                     pair.InitTime = sw.ElapsedMilliseconds;
                     InternationalizationManager.Instance.UpdatePluginMetadataTranslations(pair);
                 });
@@ -196,7 +196,7 @@ namespace Wox.Core.Plugin
                     o.PluginID = pair.Metadata.ID;
                 });
                 sw.Stop();
-                DebugHelper.WriteLine(string.Format("Plugin query: {0} - {1}", pair.Metadata.Name, sw.ElapsedMilliseconds));
+                Debug.WriteLine(string.Format("Plugin query: {0} - {1}", pair.Metadata.Name, sw.ElapsedMilliseconds));
                 pair.QueryCount += 1;
                 if (pair.QueryCount == 1)
                 {
