@@ -34,8 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NAppUpdate.Framework">
-      <HintPath>..\References\NAppUpdate.Framework.dll</HintPath>
+    <Reference Include="NAppUpdate.Framework, Version=0.3.2.0, Culture=neutral, PublicKeyToken=d1f1d1f19f9e5a56, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAppUpdate.Framework.0.3.2.0\lib\net20\NAppUpdate.Framework.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
