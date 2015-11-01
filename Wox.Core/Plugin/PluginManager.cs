@@ -26,8 +26,6 @@ namespace Wox.Core.Plugin
         private static IEnumerable<PluginPair> exclusiveSearchPlugins;
         private static List<KeyValuePair<PluginPair, IContextMenu>> contextMenuPlugins;
 
-        public static IPublicAPI API { get; private set; }
-
         private static List<PluginPair> plugins = new List<PluginPair>();
 
         /// <summary>
@@ -35,15 +33,25 @@ namespace Wox.Core.Plugin
         /// </summary>
         private static List<string> pluginDirectories = new List<string>();
 
-        private static void SetupPluginDirectories()
+        public static List<PluginPair> AllPlugins
         {
-            pluginDirectories.Add(PluginDirectory);
-            MakesurePluginDirectoriesExist();
+            get
+            {
+                return plugins.OrderBy(o => o.Metadata.Name).ToList();
+            }
         }
+
+        public static IPublicAPI API { private set; get; }
 
         public static string PluginDirectory
         {
             get { return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Plugins"); }
+        }
+
+        private static void SetupPluginDirectories()
+        {
+            pluginDirectories.Add(PluginDirectory);
+            MakesurePluginDirectoriesExist();
         }
 
         private static void MakesurePluginDirectoriesExist()
@@ -159,11 +167,33 @@ namespace Wox.Core.Plugin
             }
         }
 
-        public static List<PluginPair> AllPlugins
+        private static void QueryForPlugin(PluginPair pair, Query query)
         {
-            get
+            try
             {
-                return plugins.OrderBy(o => o.Metadata.Name).ToList();
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                List<Result> results = pair.Plugin.Query(query) ?? new List<Result>();
+                results.ForEach(o =>
+                {
+                    o.PluginID = pair.Metadata.ID;
+                });
+                sw.Stop();
+                Debug.WriteLine(string.Format("Plugin query: {0} - {1}", pair.Metadata.Name, sw.ElapsedMilliseconds));
+                pair.QueryCount += 1;
+                if (pair.QueryCount == 1)
+                {
+                    pair.AvgQueryTime = sw.ElapsedMilliseconds;
+                }
+                else
+                {
+                    pair.AvgQueryTime = (pair.AvgQueryTime + sw.ElapsedMilliseconds) / 2;
+                }
+                API.PushResults(query, pair.Metadata, results);
+            }
+            catch (System.Exception e)
+            {
+                throw new WoxPluginException(pair.Metadata.Name, e);
             }
         }
 
@@ -196,36 +226,6 @@ namespace Wox.Core.Plugin
             //todo:to improve performance, any instant search plugin that takes long than 200ms will not consider a instant plugin anymore
             return pluginMetadata.Language.ToUpper() == AllowedLanguage.CSharp &&
                    LoadInstantSearches().Any(o => o.Key.Metadata.ID == pluginMetadata.ID);
-        }
-
-        private static void QueryForPlugin(PluginPair pair, Query query)
-        {
-            try
-            {
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
-                List<Result> results = pair.Plugin.Query(query) ?? new List<Result>();
-                results.ForEach(o =>
-                {
-                    o.PluginID = pair.Metadata.ID;
-                });
-                sw.Stop();
-                Debug.WriteLine(string.Format("Plugin query: {0} - {1}", pair.Metadata.Name, sw.ElapsedMilliseconds));
-                pair.QueryCount += 1;
-                if (pair.QueryCount == 1)
-                {
-                    pair.AvgQueryTime = sw.ElapsedMilliseconds;
-                }
-                else
-                {
-                    pair.AvgQueryTime = (pair.AvgQueryTime + sw.ElapsedMilliseconds) / 2;
-                }
-                API.PushResults(query, pair.Metadata, results);
-            }
-            catch (System.Exception e)
-            {
-                throw new WoxPluginException(pair.Metadata.Name, e);
-            }
         }
 
         private static List<KeyValuePair<PluginPair, IInstantQuery>> LoadInstantSearches()
