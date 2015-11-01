@@ -501,7 +501,7 @@ namespace Wox
 
         private void Query(Query q)
         {
-            PluginManager.Query(q);
+            PluginManager.QueryForAllPlugins(q);
             StopProgress();
         }
 
