@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
 using Wox.Infrastructure.Hotkey;
+using Wox.Infrastructure.Logger;
 using Wox.Plugin.Features;
 using Control = System.Windows.Controls.Control;
 
@@ -22,14 +23,13 @@ namespace Wox.Plugin.CMD
         {
             List<Result> results = new List<Result>();
             List<Result> pushedResults = new List<Result>();
-            if (query.Search == ">")
+            string cmd = query.Search;
+            if (string.IsNullOrEmpty(cmd))
             {
                 return GetAllHistoryCmds();
             }
-
-            if (query.Search.StartsWith(">") && query.Search.Length > 1)
+            else
             {
-                string cmd = query.Search.Substring(1);
                 var queryCmd = GetCurrentCmd(cmd);
                 context.API.PushResults(query, context.CurrentPluginMetadata, new List<Result>() { queryCmd });
                 pushedResults.Add(queryCmd);
@@ -49,7 +49,7 @@ namespace Wox.Plugin.CMD
                         basedir = excmd;
                         dir = cmd;
                     }
-                    else if (Directory.Exists(Path.GetDirectoryName(excmd)))
+                    else if (Directory.Exists(Path.GetDirectoryName(excmd) ?? string.Empty))
                     {
                         basedir = Path.GetDirectoryName(excmd);
                         var dirn = Path.GetDirectoryName(cmd);
@@ -72,10 +72,12 @@ namespace Wox.Plugin.CMD
                         }));
                     }
                 }
-                catch (Exception) { }
-
+                catch (Exception e)
+                {
+                    Log.Error(e);
+                }
+                return results;
             }
-            return results;
         }
 
         private List<Result> GetHistoryCmds(string cmd, Result result)

@@ -43,8 +43,8 @@ namespace Wox.Plugin
         {
             get
             {
-                var index = string.IsNullOrEmpty(ActionKeyword) ? 1 : 2;
-                return string.Join(Seperater, Terms.Skip(index).ToArray());
+                var index = String.IsNullOrEmpty(ActionKeyword) ? 1 : 2;
+                return String.Join(Seperater, Terms.Skip(index).ToArray());
             }
         }
 
@@ -62,11 +62,11 @@ namespace Wox.Plugin
         {
             try
             {
-                return string.IsNullOrEmpty(ActionKeyword) ? Terms[index] : Terms[index + 1];
+                return String.IsNullOrEmpty(ActionKeyword) ? Terms[index] : Terms[index + 1];
             }
             catch (IndexOutOfRangeException)
             {
-                return string.Empty;
+                return String.Empty;
             }
         }
 
@@ -83,7 +83,7 @@ namespace Wox.Plugin
         {
             // replace multiple white spaces with one white space
             Terms = rawQuery.Split(new[] { Seperater }, StringSplitOptions.RemoveEmptyEntries);
-            RawQuery = string.Join(Seperater, Terms.ToArray());
+            RawQuery = String.Join(Seperater, Terms.ToArray());
 
             ActionParameters = new List<string>();
             ParseQuery();
@@ -91,7 +91,7 @@ namespace Wox.Plugin
 
         private void ParseQuery()
         {
-            if (string.IsNullOrEmpty(RawQuery)) return;
+            if (String.IsNullOrEmpty(RawQuery)) return;
 
             string[] strings = RawQuery.Split(' ');
             //todo:not exactly correct. query that didn't containing a space should be a valid query
@@ -100,7 +100,7 @@ namespace Wox.Plugin
             ActionName = strings[0];
             for (int i = 1; i < strings.Length; i++)
             {
-                if (!string.IsNullOrEmpty(strings[i]))
+                if (!String.IsNullOrEmpty(strings[i]))
                 {
                     ActionParameters.Add(strings[i]);
                 }
@@ -111,13 +111,15 @@ namespace Wox.Plugin
         public string GetAllRemainingParameter()
         {
 
-            string[] strings = RawQuery.Split(new char[] { ' ' }, 2, System.StringSplitOptions.None);
+            string[] strings = RawQuery.Split(new char[] { ' ' }, 2, StringSplitOptions.None);
             if (strings.Length > 1)
             {
                 return strings[1];
             }
 
-            return string.Empty;
+            return String.Empty;
         }
+
+        public const string ActionKeywordWildcardSign = "*";
     }
 }

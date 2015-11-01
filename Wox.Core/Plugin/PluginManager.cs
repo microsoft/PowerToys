@@ -21,11 +21,9 @@ namespace Wox.Core.Plugin
     /// </summary>
     public static class PluginManager
     {
-        public const string ActionKeywordWildcardSign = "*";
-
         private static List<PluginMetadata> pluginMetadatas;
         private static List<KeyValuePair<PluginPair, IInstantQuery>> instantSearches;
-        private static List<KeyValuePair<PluginPair, IExclusiveQuery>> exclusiveSearchPlugins;
+        private static IEnumerable<PluginPair> exclusiveSearchPlugins;
         private static List<KeyValuePair<PluginPair, IContextMenu>> contextMenuPlugins;
 
         public static IPublicAPI API { get; private set; }
@@ -133,7 +131,8 @@ namespace Wox.Core.Plugin
 
         private static void QueryDispatch(Query query)
         {
-            var pluginPairs = IsExclusivePluginQuery(query) ? GetExclusivePlugins(query) : GetGenericPlugins();
+            var nonSystemPlugin = GetNonSystemPlugin(query);
+            var pluginPairs = nonSystemPlugin != null ? new List<PluginPair> { nonSystemPlugin } : GetSystemPlugins();
             foreach (var plugin in pluginPairs)
             {
                 var customizedPluginConfig = UserSettingStorage.Instance.
@@ -175,24 +174,16 @@ namespace Wox.Core.Plugin
         /// <returns></returns>
         private static bool IsVailldActionKeyword(string actionKeyword)
         {
+            if (string.IsNullOrEmpty(actionKeyword) || actionKeyword == Query.ActionKeywordWildcardSign) return false;
             PluginPair pair = plugins.FirstOrDefault(o => o.Metadata.ActionKeyword == actionKeyword);
-            if (pair != null)
-            {
-                var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == pair.Metadata.ID);
-                if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
-                {
-                    return false;
-                }
-
-                return true;
-            }
-
-            return false;
+            if (pair == null) return false;
+            var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == pair.Metadata.ID);
+            return customizedPluginConfig == null || !customizedPluginConfig.Disabled;
         }
 
-        public static bool IsGenericPlugin(PluginMetadata metadata)
+        public static bool IsSystemPlugin(PluginMetadata metadata)
         {
-            return metadata.ActionKeyword == ActionKeywordWildcardSign;
+            return metadata.ActionKeyword == Query.ActionKeywordWildcardSign;
         }
 
         public static bool IsInstantQuery(string query)
@@ -256,62 +247,29 @@ namespace Wox.Core.Plugin
             return plugins.FirstOrDefault(o => o.Metadata.ID == id);
         }
 
-        private static List<KeyValuePair<PluginPair, IExclusiveQuery>> LoadExclusiveSearchPlugins()
-        {
-            if (exclusiveSearchPlugins != null) return exclusiveSearchPlugins;
-            exclusiveSearchPlugins = AssemblyHelper.LoadPluginInterfaces<IExclusiveQuery>();
-            return exclusiveSearchPlugins;
-        }
-
         private static PluginPair GetExclusivePlugin(Query query)
         {
-            KeyValuePair<PluginPair, IExclusiveQuery> plugin = LoadExclusiveSearchPlugins().FirstOrDefault(o => o.Value.IsExclusiveQuery((query)));
-            return plugin.Key;
+            exclusiveSearchPlugins = exclusiveSearchPlugins ??
+                plugins.Where(p => p.Plugin.GetType().GetInterfaces().Contains(typeof(IExclusiveQuery)));
+            var plugin = exclusiveSearchPlugins.FirstOrDefault(p => ((IExclusiveQuery)p.Plugin).IsExclusiveQuery(query));
+            return plugin;
         }
 
         private static PluginPair GetActionKeywordPlugin(Query query)
         {
             //if a query doesn't contain a vaild action keyword, it should not be a action keword plugin query
             if (string.IsNullOrEmpty(query.ActionKeyword)) return null;
-
-            PluginPair actionKeywordPluginPair = AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.ActionKeyword);
-            if (actionKeywordPluginPair != null)
-            {
-                var customizedPluginConfig = UserSettingStorage.Instance.
-                    CustomizedPluginConfigs.FirstOrDefault(o => o.ID == actionKeywordPluginPair.Metadata.ID);
-                if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
-                {
-                    return null;
-                }
-
-                return actionKeywordPluginPair;
-            }
-
-            return null;
+            return plugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.ActionKeyword);
         }
 
-        private static List<PluginPair> GetExclusivePlugins(Query query)
+        private static PluginPair GetNonSystemPlugin(Query query)
         {
-            List<PluginPair> pluginPairs = new List<PluginPair>();
-            var exclusivePluginPair = GetExclusivePlugin(query) ??
-                                      GetActionKeywordPlugin(query);
-            if (exclusivePluginPair != null)
-            {
-                pluginPairs.Add(exclusivePluginPair);
-            }
-
-            return pluginPairs;
+            return GetExclusivePlugin(query) ?? GetActionKeywordPlugin(query);
         }
 
-        private static List<PluginPair> GetGenericPlugins()
+        private static List<PluginPair> GetSystemPlugins()
         {
-            return plugins.Where(o => IsGenericPlugin(o.Metadata)).ToList();
-        }
-
-
-        private static bool IsExclusivePluginQuery(Query query)
-        {
-            return GetExclusivePlugin(query) != null || GetActionKeywordPlugin(query) != null;
+            return plugins.Where(o => IsSystemPlugin(o.Metadata)).ToList();
         }
 
         public static List<Result> GetPluginContextMenus(Result result)
