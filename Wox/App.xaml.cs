@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using Wox.CommandArgs;
 using Wox.Core.Plugin;
@@ -34,9 +35,9 @@ namespace Wox
                 DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
                 AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
 
+                //ThreadPool.QueueUserWorkItem(o => { ImageLoader.ImageLoader.PreloadImages(); });
                 Window = new MainWindow();
                 PluginManager.Init(Window);
-                ImageLoader.ImageLoader.PreloadImages();
                 CommandArgsFactory.Execute(e.Args.ToList());
             }
 

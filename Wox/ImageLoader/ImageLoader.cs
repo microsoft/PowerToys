@@ -70,7 +70,7 @@ namespace Wox.ImageLoader
                             if (!imageCache.ContainsKey(image.Key))
                             {
                                 KeyValuePair<string, int> copyedImg = image;
-                                App.Window.Dispatcher.Invoke(new Action(() => imageCache.Add(copyedImg.Key, img)));
+                                imageCache.Add(copyedImg.Key, img);
                             }
                         }
                     }
