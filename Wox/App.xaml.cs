@@ -5,6 +5,7 @@ using System.Windows;
 using Wox.CommandArgs;
 using Wox.Core.Plugin;
 using Wox.Helper;
+using Wox.Infrastructure;
 
 namespace Wox
 {
@@ -27,14 +28,18 @@ namespace Wox
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            base.OnStartup(e);
-            DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
-            AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
+            using (new Timeit("Startup Time"))
+            {
+                base.OnStartup(e);
+                DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
+                AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
 
-            Window = new MainWindow();
-            PluginManager.Init(Window);
-            ImageLoader.ImageLoader.PreloadImages();
-            CommandArgsFactory.Execute(e.Args.ToList());
+                Window = new MainWindow();
+                PluginManager.Init(Window);
+                ImageLoader.ImageLoader.PreloadImages();
+                CommandArgsFactory.Execute(e.Args.ToList());
+            }
+
         }
 
         public bool OnActivate(IList<string> args)
