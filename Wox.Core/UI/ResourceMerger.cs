@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using Wox.Core.i18n;
 using Wox.Core.Plugin;
+using Wox.Infrastructure;
 using Wox.Plugin;
 
 namespace Wox.Core.UI
@@ -39,9 +40,8 @@ namespace Wox.Core.UI
         internal static void ApplyPluginLanguages()
         {
             RemoveResource(PluginManager.DirectoryName);
-            foreach (var languageFile in (PluginManager.AllPlugins.Select(p => p.Plugin).
-                Where(plugin => plugin.GetType().GetInterfaces().Contains(typeof(IPluginI18n))).
-                Select(plugin => InternationalizationManager.Instance.GetLanguageFile(((IPluginI18n)plugin).GetLanguagesFolder())).
+            foreach (var languageFile in (PluginManager.GetPlugins<IPluginI18n>().
+                Select(plugin => InternationalizationManager.Instance.GetLanguageFile(((IPluginI18n)plugin.Plugin).GetLanguagesFolder())).
                 Where(file => !string.IsNullOrEmpty(file))))
             {
                 Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary

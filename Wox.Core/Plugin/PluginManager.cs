@@ -23,9 +23,9 @@ namespace Wox.Core.Plugin
     {
         public const string DirectoryName = "Plugins";
         private static List<PluginMetadata> pluginMetadatas;
-        private static List<PluginPair> instantSearches;
+        private static IEnumerable<PluginPair> instantSearches;
         private static IEnumerable<PluginPair> exclusiveSearchPlugins;
-        private static List<PluginPair> contextMenuPlugins;
+        private static IEnumerable<PluginPair> contextMenuPlugins;
         private static List<PluginPair> plugins;
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace Wox.Core.Plugin
 
         public static bool IsInstantQuery(string query)
         {
-            return GetInstantSearchesPlugins().Any(o => ((IInstantQuery)o).IsInstantQuery(query));
+            return GetInstantSearchesPlugins().Any(o => ((IInstantQuery)o.Plugin).IsInstantQuery(query));
         }
 
         private static bool IsInstantSearchPlugin(PluginMetadata pluginMetadata)
@@ -213,9 +213,9 @@ namespace Wox.Core.Plugin
                    GetInstantSearchesPlugins().Any(o => o.Metadata.ID == pluginMetadata.ID);
         }
 
-        private static List<PluginPair> GetInstantSearchesPlugins()
+        private static IEnumerable<PluginPair> GetInstantSearchesPlugins()
         {
-            instantSearches = instantSearches ?? GetPlugin<IInstantQuery>();
+            instantSearches = instantSearches ?? GetPlugins<IInstantQuery>();
             return instantSearches;
         }
 
@@ -229,26 +229,14 @@ namespace Wox.Core.Plugin
             return AllPlugins.FirstOrDefault(o => o.Metadata.ID == id);
         }
 
-        public static List<PluginPair> GetPlugin<T>() where T : class
+        public static IEnumerable<PluginPair> GetPlugins<T>() where T : class
         {
-            var results = new List<PluginPair>();
-            foreach (var pluginPair in AllPlugins)
-            {
-                //need to load types from AllPlugins
-                //PluginInitContext is only available in this instance
-                T type = pluginPair.Plugin as T;
-                if (type != null)
-                {
-                    results.Add(pluginPair);
-                }
-            }
-            return results;
+            return from p in AllPlugins where p.Plugin is T select p;
         }
 
         private static PluginPair GetExclusivePlugin(Query query)
         {
-            exclusiveSearchPlugins = exclusiveSearchPlugins ??
-                AllPlugins.Where(p => p.Plugin.GetType().GetInterfaces().Contains(typeof(IExclusiveQuery)));
+            exclusiveSearchPlugins = exclusiveSearchPlugins ?? GetPlugins<IExclusiveQuery>();
             var plugin = exclusiveSearchPlugins.FirstOrDefault(p => ((IExclusiveQuery)p.Plugin).IsExclusiveQuery(query));
             return plugin;
         }
@@ -272,7 +260,7 @@ namespace Wox.Core.Plugin
 
         public static List<Result> GetPluginContextMenus(Result result)
         {
-            contextMenuPlugins = contextMenuPlugins ?? GetPlugin<IContextMenu>();
+            contextMenuPlugins = contextMenuPlugins ?? GetPlugins<IContextMenu>();
 
             var pluginPair = contextMenuPlugins.FirstOrDefault(o => o.Metadata.ID == result.PluginID);
             var plugin = (IContextMenu)pluginPair?.Plugin;
