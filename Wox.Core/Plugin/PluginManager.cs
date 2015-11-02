@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,7 +11,6 @@ using Wox.Core.UserSettings;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
-using Wox.Plugin.Features;
 
 namespace Wox.Core.Plugin
 {
@@ -229,7 +227,7 @@ namespace Wox.Core.Plugin
             return AllPlugins.FirstOrDefault(o => o.Metadata.ID == id);
         }
 
-        public static IEnumerable<PluginPair> GetPlugins<T>() where T : class
+        public static IEnumerable<PluginPair> GetPlugins<T>() where T : IFeatures
         {
             return from p in AllPlugins where p.Plugin is T select p;
         }

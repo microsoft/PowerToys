@@ -3,7 +3,6 @@ using System.Linq;
 using System.Windows;
 using Wox.Core.i18n;
 using Wox.Core.Plugin;
-using Wox.Infrastructure;
 using Wox.Plugin;
 
 namespace Wox.Core.UI

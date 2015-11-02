@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Windows;
 using IWshRuntimeLibrary;
 using Wox.Infrastructure;
-using Wox.Plugin.Features;
 using Wox.Plugin.Program.ProgramSources;
 
 namespace Wox.Plugin.Program

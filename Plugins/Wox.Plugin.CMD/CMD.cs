@@ -8,7 +8,6 @@ using WindowsInput;
 using WindowsInput.Native;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Logger;
-using Wox.Plugin.Features;
 using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.CMD

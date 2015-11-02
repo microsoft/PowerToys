@@ -7,7 +7,6 @@ using System.Reflection;
 using System.ServiceProcess;
 using Wox.Infrastructure;
 using Wox.Plugin.Everything.Everything;
-using Wox.Plugin.Features;
 
 namespace Wox.Plugin.Everything
 {
