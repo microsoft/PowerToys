@@ -92,17 +92,16 @@ namespace Wox.Core.Plugin
                 PluginPair pair = pluginPair;
                 ThreadPool.QueueUserWorkItem(o =>
                 {
-                    Stopwatch sw = new Stopwatch();
-                    sw.Start();
-                    pair.Plugin.Init(new PluginInitContext
+                    using (var time = new Timeit($"Plugin init: {pair.Metadata.Name}"))
                     {
-                        CurrentPluginMetadata = pair.Metadata,
-                        Proxy = HttpProxy.Instance,
-                        API = API
-                    });
-                    sw.Stop();
-                    Debug.WriteLine(string.Format("Plugin init:{0} - {1}", pair.Metadata.Name, sw.ElapsedMilliseconds));
-                    pair.InitTime = sw.ElapsedMilliseconds;
+                        pair.Plugin.Init(new PluginInitContext
+                        {
+                            CurrentPluginMetadata = pair.Metadata,
+                            Proxy = HttpProxy.Instance,
+                            API = API
+                        });
+                        pair.InitTime = time.Current;
+                    }
                     InternationalizationManager.Instance.UpdatePluginMetadataTranslations(pair);
                 });
             }
@@ -168,25 +167,15 @@ namespace Wox.Core.Plugin
         {
             try
             {
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
-                List<Result> results = pair.Plugin.Query(query) ?? new List<Result>();
-                results.ForEach(o =>
+                using (var time = new Timeit("Preload programs"))
                 {
-                    o.PluginID = pair.Metadata.ID;
-                });
-                sw.Stop();
-                Debug.WriteLine(string.Format("Plugin query: {0} - {1}", pair.Metadata.Name, sw.ElapsedMilliseconds));
-                pair.QueryCount += 1;
-                if (pair.QueryCount == 1)
-                {
-                    pair.AvgQueryTime = sw.ElapsedMilliseconds;
+                    var results = pair.Plugin.Query(query) ?? new List<Result>();
+                    results.ForEach(o => { o.PluginID = pair.Metadata.ID; });
+                    var seconds = time.Current;
+                    pair.QueryCount += 1;
+                    pair.AvgQueryTime = pair.QueryCount == 1 ? seconds : (pair.AvgQueryTime + seconds) / 2;
+                    API.PushResults(query, pair.Metadata, results);
                 }
-                else
-                {
-                    pair.AvgQueryTime = (pair.AvgQueryTime + sw.ElapsedMilliseconds) / 2;
-                }
-                API.PushResults(query, pair.Metadata, results);
             }
             catch (System.Exception e)
             {

@@ -80,50 +80,47 @@ namespace Wox.ImageLoader
 
         public static ImageSource Load(string path, bool addToCache = true)
         {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-
-            if (string.IsNullOrEmpty(path)) return null;
-            if (addToCache)
+            using (new Timeit($"Loading image path: {path}"))
             {
-                ImageCacheStroage.Instance.Add(path);
-            }
-
-            ImageSource img = null;
-            if (imageCache.ContainsKey(path))
-            {
-                img = imageCache[path];
-            }
-            else
-            {
-                string ext = Path.GetExtension(path).ToLower();
-
-                if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrEmpty(path)) return null;
+                if (addToCache)
                 {
-                    img = new BitmapImage(new Uri(path));
-                }
-                else if (selfExts.Contains(ext) && File.Exists(path))
-                {
-                    img = GetIcon(path);
-                }
-                else if (!string.IsNullOrEmpty(path) && imageExts.Contains(ext) && File.Exists(path))
-                {
-                    img = new BitmapImage(new Uri(path));
+                    ImageCacheStroage.Instance.Add(path);
                 }
 
-
-                if (img != null && addToCache)
+                ImageSource img = null;
+                if (imageCache.ContainsKey(path))
                 {
-                    if (!imageCache.ContainsKey(path))
+                    img = imageCache[path];
+                }
+                else
+                {
+                    string ext = Path.GetExtension(path).ToLower();
+
+                    if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
                     {
-                        imageCache.Add(path, img);
+                        img = new BitmapImage(new Uri(path));
+                    }
+                    else if (selfExts.Contains(ext) && File.Exists(path))
+                    {
+                        img = GetIcon(path);
+                    }
+                    else if (!string.IsNullOrEmpty(path) && imageExts.Contains(ext) && File.Exists(path))
+                    {
+                        img = new BitmapImage(new Uri(path));
+                    }
+
+
+                    if (img != null && addToCache)
+                    {
+                        if (!imageCache.ContainsKey(path))
+                        {
+                            imageCache.Add(path, img);
+                        }
                     }
                 }
+                return img;
             }
-
-            sw.Stop();
-            Debug.WriteLine(string.Format("Loading image path: {0} - {1}ms",path,sw.ElapsedMilliseconds));
-            return img;
         }
 
         // http://blogs.msdn.com/b/oldnewthing/archive/2011/01/27/10120844.aspx
