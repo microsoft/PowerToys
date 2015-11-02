@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -22,9 +23,9 @@ namespace Wox.Core.Plugin
     {
         public const string DirectoryName = "Plugins";
         private static List<PluginMetadata> pluginMetadatas;
-        private static List<KeyValuePair<PluginPair, IInstantQuery>> instantSearches;
+        private static List<PluginPair> instantSearches;
         private static IEnumerable<PluginPair> exclusiveSearchPlugins;
-        private static List<KeyValuePair<PluginPair, IContextMenu>> contextMenuPlugins;
+        private static List<PluginPair> contextMenuPlugins;
         private static List<PluginPair> plugins;
 
         /// <summary>
@@ -109,7 +110,7 @@ namespace Wox.Core.Plugin
 
             ThreadPool.QueueUserWorkItem(o =>
             {
-                LoadInstantSearches();
+                GetInstantSearchesPlugins();
             });
         }
 
@@ -120,16 +121,16 @@ namespace Wox.Core.Plugin
 
         public static void QueryForAllPlugins(Query query)
         {
-            query.ActionKeyword = string.Empty;
+            query.ActionKeyword = String.Empty;
             query.Search = query.RawQuery;
             if (query.Terms.Length == 0) return;
             if (IsVailldActionKeyword(query.Terms[0]))
             {
                 query.ActionKeyword = query.Terms[0];
             }
-            if (!string.IsNullOrEmpty(query.ActionKeyword))
+            if (!String.IsNullOrEmpty(query.ActionKeyword))
             {
-                query.Search = string.Join(Query.Seperater, query.Terms.Skip(1).ToArray());
+                query.Search = String.Join(Query.Seperater, query.Terms.Skip(1).ToArray());
             }
             QueryDispatch(query);
         }
@@ -187,7 +188,7 @@ namespace Wox.Core.Plugin
         /// <returns></returns>
         private static bool IsVailldActionKeyword(string actionKeyword)
         {
-            if (string.IsNullOrEmpty(actionKeyword) || actionKeyword == Query.WildcardSign) return false;
+            if (String.IsNullOrEmpty(actionKeyword) || actionKeyword == Query.WildcardSign) return false;
             PluginPair pair = AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == actionKeyword);
             if (pair == null) return false;
             var customizedPluginConfig = UserSettingStorage.Instance.
@@ -202,22 +203,19 @@ namespace Wox.Core.Plugin
 
         public static bool IsInstantQuery(string query)
         {
-            return LoadInstantSearches().Any(o => o.Value.IsInstantQuery(query));
+            return GetInstantSearchesPlugins().Any(o => ((IInstantQuery)o).IsInstantQuery(query));
         }
 
         private static bool IsInstantSearchPlugin(PluginMetadata pluginMetadata)
         {
             //todo:to improve performance, any instant search plugin that takes long than 200ms will not consider a instant plugin anymore
             return pluginMetadata.Language.ToUpper() == AllowedLanguage.CSharp &&
-                   LoadInstantSearches().Any(o => o.Key.Metadata.ID == pluginMetadata.ID);
+                   GetInstantSearchesPlugins().Any(o => o.Metadata.ID == pluginMetadata.ID);
         }
 
-        private static List<KeyValuePair<PluginPair, IInstantQuery>> LoadInstantSearches()
+        private static List<PluginPair> GetInstantSearchesPlugins()
         {
-            if (instantSearches != null) return instantSearches;
-
-            instantSearches = AssemblyHelper.LoadPluginInterfaces<IInstantQuery>();
-
+            instantSearches = instantSearches ?? GetPlugin<IInstantQuery>();
             return instantSearches;
         }
 
@@ -231,6 +229,22 @@ namespace Wox.Core.Plugin
             return AllPlugins.FirstOrDefault(o => o.Metadata.ID == id);
         }
 
+        public static List<PluginPair> GetPlugin<T>() where T : class
+        {
+            var results = new List<PluginPair>();
+            foreach (var pluginPair in AllPlugins)
+            {
+                //need to load types from AllPlugins
+                //PluginInitContext is only available in this instance
+                T type = pluginPair.Plugin as T;
+                if (type != null)
+                {
+                    results.Add(pluginPair);
+                }
+            }
+            return results;
+        }
+
         private static PluginPair GetExclusivePlugin(Query query)
         {
             exclusiveSearchPlugins = exclusiveSearchPlugins ??
@@ -242,7 +256,7 @@ namespace Wox.Core.Plugin
         private static PluginPair GetActionKeywordPlugin(Query query)
         {
             //if a query doesn't contain a vaild action keyword, it should not be a action keword plugin query
-            if (string.IsNullOrEmpty(query.ActionKeyword)) return null;
+            if (String.IsNullOrEmpty(query.ActionKeyword)) return null;
             return AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.ActionKeyword);
         }
 
@@ -258,22 +272,19 @@ namespace Wox.Core.Plugin
 
         public static List<Result> GetPluginContextMenus(Result result)
         {
-            List<Result> contextContextMenus = new List<Result>();
-            if (contextMenuPlugins == null)
-            {
-                contextMenuPlugins = AssemblyHelper.LoadPluginInterfaces<IContextMenu>();
-            }
+            contextMenuPlugins = contextMenuPlugins ?? GetPlugin<IContextMenu>();
 
-            var contextMenuPlugin = contextMenuPlugins.FirstOrDefault(o => o.Key.Metadata.ID == result.PluginID);
-            if (contextMenuPlugin.Value != null)
+            var pluginPair = contextMenuPlugins.FirstOrDefault(o => o.Metadata.ID == result.PluginID);
+            var plugin = (IContextMenu)pluginPair?.Plugin;
+            if (plugin != null)
             {
                 try
                 {
-                    return contextMenuPlugin.Value.LoadContextMenus(result);
+                    return plugin.LoadContextMenus(result);
                 }
                 catch (System.Exception e)
                 {
-                    Log.Error(string.Format("Couldn't load plugin context menus {0}: {1}", contextMenuPlugin.Key.Metadata.Name, e.Message));
+                    Log.Error($"Couldn't load plugin context menus {pluginPair.Metadata.Name}: {e.Message}");
 #if (DEBUG)
                     {
                         throw;
@@ -282,8 +293,7 @@ namespace Wox.Core.Plugin
                 }
             }
 
-            return contextContextMenus;
+            return new List<Result>();
         }
-
     }
 }
