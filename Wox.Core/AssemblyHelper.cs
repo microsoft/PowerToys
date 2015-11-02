@@ -23,14 +23,5 @@ namespace Wox.Core
             }
             return results;
         }
-
-        public static List<T> LoadInterfacesFromAppDomain<T>() where T : class
-        {
-            var interfaceObjects = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(p => p.IsClass && !p.IsAbstract && p.GetInterfaces().Contains(typeof(T)));
-
-            return interfaceObjects.Select(interfaceObject => (T) Activator.CreateInstance(interfaceObject)).ToList();
-        }
     }
 }

@@ -24,44 +24,31 @@ namespace Wox.Core.UI
             }
         }
 
-        public static void ApplyThemeResource()
+        public static void ApplyThemeResource(Theme.Theme t)
         {
             RemoveResource(Theme.Theme.DirectoryName);
-            ApplyUIResources();
+            Application.Current.Resources.MergedDictionaries.Add(t.GetResourceDictionary());
         }
 
-        public static void ApplyLanguageResources()
+        public static void ApplyLanguageResources(Internationalization i)
         {
             RemoveResource(Internationalization.DirectoryName);
-            ApplyUIResources();
-        }
-
-        private static void ApplyUIResources()
-        {
-            var UIResources = AssemblyHelper.LoadInterfacesFromAppDomain<IUIResource>();
-            foreach (var uiResource in UIResources)
-            {
-                Application.Current.Resources.MergedDictionaries.Add(uiResource.GetResourceDictionary());
-            }
+            Application.Current.Resources.MergedDictionaries.Add(i.GetResourceDictionary());
         }
 
         internal static void ApplyPluginLanguages()
         {
             RemoveResource(PluginManager.DirectoryName);
-            var pluginI18ns = AssemblyHelper.LoadInterfacesFromAppDomain<IPluginI18n>();
-            foreach (var pluginI18n in pluginI18ns)
+            foreach (var languageFile in (PluginManager.AllPlugins.Select(p => p.Plugin).
+                Where(plugin => plugin.GetType().GetInterfaces().Contains(typeof(IPluginI18n))).
+                Select(plugin => InternationalizationManager.Instance.GetLanguageFile(((IPluginI18n)plugin).GetLanguagesFolder())).
+                Where(file => !string.IsNullOrEmpty(file))))
             {
-                string languageFile = InternationalizationManager.Instance.GetLanguageFile(pluginI18n.GetLanguagesFolder());
-                if (!string.IsNullOrEmpty(languageFile))
+                Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
                 {
-                    Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
-                    {
-                        Source = new Uri(languageFile, UriKind.Absolute)
-                    });
-                }
+                    Source = new Uri(languageFile, UriKind.Absolute)
+                });
             }
         }
-
-      
     }
 }

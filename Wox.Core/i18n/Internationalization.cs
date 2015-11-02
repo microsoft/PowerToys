@@ -70,7 +70,7 @@ namespace Wox.Core.i18n
 
             UserSettingStorage.Instance.Language = language.LanguageCode;
             UserSettingStorage.Instance.Save();
-            ResourceMerger.ApplyLanguageResources();
+            ResourceMerger.ApplyLanguageResources(this);
         }
 
         public ResourceDictionary GetResourceDictionary()

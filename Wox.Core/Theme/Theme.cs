@@ -56,7 +56,7 @@ namespace Wox.Core.Theme
             UserSettingStorage.Instance.Theme = themeName;
             UserSettingStorage.Instance.Save();
 
-            ResourceMerger.ApplyThemeResource();
+            ResourceMerger.ApplyThemeResource(this);
         }
 
         public ResourceDictionary GetResourceDictionary()
