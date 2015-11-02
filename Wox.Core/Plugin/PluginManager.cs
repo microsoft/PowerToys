@@ -229,7 +229,7 @@ namespace Wox.Core.Plugin
 
         public static IEnumerable<PluginPair> GetPlugins<T>() where T : IFeatures
         {
-            return from p in AllPlugins where p.Plugin is T select p;
+            return AllPlugins.Where(p => p.Plugin is T);
         }
 
         private static PluginPair GetExclusivePlugin(Query query)
