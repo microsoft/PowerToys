@@ -23,7 +23,7 @@ namespace Wox.Infrastructure
                 _stopwatch.Stop();
                 long seconds = _stopwatch.ElapsedMilliseconds;
                 _stopwatch.Start();
-                Debug.WriteLine(_name + ":" + _stopwatch.ElapsedMilliseconds + "ms");
+                Debug.WriteLine(_name + " : " + _stopwatch.ElapsedMilliseconds + "ms");
                 return seconds;
             }
         }

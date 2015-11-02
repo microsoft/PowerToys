@@ -27,6 +27,11 @@ namespace Wox.Plugin
 
         public const string Seperater = " ";
 
+        /// <summary>
+        /// * is used for System Plugin
+        /// </summary>
+        public const string WildcardSign = "*";
+
         internal string ActionKeyword { get; set; }
 
         internal bool IsIntantQuery { get; set; }
@@ -120,6 +125,6 @@ namespace Wox.Plugin
             return String.Empty;
         }
 
-        public const string ActionKeywordWildcardSign = "*";
+
     }
 }

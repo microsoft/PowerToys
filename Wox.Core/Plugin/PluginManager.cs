@@ -141,14 +141,10 @@ namespace Wox.Core.Plugin
             {
                 var customizedPluginConfig = UserSettingStorage.Instance.
                     CustomizedPluginConfigs.FirstOrDefault(o => o.ID == plugin.Metadata.ID);
-                if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
-                {
-                    return;
-                }
+                if (customizedPluginConfig != null && customizedPluginConfig.Disabled) return;
                 if (query.IsIntantQuery && IsInstantSearchPlugin(plugin.Metadata))
                 {
-                    Debug.WriteLine(string.Format("Plugin {0} is executing instant search.", plugin.Metadata.Name));
-                    using (new Timeit("  => instant search took: "))
+                    using (new Timeit($"Plugin {plugin.Metadata.Name} is executing instant search"))
                     {
                         QueryForPlugin(plugin, query);
                     }
@@ -190,16 +186,17 @@ namespace Wox.Core.Plugin
         /// <returns></returns>
         private static bool IsVailldActionKeyword(string actionKeyword)
         {
-            if (string.IsNullOrEmpty(actionKeyword) || actionKeyword == Query.ActionKeywordWildcardSign) return false;
+            if (string.IsNullOrEmpty(actionKeyword) || actionKeyword == Query.WildcardSign) return false;
             PluginPair pair = AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == actionKeyword);
             if (pair == null) return false;
-            var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == pair.Metadata.ID);
+            var customizedPluginConfig = UserSettingStorage.Instance.
+                CustomizedPluginConfigs.FirstOrDefault(o => o.ID == pair.Metadata.ID);
             return customizedPluginConfig == null || !customizedPluginConfig.Disabled;
         }
 
         public static bool IsSystemPlugin(PluginMetadata metadata)
         {
-            return metadata.ActionKeyword == Query.ActionKeywordWildcardSign;
+            return metadata.ActionKeyword == Query.WildcardSign;
         }
 
         public static bool IsInstantQuery(string query)
