@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
 namespace Wox.Infrastructure
@@ -23,7 +24,9 @@ namespace Wox.Infrastructure
                 _stopwatch.Stop();
                 long seconds = _stopwatch.ElapsedMilliseconds;
                 _stopwatch.Start();
-                Debug.WriteLine(_name + " : " + _stopwatch.ElapsedMilliseconds + "ms");
+                string info = _name + " : " + _stopwatch.ElapsedMilliseconds + "ms";
+                Debug.WriteLine(info);
+                Log.Info(info);
                 return seconds;
             }
         }
@@ -32,7 +35,9 @@ namespace Wox.Infrastructure
         public void Dispose()
         {
             _stopwatch.Stop();
-            Debug.WriteLine(_name + ":" + _stopwatch.ElapsedMilliseconds + "ms");
+            string info = _name + " : " + _stopwatch.ElapsedMilliseconds + "ms";
+            Debug.WriteLine(info);
+            Log.Info(info);
         }
     }
 }
