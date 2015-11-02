@@ -20,6 +20,7 @@ namespace Wox.Core.Plugin
     /// </summary>
     public static class PluginManager
     {
+        public const string DirectoryName = "Plugins";
         private static List<PluginMetadata> pluginMetadatas;
         private static List<KeyValuePair<PluginPair, IInstantQuery>> instantSearches;
         private static IEnumerable<PluginPair> exclusiveSearchPlugins;
@@ -41,7 +42,7 @@ namespace Wox.Core.Plugin
 
         public static string PluginDirectory
         {
-            get { return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Plugins"); }
+            get { return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), DirectoryName); }
         }
 
         private static void SetupPluginDirectories()

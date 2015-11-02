@@ -14,11 +14,12 @@ namespace Wox.Core.Theme
 {
     public class Theme : IUIResource,ITheme
     {
+        public const string DirectoryName = "Themes";
         private static List<string> themeDirectories = new List<string>();
 
         static Theme()
         {
-            themeDirectories.Add(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Themes"));
+            themeDirectories.Add(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), DirectoryName));
             MakesureThemeDirectoriesExist();
         }
 
@@ -55,7 +56,7 @@ namespace Wox.Core.Theme
             UserSettingStorage.Instance.Theme = themeName;
             UserSettingStorage.Instance.Save();
 
-            ResourceMerger.ApplyResources();
+            ResourceMerger.ApplyThemeResource();
         }
 
         public ResourceDictionary GetResourceDictionary()
