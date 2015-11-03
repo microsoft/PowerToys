@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Windows.Documents;
 using Wox.Core.Exception;
 using Wox.Core.i18n;
 using Wox.Core.UI;
@@ -116,23 +118,33 @@ namespace Wox.Core.Plugin
             PluginInstaller.Install(path);
         }
 
-        public static void QueryForAllPlugins(Query query)
+        public static Query QueryInit(string text) //todo is that possible to move it into type Query?
         {
-            query.ActionKeyword = string.Empty;
-            query.Search = query.RawQuery;
-            if (query.Terms.Length == 0) return;
-            if (IsVailldActionKeyword(query.Terms[0]))
+            // replace multiple white spaces with one white space
+            var terms = text.Split(new[] { Query.Seperater }, StringSplitOptions.RemoveEmptyEntries);
+            var rawQuery = string.Join(Query.Seperater, terms.ToArray());
+            var actionKeyword = string.Empty;
+            var search = rawQuery;
+            IEnumerable<string> actionParameters = terms;
+            if (terms.Length == 0) return null;
+            if (IsVailldActionKeyword(terms[0]))
             {
-                query.ActionKeyword = query.Terms[0];
+                actionKeyword = terms[0];
             }
-            if (!string.IsNullOrEmpty(query.ActionKeyword))
+            if (!string.IsNullOrEmpty(actionKeyword))
             {
-                query.Search = string.Join(Query.Seperater, query.Terms.Skip(1).ToArray());
+                actionParameters = terms.Skip(1);
+                search = string.Join(Query.Seperater, actionParameters.ToArray());
             }
-            QueryDispatch(query);
+            return new Query
+            {
+                Terms = terms, RawQuery = rawQuery, ActionKeyword = actionKeyword, Search = search,
+                // Obsolete value initialisation
+                ActionName = actionKeyword, ActionParameters = actionParameters.ToList()
+            };
         }
 
-        private static void QueryDispatch(Query query)
+        public static void QueryForAllPlugins(Query query)
         {
             var pluginPairs = GetNonSystemPlugin(query) != null ?
                 new List<PluginPair> { GetNonSystemPlugin(query) } : GetSystemPlugins();

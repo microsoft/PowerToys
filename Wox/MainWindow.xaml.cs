@@ -445,7 +445,6 @@ namespace Wox
 
             toolTip.IsOpen = false;
             pnlResult.Dirty = true;
-
             if (IsInContextMenuMode)
             {
                 QueryContextMenu();
@@ -453,8 +452,6 @@ namespace Wox
             }
 
             queryHasReturn = false;
-            Query query = new Query(tbQuery.Text);
-            lastQuery = query.RawQuery;
 
             Dispatcher.DelayInvoke("ClearResults", () =>
             {
@@ -464,7 +461,7 @@ namespace Wox
                 // didn't.
                 if (pnlResult.Dirty) pnlResult.Clear();
             }, TimeSpan.FromMilliseconds(100));
-            Query(query);
+            Query(tbQuery.Text);
             Dispatcher.DelayInvoke("ShowProgressbar", () =>
             {
                 if (!queryHasReturn && !string.IsNullOrEmpty(lastQuery))
@@ -480,9 +477,11 @@ namespace Wox
         {
             QueryHistoryStorage.Instance.Reset();
         }
-        private void Query(Query q)
+        private void Query(string text)
         {
-            PluginManager.QueryForAllPlugins(q);
+            var query = PluginManager.QueryInit(text);
+            lastQuery = query?.RawQuery;
+            PluginManager.QueryForAllPlugins(query);
             StopProgress();
         }
 

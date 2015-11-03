@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using Wox.Core.Plugin;
 using Wox.Plugin;
 
 namespace Wox.Test
@@ -8,8 +9,7 @@ namespace Wox.Test
         [Test]
         public void ExclusivePluginQueryTest()
         {
-            Query q = new Query("f file.txt file2 file3");
-            q.Search = "file.txt file2 file3";
+            Query q = PluginManager.QueryInit("> file.txt file2 file3");
 
             Assert.AreEqual(q.FirstSearch, "file.txt");
             Assert.AreEqual(q.SecondSearch, "file2");
@@ -20,8 +20,7 @@ namespace Wox.Test
         [Test]
         public void GenericPluginQueryTest()
         {
-            Query q = new Query("file.txt file2 file3");
-            q.Search = q.RawQuery;
+            Query q = PluginManager.QueryInit("file.txt file2 file3");
 
             Assert.AreEqual(q.FirstSearch, "file.txt");
             Assert.AreEqual(q.SecondSearch, "file2");
