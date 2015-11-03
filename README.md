@@ -22,6 +22,13 @@ Installation
 2. Put it into your user directory (`C:\Users\YOUUSERNAME` or `%userprofile%`)
 3. Windows 10 user, please have a look at https://github.com/Wox-launcher/Wox/issues/279
 
+
+Simple Usage
+=========
+- Launch: <kbd>Alt</kbd>+<kbd>Spaec</kbd>
+- Install/Uninstall plugin: type `wpm install/uninstall`
+- Remember type `restart` to restarat Wox after installation of a plugin
+
 Contribute  
 =========
 
@@ -33,6 +40,8 @@ Docs
 =========
 
 Full documentation can be found here [Wox Documentation](http://doc.getwox.com). This is a good place to start if you are installing Wox for the first time. Feel free to contribute if you want to improve, correct or translate the documentation.
+
+In the future, all of the documentation will be moved back to Github wiki.
 
 Discussion
 =========
