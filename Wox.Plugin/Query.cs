@@ -34,8 +34,6 @@ namespace Wox.Plugin
 
         internal string ActionKeyword { get; set; }
 
-        internal bool IsIntantQuery { get; set; }
-
         /// <summary>
         /// Return first search split by space if it has
         /// </summary>

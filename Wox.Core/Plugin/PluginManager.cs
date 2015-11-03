@@ -21,7 +21,7 @@ namespace Wox.Core.Plugin
     {
         public const string DirectoryName = "Plugins";
         private static List<PluginMetadata> pluginMetadatas;
-        private static IEnumerable<PluginPair> instantSearches;
+        private static IEnumerable<PluginPair> instantQueryPlugins;
         private static IEnumerable<PluginPair> exclusiveSearchPlugins;
         private static IEnumerable<PluginPair> contextMenuPlugins;
         private static List<PluginPair> plugins;
@@ -135,14 +135,14 @@ namespace Wox.Core.Plugin
 
         private static void QueryDispatch(Query query)
         {
-            var nonSystemPlugin = GetNonSystemPlugin(query);
-            var pluginPairs = nonSystemPlugin != null ? new List<PluginPair> { nonSystemPlugin } : GetSystemPlugins();
+            var pluginPairs = GetNonSystemPlugin(query) != null ?
+                new List<PluginPair> { GetNonSystemPlugin(query) } : GetSystemPlugins();
             foreach (var plugin in pluginPairs)
             {
                 var customizedPluginConfig = UserSettingStorage.Instance.
                     CustomizedPluginConfigs.FirstOrDefault(o => o.ID == plugin.Metadata.ID);
                 if (customizedPluginConfig != null && customizedPluginConfig.Disabled) return;
-                if (query.IsIntantQuery && IsInstantSearchPlugin(plugin.Metadata))
+                if (IsInstantQueryPlugin(plugin))
                 {
                     using (new Timeit($"Plugin {plugin.Metadata.Name} is executing instant search"))
                     {
@@ -163,7 +163,7 @@ namespace Wox.Core.Plugin
         {
             try
             {
-                using (var time = new Timeit("Preload programs"))
+                using (var time = new Timeit($"Query For {pair.Metadata.Name}"))
                 {
                     var results = pair.Plugin.Query(query) ?? new List<Result>();
                     results.ForEach(o => { o.PluginID = pair.Metadata.ID; });
@@ -199,22 +199,18 @@ namespace Wox.Core.Plugin
             return metadata.ActionKeyword == Query.WildcardSign;
         }
 
-        public static bool IsInstantQuery(string query)
+        private static bool IsInstantQueryPlugin(PluginPair plugin)
         {
-            return GetInstantSearchesPlugins().Any(o => ((IInstantQuery)o.Plugin).IsInstantQuery(query));
-        }
-
-        private static bool IsInstantSearchPlugin(PluginMetadata pluginMetadata)
-        {
-            //todo:to improve performance, any instant search plugin that takes long than 200ms will not consider a instant plugin anymore
-            return pluginMetadata.Language.ToUpper() == AllowedLanguage.CSharp &&
-                   GetInstantSearchesPlugins().Any(o => o.Metadata.ID == pluginMetadata.ID);
+            //any plugin that takes more than 200ms for AvgQueryTime won't be treated as IInstantQuery plugin anymore.
+            return plugin.AvgQueryTime < 200 &&
+                   plugin.Metadata.Language.ToUpper() == AllowedLanguage.CSharp &&
+                   GetInstantSearchesPlugins().Any(p => p.Metadata.ID == plugin.Metadata.ID);
         }
 
         private static IEnumerable<PluginPair> GetInstantSearchesPlugins()
         {
-            instantSearches = instantSearches ?? GetPlugins<IInstantQuery>();
-            return instantSearches;
+            instantQueryPlugins = instantQueryPlugins ?? GetPlugins<IInstantQuery>();
+            return instantQueryPlugins;
         }
 
         /// <summary>
@@ -242,7 +238,7 @@ namespace Wox.Core.Plugin
         private static PluginPair GetActionKeywordPlugin(Query query)
         {
             //if a query doesn't contain a vaild action keyword, it should not be a action keword plugin query
-            if (String.IsNullOrEmpty(query.ActionKeyword)) return null;
+            if (string.IsNullOrEmpty(query.ActionKeyword)) return null;
             return AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.ActionKeyword);
         }
 

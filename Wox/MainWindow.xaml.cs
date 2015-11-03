@@ -347,7 +347,7 @@ namespace Wox
         {
             //double if to omit calling win32 function
             if (UserSettingStorage.Instance.IgnoreHotkeysOnFullscreen)
-                if(WindowIntelopHelper.IsWindowFullscreen())
+                if (WindowIntelopHelper.IsWindowFullscreen())
                     return true;
 
             return false;
@@ -455,50 +455,31 @@ namespace Wox
             queryHasReturn = false;
             Query query = new Query(tbQuery.Text);
             lastQuery = query.RawQuery;
-            int searchDelay = GetSearchDelay(lastQuery);
-            query.IsIntantQuery = searchDelay == 0;
 
-            Dispatcher.DelayInvoke("UpdateSearch",
-                () =>
+            Dispatcher.DelayInvoke("ClearResults", () =>
+            {
+                // Delay the invocation of clear method of pnlResult, minimize the time-span between clear results and add new results. 
+                // So this will reduce splash issues. After waiting 100ms, if there still no results added, we
+                // must clear the result. otherwise, it will be confused why the query changed, but the results
+                // didn't.
+                if (pnlResult.Dirty) pnlResult.Clear();
+            }, TimeSpan.FromMilliseconds(100));
+            Query(query);
+            Dispatcher.DelayInvoke("ShowProgressbar", () =>
+            {
+                if (!queryHasReturn && !string.IsNullOrEmpty(lastQuery))
                 {
-                    Dispatcher.DelayInvoke("ClearResults", () =>
-                    {
-                        // Delay the invocation of clear method of pnlResult, minimize the time-span between clear results and add new results. 
-                        // So this will reduce splash issues. After waiting 100ms, if there still no results added, we
-                        // must clear the result. otherwise, it will be confused why the query changed, but the results
-                        // didn't.
-                        if (pnlResult.Dirty) pnlResult.Clear();
-                    }, TimeSpan.FromMilliseconds(100));
-                    Query(query);
-                    Dispatcher.DelayInvoke("ShowProgressbar", () =>
-                    {
-                        if (!queryHasReturn && !string.IsNullOrEmpty(lastQuery))
-                        {
-                            StartProgress();
-                        }
-                    }, TimeSpan.FromMilliseconds(150));
-                    //reset query history index after user start new query
-                    ResetQueryHistoryIndex();
-                }, TimeSpan.FromMilliseconds(searchDelay));
+                    StartProgress();
+                }
+            }, TimeSpan.FromMilliseconds(150));
+            //reset query history index after user start new query
+            ResetQueryHistoryIndex();
         }
 
         private void ResetQueryHistoryIndex()
         {
             QueryHistoryStorage.Instance.Reset();
         }
-
-        private int GetSearchDelay(string query)
-        {
-            if (!string.IsNullOrEmpty(query) && PluginManager.IsInstantQuery(query))
-            {
-                Debug.WriteLine("execute query without delay");
-                return 0;
-            }
-
-            Debug.WriteLine("execute query with 200ms delay");
-            return 200;
-        }
-
         private void Query(Query q)
         {
             PluginManager.QueryForAllPlugins(q);

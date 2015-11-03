@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System;
 
 namespace Wox.Plugin
 {
@@ -20,6 +21,7 @@ namespace Wox.Plugin
     /// </summary>
     public interface IInstantQuery : IFeatures
     {
+        [Obsolete("Empty interface is enough. it will be removed in v1.3.0 and possibly replaced by attribute")]
         bool IsInstantQuery(string query);
     }
 
