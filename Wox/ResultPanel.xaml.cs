@@ -7,7 +7,6 @@ using System.Windows.Media;
 using Wox.Core.UserSettings;
 using Wox.Plugin;
 using Wox.Storage;
-using UserControl = System.Windows.Controls.UserControl;
 
 namespace Wox
 {
@@ -225,7 +224,7 @@ namespace Wox
             if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
             {
                 lbResults.ScrollIntoView(e.AddedItems[0]);
-                Dispatcher.DelayInvoke("UpdateItemNumber", o =>
+                Dispatcher.DelayInvoke("UpdateItemNumber", () =>
                 {
                     UpdateItemNumber();
                 }, TimeSpan.FromMilliseconds(3));

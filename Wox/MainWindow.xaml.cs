@@ -24,7 +24,6 @@ using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
-using Wox.ShellContext;
 using Wox.Storage;
 using ContextMenu = System.Windows.Forms.ContextMenu;
 using DataFormats = System.Windows.DataFormats;
@@ -64,7 +63,7 @@ namespace Wox
                 tbQuery.CaretIndex = tbQuery.Text.Length;
                 if (requery)
                 {
-                    TextBoxBase_OnTextChanged(null, null);
+                    TbQuery_OnTextChanged(null, null);
                 }
             }));
         }
@@ -148,7 +147,7 @@ namespace Wox
 
         public List<PluginPair> GetAllPlugins()
         {
-            return PluginManager.AllPlugins;
+            return PluginManager.AllPlugins.ToList();
         }
 
         public event WoxKeyDownEventHandler BackKeyDownEvent;
@@ -207,18 +206,7 @@ namespace Wox
             InitialTray();
 
             Closing += MainWindow_Closing;
-            //since MainWIndow implement IPublicAPI, so we need to finish ctor MainWindow object before
-            //PublicAPI invoke in plugin init methods. E.g FolderPlugin
-            ThreadPool.QueueUserWorkItem(o =>
-            {
-                Thread.Sleep(50);
-                PluginManager.Init(this);
-            });
-            ThreadPool.QueueUserWorkItem(o =>
-            {
-                Thread.Sleep(50);
-                PreLoadImages();
-            });
+
         }
 
         void pnlResult_ItemDropEvent(Result result, IDataObject dropDataObject, DragEventArgs args)
@@ -243,11 +231,6 @@ namespace Wox
                 return GlobalKeyboardEvent((int)keyevent, vkcode, state);
             }
             return true;
-        }
-
-        private void PreLoadImages()
-        {
-            ImageLoader.ImageLoader.PreloadImages();
         }
 
         void pnlResult_RightMouseClickEvent(Result result)
@@ -364,7 +347,7 @@ namespace Wox
         {
             //double if to omit calling win32 function
             if (UserSettingStorage.Instance.IgnoreHotkeysOnFullscreen)
-                if(WindowIntelopHelper.IsWindowFullscreen())
+                if (WindowIntelopHelper.IsWindowFullscreen())
                     return true;
 
             return false;
@@ -456,69 +439,49 @@ namespace Wox
             }
         }
 
-        private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
+        private void TbQuery_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             if (ignoreTextChange) { ignoreTextChange = false; return; }
 
             toolTip.IsOpen = false;
             pnlResult.Dirty = true;
-
             if (IsInContextMenuMode)
             {
                 QueryContextMenu();
                 return;
             }
 
-            lastQuery = tbQuery.Text;
-            int searchDelay = GetSearchDelay(lastQuery);
+            queryHasReturn = false;
 
-            Dispatcher.DelayInvoke("UpdateSearch",
-                o =>
+            Dispatcher.DelayInvoke("ClearResults", () =>
+            {
+                // Delay the invocation of clear method of pnlResult, minimize the time-span between clear results and add new results. 
+                // So this will reduce splash issues. After waiting 100ms, if there still no results added, we
+                // must clear the result. otherwise, it will be confused why the query changed, but the results
+                // didn't.
+                if (pnlResult.Dirty) pnlResult.Clear();
+            }, TimeSpan.FromMilliseconds(100));
+            Query(tbQuery.Text);
+            Dispatcher.DelayInvoke("ShowProgressbar", () =>
+            {
+                if (!queryHasReturn && !string.IsNullOrEmpty(lastQuery))
                 {
-                    Dispatcher.DelayInvoke("ClearResults", i =>
-                    {
-                        // first try to use clear method inside pnlResult, which is more closer to the add new results
-                        // and this will not bring splash issues.After waiting 100ms, if there still no results added, we
-                        // must clear the result. otherwise, it will be confused why the query changed, but the results
-                        // didn't.
-                        if (pnlResult.Dirty) pnlResult.Clear();
-                    }, TimeSpan.FromMilliseconds(100), null);
-                    queryHasReturn = false;
-                    Query query = new Query(lastQuery);
-                    query.IsIntantQuery = searchDelay == 0;
-                    Query(query);
-                    Dispatcher.DelayInvoke("ShowProgressbar", originQuery =>
-                    {
-                        if (!queryHasReturn && originQuery == tbQuery.Text && !string.IsNullOrEmpty(lastQuery))
-                        {
-                            StartProgress();
-                        }
-                    }, TimeSpan.FromMilliseconds(150), tbQuery.Text);
-                    //reset query history index after user start new query
-                    ResetQueryHistoryIndex();
-                }, TimeSpan.FromMilliseconds(searchDelay));
+                    StartProgress();
+                }
+            }, TimeSpan.FromMilliseconds(150));
+            //reset query history index after user start new query
+            ResetQueryHistoryIndex();
         }
 
         private void ResetQueryHistoryIndex()
         {
             QueryHistoryStorage.Instance.Reset();
         }
-
-        private int GetSearchDelay(string query)
+        private void Query(string text)
         {
-            if (!string.IsNullOrEmpty(query) && PluginManager.IsInstantQuery(query))
-            {
-                DebugHelper.WriteLine("execute query without delay");
-                return 0;
-            }
-
-            DebugHelper.WriteLine("execute query with 200ms delay");
-            return 200;
-        }
-
-        private void Query(Query q)
-        {
-            PluginManager.Query(q);
+            var query = PluginManager.QueryInit(text);
+            lastQuery = query?.RawQuery;
+            PluginManager.QueryForAllPlugins(query);
             StopProgress();
         }
 

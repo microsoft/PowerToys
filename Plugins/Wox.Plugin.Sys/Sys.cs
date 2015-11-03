@@ -5,8 +5,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Wox.Infrastructure;
-using System.Runtime.InteropServices;
-using System.Windows.Forms;
 using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.Sys

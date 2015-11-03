@@ -1,11 +1,7 @@
 using System;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Windows;
 using System.Windows.Data;
-using System.Windows.Media.Imaging;
-using Wox.Helper;
 
 namespace Wox.Converters
 {

@@ -4,12 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Windows;
+using IWshRuntimeLibrary;
 using Wox.Infrastructure;
 using Wox.Plugin.Program.ProgramSources;
-using IWshRuntimeLibrary;
-using Wox.Plugin.Features;
 
 namespace Wox.Plugin.Program
 {
@@ -76,7 +74,7 @@ namespace Wox.Plugin.Program
             {
                 programs = ProgramCacheStorage.Instance.Programs;
             }
-            DebugHelper.WriteLine(string.Format("Preload {0} programs from cache", programs.Count));
+            Debug.WriteLine(string.Format("Preload {0} programs from cache", programs.Count));
             using (new Timeit("Program Index"))
             {
                 IndexPrograms();

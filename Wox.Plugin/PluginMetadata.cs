@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Security.RightsManagement;
-using System.Text;
 
 namespace Wox.Plugin
 {

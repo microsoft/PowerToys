@@ -1,34 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Wox.Core.Plugin;
-using Wox.Plugin;
-using Wox.Helper;
-using Application = System.Windows.Forms.Application;
-using File = System.IO.File;
-using MessageBox = System.Windows.MessageBox;
-using System.Windows.Data;
-using System.Windows.Forms;
 using Microsoft.Win32;
 using Wox.Core.i18n;
+using Wox.Core.Plugin;
 using Wox.Core.Theme;
 using Wox.Core.Updater;
 using Wox.Core.UserSettings;
+using Wox.Helper;
 using Wox.Infrastructure;
-using CheckBox = System.Windows.Controls.CheckBox;
-using Control = System.Windows.Controls.Control;
-using Cursors = System.Windows.Input.Cursors;
-using HorizontalAlignment = System.Windows.HorizontalAlignment;
+using Wox.Plugin;
+using Application = System.Windows.Forms.Application;
 
 namespace Wox
 {
@@ -464,7 +455,7 @@ namespace Wox
 
         private void DelayChangeTheme()
         {
-            Dispatcher.DelayInvoke("delayChangeTheme", o =>
+            Dispatcher.DelayInvoke("delayChangeTheme", () =>
             {
                 ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
             }, TimeSpan.FromMilliseconds(100));

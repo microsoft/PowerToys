@@ -53,7 +53,7 @@ namespace Wox
             }
 
             Dispatcher.DelayInvoke("HotkeyAvailabilityTest", 
-                o =>
+                () =>
                 {
                     SetHotkey(hotkeyModel);
                 },

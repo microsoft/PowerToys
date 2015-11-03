@@ -35,22 +35,16 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
-    <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AllowedLanguage.cs" />
     <Compile Include="EventHandler.cs" />
+    <Compile Include="Feature.cs" />
     <Compile Include="Features\IContextMenu.cs" />
     <Compile Include="Features\IExclusiveQuery.cs" />
     <Compile Include="Features\IInstantQuery.cs" />
     <Compile Include="IHttpProxy.cs" />
-    <Compile Include="IPluginI18n.cs" />
     <Compile Include="IPlugin.cs" />
     <Compile Include="IPublicAPI.cs" />
     <Compile Include="ISettingProvider.cs" />
@@ -65,6 +59,7 @@
   <ItemGroup>
     <None Include="README.md" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

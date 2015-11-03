@@ -121,3 +121,4 @@ Wox/Wox.csproj
 
 *.sublime-*
 *.dgml
+migrateToAutomaticPackageRestore.ps1

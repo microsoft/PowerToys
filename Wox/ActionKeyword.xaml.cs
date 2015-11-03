@@ -1,21 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Forms;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Wox.Core.i18n;
 using Wox.Core.Plugin;
 using Wox.Core.UserSettings;
 using Wox.Plugin;
-using MessageBox = System.Windows.MessageBox;
 
 namespace Wox
 {
@@ -57,7 +45,7 @@ namespace Wox
             }
 
             //check new action keyword didn't used by other plugin
-            if (tbAction.Text.Trim() != PluginManager.ActionKeywordWildcardSign && PluginManager.AllPlugins.Exists(o => o.Metadata.ActionKeyword == tbAction.Text.Trim()))
+            if (tbAction.Text.Trim() != Query.WildcardSign && PluginManager.AllPlugins.Any(o => o.Metadata.ActionKeyword == tbAction.Text.Trim()))
             {
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("newActionKeywordHasBeenAssigned"));
                 return;

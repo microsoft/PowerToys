@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using Newtonsoft.Json;
+using Wox.Core.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
-using Wox.Core.Exception;
 
 namespace Wox.Core.Plugin
 {

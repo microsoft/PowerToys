@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.ServiceProcess;
 using Wox.Infrastructure;
-using System.Reflection;
 using Wox.Plugin.Everything.Everything;
-using Wox.Plugin.Features;
 
 namespace Wox.Plugin.Everything
 {

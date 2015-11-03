@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Windows;
 
 namespace Wox.Plugin.Url
 {

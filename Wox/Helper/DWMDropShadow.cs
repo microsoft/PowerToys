@@ -3,7 +3,6 @@ using System.Drawing.Printing;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
-using System.Windows.Media;
 
 namespace Wox.Helper
 {

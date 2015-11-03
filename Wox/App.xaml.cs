@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Windows;
 using Wox.CommandArgs;
+using Wox.Core.Plugin;
 using Wox.Helper;
-using Application = System.Windows.Application;
-using MessageBox = System.Windows.MessageBox;
-using StartupEventArgs = System.Windows.StartupEventArgs;
+using Wox.Infrastructure;
 
 namespace Wox
 {
@@ -30,12 +29,18 @@ namespace Wox
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            base.OnStartup(e);
-            DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
-            AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
+            using (new Timeit("Startup Time"))
+            {
+                base.OnStartup(e);
+                DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
+                AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
 
-            Window = new MainWindow();
-            CommandArgsFactory.Execute(e.Args.ToList());
+                //ThreadPool.QueueUserWorkItem(o => { ImageLoader.ImageLoader.PreloadImages(); });
+                Window = new MainWindow();
+                PluginManager.Init(Window);
+                CommandArgsFactory.Execute(e.Args.ToList());
+            }
+
         }
 
         public bool OnActivate(IList<string> args)
