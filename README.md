@@ -15,10 +15,12 @@ Screenshot
 <a href="https://github.com/qianlifeng/Wox/wiki/Screenshot">More screenshot</a>
 <img src="http://ww3.sinaimg.cn/large/dce48faejw1eihx6ffo8eg20zk0m8hdt.gif" />
 
-Download
+Installation
 =========
 
-You can download the latest version on the [release page](https://github.com/qianlifeng/Wox/releases).
+1. You can download the latest version on the [release page](https://github.com/qianlifeng/Wox/releases).
+2. Put it into your user directory (`C:\Users\YOUUSERNAME` or `%userprofile%`)
+3. Windows 10 user, please have a look at https://github.com/Wox-launcher/Wox/issues/279
 
 Contribute  
 =========
