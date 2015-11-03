@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -31,7 +30,7 @@ namespace Wox.Core.Plugin
         /// </summary>
         private static List<string> pluginDirectories = new List<string>();
 
-        public static List<PluginPair> AllPlugins
+        public static IEnumerable<PluginPair> AllPlugins
         {
             get { return plugins; }
             private set { plugins = value.OrderBy(o => o.Metadata.Name).ToList(); }
@@ -77,12 +76,10 @@ namespace Wox.Core.Plugin
 
             SetupPluginDirectories();
             API = api;
-            AllPlugins?.Clear();
 
             pluginMetadatas = PluginConfig.Parse(pluginDirectories);
             AllPlugins = (new CSharpPluginLoader().LoadPlugin(pluginMetadatas)).
-                Concat(new JsonRPCPluginLoader<PythonPlugin>().LoadPlugin(pluginMetadatas)).
-                ToList();
+                Concat(new JsonRPCPluginLoader<PythonPlugin>().LoadPlugin(pluginMetadatas));
 
             //load plugin i18n languages
             ResourceMerger.ApplyPluginLanguages();
@@ -108,7 +105,9 @@ namespace Wox.Core.Plugin
 
             ThreadPool.QueueUserWorkItem(o =>
             {
-                GetInstantSearchesPlugins();
+                instantQueryPlugins = GetPlugins<IInstantQuery>();
+                exclusiveSearchPlugins = GetPlugins<IExclusiveQuery>();
+                contextMenuPlugins = GetPlugins<IContextMenu>();
             });
         }
 
@@ -119,16 +118,16 @@ namespace Wox.Core.Plugin
 
         public static void QueryForAllPlugins(Query query)
         {
-            query.ActionKeyword = String.Empty;
+            query.ActionKeyword = string.Empty;
             query.Search = query.RawQuery;
             if (query.Terms.Length == 0) return;
             if (IsVailldActionKeyword(query.Terms[0]))
             {
                 query.ActionKeyword = query.Terms[0];
             }
-            if (!String.IsNullOrEmpty(query.ActionKeyword))
+            if (!string.IsNullOrEmpty(query.ActionKeyword))
             {
-                query.Search = String.Join(Query.Seperater, query.Terms.Skip(1).ToArray());
+                query.Search = string.Join(Query.Seperater, query.Terms.Skip(1).ToArray());
             }
             QueryDispatch(query);
         }
@@ -186,7 +185,7 @@ namespace Wox.Core.Plugin
         /// <returns></returns>
         private static bool IsVailldActionKeyword(string actionKeyword)
         {
-            if (String.IsNullOrEmpty(actionKeyword) || actionKeyword == Query.WildcardSign) return false;
+            if (string.IsNullOrEmpty(actionKeyword) || actionKeyword == Query.WildcardSign) return false;
             PluginPair pair = AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == actionKeyword);
             if (pair == null) return false;
             var customizedPluginConfig = UserSettingStorage.Instance.
@@ -203,14 +202,8 @@ namespace Wox.Core.Plugin
         {
             //any plugin that takes more than 200ms for AvgQueryTime won't be treated as IInstantQuery plugin anymore.
             return plugin.AvgQueryTime < 200 &&
-                   plugin.Metadata.Language.ToUpper() == AllowedLanguage.CSharp &&
-                   GetInstantSearchesPlugins().Any(p => p.Metadata.ID == plugin.Metadata.ID);
-        }
-
-        private static IEnumerable<PluginPair> GetInstantSearchesPlugins()
-        {
-            instantQueryPlugins = instantQueryPlugins ?? GetPlugins<IInstantQuery>();
-            return instantQueryPlugins;
+                   plugin.Plugin is IInstantQuery &&
+                   instantQueryPlugins.Any(p => p.Metadata.ID == plugin.Metadata.ID);
         }
 
         /// <summary>
@@ -230,9 +223,7 @@ namespace Wox.Core.Plugin
 
         private static PluginPair GetExclusivePlugin(Query query)
         {
-            exclusiveSearchPlugins = exclusiveSearchPlugins ?? GetPlugins<IExclusiveQuery>();
-            var plugin = exclusiveSearchPlugins.FirstOrDefault(p => ((IExclusiveQuery)p.Plugin).IsExclusiveQuery(query));
-            return plugin;
+            return exclusiveSearchPlugins.FirstOrDefault(p => ((IExclusiveQuery)p.Plugin).IsExclusiveQuery(query));
         }
 
         private static PluginPair GetActionKeywordPlugin(Query query)
@@ -254,8 +245,6 @@ namespace Wox.Core.Plugin
 
         public static List<Result> GetPluginContextMenus(Result result)
         {
-            contextMenuPlugins = contextMenuPlugins ?? GetPlugins<IContextMenu>();
-
             var pluginPair = contextMenuPlugins.FirstOrDefault(o => o.Metadata.ID == result.PluginID);
             var plugin = (IContextMenu)pluginPair?.Plugin;
             if (plugin != null)

@@ -147,7 +147,7 @@ namespace Wox
 
         public List<PluginPair> GetAllPlugins()
         {
-            return PluginManager.AllPlugins;
+            return PluginManager.AllPlugins.ToList();
         }
 
         public event WoxKeyDownEventHandler BackKeyDownEvent;
