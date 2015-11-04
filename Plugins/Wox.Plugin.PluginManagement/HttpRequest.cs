@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 
-
 namespace Wox.Plugin.PluginManagement
 {
     public class HttpRequest

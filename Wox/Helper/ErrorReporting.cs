@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Windows;
-using System.Windows.Forms;
 using System.Windows.Threading;
 using Wox.Core.Exception;
 using Wox.Infrastructure.Logger;
-using MessageBox = System.Windows.MessageBox;
 
 namespace Wox.Helper
 {

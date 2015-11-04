@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Newtonsoft.Json;
 using Wox.Core.Exception;
 using Wox.Core.UserSettings;
@@ -30,11 +28,6 @@ namespace Wox.Core.Plugin
                 ParsePluginConfigs(pluginDirectory);
             }
 
-            if (PluginManager.DebuggerMode != null)
-            {
-                PluginMetadata metadata = GetPluginMetadata(PluginManager.DebuggerMode);
-                if (metadata != null) pluginMetadatas.Add(metadata);
-            }
             return pluginMetadatas;
         }
 

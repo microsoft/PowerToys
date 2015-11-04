@@ -5,8 +5,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Wox.Infrastructure;
-using System.Runtime.InteropServices;
-using System.Windows.Forms;
 using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.Sys
@@ -95,7 +93,7 @@ namespace Wox.Plugin.Sys
                 new Result
                 {
                     Title = "Sleep",
-                    SubTitle = "Put computer to sleep",
+                    SubTitle = context.API.GetTranslation("wox_plugin_sys_sleep"),
                     Score = 100,
                     IcoPath = "Images\\sleep.png",
                     Action = (c) => Application.SetSuspendState(PowerState.Suspend, false, false)

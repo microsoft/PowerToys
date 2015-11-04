@@ -1,6 +1,6 @@
 {
     "ID":"D409510CD0D2481F853690A07E6DC426",
-    "ActionKeyword":"*",
+    "ActionKeyword":">",
     "Name":"Shell",
     "Description":"Provide executing commands from Wox. Commands should start with >",
     "Author":"qianlifeng",

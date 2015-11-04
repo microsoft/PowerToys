@@ -4,9 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Timers;
-using System.Windows.Threading;
-using Wox.Plugin.Features;
 using Wox.Plugin.WebSearch.SuggestionSources;
 
 namespace Wox.Plugin.WebSearch
@@ -123,19 +120,16 @@ namespace Wox.Plugin.WebSearch
             return context.API.GetTranslation("wox_plugin_websearch_plugin_description");
         }
 
-        public bool IsInstantQuery(string query)
+        public bool IsInstantQuery(string query) => false;
+
+        public bool IsExclusiveQuery(Query query)
         {
-            var strings = query.Split(' ');
+            var strings = query.RawQuery.Split(' ');
             if (strings.Length > 1)
             {
                 return WebSearchStorage.Instance.WebSearches.Exists(o => o.ActionWord == strings[0] && o.Enabled);
             }
             return false;
-        }
-
-        public bool IsExclusiveQuery(Query query)
-        {
-            return IsInstantQuery(query.RawQuery);
         }
     }
 }

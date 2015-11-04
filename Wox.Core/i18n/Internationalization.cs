@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Windows;
 using Wox.Core.Exception;
 using Wox.Core.UI;
@@ -15,7 +14,8 @@ namespace Wox.Core.i18n
 {
     public class Internationalization : IInternationalization, IUIResource
     {
-        private static string DefaultLanguageDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+        public const string DirectoryName = "Languages";
+        private static readonly string DefaultDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), DirectoryName);
 
         static Internationalization()
         {
@@ -24,11 +24,11 @@ namespace Wox.Core.i18n
 
         private static void MakesureThemeDirectoriesExist()
         {
-            if (!Directory.Exists(DefaultLanguageDirectory))
+            if (!Directory.Exists(DefaultDirectory))
             {
                 try
                 {
-                    Directory.CreateDirectory(DefaultLanguageDirectory);
+                    Directory.CreateDirectory(DefaultDirectory);
                 }
                 catch (System.Exception e)
                 {
@@ -70,15 +70,14 @@ namespace Wox.Core.i18n
 
             UserSettingStorage.Instance.Language = language.LanguageCode;
             UserSettingStorage.Instance.Save();
-            ResourceMerger.ApplyResources();
-            UpdateAllPluginMetadataTranslations();
+            ResourceMerger.ApplyLanguageResources(this);
         }
 
         public ResourceDictionary GetResourceDictionary()
         {
             return new ResourceDictionary
             {
-                Source = new Uri(GetLanguageFile(DefaultLanguageDirectory), UriKind.Absolute)
+                Source = new Uri(GetLanguageFile(DefaultDirectory), UriKind.Absolute)
             };
         }
 
@@ -112,15 +111,6 @@ namespace Wox.Core.i18n
         }
 
 
-        internal void UpdateAllPluginMetadataTranslations()
-        {
-            List<KeyValuePair<PluginPair, IPluginI18n>> plugins = AssemblyHelper.LoadPluginInterfaces<IPluginI18n>();
-            foreach (var plugin in plugins)
-            {
-                UpdatePluginMetadataTranslations(plugin.Key);
-            }
-        }
-
         internal void UpdatePluginMetadataTranslations(PluginPair pluginPair)
         {
             var pluginI18n = pluginPair.Plugin as IPluginI18n;
@@ -143,7 +133,7 @@ namespace Wox.Core.i18n
 
         private string GetLanguagePath(Language language)
         {
-            string path = Path.Combine(DefaultLanguageDirectory, language.LanguageCode + ".xaml");
+            string path = Path.Combine(DefaultDirectory, language.LanguageCode + ".xaml");
             if (File.Exists(path))
             {
                 return path;

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using NLog;
 
 namespace Wox.Infrastructure.Logger

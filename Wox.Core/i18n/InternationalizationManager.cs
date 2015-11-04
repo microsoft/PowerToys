@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Windows;
-using Wox.Core.UI;
-using Wox.Infrastructure.Logger;
-
-namespace Wox.Core.i18n
+﻿namespace Wox.Core.i18n
 {
     public static class InternationalizationManager
     {

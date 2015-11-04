@@ -1,34 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Wox.Core.Plugin;
-using Wox.Plugin;
-using Wox.Helper;
-using Application = System.Windows.Forms.Application;
-using File = System.IO.File;
-using MessageBox = System.Windows.MessageBox;
-using System.Windows.Data;
-using System.Windows.Forms;
 using Microsoft.Win32;
 using Wox.Core.i18n;
+using Wox.Core.Plugin;
 using Wox.Core.Theme;
 using Wox.Core.Updater;
 using Wox.Core.UserSettings;
+using Wox.Helper;
 using Wox.Infrastructure;
-using CheckBox = System.Windows.Controls.CheckBox;
-using Control = System.Windows.Controls.Control;
-using Cursors = System.Windows.Input.Cursors;
-using HorizontalAlignment = System.Windows.HorizontalAlignment;
+using Wox.Plugin;
+using Application = System.Windows.Forms.Application;
 
 namespace Wox
 {
@@ -49,7 +40,6 @@ namespace Wox
         private void Setting_Loaded(object sender, RoutedEventArgs ev)
         {
             #region General
-
             cbHideWhenDeactive.Checked += (o, e) =>
             {
                 UserSettingStorage.Instance.HideWhenDeactive = true;
@@ -86,6 +76,20 @@ namespace Wox
                 UserSettingStorage.Instance.Save();
             };
 
+            cbIgnoreHotkeysOnFullscreen.Checked += (o, e) =>
+            {
+                UserSettingStorage.Instance.IgnoreHotkeysOnFullscreen = true;
+                UserSettingStorage.Instance.Save();
+            };
+
+
+            cbIgnoreHotkeysOnFullscreen.Unchecked += (o, e) =>
+            {
+                UserSettingStorage.Instance.IgnoreHotkeysOnFullscreen = false;
+                UserSettingStorage.Instance.Save();
+            };
+
+
             cbStartWithWindows.IsChecked = CheckApplicationIsStartupWithWindow();
             comboMaxResultsToShow.SelectionChanged += (o, e) =>
             {
@@ -97,6 +101,7 @@ namespace Wox
             cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
             cbDontPromptUpdateMsg.IsChecked = UserSettingStorage.Instance.DontPromptUpdateMsg;
             cbRememberLastLocation.IsChecked = UserSettingStorage.Instance.RememberLastLaunchLocation;
+            cbIgnoreHotkeysOnFullscreen.IsChecked = UserSettingStorage.Instance.IgnoreHotkeysOnFullscreen;
 
             LoadLanguages();
             comboMaxResultsToShow.ItemsSource = Enumerable.Range(2, 16);
@@ -111,7 +116,9 @@ namespace Wox
             cbEnableProxy.Unchecked += (o, e) => DisableProxy();
             cbEnableProxy.IsChecked = UserSettingStorage.Instance.ProxyEnabled;
             tbProxyServer.Text = UserSettingStorage.Instance.ProxyServer;
-            tbProxyPort.Text = UserSettingStorage.Instance.ProxyPort.ToString();
+            if (UserSettingStorage.Instance.ProxyPort != 0) {
+                tbProxyPort.Text = UserSettingStorage.Instance.ProxyPort.ToString();
+            }
             tbProxyUserName.Text = UserSettingStorage.Instance.ProxyUserName;
             tbProxyPassword.Password = UserSettingStorage.Instance.ProxyPassword;
             if (UserSettingStorage.Instance.ProxyEnabled)
@@ -159,6 +166,25 @@ namespace Wox
                 case "about":
                     settingTab.SelectedIndex = 5;
                     break;
+            }
+        }
+
+        private void settingTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Update controls inside the selected tab
+            if (e.OriginalSource != settingTab) return;
+
+            if (tabPlugin.IsSelected)
+            {
+                OnPluginTabSelected();
+            }
+            else if (tabTheme.IsSelected)
+            {
+                OnThemeTabSelected();
+            }
+            else if (tabHotkey.IsSelected)
+            {
+                OnHotkeyTabSelected();
             }
         }
 
@@ -238,17 +264,6 @@ namespace Wox
                 MainWindow.RemoveHotkey(UserSettingStorage.Instance.Hotkey);
                 UserSettingStorage.Instance.Hotkey = ctlHotkey.CurrentHotkey.ToString();
                 UserSettingStorage.Instance.Save();
-            }
-        }
-
-
-        private void TabHotkey_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            var tabItem = sender as TabItem;
-            var clickingBody = (tabItem.Content as UIElement).IsMouseOver;
-            if (!clickingBody)
-            {
-                OnHotkeyTabSelected();
             }
         }
 
@@ -420,16 +435,6 @@ namespace Wox
 
         }
 
-        private void TabTheme_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            var tabItem = sender as TabItem;
-            var clickingBody = (tabItem.Content as UIElement).IsMouseOver;
-            if (!clickingBody)
-            {
-                OnThemeTabSelected();
-            }
-        }
-
         private void ThemeComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string themeName = themeComboBox.SelectedItem.ToString();
@@ -450,7 +455,7 @@ namespace Wox
 
         private void DelayChangeTheme()
         {
-            Dispatcher.DelayInvoke("delayChangeTheme", o =>
+            Dispatcher.DelayInvoke("delayChangeTheme", () =>
             {
                 ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
             }, TimeSpan.FromMilliseconds(100));
@@ -664,17 +669,6 @@ namespace Wox
             lbPlugins.SelectedIndex = 0;
         }
 
-        private void TabPlugin_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            var tabItem = sender as TabItem;
-            var clickingBody = (tabItem.Content as UIElement).IsMouseOver;
-            if (!clickingBody)
-            {
-                OnPluginTabSelected();
-            }
-        }
-
-
         #endregion
 
         #region Proxy
@@ -786,5 +780,14 @@ namespace Wox
         }
 
         #endregion
+
+        private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            // Hide window with ESC, but make sure it is not pressed as a hotkey
+            if (e.Key == Key.Escape && !ctlHotkey.IsFocused)
+            {
+                Close();
+            }
+        }
     }
 }

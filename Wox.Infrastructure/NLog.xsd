@@ -126,6 +126,11 @@
         <xs:documentation>Ignore further rules if this one matches.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="enabled" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>Enable or disable logging rule. Disabled rules are ignored.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
   <xs:complexType name="NLogFilters">
     <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -145,6 +150,15 @@
       <xs:enumeration value="Warn" />
       <xs:enumeration value="Error" />
       <xs:enumeration value="Fatal" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="LineEndingMode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Default" />
+      <xs:enumeration value="CRLF" />
+      <xs:enumeration value="CR" />
+      <xs:enumeration value="LF" />
+      <xs:enumeration value="None" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="NLogLevelList">
@@ -226,58 +240,6 @@
       <xs:minLength value="1" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:complexType name="AspNetBufferingWrapper">
-    <xs:complexContent>
-      <xs:extension base="WrapperTargetBase">
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-          <xs:element name="name" minOccurs="0" maxOccurs="1" type="xs:string" />
-          <xs:element name="bufferGrowLimit" minOccurs="0" maxOccurs="1" type="xs:integer" />
-          <xs:element name="bufferSize" minOccurs="0" maxOccurs="1" type="xs:integer" />
-          <xs:element name="growBufferAsNeeded" minOccurs="0" maxOccurs="1" type="xs:boolean" />
-        </xs:choice>
-        <xs:attribute name="name" type="xs:string">
-          <xs:annotation>
-            <xs:documentation>Name of the target.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="bufferGrowLimit" type="xs:integer">
-          <xs:annotation>
-            <xs:documentation>Maximum number of log events that the buffer can keep.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="bufferSize" type="xs:integer">
-          <xs:annotation>
-            <xs:documentation>Number of log events to be buffered.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="growBufferAsNeeded" type="xs:boolean">
-          <xs:annotation>
-            <xs:documentation>Indicates whether buffer should grow as needed.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-  <xs:complexType name="AspNetTrace">
-    <xs:complexContent>
-      <xs:extension base="Target">
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-          <xs:element name="name" minOccurs="0" maxOccurs="1" type="xs:string" />
-          <xs:element name="layout" minOccurs="0" maxOccurs="1" type="Layout" />
-        </xs:choice>
-        <xs:attribute name="name" type="xs:string">
-          <xs:annotation>
-            <xs:documentation>Name of the target.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="layout" type="SimpleLayoutAttribute">
-          <xs:annotation>
-            <xs:documentation>Layout used to format log messages.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
   <xs:complexType name="AspResponse">
     <xs:complexContent>
       <xs:extension base="Target">
@@ -540,6 +502,7 @@
           <xs:element name="useDefaultRowHighlightingRules" minOccurs="0" maxOccurs="1" type="xs:boolean" />
           <xs:element name="highlight-row" minOccurs="0" maxOccurs="unbounded" type="NLog.Targets.ConsoleRowHighlightingRule" />
           <xs:element name="highlight-word" minOccurs="0" maxOccurs="unbounded" type="NLog.Targets.ConsoleWordHighlightingRule" />
+          <xs:element name="encoding" minOccurs="0" maxOccurs="1" type="xs:string" />
           <xs:element name="errorStream" minOccurs="0" maxOccurs="1" type="xs:boolean" />
         </xs:choice>
         <xs:attribute name="name" type="xs:string">
@@ -565,6 +528,11 @@
         <xs:attribute name="useDefaultRowHighlightingRules" type="xs:boolean">
           <xs:annotation>
             <xs:documentation>Indicates whether to use default row highlighting rules.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="encoding" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>The encoding for writing messages to the .</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="errorStream" type="xs:boolean">
@@ -667,6 +635,7 @@
           <xs:element name="header" minOccurs="0" maxOccurs="1" type="Layout" />
           <xs:element name="footer" minOccurs="0" maxOccurs="1" type="Layout" />
           <xs:element name="error" minOccurs="0" maxOccurs="1" type="xs:boolean" />
+          <xs:element name="encoding" minOccurs="0" maxOccurs="1" type="xs:string" />
         </xs:choice>
         <xs:attribute name="name" type="xs:string">
           <xs:annotation>
@@ -693,6 +662,11 @@
             <xs:documentation>Indicates whether to send the log messages to the standard error instead of the standard output.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="encoding" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>The encoding for writing messages to the .</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -709,7 +683,6 @@
           <xs:element name="dbProvider" minOccurs="0" maxOccurs="1" type="xs:string" />
           <xs:element name="dbUserName" minOccurs="0" maxOccurs="1" type="Layout" />
           <xs:element name="keepConnection" minOccurs="0" maxOccurs="1" type="xs:boolean" />
-          <xs:element name="useTransactions" minOccurs="0" maxOccurs="1" type="xs:boolean" />
           <xs:element name="installConnectionString" minOccurs="0" maxOccurs="1" type="Layout" />
           <xs:element name="install-command" minOccurs="0" maxOccurs="unbounded" type="NLog.Targets.DatabaseCommandInfo" />
           <xs:element name="uninstall-command" minOccurs="0" maxOccurs="unbounded" type="NLog.Targets.DatabaseCommandInfo" />
@@ -760,11 +733,6 @@
         <xs:attribute name="keepConnection" type="xs:boolean">
           <xs:annotation>
             <xs:documentation>Indicates whether to keep the database connection open between the log events.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="useTransactions" type="xs:boolean">
-          <xs:annotation>
-            <xs:documentation>Indicates whether to use database transactions. Some data providers require this.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="installConnectionString" type="SimpleLayoutAttribute">
@@ -855,7 +823,7 @@
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
-  <xs:complexType name="DebugHelper">
+  <xs:complexType name="Debugger">
     <xs:complexContent>
       <xs:extension base="Target">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -917,7 +885,8 @@
           <xs:element name="eventId" minOccurs="0" maxOccurs="1" type="Layout" />
           <xs:element name="log" minOccurs="0" maxOccurs="1" type="xs:string" />
           <xs:element name="machineName" minOccurs="0" maxOccurs="1" type="xs:string" />
-          <xs:element name="source" minOccurs="0" maxOccurs="1" type="xs:string" />
+          <xs:element name="source" minOccurs="0" maxOccurs="1" type="Layout" />
+          <xs:element name="entryType" minOccurs="0" maxOccurs="1" type="Layout" />
         </xs:choice>
         <xs:attribute name="name" type="xs:string">
           <xs:annotation>
@@ -949,9 +918,14 @@
             <xs:documentation>Name of the machine on which Event Log service is running.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="source" type="xs:string">
+        <xs:attribute name="source" type="SimpleLayoutAttribute">
           <xs:annotation>
             <xs:documentation>Value to be used as the event Source.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="entryType" type="SimpleLayoutAttribute">
+          <xs:annotation>
+            <xs:documentation>Optional entrytype. When not set, or when not convertable to  then determined by </xs:documentation>
           </xs:annotation>
         </xs:attribute>
       </xs:extension>
@@ -986,30 +960,32 @@
           <xs:element name="header" minOccurs="0" maxOccurs="1" type="Layout" />
           <xs:element name="footer" minOccurs="0" maxOccurs="1" type="Layout" />
           <xs:element name="encoding" minOccurs="0" maxOccurs="1" type="xs:string" />
-          <xs:element name="lineEnding" minOccurs="0" maxOccurs="1" type="NLog.Targets.LineEndingMode" />
+          <xs:element name="lineEnding" minOccurs="0" maxOccurs="1" type="LineEndingMode" />
+          <xs:element name="maxArchiveFiles" minOccurs="0" maxOccurs="1" type="xs:integer" />
           <xs:element name="archiveNumbering" minOccurs="0" maxOccurs="1" type="NLog.Targets.ArchiveNumberingMode" />
           <xs:element name="archiveFileName" minOccurs="0" maxOccurs="1" type="Layout" />
           <xs:element name="archiveEvery" minOccurs="0" maxOccurs="1" type="NLog.Targets.FileArchivePeriod" />
           <xs:element name="archiveAboveSize" minOccurs="0" maxOccurs="1" type="xs:long" />
-          <xs:element name="maxArchiveFiles" minOccurs="0" maxOccurs="1" type="xs:integer" />
+          <xs:element name="enableArchiveFileCompression" minOccurs="0" maxOccurs="1" type="xs:boolean" />
           <xs:element name="forceManaged" minOccurs="0" maxOccurs="1" type="xs:boolean" />
           <xs:element name="fileAttributes" minOccurs="0" maxOccurs="1" type="NLog.Targets.Win32FileAttributes" />
           <xs:element name="replaceFileContentsOnEachWrite" minOccurs="0" maxOccurs="1" type="xs:boolean" />
-          <xs:element name="deleteOldFileOnStartup" minOccurs="0" maxOccurs="1" type="xs:boolean" />
           <xs:element name="fileName" minOccurs="0" maxOccurs="1" type="Layout" />
           <xs:element name="archiveDateFormat" minOccurs="0" maxOccurs="1" type="xs:string" />
           <xs:element name="archiveOldFileOnStartup" minOccurs="0" maxOccurs="1" type="xs:boolean" />
           <xs:element name="createDirs" minOccurs="0" maxOccurs="1" type="xs:boolean" />
+          <xs:element name="deleteOldFileOnStartup" minOccurs="0" maxOccurs="1" type="xs:boolean" />
           <xs:element name="enableFileDelete" minOccurs="0" maxOccurs="1" type="xs:boolean" />
           <xs:element name="openFileCacheTimeout" minOccurs="0" maxOccurs="1" type="xs:integer" />
           <xs:element name="networkWrites" minOccurs="0" maxOccurs="1" type="xs:boolean" />
+          <xs:element name="maxLogFilenames" minOccurs="0" maxOccurs="1" type="xs:integer" />
           <xs:element name="keepFileOpen" minOccurs="0" maxOccurs="1" type="xs:boolean" />
           <xs:element name="concurrentWrites" minOccurs="0" maxOccurs="1" type="xs:boolean" />
           <xs:element name="concurrentWriteAttempts" minOccurs="0" maxOccurs="1" type="xs:integer" />
           <xs:element name="concurrentWriteAttemptDelay" minOccurs="0" maxOccurs="1" type="xs:integer" />
-          <xs:element name="bufferSize" minOccurs="0" maxOccurs="1" type="xs:integer" />
-          <xs:element name="openFileCacheSize" minOccurs="0" maxOccurs="1" type="xs:integer" />
           <xs:element name="autoFlush" minOccurs="0" maxOccurs="1" type="xs:boolean" />
+          <xs:element name="openFileCacheSize" minOccurs="0" maxOccurs="1" type="xs:integer" />
+          <xs:element name="bufferSize" minOccurs="0" maxOccurs="1" type="xs:integer" />
         </xs:choice>
         <xs:attribute name="name" type="xs:string">
           <xs:annotation>
@@ -1036,9 +1012,14 @@
             <xs:documentation>File encoding.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="lineEnding" type="NLog.Targets.LineEndingMode">
+        <xs:attribute name="lineEnding" type="LineEndingMode">
           <xs:annotation>
             <xs:documentation>Line ending mode.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="maxArchiveFiles" type="xs:integer">
+          <xs:annotation>
+            <xs:documentation>Maximum number of archive files that should be kept.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="archiveNumbering" type="NLog.Targets.ArchiveNumberingMode">
@@ -1058,17 +1039,17 @@
         </xs:attribute>
         <xs:attribute name="archiveAboveSize" type="xs:long">
           <xs:annotation>
-            <xs:documentation>Size in bytes above which log files will be automatically archived.</xs:documentation>
+            <xs:documentation>Size in bytes above which log files will be automatically archived. Warning: combining this with  isn't supported. We cannot create multiple archive files, if they should have the same name. Choose: </xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="maxArchiveFiles" type="xs:integer">
+        <xs:attribute name="enableArchiveFileCompression" type="xs:boolean">
           <xs:annotation>
-            <xs:documentation>Maximum number of archive files that should be kept.</xs:documentation>
+            <xs:documentation>Indicates whether to compress archive files into the zip archive format.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="forceManaged" type="xs:boolean">
           <xs:annotation>
-            <xs:documentation>Gets ors set a value indicating whether a managed file stream is forced, instead of used the native implementation.</xs:documentation>
+            <xs:documentation>Gets or set a value indicating whether a managed file stream is forced, instead of used the native implementation.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="fileAttributes" type="NLog.Targets.Win32FileAttributes">
@@ -1079,11 +1060,6 @@
         <xs:attribute name="replaceFileContentsOnEachWrite" type="xs:boolean">
           <xs:annotation>
             <xs:documentation>Indicates whether to replace file contents on each write instead of appending log message at the end.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="deleteOldFileOnStartup" type="xs:boolean">
-          <xs:annotation>
-            <xs:documentation>Indicates whether to delete old log file on startup.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="fileName" type="SimpleLayoutAttribute">
@@ -1103,7 +1079,12 @@
         </xs:attribute>
         <xs:attribute name="createDirs" type="xs:boolean">
           <xs:annotation>
-            <xs:documentation>Indicates whether to create directories if they don't exist.</xs:documentation>
+            <xs:documentation>Indicates whether to create directories if they do not exist.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="deleteOldFileOnStartup" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>Indicates whether to delete old log file on startup.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="enableFileDelete" type="xs:boolean">
@@ -1119,6 +1100,11 @@
         <xs:attribute name="networkWrites" type="xs:boolean">
           <xs:annotation>
             <xs:documentation>Indicates whether concurrent writes to the log file by multiple processes on different network hosts.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="maxLogFilenames" type="xs:integer">
+          <xs:annotation>
+            <xs:documentation>Maximum number of log filenames that should be stored as existing.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="keepFileOpen" type="xs:boolean">
@@ -1141,9 +1127,9 @@
             <xs:documentation>Delay in milliseconds to wait before attempting to write to the file again.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="bufferSize" type="xs:integer">
+        <xs:attribute name="autoFlush" type="xs:boolean">
           <xs:annotation>
-            <xs:documentation>Log file buffer size in bytes.</xs:documentation>
+            <xs:documentation>Indicates whether to automatically flush the file buffers after each log message.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="openFileCacheSize" type="xs:integer">
@@ -1151,23 +1137,14 @@
             <xs:documentation>Number of files to be kept open. Setting this to a higher value may improve performance in a situation where a single File target is writing to many files (such as splitting by level or by logger).</xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="autoFlush" type="xs:boolean">
+        <xs:attribute name="bufferSize" type="xs:integer">
           <xs:annotation>
-            <xs:documentation>Indicates whether to automatically flush the file buffers after each log message.</xs:documentation>
+            <xs:documentation>Log file buffer size in bytes.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
-  <xs:simpleType name="NLog.Targets.LineEndingMode">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="Default" />
-      <xs:enumeration value="CRLF" />
-      <xs:enumeration value="CR" />
-      <xs:enumeration value="LF" />
-      <xs:enumeration value="None" />
-    </xs:restriction>
-  </xs:simpleType>
   <xs:simpleType name="NLog.Targets.ArchiveNumberingMode">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Sequence" />
@@ -1221,50 +1198,6 @@
         <xs:attribute name="condition" type="Condition">
           <xs:annotation>
             <xs:documentation>Condition expression. Log events who meet this condition will be forwarded to the wrapped target.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-  <xs:complexType name="FormControl">
-    <xs:complexContent>
-      <xs:extension base="Target">
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-          <xs:element name="name" minOccurs="0" maxOccurs="1" type="xs:string" />
-          <xs:element name="layout" minOccurs="0" maxOccurs="1" type="Layout" />
-          <xs:element name="append" minOccurs="0" maxOccurs="1" type="xs:boolean" />
-          <xs:element name="controlName" minOccurs="0" maxOccurs="1" type="xs:string" />
-          <xs:element name="formName" minOccurs="0" maxOccurs="1" type="xs:string" />
-          <xs:element name="reverseOrder" minOccurs="0" maxOccurs="1" type="xs:boolean" />
-        </xs:choice>
-        <xs:attribute name="name" type="xs:string">
-          <xs:annotation>
-            <xs:documentation>Name of the target.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="layout" type="SimpleLayoutAttribute">
-          <xs:annotation>
-            <xs:documentation>Layout used to format log messages.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="append" type="xs:boolean">
-          <xs:annotation>
-            <xs:documentation>Indicates whether log text should be appended to the text of the control instead of overwriting it.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="controlName" type="xs:string">
-          <xs:annotation>
-            <xs:documentation>Name of control to which NLog will log write log text.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="formName" type="xs:string">
-          <xs:annotation>
-            <xs:documentation>Name of the Form on which the control is located.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="reverseOrder" type="xs:boolean">
-          <xs:annotation>
-            <xs:documentation>Whether new log entry are added to the start or the end of the control</xs:documentation>
           </xs:annotation>
         </xs:attribute>
       </xs:extension>
@@ -1356,6 +1289,7 @@
           <xs:element name="name" minOccurs="0" maxOccurs="1" type="xs:string" />
           <xs:element name="endpointAddress" minOccurs="0" maxOccurs="1" type="xs:string" />
           <xs:element name="endpointConfigurationName" minOccurs="0" maxOccurs="1" type="xs:string" />
+          <xs:element name="useOneWayContract" minOccurs="0" maxOccurs="1" type="xs:boolean" />
           <xs:element name="clientId" minOccurs="0" maxOccurs="1" type="Layout" />
           <xs:element name="includeEventProperties" minOccurs="0" maxOccurs="1" type="xs:boolean" />
           <xs:element name="parameter" minOccurs="0" maxOccurs="unbounded" type="NLog.Targets.MethodCallParameter" />
@@ -1374,6 +1308,11 @@
         <xs:attribute name="endpointConfigurationName" type="xs:string">
           <xs:annotation>
             <xs:documentation>Name of the endpoint configuration in WCF configuration file.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="useOneWayContract" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>Indicates whether to use a WCF service contract that is one way (fire and forget) or two way (request-reply)</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="clientId" type="SimpleLayoutAttribute">
@@ -1402,7 +1341,7 @@
     </xs:choice>
     <xs:attribute name="layout" type="SimpleLayoutAttribute">
       <xs:annotation>
-        <xs:documentation>Layout that should be use to calcuate the value for the parameter.</xs:documentation>
+        <xs:documentation>Layout that should be use to calculate the value for the parameter.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string">
@@ -1427,9 +1366,9 @@
           <xs:element name="html" minOccurs="0" maxOccurs="1" type="xs:boolean" />
           <xs:element name="encoding" minOccurs="0" maxOccurs="1" type="xs:string" />
           <xs:element name="addNewLines" minOccurs="0" maxOccurs="1" type="xs:boolean" />
-          <xs:element name="bcc" minOccurs="0" maxOccurs="1" type="Layout" />
-          <xs:element name="to" minOccurs="0" maxOccurs="1" type="Layout" />
           <xs:element name="cc" minOccurs="0" maxOccurs="1" type="Layout" />
+          <xs:element name="to" minOccurs="0" maxOccurs="1" type="Layout" />
+          <xs:element name="bcc" minOccurs="0" maxOccurs="1" type="Layout" />
           <xs:element name="body" minOccurs="0" maxOccurs="1" type="Layout" />
           <xs:element name="subject" minOccurs="0" maxOccurs="1" type="Layout" />
           <xs:element name="from" minOccurs="0" maxOccurs="1" type="Layout" />
@@ -1443,6 +1382,8 @@
           <xs:element name="enableSsl" minOccurs="0" maxOccurs="1" type="xs:boolean" />
           <xs:element name="smtpPort" minOccurs="0" maxOccurs="1" type="xs:integer" />
           <xs:element name="useSystemNetMailSettings" minOccurs="0" maxOccurs="1" type="xs:boolean" />
+          <xs:element name="pickupDirectoryLocation" minOccurs="0" maxOccurs="1" type="xs:string" />
+          <xs:element name="deliveryMethod" minOccurs="0" maxOccurs="1" type="System.Net.Mail.SmtpDeliveryMethod" />
         </xs:choice>
         <xs:attribute name="name" type="xs:string">
           <xs:annotation>
@@ -1479,9 +1420,9 @@
             <xs:documentation>Indicates whether to add new lines between log entries.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="bcc" type="SimpleLayoutAttribute">
+        <xs:attribute name="cc" type="SimpleLayoutAttribute">
           <xs:annotation>
-            <xs:documentation>BCC email addresses separated by semicolons (e.g. john@domain.com;jane@domain.com).</xs:documentation>
+            <xs:documentation>CC email addresses separated by semicolons (e.g. john@domain.com;jane@domain.com).</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="to" type="SimpleLayoutAttribute">
@@ -1489,9 +1430,9 @@
             <xs:documentation>Recipients' email addresses separated by semicolons (e.g. john@domain.com;jane@domain.com).</xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="cc" type="SimpleLayoutAttribute">
+        <xs:attribute name="bcc" type="SimpleLayoutAttribute">
           <xs:annotation>
-            <xs:documentation>CC email addresses separated by semicolons (e.g. john@domain.com;jane@domain.com).</xs:documentation>
+            <xs:documentation>BCC email addresses separated by semicolons (e.g. john@domain.com;jane@domain.com).</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="body" type="SimpleLayoutAttribute">
@@ -1559,6 +1500,16 @@
             <xs:documentation>Indicates whether the default Settings from System.Net.MailSettings should be used.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="pickupDirectoryLocation" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>Folder where applications save mail messages to be processed by the local SMTP server.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="deliveryMethod" type="System.Net.Mail.SmtpDeliveryMethod">
+          <xs:annotation>
+            <xs:documentation>Specifies how outgoing email messages will be handled.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -1567,6 +1518,13 @@
       <xs:enumeration value="None" />
       <xs:enumeration value="Basic" />
       <xs:enumeration value="Ntlm" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="System.Net.Mail.SmtpDeliveryMethod">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Network" />
+      <xs:enumeration value="SpecifiedPickupDirectory" />
+      <xs:enumeration value="PickupDirectoryFromIis" />
     </xs:restriction>
   </xs:simpleType>
   <xs:complexType name="Memory">
@@ -1584,32 +1542,6 @@
         <xs:attribute name="layout" type="SimpleLayoutAttribute">
           <xs:annotation>
             <xs:documentation>Layout used to format log messages.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-  <xs:complexType name="MessageBox">
-    <xs:complexContent>
-      <xs:extension base="Target">
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-          <xs:element name="name" minOccurs="0" maxOccurs="1" type="xs:string" />
-          <xs:element name="layout" minOccurs="0" maxOccurs="1" type="Layout" />
-          <xs:element name="caption" minOccurs="0" maxOccurs="1" type="Layout" />
-        </xs:choice>
-        <xs:attribute name="name" type="xs:string">
-          <xs:annotation>
-            <xs:documentation>Name of the target.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="layout" type="SimpleLayoutAttribute">
-          <xs:annotation>
-            <xs:documentation>Layout used to format log messages.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="caption" type="SimpleLayoutAttribute">
-          <xs:annotation>
-            <xs:documentation>Message box title.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
       </xs:extension>
@@ -1939,6 +1871,7 @@
           <xs:element name="counterHelp" minOccurs="0" maxOccurs="1" type="xs:string" />
           <xs:element name="counterName" minOccurs="0" maxOccurs="1" type="xs:string" />
           <xs:element name="counterType" minOccurs="0" maxOccurs="1" type="System.Diagnostics.PerformanceCounterType" />
+          <xs:element name="incrementValue" minOccurs="0" maxOccurs="1" type="Layout" />
           <xs:element name="instanceName" minOccurs="0" maxOccurs="1" type="xs:string" />
         </xs:choice>
         <xs:attribute name="name" type="xs:string">
@@ -1969,6 +1902,11 @@
         <xs:attribute name="counterType" type="System.Diagnostics.PerformanceCounterType">
           <xs:annotation>
             <xs:documentation>Performance counter type.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="incrementValue" type="SimpleLayoutAttribute">
+          <xs:annotation>
+            <xs:documentation>The value by which to increment the counter.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="instanceName" type="xs:string">
@@ -2108,165 +2046,6 @@
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
-  <xs:complexType name="RichTextBox">
-    <xs:complexContent>
-      <xs:extension base="Target">
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-          <xs:element name="name" minOccurs="0" maxOccurs="1" type="xs:string" />
-          <xs:element name="layout" minOccurs="0" maxOccurs="1" type="Layout" />
-          <xs:element name="autoScroll" minOccurs="0" maxOccurs="1" type="xs:boolean" />
-          <xs:element name="controlName" minOccurs="0" maxOccurs="1" type="xs:string" />
-          <xs:element name="formName" minOccurs="0" maxOccurs="1" type="xs:string" />
-          <xs:element name="height" minOccurs="0" maxOccurs="1" type="xs:integer" />
-          <xs:element name="maxLines" minOccurs="0" maxOccurs="1" type="xs:integer" />
-          <xs:element name="showMinimized" minOccurs="0" maxOccurs="1" type="xs:boolean" />
-          <xs:element name="toolWindow" minOccurs="0" maxOccurs="1" type="xs:boolean" />
-          <xs:element name="width" minOccurs="0" maxOccurs="1" type="xs:integer" />
-          <xs:element name="row-coloring" minOccurs="0" maxOccurs="unbounded" type="NLog.Targets.RichTextBoxRowColoringRule" />
-          <xs:element name="useDefaultRowColoringRules" minOccurs="0" maxOccurs="1" type="xs:boolean" />
-          <xs:element name="word-coloring" minOccurs="0" maxOccurs="unbounded" type="NLog.Targets.RichTextBoxWordColoringRule" />
-        </xs:choice>
-        <xs:attribute name="name" type="xs:string">
-          <xs:annotation>
-            <xs:documentation>Name of the target.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="layout" type="SimpleLayoutAttribute">
-          <xs:annotation>
-            <xs:documentation>Layout used to format log messages.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="autoScroll" type="xs:boolean">
-          <xs:annotation>
-            <xs:documentation>Indicates whether scroll bar will be moved automatically to show most recent log entries.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="controlName" type="xs:string">
-          <xs:annotation>
-            <xs:documentation>Name of RichTextBox to which Nlog will write.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="formName" type="xs:string">
-          <xs:annotation>
-            <xs:documentation>Name of the Form on which the control is located. If there is no open form of a specified name than NLog will create a new one.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="height" type="xs:integer">
-          <xs:annotation>
-            <xs:documentation>Initial height of the form with rich text box.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="maxLines" type="xs:integer">
-          <xs:annotation>
-            <xs:documentation>Maximum number of lines the rich text box will store (or 0 to disable this feature).</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="showMinimized" type="xs:boolean">
-          <xs:annotation>
-            <xs:documentation>Indicates whether the created form will be initially minimized.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="toolWindow" type="xs:boolean">
-          <xs:annotation>
-            <xs:documentation>Indicates whether the created window will be a tool window.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="width" type="xs:integer">
-          <xs:annotation>
-            <xs:documentation>Initial width of the form with rich text box.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="useDefaultRowColoringRules" type="xs:boolean">
-          <xs:annotation>
-            <xs:documentation>Indicates whether to use default coloring rules.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-  <xs:simpleType name="System.Drawing.FontStyle">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="Regular" />
-      <xs:enumeration value="Bold" />
-      <xs:enumeration value="Italic" />
-      <xs:enumeration value="Underline" />
-      <xs:enumeration value="Strikeout" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:complexType name="NLog.Targets.RichTextBoxRowColoringRule">
-    <xs:choice minOccurs="0" maxOccurs="unbounded">
-      <xs:element name="condition" minOccurs="0" maxOccurs="1" type="Condition" />
-      <xs:element name="backgroundColor" minOccurs="0" maxOccurs="1" type="xs:string" />
-      <xs:element name="fontColor" minOccurs="0" maxOccurs="1" type="xs:string" />
-      <xs:element name="style" minOccurs="0" maxOccurs="1" type="System.Drawing.FontStyle" />
-    </xs:choice>
-    <xs:attribute name="condition" type="Condition">
-      <xs:annotation>
-        <xs:documentation>Condition that must be met in order to set the specified font color.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="backgroundColor" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Background color.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="fontColor" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Font color.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="style" type="System.Drawing.FontStyle">
-      <xs:annotation>
-        <xs:documentation>Font style of matched text.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
-  <xs:complexType name="NLog.Targets.RichTextBoxWordColoringRule">
-    <xs:choice minOccurs="0" maxOccurs="unbounded">
-      <xs:element name="ignoreCase" minOccurs="0" maxOccurs="1" type="xs:boolean" />
-      <xs:element name="regex" minOccurs="0" maxOccurs="1" type="xs:string" />
-      <xs:element name="text" minOccurs="0" maxOccurs="1" type="xs:string" />
-      <xs:element name="wholeWords" minOccurs="0" maxOccurs="1" type="xs:boolean" />
-      <xs:element name="backgroundColor" minOccurs="0" maxOccurs="1" type="xs:string" />
-      <xs:element name="fontColor" minOccurs="0" maxOccurs="1" type="xs:string" />
-      <xs:element name="style" minOccurs="0" maxOccurs="1" type="System.Drawing.FontStyle" />
-    </xs:choice>
-    <xs:attribute name="ignoreCase" type="xs:boolean">
-      <xs:annotation>
-        <xs:documentation>Indicates whether to ignore case when comparing texts.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="regex" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Regular expression to be matched. You must specify either text or regex.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="text" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Text to be matched. You must specify either text or regex.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="wholeWords" type="xs:boolean">
-      <xs:annotation>
-        <xs:documentation>Indicates whether to match whole words only.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="backgroundColor" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Background color. Names are identical with KnownColor enum extended with Empty value which means that background color won't be changed.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="fontColor" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Font color. Names are identical with KnownColor enum extended with Empty value which means that font color won't be changed.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="style" type="System.Drawing.FontStyle">
-      <xs:annotation>
-        <xs:documentation>Font style of matched text. Possible values are the same as in FontStyle enum in System.Drawing.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
   <xs:complexType name="RoundRobinGroup">
     <xs:complexContent>
       <xs:extension base="CompoundTargetBase">
@@ -2320,6 +2099,7 @@
       <xs:extension base="Target">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
           <xs:element name="name" minOccurs="0" maxOccurs="1" type="xs:string" />
+          <xs:element name="includeBOM" minOccurs="0" maxOccurs="1" type="xs:boolean" />
           <xs:element name="parameter" minOccurs="0" maxOccurs="unbounded" type="NLog.Targets.MethodCallParameter" />
           <xs:element name="encoding" minOccurs="0" maxOccurs="1" type="xs:string" />
           <xs:element name="methodName" minOccurs="0" maxOccurs="1" type="xs:string" />
@@ -2332,6 +2112,11 @@
             <xs:documentation>Name of the target.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="includeBOM" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>Should we include the BOM (Byte-order-mark) for UTF? Influences the  property. This will only work for UTF-8.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="encoding" type="xs:string">
           <xs:annotation>
             <xs:documentation>Encoding.</xs:documentation>
@@ -2339,12 +2124,12 @@
         </xs:attribute>
         <xs:attribute name="methodName" type="xs:string">
           <xs:annotation>
-            <xs:documentation>Web service method name.</xs:documentation>
+            <xs:documentation>Web service method name. Only used with Soap.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="namespace" type="xs:string">
           <xs:annotation>
-            <xs:documentation>Web service namespace.</xs:documentation>
+            <xs:documentation>Web service namespace. Only used with Soap.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="protocol" type="NLog.Targets.WebServiceProtocol">
@@ -2456,6 +2241,43 @@
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
         <xs:documentation>Name of the column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="JsonLayout">
+    <xs:complexContent>
+      <xs:extension base="Layout">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="attribute" minOccurs="0" maxOccurs="unbounded" type="NLog.Layouts.JsonAttribute" />
+          <xs:element name="suppressSpaces" minOccurs="0" maxOccurs="1" type="xs:boolean" />
+        </xs:choice>
+        <xs:attribute name="suppressSpaces" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>Option to suppress the extra spaces in the output json</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="NLog.Layouts.JsonAttribute">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="encode" minOccurs="0" maxOccurs="1" type="xs:boolean" />
+      <xs:element name="layout" minOccurs="0" maxOccurs="1" type="Layout" />
+      <xs:element name="name" minOccurs="0" maxOccurs="1" type="xs:string" />
+    </xs:choice>
+    <xs:attribute name="encode" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>Determines wether or not this attribute will be Json encoded.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="layout" type="SimpleLayoutAttribute">
+      <xs:annotation>
+        <xs:documentation>Layout that will be rendered as the attribute's value.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the attribute.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>

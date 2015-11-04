@@ -53,7 +53,7 @@ namespace Wox
             }
 
             Dispatcher.DelayInvoke("HotkeyAvailabilityTest", 
-                o =>
+                () =>
                 {
                     SetHotkey(hotkeyModel);
                 },
@@ -107,6 +107,11 @@ namespace Wox
             }
 
             return false;
+        }
+
+        public new bool IsFocused
+        {
+            get { return tbHotkey.IsFocused; }
         }
     }
 }

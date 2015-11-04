@@ -22,8 +22,9 @@
     <system:String x:Key="dontPromptUpdateMsg">Don't show upgrade msg if new version available</system:String>
     <system:String x:Key="rememberLastLocation">Remember last launch location</system:String>
     <system:String x:Key="language">Language</system:String>
+    <system:String x:Key="maxShowResults">Maximum show results</system:String>
+    <system:String x:Key="ignoreHotkeysOnFullscreen">Ignore hotkeys if window is fullscreen</system:String>
     
-
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Plugin</system:String>
     <system:String x:Key="browserMorePlugins">Browse more plugins</system:String>

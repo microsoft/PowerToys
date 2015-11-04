@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Windows.Forms;
-using System.Windows.Threading;
 using NAppUpdate.Framework;
 using NAppUpdate.Framework.Common;
 using NAppUpdate.Framework.Sources;
@@ -15,7 +12,6 @@ using Wox.Core.i18n;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Logger;
-using System.Threading;
 
 namespace Wox.Core.Updater
 {

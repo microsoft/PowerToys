@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
+using System.Reflection;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
-using Wox.Plugin;
-using System.Drawing;
-using System.Reflection;
 
 namespace Wox.Core.UserSettings
 {
@@ -85,6 +83,9 @@ namespace Wox.Core.UserSettings
 
         [JsonProperty]
         public bool RememberLastLaunchLocation { get; set; }
+
+        [JsonProperty]
+        public bool IgnoreHotkeysOnFullscreen { get; set; }
 
         [JsonProperty]
         public string ProxyServer { get; set; }

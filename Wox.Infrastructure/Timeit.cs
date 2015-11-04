@@ -1,26 +1,38 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using Wox.Infrastructure.Logger;
 
 namespace Wox.Infrastructure
 {
     public class Timeit : IDisposable
     {
-        private Stopwatch stopwatch = new Stopwatch();
-        private string name;
+        private readonly Stopwatch _stopwatch = new Stopwatch();
+        private readonly string _name;
 
         public Timeit(string name)
         {
-            this.name = name;
-            stopwatch.Start();
+            _name = name;
+            _stopwatch.Start();
         }
+
+        public long Current
+        {
+            get
+            {
+                _stopwatch.Stop();
+                long seconds = _stopwatch.ElapsedMilliseconds;
+                _stopwatch.Start();
+                return seconds;
+            }
+        }
+
 
         public void Dispose()
         {
-            stopwatch.Stop();
-            DebugHelper.WriteLine(name + ":" + stopwatch.ElapsedMilliseconds + "ms");
+            _stopwatch.Stop();
+            string info = _name + " : " + _stopwatch.ElapsedMilliseconds + "ms";
+            Debug.WriteLine(info);
+            Log.Info(info);
         }
     }
 }

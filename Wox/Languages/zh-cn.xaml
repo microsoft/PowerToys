@@ -22,6 +22,8 @@
     <system:String x:Key="dontPromptUpdateMsg">不显示新版本提示</system:String>
     <system:String x:Key="rememberLastLocation">记住上次启动位置</system:String>
     <system:String x:Key="language">语言</system:String>
+    <system:String x:Key="maxShowResults">最大结果显示个数</system:String>
+    <system:String x:Key="ignoreHotkeysOnFullscreen">Ignore hotkeys if foreground window is TopMost</system:String>
 
     <!--设置，插件-->
     <system:String x:Key="plugin">插件</system:String>
@@ -30,8 +32,8 @@
     <system:String x:Key="actionKeyword">触发关键字</system:String>
     <system:String x:Key="pluginDirectory">插件目录</system:String>
     <system:String x:Key="author">作者</system:String>
-    <system:String x:Key="plugin_init_time">加载耗时：{0}ms</system:String>
-    <system:String x:Key="plugin_query_time">查询耗时：{0}ms</system:String>
+    <system:String x:Key="plugin_init_time">加载耗时 {0}ms</system:String>
+    <system:String x:Key="plugin_query_time">查询耗时 {0}ms</system:String>
     
     <!--设置，主题-->
     <system:String x:Key="theme">主题</system:String>

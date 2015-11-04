@@ -12,7 +12,6 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -39,9 +38,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="NAppUpdate.Framework, Version=0.1.0.0, Culture=neutral, PublicKeyToken=d1f1d1f19f9e5a56, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\References\NAppUpdate.Framework.dll</HintPath>
+    <Reference Include="NAppUpdate.Framework, Version=0.3.2.0, Culture=neutral, PublicKeyToken=d1f1d1f19f9e5a56, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAppUpdate.Framework.0.3.2.0\lib\net20\NAppUpdate.Framework.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -53,10 +52,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
@@ -69,8 +64,6 @@
     <Compile Include="Exception\WoxI18nException.cs" />
     <Compile Include="Exception\WoxJsonRPCException.cs" />
     <Compile Include="Exception\WoxPluginException.cs" />
-    <Compile Include="AssemblyHelper.cs" />
-    <Compile Include="Plugin\QueryDispatcher\BaseQueryDispatcher.cs" />
     <Compile Include="Updater\Release.cs" />
     <Compile Include="Updater\UpdaterManager.cs" />
     <Compile Include="Updater\WoxUpdateSource.cs" />
@@ -85,10 +78,6 @@
     <Compile Include="UI\IUIResource.cs" />
     <Compile Include="UI\ResourceMerger.cs" />
     <Compile Include="Plugin\PluginInstaller.cs" />
-    <Compile Include="Plugin\QueryDispatcher\IQueryDispatcher.cs" />
-    <Compile Include="Plugin\QueryDispatcher\QueryDispatcher.cs" />
-    <Compile Include="Plugin\QueryDispatcher\ExclusiveQueryDispatcher.cs" />
-    <Compile Include="Plugin\QueryDispatcher\GenericQueryDispatcher.cs" />
     <Compile Include="Plugin\JsonRPCPlugin.cs" />
     <Compile Include="Plugin\JsonRPCPluginLoader.cs" />
     <Compile Include="Plugin\CSharpPluginLoader.cs" />
@@ -121,7 +110,6 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

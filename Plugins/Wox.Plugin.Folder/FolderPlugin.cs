@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
-using Control = System.Windows.Controls.Control;
+using System.Windows.Controls;
 
 namespace Wox.Plugin.Folder
 {

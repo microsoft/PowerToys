@@ -1,0 +1,128 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+    <!--MainWindow-->
+    <system:String x:Key="registerHotkeyFailed">Регистрация хоткея {0} не удалась</system:String>
+    <system:String x:Key="couldnotStartCmd">Не удалось запустить {0}</system:String>
+    <system:String x:Key="invalidWoxPluginFileFormat">Неверный формат файла wox плагина</system:String>
+    <system:String x:Key="setAsTopMostInThisQuery">Отображать это окно выше всех при этом запросе</system:String>
+    <system:String x:Key="cancelTopMostInThisQuery">Не отображать это окно выше всех при этом запросе</system:String>
+    <system:String x:Key="executeQuery">Выполнить запрос:{0}</system:String>
+    <system:String x:Key="lastExecuteTime">Последний раз выполнен в:{0}</system:String>
+    <system:String x:Key="iconTrayOpen">Открыть</system:String>
+    <system:String x:Key="iconTraySettings">Настройки</system:String>
+    <system:String x:Key="iconTrayAbout">О Wox</system:String>
+    <system:String x:Key="iconTrayExit">Закрыть</system:String>
+
+    <!--Setting General-->
+    <system:String x:Key="woxsettings">Настройки Wox</system:String>
+    <system:String x:Key="general">Общие</system:String>
+    <system:String x:Key="startWoxOnSystemStartup">Запускать Wox при запуске системы</system:String>
+    <system:String x:Key="hideWoxWhenLoseFocus">Скрывать Wox если потерян фокус</system:String>
+    <system:String x:Key="dontPromptUpdateMsg">Не отображать сообщение об обновлении когда доступна новая версия</system:String>
+    <system:String x:Key="rememberLastLocation">Запомнить последнее место запуска</system:String>
+    <system:String x:Key="language">Язык</system:String>
+    <system:String x:Key="maxShowResults">Максимальное количество результатов</system:String>
+    <system:String x:Key="ignoreHotkeysOnFullscreen">Игнорировать горячие клавиши, если окно в полноэкранном режиме</system:String>
+    
+    <!--Setting Plugin-->
+    <system:String x:Key="plugin">Плагины</system:String>
+    <system:String x:Key="browserMorePlugins">Найти больше плагинов</system:String>
+    <system:String x:Key="disable">Отключить</system:String>
+    <system:String x:Key="actionKeyword">Ключевое слово</system:String>
+    <system:String x:Key="pluginDirectory">Папка</system:String>
+    <system:String x:Key="author">Автор</system:String>
+    <system:String x:Key="plugin_init_time">Инициализация: {0}ms</system:String>
+    <system:String x:Key="plugin_query_time">Запрос: {0}ms</system:String>
+
+    <!--Setting Theme-->
+    <system:String x:Key="theme">Темы</system:String>
+    <system:String x:Key="browserMoreThemes">Найти больше тем</system:String>
+    <system:String x:Key="helloWox">Привет Wox</system:String>
+    <system:String x:Key="queryBoxFont">Шрифт запросов</system:String>
+    <system:String x:Key="resultItemFont">Шрифт результатов</system:String>
+    <system:String x:Key="windowMode">Оконный режим</system:String>
+    <system:String x:Key="opacity">Прозрачность</system:String>
+    
+    <!--Setting Hotkey-->
+    <system:String x:Key="hotkey">Горячие клавиши</system:String>
+    <system:String x:Key="woxHotkey">Горячая клавиша Wox</system:String>
+    <system:String x:Key="customQueryHotkey">Задаваемые горячие клавиши для запросов</system:String>
+    <system:String x:Key="delete">Удалить</system:String>
+    <system:String x:Key="edit">Изменить</system:String>
+    <system:String x:Key="add">Добавить</system:String>
+    <system:String x:Key="pleaseSelectAnItem">Сначала выберите элемент</system:String>
+    <system:String x:Key="deleteCustomHotkeyWarning">Вы уверены что хотите удалить горячую клавишу для плагина {0}?</system:String>
+
+    <!--Setting Proxy-->
+    <system:String x:Key="proxy">Прокси</system:String>
+    <system:String x:Key="enableProxy">Включить прокси</system:String>
+    <system:String x:Key="server">Сервер</system:String>
+    <system:String x:Key="port">Порт</system:String>
+    <system:String x:Key="userName">Логин</system:String>
+    <system:String x:Key="password">Пароль</system:String>
+    <system:String x:Key="testProxy">Проверить</system:String>
+    <system:String x:Key="save">Сохранить</system:String>
+    <system:String x:Key="serverCantBeEmpty">Необходимо задать сервер</system:String>
+    <system:String x:Key="portCantBeEmpty">Необходимо задать порт</system:String>
+    <system:String x:Key="invalidPortFormat">Неверный формат порта</system:String>
+    <system:String x:Key="saveProxySuccessfully">Прокси успешно сохранён</system:String>
+    <system:String x:Key="proxyIsCorrect">Прокси сервер задан правильно</system:String>
+    <system:String x:Key="proxyConnectFailed">Подключение к прокси серверу не удалось</system:String>
+
+    <!--Setting About-->
+    <system:String x:Key="about">О Wox</system:String>
+    <system:String x:Key="website">Сайт</system:String>
+    <system:String x:Key="version">Версия</system:String>
+    <system:String x:Key="about_activate_times">Вы воспользовались Wox уже {0} раз</system:String>
+
+    <!--Action Keyword Setting Dialog-->
+    <system:String x:Key="oldActionKeyword">Текущая горячая клавиша</system:String>
+    <system:String x:Key="newActionKeyword">Новая горячая клавиша</system:String>
+    <system:String x:Key="cancel">Отменить</system:String>
+    <system:String x:Key="done">Подтвердить</system:String>
+    <system:String x:Key="cannotFindSpecifiedPlugin">Не удалось найти заданный плагин</system:String>
+    <system:String x:Key="newActionKeywordCannotBeEmpty">Новая горячая клавиша не может быть пустой</system:String>
+    <system:String x:Key="newActionKeywordHasBeenAssigned">Новая горячая клавиша уже используется другим плагином. Пожалуйста, зайдайте новую</system:String>
+    <system:String x:Key="succeed">Сохранено</system:String>
+    <system:String x:Key="actionkeyword_tips">Используйте * в случае, если вы не хотите задавать конкретную горячую клавишу</system:String>
+    
+    
+    <!--Custom Query Hotkey Dialog-->
+    <system:String x:Key="preview">Проверить</system:String>
+    <system:String x:Key="hotkeyIsNotUnavailable">Горячая клавиша недоступна. Пожалуйста, зайдайте новую</system:String>
+    <system:String x:Key="invalidPluginHotkey">Недействительная горячая клавиша плагина</system:String>
+    <system:String x:Key="update">Изменить</system:String>
+    
+    <!--Hotkey Control-->
+    <system:String x:Key="hotkeyUnavailable">Горячая клавиша недоступна</system:String>
+    
+    
+    <!--Crash Reporter-->
+    <system:String x:Key="reportWindow_version">Версия</system:String>
+    <system:String x:Key="reportWindow_time">Время</system:String>
+    <system:String x:Key="reportWindow_reproduce">Пожалуйста, сообщите что произошло когда произошёл сбой в приложении, чтобы мы могли его исправить</system:String>
+    <system:String x:Key="reportWindow_send_report">Отправить отчёт</system:String>
+    <system:String x:Key="reportWindow_cancel">Отмена</system:String>
+    <system:String x:Key="reportWindow_general">Общие</system:String>
+    <system:String x:Key="reportWindow_exceptions">Исключения</system:String>
+    <system:String x:Key="reportWindow_exception_type">Тип исключения</system:String>
+    <system:String x:Key="reportWindow_source">Источник</system:String>
+    <system:String x:Key="reportWindow_stack_trace">Трессировка стека</system:String>
+    <system:String x:Key="reportWindow_sending">Отправляем</system:String>
+    <system:String x:Key="reportWindow_report_succeed">Отчёт успешно отправлен</system:String>
+    <system:String x:Key="reportWindow_report_failed">Не удалось отправить отчёт</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">Произошёл сбой в Wox</system:String>
+
+    <!--update-->
+    <system:String x:Key="update_wox_update_new_version_available">Доступна новая версия Wox V{0}</system:String>
+    <system:String x:Key="update_wox_update_error">Произошла ошибка при попытке установить обновление</system:String>
+    <system:String x:Key="update_wox_update">Обновить</system:String>
+    <system:String x:Key="update_wox_update_cancel">Отмена</system:String>
+    <system:String x:Key="update_wox_update_restart_wox_tip">Это обновление перезапустит Wox</system:String>
+    <system:String x:Key="update_wox_update_upadte_files">Следующие файлы будут обновлены</system:String>
+    <system:String x:Key="update_wox_update_files">Обновить файлы</system:String>
+    <system:String x:Key="update_wox_update_upadte_description">Описание обновления</system:String>
+    
+
+</ResourceDictionary>
