@@ -4,35 +4,41 @@ using Wox.Infrastructure.Logger;
 
 namespace Wox.Infrastructure
 {
-    public class Timeit : IDisposable
+    public static class Timeit
     {
-        private readonly Stopwatch _stopwatch = new Stopwatch();
-        private readonly string _name;
-
-        public Timeit(string name)
+        /// <summary>
+        /// This stopwatch will appear only in Debug mode
+        /// </summary>
+        public static void StopwatchDebug(string name, Action action)
         {
-            _name = name;
-            _stopwatch.Start();
+#if DEBUG
+            Stopwatch(name, action);
+#else
+            action();
+#endif
         }
 
-        public long Current
+        [Conditional("DEBUG")]
+        private static void WriteTimeInfo(string name, long milliseconds)
         {
-            get
-            {
-                _stopwatch.Stop();
-                long seconds = _stopwatch.ElapsedMilliseconds;
-                _stopwatch.Start();
-                return seconds;
-            }
-        }
-
-
-        public void Dispose()
-        {
-            _stopwatch.Stop();
-            string info = _name + " : " + _stopwatch.ElapsedMilliseconds + "ms";
+            string info = $"{name} : {milliseconds}ms";
             Debug.WriteLine(info);
             Log.Info(info);
         }
+
+        /// <summary>
+        /// This stopwatch will also appear only in Debug mode
+        /// </summary>
+        public static long Stopwatch(string name, Action action)
+        {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            action();
+            stopWatch.Stop();
+            var milliseconds = stopWatch.ElapsedMilliseconds;
+            WriteTimeInfo(name, milliseconds);
+            return milliseconds;
+        }
+
     }
 }

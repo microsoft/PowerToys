@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -91,7 +92,7 @@ namespace Wox.Core.Plugin
                 PluginPair pair = pluginPair;
                 ThreadPool.QueueUserWorkItem(o =>
                 {
-                    using (var time = new Timeit($"Plugin init: {pair.Metadata.Name}"))
+                    var milliseconds = Timeit.Stopwatch($"Plugin init: {pair.Metadata.Name}", () =>
                     {
                         pair.Plugin.Init(new PluginInitContext
                         {
@@ -99,8 +100,8 @@ namespace Wox.Core.Plugin
                             Proxy = HttpProxy.Instance,
                             API = API
                         });
-                        pair.InitTime = time.Current;
-                    }
+                    });
+                    pair.InitTime = milliseconds;
                     InternationalizationManager.Instance.UpdatePluginMetadataTranslations(pair);
                 });
             }
@@ -138,9 +139,13 @@ namespace Wox.Core.Plugin
             }
             return new Query
             {
-                Terms = terms, RawQuery = rawQuery, ActionKeyword = actionKeyword, Search = search,
+                Terms = terms,
+                RawQuery = rawQuery,
+                ActionKeyword = actionKeyword,
+                Search = search,
                 // Obsolete value initialisation
-                ActionName = actionKeyword, ActionParameters = actionParameters.ToList()
+                ActionName = actionKeyword,
+                ActionParameters = actionParameters.ToList()
             };
         }
 
@@ -155,10 +160,10 @@ namespace Wox.Core.Plugin
                 if (customizedPluginConfig != null && customizedPluginConfig.Disabled) continue;
                 if (IsInstantQueryPlugin(plugin))
                 {
-                    using (new Timeit($"Plugin {plugin.Metadata.Name} is executing instant search"))
+                    Timeit.StopwatchDebug($"Instant Query for {plugin.Metadata.Name}", () =>
                     {
                         QueryForPlugin(plugin, query);
-                    }
+                    });
                 }
                 else
                 {
@@ -174,15 +179,15 @@ namespace Wox.Core.Plugin
         {
             try
             {
-                using (var time = new Timeit($"Query For {pair.Metadata.Name}"))
-                {
-                    var results = pair.Plugin.Query(query) ?? new List<Result>();
-                    results.ForEach(o => { o.PluginID = pair.Metadata.ID; });
-                    var seconds = time.Current;
-                    pair.QueryCount += 1;
-                    pair.AvgQueryTime = pair.QueryCount == 1 ? seconds : (pair.AvgQueryTime + seconds) / 2;
-                    API.PushResults(query, pair.Metadata, results);
-                }
+                List<Result> results = new List<Result>();
+                var milliseconds = Timeit.Stopwatch($"Query for {pair.Metadata.Name}", () =>
+                    {
+                        results = pair.Plugin.Query(query) ?? results;
+                        results.ForEach(o => { o.PluginID = pair.Metadata.ID; });
+                    });
+                pair.QueryCount += 1;
+                pair.AvgQueryTime = pair.QueryCount == 1 ? milliseconds : (pair.AvgQueryTime + milliseconds) / 2;
+                API.PushResults(query, pair.Metadata, results);
             }
             catch (System.Exception e)
             {

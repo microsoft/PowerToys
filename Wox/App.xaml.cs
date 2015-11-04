@@ -29,7 +29,7 @@ namespace Wox
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            using (new Timeit("Startup Time"))
+            Timeit.StopwatchDebug("Startup Time", () =>
             {
                 base.OnStartup(e);
                 DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
@@ -39,7 +39,7 @@ namespace Wox
                 Window = new MainWindow();
                 PluginManager.Init(Window);
                 CommandArgsFactory.Execute(e.Args.ToList());
-            }
+            });
 
         }
 

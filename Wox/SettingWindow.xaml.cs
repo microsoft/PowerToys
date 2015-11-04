@@ -329,10 +329,10 @@ namespace Wox
 
         private void OnThemeTabSelected()
         {
-            using (new Timeit("theme load"))
+            Timeit.StopwatchDebug("theme load", () =>
             {
                 var s = Fonts.SystemFontFamilies;
-            }
+            });
 
             if (themeTabLoaded) return;
 

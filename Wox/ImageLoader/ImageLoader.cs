@@ -48,7 +48,7 @@ namespace Wox.ImageLoader
                         new Int32Rect(0, 0, icon.Width, icon.Height), BitmapSizeOptions.FromEmptyOptions());
                 }
             }
-            catch{}
+            catch { }
 
             return null;
         }
@@ -57,7 +57,7 @@ namespace Wox.ImageLoader
         {
             //ImageCacheStroage.Instance.TopUsedImages can be changed during foreach, so we need to make a copy
             var imageList = new Dictionary<string, int>(ImageCacheStroage.Instance.TopUsedImages);
-            using (new Timeit(string.Format("Preload {0} images", imageList.Count)))
+            Timeit.StopwatchDebug($"Preload {imageList.Count} images", () =>
             {
                 foreach (var image in imageList)
                 {
@@ -75,20 +75,22 @@ namespace Wox.ImageLoader
                         }
                     }
                 }
-            }
+            });
         }
 
         public static ImageSource Load(string path, bool addToCache = true)
         {
-            using (new Timeit($"Loading image path: {path}"))
+            if (string.IsNullOrEmpty(path)) return null;
+            ImageSource img = null;
+            Timeit.StopwatchDebug($"Loading image path: {path}", () =>
             {
-                if (string.IsNullOrEmpty(path)) return null;
+
                 if (addToCache)
                 {
                     ImageCacheStroage.Instance.Add(path);
                 }
 
-                ImageSource img = null;
+
                 if (imageCache.ContainsKey(path))
                 {
                     img = imageCache[path];
@@ -119,8 +121,8 @@ namespace Wox.ImageLoader
                         }
                     }
                 }
-                return img;
-            }
+            });
+            return img;
         }
 
         // http://blogs.msdn.com/b/oldnewthing/archive/2011/01/27/10120844.aspx
