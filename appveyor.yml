@@ -17,9 +17,9 @@ build:
   project: Wox.sln
   publish_nuget: true
 after_build:
-- cmd: .\deploy\UpdateGenerator\build.bat
+- cmd: .\Deploy\UpdateGenerator\build.bat
 after_test:
-- ps: .\deploy\nuget\pack.ps1
+- ps: .\Deploy\Nuget\pack.ps1
 artifacts:
 - path: Output\Release
   name: release-binary
