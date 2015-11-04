@@ -18,8 +18,11 @@ Screenshot
 Installation
 =========
 
-1. You can download the latest version on the [release page](https://github.com/qianlifeng/Wox/releases).
-2. Put it into your user directory (`C:\Users\YOUUSERNAME` or `%userprofile%`)
+1. Download
+  1. Latest stable version: [release page](https://github.com/qianlifeng/Wox/releases).
+  2. Latest build: [history](https://ci.appveyor.com/project/qianlifeng/wox/history)
+  (click one build -> artifacts -> release-binary.zip).
+2. Unzip it and put it into your user directory (`C:\Users\YOUUSERNAME` or `%userprofile%`)
 3. Windows 10 user, please have a look at https://github.com/Wox-launcher/Wox/issues/279
 
 
