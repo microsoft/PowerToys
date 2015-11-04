@@ -25,7 +25,7 @@ Installation
 
 Simple Usage
 =========
-- Launch: <kbd>Alt</kbd>+<kbd>Spaec</kbd>
+- Launch: <kbd>Alt</kbd>+<kbd>Space</kbd>
 - Install/Uninstall plugin: type `wpm install/uninstall`
 - Remember type `restart` to restarat Wox after installation of a plugin
 
