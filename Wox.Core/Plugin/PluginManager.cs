@@ -13,6 +13,7 @@ using Wox.Core.UserSettings;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox.Core.Plugin
 {
@@ -92,7 +93,7 @@ namespace Wox.Core.Plugin
                 PluginPair pair = pluginPair;
                 ThreadPool.QueueUserWorkItem(o =>
                 {
-                    var milliseconds = Timeit.Stopwatch($"Plugin init: {pair.Metadata.Name}", () =>
+                    var milliseconds = Stopwatch.Normal($"Plugin init: {pair.Metadata.Name}", () =>
                     {
                         pair.Plugin.Init(new PluginInitContext
                         {
@@ -160,7 +161,7 @@ namespace Wox.Core.Plugin
                 if (customizedPluginConfig != null && customizedPluginConfig.Disabled) continue;
                 if (IsInstantQueryPlugin(plugin))
                 {
-                    Timeit.StopwatchDebug($"Instant Query for {plugin.Metadata.Name}", () =>
+                    Stopwatch.Debug($"Instant Query for {plugin.Metadata.Name}", () =>
                     {
                         QueryForPlugin(plugin, query);
                     });
@@ -180,7 +181,7 @@ namespace Wox.Core.Plugin
             try
             {
                 List<Result> results = new List<Result>();
-                var milliseconds = Timeit.Stopwatch($"Query for {pair.Metadata.Name}", () =>
+                var milliseconds = Stopwatch.Normal($"Query for {pair.Metadata.Name}", () =>
                     {
                         results = pair.Plugin.Query(query) ?? results;
                         results.ForEach(o => { o.PluginID = pair.Metadata.ID; });

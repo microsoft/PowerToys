@@ -8,6 +8,7 @@ using System.Windows;
 using IWshRuntimeLibrary;
 using Wox.Infrastructure;
 using Wox.Plugin.Program.ProgramSources;
+using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox.Plugin.Program
 {
@@ -70,12 +71,12 @@ namespace Wox.Plugin.Program
         {
             this.context = context;
             this.context.API.ResultItemDropEvent += API_ResultItemDropEvent;
-            Timeit.StopwatchDebug("Preload programs", () =>
+            Stopwatch.Debug("Preload programs", () =>
             {
                 programs = ProgramCacheStorage.Instance.Programs;
             });
             Debug.WriteLine($"Preload {programs.Count} programs from cache");
-            Timeit.StopwatchDebug("Program Index", IndexPrograms);
+            Stopwatch.Debug("Program Index", IndexPrograms);
         }
 
         void API_ResultItemDropEvent(Result result, IDataObject dropObject, DragEventArgs e)

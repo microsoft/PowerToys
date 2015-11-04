@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wox.Infrastructure;
+using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox.ImageLoader
 {
@@ -57,7 +58,7 @@ namespace Wox.ImageLoader
         {
             //ImageCacheStroage.Instance.TopUsedImages can be changed during foreach, so we need to make a copy
             var imageList = new Dictionary<string, int>(ImageCacheStroage.Instance.TopUsedImages);
-            Timeit.StopwatchDebug($"Preload {imageList.Count} images", () =>
+            Stopwatch.Debug($"Preload {imageList.Count} images", () =>
             {
                 foreach (var image in imageList)
                 {
@@ -82,7 +83,7 @@ namespace Wox.ImageLoader
         {
             if (string.IsNullOrEmpty(path)) return null;
             ImageSource img = null;
-            Timeit.StopwatchDebug($"Loading image path: {path}", () =>
+            Stopwatch.Debug($"Loading image path: {path}", () =>
             {
 
                 if (addToCache)

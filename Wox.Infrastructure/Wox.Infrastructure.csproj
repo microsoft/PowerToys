@@ -53,11 +53,11 @@
     <Compile Include="Hotkey\KeyEvent.cs" />
     <Compile Include="Logger\Log.cs" />
     <Compile Include="PeHeaderReader.cs" />
+    <Compile Include="Stopwatch.cs" />
     <Compile Include="Storage\BinaryStorage.cs" />
     <Compile Include="Storage\IStorage.cs" />
     <Compile Include="Storage\JsonStorage.cs" />
     <Compile Include="StringMatcher.cs" />
-    <Compile Include="Timeit.cs" />
     <Compile Include="Unidecoder.Characters.cs" />
     <Compile Include="Http\HttpRequest.cs" />
     <Compile Include="Storage\BaseStorage.cs" />

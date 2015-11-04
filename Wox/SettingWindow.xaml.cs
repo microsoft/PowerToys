@@ -20,6 +20,7 @@ using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Plugin;
 using Application = System.Windows.Forms.Application;
+using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox
 {
@@ -329,7 +330,7 @@ namespace Wox
 
         private void OnThemeTabSelected()
         {
-            Timeit.StopwatchDebug("theme load", () =>
+            Stopwatch.Debug("theme load", () =>
             {
                 var s = Fonts.SystemFontFamilies;
             });

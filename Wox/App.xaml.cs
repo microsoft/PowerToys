@@ -29,7 +29,7 @@ namespace Wox
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            Timeit.StopwatchDebug("Startup Time", () =>
+            Stopwatch.Debug("Startup Time", () =>
             {
                 base.OnStartup(e);
                 DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
