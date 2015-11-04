@@ -1,23 +1,19 @@
 version: 1.2.0.{build}
-branches:
-  only:
-  - master
 os: Visual Studio 2015
 configuration: Release
 platform: Any CPU
 assembly_info:
   patch: true
   file: AssemblyInfo.*
-  assembly_version: 1.2.0
+  assembly_version: '{version}'
   assembly_file_version: '{version}'
   assembly_informational_version: '{version}-$(APPVEYOR_REPO_COMMIT)'
 before_build:
 - ps: nuget restore
 build:
   project: Wox.sln
-  publish_nuget: true
 after_build:
-- cmd: .\Deploy\UpdateGenerator\build.bat
+- ps: .\Deploy\UpdateGenerator\build.ps1
 after_test:
 - ps: .\Deploy\Nuget\pack.ps1
 artifacts:
