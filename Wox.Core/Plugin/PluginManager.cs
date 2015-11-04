@@ -152,7 +152,7 @@ namespace Wox.Core.Plugin
             {
                 var customizedPluginConfig = UserSettingStorage.Instance.
                     CustomizedPluginConfigs.FirstOrDefault(o => o.ID == plugin.Metadata.ID);
-                if (customizedPluginConfig != null && customizedPluginConfig.Disabled) return;
+                if (customizedPluginConfig != null && customizedPluginConfig.Disabled) continue;
                 if (IsInstantQueryPlugin(plugin))
                 {
                     using (new Timeit($"Plugin {plugin.Metadata.Name} is executing instant search"))
