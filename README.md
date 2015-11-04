@@ -21,7 +21,7 @@ Installation
 1. Download
   1. Latest stable version: [release page](https://github.com/qianlifeng/Wox/releases).
   2. Latest build: [history](https://ci.appveyor.com/project/qianlifeng/wox/history)
-  (click one build -> artifacts -> release-binary.zip).
+     (top green build -> artifacts -> release-binary.zip).
 2. Unzip it and put it into your user directory (`C:\Users\YOUUSERNAME` or `%userprofile%`)
 3. Windows 10 user, please have a look at https://github.com/Wox-launcher/Wox/issues/279
 
