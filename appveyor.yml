@@ -14,7 +14,7 @@ build:
   project: Wox.sln
 after_test:
 - ps: >-
-    .\Deploy\UpdateGenerator\build.bat
+    .\Deploy\UpdateGenerator\build.ps1
 
     .\Deploy\Nuget\pack.ps1
 artifacts:
