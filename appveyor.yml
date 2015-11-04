@@ -12,10 +12,11 @@ before_build:
 - ps: nuget restore
 build:
   project: Wox.sln
-after_build:
-- ps: .\Deploy\UpdateGenerator\build.ps1
 after_test:
-- ps: .\Deploy\Nuget\pack.ps1
+- ps: >-
+    .\Deploy\UpdateGenerator\build.bat
+
+    .\Deploy\Nuget\pack.ps1
 artifacts:
 - path: Output\Release
   name: release-binary
