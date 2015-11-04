@@ -464,7 +464,7 @@ namespace Wox
             Query(tbQuery.Text);
             Dispatcher.DelayInvoke("ShowProgressbar", () =>
             {
-                if (!queryHasReturn && !string.IsNullOrEmpty(lastQuery))
+                if (!queryHasReturn && !string.IsNullOrEmpty(tbQuery.Text) && tbQuery.Text != lastQuery)
                 {
                     StartProgress();
                 }
