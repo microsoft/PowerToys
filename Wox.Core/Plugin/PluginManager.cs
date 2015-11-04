@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Windows.Documents;
 using Wox.Core.Exception;
 using Wox.Core.i18n;
 using Wox.Core.UI;
@@ -110,7 +108,6 @@ namespace Wox.Core.Plugin
             ThreadPool.QueueUserWorkItem(o =>
             {
                 instantQueryPlugins = GetPlugins<IInstantQuery>();
-                exclusiveSearchPlugins = GetPlugins<IExclusiveQuery>();
                 contextMenuPlugins = GetPlugins<IContextMenu>();
             });
         }
@@ -123,8 +120,8 @@ namespace Wox.Core.Plugin
         public static Query QueryInit(string text) //todo is that possible to move it into type Query?
         {
             // replace multiple white spaces with one white space
-            var terms = text.Split(new[] { Query.Seperater }, StringSplitOptions.RemoveEmptyEntries);
-            var rawQuery = string.Join(Query.Seperater, terms.ToArray());
+            var terms = text.Split(new[] { Query.TermSeperater }, StringSplitOptions.RemoveEmptyEntries);
+            var rawQuery = string.Join(Query.TermSeperater, terms.ToArray());
             var actionKeyword = string.Empty;
             var search = rawQuery;
             IEnumerable<string> actionParameters = terms;
@@ -136,7 +133,7 @@ namespace Wox.Core.Plugin
             if (!string.IsNullOrEmpty(actionKeyword))
             {
                 actionParameters = terms.Skip(1);
-                search = string.Join(Query.Seperater, actionParameters.ToArray());
+                search = string.Join(Query.TermSeperater, actionParameters.ToArray());
             }
             return new Query
             {
@@ -204,7 +201,7 @@ namespace Wox.Core.Plugin
         private static bool IsVailldActionKeyword(string actionKeyword)
         {
             if (string.IsNullOrEmpty(actionKeyword) || actionKeyword == Query.WildcardSign) return false;
-            PluginPair pair = AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == actionKeyword);
+            PluginPair pair = AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeywords.Contains(actionKeyword));
             if (pair == null) return false;
             var customizedPluginConfig = UserSettingStorage.Instance.
                 CustomizedPluginConfigs.FirstOrDefault(o => o.ID == pair.Metadata.ID);
@@ -213,7 +210,7 @@ namespace Wox.Core.Plugin
 
         public static bool IsSystemPlugin(PluginMetadata metadata)
         {
-            return metadata.ActionKeyword == Query.WildcardSign;
+            return metadata.ActionKeywords.Contains(Query.WildcardSign);
         }
 
         private static bool IsInstantQueryPlugin(PluginPair plugin)
@@ -239,21 +236,11 @@ namespace Wox.Core.Plugin
             return AllPlugins.Where(p => p.Plugin is T);
         }
 
-        private static PluginPair GetExclusivePlugin(Query query)
-        {
-            return exclusiveSearchPlugins.FirstOrDefault(p => ((IExclusiveQuery)p.Plugin).IsExclusiveQuery(query));
-        }
-
-        private static PluginPair GetActionKeywordPlugin(Query query)
-        {
-            //if a query doesn't contain a vaild action keyword, it should not be a action keword plugin query
-            if (string.IsNullOrEmpty(query.ActionKeyword)) return null;
-            return AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeyword == query.ActionKeyword);
-        }
-
         private static PluginPair GetNonSystemPlugin(Query query)
         {
-            return GetExclusivePlugin(query) ?? GetActionKeywordPlugin(query);
+            //if a query doesn't contain a vaild action keyword, it should be a query for system plugin
+            if (string.IsNullOrEmpty(query.ActionKeyword)) return null;
+            return AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeywords.Contains(query.ActionKeyword));
         }
 
         private static List<PluginPair> GetSystemPlugins()

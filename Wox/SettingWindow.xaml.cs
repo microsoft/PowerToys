@@ -527,7 +527,7 @@ namespace Wox
             {
                 provider = pair.Plugin as ISettingProvider;
                 pluginAuthor.Visibility = Visibility.Visible;
-                pluginActionKeyword.Visibility = Visibility.Visible;
+                pluginActionKeywords.Visibility = Visibility.Visible;
                 pluginInitTime.Text =
                     string.Format(InternationalizationManager.Instance.GetTranslation("plugin_init_time"), pair.InitTime);
                 pluginQueryTime.Text =
@@ -536,7 +536,7 @@ namespace Wox
                 tbOpenPluginDirecoty.Visibility = Visibility.Visible;
                 pluginTitle.Text = pair.Metadata.Name;
                 pluginTitle.Cursor = Cursors.Hand;
-                pluginActionKeyword.Text = pair.Metadata.ActionKeyword;
+                pluginActionKeywords.Text = string.Join(Query.ActionKeywordSeperater, pair.Metadata.ActionKeywords);
                 pluginAuthor.Text = InternationalizationManager.Instance.GetTranslation("author") + ": " + pair.Metadata.Author;
                 pluginSubTitle.Text = pair.Metadata.Description;
                 pluginId = pair.Metadata.ID;
@@ -578,12 +578,13 @@ namespace Wox
             var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == id);
             if (customizedPluginConfig == null)
             {
+                // todo when this part will be invoked
                 UserSettingStorage.Instance.CustomizedPluginConfigs.Add(new CustomizedPluginConfig()
                 {
                     Disabled = cbDisabled.IsChecked ?? true,
                     ID = id,
                     Name = name,
-                    Actionword = string.Empty
+                    ActionKeywords = null
                 });
             }
             else
@@ -593,7 +594,7 @@ namespace Wox
             UserSettingStorage.Instance.Save();
         }
 
-        private void PluginActionKeyword_OnMouseUp(object sender, MouseButtonEventArgs e)
+        private void PluginActionKeywords_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
             {
@@ -602,10 +603,10 @@ namespace Wox
                 {
                     //third-party plugin
                     string id = pair.Metadata.ID;
-                    ActionKeyword changeKeywordWindow = new ActionKeyword(id);
-                    changeKeywordWindow.ShowDialog();
+                    ActionKeywords changeKeywordsWindow = new ActionKeywords(id);
+                    changeKeywordsWindow.ShowDialog();
                     PluginPair plugin = PluginManager.GetPlugin(id);
-                    if (plugin != null) pluginActionKeyword.Text = plugin.Metadata.ActionKeyword;
+                    if (plugin != null) pluginActionKeywords.Text = string.Join(Query.ActionKeywordSeperater, pair.Metadata.ActionKeywords);
                 }
             }
         }

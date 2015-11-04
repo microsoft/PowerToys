@@ -6,7 +6,7 @@ using System.Windows;
 using Wox.CommandArgs;
 using Wox.Core.Plugin;
 using Wox.Helper;
-using Wox.Infrastructure;
+using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox
 {

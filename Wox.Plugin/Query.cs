@@ -25,14 +25,15 @@ namespace Wox.Plugin
         /// </summary>
         internal string[] Terms { private get; set; }
 
-        public const string Seperater = " ";
+        public const string TermSeperater = " ";
+        public const string ActionKeywordSeperater = ";";
 
         /// <summary>
         /// * is used for System Plugin
         /// </summary>
         public const string WildcardSign = "*";
 
-        internal string ActionKeyword { get; set; }
+        public string ActionKeyword { get; set; }
 
         /// <summary>
         /// Return first search split by space if it has
@@ -46,8 +47,8 @@ namespace Wox.Plugin
         {
             get
             {
-                var index = String.IsNullOrEmpty(ActionKeyword) ? 1 : 2;
-                return String.Join(Seperater, Terms.Skip(index).ToArray());
+                var index = string.IsNullOrEmpty(ActionKeyword) ? 1 : 2;
+                return string.Join(TermSeperater, Terms.Skip(index).ToArray());
             }
         }
 
@@ -65,18 +66,17 @@ namespace Wox.Plugin
         {
             try
             {
-                return String.IsNullOrEmpty(ActionKeyword) ? Terms[index] : Terms[index + 1];
+                return string.IsNullOrEmpty(ActionKeyword) ? Terms[index] : Terms[index + 1];
             }
             catch (IndexOutOfRangeException)
             {
-                return String.Empty;
+                return string.Empty;
             }
         }
 
         public override string ToString() => RawQuery;
 
-        [Obsolete("Use Search instead, A plugin developer shouldn't care about action name, as it may changed by users. " +
-                  "this property will be removed in v1.3.0")]
+        [Obsolete("Use ActionKeyword, this property will be removed in v1.3.0")]
         public string ActionName { get; internal set; }
 
         [Obsolete("Use Search instead, this property will be removed in v1.3.0")]

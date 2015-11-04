@@ -77,13 +77,13 @@
     <system:String x:Key="about_activate_times">你已經激活了Wox {0} 次</system:String>
 
     <!--Action Keyword 設置對話框-->
-    <system:String x:Key="oldActionKeyword">舊觸發關鍵字</system:String>
-    <system:String x:Key="newActionKeyword">新觸發關鍵字</system:String>
+    <system:String x:Key="oldActionKeywords">舊觸發關鍵字</system:String>
+    <system:String x:Key="newActionKeywords">新觸發關鍵字</system:String>
     <system:String x:Key="cancel">取消</system:String>
     <system:String x:Key="done">確定</system:String>
     <system:String x:Key="cannotFindSpecifiedPlugin">找不到指定的插件</system:String>
-    <system:String x:Key="newActionKeywordCannotBeEmpty">新觸發關鍵字不能為空</system:String>
-    <system:String x:Key="newActionKeywordHasBeenAssigned">新觸發關鍵字已經被指派給其他插件了，請重新選擇一個關鍵字</system:String>
+    <system:String x:Key="newActionKeywordsCannotBeEmpty">新觸發關鍵字不能為空</system:String>
+    <system:String x:Key="newActionKeywordsHasBeenAssigned">新觸發關鍵字已經被指派給其他插件了，請重新選擇一個關鍵字</system:String>
     <system:String x:Key="succeed">成功</system:String>
     <system:String x:Key="actionkeyword_tips">如果你不想設置觸發關鍵字，可以使用*代替</system:String>
 

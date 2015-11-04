@@ -1,6 +1,6 @@
 {
     "ID":"565B73353DBF4806919830B9202EE3BF",
-    "ActionKeyword":"*",
+    "ActionKeywords": ["g", "wiki", "findicon"],
     "Name":"Web Searches",
     "Description":"Provide the web search ability",
     "Author":"qianlifeng",

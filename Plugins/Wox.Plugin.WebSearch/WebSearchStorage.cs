@@ -40,7 +40,7 @@ namespace Wox.Plugin.WebSearch
             WebSearch googleWebSearch = new WebSearch()
             {
                 Title = "Google",
-                ActionWord = "g",
+                ActionKeyword = "g",
                 IconPath = @"Images\websearch\google.png",
                 Url = "https://www.google.com/search?q={q}",
                 Enabled = true
@@ -51,7 +51,7 @@ namespace Wox.Plugin.WebSearch
             WebSearch wikiWebSearch = new WebSearch()
             {
                 Title = "Wikipedia",
-                ActionWord = "wiki",
+                ActionKeyword = "wiki",
                 IconPath = @"Images\websearch\wiki.png",
                 Url = "http://en.wikipedia.org/wiki/{q}",
                 Enabled = true
@@ -61,7 +61,7 @@ namespace Wox.Plugin.WebSearch
             WebSearch findIcon = new WebSearch()
             {
                 Title = "FindIcon",
-                ActionWord = "findicon",
+                ActionKeyword = "findicon",
                 IconPath = @"Images\websearch\pictures.png",
                 Url = "http://findicons.com/search/{q}",
                 Enabled = true
