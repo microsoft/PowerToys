@@ -35,7 +35,7 @@ namespace Wox
                 DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
                 AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
 
-                //ThreadPool.QueueUserWorkItem(o => { ImageLoader.ImageLoader.PreloadImages(); });
+                ThreadPool.QueueUserWorkItem(o => { ImageLoader.ImageLoader.PreloadImages(); });
                 Window = new MainWindow();
                 PluginManager.Init(Window);
                 CommandArgsFactory.Execute(e.Args.ToList());
