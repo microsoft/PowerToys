@@ -480,8 +480,11 @@ namespace Wox
         private void Query(string text)
         {
             var query = PluginManager.QueryInit(text);
-            lastQuery = query?.RawQuery;
-            PluginManager.QueryForAllPlugins(query);
+            if (query != null)
+            {
+                lastQuery = query.RawQuery;
+                PluginManager.QueryForAllPlugins(query);
+            }
             StopProgress();
         }
 
