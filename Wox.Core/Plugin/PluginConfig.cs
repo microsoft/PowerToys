@@ -119,7 +119,7 @@ namespace Wox.Core.Plugin
             if (customizedPluginConfig?.ActionKeywords?.Length > 0)
             {
                 metadata.ActionKeywords = customizedPluginConfig.ActionKeywords;
-                metadata.ActionKeyword = customizedPluginConfig.ActionKeywords[0]; //todo reenable
+                metadata.ActionKeyword = customizedPluginConfig.ActionKeywords[0];
             }
 
             return metadata;

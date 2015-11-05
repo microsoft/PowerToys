@@ -23,7 +23,7 @@ namespace Wox.Plugin
         /// <summary>
         /// The raw query splited into a string array.
         /// </summary>
-        internal string[] Terms { private get; set; }
+        public string[] Terms { get; set; }
 
         /// <summary>
         /// Query can be splited into multiple terms by whitespace

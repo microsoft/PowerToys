@@ -29,8 +29,8 @@ namespace Wox.Core.Plugin
 
         public static IEnumerable<PluginPair> AllPlugins { get; private set; }
 
-        private static List<PluginPair> GlobalPlugins { get; set; }
-        private static List<PluginPair> NonGlobalPlugins { get; set; }
+        public static IEnumerable<PluginPair> GlobalPlugins { get; private set; }
+        public static IEnumerable<PluginPair> NonGlobalPlugins { get; private set; }
 
         private static IEnumerable<PluginPair> InstantQueryPlugins { get; set; }
         public static IPublicAPI API { private set; get; }
@@ -104,19 +104,8 @@ namespace Wox.Core.Plugin
             {
                 InstantQueryPlugins = GetPluginsForInterface<IInstantQuery>();
                 contextMenuPlugins = GetPluginsForInterface<IContextMenu>();
-                GlobalPlugins = new List<PluginPair>();
-                NonGlobalPlugins = new List<PluginPair>();
-                foreach (var plugin in AllPlugins)
-                {
-                    if (IsGlobalPlugin(plugin.Metadata))
-                    {
-                        GlobalPlugins.Add(plugin);
-                    }
-                    else
-                    {
-                        NonGlobalPlugins.Add(plugin);
-                    }
-                }
+                GlobalPlugins = AllPlugins.Where(p => IsGlobalPlugin(p.Metadata));
+                NonGlobalPlugins = AllPlugins.Where(p => !IsGlobalPlugin(p.Metadata));
             });
         }
 
