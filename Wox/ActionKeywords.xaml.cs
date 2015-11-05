@@ -15,7 +15,7 @@ namespace Wox
         public ActionKeywords(string pluginId)
         {
             InitializeComponent();
-            PluginPair plugin = PluginManager.GetPlugin(pluginId);
+            PluginPair plugin = PluginManager.GetPluginForId(pluginId);
             if (plugin == null)
             {
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("cannotFindSpecifiedPlugin"));
@@ -47,7 +47,7 @@ namespace Wox
 
             var actionKeywords = tbAction.Text.Trim().Split(new[] { Query.ActionKeywordSeperater }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             //check new action keyword didn't used by other plugin
-            if (actionKeywords[0] != Query.WildcardSign && PluginManager.AllPlugins.
+            if (actionKeywords[0] != Query.GlobalPluginWildcardSign && PluginManager.AllPlugins.
                                         SelectMany(p => p.Metadata.ActionKeywords).
                                         Any(k => actionKeywords.Contains(k)))
             {

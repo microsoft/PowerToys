@@ -39,7 +39,7 @@ namespace Wox.Core.UI
         internal static void ApplyPluginLanguages()
         {
             RemoveResource(PluginManager.DirectoryName);
-            foreach (var languageFile in PluginManager.GetPlugins<IPluginI18n>().
+            foreach (var languageFile in PluginManager.GetPluginsForInterface<IPluginI18n>().
                 Select(plugin => InternationalizationManager.Instance.GetLanguageFile(((IPluginI18n)plugin.Plugin).GetLanguagesFolder())).
                 Where(file => !string.IsNullOrEmpty(file)))
             {

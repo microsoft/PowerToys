@@ -25,13 +25,19 @@ namespace Wox.Plugin
         /// </summary>
         internal string[] Terms { private get; set; }
 
+        /// <summary>
+        /// Query can be splited into multiple terms by whitespace
+        /// </summary>
         public const string TermSeperater = " ";
+        /// <summary>
+        /// User can set multiple action keywords seperated by ';'
+        /// </summary>
         public const string ActionKeywordSeperater = ";";
 
         /// <summary>
-        /// * is used for System Plugin
+        /// '*' is used for System Plugin
         /// </summary>
-        public const string WildcardSign = "*";
+        public const string GlobalPluginWildcardSign = "*";
 
         public string ActionKeyword { get; set; }
 

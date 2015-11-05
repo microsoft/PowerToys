@@ -605,7 +605,7 @@ namespace Wox
                     string id = pair.Metadata.ID;
                     ActionKeywords changeKeywordsWindow = new ActionKeywords(id);
                     changeKeywordsWindow.ShowDialog();
-                    PluginPair plugin = PluginManager.GetPlugin(id);
+                    PluginPair plugin = PluginManager.GetPluginForId(id);
                     if (plugin != null) pluginActionKeywords.Text = string.Join(Query.ActionKeywordSeperater, pair.Metadata.ActionKeywords);
                 }
             }

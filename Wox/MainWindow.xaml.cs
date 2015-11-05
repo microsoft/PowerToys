@@ -464,7 +464,7 @@ namespace Wox
             Query(tbQuery.Text);
             Dispatcher.DelayInvoke("ShowProgressbar", () =>
             {
-                if (!queryHasReturn && !string.IsNullOrEmpty(tbQuery.Text) && tbQuery.Text != lastQuery)
+                if (!string.IsNullOrEmpty(tbQuery.Text.Trim()) && tbQuery.Text != lastQuery && !queryHasReturn)
                 {
                     StartProgress();
                 }
@@ -873,10 +873,10 @@ namespace Wox
 
         private void ShowContextMenu(Result result)
         {
-            List<Result> results = PluginManager.GetPluginContextMenus(result);
+            List<Result> results = PluginManager.GetContextMenusForPlugin(result);
             results.ForEach(o =>
             {
-                o.PluginDirectory = PluginManager.GetPlugin(result.PluginID).Metadata.PluginDirectory;
+                o.PluginDirectory = PluginManager.GetPluginForId(result.PluginID).Metadata.PluginDirectory;
                 o.PluginID = result.PluginID;
                 o.OriginQuery = result.OriginQuery;
             });
