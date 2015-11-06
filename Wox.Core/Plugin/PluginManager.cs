@@ -202,7 +202,7 @@ namespace Wox.Core.Plugin
             return customizedPluginConfig == null || !customizedPluginConfig.Disabled;
         }
 
-        public static bool IsGlobalPlugin(PluginMetadata metadata)
+        private static bool IsGlobalPlugin(PluginMetadata metadata)
         {
             return metadata.ActionKeywords.Contains(Query.GlobalPluginWildcardSign);
         }
