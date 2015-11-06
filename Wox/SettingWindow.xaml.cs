@@ -549,7 +549,7 @@ namespace Wox
                     string.Format(InternationalizationManager.Instance.GetTranslation("plugin_init_time"), pair.InitTime);
                 pluginQueryTime.Text =
                     string.Format(InternationalizationManager.Instance.GetTranslation("plugin_query_time"), pair.AvgQueryTime);
-                if (pair.Metadata.ActionKeywords.Count > 0)
+                if (pair.Metadata.ActionKeywords.Count > 1)
                 {
                     pluginActionKeywordsTitle.Visibility = Visibility.Collapsed;
                     pluginActionKeywords.Visibility = Visibility.Collapsed;
