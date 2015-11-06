@@ -441,36 +441,33 @@ namespace Wox
 
         private void TbQuery_OnTextChanged(object sender, TextChangedEventArgs e)
         {
+            
             if (ignoreTextChange) { ignoreTextChange = false; return; }
 
-            toolTip.IsOpen = false;
-            pnlResult.Dirty = true;
-            if (IsInContextMenuMode)
+            if (!string.IsNullOrEmpty(tbQuery.Text.Trim()))
             {
-                QueryContextMenu();
-                return;
-            }
-
-            queryHasReturn = false;
-
-            Dispatcher.DelayInvoke("ClearResults", () =>
-            {
-                // Delay the invocation of clear method of pnlResult, minimize the time-span between clear results and add new results. 
-                // So this will reduce splash issues. After waiting 100ms, if there still no results added, we
-                // must clear the result. otherwise, it will be confused why the query changed, but the results
-                // didn't.
-                if (pnlResult.Dirty) pnlResult.Clear();
-            }, TimeSpan.FromMilliseconds(100));
-            Query(tbQuery.Text);
-            Dispatcher.DelayInvoke("ShowProgressbar", () =>
-            {
-                if (!string.IsNullOrEmpty(tbQuery.Text.Trim()) && tbQuery.Text != lastQuery && !queryHasReturn)
+                toolTip.IsOpen = false;
+                if (IsInContextMenuMode)
                 {
-                    StartProgress();
+                    QueryContextMenu();
+                    return;
                 }
-            }, TimeSpan.FromMilliseconds(150));
-            //reset query history index after user start new query
-            ResetQueryHistoryIndex();
+
+                Query(tbQuery.Text);
+                Dispatcher.DelayInvoke("ShowProgressbar", () =>
+                {
+                    if (!string.IsNullOrEmpty(tbQuery.Text.Trim()) && tbQuery.Text != lastQuery && !queryHasReturn)
+                    {
+                        StartProgress();
+                    }
+                }, TimeSpan.FromMilliseconds(150));
+                //reset query history index after user start new query
+                ResetQueryHistoryIndex();
+            }
+            else
+            {
+                pnlResult.Clear();
+            }
         }
 
         private void ResetQueryHistoryIndex()
@@ -720,7 +717,6 @@ namespace Wox
             if (history != null)
             {
                 ChangeQueryText(history.Query, true);
-                pnlResult.Dirty = true;
                 var executeQueryHistoryTitle = GetTranslation("executeQuery");
                 var lastExecuteTime = GetTranslation("lastExecuteTime");
                 UpdateResultViewInternal(new List<Result>()
