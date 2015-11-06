@@ -230,7 +230,7 @@ namespace Wox.Plugin.PluginManagement
             List<Result> results = new List<Result>();
             foreach (PluginMetadata plugin in context.API.GetAllPlugins().Select(o => o.Metadata))
             {
-                string actionKeywordString = string.Join(" or ", plugin.ActionKeywords);
+                string actionKeywordString = string.Join(" or ", plugin.ActionKeywords.ToArray());
                 results.Add(new Result
                 {
                     Title = $"{plugin.Name} - Action Keywords: {actionKeywordString}",

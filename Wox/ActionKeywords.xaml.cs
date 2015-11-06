@@ -28,7 +28,7 @@ namespace Wox
 
         private void ActionKeyword_OnLoaded(object sender, RoutedEventArgs e)
         {
-            tbOldActionKeyword.Text = string.Join(Query.ActionKeywordSeperater, pluginMetadata.ActionKeywords);
+            tbOldActionKeyword.Text = string.Join(Query.ActionKeywordSeperater, pluginMetadata.ActionKeywords.ToArray());
             tbAction.Focus();
         }
 
@@ -45,7 +45,7 @@ namespace Wox
                 return;
             }
 
-            var actionKeywords = tbAction.Text.Trim().Split(new[] { Query.ActionKeywordSeperater }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+            var actionKeywords = tbAction.Text.Trim().Split(new[] { Query.ActionKeywordSeperater }, StringSplitOptions.RemoveEmptyEntries).ToList();
             //check new action keyword didn't used by other plugin
             if (actionKeywords[0] != Query.GlobalPluginWildcardSign && PluginManager.AllPlugins.
                                         SelectMany(p => p.Metadata.ActionKeywords).

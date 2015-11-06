@@ -29,7 +29,7 @@
     <system:String x:Key="plugin">Плагины</system:String>
     <system:String x:Key="browserMorePlugins">Найти больше плагинов</system:String>
     <system:String x:Key="disable">Отключить</system:String>
-    <system:String x:Key="actionKeyword">Ключевое слово</system:String>
+    <system:String x:Key="actionKeywords">Ключевое слово</system:String>
     <system:String x:Key="pluginDirectory">Папка</system:String>
     <system:String x:Key="author">Автор</system:String>
     <system:String x:Key="plugin_init_time">Инициализация: {0}ms</system:String>

@@ -117,7 +117,8 @@ namespace Wox
             cbEnableProxy.Unchecked += (o, e) => DisableProxy();
             cbEnableProxy.IsChecked = UserSettingStorage.Instance.ProxyEnabled;
             tbProxyServer.Text = UserSettingStorage.Instance.ProxyServer;
-            if (UserSettingStorage.Instance.ProxyPort != 0) {
+            if (UserSettingStorage.Instance.ProxyPort != 0)
+            {
                 tbProxyPort.Text = UserSettingStorage.Instance.ProxyPort.ToString();
             }
             tbProxyUserName.Text = UserSettingStorage.Instance.ProxyUserName;
@@ -186,6 +187,23 @@ namespace Wox
             else if (tabHotkey.IsSelected)
             {
                 OnHotkeyTabSelected();
+            }
+
+            // save multiple action keywords settings, todo: this hack is ugly
+            var tab = e.RemovedItems.Count > 0 ? e.RemovedItems[0] : null;
+            if (ReferenceEquals(tab, tabPlugin))
+            {
+                var metadata = (lbPlugins.SelectedItem as PluginPair)?.Metadata;
+                if (metadata != null)
+                {
+                    var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == metadata.ID);
+                    if (customizedPluginConfig != null && !customizedPluginConfig.Disabled)
+                    {
+                        customizedPluginConfig.ActionKeywords = metadata.ActionKeywords;
+                        UserSettingStorage.Instance.Save();
+                    }
+
+                }
             }
         }
 
@@ -527,16 +545,24 @@ namespace Wox
             {
                 provider = pair.Plugin as ISettingProvider;
                 pluginAuthor.Visibility = Visibility.Visible;
-                pluginActionKeywords.Visibility = Visibility.Visible;
                 pluginInitTime.Text =
                     string.Format(InternationalizationManager.Instance.GetTranslation("plugin_init_time"), pair.InitTime);
                 pluginQueryTime.Text =
                     string.Format(InternationalizationManager.Instance.GetTranslation("plugin_query_time"), pair.AvgQueryTime);
-                pluginActionKeywordTitle.Visibility = Visibility.Visible;
+                if (pair.Metadata.ActionKeywords.Count > 0)
+                {
+                    pluginActionKeywordsTitle.Visibility = Visibility.Collapsed;
+                    pluginActionKeywords.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    pluginActionKeywordsTitle.Visibility = Visibility.Visible;
+                    pluginActionKeywords.Visibility = Visibility.Visible;
+                }
                 tbOpenPluginDirecoty.Visibility = Visibility.Visible;
                 pluginTitle.Text = pair.Metadata.Name;
                 pluginTitle.Cursor = Cursors.Hand;
-                pluginActionKeywords.Text = string.Join(Query.ActionKeywordSeperater, pair.Metadata.ActionKeywords);
+                pluginActionKeywords.Text = string.Join(Query.ActionKeywordSeperater, pair.Metadata.ActionKeywords.ToArray());
                 pluginAuthor.Text = InternationalizationManager.Instance.GetTranslation("author") + ": " + pair.Metadata.Author;
                 pluginSubTitle.Text = pair.Metadata.Description;
                 pluginId = pair.Metadata.ID;
@@ -606,7 +632,7 @@ namespace Wox
                     ActionKeywords changeKeywordsWindow = new ActionKeywords(id);
                     changeKeywordsWindow.ShowDialog();
                     PluginPair plugin = PluginManager.GetPluginForId(id);
-                    if (plugin != null) pluginActionKeywords.Text = string.Join(Query.ActionKeywordSeperater, pair.Metadata.ActionKeywords);
+                    if (plugin != null) pluginActionKeywords.Text = string.Join(Query.ActionKeywordSeperater, pair.Metadata.ActionKeywords.ToArray());
                 }
             }
         }

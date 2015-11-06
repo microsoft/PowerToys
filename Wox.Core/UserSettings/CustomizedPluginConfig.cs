@@ -10,7 +10,7 @@ namespace Wox.Core.UserSettings
 
         public string Name { get; set; }
 
-        public string[] ActionKeywords { get; set; }
+        public List<string> ActionKeywords { get; set; }
 
         public bool Disabled { get; set; }
     }

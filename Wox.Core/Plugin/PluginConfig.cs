@@ -73,7 +73,7 @@ namespace Wox.Core.Plugin
                 metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
                 metadata.PluginDirectory = pluginDirectory;
                 // for plugins which doesn't has ActionKeywords key
-                metadata.ActionKeywords = metadata.ActionKeywords ?? new[] {metadata.ActionKeyword};
+                metadata.ActionKeywords = metadata.ActionKeywords ?? new List<string> {metadata.ActionKeyword};
                 // for plugin still use old ActionKeyword
                 metadata.ActionKeyword = metadata.ActionKeywords?[0];
             }
@@ -116,7 +116,7 @@ namespace Wox.Core.Plugin
 
             //replace action keyword if user customized it.
             var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == metadata.ID);
-            if (customizedPluginConfig?.ActionKeywords?.Length > 0)
+            if (customizedPluginConfig?.ActionKeywords?.Count > 0)
             {
                 metadata.ActionKeywords = customizedPluginConfig.ActionKeywords;
                 metadata.ActionKeyword = customizedPluginConfig.ActionKeywords[0];

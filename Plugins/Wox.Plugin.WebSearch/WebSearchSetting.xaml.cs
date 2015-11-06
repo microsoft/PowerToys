@@ -104,6 +104,7 @@ namespace Wox.Plugin.WebSearch
                     Url = url,
                     Title = title
                 });
+                context.CurrentPluginMetadata.ActionKeywords.Add(action);
                 string msg = context.API.GetTranslation("wox_plugin_websearch_succeed");
                 MessageBox.Show(msg);
             }
@@ -120,10 +121,12 @@ namespace Wox.Plugin.WebSearch
                 updateWebSearch.Enabled = cbEnable.IsChecked ?? false;
                 updateWebSearch.Url = url;
                 updateWebSearch.Title= title;
+                context.CurrentPluginMetadata.ActionKeywords.Add(action);
                 string msg = context.API.GetTranslation("wox_plugin_websearch_succeed");
                 MessageBox.Show(msg);
             }
             WebSearchStorage.Instance.Save();
+
             settingWindow.ReloadWebSearchView();
             Close();
         }

@@ -29,7 +29,7 @@
     <system:String x:Key="plugin">Plugin</system:String>
     <system:String x:Key="browserMorePlugins">Browse more plugins</system:String>
     <system:String x:Key="disable">Disable</system:String>
-    <system:String x:Key="actionKeyword">Action keyword</system:String>
+    <system:String x:Key="actionKeywords">Action keywords</system:String>
     <system:String x:Key="pluginDirectory">Plugin Directory</system:String>
     <system:String x:Key="author">Author</system:String>
     <system:String x:Key="plugin_init_time">Init time: {0}ms</system:String>

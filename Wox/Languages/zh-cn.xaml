@@ -29,7 +29,7 @@
     <system:String x:Key="plugin">插件</system:String>
     <system:String x:Key="browserMorePlugins">浏览更多插件</system:String>
     <system:String x:Key="disable">禁用</system:String>
-    <system:String x:Key="actionKeyword">触发关键字</system:String>
+    <system:String x:Key="actionKeywords">触发关键字</system:String>
     <system:String x:Key="pluginDirectory">插件目录</system:String>
     <system:String x:Key="author">作者</system:String>
     <system:String x:Key="plugin_init_time">加载耗时 {0}ms</system:String>
