@@ -7,47 +7,32 @@ using Wox.Core.UserSettings;
 
 namespace Wox.Plugin.PluginIndicator
 {
-    public class PluginIndicator : IPlugin,IPluginI18n
+    public class PluginIndicator : IPlugin, IPluginI18n
     {
-        private List<PluginPair> allPlugins = new List<PluginPair>();
         private PluginInitContext context;
 
         public List<Result> Query(Query query)
         {
-            List<Result> results = new List<Result>();
-            if (allPlugins.Count == 0)
-            {
-                allPlugins = context.API.GetAllPlugins().Where(o => !PluginManager.IsSystemPlugin(o.Metadata)).ToList();
-            }
-
-            foreach (PluginMetadata metadata in allPlugins.Select(o => o.Metadata))
-            {
-                if (metadata.ActionKeyword.StartsWith(query.Search))
-                {
-                    PluginMetadata metadataCopy = metadata;
-                    var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == metadataCopy.ID);
-                    if (customizedPluginConfig != null && customizedPluginConfig.Disabled)
-                    {
-                        continue;
-                    }
-
-                    Result result = new Result
-                    {
-                        Title = metadata.ActionKeyword,
-                        SubTitle = string.Format("Activate {0} plugin", metadata.Name),
-                        Score = 100,
-                        IcoPath = metadata.FullIcoPath,
-                        Action = (c) =>
-                        {
-                            context.API.ChangeQuery(metadataCopy.ActionKeyword + " ");
-                            return false;
-                        },
-                    };
-                    results.Add(result);
-                }
-            }
-
-            return results;
+            var results = from plugin in PluginManager.NonGlobalPlugins
+                          select plugin.Metadata into metadata
+                          from keyword in metadata.ActionKeywords
+                          where keyword.StartsWith(query.Terms[0])
+                          let customizedPluginConfig =
+                              UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == metadata.ID)
+                          where customizedPluginConfig == null || !customizedPluginConfig.Disabled
+                          select new Result
+                          {
+                              Title = keyword,
+                              SubTitle = $"Activate {metadata.Name} plugin",
+                              Score = 100,
+                              IcoPath = metadata.FullIcoPath,
+                              Action = (c) =>
+                              {
+                                  context.API.ChangeQuery($"{keyword}{Plugin.Query.TermSeperater}");
+                                  return false;
+                              },
+                          };
+            return results.ToList();
         }
 
         public void Init(PluginInitContext context)

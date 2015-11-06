@@ -29,7 +29,7 @@
     <system:String x:Key="plugin">Plugin</system:String>
     <system:String x:Key="browserMorePlugins">Browse more plugins</system:String>
     <system:String x:Key="disable">Disable</system:String>
-    <system:String x:Key="actionKeyword">Action keyword</system:String>
+    <system:String x:Key="actionKeywords">Action keywords</system:String>
     <system:String x:Key="pluginDirectory">Plugin Directory</system:String>
     <system:String x:Key="author">Author</system:String>
     <system:String x:Key="plugin_init_time">Init time: {0}ms</system:String>
@@ -77,13 +77,13 @@
     <system:String x:Key="about_activate_times">You have activated Wox {0} times</system:String>
 
     <!--Action Keyword Setting Dialog-->
-    <system:String x:Key="oldActionKeyword">Old Action Keyword</system:String>
-    <system:String x:Key="newActionKeyword">New Action Keyword</system:String>
+    <system:String x:Key="oldActionKeywords">Old Action Keyword</system:String>
+    <system:String x:Key="newActionKeywords">New Action Keyword</system:String>
     <system:String x:Key="cancel">Cancel</system:String>
     <system:String x:Key="done">Done</system:String>
     <system:String x:Key="cannotFindSpecifiedPlugin">Can't find specified plugin</system:String>
-    <system:String x:Key="newActionKeywordCannotBeEmpty">New Action Keyword can't be empty</system:String>
-    <system:String x:Key="newActionKeywordHasBeenAssigned">New ActionKeyword has been assigned to other plugin, please assign another new action keyword</system:String>
+    <system:String x:Key="newActionKeywordsCannotBeEmpty">New Action Keyword can't be empty</system:String>
+    <system:String x:Key="newActionKeywordsHasBeenAssigned">New ActionKeywords has been assigned to other plugin, please assign another new action keyword</system:String>
     <system:String x:Key="succeed">Succeed</system:String>
     <system:String x:Key="actionkeyword_tips">Use * if you don't want to specify a action keyword</system:String>
     

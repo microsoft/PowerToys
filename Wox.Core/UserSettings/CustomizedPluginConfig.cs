@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Wox.Core.UserSettings
 {
@@ -9,7 +10,7 @@ namespace Wox.Core.UserSettings
 
         public string Name { get; set; }
 
-        public string Actionword { get; set; }
+        public List<string> ActionKeywords { get; set; }
 
         public bool Disabled { get; set; }
     }

@@ -7,134 +7,109 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using System.Windows.Forms;
+using System.Windows;
 using Newtonsoft.Json;
 
 namespace Wox.Plugin.PluginManagement
 {
-    public class Main : IPlugin,IPluginI18n
+    public class Main : IPlugin, IPluginI18n
     {
         private static string APIBASE = "https://api.getwox.com";
         private static string PluginConfigName = "plugin.json";
         private static string pluginSearchUrl = APIBASE + "/plugin/search/";
+        private const string ListCommand = "list";
+        private const string InstallCommand = "install";
+        private const string UninstallCommand = "uninstall";
         private PluginInitContext context;
 
         public List<Result> Query(Query query)
         {
             List<Result> results = new List<Result>();
+
             if (string.IsNullOrEmpty(query.Search))
             {
-                results.Add(new Result("install <pluginName>", "Images\\plugin.png", "search and install wox plugins")
-                {
-                    Action = e => ChangeToInstallCommand()
-                });
-                results.Add(new Result("uninstall <pluginName>", "Images\\plugin.png", "uninstall plugin")
-                {
-                    Action = e => ChangeToUninstallCommand()
-                });
-                results.Add(new Result("list", "Images\\plugin.png", "list plugins installed")
-                {
-                    Action = e => ChangeToListCommand()
-                });
+                results.Add(ResultForListCommandAutoComplete(query));
+                results.Add(ResultForInstallCommandAutoComplete(query));
+                results.Add(ResultForUninstallCommandAutoComplete(query));
                 return results;
             }
 
-            if (!string.IsNullOrEmpty(query.FirstSearch))
+            string command = query.FirstSearch.ToLower();
+            if (string.IsNullOrEmpty(command)) return results;
+
+            if (command == ListCommand)
             {
-                bool hit = false;
-                switch (query.FirstSearch.ToLower())
-                {
-                    case "list":
-                        hit = true;
-                        results = ListInstalledPlugins();
-                        break;
+                return ResultForListInstalledPlugins();
+            }
+            if (command == UninstallCommand)
+            {
+                return ResultForUnInstallPlugin(query);
+            }
+            if (command == InstallCommand)
+            {
+                return ResultForInstallPlugin(query);
+            }
 
-                    case "uninstall":
-                        hit = true;
-                        results = UnInstallPlugins(query);
-                        break;
-
-                    case "install":
-                        hit = true;
-                        if (!string.IsNullOrEmpty(query.SecondSearch))
-                        {
-                            results = InstallPlugin(query.SecondSearch);
-                        }
-                        break;
-                }
-
-                if (!hit)
-                {
-                    if ("install".Contains(query.FirstSearch.ToLower()))
-                    {
-                        results.Add(new Result("install <pluginName>", "Images\\plugin.png", "search and install wox plugins")
-                        {
-                            Action = e => ChangeToInstallCommand()
-                        });
-                    }
-                    if ("uninstall".Contains(query.FirstSearch.ToLower()))
-                    {
-                        results.Add(new Result("uninstall <pluginName>", "Images\\plugin.png", "uninstall plugin")
-                        {
-                            Action = e => ChangeToUninstallCommand()
-                        });
-                    }
-                    if ("list".Contains(query.FirstSearch.ToLower()))
-                    {
-                        results.Add(new Result("list", "Images\\plugin.png", "list plugins installed")
-                        {
-                            Action = e => ChangeToListCommand()
-                        });
-                    }
-                }
+            if (InstallCommand.Contains(command))
+            {
+                results.Add(ResultForInstallCommandAutoComplete(query));
+            }
+            if (UninstallCommand.Contains(command))
+            {
+                results.Add(ResultForUninstallCommandAutoComplete(query));
+            }
+            if (ListCommand.Contains(command))
+            {
+                results.Add(ResultForListCommandAutoComplete(query));
             }
 
             return results;
         }
 
-        private bool ChangeToListCommand()
+        private Result ResultForListCommandAutoComplete(Query query)
         {
-            if (context.CurrentPluginMetadata.ActionKeyword == "*")
-            {
-                context.API.ChangeQuery("list ");
-            }
-            else
-            {
-                context.API.ChangeQuery(string.Format("{0} list ", context.CurrentPluginMetadata.ActionKeyword));
-            }
-            return false;
+            string title = ListCommand;
+            string subtitle = "list installed plugins";
+            return ResultForCommand(query, ListCommand, title, subtitle);
         }
 
-        private bool ChangeToUninstallCommand()
+        private Result ResultForInstallCommandAutoComplete(Query query)
         {
-            if (context.CurrentPluginMetadata.ActionKeyword == "*")
-            {
-                context.API.ChangeQuery("uninstall ");
-            }
-            else
-            {
-                context.API.ChangeQuery(string.Format("{0} uninstall ", context.CurrentPluginMetadata.ActionKeyword));
-            }
-            return false;
+            string title = $"{InstallCommand} <Package Name>";
+            string subtitle = "list installed plugins";
+            return ResultForCommand(query, InstallCommand, title, subtitle);
         }
 
-        private bool ChangeToInstallCommand()
+        private Result ResultForUninstallCommandAutoComplete(Query query)
         {
-            if (context.CurrentPluginMetadata.ActionKeyword == "*")
-            {
-                context.API.ChangeQuery("install ");
-            }
-            else
-            {
-                context.API.ChangeQuery(string.Format("{0} install ", context.CurrentPluginMetadata.ActionKeyword));
-            }
-            return false;
+            string title = $"{UninstallCommand} <Package Name>";
+            string subtitle = "list installed plugins";
+            return ResultForCommand(query, UninstallCommand, title, subtitle);
         }
 
-        private List<Result> InstallPlugin(string queryPluginName)
+        private Result ResultForCommand(Query query, string command, string title, string subtitle)
+        {
+            const string seperater = Plugin.Query.TermSeperater;
+            var result = new Result
+            {
+                Title = title,
+                IcoPath = "Images\\plugin.png",
+                SubTitle = subtitle,
+                Action = e =>
+                {
+                    context.API.ChangeQuery($"{query.ActionKeyword}{seperater}{command}{seperater}");
+                    return false;
+                }
+            };
+            return result;
+        }
+
+        private List<Result> ResultForInstallPlugin(Query query)
         {
             List<Result> results = new List<Result>();
-            HttpWebResponse response = HttpRequest.CreateGetHttpResponse(pluginSearchUrl + queryPluginName, context.Proxy);
+            string pluginName = query.SecondSearch;
+            if (string.IsNullOrEmpty(pluginName)) return results;
+            HttpWebResponse response = HttpRequest.CreateGetHttpResponse(pluginSearchUrl + pluginName, context.Proxy);
             Stream s = response.GetResponseStream();
             if (s != null)
             {
@@ -154,17 +129,17 @@ namespace Wox.Plugin.PluginManagement
                 foreach (WoxPluginResult r in searchedPlugins)
                 {
                     WoxPluginResult r1 = r;
-                    results.Add(new Result()
+                    results.Add(new Result
                     {
                         Title = r.name,
                         SubTitle = r.description,
                         IcoPath = "Images\\plugin.png",
                         Action = e =>
                         {
-                            DialogResult result = MessageBox.Show("Are your sure to install " + r.name + " plugin",
-                                "Install plugin", MessageBoxButtons.YesNo);
+                            MessageBoxResult result = MessageBox.Show("Are your sure to install " + r.name + " plugin",
+                                "Install plugin", MessageBoxButton.YesNo);
 
-                            if (result == DialogResult.Yes)
+                            if (result == MessageBoxResult.Yes)
                             {
                                 string folder = Path.Combine(Path.GetTempPath(), "WoxPluginDownload");
                                 if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
@@ -201,7 +176,7 @@ namespace Wox.Plugin.PluginManagement
             return results;
         }
 
-        private List<Result> UnInstallPlugins(Query query)
+        private List<Result> ResultForUnInstallPlugin(Query query)
         {
             List<Result> results = new List<Result>();
             List<PluginMetadata> allInstalledPlugins = context.API.GetAllPlugins().Select(o => o.Metadata).ToList();
@@ -213,15 +188,14 @@ namespace Wox.Plugin.PluginManagement
 
             foreach (PluginMetadata plugin in allInstalledPlugins)
             {
-                var plugin1 = plugin;
-                results.Add(new Result()
+                results.Add(new Result
                 {
                     Title = plugin.Name,
                     SubTitle = plugin.Description,
                     IcoPath = plugin.FullIcoPath,
                     Action = e =>
                     {
-                        UnInstallPlugin(plugin1);
+                        UnInstallPlugin(plugin);
                         return false;
                     }
                 });
@@ -232,16 +206,16 @@ namespace Wox.Plugin.PluginManagement
         private void UnInstallPlugin(PluginMetadata plugin)
         {
             string content = string.Format("Do you want to uninstall following plugin?\r\n\r\nName: {0}\r\nVersion: {1}\r\nAuthor: {2}", plugin.Name, plugin.Version, plugin.Author);
-            if (MessageBox.Show(content, "Wox", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (MessageBox.Show(content, "Wox", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 File.Create(Path.Combine(plugin.PluginDirectory, "NeedDelete.txt")).Close();
                 if (MessageBox.Show(
                     "You have uninstalled plugin " + plugin.Name + " successfully.\r\n Restart Wox to take effect?",
                     "Install plugin",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
                     ProcessStartInfo Info = new ProcessStartInfo();
-                    Info.Arguments = "/C ping 127.0.0.1 -n 1 && \"" + Application.ExecutablePath + "\"";
+                    Info.Arguments = "/C ping 127.0.0.1 -n 1 && \"" + Assembly.GetExecutingAssembly().Location + "\"";
                     Info.WindowStyle = ProcessWindowStyle.Hidden;
                     Info.CreateNoWindow = true;
                     Info.FileName = "cmd.exe";
@@ -251,14 +225,15 @@ namespace Wox.Plugin.PluginManagement
             }
         }
 
-        private List<Result> ListInstalledPlugins()
+        private List<Result> ResultForListInstalledPlugins()
         {
             List<Result> results = new List<Result>();
             foreach (PluginMetadata plugin in context.API.GetAllPlugins().Select(o => o.Metadata))
             {
-                results.Add(new Result()
+                string actionKeywordString = string.Join(" or ", plugin.ActionKeywords.ToArray());
+                results.Add(new Result
                 {
-                    Title = plugin.Name + " - " + plugin.ActionKeyword,
+                    Title = $"{plugin.Name} - Action Keywords: {actionKeywordString}",
                     SubTitle = plugin.Description,
                     IcoPath = plugin.FullIcoPath
                 });

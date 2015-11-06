@@ -51,7 +51,7 @@ namespace Wox.Core.Plugin
                 string content = string.Format(
                         "Do you want to install following plugin?\r\n\r\nName: {0}\r\nVersion: {1}\r\nAuthor: {2}",
                         plugin.Name, plugin.Version, plugin.Author);
-                PluginPair existingPlugin = PluginManager.GetPlugin(plugin.ID);
+                PluginPair existingPlugin = PluginManager.GetPluginForId(plugin.ID);
 
                 if (existingPlugin != null)
                 {

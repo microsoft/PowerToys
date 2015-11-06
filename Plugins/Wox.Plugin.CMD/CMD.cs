@@ -12,7 +12,7 @@ using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.CMD
 {
-    public class CMD : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IExclusiveQuery, IContextMenu
+    public class CMD : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IContextMenu
     {
         private PluginInitContext context;
         private bool WinRStroked;
@@ -201,11 +201,6 @@ namespace Wox.Plugin.CMD
         }
 
         public bool IsInstantQuery(string query) => false;
-
-        public bool IsExclusiveQuery(Query query)
-        {
-            return query.Search.StartsWith(">");
-        }
 
         public List<Result> LoadContextMenus(Result selectedResult)
         {

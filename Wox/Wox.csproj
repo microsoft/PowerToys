@@ -126,8 +126,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="ActionKeyword.xaml.cs">
-      <DependentUpon>ActionKeyword.xaml</DependentUpon>
+    <Compile Include="ActionKeywords.xaml.cs">
+      <DependentUpon>ActionKeywords.xaml</DependentUpon>
     </Compile>
     <Compile Include="CommandArgs\CommandArgsFactory.cs" />
     <Compile Include="CommandArgs\HideStartCommandArg.cs" />
@@ -160,7 +160,7 @@
     <Compile Include="SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
-    <Page Include="ActionKeyword.xaml">
+    <Page Include="ActionKeywords.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -375,4 +375,3 @@ cd "$(TargetDir)Plugins" &amp; del /s /q WindowsInput.dll
   </Target>
   -->
 </Project>
-

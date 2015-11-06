@@ -59,7 +59,7 @@
     <Compile Include="WebSearchesSetting.xaml.cs">
       <DependentUpon>WebSearchesSetting.xaml</DependentUpon>
     </Compile>
-    <Compile Include="WebQueryPlugin.cs" />
+    <Compile Include="WebSearchPlugin.cs" />
     <Compile Include="WebSearchSetting.xaml.cs">
       <DependentUpon>WebSearchSetting.xaml</DependentUpon>
     </Compile>
@@ -136,4 +136,3 @@
   </Target>
   -->
 </Project>
-

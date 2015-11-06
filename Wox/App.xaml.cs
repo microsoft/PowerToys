@@ -6,7 +6,7 @@ using System.Windows;
 using Wox.CommandArgs;
 using Wox.Core.Plugin;
 using Wox.Helper;
-using Wox.Infrastructure;
+using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox
 {
@@ -29,7 +29,7 @@ namespace Wox
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            using (new Timeit("Startup Time"))
+            Stopwatch.Debug("Startup Time", () =>
             {
                 base.OnStartup(e);
                 DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
@@ -39,7 +39,7 @@ namespace Wox
                 Window = new MainWindow();
                 PluginManager.Init(Window);
                 CommandArgsFactory.Execute(e.Args.ToList());
-            }
+            });
 
         }
 

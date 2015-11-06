@@ -22,7 +22,7 @@
                     <GridViewColumn Header="{DynamicResource wox_plugin_websearch_action_keyword}"  Width="180">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding ActionWord}"/>
+                                <TextBlock Text="{Binding ActionKeyword}"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>

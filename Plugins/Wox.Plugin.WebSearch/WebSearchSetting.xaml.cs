@@ -42,7 +42,7 @@ namespace Wox.Plugin.WebSearch
             cbEnable.IsChecked = webSearch.Enabled;
             tbTitle.Text = webSearch.Title;
             tbUrl.Text = webSearch.Url;
-            tbActionword.Text = webSearch.ActionWord;
+            tbActionword.Text = webSearch.ActionKeyword;
         }
 
         private void ShowIcon(string path)
@@ -90,7 +90,7 @@ namespace Wox.Plugin.WebSearch
 
             if (!update)
             {
-                if (WebSearchStorage.Instance.WebSearches.Exists(o => o.ActionWord == action))
+                if (WebSearchStorage.Instance.WebSearches.Exists(o => o.ActionKeyword == action))
                 {
                     string warning = context.API.GetTranslation("wox_plugin_websearch_action_keyword_exist");
                     MessageBox.Show(warning);
@@ -98,32 +98,41 @@ namespace Wox.Plugin.WebSearch
                 }
                 WebSearchStorage.Instance.WebSearches.Add(new WebSearch()
                 {
-                    ActionWord = action,
+                    ActionKeyword = action,
                     Enabled = cbEnable.IsChecked ?? false,
                     IconPath = tbIconPath.Text,
                     Url = url,
                     Title = title
                 });
+                
+                //save the action keywords, the order is not metters. Wox will read this metadata when save settings.
+                context.CurrentPluginMetadata.ActionKeywords.Add(action);
+
                 string msg = context.API.GetTranslation("wox_plugin_websearch_succeed");
                 MessageBox.Show(msg);
             }
             else
             {
-                if (WebSearchStorage.Instance.WebSearches.Exists(o => o.ActionWord == action && o != updateWebSearch))
+                if (WebSearchStorage.Instance.WebSearches.Exists(o => o.ActionKeyword == action && o != updateWebSearch))
                 {
                     string warning = context.API.GetTranslation("wox_plugin_websearch_action_keyword_exist");
                     MessageBox.Show(warning);
                     return;
                 }
-                updateWebSearch.ActionWord = action;
+                updateWebSearch.ActionKeyword = action;
                 updateWebSearch.IconPath = tbIconPath.Text;
                 updateWebSearch.Enabled = cbEnable.IsChecked ?? false;
                 updateWebSearch.Url = url;
                 updateWebSearch.Title= title;
+                
+                //save the action keywords, the order is not metters. Wox will read this metadata when save settings.
+                context.CurrentPluginMetadata.ActionKeywords.Add(action);
+
                 string msg = context.API.GetTranslation("wox_plugin_websearch_succeed");
                 MessageBox.Show(msg);
             }
             WebSearchStorage.Instance.Save();
+
             settingWindow.ReloadWebSearchView();
             Close();
         }

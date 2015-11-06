@@ -29,7 +29,7 @@
     <system:String x:Key="plugin">Плагины</system:String>
     <system:String x:Key="browserMorePlugins">Найти больше плагинов</system:String>
     <system:String x:Key="disable">Отключить</system:String>
-    <system:String x:Key="actionKeyword">Ключевое слово</system:String>
+    <system:String x:Key="actionKeywords">Ключевое слово</system:String>
     <system:String x:Key="pluginDirectory">Папка</system:String>
     <system:String x:Key="author">Автор</system:String>
     <system:String x:Key="plugin_init_time">Инициализация: {0}ms</system:String>
@@ -77,13 +77,13 @@
     <system:String x:Key="about_activate_times">Вы воспользовались Wox уже {0} раз</system:String>
 
     <!--Action Keyword Setting Dialog-->
-    <system:String x:Key="oldActionKeyword">Текущая горячая клавиша</system:String>
-    <system:String x:Key="newActionKeyword">Новая горячая клавиша</system:String>
+    <system:String x:Key="oldActionKeywords">Текущая горячая клавиша</system:String>
+    <system:String x:Key="newActionKeywords">Новая горячая клавиша</system:String>
     <system:String x:Key="cancel">Отменить</system:String>
     <system:String x:Key="done">Подтвердить</system:String>
     <system:String x:Key="cannotFindSpecifiedPlugin">Не удалось найти заданный плагин</system:String>
-    <system:String x:Key="newActionKeywordCannotBeEmpty">Новая горячая клавиша не может быть пустой</system:String>
-    <system:String x:Key="newActionKeywordHasBeenAssigned">Новая горячая клавиша уже используется другим плагином. Пожалуйста, зайдайте новую</system:String>
+    <system:String x:Key="newActionKeywordsCannotBeEmpty">Новая горячая клавиша не может быть пустой</system:String>
+    <system:String x:Key="newActionKeywordsHasBeenAssigned">Новая горячая клавиша уже используется другим плагином. Пожалуйста, зайдайте новую</system:String>
     <system:String x:Key="succeed">Сохранено</system:String>
     <system:String x:Key="actionkeyword_tips">Используйте * в случае, если вы не хотите задавать конкретную горячую клавишу</system:String>
     

@@ -106,10 +106,10 @@
                                     <CheckBox x:Name="cbDisablePlugin" Click="CbDisablePlugin_OnClick">
                                         <TextBlock Text="{DynamicResource disable}"></TextBlock>
                                     </CheckBox>
-                                    <TextBlock x:Name="pluginActionKeywordTitle" Margin="20 0 0 0">
-                                        <TextBlock Text="{DynamicResource actionKeyword}"></TextBlock>
+                                    <TextBlock x:Name="pluginActionKeywordsTitle" Margin="20 0 0 0">
+                                        <TextBlock Text="{DynamicResource actionKeywords}"></TextBlock>
                                     </TextBlock>
-                                    <TextBlock Margin="5 0 0 0" ToolTip="Change Action Keyword" Cursor="Hand" MouseUp="PluginActionKeyword_OnMouseUp" Foreground="Blue" Text="key" x:Name="pluginActionKeyword"></TextBlock>
+                                    <TextBlock Margin="5 0 0 0" ToolTip="Change Action Keywords" Cursor="Hand" MouseUp="PluginActionKeywords_OnMouseUp" Foreground="Blue" Text="keys" x:Name="pluginActionKeywords"></TextBlock>
                                     <TextBlock Margin="10 0 0 0" Text="Init time: 0ms" x:Name="pluginInitTime"></TextBlock>
                                     <TextBlock Margin="10 0 0 0" Text="Query time: 0ms" x:Name="pluginQueryTime"></TextBlock>
                                     <TextBlock HorizontalAlignment="Right" Cursor="Hand" MouseUp="tbOpenPluginDirecoty_MouseUp" Foreground="Blue" Text="{DynamicResource pluginDirectory}" x:Name="tbOpenPluginDirecoty"></TextBlock>
@@ -234,7 +234,7 @@
                                 <GridViewColumn Header="{DynamicResource actionKeyword}" Width="500">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding ActionKeyword}"/>
+                                            <TextBlock Text="{Binding ActionKeywords}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>

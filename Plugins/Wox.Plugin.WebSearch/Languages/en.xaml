@@ -23,7 +23,7 @@
     <system:String x:Key="wox_plugin_websearch_input_title">Please input title</system:String>
     <system:String x:Key="wox_plugin_websearch_input_action_keyword">Please input action keyword</system:String>
     <system:String x:Key="wox_plugin_websearch_input_url">Please input URL</system:String>
-    <system:String x:Key="wox_plugin_websearch_action_keyword_exist">ActionWord has existed, please input a new one</system:String>
+    <system:String x:Key="wox_plugin_websearch_action_keyword_exist">ActionKeyword has existed, please input a new one</system:String>
     <system:String x:Key="wox_plugin_websearch_succeed">Succeed</system:String>
 
     <system:String x:Key="wox_plugin_websearch_plugin_name">Web Searches</system:String>

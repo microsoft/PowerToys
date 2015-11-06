@@ -23,16 +23,23 @@ namespace Wox.Plugin
         /// <summary>
         /// The raw query splited into a string array.
         /// </summary>
-        internal string[] Terms { private get; set; }
-
-        public const string Seperater = " ";
+        public string[] Terms { get; set; }
 
         /// <summary>
-        /// * is used for System Plugin
+        /// Query can be splited into multiple terms by whitespace
         /// </summary>
-        public const string WildcardSign = "*";
+        public const string TermSeperater = " ";
+        /// <summary>
+        /// User can set multiple action keywords seperated by ';'
+        /// </summary>
+        public const string ActionKeywordSeperater = ";";
 
-        internal string ActionKeyword { get; set; }
+        /// <summary>
+        /// '*' is used for System Plugin
+        /// </summary>
+        public const string GlobalPluginWildcardSign = "*";
+
+        public string ActionKeyword { get; set; }
 
         /// <summary>
         /// Return first search split by space if it has
@@ -46,8 +53,8 @@ namespace Wox.Plugin
         {
             get
             {
-                var index = String.IsNullOrEmpty(ActionKeyword) ? 1 : 2;
-                return String.Join(Seperater, Terms.Skip(index).ToArray());
+                var index = string.IsNullOrEmpty(ActionKeyword) ? 1 : 2;
+                return string.Join(TermSeperater, Terms.Skip(index).ToArray());
             }
         }
 
@@ -65,18 +72,17 @@ namespace Wox.Plugin
         {
             try
             {
-                return String.IsNullOrEmpty(ActionKeyword) ? Terms[index] : Terms[index + 1];
+                return string.IsNullOrEmpty(ActionKeyword) ? Terms[index] : Terms[index + 1];
             }
             catch (IndexOutOfRangeException)
             {
-                return String.Empty;
+                return string.Empty;
             }
         }
 
         public override string ToString() => RawQuery;
 
-        [Obsolete("Use Search instead, A plugin developer shouldn't care about action name, as it may changed by users. " +
-                  "this property will be removed in v1.3.0")]
+        [Obsolete("Use ActionKeyword, this property will be removed in v1.3.0")]
         public string ActionName { get; internal set; }
 
         [Obsolete("Use Search instead, this property will be removed in v1.3.0")]

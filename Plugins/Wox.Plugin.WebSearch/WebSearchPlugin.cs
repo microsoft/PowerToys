@@ -8,7 +8,7 @@ using Wox.Plugin.WebSearch.SuggestionSources;
 
 namespace Wox.Plugin.WebSearch
 {
-    public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IExclusiveQuery
+    public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery
     {
         private PluginInitContext context;
         private IDisposable suggestionTimer;
@@ -16,17 +16,12 @@ namespace Wox.Plugin.WebSearch
         public List<Result> Query(Query query)
         {
             List<Result> results = new List<Result>();
-            if (!query.Search.Contains(' '))
-            {
-                return results;
-            }
-
             WebSearch webSearch =
-                WebSearchStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionWord == query.FirstSearch.Trim() && o.Enabled);
+                WebSearchStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionKeyword == query.ActionKeyword && o.Enabled);
 
             if (webSearch != null)
             {
-                string keyword = query.SecondToEndSearch;
+                string keyword = query.ActionKeyword;
                 string title = keyword;
                 string subtitle = context.API.GetTranslation("wox_plugin_websearch_search") + " " + webSearch.Title;
                 if (string.IsNullOrEmpty(keyword))
@@ -122,14 +117,5 @@ namespace Wox.Plugin.WebSearch
 
         public bool IsInstantQuery(string query) => false;
 
-        public bool IsExclusiveQuery(Query query)
-        {
-            var strings = query.RawQuery.Split(' ');
-            if (strings.Length > 1)
-            {
-                return WebSearchStorage.Instance.WebSearches.Exists(o => o.ActionWord == strings[0] && o.Enabled);
-            }
-            return false;
-        }
     }
 }
