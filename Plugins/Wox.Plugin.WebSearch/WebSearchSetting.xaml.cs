@@ -104,7 +104,10 @@ namespace Wox.Plugin.WebSearch
                     Url = url,
                     Title = title
                 });
+                
+                //save the action keywords, the order is not metters. Wox will read this metadata when save settings.
                 context.CurrentPluginMetadata.ActionKeywords.Add(action);
+
                 string msg = context.API.GetTranslation("wox_plugin_websearch_succeed");
                 MessageBox.Show(msg);
             }
@@ -121,7 +124,10 @@ namespace Wox.Plugin.WebSearch
                 updateWebSearch.Enabled = cbEnable.IsChecked ?? false;
                 updateWebSearch.Url = url;
                 updateWebSearch.Title= title;
+                
+                //save the action keywords, the order is not metters. Wox will read this metadata when save settings.
                 context.CurrentPluginMetadata.ActionKeywords.Add(action);
+
                 string msg = context.API.GetTranslation("wox_plugin_websearch_succeed");
                 MessageBox.Show(msg);
             }
