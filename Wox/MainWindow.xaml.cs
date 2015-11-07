@@ -43,11 +43,11 @@ namespace Wox
 
         private readonly Storyboard progressBarStoryboard = new Storyboard();
         private NotifyIcon notifyIcon;
-        private bool queryHasReturn;
-        private string lastQuery;
+        private bool _queryHasReturn;
+        private Query _lastQuery = new Query();
         private ToolTip toolTip = new ToolTip();
 
-        private bool ignoreTextChange = false;
+        private bool _ignoreTextChange = false;
         private List<Result> CurrentContextMenus = new List<Result>();
         private string textBeforeEnterContextMenuMode;
 
@@ -72,7 +72,7 @@ namespace Wox
         {
             Dispatcher.Invoke(new Action(() =>
             {
-                ignoreTextChange = true;
+                _ignoreTextChange = true;
                 tbQuery.Text = query;
                 tbQuery.CaretIndex = tbQuery.Text.Length;
                 if (selectAll)
@@ -441,10 +441,10 @@ namespace Wox
 
         private void TbQuery_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            
-            if (ignoreTextChange) { ignoreTextChange = false; return; }
 
-            if (!string.IsNullOrEmpty(tbQuery.Text.Trim()))
+            if (_ignoreTextChange) { _ignoreTextChange = false; return; }
+            string query = tbQuery.Text.Trim();
+            if (!string.IsNullOrEmpty(query))
             {
                 toolTip.IsOpen = false;
                 if (IsInContextMenuMode)
@@ -453,10 +453,10 @@ namespace Wox
                     return;
                 }
 
-                Query(tbQuery.Text);
+                Query(query);
                 Dispatcher.DelayInvoke("ShowProgressbar", () =>
                 {
-                    if (!string.IsNullOrEmpty(tbQuery.Text.Trim()) && tbQuery.Text != lastQuery && !queryHasReturn)
+                    if (!string.IsNullOrEmpty(query) && query != _lastQuery.RawQuery && !_queryHasReturn)
                     {
                         StartProgress();
                     }
@@ -479,7 +479,28 @@ namespace Wox
             var query = PluginManager.QueryInit(text);
             if (query != null)
             {
-                lastQuery = query.RawQuery;
+                // handle the exclusiveness of plugin using action keyword
+                string lastKeyword = _lastQuery.ActionKeyword;
+                string keyword = query.ActionKeyword;
+                if (string.IsNullOrEmpty(lastKeyword))
+                {
+                    if (!string.IsNullOrEmpty(keyword))
+                    {
+                        pnlResult.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword]);
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(keyword))
+                    {
+                        pnlResult.RemoveResultsFor(PluginManager.NonGlobalPlugins[lastKeyword]);
+                    }
+                    else if (lastKeyword != keyword)
+                    {
+                        pnlResult.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword]);
+                    }
+                }
+                _lastQuery = query;
                 PluginManager.QueryForAllPlugins(query);
             }
             StopProgress();
@@ -814,7 +835,7 @@ namespace Wox
 
         private void UpdateResultView(List<Result> list)
         {
-            queryHasReturn = true;
+            _queryHasReturn = true;
             progressBar.Dispatcher.Invoke(new Action(StopProgress));
             if (list == null || list.Count == 0) return;
 
@@ -824,7 +845,7 @@ namespace Wox
                 {
                     o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o) * 5;
                 });
-                List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == lastQuery).ToList();
+                List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == _lastQuery.RawQuery).ToList();
                 UpdateResultViewInternal(l);
             }
         }
