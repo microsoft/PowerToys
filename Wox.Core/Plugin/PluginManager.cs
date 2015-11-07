@@ -29,8 +29,8 @@ namespace Wox.Core.Plugin
 
         public static IEnumerable<PluginPair> AllPlugins { get; private set; }
 
-        public static IEnumerable<PluginPair> GlobalPlugins { get; private set; }
-        public static IEnumerable<PluginPair> NonGlobalPlugins { get; private set; }
+        public static List<PluginPair> GlobalPlugins { get; } = new List<PluginPair>();
+        public static Dictionary<string, PluginPair> NonGlobalPlugins { get; } = new Dictionary<string, PluginPair>();
 
         private static IEnumerable<PluginPair> InstantQueryPlugins { get; set; }
         public static IPublicAPI API { private set; get; }
@@ -104,8 +104,20 @@ namespace Wox.Core.Plugin
             {
                 InstantQueryPlugins = GetPluginsForInterface<IInstantQuery>();
                 contextMenuPlugins = GetPluginsForInterface<IContextMenu>();
-                GlobalPlugins = AllPlugins.Where(p => IsGlobalPlugin(p.Metadata));
-                NonGlobalPlugins = AllPlugins.Where(p => !IsGlobalPlugin(p.Metadata));
+                foreach (var plugin in AllPlugins)
+                {
+                    if (IsGlobalPlugin(plugin.Metadata))
+                    {
+                        GlobalPlugins.Add(plugin);
+                    }
+                    else
+                    {
+                        foreach (string actionKeyword in plugin.Metadata.ActionKeywords)
+                        {
+                            NonGlobalPlugins[actionKeyword] = plugin;
+                        }
+                    }
+                }
             });
         }
 
@@ -123,7 +135,7 @@ namespace Wox.Core.Plugin
             var search = rawQuery;
             List<string> actionParameters = terms.ToList();
             if (terms.Length == 0) return null;
-            if (IsVailldActionKeyword(terms[0]))
+            if (NonGlobalPlugins.ContainsKey(terms[0]))
             {
                 actionKeyword = terms[0];
                 actionParameters = terms.Skip(1).ToList();
@@ -143,8 +155,8 @@ namespace Wox.Core.Plugin
 
         public static void QueryForAllPlugins(Query query)
         {
-            var pluginPairs = GetPluginForActionKeyword(query.ActionKeyword) != null ?
-                new List<PluginPair> { GetPluginForActionKeyword(query.ActionKeyword) } : GlobalPlugins;
+            var pluginPairs = NonGlobalPlugins.ContainsKey(query.ActionKeyword) ?
+                new List<PluginPair> { NonGlobalPlugins[query.ActionKeyword] } : GlobalPlugins;
             foreach (var plugin in pluginPairs)
             {
                 var customizedPluginConfig = UserSettingStorage.Instance.
@@ -187,21 +199,6 @@ namespace Wox.Core.Plugin
             }
         }
 
-        /// <summary>
-        /// Check if a query contains valid action keyword
-        /// </summary>
-        /// <param name="actionKeyword"></param>
-        /// <returns></returns>
-        private static bool IsVailldActionKeyword(string actionKeyword)
-        {
-            if (string.IsNullOrEmpty(actionKeyword) || actionKeyword == Query.GlobalPluginWildcardSign) return false;
-            PluginPair pair = AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeywords.Contains(actionKeyword));
-            if (pair == null) return false;
-            var customizedPluginConfig = UserSettingStorage.Instance.
-                CustomizedPluginConfigs.FirstOrDefault(o => o.ID == pair.Metadata.ID);
-            return customizedPluginConfig == null || !customizedPluginConfig.Disabled;
-        }
-
         private static bool IsGlobalPlugin(PluginMetadata metadata)
         {
             return metadata.ActionKeywords.Contains(Query.GlobalPluginWildcardSign);
@@ -223,13 +220,6 @@ namespace Wox.Core.Plugin
         public static PluginPair GetPluginForId(string id)
         {
             return AllPlugins.FirstOrDefault(o => o.Metadata.ID == id);
-        }
-
-        private static PluginPair GetPluginForActionKeyword(string actionKeyword)
-        {
-            //if a query doesn't contain a vaild action keyword, it should be a query for system plugin
-            if (string.IsNullOrEmpty(actionKeyword) || actionKeyword == Query.GlobalPluginWildcardSign) return null;
-            return NonGlobalPlugins.FirstOrDefault(o => o.Metadata.ActionKeywords.Contains(actionKeyword));
         }
 
         public static IEnumerable<PluginPair> GetPluginsForInterface<T>() where T : IFeatures
