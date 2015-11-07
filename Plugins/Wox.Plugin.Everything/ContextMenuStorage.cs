@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Exceptionless.Json;
 using JsonProperty = Newtonsoft.Json.JsonPropertyAttribute;
 using Wox.Infrastructure.Storage;
 
