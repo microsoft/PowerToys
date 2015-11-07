@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Linq;
 using System.Runtime.Remoting.Contexts;
 using Wox.Core.UserSettings;
+using Wox.Helper;
 using Wox.Plugin;
 using Wox.Storage;
 
@@ -20,7 +21,7 @@ namespace Wox
         public event Action<Result> LeftMouseClickEvent;
         public event Action<Result> RightMouseClickEvent;
         public event Action<Result, IDataObject, DragEventArgs> ItemDropEvent;
-        private readonly ObservableCollection<Result> _results; //todo, for better performance, override the default linear search
+        private readonly ListBoxItems _results; //todo, for better performance, override the default linear search
         private readonly object _resultsUpdateLock = new object();
 
         protected virtual void OnRightMouseClick(Result result)
@@ -38,6 +39,22 @@ namespace Wox
 
         public int MaxResultsToShow { get { return UserSettingStorage.Instance.MaxResultsToShow * 50; } }
 
+        internal void RemoveResultsFor(PluginPair plugin)
+        {
+            lock (_resultsUpdateLock)
+            {
+                _results.RemoveAll(r => r.PluginID == plugin.Metadata.ID);
+            }
+        }
+
+        internal void RemoveResultsExcept(PluginPair plugin)
+        {
+            lock (_resultsUpdateLock)
+            {
+                _results.RemoveAll(r => r.PluginID != plugin.Metadata.ID);
+            }
+        }
+
         public void AddResults(List<Result> newResults)
         {
             if (newResults != null && newResults.Count > 0)
@@ -45,16 +62,7 @@ namespace Wox
                 lock (_resultsUpdateLock)
                 {
                     var pluginId = newResults[0].PluginID;
-                    var actionKeyword = newResults[0].OriginQuery.ActionKeyword;
-                    List<Result> oldResults;
-                    if (string.IsNullOrEmpty(actionKeyword))
-                    {
-                        oldResults = _results.Where(r => r.PluginID == pluginId).ToList();
-                    }
-                    else
-                    {
-                        oldResults = _results.ToList();
-                    }
+                    var oldResults = _results.Where(r => r.PluginID == pluginId).ToList();
                     // intersection of A (old results) and B (new newResults)
                     var intersection = oldResults.Intersect(newResults).ToList();
 
@@ -236,7 +244,7 @@ namespace Wox
         public ResultPanel()
         {
             InitializeComponent();
-            _results = new ObservableCollection<Result>();
+            _results = new ListBoxItems();
             lbResults.ItemsSource = _results;
         }
 
