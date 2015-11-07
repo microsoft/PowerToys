@@ -429,7 +429,7 @@ namespace Wox
                     IcoPath = "Images/app.png",
                     PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 }
-            });
+            }, "test id");
 
             foreach (string theme in ThemeManager.Theme.LoadAvailableThemes())
             {

@@ -55,56 +55,51 @@ namespace Wox
             }
         }
 
-        public void AddResults(List<Result> newResults)
+        public void AddResults(List<Result> newResults, string resultId)
         {
-            if (newResults != null && newResults.Count > 0)
+            var oldResults = _results.Where(r => r.PluginID == resultId).ToList();
+            // intersection of A (old results) and B (new newResults)
+            var intersection = oldResults.Intersect(newResults).ToList();
+            lock (_resultsUpdateLock)
             {
-                lock (_resultsUpdateLock)
+                // remove result of relative complement of B in A
+                foreach (var result in oldResults.Except(intersection))
                 {
-                    var pluginId = newResults[0].PluginID;
-                    var oldResults = _results.Where(r => r.PluginID == pluginId).ToList();
-                    // intersection of A (old results) and B (new newResults)
-                    var intersection = oldResults.Intersect(newResults).ToList();
+                    _results.Remove(result);
+                }
 
-                    // remove result of relative complement of B in A
-                    foreach (var result in oldResults.Except(intersection))
+                // update scores
+                foreach (var result in newResults)
+                {
+                    if (IsTopMostResult(result))
                     {
-                        _results.Remove(result);
+                        result.Score = int.MaxValue;
                     }
+                }
 
-                    // update scores
-                    foreach (var result in newResults)
-                    {
-                        if (IsTopMostResult(result))
-                        {
-                            result.Score = int.MaxValue;
-                        }
-                    }
-
-                    // update index for result in intersection of A and B
-                    foreach (var result in intersection)
-                    {
-                        int oldIndex = _results.IndexOf(result);
-                        int oldScore = _results[oldIndex].Score;
-                        if (result.Score != oldScore)
-                        {
-                            int newIndex = InsertIndexOf(result.Score);
-                            if (newIndex != oldIndex)
-                            {
-                                _results.Move(oldIndex, newIndex);
-                            }
-                        }
-                    }
-
-                    // insert result in relative complement of A in B
-                    foreach (var result in newResults.Except(intersection))
+                // update index for result in intersection of A and B
+                foreach (var result in intersection)
+                {
+                    int oldIndex = _results.IndexOf(result);
+                    int oldScore = _results[oldIndex].Score;
+                    if (result.Score != oldScore)
                     {
                         int newIndex = InsertIndexOf(result.Score);
-                        _results.Insert(newIndex, result);
+                        if (newIndex != oldIndex)
+                        {
+                            _results.Move(oldIndex, newIndex);
+                        }
                     }
-                    lbResults.Margin = lbResults.Items.Count > 0 ? new Thickness { Top = 8 } : new Thickness { Top = 0 };
-                    SelectFirst();
                 }
+
+                // insert result in relative complement of A in B
+                foreach (var result in newResults.Except(intersection))
+                {
+                    int newIndex = InsertIndexOf(result.Score);
+                    _results.Insert(newIndex, result);
+                }
+                lbResults.Margin = lbResults.Items.Count > 0 ? new Thickness { Top = 8 } : new Thickness { Top = 0 };
+                SelectFirst();
             }
         }
 

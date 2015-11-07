@@ -163,7 +163,7 @@ namespace Wox
                 o.PluginID = plugin.ID;
                 o.OriginQuery = query;
             });
-            UpdateResultView(results);
+            UpdateResultView(results, plugin, query);
         }
 
         public void ShowContextMenu(PluginMetadata plugin, List<Result> results)
@@ -177,7 +177,7 @@ namespace Wox
                     o.ContextMenu = null;
                 });
                 pnlContextMenu.Clear();
-                pnlContextMenu.AddResults(results);
+                pnlContextMenu.AddResults(results, plugin.ID);
                 pnlContextMenu.Visibility = Visibility.Visible;
                 pnlResult.Visibility = Visibility.Collapsed;
             }
@@ -419,11 +419,12 @@ namespace Wox
 
         private void QueryContextMenu()
         {
+            var contextMenuId = "Context Menu Id";
             pnlContextMenu.Clear();
             var query = tbQuery.Text.ToLower();
             if (string.IsNullOrEmpty(query))
             {
-                pnlContextMenu.AddResults(CurrentContextMenus);
+                pnlContextMenu.AddResults(CurrentContextMenus, contextMenuId);
             }
             else
             {
@@ -436,7 +437,7 @@ namespace Wox
                         filterResults.Add(contextMenu);
                     }
                 }
-                pnlContextMenu.AddResults(filterResults);
+                pnlContextMenu.AddResults(filterResults, contextMenuId);
             }
         }
 
@@ -445,15 +446,14 @@ namespace Wox
 
             if (_ignoreTextChange) { _ignoreTextChange = false; return; }
             string query = tbQuery.Text.Trim();
+            toolTip.IsOpen = false;
+            if (IsInContextMenuMode)
+            {
+                QueryContextMenu();
+                return;
+            }
             if (!string.IsNullOrEmpty(query))
             {
-                toolTip.IsOpen = false;
-                if (IsInContextMenuMode)
-                {
-                    QueryContextMenu();
-                    return;
-                }
-
                 Query(query);
                 Dispatcher.DelayInvoke("ShowProgressbar", () =>
                 {
@@ -738,6 +738,11 @@ namespace Wox
         {
             if (history != null)
             {
+                var historyMetadata = new PluginMetadata
+                {
+                    ID = "Query history",
+                    Name = "Query history"
+                };
                 ChangeQueryText(history.Query, true);
                 var executeQueryHistoryTitle = GetTranslation("executeQuery");
                 var lastExecuteTime = GetTranslation("lastExecuteTime");
@@ -753,7 +758,7 @@ namespace Wox
                             return false;
                         }
                     }
-                });
+                }, historyMetadata);
             }
         }
 
@@ -834,33 +839,28 @@ namespace Wox
             }
         }
 
-        private void UpdateResultView(List<Result> list)
+        private void UpdateResultView(List<Result> list, PluginMetadata metadata, Query originQuery)
         {
             _queryHasReturn = true;
             progressBar.Dispatcher.Invoke(new Action(StopProgress));
-            if (list == null || list.Count == 0) return;
 
-            if (list.Count > 0)
+            list.ForEach(o =>
             {
-                list.ForEach(o =>
-                {
-                    o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o) * 5;
-                });
-                List<Result> l = list.Where(o => o.OriginQuery != null && o.OriginQuery.RawQuery == _lastQuery.RawQuery).ToList();
-                UpdateResultViewInternal(l);
+                o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o) * 5;
+            });
+            if (originQuery.RawQuery == _lastQuery.RawQuery)
+            {
+                UpdateResultViewInternal(list, metadata);
             }
         }
 
-        private void UpdateResultViewInternal(List<Result> list)
+        private void UpdateResultViewInternal(List<Result> list, PluginMetadata metadata)
         {
-            if (list != null && list.Count > 0)
+            Dispatcher.Invoke(new Action(() =>
             {
-                Dispatcher.Invoke(new Action(() =>
-                {
-                    Stopwatch.Normal($"UI update cost for {list[0].PluginDirectory.Split('\\').Last()}",
-                        () =>{pnlResult.AddResults(list);});
-                }));
-            }
+                Stopwatch.Normal($"UI update cost for {metadata.Name}",
+                    () => { pnlResult.AddResults(list, metadata.ID); });
+            }));
         }
 
         private Result GetTopMostContextMenu(Result result)
@@ -908,7 +908,7 @@ namespace Wox
             textBeforeEnterContextMenuMode = tbQuery.Text;
             ChangeQueryText("");
             pnlContextMenu.Clear();
-            pnlContextMenu.AddResults(results);
+            pnlContextMenu.AddResults(results, result.PluginID);
             CurrentContextMenus = results;
             pnlContextMenu.Visibility = Visibility.Visible;
             pnlResult.Visibility = Visibility.Collapsed;
