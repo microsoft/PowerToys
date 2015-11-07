@@ -35,7 +35,7 @@ namespace Wox.Core.Theme
                     }
                     catch (System.Exception e)
                     {
-                        Log.Error(e.Message);
+                        Log.Error(e);
                     }
                 }
             }

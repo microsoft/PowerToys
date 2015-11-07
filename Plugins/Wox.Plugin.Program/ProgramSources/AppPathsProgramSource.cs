@@ -57,7 +57,7 @@ namespace Wox.Plugin.Program.ProgramSources
                     }
                     catch (Exception e)
                     {
-                        Log.Error(e.StackTrace);
+                        Log.Error(e);
                     }
                 }
             }

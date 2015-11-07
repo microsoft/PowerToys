@@ -14,7 +14,6 @@
         public WoxException(string msg, System.Exception innerException)
             : base(msg, innerException)
         {
-
         }
     }
 }

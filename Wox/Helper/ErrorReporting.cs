@@ -9,7 +9,7 @@ namespace Wox.Helper
     {
         public static void Report(Exception e)
         {
-            Log.Error(ExceptionFormatter.FormatExcpetion(e));
+            Log.Fatal(e);
             new CrashReporter.CrashReporter(e).Show();
         }
 

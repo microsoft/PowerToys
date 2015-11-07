@@ -58,7 +58,7 @@ namespace Wox.Core.Plugin
                     }
                     catch (System.Exception e)
                     {
-                        Log.Error(e.Message);
+                        Log.Error(e);
                     }
                 }
             }
@@ -69,7 +69,7 @@ namespace Wox.Core.Plugin
         /// </summary>
         public static void Init(IPublicAPI api)
         {
-            if (api == null) throw new WoxCritialException("api is null");
+            if (api == null) throw new WoxFatalException("api is null");
 
             SetupPluginDirectories();
             API = api;
@@ -164,7 +164,7 @@ namespace Wox.Core.Plugin
                 if (customizedPluginConfig != null && customizedPluginConfig.Disabled) continue;
                 if (IsInstantQueryPlugin(plugin))
                 {
-                    Stopwatch.Debug($"Instant Query for {plugin.Metadata.Name}", () =>
+                    Stopwatch.Normal($"Instant QueryForPlugin for {plugin.Metadata.Name}", () =>
                     {
                         QueryForPlugin(plugin, query);
                     });
@@ -173,7 +173,10 @@ namespace Wox.Core.Plugin
                 {
                     ThreadPool.QueueUserWorkItem(state =>
                     {
-                        QueryForPlugin(plugin, query);
+                        Stopwatch.Normal($"Normal QueryForPlugin for {plugin.Metadata.Name}", () =>
+                        {
+                            QueryForPlugin(plugin, query);
+                        });
                     });
                 }
             }
@@ -184,7 +187,7 @@ namespace Wox.Core.Plugin
             try
             {
                 List<Result> results = new List<Result>();
-                var milliseconds = Stopwatch.Normal($"Query for {pair.Metadata.Name}", () =>
+                var milliseconds = Stopwatch.Normal($"Plugin.Query cost for {pair.Metadata.Name}", () =>
                     {
                         results = pair.Plugin.Query(query) ?? results;
                         results.ForEach(o => { o.PluginID = pair.Metadata.ID; });
@@ -195,7 +198,7 @@ namespace Wox.Core.Plugin
             }
             catch (System.Exception e)
             {
-                throw new WoxPluginException(pair.Metadata.Name, e);
+                throw new WoxPluginException(pair.Metadata.Name, $"QueryForPlugin failed", e);
             }
         }
 
@@ -239,12 +242,7 @@ namespace Wox.Core.Plugin
                 }
                 catch (System.Exception e)
                 {
-                    Log.Error($"Couldn't load plugin context menus {pluginPair.Metadata.Name}: {e.Message}");
-#if (DEBUG)
-                    {
-                        throw;
-                    }
-#endif
+                    Log.Error(new WoxPluginException(pluginPair.Metadata.Name, $"Couldn't load plugin context menus", e));
                 }
             }
 

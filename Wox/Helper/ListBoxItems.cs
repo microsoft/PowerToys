@@ -9,6 +9,7 @@ using Wox.Plugin;
 namespace Wox.Helper
 {
     class ListBoxItems : ObservableCollection<Result>
+    // todo implement custom moveItem,removeItem,insertItem
     {
         public void RemoveAll(Predicate<Result> predicate)
         {
@@ -21,7 +22,10 @@ namespace Wox.Helper
 
                 OnPropertyChanged(new PropertyChangedEventArgs("Count"));
                 OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
-                // fuck ms http://blogs.msdn.com/b/nathannesbit/archive/2009/04/20/addrange-and-observablecollection.aspx
+                // fuck ms 
+                // http://blogs.msdn.com/b/nathannesbit/archive/2009/04/20/addrange-and-observablecollection.aspx
+                // http://geekswithblogs.net/NewThingsILearned/archive/2008/01/16/listcollectionviewcollectionview-doesnt-support-notifycollectionchanged-with-multiple-items.aspx
+                // PS: don't use Reset for other data updates, it will cause UI flickering
                 OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
         }

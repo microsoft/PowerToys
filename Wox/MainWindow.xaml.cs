@@ -32,6 +32,7 @@ using IDataObject = System.Windows.IDataObject;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MenuItem = System.Windows.Forms.MenuItem;
 using MessageBox = System.Windows.MessageBox;
+using Stopwatch = Wox.Infrastructure.Stopwatch;
 using ToolTip = System.Windows.Controls.ToolTip;
 
 namespace Wox
@@ -852,10 +853,14 @@ namespace Wox
 
         private void UpdateResultViewInternal(List<Result> list)
         {
-            Dispatcher.Invoke(new Action(() =>
+            if (list != null && list.Count > 0)
             {
-                pnlResult.AddResults(list);
-            }));
+                Dispatcher.Invoke(new Action(() =>
+                {
+                    Stopwatch.Normal($"UI update cost for {list[0].PluginDirectory.Split('\\').Last()}",
+                        () =>{pnlResult.AddResults(list);});
+                }));
+            }
         }
 
         private Result GetTopMostContextMenu(Result result)
