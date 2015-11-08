@@ -4,8 +4,8 @@ Wox   [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e
 
 Features
 =========
-1. Search for applications, folders, files and in the browser bookmarks (using a plugin)
-2. Search the web using shortcuts (e.g. search google with `g keyword` or Youtube `youtube keyword`)
+1. Search for applications, folders, files. Search for bookmarks of browser is also possible via plugin.
+2. Search the web using shortcuts (e.g. search google with `g keyword`)
 3. Themes support, get more themes from [http://www.getwox.com/theme/builder](http://www.getwox.com/theme/builder)
 4. Plugin support, get more plugins from [http://www.getwox.com/plugin](http://www.getwox.com/plugin)
 
@@ -37,16 +37,11 @@ Contribute
 
 If you are a developer, feel free to send a pull request to the **Dev** branch. We still have a lot of features and bugs to resolve. Take a look at [issues page](https://github.com/qianlifeng/Wox/issues) if you want to contribute :)
 
-If you are not a developer, you can still contribute to the project. Install the beta version, test things and help us with new entries and corrections to the docs [Wox doc](http://doc.getwox.com). Feedback is always welcome!
+If you are not a developer, you can still contribute to the project. Install the Latest build(https://ci.appveyor.com/project/qianlifeng/wox/history) and report bugs. Help us with new entries and corrections to the [Wox doc](http://doc.getwox.com). Feedback is always welcome!
 
 Docs
 =========
 
-Full documentation can be found here [Wox Documentation](http://doc.getwox.com). This is a good place to start if you are installing Wox for the first time. Feel free to contribute if you want to improve, correct or translate the documentation.
+Full documentation can be found here [Wox doc](http://doc.getwox.com). This is a good place to start if you are installing Wox for the first time. Feel free to contribute if you want to improve, correct or translate the documentation.
 
 In the future, all of the documentation will be moved back to Github wiki.
-
-Discussion
-=========
-
-Do you have a question or an idea for a killer feature? Discuss things with our community at the [Wox Fourms](http://discussion.getwox.com). 
