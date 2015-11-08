@@ -32,7 +32,7 @@ namespace Wox.Core.i18n
                 }
                 catch (System.Exception e)
                 {
-                    Log.Error(e.Message);
+                    Log.Error(e);
                 }
             }
         }
@@ -122,12 +122,8 @@ namespace Wox.Core.i18n
             }
             catch (System.Exception e)
             {
-                Log.Warn("Update Plugin metadata translation failed:" + e.Message);
-#if (DEBUG)
-                {
-                    throw;
-                }
-#endif
+                var woxPluginException = new WoxPluginException(pluginPair.Metadata.Name, "Update Plugin metadata translation failed:", e);
+                Log.Error(woxPluginException);
             }
         }
 

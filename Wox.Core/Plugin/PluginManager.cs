@@ -29,8 +29,8 @@ namespace Wox.Core.Plugin
 
         public static IEnumerable<PluginPair> AllPlugins { get; private set; }
 
-        public static IEnumerable<PluginPair> GlobalPlugins { get; private set; }
-        public static IEnumerable<PluginPair> NonGlobalPlugins { get; private set; }
+        public static List<PluginPair> GlobalPlugins { get; } = new List<PluginPair>();
+        public static Dictionary<string, PluginPair> NonGlobalPlugins { get; } = new Dictionary<string, PluginPair>();
 
         private static IEnumerable<PluginPair> InstantQueryPlugins { get; set; }
         public static IPublicAPI API { private set; get; }
@@ -58,7 +58,7 @@ namespace Wox.Core.Plugin
                     }
                     catch (System.Exception e)
                     {
-                        Log.Error(e.Message);
+                        Log.Error(e);
                     }
                 }
             }
@@ -69,7 +69,7 @@ namespace Wox.Core.Plugin
         /// </summary>
         public static void Init(IPublicAPI api)
         {
-            if (api == null) throw new WoxCritialException("api is null");
+            if (api == null) throw new WoxFatalException("api is null");
 
             SetupPluginDirectories();
             API = api;
@@ -104,8 +104,20 @@ namespace Wox.Core.Plugin
             {
                 InstantQueryPlugins = GetPluginsForInterface<IInstantQuery>();
                 contextMenuPlugins = GetPluginsForInterface<IContextMenu>();
-                GlobalPlugins = AllPlugins.Where(p => IsGlobalPlugin(p.Metadata));
-                NonGlobalPlugins = AllPlugins.Where(p => !IsGlobalPlugin(p.Metadata));
+                foreach (var plugin in AllPlugins)
+                {
+                    if (IsGlobalPlugin(plugin.Metadata))
+                    {
+                        GlobalPlugins.Add(plugin);
+                    }
+                    else
+                    {
+                        foreach (string actionKeyword in plugin.Metadata.ActionKeywords)
+                        {
+                            NonGlobalPlugins[actionKeyword] = plugin;
+                        }
+                    }
+                }
             });
         }
 
@@ -123,7 +135,7 @@ namespace Wox.Core.Plugin
             var search = rawQuery;
             List<string> actionParameters = terms.ToList();
             if (terms.Length == 0) return null;
-            if (IsVailldActionKeyword(terms[0]))
+            if (NonGlobalPlugins.ContainsKey(terms[0]))
             {
                 actionKeyword = terms[0];
                 actionParameters = terms.Skip(1).ToList();
@@ -143,8 +155,8 @@ namespace Wox.Core.Plugin
 
         public static void QueryForAllPlugins(Query query)
         {
-            var pluginPairs = GetPluginForActionKeyword(query.ActionKeyword) != null ?
-                new List<PluginPair> { GetPluginForActionKeyword(query.ActionKeyword) } : GlobalPlugins;
+            var pluginPairs = NonGlobalPlugins.ContainsKey(query.ActionKeyword) ?
+                new List<PluginPair> { NonGlobalPlugins[query.ActionKeyword] } : GlobalPlugins;
             foreach (var plugin in pluginPairs)
             {
                 var customizedPluginConfig = UserSettingStorage.Instance.
@@ -152,7 +164,7 @@ namespace Wox.Core.Plugin
                 if (customizedPluginConfig != null && customizedPluginConfig.Disabled) continue;
                 if (IsInstantQueryPlugin(plugin))
                 {
-                    Stopwatch.Debug($"Instant Query for {plugin.Metadata.Name}", () =>
+                    Stopwatch.Normal($"Instant QueryForPlugin for {plugin.Metadata.Name}", () =>
                     {
                         QueryForPlugin(plugin, query);
                     });
@@ -161,7 +173,10 @@ namespace Wox.Core.Plugin
                 {
                     ThreadPool.QueueUserWorkItem(state =>
                     {
-                        QueryForPlugin(plugin, query);
+                        Stopwatch.Normal($"Normal QueryForPlugin for {plugin.Metadata.Name}", () =>
+                        {
+                            QueryForPlugin(plugin, query);
+                        });
                     });
                 }
             }
@@ -172,7 +187,7 @@ namespace Wox.Core.Plugin
             try
             {
                 List<Result> results = new List<Result>();
-                var milliseconds = Stopwatch.Normal($"Query for {pair.Metadata.Name}", () =>
+                var milliseconds = Stopwatch.Normal($"Plugin.Query cost for {pair.Metadata.Name}", () =>
                     {
                         results = pair.Plugin.Query(query) ?? results;
                         results.ForEach(o => { o.PluginID = pair.Metadata.ID; });
@@ -183,23 +198,8 @@ namespace Wox.Core.Plugin
             }
             catch (System.Exception e)
             {
-                throw new WoxPluginException(pair.Metadata.Name, e);
+                throw new WoxPluginException(pair.Metadata.Name, $"QueryForPlugin failed", e);
             }
-        }
-
-        /// <summary>
-        /// Check if a query contains valid action keyword
-        /// </summary>
-        /// <param name="actionKeyword"></param>
-        /// <returns></returns>
-        private static bool IsVailldActionKeyword(string actionKeyword)
-        {
-            if (string.IsNullOrEmpty(actionKeyword) || actionKeyword == Query.GlobalPluginWildcardSign) return false;
-            PluginPair pair = AllPlugins.FirstOrDefault(o => o.Metadata.ActionKeywords.Contains(actionKeyword));
-            if (pair == null) return false;
-            var customizedPluginConfig = UserSettingStorage.Instance.
-                CustomizedPluginConfigs.FirstOrDefault(o => o.ID == pair.Metadata.ID);
-            return customizedPluginConfig == null || !customizedPluginConfig.Disabled;
         }
 
         private static bool IsGlobalPlugin(PluginMetadata metadata)
@@ -225,13 +225,6 @@ namespace Wox.Core.Plugin
             return AllPlugins.FirstOrDefault(o => o.Metadata.ID == id);
         }
 
-        private static PluginPair GetPluginForActionKeyword(string actionKeyword)
-        {
-            //if a query doesn't contain a vaild action keyword, it should be a query for system plugin
-            if (string.IsNullOrEmpty(actionKeyword) || actionKeyword == Query.GlobalPluginWildcardSign) return null;
-            return NonGlobalPlugins.FirstOrDefault(o => o.Metadata.ActionKeywords.Contains(actionKeyword));
-        }
-
         public static IEnumerable<PluginPair> GetPluginsForInterface<T>() where T : IFeatures
         {
             return AllPlugins.Where(p => p.Plugin is T);
@@ -249,12 +242,7 @@ namespace Wox.Core.Plugin
                 }
                 catch (System.Exception e)
                 {
-                    Log.Error($"Couldn't load plugin context menus {pluginPair.Metadata.Name}: {e.Message}");
-#if (DEBUG)
-                    {
-                        throw;
-                    }
-#endif
+                    Log.Error(new WoxPluginException(pluginPair.Metadata.Name, $"Couldn't load plugin context menus", e));
                 }
             }
 

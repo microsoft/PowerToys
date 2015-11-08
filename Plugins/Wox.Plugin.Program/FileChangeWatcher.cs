@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-
+using Wox.Infrastructure.Logger;
 namespace Wox.Plugin.Program
 {
     internal class FileChangeWatcher
@@ -15,7 +15,7 @@ namespace Wox.Plugin.Program
             if (watchedPath.Contains(path)) return;
             if (!Directory.Exists(path))
             {
-                Debug.WriteLine(string.Format("FileChangeWatcher: {0} doesn't exist", path));
+                Log.Warn($"FileChangeWatcher: {path} doesn't exist");
                 return;
             }
 

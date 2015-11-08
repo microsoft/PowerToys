@@ -3,9 +3,9 @@
     /// <summary>
     /// Represent exceptions that wox can't handle and MUST close running Wox.
     /// </summary>
-    public class WoxCritialException : WoxException
+    public class WoxFatalException : WoxException
     {
-        public WoxCritialException(string msg) : base(msg)
+        public WoxFatalException(string msg) : base(msg)
         {
         }
     }
