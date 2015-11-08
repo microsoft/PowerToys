@@ -9,7 +9,7 @@ using Wox.Plugin;
 namespace Wox.Helper
 {
     class ListBoxItems : ObservableCollection<Result>
-    // todo implement custom moveItem,removeItem,insertItem
+    // todo implement custom moveItem,removeItem,insertItem for better performance
     {
         public void RemoveAll(Predicate<Result> predicate)
         {
@@ -18,6 +18,7 @@ namespace Wox.Helper
             List<Result> itemsToRemove = Items.Where(x => predicate(x)).ToList();
             if (itemsToRemove.Count > 0)
             {
+                
                 itemsToRemove.ForEach(item => Items.Remove(item));
 
                 OnPropertyChanged(new PropertyChangedEventArgs("Count"));
@@ -28,6 +29,39 @@ namespace Wox.Helper
                 // PS: don't use Reset for other data updates, it will cause UI flickering
                 OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
+        }
+
+        public void Update(List<Result> newItems)
+        {
+            int newCount = newItems.Count;
+            int oldCount = Items.Count;
+            int location = newCount > oldCount ? oldCount : newCount;
+            for (int i = 0; i < location; i++)
+            {
+                Result oldItem = Items[i];
+                Result newItem = newItems[i];
+                if (!Equals(oldItem, newItem))
+                {
+                    this[i] = newItem;
+                }
+            }
+
+            if (newCount > oldCount)
+            {
+                for (int i = oldCount; i < newCount; i++)
+                {
+                    Add(newItems[i]);
+                }
+            }
+            else
+            {
+                int removeIndex = newCount;
+                for (int i = newCount; i < oldCount; i++)
+                {
+                    RemoveAt(removeIndex);
+                }
+            }
+
         }
     }
 }
