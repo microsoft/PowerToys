@@ -38,7 +38,7 @@ namespace Wox.Plugin.Program.ProgramSources
                         using (var key = root.OpenSubKey(item))
                         {
                             string path = key.GetValue("") as string;
-                            if (path == null) continue;
+                            if (string.IsNullOrEmpty(path)) continue;
 
                             // fix path like this ""\"C:\\folder\\executable.exe\"""
                             const int begin = 0;
