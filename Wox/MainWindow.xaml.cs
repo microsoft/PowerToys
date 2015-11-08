@@ -443,25 +443,19 @@ namespace Wox
 
         private void TbQuery_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-
             if (_ignoreTextChange) { _ignoreTextChange = false; return; }
-            string query = tbQuery.Text.Trim();
+
             toolTip.IsOpen = false;
             if (IsInContextMenuMode)
             {
                 QueryContextMenu();
                 return;
             }
+
+            string query = tbQuery.Text.Trim();
             if (!string.IsNullOrEmpty(query))
             {
                 Query(query);
-                Dispatcher.DelayInvoke("ShowProgressbar", () =>
-                {
-                    if (!string.IsNullOrEmpty(query) && query != _lastQuery.RawQuery && !_queryHasReturn)
-                    {
-                        StartProgress();
-                    }
-                }, TimeSpan.FromMilliseconds(150));
                 //reset query history index after user start new query
                 ResetQueryHistoryIndex();
             }
@@ -478,6 +472,7 @@ namespace Wox
         }
         private void Query(string text)
         {
+            _queryHasReturn = false;
             var query = PluginManager.QueryInit(text);
             if (query != null)
             {
@@ -503,6 +498,13 @@ namespace Wox
                     }
                 }
                 _lastQuery = query;
+                Dispatcher.DelayInvoke("ShowProgressbar", () =>
+                {
+                    if (!string.IsNullOrEmpty(query.RawQuery) && query.RawQuery == _lastQuery.RawQuery && !_queryHasReturn)
+                    {
+                        StartProgress();
+                    }
+                }, TimeSpan.FromMilliseconds(150));
                 PluginManager.QueryForAllPlugins(query);
             }
             StopProgress();
