@@ -1,13 +1,13 @@
 Wox   [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e103)](https://ci.appveyor.com/project/qianlifeng/wox) <a href="https://chocolatey.org/packages/wox"><img src="https://img.shields.io/badge/chocolatey-wox-b4884f.svg?style=flat" style="height:auto; width: 100%"></a> [![Bountysource](https://www.bountysource.com/badge/team?team_id=39433&style=raised)](https://www.bountysource.com/teams/wox?utm_source=Wox&utm_medium=shield&utm_campaign=raised)
 =========
-[Wox](http://www.getwox.com) is a launcher for windows, inspired by [Alfred](http://www.alfredapp.com/) and [Launchy](http://www.launchy.net/). Wox indexes your programs, your documents, project files, folders, and bookmarks. You can launch everything with just a few keystrokes!.
+[Wox](http://www.getwox.com) is a launcher for windows, inspired by [Alfred](http://www.alfredapp.com/) and [Launchy](http://www.launchy.net/). You can launch everything with just a few keystrokes!.
 
 Features
 =========
-1. Search for applications, folders, files. Search for bookmarks of browser is also possible via plugin.
-2. Search the web using shortcuts (e.g. search google with `g keyword`)
-3. Themes support, get more themes from [http://www.getwox.com/theme/builder](http://www.getwox.com/theme/builder)
-4. Plugin support, get more plugins from [http://www.getwox.com/plugin](http://www.getwox.com/plugin)
+1. Search for applications, folders, files, [bookmarks](https://www.getwox.com/plugin/16).
+2. Web search using keyword (e.g. search google with `g search_term`)
+3. Get themes from [http://www.getwox.com/theme/builder](http://www.getwox.com/theme/builder)
+4. Install plugins from [http://www.getwox.com/plugin](http://www.getwox.com/plugin)
 
 Screenshot
 =========
@@ -37,7 +37,7 @@ Contribute
 
 If you are a developer, feel free to send a pull request to the **Dev** branch. We still have a lot of features and bugs to resolve. Take a look at [issues page](https://github.com/qianlifeng/Wox/issues) if you want to contribute :)
 
-If you are not a developer, you can still contribute to the project. Install the [Latest build](https://ci.appveyor.com/project/qianlifeng/wox/history) and report bugs. Feedback is always welcome!
+If you are not a developer, you can still contribute to the project. Install the [Latest build](https://ci.appveyor.com/project/qianlifeng/wox/history) and report [here](https://github.com/qianlifeng/Wox/issues). Feedback is always welcome!
 
 Docs
 =========
