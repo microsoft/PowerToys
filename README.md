@@ -37,11 +37,11 @@ Contribute
 
 If you are a developer, feel free to send a pull request to the **Dev** branch. We still have a lot of features and bugs to resolve. Take a look at [issues page](https://github.com/qianlifeng/Wox/issues) if you want to contribute :)
 
-If you are not a developer, you can still contribute to the project. Install the Latest build(https://ci.appveyor.com/project/qianlifeng/wox/history) and report bugs. Help us with new entries and corrections to the [Wox doc](http://doc.getwox.com). Feedback is always welcome!
+If you are not a developer, you can still contribute to the project. Install the [Latest build](https://ci.appveyor.com/project/qianlifeng/wox/history) and report bugs. Feedback is always welcome!
 
 Docs
 =========
 
-Full documentation can be found here [Wox doc](http://doc.getwox.com). This is a good place to start if you are installing Wox for the first time. Feel free to contribute if you want to improve, correct or translate the documentation.
+Full documentation can be found here [Wox doc](http://doc.getwox.com). This is a good place to start if you are installing Wox for the first time.
 
 In the future, all of the documentation will be moved back to Github wiki.
