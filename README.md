@@ -37,7 +37,7 @@ Contribute
 
 If you are a developer, feel free to send a pull request to the **Dev** branch. We still have a lot of features and bugs to resolve. Take a look at [issues page](https://github.com/qianlifeng/Wox/issues) if you want to contribute :)
 
-If you are not a developer, you can still contribute to the project. Install the [Latest build](https://ci.appveyor.com/project/qianlifeng/wox/history) and report [here](https://github.com/qianlifeng/Wox/issues). Feedback is always welcome!
+If you are not a developer, you can still contribute to the project. Install the [Latest build](https://ci.appveyor.com/project/qianlifeng/wox/history) and report bug [here](https://github.com/qianlifeng/Wox/issues). Feedback is always welcome!
 
 Docs
 =========
