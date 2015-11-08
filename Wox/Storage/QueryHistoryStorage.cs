@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
+using Wox.Plugin;
 
 namespace Wox.Storage
 {
@@ -15,6 +16,9 @@ namespace Wox.Storage
 
         private int MaxHistory = 300;
         private int cursor = 0;
+
+        public static PluginMetadata MetaData { get; } = new PluginMetadata
+            { ID = "Query history", Name = "Query history" };
 
         protected override string ConfigFolder
         {
@@ -77,7 +81,7 @@ namespace Wox.Storage
             return History.OrderByDescending(o => o.ExecutedDateTime).ToList();
         }
     }
-    
+
     public class HistoryItem
     {
         public string Query { get; set; }

@@ -473,6 +473,7 @@ namespace Wox
 
         private void ResetQueryHistoryIndex()
         {
+            pnlResult.RemoveResultsFor(QueryHistoryStorage.MetaData);
             QueryHistoryStorage.Instance.Reset();
         }
         private void Query(string text)
@@ -487,18 +488,18 @@ namespace Wox
                 {
                     if (!string.IsNullOrEmpty(keyword))
                     {
-                        pnlResult.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword]);
+                        pnlResult.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
                     }
                 }
                 else
                 {
                     if (string.IsNullOrEmpty(keyword))
                     {
-                        pnlResult.RemoveResultsFor(PluginManager.NonGlobalPlugins[lastKeyword]);
+                        pnlResult.RemoveResultsFor(PluginManager.NonGlobalPlugins[lastKeyword].Metadata);
                     }
                     else if (lastKeyword != keyword)
                     {
-                        pnlResult.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword]);
+                        pnlResult.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
                     }
                 }
                 _lastQuery = query;
@@ -738,14 +739,11 @@ namespace Wox
         {
             if (history != null)
             {
-                var historyMetadata = new PluginMetadata
-                {
-                    ID = "Query history",
-                    Name = "Query history"
-                };
+                var historyMetadata = QueryHistoryStorage.MetaData;
                 ChangeQueryText(history.Query, true);
                 var executeQueryHistoryTitle = GetTranslation("executeQuery");
                 var lastExecuteTime = GetTranslation("lastExecuteTime");
+                pnlResult.RemoveResultsExcept(historyMetadata);
                 UpdateResultViewInternal(new List<Result>()
                 {
                     new Result(){

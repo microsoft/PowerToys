@@ -40,19 +40,19 @@ namespace Wox
 
         public int MaxResultsToShow { get { return UserSettingStorage.Instance.MaxResultsToShow * 50; } }
 
-        internal void RemoveResultsFor(PluginPair plugin)
+        internal void RemoveResultsFor(PluginMetadata metadata)
         {
             lock (_resultsUpdateLock)
             {
-                _results.RemoveAll(r => r.PluginID == plugin.Metadata.ID);
+                _results.RemoveAll(r => r.PluginID == metadata.ID);
             }
         }
 
-        internal void RemoveResultsExcept(PluginPair plugin)
+        internal void RemoveResultsExcept(PluginMetadata metadata)
         {
             lock (_resultsUpdateLock)
             {
-                _results.RemoveAll(r => r.PluginID != plugin.Metadata.ID);
+                _results.RemoveAll(r => r.PluginID != metadata.ID);
             }
         }
 
