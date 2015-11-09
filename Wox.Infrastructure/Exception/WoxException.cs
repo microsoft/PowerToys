@@ -1,4 +1,4 @@
-﻿namespace Wox.Core.Exception
+﻿namespace Wox.Infrastructure.Exception
 {
     /// <summary>
     /// Base Wox Exceptions
@@ -14,7 +14,6 @@
         public WoxException(string msg, System.Exception innerException)
             : base(msg, innerException)
         {
-
         }
     }
 }

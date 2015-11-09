@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using Newtonsoft.Json;
-using Wox.Core.Exception;
+using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
@@ -74,7 +74,7 @@ namespace Wox.Core.Plugin
                 }
                 catch (System.Exception e)
                 {
-                    Log.Error(e.Message);
+                    Log.Error(e);
                 }
             }
             return null;

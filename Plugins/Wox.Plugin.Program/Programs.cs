@@ -8,6 +8,7 @@ using System.Windows;
 using IWshRuntimeLibrary;
 using Wox.Infrastructure;
 using Wox.Plugin.Program.ProgramSources;
+using Wox.Infrastructure.Logger;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox.Plugin.Program
@@ -17,7 +18,7 @@ namespace Wox.Plugin.Program
         private static object lockObject = new object();
         private static List<Program> programs = new List<Program>();
         private static List<IProgramSource> sources = new List<IProgramSource>();
-        private static Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>() { 
+        private static Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>() {
             {"FileSystemProgramSource", typeof(FileSystemProgramSource)},
             {"CommonStartMenuProgramSource", typeof(CommonStartMenuProgramSource)},
             {"UserStartMenuProgramSource", typeof(UserStartMenuProgramSource)},
@@ -27,7 +28,7 @@ namespace Wox.Plugin.Program
 
         public List<Result> Query(Query query)
         {
-            
+
             var fuzzyMather = FuzzyMatcher.Create(query.Search);
             List<Program> returnList = programs.Where(o => MatchProgram(o, fuzzyMather)).ToList();
             returnList.ForEach(ScoreFilter);
@@ -75,7 +76,7 @@ namespace Wox.Plugin.Program
             {
                 programs = ProgramCacheStorage.Instance.Programs;
             });
-            Debug.WriteLine($"Preload {programs.Count} programs from cache");
+            Log.Info($"Preload {programs.Count} programs from cache");
             Stopwatch.Debug("Program Index", IndexPrograms);
         }
 
@@ -98,7 +99,7 @@ namespace Wox.Plugin.Program
                 }
 
                 sources.Clear();
-                foreach(var source in programSources.Where(o => o.Enabled))
+                foreach (var source in programSources.Where(o => o.Enabled))
                 {
                     Type sourceClass;
                     if (SourceTypes.TryGetValue(source.Type, out sourceClass))

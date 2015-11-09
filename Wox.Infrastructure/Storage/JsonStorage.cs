@@ -25,7 +25,7 @@ namespace Wox.Infrastructure.Storage
                 {
                     serializedObject = JsonConvert.DeserializeObject<T>(json);
                 }
-                catch (Exception)
+                catch (System.Exception)
                 {
                     serializedObject = LoadDefault();
                 }

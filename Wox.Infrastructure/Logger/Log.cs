@@ -1,5 +1,5 @@
-﻿using System;
-using NLog;
+﻿using NLog;
+using Wox.Infrastructure.Exception;
 
 namespace Wox.Infrastructure.Logger
 {
@@ -7,34 +7,40 @@ namespace Wox.Infrastructure.Logger
     {
         private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static void Error(string msg)
+        public static void Error(System.Exception e)
         {
-            logger.Error(msg);
-        }
-
-        public static void Error(Exception e)
-        {
+#if DEBUG
+            throw e;
+#else
             logger.Error(e.Message + "\r\n" + e.StackTrace);
+#endif
         }
 
         public static void Debug(string msg)
         {
+            System.Diagnostics.Debug.WriteLine($"DEBUG: {msg}");
             logger.Debug(msg);
         }
 
         public static void Info(string msg)
         {
+            System.Diagnostics.Debug.WriteLine($"INFO: {msg}");
             logger.Info(msg);
         }
 
         public static void Warn(string msg)
         {
+            System.Diagnostics.Debug.WriteLine($"WARN: {msg}");
             logger.Warn(msg);
         }
 
-        public static void Fatal(string msg)
+        public static void Fatal(System.Exception e)
         {
-            logger.Fatal(msg);
+#if DEBUG
+            throw e;
+#else
+            logger.Fatal(ExceptionFormatter.FormatExcpetion(e));
+#endif
         }
     }
 }

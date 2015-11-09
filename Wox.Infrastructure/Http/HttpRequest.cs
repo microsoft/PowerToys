@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using System.Text;
 using Wox.Plugin;
@@ -55,7 +54,7 @@ namespace Wox.Infrastructure.Http
                     }
                 }
             }
-            catch (Exception e)
+            catch (System.Exception e)
             {
                 Logger.Log.Error(e);
                 return string.Empty;
@@ -108,7 +107,7 @@ namespace Wox.Infrastructure.Http
                     }
                 }
             }
-            catch (Exception e)
+            catch (System.Exception e)
             {
                 Logger.Log.Error(e);
                 return string.Empty;

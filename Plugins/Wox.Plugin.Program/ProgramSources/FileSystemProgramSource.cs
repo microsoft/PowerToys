@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Plugin.Program.ProgramSources
@@ -70,7 +71,8 @@ namespace Wox.Plugin.Program.ProgramSources
             }
             catch (Exception e)
             {
-                Log.Warn(string.Format("GetAppFromDirectory failed: {0} - {1}", path, e.Message));
+                var woxPluginException = new WoxPluginException("Program", $"GetAppFromDirectory failed: {path}", e);
+                Log.Error(woxPluginException);
             }
         }
 

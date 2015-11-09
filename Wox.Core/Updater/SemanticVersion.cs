@@ -1,5 +1,5 @@
 ﻿using System;
-using Wox.Core.Exception;
+using Wox.Infrastructure.Exception;
 
 namespace Wox.Core.Updater
 {

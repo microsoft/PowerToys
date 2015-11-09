@@ -17,7 +17,7 @@ using Wox.Core.Theme;
 using Wox.Core.Updater;
 using Wox.Core.UserSettings;
 using Wox.Helper;
-using Wox.Infrastructure;
+using Wox.Infrastructure.Exception;
 using Wox.Plugin;
 using Application = System.Windows.Forms.Application;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
@@ -187,23 +187,6 @@ namespace Wox
             else if (tabHotkey.IsSelected)
             {
                 OnHotkeyTabSelected();
-            }
-
-            // save multiple action keywords settings, todo: this hack is ugly
-            var tab = e.RemovedItems.Count > 0 ? e.RemovedItems[0] : null;
-            if (ReferenceEquals(tab, tabPlugin))
-            {
-                var metadata = (lbPlugins.SelectedItem as PluginPair)?.Metadata;
-                if (metadata != null)
-                {
-                    var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == metadata.ID);
-                    if (customizedPluginConfig != null && !customizedPluginConfig.Disabled)
-                    {
-                        customizedPluginConfig.ActionKeywords = metadata.ActionKeywords;
-                        UserSettingStorage.Instance.Save();
-                    }
-
-                }
             }
         }
 
@@ -429,7 +412,7 @@ namespace Wox
                     IcoPath = "Images/app.png",
                     PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 }
-            });
+            }, "test id");
 
             foreach (string theme in ThemeManager.Theme.LoadAvailableThemes())
             {
@@ -535,50 +518,64 @@ namespace Wox
 
         #region Plugin
 
-        private void lbPlugins_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void lbPlugins_OnSelectionChanged(object sender, SelectionChangedEventArgs _)
         {
-            ISettingProvider provider = null;
+
             var pair = lbPlugins.SelectedItem as PluginPair;
             string pluginId = string.Empty;
-
-            if (pair != null)
+            List<string> actionKeywords = null;
+            if (pair == null) return;
+            actionKeywords = pair.Metadata.ActionKeywords;
+            pluginAuthor.Visibility = Visibility.Visible;
+            pluginInitTime.Text =
+                string.Format(InternationalizationManager.Instance.GetTranslation("plugin_init_time"), pair.InitTime);
+            pluginQueryTime.Text =
+                string.Format(InternationalizationManager.Instance.GetTranslation("plugin_query_time"), pair.AvgQueryTime);
+            if (actionKeywords.Count > 1)
             {
-                provider = pair.Plugin as ISettingProvider;
-                pluginAuthor.Visibility = Visibility.Visible;
-                pluginInitTime.Text =
-                    string.Format(InternationalizationManager.Instance.GetTranslation("plugin_init_time"), pair.InitTime);
-                pluginQueryTime.Text =
-                    string.Format(InternationalizationManager.Instance.GetTranslation("plugin_query_time"), pair.AvgQueryTime);
-                if (pair.Metadata.ActionKeywords.Count > 0)
-                {
-                    pluginActionKeywordsTitle.Visibility = Visibility.Collapsed;
-                    pluginActionKeywords.Visibility = Visibility.Collapsed;
-                }
-                else
-                {
-                    pluginActionKeywordsTitle.Visibility = Visibility.Visible;
-                    pluginActionKeywords.Visibility = Visibility.Visible;
-                }
-                tbOpenPluginDirecoty.Visibility = Visibility.Visible;
-                pluginTitle.Text = pair.Metadata.Name;
-                pluginTitle.Cursor = Cursors.Hand;
-                pluginActionKeywords.Text = string.Join(Query.ActionKeywordSeperater, pair.Metadata.ActionKeywords.ToArray());
-                pluginAuthor.Text = InternationalizationManager.Instance.GetTranslation("author") + ": " + pair.Metadata.Author;
-                pluginSubTitle.Text = pair.Metadata.Description;
-                pluginId = pair.Metadata.ID;
-                pluginIcon.Source = ImageLoader.ImageLoader.Load(pair.Metadata.FullIcoPath);
+                pluginActionKeywordsTitle.Visibility = Visibility.Collapsed;
+                pluginActionKeywords.Visibility = Visibility.Collapsed;
             }
+            else
+            {
+                pluginActionKeywordsTitle.Visibility = Visibility.Visible;
+                pluginActionKeywords.Visibility = Visibility.Visible;
+            }
+            tbOpenPluginDirecoty.Visibility = Visibility.Visible;
+            pluginTitle.Text = pair.Metadata.Name;
+            pluginTitle.Cursor = Cursors.Hand;
+            pluginActionKeywords.Text = string.Join(Query.ActionKeywordSeperater, actionKeywords.ToArray());
+            pluginAuthor.Text = InternationalizationManager.Instance.GetTranslation("author") + ": " + pair.Metadata.Author;
+            pluginSubTitle.Text = pair.Metadata.Description;
+            pluginId = pair.Metadata.ID;
+            pluginIcon.Source = ImageLoader.ImageLoader.Load(pair.Metadata.FullIcoPath);
 
             var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == pluginId);
             cbDisablePlugin.IsChecked = customizedPluginConfig != null && customizedPluginConfig.Disabled;
 
             PluginContentPanel.Content = null;
-            if (provider != null)
+            var settingProvider = pair.Plugin as ISettingProvider;
+            if (settingProvider != null)
             {
-                Control control = null;
-                if (!featureControls.TryGetValue(provider, out control))
-                    featureControls.Add(provider, control = provider.CreateSettingPanel());
+                Control control;
+                if (!featureControls.TryGetValue(settingProvider, out control))
+                {
+                    var multipleActionKeywordsProvider = settingProvider as IMultipleActionKeywords;
+                    if (multipleActionKeywordsProvider != null)
+                    {
+                        multipleActionKeywordsProvider.ActionKeywordsChanged += (o, e) =>
+                        {
+                            // update in-memory data
+                            PluginManager.UpdateActionKeywordForPlugin(pair, e.OldActionKeyword, e.NewActionKeyword);
+                            // update persistant data
+                            UserSettingStorage.Instance.UpdateActionKeyword(pair.Metadata);
 
+                            MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
+                        };
+                    }
+
+                    featureControls.Add(settingProvider, control = settingProvider.CreateSettingPanel());
+                }
                 PluginContentPanel.Content = control;
                 control.HorizontalAlignment = HorizontalAlignment.Stretch;
                 control.VerticalAlignment = VerticalAlignment.Stretch;

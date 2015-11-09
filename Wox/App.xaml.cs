@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -32,15 +33,21 @@ namespace Wox
             Stopwatch.Debug("Startup Time", () =>
             {
                 base.OnStartup(e);
-                DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
-                AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
-
+                RegisterUnhandledException();
                 ThreadPool.QueueUserWorkItem(o => { ImageLoader.ImageLoader.PreloadImages(); });
                 Window = new MainWindow();
                 PluginManager.Init(Window);
                 CommandArgsFactory.Execute(e.Args.ToList());
             });
 
+        }
+
+        [Conditional("DEBUG")]
+        private void RegisterUnhandledException()
+        {
+            // let exception throw as normal is better for Debug
+            DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
         }
 
         public bool OnActivate(IList<string> args)

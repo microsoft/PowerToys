@@ -106,6 +106,7 @@
     <Compile Include="Converters\OpacityModeConverter.cs" />
     <Compile Include="Converters\StringEmptyConverter.cs" />
     <Compile Include="Converters\StringNullOrEmptyToVisibilityConverter.cs" />
+    <Compile Include="Helper\ListBoxItems.cs" />
     <Compile Include="Helper\SingletonWindowOpener.cs" />
     <Compile Include="ImageLoader\ImageCacheStroage.cs" />
     <Compile Include="ShellContext\ShellContextMenuManager.cs" />
@@ -280,7 +281,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -304,9 +307,6 @@
       <Project>{8451ECDD-2EA4-4966-BB0A-7BBC40138E80}</Project>
       <Name>Wox.Plugin</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
