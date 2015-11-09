@@ -50,13 +50,7 @@ namespace Wox.Plugin.WebSearch
 
         private void ShowIcon(string path)
         {
-            try
-            {
-                imgIcon.Source = new BitmapImage(new Uri(path, UriKind.Relative));
-            }
-            catch (Exception)
-            {
-            }
+            imgIcon.Source = new BitmapImage(new Uri($"{_defaultWebSearchImageDirectory}\\{path}", UriKind.Absolute));
         }
 
         private void BtnCancel_OnClick(object sender, RoutedEventArgs e)
@@ -86,13 +80,6 @@ namespace Wox.Plugin.WebSearch
             }
 
             string newActionKeyword = tbActionword.Text.Trim();
-            if (string.IsNullOrEmpty(newActionKeyword))
-            {
-                string warning = _context.API.GetTranslation("wox_plugin_websearch_input_action_keyword");
-                MessageBox.Show(warning);
-                return;
-            }
-
             if (_isUpdate)
             {
                 try
@@ -155,8 +142,8 @@ namespace Wox.Plugin.WebSearch
             if (result == true)
             {
                 string filename = dlg.FileName;
-                tbIconPath.Text = filename;
-                ShowIcon(filename);
+                tbIconPath.Text = Path.GetFileName(filename);
+                ShowIcon(tbIconPath.Text);
             }
         }
     }
