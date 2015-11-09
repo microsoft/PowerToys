@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
-using Wox.Core.Exception;
 using Wox.Core.Plugin;
+using Wox.Infrastructure.Exception;
 
 namespace Wox.Test.Plugins
 {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Wox.Core.Exception;
+using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Plugin.Program.ProgramSources

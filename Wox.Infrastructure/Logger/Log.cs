@@ -1,6 +1,4 @@
-﻿using System;
-using NLog;
-using Wox.Core.Exception;
+﻿using NLog;
 
 namespace Wox.Infrastructure.Logger
 {
@@ -8,7 +6,7 @@ namespace Wox.Infrastructure.Logger
     {
         private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static void Error(Exception e)
+        public static void Error(System.Exception e)
         {
 #if DEBUG
             throw e;
@@ -35,7 +33,7 @@ namespace Wox.Infrastructure.Logger
             logger.Warn(msg);
         }
 
-        public static void Fatal(Exception e)
+        public static void Fatal(System.Exception e)
         {
 #if DEBUG
             throw e;

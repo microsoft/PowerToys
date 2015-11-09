@@ -2,8 +2,8 @@
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
-using Wox.Core.Exception;
 using Wox.Core.UserSettings;
+using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 

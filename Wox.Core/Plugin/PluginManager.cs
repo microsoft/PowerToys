@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Wox.Core.Exception;
 using Wox.Core.i18n;
 using Wox.Core.UI;
 using Wox.Core.UserSettings;
+using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
@@ -30,7 +30,7 @@ namespace Wox.Core.Plugin
         public static IEnumerable<PluginPair> AllPlugins { get; private set; }
 
         public static List<PluginPair> GlobalPlugins { get; } = new List<PluginPair>();
-        public static Dictionary<string, PluginPair> NonGlobalPlugins { get; } = new Dictionary<string, PluginPair>();
+        public static Dictionary<string, PluginPair> NonGlobalPlugins { get; set; } = new Dictionary<string, PluginPair>();
 
         private static IEnumerable<PluginPair> InstantQueryPlugins { get; set; }
         public static IPublicAPI API { private set; get; }

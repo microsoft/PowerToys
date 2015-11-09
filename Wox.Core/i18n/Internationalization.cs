@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
-using Wox.Core.Exception;
 using Wox.Core.UI;
 using Wox.Core.UserSettings;
+using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 

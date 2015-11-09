@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Windows.Threading;
-using Wox.Core.Exception;
+using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Helper
