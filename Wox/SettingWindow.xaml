@@ -199,7 +199,20 @@
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
                         </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0 2">
+                            <TextBlock Text="{DynamicResource windowsAccents}"/>
+                            <ComboBox  Width="100">
+                                <ComboBox.Items>
+                                    <ComboBoxItem Content="None"/>
+                                    <ComboBoxItem Content="Accent"/>
+                                    <ComboBoxItem Content="Accent Blur"/>
+                                    <ComboBoxItem Content="Blur"/>
+                                </ComboBox.Items>
+                                
+                            </ComboBox>
+                        </StackPanel>
                     </StackPanel>
+                    
 
                 </Grid>
             </Grid>
