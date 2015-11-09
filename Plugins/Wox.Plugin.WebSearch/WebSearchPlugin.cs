@@ -1,17 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Controls;
+using Wox.Plugin.WebSearch.Annotations;
 using Wox.Plugin.WebSearch.SuggestionSources;
 
 namespace Wox.Plugin.WebSearch
 {
-    public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery
+    public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IMultipleActionKeywords
     {
-        private PluginInitContext _context;
+        public PluginInitContext Context { get; private set; }
 
         public List<Result> Query(Query query)
         {
@@ -23,7 +25,7 @@ namespace Wox.Plugin.WebSearch
             {
                 string keyword = query.Search;
                 string title = keyword;
-                string subtitle = _context.API.GetTranslation("wox_plugin_websearch_search") + " " + webSearch.Title;
+                string subtitle = Context.API.GetTranslation("wox_plugin_websearch_search") + " " + webSearch.Title;
                 if (string.IsNullOrEmpty(keyword))
                 {
                     title = subtitle;
@@ -54,7 +56,7 @@ namespace Wox.Plugin.WebSearch
 
         private IEnumerable<Result> ResultsFromSuggestions(string keyword, string subtitle, WebSearch webSearch)
         {
-            ISuggestionSource sugg = SuggestionSourceFactory.GetSuggestionSource(WebSearchStorage.Instance.WebSearchSuggestionSource, _context);
+            ISuggestionSource sugg = SuggestionSourceFactory.GetSuggestionSource(WebSearchStorage.Instance.WebSearchSuggestionSource, Context);
             var suggestions = sugg?.GetSuggestions(keyword);
             if (suggestions != null)
             {
@@ -77,7 +79,7 @@ namespace Wox.Plugin.WebSearch
 
         public void Init(PluginInitContext context)
         {
-            _context = context;
+            this.Context = context;
 
             if (WebSearchStorage.Instance.WebSearches == null)
                 WebSearchStorage.Instance.WebSearches = WebSearchStorage.Instance.LoadDefaultWebSearches();
@@ -87,7 +89,7 @@ namespace Wox.Plugin.WebSearch
 
         public Control CreateSettingPanel()
         {
-            return new WebSearchesSetting(_context);
+            return new WebSearchesSetting(this);
         }
 
         #endregion
@@ -99,15 +101,35 @@ namespace Wox.Plugin.WebSearch
 
         public string GetTranslatedPluginTitle()
         {
-            return _context.API.GetTranslation("wox_plugin_websearch_plugin_name");
+            return Context.API.GetTranslation("wox_plugin_websearch_plugin_name");
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return _context.API.GetTranslation("wox_plugin_websearch_plugin_description");
+            return Context.API.GetTranslation("wox_plugin_websearch_plugin_description");
         }
 
         public bool IsInstantQuery(string query) => false;
 
+        [NotifyPropertyChangedInvocator]
+        public void NotifyActionKeywordsUpdated(string oldActionKeywords, string newActionKeywords)
+        {
+            ActionKeywordsChanged?.Invoke(this, new ActionKeywordsChangedEventArgs
+            {
+                OldActionKeyword = oldActionKeywords,
+                NewActionKeyword = newActionKeywords
+            });
+        }
+
+        [NotifyPropertyChangedInvocator]
+        public void NotifyActionKeywordsAdded(string newActionKeywords)
+        {
+            ActionKeywordsChanged?.Invoke(this, new ActionKeywordsChangedEventArgs
+            {
+                NewActionKeyword = newActionKeywords
+            });
+        }
+
+        public event ActionKeywordsChangedEventHandler ActionKeywordsChanged;
     }
 }

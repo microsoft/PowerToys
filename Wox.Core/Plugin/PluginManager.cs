@@ -7,10 +7,10 @@ using System.Threading;
 using Wox.Core.i18n;
 using Wox.Core.UI;
 using Wox.Core.UserSettings;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
-using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox.Core.Plugin
 {
@@ -56,7 +56,7 @@ namespace Wox.Core.Plugin
                     {
                         Directory.CreateDirectory(pluginDirectory);
                     }
-                    catch (System.Exception e)
+                    catch (Exception e)
                     {
                         Log.Error(e);
                     }
@@ -196,7 +196,7 @@ namespace Wox.Core.Plugin
                 pair.AvgQueryTime = pair.QueryCount == 1 ? milliseconds : (pair.AvgQueryTime + milliseconds) / 2;
                 API.PushResults(query, pair.Metadata, results);
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 throw new WoxPluginException(pair.Metadata.Name, $"QueryForPlugin failed", e);
             }
@@ -240,7 +240,7 @@ namespace Wox.Core.Plugin
                 {
                     return plugin.LoadContextMenus(result);
                 }
-                catch (System.Exception e)
+                catch (Exception e)
                 {
                     Log.Error(new WoxPluginException(pluginPair.Metadata.Name, $"Couldn't load plugin context menus", e));
                 }
@@ -248,5 +248,58 @@ namespace Wox.Core.Plugin
 
             return new List<Result>();
         }
+
+        public static void UpdateActionKeywordForPlugin(PluginPair plugin, string oldActionKeyword, string newActionKeyword)
+        {
+            var actionKeywords = plugin.Metadata.ActionKeywords;
+            if (string.IsNullOrEmpty(newActionKeyword))
+            {
+                string msg = InternationalizationManager.Instance.GetTranslation("newActionKeywordsCannotBeEmpty");
+                throw new WoxPluginException(plugin.Metadata.Name, msg);
+            }
+            if (NonGlobalPlugins.ContainsKey(newActionKeyword))
+            {
+                string msg = InternationalizationManager.Instance.GetTranslation("newActionKeywordsHasBeenAssigned");
+                throw new WoxPluginException(plugin.Metadata.Name, msg);
+            }
+
+            // add new action keyword
+            if (string.IsNullOrEmpty(oldActionKeyword))
+            {
+                actionKeywords.Add(newActionKeyword);
+                if (newActionKeyword == Query.GlobalPluginWildcardSign)
+                {
+                    GlobalPlugins.Add(plugin);
+                }
+                else
+                {
+                    NonGlobalPlugins[newActionKeyword] = plugin;
+                }
+            }
+            // update existing action keyword
+            else
+            {
+                int index = actionKeywords.IndexOf(oldActionKeyword);
+                actionKeywords[index] = newActionKeyword;
+                if (oldActionKeyword == Query.GlobalPluginWildcardSign)
+                {
+                    GlobalPlugins.Remove(plugin);
+                }
+                else
+                {
+                    NonGlobalPlugins.Remove(oldActionKeyword);
+                }
+                if (newActionKeyword == Query.GlobalPluginWildcardSign)
+                {
+                    GlobalPlugins.Add(plugin);
+                }
+                else
+                {
+                    NonGlobalPlugins[newActionKeyword] = plugin;
+                }
+            }
+
+        }
+
     }
 }

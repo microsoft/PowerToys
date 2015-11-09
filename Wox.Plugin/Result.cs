@@ -57,7 +57,8 @@ namespace Wox.Plugin
 
         public override int GetHashCode()
         {
-            return (Title?.GetHashCode() ?? 0) ^ (SubTitle?.GetHashCode() ?? 0);
+            var hashcode = (Title?.GetHashCode() ?? 0) ^ (SubTitle?.GetHashCode() ?? 0);
+            return hashcode;
         }
 
         public override string ToString()

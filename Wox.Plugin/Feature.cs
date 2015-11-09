@@ -38,4 +38,17 @@ namespace Wox.Plugin
 
         string GetTranslatedPluginDescription();
     }
+
+    public interface IMultipleActionKeywords
+    {
+        event ActionKeywordsChangedEventHandler ActionKeywordsChanged;
+    }
+
+    public class ActionKeywordsChangedEventArgs : EventArgs
+    {
+        public string OldActionKeyword { get; set; }
+        public string NewActionKeyword { get; set; }
+    }
+
+    public delegate void ActionKeywordsChangedEventHandler(IMultipleActionKeywords sender, ActionKeywordsChangedEventArgs e);
 }

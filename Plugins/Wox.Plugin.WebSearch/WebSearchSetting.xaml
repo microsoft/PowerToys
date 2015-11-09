@@ -37,7 +37,7 @@
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="5" Grid.Column="1">
             <Button x:Name="btnCancel" Click="BtnCancel_OnClick" Margin="10 0 10 0" Width="80" Height="25" Content="{DynamicResource wox_plugin_websearch_cancel}"></Button>
-            <Button x:Name="btnAdd" Margin="10 0 10 0"  Width="80" Height="25" Click="btnAdd_OnClick">
+            <Button x:Name="btnConfirm" Margin="10 0 10 0"  Width="80" Height="25" Click="btnConfirm_OnClick">
                 <TextBlock x:Name="lblAdd" Text="{DynamicResource wox_plugin_websearch_add}"></TextBlock></Button>
         </StackPanel>
     </Grid>

@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
+using Wox.Plugin;
 
 namespace Wox.Core.UserSettings
 {
@@ -118,7 +120,7 @@ namespace Wox.Core.UserSettings
         public void IncreaseActivateTimes()
         {
             ActivateTimes++;
-            if (ActivateTimes%15 == 0)
+            if (ActivateTimes % 15 == 0)
             {
                 Save();
             }
@@ -161,6 +163,26 @@ namespace Wox.Core.UserSettings
             {
                 storage.Language = "en";
             }
+        }
+
+        public void UpdateActionKeyword(PluginMetadata metadata)
+        {
+            var customizedPluginConfig = CustomizedPluginConfigs.FirstOrDefault(o => o.ID == metadata.ID);
+            if (customizedPluginConfig == null)
+            {
+                CustomizedPluginConfigs.Add(new CustomizedPluginConfig()
+                {
+                    Disabled = false,
+                    ID = metadata.ID,
+                    Name = metadata.Name,
+                    ActionKeywords = metadata.ActionKeywords
+                });
+            }
+            else
+            {
+                customizedPluginConfig.ActionKeywords = metadata.ActionKeywords;
+            }
+            Save();
         }
     }
 
