@@ -207,7 +207,6 @@ namespace Wox
             InitialTray();
 
             Closing += MainWindow_Closing;
-            
 
         }
 
@@ -256,7 +255,6 @@ namespace Wox
 
             InitProgressbarAnimation();
             WindowIntelopHelper.DisableControlBox(this);
-            WindowIntelopHelper.EnableBlur(this);
             CheckUpdate();
         }
 

@@ -27,6 +27,7 @@
         <Setter Property="Stroke" Value="Blue" />
     </Style>
 
+    <system:Int32 x:Key="WindowsAccentMode">0</system:Int32>
     <!-- Item Style -->
     <Style x:Key="BaseItemTitleStyle" TargetType="{x:Type TextBlock}">
         <Setter Property="Foreground" Value="#FFFFF8" />

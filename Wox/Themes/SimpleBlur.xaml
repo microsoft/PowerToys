@@ -9,7 +9,8 @@
     </Style>
     
     <Style x:Key="WindowBorderStyle" BasedOn="{StaticResource BaseWindowBorderStyle}" TargetType="{x:Type Border}">
-        <Setter Property="Background" Value="#80FFFFFF" />
+        <Setter Property="Background" Value="Transparent" />
+        <!--<Setter Property="Background" Value="#80FFFFFF" />-->
         
     </Style>
     
