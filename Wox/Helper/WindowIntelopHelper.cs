@@ -89,7 +89,11 @@ namespace Wox.Helper
             public int Bottom;
         }
 
-        internal enum AccentState
+        #region Blur Handling
+        /*
+        Found on https://github.com/riverar/sample-win10-aeroglass
+        */
+        public enum AccentState
         {
             ACCENT_DISABLED = 0,
             ACCENT_ENABLE_GRADIENT = 1,
@@ -120,14 +124,23 @@ namespace Wox.Helper
             WCA_ACCENT_POLICY = 19
         }
         [DllImport("user32.dll")]
-        internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
-        public static void SetWindowAccent(Window wind, int themeAccentMode)
+        private static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
+
+        /// <summary>
+        /// Sets the blur for a window via SetWindowCompositionAttribute
+        /// </summary>
+        /// <param name="wind">window to blur</param>
+        /// <param name="status">true/false - on or off correspondingly</param>
+        public static void SetBlurForWindow(Window wind, bool status)
         {
-            if (themeAccentMode < 0 || themeAccentMode > 3)
-                themeAccentMode = 0;
+            SetWindowAccent(wind, status ? AccentState.ACCENT_ENABLE_BLURBEHIND : AccentState.ACCENT_DISABLED);
+        }
+
+        private static void SetWindowAccent(Window wind, AccentState themeAccentMode)
+        {
             var windowHelper = new WindowInteropHelper(wind);
             var accent = new AccentPolicy();
-            accent.AccentState = (AccentState) themeAccentMode;
+            accent.AccentState = themeAccentMode;
             var accentStructSize = Marshal.SizeOf(accent);
 
             var accentPtr = Marshal.AllocHGlobal(accentStructSize);
@@ -142,5 +155,8 @@ namespace Wox.Helper
 
             Marshal.FreeHGlobal(accentPtr);
         }
+        #endregion
+
+  
     }
 }

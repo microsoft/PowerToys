@@ -56,7 +56,7 @@ namespace Wox.Core.UserSettings
         public string ResultItemFontStretch { get; set; }
 
         [JsonProperty]
-        public int ThemeAccentMode { get; set; }
+        public bool ThemeBlurEnabled { get; set; }
 
         [JsonProperty]
         public double WindowLeft { get; set; }

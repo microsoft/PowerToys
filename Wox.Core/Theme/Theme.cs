@@ -56,7 +56,7 @@ namespace Wox.Core.Theme
             ResourceMerger.ApplyThemeResource(this);
 
             UserSettingStorage.Instance.Theme = themeName;
-            UserSettingStorage.Instance.ThemeAccentMode = (int)Application.Current.Resources["WindowsAccentMode"];
+            UserSettingStorage.Instance.ThemeBlurEnabled = (bool)Application.Current.Resources["ThemeBlurEnabled"];
             UserSettingStorage.Instance.Save();
         }
 
