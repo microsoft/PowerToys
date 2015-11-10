@@ -5,8 +5,11 @@
         <ResourceDictionary Source="Base.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
+    <!-- Windows Accent Mode: 0 - none, 1 - Accent color, 2 - Accent with transparency, 3 - Blur -->
+    <system:Int32 x:Key="WindowsAccentMode">3</system:Int32>
+
     <Style x:Key="QueryBoxStyle" BasedOn="{StaticResource BaseQueryBoxStyle}" TargetType="{x:Type TextBox}">
-        <Setter Property="Background" Value="#FFBBBBBB"></Setter>
+        <Setter Property="Background" Value="Transparent"></Setter>
         <Setter Property="Foreground" Value="Black"></Setter>
         <Setter Property="FontFamily" Value="Helvetica"/>
         <Setter Property="FontSize" Value="32"/>
@@ -50,7 +53,7 @@
         <Setter Property="Foreground"  Value="#656565"></Setter>
         <Setter Property="FontFamily" Value="Helvetica"/>
     </Style>
-    <Color x:Key="ItemSelectedBackgroundColor">#FFBBBBBB</Color>
+    <Color x:Key="ItemSelectedBackgroundColor">Transparent</Color>
 
     <!-- button style in the middle of the scrollbar -->
     <Style x:Key="ThumbStyle" BasedOn="{StaticResource BaseThumbStyle}" TargetType="{x:Type Thumb}">

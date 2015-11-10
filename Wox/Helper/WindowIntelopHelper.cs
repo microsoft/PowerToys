@@ -121,13 +121,13 @@ namespace Wox.Helper
         }
         [DllImport("user32.dll")]
         internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
-        public static void EnableBlur(Window wind)
+        public static void SetWindowAccent(Window wind, int themeAccentMode)
         {
+            if (themeAccentMode < 0 || themeAccentMode > 3)
+                themeAccentMode = 0;
             var windowHelper = new WindowInteropHelper(wind);
-
             var accent = new AccentPolicy();
-            accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
-            accent.GradientColor = 16711680;
+            accent.AccentState = (AccentState) themeAccentMode;
             var accentStructSize = Marshal.SizeOf(accent);
 
             var accentPtr = Marshal.AllocHGlobal(accentStructSize);

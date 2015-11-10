@@ -56,6 +56,9 @@ namespace Wox.Core.UserSettings
         public string ResultItemFontStretch { get; set; }
 
         [JsonProperty]
+        public int ThemeAccentMode { get; set; }
+
+        [JsonProperty]
         public double WindowLeft { get; set; }
 
         [JsonProperty]
@@ -116,6 +119,8 @@ namespace Wox.Core.UserSettings
         {
             get { return "config"; }
         }
+
+        
 
         public void IncreaseActivateTimes()
         {

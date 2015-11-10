@@ -5,6 +5,9 @@
         <ResourceDictionary Source="Base.xaml" />
     </ResourceDictionary.MergedDictionaries>
     
+    <!-- Windows Accent Mode: 0 - none, 1 - Accent color, 2 - Accent with transparency, 3 - Blur -->
+    <system:Int32 x:Key="WindowsAccentMode">3</system:Int32>
+    
     <Style x:Key="QueryBoxStyle" BasedOn="{StaticResource BaseQueryBoxStyle}" TargetType="{x:Type TextBox}">
     </Style>
     

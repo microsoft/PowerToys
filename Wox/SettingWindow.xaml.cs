@@ -460,6 +460,7 @@ namespace Wox
             Dispatcher.DelayInvoke("delayChangeTheme", () =>
             {
                 ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
+                WindowIntelopHelper.SetWindowAccent(MainWindow, UserSettingStorage.Instance.ThemeAccentMode);
             }, TimeSpan.FromMilliseconds(100));
         }
 
