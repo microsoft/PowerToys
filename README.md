@@ -4,9 +4,9 @@ Wox   [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e
 
 Features
 =========
-1. Search for applications, folders, files, [bookmarks](https://www.getwox.com/plugin/16).
-2. Web search using keyword (e.g. search google with `g search_term`)
-3. Get themes from [http://www.getwox.com/theme/builder](http://www.getwox.com/theme/builder)
+1. Search all applications, folders, files, [bookmarks](https://www.getwox.com/plugin/16).
+2. Search Web using keyword (e.g. search google with `g search_term`)
+3. Build custom themes in [http://www.getwox.com/theme/builder](http://www.getwox.com/theme/builder)
 4. Install plugins from [http://www.getwox.com/plugin](http://www.getwox.com/plugin)
 
 Screenshot
@@ -35,9 +35,9 @@ Simple Usage
 Contribute  
 =========
 
-If you are a developer, feel free to send a pull request to the **Dev** branch. We still have a lot of features and bugs to resolve. Take a look at [issues page](https://github.com/qianlifeng/Wox/issues) if you want to contribute :)
+If you are a developer, please feel free to send a pull request to the **Dev** branch. We still have a lot of features and bugs to resolve. Take a look at [issues page](https://github.com/qianlifeng/Wox/issues) if you want to contribute :)
 
-If you are not a developer, you can still contribute to the project. Install the [Latest build](https://ci.appveyor.com/project/qianlifeng/wox/history) and report bug [here](https://github.com/qianlifeng/Wox/issues). Feedback is always welcome!
+If you are not a developer, please install the [Latest build](https://ci.appveyor.com/project/qianlifeng/wox/history) and report bugs (how to: [English](https://github.com/Wox-launcher/Wox/wiki/FAQ-English) [中文](https://github.com/Wox-launcher/Wox/wiki/FAQ-%E4%B8%AD%E6%96%87)). Feedback is always welcome!
 
 Docs
 =========
