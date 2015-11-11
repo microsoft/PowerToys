@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using System.Diagnostics;
+using NLog;
 using Wox.Infrastructure.Exception;
 
 namespace Wox.Infrastructure.Logger
@@ -12,7 +13,12 @@ namespace Wox.Infrastructure.Logger
 #if DEBUG
             throw e;
 #else
-            logger.Error(e.Message + "\r\n" + e.StackTrace);
+            while (e.InnerException != null)
+            {
+                logger.Error(e.Message);
+                logger.Error(e.StackTrace);
+                e = e.InnerException;
+            }
 #endif
         }
 

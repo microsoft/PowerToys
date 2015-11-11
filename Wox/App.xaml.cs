@@ -42,7 +42,7 @@ namespace Wox
 
         }
 
-        [Conditional("DEBUG")]
+        [Conditional("RELEASE")]
         private void RegisterUnhandledException()
         {
             // let exception throw as normal is better for Debug
