@@ -364,7 +364,6 @@ cd "$(TargetDir)Plugins" &amp; del /s /q NAppUpdate.Framework.dll
 cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Infrastructure.dll
 cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Infrastructure.pdb
 cd "$(TargetDir)Plugins" &amp; del /s /q Newtonsoft.Json.dll
-cd "$(TargetDir)Plugins" &amp; del /s /q WindowsInput.dll
 )</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
