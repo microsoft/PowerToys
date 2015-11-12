@@ -66,7 +66,13 @@
     <Compile Include="WebSearchStorage.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Images\websearch\pictures.png">
+    <None Include="Images\google.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Images\pictures.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Images\wiki.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Content Include="Languages\en.xaml">
@@ -111,16 +117,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Images\web_search.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Images\websearch\google.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Images\websearch\wiki.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
