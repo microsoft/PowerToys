@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
-using Wox.Core.Exception;
 using Wox.Core.UI;
 using Wox.Core.UserSettings;
+using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
@@ -32,7 +32,7 @@ namespace Wox.Core.i18n
                 }
                 catch (System.Exception e)
                 {
-                    Log.Error(e.Message);
+                    Log.Error(e);
                 }
             }
         }
@@ -122,12 +122,8 @@ namespace Wox.Core.i18n
             }
             catch (System.Exception e)
             {
-                Log.Warn("Update Plugin metadata translation failed:" + e.Message);
-#if (DEBUG)
-                {
-                    throw;
-                }
-#endif
+                var woxPluginException = new WoxPluginException(pluginPair.Metadata.Name, "Update Plugin metadata translation failed:", e);
+                Log.Error(woxPluginException);
             }
         }
 

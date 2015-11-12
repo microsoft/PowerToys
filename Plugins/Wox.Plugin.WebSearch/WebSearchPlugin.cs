@@ -1,17 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Controls;
+using Wox.Plugin.WebSearch.Annotations;
 using Wox.Plugin.WebSearch.SuggestionSources;
 
 namespace Wox.Plugin.WebSearch
 {
-    public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery
+    public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IMultipleActionKeywords
     {
-        private PluginInitContext context;
-        private IDisposable suggestionTimer;
+        public PluginInitContext Context { get; private set; }
 
         public List<Result> Query(Query query)
         {
@@ -21,71 +23,63 @@ namespace Wox.Plugin.WebSearch
 
             if (webSearch != null)
             {
-                string keyword = query.ActionKeyword;
+                string keyword = query.Search;
                 string title = keyword;
-                string subtitle = context.API.GetTranslation("wox_plugin_websearch_search") + " " + webSearch.Title;
+                string subtitle = Context.API.GetTranslation("wox_plugin_websearch_search") + " " + webSearch.Title;
                 if (string.IsNullOrEmpty(keyword))
                 {
                     title = subtitle;
-                    subtitle = null;
+                    subtitle = string.Empty;
                 }
-                context.API.PushResults(query, context.CurrentPluginMetadata, new List<Result>()
+                var result = new Result
                 {
-                    new Result()
+                    Title = title,
+                    SubTitle = subtitle,
+                    Score = 6,
+                    IcoPath = webSearch.IconPath,
+                    Action = c =>
                     {
-                        Title = title,
-                        SubTitle = subtitle,
-                        Score = 6,
-                        IcoPath = webSearch.IconPath,
-                        Action = (c) =>
-                        {
-                            Process.Start(webSearch.Url.Replace("{q}", Uri.EscapeDataString(keyword)));
-                            return true;
-                        }
+                        Process.Start(webSearch.Url.Replace("{q}", Uri.EscapeDataString(keyword ?? string.Empty)));
+                        return true;
                     }
-                });
+                };
+                results.Add(result);
 
                 if (WebSearchStorage.Instance.EnableWebSearchSuggestion && !string.IsNullOrEmpty(keyword))
                 {
-                    if (suggestionTimer != null)
-                    {
-                        suggestionTimer.Dispose();
-                    }
-                    suggestionTimer = EasyTimer.SetTimeout(() => { QuerySuggestions(keyword, query, subtitle, webSearch); }, 350);
+                    // todo use Task.Wait when .net upgraded
+                    results.AddRange(ResultsFromSuggestions(keyword, subtitle, webSearch));
                 }
             }
-
             return results;
         }
 
-        private void QuerySuggestions(string keyword, Query query, string subtitle, WebSearch webSearch)
+        private IEnumerable<Result> ResultsFromSuggestions(string keyword, string subtitle, WebSearch webSearch)
         {
-            ISuggestionSource sugg = SuggestionSourceFactory.GetSuggestionSource(WebSearchStorage.Instance.WebSearchSuggestionSource, context);
-            if (sugg != null)
+            ISuggestionSource sugg = SuggestionSourceFactory.GetSuggestionSource(WebSearchStorage.Instance.WebSearchSuggestionSource, Context);
+            var suggestions = sugg?.GetSuggestions(keyword);
+            if (suggestions != null)
             {
-                var result = sugg.GetSuggestions(keyword);
-                if (result != null)
+                var resultsFromSuggestion = suggestions.Select(o => new Result
                 {
-                    context.API.PushResults(query, context.CurrentPluginMetadata,
-                        result.Select(o => new Result()
-                        {
-                            Title = o,
-                            SubTitle = subtitle,
-                            Score = 5,
-                            IcoPath = webSearch.IconPath,
-                            Action = (c) =>
-                            {
-                                Process.Start(webSearch.Url.Replace("{q}", Uri.EscapeDataString(o)));
-                                return true;
-                            }
-                        }).ToList());
-                }
+                    Title = o,
+                    SubTitle = subtitle,
+                    Score = 5,
+                    IcoPath = webSearch.IconPath,
+                    Action = c =>
+                    {
+                        Process.Start(webSearch.Url.Replace("{q}", Uri.EscapeDataString(o)));
+                        return true;
+                    }
+                });
+                return resultsFromSuggestion;
             }
+            return new List<Result>();
         }
 
         public void Init(PluginInitContext context)
         {
-            this.context = context;
+            this.Context = context;
 
             if (WebSearchStorage.Instance.WebSearches == null)
                 WebSearchStorage.Instance.WebSearches = WebSearchStorage.Instance.LoadDefaultWebSearches();
@@ -93,9 +87,9 @@ namespace Wox.Plugin.WebSearch
 
         #region ISettingProvider Members
 
-        public System.Windows.Controls.Control CreateSettingPanel()
+        public Control CreateSettingPanel()
         {
-            return new WebSearchesSetting(context);
+            return new WebSearchesSetting(this);
         }
 
         #endregion
@@ -107,15 +101,35 @@ namespace Wox.Plugin.WebSearch
 
         public string GetTranslatedPluginTitle()
         {
-            return context.API.GetTranslation("wox_plugin_websearch_plugin_name");
+            return Context.API.GetTranslation("wox_plugin_websearch_plugin_name");
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return context.API.GetTranslation("wox_plugin_websearch_plugin_description");
+            return Context.API.GetTranslation("wox_plugin_websearch_plugin_description");
         }
 
         public bool IsInstantQuery(string query) => false;
 
+        [NotifyPropertyChangedInvocator]
+        public void NotifyActionKeywordsUpdated(string oldActionKeywords, string newActionKeywords)
+        {
+            ActionKeywordsChanged?.Invoke(this, new ActionKeywordsChangedEventArgs
+            {
+                OldActionKeyword = oldActionKeywords,
+                NewActionKeyword = newActionKeywords
+            });
+        }
+
+        [NotifyPropertyChangedInvocator]
+        public void NotifyActionKeywordsAdded(string newActionKeywords)
+        {
+            ActionKeywordsChanged?.Invoke(this, new ActionKeywordsChangedEventArgs
+            {
+                NewActionKeyword = newActionKeywords
+            });
+        }
+
+        public event ActionKeywordsChangedEventHandler ActionKeywordsChanged;
     }
 }

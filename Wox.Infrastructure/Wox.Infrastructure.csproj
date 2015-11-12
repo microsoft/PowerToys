@@ -46,9 +46,17 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exception\ExceptionFormatter.cs" />
+    <Compile Include="Exception\WoxException.cs" />
+    <Compile Include="Exception\WoxFatalException.cs" />
+    <Compile Include="Exception\WoxHttpException.cs" />
+    <Compile Include="Exception\WoxI18nException.cs" />
+    <Compile Include="Exception\WoxJsonRPCException.cs" />
+    <Compile Include="Exception\WoxPluginException.cs" />
     <Compile Include="Hotkey\InterceptKeys.cs" />
     <Compile Include="Hotkey\KeyEvent.cs" />
     <Compile Include="Logger\Log.cs" />

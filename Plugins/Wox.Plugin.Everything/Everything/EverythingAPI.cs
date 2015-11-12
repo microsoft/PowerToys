@@ -227,8 +227,6 @@ namespace Wox.Plugin.Everything.Everything
                 yield break;
             }
 
-            Everything_SortResultsByPath();
-
             const int bufferSize = 4096;
             StringBuilder buffer = new StringBuilder(bufferSize);
             for (int idx = 0; idx < Everything_GetNumResults(); ++idx)

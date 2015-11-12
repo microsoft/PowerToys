@@ -48,7 +48,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\Output\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;RELEASE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -295,7 +295,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -319,9 +321,6 @@
       <Project>{8451ECDD-2EA4-4966-BB0A-7BBC40138E80}</Project>
       <Name>Wox.Plugin</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -379,7 +378,6 @@ cd "$(TargetDir)Plugins" &amp; del /s /q NAppUpdate.Framework.dll
 cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Infrastructure.dll
 cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Infrastructure.pdb
 cd "$(TargetDir)Plugins" &amp; del /s /q Newtonsoft.Json.dll
-cd "$(TargetDir)Plugins" &amp; del /s /q WindowsInput.dll
 )</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

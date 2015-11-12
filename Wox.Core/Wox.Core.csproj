@@ -27,7 +27,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\Output\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -58,13 +58,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="APIServer.cs" />
-    <Compile Include="Exception\ExceptionFormatter.cs" />
-    <Compile Include="Exception\WoxCritialException.cs" />
-    <Compile Include="Exception\WoxException.cs" />
-    <Compile Include="Exception\WoxHttpException.cs" />
-    <Compile Include="Exception\WoxI18nException.cs" />
-    <Compile Include="Exception\WoxJsonRPCException.cs" />
-    <Compile Include="Exception\WoxPluginException.cs" />
     <Compile Include="Updater\Release.cs" />
     <Compile Include="Updater\UpdaterManager.cs" />
     <Compile Include="Updater\WoxUpdateSource.cs" />

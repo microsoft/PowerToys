@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -21,7 +22,7 @@ namespace Wox
         public event Action<Result> LeftMouseClickEvent;
         public event Action<Result> RightMouseClickEvent;
         public event Action<Result, IDataObject, DragEventArgs> ItemDropEvent;
-        private readonly ListBoxItems _results; //todo, for better performance, override the default linear search
+        private readonly ListBoxItems _results;
         private readonly object _resultsUpdateLock = new object();
 
         protected virtual void OnRightMouseClick(Result result)
@@ -39,75 +40,74 @@ namespace Wox
 
         public int MaxResultsToShow { get { return UserSettingStorage.Instance.MaxResultsToShow * 50; } }
 
-        internal void RemoveResultsFor(PluginPair plugin)
+        internal void RemoveResultsFor(PluginMetadata metadata)
         {
             lock (_resultsUpdateLock)
             {
-                _results.RemoveAll(r => r.PluginID == plugin.Metadata.ID);
+                _results.RemoveAll(r => r.PluginID == metadata.ID);
             }
         }
 
-        internal void RemoveResultsExcept(PluginPair plugin)
+        internal void RemoveResultsExcept(PluginMetadata metadata)
         {
             lock (_resultsUpdateLock)
             {
-                _results.RemoveAll(r => r.PluginID != plugin.Metadata.ID);
+                _results.RemoveAll(r => r.PluginID != metadata.ID);
             }
         }
 
-
-
-
-        public void AddResults(List<Result> newResults)
+        public void AddResults(List<Result> newResults, string resultId)
         {
-            if (newResults != null && newResults.Count > 0)
+            lock (_resultsUpdateLock)
             {
-                lock (_resultsUpdateLock)
+                var resultCopy = _results.ToList();
+                var oldResults = resultCopy.Where(r => r.PluginID == resultId).ToList();
+                // intersection of A (old results) and B (new newResults)
+                var intersection = oldResults.Intersect(newResults).ToList();
+                // remove result of relative complement of B in A
+                foreach (var result in oldResults.Except(intersection))
                 {
-                    var pluginId = newResults[0].PluginID;
-                    var oldResults = _results.Where(r => r.PluginID == pluginId).ToList();
-                    // intersection of A (old results) and B (new newResults)
-                    var intersection = oldResults.Intersect(newResults).ToList();
-
-                    // remove result of relative complement of B in A
-                    foreach (var result in oldResults.Except(intersection))
-                    {
-                        _results.Remove(result);
-                    }
-
-                    // update scores
-                    foreach (var result in newResults)
-                    {
-                        if (IsTopMostResult(result))
-                        {
-                            result.Score = int.MaxValue;
-                        }
-                    }
-
-                    // update index for result in intersection of A and B
-                    foreach (var result in intersection)
-                    {
-                        int oldIndex = _results.IndexOf(result);
-                        int oldScore = _results[oldIndex].Score;
-                        if (result.Score != oldScore)
-                        {
-                            int newIndex = InsertIndexOf(result.Score);
-                            if (newIndex != oldIndex)
-                            {
-                                _results.Move(oldIndex, newIndex);
-                            }
-                        }
-                    }
-
-                    // insert result in relative complement of A in B
-                    foreach (var result in newResults.Except(intersection))
-                    {
-                        int newIndex = InsertIndexOf(result.Score);
-                        _results.Insert(newIndex, result);
-                    }
-                    lbResults.Margin = lbResults.Items.Count > 0 ? new Thickness { Top = 8 } : new Thickness { Top = 0 };
-                    SelectFirst();
+                    resultCopy.Remove(result);
                 }
+
+                // update scores
+                foreach (var result in newResults)
+                {
+                    if (IsTopMostResult(result))
+                    {
+                        result.Score = int.MaxValue;
+                    }
+                }
+
+                // update index for result in intersection of A and B
+                foreach (var result in intersection)
+                {
+                    int oldIndex = resultCopy.IndexOf(result);
+                    int oldScore = resultCopy[oldIndex].Score;
+                    if (result.Score != oldScore)
+                    {
+                        int newIndex = InsertIndexOf(result.Score, resultCopy);
+                        if (newIndex != oldIndex)
+                        {
+                            var item = resultCopy[oldIndex];
+                            resultCopy.RemoveAt(oldIndex);
+                            resultCopy.Insert(newIndex, item);
+                        }
+                    }
+                }
+
+                // insert result in relative complement of A in B
+                foreach (var result in newResults.Except(intersection))
+                {
+                    int newIndex = InsertIndexOf(result.Score, resultCopy);
+                    resultCopy.Insert(newIndex, result);
+                }
+
+                // update UI in one run, so it can avoid UI flickering
+                _results.Update(resultCopy);
+
+                lbResults.Margin = lbResults.Items.Count > 0 ? new Thickness { Top = 8 } : new Thickness { Top = 0 };
+                SelectFirst();
             }
         }
 
@@ -116,13 +116,13 @@ namespace Wox
             return TopMostRecordStorage.Instance.IsTopMost(result);
         }
 
-        private int InsertIndexOf(int newScore)
+        private int InsertIndexOf(int newScore, IList<Result> list)
         {
             int index = 0;
-            for (; index < lbResults.Items.Count; index++)
+            for (; index < list.Count; index++)
             {
-                Result result = lbResults.Items[index] as Result;
-                if (newScore > result?.Score)
+                var result = list[index];
+                if (newScore > result.Score)
                 {
                     break;
                 }

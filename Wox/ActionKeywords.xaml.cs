@@ -1,34 +1,34 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using Wox.Core.i18n;
 using Wox.Core.Plugin;
 using Wox.Core.UserSettings;
+using Wox.Infrastructure.Exception;
 using Wox.Plugin;
 
 namespace Wox
 {
     public partial class ActionKeywords : Window
     {
-        private PluginMetadata pluginMetadata;
+        private PluginPair _plugin;
 
         public ActionKeywords(string pluginId)
         {
             InitializeComponent();
-            PluginPair plugin = PluginManager.GetPluginForId(pluginId);
-            if (plugin == null)
+            _plugin = PluginManager.GetPluginForId(pluginId);
+            if (_plugin == null)
             {
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("cannotFindSpecifiedPlugin"));
                 Close();
                 return;
             }
-
-            pluginMetadata = plugin.Metadata;
         }
 
         private void ActionKeyword_OnLoaded(object sender, RoutedEventArgs e)
         {
-            tbOldActionKeyword.Text = string.Join(Query.ActionKeywordSeperater, pluginMetadata.ActionKeywords.ToArray());
+            tbOldActionKeyword.Text = string.Join(Query.ActionKeywordSeperater, _plugin.Metadata.ActionKeywords.ToArray());
             tbAction.Focus();
         }
 
@@ -37,42 +37,23 @@ namespace Wox
             Close();
         }
 
-        private void btnDone_OnClick(object sender, RoutedEventArgs e)
+        private void btnDone_OnClick(object sender, RoutedEventArgs _)
         {
-            if (string.IsNullOrEmpty(tbAction.Text))
+            var oldActionKeyword = _plugin.Metadata.ActionKeywords[0];
+            var newActionKeyword = tbAction.Text.Trim();
+            try
             {
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("newActionKeywordCannotBeEmpty"));
+                // update in-memory data
+                PluginManager.UpdateActionKeywordForPlugin(_plugin, oldActionKeyword, newActionKeyword);
+            }
+            catch (WoxPluginException e)
+            {
+                MessageBox.Show(e.Message);
                 return;
             }
+            // update persistant data
+            UserSettingStorage.Instance.UpdateActionKeyword(_plugin.Metadata);
 
-            var actionKeywords = tbAction.Text.Trim().Split(new[] { Query.ActionKeywordSeperater }, StringSplitOptions.RemoveEmptyEntries).ToList();
-            //check new action keyword didn't used by other plugin
-            if (actionKeywords[0] != Query.GlobalPluginWildcardSign && PluginManager.AllPlugins.
-                                        SelectMany(p => p.Metadata.ActionKeywords).
-                                        Any(k => actionKeywords.Contains(k)))
-            {
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("newActionKeywordHasBeenAssigned"));
-                return;
-            }
-
-
-            pluginMetadata.ActionKeywords = actionKeywords;
-            var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == pluginMetadata.ID);
-            if (customizedPluginConfig == null)
-            {
-                UserSettingStorage.Instance.CustomizedPluginConfigs.Add(new CustomizedPluginConfig()
-                {
-                    Disabled = false,
-                    ID = pluginMetadata.ID,
-                    Name = pluginMetadata.Name,
-                    ActionKeywords = actionKeywords
-                });
-            }
-            else
-            {
-                customizedPluginConfig.ActionKeywords = actionKeywords;
-            }
-            UserSettingStorage.Instance.Save();
             MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
             Close();
         }

@@ -106,9 +106,7 @@
                                     <CheckBox x:Name="cbDisablePlugin" Click="CbDisablePlugin_OnClick">
                                         <TextBlock Text="{DynamicResource disable}"></TextBlock>
                                     </CheckBox>
-                                    <TextBlock x:Name="pluginActionKeywordsTitle" Margin="20 0 0 0">
-                                        <TextBlock Text="{DynamicResource actionKeywords}"></TextBlock>
-                                    </TextBlock>
+                                    <TextBlock x:Name="pluginActionKeywordsTitle" Margin="20 0 0 0" Text="{DynamicResource actionKeywords}" />
                                     <TextBlock Margin="5 0 0 0" ToolTip="Change Action Keywords" Cursor="Hand" MouseUp="PluginActionKeywords_OnMouseUp" Foreground="Blue" Text="keys" x:Name="pluginActionKeywords"></TextBlock>
                                     <TextBlock Margin="10 0 0 0" Text="Init time: 0ms" x:Name="pluginInitTime"></TextBlock>
                                     <TextBlock Margin="10 0 0 0" Text="Query time: 0ms" x:Name="pluginQueryTime"></TextBlock>
@@ -144,9 +142,6 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel x:Name="PreviewPanel" Grid.Row="0" Margin="0">
                         <StackPanel x:Name="PreviewMainPanel" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <StackPanel.Resources>
-                                <ResourceDictionary Source="/PresentationFramework.Classic,Version=3.0.0.0,Culture=neutral,PublicKeyToken=31bf3856ad364e35,processorArchitecture=MSIL;component/themes/Classic.xaml"/>
-                            </StackPanel.Resources>
                             <Border Width="500" Style="{DynamicResource WindowBorderStyle}">
                                 <Grid>
                                     <Grid.RowDefinitions>
@@ -231,7 +226,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="{DynamicResource actionKeyword}" Width="500">
+                                <GridViewColumn Header="{DynamicResource actionKeywords}" Width="500">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding ActionKeywords}"/>

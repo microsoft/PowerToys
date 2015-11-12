@@ -18,14 +18,6 @@ namespace Wox.Infrastructure
 #endif
         }
 
-        [Conditional("DEBUG")]
-        private static void WriteTimeInfo(string name, long milliseconds)
-        {
-            string info = $"{name} : {milliseconds}ms";
-            System.Diagnostics.Debug.WriteLine(info);
-            Log.Info(info);
-        }
-
         /// <summary>
         /// This stopwatch will also appear only in Debug mode
         /// </summary>
@@ -36,7 +28,8 @@ namespace Wox.Infrastructure
             action();
             stopWatch.Stop();
             var milliseconds = stopWatch.ElapsedMilliseconds;
-            WriteTimeInfo(name, milliseconds);
+            string info = $"{name} : {milliseconds}ms";
+            Log.Debug(info);
             return milliseconds;
         }
 

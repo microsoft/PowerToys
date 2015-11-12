@@ -4,13 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Wox.Core.Exception;
 using Wox.Core.i18n;
 using Wox.Core.UI;
 using Wox.Core.UserSettings;
+using Wox.Infrastructure;
+using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
-using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox.Core.Plugin
 {
@@ -30,7 +30,7 @@ namespace Wox.Core.Plugin
         public static IEnumerable<PluginPair> AllPlugins { get; private set; }
 
         public static List<PluginPair> GlobalPlugins { get; } = new List<PluginPair>();
-        public static Dictionary<string, PluginPair> NonGlobalPlugins { get; } = new Dictionary<string, PluginPair>();
+        public static Dictionary<string, PluginPair> NonGlobalPlugins { get; set; } = new Dictionary<string, PluginPair>();
 
         private static IEnumerable<PluginPair> InstantQueryPlugins { get; set; }
         public static IPublicAPI API { private set; get; }
@@ -56,9 +56,9 @@ namespace Wox.Core.Plugin
                     {
                         Directory.CreateDirectory(pluginDirectory);
                     }
-                    catch (System.Exception e)
+                    catch (Exception e)
                     {
-                        Log.Error(e.Message);
+                        Log.Error(e);
                     }
                 }
             }
@@ -69,7 +69,7 @@ namespace Wox.Core.Plugin
         /// </summary>
         public static void Init(IPublicAPI api)
         {
-            if (api == null) throw new WoxCritialException("api is null");
+            if (api == null) throw new WoxFatalException("api is null");
 
             SetupPluginDirectories();
             API = api;
@@ -164,7 +164,7 @@ namespace Wox.Core.Plugin
                 if (customizedPluginConfig != null && customizedPluginConfig.Disabled) continue;
                 if (IsInstantQueryPlugin(plugin))
                 {
-                    Stopwatch.Debug($"Instant Query for {plugin.Metadata.Name}", () =>
+                    Stopwatch.Normal($"Instant QueryForPlugin for {plugin.Metadata.Name}", () =>
                     {
                         QueryForPlugin(plugin, query);
                     });
@@ -173,7 +173,10 @@ namespace Wox.Core.Plugin
                 {
                     ThreadPool.QueueUserWorkItem(state =>
                     {
-                        QueryForPlugin(plugin, query);
+                        Stopwatch.Normal($"Normal QueryForPlugin for {plugin.Metadata.Name}", () =>
+                        {
+                            QueryForPlugin(plugin, query);
+                        });
                     });
                 }
             }
@@ -184,7 +187,7 @@ namespace Wox.Core.Plugin
             try
             {
                 List<Result> results = new List<Result>();
-                var milliseconds = Stopwatch.Normal($"Query for {pair.Metadata.Name}", () =>
+                var milliseconds = Stopwatch.Normal($"Plugin.Query cost for {pair.Metadata.Name}", () =>
                     {
                         results = pair.Plugin.Query(query) ?? results;
                         results.ForEach(o => { o.PluginID = pair.Metadata.ID; });
@@ -193,9 +196,9 @@ namespace Wox.Core.Plugin
                 pair.AvgQueryTime = pair.QueryCount == 1 ? milliseconds : (pair.AvgQueryTime + milliseconds) / 2;
                 API.PushResults(query, pair.Metadata, results);
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
-                throw new WoxPluginException(pair.Metadata.Name, e);
+                throw new WoxPluginException(pair.Metadata.Name, $"QueryForPlugin failed", e);
             }
         }
 
@@ -237,18 +240,66 @@ namespace Wox.Core.Plugin
                 {
                     return plugin.LoadContextMenus(result);
                 }
-                catch (System.Exception e)
+                catch (Exception e)
                 {
-                    Log.Error($"Couldn't load plugin context menus {pluginPair.Metadata.Name}: {e.Message}");
-#if (DEBUG)
-                    {
-                        throw;
-                    }
-#endif
+                    Log.Error(new WoxPluginException(pluginPair.Metadata.Name, $"Couldn't load plugin context menus", e));
                 }
             }
 
             return new List<Result>();
         }
+
+        public static void UpdateActionKeywordForPlugin(PluginPair plugin, string oldActionKeyword, string newActionKeyword)
+        {
+            var actionKeywords = plugin.Metadata.ActionKeywords;
+            if (string.IsNullOrEmpty(newActionKeyword))
+            {
+                string msg = InternationalizationManager.Instance.GetTranslation("newActionKeywordsCannotBeEmpty");
+                throw new WoxPluginException(plugin.Metadata.Name, msg);
+            }
+            if (NonGlobalPlugins.ContainsKey(newActionKeyword))
+            {
+                string msg = InternationalizationManager.Instance.GetTranslation("newActionKeywordsHasBeenAssigned");
+                throw new WoxPluginException(plugin.Metadata.Name, msg);
+            }
+
+            // add new action keyword
+            if (string.IsNullOrEmpty(oldActionKeyword))
+            {
+                actionKeywords.Add(newActionKeyword);
+                if (newActionKeyword == Query.GlobalPluginWildcardSign)
+                {
+                    GlobalPlugins.Add(plugin);
+                }
+                else
+                {
+                    NonGlobalPlugins[newActionKeyword] = plugin;
+                }
+            }
+            // update existing action keyword
+            else
+            {
+                int index = actionKeywords.IndexOf(oldActionKeyword);
+                actionKeywords[index] = newActionKeyword;
+                if (oldActionKeyword == Query.GlobalPluginWildcardSign)
+                {
+                    GlobalPlugins.Remove(plugin);
+                }
+                else
+                {
+                    NonGlobalPlugins.Remove(oldActionKeyword);
+                }
+                if (newActionKeyword == Query.GlobalPluginWildcardSign)
+                {
+                    GlobalPlugins.Add(plugin);
+                }
+                else
+                {
+                    NonGlobalPlugins[newActionKeyword] = plugin;
+                }
+            }
+
+        }
+
     }
 }

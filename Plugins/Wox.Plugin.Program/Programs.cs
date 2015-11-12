@@ -8,6 +8,7 @@ using System.Windows;
 using IWshRuntimeLibrary;
 using Wox.Infrastructure;
 using Wox.Plugin.Program.ProgramSources;
+using Wox.Infrastructure.Logger;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox.Plugin.Program
@@ -17,7 +18,7 @@ namespace Wox.Plugin.Program
         private static object lockObject = new object();
         private static List<Program> programs = new List<Program>();
         private static List<IProgramSource> sources = new List<IProgramSource>();
-        private static Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>() { 
+        private static Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>() {
             {"FileSystemProgramSource", typeof(FileSystemProgramSource)},
             {"CommonStartMenuProgramSource", typeof(CommonStartMenuProgramSource)},
             {"UserStartMenuProgramSource", typeof(UserStartMenuProgramSource)},
@@ -27,26 +28,26 @@ namespace Wox.Plugin.Program
 
         public List<Result> Query(Query query)
         {
-            
-            var fuzzyMather = FuzzyMatcher.Create(query.Search);
-            List<Program> returnList = programs.Where(o => MatchProgram(o, fuzzyMather)).ToList();
-            returnList.ForEach(ScoreFilter);
-            returnList = returnList.OrderByDescending(o => o.Score).ToList();
 
-            return returnList.Select(c => new Result()
-            {
-                Title = c.Title,
-                SubTitle = c.ExecutePath,
-                IcoPath = c.IcoPath,
-                Score = c.Score,
-                ContextData = c,
-                Action = (e) =>
-                {
-                    context.API.HideApp();
-                    context.API.ShellRun(c.ExecutePath);
-                    return true;
-                }
-            }).ToList();
+            var fuzzyMather = FuzzyMatcher.Create(query.Search);
+            var results = programs.Where(o => MatchProgram(o, fuzzyMather)).
+                                   Select(ScoreFilter).
+                                   OrderByDescending(o => o.Score)
+                                   .Select(c => new Result()
+                                   {
+                                       Title = c.Title,
+                                       SubTitle = c.ExecutePath,
+                                       IcoPath = c.IcoPath,
+                                       Score = c.Score,
+                                       ContextData = c,
+                                       Action = (e) =>
+                                       {
+                                           context.API.HideApp();
+                                           context.API.ShellRun(c.ExecutePath);
+                                           return true;
+                                       }
+                                   }).ToList();
+            return results;
         }
 
         static string ResolveShortcut(string filePath)
@@ -59,12 +60,10 @@ namespace Wox.Plugin.Program
 
         private bool MatchProgram(Program program, FuzzyMatcher matcher)
         {
-            if ((program.Score = matcher.Evaluate(program.Title).Score) > 0) return true;
-            if ((program.Score = matcher.Evaluate(program.PinyinTitle).Score) > 0) return true;
-            if (program.AbbrTitle != null && (program.Score = matcher.Evaluate(program.AbbrTitle).Score) > 0) return true;
-            if (program.ExecuteName != null && (program.Score = matcher.Evaluate(program.ExecuteName).Score) > 0) return true;
-
-            return false;
+            var scores = new List<string> { program.Title, program.PinyinTitle, program.AbbrTitle, program.ExecuteName };
+            program.Score = scores.Select(s => matcher.Evaluate(s ?? string.Empty).Score).Max();
+            if (program.Score > 0) return true;
+            else return false;
         }
 
         public void Init(PluginInitContext context)
@@ -75,7 +74,7 @@ namespace Wox.Plugin.Program
             {
                 programs = ProgramCacheStorage.Instance.Programs;
             });
-            Debug.WriteLine($"Preload {programs.Count} programs from cache");
+            Log.Info($"Preload {programs.Count} programs from cache");
             Stopwatch.Debug("Program Index", IndexPrograms);
         }
 
@@ -98,7 +97,7 @@ namespace Wox.Plugin.Program
                 }
 
                 sources.Clear();
-                foreach(var source in programSources.Where(o => o.Enabled))
+                foreach (var source in programSources.Where(o => o.Enabled))
                 {
                     Type sourceClass;
                     if (SourceTypes.TryGetValue(source.Type, out sourceClass))
@@ -160,7 +159,7 @@ namespace Wox.Plugin.Program
             return list;
         }
 
-        private void ScoreFilter(Program p)
+        private Program ScoreFilter(Program p)
         {
             p.Score += p.Source.BonusPoints;
 
@@ -172,6 +171,7 @@ namespace Wox.Plugin.Program
 
             if (p.Title.Contains("卸载") || p.Title.ToLower().Contains("uninstall"))
                 p.Score -= 20;
+            return p;
         }
 
         #region ISettingProvider Members

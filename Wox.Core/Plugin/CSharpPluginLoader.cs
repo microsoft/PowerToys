@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
@@ -19,10 +20,10 @@ namespace Wox.Core.Plugin
                 try
                 {
                     Assembly asm = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
-                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract &&  o.GetInterfaces().Contains(typeof(IPlugin))).ToList();
+                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IPlugin))).ToList();
                     if (types.Count == 0)
                     {
-                        Log.Warn(string.Format("Couldn't load plugin {0}: didn't find the class that implement IPlugin", metadata.Name));
+                        Log.Warn($"Couldn't load plugin {metadata.Name}: didn't find the class that implement IPlugin");
                         continue;
                     }
 
@@ -39,12 +40,7 @@ namespace Wox.Core.Plugin
                 }
                 catch (System.Exception e)
                 {
-                    Log.Error(string.Format("Couldn't load plugin {0}: {1}", metadata.Name, e.Message));
-#if (DEBUG)
-                    {
-                        throw;
-                    }
-#endif
+                    Log.Error(new WoxPluginException(metadata.Name, $"Couldn't load plugin", e));
                 }
             }
 

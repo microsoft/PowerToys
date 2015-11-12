@@ -10,14 +10,14 @@ namespace Wox.Plugin.WebSearch
     /// </summary>
     public partial class WebSearchesSetting : UserControl
     {
-        PluginInitContext context;
+        public PluginInitContext Context { get; }
+        public WebSearchPlugin Plugin { get; }
 
-        public WebSearchesSetting(PluginInitContext context)
+        public WebSearchesSetting(WebSearchPlugin plugin)
         {
-            this.context = context;
-
+            Context = plugin.Context;
+            Plugin = plugin;
             InitializeComponent();
-
             Loaded += Setting_Loaded;
         }
 
@@ -28,7 +28,7 @@ namespace Wox.Plugin.WebSearch
             comboBoxSuggestionSource.Visibility = WebSearchStorage.Instance.EnableWebSearchSuggestion
                 ? Visibility.Visible
                 : Visibility.Collapsed;
-                
+
             List<ComboBoxItem> items = new List<ComboBoxItem>()
             {
                 new ComboBoxItem() {Content = "Google"},
@@ -51,7 +51,7 @@ namespace Wox.Plugin.WebSearch
 
         private void btnAddWebSearch_OnClick(object sender, RoutedEventArgs e)
         {
-            WebSearchSetting webSearch = new WebSearchSetting(this,context);
+            WebSearchSetting webSearch = new WebSearchSetting(this);
             webSearch.ShowDialog();
         }
 
@@ -60,9 +60,9 @@ namespace Wox.Plugin.WebSearch
             WebSearch selectedWebSearch = webSearchView.SelectedItem as WebSearch;
             if (selectedWebSearch != null)
             {
-                string msg = string.Format(context.API.GetTranslation("wox_plugin_websearch_delete_warning"),selectedWebSearch.Title);
-                    
-                if (MessageBox.Show(msg,string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                string msg = string.Format(Context.API.GetTranslation("wox_plugin_websearch_delete_warning"), selectedWebSearch.Title);
+
+                if (MessageBox.Show(msg, string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
                     WebSearchStorage.Instance.WebSearches.Remove(selectedWebSearch);
                     webSearchView.Items.Refresh();
@@ -70,7 +70,7 @@ namespace Wox.Plugin.WebSearch
             }
             else
             {
-                string warning =context.API.GetTranslation("wox_plugin_websearch_pls_select_web_search");
+                string warning = Context.API.GetTranslation("wox_plugin_websearch_pls_select_web_search");
                 MessageBox.Show(warning);
             }
         }
@@ -80,13 +80,13 @@ namespace Wox.Plugin.WebSearch
             WebSearch selectedWebSearch = webSearchView.SelectedItem as WebSearch;
             if (selectedWebSearch != null)
             {
-                WebSearchSetting webSearch = new WebSearchSetting(this,context);
+                WebSearchSetting webSearch = new WebSearchSetting(this);
                 webSearch.UpdateItem(selectedWebSearch);
                 webSearch.ShowDialog();
             }
             else
             {
-                string warning = context.API.GetTranslation("wox_plugin_websearch_pls_select_web_search");
+                string warning = Context.API.GetTranslation("wox_plugin_websearch_pls_select_web_search");
                 MessageBox.Show(warning);
             }
         }
@@ -109,7 +109,7 @@ namespace Wox.Plugin.WebSearch
         {
             if (e.AddedItems.Count > 0)
             {
-                WebSearchStorage.Instance.WebSearchSuggestionSource = ((ComboBoxItem) e.AddedItems[0]).Content.ToString();
+                WebSearchStorage.Instance.WebSearchSuggestionSource = ((ComboBoxItem)e.AddedItems[0]).Content.ToString();
                 WebSearchStorage.Instance.Save();
             }
         }

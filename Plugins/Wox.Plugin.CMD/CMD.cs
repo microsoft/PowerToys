@@ -21,22 +21,17 @@ namespace Wox.Plugin.CMD
         public List<Result> Query(Query query)
         {
             List<Result> results = new List<Result>();
-            List<Result> pushedResults = new List<Result>();
             string cmd = query.Search;
             if (string.IsNullOrEmpty(cmd))
             {
-                return GetAllHistoryCmds();
+                return ResultsFromlHistory();
             }
             else
             {
                 var queryCmd = GetCurrentCmd(cmd);
-                context.API.PushResults(query, context.CurrentPluginMetadata, new List<Result>() { queryCmd });
-                pushedResults.Add(queryCmd);
-
+                results.Add(queryCmd);
                 var history = GetHistoryCmds(cmd, queryCmd);
-                context.API.PushResults(query, context.CurrentPluginMetadata, history);
-                pushedResults.AddRange(history);
-
+                results.AddRange(history);
 
                 try
                 {
@@ -57,7 +52,11 @@ namespace Wox.Plugin.CMD
 
                     if (basedir != null)
                     {
-                        List<string> autocomplete = Directory.GetFileSystemEntries(basedir).Select(o => dir + Path.GetFileName(o)).Where(o => o.StartsWith(cmd, StringComparison.OrdinalIgnoreCase) && !results.Any(p => o.Equals(p.Title, StringComparison.OrdinalIgnoreCase)) && !pushedResults.Any(p => o.Equals(p.Title, StringComparison.OrdinalIgnoreCase))).ToList();
+                        var autocomplete = Directory.GetFileSystemEntries(basedir).
+                            Select(o => dir + Path.GetFileName(o)).
+                            Where(o => o.StartsWith(cmd, StringComparison.OrdinalIgnoreCase) &&
+                                       !results.Any(p => o.Equals(p.Title, StringComparison.OrdinalIgnoreCase)) &&
+                                       !results.Any(p => o.Equals(p.Title, StringComparison.OrdinalIgnoreCase))).ToList();
                         autocomplete.Sort();
                         results.AddRange(autocomplete.ConvertAll(m => new Result()
                         {
@@ -94,7 +93,7 @@ namespace Wox.Plugin.CMD
                     var ret = new Result
                     {
                         Title = m.Key,
-                        SubTitle =  string.Format(context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
+                        SubTitle = string.Format(context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
                         IcoPath = "Images/cmd.png",
                         Action = (c) =>
                         {
@@ -125,13 +124,13 @@ namespace Wox.Plugin.CMD
             return result;
         }
 
-        private List<Result> GetAllHistoryCmds()
+        private List<Result> ResultsFromlHistory()
         {
             IEnumerable<Result> history = CMDStorage.Instance.CMDHistory.OrderByDescending(o => o.Value)
                 .Select(m => new Result
                 {
                     Title = m.Key,
-                    SubTitle =  string.Format(context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
+                    SubTitle = string.Format(context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
                     IcoPath = "Images/cmd.png",
                     Action = (c) =>
                     {
@@ -177,7 +176,8 @@ namespace Wox.Plugin.CMD
         private void OnWinRPressed()
         {
             context.API.ShowApp();
-            context.API.ChangeQuery(">");
+            // todo don't hardcode action keywords.
+            context.API.ChangeQuery($">{Plugin.Query.TermSeperater}");
         }
 
         public Control CreateSettingPanel()

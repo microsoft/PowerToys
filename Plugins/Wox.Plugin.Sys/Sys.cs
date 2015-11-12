@@ -39,8 +39,11 @@ namespace Wox.Plugin.Sys
             List<Result> results = new List<Result>();
             foreach (Result availableResult in availableResults)
             {
-                if (StringMatcher.IsMatch(availableResult.Title, query.Search) || StringMatcher.IsMatch(availableResult.SubTitle, query.Search))
+                int titleScore = StringMatcher.Match(availableResult.Title, query.Search);
+                int subTitleScore = StringMatcher.Match(availableResult.SubTitle, query.Search);
+                if (titleScore > 0 || subTitleScore > 0)
                 {
+                    availableResult.Score = titleScore > 0 ? titleScore : subTitleScore;
                     results.Add(availableResult);
                 }
             }
@@ -55,92 +58,85 @@ namespace Wox.Plugin.Sys
 
         private void LoadCommands()
         {
-            availableResults.AddRange(new Result[] { 
-				new Result
-				{
-					Title = "Shutdown",
-					SubTitle = context.API.GetTranslation("wox_plugin_sys_shutdown_computer"),
-					Score = 100,
-					IcoPath = "Images\\exit.png",
-					Action = (c) =>
-					{
-						if (MessageBox.Show("Are you sure you want to shut the computer down?","Shutdown Computer?",MessageBoxButtons.YesNo,MessageBoxIcon.Warning) == DialogResult.Yes) {
-							Process.Start("shutdown", "/s /t 0");
-						}
-					    return true;
-					}
-				},
-				new Result
-				{
-				    Title = "Log off",
+            availableResults.AddRange(new Result[] {
+                new Result
+                {
+                    Title = "Shutdown",
+                    SubTitle = context.API.GetTranslation("wox_plugin_sys_shutdown_computer"),
+                    IcoPath = "Images\\exit.png",
+                    Action = (c) =>
+                    {
+                        if (MessageBox.Show("Are you sure you want to shut the computer down?","Shutdown Computer?",MessageBoxButtons.YesNo,MessageBoxIcon.Warning) == DialogResult.Yes) {
+                            Process.Start("shutdown", "/s /t 0");
+                        }
+                        return true;
+                    }
+                },
+                new Result
+                {
+                    Title = "Log off",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_log_off"),
-				    Score = 100,
-				    IcoPath = "Images\\logoff.png",
-				    Action = (c) => ExitWindowsEx(EWX_LOGOFF, 0)
-				},
-				new Result
-				{
-				    Title = "Lock",
+                    IcoPath = "Images\\logoff.png",
+                    Action = (c) => ExitWindowsEx(EWX_LOGOFF, 0)
+                },
+                new Result
+                {
+                    Title = "Lock",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_lock"),
-				    Score = 100,
-				    IcoPath = "Images\\lock.png",
-				    Action = (c) =>
-				    {
-				        LockWorkStation();
-				        return true;
-				    }
-				},
+                    IcoPath = "Images\\lock.png",
+                    Action = (c) =>
+                    {
+                        LockWorkStation();
+                        return true;
+                    }
+                },
                 new Result
                 {
                     Title = "Sleep",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_sleep"),
-                    Score = 100,
                     IcoPath = "Images\\sleep.png",
                     Action = (c) => Application.SetSuspendState(PowerState.Suspend, false, false)
                 },
                 new Result
-				{
-				    Title = "Exit",
+                {
+                    Title = "Exit",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_exit"),
-				    Score = 110,
-				    IcoPath = "Images\\app.png",
-				    Action = (c) =>
-				    {
-				        context.API.CloseApp();
-				        return true;
-				    }
-				},
-				new Result
-				{
-				    Title = "Restart Wox",
+                    IcoPath = "Images\\app.png",
+                    Action = (c) =>
+                    {
+                        context.API.CloseApp();
+                        return true;
+                    }
+                },
+                new Result
+                {
+                    Title = "Restart Wox",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_restart"),
-				    Score = 110,
-				    IcoPath = "Images\\restart.png",
-				    Action = (c) =>
-				    {
-				        ProcessStartInfo Info = new ProcessStartInfo();
-				        Info.Arguments = "/C ping 127.0.0.1 -n 1 && \"" + Application.ExecutablePath + "\"";
-				        Info.WindowStyle = ProcessWindowStyle.Hidden;
-				        Info.CreateNoWindow = true;
-				        Info.FileName = "cmd.exe";
-				        Process.Start(Info);
-				        context.API.CloseApp();
-				        return true;
-				    }
-				},
-				new Result
-				{
-				    Title = "Settings",
+                    IcoPath = "Images\\restart.png",
+                    Action = (c) =>
+                    {
+                        ProcessStartInfo Info = new ProcessStartInfo();
+                        Info.Arguments = "/C ping 127.0.0.1 -n 1 && \"" + Application.ExecutablePath + "\"";
+                        Info.WindowStyle = ProcessWindowStyle.Hidden;
+                        Info.CreateNoWindow = true;
+                        Info.FileName = "cmd.exe";
+                        Process.Start(Info);
+                        context.API.CloseApp();
+                        return true;
+                    }
+                },
+                new Result
+                {
+                    Title = "Settings",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_setting"),
-				    Score = 100,
-				    IcoPath = "Images\\app.png",
-				    Action = (c) =>
-				    {
-				        context.API.OpenSettingDialog();
-				        return true;
-				    }
-				}
-			});
+                    IcoPath = "Images\\app.png",
+                    Action = (c) =>
+                    {
+                        context.API.OpenSettingDialog();
+                        return true;
+                    }
+                }
+            });
         }
 
         public string GetLanguagesFolder()
