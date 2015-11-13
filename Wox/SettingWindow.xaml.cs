@@ -460,6 +460,7 @@ namespace Wox
             Dispatcher.DelayInvoke("delayChangeTheme", () =>
             {
                 ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
+                WindowIntelopHelper.SetBlurForWindow(MainWindow, UserSettingStorage.Instance.ThemeBlurEnabled);
             }, TimeSpan.FromMilliseconds(100));
         }
 

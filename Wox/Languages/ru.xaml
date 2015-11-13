@@ -43,6 +43,7 @@
     <system:String x:Key="resultItemFont">Шрифт результатов</system:String>
     <system:String x:Key="windowMode">Оконный режим</system:String>
     <system:String x:Key="opacity">Прозрачность</system:String>
+    <system:String x:Key="windowsAccents">Windows Accents</system:String>
     
     <!--Setting Hotkey-->
     <system:String x:Key="hotkey">Горячие клавиши</system:String>

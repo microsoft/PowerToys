@@ -255,6 +255,7 @@ namespace Wox
 
             InitProgressbarAnimation();
             WindowIntelopHelper.DisableControlBox(this);
+            WindowIntelopHelper.SetBlurForWindow(this, UserSettingStorage.Instance.ThemeBlurEnabled);
             CheckUpdate();
         }
 

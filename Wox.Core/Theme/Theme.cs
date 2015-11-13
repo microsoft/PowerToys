@@ -53,10 +53,11 @@ namespace Wox.Core.Theme
                 }
             }
 
-            UserSettingStorage.Instance.Theme = themeName;
-            UserSettingStorage.Instance.Save();
-
             ResourceMerger.ApplyThemeResource(this);
+
+            UserSettingStorage.Instance.Theme = themeName;
+            UserSettingStorage.Instance.ThemeBlurEnabled = (bool)Application.Current.Resources["ThemeBlurEnabled"];
+            UserSettingStorage.Instance.Save();
         }
 
         public ResourceDictionary GetResourceDictionary()
@@ -89,7 +90,6 @@ namespace Wox.Core.Theme
                 Setter[] setters = new Setter[] { fontFamily, fontStyle, fontWeight, fontStretch };
                 Array.ForEach(new Style[] { resultItemStyle, resultSubItemStyle, resultItemSelectedStyle, resultSubItemSelectedStyle }, o => Array.ForEach(setters, p => o.Setters.Add(p)));
             }
-
             return dict;
         }
 
