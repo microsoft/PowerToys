@@ -257,6 +257,8 @@ namespace Wox.Core.Plugin
                 string msg = InternationalizationManager.Instance.GetTranslation("newActionKeywordsCannotBeEmpty");
                 throw new WoxPluginException(plugin.Metadata.Name, msg);
             }
+            // do nothing if they are same
+            if (oldActionKeyword == newActionKeyword) return;
             if (NonGlobalPlugins.ContainsKey(newActionKeyword))
             {
                 string msg = InternationalizationManager.Instance.GetTranslation("newActionKeywordsHasBeenAssigned");
