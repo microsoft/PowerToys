@@ -27,6 +27,10 @@ namespace Wox.Plugin.Sys
         [DllImport("user32")]
         private static extern void LockWorkStation();
 
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/bb762160(v=vs.85).aspx
+        [DllImport("Shell32.dll", CharSet = CharSet.Unicode)]
+        private static extern uint SHEmptyRecycleBin(System.IntPtr hwnd, string pszRootPath, uint dwFlags);
+
         #endregion
 
         public Control CreateSettingPanel()
@@ -74,6 +78,19 @@ namespace Wox.Plugin.Sys
                 },
                 new Result
                 {
+                    Title = "Restart",
+                    SubTitle = context.API.GetTranslation("wox_plugin_sys_restart_computer"),
+                    IcoPath = "Images\\restartcomp.png",
+                    Action = (c) =>
+                    {
+                        if (MessageBox.Show("Are you sure you want to restart the computer?","Restart Computer?",MessageBoxButtons.YesNo,MessageBoxIcon.Warning) == DialogResult.Yes) {
+                            Process.Start("shutdown", "/r /t 0");
+                        }
+                        return true;
+                    }
+                },
+                new Result
+                {
                     Title = "Log off",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_log_off"),
                     IcoPath = "Images\\logoff.png",
@@ -96,6 +113,26 @@ namespace Wox.Plugin.Sys
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_sleep"),
                     IcoPath = "Images\\sleep.png",
                     Action = (c) => Application.SetSuspendState(PowerState.Suspend, false, false)
+                },
+                                new Result
+                {
+                    Title = "Empty Recycle Bin",
+                    SubTitle = context.API.GetTranslation("wox_plugin_sys_emptyrecyclebin"),
+                    IcoPath = "Images\\recyclebin.png",
+                    Action = (c) =>
+                    {
+                        try
+                        {
+                            // Using 0 for the last part, let's us use all the windows pop-up and sounds
+                            uint result = SHEmptyRecycleBin(System.IntPtr.Zero, null, 0);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            MessageBox.Show("Error emptying recycle bin. \n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+
+                        return true;
+                    }
                 },
                 new Result
                 {

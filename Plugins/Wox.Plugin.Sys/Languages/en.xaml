@@ -6,12 +6,14 @@
     <system:String x:Key="wox_plugin_sys_desc">Description</system:String>
 
     <system:String x:Key="wox_plugin_sys_shutdown_computer">Shutdown Computer</system:String>
+    <system:String x:Key="wox_plugin_sys_restart_computer">Restart Computer</system:String>
     <system:String x:Key="wox_plugin_sys_log_off">Log off</system:String>
     <system:String x:Key="wox_plugin_sys_lock">Lock this computer</system:String>
     <system:String x:Key="wox_plugin_sys_exit">Close Wox</system:String>
     <system:String x:Key="wox_plugin_sys_restart">Restart Wox</system:String>
     <system:String x:Key="wox_plugin_sys_setting">Tweak this app</system:String>
     <system:String x:Key="wox_plugin_sys_sleep">Put computer to sleep</system:String>
+    <system:String x:Key="wox_plugin_sys_emptyrecyclebin">Empty recycle bin</system:String>
 
     <system:String x:Key="wox_plugin_sys_plugin_name">System Commands</system:String>
     <system:String x:Key="wox_plugin_sys_plugin_description">Provide System related commands. e.g. shutdown,lock,setting etc.</system:String>
