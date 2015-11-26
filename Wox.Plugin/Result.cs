@@ -47,7 +47,10 @@ namespace Wox.Plugin
             Result r = obj as Result;
             if (r != null)
             {
-                return string.Equals(r.Title, Title) && string.Equals(r.SubTitle, SubTitle);
+                var equality = string.Equals(r.Title, Title) &&
+                               string.Equals(r.SubTitle, SubTitle) &&
+                               r.Score == Score;
+                return equality;
             }
             else
             {
@@ -57,7 +60,9 @@ namespace Wox.Plugin
 
         public override int GetHashCode()
         {
-            var hashcode = (Title?.GetHashCode() ?? 0) ^ (SubTitle?.GetHashCode() ?? 0);
+            var hashcode = (Title?.GetHashCode() ?? 0) ^
+                           (SubTitle?.GetHashCode() ?? 0) ^
+                           (Score.GetHashCode());
             return hashcode;
         }
 

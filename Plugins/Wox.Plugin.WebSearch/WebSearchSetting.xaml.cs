@@ -11,7 +11,8 @@ namespace Wox.Plugin.WebSearch
 {
     public partial class WebSearchSetting : Window
     {
-        private string _defaultWebSearchImageDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Images\\websearch");
+        private const string _imageDirectoryName = "Images";
+        private string _pluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         private readonly WebSearchesSetting _settingWindow;
         private bool _isUpdate;
         private WebSearch _updateWebSearch;
@@ -50,7 +51,7 @@ namespace Wox.Plugin.WebSearch
 
         private void ShowIcon(string path)
         {
-            imgIcon.Source = new BitmapImage(new Uri($"{_defaultWebSearchImageDirectory}\\{path}", UriKind.Absolute));
+            imgIcon.Source = new BitmapImage(new Uri(Path.Combine(_pluginDirectory, path), UriKind.Absolute));
         }
 
         private void BtnCancel_OnClick(object sender, RoutedEventArgs e)
@@ -126,15 +127,15 @@ namespace Wox.Plugin.WebSearch
 
         private void BtnSelectIcon_OnClick(object sender, RoutedEventArgs e)
         {
-            if (!Directory.Exists(_defaultWebSearchImageDirectory))
+            if (!Directory.Exists(_pluginDirectory))
             {
-                _defaultWebSearchImageDirectory =
+                _pluginDirectory =
                     Path.GetDirectoryName(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             }
 
             var dlg = new OpenFileDialog
             {
-                InitialDirectory = _defaultWebSearchImageDirectory,
+                InitialDirectory = Path.Combine(_pluginDirectory, _imageDirectoryName),
                 Filter = "Image files (*.jpg, *.jpeg, *.gif, *.png, *.bmp) |*.jpg; *.jpeg; *.gif; *.png; *.bmp"
             };
 
@@ -142,8 +143,11 @@ namespace Wox.Plugin.WebSearch
             if (result == true)
             {
                 string filename = dlg.FileName;
-                tbIconPath.Text = Path.GetFileName(filename);
-                ShowIcon(tbIconPath.Text);
+                if (filename != null)
+                {
+                    tbIconPath.Text = Path.Combine(_imageDirectoryName, Path.GetFileName(filename));
+                    ShowIcon(tbIconPath.Text);
+                }
             }
         }
     }

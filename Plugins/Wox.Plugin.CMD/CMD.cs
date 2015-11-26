@@ -176,7 +176,8 @@ namespace Wox.Plugin.CMD
         private void OnWinRPressed()
         {
             context.API.ShowApp();
-            context.API.ChangeQuery(">");
+            // todo don't hardcode action keywords.
+            context.API.ChangeQuery($">{Plugin.Query.TermSeperater}");
         }
 
         public Control CreateSettingPanel()

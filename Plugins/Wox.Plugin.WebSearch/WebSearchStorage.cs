@@ -41,7 +41,7 @@ namespace Wox.Plugin.WebSearch
             {
                 Title = "Google",
                 ActionKeyword = "g",
-                IconPath = @"google.png",
+                IconPath = @"Images\google.png",
                 Url = "https://www.google.com/search?q={q}",
                 Enabled = true
             };
@@ -52,7 +52,7 @@ namespace Wox.Plugin.WebSearch
             {
                 Title = "Wikipedia",
                 ActionKeyword = "wiki",
-                IconPath = @"wiki.png",
+                IconPath = @"Images\wiki.png",
                 Url = "http://en.wikipedia.org/wiki/{q}",
                 Enabled = true
             };
@@ -62,7 +62,7 @@ namespace Wox.Plugin.WebSearch
             {
                 Title = "FindIcon",
                 ActionKeyword = "findicon",
-                IconPath = @"pictures.png",
+                IconPath = @"Images\pictures.png",
                 Url = "http://findicons.com/search/{q}",
                 Enabled = true
             };

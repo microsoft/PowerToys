@@ -47,12 +47,6 @@ namespace Wox.Plugin.Everything
                 try
                 {
                     var searchList = api.Search(keyword, maxCount: ContextMenuStorage.Instance.MaxSearchCount).ToList();
-                    var fuzzyMather = FuzzyMatcher.Create(keyword);
-                    searchList.Sort(
-                        (x, y) =>
-                            fuzzyMather.Evaluate(Path.GetFileName(y.FullPath)).Score -
-                            fuzzyMather.Evaluate(Path.GetFileName(x.FullPath)).Score);
-
                     foreach (var s in searchList)
                     {
                         var path = s.FullPath;
