@@ -1,10 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Interop;
 using Wox.Infrastructure;
+using FormsApplication = System.Windows.Forms.Application;
+using PowerState = System.Windows.Forms.PowerState;
 using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.Sys
@@ -22,14 +26,22 @@ namespace Wox.Plugin.Sys
         internal const int EWX_FORCE = 0x00000004;
         internal const int EWX_POWEROFF = 0x00000008;
         internal const int EWX_FORCEIFHUNG = 0x00000010;
+
         [DllImport("user32")]
         private static extern bool ExitWindowsEx(uint uFlags, uint dwReason);
+
         [DllImport("user32")]
         private static extern void LockWorkStation();
 
-        // https://msdn.microsoft.com/en-us/library/windows/desktop/bb762160(v=vs.85).aspx
         [DllImport("Shell32.dll", CharSet = CharSet.Unicode)]
-        private static extern uint SHEmptyRecycleBin(System.IntPtr hwnd, string pszRootPath, uint dwFlags);
+        private static extern uint SHEmptyRecycleBin(IntPtr hWnd, uint dwFlags);
+
+        // http://www.pinvoke.net/default.aspx/Enums/HRESULT.html
+        private enum HRESULT : uint
+        {
+            S_FALSE = 0x0001,
+            S_OK = 0x0000
+        }
 
         #endregion
 
@@ -62,7 +74,8 @@ namespace Wox.Plugin.Sys
 
         private void LoadCommands()
         {
-            availableResults.AddRange(new Result[] {
+            availableResults.AddRange(new Result[]
+            {
                 new Result
                 {
                     Title = "Shutdown",
@@ -70,7 +83,10 @@ namespace Wox.Plugin.Sys
                     IcoPath = "Images\\exit.png",
                     Action = (c) =>
                     {
-                        if (MessageBox.Show("Are you sure you want to shut the computer down?","Shutdown Computer?",MessageBoxButtons.YesNo,MessageBoxIcon.Warning) == DialogResult.Yes) {
+                        var reuslt = MessageBox.Show("Are you sure you want to shut the computer down?",
+                                                     "Shutdown Computer?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                        if (reuslt == MessageBoxResult.Yes)
+                        {
                             Process.Start("shutdown", "/s /t 0");
                         }
                         return true;
@@ -83,7 +99,10 @@ namespace Wox.Plugin.Sys
                     IcoPath = "Images\\restartcomp.png",
                     Action = (c) =>
                     {
-                        if (MessageBox.Show("Are you sure you want to restart the computer?","Restart Computer?",MessageBoxButtons.YesNo,MessageBoxIcon.Warning) == DialogResult.Yes) {
+                        var result = MessageBox.Show("Are you sure you want to restart the computer?",
+                                                     "Restart Computer?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                        if (result == MessageBoxResult.Yes)
+                        {
                             Process.Start("shutdown", "/r /t 0");
                         }
                         return true;
@@ -106,31 +125,31 @@ namespace Wox.Plugin.Sys
                         LockWorkStation();
                         return true;
                     }
-                },
+                },  
                 new Result
                 {
                     Title = "Sleep",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_sleep"),
                     IcoPath = "Images\\sleep.png",
-                    Action = (c) => Application.SetSuspendState(PowerState.Suspend, false, false)
+                    Action = (c) => FormsApplication.SetSuspendState(PowerState.Suspend, false, false)
                 },
-                                new Result
+                new Result
                 {
                     Title = "Empty Recycle Bin",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_emptyrecyclebin"),
                     IcoPath = "Images\\recyclebin.png",
                     Action = (c) =>
                     {
-                        try
+                        // http://www.pinvoke.net/default.aspx/shell32/SHEmptyRecycleBin.html
+                        // 0 for nothing
+                        var result = SHEmptyRecycleBin(new WindowInteropHelper(Application.Current.MainWindow).Handle, 0);
+                        if (result != (uint) HRESULT.S_OK)
                         {
-                            // Using 0 for the last part, let's us use all the windows pop-up and sounds
-                            uint result = SHEmptyRecycleBin(System.IntPtr.Zero, null, 0);
+                            MessageBox.Show($"Error emptying recycle bin, error code: {result}\n" +
+                                            "please refer to https://msdn.microsoft.com/en-us/library/windows/desktop/aa378137",
+                                            "Error",
+                                            MessageBoxButton.OK, MessageBoxImage.Error);
                         }
-                        catch (System.Exception ex)
-                        {
-                            MessageBox.Show("Error emptying recycle bin. \n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-
                         return true;
                     }
                 },
@@ -153,7 +172,7 @@ namespace Wox.Plugin.Sys
                     Action = (c) =>
                     {
                         ProcessStartInfo Info = new ProcessStartInfo();
-                        Info.Arguments = "/C ping 127.0.0.1 -n 1 && \"" + Application.ExecutablePath + "\"";
+                        Info.Arguments = "/C ping 127.0.0.1 -n 1 && \"" + FormsApplication.ExecutablePath + "\"";
                         Info.WindowStyle = ProcessWindowStyle.Hidden;
                         Info.CreateNoWindow = true;
                         Info.FileName = "cmd.exe";
@@ -179,7 +198,6 @@ namespace Wox.Plugin.Sys
         public string GetLanguagesFolder()
         {
             return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
-
         }
 
         public string GetTranslatedPluginTitle()
