@@ -10,7 +10,6 @@ using System.Reflection;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using NHotkey;
@@ -26,14 +25,10 @@ using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
 using Wox.Storage;
 using ContextMenu = System.Windows.Forms.ContextMenu;
-using DataFormats = System.Windows.DataFormats;
-using DragEventArgs = System.Windows.DragEventArgs;
-using IDataObject = System.Windows.IDataObject;
-using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using NotifyIcon = System.Windows.Forms.NotifyIcon;
+using Screen = System.Windows.Forms.Screen;
 using MenuItem = System.Windows.Forms.MenuItem;
-using MessageBox = System.Windows.MessageBox;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
-using ToolTip = System.Windows.Controls.ToolTip;
 
 namespace Wox
 {
@@ -91,6 +86,16 @@ namespace Wox
                 Close();
                 Environment.Exit(0);
             }));
+        }
+
+        public void RestarApp()
+        {
+            ProcessStartInfo info = new ProcessStartInfo
+            {
+                FileName = Application.ResourceAssembly.Location,
+                Arguments = SingleInstance<App>.Restart
+            };
+            Process.Start(info);
         }
 
         public void HideApp()

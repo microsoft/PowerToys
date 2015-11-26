@@ -52,6 +52,11 @@ namespace Wox.Plugin
         void CloseApp();
 
         /// <summary>
+        /// Restart Wox
+        /// </summary>
+        void RestarApp();
+
+        /// <summary>
         /// Hide Wox
         /// </summary>
         void HideApp();

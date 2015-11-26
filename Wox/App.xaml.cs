@@ -52,6 +52,10 @@ namespace Wox
 
         public bool OnActivate(IList<string> args)
         {
+            if (args.Count > 0 && args[0] == SingleInstance<App>.Restart)
+            {
+                Window.CloseApp();
+            }
             CommandArgsFactory.Execute(args);
             return true;
         }

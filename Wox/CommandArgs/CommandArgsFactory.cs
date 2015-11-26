@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Wox.Helper;
 
 namespace Wox.CommandArgs
 {
@@ -20,7 +21,8 @@ namespace Wox.CommandArgs
 
         public static void Execute(IList<string> args)
         {
-            if (args.Count > 0)
+            // todo restart command line args?
+            if (args.Count > 0 && args[0] != SingleInstance<App>.Restart)
             {
                 string command = args[0];
                 ICommandArg cmd = commandArgs.FirstOrDefault(o => o.Command.ToLower() == command);

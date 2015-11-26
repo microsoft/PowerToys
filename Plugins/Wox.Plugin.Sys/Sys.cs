@@ -171,14 +171,8 @@ namespace Wox.Plugin.Sys
                     IcoPath = "Images\\restart.png",
                     Action = (c) =>
                     {
-                        ProcessStartInfo Info = new ProcessStartInfo();
-                        Info.Arguments = "/C ping 127.0.0.1 -n 1 && \"" + FormsApplication.ExecutablePath + "\"";
-                        Info.WindowStyle = ProcessWindowStyle.Hidden;
-                        Info.CreateNoWindow = true;
-                        Info.FileName = "cmd.exe";
-                        Process.Start(Info);
-                        context.API.CloseApp();
-                        return true;
+                        context.API.RestarApp();
+                        return false;
                     }
                 },
                 new Result

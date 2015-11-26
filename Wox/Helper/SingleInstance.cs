@@ -212,6 +212,8 @@ namespace Wox.Helper
                 where   TApplication: Application ,  ISingleInstanceApp 
                                     
     {
+        public const string Restart = "Restart";
+
         #region Private Fields
 
         /// <summary>
@@ -273,6 +275,8 @@ namespace Wox.Helper
         public static bool InitializeAsFirstInstance( string uniqueName )
         {
             commandLineArgs = GetCommandLineArgs(uniqueName);
+            //remove execute path itself
+            commandLineArgs.RemoveAt(0);
 
             // Build unique application Id and the IPC channel name.
             string applicationIdentifier = uniqueName + Environment.UserName;
@@ -285,13 +289,20 @@ namespace Wox.Helper
             if (firstInstance)
             {
                 CreateRemoteService(channelName);
+                return true;
+            }
+            else if (commandLineArgs.Count > 0 && commandLineArgs[0] == Restart)
+            {
+                SignalFirstInstance(channelName, commandLineArgs);
+                singleInstanceMutex = new Mutex(true, applicationIdentifier);
+                CreateRemoteService(channelName);
+                return true;
             }
             else
             {
                 SignalFirstInstance(channelName, commandLineArgs);
+                return false;
             }
-
-            return firstInstance;
         }
 
         /// <summary>
@@ -442,8 +453,7 @@ namespace Wox.Helper
             {
                 return;
             }
-            //remove execute path itself
-            args.RemoveAt(0);
+
             ((TApplication)Application.Current).OnActivate(args);
         }
 
