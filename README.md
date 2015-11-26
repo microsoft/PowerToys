@@ -30,7 +30,6 @@ Simple Usage
 =========
 - Launch: <kbd>Alt</kbd>+<kbd>Space</kbd>
 - Install/Uninstall plugin: type `wpm install/uninstall`
-- Restart Wox by typing  `restart` after installation of a plugin
 
 Contribute  
 =========
