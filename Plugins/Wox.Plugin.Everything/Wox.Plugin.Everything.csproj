@@ -45,6 +45,9 @@
     <Reference Include="System.ServiceProcess" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\SolutionAssemblyInfo.cs">
+      <Link>Properties\SolutionAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Everything\Exceptions\CreateThreadException.cs" />
     <Compile Include="Everything\Exceptions\CreateWindowException.cs" />
     <Compile Include="Everything\EverythingAPI.cs" />
@@ -138,4 +141,3 @@
   </Target>
   -->
 </Project>
-

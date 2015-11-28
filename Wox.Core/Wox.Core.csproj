@@ -56,6 +56,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SolutionAssemblyInfo.cs">
+      <Link>Properties\SolutionAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="APIServer.cs" />
     <Compile Include="Updater\Release.cs" />
     <Compile Include="Updater\UpdaterManager.cs" />

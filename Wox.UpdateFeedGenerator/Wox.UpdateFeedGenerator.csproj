@@ -49,6 +49,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SolutionAssemblyInfo.cs">
+      <Link>Properties\SolutionAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="ConfigStorage.cs" />
     <Compile Include="FileInfoEx.cs" />
     <Compile Include="FileSystemEnumerator.cs" />
@@ -75,4 +78,3 @@
   </Target>
   -->
 </Project>
-

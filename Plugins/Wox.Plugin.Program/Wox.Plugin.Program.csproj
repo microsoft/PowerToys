@@ -48,6 +48,9 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="AddProgramSource.xaml" />
+    <Compile Include="..\..\SolutionAssemblyInfo.cs">
+      <Link>Properties\SolutionAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="AddProgramSource.xaml.cs">
       <DependentUpon>AddProgramSource.xaml</DependentUpon>
     </Compile>

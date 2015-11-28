@@ -50,6 +50,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\SolutionAssemblyInfo.cs">
+      <Link>Properties\SolutionAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="FolderLink.cs" />
     <Compile Include="FolderPlugin.cs" />
     <Compile Include="FolderPluginSettings.xaml.cs">
@@ -112,4 +115,3 @@
   </Target>
   -->
 </Project>
-
