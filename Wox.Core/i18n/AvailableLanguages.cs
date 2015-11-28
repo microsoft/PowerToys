@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace Wox.Core.i18n
 {
@@ -8,6 +8,7 @@ namespace Wox.Core.i18n
         public static Language Chinese = new Language("zh-cn", "中文");
         public static Language Chinese_TW = new Language("zh-tw", "中文（繁体）");
         public static Language Russian = new Language("ru", "Русский");
+        public static Language French = new Language("fr", "Français");
 
         public static List<Language> GetAvailableLanguages()
         {
@@ -17,6 +18,7 @@ namespace Wox.Core.i18n
                 Chinese, 
                 Chinese_TW,
                 Russian,
+                French,
             };
             return languages;
         }
