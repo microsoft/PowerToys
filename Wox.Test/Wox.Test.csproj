@@ -41,6 +41,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SolutionAssemblyInfo.cs">
+      <Link>Properties\SolutionAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="FuzzyMatcherTest.cs" />
     <Compile Include="Plugins\PluginInitTest.cs" />
     <Compile Include="QueryTest.cs" />
@@ -78,4 +81,3 @@
   </Target>
   -->
 </Project>
-

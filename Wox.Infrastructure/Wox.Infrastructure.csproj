@@ -50,6 +50,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SolutionAssemblyInfo.cs">
+      <Link>Properties\SolutionAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Exception\ExceptionFormatter.cs" />
     <Compile Include="Exception\WoxException.cs" />
     <Compile Include="Exception\WoxFatalException.cs" />

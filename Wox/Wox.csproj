@@ -100,6 +100,9 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SolutionAssemblyInfo.cs">
+      <Link>Properties\SolutionAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="CommandArgs\ToggleCommandArg.cs" />
     <Compile Include="Converters\ConvertorBase.cs" />
     <Compile Include="Converters\ImagePathConverter.cs" />
