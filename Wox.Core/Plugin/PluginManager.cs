@@ -79,7 +79,7 @@ namespace Wox.Core.Plugin
                 Concat(new JsonRPCPluginLoader<PythonPlugin>().LoadPlugin(metadatas));
 
             //load plugin i18n languages
-            ResourceMerger.ApplyPluginLanguages();
+            ResourceMerger.UpdatePluginLanguages();
 
             foreach (PluginPair pluginPair in AllPlugins)
             {

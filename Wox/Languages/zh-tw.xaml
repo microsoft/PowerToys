@@ -43,7 +43,6 @@
     <system:String x:Key="resultItemFont">結果項字體</system:String>
     <system:String x:Key="windowMode">窗口模式</system:String>
     <system:String x:Key="opacity">透明度</system:String>
-    <system:String x:Key="windowsAccents">Windows Accents</system:String>
 
     <!--設置，熱鍵-->
     <system:String x:Key="hotkey">熱鍵</system:String>

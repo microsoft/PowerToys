@@ -8,39 +8,37 @@
     <system:Boolean x:Key="ThemeBlurEnabled">True</system:Boolean>
 
     <Style x:Key="QueryBoxStyle" BasedOn="{StaticResource BaseQueryBoxStyle}" TargetType="{x:Type TextBox}">
-		<Setter Property="Foreground" Value="#FF000000" />
-		<Setter Property="Background" Value="#01FFFFFF" />
+        <Setter Property="Foreground" Value="#FF000000" />
+        <Setter Property="Background" Value="#01FFFFFF" />
     </Style>
-    
+
     <Style x:Key="WindowBorderStyle" BasedOn="{StaticResource BaseWindowBorderStyle}" TargetType="{x:Type Border}">
         <Setter Property="Background" Value="#CCFFFFFF" />
-		<Setter Property="BorderBrush" Value="#70000000" /> 
-		<Setter Property="BorderThickness" Value="10" />
-		
-        
+        <Setter Property="BorderBrush" Value="#70000000" />
+        <Setter Property="BorderThickness" Value="0" />
     </Style>
-    
+
     <Style x:Key="WindowStyle" BasedOn="{StaticResource BaseWindowStyle}" TargetType="{x:Type Window}">
         <Setter Property="Background" Value="#01FFFFFF"></Setter>
-    </Style>  
+    </Style>
 
     <Style x:Key="PendingLineStyle" BasedOn="{StaticResource BasePendingLineStyle}" TargetType="{x:Type Line}">
     </Style>
 
     <!-- Item Style -->
     <Style x:Key="ItemTitleStyle"  BasedOn="{StaticResource BaseItemTitleStyle}" TargetType="{x:Type TextBlock}">
-		<Setter Property="Margin" Value="0, -10"/>
-		<Setter Property="Foreground" Value="#FF000000"/>
+        <Setter Property="Margin" Value="0, -10"/>
+        <Setter Property="Foreground" Value="#FF000000"/>
     </Style>
     <Style x:Key="ItemSubTitleStyle" BasedOn="{StaticResource BaseItemSubTitleStyle}" TargetType="{x:Type TextBlock}" >
-		<Setter Property="Foreground" Value="#FF000000"/>
+        <Setter Property="Foreground" Value="#FF000000"/>
     </Style>
     <Style x:Key="ItemTitleSelectedStyle" BasedOn="{StaticResource BaseItemTitleSelectedStyle}"  TargetType="{x:Type TextBlock}" >
-		<Setter Property="Margin" Value="0, -10"/>
-		<Setter Property="Foreground" Value="#FFFFFFFF"/>
+        <Setter Property="Margin" Value="0, -10"/>
+        <Setter Property="Foreground" Value="#FFFFFFFF"/>
     </Style>
     <Style x:Key="ItemSubTitleSelectedStyle" BasedOn="{StaticResource BaseItemSubTitleSelectedStyle}" TargetType="{x:Type TextBlock}" >
-		<Setter Property="Foreground" Value="#FFFFFFFF"/>
+        <Setter Property="Foreground" Value="#FFFFFFFF"/>
     </Style>
     <Color x:Key="ItemSelectedBackgroundColor">#356ef3</Color>
 
@@ -49,6 +47,6 @@
     </Style>
 
     <Style x:Key="ScrollBarStyle" BasedOn="{StaticResource BaseScrollBarStyle}" TargetType="{x:Type ScrollBar}">
-       <Setter Property="Background" Value="#a0a0a0"/>
+        <Setter Property="Background" Value="#a0a0a0"/>
     </Style>
 </ResourceDictionary>

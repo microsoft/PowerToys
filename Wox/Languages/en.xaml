@@ -43,7 +43,6 @@
     <system:String x:Key="resultItemFont">Result Item Font</system:String>
     <system:String x:Key="windowMode">Window Mode</system:String>
     <system:String x:Key="opacity">Opacity</system:String>
-    <system:String x:Key="windowsAccents">Windows Accents</system:String>
     
     
     <!--Setting Hotkey-->

@@ -198,16 +198,12 @@ namespace Wox
             pnlResult.ItemDropEvent += pnlResult_ItemDropEvent;
             pnlContextMenu.LeftMouseClickEvent += SelectResult;
             pnlResult.RightMouseClickEvent += pnlResult_RightMouseClickEvent;
+            Closing += MainWindow_Closing;
 
-            ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
-            InternationalizationManager.Instance.ChangeLanguage(UserSettingStorage.Instance.Language);
 
             SetHotkey(UserSettingStorage.Instance.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
             InitialTray();
-
-            Closing += MainWindow_Closing;
-
         }
 
         void pnlResult_ItemDropEvent(Result result, IDataObject dropDataObject, DragEventArgs args)
@@ -250,12 +246,14 @@ namespace Wox
 
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
+            ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
+            InternationalizationManager.Instance.ChangeLanguage(UserSettingStorage.Instance.Language);
+
             Left = GetWindowsLeft();
             Top = GetWindowsTop();
 
             InitProgressbarAnimation();
             WindowIntelopHelper.DisableControlBox(this);
-            WindowIntelopHelper.SetBlurForWindow(this, UserSettingStorage.Instance.ThemeBlurEnabled);
             CheckUpdate();
         }
 

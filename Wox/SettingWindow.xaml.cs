@@ -440,9 +440,7 @@ namespace Wox
         private void ThemeComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string themeName = themeComboBox.SelectedItem.ToString();
-            UserSettingStorage.Instance.Theme = themeName;
-            DelayChangeTheme();
-            UserSettingStorage.Instance.Save();
+            ThemeManager.Theme.ChangeTheme(themeName);
         }
 
         private void CbQueryBoxFont_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -451,17 +449,7 @@ namespace Wox
             string queryBoxFontName = cbQueryBoxFont.SelectedItem.ToString();
             UserSettingStorage.Instance.QueryBoxFont = queryBoxFontName;
             this.cbQueryBoxFontFaces.SelectedItem = ((FontFamily)cbQueryBoxFont.SelectedItem).ChooseRegularFamilyTypeface();
-            DelayChangeTheme();
             UserSettingStorage.Instance.Save();
-        }
-
-        private void DelayChangeTheme()
-        {
-            Dispatcher.DelayInvoke("delayChangeTheme", () =>
-            {
-                ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
-                WindowIntelopHelper.SetBlurForWindow(MainWindow, UserSettingStorage.Instance.ThemeBlurEnabled);
-            }, TimeSpan.FromMilliseconds(100));
         }
 
         private void CbQueryBoxFontFaces_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -481,7 +469,6 @@ namespace Wox
                 UserSettingStorage.Instance.QueryBoxFontWeight = typeface.Weight.ToString();
                 UserSettingStorage.Instance.QueryBoxFontStyle = typeface.Style.ToString();
                 UserSettingStorage.Instance.Save();
-                DelayChangeTheme();
             }
         }
 
@@ -491,9 +478,7 @@ namespace Wox
             string resultItemFont = cbResultItemFont.SelectedItem.ToString();
             UserSettingStorage.Instance.ResultItemFont = resultItemFont;
             this.cbResultItemFontFaces.SelectedItem = ((FontFamily)cbResultItemFont.SelectedItem).ChooseRegularFamilyTypeface();
-
             UserSettingStorage.Instance.Save();
-            DelayChangeTheme();
         }
 
         private void CbResultItemFontFaces_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -511,7 +496,6 @@ namespace Wox
                 UserSettingStorage.Instance.ResultItemFontWeight = typeface.Weight.ToString();
                 UserSettingStorage.Instance.ResultItemFontStyle = typeface.Style.ToString();
                 UserSettingStorage.Instance.Save();
-                DelayChangeTheme();
             }
         }
 

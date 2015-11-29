@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Media;
 using Wox.Core.UI;
 using Wox.Core.UserSettings;
@@ -12,7 +14,7 @@ using Wox.Infrastructure.Logger;
 
 namespace Wox.Core.Theme
 {
-    public class Theme : IUIResource,ITheme
+    public class Theme : IUIResource
     {
         public const string DirectoryName = "Themes";
         private static List<string> themeDirectories = new List<string>();
@@ -53,11 +55,21 @@ namespace Wox.Core.Theme
                 }
             }
 
-            ResourceMerger.ApplyThemeResource(this);
-
             UserSettingStorage.Instance.Theme = themeName;
-            UserSettingStorage.Instance.ThemeBlurEnabled = (bool)Application.Current.Resources["ThemeBlurEnabled"];
             UserSettingStorage.Instance.Save();
+            ResourceMerger.UpdateResource(this);
+
+            try
+            {
+                var isBlur = Application.Current.FindResource("ThemeBlurEnabled");
+                if (isBlur is bool)
+                {
+                    SetBlurForWindow(Application.Current.MainWindow, (bool)isBlur);
+                }
+            }
+            catch (ResourceReferenceKeyNotFoundException e)
+            {
+            }
         }
 
         public ResourceDictionary GetResourceDictionary()
@@ -119,5 +131,74 @@ namespace Wox.Core.Theme
 
             return string.Empty;
         }
+
+        #region Blur Handling
+        /*
+        Found on https://github.com/riverar/sample-win10-aeroglass
+        */
+        public enum AccentState
+        {
+            ACCENT_DISABLED = 0,
+            ACCENT_ENABLE_GRADIENT = 1,
+            ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,
+            ACCENT_ENABLE_BLURBEHIND = 3,
+            ACCENT_INVALID_STATE = 4
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct AccentPolicy
+        {
+            public AccentState AccentState;
+            public int AccentFlags;
+            public int GradientColor;
+            public int AnimationId;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct WindowCompositionAttributeData
+        {
+            public WindowCompositionAttribute Attribute;
+            public IntPtr Data;
+            public int SizeOfData;
+        }
+
+        internal enum WindowCompositionAttribute
+        {
+            WCA_ACCENT_POLICY = 19
+        }
+        [DllImport("user32.dll")]
+        private static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
+
+        /// <summary>
+        /// Sets the blur for a window via SetWindowCompositionAttribute
+        /// </summary>
+        /// <param name="wind">window to blur</param>
+        /// <param name="status">true/false - on or off correspondingly</param>
+        public void SetBlurForWindow(Window wind, bool status)
+        {
+            SetWindowAccent(wind, status ? AccentState.ACCENT_ENABLE_BLURBEHIND : AccentState.ACCENT_DISABLED);
+        }
+
+        private void SetWindowAccent(Window wind, AccentState themeAccentMode)
+        {
+            var windowHelper = new WindowInteropHelper(wind);
+            var accent = new AccentPolicy { AccentState = themeAccentMode };
+            var accentStructSize = Marshal.SizeOf(accent);
+
+            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
+            Marshal.StructureToPtr(accent, accentPtr, false);
+
+            var data = new WindowCompositionAttributeData
+            {
+                Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY,
+                SizeOfData = accentStructSize,
+                Data = accentPtr
+            };
+
+            SetWindowCompositionAttribute(windowHelper.Handle, ref data);
+
+            Marshal.FreeHGlobal(accentPtr);
+        }
+        #endregion
     }
 }

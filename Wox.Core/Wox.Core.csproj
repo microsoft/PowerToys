@@ -69,7 +69,6 @@
     <Compile Include="i18n\Internationalization.cs" />
     <Compile Include="i18n\InternationalizationManager.cs" />
     <Compile Include="i18n\Language.cs" />
-    <Compile Include="Theme\ITheme.cs" />
     <Compile Include="Theme\ThemeManager.cs" />
     <Compile Include="UI\IUIResource.cs" />
     <Compile Include="UI\ResourceMerger.cs" />
