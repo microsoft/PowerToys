@@ -59,16 +59,11 @@ namespace Wox.Core.Theme
             UserSettingStorage.Instance.Save();
             ResourceMerger.UpdateResource(this);
 
-            try
+            // Exception of FindResource can't be cathed if global exception handle is set
+            var isBlur = Application.Current.TryFindResource("ThemeBlurEnabled");
+            if (isBlur is bool)
             {
-                var isBlur = Application.Current.FindResource("ThemeBlurEnabled");
-                if (isBlur is bool)
-                {
-                    SetBlurForWindow(Application.Current.MainWindow, (bool)isBlur);
-                }
-            }
-            catch (ResourceReferenceKeyNotFoundException e)
-            {
+                SetBlurForWindow(Application.Current.MainWindow, (bool)isBlur);
             }
         }
 
