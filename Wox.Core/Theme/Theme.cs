@@ -168,10 +168,13 @@ namespace Wox.Core.Theme
         /// Sets the blur for a window via SetWindowCompositionAttribute
         /// </summary>
         /// <param name="wind">window to blur</param>
-        /// <param name="status">true/false - on or off correspondingly</param>
-        private void SetBlurForWindow(Window wind, bool status)
+        /// <param name="isBlur">true/false - on or off correspondingly</param>
+        private void SetBlurForWindow(Window wind, bool isBlur)
         {
-            SetWindowAccent(wind, status ? AccentState.ACCENT_ENABLE_BLURBEHIND : AccentState.ACCENT_DISABLED);
+            if (isBlur)
+            {
+                SetWindowAccent(wind, AccentState.ACCENT_ENABLE_BLURBEHIND);
+            }
         }
 
         private void SetWindowAccent(Window wind, AccentState themeAccentMode)
