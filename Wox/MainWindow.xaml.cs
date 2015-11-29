@@ -80,12 +80,8 @@ namespace Wox
 
         public void CloseApp()
         {
-            Dispatcher.Invoke(new Action(() =>
-            {
-                notifyIcon.Visible = false;
-                Close();
-                Environment.Exit(0);
-            }));
+            SingleInstance<App>.singleInstanceMutex.ReleaseMutex();
+            Application.Current.Shutdown();
         }
 
         public void RestarApp()
