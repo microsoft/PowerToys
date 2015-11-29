@@ -136,7 +136,7 @@ namespace Wox.Core.Theme
         /*
         Found on https://github.com/riverar/sample-win10-aeroglass
         */
-        public enum AccentState
+        private enum AccentState
         {
             ACCENT_DISABLED = 0,
             ACCENT_ENABLE_GRADIENT = 1,
@@ -146,7 +146,7 @@ namespace Wox.Core.Theme
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct AccentPolicy
+        private struct AccentPolicy
         {
             public AccentState AccentState;
             public int AccentFlags;
@@ -155,14 +155,14 @@ namespace Wox.Core.Theme
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct WindowCompositionAttributeData
+        private struct WindowCompositionAttributeData
         {
             public WindowCompositionAttribute Attribute;
             public IntPtr Data;
             public int SizeOfData;
         }
 
-        internal enum WindowCompositionAttribute
+        private enum WindowCompositionAttribute
         {
             WCA_ACCENT_POLICY = 19
         }
@@ -174,7 +174,7 @@ namespace Wox.Core.Theme
         /// </summary>
         /// <param name="wind">window to blur</param>
         /// <param name="status">true/false - on or off correspondingly</param>
-        public void SetBlurForWindow(Window wind, bool status)
+        private void SetBlurForWindow(Window wind, bool status)
         {
             SetWindowAccent(wind, status ? AccentState.ACCENT_ENABLE_BLURBEHIND : AccentState.ACCENT_DISABLED);
         }
