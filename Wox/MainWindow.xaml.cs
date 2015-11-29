@@ -80,7 +80,6 @@ namespace Wox
 
         public void CloseApp()
         {
-            SingleInstance<App>.singleInstanceMutex.ReleaseMutex();
             Application.Current.Shutdown();
         }
 

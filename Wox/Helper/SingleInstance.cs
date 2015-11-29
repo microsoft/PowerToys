@@ -302,11 +302,7 @@ namespace Wox.Helper
         /// </summary>
         public static void Cleanup()
         {
-            if (singleInstanceMutex != null)
-            {
-                singleInstanceMutex.Close();
-                singleInstanceMutex = null;
-            }
+            singleInstanceMutex?.ReleaseMutex();
 
             if (channel != null)
             {
