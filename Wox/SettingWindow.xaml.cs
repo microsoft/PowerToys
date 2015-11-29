@@ -450,6 +450,7 @@ namespace Wox
             UserSettingStorage.Instance.QueryBoxFont = queryBoxFontName;
             this.cbQueryBoxFontFaces.SelectedItem = ((FontFamily)cbQueryBoxFont.SelectedItem).ChooseRegularFamilyTypeface();
             UserSettingStorage.Instance.Save();
+            ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
         }
 
         private void CbQueryBoxFontFaces_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -469,6 +470,7 @@ namespace Wox
                 UserSettingStorage.Instance.QueryBoxFontWeight = typeface.Weight.ToString();
                 UserSettingStorage.Instance.QueryBoxFontStyle = typeface.Style.ToString();
                 UserSettingStorage.Instance.Save();
+                ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
             }
         }
 
@@ -479,6 +481,7 @@ namespace Wox
             UserSettingStorage.Instance.ResultItemFont = resultItemFont;
             this.cbResultItemFontFaces.SelectedItem = ((FontFamily)cbResultItemFont.SelectedItem).ChooseRegularFamilyTypeface();
             UserSettingStorage.Instance.Save();
+            ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
         }
 
         private void CbResultItemFontFaces_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -496,6 +499,7 @@ namespace Wox
                 UserSettingStorage.Instance.ResultItemFontWeight = typeface.Weight.ToString();
                 UserSettingStorage.Instance.ResultItemFontStyle = typeface.Style.ToString();
                 UserSettingStorage.Instance.Save();
+                ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
             }
         }
 
