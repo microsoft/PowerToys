@@ -80,6 +80,7 @@ namespace Wox
 
         public void CloseApp()
         {
+            notifyIcon.Visible = false;
             Application.Current.Shutdown();
         }
 
