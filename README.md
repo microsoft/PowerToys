@@ -33,7 +33,7 @@ Simple Usage
 Contribute  
 =========
 
-If you are a developer, please feel free to send a pull request to the **Dev** branch. We still have a lot of features and bugs to resolve. Take a look at [issues page](https://github.com/Wox-launcher/Wox/issues) if you want to contribute :)
+If you are a developer, please feel free to send a pull request to the **Dev** branch. We still have a lot of features and bugs to resolve. Take a look at [issues page](https://github.com/Wox-launcher/Wox/issues), especially for [help_needed](https://github.com/Wox-launcher/Wox/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp_needed) labeled issue. :)
 
 If you are not a developer, please install the [Latest build](https://ci.appveyor.com/project/qianlifeng/wox/history) and report bugs (how to: [English](https://github.com/Wox-launcher/Wox/wiki/FAQ-English) [中文](https://github.com/Wox-launcher/Wox/wiki/FAQ-%E4%B8%AD%E6%96%87)). Feedback is always welcome!
 
