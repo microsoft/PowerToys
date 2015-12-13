@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using Wox.Helper;
 
 namespace Wox {
 	public partial class Msg : Window {
@@ -13,15 +14,18 @@ namespace Wox {
 
 		public Msg() {
 			InitializeComponent();
-
-			Left = Screen.PrimaryScreen.WorkingArea.Right - this.Width;
-			Top = Screen.PrimaryScreen.Bounds.Bottom;
-			showAnimation.From = Screen.PrimaryScreen.Bounds.Bottom;
-			showAnimation.To = Screen.PrimaryScreen.WorkingArea.Bottom - Height;
+		    var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+		    var dipWorkingArea = WindowIntelopHelper.TransformPixelsToDIP(this, 
+                screen.WorkingArea.Width,
+		        screen.WorkingArea.Height);
+			Left = dipWorkingArea.X - this.Width;
+		    Top = dipWorkingArea.Y;
+			showAnimation.From = dipWorkingArea.Y;
+			showAnimation.To = dipWorkingArea.Y - Height; 
 
 			// Create the fade out storyboard
 			fadeOutStoryboard.Completed += new EventHandler(fadeOutStoryboard_Completed);
-			DoubleAnimation fadeOutAnimation = new DoubleAnimation(Screen.PrimaryScreen.WorkingArea.Bottom - Height, Screen.PrimaryScreen.Bounds.Bottom, new Duration(TimeSpan.FromSeconds(0.3))) {
+			DoubleAnimation fadeOutAnimation = new DoubleAnimation(dipWorkingArea.Y - Height, dipWorkingArea.Y, new Duration(TimeSpan.FromSeconds(0.3))) {
 				AccelerationRatio = 0.2
 			};
 			Storyboard.SetTarget(fadeOutAnimation, this);
