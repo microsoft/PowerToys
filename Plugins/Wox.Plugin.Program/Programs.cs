@@ -224,7 +224,9 @@ namespace Wox.Plugin.Program
                         if (Path.EndsWith(".lnk"))
                         {
                             //get location of shortcut
-                            Path = ResolveShortcut(Path);
+                            var resolved = ResolveShortcut(Path);
+                            if(!string.IsNullOrEmpty(resolved))
+                                Path = resolved;
                         }
                         //get parent folder
                         Path = Directory.GetParent(Path).FullName;
