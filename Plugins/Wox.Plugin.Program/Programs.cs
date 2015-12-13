@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
-using IWshRuntimeLibrary;
 using Wox.Infrastructure;
 using Wox.Plugin.Program.ProgramSources;
 using Wox.Infrastructure.Logger;
@@ -48,14 +47,6 @@ namespace Wox.Plugin.Program
                                        }
                                    }).ToList();
             return results;
-        }
-
-        static string ResolveShortcut(string filePath)
-        {
-            // IWshRuntimeLibrary is in the COM library "Windows Script Host Object Model"
-            WshShell shell = new WshShell();
-            IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(filePath);
-            return shortcut.TargetPath;
         }
 
         private bool MatchProgram(Program program, FuzzyMatcher matcher)
@@ -224,7 +215,7 @@ namespace Wox.Plugin.Program
                         if (Path.EndsWith(".lnk"))
                         {
                             //get location of shortcut
-                            var resolved = ResolveShortcut(Path);
+                            var resolved = ShortcutHelper.ResolveShortcut(Path);
                             if(!string.IsNullOrEmpty(resolved))
                                 Path = resolved;
                         }
