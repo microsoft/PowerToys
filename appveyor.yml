@@ -1,4 +1,4 @@
-version: 1.2.0.{build}
+version: 1.2.{build}
 os: Visual Studio 2015
 configuration: Release
 platform: Any CPU
@@ -7,7 +7,7 @@ assembly_info:
   file: AssemblyInfo.*
   assembly_version: '{version}'
   assembly_file_version: '{version}'
-  assembly_informational_version: '{version}-$(APPVEYOR_REPO_COMMIT)'
+  assembly_informational_version: '{version}-beta.2-$(APPVEYOR_REPO_COMMIT)'
 before_build:
 - ps: nuget restore
 build:

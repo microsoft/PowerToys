@@ -44,6 +44,7 @@
     <system:String x:Key="windowMode">Window Mode</system:String>
     <system:String x:Key="opacity">Opacity</system:String>
     
+    
     <!--Setting Hotkey-->
     <system:String x:Key="hotkey">Hotkey</system:String>
     <system:String x:Key="woxHotkey">Wox Hotkey</system:String>

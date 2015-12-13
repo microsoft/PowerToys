@@ -18,7 +18,7 @@ namespace Wox.Core.Updater
     public class UpdaterManager
     {
         private static UpdaterManager instance;
-        private const string VersionCheckURL = "https://api.getwox.com/release/latest/";
+        private const string VersionCheckURL = "http://api.getwox.com/release/latest/";
         private const string UpdateFeedURL = "http://upgrade.getwox.com/update.xml";
         //private const string UpdateFeedURL = "http://127.0.0.1:8888/update.xml";
         private static SemanticVersion currentVersion;

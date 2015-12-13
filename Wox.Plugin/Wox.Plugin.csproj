@@ -42,6 +42,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SolutionAssemblyInfo.cs">
+      <Link>Properties\SolutionAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="AllowedLanguage.cs" />
     <Compile Include="EventHandler.cs" />
     <Compile Include="Feature.cs" />

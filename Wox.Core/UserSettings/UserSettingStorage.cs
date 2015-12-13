@@ -117,6 +117,8 @@ namespace Wox.Core.UserSettings
             get { return "config"; }
         }
 
+        
+
         public void IncreaseActivateTimes()
         {
             ActivateTimes++;

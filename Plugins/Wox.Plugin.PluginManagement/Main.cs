@@ -14,7 +14,7 @@ namespace Wox.Plugin.PluginManagement
 {
     public class Main : IPlugin, IPluginI18n
     {
-        private static string APIBASE = "https://api.getwox.com";
+        private static string APIBASE = "http://api.getwox.com";
         private static string PluginConfigName = "plugin.json";
         private static string pluginSearchUrl = APIBASE + "/plugin/search/";
         private const string ListCommand = "list";
@@ -205,22 +205,19 @@ namespace Wox.Plugin.PluginManagement
 
         private void UnInstallPlugin(PluginMetadata plugin)
         {
-            string content = string.Format("Do you want to uninstall following plugin?\r\n\r\nName: {0}\r\nVersion: {1}\r\nAuthor: {2}", plugin.Name, plugin.Version, plugin.Author);
+            string content = $"Do you want to uninstall following plugin?{Environment.NewLine}{Environment.NewLine}" +
+                             $"Name: {plugin.Name}{Environment.NewLine}" +
+                             $"Version: {plugin.Version}{Environment.NewLine}" +
+                             $"Author: {plugin.Author}";
             if (MessageBox.Show(content, "Wox", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 File.Create(Path.Combine(plugin.PluginDirectory, "NeedDelete.txt")).Close();
-                if (MessageBox.Show(
-                    "You have uninstalled plugin " + plugin.Name + " successfully.\r\n Restart Wox to take effect?",
-                    "Install plugin",
-                    MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                var result = MessageBox.Show($"You have uninstalled plugin {plugin.Name} successfully.{Environment.NewLine}" +
+                                             "Restart Wox to take effect?",
+                                             "Install plugin", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
                 {
-                    ProcessStartInfo Info = new ProcessStartInfo();
-                    Info.Arguments = "/C ping 127.0.0.1 -n 1 && \"" + Assembly.GetExecutingAssembly().Location + "\"";
-                    Info.WindowStyle = ProcessWindowStyle.Hidden;
-                    Info.CreateNoWindow = true;
-                    Info.FileName = "cmd.exe";
-                    Process.Start(Info);
-                    context.API.CloseApp();
+                    context.API.RestarApp();
                 }
             }
         }

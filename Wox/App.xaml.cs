@@ -50,10 +50,16 @@ namespace Wox
             AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
         }
 
-        public bool OnActivate(IList<string> args)
+        public void OnActivate(IList<string> args)
         {
-            CommandArgsFactory.Execute(args);
-            return true;
+            if (args.Count > 0 && args[0] == SingleInstance<App>.Restart)
+            {
+                Window.CloseApp();
+            }
+            else
+            {
+                CommandArgsFactory.Execute(args);
+            }
         }
     }
 }

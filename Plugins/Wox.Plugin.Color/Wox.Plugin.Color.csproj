@@ -38,6 +38,9 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\SolutionAssemblyInfo.cs">
+      <Link>Properties\SolutionAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Color.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
