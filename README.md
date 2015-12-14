@@ -2,11 +2,11 @@ Wox   [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e
 =========
 [Wox](http://www.getwox.com/) is a launcher for Windows, an alternative to [Alfred](https://www.alfredapp.com/) or [Launchy](http://www.launchy.net/). You can launch everything with just a few keystrokes!
 
-Screenshot
+Demo
 =========
 
-<a href="https://github.com/Wox-launcher/Wox/wiki/Screenshot">More screenshots</a>
-<img src="http://ww3.sinaimg.cn/large/dce48faejw1eihx6ffo8eg20zk0m8hdt.gif" />
+[More demo]("https://github.com/Wox-launcher/Wox/wiki/Screenshot")
+![demo]("http://i.imgur.com/DtxNBJi.gifv")
 
 Features
 =========
