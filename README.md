@@ -5,8 +5,8 @@ Wox   [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e
 Demo
 =========
 
-[More demo]("https://github.com/Wox-launcher/Wox/wiki/Screenshot")
-![demo]("http://i.imgur.com/DtxNBJi.gifv")
+[More demo](https://github.com/Wox-launcher/Wox/wiki/Screenshot)
+![demo](http://i.imgur.com/DtxNBJi.gif)
 
 Features
 =========
