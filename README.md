@@ -47,10 +47,3 @@ Docs
 Full documentation can be found here [Wox doc](http://doc.getwox.com). This is a good place to start if you are installing Wox for the first time.
 
 In the future, all of the documentation will be moved back to Github wiki.
-
-
-
-=========
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/Wox-launcher/wox/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
