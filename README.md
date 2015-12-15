@@ -1,6 +1,10 @@
-Wox   [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e103)](https://ci.appveyor.com/project/qianlifeng/wox) [![Bountysource](https://www.bountysource.com/badge/team?team_id=39433&style=raised)](https://www.bountysource.com/teams/wox?utm_source=Wox&utm_medium=shield&utm_campaign=raised) [![Issue Stats](http://issuestats.com/github/Wox-launcher/Wox/badge/pr)](http://issuestats.com/github/Wox-launcher/Wox) [![Github All Releases](https://img.shields.io/github/downloads/Wox-launcher/Wox/total.svg)](https://github.com/Wox-launcher/Wox/releases)
+[![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e103)](https://ci.appveyor.com/project/qianlifeng/wox) 
+[![Bountysource](https://www.bountysource.com/badge/team?team_id=39433&style=raised)](https://www.bountysource.com/teams/wox?utm_source=Wox&utm_medium=shield&utm_campaign=raised) 
+[![Issue Stats](http://issuestats.com/github/Wox-launcher/Wox/badge/pr)](http://issuestats.com/github/Wox-launcher/Wox) 
+
 =========
-[Wox](http://www.getwox.com/) is a launcher for Windows, an alternative to [Alfred](https://www.alfredapp.com/) or [Launchy](http://www.launchy.net/). You can launch everything with just a few keystrokes!
+
+Wox is a launcher for Windows, an alternative to [Alfred](https://www.alfredapp.com/) and [Launchy](http://www.launchy.net/). You can launch everything with just a few keystrokes!
 
 Demo
 =========
