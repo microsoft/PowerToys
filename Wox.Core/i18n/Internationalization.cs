@@ -88,20 +88,15 @@ namespace Wox.Core.i18n
 
         public string GetTranslation(string key)
         {
-            try
+            var translation = Application.Current.TryFindResource(key);
+            if (translation is string)
             {
-                object translation = Application.Current.FindResource(key);
-                if (translation == null)
-                {
-                    return "NoTranslation";
-                }
                 return translation.ToString();
             }
-            catch
+            else
             {
                 return "NoTranslation";
             }
-
         }
 
         private string GetLanguagePath(string languageCode)

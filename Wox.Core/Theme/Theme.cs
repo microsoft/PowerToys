@@ -59,16 +59,11 @@ namespace Wox.Core.Theme
             UserSettingStorage.Instance.Save();
             ResourceMerger.UpdateResource(this);
 
-            try
+            // Exception of FindResource can't be cathed if global exception handle is set
+            var isBlur = Application.Current.TryFindResource("ThemeBlurEnabled");
+            if (isBlur is bool)
             {
-                var isBlur = Application.Current.FindResource("ThemeBlurEnabled");
-                if (isBlur is bool)
-                {
-                    SetBlurForWindow(Application.Current.MainWindow, (bool)isBlur);
-                }
-            }
-            catch (ResourceReferenceKeyNotFoundException e)
-            {
+                SetBlurForWindow(Application.Current.MainWindow, (bool)isBlur);
             }
         }
 
@@ -173,10 +168,13 @@ namespace Wox.Core.Theme
         /// Sets the blur for a window via SetWindowCompositionAttribute
         /// </summary>
         /// <param name="wind">window to blur</param>
-        /// <param name="status">true/false - on or off correspondingly</param>
-        private void SetBlurForWindow(Window wind, bool status)
+        /// <param name="isBlur">true/false - on or off correspondingly</param>
+        private void SetBlurForWindow(Window wind, bool isBlur)
         {
-            SetWindowAccent(wind, status ? AccentState.ACCENT_ENABLE_BLURBEHIND : AccentState.ACCENT_DISABLED);
+            if (isBlur)
+            {
+                SetWindowAccent(wind, AccentState.ACCENT_ENABLE_BLURBEHIND);
+            }
         }
 
         private void SetWindowAccent(Window wind, AccentState themeAccentMode)

@@ -143,8 +143,12 @@ namespace Wox.Plugin.CMD
 
         private void ExecuteCmd(string cmd, bool runAsAdministrator = false)
         {
-            if (context.API.ShellRun(cmd, runAsAdministrator))
+            var fullCmd = CMDStorage.Instance.LeaveCmdOpen ? $"cmd /k \"{cmd}\" & pause & exit" : cmd;
+            var success = context.API.ShellRun(fullCmd, runAsAdministrator);
+            if (success)
+            {
                 CMDStorage.Instance.AddCmdHistory(cmd);
+            }
         }
 
         public void Init(PluginInitContext context)
@@ -176,8 +180,7 @@ namespace Wox.Plugin.CMD
         private void OnWinRPressed()
         {
             context.API.ShowApp();
-            // todo don't hardcode action keywords.
-            context.API.ChangeQuery($">{Plugin.Query.TermSeperater}");
+            context.API.ChangeQuery($"{context.CurrentPluginMetadata.ActionKeywords[0]}{Plugin.Query.TermSeperater}");
         }
 
         public Control CreateSettingPanel()
