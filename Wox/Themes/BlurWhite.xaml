@@ -46,7 +46,7 @@
     <Style x:Key="ItemSubTitleSelectedStyle" BasedOn="{StaticResource BaseItemSubTitleSelectedStyle}" TargetType="{x:Type TextBlock}" >
         <Setter Property="Foreground" Value="#FFFFFFFF"/>
     </Style>
-    <Color x:Key="ItemSelectedBackgroundColor">#356ef3</Color>
+    <SolidColorBrush x:Key="ItemSelectedBackgroundColor">#356ef3</SolidColorBrush>
 
     <!-- button style in the middle of the scrollbar -->
     <Style x:Key="ThumbStyle" BasedOn="{StaticResource BaseThumbStyle}" TargetType="{x:Type Thumb}">
