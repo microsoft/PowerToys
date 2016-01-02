@@ -425,7 +425,12 @@ namespace Wox
             var wallpaper = WallpaperPathRetrieval.GetWallpaperPath();
             if (wallpaper != null && File.Exists(wallpaper))
             {
-                var brush = new ImageBrush(new BitmapImage(new Uri(wallpaper)));
+                var memStream = new MemoryStream(File.ReadAllBytes(wallpaper));
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.StreamSource = memStream;
+                bitmap.EndInit();
+                var brush = new ImageBrush(bitmap);
                 brush.Stretch = Stretch.UniformToFill;
                 PreviewPanel.Background = brush;
             }

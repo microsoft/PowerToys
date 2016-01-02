@@ -1,4 +1,4 @@
-$path = $env:APPVEYOR_BUILD_FOLDER + "\Deploy\Nuget\wox.plugin.nuspec"
+$path = $env:APPVEYOR_BUILD_FOLDER + "\Deploy\wox.plugin.nuspec"
 
 $current_path = Convert-Path .
 Write-Host "Current path: " + $current_path
