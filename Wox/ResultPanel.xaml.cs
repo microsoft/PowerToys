@@ -58,16 +58,19 @@ namespace Wox
 
         public void AddResults(List<Result> newResults, string resultId)
         {
+            // todo check count in the previous call
+            if (newResults.Count == 0) return;
             lock (_resultsUpdateLock)
             {
-                var resultCopy = _results.ToList();
-                var oldResults = resultCopy.Where(r => r.PluginID == resultId).ToList();
+                // todo use async to do new result calculation
+                var resultsCopy = _results.ToList();
+                var oldResults = resultsCopy.Where(r => r.PluginID == resultId).ToList();
                 // intersection of A (old results) and B (new newResults)
                 var intersection = oldResults.Intersect(newResults).ToList();
                 // remove result of relative complement of B in A
                 foreach (var result in oldResults.Except(intersection))
                 {
-                    resultCopy.Remove(result);
+                    resultsCopy.Remove(result);
                 }
 
                 // update scores
@@ -80,31 +83,31 @@ namespace Wox
                 }
 
                 // update index for result in intersection of A and B
-                foreach (var result in intersection)
+                foreach (var commonResult in intersection)
                 {
-                    int oldIndex = resultCopy.IndexOf(result);
-                    int oldScore = resultCopy[oldIndex].Score;
-                    if (result.Score != oldScore)
+                    int oldIndex = resultsCopy.IndexOf(commonResult);
+                    int oldScore = resultsCopy[oldIndex].Score;
+                    int newScore = newResults[newResults.IndexOf(commonResult)].Score;
+                    if (newScore != oldScore)
                     {
-                        int newIndex = InsertIndexOf(result.Score, resultCopy);
-                        if (newIndex != oldIndex)
-                        {
-                            var item = resultCopy[oldIndex];
-                            resultCopy.RemoveAt(oldIndex);
-                            resultCopy.Insert(newIndex, item);
-                        }
+                        var oldResult = resultsCopy[oldIndex];
+                        oldResult.Score = newScore;
+                        resultsCopy.RemoveAt(oldIndex);
+                        int newIndex = InsertIndexOf(newScore, resultsCopy);
+                        resultsCopy.Insert(newIndex, oldResult);
+
                     }
                 }
 
                 // insert result in relative complement of A in B
                 foreach (var result in newResults.Except(intersection))
                 {
-                    int newIndex = InsertIndexOf(result.Score, resultCopy);
-                    resultCopy.Insert(newIndex, result);
+                    int newIndex = InsertIndexOf(result.Score, resultsCopy);
+                    resultsCopy.Insert(newIndex, result);
                 }
 
                 // update UI in one run, so it can avoid UI flickering
-                _results.Update(resultCopy);
+                _results.Update(resultsCopy);
 
                 lbResults.Margin = lbResults.Items.Count > 0 ? new Thickness { Top = 8 } : new Thickness { Top = 0 };
                 SelectFirst();
