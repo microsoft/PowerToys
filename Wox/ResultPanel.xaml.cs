@@ -58,8 +58,6 @@ namespace Wox
 
         public void AddResults(List<Result> newResults, string resultId)
         {
-            // todo check count in the previous call
-            if (newResults.Count == 0) return;
             lock (_resultsUpdateLock)
             {
                 // todo use async to do new result calculation
