@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.ServiceProcess;
-using Wox.Infrastructure;
 using Wox.Plugin.Everything.Everything;
 
 namespace Wox.Plugin.Everything
@@ -57,7 +56,11 @@ namespace Wox.Plugin.Everything
                         r.Action = (c) =>
                         {
                             context.API.HideApp();
-                            context.API.ShellRun(path);
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = path,
+                                UseShellExecute = true
+                            });
                             return true;
                         };
                         r.ContextData = s;
@@ -124,12 +127,12 @@ namespace Wox.Plugin.Everything
         {
             List<ContextMenu> defaultContextMenus = new List<ContextMenu>();
             ContextMenu openFolderContextMenu = new ContextMenu()
-                   {
-                       Name = context.API.GetTranslation("wox_plugin_everything_open_containing_folder"),
-                       Command = "explorer.exe",
-                       Argument = " /select,\"{path}\"",
-                       ImagePath = "Images\\folder.png"
-                   };
+            {
+                Name = context.API.GetTranslation("wox_plugin_everything_open_containing_folder"),
+                Command = "explorer.exe",
+                Argument = " /select,\"{path}\"",
+                ImagePath = "Images\\folder.png"
+            };
 
             defaultContextMenus.Add(openFolderContextMenu);
             return defaultContextMenus;

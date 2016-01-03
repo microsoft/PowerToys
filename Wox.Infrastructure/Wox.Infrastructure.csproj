@@ -77,7 +77,6 @@
     <Compile Include="Hotkey\HotkeyModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Unidecoder.cs" />
-    <Compile Include="WindowsShellRun.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj">

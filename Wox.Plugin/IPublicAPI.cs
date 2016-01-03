@@ -22,15 +22,6 @@ namespace Wox.Plugin
         void ShowContextMenu(PluginMetadata plugin, List<Result> results);
 
         /// <summary>
-        /// Execute command
-        /// a replacement to RUN(win+r) function
-        /// </summary>
-        /// <param name="cmd">command that want to execute</param>
-        /// <param name="runAsAdministrator">run as administrator</param>
-        /// <returns></returns>
-        bool ShellRun(string cmd, bool runAsAdministrator = false);
-
-        /// <summary>
         /// Change Wox query
         /// </summary>
         /// <param name="query">query text</param>

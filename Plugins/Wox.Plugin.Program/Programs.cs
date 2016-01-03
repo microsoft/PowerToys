@@ -42,7 +42,7 @@ namespace Wox.Plugin.Program
                                        Action = (e) =>
                                        {
                                            context.API.HideApp();
-                                           context.API.ShellRun(c.ExecutePath);
+                                           Process.Start(c.ExecutePath);
                                            return true;
                                        }
                                    }).ToList();
@@ -198,7 +198,11 @@ namespace Wox.Plugin.Program
                     Action = _ =>
                     {
                         context.API.HideApp();
-                        context.API.ShellRun(p.ExecutePath, true);
+                        Process.Start( new ProcessStartInfo
+                        {
+                            FileName = p.ExecutePath,
+                            Verb = "runas"
+                        });
                         return true;
                     },
                     IcoPath = "Images/cmd.png"
@@ -209,19 +213,10 @@ namespace Wox.Plugin.Program
                     Action = _ =>
                     {
                         context.API.HideApp();
-                        String Path = p.ExecutePath;
-                        //check if shortcut
-                        if (Path.EndsWith(".lnk"))
-                        {
-                            //get location of shortcut
-                            var resolved = ShortcutHelper.ResolveShortcut(Path);
-                            if(!string.IsNullOrEmpty(resolved))
-                                Path = resolved;
-                        }
                         //get parent folder
-                        Path = Directory.GetParent(Path).FullName;
+                        var folderPath = Directory.GetParent(p.ExecutePath).FullName;
                         //open the folder
-                        context.API.ShellRun("explorer.exe " + Path, false);
+                        Process.Start(folderPath);
                         return true;
                     },
                     IcoPath = "Images/folder.png"

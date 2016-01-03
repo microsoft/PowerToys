@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -902,24 +901,6 @@ namespace Wox
             CurrentContextMenus = results;
             pnlContextMenu.Visibility = Visibility.Visible;
             pnlResult.Visibility = Visibility.Collapsed;
-        }
-
-        public bool ShellRun(string cmd, bool runAsAdministrator = false)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(cmd))
-                    throw new ArgumentNullException();
-
-                WindowsShellRun.Start(cmd, runAsAdministrator);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                string errorMsg = string.Format(InternationalizationManager.Instance.GetTranslation("couldnotStartCmd"), cmd);
-                ShowMsg(errorMsg, ex.Message, null);
-            }
-            return false;
         }
 
         private void MainWindow_OnDrop(object sender, DragEventArgs e)

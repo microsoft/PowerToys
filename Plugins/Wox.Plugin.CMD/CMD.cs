@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -64,7 +65,7 @@ namespace Wox.Plugin.CMD
                             IcoPath = "Images/cmd.png",
                             Action = (c) =>
                             {
-                                ExecuteCmd(m);
+                                ExecuteCMD(m);
                                 return true;
                             }
                         }));
@@ -97,7 +98,7 @@ namespace Wox.Plugin.CMD
                         IcoPath = "Images/cmd.png",
                         Action = (c) =>
                         {
-                            ExecuteCmd(m.Key);
+                            ExecuteCMD(m.Key);
                             return true;
                         }
                     };
@@ -116,7 +117,7 @@ namespace Wox.Plugin.CMD
                 IcoPath = "Images/cmd.png",
                 Action = (c) =>
                 {
-                    ExecuteCmd(cmd);
+                    ExecuteCMD(cmd);
                     return true;
                 }
             };
@@ -134,20 +135,31 @@ namespace Wox.Plugin.CMD
                     IcoPath = "Images/cmd.png",
                     Action = (c) =>
                     {
-                        ExecuteCmd(m.Key);
+                        ExecuteCMD(m.Key);
                         return true;
                     }
                 }).Take(5);
             return history.ToList();
         }
 
-        private void ExecuteCmd(string cmd, bool runAsAdministrator = false)
+        private void ExecuteCMD(string cmd, bool runAsAdministrator = false)
         {
-            var fullCmd = CMDStorage.Instance.LeaveCmdOpen ? $"cmd /k \"{cmd}\" & pause & exit" : cmd;
-            var success = context.API.ShellRun(fullCmd, runAsAdministrator);
-            if (success)
+            var arguments = CMDStorage.Instance.LeaveCmdOpen ? $"/k {cmd}" : $"/c {cmd} & pause";
+            var info = new ProcessStartInfo
             {
+                UseShellExecute = true,
+                FileName = "cmd.exe",
+                Arguments = arguments,
+                Verb = runAsAdministrator ? "runas" : ""
+            };
+            try
+            {
+                Process.Start(info);
                 CMDStorage.Instance.AddCmdHistory(cmd);
+            }
+            catch (FileNotFoundException e)
+            {
+                MessageBox.Show($"Command not found: {e.Message}");
             }
         }
 
@@ -215,7 +227,7 @@ namespace Wox.Plugin.CMD
                             Action = c =>
                             {
                                 context.API.HideApp();
-                                ExecuteCmd(selectedResult.Title, true);
+                                ExecuteCMD(selectedResult.Title, true);
                                 return true;
                             },
                             IcoPath = "Images/cmd.png"
