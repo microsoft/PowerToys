@@ -29,9 +29,9 @@ namespace Wox.Plugin.Program
         {
 
             var fuzzyMather = FuzzyMatcher.Create(query.Search);
-            var results = programs.Where(o => MatchProgram(o, fuzzyMather)).
+            var results = programs.Where(p => MatchProgram(p, fuzzyMather)).
                                    Select(ScoreFilter).
-                                   OrderByDescending(o => o.Score)
+                                   OrderByDescending(p => p.Score)
                                    .Select(c => new Result()
                                    {
                                        Title = c.Title,
@@ -53,8 +53,7 @@ namespace Wox.Plugin.Program
         {
             var scores = new List<string> { program.Title, program.PinyinTitle, program.AbbrTitle, program.ExecuteName };
             program.Score = scores.Select(s => matcher.Evaluate(s ?? string.Empty).Score).Max();
-            if (program.Score > 0) return true;
-            else return false;
+            return program.Score > 0;
         }
 
         public void Init(PluginInitContext context)
