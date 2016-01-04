@@ -109,7 +109,7 @@ namespace Wox.Plugin.Folder
                                     return false;
                                 }
                             }
-                            context.API.ChangeQuery(item.Path);
+                            context.API.ChangeQuery(item.Path+"\\");
                             return false;
                         },
                         ContextData = item
