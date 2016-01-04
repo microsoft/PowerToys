@@ -79,10 +79,7 @@ namespace Wox.Plugin.WebSearch
 
         public void Init(PluginInitContext context)
         {
-            this.Context = context;
-
-            if (WebSearchStorage.Instance.WebSearches == null)
-                WebSearchStorage.Instance.WebSearches = WebSearchStorage.Instance.LoadDefaultWebSearches();
+            Context = context;
         }
 
         #region ISettingProvider Members
