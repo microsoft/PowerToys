@@ -110,7 +110,7 @@ namespace Wox.Plugin.WebSearch
                     MessageBox.Show(exception.Message);
                     return;
                 }
-                WebSearchStorage.Instance.WebSearches.Add(new WebSearch()
+                WebSearchStorage.Instance.WebSearches.Add(new WebSearch
                 {
                     ActionKeyword = newActionKeyword,
                     Enabled = cbEnable.IsChecked ?? false,

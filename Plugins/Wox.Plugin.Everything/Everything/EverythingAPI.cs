@@ -233,7 +233,7 @@ namespace Wox.Plugin.Everything.Everything
             {
                 Everything_GetResultFullPathName(idx, buffer, bufferSize);
 
-                var result = new SearchResult() { FullPath = buffer.ToString() };
+                var result = new SearchResult { FullPath = buffer.ToString() };
                 if (Everything_IsFolderResult(idx))
                     result.Type = ResultType.Folder;
                 else if (Everything_IsFileResult(idx))

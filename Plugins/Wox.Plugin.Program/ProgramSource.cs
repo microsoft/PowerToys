@@ -16,7 +16,7 @@ namespace Wox.Plugin.Program
 
         public override string ToString()
         {
-            return (this.Type ?? "") + ":" + this.Location ?? "";
+            return (Type ?? "") + ":" + Location ?? "";
         }
     }
 }

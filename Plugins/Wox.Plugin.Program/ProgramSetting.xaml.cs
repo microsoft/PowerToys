@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.IO;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -31,9 +31,9 @@ namespace Wox.Plugin.Program
             programSourceView.Items.Refresh();
             ThreadPool.QueueUserWorkItem(t =>
             {
-                Dispatcher.Invoke(new Action(() => { indexingPanel.Visibility = Visibility.Visible; }));
+                Dispatcher.Invoke(() => { indexingPanel.Visibility = Visibility.Visible; });
                 Programs.IndexPrograms();
-                Dispatcher.Invoke(new Action(() => { indexingPanel.Visibility = Visibility.Hidden; }));
+                Dispatcher.Invoke(() => { indexingPanel.Visibility = Visibility.Hidden; });
             });
         }
 
@@ -42,7 +42,7 @@ namespace Wox.Plugin.Program
             var add = new AddProgramSource();
             if(add.ShowDialog() ?? false)
             {
-                this.ReIndexing();
+                ReIndexing();
             }
         }
 
@@ -75,7 +75,7 @@ namespace Wox.Plugin.Program
                 var add = new AddProgramSource(selectedProgramSource);
                 if (add.ShowDialog() ?? false)
                 {
-                    this.ReIndexing();
+                    ReIndexing();
                 }
             }
             else
@@ -116,9 +116,9 @@ namespace Wox.Plugin.Program
             {
                 foreach (string s in files)
                 {
-                    if (System.IO.Directory.Exists(s) == true)
+                    if (Directory.Exists(s))
                     {
-                        ProgramStorage.Instance.ProgramSources.Add(new ProgramSource()
+                        ProgramStorage.Instance.ProgramSources.Add(new ProgramSource
                         {
                             Location = s,
                             Type = "FileSystemProgramSource",

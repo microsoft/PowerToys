@@ -131,7 +131,7 @@ namespace Wox.Infrastructure.Hotkey
             if (CharKey != Key.None)
             {
                 text += specialSymbolDictionary.ContainsKey(CharKey)
-                    ? specialSymbolDictionary[CharKey].ToString()
+                    ? specialSymbolDictionary[CharKey]
                     : CharKey.ToString();
             }
             else if (!string.IsNullOrEmpty(text))

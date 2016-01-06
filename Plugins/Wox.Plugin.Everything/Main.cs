@@ -4,7 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.ServiceProcess;
+using System.Windows;
 using Wox.Plugin.Everything.Everything;
 
 namespace Wox.Plugin.Everything
@@ -13,8 +15,8 @@ namespace Wox.Plugin.Everything
     {
         PluginInitContext context;
         EverythingAPI api = new EverythingAPI();
-        private static List<string> imageExts = new List<string>() { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico" };
-        private static List<string> executableExts = new List<string>() { ".exe" };
+        private static List<string> imageExts = new List<string> { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico" };
+        private static List<string> executableExts = new List<string> { ".exe" };
 
         public List<Result> Query(Query query)
         {
@@ -34,7 +36,7 @@ namespace Wox.Plugin.Everything
                     r.Title = "Uninstall Everything";
                     r.SubTitle = "You need to uninstall everything service if you can not move/delete wox folder";
                     r.IcoPath = "Images\\find.png";
-                    r.Action = (c) =>
+                    r.Action = c =>
                     {
                         UnInstallEverything();
                         return true;
@@ -53,7 +55,7 @@ namespace Wox.Plugin.Everything
                         r.Title = Path.GetFileName(path);
                         r.SubTitle = path;
                         r.IcoPath = GetIconPath(s);
-                        r.Action = (c) =>
+                        r.Action = c =>
                         {
                             context.API.HideApp();
                             Process.Start(new ProcessStartInfo
@@ -70,7 +72,7 @@ namespace Wox.Plugin.Everything
                 catch (IPCErrorException)
                 {
                     StartEverything();
-                    results.Add(new Result()
+                    results.Add(new Result
                     {
                         Title = context.API.GetTranslation("wox_plugin_everything_is_not_running"),
                         IcoPath = "Images\\warning.png"
@@ -78,13 +80,13 @@ namespace Wox.Plugin.Everything
                 }
                 catch (Exception e)
                 {
-                    results.Add(new Result()
+                    results.Add(new Result
                     {
                         Title = context.API.GetTranslation("wox_plugin_everything_query_error"),
                         SubTitle = e.Message,
                         Action = _ =>
                         {
-                            System.Windows.Clipboard.SetText(e.Message + "\r\n" + e.StackTrace);
+                            Clipboard.SetText(e.Message + "\r\n" + e.StackTrace);
                             context.API.ShowMsg(context.API.GetTranslation("wox_plugin_everything_copied"), null, string.Empty);
                             return false;
                         },
@@ -120,13 +122,13 @@ namespace Wox.Plugin.Everything
             return "Images\\file.png";
         }
 
-        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        [DllImport("kernel32.dll")]
         private static extern int LoadLibrary(string name);
 
         private List<ContextMenu> GetDefaultContextMenu()
         {
             List<ContextMenu> defaultContextMenus = new List<ContextMenu>();
-            ContextMenu openFolderContextMenu = new ContextMenu()
+            ContextMenu openFolderContextMenu = new ContextMenu
             {
                 Name = context.API.GetTranslation("wox_plugin_everything_open_containing_folder"),
                 Command = "explorer.exe",
@@ -282,7 +284,7 @@ namespace Wox.Plugin.Everything
                 foreach (ContextMenu contextMenu in availableContextMenus)
                 {
                     var menu = contextMenu;
-                    contextMenus.Add(new Result()
+                    contextMenus.Add(new Result
                     {
                         Title = contextMenu.Name,
                         Action = _ =>

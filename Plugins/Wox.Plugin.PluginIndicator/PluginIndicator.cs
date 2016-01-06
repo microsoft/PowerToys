@@ -25,11 +25,11 @@ namespace Wox.Plugin.PluginIndicator
                               SubTitle = $"Activate {metadata.Name} plugin",
                               Score = 100,
                               IcoPath = metadata.FullIcoPath,
-                              Action = (c) =>
+                              Action = c =>
                               {
                                   context.API.ChangeQuery($"{keyword}{Plugin.Query.TermSeperater}");
                                   return false;
-                              },
+                              }
                           };
             return results.ToList();
         }

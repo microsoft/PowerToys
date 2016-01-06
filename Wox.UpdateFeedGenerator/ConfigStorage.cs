@@ -36,7 +36,7 @@ namespace Wox.UpdateFeedGenerator
             if (string.IsNullOrEmpty(config.OutputDirectory))
             {
                 config.OutputDirectory = @"Update";
-                ConfigStorage.Instance.Save();
+                Instance.Save();
             }
         }
 

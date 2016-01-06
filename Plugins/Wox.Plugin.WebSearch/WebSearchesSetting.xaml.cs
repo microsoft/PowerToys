@@ -29,10 +29,10 @@ namespace Wox.Plugin.WebSearch
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
-            List<ComboBoxItem> items = new List<ComboBoxItem>()
+            List<ComboBoxItem> items = new List<ComboBoxItem>
             {
-                new ComboBoxItem() {Content = "Google"},
-                new ComboBoxItem() {Content = "Baidu"},
+                new ComboBoxItem {Content = "Google"},
+                new ComboBoxItem {Content = "Baidu"}
             };
             ComboBoxItem selected = items.FirstOrDefault(o => o.Content.ToString() == WebSearchStorage.Instance.WebSearchSuggestionSource);
             if (selected == null)

@@ -41,8 +41,8 @@ namespace Wox.Core.Plugin
 
         protected override string ExecuteQuery(Query query)
         {
-            JsonRPCServerRequestModel request = new JsonRPCServerRequestModel()
-                {
+            JsonRPCServerRequestModel request = new JsonRPCServerRequestModel
+            {
                     Method = "query",
                     Parameters = new object[] { query.GetAllRemainingParameter() },
                     HttpProxy = HttpProxy.Instance

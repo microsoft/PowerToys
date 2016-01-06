@@ -15,30 +15,30 @@ namespace Wox.Core.Updater
 
         public WoxUpdateSource(string feedUrl,IWebProxy proxy)
         {
-            this.FeedUrl = feedUrl;
-            this.Proxy = proxy;
+            FeedUrl = feedUrl;
+            Proxy = proxy;
         }
 
         private void TryResolvingHost()
         {
-            Uri uri = new Uri(this.FeedUrl);
+            Uri uri = new Uri(FeedUrl);
             try
             {
                 Dns.GetHostEntry(uri.Host);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                throw new WebException(string.Format("Failed to resolve {0}. Check your connectivity.", (object)uri.Host), WebExceptionStatus.ConnectFailure);
+                throw new WebException(string.Format("Failed to resolve {0}. Check your connectivity.", uri.Host), WebExceptionStatus.ConnectFailure);
             }
         }
 
         public string GetUpdatesFeed()
         {
-            this.TryResolvingHost();
+            TryResolvingHost();
             string str = string.Empty;
-            WebRequest webRequest = WebRequest.Create(this.FeedUrl);
+            WebRequest webRequest = WebRequest.Create(FeedUrl);
             webRequest.Method = "GET";
-            webRequest.Proxy = this.Proxy;
+            webRequest.Proxy = Proxy;
             using (WebResponse response = webRequest.GetResponse())
             {
                 Stream responseStream = response.GetResponseStream();
@@ -56,7 +56,7 @@ namespace Wox.Core.Updater
             if (!string.IsNullOrEmpty(baseUrl) && !baseUrl.EndsWith("/"))
                 baseUrl += "/";
             FileDownloader fileDownloader = !Uri.IsWellFormedUriString(url, UriKind.Absolute) ? (!Uri.IsWellFormedUriString(baseUrl, UriKind.Absolute) ? (string.IsNullOrEmpty(baseUrl) ? new FileDownloader(url) : new FileDownloader(new Uri(new Uri(baseUrl), url))) : new FileDownloader(new Uri(new Uri(baseUrl, UriKind.Absolute), url))) : new FileDownloader(url);
-            fileDownloader.Proxy = this.Proxy;
+            fileDownloader.Proxy = Proxy;
             if (string.IsNullOrEmpty(tempLocation) || !Directory.Exists(Path.GetDirectoryName(tempLocation)))
                 tempLocation = Path.GetTempFileName();
             return fileDownloader.DownloadToFile(tempLocation, onProgress);

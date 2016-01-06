@@ -11,7 +11,7 @@ namespace Wox.Core.Plugin
             T jsonRPCPlugin = new T();
             List<PluginMetadata> jsonRPCPluginMetadatas = pluginMetadatas.Where(o => o.Language.ToUpper() == jsonRPCPlugin.SupportedLanguage.ToUpper()).ToList();
 
-            return jsonRPCPluginMetadatas.Select(metadata => new PluginPair()
+            return jsonRPCPluginMetadatas.Select(metadata => new PluginPair
             {
                 Plugin = new T(),  //every JsonRPC plugin should has its own plugin instance
                 Metadata = metadata

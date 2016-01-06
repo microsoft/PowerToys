@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Controls;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin.Program.ProgramSources;
@@ -17,11 +18,12 @@ namespace Wox.Plugin.Program
         private static object lockObject = new object();
         private static List<Program> programs = new List<Program>();
         private static List<IProgramSource> sources = new List<IProgramSource>();
-        private static Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>() {
+        private static Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>
+        {
             {"FileSystemProgramSource", typeof(FileSystemProgramSource)},
             {"CommonStartMenuProgramSource", typeof(CommonStartMenuProgramSource)},
             {"UserStartMenuProgramSource", typeof(UserStartMenuProgramSource)},
-            {"AppPathsProgramSource", typeof(AppPathsProgramSource)},
+            {"AppPathsProgramSource", typeof(AppPathsProgramSource)}
         };
         private PluginInitContext context;
 
@@ -32,14 +34,14 @@ namespace Wox.Plugin.Program
             var results = programs.Where(p => MatchProgram(p, fuzzyMather)).
                                    Select(ScoreFilter).
                                    OrderByDescending(p => p.Score)
-                                   .Select(c => new Result()
+                                   .Select(c => new Result
                                    {
                                        Title = c.Title,
                                        SubTitle = c.ExecutePath,
                                        IcoPath = c.IcoPath,
                                        Score = c.Score,
                                        ContextData = c,
-                                       Action = (e) =>
+                                       Action = e =>
                                        {
                                            context.API.HideApp();
                                            Process.Start(c.ExecutePath);
@@ -128,19 +130,19 @@ namespace Wox.Plugin.Program
         private static List<ProgramSource> LoadDeaultProgramSources()
         {
             var list = new List<ProgramSource>();
-            list.Add(new ProgramSource()
+            list.Add(new ProgramSource
             {
                 BonusPoints = 0,
                 Enabled = ProgramStorage.Instance.EnableStartMenuSource,
                 Type = "CommonStartMenuProgramSource"
             });
-            list.Add(new ProgramSource()
+            list.Add(new ProgramSource
             {
                 BonusPoints = 0,
                 Enabled = ProgramStorage.Instance.EnableStartMenuSource,
                 Type = "UserStartMenuProgramSource"
             });
-            list.Add(new ProgramSource()
+            list.Add(new ProgramSource
             {
                 BonusPoints = -10,
                 Enabled = ProgramStorage.Instance.EnableRegistrySource,
@@ -166,7 +168,7 @@ namespace Wox.Plugin.Program
 
         #region ISettingProvider Members
 
-        public System.Windows.Controls.Control CreateSettingPanel()
+        public Control CreateSettingPanel()
         {
             return new ProgramSetting(context);
         }
@@ -190,9 +192,9 @@ namespace Wox.Plugin.Program
         public List<Result> LoadContextMenus(Result selectedResult)
         {
             Program p = selectedResult.ContextData as Program;
-            List<Result> contextMenus = new List<Result>()
+            List<Result> contextMenus = new List<Result>
             {
-                new Result()
+                new Result
                 {
                     Title = context.API.GetTranslation("wox_plugin_program_run_as_administrator"),
                     Action = _ =>
@@ -207,7 +209,7 @@ namespace Wox.Plugin.Program
                     },
                     IcoPath = "Images/cmd.png"
                 },
-                new Result()
+                new Result
                 {
                     Title = context.API.GetTranslation("wox_plugin_program_open_containing_folder"),
                     Action = _ =>

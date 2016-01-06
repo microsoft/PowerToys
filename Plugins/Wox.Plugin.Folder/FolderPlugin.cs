@@ -51,7 +51,7 @@ namespace Wox.Plugin.Folder
         {
             List<Result> contextMenus = new List<Result>();
             string folderPath = ((FolderLink) targetResult.ContextData).Path;
-            contextMenus.Add(new Result()
+            contextMenus.Add(new Result
             {
                 Title = "Copy to this folder",
                 IcoPath = "Images/copy.png",

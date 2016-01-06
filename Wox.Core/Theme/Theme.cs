@@ -35,7 +35,7 @@ namespace Wox.Core.Theme
                     {
                         Directory.CreateDirectory(pluginDirectory);
                     }
-                    catch (System.Exception e)
+                    catch (Exception e)
                     {
                         Log.Error(e);
                     }
@@ -51,7 +51,7 @@ namespace Wox.Core.Theme
                 themePath = GetThemePath("Dark");
                 if (string.IsNullOrEmpty(themePath))
                 {
-                    throw new System.Exception("Change theme failed");
+                    throw new Exception("Change theme failed");
                 }
             }
 
@@ -94,8 +94,8 @@ namespace Wox.Core.Theme
                 Setter fontWeight = new Setter(TextBlock.FontWeightProperty, FontHelper.GetFontWeightFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontWeight));
                 Setter fontStretch = new Setter(TextBlock.FontStretchProperty, FontHelper.GetFontStretchFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontStretch));
 
-                Setter[] setters = new Setter[] { fontFamily, fontStyle, fontWeight, fontStretch };
-                Array.ForEach(new Style[] { resultItemStyle, resultSubItemStyle, resultItemSelectedStyle, resultSubItemSelectedStyle }, o => Array.ForEach(setters, p => o.Setters.Add(p)));
+                Setter[] setters = { fontFamily, fontStyle, fontWeight, fontStretch };
+                Array.ForEach(new[] { resultItemStyle, resultSubItemStyle, resultItemSelectedStyle, resultSubItemSelectedStyle }, o => Array.ForEach(setters, p => o.Setters.Add(p)));
             }
             return dict;
         }

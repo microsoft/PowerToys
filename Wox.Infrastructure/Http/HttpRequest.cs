@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Net;
 using System.Text;
+using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
 namespace Wox.Infrastructure.Http
@@ -56,7 +57,7 @@ namespace Wox.Infrastructure.Http
             }
             catch (System.Exception e)
             {
-                Logger.Log.Error(e);
+                Log.Error(e);
                 return string.Empty;
             }
 
@@ -109,7 +110,7 @@ namespace Wox.Infrastructure.Http
             }
             catch (System.Exception e)
             {
-                Logger.Log.Error(e);
+                Log.Error(e);
                 return string.Empty;
             }
 

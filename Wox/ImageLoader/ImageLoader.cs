@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wox.Infrastructure;
@@ -43,7 +44,7 @@ namespace Wox.ImageLoader
                 Icon icon = GetFileIcon(fileName) ?? Icon.ExtractAssociatedIcon(fileName);
                 if (icon != null)
                 {
-                    return System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(icon.Handle,
+                    return Imaging.CreateBitmapSourceFromHIcon(icon.Handle,
                         new Int32Rect(0, 0, icon.Width, icon.Height), BitmapSizeOptions.FromEmptyOptions());
                 }
             }
@@ -206,7 +207,7 @@ namespace Wox.ImageLoader
             public string szDisplayName;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NAMESIZE)]
             public string szTypeName;
-        };
+        }
 
         private const uint SHGFI_ICON = 0x000000100; // get icon
         private const uint SHGFI_DISPLAYNAME = 0x000000200; // get display name

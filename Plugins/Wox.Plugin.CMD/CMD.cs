@@ -59,11 +59,11 @@ namespace Wox.Plugin.CMD
                                        !results.Any(p => o.Equals(p.Title, StringComparison.OrdinalIgnoreCase)) &&
                                        !results.Any(p => o.Equals(p.Title, StringComparison.OrdinalIgnoreCase))).ToList();
                         autocomplete.Sort();
-                        results.AddRange(autocomplete.ConvertAll(m => new Result()
+                        results.AddRange(autocomplete.ConvertAll(m => new Result
                         {
                             Title = m,
                             IcoPath = "Images/cmd.png",
-                            Action = (c) =>
+                            Action = c =>
                             {
                                 ExecuteCMD(m);
                                 return true;
@@ -96,7 +96,7 @@ namespace Wox.Plugin.CMD
                         Title = m.Key,
                         SubTitle = string.Format(context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
                         IcoPath = "Images/cmd.png",
-                        Action = (c) =>
+                        Action = c =>
                         {
                             ExecuteCMD(m.Key);
                             return true;
@@ -115,7 +115,7 @@ namespace Wox.Plugin.CMD
                 Score = 5000,
                 SubTitle = context.API.GetTranslation("wox_plugin_cmd_execute_through_shell"),
                 IcoPath = "Images/cmd.png",
-                Action = (c) =>
+                Action = c =>
                 {
                     ExecuteCMD(cmd);
                     return true;
@@ -133,7 +133,7 @@ namespace Wox.Plugin.CMD
                     Title = m.Key,
                     SubTitle = string.Format(context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
                     IcoPath = "Images/cmd.png",
-                    Action = (c) =>
+                    Action = c =>
                     {
                         ExecuteCMD(m.Key);
                         return true;
@@ -219,9 +219,9 @@ namespace Wox.Plugin.CMD
 
         public List<Result> LoadContextMenus(Result selectedResult)
         {
-            return new List<Result>()
-                     {
-                        new Result()
+            return new List<Result>
+            {
+                        new Result
                         {
                             Title = context.API.GetTranslation("wox_plugin_cmd_run_as_administrator"),
                             Action = c =>

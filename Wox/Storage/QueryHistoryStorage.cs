@@ -15,7 +15,7 @@ namespace Wox.Storage
         private List<HistoryItem> History = new List<HistoryItem>();
 
         private int MaxHistory = 300;
-        private int cursor = 0;
+        private int cursor;
 
         public static PluginMetadata MetaData { get; } = new PluginMetadata
             { ID = "Query history", Name = "Query history" };
@@ -61,7 +61,7 @@ namespace Wox.Storage
             }
             else
             {
-                History.Add(new HistoryItem()
+                History.Add(new HistoryItem
                 {
                     Query = query,
                     ExecutedDateTime = DateTime.Now

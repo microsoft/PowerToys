@@ -9,6 +9,7 @@ using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Ipc;
 using System.Runtime.Serialization.Formatters;
 using System.Security;
+using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
@@ -131,7 +132,7 @@ namespace Wox.Helper
         // This is the hard-coded message value used by WinForms for Shell_NotifyIcon.
         // It's relatively safe to reuse.
         TRAYMOUSEMESSAGE = 0x800, //WM_USER + 1024
-        APP = 0x8000,
+        APP = 0x8000
     }
 
     [SuppressUnmanagedCodeSecurity]
@@ -342,7 +343,7 @@ namespace Wox.Helper
                 {
                     try
                     {
-                        using (TextReader reader = new StreamReader(cmdLinePath, System.Text.Encoding.Unicode))
+                        using (TextReader reader = new StreamReader(cmdLinePath, Encoding.Unicode))
                         {
                             args = NativeMethods.CommandLineToArgvW(reader.ReadToEnd());
                         }
@@ -465,7 +466,7 @@ namespace Wox.Helper
                 {
                     // Do an asynchronous call to ActivateFirstInstance function
                     Application.Current.Dispatcher.BeginInvoke(
-                        DispatcherPriority.Normal, new DispatcherOperationCallback(SingleInstance<TApplication>.ActivateFirstInstanceCallback), args);
+                        DispatcherPriority.Normal, new DispatcherOperationCallback(ActivateFirstInstanceCallback), args);
                 }
             }
 

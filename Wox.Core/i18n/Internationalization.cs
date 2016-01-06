@@ -30,7 +30,7 @@ namespace Wox.Core.i18n
                 {
                     Directory.CreateDirectory(DefaultDirectory);
                 }
-                catch (System.Exception e)
+                catch (Exception e)
                 {
                     Log.Error(e);
                 }
@@ -64,7 +64,7 @@ namespace Wox.Core.i18n
                 path = GetLanguagePath(AvailableLanguages.English);
                 if (string.IsNullOrEmpty(path))
                 {
-                    throw new System.Exception("Change Language failed");
+                    throw new Exception("Change Language failed");
                 }
             }
 
@@ -115,7 +115,7 @@ namespace Wox.Core.i18n
                 pluginPair.Metadata.Name = pluginI18n.GetTranslatedPluginTitle();
                 pluginPair.Metadata.Description = pluginI18n.GetTranslatedPluginDescription();
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 var woxPluginException = new WoxPluginException(pluginPair.Metadata.Name, "Update Plugin metadata translation failed:", e);
                 Log.Error(woxPluginException);

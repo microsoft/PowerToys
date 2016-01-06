@@ -19,7 +19,6 @@ namespace Wox
             {
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("cannotFindSpecifiedPlugin"));
                 Close();
-                return;
             }
         }
 

@@ -18,7 +18,7 @@ namespace Wox.Core.i18n
                 Chinese, 
                 Chinese_TW,
                 Russian,
-                French,
+                French
             };
             return languages;
         }

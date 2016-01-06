@@ -2,6 +2,7 @@
 using System.Linq;
 using NUnit.Framework;
 using Wox.Infrastructure;
+using Wox.Plugin;
 
 namespace Wox.Test
 {
@@ -11,20 +12,20 @@ namespace Wox.Test
         [Test]
         public void MatchTest()
         {
-            var sources = new List<string>()
+            var sources = new List<string>
             {
                 "file open in browser-test",
                 "Install Package",
                 "add new bsd",
                 "Inste",
-                "aac",
+                "aac"
             };
 
 
-            var results = new List<Wox.Plugin.Result>();
+            var results = new List<Result>();
             foreach (var str in sources)
             {
-                results.Add(new Plugin.Result()
+                results.Add(new Result
                 {
                     Title = str,
                     Score = FuzzyMatcher.Create("inst").Evaluate(str).Score

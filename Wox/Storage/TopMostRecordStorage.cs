@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Wox.Infrastructure.Storage;
+using Wox.Plugin;
 
 namespace Wox.Storage
 {
@@ -20,7 +21,7 @@ namespace Wox.Storage
             get { return "TopMostRecords"; }
         }
 
-        internal bool IsTopMost(Plugin.Result result)
+        internal bool IsTopMost(Result result)
         {
             return records.Any(o => o.Value.Title == result.Title
                 && o.Value.SubTitle == result.SubTitle
@@ -28,7 +29,7 @@ namespace Wox.Storage
                 && o.Key == result.OriginQuery.RawQuery);
         }
 
-        internal void Remove(Plugin.Result result)
+        internal void Remove(Result result)
         {
             if (records.ContainsKey(result.OriginQuery.RawQuery))
             {
@@ -37,7 +38,7 @@ namespace Wox.Storage
             }
         }
 
-        internal void AddOrUpdate(Plugin.Result result)
+        internal void AddOrUpdate(Result result)
         {
             if (records.ContainsKey(result.OriginQuery.RawQuery))
             {
@@ -47,11 +48,11 @@ namespace Wox.Storage
             }
             else
             {
-                records.Add(result.OriginQuery.RawQuery, new TopMostRecord()
-                    {
+                records.Add(result.OriginQuery.RawQuery, new TopMostRecord
+                {
                         PluginID = result.PluginID,
                         Title = result.Title,
-                        SubTitle = result.SubTitle,
+                        SubTitle = result.SubTitle
                     });
             }
 

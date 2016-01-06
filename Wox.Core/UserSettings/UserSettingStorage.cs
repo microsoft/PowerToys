@@ -172,7 +172,7 @@ namespace Wox.Core.UserSettings
             var customizedPluginConfig = CustomizedPluginConfigs.FirstOrDefault(o => o.ID == metadata.ID);
             if (customizedPluginConfig == null)
             {
-                CustomizedPluginConfigs.Add(new CustomizedPluginConfig()
+                CustomizedPluginConfigs.Add(new CustomizedPluginConfig
                 {
                     Disabled = false,
                     ID = metadata.ID,

@@ -12,7 +12,7 @@ namespace Wox
     public partial class Msg : Window
     {
         Storyboard fadeOutStoryboard = new Storyboard();
-        private bool closing = false;
+        private bool closing;
 
         public Msg()
         {
@@ -21,13 +21,13 @@ namespace Wox
             var dipWorkingArea = WindowIntelopHelper.TransformPixelsToDIP(this,
                 screen.WorkingArea.Width,
                 screen.WorkingArea.Height);
-            Left = dipWorkingArea.X - this.Width;
+            Left = dipWorkingArea.X - Width;
             Top = dipWorkingArea.Y;
             showAnimation.From = dipWorkingArea.Y;
             showAnimation.To = dipWorkingArea.Y - Height;
 
             // Create the fade out storyboard
-            fadeOutStoryboard.Completed += new EventHandler(fadeOutStoryboard_Completed);
+            fadeOutStoryboard.Completed += fadeOutStoryboard_Completed;
             DoubleAnimation fadeOutAnimation = new DoubleAnimation(dipWorkingArea.Y - Height, dipWorkingArea.Y, new Duration(TimeSpan.FromSeconds(0.3)))
             {
                 AccelerationRatio = 0.2

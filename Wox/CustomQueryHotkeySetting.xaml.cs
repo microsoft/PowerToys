@@ -38,7 +38,7 @@ namespace Wox
                     UserSettingStorage.Instance.CustomPluginHotkeys = new List<CustomPluginHotkey>();
                 }
 
-                var pluginHotkey = new CustomPluginHotkey()
+                var pluginHotkey = new CustomPluginHotkey
                 {
                     Hotkey = ctlHotkey.CurrentHotkey.ToString(),
                     ActionKeyword = tbAction.Text

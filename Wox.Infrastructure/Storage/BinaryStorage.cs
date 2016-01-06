@@ -69,7 +69,7 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        private System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             Assembly ayResult = null;
             string sShortAssemblyName = args.Name.Split(',')[0];

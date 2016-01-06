@@ -47,7 +47,7 @@ namespace Wox.Plugin.ControlPanel
                 var fuzzyMather = FuzzyMatcher.Create(myQuery);
                 if (MatchProgram(item, fuzzyMather))
                 {
-                    results.Add(new Result()
+                    results.Add(new Result
                     {
                         Title = item.LocalizedString,
                         SubTitle = item.InfoTip,

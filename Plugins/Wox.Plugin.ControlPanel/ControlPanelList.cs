@@ -123,7 +123,7 @@ namespace Wox.Plugin.ControlPanel
 
             if (currentKey.GetValue("LocalizedString") != null)
             {
-                localizedStringRaw = currentKey.GetValue("LocalizedString").ToString().Split(new string[] { ",-" }, StringSplitOptions.None);
+                localizedStringRaw = currentKey.GetValue("LocalizedString").ToString().Split(new[] { ",-" }, StringSplitOptions.None);
 
                 if (localizedStringRaw.Length > 1)
                 {
@@ -184,7 +184,7 @@ namespace Wox.Plugin.ControlPanel
 
             if (currentKey.GetValue("InfoTip") != null)
             {
-                infoTipRaw = currentKey.GetValue("InfoTip").ToString().Split(new string[] { ",-" }, StringSplitOptions.None);
+                infoTipRaw = currentKey.GetValue("InfoTip").ToString().Split(new[] { ",-" }, StringSplitOptions.None);
 
                 if (infoTipRaw.Length == 2)
                 {
@@ -229,7 +229,7 @@ namespace Wox.Plugin.ControlPanel
             {
                 if (currentKey.OpenSubKey("DefaultIcon").GetValue(null) != null)
                 {
-                    iconString = new List<string>(currentKey.OpenSubKey("DefaultIcon").GetValue(null).ToString().Split(new char[] { ',' }, 2));
+                    iconString = new List<string>(currentKey.OpenSubKey("DefaultIcon").GetValue(null).ToString().Split(new[] { ',' }, 2));
                     if (iconString[0][0] == '@')
                     {
                         iconString[0] = iconString[0].Substring(1);
@@ -247,7 +247,7 @@ namespace Wox.Plugin.ControlPanel
                     if (iconPtr == IntPtr.Zero)
                     {
                         defaultIconPtr = IntPtr.Zero;
-                        EnumResourceNamesWithID(dataFilePointer, GROUP_ICON, new EnumResNameDelegate(EnumRes), IntPtr.Zero); //Iterate through resources. 
+                        EnumResourceNamesWithID(dataFilePointer, GROUP_ICON, EnumRes, IntPtr.Zero); //Iterate through resources. 
 
                         iconPtr = LoadImage(dataFilePointer, defaultIconPtr, 1, iconSize, iconSize, 0);
                     }
@@ -312,16 +312,16 @@ namespace Wox.Plugin.ControlPanel
 
         private static uint GET_RESOURCE_ID(IntPtr value)
         {
-            if (IS_INTRESOURCE(value) == true)
+            if (IS_INTRESOURCE(value))
                 return (uint)value;
-            throw new System.NotSupportedException("value is not an ID!");
+            throw new NotSupportedException("value is not an ID!");
         }
 
         private static string GET_RESOURCE_NAME(IntPtr value)
         {
-            if (IS_INTRESOURCE(value) == true)
+            if (IS_INTRESOURCE(value))
                 return value.ToString();
-            return Marshal.PtrToStringUni((IntPtr)value);
+            return Marshal.PtrToStringUni(value);
         }
 
         private static bool EnumRes(IntPtr hModule, IntPtr lpszType, IntPtr lpszName, IntPtr lParam)

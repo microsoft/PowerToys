@@ -162,9 +162,9 @@ namespace Wox.UpdateFeedGenerator
 			if (fileTypesToMatch.IndexOfAny(new[] { ':', '<', '>', '/', '\\' }) >= 0) throw new ArgumentException("invalid cahracters in wildcard pattern", "fileTypesToMatch");
 
 			m_includeSubDirs = includeSubDirs;
-			m_paths = pathsToSearch.Split(new[] { ';', ',' });
+			m_paths = pathsToSearch.Split(';', ',');
 
-			string[] specs = fileTypesToMatch.Split(new[] { ';', ',' });
+			string[] specs = fileTypesToMatch.Split(';', ',');
 			m_fileSpecs = new List<Regex>(specs.Length);
 			foreach (string spec in specs) {
 				// trim whitespace off file spec and convert Win32 wildcards to regular expressions

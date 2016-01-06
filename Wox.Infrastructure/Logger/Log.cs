@@ -1,5 +1,4 @@
 ﻿using NLog;
-using Wox.Infrastructure.Exception;
 
 namespace Wox.Infrastructure.Logger
 {

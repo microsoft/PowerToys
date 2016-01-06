@@ -47,10 +47,10 @@ namespace Wox.CrashReporter
                     .SetUserDescription(reproduceSteps)
                     .Submit();
                 ExceptionlessClient.Current.ProcessQueue();
-                Dispatcher.Invoke(new Action(() =>
+                Dispatcher.Invoke(() =>
                 {
                     Close();
-                }));
+                });
             });
         }
 

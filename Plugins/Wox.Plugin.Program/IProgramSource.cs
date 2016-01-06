@@ -23,7 +23,7 @@ namespace Wox.Plugin.Program
 
         protected Program CreateEntry(string file)
         {
-            var p = new Program()
+            var p = new Program
             {
                 Title = Path.GetFileNameWithoutExtension(file),
                 IcoPath = file,

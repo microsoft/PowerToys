@@ -11,7 +11,7 @@ namespace Wox.Plugin.Sys
 
             foreach (var Result in Results)
             {
-                this.lbxCommands.Items.Add(Result);
+                lbxCommands.Items.Add(Result);
             }
         }
     }

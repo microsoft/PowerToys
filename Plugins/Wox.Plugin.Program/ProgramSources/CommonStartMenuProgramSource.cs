@@ -1,11 +1,12 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Wox.Plugin.Program.ProgramSources
 {
     [Serializable]
-    [global::System.ComponentModel.Browsable(false)]
+    [Browsable(false)]
     public class CommonStartMenuProgramSource : FileSystemProgramSource
     {
         [DllImport("shell32.dll")]
@@ -28,7 +29,7 @@ namespace Wox.Plugin.Program.ProgramSources
         public CommonStartMenuProgramSource(ProgramSource source)
             : this()
         {
-            this.BonusPoints = source.BonusPoints;
+            BonusPoints = source.BonusPoints;
         }
 
         public override string ToString()

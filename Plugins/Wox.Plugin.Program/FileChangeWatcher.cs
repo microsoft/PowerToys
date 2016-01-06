@@ -7,7 +7,7 @@ namespace Wox.Plugin.Program
 {
     internal class FileChangeWatcher
     {
-        private static bool isIndexing = false;
+        private static bool isIndexing;
         private static List<string> watchedPath = new List<string>(); 
 
         public static void AddWatch(string path, bool includingSubDirectory = true)
