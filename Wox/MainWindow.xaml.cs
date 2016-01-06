@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -484,13 +485,14 @@ namespace Wox
                     }
                 }
                 _lastQuery = query;
-                Dispatcher.DelayInvoke("ShowProgressbar", () =>
+                Dispatcher.InvokeAsync(async () =>
                 {
+                    await Task.Delay(150);
                     if (!string.IsNullOrEmpty(query.RawQuery) && query.RawQuery == _lastQuery.RawQuery && !_queryHasReturn)
                     {
                         StartProgress();
                     }
-                }, TimeSpan.FromMilliseconds(150));
+                });
                 PluginManager.QueryForAllPlugins(query);
             }
             StopProgress();
@@ -829,6 +831,7 @@ namespace Wox
 
         private void UpdateResultView(List<Result> list, PluginMetadata metadata, Query originQuery)
         {
+            Thread.Sleep(3000);
             _queryHasReturn = true;
             progressBar.Dispatcher.Invoke(new Action(StopProgress));
 
