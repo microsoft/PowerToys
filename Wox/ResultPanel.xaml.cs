@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
+using System.Linq;
+using System.Runtime.Remoting.Contexts;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Linq;
-using System.Runtime.Remoting.Contexts;
 using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Plugin;
@@ -266,10 +263,10 @@ namespace Wox
             if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
             {
                 lbResults.ScrollIntoView(e.AddedItems[0]);
-                Dispatcher.DelayInvoke("UpdateItemNumber", () =>
-                {
-                    UpdateItemNumber();
-                }, TimeSpan.FromMilliseconds(3));
+                //Dispatcher.DelayInvoke("UpdateItemNumber", () =>
+                //{
+                    //UpdateItemNumber();
+                //}, TimeSpan.FromMilliseconds(3));
             }
         }
 

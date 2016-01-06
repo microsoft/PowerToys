@@ -1,6 +1,4 @@
-﻿using Wox.Plugin;
-
-namespace Wox.Infrastructure.Exception
+﻿namespace Wox.Infrastructure.Exception
 {
     public class WoxPluginException : WoxException
     {

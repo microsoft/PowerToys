@@ -5,11 +5,13 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Interop;
 using Wox.Infrastructure;
-using FormsApplication = System.Windows.Forms.Application;
-using PowerState = System.Windows.Forms.PowerState;
+using Application = System.Windows.Application;
 using Control = System.Windows.Controls.Control;
+using FormsApplication = System.Windows.Forms.Application;
+using MessageBox = System.Windows.MessageBox;
 
 namespace Wox.Plugin.Sys
 {

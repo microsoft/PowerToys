@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using JsonProperty = Newtonsoft.Json.JsonPropertyAttribute;
 using Wox.Infrastructure.Storage;
+using JsonProperty = Newtonsoft.Json.JsonPropertyAttribute;
 
 namespace Wox.Plugin.Everything
 {

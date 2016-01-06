@@ -1,0 +1,139 @@
+{
+  "WebSearches": [
+    {
+      "Title": "Google",
+      "ActionKeyword": "g",
+      "IconPath": "Images\\google.png",
+      "Url": "https://www.google.com/search?q={q}",
+      "Enabled": true
+    },
+    {
+      "Title": "Wikipedia",
+      "ActionKeyword": "wiki",
+      "IconPath": "Images\\wiki.png",
+      "Url": "http://en.wikipedia.org/wiki/{q}",
+      "Enabled": true
+    },
+    {
+      "Title": "FindIcon",
+      "ActionKeyword": "findicon",
+      "IconPath": "Images\\pictures.png",
+      "Url": "http://findicons.com/search/{q}",
+      "Enabled": true
+    },
+    {
+      "Title": "Facebook",
+      "ActionKeyword": "facebook",
+      "IconPath": "Images\\facebook.png",
+      "Url": "http://www.facebook.com/search/?q={q}",
+      "Enabled": true
+    },
+    {
+      "Title": "Twitter",
+      "ActionKeyword": "twitter",
+      "IconPath": "Images\\twitter.png",
+      "Url": "http://twitter.com/search?q={q}",
+      "Enabled": true
+    },
+    {
+      "Title": "Google Maps",
+      "ActionKeyword": "maps",
+      "IconPath": "Images\\google_maps.png",
+      "Url": "http://maps.google.com/maps?q={q}",
+      "Enabled": true
+    },
+    {
+      "Title": "Google Translate",
+      "ActionKeyword": "translate",
+      "IconPath": "Images\\google_translate.png",
+      "Url": "http://translate.google.com/#auto|en|{q}",
+      "Enabled": true
+    },
+    {
+      "Title": "Duckduckgo",
+      "ActionKeyword": "duckduckgo",
+      "IconPath": "Images\\duckduckgo.png",
+      "Url": "https://duckduckgo.com/?q={q}",
+      "Enabled": true
+    },
+    {
+      "Title": "Github",
+      "ActionKeyword": "github",
+      "IconPath": "Images\\github.png",
+      "Url": "https://github.com/search?q={q}",
+      "Enabled": true
+    },
+    {
+      "Title": "Github Gist",
+      "ActionKeyword": "gist",
+      "IconPath": "Images\\gist.png",
+      "Url": "https://gist.github.com/search?q={q}",
+      "Enabled": true
+    },
+    {
+      "Title": "Gmail",
+      "ActionKeyword": "gmail",
+      "IconPath": "Images\\gmail.png",
+      "Url": "https://mail.google.com/mail/ca/u/0/#apps/{q}",
+      "Enabled": true
+    },
+    {
+      "Title": "Google Drive",
+      "ActionKeyword": "drive",
+      "IconPath": "Images\\google_drive.png",
+      "Url": "http://drive.google.com/?hl=en&tab=bo#search/{q}",
+      "Enabled": true
+    },
+    {
+      "Title": "Wolframalpha",
+      "ActionKeyword": "wolframalpha",
+      "IconPath": "Images\\wolframalpha.png",
+      "Url": "http://www.wolframalpha.com/input/?i={q}",
+      "Enabled": true
+    },
+    {
+      "Title": "Stackoverflow",
+      "ActionKeyword": "stackoverflow",
+      "IconPath": "Images\\stackoverflow.png",
+      "Url": "http://stackoverflow.com/search?q={q}",
+      "Enabled": true
+    },
+    {
+      "Title": "I'm Feeling Lucky",
+      "ActionKeyword": "lucky",
+      "IconPath": "Images\\google.png",
+      "Url": "http://google.com/search?q={q}&btnI=I",
+      "Enabled": true
+    },
+    {
+      "Title": "Google Image",
+      "ActionKeyword": "image",
+      "IconPath": "Images\\google.png",
+      "Url": "https://www.google.com/search?q={q}&tbm=isch",
+      "Enabled": true
+    },
+    {
+      "Title": "Youtube",
+      "ActionKeyword": "youtube",
+      "IconPath": "Images\\youtube.png",
+      "Url": "http://www.youtube.com/results?search_query={q}",
+      "Enabled": true
+    },
+    {
+      "Title": "Bing",
+      "ActionKeyword": "bing",
+      "IconPath": "Images\\bing.png",
+      "URL": "https://www.bing.com/search?q={q}",
+      "Enabled": true
+    },
+    {
+      "Title": "Yahoo",
+      "ActionKeyword": "yahoo",
+      "IconPath": "Images\\yahoo.png",
+      "URL": "http://www.search.yahoo.com/search?p={q}",
+      "Enabled": true
+    }
+  ],
+  "EnableWebSearchSuggestion": false,
+  "WebSearchSuggestionSource": "Google"
+}

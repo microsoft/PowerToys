@@ -63,7 +63,6 @@
     <Compile Include="Hotkey\InterceptKeys.cs" />
     <Compile Include="Hotkey\KeyEvent.cs" />
     <Compile Include="Logger\Log.cs" />
-    <Compile Include="PeHeaderReader.cs" />
     <Compile Include="Stopwatch.cs" />
     <Compile Include="Storage\BinaryStorage.cs" />
     <Compile Include="Storage\IStorage.cs" />

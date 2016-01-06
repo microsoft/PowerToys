@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -79,10 +78,7 @@ namespace Wox.Plugin.WebSearch
 
         public void Init(PluginInitContext context)
         {
-            this.Context = context;
-
-            if (WebSearchStorage.Instance.WebSearches == null)
-                WebSearchStorage.Instance.WebSearches = WebSearchStorage.Instance.LoadDefaultWebSearches();
+            Context = context;
         }
 
         #region ISettingProvider Members
