@@ -831,7 +831,6 @@ namespace Wox
 
         private void UpdateResultView(List<Result> list, PluginMetadata metadata, Query originQuery)
         {
-            Thread.Sleep(3000);
             _queryHasReturn = true;
             progressBar.Dispatcher.Invoke(new Action(StopProgress));
 
