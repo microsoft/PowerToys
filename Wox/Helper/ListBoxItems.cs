@@ -18,7 +18,7 @@ namespace Wox.Helper
             List<Result> itemsToRemove = Items.Where(x => predicate(x)).ToList();
             if (itemsToRemove.Count > 0)
             {
-                
+
                 itemsToRemove.ForEach(item => Items.Remove(item));
 
                 OnPropertyChanged(new PropertyChangedEventArgs("Count"));
@@ -40,9 +40,13 @@ namespace Wox.Helper
             {
                 Result oldItem = Items[i];
                 Result newItem = newItems[i];
-                if (!Equals(oldItem, newItem))
+                if (!oldItem.Equals(newItem))
                 {
                     this[i] = newItem;
+                }
+                else if (oldItem.Score != newItem.Score)
+                {
+                    this[i].Score = newItem.Score;
                 }
             }
 
