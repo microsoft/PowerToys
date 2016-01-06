@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
+using System.Windows;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json;
 using Wox.Plugin;
-using System.Windows;
 
 namespace Wox.Core.Plugin
 {

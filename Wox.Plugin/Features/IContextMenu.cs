@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace Wox.Plugin.Features
 {
     [Obsolete("Delete Wox.Plugin.Features using directive, " +

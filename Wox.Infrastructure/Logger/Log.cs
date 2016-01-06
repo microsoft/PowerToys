@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using NLog;
-using Wox.Infrastructure.Exception;
+﻿using NLog;
 
 namespace Wox.Infrastructure.Logger
 {

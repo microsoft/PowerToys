@@ -6,8 +6,8 @@ using System.Linq;
 using System.Reflection;
 using System.Windows;
 using Wox.Infrastructure;
-using Wox.Plugin.Program.ProgramSources;
 using Wox.Infrastructure.Logger;
+using Wox.Plugin.Program.ProgramSources;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox.Plugin.Program

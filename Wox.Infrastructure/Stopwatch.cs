@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Infrastructure
