@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows;
 using Wox.CommandArgs;
 using Wox.Core.Plugin;
 using Wox.Helper;
+using Wox.Infrastructure;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
+
 
 namespace Wox
 {
@@ -33,6 +37,7 @@ namespace Wox
             Stopwatch.Debug("Startup Time", () =>
             {
                 base.OnStartup(e);
+                WoxDirectroy.Executable = Directory.GetParent(Assembly.GetExecutingAssembly().Location).ToString();
                 RegisterUnhandledException();
                 ThreadPool.QueueUserWorkItem(o => { ImageLoader.ImageLoader.PreloadImages(); });
                 Window = new MainWindow();
