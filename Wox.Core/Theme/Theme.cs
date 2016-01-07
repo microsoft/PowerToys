@@ -14,14 +14,14 @@ using Wox.Infrastructure.Logger;
 
 namespace Wox.Core.Theme
 {
-    public class Theme : IUIResource
+    public class Theme : Resource
     {
-        public const string DirectoryName = "Themes";
         private static List<string> themeDirectories = new List<string>();
 
-        static Theme()
+        public Theme()
         {
-            themeDirectories.Add(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), DirectoryName));
+            DirectoryName = "Themes";
+            themeDirectories.Add(DirectoryPath);
             MakesureThemeDirectoriesExist();
         }
 
@@ -67,7 +67,7 @@ namespace Wox.Core.Theme
             }
         }
 
-        public ResourceDictionary GetResourceDictionary()
+        public override ResourceDictionary GetResourceDictionary()
         {
             var dict = new ResourceDictionary
             {

@@ -66,13 +66,12 @@
     <Compile Include="Updater\WoxUpdateSource.cs" />
     <Compile Include="UserSettings\HttpProxy.cs" />
     <Compile Include="i18n\AvailableLanguages.cs" />
-    <Compile Include="i18n\IInternationalization.cs" />
     <Compile Include="i18n\Internationalization.cs" />
     <Compile Include="i18n\InternationalizationManager.cs" />
     <Compile Include="i18n\Language.cs" />
     <Compile Include="Theme\ThemeManager.cs" />
-    <Compile Include="UI\IUIResource.cs" />
-    <Compile Include="UI\ResourceMerger.cs" />
+    <Compile Include="Resource\Resource.cs" />
+    <Compile Include="Resource\ResourceMerger.cs" />
     <Compile Include="Plugin\PluginInstaller.cs" />
     <Compile Include="Plugin\JsonRPCPlugin.cs" />
     <Compile Include="Plugin\JsonRPCPluginLoader.cs" />

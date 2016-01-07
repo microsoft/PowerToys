@@ -25,16 +25,10 @@ namespace Wox.Core.UI
             }
         }
 
-        public static void UpdateResource(Theme.Theme t)
+        public static void UpdateResource<T>(T t) where T : Resource
         {
-            RemoveResource(Theme.Theme.DirectoryName);
+            RemoveResource(t.DirectoryName);
             Application.Current.Resources.MergedDictionaries.Add(t.GetResourceDictionary());
-        }
-
-        public static void UpdateResources(Internationalization i)
-        {
-            RemoveResource(Internationalization.DirectoryName);
-            Application.Current.Resources.MergedDictionaries.Add(i.GetResourceDictionary());
         }
 
         internal static void UpdatePluginLanguages()
