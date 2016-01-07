@@ -5,7 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using NHotkey.Wpf;
-using Wox.Core.i18n;
+using Wox.Core.Resource;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
 

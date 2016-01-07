@@ -8,7 +8,7 @@ using NAppUpdate.Framework.Common;
 using NAppUpdate.Framework.Sources;
 using NAppUpdate.Framework.Tasks;
 using Newtonsoft.Json;
-using Wox.Core.i18n;
+using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Logger;

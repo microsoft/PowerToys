@@ -2,17 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
-using Wox.Core.UI;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure.Logger;
 
-namespace Wox.Core.Theme
+namespace Wox.Core.Resource
 {
     public class Theme : Resource
     {

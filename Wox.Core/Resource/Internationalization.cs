@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
-using Wox.Core.UI;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
-namespace Wox.Core.i18n
+namespace Wox.Core.Resource
 {
     public class Internationalization : Resource
     {

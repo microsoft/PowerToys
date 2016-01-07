@@ -2,7 +2,7 @@
 using System.Windows;
 using Wox.Infrastructure;
 
-namespace Wox.Core.UI
+namespace Wox.Core.Resource
 {
     public abstract class Resource
     {

@@ -2,11 +2,10 @@
 using System.IO;
 using System.Linq;
 using System.Windows;
-using Wox.Core.i18n;
 using Wox.Core.Plugin;
 using Wox.Plugin;
 
-namespace Wox.Core.UI
+namespace Wox.Core.Resource
 {
     public static class ResourceMerger
     {
@@ -25,7 +24,7 @@ namespace Wox.Core.UI
             }
         }
 
-        public static void UpdateResource<T>(T t) where T : Resource
+        public static void UpdateResource<T>(T t) where T : Core.Resource.Resource
         {
             RemoveResource(t.DirectoryName);
             Application.Current.Resources.MergedDictionaries.Add(t.GetResourceDictionary());

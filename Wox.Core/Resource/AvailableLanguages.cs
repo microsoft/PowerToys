@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Wox.Core.i18n
+namespace Wox.Core.Resource
 {
     internal static class AvailableLanguages
     {

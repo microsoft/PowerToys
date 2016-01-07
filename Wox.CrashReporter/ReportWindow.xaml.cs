@@ -3,7 +3,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Documents;
 using Exceptionless;
-using Wox.Core.i18n;
+using Wox.Core.Resource;
 using Wox.Core.Updater;
 
 namespace Wox.CrashReporter

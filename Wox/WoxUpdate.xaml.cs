@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 using MarkdownSharp;
-using Wox.Core.i18n;
+using Wox.Core.Resource;
 using Wox.Core.Updater;
 
 namespace Wox

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 
-namespace Wox.Core.Theme
+namespace Wox.Core.Resource
 {
     public static class FontHelper
     {
