@@ -11,14 +11,6 @@ namespace Wox.Plugin.Program
     {
         public List<Program> Programs = new List<Program>();
 
-        protected override string ConfigFolder
-        {
-            get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
-        }
-
-        protected override string ConfigName
-        {
-            get { return "ProgramIndexCache"; }
-        }
+        protected override string FileName { get; } = "ProgramIndexCache";
     }
 }

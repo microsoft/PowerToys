@@ -12,15 +12,7 @@ namespace Wox.Storage
         [JsonProperty]
         private Dictionary<string, int> records = new Dictionary<string, int>();
 
-        protected override string ConfigFolder
-        {
-            get { return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Config"); }
-        }
-
-        protected override string ConfigName
-        {
-            get { return "UserSelectedRecords"; }
-        }
+        protected override string FileName { get; } = "UserSelectedRecords";
 
         public void Add(Result result)
         {

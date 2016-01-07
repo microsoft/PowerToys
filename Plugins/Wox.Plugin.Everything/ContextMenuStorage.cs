@@ -15,15 +15,7 @@ namespace Wox.Plugin.Everything
 
         public IPublicAPI API { get; set; }
 
-        protected override string ConfigName
-        {
-            get { return "EverythingContextMenu"; }
-        }
-
-        protected override string ConfigFolder
-        {
-            get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
-        }
+        protected override string FileName { get; } = "EverythingContextMenu"; 
 
         protected override void OnAfterLoad(ContextMenuStorage obj)
         {

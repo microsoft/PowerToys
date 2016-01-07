@@ -107,17 +107,7 @@ namespace Wox.Core.UserSettings
         [JsonProperty]
         public int MaxResultsToShow { get; set; }
 
-        protected override string ConfigFolder
-        {
-            get { return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Config"); }
-        }
-
-        protected override string ConfigName
-        {
-            get { return "config"; }
-        }
-
-        
+        protected override string FileName { get; } = "Settings";
 
         public void IncreaseActivateTimes()
         {

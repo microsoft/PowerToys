@@ -11,15 +11,7 @@ namespace Wox.Storage
     {
         public Dictionary<string, TopMostRecord> records = new Dictionary<string, TopMostRecord>();
 
-        protected override string ConfigFolder
-        {
-            get { return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Config"); }
-        }
-
-        protected override string ConfigName
-        {
-            get { return "TopMostRecords"; }
-        }
+        protected override string FileName { get; } = "TopMostRecords";
 
         internal bool IsTopMost(Result result)
         {
@@ -50,10 +42,10 @@ namespace Wox.Storage
             {
                 records.Add(result.OriginQuery.RawQuery, new TopMostRecord
                 {
-                        PluginID = result.PluginID,
-                        Title = result.Title,
-                        SubTitle = result.SubTitle
-                    });
+                    PluginID = result.PluginID,
+                    Title = result.Title,
+                    SubTitle = result.SubTitle
+                });
             }
 
             Save();

@@ -17,14 +17,6 @@ namespace Wox.Plugin.WebSearch
         [JsonProperty]
         public string WebSearchSuggestionSource { get; set; }
 
-        protected override string ConfigFolder
-        {
-            get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
-        }
-
-        protected override string ConfigName
-        {
-            get { return "setting"; }
-        }
+        protected override string FileName { get; } = "settings_plugin_websearch";
     }
 }

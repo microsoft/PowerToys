@@ -17,7 +17,7 @@ namespace Wox.Infrastructure.Storage
 
         protected override void LoadInternal()
         {
-            string json = File.ReadAllText(ConfigPath);
+            string json = File.ReadAllText(FilePath);
             if (!string.IsNullOrEmpty(json))
             {
                 try
@@ -42,7 +42,7 @@ namespace Wox.Infrastructure.Storage
                 lock (syncObject)
                 {
                     string json = JsonConvert.SerializeObject(serializedObject, Formatting.Indented);
-                    File.WriteAllText(ConfigPath, json);
+                    File.WriteAllText(FilePath, json);
                 }
             });
         }

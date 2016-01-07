@@ -40,14 +40,6 @@ namespace Wox.UpdateFeedGenerator
             }
         }
 
-        protected override string ConfigFolder
-        {
-            get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
-        }
-
-        protected override string ConfigName
-        {
-            get { return "config"; }
-        }
+        protected override string FileName { get; } = "config";
     }
 }
