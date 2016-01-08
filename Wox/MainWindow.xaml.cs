@@ -748,7 +748,7 @@ namespace Wox
                         Title = string.Format(executeQueryHistoryTitle,history.Query),
                         SubTitle = string.Format(lastExecuteTime,history.ExecutedDateTime),
                         IcoPath = "Images\\history.png",
-                        PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                        PluginDirectory = WoxDirectroy.Executable,
                         Action = _ =>{
                             ChangeQuery(history.Query,true);
                             return false;
@@ -865,7 +865,7 @@ namespace Wox
             {
                 return new Result(GetTranslation("cancelTopMostInThisQuery"), "Images\\down.png")
                 {
-                    PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    PluginDirectory = WoxDirectroy.Executable,
                     Action = _ =>
                     {
                         TopMostRecordStorage.Instance.Remove(result);
@@ -878,7 +878,7 @@ namespace Wox
             {
                 return new Result(GetTranslation("setAsTopMostInThisQuery"), "Images\\up.png")
                 {
-                    PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    PluginDirectory = WoxDirectroy.Executable,
                     Action = _ =>
                     {
                         TopMostRecordStorage.Instance.AddOrUpdate(result);
