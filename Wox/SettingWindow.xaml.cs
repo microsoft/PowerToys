@@ -11,13 +11,11 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
-using Wox.Core.i18n;
 using Wox.Core.Plugin;
-using Wox.Core.Theme;
+using Wox.Core.Resource;
 using Wox.Core.Updater;
 using Wox.Core.UserSettings;
 using Wox.Helper;
-using Wox.Infrastructure.Exception;
 using Wox.Plugin;
 using Application = System.Windows.Forms.Application;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
@@ -27,13 +25,13 @@ namespace Wox
     public partial class SettingWindow : Window
     {
         public readonly MainWindow MainWindow;
-        bool settingsLoaded = false;
+        bool settingsLoaded;
         private Dictionary<ISettingProvider, Control> featureControls = new Dictionary<ISettingProvider, Control>();
-        private bool themeTabLoaded = false;
+        private bool themeTabLoaded;
 
         public SettingWindow(MainWindow mainWindow)
         {
-            this.MainWindow = mainWindow;
+            MainWindow = mainWindow;
             InitializeComponent();
             Loaded += Setting_Loaded;
         }
@@ -248,7 +246,7 @@ namespace Wox
 
         #region Hotkey
 
-        void ctlHotkey_OnHotkeyChanged(object sender, System.EventArgs e)
+        void ctlHotkey_OnHotkeyChanged(object sender, EventArgs e)
         {
             if (ctlHotkey.CurrentHotkeyAvailable)
             {
@@ -362,50 +360,50 @@ namespace Wox
                     ));
             }
 
-            resultPanelPreview.AddResults(new List<Result>()
+            resultPanelPreview.AddResults(new List<Result>
             {
-                new Result()
+                new Result
                 {
                     Title = "Wox is an effective launcher for windows",
                     SubTitle = "Wox provide bundles of features let you access infomations quickly.",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 },
-                new Result()
+                new Result
                 {
                     Title = "Search applications",
                     SubTitle = "Search applications, files (via everything plugin) and browser bookmarks",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 },
-                new Result()
+                new Result
                 {
                     Title = "Search web contents with shortcuts",
                     SubTitle = "e.g. search google with g keyword or youtube keyword)",
                     IcoPath = "Images/app.png",
                     PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 },
-                new Result()
+                new Result
                 {
                     Title = "clipboard history ",
                     IcoPath = "Images/app.png",
                     PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 },
-                new Result()
+                new Result
                 {
                     Title = "Themes support",
                     SubTitle = "get more themes from http://www.getwox.com/theme",
                     IcoPath = "Images/app.png",
                     PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 },
-                new Result()
+                new Result
                 {
                     Title = "Plugins support",
                     SubTitle = "get more plugins from http://www.getwox.com/plugin",
                     IcoPath = "Images/app.png",
                     PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
                 },
-                new Result()
+                new Result
                 {
                     Title = "Wox is an open-source software",
                     SubTitle = "Wox benefits from the open-source community a lot",
@@ -416,7 +414,7 @@ namespace Wox
 
             foreach (string theme in ThemeManager.Theme.LoadAvailableThemes())
             {
-                string themeName = System.IO.Path.GetFileNameWithoutExtension(theme);
+                string themeName = Path.GetFileNameWithoutExtension(theme);
                 themeComboBox.Items.Add(themeName);
             }
 
@@ -453,7 +451,7 @@ namespace Wox
             if (!settingsLoaded) return;
             string queryBoxFontName = cbQueryBoxFont.SelectedItem.ToString();
             UserSettingStorage.Instance.QueryBoxFont = queryBoxFontName;
-            this.cbQueryBoxFontFaces.SelectedItem = ((FontFamily)cbQueryBoxFont.SelectedItem).ChooseRegularFamilyTypeface();
+            cbQueryBoxFontFaces.SelectedItem = ((FontFamily)cbQueryBoxFont.SelectedItem).ChooseRegularFamilyTypeface();
             UserSettingStorage.Instance.Save();
             ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
         }
@@ -466,8 +464,6 @@ namespace Wox
             {
                 if (cbQueryBoxFontFaces.Items.Count > 0)
                     cbQueryBoxFontFaces.SelectedIndex = 0;
-
-                return;
             }
             else
             {
@@ -484,7 +480,7 @@ namespace Wox
             if (!settingsLoaded) return;
             string resultItemFont = cbResultItemFont.SelectedItem.ToString();
             UserSettingStorage.Instance.ResultItemFont = resultItemFont;
-            this.cbResultItemFontFaces.SelectedItem = ((FontFamily)cbResultItemFont.SelectedItem).ChooseRegularFamilyTypeface();
+            cbResultItemFontFaces.SelectedItem = ((FontFamily)cbResultItemFont.SelectedItem).ChooseRegularFamilyTypeface();
             UserSettingStorage.Instance.Save();
             ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
         }
@@ -596,7 +592,7 @@ namespace Wox
             if (customizedPluginConfig == null)
             {
                 // todo when this part will be invoked
-                UserSettingStorage.Instance.CustomizedPluginConfigs.Add(new CustomizedPluginConfig()
+                UserSettingStorage.Instance.CustomizedPluginConfigs.Add(new CustomizedPluginConfig
                 {
                     Disabled = cbDisabled.IsChecked ?? true,
                     ID = id,
@@ -800,7 +796,7 @@ namespace Wox
 
         #endregion
 
-        private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             // Hide window with ESC, but make sure it is not pressed as a hotkey
             if (e.Key == Key.Escape && !ctlHotkey.IsFocused)

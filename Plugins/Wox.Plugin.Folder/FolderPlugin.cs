@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using Wox.Infrastructure;
 
 namespace Wox.Plugin.Folder
 {
@@ -51,7 +51,7 @@ namespace Wox.Plugin.Folder
         {
             List<Result> contextMenus = new List<Result>();
             string folderPath = ((FolderLink) targetResult.ContextData).Path;
-            contextMenus.Add(new Result()
+            contextMenus.Add(new Result
             {
                 Title = "Copy to this folder",
                 IcoPath = "Images/copy.png",
@@ -246,7 +246,7 @@ namespace Wox.Plugin.Folder
 
         public string GetLanguagesFolder()
         {
-            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+            return Path.Combine(WoxDirectroy.Executable, "Languages");
         }
 
         public string GetTranslatedPluginTitle()

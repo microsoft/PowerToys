@@ -27,7 +27,7 @@ namespace Wox.Plugin.Program.ProgramSources
         public FileSystemProgramSource(ProgramSource source)
             : this(source.Location, source.MaxDepth, source.Suffixes)
         {
-            this.BonusPoints = source.BonusPoints;
+            BonusPoints = source.BonusPoints;
         }
 
         public override List<Program> LoadPrograms()
@@ -78,7 +78,7 @@ namespace Wox.Plugin.Program.ProgramSources
 
         public override string ToString()
         {
-            return typeof(FileSystemProgramSource).Name + ":" + this.baseDirectory;
+            return typeof(FileSystemProgramSource).Name + ":" + baseDirectory;
         }
     }
 }

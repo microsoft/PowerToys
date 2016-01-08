@@ -15,10 +15,7 @@ namespace Wox.Plugin
 
         public string Website { get; set; }
 
-        public string ExecuteFilePath
-        {
-            get { return Path.Combine(PluginDirectory, ExecuteFileName); }
-        }
+        public string ExecuteFilePath => Path.Combine(PluginDirectory, ExecuteFileName);
 
         public string ExecuteFileName { get; set; }
 

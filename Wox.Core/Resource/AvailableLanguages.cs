@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Wox.Core.i18n
+namespace Wox.Core.Resource
 {
     internal static class AvailableLanguages
     {
@@ -18,7 +18,7 @@ namespace Wox.Core.i18n
                 Chinese, 
                 Chinese_TW,
                 Russian,
-                French,
+                French
             };
             return languages;
         }

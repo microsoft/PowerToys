@@ -29,7 +29,7 @@ namespace Wox.Core.Plugin
 
                     foreach (Type type in types)
                     {
-                        PluginPair pair = new PluginPair()
+                        PluginPair pair = new PluginPair
                         {
                             Plugin = Activator.CreateInstance(type) as IPlugin,
                             Metadata = metadata
@@ -38,7 +38,7 @@ namespace Wox.Core.Plugin
                         plugins.Add(pair);
                     }
                 }
-                catch (System.Exception e)
+                catch (Exception e)
                 {
                     Log.Error(new WoxPluginException(metadata.Name, $"Couldn't load plugin", e));
                 }

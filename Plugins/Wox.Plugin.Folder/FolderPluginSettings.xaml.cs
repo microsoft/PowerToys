@@ -1,7 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Forms;
+using DataFormats = System.Windows.DataFormats;
+using DragDropEffects = System.Windows.DragDropEffects;
+using DragEventArgs = System.Windows.DragEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
 
@@ -66,10 +70,10 @@ namespace Wox.Plugin.Folder
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
-            var folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
-            if (folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            var folderBrowserDialog = new FolderBrowserDialog();
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
-                var newFolder = new FolderLink()
+                var newFolder = new FolderLink
                 {
                     Path = folderBrowserDialog.SelectedPath
                 };
@@ -86,9 +90,9 @@ namespace Wox.Plugin.Folder
             lbxFolders.Items.Refresh();
         }
 
-        private void lbxFolders_Drop(object sender, System.Windows.DragEventArgs e)
+        private void lbxFolders_Drop(object sender, DragEventArgs e)
         {
-            string[] files = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 
             if (files != null && files.Count() > 0)
             {
@@ -99,9 +103,9 @@ namespace Wox.Plugin.Folder
 
                 foreach (string s in files)
                 {
-                    if (System.IO.Directory.Exists(s) == true)
+                    if (Directory.Exists(s))
                     {
-                        var newFolder = new FolderLink()
+                        var newFolder = new FolderLink
                         {
                             Path = s
                         };
@@ -115,15 +119,15 @@ namespace Wox.Plugin.Folder
             }
         }
 
-        private void lbxFolders_DragEnter(object sender, System.Windows.DragEventArgs e)
+        private void lbxFolders_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop))
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                e.Effects = System.Windows.DragDropEffects.Link;
+                e.Effects = DragDropEffects.Link;
             }
             else
             {
-                e.Effects = System.Windows.DragDropEffects.None;
+                e.Effects = DragDropEffects.None;
             }
         }
     }

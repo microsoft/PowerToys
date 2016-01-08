@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using Wox.Core.i18n;
+using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 
 namespace Wox
@@ -38,7 +38,7 @@ namespace Wox
                     UserSettingStorage.Instance.CustomPluginHotkeys = new List<CustomPluginHotkey>();
                 }
 
-                var pluginHotkey = new CustomPluginHotkey()
+                var pluginHotkey = new CustomPluginHotkey
                 {
                     Hotkey = ctlHotkey.CurrentHotkey.ToString(),
                     ActionKeyword = tbAction.Text

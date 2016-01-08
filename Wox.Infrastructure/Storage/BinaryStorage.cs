@@ -28,7 +28,7 @@ namespace Wox.Infrastructure.Storage
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             try
             {
-                using (FileStream fileStream = new FileStream(ConfigPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (FileStream fileStream = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     if (fileStream.Length > 0)
                     {
@@ -69,7 +69,7 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        private System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             Assembly ayResult = null;
             string sShortAssemblyName = args.Name.Split(',')[0];
@@ -93,7 +93,7 @@ namespace Wox.Infrastructure.Storage
                 {
                     try
                     {
-                        FileStream fileStream = new FileStream(ConfigPath, FileMode.Create);
+                        FileStream fileStream = new FileStream(FilePath, FileMode.Create);
                         BinaryFormatter binaryFormatter = new BinaryFormatter
                         {
                             AssemblyFormat = FormatterAssemblyStyle.Simple

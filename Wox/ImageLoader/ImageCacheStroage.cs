@@ -10,19 +10,11 @@ namespace Wox.ImageLoader
     [Serializable]
     public class ImageCacheStroage : BinaryStorage<ImageCacheStroage>
     {
-        private int counter = 0;
+        private int counter;
         private const int maxCached = 200;
         public Dictionary<string, int> TopUsedImages = new Dictionary<string, int>();
 
-        protected override string ConfigFolder
-        {
-            get { return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Config"); }
-        }
-
-        protected override string ConfigName
-        {
-            get { return "ImageCache"; }
-        }
+        protected override string FileName { get; } = "ImageCache";
 
         public void Add(string path)
         {

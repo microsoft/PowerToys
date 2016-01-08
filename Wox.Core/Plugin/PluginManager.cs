@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
-using Wox.Core.i18n;
-using Wox.Core.UI;
+using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Exception;
@@ -20,35 +18,33 @@ namespace Wox.Core.Plugin
     public static class PluginManager
     {
         public const string DirectoryName = "Plugins";
-        private static IEnumerable<PluginPair> contextMenuPlugins;
+        private static IEnumerable<PluginPair> _contextMenuPlugins;
 
         /// <summary>
         /// Directories that will hold Wox plugin directory
         /// </summary>
-        private static List<string> pluginDirectories = new List<string>();
+        private static readonly List<string> PluginDirectories = new List<string>();
 
         public static IEnumerable<PluginPair> AllPlugins { get; private set; }
 
-        public static List<PluginPair> GlobalPlugins { get; } = new List<PluginPair>();
-        public static Dictionary<string, PluginPair> NonGlobalPlugins { get; set; } = new Dictionary<string, PluginPair>();
+        public static readonly List<PluginPair> GlobalPlugins = new List<PluginPair>();
+
+        public static readonly Dictionary<string, PluginPair> NonGlobalPlugins = new Dictionary<string, PluginPair>();
 
         private static IEnumerable<PluginPair> InstantQueryPlugins { get; set; }
         public static IPublicAPI API { private set; get; }
 
-        public static string PluginDirectory
-        {
-            get { return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), DirectoryName); }
-        }
+        public static readonly string PluginDirectory = Path.Combine(WoxDirectroy.Executable, DirectoryName);
 
         private static void SetupPluginDirectories()
         {
-            pluginDirectories.Add(PluginDirectory);
+            PluginDirectories.Add(PluginDirectory);
             MakesurePluginDirectoriesExist();
         }
 
         private static void MakesurePluginDirectoriesExist()
         {
-            foreach (string pluginDirectory in pluginDirectories)
+            foreach (string pluginDirectory in PluginDirectories)
             {
                 if (!Directory.Exists(pluginDirectory))
                 {
@@ -74,7 +70,7 @@ namespace Wox.Core.Plugin
             SetupPluginDirectories();
             API = api;
 
-            var metadatas = PluginConfig.Parse(pluginDirectories);
+            var metadatas = PluginConfig.Parse(PluginDirectories);
             AllPlugins = (new CSharpPluginLoader().LoadPlugin(metadatas)).
                 Concat(new JsonRPCPluginLoader<PythonPlugin>().LoadPlugin(metadatas));
 
@@ -103,7 +99,7 @@ namespace Wox.Core.Plugin
             ThreadPool.QueueUserWorkItem(o =>
             {
                 InstantQueryPlugins = GetPluginsForInterface<IInstantQuery>();
-                contextMenuPlugins = GetPluginsForInterface<IContextMenu>();
+                _contextMenuPlugins = GetPluginsForInterface<IContextMenu>();
                 foreach (var plugin in AllPlugins)
                 {
                     if (IsGlobalPlugin(plugin.Metadata))
@@ -232,7 +228,7 @@ namespace Wox.Core.Plugin
 
         public static List<Result> GetContextMenusForPlugin(Result result)
         {
-            var pluginPair = contextMenuPlugins.FirstOrDefault(o => o.Metadata.ID == result.PluginID);
+            var pluginPair = _contextMenuPlugins.FirstOrDefault(o => o.Metadata.ID == result.PluginID);
             var plugin = (IContextMenu)pluginPair?.Plugin;
             if (plugin != null)
             {

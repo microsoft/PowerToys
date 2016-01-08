@@ -55,6 +55,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj">
+      <Project>{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}</Project>
+      <Name>Wox.Infrastructure</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj">
       <Project>{8451ecdd-2ea4-4966-bb0a-7bbc40138e80}</Project>
       <Name>Wox.Plugin</Name>

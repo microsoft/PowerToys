@@ -4,23 +4,18 @@ using System.IO;
 namespace Wox.Infrastructure.Storage
 {
     [Serializable]
-    public abstract class BaseStorage<T> : IStorage where T : class,IStorage, new()
+    public abstract class BaseStorage<T> : IStorage where T : class, IStorage, new()
     {
-        protected abstract string ConfigFolder { get; }
+        protected string DirectoryPath { get; } = Path.Combine(WoxDirectroy.Executable, "Config");
 
-        protected string ConfigPath
-        {
-            get
-            {
-                return Path.Combine(ConfigFolder, ConfigName + FileSuffix);
-            }
-        }
+        protected string FilePath => Path.Combine(DirectoryPath, FileName + FileSuffix);
 
         protected abstract string FileSuffix { get; }
 
-        protected abstract string ConfigName { get; }
+        protected abstract string FileName { get; }
 
         private static object locker = new object();
+
         protected static T serializedObject;
 
         public event Action<T> AfterLoad;
@@ -64,13 +59,13 @@ namespace Wox.Infrastructure.Storage
 
         public void Load()
         {
-            if (!File.Exists(ConfigPath))
+            if (!File.Exists(FilePath))
             {
-                if (!Directory.Exists(ConfigFolder))
+                if (!Directory.Exists(DirectoryPath))
                 {
-                    Directory.CreateDirectory(ConfigFolder);
+                    Directory.CreateDirectory(DirectoryPath);
                 }
-                File.Create(ConfigPath).Close();
+                File.Create(FilePath).Close();
             }
             LoadInternal();
             OnAfterLoad(serializedObject);

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -41,7 +42,7 @@ namespace Wox.Core.Plugin
                     foreach (JsonRPCResult result in queryResponseModel.Result)
                     {
                         JsonRPCResult result1 = result;
-                        result.Action = (c) =>
+                        result.Action = c =>
                         {
                             if (result1.JsonRPCAction == null) return false;
 
@@ -72,7 +73,7 @@ namespace Wox.Core.Plugin
                     }
                     return results;
                 }
-                catch (System.Exception e)
+                catch (Exception e)
                 {
                     Log.Error(e);
                 }
@@ -89,7 +90,7 @@ namespace Wox.Core.Plugin
                 {
                     methodInfo.Invoke(PluginManager.API, parameters);
                 }
-                catch (System.Exception)
+                catch (Exception)
                 {
 #if (DEBUG)
                     {
@@ -150,7 +151,7 @@ namespace Wox.Core.Plugin
                     }
                 }
             }
-            catch(System.Exception e)
+            catch(Exception e)
             {
                 throw new WoxJsonRPCException(e.Message);
             }

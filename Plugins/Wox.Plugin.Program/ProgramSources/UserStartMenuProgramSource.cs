@@ -1,9 +1,10 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace Wox.Plugin.Program.ProgramSources
 {
     [Serializable]
-    [global::System.ComponentModel.Browsable(false)]
+    [Browsable(false)]
     public class UserStartMenuProgramSource : FileSystemProgramSource
     {
         public UserStartMenuProgramSource()
@@ -14,7 +15,7 @@ namespace Wox.Plugin.Program.ProgramSources
         public UserStartMenuProgramSource(ProgramSource source)
             : this()
         {
-            this.BonusPoints = source.BonusPoints;
+            BonusPoints = source.BonusPoints;
         }
 
         public override string ToString()

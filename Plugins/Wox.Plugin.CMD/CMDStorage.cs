@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
 
@@ -17,15 +15,7 @@ namespace Wox.Plugin.CMD
         [JsonProperty]
         public Dictionary<string, int> CMDHistory = new Dictionary<string, int>();
 
-        protected override string ConfigFolder
-        {
-            get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
-        }
-
-        protected override string ConfigName
-        {
-            get { return "CMDHistory"; }
-        }
+        protected override string FileName { get; } = "CMDHistory";
 
         protected override CMDStorage LoadDefault()
         {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
@@ -45,7 +46,7 @@ namespace Wox.Core.Plugin
                         Directory.Delete(directory, true);
                         continue;
                     }
-                    catch (System.Exception e)
+                    catch (Exception e)
                     {
                         Log.Fatal(e);
                     }
@@ -77,7 +78,7 @@ namespace Wox.Core.Plugin
                 // for plugin still use old ActionKeyword
                 metadata.ActionKeyword = metadata.ActionKeywords?[0];
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 string msg = $"Parse plugin config {configPath} failed: json format is not valid";
                 Log.Error(new WoxException(msg));

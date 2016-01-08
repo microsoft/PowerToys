@@ -8,7 +8,7 @@ using NAppUpdate.Framework.Common;
 using NAppUpdate.Framework.Sources;
 using NAppUpdate.Framework.Tasks;
 using Newtonsoft.Json;
-using Wox.Core.i18n;
+using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Logger;
@@ -92,7 +92,7 @@ namespace Wox.Core.Updater
                             StartUpdate();
                         }
                     }
-                    catch (System.Exception e)
+                    catch (Exception e)
                     {
                         Log.Error(e);
                     }
@@ -112,7 +112,7 @@ namespace Wox.Core.Updater
                     {
                         ((UpdateProcessAsyncResult)asyncResult).EndInvoke();
                     }
-                    catch (System.Exception e)
+                    catch (Exception e)
                     {
                         Log.Error(e);
                         updManager.CleanUp();
@@ -148,7 +148,7 @@ namespace Wox.Core.Updater
             {
                 UpdateManager.Instance.ApplyUpdates(true, UserSettingStorage.Instance.EnableUpdateLog, false);
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 string updateError = InternationalizationManager.Instance.GetTranslation("update_wox_update_error");
                 Log.Error(e);

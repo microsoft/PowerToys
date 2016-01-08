@@ -1,6 +1,6 @@
 namespace Wox.Infrastructure.Hotkey
 {
-    public enum KeyEvent:int
+    public enum KeyEvent
     {
         /// <summary>
         /// Key down

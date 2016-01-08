@@ -2,35 +2,31 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Windows;
-using Wox.Core.UI;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
-namespace Wox.Core.i18n
+namespace Wox.Core.Resource
 {
-    public class Internationalization : IInternationalization, IUIResource
+    public class Internationalization : Resource
     {
-        public const string DirectoryName = "Languages";
-        private static readonly string DefaultDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), DirectoryName);
-
-        static Internationalization()
+        public Internationalization()
         {
+            DirectoryName = "Languages";
             MakesureThemeDirectoriesExist();
         }
 
-        private static void MakesureThemeDirectoriesExist()
+        private void MakesureThemeDirectoriesExist()
         {
-            if (!Directory.Exists(DefaultDirectory))
+            if (!Directory.Exists(DirectoryPath))
             {
                 try
                 {
-                    Directory.CreateDirectory(DefaultDirectory);
+                    Directory.CreateDirectory(DirectoryPath);
                 }
-                catch (System.Exception e)
+                catch (Exception e)
                 {
                     Log.Error(e);
                 }
@@ -64,20 +60,22 @@ namespace Wox.Core.i18n
                 path = GetLanguagePath(AvailableLanguages.English);
                 if (string.IsNullOrEmpty(path))
                 {
-                    throw new System.Exception("Change Language failed");
+                    throw new Exception("Change Language failed");
                 }
             }
 
             UserSettingStorage.Instance.Language = language.LanguageCode;
             UserSettingStorage.Instance.Save();
-            ResourceMerger.UpdateResources(this);
+            ResourceMerger.UpdateResource(this);
         }
 
-        public ResourceDictionary GetResourceDictionary()
+
+
+        public override ResourceDictionary GetResourceDictionary()
         {
             return new ResourceDictionary
             {
-                Source = new Uri(GetLanguageFile(DefaultDirectory), UriKind.Absolute)
+                Source = new Uri(GetLanguageFile(DirectoryPath), UriKind.Absolute)
             };
         }
 
@@ -115,7 +113,7 @@ namespace Wox.Core.i18n
                 pluginPair.Metadata.Name = pluginI18n.GetTranslatedPluginTitle();
                 pluginPair.Metadata.Description = pluginI18n.GetTranslatedPluginDescription();
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 var woxPluginException = new WoxPluginException(pluginPair.Metadata.Name, "Update Plugin metadata translation failed:", e);
                 Log.Error(woxPluginException);
@@ -124,7 +122,7 @@ namespace Wox.Core.i18n
 
         private string GetLanguagePath(Language language)
         {
-            string path = Path.Combine(DefaultDirectory, language.LanguageCode + ".xaml");
+            string path = Path.Combine(DirectoryPath, language.LanguageCode + ".xaml");
             if (File.Exists(path))
             {
                 return path;
@@ -156,4 +154,5 @@ namespace Wox.Core.i18n
 
         }
     }
+
 }

@@ -16,14 +16,14 @@ namespace Wox.Helper
         public static void UnhandledExceptionHandle(object sender, UnhandledExceptionEventArgs e)
         {
             //handle non-ui thread exceptions
-            App.Window.Dispatcher.Invoke(new Action(() =>
+            App.Window.Dispatcher.Invoke(() =>
             {
                 Report((Exception)e.ExceptionObject);
                 if (!(e.ExceptionObject is WoxException))
                 {
                     Environment.Exit(0);
                 }
-            }));
+            });
         }
 
         public static void DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)

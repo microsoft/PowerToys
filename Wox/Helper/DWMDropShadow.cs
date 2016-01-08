@@ -25,7 +25,7 @@ namespace Wox.Helper
         {
             if (!DropShadow(window))
             {
-                window.SourceInitialized += new EventHandler(window_SourceInitialized);
+                window.SourceInitialized += window_SourceInitialized;
             }
         }
 
@@ -35,7 +35,7 @@ namespace Wox.Helper
 
             DropShadow(window);
 
-            window.SourceInitialized -= new EventHandler(window_SourceInitialized);
+            window.SourceInitialized -= window_SourceInitialized;
         }
 
         /// <summary>

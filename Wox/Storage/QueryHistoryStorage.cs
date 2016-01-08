@@ -15,20 +15,12 @@ namespace Wox.Storage
         private List<HistoryItem> History = new List<HistoryItem>();
 
         private int MaxHistory = 300;
-        private int cursor = 0;
+        private int cursor;
 
         public static PluginMetadata MetaData { get; } = new PluginMetadata
             { ID = "Query history", Name = "Query history" };
 
-        protected override string ConfigFolder
-        {
-            get { return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Config"); }
-        }
-
-        protected override string ConfigName
-        {
-            get { return "QueryHistory"; }
-        }
+        protected override string FileName { get; } = "QueryHistory";
 
         public HistoryItem Previous()
         {
@@ -61,7 +53,7 @@ namespace Wox.Storage
             }
             else
             {
-                History.Add(new HistoryItem()
+                History.Add(new HistoryItem
                 {
                     Query = query,
                     ExecutedDateTime = DateTime.Now

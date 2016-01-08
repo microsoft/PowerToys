@@ -36,18 +36,10 @@ namespace Wox.UpdateFeedGenerator
             if (string.IsNullOrEmpty(config.OutputDirectory))
             {
                 config.OutputDirectory = @"Update";
-                ConfigStorage.Instance.Save();
+                Instance.Save();
             }
         }
 
-        protected override string ConfigFolder
-        {
-            get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
-        }
-
-        protected override string ConfigName
-        {
-            get { return "config"; }
-        }
+        protected override string FileName { get; } = "config";
     }
 }

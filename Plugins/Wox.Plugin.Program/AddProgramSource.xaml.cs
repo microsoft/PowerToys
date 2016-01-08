@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Forms;
 
 namespace Wox.Plugin.Program
 {
@@ -16,51 +17,51 @@ namespace Wox.Plugin.Program
 
         public AddProgramSource(ProgramSource edit) : this()
         {
-            this._editing = edit;
-            this.Directory.Text = this._editing.Location;
-            this.MaxDepth.Text = this._editing.MaxDepth.ToString();
-            this.Suffixes.Text = this._editing.Suffixes;
+            _editing = edit;
+            Directory.Text = _editing.Location;
+            MaxDepth.Text = _editing.MaxDepth.ToString();
+            Suffixes.Text = _editing.Suffixes;
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new System.Windows.Forms.FolderBrowserDialog();
-            System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+            var dialog = new FolderBrowserDialog();
+            DialogResult result = dialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                this.Directory.Text = dialog.SelectedPath;
+                Directory.Text = dialog.SelectedPath;
             }
         }
 
         private void ButtonAdd_OnClick(object sender, RoutedEventArgs e)
         {
             int max;
-            if(!int.TryParse(this.MaxDepth.Text, out max))
+            if(!int.TryParse(MaxDepth.Text, out max))
             {
                 max = -1;
             }
 
-            if(this._editing == null)
+            if(_editing == null)
             {
-                ProgramStorage.Instance.ProgramSources.Add(new ProgramSource()
+                ProgramStorage.Instance.ProgramSources.Add(new ProgramSource
                 {
-                    Location = this.Directory.Text,
+                    Location = Directory.Text,
                     MaxDepth = max,
-                    Suffixes = this.Suffixes.Text,
+                    Suffixes = Suffixes.Text,
                     Type = "FileSystemProgramSource",
                     Enabled = true
                 });
             }
             else
             {
-                this._editing.Location = this.Directory.Text;
-                this._editing.MaxDepth = max;
-                this._editing.Suffixes = this.Suffixes.Text;
+                _editing.Location = Directory.Text;
+                _editing.MaxDepth = max;
+                _editing.Suffixes = Suffixes.Text;
             }
 
             ProgramStorage.Instance.Save();
-            this.DialogResult = true;
-            this.Close();
+            DialogResult = true;
+            Close();
         }
     }
 }

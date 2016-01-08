@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Forms;
@@ -76,14 +75,14 @@ namespace Wox.Plugin.Sys
 
         private void LoadCommands()
         {
-            availableResults.AddRange(new Result[]
+            availableResults.AddRange(new[]
             {
                 new Result
                 {
                     Title = "Shutdown",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_shutdown_computer"),
                     IcoPath = "Images\\exit.png",
-                    Action = (c) =>
+                    Action = c =>
                     {
                         var reuslt = MessageBox.Show("Are you sure you want to shut the computer down?",
                                                      "Shutdown Computer?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
@@ -99,7 +98,7 @@ namespace Wox.Plugin.Sys
                     Title = "Restart",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_restart_computer"),
                     IcoPath = "Images\\restartcomp.png",
-                    Action = (c) =>
+                    Action = c =>
                     {
                         var result = MessageBox.Show("Are you sure you want to restart the computer?",
                                                      "Restart Computer?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
@@ -115,14 +114,14 @@ namespace Wox.Plugin.Sys
                     Title = "Log off",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_log_off"),
                     IcoPath = "Images\\logoff.png",
-                    Action = (c) => ExitWindowsEx(EWX_LOGOFF, 0)
+                    Action = c => ExitWindowsEx(EWX_LOGOFF, 0)
                 },
                 new Result
                 {
                     Title = "Lock",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_lock"),
                     IcoPath = "Images\\lock.png",
-                    Action = (c) =>
+                    Action = c =>
                     {
                         LockWorkStation();
                         return true;
@@ -133,14 +132,14 @@ namespace Wox.Plugin.Sys
                     Title = "Sleep",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_sleep"),
                     IcoPath = "Images\\sleep.png",
-                    Action = (c) => FormsApplication.SetSuspendState(PowerState.Suspend, false, false)
+                    Action = c => FormsApplication.SetSuspendState(PowerState.Suspend, false, false)
                 },
                 new Result
                 {
                     Title = "Empty Recycle Bin",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_emptyrecyclebin"),
                     IcoPath = "Images\\recyclebin.png",
-                    Action = (c) =>
+                    Action = c =>
                     {
                         // http://www.pinvoke.net/default.aspx/shell32/SHEmptyRecycleBin.html
                         // 0 for nothing
@@ -160,7 +159,7 @@ namespace Wox.Plugin.Sys
                     Title = "Exit",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_exit"),
                     IcoPath = "Images\\app.png",
-                    Action = (c) =>
+                    Action = c =>
                     {
                         context.API.CloseApp();
                         return true;
@@ -171,7 +170,7 @@ namespace Wox.Plugin.Sys
                     Title = "Restart Wox",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_restart"),
                     IcoPath = "Images\\restart.png",
-                    Action = (c) =>
+                    Action = c =>
                     {
                         context.API.RestarApp();
                         return false;
@@ -182,7 +181,7 @@ namespace Wox.Plugin.Sys
                     Title = "Settings",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_setting"),
                     IcoPath = "Images\\app.png",
-                    Action = (c) =>
+                    Action = c =>
                     {
                         context.API.OpenSettingDialog();
                         return true;
@@ -193,7 +192,7 @@ namespace Wox.Plugin.Sys
 
         public string GetLanguagesFolder()
         {
-            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+            return Path.Combine(WoxDirectroy.Executable, "Languages");
         }
 
         public string GetTranslatedPluginTitle()

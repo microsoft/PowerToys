@@ -2,11 +2,10 @@
 using System.IO;
 using System.Linq;
 using System.Windows;
-using Wox.Core.i18n;
 using Wox.Core.Plugin;
 using Wox.Plugin;
 
-namespace Wox.Core.UI
+namespace Wox.Core.Resource
 {
     public static class ResourceMerger
     {
@@ -25,16 +24,10 @@ namespace Wox.Core.UI
             }
         }
 
-        public static void UpdateResource(Theme.Theme t)
+        public static void UpdateResource<T>(T t) where T : Core.Resource.Resource
         {
-            RemoveResource(Theme.Theme.DirectoryName);
+            RemoveResource(t.DirectoryName);
             Application.Current.Resources.MergedDictionaries.Add(t.GetResourceDictionary());
-        }
-
-        public static void UpdateResources(Internationalization i)
-        {
-            RemoveResource(Internationalization.DirectoryName);
-            Application.Current.Resources.MergedDictionaries.Add(i.GetResourceDictionary());
         }
 
         internal static void UpdatePluginLanguages()

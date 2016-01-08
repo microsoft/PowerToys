@@ -10,13 +10,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using NHotkey;
 using NHotkey.Wpf;
-using Wox.Core.i18n;
 using Wox.Core.Plugin;
-using Wox.Core.Theme;
+using Wox.Core.Resource;
 using Wox.Core.Updater;
 using Wox.Core.UserSettings;
 using Wox.Helper;
@@ -24,11 +24,16 @@ using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
 using Wox.Storage;
+using Application = System.Windows.Application;
 using ContextMenu = System.Windows.Forms.ContextMenu;
-using NotifyIcon = System.Windows.Forms.NotifyIcon;
-using Screen = System.Windows.Forms.Screen;
+using DataFormats = System.Windows.DataFormats;
+using DragEventArgs = System.Windows.DragEventArgs;
+using IDataObject = System.Windows.IDataObject;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MenuItem = System.Windows.Forms.MenuItem;
+using MessageBox = System.Windows.MessageBox;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
+using ToolTip = System.Windows.Controls.ToolTip;
 
 namespace Wox
 {
@@ -43,7 +48,7 @@ namespace Wox
         private Query _lastQuery = new Query();
         private ToolTip toolTip = new ToolTip();
 
-        private bool _ignoreTextChange = false;
+        private bool _ignoreTextChange;
         private List<Result> CurrentContextMenus = new List<Result>();
         private string textBeforeEnterContextMenuMode;
 
@@ -53,7 +58,7 @@ namespace Wox
 
         public void ChangeQuery(string query, bool requery = false)
         {
-            Dispatcher.Invoke(new Action(() =>
+            Dispatcher.Invoke(() =>
             {
                 tbQuery.Text = query;
                 tbQuery.CaretIndex = tbQuery.Text.Length;
@@ -61,12 +66,12 @@ namespace Wox
                 {
                     TbQuery_OnTextChanged(null, null);
                 }
-            }));
+            });
         }
 
         public void ChangeQueryText(string query, bool selectAll = false)
         {
-            Dispatcher.Invoke(new Action(() =>
+            Dispatcher.Invoke(() =>
             {
                 _ignoreTextChange = true;
                 tbQuery.Text = query;
@@ -75,7 +80,7 @@ namespace Wox
                 {
                     tbQuery.SelectAll();
                 }
-            }));
+            });
         }
 
         public void CloseApp()
@@ -96,50 +101,50 @@ namespace Wox
 
         public void HideApp()
         {
-            Dispatcher.Invoke(new Action(HideWox));
+            Dispatcher.Invoke(HideWox);
         }
 
         public void ShowApp()
         {
-            Dispatcher.Invoke(new Action(() => ShowWox()));
+            Dispatcher.Invoke(() => ShowWox());
         }
 
         public void ShowMsg(string title, string subTitle, string iconPath)
         {
-            Dispatcher.Invoke(new Action(() =>
+            Dispatcher.Invoke(() =>
             {
                 var m = new Msg { Owner = GetWindow(this) };
                 m.Show(title, subTitle, iconPath);
-            }));
+            });
         }
 
         public void OpenSettingDialog(string tabName = "general")
         {
-            Dispatcher.Invoke(new Action(() =>
+            Dispatcher.Invoke(() =>
             {
                 SettingWindow sw = SingletonWindowOpener.Open<SettingWindow>(this);
                 sw.SwitchTo(tabName);
-            }));
+            });
         }
 
         public void StartLoadingBar()
         {
-            Dispatcher.Invoke(new Action(StartProgress));
+            Dispatcher.Invoke(StartProgress);
         }
 
         public void StopLoadingBar()
         {
-            Dispatcher.Invoke(new Action(StopProgress));
+            Dispatcher.Invoke(StopProgress);
         }
 
         public void InstallPlugin(string path)
         {
-            Dispatcher.Invoke(new Action(() => PluginManager.InstallPlugin(path)));
+            Dispatcher.Invoke(() => PluginManager.InstallPlugin(path));
         }
 
         public void ReloadPlugins()
         {
-            Dispatcher.Invoke(new Action(() => PluginManager.Init(this)));
+            Dispatcher.Invoke(() => PluginManager.Init(this));
         }
 
         public string GetTranslation(string key)
@@ -241,7 +246,7 @@ namespace Wox
             UserSettingStorage.Instance.WindowLeft = Left;
             UserSettingStorage.Instance.WindowTop = Top;
             UserSettingStorage.Instance.Save();
-            this.HideWox();
+            HideWox();
             e.Cancel = true;
         }
 
@@ -293,10 +298,10 @@ namespace Wox
 
         private void OnPrepareUpdateReady(object sender, EventArgs e)
         {
-            Dispatcher.Invoke(new Action(() =>
+            Dispatcher.Invoke(() =>
             {
                 new WoxUpdate().ShowDialog();
-            }));
+            });
         }
 
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
@@ -664,7 +669,7 @@ namespace Wox
                 case Key.Back:
                     if (BackKeyDownEvent != null)
                     {
-                        BackKeyDownEvent(new WoxKeyDownEventArgs()
+                        BackKeyDownEvent(new WoxKeyDownEventArgs
                         {
                             Query = tbQuery.Text,
                             keyEventArgs = e
@@ -736,13 +741,14 @@ namespace Wox
                 var executeQueryHistoryTitle = GetTranslation("executeQuery");
                 var lastExecuteTime = GetTranslation("lastExecuteTime");
                 pnlResult.RemoveResultsExcept(historyMetadata);
-                UpdateResultViewInternal(new List<Result>()
+                UpdateResultViewInternal(new List<Result>
                 {
-                    new Result(){
+                    new Result
+                    {
                         Title = string.Format(executeQueryHistoryTitle,history.Query),
                         SubTitle = string.Format(lastExecuteTime,history.ExecutedDateTime),
                         IcoPath = "Images\\history.png",
-                        PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                        PluginDirectory = WoxDirectroy.Executable,
                         Action = _ =>{
                             ChangeQuery(history.Query,true);
                             return false;
@@ -815,7 +821,7 @@ namespace Wox
             {
                 if (result.Action != null)
                 {
-                    bool hideWindow = result.Action(new ActionContext()
+                    bool hideWindow = result.Action(new ActionContext
                     {
                         SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
                     });
@@ -831,9 +837,8 @@ namespace Wox
 
         private void UpdateResultView(List<Result> list, PluginMetadata metadata, Query originQuery)
         {
-            Thread.Sleep(3000);
             _queryHasReturn = true;
-            progressBar.Dispatcher.Invoke(new Action(StopProgress));
+            progressBar.Dispatcher.Invoke(StopProgress);
 
             list.ForEach(o =>
             {
@@ -847,11 +852,11 @@ namespace Wox
 
         private void UpdateResultViewInternal(List<Result> list, PluginMetadata metadata)
         {
-            Dispatcher.Invoke(new Action(() =>
+            Dispatcher.Invoke(() =>
             {
                 Stopwatch.Normal($"UI update cost for {metadata.Name}",
                     () => { pnlResult.AddResults(list, metadata.ID); });
-            }));
+            });
         }
 
         private Result GetTopMostContextMenu(Result result)
@@ -860,7 +865,7 @@ namespace Wox
             {
                 return new Result(GetTranslation("cancelTopMostInThisQuery"), "Images\\down.png")
                 {
-                    PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    PluginDirectory = WoxDirectroy.Executable,
                     Action = _ =>
                     {
                         TopMostRecordStorage.Instance.Remove(result);
@@ -873,7 +878,7 @@ namespace Wox
             {
                 return new Result(GetTranslation("setAsTopMostInThisQuery"), "Images\\up.png")
                 {
-                    PluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    PluginDirectory = WoxDirectroy.Executable,
                     Action = _ =>
                     {
                         TopMostRecordStorage.Instance.AddOrUpdate(result);

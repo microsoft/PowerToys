@@ -107,12 +107,12 @@ namespace Wox.Core.Plugin
                 metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
                 metadata.PluginDirectory = pluginDirectory;
             }
-            catch (System.Exception)
+            catch (Exception)
             {
                 string error = $"Parse plugin config {configPath} failed: json format is not valid";
 #if (DEBUG)
                 {
-                    throw new System.Exception(error);
+                    throw new Exception(error);
                 }
 #endif
                 return null;
@@ -124,7 +124,7 @@ namespace Wox.Core.Plugin
                 string error = $"Parse plugin config {configPath} failed: invalid language {metadata.Language}";
 #if (DEBUG)
                 {
-                    throw new System.Exception(error);
+                    throw new Exception(error);
                 }
 #endif
                 return null;
@@ -134,7 +134,7 @@ namespace Wox.Core.Plugin
                 string error = $"Parse plugin config {configPath} failed: ExecuteFile {metadata.ExecuteFilePath} didn't exist";
 #if (DEBUG)
                 {
-                    throw new System.Exception(error);
+                    throw new Exception(error);
                 }
 #endif
                 return null;

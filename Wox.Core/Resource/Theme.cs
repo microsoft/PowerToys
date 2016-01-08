@@ -2,26 +2,24 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
-using Wox.Core.UI;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure.Logger;
 
-namespace Wox.Core.Theme
+namespace Wox.Core.Resource
 {
-    public class Theme : IUIResource
+    public class Theme : Resource
     {
-        public const string DirectoryName = "Themes";
         private static List<string> themeDirectories = new List<string>();
 
-        static Theme()
+        public Theme()
         {
-            themeDirectories.Add(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), DirectoryName));
+            DirectoryName = "Themes";
+            themeDirectories.Add(DirectoryPath);
             MakesureThemeDirectoriesExist();
         }
 
@@ -35,7 +33,7 @@ namespace Wox.Core.Theme
                     {
                         Directory.CreateDirectory(pluginDirectory);
                     }
-                    catch (System.Exception e)
+                    catch (Exception e)
                     {
                         Log.Error(e);
                     }
@@ -51,7 +49,7 @@ namespace Wox.Core.Theme
                 themePath = GetThemePath("Dark");
                 if (string.IsNullOrEmpty(themePath))
                 {
-                    throw new System.Exception("Change theme failed");
+                    throw new Exception("Change theme failed");
                 }
             }
 
@@ -67,7 +65,7 @@ namespace Wox.Core.Theme
             }
         }
 
-        public ResourceDictionary GetResourceDictionary()
+        public override ResourceDictionary GetResourceDictionary()
         {
             var dict = new ResourceDictionary
             {
@@ -94,8 +92,8 @@ namespace Wox.Core.Theme
                 Setter fontWeight = new Setter(TextBlock.FontWeightProperty, FontHelper.GetFontWeightFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontWeight));
                 Setter fontStretch = new Setter(TextBlock.FontStretchProperty, FontHelper.GetFontStretchFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultItemFontStretch));
 
-                Setter[] setters = new Setter[] { fontFamily, fontStyle, fontWeight, fontStretch };
-                Array.ForEach(new Style[] { resultItemStyle, resultSubItemStyle, resultItemSelectedStyle, resultSubItemSelectedStyle }, o => Array.ForEach(setters, p => o.Setters.Add(p)));
+                Setter[] setters = { fontFamily, fontStyle, fontWeight, fontStretch };
+                Array.ForEach(new[] { resultItemStyle, resultSubItemStyle, resultItemSelectedStyle, resultSubItemSelectedStyle }, o => Array.ForEach(setters, p => o.Setters.Add(p)));
             }
             return dict;
         }

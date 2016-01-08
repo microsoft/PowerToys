@@ -1,4 +1,4 @@
-﻿namespace Wox.Core.i18n
+﻿namespace Wox.Core.Resource
 {
     public class Language
     {

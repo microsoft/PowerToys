@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Reflection;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
 
@@ -23,11 +21,6 @@ namespace Wox.Plugin.Program
         [DefaultValue(true)]
         public bool EnableRegistrySource { get; set; }
 
-        protected override string ConfigFolder
-        {
-            get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
-        }
-
         protected override ProgramStorage LoadDefault()
         {
             ProgramSources = new List<ProgramSource>();
@@ -44,9 +37,6 @@ namespace Wox.Plugin.Program
             }
         }
 
-        protected override string ConfigName
-        {
-            get { return "setting"; }
-        }
+        protected override string FileName { get; } = "settings_plugin_program";
     }
 }

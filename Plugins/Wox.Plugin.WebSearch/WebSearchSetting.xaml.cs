@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Exception;
 
 namespace Wox.Plugin.WebSearch
@@ -12,7 +12,7 @@ namespace Wox.Plugin.WebSearch
     public partial class WebSearchSetting : Window
     {
         private const string _imageDirectoryName = "Images";
-        private string _pluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        private string _pluginDirectory = WoxDirectroy.Executable;
         private readonly WebSearchesSetting _settingWindow;
         private bool _isUpdate;
         private WebSearch _updateWebSearch;
@@ -110,7 +110,7 @@ namespace Wox.Plugin.WebSearch
                     MessageBox.Show(exception.Message);
                     return;
                 }
-                WebSearchStorage.Instance.WebSearches.Add(new WebSearch()
+                WebSearchStorage.Instance.WebSearches.Add(new WebSearch
                 {
                     ActionKeyword = newActionKeyword,
                     Enabled = cbEnable.IsChecked ?? false,
@@ -130,7 +130,7 @@ namespace Wox.Plugin.WebSearch
             if (!Directory.Exists(_pluginDirectory))
             {
                 _pluginDirectory =
-                    Path.GetDirectoryName(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+                    Path.GetDirectoryName(WoxDirectroy.Executable);
             }
 
             var dlg = new OpenFileDialog

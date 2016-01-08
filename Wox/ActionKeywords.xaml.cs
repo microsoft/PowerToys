@@ -1,6 +1,6 @@
 ﻿using System.Windows;
-using Wox.Core.i18n;
 using Wox.Core.Plugin;
+using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure.Exception;
 using Wox.Plugin;
@@ -19,7 +19,6 @@ namespace Wox
             {
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("cannotFindSpecifiedPlugin"));
                 Close();
-                return;
             }
         }
 
