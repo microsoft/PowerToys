@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Windows;
 using Newtonsoft.Json;
+using Wox.Infrastructure;
 
 namespace Wox.Plugin.PluginManagement
 {
@@ -244,7 +244,7 @@ namespace Wox.Plugin.PluginManagement
 
         public string GetLanguagesFolder()
         {
-            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+            return Path.Combine(WoxDirectroy.Executable, "Languages");
         }
 
         public string GetTranslatedPluginTitle()

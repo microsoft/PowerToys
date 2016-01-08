@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Logger;
 using Control = System.Windows.Controls.Control;
@@ -202,7 +202,7 @@ namespace Wox.Plugin.CMD
 
         public string GetLanguagesFolder()
         {
-            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+            return Path.Combine(WoxDirectroy.Executable, "Languages");
         }
 
         public string GetTranslatedPluginTitle()

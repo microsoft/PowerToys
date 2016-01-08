@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Wox.Core.Plugin;
 using Wox.Core.UserSettings;
+using Wox.Infrastructure;
 
 namespace Wox.Plugin.PluginIndicator
 {
@@ -41,7 +41,7 @@ namespace Wox.Plugin.PluginIndicator
 
         public string GetLanguagesFolder()
         {
-            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+            return Path.Combine(WoxDirectroy.Executable, "Languages");
         }
 
         public string GetTranslatedPluginTitle()

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows;
+using Wox.Infrastructure;
 using YAMP;
 
 namespace Wox.Plugin.Caculator
@@ -95,7 +95,8 @@ namespace Wox.Plugin.Caculator
 
         public string GetLanguagesFolder()
         {
-            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+            return Path.Combine(WoxDirectroy.Executable, "Languages");
+
         }
 
         public string GetTranslatedPluginTitle()

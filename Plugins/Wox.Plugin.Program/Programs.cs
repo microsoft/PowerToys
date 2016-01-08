@@ -177,7 +177,7 @@ namespace Wox.Plugin.Program
 
         public string GetLanguagesFolder()
         {
-            return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Languages");
+            return Path.Combine(WoxDirectroy.Executable, "Languages");
         }
         public string GetTranslatedPluginTitle()
         {
