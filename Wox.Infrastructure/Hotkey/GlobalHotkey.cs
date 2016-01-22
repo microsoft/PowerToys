@@ -63,7 +63,7 @@ namespace Wox.Infrastructure.Hotkey
             }
             if ((InterceptKeys.GetKeyState(VK_WIN) & 0x8000) != 0)
             {
-                //ALT is pressed
+                //WIN is pressed
                 state.WinPressed = true;
             }
 
