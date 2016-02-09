@@ -5,8 +5,8 @@
     <system:String x:Key="registerHotkeyFailed">ホットキー「{0}」の登録に失敗しました</system:String>
     <system:String x:Key="couldnotStartCmd">{0}の起動に失敗しました</system:String>
     <system:String x:Key="invalidWoxPluginFileFormat">Woxプラグインの形式が正しくありません</system:String>
-    <system:String x:Key="setAsTopMostInThisQuery">Set as topmost in this query</system:String>
-    <system:String x:Key="cancelTopMostInThisQuery">Cancel topmost in this query</system:String>
+    <system:String x:Key="setAsTopMostInThisQuery">このクエリを最上位にセットする</system:String>
+    <system:String x:Key="cancelTopMostInThisQuery">このクエリを最上位にセットをキャンセル</system:String>
     <system:String x:Key="executeQuery">次のコマンドを実行します:{0}</system:String>
     <system:String x:Key="lastExecuteTime">最終実行時間:{0}</system:String>
     <system:String x:Key="iconTrayOpen">開く</system:String>
