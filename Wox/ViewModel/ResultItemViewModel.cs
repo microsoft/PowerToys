@@ -73,7 +73,6 @@ namespace Wox.ViewModel
         {
             get
             {
-                //TODO: Some of the properties in Result class may be moved to this class
                 return this._result.FullIcoPath;
             }
         }

@@ -17,62 +17,13 @@ namespace Wox
     [Synchronization]
     public partial class ResultPanel : UserControl
     {
+        //TODO: Refactor this event
         public event Action<Result, IDataObject, DragEventArgs> ItemDropEvent;
 
         public void AddResults(List<Result> newResults, string resultId)
         {
-            //lock (_resultsUpdateLock)
-            //{
-            //    // todo use async to do new result calculation
-            //    var resultsCopy = _results.ToList();
-            //    var oldResults = resultsCopy.Where(r => r.PluginID == resultId).ToList();
-            //    // intersection of A (old results) and B (new newResults)
-            //    var intersection = oldResults.Intersect(newResults).ToList();
-            //    // remove result of relative complement of B in A
-            //    foreach (var result in oldResults.Except(intersection))
-            //    {
-            //        resultsCopy.Remove(result);
-            //    }
-
-            //    // update scores
-            //    foreach (var result in newResults)
-            //    {
-            //        if (IsTopMostResult(result))
-            //        {
-            //            result.Score = int.MaxValue;
-            //        }
-            //    }
-
-            //    // update index for result in intersection of A and B
-            //    foreach (var commonResult in intersection)
-            //    {
-            //        int oldIndex = resultsCopy.IndexOf(commonResult);
-            //        int oldScore = resultsCopy[oldIndex].Score;
-            //        int newScore = newResults[newResults.IndexOf(commonResult)].Score;
-            //        if (newScore != oldScore)
-            //        {
-            //            var oldResult = resultsCopy[oldIndex];
-            //            oldResult.Score = newScore;
-            //            resultsCopy.RemoveAt(oldIndex);
-            //            int newIndex = InsertIndexOf(newScore, resultsCopy);
-            //            resultsCopy.Insert(newIndex, oldResult);
-
-            //        }
-            //    }
-
-            //    // insert result in relative complement of A in B
-            //    foreach (var result in newResults.Except(intersection))
-            //    {
-            //        int newIndex = InsertIndexOf(result.Score, resultsCopy);
-            //        resultsCopy.Insert(newIndex, result);
-            //    }
-
-            //    // update UI in one run, so it can avoid UI flickering
-            //    _results.Update(resultsCopy);
-
-            //    lbResults.Margin = lbResults.Items.Count > 0 ? new Thickness { Top = 8 } : new Thickness { Top = 0 };
-            //    SelectFirst();
-            //}
+            var vm = this.DataContext as ResultPanelViewModel;
+            vm.AddResults(newResults, resultId);
         }
         
 

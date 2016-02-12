@@ -64,12 +64,46 @@ namespace Wox
             ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
             InternationalizationManager.Instance.ChangeLanguage(UserSettingStorage.Instance.Language);
 
-            Left = GetWindowsLeft();
-            Top = GetWindowsTop();
-
             InitProgressbarAnimation();
             WindowIntelopHelper.DisableControlBox(this);
             CheckUpdate();
+
+            var vm = this.DataContext as MainViewModel;
+            vm.PropertyChanged += (o, eve) =>
+            {
+                if(eve.PropertyName == "SelectAllText")
+                {
+                    if (vm.SelectAllText)
+                    {
+                        this.tbQuery.SelectAll();
+                    }
+                }
+                else if(eve.PropertyName == "CaretIndex")
+                {
+                    this.tbQuery.CaretIndex = vm.CaretIndex;
+                }
+                else if(eve.PropertyName == "Left")
+                {
+                    this.Left = vm.Left;
+                }
+                else if(eve.PropertyName == "Top")
+                {
+                    this.Top = vm.Top;
+                }
+                else if(eve.PropertyName == "IsVisible")
+                {
+                    if (vm.IsVisible)
+                    {
+                        this.tbQuery.Focus();
+                    }
+                }
+            };
+
+            vm.Left = GetWindowsLeft();
+            vm.Top = GetWindowsTop();
+            this.Activate();
+            this.Focus();
+            this.tbQuery.Focus();
         }
 
         private double GetWindowsLeft()
@@ -135,14 +169,13 @@ namespace Wox
         {
             if (UserSettingStorage.Instance.HideWhenDeactive)
             {
-                //TODO:Hide the window when deactivated
-                //HideWox();
+                App.API.HideApp();
             }
         }
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            //The code here is to supress the conflict of Window.InputBinding and ListBox native Down/Up Key handle
+            //The code here is to supress the conflict of Window.InputBinding and ListBox/TextBox native Key handle
             var vm = this.DataContext as MainViewModel;
             //when alt is pressed, the real key should be e.SystemKey
             Key key = (e.Key == Key.System ? e.SystemKey : e.Key);
@@ -179,20 +212,11 @@ namespace Wox
                     vm.SelectPrevPageCommand.Execute(null);
                     e.Handled = true;
                     break;
+                case Key.Back:
+                    vm.BackCommand.Execute(e);
+                    break;
             }
         }
-
-        //TODO: Colin - Figure out how to raise BackKeyDownEvent?
-        //        case Key.Back:
-        //            if (BackKeyDownEvent != null)
-        //            {
-        //                BackKeyDownEvent(new WoxKeyDownEventArgs
-        //                {
-        //                    Query = tbQuery.Text,
-        //                    keyEventArgs = e
-        //                });
-        //            }
-        //            break;
 
         private void MainWindow_OnDrop(object sender, DragEventArgs e)
         {

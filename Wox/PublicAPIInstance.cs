@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Threading;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
@@ -36,6 +37,22 @@ namespace Wox
 
             SetHotkey(UserSettingStorage.Instance.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
+
+            this.MainVM.ListeningKeyPressed += (o, e) => {
+
+                if(e.KeyEventArgs.Key == Key.Back)
+                {
+                    if (null != this.BackKeyDownEvent)
+                    {
+                        BackKeyDownEvent(new WoxKeyDownEventArgs
+                        {
+                            Query = this.MainVM.QueryText,
+                            keyEventArgs = e.KeyEventArgs
+                        });
+                    }
+                }
+
+            };
         }
 
         #endregion
@@ -55,33 +72,14 @@ namespace Wox
         public void ChangeQuery(string query, bool requery = false)
         {
             this.MainVM.QueryText = query;
+            this.MainVM.CaretIndex = this.MainVM.QueryText.Length;
 
-            //TODO: Colin - Adjust CaretIndext
-            //Application.Current.Dispatcher.Invoke(() =>
-            //{
-
-            //    tbQuery.CaretIndex = this.MainVM.QueryText.Length;
-            //    if (requery)
-            //    {
-            //        TbQuery_OnTextChanged(null, null);
-            //    }
-            //});
         }
 
         public void ChangeQueryText(string query, bool selectAll = false)
         {
             this.MainVM.QueryText = query;
-
-            //TODO: Colin - Select all text 
-            //Application.Current.Dispatcher.Invoke(() =>
-            //{
-
-            //    tbQuery.CaretIndex = tbQuery.Text.Length;
-            //    if (selectAll)
-            //    {
-            //        tbQuery.SelectAll();
-            //    }
-            //});
+            this.MainVM.SelectAllText = true;
         }
 
         public void CloseApp()
@@ -183,13 +181,7 @@ namespace Wox
                     o.PluginID = plugin.ID;
                 });
 
-                this.MainVM.ActionPanel.Clear();
-
-                //TODO:Show Action Panel accordingly
-                //pnlContextMenu.Clear();
-                //pnlContextMenu.AddResults(results, plugin.ID);
-                //pnlContextMenu.Visibility = Visibility.Visible;
-                //pnlResult.Visibility = Visibility.Collapsed;
+                this.MainVM.ShowActionPanel(results, plugin.ID);
             }
         }
 
@@ -217,17 +209,7 @@ namespace Wox
         {
             UserSettingStorage.Instance.IncreaseActivateTimes();
             this.MainVM.IsVisible = true;
-
-            //TODO: Colin - Adjust window properties
-            //Left = GetWindowsLeft();
-            //Top = GetWindowsTop();
-
-            //Show();
-            //Activate();
-            //Focus();
-            //tbQuery.Focus();
-            //ResetQueryHistoryIndex();
-            //if (selectAll) tbQuery.SelectAll();
+            this.MainVM.SelectAllText = true;
         }
 
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)

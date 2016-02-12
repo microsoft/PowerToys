@@ -11,8 +11,14 @@ namespace Wox.CommandArgs
 
         public void Execute(IList<string> args)
         {
-            //TODO: Add ToggleWox Method
-            //App.API.ToggleWox();
+            if (App.Window.IsVisible)
+            {
+                App.API.HideApp();
+            }
+            else
+            {
+                App.API.ShowApp();
+            }
         }
     }
 }

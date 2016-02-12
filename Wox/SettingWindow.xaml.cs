@@ -22,6 +22,7 @@ using Stopwatch = Wox.Infrastructure.Stopwatch;
 using Wox.Infrastructure.Hotkey;
 using NHotkey.Wpf;
 using NHotkey;
+using Wox.ViewModel;
 
 namespace Wox
 {
@@ -36,6 +37,7 @@ namespace Wox
         {
             this._api = api;
             InitializeComponent();
+            this.resultPanelPreview.DataContext = new ResultPanelViewModel();
             Loaded += Setting_Loaded;
         }
 

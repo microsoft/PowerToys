@@ -32,7 +32,7 @@ namespace Wox
             var about = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTrayAbout"));
             about.Click += (o, e) => this._api.OpenSettingDialog("about");
             var exit = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTrayExit"));
-            exit.Click += (o, e) => this._api.HideApp();
+            exit.Click += (o, e) => this._api.CloseApp();
             MenuItem[] childen = { open, setting, about, exit };
             notifyIcon.ContextMenu = new ContextMenu(childen);
         }
