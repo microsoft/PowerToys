@@ -25,7 +25,7 @@ namespace Wox.ViewModel
             {
                 this._result = result;
 
-                this.OpenResultCommand = new RelayCommand(() => {
+                this.OpenResultCommand = new RelayCommand((parameter) => {
 
                     bool hideWindow = result.Action(new ActionContext
                     {
@@ -38,7 +38,7 @@ namespace Wox.ViewModel
                     }
                 });
 
-                this.OpenResultActionPanelCommand = new RelayCommand(()=> {
+                this.OpenResultActionPanelCommand = new RelayCommand((parameter) => {
 
                     if(null!= ResultActionPanelOpened)
                     {

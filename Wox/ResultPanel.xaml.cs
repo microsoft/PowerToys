@@ -18,7 +18,6 @@ namespace Wox
     public partial class ResultPanel : UserControl
     {
         public event Action<Result, IDataObject, DragEventArgs> ItemDropEvent;
-        private readonly object _resultsUpdateLock = new object();
 
         public void AddResults(List<Result> newResults, string resultId)
         {
@@ -77,54 +76,6 @@ namespace Wox
         }
         
 
-        public void SelectNext()
-        {
-            int index = lbResults.SelectedIndex;
-            if (index == lbResults.Items.Count - 1)
-            {
-                index = -1;
-            }
-            Select(index + 1);
-        }
-
-        public void SelectPrev()
-        {
-            int index = lbResults.SelectedIndex;
-            if (index == 0)
-            {
-                index = lbResults.Items.Count;
-            }
-            Select(index - 1);
-        }
-
-        private void SelectFirst()
-        {
-            Select(0);
-        }
-
-        private void Select(int index)
-        {
-            if (index >= 0 && index < lbResults.Items.Count)
-            {
-                lbResults.SelectedItem = lbResults.Items.GetItemAt(index);
-            }
-        }
-
-        public List<Result> GetVisibleResults()
-        {
-            List<Result> visibleElements = new List<Result>();
-            VirtualizingStackPanel virtualizingStackPanel = GetInnerStackPanel(lbResults);
-            for (int i = (int)virtualizingStackPanel.VerticalOffset; i <= virtualizingStackPanel.VerticalOffset + virtualizingStackPanel.ViewportHeight; i++)
-            {
-                ListBoxItem item = lbResults.ItemContainerGenerator.ContainerFromIndex(i) as ListBoxItem;
-                if (item != null)
-                {
-                    visibleElements.Add(item.DataContext as Result);
-                }
-            }
-            return visibleElements;
-        }
-
         private void UpdateItemNumber()
         {
             //VirtualizingStackPanel virtualizingStackPanel = GetInnerStackPanel(lbResults);
@@ -146,51 +97,6 @@ namespace Wox
             //}
         }
 
-        private childItem FindVisualChild<childItem>(DependencyObject obj) where childItem : DependencyObject
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
-                if (child != null && child is childItem)
-                    return (childItem)child;
-                else
-                {
-                    childItem childOfChild = FindVisualChild<childItem>(child);
-                    if (childOfChild != null)
-                        return childOfChild;
-                }
-            }
-            return null;
-        }
-
-        private VirtualizingStackPanel GetInnerStackPanel(FrameworkElement element)
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
-            {
-                var child = VisualTreeHelper.GetChild(element, i) as FrameworkElement;
-
-                if (child == null) continue;
-
-                if (child is VirtualizingStackPanel) return child as VirtualizingStackPanel;
-
-                var panel = GetInnerStackPanel(child);
-
-                if (panel != null)
-                    return panel;
-            }
-
-            return null;
-
-        }
-
-        public Result GetActiveResult()
-        {
-            int index = lbResults.SelectedIndex;
-            if (index < 0) return null;
-
-            return lbResults.Items[index] as Result;
-        }
-
         public ResultPanel()
         {
             InitializeComponent();
@@ -206,28 +112,6 @@ namespace Wox
                     //UpdateItemNumber();
                 //}, TimeSpan.FromMilliseconds(3));
             }
-        }
-
-        public void SelectNextPage()
-        {
-            int index = lbResults.SelectedIndex;
-            index += 5;
-            if (index >= lbResults.Items.Count)
-            {
-                index = lbResults.Items.Count - 1;
-            }
-            Select(index);
-        }
-
-        public void SelectPrevPage()
-        {
-            int index = lbResults.SelectedIndex;
-            index -= 5;
-            if (index < 0)
-            {
-                index = 0;
-            }
-            Select(index);
         }
 
         private void ListBoxItem_OnDrop(object sender, DragEventArgs e)

@@ -56,6 +56,7 @@ namespace Wox
         {
             this.MainVM.QueryText = query;
 
+            //TODO: Colin - Adjust CaretIndext
             //Application.Current.Dispatcher.Invoke(() =>
             //{
 
@@ -71,6 +72,7 @@ namespace Wox
         {
             this.MainVM.QueryText = query;
 
+            //TODO: Colin - Select all text 
             //Application.Current.Dispatcher.Invoke(() =>
             //{
 
@@ -216,7 +218,7 @@ namespace Wox
             UserSettingStorage.Instance.IncreaseActivateTimes();
             this.MainVM.IsVisible = true;
 
-            //TODO:Adjust window properties
+            //TODO: Colin - Adjust window properties
             //Left = GetWindowsLeft();
             //Top = GetWindowsTop();
 

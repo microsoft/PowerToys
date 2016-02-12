@@ -124,6 +124,70 @@ namespace Wox.ViewModel
 
         #region Public Methods
 
+        public void SelectResult(int index)
+        {
+            if(index <= this.Results.Count - 1)
+            {
+                this.SelectedResult = this.Results[index];
+            }
+        }
+
+        public void SelectNextResult()
+        {
+            if (null != this.SelectedResult)
+            {
+                var index = this.Results.IndexOf(this.SelectedResult);
+                if(index == this.Results.Count - 1)
+                {
+                    index = -1;
+                }
+                this.SelectedResult = this.Results.ElementAt(index + 1);
+            }
+        }
+
+        public void SelectPrevResult()
+        {
+            if (null != this.SelectedResult)
+            {
+                var index = this.Results.IndexOf(this.SelectedResult);
+                if (index == 0)
+                {
+                    index = this.Results.Count;
+                }
+                this.SelectedResult = this.Results.ElementAt(index - 1);
+            }
+        }
+
+        public void SelectNextPage()
+        {
+            var index = 0;
+            if (null != this.SelectedResult)
+            {
+                index = this.Results.IndexOf(this.SelectedResult);
+            }
+            index += 5;
+            if (index > this.Results.Count - 1)
+            {
+                index = this.Results.Count - 1;
+            }
+            this.SelectedResult = this.Results.ElementAt(index);
+        }
+
+        public void SelectPrevPage()
+        {
+            var index = 0;
+            if (null != this.SelectedResult)
+            {
+                index = this.Results.IndexOf(this.SelectedResult);
+            }
+            index -= 5;
+            if (index < 0)
+            {
+                index = 0;
+            }
+            this.SelectedResult = this.Results.ElementAt(index);
+        }
+
         public void Clear()
         {
             this._results.Clear();

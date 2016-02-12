@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -185,13 +186,73 @@ namespace Wox.ViewModel
             set;
         }
 
+        public ICommand SelectNextItemCommand
+        {
+            get;
+            set;
+        }
+
+        public ICommand SelectPrevItemCommand
+        {
+            get;
+            set;
+        }
+
+        public ICommand CtrlOCommand
+        {
+            get;
+            set;
+        }
+
+        public ICommand DisplayNextQueryCommand
+        {
+            get;
+            set;
+        }
+
+        public ICommand DisplayPrevQueryCommand
+        {
+            get;
+            set;
+        }
+
+        public ICommand SelectNextPageCommand
+        {
+            get;
+            set;
+        }
+
+        public ICommand SelectPrevPageCommand
+        {
+            get;
+            set;
+        }
+
+        public ICommand StartHelpCommand
+        {
+            get;
+            set;
+        }
+
+        public ICommand ShiftEnterCommand
+        {
+            get;
+            set;
+        }
+
+        public ICommand OpenResultCommand
+        {
+            get;
+            set;
+        }
+
         #endregion
 
         #region Private Methods
 
         private void InitializeKeyCommands()
         {
-            this.EscCommand = new RelayCommand(() => {
+            this.EscCommand = new RelayCommand((parameter) => {
 
                 if (this.IsActionPanelVisible)
                 {
@@ -202,6 +263,97 @@ namespace Wox.ViewModel
                     this.IsVisible = false;
                 }
 
+            });
+
+            this.SelectNextItemCommand = new RelayCommand((parameter) => {
+
+                if (this.IsActionPanelVisible)
+                {
+                    this._actionPanel.SelectNextResult();
+                }
+                else
+                {
+                    this._searchResultPanel.SelectNextResult();
+                }
+
+            });
+
+            this.SelectPrevItemCommand = new RelayCommand((parameter) => {
+
+                if (this.IsActionPanelVisible)
+                {
+                    this._actionPanel.SelectPrevResult();
+                }
+                else
+                {
+                    this._searchResultPanel.SelectPrevResult();
+                }
+
+            });
+
+            this.CtrlOCommand = new RelayCommand((parameter) => {
+
+                if (this.IsActionPanelVisible)
+                {
+                    BackToSearchMode();
+                }
+                else
+                {
+                    ShowActionPanel(this._searchResultPanel.SelectedResult.RawResult);
+                }
+            });
+
+            this.DisplayNextQueryCommand = new RelayCommand((parameter) => {
+
+                var nextQuery = QueryHistoryStorage.Instance.Next();
+                DisplayQueryHistory(nextQuery);
+
+            });
+
+            this.DisplayPrevQueryCommand = new RelayCommand((parameter) => {
+
+                var prev = QueryHistoryStorage.Instance.Previous();
+                DisplayQueryHistory(prev);
+
+            });
+
+            this.SelectNextPageCommand = new RelayCommand((parameter) => {
+
+                this._searchResultPanel.SelectNextPage();
+
+            });
+
+            this.SelectPrevPageCommand = new RelayCommand((parameter) => {
+
+                this._searchResultPanel.SelectPrevPage();
+
+            });
+
+            this.StartHelpCommand = new RelayCommand((parameter) => {
+                Process.Start("http://doc.getwox.com");
+            });
+
+            this.ShiftEnterCommand = new RelayCommand((parameter) => {
+
+                if (!this.IsActionPanelVisible && null != this._searchResultPanel.SelectedResult)
+                {
+                    this.ShowActionPanel(this._searchResultPanel.SelectedResult.RawResult);
+                }
+
+            });
+
+            this.OpenResultCommand = new RelayCommand((parameter) => {
+
+                if(null != parameter)
+                {
+                    var index = int.Parse(parameter.ToString());
+                    this._searchResultPanel.SelectResult(index);
+                }
+
+                if (null != this._searchResultPanel.SelectedResult)
+                {
+                    this._searchResultPanel.SelectedResult.OpenResultCommand.Execute(null);
+                }
             });
         }
 
@@ -406,7 +558,7 @@ namespace Wox.ViewModel
 
         private void UpdateResultViewInternal(List<Result> list, PluginMetadata metadata)
         {
-            Stopwatch.Normal($"UI update cost for {metadata.Name}",
+            Infrastructure.Stopwatch.Normal($"UI update cost for {metadata.Name}",
                     () => { this._searchResultPanel.AddResults(list, metadata.ID); });
         }
 
@@ -415,6 +567,38 @@ namespace Wox.ViewModel
             this.QueryText = _textBeforeEnterContextMenuMode;
             this.IsActionPanelVisible = false;
             this.IsSearchResultPanelVisible = true;
+        }
+
+        private void DisplayQueryHistory(HistoryItem history)
+        {
+            if (history != null)
+            {
+                var historyMetadata = QueryHistoryStorage.MetaData;
+
+                this.QueryText = history.Query;
+                //TODO: Need to select all text
+
+                var executeQueryHistoryTitle = InternationalizationManager.Instance.GetTranslation("executeQuery");
+                var lastExecuteTime = InternationalizationManager.Instance.GetTranslation("lastExecuteTime");
+                this._searchResultPanel.RemoveResultsExcept(historyMetadata);
+                UpdateResultViewInternal(new List<Result>
+                {
+                    new Result
+                    {
+                        Title = string.Format(executeQueryHistoryTitle,history.Query),
+                        SubTitle = string.Format(lastExecuteTime,history.ExecutedDateTime),
+                        IcoPath = "Images\\history.png",
+                        PluginDirectory = WoxDirectroy.Executable,
+                        Action = _ =>{
+
+                            this.QueryText = history.Query;
+                            //TODO: Need to select all text
+
+                            return false;
+                        }
+                    }
+                }, historyMetadata);
+            }
         }
 
         #endregion

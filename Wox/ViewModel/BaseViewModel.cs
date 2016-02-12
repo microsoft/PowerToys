@@ -25,9 +25,9 @@ namespace Wox.ViewModel
     public class RelayCommand : ICommand
     {
 
-        private Action _action;
+        private Action<object> _action;
 
-        public RelayCommand(Action action)
+        public RelayCommand(Action<object> action)
         {
             this._action = action;
         }
@@ -43,7 +43,7 @@ namespace Wox.ViewModel
         {
             if (null != this._action)
             {
-                this._action();
+                this._action(parameter);
             }
         }
     }
