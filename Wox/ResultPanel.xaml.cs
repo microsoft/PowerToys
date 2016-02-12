@@ -17,7 +17,6 @@ namespace Wox
     [Synchronization]
     public partial class ResultPanel : UserControl
     {
-        //TODO: Refactor this event
         public event Action<Result, IDataObject, DragEventArgs> ItemDropEvent;
 
         public void AddResults(List<Result> newResults, string resultId)
