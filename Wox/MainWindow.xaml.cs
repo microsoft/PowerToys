@@ -24,20 +24,14 @@ namespace Wox
 
         #region Properties
 
-        private readonly Storyboard progressBarStoryboard = new Storyboard();
-        private NotifyIcon notifyIcon;
-        
-        
+        private readonly Storyboard progressBarStoryboard = new Storyboard();            
 
         #endregion
         
-
         public MainWindow()
         {
             InitializeComponent();
             
-            InitialTray();
-
             //pnlResult.ItemDropEvent += pnlResult_ItemDropEvent;
             Closing += MainWindow_Closing;
         }
@@ -130,22 +124,6 @@ namespace Wox
             progressBarStoryboard.RepeatBehavior = RepeatBehavior.Forever;
             progressBar.Visibility = Visibility.Hidden;
             progressBar.BeginStoryboard(progressBarStoryboard);
-        }
-
-        private void InitialTray()
-        {
-            //notifyIcon = new NotifyIcon { Text = "Wox", Icon = Properties.Resources.app, Visible = true };
-            //notifyIcon.Click += (o, e) => ShowWox();
-            //var open = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTrayOpen"));
-            //open.Click += (o, e) => ShowWox();
-            //var setting = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTraySettings"));
-            //setting.Click += (o, e) => OpenSettingDialog();
-            //var about = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTrayAbout"));
-            //about.Click += (o, e) => OpenSettingDialog("about");
-            //var exit = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTrayExit"));
-            //exit.Click += (o, e) => CloseApp();
-            //MenuItem[] childen = { open, setting, about, exit };
-            //notifyIcon.ContextMenu = new ContextMenu(childen);
         }
 
         private void Border_OnMouseDown(object sender, MouseButtonEventArgs e)

@@ -45,11 +45,12 @@ namespace Wox
                 RegisterUnhandledException();
                 ThreadPool.QueueUserWorkItem(o => { ImageLoader.ImageLoader.PreloadImages(); });
 
-
                 MainViewModel mainVM = new MainViewModel();
                 API = new PublicAPIInstance(mainVM);
                 Window = new MainWindow();
                 Window.DataContext = mainVM;
+
+                NotifyIconManager notifyIconManager = new NotifyIconManager(API);
 
                 PluginManager.Init(API);
                 CommandArgsFactory.Execute(e.Args.ToList());
