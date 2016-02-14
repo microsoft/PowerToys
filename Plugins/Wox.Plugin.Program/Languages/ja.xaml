@@ -1,0 +1,38 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <!--Program setting-->
+    <system:String x:Key="wox_plugin_program_delete">Delete</system:String>
+    <system:String x:Key="wox_plugin_program_edit">Edit</system:String>
+    <system:String x:Key="wox_plugin_program_add">Add</system:String>
+    <system:String x:Key="wox_plugin_program_location">Location</system:String>
+    <system:String x:Key="wox_plugin_program_suffixes">Index file suffixes</system:String>
+    <system:String x:Key="wox_plugin_program_reindex">Reindex</system:String>
+    <system:String x:Key="wox_plugin_program_indexing">Indexing</system:String>
+    <system:String x:Key="wox_plugin_program_index_start">Index Start Menu</system:String>
+    <system:String x:Key="wox_plugin_program_index_registry">Index Registry</system:String>
+    <system:String x:Key="wox_plugin_program_suffixes_header">Suffixes</system:String>
+    <system:String x:Key="wox_plugin_program_max_depth_header">Max Depth</system:String>
+
+    <system:String x:Key="wox_plugin_program_directory">Directory:</system:String>
+    <system:String x:Key="wox_plugin_program_browse">Browse</system:String>
+    <system:String x:Key="wox_plugin_program_file_suffixes">File Suffixes:</system:String>
+    <system:String x:Key="wox_plugin_program_max_search_depth">Maximum Search Depth (-1 is unlimited):</system:String>
+
+    <system:String x:Key="wox_plugin_program_pls_select_program_source">Please select a program source</system:String>
+    <system:String x:Key="wox_plugin_program_delete_program_source">Are your sure to delete {0}?</system:String>
+
+    <system:String x:Key="wox_plugin_program_update">Update</system:String>
+    <system:String x:Key="wox_plugin_program_only_index_tip">Wox will only index files that end with following suffixes:</system:String>
+    <system:String x:Key="wox_plugin_program_split_by_tip">(Each suffix should split by ;)</system:String>
+    <system:String x:Key="wox_plugin_program_update_file_suffixes">Sucessfully update file suffixes</system:String>
+    <system:String x:Key="wox_plugin_program_suffixes_cannot_empty">File suffixes can't be empty</system:String>
+
+    <system:String x:Key="wox_plugin_program_run_as_administrator">Run As Administrator</system:String>
+    <system:String x:Key="wox_plugin_program_open_containing_folder">Open containing folder</system:String>
+
+    <system:String x:Key="wox_plugin_program_plugin_name">Program</system:String>
+    <system:String x:Key="wox_plugin_program_plugin_description">Search programs in Wox</system:String>
+
+</ResourceDictionary>
