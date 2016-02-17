@@ -14,5 +14,9 @@
         {
             PluginName = pluginName;
         }
+
+        public WoxPluginException(string msg) : base(msg)
+        {
+        }
     }
 }

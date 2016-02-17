@@ -32,8 +32,6 @@ namespace Wox.Plugin
     /// </summary>
     public interface IPluginI18n : IFeatures
     {
-        string GetLanguagesFolder();
-
         string GetTranslatedPluginTitle();
 
         string GetTranslatedPluginDescription();
