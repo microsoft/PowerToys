@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows;
-using Wox.Infrastructure;
 using YAMP;
 
 namespace Wox.Plugin.Caculator
@@ -91,12 +89,6 @@ namespace Wox.Plugin.Caculator
         public void Init(PluginInitContext context)
         {
             this.context = context;
-        }
-
-        public string GetLanguagesFolder()
-        {
-            return Path.Combine(WoxDirectroy.Executable, "Languages");
-
         }
 
         public string GetTranslatedPluginTitle()

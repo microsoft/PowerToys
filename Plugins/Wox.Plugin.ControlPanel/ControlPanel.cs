@@ -82,11 +82,6 @@ namespace Wox.Plugin.ControlPanel
             return false;
         }
 
-        public string GetLanguagesFolder()
-        {
-            return Path.Combine(WoxDirectroy.Executable, "Languages");
-        }
-
         public string GetTranslatedPluginTitle()
         {
             return context.API.GetTranslation("wox_plugin_controlpanel_plugin_name");

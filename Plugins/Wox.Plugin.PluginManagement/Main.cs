@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading;
 using System.Windows;
 using Newtonsoft.Json;
-using Wox.Infrastructure;
 
 namespace Wox.Plugin.PluginManagement
 {
@@ -240,11 +239,6 @@ namespace Wox.Plugin.PluginManagement
         public void Init(PluginInitContext context)
         {
             this.context = context;
-        }
-
-        public string GetLanguagesFolder()
-        {
-            return Path.Combine(WoxDirectroy.Executable, "Languages");
         }
 
         public string GetTranslatedPluginTitle()

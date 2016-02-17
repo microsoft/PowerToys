@@ -15,10 +15,10 @@ namespace Wox.Core.Resource
         public Internationalization()
         {
             DirectoryName = "Languages";
-            MakesureThemeDirectoriesExist();
+            MakesureDirectoriesExist();
         }
 
-        private void MakesureThemeDirectoriesExist()
+        private void MakesureDirectoriesExist()
         {
             if (!Directory.Exists(DirectoryPath))
             {
@@ -73,10 +73,11 @@ namespace Wox.Core.Resource
 
         public override ResourceDictionary GetResourceDictionary()
         {
-            return new ResourceDictionary
+            var dictionary = new ResourceDictionary
             {
                 Source = new Uri(GetLanguageFile(DirectoryPath), UriKind.Absolute)
             };
+            return dictionary;
         }
 
         public List<Language> LoadAvailableLanguages()

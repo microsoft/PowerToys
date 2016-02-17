@@ -6,7 +6,6 @@ using System.Linq;
 using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
-using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Logger;
 using Control = System.Windows.Controls.Control;
@@ -198,11 +197,6 @@ namespace Wox.Plugin.CMD
         public Control CreateSettingPanel()
         {
             return new CMDSetting();
-        }
-
-        public string GetLanguagesFolder()
-        {
-            return Path.Combine(WoxDirectroy.Executable, "Languages");
         }
 
         public string GetTranslatedPluginTitle()

@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Windows.Controls;
-using Wox.Infrastructure;
 using Wox.Plugin.WebSearch.Annotations;
 using Wox.Plugin.WebSearch.SuggestionSources;
 
@@ -89,11 +87,6 @@ namespace Wox.Plugin.WebSearch
         }
 
         #endregion
-
-        public string GetLanguagesFolder()
-        {
-            return Path.Combine(WoxDirectroy.Executable, "Languages");
-        }
 
         public string GetTranslatedPluginTitle()
         {
