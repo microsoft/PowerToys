@@ -9,7 +9,7 @@
     <ListBox x:Name="lbResults" MaxHeight="{Binding MaxHeight}" SelectedItem="{Binding SelectedResult}"
              HorizontalContentAlignment="Stretch" ItemsSource="{Binding Results}" Margin="{Binding Margin}"
              Style="{DynamicResource BaseListboxStyle}" SelectionChanged="lbResults_SelectionChanged" Focusable="False"
-             KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single" Drop="ListBoxItem_OnDrop"
+             KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single"
              VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Standard">
         <ListBox.ItemTemplate>
             <DataTemplate>

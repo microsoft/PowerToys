@@ -32,24 +32,8 @@ namespace Wox
         {
             InitializeComponent();
             
-            //pnlResult.ItemDropEvent += pnlResult_ItemDropEvent;
             Closing += MainWindow_Closing;
         }
-
-        //void pnlResult_ItemDropEvent(Result result, IDataObject dropDataObject, DragEventArgs args)
-        //{
-        //    PluginPair pluginPair = PluginManager.AllPlugins.FirstOrDefault(o => o.Metadata.ID == result.PluginID);
-        //    if (ResultItemDropEvent != null && pluginPair != null)
-        //    {
-        //        foreach (var delegateHandler in ResultItemDropEvent.GetInvocationList())
-        //        {
-        //            if (delegateHandler.Target == pluginPair.Plugin)
-        //            {
-        //                delegateHandler.DynamicInvoke(result, dropDataObject, args);
-        //            }
-        //        }
-        //    }
-        //}
 
         void MainWindow_Closing(object sender, CancelEventArgs e)
         {
