@@ -10,123 +10,72 @@ using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Plugin;
 using Wox.Storage;
+using Wox.ViewModel;
 
 namespace Wox
 {
     [Synchronization]
     public partial class ResultPanel : UserControl
     {
-        public event Action<Result> LeftMouseClickEvent;
-        public event Action<Result> RightMouseClickEvent;
         public event Action<Result, IDataObject, DragEventArgs> ItemDropEvent;
-        private readonly ListBoxItems _results;
         private readonly object _resultsUpdateLock = new object();
-
-        protected virtual void OnRightMouseClick(Result result)
-        {
-            Action<Result> handler = RightMouseClickEvent;
-            if (handler != null) handler(result);
-        }
-
-        protected virtual void OnLeftMouseClick(Result result)
-        {
-            Action<Result> handler = LeftMouseClickEvent;
-            if (handler != null) handler(result);
-        }
-
-
-        public int MaxResultsToShow { get { return UserSettingStorage.Instance.MaxResultsToShow * 50; } }
-
-        internal void RemoveResultsFor(PluginMetadata metadata)
-        {
-            lock (_resultsUpdateLock)
-            {
-                _results.RemoveAll(r => r.PluginID == metadata.ID);
-            }
-        }
-
-        internal void RemoveResultsExcept(PluginMetadata metadata)
-        {
-            lock (_resultsUpdateLock)
-            {
-                _results.RemoveAll(r => r.PluginID != metadata.ID);
-            }
-        }
 
         public void AddResults(List<Result> newResults, string resultId)
         {
-            lock (_resultsUpdateLock)
-            {
-                // todo use async to do new result calculation
-                var resultsCopy = _results.ToList();
-                var oldResults = resultsCopy.Where(r => r.PluginID == resultId).ToList();
-                // intersection of A (old results) and B (new newResults)
-                var intersection = oldResults.Intersect(newResults).ToList();
-                // remove result of relative complement of B in A
-                foreach (var result in oldResults.Except(intersection))
-                {
-                    resultsCopy.Remove(result);
-                }
+            //lock (_resultsUpdateLock)
+            //{
+            //    // todo use async to do new result calculation
+            //    var resultsCopy = _results.ToList();
+            //    var oldResults = resultsCopy.Where(r => r.PluginID == resultId).ToList();
+            //    // intersection of A (old results) and B (new newResults)
+            //    var intersection = oldResults.Intersect(newResults).ToList();
+            //    // remove result of relative complement of B in A
+            //    foreach (var result in oldResults.Except(intersection))
+            //    {
+            //        resultsCopy.Remove(result);
+            //    }
 
-                // update scores
-                foreach (var result in newResults)
-                {
-                    if (IsTopMostResult(result))
-                    {
-                        result.Score = int.MaxValue;
-                    }
-                }
+            //    // update scores
+            //    foreach (var result in newResults)
+            //    {
+            //        if (IsTopMostResult(result))
+            //        {
+            //            result.Score = int.MaxValue;
+            //        }
+            //    }
 
-                // update index for result in intersection of A and B
-                foreach (var commonResult in intersection)
-                {
-                    int oldIndex = resultsCopy.IndexOf(commonResult);
-                    int oldScore = resultsCopy[oldIndex].Score;
-                    int newScore = newResults[newResults.IndexOf(commonResult)].Score;
-                    if (newScore != oldScore)
-                    {
-                        var oldResult = resultsCopy[oldIndex];
-                        oldResult.Score = newScore;
-                        resultsCopy.RemoveAt(oldIndex);
-                        int newIndex = InsertIndexOf(newScore, resultsCopy);
-                        resultsCopy.Insert(newIndex, oldResult);
+            //    // update index for result in intersection of A and B
+            //    foreach (var commonResult in intersection)
+            //    {
+            //        int oldIndex = resultsCopy.IndexOf(commonResult);
+            //        int oldScore = resultsCopy[oldIndex].Score;
+            //        int newScore = newResults[newResults.IndexOf(commonResult)].Score;
+            //        if (newScore != oldScore)
+            //        {
+            //            var oldResult = resultsCopy[oldIndex];
+            //            oldResult.Score = newScore;
+            //            resultsCopy.RemoveAt(oldIndex);
+            //            int newIndex = InsertIndexOf(newScore, resultsCopy);
+            //            resultsCopy.Insert(newIndex, oldResult);
 
-                    }
-                }
+            //        }
+            //    }
 
-                // insert result in relative complement of A in B
-                foreach (var result in newResults.Except(intersection))
-                {
-                    int newIndex = InsertIndexOf(result.Score, resultsCopy);
-                    resultsCopy.Insert(newIndex, result);
-                }
+            //    // insert result in relative complement of A in B
+            //    foreach (var result in newResults.Except(intersection))
+            //    {
+            //        int newIndex = InsertIndexOf(result.Score, resultsCopy);
+            //        resultsCopy.Insert(newIndex, result);
+            //    }
 
-                // update UI in one run, so it can avoid UI flickering
-                _results.Update(resultsCopy);
+            //    // update UI in one run, so it can avoid UI flickering
+            //    _results.Update(resultsCopy);
 
-                lbResults.Margin = lbResults.Items.Count > 0 ? new Thickness { Top = 8 } : new Thickness { Top = 0 };
-                SelectFirst();
-            }
+            //    lbResults.Margin = lbResults.Items.Count > 0 ? new Thickness { Top = 8 } : new Thickness { Top = 0 };
+            //    SelectFirst();
+            //}
         }
-
-        private bool IsTopMostResult(Result result)
-        {
-            return TopMostRecordStorage.Instance.IsTopMost(result);
-        }
-
-        private int InsertIndexOf(int newScore, IList<Result> list)
-        {
-            int index = 0;
-            for (; index < list.Count; index++)
-            {
-                var result = list[index];
-                if (newScore > result.Score)
-                {
-                    break;
-                }
-            }
-            return index;
-        }
+        
 
         public void SelectNext()
         {
@@ -245,17 +194,6 @@ namespace Wox
         public ResultPanel()
         {
             InitializeComponent();
-            _results = new ListBoxItems();
-            lbResults.ItemsSource = _results;
-        }
-
-        public void Clear()
-        {
-            lock (_resultsUpdateLock)
-            {
-                _results.Clear();
-                lbResults.Margin = new Thickness { Top = 0 };
-            }
         }
 
         private void lbResults_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -267,19 +205,6 @@ namespace Wox
                 //{
                     //UpdateItemNumber();
                 //}, TimeSpan.FromMilliseconds(3));
-            }
-        }
-
-        private void LbResults_OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            var item = ItemsControl.ContainerFromElement(lbResults, e.OriginalSource as DependencyObject) as ListBoxItem;
-            if (item != null && e.ChangedButton == MouseButton.Left)
-            {
-                OnLeftMouseClick(item.DataContext as Result);
-            }
-            if (item != null && e.ChangedButton == MouseButton.Right)
-            {
-                OnRightMouseClick(item.DataContext as Result);
             }
         }
 
@@ -310,14 +235,14 @@ namespace Wox
             var item = ItemsControl.ContainerFromElement(lbResults, e.OriginalSource as DependencyObject) as ListBoxItem;
             if (item != null)
             {
-                OnItemDropEvent(item.DataContext as Result, e.Data, e);
+                OnItemDropEvent(item.DataContext as ResultItemViewModel, e.Data, e);
             }
         }
 
-        protected virtual void OnItemDropEvent(Result obj, IDataObject data, DragEventArgs e)
+        protected virtual void OnItemDropEvent(ResultItemViewModel obj, IDataObject data, DragEventArgs e)
         {
             var handler = ItemDropEvent;
-            if (handler != null) handler(obj, data, e);
+            if (handler != null) handler(obj.RawResult, data, e);
         }
     }
 }
