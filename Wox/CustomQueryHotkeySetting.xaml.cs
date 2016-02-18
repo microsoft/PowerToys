@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using NHotkey;
+using NHotkey.Wpf;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using Wox.Core.Resource;
 using Wox.Core.UserSettings;
+using Wox.Infrastructure.Hotkey;
 
 namespace Wox
 {
@@ -44,11 +48,12 @@ namespace Wox
                     ActionKeyword = tbAction.Text
                 };
                 UserSettingStorage.Instance.CustomPluginHotkeys.Add(pluginHotkey);
-                //settingWidow.MainWindow.SetHotkey(ctlHotkey.CurrentHotkey, delegate
-                //{
-                //    settingWidow.MainWindow.ChangeQuery(pluginHotkey.ActionKeyword);
-                //    settingWidow.MainWindow.ShowApp();
-                //});
+
+                SetHotkey(ctlHotkey.CurrentHotkey, delegate
+                {
+                    App.API.ChangeQuery(pluginHotkey.ActionKeyword);
+                    App.API.ShowApp();
+                });
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
             }
             else
@@ -62,12 +67,12 @@ namespace Wox
                 updateCustomHotkey.ActionKeyword = tbAction.Text;
                 updateCustomHotkey.Hotkey = ctlHotkey.CurrentHotkey.ToString();
                 //remove origin hotkey
-                //settingWidow.MainWindow.RemoveHotkey(oldHotkey);
-                //settingWidow.MainWindow.SetHotkey(updateCustomHotkey.Hotkey, delegate
-                //{
-                //    settingWidow.MainWindow.ShowApp();
-                //    settingWidow.MainWindow.ChangeQuery(updateCustomHotkey.ActionKeyword);
-                //});
+                RemoveHotkey(oldHotkey);
+                SetHotkey(new HotkeyModel(updateCustomHotkey.Hotkey), delegate
+                {
+                    App.API.ShowApp();
+                    App.API.ChangeQuery(updateCustomHotkey.ActionKeyword);
+                });
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
             }
 
@@ -94,8 +99,30 @@ namespace Wox
 
         private void BtnTestActionKeyword_OnClick(object sender, RoutedEventArgs e)
         {
-            //settingWidow.MainWindow.ShowApp();
-            //settingWidow.MainWindow.ChangeQuery(tbAction.Text);
+            App.API.ShowApp();
+            App.API.ChangeQuery(tbAction.Text);
+        }
+
+        private void RemoveHotkey(string hotkeyStr)
+        {
+            if (!string.IsNullOrEmpty(hotkeyStr))
+            {
+                HotkeyManager.Current.Remove(hotkeyStr);
+            }
+        }
+
+        private void SetHotkey(HotkeyModel hotkey, EventHandler<HotkeyEventArgs> action)
+        {
+            string hotkeyStr = hotkey.ToString();
+            try
+            {
+                HotkeyManager.Current.AddOrReplace(hotkeyStr, hotkey.CharKey, hotkey.ModifierKeys, action);
+            }
+            catch (Exception)
+            {
+                string errorMsg = string.Format(InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
+                MessageBox.Show(errorMsg);
+            }
         }
     }
 }
