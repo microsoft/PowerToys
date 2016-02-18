@@ -1,6 +1,7 @@
 ﻿<Window x:Class="Wox.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:wox="clr-namespace:Wox"
+        xmlns:vm="clr-namespace:Wox.ViewModel" xmlns:converters="clr-namespace:Wox.Converters"
         Title="Wox"
         Topmost="True"
         Loaded="MainWindow_OnLoaded"
@@ -15,14 +16,32 @@
         Style="{DynamicResource WindowStyle}"
         Icon="Images\app.png"
         AllowsTransparency="True"
+        Visibility="{Binding IsVisible,Converter={converters:VisibilityConverter}}"
         >
+    <Window.InputBindings>
+        <KeyBinding Key="Esc" Command="{Binding EscCommand}"></KeyBinding>
+    </Window.InputBindings>
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:ResultPanelViewModel}">
+            <wox:ResultPanel></wox:ResultPanel>
+        </DataTemplate>
+        <converters:VisibilityConverter x:Key="VisibilityConverter" />
+    </Window.Resources>
     <Border Style="{DynamicResource WindowBorderStyle}" MouseDown="Border_OnMouseDown">
         <StackPanel Orientation="Vertical">
-            <TextBox Style="{DynamicResource QueryBoxStyle}" PreviewDragOver="TbQuery_OnPreviewDragOver" AllowDrop="True"
-                     x:Name="tbQuery" PreviewKeyDown="TbQuery_OnPreviewKeyDown" TextChanged="TbQuery_OnTextChanged" />
-            <Line Style="{DynamicResource PendingLineStyle}" x:Name="progressBar" Y1="0" Y2="0" X2="100" Height="2" StrokeThickness="1"></Line>
-            <wox:ResultPanel x:Name="pnlResult" />
-            <wox:ResultPanel x:Name="pnlContextMenu" Visibility="Collapsed" />
+            <TextBox Style="{DynamicResource QueryBoxStyle}" Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                     PreviewDragOver="TbQuery_OnPreviewDragOver" AllowDrop="True"
+                     x:Name="tbQuery" />
+            <Line Style="{DynamicResource PendingLineStyle}" x:Name="progressBar" Y1="0" Y2="0" X2="100" Height="2" StrokeThickness="1"
+                  Visibility="{Binding IsProgressBarVisible,Converter={StaticResource VisibilityConverter}}">
+                <Line.ToolTip>
+                    <ToolTip IsOpen="{Binding IsProgressBarTooltipVisible}"></ToolTip>
+                </Line.ToolTip>
+            </Line>
+            <ContentControl Content="{Binding SearchResultPanel}" Visibility="{Binding IsSearchResultPanelVisible,Converter={StaticResource VisibilityConverter}}">
+            </ContentControl>
+            <ContentControl Content="{Binding ActionPanel}" Visibility="{Binding IsActionPanelVisible,Converter={StaticResource VisibilityConverter}}">
+            </ContentControl>
         </StackPanel>
     </Border>
 </Window>
