@@ -16,9 +16,9 @@ namespace Wox.CommandArgs
             if (args.Count > 0)
             {
                 string query = args[0];
-                App.Window.ChangeQuery(query);
+                App.API.ChangeQuery(query);
             }
-            App.Window.ShowApp();
+            App.API.ShowApp();
         }
     }
 }

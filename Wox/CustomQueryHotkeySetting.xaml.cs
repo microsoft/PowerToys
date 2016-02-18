@@ -44,11 +44,11 @@ namespace Wox
                     ActionKeyword = tbAction.Text
                 };
                 UserSettingStorage.Instance.CustomPluginHotkeys.Add(pluginHotkey);
-                settingWidow.MainWindow.SetHotkey(ctlHotkey.CurrentHotkey, delegate
-                {
-                    settingWidow.MainWindow.ChangeQuery(pluginHotkey.ActionKeyword);
-                    settingWidow.MainWindow.ShowApp();
-                });
+                //settingWidow.MainWindow.SetHotkey(ctlHotkey.CurrentHotkey, delegate
+                //{
+                //    settingWidow.MainWindow.ChangeQuery(pluginHotkey.ActionKeyword);
+                //    settingWidow.MainWindow.ShowApp();
+                //});
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
             }
             else
@@ -62,12 +62,12 @@ namespace Wox
                 updateCustomHotkey.ActionKeyword = tbAction.Text;
                 updateCustomHotkey.Hotkey = ctlHotkey.CurrentHotkey.ToString();
                 //remove origin hotkey
-                settingWidow.MainWindow.RemoveHotkey(oldHotkey);
-                settingWidow.MainWindow.SetHotkey(updateCustomHotkey.Hotkey, delegate
-                {
-                    settingWidow.MainWindow.ShowApp();
-                    settingWidow.MainWindow.ChangeQuery(updateCustomHotkey.ActionKeyword);
-                });
+                //settingWidow.MainWindow.RemoveHotkey(oldHotkey);
+                //settingWidow.MainWindow.SetHotkey(updateCustomHotkey.Hotkey, delegate
+                //{
+                //    settingWidow.MainWindow.ShowApp();
+                //    settingWidow.MainWindow.ChangeQuery(updateCustomHotkey.ActionKeyword);
+                //});
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
             }
 
@@ -94,8 +94,8 @@ namespace Wox
 
         private void BtnTestActionKeyword_OnClick(object sender, RoutedEventArgs e)
         {
-            settingWidow.MainWindow.ShowApp();
-            settingWidow.MainWindow.ChangeQuery(tbAction.Text);
+            //settingWidow.MainWindow.ShowApp();
+            //settingWidow.MainWindow.ChangeQuery(tbAction.Text);
         }
     }
 }

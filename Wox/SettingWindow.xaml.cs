@@ -94,7 +94,7 @@ namespace Wox
             {
                 UserSettingStorage.Instance.MaxResultsToShow = (int)comboMaxResultsToShow.SelectedItem;
                 UserSettingStorage.Instance.Save();
-                MainWindow.pnlResult.lbResults.GetBindingExpression(MaxHeightProperty).UpdateTarget();
+                //MainWindow.pnlResult.lbResults.GetBindingExpression(MaxHeightProperty).UpdateTarget();
             };
 
             cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
@@ -250,18 +250,18 @@ namespace Wox
         {
             if (ctlHotkey.CurrentHotkeyAvailable)
             {
-                MainWindow.SetHotkey(ctlHotkey.CurrentHotkey, delegate
-                {
-                    if (!MainWindow.IsVisible)
-                    {
-                        MainWindow.ShowApp();
-                    }
-                    else
-                    {
-                        MainWindow.HideApp();
-                    }
-                });
-                MainWindow.RemoveHotkey(UserSettingStorage.Instance.Hotkey);
+                //MainWindow.SetHotkey(ctlHotkey.CurrentHotkey, delegate
+                //{
+                //    if (!MainWindow.IsVisible)
+                //    {
+                //        MainWindow.ShowApp();
+                //    }
+                //    else
+                //    {
+                //        MainWindow.HideApp();
+                //    }
+                //});
+                //MainWindow.RemoveHotkey(UserSettingStorage.Instance.Hotkey);
                 UserSettingStorage.Instance.Hotkey = ctlHotkey.CurrentHotkey.ToString();
                 UserSettingStorage.Instance.Save();
             }
@@ -289,7 +289,7 @@ namespace Wox
                 UserSettingStorage.Instance.CustomPluginHotkeys.Remove(item);
                 lvCustomHotkey.Items.Refresh();
                 UserSettingStorage.Instance.Save();
-                MainWindow.RemoveHotkey(item.Hotkey);
+                //MainWindow.RemoveHotkey(item.Hotkey);
             }
         }
 

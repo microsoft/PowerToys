@@ -34,7 +34,7 @@ namespace Wox.CommandArgs
             }
             else
             {
-                App.Window.ShowApp();
+                App.API.ShowApp();
             }
         }
     }

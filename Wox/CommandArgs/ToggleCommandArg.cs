@@ -11,7 +11,8 @@ namespace Wox.CommandArgs
 
         public void Execute(IList<string> args)
         {
-            App.Window.ToggleWox();
+            //TODO: Add ToggleWox Method
+            //App.API.ToggleWox();
         }
     }
 }
