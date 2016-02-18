@@ -103,6 +103,21 @@ namespace Wox.ViewModel
 
         #endregion
 
+        public override bool Equals(object obj)
+        {
+            ResultItemViewModel r = obj as ResultItemViewModel;
+            if (r != null)
+            {
+                var equality = string.Equals(r.Title, Title) &&
+                               string.Equals(r.SubTitle, SubTitle);
+                return equality;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public event EventHandler<ResultOpenedEventArgs> ResultOpened;
 
         public event EventHandler ResultActionPanelOpened;
