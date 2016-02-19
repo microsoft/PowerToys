@@ -30,25 +30,7 @@ namespace Wox.ViewModel
 
         public ResultPanelViewModel()
         {
-            this._results = new ResultCollection(
-
-                (o, e)=> {
-
-                    if(null != ResultOpenedInPanel)
-                    {
-                        this.ResultOpenedInPanel(this, new ResultOpenedInPanelEventArgs(o as ResultItemViewModel, e.HideWindow));
-                    }
-                },
-
-                (o, e) => {
-
-                    if(null != ResultActionPanelOpenedInPanel)
-                    {
-                        this.ResultActionPanelOpenedInPanel(this, new ResultActionPanelOpenedInPanelEventArgs(o as ResultItemViewModel));
-                    }
-
-                }
-            );
+            this._results = new ResultCollection();
         }
 
         #endregion
@@ -293,64 +275,12 @@ namespace Wox.ViewModel
 
         #endregion
 
-        public event EventHandler<ResultOpenedInPanelEventArgs> ResultOpenedInPanel;
-
-        public event EventHandler<ResultActionPanelOpenedInPanelEventArgs> ResultActionPanelOpenedInPanel;
-
         public class ResultCollection : ObservableCollection<ResultItemViewModel>
         // todo implement custom moveItem,removeItem,insertItem for better performance
         {
 
-            private EventHandler<ResultOpenedEventArgs> _resultOpenedHandler;
-            private EventHandler _resultActionPanelOpenedHandler;
-
-            public ResultCollection(EventHandler<ResultOpenedEventArgs> resultOpenedHandler, 
-                EventHandler resultActionPanelOpenedHandler)
+            public ResultCollection()
             {
-                this._resultOpenedHandler = resultOpenedHandler;
-                this._resultActionPanelOpenedHandler = resultActionPanelOpenedHandler;
-            }
-
-            protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
-            {
-                base.OnCollectionChanged(e);
-
-                if(e.Action == NotifyCollectionChangedAction.Add)
-                {
-                    foreach(var item in e.NewItems)
-                    {
-                        var resultVM = item as ResultItemViewModel;
-                        resultVM.ResultOpened += this._resultOpenedHandler;
-                        resultVM.ResultActionPanelOpened += this._resultActionPanelOpenedHandler;
-                    }
-                }
-
-                if(e.Action == NotifyCollectionChangedAction.Remove)
-                {
-                    foreach (var item in e.OldItems)
-                    {
-                        var resultVM = item as ResultItemViewModel;
-                        resultVM.ResultOpened -= this._resultOpenedHandler;
-                        resultVM.ResultActionPanelOpened -= this._resultActionPanelOpenedHandler;
-                    }
-                }
-                
-                if(e.Action == NotifyCollectionChangedAction.Replace)
-                {
-                    foreach (var item in e.NewItems)
-                    {
-                        var resultVM = item as ResultItemViewModel;
-                        resultVM.ResultOpened += this._resultOpenedHandler;
-                        resultVM.ResultActionPanelOpened += this._resultActionPanelOpenedHandler;
-                    }
-
-                    foreach (var item in e.OldItems)
-                    {
-                        var resultVM = item as ResultItemViewModel;
-                        resultVM.ResultOpened -= this._resultOpenedHandler;
-                        resultVM.ResultActionPanelOpened -= this._resultActionPanelOpenedHandler;
-                    }
-                }
             }
 
             public void RemoveAll(Predicate<ResultItemViewModel> predicate)
@@ -418,41 +348,5 @@ namespace Wox.ViewModel
         }
 
     }
-
-    public class ResultOpenedInPanelEventArgs : EventArgs
-    {
-
-        public bool HideWindow
-        {
-            get;
-            private set;
-        }
-
-        public ResultItemViewModel Result
-        {
-            get;
-            private set;
-        }
-
-        public ResultOpenedInPanelEventArgs(ResultItemViewModel result, bool hideWindow)
-        {
-            this.HideWindow = hideWindow;
-            this.Result = result;
-        }
-    }
-
-    public class ResultActionPanelOpenedInPanelEventArgs : EventArgs
-    {
-
-        public ResultItemViewModel Result
-        {
-            get;
-            private set;
-        }
-
-        public ResultActionPanelOpenedInPanelEventArgs(ResultItemViewModel result)
-        {
-            this.Result = result;
-        }
-    }
+    
 }

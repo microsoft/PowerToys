@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Wox.Core.Plugin;
+using Wox.Core.Resource;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
 using Wox.Storage;
@@ -33,22 +36,35 @@ namespace Wox.ViewModel
                         SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
                     });
 
-                    if (null != this.ResultOpened)
+                    if (hideWindow)
                     {
-                        this.ResultOpened(this, new ResultOpenedEventArgs(hideWindow));
+                        App.API.HideApp();
+                        UserSelectedRecordStorage.Instance.Add(this._result);
+                        QueryHistoryStorage.Instance.Add(this._result.OriginQuery.RawQuery);
                     }
                 });
 
-                this.OpenResultActionPanelCommand = new RelayCommand((parameter) => {
+                this.OpenResultActionPanelCommand = new RelayCommand((parameter) =>
+                {
 
-                    if(null!= ResultActionPanelOpened)
+                    var actions = PluginManager.GetContextMenusForPlugin(result);
+
+                    var pluginMetaData = PluginManager.GetPluginForId(result.PluginID).Metadata;
+                    actions.ForEach(o =>
                     {
-                        this.ResultActionPanelOpened(this, new EventArgs());
-                    }
+                        o.PluginDirectory = pluginMetaData.PluginDirectory;
+                        o.PluginID = result.PluginID;
+                        o.OriginQuery = result.OriginQuery;
+                    });
+
+                    actions.Add(GetTopMostContextMenu(result));
+
+                    App.API.ShowContextMenu(pluginMetaData, actions);
 
                 });
             }
         }
+
 
         #endregion
 
@@ -114,6 +130,41 @@ namespace Wox.ViewModel
 
         #endregion
 
+        #region Private Methods
+
+        private Result GetTopMostContextMenu(Result result)
+        {
+            if (TopMostRecordStorage.Instance.IsTopMost(result))
+            {
+                return new Result(InternationalizationManager.Instance.GetTranslation("cancelTopMostInThisQuery"), "Images\\down.png")
+                {
+                    PluginDirectory = WoxDirectroy.Executable,
+                    Action = _ =>
+                    {
+                        TopMostRecordStorage.Instance.Remove(result);
+                        App.API.ShowMsg("Succeed", "", "");
+                        return false;
+                    }
+                };
+            }
+            else
+            {
+                return new Result(InternationalizationManager.Instance.GetTranslation("setAsTopMostInThisQuery"), "Images\\up.png")
+                {
+                    PluginDirectory = WoxDirectroy.Executable,
+                    Action = _ =>
+                    {
+                        TopMostRecordStorage.Instance.AddOrUpdate(result);
+                        App.API.ShowMsg("Succeed", "", "");
+                        return false;
+                    }
+                };
+            }
+        }
+
+
+        #endregion
+
         public override bool Equals(object obj)
         {
             ResultItemViewModel r = obj as ResultItemViewModel;
@@ -135,24 +186,5 @@ namespace Wox.ViewModel
             return _result.ToString();
         }
 
-        public event EventHandler<ResultOpenedEventArgs> ResultOpened;
-
-        public event EventHandler ResultActionPanelOpened;
-
-    }
-
-    public class ResultOpenedEventArgs : EventArgs
-    {
-
-        public bool HideWindow
-        {
-            get;
-            private set;
-        }
-
-        public ResultOpenedEventArgs(bool hideWindow)
-        {
-            this.HideWindow = hideWindow;
-        }
     }
 }

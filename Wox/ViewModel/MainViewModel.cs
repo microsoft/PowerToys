@@ -417,20 +417,6 @@ namespace Wox.ViewModel
         {
             this._searchResultPanel = new ResultPanelViewModel();
             this.IsSearchResultPanelVisible = false;
-            this._searchResultPanel.ResultOpenedInPanel += (o, e) =>
-            {
-                if (e.HideWindow)
-                {
-                    this.IsVisible = false;
-                }
-                UserSelectedRecordStorage.Instance.Add(e.Result.RawResult);
-                QueryHistoryStorage.Instance.Add(this.QueryText);
-            };
-
-            this._searchResultPanel.ResultActionPanelOpenedInPanel += (o, e) =>
-            {
-                this.ShowActionPanel(e.Result.RawResult);
-            };
         }
 
         private void ShowActionPanel(Result result)
@@ -501,13 +487,6 @@ namespace Wox.ViewModel
         {
             this._actionPanel = new ResultPanelViewModel();
             this.IsActionPanelVisible = false;
-            this._actionPanel.ResultOpenedInPanel += (o, e) =>
-            {
-                if (e.HideWindow)
-                {
-                    this.IsVisible = false;
-                }
-            };
         }
 
         private void HandleQueryTextUpdated()
