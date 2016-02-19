@@ -5,7 +5,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:converters="clr-namespace:Wox.Converters"
-             mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100">
+             xmlns:vm ="clr-namespace:Wox.ViewModel"
+             mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100" d:DataContext="{d:DesignInstance vm:ResultPanelViewModel}">
     <ListBox x:Name="lbResults" MaxHeight="{Binding MaxHeight}" SelectedItem="{Binding SelectedResult}"
              HorizontalContentAlignment="Stretch" ItemsSource="{Binding Results}" Margin="{Binding Margin}"
              Style="{DynamicResource BaseListboxStyle}" SelectionChanged="lbResults_SelectionChanged" Focusable="False"
@@ -13,6 +14,9 @@
              VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Standard">
         <ListBox.ItemTemplate>
             <DataTemplate>
+                <DataTemplate.DataType>
+                    <x:Type TypeName="vm:ResultItemViewModel" />
+                </DataTemplate.DataType>
                 <Button Command="{Binding OpenResultCommand}">
                     <Button.InputBindings>
                         <MouseBinding Command="{Binding OpenResultActionPanelCommand}" MouseAction="RightClick"></MouseBinding>

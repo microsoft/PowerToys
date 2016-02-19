@@ -2,6 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:wox="clr-namespace:Wox"
         xmlns:vm="clr-namespace:Wox.ViewModel" xmlns:converters="clr-namespace:Wox.Converters"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         Title="Wox"
         Topmost="True"
         Loaded="MainWindow_OnLoaded"
@@ -17,8 +19,7 @@
         Icon="Images\app.png"
         AllowsTransparency="True"
         Visibility="{Binding IsVisible,Converter={converters:VisibilityConverter}}"
-        PreviewKeyDown="Window_PreviewKeyDown"
-        >
+        PreviewKeyDown="Window_PreviewKeyDown" d:DataContext="{d:DesignInstance vm:MainViewModel}">
     <Window.InputBindings>
         <KeyBinding Key="Esc" Command="{Binding EscCommand}"></KeyBinding>
         <KeyBinding Key="Tab" Command="{Binding SelectNextItemCommand}"></KeyBinding>
