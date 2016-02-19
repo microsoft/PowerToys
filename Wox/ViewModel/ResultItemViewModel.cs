@@ -14,6 +14,7 @@ namespace Wox.ViewModel
         #region Private Fields
 
         private Result _result;
+        private bool _isSelected;
 
         #endregion
 
@@ -74,6 +75,16 @@ namespace Wox.ViewModel
             get
             {
                 return this._result.FullIcoPath;
+            }
+        }
+
+        public bool IsSelected
+        {
+            get { return _isSelected; }
+            set
+            {
+                _isSelected = value;
+                OnPropertyChanged("IsSelected");
             }
         }
 

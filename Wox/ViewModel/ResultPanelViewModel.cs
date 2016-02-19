@@ -79,8 +79,22 @@ namespace Wox.ViewModel
             }
             set
             {
-                this._selectedResult = value;
-                OnPropertyChanged("SelectedResult");
+                if (value != _selectedResult)
+                {
+                    if (null != _selectedResult)
+                    {
+                        _selectedResult.IsSelected = false;
+                    }
+
+                    _selectedResult = value;
+
+                    if (null != _selectedResult)
+                    {
+                        _selectedResult.IsSelected = true;
+                    }
+
+                    OnPropertyChanged("SelectedResult");
+                }
             }
         }
 
