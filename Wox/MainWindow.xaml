@@ -19,7 +19,7 @@
         Icon="Images\app.png"
         AllowsTransparency="True"
         Visibility="{Binding IsVisible,Converter={converters:VisibilityConverter}}"
-        PreviewKeyDown="Window_PreviewKeyDown" d:DataContext="{d:DesignInstance vm:MainViewModel}">
+        PreviewKeyDown="Window_PreviewKeyDown" d:DataContext="{d:DesignInstance vm:MainViewModel, IsDesignTimeCreatable=True}">
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:ResultPanelViewModel}">
             <wox:ResultPanel></wox:ResultPanel>
