@@ -159,12 +159,53 @@ namespace Wox
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            //The code here is to supress the conflict of Window.InputBinding and ListBox/TextBox native Key handle
             var vm = this.DataContext as MainViewModel;
+
+            if (null == vm) return;
             //when alt is pressed, the real key should be e.SystemKey
-            Key key = (e.Key == Key.System ? e.SystemKey : e.Key);
+            var key = (e.Key == Key.System ? e.SystemKey : e.Key);
             switch (key)
             {
+                case Key.Escape:
+                    vm.EscCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+
+                case Key.Tab:
+                    if (GlobalHotkey.Instance.CheckModifiers().ShiftPressed)
+                    {
+                        vm.SelectPrevItemCommand.Execute(null);
+                    }
+                    else
+                    {
+                        vm.SelectNextItemCommand.Execute(null);
+                    }
+                    e.Handled = true;
+                    break;
+
+                case Key.N:
+                case Key.J:
+                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
+                    {
+                        vm.SelectNextItemCommand.Execute(null);
+                    }
+                    break;
+
+                case Key.P:
+                case Key.K:
+                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
+                    {
+                        vm.SelectPrevItemCommand.Execute(null);
+                    }
+                    break;
+
+                case Key.O:
+                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
+                    {
+                        vm.CtrlOCommand.Execute(null);
+                    }
+                    break;
+
                 case Key.Down:
                     if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
                     {
@@ -188,17 +229,93 @@ namespace Wox
                     }
                     e.Handled = true;
                     break;
+
+                case Key.D:
+                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
+                    {
+                        vm.SelectNextPageCommand.Execute(null);
+                    }
+                    break;
+
                 case Key.PageDown:
                     vm.SelectNextPageCommand.Execute(null);
                     e.Handled = true;
                     break;
+
+                case Key.U:
+                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
+                    {
+                        vm.SelectPrevPageCommand.Execute(null);
+                    }
+                    break;
+
                 case Key.PageUp:
                     vm.SelectPrevPageCommand.Execute(null);
                     e.Handled = true;
                     break;
+
                 case Key.Back:
                     vm.BackCommand.Execute(e);
                     break;
+
+                case Key.F1:
+                    vm.StartHelpCommand.Execute(null);
+                    break;
+
+                case Key.Enter:
+                    if (GlobalHotkey.Instance.CheckModifiers().ShiftPressed)
+                    {
+                        vm.ShiftEnterCommand.Execute(null);
+                    }
+                    else
+                    {
+                        vm.OpenResultCommand.Execute(null);
+                    }
+                    e.Handled = true;
+                    break;
+
+                case Key.D1:
+
+                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
+                    {
+                        vm.OpenResultCommand.Execute(0);
+                    }
+                    break;
+
+                case Key.D2:
+                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
+                    {
+                        vm.OpenResultCommand.Execute(1);
+                    }
+                    break;
+
+                case Key.D3:
+                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
+                    {
+                        vm.OpenResultCommand.Execute(2);
+                    }
+                    break;
+
+                case Key.D4:
+                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
+                    {
+                        vm.OpenResultCommand.Execute(3);
+                    }
+                    break;
+
+                case Key.D5:
+                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
+                    {
+                        vm.OpenResultCommand.Execute(4);
+                    }
+                    break;
+                case Key.D6:
+                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
+                    {
+                        vm.OpenResultCommand.Execute(5);
+                    }
+                    break;
+
             }
         }
 
