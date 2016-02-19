@@ -629,6 +629,7 @@ namespace Wox.ViewModel
             this.QueryText = _textBeforeEnterContextMenuMode;
             this.IsActionPanelVisible = false;
             this.IsSearchResultPanelVisible = true;
+            this.CaretIndex = this.QueryText.Length;
         }
 
         private void DisplayQueryHistory(HistoryItem history)
