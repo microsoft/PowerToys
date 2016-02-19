@@ -10,7 +10,7 @@ namespace Wox.Helper
 		{
 			var window = Application.Current.Windows.OfType<Window>().FirstOrDefault(x => x.GetType() == typeof(T))
 						 ?? (T)Activator.CreateInstance(typeof(T), args);
-			Application.Current.MainWindow.Hide();
+            App.API.HideApp();
 			window.Show();
 			window.Focus();
 			

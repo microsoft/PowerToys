@@ -12,7 +12,7 @@ namespace Wox.CommandArgs
 
         public void Execute(IList<string> args)
         {
-            PluginManager.Init(App.Window);
+            PluginManager.Init(App.API);
         }
     }
 }

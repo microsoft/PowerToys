@@ -19,20 +19,25 @@ using Wox.Helper;
 using Wox.Plugin;
 using Application = System.Windows.Forms.Application;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
+using Wox.Infrastructure.Hotkey;
+using NHotkey.Wpf;
+using NHotkey;
+using Wox.ViewModel;
 
 namespace Wox
 {
     public partial class SettingWindow : Window
     {
-        public readonly MainWindow MainWindow;
+        public readonly IPublicAPI _api;
         bool settingsLoaded;
         private Dictionary<ISettingProvider, Control> featureControls = new Dictionary<ISettingProvider, Control>();
         private bool themeTabLoaded;
 
-        public SettingWindow(MainWindow mainWindow)
+        public SettingWindow(IPublicAPI api)
         {
-            MainWindow = mainWindow;
+            this._api = api;
             InitializeComponent();
+            this.resultPanelPreview.DataContext = new ResultPanelViewModel();
             Loaded += Setting_Loaded;
         }
 
@@ -94,7 +99,7 @@ namespace Wox
             {
                 UserSettingStorage.Instance.MaxResultsToShow = (int)comboMaxResultsToShow.SelectedItem;
                 UserSettingStorage.Instance.Save();
-                MainWindow.pnlResult.lbResults.GetBindingExpression(MaxHeightProperty).UpdateTarget();
+                //MainWindow.pnlResult.lbResults.GetBindingExpression(MaxHeightProperty).UpdateTarget();
             };
 
             cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
@@ -250,20 +255,42 @@ namespace Wox
         {
             if (ctlHotkey.CurrentHotkeyAvailable)
             {
-                MainWindow.SetHotkey(ctlHotkey.CurrentHotkey, delegate
+                SetHotkey(ctlHotkey.CurrentHotkey, delegate
                 {
-                    if (!MainWindow.IsVisible)
+                    if (!App.Window.IsVisible)
                     {
-                        MainWindow.ShowApp();
+                        this._api.ShowApp();
                     }
                     else
                     {
-                        MainWindow.HideApp();
+                        this._api.HideApp();
                     }
                 });
-                MainWindow.RemoveHotkey(UserSettingStorage.Instance.Hotkey);
+                RemoveHotkey(UserSettingStorage.Instance.Hotkey);
                 UserSettingStorage.Instance.Hotkey = ctlHotkey.CurrentHotkey.ToString();
                 UserSettingStorage.Instance.Save();
+            }
+        }
+
+        void SetHotkey(HotkeyModel hotkey, EventHandler<HotkeyEventArgs> action)
+        {
+            string hotkeyStr = hotkey.ToString();
+            try
+            {
+                HotkeyManager.Current.AddOrReplace(hotkeyStr, hotkey.CharKey, hotkey.ModifierKeys, action);
+            }
+            catch (Exception)
+            {
+                string errorMsg = string.Format(InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
+                MessageBox.Show(errorMsg);
+            }
+        }
+
+        void RemoveHotkey(string hotkeyStr)
+        {
+            if (!string.IsNullOrEmpty(hotkeyStr))
+            {
+                HotkeyManager.Current.Remove(hotkeyStr);
             }
         }
 
@@ -289,7 +316,7 @@ namespace Wox
                 UserSettingStorage.Instance.CustomPluginHotkeys.Remove(item);
                 lvCustomHotkey.Items.Refresh();
                 UserSettingStorage.Instance.Save();
-                MainWindow.RemoveHotkey(item.Hotkey);
+                RemoveHotkey(item.Hotkey);
             }
         }
 

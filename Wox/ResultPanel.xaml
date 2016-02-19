@@ -5,49 +5,64 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:converters="clr-namespace:Wox.Converters"
-             mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100">
-
-    <ListBox x:Name="lbResults" MaxHeight="{Binding ElementName=Results, Path=MaxResultsToShow}"
-             HorizontalContentAlignment="Stretch" PreviewMouseDown="LbResults_OnPreviewMouseDown"
+             xmlns:vm ="clr-namespace:Wox.ViewModel"
+             mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100" d:DataContext="{d:DesignInstance vm:ResultPanelViewModel}">
+    <ListBox x:Name="lbResults" MaxHeight="{Binding MaxHeight}" SelectedItem="{Binding SelectedResult}"
+             HorizontalContentAlignment="Stretch" ItemsSource="{Binding Results}" Margin="{Binding Margin}"
              Style="{DynamicResource BaseListboxStyle}" SelectionChanged="lbResults_SelectionChanged" Focusable="False"
              KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single"
              VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Standard">
         <ListBox.ItemTemplate>
             <DataTemplate>
-                <!-- a result item height is 50 including margin -->
-                <Grid HorizontalAlignment="Stretch" Height="40" VerticalAlignment="Stretch" Margin="5"
+                <DataTemplate.DataType>
+                    <x:Type TypeName="vm:ResultItemViewModel" />
+                </DataTemplate.DataType>
+                <Button Command="{Binding OpenResultCommand}">
+                    <Button.InputBindings>
+                        <MouseBinding Command="{Binding OpenResultActionPanelCommand}" MouseAction="RightClick"></MouseBinding>
+                    </Button.InputBindings>
+                    <Button.Template>
+                        <ControlTemplate>
+                            <ContentPresenter Content="{TemplateBinding Button.Content}"></ContentPresenter>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Content>
+                        <Grid HorizontalAlignment="Stretch" Height="40" VerticalAlignment="Stretch" Margin="5"
                       Cursor="Hand">
-                    <Grid.Resources>
-                        <converters:ImagePathConverter x:Key="ImageConverter" />
-                    </Grid.Resources>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="32" />
-                        <ColumnDefinition />
-                        <ColumnDefinition Width="0" />
-                    </Grid.ColumnDefinitions>
-                    <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left"
+                            <Grid.Resources>
+                                <converters:ImagePathConverter x:Key="ImageConverter" />
+                            </Grid.Resources>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="32" />
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="0" />
+                            </Grid.ColumnDefinitions>
+                            <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left"
                            Source="{Binding FullIcoPath,Converter={StaticResource ImageConverter},IsAsync=True}" />
-                    <Grid Margin="5 0 5 0" Grid.Column="1" HorizontalAlignment="Stretch">
-                        <Grid.RowDefinitions>
-                            <RowDefinition />
-                            <RowDefinition Height="Auto" x:Name="SubTitleRowDefinition" />
-                        </Grid.RowDefinitions>
-                        <TextBlock Style="{DynamicResource ItemTitleStyle}" DockPanel.Dock="Left"
+                            <Grid Margin="5 0 5 0" Grid.Column="1" HorizontalAlignment="Stretch">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition Height="Auto" x:Name="SubTitleRowDefinition" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Style="{DynamicResource ItemTitleStyle}" DockPanel.Dock="Left"
                                    VerticalAlignment="Center" ToolTip="{Binding Title}" x:Name="tbTitle"
-                                   Text="{Binding Title}" />
-                        <TextBlock Style="{DynamicResource ItemSubTitleStyle}" ToolTip="{Binding SubTitle}"
+                                   Text="{Binding Title}" >
+                                </TextBlock>
+                                <TextBlock Style="{DynamicResource ItemSubTitleStyle}" ToolTip="{Binding SubTitle}"
                                    Visibility="{Binding SubTitle, Converter={converters:StringNullOrEmptyToVisibilityConverter}}"
-                                   Grid.Row="1" x:Name="tbSubTitle" Text="{Binding SubTitle}" />
-                    </Grid>
-                    <TextBlock Grid.Column="2" x:Name="tbItemNumber" Style="{DynamicResource ItemNumberStyle}" Text="9"/>
-                </Grid>
+                                   Grid.Row="1" x:Name="tbSubTitle" Text="{Binding SubTitle}" >
+                                </TextBlock>
+                            </Grid>
+                        </Grid>
+                    </Button.Content>
+                </Button>
+                <!-- a result item height is 50 including margin -->
                 <DataTemplate.Triggers>
-                    <DataTrigger
-                        Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}}, Path=IsSelected}"
-                        Value="True">
+                    <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
                         <Setter TargetName="tbTitle" Property="Style" Value="{DynamicResource ItemTitleSelectedStyle}" />
-                        <Setter TargetName="tbSubTitle" Property="Style"
-                                Value="{DynamicResource ItemSubTitleSelectedStyle}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
+                        <Setter TargetName="tbSubTitle" Property="Style" Value="{DynamicResource ItemSubTitleSelectedStyle}" />
                     </DataTrigger>
                 </DataTemplate.Triggers>
             </DataTemplate>

@@ -10,6 +10,8 @@ using Wox.CommandArgs;
 using Wox.Core.Plugin;
 using Wox.Helper;
 using Wox.Infrastructure;
+using Wox.Plugin;
+using Wox.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 
@@ -19,6 +21,8 @@ namespace Wox
     {
         private const string Unique = "Wox_Unique_Application_Mutex";
         public static MainWindow Window { get; private set; }
+
+        public static IPublicAPI API { get; private set; }
 
         [STAThread]
         public static void Main()
@@ -40,8 +44,15 @@ namespace Wox
                 WoxDirectroy.Executable = Directory.GetParent(Assembly.GetExecutingAssembly().Location).ToString();
                 RegisterUnhandledException();
                 ThreadPool.QueueUserWorkItem(o => { ImageLoader.ImageLoader.PreloadImages(); });
+
+                MainViewModel mainVM = new MainViewModel();
+                API = new PublicAPIInstance(mainVM);
                 Window = new MainWindow();
-                PluginManager.Init(Window);
+                Window.DataContext = mainVM;
+
+                NotifyIconManager notifyIconManager = new NotifyIconManager(API);
+
+                PluginManager.Init(API);
                 CommandArgsFactory.Execute(e.Args.ToList());
             });
 
@@ -59,7 +70,7 @@ namespace Wox
         {
             if (args.Count > 0 && args[0] == SingleInstance<App>.Restart)
             {
-                Window.CloseApp();
+                API.CloseApp();
             }
             else
             {
