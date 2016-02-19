@@ -119,14 +119,20 @@ namespace Wox.ViewModel
             ResultItemViewModel r = obj as ResultItemViewModel;
             if (r != null)
             {
-                var equality = string.Equals(r.Title, Title) &&
-                               string.Equals(r.SubTitle, SubTitle);
-                return equality;
+                return _result.Equals(r.RawResult);
             }
-            else
-            {
-                return false;
-            }
+            
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return _result.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return _result.ToString();
         }
 
         public event EventHandler<ResultOpenedEventArgs> ResultOpened;

@@ -79,7 +79,7 @@ namespace Wox.ViewModel
             }
             set
             {
-                if (value != _selectedResult)
+                if (null != value)
                 {
                     if (null != _selectedResult)
                     {
@@ -93,8 +93,10 @@ namespace Wox.ViewModel
                         _selectedResult.IsSelected = true;
                     }
 
-                    OnPropertyChanged("SelectedResult");
                 }
+
+                OnPropertyChanged("SelectedResult");
+
             }
         }
 
