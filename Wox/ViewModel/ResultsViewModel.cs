@@ -17,7 +17,7 @@ namespace Wox.ViewModel
     {
         #region Private Fields
 
-        private ResultItemViewModel _selectedResult;
+        private ResultViewModel _selectedResult;
         private ResultCollection _results;
         private bool _isVisible;
         private Thickness _margin;
@@ -53,7 +53,7 @@ namespace Wox.ViewModel
             }
         }
 
-        public ResultItemViewModel SelectedResult
+        public ResultViewModel SelectedResult
         {
             get
             {
@@ -104,7 +104,7 @@ namespace Wox.ViewModel
             return TopMostRecordStorage.Instance.IsTopMost(result);
         }
 
-        private int InsertIndexOf(int newScore, IList<ResultItemViewModel> list)
+        private int InsertIndexOf(int newScore, IList<ResultViewModel> list)
         {
             int index = 0;
             for (; index < list.Count; index++)
@@ -211,8 +211,8 @@ namespace Wox.ViewModel
         {
             lock (_resultsUpdateLock)
             {
-                var newResults = new List<ResultItemViewModel>();
-                newRawResults.ForEach((re) => { newResults.Add(new ResultItemViewModel(re)); });
+                var newResults = new List<ResultViewModel>();
+                newRawResults.ForEach((re) => { newResults.Add(new ResultViewModel(re)); });
                 // todo use async to do new result calculation
                 var resultsCopy = _results.ToList();
                 var oldResults = resultsCopy.Where(r => r.RawResult.PluginID == resultId).ToList();
@@ -275,19 +275,18 @@ namespace Wox.ViewModel
 
         #endregion
 
-        public class ResultCollection : ObservableCollection<ResultItemViewModel>
-        // todo implement custom moveItem,removeItem,insertItem for better performance
+        public class ResultCollection : ObservableCollection<ResultViewModel>
         {
 
             public ResultCollection()
             {
             }
 
-            public void RemoveAll(Predicate<ResultItemViewModel> predicate)
+            public void RemoveAll(Predicate<ResultViewModel> predicate)
             {
                 CheckReentrancy();
 
-                List<ResultItemViewModel> itemsToRemove = Items.Where(x => predicate(x)).ToList();
+                List<ResultViewModel> itemsToRemove = Items.Where(x => predicate(x)).ToList();
                 if (itemsToRemove.Count > 0)
                 {
 
@@ -309,22 +308,22 @@ namespace Wox.ViewModel
 
             }
 
-            public void Update(List<ResultItemViewModel> newItems)
+            public void Update(List<ResultViewModel> newItems)
             {
                 int newCount = newItems.Count;
                 int oldCount = Items.Count;
                 int location = newCount > oldCount ? oldCount : newCount;
                 for (int i = 0; i < location; i++)
                 {
-                    ResultItemViewModel oldItem = Items[i];
-                    ResultItemViewModel newItem = newItems[i];
-                    if (!oldItem.Equals(newItem))
+                    ResultViewModel oldResult = Items[i];
+                    ResultViewModel newResult = newItems[i];
+                    if (!oldResult.Equals(newResult))
                     {
-                        this[i] = newItem;
+                        this[i] = newResult;
                     }
-                    else if (oldItem.RawResult.Score != newItem.RawResult.Score)
+                    else if (oldResult.RawResult.Score != newResult.RawResult.Score)
                     {
-                        this[i].RawResult.Score = newItem.RawResult.Score;
+                        this[i].RawResult.Score = newResult.RawResult.Score;
                     }
                 }
 

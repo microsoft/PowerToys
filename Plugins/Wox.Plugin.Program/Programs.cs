@@ -61,7 +61,7 @@ namespace Wox.Plugin.Program
         public void Init(PluginInitContext context)
         {
             this.context = context;
-            this.context.API.ResultItemDropEvent += API_ResultItemDropEvent;
+            this.context.API.ResultItemDropEvent += ResultDropEvent;
             Stopwatch.Debug("Preload programs", () =>
             {
                 programs = ProgramCacheStorage.Instance.Programs;
@@ -70,7 +70,7 @@ namespace Wox.Plugin.Program
             Stopwatch.Debug("Program Index", IndexPrograms);
         }
 
-        void API_ResultItemDropEvent(Result result, IDataObject dropObject, DragEventArgs e)
+        void ResultDropEvent(Result result, IDataObject dropObject, DragEventArgs e)
         {
 
             e.Handled = true;

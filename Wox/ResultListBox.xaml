@@ -14,7 +14,7 @@
         <ListBox.ItemTemplate>
             <DataTemplate>
                 <DataTemplate.DataType>
-                    <x:Type TypeName="vm:ResultItemViewModel" />
+                    <x:Type TypeName="vm:ResultViewModel" />
                 </DataTemplate.DataType>
                 <Button Command="{Binding OpenResultListBoxItemCommand}">
                     <Button.InputBindings>
