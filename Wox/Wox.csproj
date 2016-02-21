@@ -123,7 +123,6 @@
     <Compile Include="Converters\OpacityModeConverter.cs" />
     <Compile Include="Converters\StringEmptyConverter.cs" />
     <Compile Include="Converters\StringNullOrEmptyToVisibilityConverter.cs" />
-    <Compile Include="Converters\VisibilityConverter.cs" />
     <Compile Include="Extensions\VisibilityExtensions.cs" />
     <Compile Include="Helper\SingletonWindowOpener.cs" />
     <Compile Include="ImageLoader\ImageCacheStroage.cs" />
