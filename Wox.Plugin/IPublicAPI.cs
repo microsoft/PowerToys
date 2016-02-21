@@ -119,6 +119,7 @@ namespace Wox.Plugin
         /// <summary>
         /// Fired after drop to result item of current plugin 
         /// </summary>
+        /// todo: ResultItem -> Result
         event ResultItemDropEventHandler ResultItemDropEvent;
     }
 }

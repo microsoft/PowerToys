@@ -12,7 +12,7 @@ using Wox.Storage;
 
 namespace Wox.ViewModel
 {
-    public class ResultItemViewModel : BaseViewModel
+    public class ResultViewModel : BaseViewModel
     {
         #region Private Fields
 
@@ -23,7 +23,7 @@ namespace Wox.ViewModel
 
         #region Constructor
 
-        public ResultItemViewModel(Result result)
+        public ResultViewModel(Result result)
         {
             if (null != result)
             {
@@ -160,7 +160,7 @@ namespace Wox.ViewModel
 
         public override bool Equals(object obj)
         {
-            ResultItemViewModel r = obj as ResultItemViewModel;
+            ResultViewModel r = obj as ResultViewModel;
             if (r != null)
             {
                 return _result.Equals(r.RawResult);

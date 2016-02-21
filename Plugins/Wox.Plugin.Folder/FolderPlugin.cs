@@ -22,7 +22,7 @@ namespace Wox.Plugin.Folder
         {
             this.context = context;
             this.context.API.BackKeyDownEvent += ApiBackKeyDownEvent;
-            this.context.API.ResultItemDropEvent += API_ResultItemDropEvent;
+            this.context.API.ResultItemDropEvent += ResultDropEvent;
             InitialDriverList();
             if (FolderStorage.Instance.FolderLinks == null)
             {
@@ -31,7 +31,7 @@ namespace Wox.Plugin.Folder
             }
         }
 
-        void API_ResultItemDropEvent(Result result, IDataObject dropObject, DragEventArgs e)
+        void ResultDropEvent(Result result, IDataObject dropObject, DragEventArgs e)
         {
             if (dropObject.GetDataPresent(DataFormats.FileDrop))
             {
