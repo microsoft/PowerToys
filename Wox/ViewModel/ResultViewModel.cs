@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Wox.Core.Plugin;
+﻿using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
@@ -16,7 +11,6 @@ namespace Wox.ViewModel
     {
         #region Private Fields
 
-        private Result _result;
         private bool _isSelected;
 
         #endregion
@@ -27,9 +21,9 @@ namespace Wox.ViewModel
         {
             if (null != result)
             {
-                this._result = result;
+                RawResult = result;
 
-                this.OpenResultListBoxItemCommand = new RelayCommand((parameter) =>
+                OpenResultListBoxItemCommand = new RelayCommand(_ =>
                 {
 
                     bool hideWindow = result.Action(new ActionContext
@@ -40,12 +34,12 @@ namespace Wox.ViewModel
                     if (hideWindow)
                     {
                         App.API.HideApp();
-                        UserSelectedRecordStorage.Instance.Add(this._result);
-                        QueryHistoryStorage.Instance.Add(this._result.OriginQuery.RawQuery);
+                        UserSelectedRecordStorage.Instance.Add(RawResult);
+                        QueryHistoryStorage.Instance.Add(RawResult.OriginQuery.RawQuery);
                     }
                 });
 
-                this.OpenContextMenuItemCommand = new RelayCommand((parameter) =>
+                OpenContextMenuItemCommand = new RelayCommand(_ =>
                 {
 
                     var actions = PluginManager.GetContextMenusForPlugin(result);
@@ -71,29 +65,11 @@ namespace Wox.ViewModel
 
         #region ViewModel Properties
 
-        public string Title
-        {
-            get
-            {
-                return this._result.Title;
-            }
-        }
+        public string Title => RawResult.Title;
 
-        public string SubTitle
-        {
-            get
-            {
-                return this._result.SubTitle;
-            }
-        }
+        public string SubTitle => RawResult.SubTitle;
 
-        public string FullIcoPath
-        {
-            get
-            {
-                return this._result.FullIcoPath;
-            }
-        }
+        public string FullIcoPath => RawResult.FullIcoPath;
 
         public bool IsSelected
         {
@@ -113,13 +89,7 @@ namespace Wox.ViewModel
 
         #region Properties
 
-        public Result RawResult
-        {
-            get
-            {
-                return this._result;
-            }
-        }
+        public Result RawResult { get; }
 
         #endregion
 
@@ -163,7 +133,7 @@ namespace Wox.ViewModel
             ResultViewModel r = obj as ResultViewModel;
             if (r != null)
             {
-                return _result.Equals(r.RawResult);
+                return RawResult.Equals(r.RawResult);
             }
 
             return false;
@@ -171,12 +141,12 @@ namespace Wox.ViewModel
 
         public override int GetHashCode()
         {
-            return _result.GetHashCode();
+            return RawResult.GetHashCode();
         }
 
         public override string ToString()
         {
-            return _result.ToString();
+            return RawResult.ToString();
         }
 
     }

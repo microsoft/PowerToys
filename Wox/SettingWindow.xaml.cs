@@ -35,9 +35,9 @@ namespace Wox
 
         public SettingWindow(IPublicAPI api)
         {
-            this._api = api;
+            _api = api;
             InitializeComponent();
-            this.ResultListBoxPreview.DataContext = new ResultsViewModel();
+            ResultListBoxPreview.DataContext = new ResultsViewModel();
             Loaded += Setting_Loaded;
         }
 
@@ -259,11 +259,11 @@ namespace Wox
                 {
                     if (!App.Window.IsVisible)
                     {
-                        this._api.ShowApp();
+                        _api.ShowApp();
                     }
                     else
                     {
-                        this._api.HideApp();
+                        _api.HideApp();
                     }
                 });
                 RemoveHotkey(UserSettingStorage.Instance.Hotkey);

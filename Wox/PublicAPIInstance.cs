@@ -28,7 +28,7 @@ namespace Wox
 
         public PublicAPIInstance(MainViewModel mainVM)
         {
-            this.MainVM = mainVM;
+            MainVM = mainVM;
 
 
             GlobalHotkey.Instance.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
@@ -37,15 +37,15 @@ namespace Wox
             SetHotkey(UserSettingStorage.Instance.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
 
-            this.MainVM.ListeningKeyPressed += (o, e) => {
+            MainVM.ListeningKeyPressed += (o, e) => {
 
                 if(e.KeyEventArgs.Key == Key.Back)
                 {
-                    if (null != this.BackKeyDownEvent)
+                    if (null != BackKeyDownEvent)
                     {
                         BackKeyDownEvent(new WoxKeyDownEventArgs
                         {
-                            Query = this.MainVM.QueryText,
+                            Query = MainVM.QueryText,
                             keyEventArgs = e.KeyEventArgs
                         });
                     }
@@ -70,15 +70,15 @@ namespace Wox
 
         public void ChangeQuery(string query, bool requery = false)
         {
-            this.MainVM.QueryText = query;
-            this.MainVM.CaretIndex = this.MainVM.QueryText.Length;
+            MainVM.QueryText = query;
+            MainVM.CaretIndex = MainVM.QueryText.Length;
 
         }
 
         public void ChangeQueryText(string query, bool selectAll = false)
         {
-            this.MainVM.QueryText = query;
-            this.MainVM.SelectAllText = true;
+            MainVM.QueryText = query;
+            MainVM.SelectAllText = true;
         }
 
         public void CloseApp()
@@ -127,12 +127,12 @@ namespace Wox
 
         public void StartLoadingBar()
         {
-            this.MainVM.IsProgressBarVisible = true;
+            MainVM.IsProgressBarVisible = true;
         }
 
         public void StopLoadingBar()
         {
-            this.MainVM.IsProgressBarVisible = false;
+            MainVM.IsProgressBarVisible = false;
         }
 
         public void InstallPlugin(string path)
@@ -167,7 +167,7 @@ namespace Wox
                 o.PluginID = plugin.ID;
                 o.OriginQuery = query;
             });
-            this.MainVM.UpdateResultView(results, plugin, query);
+            MainVM.UpdateResultView(results, plugin, query);
         }
 
         public void ShowContextMenu(PluginMetadata plugin, List<Result> results)
@@ -180,7 +180,7 @@ namespace Wox
                     o.PluginID = plugin.ID;
                 });
 
-                this.MainVM.ShowContextMenu(results, plugin.ID);
+                MainVM.ShowContextMenu(results, plugin.ID);
             }
         }
 
@@ -199,16 +199,16 @@ namespace Wox
 
         private void HideWox()
         {
-            UserSettingStorage.Instance.WindowLeft = this.MainVM.Left;
-            UserSettingStorage.Instance.WindowTop = this.MainVM.Top;
-            this.MainVM.IsVisible = false;
+            UserSettingStorage.Instance.WindowLeft = MainVM.Left;
+            UserSettingStorage.Instance.WindowTop = MainVM.Top;
+            MainVM.IsVisible = false;
         }
 
         private void ShowWox(bool selectAll = true)
         {
             UserSettingStorage.Instance.IncreaseActivateTimes();
-            this.MainVM.IsVisible = true;
-            this.MainVM.SelectAllText = true;
+            MainVM.IsVisible = true;
+            MainVM.SelectAllText = true;
         }
 
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)

@@ -11,11 +11,11 @@ namespace Wox.ViewModel
     public class BaseViewModel : INotifyPropertyChanged
     {
 
-        protected virtual void OnPropertyChanged(string propertyName)
+        protected void OnPropertyChanged(string propertyName)
         {
-            if (null != this.PropertyChanged)
+            if (null != PropertyChanged)
             {
-                this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
         }
 
@@ -29,7 +29,7 @@ namespace Wox.ViewModel
 
         public RelayCommand(Action<object> action)
         {
-            this._action = action;
+            _action = action;
         }
 
         public virtual bool CanExecute(object parameter)
@@ -41,9 +41,9 @@ namespace Wox.ViewModel
 
         public virtual void Execute(object parameter)
         {
-            if (null != this._action)
+            if (null != _action)
             {
-                this._action(parameter);
+                _action(parameter);
             }
         }
     }
