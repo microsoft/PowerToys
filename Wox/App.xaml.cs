@@ -43,12 +43,14 @@ namespace Wox
                 base.OnStartup(e);
                 WoxDirectroy.Executable = Directory.GetParent(Assembly.GetExecutingAssembly().Location).ToString();
                 RegisterUnhandledException();
-                ThreadPool.QueueUserWorkItem(o => { ImageLoader.ImageLoader.PreloadImages(); });
+
+                ThreadPool.SetMaxThreads(30, 10);
+                ThreadPool.SetMinThreads(10, 5);
+                ThreadPool.QueueUserWorkItem(_ => { ImageLoader.ImageLoader.PreloadImages(); });
 
                 MainViewModel mainVM = new MainViewModel();
                 API = new PublicAPIInstance(mainVM);
-                Window = new MainWindow();
-                Window.DataContext = mainVM;
+                Window = new MainWindow {DataContext = mainVM};
 
                 NotifyIconManager notifyIconManager = new NotifyIconManager(API);
 
