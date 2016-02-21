@@ -14,6 +14,7 @@ using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
 using Wox.Storage;
+using Wox.Extensions;
 
 namespace Wox.ViewModel
 {
@@ -22,15 +23,17 @@ namespace Wox.ViewModel
         #region Private Fields
 
         private string _queryText;
-        private bool _isVisible;
-        private bool _isResultListBoxVisible;
-        private bool _isContextMenuVisible;
-        private bool _isProgressBarVisible;
+
         private bool _isProgressBarTooltipVisible;
         private bool _selectAllText;
         private int _caretIndex;
         private double _left;
         private double _top;
+
+        private Visibility _contextMenuVisibility;
+        private Visibility _progressBarVisibility;
+        private Visibility _resultListBoxVisibility;
+        private Visibility _windowVisibility;
 
         private bool _queryHasReturn;
         private Query _lastQuery = new Query();
@@ -100,63 +103,6 @@ namespace Wox.ViewModel
             }
         }
 
-        public bool IsVisible
-        {
-            get
-            {
-                return this._isVisible;
-            }
-            set
-            {
-                this._isVisible = value;
-                OnPropertyChanged("IsVisible");
-
-                if (!value && this.IsContextMenuVisible)
-                {
-                    this.BackToSearchMode();
-                }
-            }
-        }
-
-        public bool IsResultListBoxVisible
-        {
-            get
-            {
-                return this._isResultListBoxVisible;
-            }
-            set
-            {
-                this._isResultListBoxVisible = value;
-                OnPropertyChanged("IsResultListBoxVisible");
-            }
-        }
-
-        public bool IsContextMenuVisible
-        {
-            get
-            {
-                return this._isContextMenuVisible;
-            }
-            set
-            {
-                this._isContextMenuVisible = value;
-                OnPropertyChanged("IsContextMenuVisible");
-            }
-        }
-
-        public bool IsProgressBarVisible
-        {
-            get
-            {
-                return this._isProgressBarVisible;
-            }
-            set
-            {
-                this._isProgressBarVisible = value;
-                OnPropertyChanged("IsProgressBarVisible");
-            }
-        }
-
         public bool IsProgressBarTooltipVisible
         {
             get
@@ -193,6 +139,63 @@ namespace Wox.ViewModel
             {
                 this._top = value;
                 OnPropertyChanged("Top");
+            }
+        }
+
+        public Visibility ContextMenuVisibility
+        {
+            get
+            {
+                return this._contextMenuVisibility;
+            }
+            set
+            {
+                this._contextMenuVisibility = value;
+                OnPropertyChanged("ContextMenuVisibility");
+            }
+        }
+
+        public Visibility ProgressBarVisibility
+        {
+            get
+            {
+                return this._progressBarVisibility;
+            }
+            set
+            {
+                this._progressBarVisibility = value;
+                OnPropertyChanged("ProgressBarVisibility");
+            }
+        }
+
+        public Visibility ResultListBoxVisibility
+        {
+            get
+            {
+                return this._resultListBoxVisibility;
+            }
+            set
+            {
+                this._resultListBoxVisibility = value;
+                OnPropertyChanged("ResultListBoxVisibility");
+            }
+        }
+
+        public Visibility WindowVisibility
+        {
+            get
+            {
+                return this._windowVisibility;
+            }
+            set
+            {
+                this._windowVisibility = value;
+                OnPropertyChanged("WindowVisibility");
+
+                if (value.IsNotVisible() && this.ContextMenuVisibility.IsVisible())
+                {
+                    this.BackToSearchMode();
+                }
             }
         }
 
@@ -277,13 +280,13 @@ namespace Wox.ViewModel
             this.EscCommand = new RelayCommand((parameter) =>
             {
 
-                if (this.IsContextMenuVisible)
+                if (this.ContextMenuVisibility.IsVisible())
                 {
                     this.BackToSearchMode();
                 }
                 else
                 {
-                    this.IsVisible = false;
+                    this.WindowVisibility = Visibility.Collapsed;
                 }
 
             });
@@ -291,7 +294,7 @@ namespace Wox.ViewModel
             this.SelectNextItemCommand = new RelayCommand((parameter) =>
             {
 
-                if (this.IsContextMenuVisible)
+                if (this.ContextMenuVisibility.IsVisible())
                 {
                     this.ContextMenu.SelectNextResult();
                 }
@@ -305,7 +308,7 @@ namespace Wox.ViewModel
             this.SelectPrevItemCommand = new RelayCommand((parameter) =>
             {
 
-                if (this.IsContextMenuVisible)
+                if (this.ContextMenuVisibility.IsVisible())
                 {
                     this.ContextMenu.SelectPrevResult();
                 }
@@ -319,7 +322,7 @@ namespace Wox.ViewModel
             this.CtrlOCommand = new RelayCommand((parameter) =>
             {
 
-                if (this.IsContextMenuVisible)
+                if (this.ContextMenuVisibility.IsVisible())
                 {
                     BackToSearchMode();
                 }
@@ -367,7 +370,7 @@ namespace Wox.ViewModel
             this.ShiftEnterCommand = new RelayCommand((parameter) =>
             {
 
-                if (!this.IsContextMenuVisible && null != this.Results.SelectedResult)
+                if (this.ContextMenuVisibility.IsNotVisible() && null != this.Results.SelectedResult)
                 {
                     this.ShowContextMenu(this.Results.SelectedResult.RawResult);
                 }
@@ -402,7 +405,7 @@ namespace Wox.ViewModel
         private void InitializeResultListBox()
         {
             this.Results = new ResultsViewModel();
-            this.IsResultListBoxVisible = false;
+            this.ResultListBoxVisibility = Visibility.Collapsed;
         }
 
         private void ShowContextMenu(Result result)
@@ -433,8 +436,8 @@ namespace Wox.ViewModel
             this.ContextMenu.AddResults(actions, pluginID);
             CurrentContextMenus = actions;
 
-            this.IsContextMenuVisible = true;
-            this.IsResultListBoxVisible = false;
+            this.ContextMenuVisibility = Visibility.Visible;
+            this.ResultListBoxVisibility = Visibility.Collapsed;
 
             this.QueryText = "";
         }
@@ -472,7 +475,7 @@ namespace Wox.ViewModel
         private void InitializeContextMenu()
         {
             this.ContextMenu = new ResultsViewModel();
-            this.IsContextMenuVisible = false;
+            this.ContextMenuVisibility = Visibility.Collapsed;
         }
 
         private void HandleQueryTextUpdated()
@@ -480,7 +483,7 @@ namespace Wox.ViewModel
             if (_ignoreTextChange) { _ignoreTextChange = false; return; }
 
             this.IsProgressBarTooltipVisible = false;
-            if (this.IsContextMenuVisible)
+            if (this.ContextMenuVisibility.IsVisible())
             {
                 QueryContextMenu();
             }
@@ -592,8 +595,8 @@ namespace Wox.ViewModel
         private void BackToSearchMode()
         {
             this.QueryText = _textBeforeEnterContextMenuMode;
-            this.IsContextMenuVisible = false;
-            this.IsResultListBoxVisible = true;
+            this.ContextMenuVisibility = Visibility.Collapsed;
+            this.ResultListBoxVisibility = Visibility.Visible;
             this.CaretIndex = this.QueryText.Length;
         }
 
@@ -652,7 +655,7 @@ namespace Wox.ViewModel
 
             if (list.Count > 0)
             {
-                this.IsResultListBoxVisible = true;
+                this.ResultListBoxVisibility = Visibility.Visible;
             }
         }
 
