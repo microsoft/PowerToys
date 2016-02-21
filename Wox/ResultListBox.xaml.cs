@@ -15,7 +15,7 @@ using Wox.ViewModel;
 namespace Wox
 {
     [Synchronization]
-    public partial class ResultPanel : UserControl
+    public partial class ResultListBox
     {
         public void AddResults(List<Result> newResults, string resultId)
         {
@@ -24,7 +24,7 @@ namespace Wox
         }
         
 
-        public ResultPanel()
+        public ResultListBox()
         {
             InitializeComponent();
         }

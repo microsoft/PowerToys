@@ -21,11 +21,10 @@ namespace Wox.ViewModel
     {
         #region Private Fields
 
-        private ResultPanelViewModel _searchResultPanel;
         private ResultPanelViewModel _actionPanel;
         private string _queryText;
         private bool _isVisible;
-        private bool _isSearchResultPanelVisible;
+        private bool _isResultListBoxVisible;
         private bool _isActionPanelVisible;
         private bool _isProgressBarVisible;
         private bool _isProgressBarTooltipVisible;
@@ -46,7 +45,7 @@ namespace Wox.ViewModel
 
         public MainViewModel()
         {
-            this.InitializeResultPanel();
+            this.InitializeResultListBox();
             this.InitializeActionPanel();
             this.InitializeKeyCommands();
 
@@ -57,13 +56,7 @@ namespace Wox.ViewModel
 
         #region ViewModel Properties
 
-        public ResultPanelViewModel SearchResultPanel
-        {
-            get
-            {
-                return this._searchResultPanel;
-            }
-        }
+        public ResultPanelViewModel Results { get; private set; }
 
         public ResultPanelViewModel ActionPanel
         {
@@ -132,16 +125,16 @@ namespace Wox.ViewModel
             }
         }
 
-        public bool IsSearchResultPanelVisible
+        public bool IsResultListBoxVisible
         {
             get
             {
-                return this._isSearchResultPanelVisible;
+                return this._isResultListBoxVisible;
             }
             set
             {
-                this._isSearchResultPanelVisible = value;
-                OnPropertyChanged("IsSearchResultPanelVisible");
+                this._isResultListBoxVisible = value;
+                OnPropertyChanged("IsResultListBoxVisible");
             }
         }
 
@@ -311,7 +304,7 @@ namespace Wox.ViewModel
                 }
                 else
                 {
-                    this._searchResultPanel.SelectNextResult();
+                    this.Results.SelectNextResult();
                 }
 
             });
@@ -325,7 +318,7 @@ namespace Wox.ViewModel
                 }
                 else
                 {
-                    this._searchResultPanel.SelectPrevResult();
+                    this.Results.SelectPrevResult();
                 }
 
             });
@@ -339,7 +332,7 @@ namespace Wox.ViewModel
                 }
                 else
                 {
-                    ShowActionPanel(this._searchResultPanel.SelectedResult.RawResult);
+                    ShowActionPanel(this.Results.SelectedResult.RawResult);
                 }
             });
 
@@ -362,14 +355,14 @@ namespace Wox.ViewModel
             this.SelectNextPageCommand = new RelayCommand((parameter) =>
             {
 
-                this._searchResultPanel.SelectNextPage();
+                this.Results.SelectNextPage();
 
             });
 
             this.SelectPrevPageCommand = new RelayCommand((parameter) =>
             {
 
-                this._searchResultPanel.SelectPrevPage();
+                this.Results.SelectPrevPage();
 
             });
 
@@ -381,9 +374,9 @@ namespace Wox.ViewModel
             this.ShiftEnterCommand = new RelayCommand((parameter) =>
             {
 
-                if (!this.IsActionPanelVisible && null != this._searchResultPanel.SelectedResult)
+                if (!this.IsActionPanelVisible && null != this.Results.SelectedResult)
                 {
-                    this.ShowActionPanel(this._searchResultPanel.SelectedResult.RawResult);
+                    this.ShowActionPanel(this.Results.SelectedResult.RawResult);
                 }
 
             });
@@ -394,12 +387,12 @@ namespace Wox.ViewModel
                 if (null != parameter)
                 {
                     var index = int.Parse(parameter.ToString());
-                    this._searchResultPanel.SelectResult(index);
+                    this.Results.SelectResult(index);
                 }
 
-                if (null != this._searchResultPanel.SelectedResult)
+                if (null != this.Results.SelectedResult)
                 {
-                    this._searchResultPanel.SelectedResult.OpenResultCommand.Execute(null);
+                    this.Results.SelectedResult.OpenResultCommand.Execute(null);
                 }
             });
 
@@ -413,10 +406,10 @@ namespace Wox.ViewModel
             });
         }
 
-        private void InitializeResultPanel()
+        private void InitializeResultListBox()
         {
-            this._searchResultPanel = new ResultPanelViewModel();
-            this.IsSearchResultPanelVisible = false;
+            this.Results = new ResultPanelViewModel();
+            this.IsResultListBoxVisible = false;
         }
 
         private void ShowActionPanel(Result result)
@@ -448,7 +441,7 @@ namespace Wox.ViewModel
             CurrentContextMenus = actions;
 
             this.IsActionPanelVisible = true;
-            this.IsSearchResultPanelVisible = false;
+            this.IsResultListBoxVisible = false;
 
             this.QueryText = "";
         }
@@ -509,7 +502,7 @@ namespace Wox.ViewModel
                 }
                 else
                 {
-                    this._searchResultPanel.Clear();
+                    this.Results.Clear();
                 }
             }
         }
@@ -551,18 +544,18 @@ namespace Wox.ViewModel
                 {
                     if (!string.IsNullOrEmpty(keyword))
                     {
-                        this._searchResultPanel.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
+                        this.Results.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
                     }
                 }
                 else
                 {
                     if (string.IsNullOrEmpty(keyword))
                     {
-                        this._searchResultPanel.RemoveResultsFor(PluginManager.NonGlobalPlugins[lastKeyword].Metadata);
+                        this.Results.RemoveResultsFor(PluginManager.NonGlobalPlugins[lastKeyword].Metadata);
                     }
                     else if (lastKeyword != keyword)
                     {
-                        this._searchResultPanel.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
+                        this.Results.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
                     }
                 }
                 _lastQuery = query;
@@ -593,21 +586,21 @@ namespace Wox.ViewModel
 
         private void ResetQueryHistoryIndex()
         {
-            this._searchResultPanel.RemoveResultsFor(QueryHistoryStorage.MetaData);
+            this.Results.RemoveResultsFor(QueryHistoryStorage.MetaData);
             QueryHistoryStorage.Instance.Reset();
         }
 
         private void UpdateResultViewInternal(List<Result> list, PluginMetadata metadata)
         {
             Infrastructure.Stopwatch.Normal($"UI update cost for {metadata.Name}",
-                    () => { this._searchResultPanel.AddResults(list, metadata.ID); });
+                    () => { this.Results.AddResults(list, metadata.ID); });
         }
 
         private void BackToSearchMode()
         {
             this.QueryText = _textBeforeEnterContextMenuMode;
             this.IsActionPanelVisible = false;
-            this.IsSearchResultPanelVisible = true;
+            this.IsResultListBoxVisible = true;
             this.CaretIndex = this.QueryText.Length;
         }
 
@@ -622,7 +615,7 @@ namespace Wox.ViewModel
 
                 var executeQueryHistoryTitle = InternationalizationManager.Instance.GetTranslation("executeQuery");
                 var lastExecuteTime = InternationalizationManager.Instance.GetTranslation("lastExecuteTime");
-                this._searchResultPanel.RemoveResultsExcept(historyMetadata);
+                this.Results.RemoveResultsExcept(historyMetadata);
                 UpdateResultViewInternal(new List<Result>
                 {
                     new Result
@@ -666,7 +659,7 @@ namespace Wox.ViewModel
 
             if (list.Count > 0)
             {
-                this.IsSearchResultPanelVisible = true;
+                this.IsResultListBoxVisible = true;
             }
         }
 

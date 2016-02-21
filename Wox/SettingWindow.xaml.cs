@@ -37,7 +37,7 @@ namespace Wox
         {
             this._api = api;
             InitializeComponent();
-            this.resultPanelPreview.DataContext = new ResultPanelViewModel();
+            this.ResultListBoxPreview.DataContext = new ResultPanelViewModel();
             Loaded += Setting_Loaded;
         }
 
@@ -387,7 +387,7 @@ namespace Wox
                     ));
             }
 
-            resultPanelPreview.AddResults(new List<Result>
+            ResultListBoxPreview.AddResults(new List<Result>
             {
                 new Result
                 {

@@ -149,7 +149,7 @@
                                         <RowDefinition/>
                                     </Grid.RowDefinitions>
                                     <TextBox Text="{DynamicResource helloWox}" IsReadOnly="True" Style="{DynamicResource QueryBoxStyle}" Grid.Row="0"/>
-                                    <wox:ResultPanel Grid.Row="1" x:Name="resultPanelPreview"/>
+                                    <wox:ResultListBox Grid.Row="1" x:Name="ResultListBoxPreview"/>
                                 </Grid>
                             </Border>
                         </StackPanel>
