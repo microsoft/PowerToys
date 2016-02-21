@@ -17,9 +17,9 @@
                 <DataTemplate.DataType>
                     <x:Type TypeName="vm:ResultItemViewModel" />
                 </DataTemplate.DataType>
-                <Button Command="{Binding OpenResultCommand}">
+                <Button Command="{Binding OpenResultListBoxItemCommand}">
                     <Button.InputBindings>
-                        <MouseBinding Command="{Binding OpenResultActionPanelCommand}" MouseAction="RightClick"></MouseBinding>
+                        <MouseBinding Command="{Binding OpenContextMenuItemCommand}" MouseAction="RightClick"></MouseBinding>
                     </Button.InputBindings>
                     <Button.Template>
                         <ControlTemplate>

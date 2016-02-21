@@ -25,11 +25,12 @@ namespace Wox.ViewModel
 
         public ResultItemViewModel(Result result)
         {
-            if(null!= result)
+            if (null != result)
             {
                 this._result = result;
 
-                this.OpenResultCommand = new RelayCommand((parameter) => {
+                this.OpenResultListBoxItemCommand = new RelayCommand((parameter) =>
+                {
 
                     bool hideWindow = result.Action(new ActionContext
                     {
@@ -44,7 +45,7 @@ namespace Wox.ViewModel
                     }
                 });
 
-                this.OpenResultActionPanelCommand = new RelayCommand((parameter) =>
+                this.OpenContextMenuItemCommand = new RelayCommand((parameter) =>
                 {
 
                     var actions = PluginManager.GetContextMenusForPlugin(result);
@@ -104,17 +105,9 @@ namespace Wox.ViewModel
             }
         }
 
-        public RelayCommand OpenResultCommand
-        {
-            get;
-            set;
-        }
+        public RelayCommand OpenResultListBoxItemCommand { get; set; }
 
-        public RelayCommand OpenResultActionPanelCommand
-        {
-            get;
-            set;
-        }
+        public RelayCommand OpenContextMenuItemCommand { get; set; }
 
         #endregion
 
@@ -172,7 +165,7 @@ namespace Wox.ViewModel
             {
                 return _result.Equals(r.RawResult);
             }
-            
+
             return false;
         }
 
