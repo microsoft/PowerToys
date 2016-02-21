@@ -21,11 +21,10 @@ namespace Wox.ViewModel
     {
         #region Private Fields
 
-        private ResultsViewModel _actionPanel;
         private string _queryText;
         private bool _isVisible;
         private bool _isResultListBoxVisible;
-        private bool _isActionPanelVisible;
+        private bool _isContextMenuVisible;
         private bool _isProgressBarVisible;
         private bool _isProgressBarTooltipVisible;
         private bool _selectAllText;
@@ -46,7 +45,7 @@ namespace Wox.ViewModel
         public MainViewModel()
         {
             this.InitializeResultListBox();
-            this.InitializeActionPanel();
+            this.InitializeContextMenu();
             this.InitializeKeyCommands();
 
             this._queryHasReturn = false;
@@ -58,13 +57,7 @@ namespace Wox.ViewModel
 
         public ResultsViewModel Results { get; private set; }
 
-        public ResultsViewModel ActionPanel
-        {
-            get
-            {
-                return this._actionPanel;
-            }
-        }
+        public ResultsViewModel ContextMenu { get; private set; }
 
         public string QueryText
         {
@@ -118,7 +111,7 @@ namespace Wox.ViewModel
                 this._isVisible = value;
                 OnPropertyChanged("IsVisible");
 
-                if (!value && this.IsActionPanelVisible)
+                if (!value && this.IsContextMenuVisible)
                 {
                     this.BackToSearchMode();
                 }
@@ -138,16 +131,16 @@ namespace Wox.ViewModel
             }
         }
 
-        public bool IsActionPanelVisible
+        public bool IsContextMenuVisible
         {
             get
             {
-                return this._isActionPanelVisible;
+                return this._isContextMenuVisible;
             }
             set
             {
-                this._isActionPanelVisible = value;
-                OnPropertyChanged("IsActionPanelVisible");
+                this._isContextMenuVisible = value;
+                OnPropertyChanged("IsContextMenuVisible");
             }
         }
 
@@ -284,7 +277,7 @@ namespace Wox.ViewModel
             this.EscCommand = new RelayCommand((parameter) =>
             {
 
-                if (this.IsActionPanelVisible)
+                if (this.IsContextMenuVisible)
                 {
                     this.BackToSearchMode();
                 }
@@ -298,9 +291,9 @@ namespace Wox.ViewModel
             this.SelectNextItemCommand = new RelayCommand((parameter) =>
             {
 
-                if (this.IsActionPanelVisible)
+                if (this.IsContextMenuVisible)
                 {
-                    this._actionPanel.SelectNextResult();
+                    this.ContextMenu.SelectNextResult();
                 }
                 else
                 {
@@ -312,9 +305,9 @@ namespace Wox.ViewModel
             this.SelectPrevItemCommand = new RelayCommand((parameter) =>
             {
 
-                if (this.IsActionPanelVisible)
+                if (this.IsContextMenuVisible)
                 {
-                    this._actionPanel.SelectPrevResult();
+                    this.ContextMenu.SelectPrevResult();
                 }
                 else
                 {
@@ -326,13 +319,13 @@ namespace Wox.ViewModel
             this.CtrlOCommand = new RelayCommand((parameter) =>
             {
 
-                if (this.IsActionPanelVisible)
+                if (this.IsContextMenuVisible)
                 {
                     BackToSearchMode();
                 }
                 else
                 {
-                    ShowActionPanel(this.Results.SelectedResult.RawResult);
+                    ShowContextMenu(this.Results.SelectedResult.RawResult);
                 }
             });
 
@@ -374,9 +367,9 @@ namespace Wox.ViewModel
             this.ShiftEnterCommand = new RelayCommand((parameter) =>
             {
 
-                if (!this.IsActionPanelVisible && null != this.Results.SelectedResult)
+                if (!this.IsContextMenuVisible && null != this.Results.SelectedResult)
                 {
-                    this.ShowActionPanel(this.Results.SelectedResult.RawResult);
+                    this.ShowContextMenu(this.Results.SelectedResult.RawResult);
                 }
 
             });
@@ -392,7 +385,7 @@ namespace Wox.ViewModel
 
                 if (null != this.Results.SelectedResult)
                 {
-                    this.Results.SelectedResult.OpenResultCommand.Execute(null);
+                    this.Results.SelectedResult.OpenResultListBoxItemCommand.Execute(null);
                 }
             });
 
@@ -412,13 +405,13 @@ namespace Wox.ViewModel
             this.IsResultListBoxVisible = false;
         }
 
-        private void ShowActionPanel(Result result)
+        private void ShowContextMenu(Result result)
         {
             if (result == null) return;
-            this.ShowActionPanel(result, PluginManager.GetContextMenusForPlugin(result));
+            this.ShowContextMenu(result, PluginManager.GetContextMenusForPlugin(result));
         }
 
-        private void ShowActionPanel(Result result, List<Result> actions)
+        private void ShowContextMenu(Result result, List<Result> actions)
         {
             actions.ForEach(o =>
             {
@@ -429,18 +422,18 @@ namespace Wox.ViewModel
 
             actions.Add(GetTopMostContextMenu(result));
 
-            this.DisplayActionPanel(actions, result.PluginID);
+            this.DisplayContextMenu(actions, result.PluginID);
         }
 
-        private void DisplayActionPanel(List<Result> actions, string pluginID)
+        private void DisplayContextMenu(List<Result> actions, string pluginID)
         {
             _textBeforeEnterContextMenuMode = this.QueryText;
 
-            this._actionPanel.Clear();
-            this._actionPanel.AddResults(actions, pluginID);
+            this.ContextMenu.Clear();
+            this.ContextMenu.AddResults(actions, pluginID);
             CurrentContextMenus = actions;
 
-            this.IsActionPanelVisible = true;
+            this.IsContextMenuVisible = true;
             this.IsResultListBoxVisible = false;
 
             this.QueryText = "";
@@ -476,10 +469,10 @@ namespace Wox.ViewModel
             }
         }
 
-        private void InitializeActionPanel()
+        private void InitializeContextMenu()
         {
-            this._actionPanel = new ResultsViewModel();
-            this.IsActionPanelVisible = false;
+            this.ContextMenu = new ResultsViewModel();
+            this.IsContextMenuVisible = false;
         }
 
         private void HandleQueryTextUpdated()
@@ -487,9 +480,9 @@ namespace Wox.ViewModel
             if (_ignoreTextChange) { _ignoreTextChange = false; return; }
 
             this.IsProgressBarTooltipVisible = false;
-            if (this.IsActionPanelVisible)
+            if (this.IsContextMenuVisible)
             {
-                QueryActionPanel();
+                QueryContextMenu();
             }
             else
             {
@@ -507,14 +500,14 @@ namespace Wox.ViewModel
             }
         }
 
-        private void QueryActionPanel()
+        private void QueryContextMenu()
         {
             var contextMenuId = "Context Menu Id";
-            this._actionPanel.Clear();
+            this.ContextMenu.Clear();
             var query = this.QueryText.ToLower();
             if (string.IsNullOrEmpty(query))
             {
-                this._actionPanel.AddResults(CurrentContextMenus, contextMenuId);
+                this.ContextMenu.AddResults(CurrentContextMenus, contextMenuId);
             }
             else
             {
@@ -527,7 +520,7 @@ namespace Wox.ViewModel
                         filterResults.Add(contextMenu);
                     }
                 }
-                this._actionPanel.AddResults(filterResults, contextMenuId);
+                this.ContextMenu.AddResults(filterResults, contextMenuId);
             }
         }
 
@@ -599,7 +592,7 @@ namespace Wox.ViewModel
         private void BackToSearchMode()
         {
             this.QueryText = _textBeforeEnterContextMenuMode;
-            this.IsActionPanelVisible = false;
+            this.IsContextMenuVisible = false;
             this.IsResultListBoxVisible = true;
             this.CaretIndex = this.QueryText.Length;
         }
@@ -663,9 +656,9 @@ namespace Wox.ViewModel
             }
         }
 
-        public void ShowActionPanel(List<Result> actions, string pluginID)
+        public void ShowContextMenu(List<Result> actions, string pluginID)
         {
-            this.DisplayActionPanel(actions, pluginID);
+            this.DisplayContextMenu(actions, pluginID);
         }
 
         #endregion

@@ -39,7 +39,7 @@
             </Line>
             <ContentControl Content="{Binding Results}" Visibility="{Binding IsResultListBoxVisible,Converter={StaticResource VisibilityConverter}}">
             </ContentControl>
-            <ContentControl Content="{Binding ActionPanel}" Visibility="{Binding IsActionPanelVisible,Converter={StaticResource VisibilityConverter}}">
+            <ContentControl Content="{Binding ContextMenu}" Visibility="{Binding IsContextMenuVisible,Converter={StaticResource VisibilityConverter}}">
             </ContentControl>
         </StackPanel>
     </Border>

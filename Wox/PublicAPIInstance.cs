@@ -181,7 +181,7 @@ namespace Wox
                     o.PluginID = plugin.ID;
                 });
 
-                this.MainVM.ShowActionPanel(results, plugin.ID);
+                this.MainVM.ShowContextMenu(results, plugin.ID);
             }
         }
 
