@@ -6,7 +6,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:converters="clr-namespace:Wox.Converters"
              xmlns:vm ="clr-namespace:Wox.ViewModel"
-             mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100" d:DataContext="{d:DesignInstance vm:ResultPanelViewModel}">
+             mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100" d:DataContext="{d:DesignInstance vm:ResultsViewModel}">
     <ListBox x:Name="lbResults" MaxHeight="{Binding MaxHeight}" SelectedItem="{Binding SelectedResult}"
              HorizontalContentAlignment="Stretch" ItemsSource="{Binding Results}" Margin="{Binding Margin}"
              Style="{DynamicResource BaseListboxStyle}" SelectionChanged="lbResults_SelectionChanged" Focusable="False"

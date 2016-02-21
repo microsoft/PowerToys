@@ -21,7 +21,7 @@ namespace Wox.ViewModel
     {
         #region Private Fields
 
-        private ResultPanelViewModel _actionPanel;
+        private ResultsViewModel _actionPanel;
         private string _queryText;
         private bool _isVisible;
         private bool _isResultListBoxVisible;
@@ -56,9 +56,9 @@ namespace Wox.ViewModel
 
         #region ViewModel Properties
 
-        public ResultPanelViewModel Results { get; private set; }
+        public ResultsViewModel Results { get; private set; }
 
-        public ResultPanelViewModel ActionPanel
+        public ResultsViewModel ActionPanel
         {
             get
             {
@@ -408,7 +408,7 @@ namespace Wox.ViewModel
 
         private void InitializeResultListBox()
         {
-            this.Results = new ResultPanelViewModel();
+            this.Results = new ResultsViewModel();
             this.IsResultListBoxVisible = false;
         }
 
@@ -478,7 +478,7 @@ namespace Wox.ViewModel
 
         private void InitializeActionPanel()
         {
-            this._actionPanel = new ResultPanelViewModel();
+            this._actionPanel = new ResultsViewModel();
             this.IsActionPanelVisible = false;
         }
 
