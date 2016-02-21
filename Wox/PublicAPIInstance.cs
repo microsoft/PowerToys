@@ -30,8 +30,7 @@ namespace Wox
         {
             this.MainVM = mainVM;
 
-            ThreadPool.SetMaxThreads(30, 10);
-            ThreadPool.SetMinThreads(10, 5);
+
             GlobalHotkey.Instance.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
 
