@@ -33,7 +33,7 @@ namespace Wox
         {
             if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
             {
-                lbResults.ScrollIntoView(e.AddedItems[0]);
+                ScrollIntoView(e.AddedItems[0]);
             }
         }
 
