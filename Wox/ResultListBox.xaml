@@ -1,13 +1,12 @@
-﻿<UserControl x:Class="Wox.ResultListBox"
-             x:Name="Results"
+﻿<ListBox x:Class="Wox.ResultListBox"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:converters="clr-namespace:Wox.Converters"
              xmlns:vm ="clr-namespace:Wox.ViewModel"
-             mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100" d:DataContext="{d:DesignInstance vm:ResultsViewModel}">
-    <ListBox x:Name="lbResults" MaxHeight="{Binding MaxHeight}" SelectedItem="{Binding SelectedResult}"
+             mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100" d:DataContext="{d:DesignInstance vm:ResultsViewModel}"
+             MaxHeight="{Binding MaxHeight}" SelectedItem="{Binding SelectedResult}"
              HorizontalContentAlignment="Stretch" ItemsSource="{Binding Results}" Margin="{Binding Margin}"
              Style="{DynamicResource BaseListboxStyle}" SelectionChanged="lbResults_SelectionChanged" Focusable="False"
              KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single"
@@ -99,5 +98,4 @@
                 </Setter>
             </Style>
         </ListBox.ItemContainerStyle>
-    </ListBox>
-</UserControl>
+</ListBox>
