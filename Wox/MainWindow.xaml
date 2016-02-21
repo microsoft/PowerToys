@@ -22,7 +22,7 @@
         PreviewKeyDown="Window_PreviewKeyDown" d:DataContext="{d:DesignInstance vm:MainViewModel, IsDesignTimeCreatable=True}">
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:ResultPanelViewModel}">
-            <wox:ResultPanel></wox:ResultPanel>
+            <wox:ResultListBox></wox:ResultListBox>
         </DataTemplate>
         <converters:VisibilityConverter x:Key="VisibilityConverter" />
     </Window.Resources>
@@ -37,7 +37,7 @@
                     <ToolTip IsOpen="{Binding IsProgressBarTooltipVisible}"></ToolTip>
                 </Line.ToolTip>
             </Line>
-            <ContentControl Content="{Binding SearchResultPanel}" Visibility="{Binding IsSearchResultPanelVisible,Converter={StaticResource VisibilityConverter}}">
+            <ContentControl Content="{Binding Results}" Visibility="{Binding IsResultListBoxVisible,Converter={StaticResource VisibilityConverter}}">
             </ContentControl>
             <ContentControl Content="{Binding ActionPanel}" Visibility="{Binding IsActionPanelVisible,Converter={StaticResource VisibilityConverter}}">
             </ContentControl>
