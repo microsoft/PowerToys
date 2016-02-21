@@ -13,7 +13,7 @@ using Wox.Storage;
 
 namespace Wox.ViewModel
 {
-    public class ResultPanelViewModel : BaseViewModel
+    public class ResultsViewModel : BaseViewModel
     {
         #region Private Fields
 
@@ -28,7 +28,7 @@ namespace Wox.ViewModel
 
         #region Constructor
 
-        public ResultPanelViewModel()
+        public ResultsViewModel()
         {
             this._results = new ResultCollection();
         }

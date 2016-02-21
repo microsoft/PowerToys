@@ -21,7 +21,7 @@
         Visibility="{Binding IsVisible,Converter={converters:VisibilityConverter}}"
         PreviewKeyDown="Window_PreviewKeyDown" d:DataContext="{d:DesignInstance vm:MainViewModel, IsDesignTimeCreatable=True}">
     <Window.Resources>
-        <DataTemplate DataType="{x:Type vm:ResultPanelViewModel}">
+        <DataTemplate DataType="{x:Type vm:ResultsViewModel}">
             <wox:ResultListBox></wox:ResultListBox>
         </DataTemplate>
         <converters:VisibilityConverter x:Key="VisibilityConverter" />

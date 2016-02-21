@@ -19,7 +19,7 @@ namespace Wox
     {
         public void AddResults(List<Result> newResults, string resultId)
         {
-            var vm = this.DataContext as ResultPanelViewModel;
+            var vm = this.DataContext as ResultsViewModel;
             vm.AddResults(newResults, resultId);
         }
         
