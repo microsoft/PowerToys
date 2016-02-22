@@ -37,16 +37,12 @@ namespace Wox
 
                 if(e.KeyEventArgs.Key == Key.Back)
                 {
-                    if (null != BackKeyDownEvent)
+                    BackKeyDownEvent?.Invoke(new WoxKeyDownEventArgs
                     {
-                        BackKeyDownEvent(new WoxKeyDownEventArgs
-                        {
-                            Query = MainVM.QueryText,
-                            keyEventArgs = e.KeyEventArgs
-                        });
-                    }
+                        Query = MainVM.QueryText,
+                        keyEventArgs = e.KeyEventArgs
+                    });
                 }
-
             };
         }
 

@@ -19,7 +19,7 @@ namespace Wox.ViewModel
 
         public ResultViewModel(Result result)
         {
-            if (null != result)
+            if (result != null)
             {
                 RawResult = result;
 

@@ -287,7 +287,7 @@ namespace Wox.ViewModel
 
             ShiftEnterCommand = new RelayCommand(_ =>
             {
-                if (!IsContextMenuVisible && null != Results.SelectedResult)
+                if (!IsContextMenuVisible && Results.SelectedResult != null)
                 {
                     ShowContextMenu(Results.SelectedResult.RawResult);
                 }
@@ -295,7 +295,7 @@ namespace Wox.ViewModel
 
             OpenResultCommand = new RelayCommand(o =>
             {
-                if (null != o)
+                if (o != null)
                 {
                     var index = int.Parse(o.ToString());
                     Results.SelectResult(index);

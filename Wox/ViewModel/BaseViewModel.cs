@@ -9,10 +9,7 @@ namespace Wox.ViewModel
 
         protected void OnPropertyChanged(string propertyName)
         {
-            if (null != PropertyChanged)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -37,10 +34,7 @@ namespace Wox.ViewModel
 
         public virtual void Execute(object parameter)
         {
-            if (null != _action)
-            {
-                _action(parameter);
-            }
+            _action?.Invoke(parameter);
         }
     }
 }
