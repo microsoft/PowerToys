@@ -19,20 +19,25 @@ using Wox.Helper;
 using Wox.Plugin;
 using Application = System.Windows.Forms.Application;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
+using Wox.Infrastructure.Hotkey;
+using NHotkey.Wpf;
+using NHotkey;
+using Wox.ViewModel;
 
 namespace Wox
 {
     public partial class SettingWindow : Window
     {
-        public readonly MainWindow MainWindow;
+        public readonly IPublicAPI _api;
         bool settingsLoaded;
         private Dictionary<ISettingProvider, Control> featureControls = new Dictionary<ISettingProvider, Control>();
         private bool themeTabLoaded;
 
-        public SettingWindow(MainWindow mainWindow)
+        public SettingWindow(IPublicAPI api)
         {
-            MainWindow = mainWindow;
+            _api = api;
             InitializeComponent();
+            ResultListBoxPreview.DataContext = new ResultsViewModel();
             Loaded += Setting_Loaded;
         }
 
@@ -94,7 +99,7 @@ namespace Wox
             {
                 UserSettingStorage.Instance.MaxResultsToShow = (int)comboMaxResultsToShow.SelectedItem;
                 UserSettingStorage.Instance.Save();
-                MainWindow.pnlResult.lbResults.GetBindingExpression(MaxHeightProperty).UpdateTarget();
+                //MainWindow.pnlResult.lbResults.GetBindingExpression(MaxHeightProperty).UpdateTarget();
             };
 
             cbHideWhenDeactive.IsChecked = UserSettingStorage.Instance.HideWhenDeactive;
@@ -250,20 +255,42 @@ namespace Wox
         {
             if (ctlHotkey.CurrentHotkeyAvailable)
             {
-                MainWindow.SetHotkey(ctlHotkey.CurrentHotkey, delegate
+                SetHotkey(ctlHotkey.CurrentHotkey, delegate
                 {
-                    if (!MainWindow.IsVisible)
+                    if (!App.Window.IsVisible)
                     {
-                        MainWindow.ShowApp();
+                        _api.ShowApp();
                     }
                     else
                     {
-                        MainWindow.HideApp();
+                        _api.HideApp();
                     }
                 });
-                MainWindow.RemoveHotkey(UserSettingStorage.Instance.Hotkey);
+                RemoveHotkey(UserSettingStorage.Instance.Hotkey);
                 UserSettingStorage.Instance.Hotkey = ctlHotkey.CurrentHotkey.ToString();
                 UserSettingStorage.Instance.Save();
+            }
+        }
+
+        void SetHotkey(HotkeyModel hotkey, EventHandler<HotkeyEventArgs> action)
+        {
+            string hotkeyStr = hotkey.ToString();
+            try
+            {
+                HotkeyManager.Current.AddOrReplace(hotkeyStr, hotkey.CharKey, hotkey.ModifierKeys, action);
+            }
+            catch (Exception)
+            {
+                string errorMsg = string.Format(InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
+                MessageBox.Show(errorMsg);
+            }
+        }
+
+        void RemoveHotkey(string hotkeyStr)
+        {
+            if (!string.IsNullOrEmpty(hotkeyStr))
+            {
+                HotkeyManager.Current.Remove(hotkeyStr);
             }
         }
 
@@ -289,7 +316,7 @@ namespace Wox
                 UserSettingStorage.Instance.CustomPluginHotkeys.Remove(item);
                 lvCustomHotkey.Items.Refresh();
                 UserSettingStorage.Instance.Save();
-                MainWindow.RemoveHotkey(item.Hotkey);
+                RemoveHotkey(item.Hotkey);
             }
         }
 
@@ -348,19 +375,19 @@ namespace Wox
                     UserSettingStorage.Instance.QueryBoxFontStretch
                     ));
             }
-            if (!string.IsNullOrEmpty(UserSettingStorage.Instance.ResultItemFont) &&
-                Fonts.SystemFontFamilies.Count(o => o.FamilyNames.Values.Contains(UserSettingStorage.Instance.ResultItemFont)) > 0)
+            if (!string.IsNullOrEmpty(UserSettingStorage.Instance.ResultFont) &&
+                Fonts.SystemFontFamilies.Count(o => o.FamilyNames.Values.Contains(UserSettingStorage.Instance.ResultFont)) > 0)
             {
-                cbResultItemFont.Text = UserSettingStorage.Instance.ResultItemFont;
+                ResultFontComboBox.Text = UserSettingStorage.Instance.ResultFont;
 
-                cbResultItemFontFaces.SelectedItem = SyntaxSugars.CallOrRescueDefault(() => ((FontFamily)cbResultItemFont.SelectedItem).ConvertFromInvariantStringsOrNormal(
-                    UserSettingStorage.Instance.ResultItemFontStyle,
-                    UserSettingStorage.Instance.ResultItemFontWeight,
-                    UserSettingStorage.Instance.ResultItemFontStretch
+                ResultFontFacesComboBox.SelectedItem = SyntaxSugars.CallOrRescueDefault(() => ((FontFamily)ResultFontComboBox.SelectedItem).ConvertFromInvariantStringsOrNormal(
+                    UserSettingStorage.Instance.ResultFontStyle,
+                    UserSettingStorage.Instance.ResultFontWeight,
+                    UserSettingStorage.Instance.ResultFontStretch
                     ));
             }
 
-            resultPanelPreview.AddResults(new List<Result>
+            ResultListBoxPreview.AddResults(new List<Result>
             {
                 new Result
                 {
@@ -475,30 +502,30 @@ namespace Wox
             }
         }
 
-        private void CbResultItemFont_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void OnResultFontSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!settingsLoaded) return;
-            string resultItemFont = cbResultItemFont.SelectedItem.ToString();
-            UserSettingStorage.Instance.ResultItemFont = resultItemFont;
-            cbResultItemFontFaces.SelectedItem = ((FontFamily)cbResultItemFont.SelectedItem).ChooseRegularFamilyTypeface();
+            string resultItemFont = ResultFontComboBox.SelectedItem.ToString();
+            UserSettingStorage.Instance.ResultFont = resultItemFont;
+            ResultFontFacesComboBox.SelectedItem = ((FontFamily)ResultFontComboBox.SelectedItem).ChooseRegularFamilyTypeface();
             UserSettingStorage.Instance.Save();
             ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
         }
 
-        private void CbResultItemFontFaces_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void OnResultFontFacesSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!settingsLoaded) return;
-            FamilyTypeface typeface = (FamilyTypeface)cbResultItemFontFaces.SelectedItem;
+            FamilyTypeface typeface = (FamilyTypeface)ResultFontFacesComboBox.SelectedItem;
             if (typeface == null)
             {
-                if (cbResultItemFontFaces.Items.Count > 0)
-                    cbResultItemFontFaces.SelectedIndex = 0;
+                if (ResultFontFacesComboBox.Items.Count > 0)
+                    ResultFontFacesComboBox.SelectedIndex = 0;
             }
             else
             {
-                UserSettingStorage.Instance.ResultItemFontStretch = typeface.Stretch.ToString();
-                UserSettingStorage.Instance.ResultItemFontWeight = typeface.Weight.ToString();
-                UserSettingStorage.Instance.ResultItemFontStyle = typeface.Style.ToString();
+                UserSettingStorage.Instance.ResultFontStretch = typeface.Stretch.ToString();
+                UserSettingStorage.Instance.ResultFontWeight = typeface.Weight.ToString();
+                UserSettingStorage.Instance.ResultFontStyle = typeface.Style.ToString();
                 UserSettingStorage.Instance.Save();
                 ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
             }

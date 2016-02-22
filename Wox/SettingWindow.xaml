@@ -149,7 +149,7 @@
                                         <RowDefinition/>
                                     </Grid.RowDefinitions>
                                     <TextBox Text="{DynamicResource helloWox}" IsReadOnly="True" Style="{DynamicResource QueryBoxStyle}" Grid.Row="0"/>
-                                    <wox:ResultPanel Grid.Row="1" x:Name="resultPanelPreview"/>
+                                    <wox:ResultListBox Grid.Row="1" x:Name="ResultListBoxPreview"/>
                                 </Grid>
                             </Border>
                         </StackPanel>
@@ -177,10 +177,10 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="2">
                             <TextBlock Text="{DynamicResource resultItemFont}" />
-                            <ComboBox Margin="5 -2 5 0" x:Name="cbResultItemFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbResultItemFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
+                            <ComboBox Margin="5 -2 5 0" x:Name="ResultFontComboBox" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="OnResultFontSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
                             <ComboBox Margin="0 -2 0 0"
-								x:Name="cbResultItemFontFaces"
-								ItemsSource="{Binding SelectedValue.FamilyTypefaces, ElementName=cbResultItemFont}" SelectionChanged="CbResultItemFontFaces_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
+								x:Name="ResultFontFacesComboBox"
+								ItemsSource="{Binding SelectedValue.FamilyTypefaces, ElementName=ResultFontComboBox}" SelectionChanged="OnResultFontFacesSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <ItemsControl ItemsSource="{Binding AdjustedFaceNames}">

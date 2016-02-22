@@ -44,16 +44,16 @@ namespace Wox.Core.UserSettings
         public string QueryBoxFontStretch { get; set; }
 
         [JsonProperty]
-        public string ResultItemFont { get; set; }
+        public string ResultFont { get; set; }
 
         [JsonProperty]
-        public string ResultItemFontStyle { get; set; }
+        public string ResultFontStyle { get; set; }
 
         [JsonProperty]
-        public string ResultItemFontWeight { get; set; }
+        public string ResultFontWeight { get; set; }
 
         [JsonProperty]
-        public string ResultItemFontStretch { get; set; }
+        public string ResultFontStretch { get; set; }
 
         [JsonProperty]
         public double WindowLeft { get; set; }
@@ -126,7 +126,7 @@ namespace Wox.Core.UserSettings
             CustomizedPluginConfigs = new List<CustomizedPluginConfig>();
             Hotkey = "Alt + Space";
             QueryBoxFont = FontFamily.GenericSansSerif.Name;
-            ResultItemFont = FontFamily.GenericSansSerif.Name;
+            ResultFont = FontFamily.GenericSansSerif.Name;
             Opacity = 1;
             OpacityMode = OpacityMode.Normal;
             LeaveCmdOpen = false;
@@ -147,9 +147,9 @@ namespace Wox.Core.UserSettings
             {
                 storage.QueryBoxFont = FontFamily.GenericSansSerif.Name;
             }
-            if (storage.ResultItemFont == null)
+            if (storage.ResultFont == null)
             {
-                storage.ResultItemFont = FontFamily.GenericSansSerif.Name;
+                storage.ResultFont = FontFamily.GenericSansSerif.Name;
             }
             if (storage.Language == null)
             {
