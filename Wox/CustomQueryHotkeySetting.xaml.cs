@@ -1,9 +1,9 @@
-﻿using NHotkey;
-using NHotkey.Wpf;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using NHotkey;
+using NHotkey.Wpf;
 using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure.Hotkey;

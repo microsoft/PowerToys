@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using Wox.Infrastructure.Storage;
 
 namespace Wox.ImageLoader

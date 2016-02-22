@@ -14,7 +14,6 @@ using Wox.Plugin;
 using Wox.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
-
 namespace Wox
 {
     public partial class App : Application, ISingleInstanceApp

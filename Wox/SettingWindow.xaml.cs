@@ -11,18 +11,18 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
+using NHotkey;
+using NHotkey.Wpf;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Core.Updater;
 using Wox.Core.UserSettings;
 using Wox.Helper;
+using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
+using Wox.ViewModel;
 using Application = System.Windows.Forms.Application;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
-using Wox.Infrastructure.Hotkey;
-using NHotkey.Wpf;
-using NHotkey;
-using Wox.ViewModel;
 
 namespace Wox
 {
