@@ -53,42 +53,42 @@ namespace Wox
             WindowIntelopHelper.DisableControlBox(this);
             CheckUpdate();
 
-            var vm = this.DataContext as MainViewModel;
+            var vm = DataContext as MainViewModel;
             vm.PropertyChanged += (o, eve) =>
             {
                 if(eve.PropertyName == "SelectAllText")
                 {
                     if (vm.SelectAllText)
                     {
-                        this.tbQuery.SelectAll();
+                        tbQuery.SelectAll();
                     }
                 }
                 else if(eve.PropertyName == "CaretIndex")
                 {
-                    this.tbQuery.CaretIndex = vm.CaretIndex;
+                    tbQuery.CaretIndex = vm.CaretIndex;
                 }
                 else if(eve.PropertyName == "Left")
                 {
-                    this.Left = vm.Left;
+                    Left = vm.Left;
                 }
                 else if(eve.PropertyName == "Top")
                 {
-                    this.Top = vm.Top;
+                    Top = vm.Top;
                 }
                 else if(eve.PropertyName == "IsVisible")
                 {
                     if (vm.WindowVisibility.IsVisible())
                     {
-                        this.tbQuery.Focus();
+                        tbQuery.Focus();
                     }
                 }
             };
 
             vm.Left = GetWindowsLeft();
             vm.Top = GetWindowsTop();
-            this.Activate();
-            this.Focus();
-            this.tbQuery.Focus();
+            Activate();
+            Focus();
+            tbQuery.Focus();
         }
 
         private double GetWindowsLeft()
@@ -160,7 +160,7 @@ namespace Wox
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            var vm = this.DataContext as MainViewModel;
+            var vm = DataContext as MainViewModel;
 
             if (null == vm) return;
             //when alt is pressed, the real key should be e.SystemKey

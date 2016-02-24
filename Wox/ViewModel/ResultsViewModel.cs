@@ -18,46 +18,22 @@ namespace Wox.ViewModel
         #region Private Fields
 
         private ResultViewModel _selectedResult;
-        private ResultCollection _results;
-        private bool _isVisible;
+        public ResultCollection Results { get; } = new ResultCollection();
         private Thickness _margin;
 
         private readonly object _resultsUpdateLock = new object();
 
         #endregion
 
-        #region Constructor
-
-        public ResultsViewModel()
-        {
-            this._results = new ResultCollection();
-        }
-
-        #endregion
-
         #region ViewModel Properties
 
-        public int MaxHeight
-        {
-            get
-            {
-                return UserSettingStorage.Instance.MaxResultsToShow * 50;
-            }
-        }
-
-        public ResultCollection Results
-        {
-            get
-            {
-                return this._results;
-            }
-        }
+        public int MaxHeight => UserSettingStorage.Instance.MaxResultsToShow * 50;
 
         public ResultViewModel SelectedResult
         {
             get
             {
-                return this._selectedResult;
+                return _selectedResult;
             }
             set
             {
@@ -86,11 +62,11 @@ namespace Wox.ViewModel
         {
             get
             {
-                return this._margin;
+                return _margin;
             }
             set
             {
-                this._margin = value;
+                _margin = value;
                 OnPropertyChanged("Margin");
             }
         }
@@ -124,78 +100,78 @@ namespace Wox.ViewModel
 
         public void SelectResult(int index)
         {
-            if(index <= this.Results.Count - 1)
+            if (index <= Results.Count - 1)
             {
-                this.SelectedResult = this.Results[index];
+                SelectedResult = Results[index];
             }
         }
 
         public void SelectNextResult()
         {
-            if (null != this.SelectedResult)
+            if (null != SelectedResult)
             {
-                var index = this.Results.IndexOf(this.SelectedResult);
-                if(index == this.Results.Count - 1)
+                var index = Results.IndexOf(SelectedResult);
+                if (index == Results.Count - 1)
                 {
                     index = -1;
                 }
-                this.SelectedResult = this.Results.ElementAt(index + 1);
+                SelectedResult = Results.ElementAt(index + 1);
             }
         }
 
         public void SelectPrevResult()
         {
-            if (null != this.SelectedResult)
+            if (null != SelectedResult)
             {
-                var index = this.Results.IndexOf(this.SelectedResult);
+                var index = Results.IndexOf(SelectedResult);
                 if (index == 0)
                 {
-                    index = this.Results.Count;
+                    index = Results.Count;
                 }
-                this.SelectedResult = this.Results.ElementAt(index - 1);
+                SelectedResult = Results.ElementAt(index - 1);
             }
         }
 
         public void SelectNextPage()
         {
             var index = 0;
-            if (null != this.SelectedResult)
+            if (null != SelectedResult)
             {
-                index = this.Results.IndexOf(this.SelectedResult);
+                index = Results.IndexOf(SelectedResult);
             }
             index += 5;
-            if (index > this.Results.Count - 1)
+            if (index > Results.Count - 1)
             {
-                index = this.Results.Count - 1;
+                index = Results.Count - 1;
             }
-            this.SelectedResult = this.Results.ElementAt(index);
+            SelectedResult = Results.ElementAt(index);
         }
 
         public void SelectPrevPage()
         {
             var index = 0;
-            if (null != this.SelectedResult)
+            if (null != SelectedResult)
             {
-                index = this.Results.IndexOf(this.SelectedResult);
+                index = Results.IndexOf(SelectedResult);
             }
             index -= 5;
             if (index < 0)
             {
                 index = 0;
             }
-            this.SelectedResult = this.Results.ElementAt(index);
+            SelectedResult = Results.ElementAt(index);
         }
 
         public void Clear()
         {
-            this._results.Clear();
+            Results.Clear();
         }
 
         public void RemoveResultsExcept(PluginMetadata metadata)
         {
             lock (_resultsUpdateLock)
             {
-                _results.RemoveAll(r => r.RawResult.PluginID != metadata.ID);
+                Results.RemoveAll(r => r.RawResult.PluginID != metadata.ID);
             }
         }
 
@@ -203,7 +179,7 @@ namespace Wox.ViewModel
         {
             lock (_resultsUpdateLock)
             {
-                _results.RemoveAll(r => r.RawResult.PluginID == metadata.ID);
+                Results.RemoveAll(r => r.RawResult.PluginID == metadata.ID);
             }
         }
 
@@ -214,7 +190,7 @@ namespace Wox.ViewModel
                 var newResults = new List<ResultViewModel>();
                 newRawResults.ForEach((re) => { newResults.Add(new ResultViewModel(re)); });
                 // todo use async to do new result calculation
-                var resultsCopy = _results.ToList();
+                var resultsCopy = Results.ToList();
                 var oldResults = resultsCopy.Where(r => r.RawResult.PluginID == resultId).ToList();
                 // intersection of A (old results) and B (new newResults)
                 var intersection = oldResults.Intersect(newResults).ToList();
@@ -258,16 +234,16 @@ namespace Wox.ViewModel
                 }
 
                 // update UI in one run, so it can avoid UI flickering
-                _results.Update(resultsCopy);
+                Results.Update(resultsCopy);
 
-                if(this._results.Count > 0)
+                if (Results.Count > 0)
                 {
-                    this.Margin = new Thickness { Top = 8 };
-                    this.SelectedResult = this._results[0];
+                    Margin = new Thickness { Top = 8 };
+                    SelectedResult = Results[0];
                 }
                 else
                 {
-                    this.Margin = new Thickness { Top = 0 };
+                    Margin = new Thickness { Top = 0 };
                 }
             }
         }
@@ -278,10 +254,6 @@ namespace Wox.ViewModel
         public class ResultCollection : ObservableCollection<ResultViewModel>
         {
 
-            public ResultCollection()
-            {
-            }
-
             public void RemoveAll(Predicate<ResultViewModel> predicate)
             {
                 CheckReentrancy();
@@ -289,12 +261,7 @@ namespace Wox.ViewModel
                 List<ResultViewModel> itemsToRemove = Items.Where(x => predicate(x)).ToList();
                 if (itemsToRemove.Count > 0)
                 {
-
-                    itemsToRemove.ForEach(item => {
-
-                        Items.Remove(item);
-
-                    });
+                    itemsToRemove.ForEach(item => { Items.Remove(item); });
 
                     OnPropertyChanged(new PropertyChangedEventArgs("Count"));
                     OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
@@ -347,5 +314,5 @@ namespace Wox.ViewModel
         }
 
     }
-    
+
 }
