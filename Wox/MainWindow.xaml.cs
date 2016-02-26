@@ -16,7 +16,6 @@ using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using Wox.ViewModel;
 using Wox.Plugin;
-using Wox.Extensions;
 
 namespace Wox
 {
@@ -77,7 +76,7 @@ namespace Wox
                 }
                 else if(eve.PropertyName == "IsVisible")
                 {
-                    if (vm.WindowVisibility.IsVisible())
+                    if (vm.MainWindowVisibility.IsVisible())
                     {
                         tbQuery.Focus();
                     }

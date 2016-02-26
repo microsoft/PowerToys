@@ -18,7 +18,7 @@
         Style="{DynamicResource WindowStyle}"
         Icon="Images\app.png"
         AllowsTransparency="True"
-        Visibility="{Binding WindowVisibility}"
+        Visibility="{Binding MainWindowVisibility}"
         PreviewKeyDown="Window_PreviewKeyDown" d:DataContext="{d:DesignInstance vm:MainViewModel, IsDesignTimeCreatable=True}">
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:ResultsViewModel}">

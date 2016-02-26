@@ -18,7 +18,6 @@ using Wox.Helper;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
 using Wox.ViewModel;
-using Wox.Extensions;
 
 namespace Wox
 {
@@ -202,13 +201,13 @@ namespace Wox
         {
             UserSettingStorage.Instance.WindowLeft = MainVM.Left;
             UserSettingStorage.Instance.WindowTop = MainVM.Top;
-            MainVM.WindowVisibility = Visibility.Collapsed;
+            MainVM.MainWindowVisibility = Visibility.Collapsed;
         }
 
         private void ShowWox(bool selectAll = true)
         {
             UserSettingStorage.Instance.IncreaseActivateTimes();
-            MainVM.WindowVisibility = Visibility.Visible;
+            MainVM.MainWindowVisibility = Visibility.Visible;
             MainVM.SelectAllText = true;
         }
 
@@ -278,7 +277,7 @@ namespace Wox
 
         private void ToggleWox()
         {
-            if (MainVM.WindowVisibility.IsNotVisible())
+            if (!MainVM.MainWindowVisibility.IsVisible())
             {
                 ShowWox();
             }

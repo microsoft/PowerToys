@@ -10,11 +10,11 @@ using System.Windows.Input;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Core.UserSettings;
+using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
 using Wox.Storage;
-using Wox.Extensions;
 
 namespace Wox.ViewModel
 {
@@ -33,7 +33,7 @@ namespace Wox.ViewModel
         private Visibility _contextMenuVisibility;
         private Visibility _progressBarVisibility;
         private Visibility _resultListBoxVisibility;
-        private Visibility _windowVisibility;
+        private Visibility _mainWindowVisibility;
 
         private bool _queryHasReturn;
         private Query _lastQuery = new Query();
@@ -181,18 +181,18 @@ namespace Wox.ViewModel
             }
         }
 
-        public Visibility WindowVisibility
+        public Visibility MainWindowVisibility
         {
             get
             {
-                return _windowVisibility;
+                return _mainWindowVisibility;
             }
             set
             {
-                _windowVisibility = value;
-                OnPropertyChanged("WindowVisibility");
+                _mainWindowVisibility = value;
+                OnPropertyChanged("MainWindowVisibility");
 
-                if (value.IsNotVisible() && ContextMenuVisibility.IsVisible())
+                if (!value.IsVisible() && ContextMenuVisibility.IsVisible())
                 {
                     BackToSearchMode();
                 }
@@ -200,21 +200,13 @@ namespace Wox.ViewModel
         }
 
         public ICommand EscCommand { get; set; }
-
         public ICommand SelectNextItemCommand { get; set; }
-
         public ICommand SelectPrevItemCommand { get; set; }
-
         public ICommand CtrlOCommand { get; set; }
-
         public ICommand DisplayNextQueryCommand { get; set; }
-
         public ICommand DisplayPrevQueryCommand { get; set; }
-
         public ICommand SelectNextPageCommand { get; set; }
-
         public ICommand SelectPrevPageCommand { get; set; }
-
         public ICommand StartHelpCommand { get; set; }
         public ICommand ShiftEnterCommand { get; set; }
         public ICommand OpenResultCommand { get; set; }
@@ -234,7 +226,7 @@ namespace Wox.ViewModel
                 }
                 else
                 {
-                    WindowVisibility = Visibility.Collapsed;
+                    MainWindowVisibility = Visibility.Collapsed;
                 }
 
             });
@@ -318,7 +310,7 @@ namespace Wox.ViewModel
             ShiftEnterCommand = new RelayCommand((parameter) =>
             {
 
-                if (ContextMenuVisibility.IsNotVisible() && null != Results.SelectedResult)
+                if (!ContextMenuVisibility.IsVisible() && null != Results.SelectedResult)
                 {
                     ShowContextMenu(Results.SelectedResult.RawResult);
                 }
