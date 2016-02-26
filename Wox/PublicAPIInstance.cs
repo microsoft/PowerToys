@@ -119,12 +119,12 @@ namespace Wox
 
         public void StartLoadingBar()
         {
-            MainVM.IsProgressBarVisible = true;
+            MainVM.ProgressBarVisibility = Visibility.Visible;
         }
 
         public void StopLoadingBar()
         {
-            MainVM.IsProgressBarVisible = false;
+            MainVM.ProgressBarVisibility = Visibility.Collapsed;
         }
 
         public void InstallPlugin(string path)
@@ -193,13 +193,13 @@ namespace Wox
         {
             UserSettingStorage.Instance.WindowLeft = MainVM.Left;
             UserSettingStorage.Instance.WindowTop = MainVM.Top;
-            MainVM.IsVisible = false;
+            MainVM.MainWindowVisibility = Visibility.Collapsed;
         }
 
         private void ShowWox(bool selectAll = true)
         {
             UserSettingStorage.Instance.IncreaseActivateTimes();
-            MainVM.IsVisible = true;
+            MainVM.MainWindowVisibility = Visibility.Visible;
             MainVM.SelectAllText = true;
         }
 
@@ -269,7 +269,7 @@ namespace Wox
 
         private void ToggleWox()
         {
-            if (!MainVM.IsVisible)
+            if (!MainVM.MainWindowVisibility.IsVisible())
             {
                 ShowWox();
             }

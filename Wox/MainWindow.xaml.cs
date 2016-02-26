@@ -75,7 +75,7 @@ namespace Wox
                 }
                 else if(eve.PropertyName == "IsVisible")
                 {
-                    if (vm.IsVisible)
+                    if (vm.MainWindowVisibility.IsVisible())
                     {
                         tbQuery.Focus();
                     }
