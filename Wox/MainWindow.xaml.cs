@@ -58,12 +58,12 @@ namespace Wox
                 {
                     if (vm.SelectAllText)
                     {
-                        tbQuery.SelectAll();
+                        QueryTextBox.SelectAll();
                     }
                 }
                 else if(eve.PropertyName == "CaretIndex")
                 {
-                    tbQuery.CaretIndex = vm.CaretIndex;
+                    QueryTextBox.CaretIndex = vm.CaretIndex;
                 }
                 else if(eve.PropertyName == "Left")
                 {
@@ -73,20 +73,19 @@ namespace Wox
                 {
                     Top = vm.Top;
                 }
-                else if(eve.PropertyName == "IsVisible")
+                else if(eve.PropertyName == "MainWindowVisibility")
                 {
                     if (vm.MainWindowVisibility.IsVisible())
                     {
-                        tbQuery.Focus();
+                        Activate();
+                        QueryTextBox.Focus();
                     }
                 }
             };
 
             vm.Left = GetWindowsLeft();
             vm.Top = GetWindowsTop();
-            Activate();
-            Focus();
-            tbQuery.Focus();
+            vm.MainWindowVisibility = Visibility.Visible;
         }
 
         private double GetWindowsLeft()
@@ -105,7 +104,7 @@ namespace Wox
 
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
             var dipPoint = WindowIntelopHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
-            UserSettingStorage.Instance.WindowTop = (dipPoint.Y - tbQuery.ActualHeight)/4;
+            UserSettingStorage.Instance.WindowTop = (dipPoint.Y - QueryTextBox.ActualHeight)/4;
             return UserSettingStorage.Instance.WindowTop;
         }
 
