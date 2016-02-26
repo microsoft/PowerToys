@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,8 +22,6 @@ namespace Wox.ViewModel
         private string _queryText;
 
         private bool _isProgressBarTooltipVisible;
-        private bool _selectAllText;
-        private int _caretIndex;
         private double _left;
         private double _top;
 
@@ -68,34 +67,7 @@ namespace Wox.ViewModel
             {
                 _queryText = value;
                 OnPropertyChanged("QueryText");
-
                 HandleQueryTextUpdated();
-            }
-        }
-
-        public bool SelectAllText
-        {
-            get
-            {
-                return _selectAllText;
-            }
-            set
-            {
-                _selectAllText = value;
-                OnPropertyChanged("SelectAllText");
-            }
-        }
-
-        public int CaretIndex
-        {
-            get
-            {
-                return _caretIndex;
-            }
-            set
-            {
-                _caretIndex = value;
-                OnPropertyChanged("CaretIndex");
             }
         }
 
@@ -187,6 +159,7 @@ namespace Wox.ViewModel
             {
                 _mainWindowVisibility = value;
                 OnPropertyChanged("MainWindowVisibility");
+                MainWindowVisibilityChanged?.Invoke(this, new EventArgs());
 
                 if (!value.IsVisible() && ContextMenuVisibility.IsVisible())
                 {
@@ -225,7 +198,7 @@ namespace Wox.ViewModel
                 }
             });
 
-            SelectNextItemCommand = new RelayCommand(o =>
+            SelectNextItemCommand = new RelayCommand(_ =>
             {
                 if (ContextMenuVisibility.IsVisible())
                 {
@@ -390,7 +363,11 @@ namespace Wox.ViewModel
 
         private void HandleQueryTextUpdated()
         {
-            if (_ignoreTextChange) { _ignoreTextChange = false; return; }
+            if (_ignoreTextChange)
+            {
+                _ignoreTextChange = false;
+                return;
+            }
 
             IsProgressBarTooltipVisible = false;
             if (ContextMenuVisibility.IsVisible())
@@ -475,15 +452,6 @@ namespace Wox.ViewModel
                     }
                 };
                 action.Invoke();
-
-                //Application.Current.Dispatcher.InvokeAsync(async () =>
-                //{
-                //    await Task.Delay(150);
-                //    if (!string.IsNullOrEmpty(query.RawQuery) && query.RawQuery == _lastQuery.RawQuery && !_queryHasReturn)
-                //    {
-                //        StartProgress();
-                //    }
-                //});
                 PluginManager.QueryForAllPlugins(query);
             }
 
@@ -507,7 +475,7 @@ namespace Wox.ViewModel
             QueryText = _textBeforeEnterContextMenuMode;
             ContextMenuVisibility = Visibility.Collapsed;
             ResultListBoxVisibility = Visibility.Visible;
-            CaretIndex = QueryText.Length;
+            OnCursorMovedToEnd();
         }
 
         private void DisplayQueryHistory(HistoryItem history)
@@ -517,7 +485,7 @@ namespace Wox.ViewModel
                 var historyMetadata = QueryHistoryStorage.MetaData;
 
                 QueryText = history.Query;
-                SelectAllText = true;
+                OnTextBoxSelected();
 
                 var executeQueryHistoryTitle = InternationalizationManager.Instance.GetTranslation("executeQuery");
                 var lastExecuteTime = InternationalizationManager.Instance.GetTranslation("lastExecuteTime");
@@ -531,10 +499,8 @@ namespace Wox.ViewModel
                         IcoPath = "Images\\history.png",
                         PluginDirectory = WoxDirectroy.Executable,
                         Action = _ =>{
-
                             QueryText = history.Query;
-                            SelectAllText = true;
-
+                            OnTextBoxSelected();
                             return false;
                         }
                     }
@@ -577,6 +543,19 @@ namespace Wox.ViewModel
         #endregion
 
         public event EventHandler<ListeningKeyPressedEventArgs> ListeningKeyPressed;
+        public event EventHandler MainWindowVisibilityChanged;
+
+        public event EventHandler CursorMovedToEnd;
+        public void OnCursorMovedToEnd()
+        {
+            CursorMovedToEnd?.Invoke(this, new EventArgs());
+        }
+
+        public event EventHandler TextBoxSelected;
+        public void OnTextBoxSelected()
+        {
+            TextBoxSelected?.Invoke(this, new EventArgs());
+        }
 
     }
 

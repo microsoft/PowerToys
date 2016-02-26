@@ -21,20 +21,18 @@ namespace Wox
     public partial class MainWindow
     {
 
-        #region Properties
+        #region Private Fields
 
-        private readonly Storyboard progressBarStoryboard = new Storyboard();            
+        private readonly Storyboard _progressBarStoryboard = new Storyboard();
 
         #endregion
-        
+
         public MainWindow()
         {
             InitializeComponent();
-            
-            Closing += MainWindow_Closing;
         }
 
-        void MainWindow_Closing(object sender, CancelEventArgs e)
+        private void OnClosing(object sender, CancelEventArgs e)
         {
             UserSettingStorage.Instance.WindowLeft = Left;
             UserSettingStorage.Instance.WindowTop = Top;
@@ -42,44 +40,29 @@ namespace Wox
             e.Cancel = true;
         }
 
-        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        private void OnLoaded(object sender, RoutedEventArgs _)
         {
+            CheckUpdate();
+
             ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
             InternationalizationManager.Instance.ChangeLanguage(UserSettingStorage.Instance.Language);
 
             InitProgressbarAnimation();
             WindowIntelopHelper.DisableControlBox(this);
-            CheckUpdate();
 
-            var vm = DataContext as MainViewModel;
-            vm.PropertyChanged += (o, eve) =>
+            var vm = (MainViewModel)DataContext;
+            vm.TextBoxSelected += (o, e) => QueryTextBox.SelectAll();
+            vm.CursorMovedToEnd += (o, e) =>
             {
-                if(eve.PropertyName == "SelectAllText")
+                QueryTextBox.Focus();
+                QueryTextBox.CaretIndex = QueryTextBox.Text.Length;
+            };
+            vm.MainWindowVisibilityChanged += (o, e) =>
+            {
+                if (vm.MainWindowVisibility.IsVisible())
                 {
-                    if (vm.SelectAllText)
-                    {
-                        QueryTextBox.SelectAll();
-                    }
-                }
-                else if(eve.PropertyName == "CaretIndex")
-                {
-                    QueryTextBox.CaretIndex = vm.CaretIndex;
-                }
-                else if(eve.PropertyName == "Left")
-                {
-                    Left = vm.Left;
-                }
-                else if(eve.PropertyName == "Top")
-                {
-                    Top = vm.Top;
-                }
-                else if(eve.PropertyName == "MainWindowVisibility")
-                {
-                    if (vm.MainWindowVisibility.IsVisible())
-                    {
-                        Activate();
-                        QueryTextBox.Focus();
-                    }
+                    Activate();
+                    QueryTextBox.Focus();
                 }
             };
 
@@ -94,7 +77,7 @@ namespace Wox
 
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
             var dipPoint = WindowIntelopHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
-            UserSettingStorage.Instance.WindowLeft = (dipPoint.X - ActualWidth)/2;
+            UserSettingStorage.Instance.WindowLeft = (dipPoint.X - ActualWidth) / 2;
             return UserSettingStorage.Instance.WindowLeft;
         }
 
@@ -104,7 +87,7 @@ namespace Wox
 
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
             var dipPoint = WindowIntelopHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
-            UserSettingStorage.Instance.WindowTop = (dipPoint.Y - QueryTextBox.ActualHeight)/4;
+            UserSettingStorage.Instance.WindowTop = (dipPoint.Y - QueryTextBox.ActualHeight) / 4;
             return UserSettingStorage.Instance.WindowTop;
         }
 
@@ -135,19 +118,19 @@ namespace Wox
             var da1 = new DoubleAnimation(progressBar.X1, ActualWidth, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
             Storyboard.SetTargetProperty(da, new PropertyPath("(Line.X2)"));
             Storyboard.SetTargetProperty(da1, new PropertyPath("(Line.X1)"));
-            progressBarStoryboard.Children.Add(da);
-            progressBarStoryboard.Children.Add(da1);
-            progressBarStoryboard.RepeatBehavior = RepeatBehavior.Forever;
+            _progressBarStoryboard.Children.Add(da);
+            _progressBarStoryboard.Children.Add(da1);
+            _progressBarStoryboard.RepeatBehavior = RepeatBehavior.Forever;
             progressBar.Visibility = Visibility.Hidden;
-            progressBar.BeginStoryboard(progressBarStoryboard);
+            progressBar.BeginStoryboard(_progressBarStoryboard);
         }
 
-        private void Border_OnMouseDown(object sender, MouseButtonEventArgs e)
+        private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left) DragMove();
         }
 
-        private void MainWindow_OnDeactivated(object sender, EventArgs e)
+        private void OnDeactivated(object sender, EventArgs e)
         {
             if (UserSettingStorage.Instance.HideWhenDeactive)
             {
@@ -155,7 +138,7 @@ namespace Wox
             }
         }
 
-        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             var vm = DataContext as MainViewModel;
 
@@ -317,7 +300,7 @@ namespace Wox
             }
         }
 
-        private void MainWindow_OnDrop(object sender, DragEventArgs e)
+        private void OnDrop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
@@ -335,7 +318,7 @@ namespace Wox
             e.Handled = false;
         }
 
-        private void TbQuery_OnPreviewDragOver(object sender, DragEventArgs e)
+        private void OnPreviewDragOver(object sender, DragEventArgs e)
         {
             e.Handled = true;
         }

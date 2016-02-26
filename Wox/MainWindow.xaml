@@ -1,34 +1,41 @@
 ﻿<Window x:Class="Wox.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:wox="clr-namespace:Wox"
-        xmlns:vm="clr-namespace:Wox.ViewModel" xmlns:converters="clr-namespace:Wox.Converters"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wox="clr-namespace:Wox"
+        xmlns:vm="clr-namespace:Wox.ViewModel"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         Title="Wox"
         Topmost="True"
-        Loaded="MainWindow_OnLoaded"
+        Loaded="OnLoaded"
+        Closing="OnClosing"
+        PreviewKeyDown="OnPreviewKeyDown"
+        Drop="OnDrop"
+        Deactivated="OnDeactivated"
         SizeToContent="Height"
         ResizeMode="NoResize"
-        Deactivated="MainWindow_OnDeactivated"
         WindowStyle="None"
         WindowStartupLocation="Manual"
-        Drop="MainWindow_OnDrop"
         AllowDrop="True"
         ShowInTaskbar="False"
         Style="{DynamicResource WindowStyle}"
         Icon="Images\app.png"
         AllowsTransparency="True"
-        Visibility="{Binding MainWindowVisibility}"
-        PreviewKeyDown="Window_PreviewKeyDown" d:DataContext="{d:DesignInstance vm:MainViewModel, IsDesignTimeCreatable=True}">
+        Left="{Binding Left, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+        Top="{Binding Top, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+        Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+        d:DataContext="{d:DesignInstance vm:MainViewModel, IsDesignTimeCreatable=True}">
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:ResultsViewModel}">
             <wox:ResultListBox></wox:ResultListBox>
         </DataTemplate>
     </Window.Resources>
-    <Border Style="{DynamicResource WindowBorderStyle}" MouseDown="Border_OnMouseDown">
+    <Border Style="{DynamicResource WindowBorderStyle}" MouseDown="OnMouseDown">
         <StackPanel Orientation="Vertical">
-            <TextBox Style="{DynamicResource QueryBoxStyle}" Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                     PreviewDragOver="TbQuery_OnPreviewDragOver" AllowDrop="True"
+            <TextBox Style="{DynamicResource QueryBoxStyle}"
+                     Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     PreviewDragOver="OnPreviewDragOver"
+                     AllowDrop="True"
                      x:Name="QueryTextBox" />
             <Line Style="{DynamicResource PendingLineStyle}" x:Name="progressBar" Y1="0" Y2="0" X2="100" Height="2" StrokeThickness="1"
                   Visibility="{Binding ProgressBarVisibility}">

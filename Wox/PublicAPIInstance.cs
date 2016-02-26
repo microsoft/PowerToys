@@ -63,14 +63,13 @@ namespace Wox
         public void ChangeQuery(string query, bool requery = false)
         {
             MainVM.QueryText = query;
-            MainVM.CaretIndex = MainVM.QueryText.Length;
-
+            MainVM.OnCursorMovedToEnd();
         }
 
         public void ChangeQueryText(string query, bool selectAll = false)
         {
             MainVM.QueryText = query;
-            MainVM.SelectAllText = true;
+            MainVM.OnTextBoxSelected();
         }
 
         public void CloseApp()
@@ -200,7 +199,7 @@ namespace Wox
         {
             UserSettingStorage.Instance.IncreaseActivateTimes();
             MainVM.MainWindowVisibility = Visibility.Visible;
-            MainVM.SelectAllText = true;
+            MainVM.OnTextBoxSelected();
         }
 
         public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
