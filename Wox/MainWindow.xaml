@@ -18,13 +18,12 @@
         Style="{DynamicResource WindowStyle}"
         Icon="Images\app.png"
         AllowsTransparency="True"
-        Visibility="{Binding IsVisible,Converter={converters:VisibilityConverter}}"
+        Visibility="{Binding WindowVisibility}"
         PreviewKeyDown="Window_PreviewKeyDown" d:DataContext="{d:DesignInstance vm:MainViewModel, IsDesignTimeCreatable=True}">
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:ResultsViewModel}">
             <wox:ResultListBox></wox:ResultListBox>
         </DataTemplate>
-        <converters:VisibilityConverter x:Key="VisibilityConverter" />
     </Window.Resources>
     <Border Style="{DynamicResource WindowBorderStyle}" MouseDown="Border_OnMouseDown">
         <StackPanel Orientation="Vertical">
@@ -32,14 +31,14 @@
                      PreviewDragOver="TbQuery_OnPreviewDragOver" AllowDrop="True"
                      x:Name="tbQuery" />
             <Line Style="{DynamicResource PendingLineStyle}" x:Name="progressBar" Y1="0" Y2="0" X2="100" Height="2" StrokeThickness="1"
-                  Visibility="{Binding IsProgressBarVisible,Converter={StaticResource VisibilityConverter}}">
+                  Visibility="{Binding ProgressBarVisibility}">
                 <Line.ToolTip>
                     <ToolTip IsOpen="{Binding IsProgressBarTooltipVisible}"></ToolTip>
                 </Line.ToolTip>
             </Line>
-            <ContentControl Content="{Binding Results}" Visibility="{Binding IsResultListBoxVisible,Converter={StaticResource VisibilityConverter}}">
+            <ContentControl Content="{Binding Results}" Visibility="{Binding ResultListBoxVisibility}">
             </ContentControl>
-            <ContentControl Content="{Binding ContextMenu}" Visibility="{Binding IsContextMenuVisible,Converter={StaticResource VisibilityConverter}}">
+            <ContentControl Content="{Binding ContextMenu}" Visibility="{Binding ContextMenuVisibility}">
             </ContentControl>
         </StackPanel>
     </Border>
