@@ -51,7 +51,7 @@ namespace Wox.ViewModel
 
                 }
 
-                OnPropertyChanged("SelectedResult");
+                OnPropertyChanged();
 
             }
         }
@@ -65,7 +65,7 @@ namespace Wox.ViewModel
             set
             {
                 _margin = value;
-                OnPropertyChanged("Margin");
+                OnPropertyChanged();
             }
         }
 

@@ -77,7 +77,7 @@ namespace Wox.ViewModel
             set
             {
                 _isSelected = value;
-                OnPropertyChanged("IsSelected");
+                OnPropertyChanged();
             }
         }
 
@@ -105,7 +105,7 @@ namespace Wox.ViewModel
                     Action = _ =>
                     {
                         TopMostRecordStorage.Instance.Remove(result);
-                        App.API.ShowMsg("Succeed", "", "");
+                        App.API.ShowMsg("Succeed");
                         return false;
                     }
                 };
@@ -118,7 +118,7 @@ namespace Wox.ViewModel
                     Action = _ =>
                     {
                         TopMostRecordStorage.Instance.AddOrUpdate(result);
-                        App.API.ShowMsg("Succeed", "", "");
+                        App.API.ShowMsg("Succeed");
                         return false;
                     }
                 };

@@ -66,7 +66,7 @@ namespace Wox.ViewModel
             set
             {
                 _queryText = value;
-                OnPropertyChanged("QueryText");
+                OnPropertyChanged();
                 HandleQueryTextUpdated();
             }
         }
@@ -80,7 +80,7 @@ namespace Wox.ViewModel
             set
             {
                 _isProgressBarTooltipVisible = value;
-                OnPropertyChanged("IsProgressBarTooltipVisible");
+                OnPropertyChanged();
             }
         }
 
@@ -93,7 +93,7 @@ namespace Wox.ViewModel
             set
             {
                 _left = value;
-                OnPropertyChanged("Left");
+                OnPropertyChanged();
             }
         }
 
@@ -106,7 +106,7 @@ namespace Wox.ViewModel
             set
             {
                 _top = value;
-                OnPropertyChanged("Top");
+                OnPropertyChanged();
             }
         }
 
@@ -119,7 +119,7 @@ namespace Wox.ViewModel
             set
             {
                 _contextMenuVisibility = value;
-                OnPropertyChanged("ContextMenuVisibility");
+                OnPropertyChanged();
             }
         }
 
@@ -132,7 +132,7 @@ namespace Wox.ViewModel
             set
             {
                 _progressBarVisibility = value;
-                OnPropertyChanged("ProgressBarVisibility");
+                OnPropertyChanged();
             }
         }
 
@@ -145,7 +145,7 @@ namespace Wox.ViewModel
             set
             {
                 _resultListBoxVisibility = value;
-                OnPropertyChanged("ResultListBoxVisibility");
+                OnPropertyChanged();
             }
         }
 
@@ -158,7 +158,7 @@ namespace Wox.ViewModel
             set
             {
                 _mainWindowVisibility = value;
-                OnPropertyChanged("MainWindowVisibility");
+                OnPropertyChanged();
                 MainWindowVisibilityChanged?.Invoke(this, new EventArgs());
 
                 if (!value.IsVisible() && ContextMenuVisibility.IsVisible())
@@ -335,7 +335,7 @@ namespace Wox.ViewModel
                     Action = _ =>
                     {
                         TopMostRecordStorage.Instance.Remove(result);
-                        App.API.ShowMsg("Succeed", "", "");
+                        App.API.ShowMsg("Succeed");
                         return false;
                     }
                 };
@@ -348,7 +348,7 @@ namespace Wox.ViewModel
                     Action = _ =>
                     {
                         TopMostRecordStorage.Instance.AddOrUpdate(result);
-                        App.API.ShowMsg("Succeed", "", "");
+                        App.API.ShowMsg("Succeed");
                         return false;
                     }
                 };
