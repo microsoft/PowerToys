@@ -22,7 +22,6 @@ namespace Wox.ViewModel
     {
         #region Private Fields
 
-        private bool _isProgressBarTooltipVisible;
         private double _left;
         private double _top;
 
