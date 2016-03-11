@@ -22,7 +22,7 @@
     </Window.Resources>
     <TabControl Height="auto" x:Name="settingTab" SelectionChanged="settingTab_SelectionChanged">
         <TabItem Header="{DynamicResource general}">
-            <StackPanel Orientation="Vertical" Margin="10">
+            <StackPanel Orientation="Vertical">
                 <CheckBox x:Name="cbStartWithWindows"  Unchecked="CbStartWithWindows_OnUnchecked" Checked="CbStartWithWindows_OnChecked" Margin="10">
                     <TextBlock Text="{DynamicResource startWoxOnSystemStartup}" ></TextBlock>
                 </CheckBox>
@@ -55,8 +55,8 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <DockPanel Grid.Column="0" >
-                    <TextBlock DockPanel.Dock="Top" Margin="6" HorizontalAlignment="Left" Cursor="Hand" MouseUp="tbMorePlugins_MouseUp" x:Name="tbMorePlugins" Foreground="Blue" Text="{DynamicResource browserMorePlugins}"></TextBlock>
-                    <ListBox x:Name="lbPlugins" Margin="0" SelectionChanged="lbPlugins_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" >
+                    <TextBlock DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Left" Cursor="Hand" MouseUp="tbMorePlugins_MouseUp" x:Name="tbMorePlugins" Foreground="Blue" Text="{DynamicResource browserMorePlugins}"></TextBlock>
+                    <ListBox x:Name="lbPlugins" Margin="10, 0, 10, 10" SelectionChanged="lbPlugins_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" >
                         <ListBox.Resources>
                             <DataTemplate DataType="{x:Type woxPlugin:PluginPair}">
                                 <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
@@ -129,8 +129,8 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <DockPanel Grid.Column="0" >
-                    <TextBlock DockPanel.Dock="Top" Margin="6" HorizontalAlignment="Left" Cursor="Hand" MouseUp="tbMoreThemes_MouseUp" x:Name="tbMoreThemes" Foreground="Blue" Text="{DynamicResource browserMoreThemes}"></TextBlock>
-                    <ListBox x:Name="themeComboBox" Margin="0" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="180"/>
+                    <TextBlock DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Left" Cursor="Hand" MouseUp="tbMoreThemes_MouseUp" x:Name="tbMoreThemes" Foreground="Blue" Text="{DynamicResource browserMoreThemes}"></TextBlock>
+                    <ListBox x:Name="themeComboBox" Margin="10, 0, 10, 10" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="180"/>
                 </DockPanel>
                 <Grid Margin="0" Grid.Column="1">
                     <Grid.RowDefinitions>
@@ -294,25 +294,30 @@
         </TabItem>
         <TabItem Header="{DynamicResource about}">
             <Grid>
+                <Grid.Resources>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="Margin" Value="10, 10, 0, 0" />
+                    </Style>
+                </Grid.Resources>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="80"></ColumnDefinition>
                     <ColumnDefinition></ColumnDefinition>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="30"></RowDefinition>
-                    <RowDefinition Height="30"></RowDefinition>
-                    <RowDefinition Height="30"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Column="0" Grid.Row="0" Margin="6" Text="{DynamicResource website}"></TextBlock>
-                <TextBlock Grid.Column="1" Grid.Row="0" Margin="6" HorizontalAlignment="Left" Cursor="Hand" MouseUp="tbWebsite_MouseUp" x:Name="tbWebsite" Foreground="Blue" Text="http://www.getwox.com"></TextBlock>
+                <TextBlock Grid.Column="0" Grid.Row="0" Text="{DynamicResource website}"></TextBlock>
+                <TextBlock Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left" Cursor="Hand" MouseUp="tbWebsite_MouseUp" x:Name="tbWebsite" Foreground="Blue" Text="http://www.getwox.com"></TextBlock>
 
-                <TextBlock Grid.Column="0" Grid.Row="1" Margin="6" Text="{DynamicResource version}"></TextBlock>
+                <TextBlock Grid.Column="0" Grid.Row="1" Text="{DynamicResource version}"></TextBlock>
                 <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal">
-                    <TextBlock  Margin="6" HorizontalAlignment="Left" x:Name="tbVersion" Text="1.0.0"></TextBlock>
+                    <TextBlock HorizontalAlignment="Left" x:Name="tbVersion" Text="1.0.0"></TextBlock>
                 </StackPanel>
 
-                <TextBlock x:Name="tbActivatedTimes" Grid.Row="2" Margin="6" Grid.ColumnSpan="2" Text="{DynamicResource about_activate_times}"></TextBlock>
+                <TextBlock x:Name="tbActivatedTimes" Grid.Row="2" Grid.ColumnSpan="2" Text="{DynamicResource about_activate_times}"></TextBlock>
             </Grid>
         </TabItem>
     </TabControl>
