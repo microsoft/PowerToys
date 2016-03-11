@@ -287,10 +287,10 @@
         </TabItem>
         <TabItem Header="{DynamicResource proxy}" Height="22" VerticalAlignment="Top">
             <StackPanel>
-                <CheckBox x:Name="cbEnableProxy" Margin="10">
-                    <TextBlock Text="{DynamicResource enableProxy}" />
+                <CheckBox x:Name="ToggleProxy" Margin="10" Checked="ProxyToggled" Unchecked="ProxyToggled">
+                    <TextBlock Text="{DynamicResource enableProxy}"/>
                 </CheckBox>
-                <Grid Margin="10">
+                <Grid Margin="10" IsEnabled="{Binding IsChecked, ElementName=ToggleProxy}">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition />
@@ -326,11 +326,9 @@
                         <PasswordBox Width="200" HorizontalAlignment="Left" x:Name="tbProxyPassword" />
                     </Border>
                 </Grid>
-                <StackPanel Orientation="Horizontal">
-                    <Button x:Name="btnTestProxy" Width="80" HorizontalAlignment="Left" Margin="10"
-                            Click="btnTestProxy_Click" Content="{DynamicResource testProxy}" />
-                    <Button x:Name="btnSaveProxy" Width="80" HorizontalAlignment="Left" Margin="10"
-                            Click="btnSaveProxy_Click" Content="{DynamicResource save}" />
+                <StackPanel Orientation="Horizontal" IsEnabled="{Binding IsChecked, ElementName=ToggleProxy}">
+                    <Button x:Name="btnTestProxy" Width="80" HorizontalAlignment="Left" Margin="10" Click="btnTestProxy_Click" Content="{DynamicResource testProxy}"/>
+                    <Button x:Name="btnSaveProxy" Width="80" HorizontalAlignment="Left" Margin="10" Click="btnSaveProxy_Click" Content="{DynamicResource save}"/>
                 </StackPanel>
             </StackPanel>
         </TabItem>
