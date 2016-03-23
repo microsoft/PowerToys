@@ -562,11 +562,7 @@ namespace Wox.ViewModel
     public class ListeningKeyPressedEventArgs : EventArgs
     {
 
-        public KeyEventArgs KeyEventArgs
-        {
-            get;
-            private set;
-        }
+        public KeyEventArgs KeyEventArgs { get; private set; }
 
         public ListeningKeyPressedEventArgs(KeyEventArgs keyEventArgs)
         {
