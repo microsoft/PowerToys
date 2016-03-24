@@ -1,0 +1,38 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <!--Program setting-->
+    <system:String x:Key="wox_plugin_program_delete">Löschen</system:String>
+    <system:String x:Key="wox_plugin_program_edit">Bearbeiten</system:String>
+    <system:String x:Key="wox_plugin_program_add">Hinzufügen</system:String>
+    <system:String x:Key="wox_plugin_program_location">Speicherort</system:String>
+    <system:String x:Key="wox_plugin_program_suffixes">Indexiere Dateiendungen</system:String>
+    <system:String x:Key="wox_plugin_program_reindex">erneut Indexieren</system:String>
+    <system:String x:Key="wox_plugin_program_indexing">Indexieren</system:String>
+    <system:String x:Key="wox_plugin_program_index_start">Indexierungs Startmenü</system:String>
+    <system:String x:Key="wox_plugin_program_index_registry">Indexierungsspeicher</system:String>
+    <system:String x:Key="wox_plugin_program_suffixes_header">Endungen</system:String>
+    <system:String x:Key="wox_plugin_program_max_depth_header">Maximale Tiefe</system:String>
+
+    <system:String x:Key="wox_plugin_program_directory">Verzeichnis:</system:String>
+    <system:String x:Key="wox_plugin_program_browse">Durchsuchen</system:String>
+    <system:String x:Key="wox_plugin_program_file_suffixes">Dateiendungen:</system:String>
+    <system:String x:Key="wox_plugin_program_max_search_depth">Maximale Suchtiefe (-1 ist unlimitiert):</system:String>
+
+    <system:String x:Key="wox_plugin_program_pls_select_program_source">Bitte wähle eine Programmquelle</system:String>
+    <system:String x:Key="wox_plugin_program_delete_program_source">Willst du wirklich {0} löschen?</system:String>
+
+    <system:String x:Key="wox_plugin_program_update">Aktualisieren</system:String>
+    <system:String x:Key="wox_plugin_program_only_index_tip">Wox indexiert nur Datien mit folgenden Endungen:</system:String>
+    <system:String x:Key="wox_plugin_program_split_by_tip">(Jede Endung muss durch ein ; getrennt werden)</system:String>
+    <system:String x:Key="wox_plugin_program_update_file_suffixes">Dateiendungen wurden erfolgreich aktualisiert</system:String>
+    <system:String x:Key="wox_plugin_program_suffixes_cannot_empty">Dateiendungen dürfen nicht leer sein</system:String>
+
+    <system:String x:Key="wox_plugin_program_run_as_administrator">Als Administrator ausführen</system:String>
+    <system:String x:Key="wox_plugin_program_open_containing_folder">Enthaltenden Ordner öffnen</system:String>
+
+    <system:String x:Key="wox_plugin_program_plugin_name">Programm</system:String>
+    <system:String x:Key="wox_plugin_program_plugin_description">Suche Programme mit Wox</system:String>
+
+</ResourceDictionary>
