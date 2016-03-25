@@ -8,9 +8,9 @@ using System.Threading;
 using System.Windows;
 using Wox.CommandArgs;
 using Wox.Core.Plugin;
+using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure;
-using Wox.Plugin;
 using Wox.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
@@ -21,7 +21,7 @@ namespace Wox
         private const string Unique = "Wox_Unique_Application_Mutex";
         public static MainWindow Window { get; private set; }
 
-        public static IPublicAPI API { get; private set; }
+        public static PublicAPIInstance API { get; private set; }
 
         [STAThread]
         public static void Main()
@@ -50,11 +50,13 @@ namespace Wox
                 MainViewModel mainVM = new MainViewModel();
                 API = new PublicAPIInstance(mainVM);
                 Window = new MainWindow {DataContext = mainVM};
-
                 NotifyIconManager notifyIconManager = new NotifyIconManager(API);
-
                 PluginManager.Init(API);
                 CommandArgsFactory.Execute(e.Args.ToList());
+
+                // happlebao todo: the whole setting releated initialization should be put into seperate class/method
+                API.SetHotkey(UserSettingStorage.Instance.Hotkey, API.OnHotkey);
+                API.SetCustomPluginHotkey();
             });
 
         }

@@ -156,8 +156,8 @@ namespace Wox.Core.Plugin
             foreach (var plugin in pluginPairs)
             {
                 var customizedPluginConfig = UserSettingStorage.Instance.
-                    CustomizedPluginConfigs.FirstOrDefault(o => o.ID == plugin.Metadata.ID);
-                if (customizedPluginConfig != null && customizedPluginConfig.Disabled) continue;
+                    CustomizedPluginConfigs[plugin.Metadata.ID];
+                if (customizedPluginConfig.Disabled) continue;
                 if (IsInstantQueryPlugin(plugin))
                 {
                     Stopwatch.Normal($"Instant QueryForPlugin for {plugin.Metadata.Name}", () =>

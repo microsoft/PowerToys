@@ -1,110 +1,80 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using Newtonsoft.Json;
+using Wox.Core.Plugin;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
+using Newtonsoft.Json;
 
 namespace Wox.Core.UserSettings
 {
     public class UserSettingStorage : JsonStrorage<UserSettingStorage>
     {
-        [JsonProperty]
         public bool DontPromptUpdateMsg { get; set; }
 
-        [JsonProperty]
         public int ActivateTimes { get; set; }
 
-
-        [JsonProperty]
         public bool EnableUpdateLog { get; set; }
 
-        [JsonProperty]
         public string Hotkey { get; set; }
 
-        [JsonProperty]
         public string Language { get; set; }
 
-        [JsonProperty]
         public string Theme { get; set; }
 
-        [JsonProperty]
         public string QueryBoxFont { get; set; }
 
-        [JsonProperty]
         public string QueryBoxFontStyle { get; set; }
 
-        [JsonProperty]
         public string QueryBoxFontWeight { get; set; }
 
-        [JsonProperty]
         public string QueryBoxFontStretch { get; set; }
 
-        [JsonProperty]
         public string ResultFont { get; set; }
 
-        [JsonProperty]
         public string ResultFontStyle { get; set; }
 
-        [JsonProperty]
         public string ResultFontWeight { get; set; }
 
-        [JsonProperty]
         public string ResultFontStretch { get; set; }
 
-        [JsonProperty]
         public double WindowLeft { get; set; }
 
-        [JsonProperty]
         public double WindowTop { get; set; }
 
-        public List<CustomizedPluginConfig> CustomizedPluginConfigs { get; set; }
+        // Order defaults to 0 or -1, so 1 will let this property appear last
+        [JsonProperty(Order = 1)]
+        public Dictionary<string, CustomizedPluginConfig> CustomizedPluginConfigs { get; set; }
 
-        [JsonProperty]
         public List<CustomPluginHotkey> CustomPluginHotkeys { get; set; }
 
-        [JsonProperty]
         public bool StartWoxOnSystemStartup { get; set; }
 
         [Obsolete]
-        [JsonProperty]
         public double Opacity { get; set; }
 
         [Obsolete]
-        [JsonProperty]
         public OpacityMode OpacityMode { get; set; }
 
-        [JsonProperty]
         public bool LeaveCmdOpen { get; set; }
 
-        [JsonProperty]
         public bool HideWhenDeactive { get; set; }
 
-        [JsonProperty]
         public bool RememberLastLaunchLocation { get; set; }
 
-        [JsonProperty]
         public bool IgnoreHotkeysOnFullscreen { get; set; }
 
-        [JsonProperty]
         public string ProxyServer { get; set; }
 
-        [JsonProperty]
         public bool ProxyEnabled { get; set; }
 
-        [JsonProperty]
         public int ProxyPort { get; set; }
 
-        [JsonProperty]
         public string ProxyUserName { get; set; }
 
-        [JsonProperty]
         public string ProxyPassword { get; set; }
 
-        [JsonProperty]
         public int MaxResultsToShow { get; set; }
 
         protected override string FileName { get; } = "Settings";
@@ -123,7 +93,7 @@ namespace Wox.Core.UserSettings
             DontPromptUpdateMsg = false;
             Theme = "Dark";
             Language = "en";
-            CustomizedPluginConfigs = new List<CustomizedPluginConfig>();
+            CustomizedPluginConfigs = new Dictionary<string, CustomizedPluginConfig>();
             Hotkey = "Alt + Space";
             QueryBoxFont = FontFamily.GenericSansSerif.Name;
             ResultFont = FontFamily.GenericSansSerif.Name;
@@ -139,10 +109,38 @@ namespace Wox.Core.UserSettings
 
         protected override void OnAfterLoad(UserSettingStorage storage)
         {
+            var metadatas = PluginManager.AllPlugins.Select(p => p.Metadata);
             if (storage.CustomizedPluginConfigs == null)
             {
-                storage.CustomizedPluginConfigs = new List<CustomizedPluginConfig>();
+                var configs = new Dictionary<string, CustomizedPluginConfig>();
+                foreach (var metadata in metadatas)
+                {
+                    addPluginMetadata(configs, metadata);
+                }
+                storage.CustomizedPluginConfigs = configs;
             }
+            else
+            {
+                var configs = storage.CustomizedPluginConfigs;
+                foreach (var metadata in metadatas)
+                {
+                    if (configs.ContainsKey(metadata.ID))
+                    {
+                        var config = configs[metadata.ID];
+                        if (config.ActionKeywords?.Count > 0)
+                        {
+                            metadata.ActionKeywords = config.ActionKeywords;
+                            metadata.ActionKeyword = config.ActionKeywords[0];
+                        }
+                    }
+                    else
+                    {
+                        addPluginMetadata(configs, metadata);
+                    }
+                }
+            }
+
+
             if (storage.QueryBoxFont == null)
             {
                 storage.QueryBoxFont = FontFamily.GenericSansSerif.Name;
@@ -157,23 +155,22 @@ namespace Wox.Core.UserSettings
             }
         }
 
+
+        private void addPluginMetadata(Dictionary<string, CustomizedPluginConfig> configs, PluginMetadata metadata)
+        {
+            configs[metadata.ID] = new CustomizedPluginConfig
+            {
+                ID = metadata.ID,
+                Name = metadata.Name,
+                ActionKeywords = metadata.ActionKeywords,
+                Disabled = false
+            };
+        }
+
         public void UpdateActionKeyword(PluginMetadata metadata)
         {
-            var customizedPluginConfig = CustomizedPluginConfigs.FirstOrDefault(o => o.ID == metadata.ID);
-            if (customizedPluginConfig == null)
-            {
-                CustomizedPluginConfigs.Add(new CustomizedPluginConfig
-                {
-                    Disabled = false,
-                    ID = metadata.ID,
-                    Name = metadata.Name,
-                    ActionKeywords = metadata.ActionKeywords
-                });
-            }
-            else
-            {
-                customizedPluginConfig.ActionKeywords = metadata.ActionKeywords;
-            }
+            var config = CustomizedPluginConfigs[metadata.ID];
+            config.ActionKeywords = metadata.ActionKeywords;
             Save();
         }
     }
