@@ -30,9 +30,6 @@ namespace Wox
             GlobalHotkey.Instance.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
 
-            SetHotkey(UserSettingStorage.Instance.Hotkey, OnHotkey);
-            SetCustomPluginHotkey();
-
             MainVM.ListeningKeyPressed += (o, e) => {
 
                 if(e.KeyEventArgs.Key == Key.Back)
@@ -98,7 +95,7 @@ namespace Wox
             ShowWox();
         }
 
-        public void ShowMsg(string title, string subTitle, string iconPath)
+        public void ShowMsg(string title, string subTitle = "", string iconPath = "")
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -202,7 +199,7 @@ namespace Wox
             MainVM.OnTextBoxSelected();
         }
 
-        public void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
+        internal void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
         {
             var hotkey = new HotkeyModel(hotkeyStr);
             SetHotkey(hotkey, action);
@@ -244,7 +241,7 @@ namespace Wox
             return false;
         }
 
-        private void SetCustomPluginHotkey()
+        internal void SetCustomPluginHotkey()
         {
             if (UserSettingStorage.Instance.CustomPluginHotkeys == null) return;
             foreach (CustomPluginHotkey hotkey in UserSettingStorage.Instance.CustomPluginHotkeys)
@@ -259,7 +256,7 @@ namespace Wox
             }
         }
 
-        private void OnHotkey(object sender, HotkeyEventArgs e)
+        protected internal void OnHotkey(object sender, HotkeyEventArgs e)
         {
             if (ShouldIgnoreHotkeys()) return;
             ToggleWox();

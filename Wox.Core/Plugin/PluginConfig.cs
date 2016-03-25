@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Newtonsoft.Json;
-using Wox.Core.UserSettings;
 using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
@@ -74,7 +72,7 @@ namespace Wox.Core.Plugin
                 metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
                 metadata.PluginDirectory = pluginDirectory;
                 // for plugins which doesn't has ActionKeywords key
-                metadata.ActionKeywords = metadata.ActionKeywords ?? new List<string> {metadata.ActionKeyword};
+                metadata.ActionKeywords = metadata.ActionKeywords ?? new List<string> { metadata.ActionKeyword };
                 // for plugin still use old ActionKeyword
                 metadata.ActionKeyword = metadata.ActionKeywords?[0];
             }
@@ -98,14 +96,6 @@ namespace Wox.Core.Plugin
                 string msg = $"Parse plugin config {configPath} failed: ExecuteFile {metadata.ExecuteFilePath} didn't exist";
                 Log.Error(new WoxException(msg));
                 return null;
-            }
-
-            //replace action keyword if user customized it.
-            var customizedPluginConfig = UserSettingStorage.Instance.CustomizedPluginConfigs.FirstOrDefault(o => o.ID == metadata.ID);
-            if (customizedPluginConfig?.ActionKeywords?.Count > 0)
-            {
-                metadata.ActionKeywords = customizedPluginConfig.ActionKeywords;
-                metadata.ActionKeyword = customizedPluginConfig.ActionKeywords[0];
             }
 
             return metadata;
