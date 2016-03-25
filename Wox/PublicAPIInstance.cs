@@ -187,14 +187,11 @@ namespace Wox
 
         private void HideWox()
         {
-            UserSettingStorage.Instance.WindowLeft = MainVM.Left;
-            UserSettingStorage.Instance.WindowTop = MainVM.Top;
             MainVM.MainWindowVisibility = Visibility.Collapsed;
         }
 
         private void ShowWox(bool selectAll = true)
         {
-            UserSettingStorage.Instance.IncreaseActivateTimes();
             MainVM.MainWindowVisibility = Visibility.Visible;
             MainVM.OnTextBoxSelected();
         }

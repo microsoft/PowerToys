@@ -34,9 +34,11 @@ namespace Wox
 
         private void OnClosing(object sender, CancelEventArgs e)
         {
-            UserSettingStorage.Instance.WindowLeft = Left;
-            UserSettingStorage.Instance.WindowTop = Top;
-            UserSettingStorage.Instance.Save();
+
+                UserSettingStorage.Instance.WindowLeft = Left;
+                UserSettingStorage.Instance.WindowTop = Top;
+                UserSettingStorage.Instance.Save();
+
             e.Cancel = true;
         }
 
@@ -63,6 +65,15 @@ namespace Wox
                 {
                     Activate();
                     QueryTextBox.Focus();
+                    Left = GetWindowsLeft();
+                    Top = GetWindowsTop();
+                    UserSettingStorage.Instance.IncreaseActivateTimes();
+                }
+                else
+                {
+                        UserSettingStorage.Instance.WindowLeft = Left;
+                        UserSettingStorage.Instance.WindowTop = Top;
+                        UserSettingStorage.Instance.Save();
                 }
             };
 
@@ -73,22 +84,30 @@ namespace Wox
 
         private double GetWindowsLeft()
         {
-            if (UserSettingStorage.Instance.RememberLastLaunchLocation) return UserSettingStorage.Instance.WindowLeft;
+            if (UserSettingStorage.Instance.RememberLastLaunchLocation)
+            {
+                return UserSettingStorage.Instance.WindowLeft;
+            }
 
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-            var dipPoint = WindowIntelopHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
-            UserSettingStorage.Instance.WindowLeft = (dipPoint.X - ActualWidth) / 2;
-            return UserSettingStorage.Instance.WindowLeft;
+            var dip1 = WindowIntelopHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
+            var dip2 = WindowIntelopHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
+            var left = (dip2.X - ActualWidth) / 2 + dip1.X;
+            return left;
         }
 
         private double GetWindowsTop()
         {
-            if (UserSettingStorage.Instance.RememberLastLaunchLocation) return UserSettingStorage.Instance.WindowTop;
+            if (UserSettingStorage.Instance.RememberLastLaunchLocation)
+            {
+                return UserSettingStorage.Instance.WindowTop;
+            }
 
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-            var dipPoint = WindowIntelopHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
-            UserSettingStorage.Instance.WindowTop = (dipPoint.Y - QueryTextBox.ActualHeight) / 4;
-            return UserSettingStorage.Instance.WindowTop;
+            var dip1 = WindowIntelopHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
+            var dip2 = WindowIntelopHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
+            var top = (dip2.Y - ActualHeight) / 4 + dip1.Y;
+            return top;
         }
 
         private void CheckUpdate()
