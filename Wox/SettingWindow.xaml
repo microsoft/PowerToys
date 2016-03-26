@@ -1,78 +1,87 @@
 ﻿<Window
-		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:wox="clr-namespace:Wox"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:wox="clr-namespace:Wox"
     x:Class="Wox.SettingWindow"
-		xmlns:woxPlugin="clr-namespace:Wox.Plugin;assembly=Wox.Plugin"
-		xmlns:converters="clr-namespace:Wox.Converters"
-		xmlns:userSettings="clr-namespace:Wox.Core.UserSettings;assembly=Wox.Core"
-        xmlns:sys="clr-namespace:System;assembly=mscorlib"
-		Icon="Images\app.png"
-		Title="{DynamicResource woxsettings}"
-		ResizeMode="NoResize"
-		WindowStartupLocation="CenterScreen"
-		Height="600" Width="800" PreviewKeyDown="Window_PreviewKeyDown">
+    xmlns:woxPlugin="clr-namespace:Wox.Plugin;assembly=Wox.Plugin"
+    xmlns:converters="clr-namespace:Wox.Converters"
+    xmlns:userSettings="clr-namespace:Wox.Core.UserSettings;assembly=Wox.Core"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    Icon="Images\app.png"
+    Title="{DynamicResource woxsettings}"
+    ResizeMode="NoResize"
+    WindowStartupLocation="CenterScreen"
+    Height="600" Width="800" PreviewKeyDown="Window_PreviewKeyDown">
     <Window.Resources>
         <ListBoxItem HorizontalContentAlignment="Stretch"
-					IsEnabled="False"
-					IsHitTestVisible="False" x:Key="FeatureBoxSeperator">
-            <Separator Width="{Binding ElementName=lbPlugins, Path=ActualWidth}"/>
+                     IsEnabled="False"
+                     IsHitTestVisible="False" x:Key="FeatureBoxSeperator">
+            <Separator Width="{Binding ElementName=lbPlugins, Path=ActualWidth}" />
         </ListBoxItem>
         <converters:ImagePathConverter x:Key="ImageConverter" />
     </Window.Resources>
     <TabControl Height="auto" x:Name="settingTab" SelectionChanged="settingTab_SelectionChanged">
         <TabItem Header="{DynamicResource general}">
             <StackPanel Orientation="Vertical">
-                <CheckBox x:Name="cbStartWithWindows"  Unchecked="CbStartWithWindows_OnUnchecked" Checked="CbStartWithWindows_OnChecked" Margin="10">
-                    <TextBlock Text="{DynamicResource startWoxOnSystemStartup}" ></TextBlock>
+                <CheckBox x:Name="cbStartWithWindows" Unchecked="CbStartWithWindows_OnUnchecked"
+                          Checked="CbStartWithWindows_OnChecked" Margin="10">
+                    <TextBlock Text="{DynamicResource startWoxOnSystemStartup}" />
                 </CheckBox>
                 <CheckBox x:Name="cbHideWhenDeactive" Margin="10">
-                    <TextBlock Text="{DynamicResource hideWoxWhenLoseFocus}" ></TextBlock>
+                    <TextBlock Text="{DynamicResource hideWoxWhenLoseFocus}" />
                 </CheckBox>
                 <CheckBox x:Name="cbDontPromptUpdateMsg" Margin="10">
-                    <TextBlock Text="{DynamicResource dontPromptUpdateMsg}" ></TextBlock>
+                    <TextBlock Text="{DynamicResource dontPromptUpdateMsg}" />
                 </CheckBox>
                 <CheckBox x:Name="cbRememberLastLocation" Margin="10">
-                    <TextBlock Text="{DynamicResource rememberLastLocation}" ></TextBlock>
+                    <TextBlock Text="{DynamicResource rememberLastLocation}" />
                 </CheckBox>
                 <CheckBox x:Name="cbIgnoreHotkeysOnFullscreen" Margin="10">
-                    <TextBlock Text="{DynamicResource ignoreHotkeysOnFullscreen}" ></TextBlock>
+                    <TextBlock Text="{DynamicResource ignoreHotkeysOnFullscreen}" />
                 </CheckBox>
                 <StackPanel Margin="10" Orientation="Horizontal">
-                    <TextBlock  Text="{DynamicResource language}"></TextBlock>
+                    <TextBlock Text="{DynamicResource language}" />
                     <ComboBox Margin="10 0 0 0" Width="120" x:Name="cbLanguages" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="10">
-                    <TextBlock  Text="{DynamicResource maxShowResults}"></TextBlock>
-                    <ComboBox Margin="10 0 0 0" Width="45" Name="comboMaxResultsToShow"/>
+                    <TextBlock Text="{DynamicResource maxShowResults}" />
+                    <ComboBox Margin="10 0 0 0" Width="45" Name="comboMaxResultsToShow" />
                 </StackPanel>
             </StackPanel>
         </TabItem>
         <TabItem Header="{DynamicResource plugin}" x:Name="tabPlugin">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200"/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <DockPanel Grid.Column="0" >
-                    <TextBlock DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Left" Cursor="Hand" MouseUp="tbMorePlugins_MouseUp" x:Name="tbMorePlugins" Foreground="Blue" Text="{DynamicResource browserMorePlugins}"></TextBlock>
-                    <ListBox x:Name="lbPlugins" Margin="10, 0, 10, 10" SelectionChanged="lbPlugins_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" >
+                <DockPanel Grid.Column="0">
+                    <TextBlock DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Left" Cursor="Hand"
+                               MouseUp="tbMorePlugins_MouseUp" x:Name="tbMorePlugins" Foreground="Blue"
+                               Text="{DynamicResource browserMorePlugins}" />
+                    <ListBox x:Name="lbPlugins" Margin="10, 0, 10, 10" SelectionChanged="lbPlugins_OnSelectionChanged"
+                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True">
                         <ListBox.Resources>
                             <DataTemplate DataType="{x:Type woxPlugin:PluginPair}">
                                 <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="32"></ColumnDefinition>
-                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="32" />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
-                                    <Image Width="32" Height="32" HorizontalAlignment="Left" Source="{Binding Metadata.FullIcoPath,Converter={StaticResource ImageConverter},IsAsync=True}">
-                                    </Image>
+                                    <Image Width="32" Height="32" HorizontalAlignment="Left"
+                                           Source="{Binding Metadata.FullIcoPath,Converter={StaticResource ImageConverter},IsAsync=True}" />
                                     <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
                                         <Grid.RowDefinitions>
-                                            <RowDefinition></RowDefinition>
-                                            <RowDefinition Height="Auto"></RowDefinition>
+                                            <RowDefinition />
+                                            <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
-                                        <TextBlock VerticalAlignment="Center" ToolTip="{Binding Metadata.Name}" x:Name="tbTitle" Text="{Binding Metadata.Name}"></TextBlock>
-                                        <TextBlock ToolTip="{Binding Metadata.Description}" Visibility="{Binding Metadata.Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" Grid.Row="1" x:Name="tbSubTitle" Text="{Binding Metadata.Description}" Opacity="0.5"></TextBlock>
+                                        <TextBlock VerticalAlignment="Center" ToolTip="{Binding Metadata.Name}"
+                                                   x:Name="tbTitle" Text="{Binding Metadata.Name}" />
+                                        <TextBlock ToolTip="{Binding Metadata.Description}"
+                                                   Visibility="{Binding Metadata.Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}"
+                                                   Grid.Row="1" x:Name="tbSubTitle"
+                                                   Text="{Binding Metadata.Description}" Opacity="0.5" />
                                     </Grid>
                                 </Grid>
                             </DataTemplate>
@@ -81,75 +90,91 @@
                 </DockPanel>
                 <Grid Margin="0" Grid.Column="1">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <ContentControl x:Name="PluginInfoPanel" Grid.ColumnSpan="1" Grid.Row="0" Margin="10 10 10 0">
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="48"></ColumnDefinition>
-                                <ColumnDefinition/>
+                                <ColumnDefinition Width="48" />
+                                <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <Image Width="48" Height="48" HorizontalAlignment="Left" VerticalAlignment="Top" x:Name="pluginIcon"/>
+                            <Image Width="48" Height="48" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                   x:Name="pluginIcon" />
                             <Grid Margin="10,0,0,0" Grid.Column="1" HorizontalAlignment="Stretch">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                    <RowDefinition />
                                 </Grid.RowDefinitions>
                                 <DockPanel Grid.Row="0">
-                                    <TextBlock x:Name="pluginTitle" Text="Plugin Title" Cursor="Hand" MouseUp="PluginTitle_OnMouseUp" ToolTip="{Binding Source=pluginTitle, Path=Text}" FontSize="24"></TextBlock>
-                                    <TextBlock Opacity="0.5" VerticalAlignment="Bottom" HorizontalAlignment="Right" x:Name="pluginAuthor" Text="{DynamicResource author}"></TextBlock>
+                                    <TextBlock x:Name="pluginTitle" Text="Plugin Title" Cursor="Hand"
+                                               MouseUp="PluginTitle_OnMouseUp"
+                                               ToolTip="{Binding Source=pluginTitle, Path=Text}" FontSize="24" />
+                                    <TextBlock Opacity="0.5" VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                                               x:Name="pluginAuthor" Text="{DynamicResource author}" />
                                 </DockPanel>
-                                <TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5" ToolTip="{Binding Source=pluginSubTitle, Path=Text}" Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" ></TextBlock>
+                                <TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5"
+                                           ToolTip="{Binding Source=pluginSubTitle, Path=Text}"
+                                           Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" />
                                 <DockPanel Grid.Row="2" Margin="0 10 0 8">
                                     <CheckBox x:Name="cbDisablePlugin" Click="CbDisablePlugin_OnClick">
-                                        <TextBlock Text="{DynamicResource disable}"></TextBlock>
+                                        <TextBlock Text="{DynamicResource disable}" />
                                     </CheckBox>
-                                    <TextBlock x:Name="pluginActionKeywordsTitle" Margin="20 0 0 0" Text="{DynamicResource actionKeywords}" />
-                                    <TextBlock Margin="5 0 0 0" ToolTip="Change Action Keywords" Cursor="Hand" MouseUp="PluginActionKeywords_OnMouseUp" Foreground="Blue" Text="keys" x:Name="pluginActionKeywords"></TextBlock>
-                                    <TextBlock Margin="10 0 0 0" Text="Init time: 0ms" x:Name="pluginInitTime"></TextBlock>
-                                    <TextBlock Margin="10 0 0 0" Text="Query time: 0ms" x:Name="pluginQueryTime"></TextBlock>
-                                    <TextBlock HorizontalAlignment="Right" Cursor="Hand" MouseUp="tbOpenPluginDirecoty_MouseUp" Foreground="Blue" Text="{DynamicResource pluginDirectory}" x:Name="tbOpenPluginDirecoty"></TextBlock>
+                                    <TextBlock x:Name="pluginActionKeywordsTitle" Margin="20 0 0 0"
+                                               Text="{DynamicResource actionKeywords}" />
+                                    <TextBlock Margin="5 0 0 0" ToolTip="Change Action Keywords" Cursor="Hand"
+                                               MouseUp="PluginActionKeywords_OnMouseUp" Foreground="Blue" Text="keys"
+                                               x:Name="pluginActionKeywords" />
+                                    <TextBlock Margin="10 0 0 0" Text="Init time: 0ms" x:Name="pluginInitTime" />
+                                    <TextBlock Margin="10 0 0 0" Text="Query time: 0ms" x:Name="pluginQueryTime" />
+                                    <TextBlock HorizontalAlignment="Right" Cursor="Hand"
+                                               MouseUp="tbOpenPluginDirecoty_MouseUp" Foreground="Blue"
+                                               Text="{DynamicResource pluginDirectory}" x:Name="tbOpenPluginDirecoty" />
                                 </DockPanel>
                             </Grid>
                         </Grid>
                     </ContentControl>
 
-                    <ContentControl x:Name="PluginContentPanel" Grid.ColumnSpan="1" Grid.Row="1" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-
-                    </ContentControl>
+                    <ContentControl x:Name="PluginContentPanel" Grid.ColumnSpan="1" Grid.Row="1" Margin="0"
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                 </Grid>
             </Grid>
         </TabItem>
         <TabItem Header="{DynamicResource theme}" x:Name="tabTheme">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200"/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <DockPanel Grid.Column="0" >
-                    <TextBlock DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Left" Cursor="Hand" MouseUp="tbMoreThemes_MouseUp" x:Name="tbMoreThemes" Foreground="Blue" Text="{DynamicResource browserMoreThemes}"></TextBlock>
-                    <ListBox x:Name="themeComboBox" Margin="10, 0, 10, 10" SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="180"/>
+                <DockPanel Grid.Column="0">
+                    <TextBlock DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Left" Cursor="Hand"
+                               MouseUp="tbMoreThemes_MouseUp" x:Name="tbMoreThemes" Foreground="Blue"
+                               Text="{DynamicResource browserMoreThemes}" />
+                    <ListBox x:Name="themeComboBox" Margin="10, 0, 10, 10"
+                             SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Stretch"
+                             VerticalAlignment="Stretch" Width="180" />
                 </DockPanel>
                 <Grid Margin="0" Grid.Column="1">
                     <Grid.RowDefinitions>
                         <RowDefinition />
-                        <RowDefinition Height="100"/>
+                        <RowDefinition Height="100" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
+                        <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <StackPanel x:Name="PreviewPanel" Grid.Row="0" Margin="0">
-                        <StackPanel x:Name="PreviewMainPanel" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <StackPanel x:Name="PreviewMainPanel" Orientation="Horizontal" Margin="10"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Border Width="500" Style="{DynamicResource WindowBorderStyle}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="50" />
-                                        <RowDefinition/>
+                                        <RowDefinition />
                                     </Grid.RowDefinitions>
-                                    <TextBox Text="{DynamicResource helloWox}" IsReadOnly="True" Style="{DynamicResource QueryBoxStyle}" Grid.Row="0"/>
-                                    <wox:ResultListBox Grid.Row="1" x:Name="ResultListBoxPreview"/>
+                                    <TextBox Text="{DynamicResource helloWox}" IsReadOnly="True"
+                                             Style="{DynamicResource QueryBoxStyle}" Grid.Row="0" />
+                                    <wox:ResultListBox Grid.Row="1" x:Name="ResultListBoxPreview" />
                                 </Grid>
                             </Border>
                         </StackPanel>
@@ -158,10 +183,15 @@
                     <StackPanel Grid.Row="1" Margin="0 10 0 10" Orientation="Vertical">
                         <StackPanel Orientation="Horizontal" Margin="2">
                             <TextBlock Text="{DynamicResource queryBoxFont}" />
-                            <ComboBox Margin="10 -2 5 0" x:Name="cbQueryBoxFont" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="CbQueryBoxFont_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
+                            <ComboBox Margin="10 -2 5 0" x:Name="cbQueryBoxFont"
+                                      ItemsSource="{x:Static Fonts.SystemFontFamilies}"
+                                      SelectionChanged="CbQueryBoxFont_OnSelectionChanged" HorizontalAlignment="Left"
+                                      VerticalAlignment="Top" Width="160" />
                             <ComboBox Margin="0 -2 0 0"
-								x:Name="cbQueryBoxFontFaces"
-								ItemsSource="{Binding SelectedValue.FamilyTypefaces, ElementName=cbQueryBoxFont}" SelectionChanged="CbQueryBoxFontFaces_OnSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
+                                      x:Name="cbQueryBoxFontFaces"
+                                      ItemsSource="{Binding SelectedValue.FamilyTypefaces, ElementName=cbQueryBoxFont}"
+                                      SelectionChanged="CbQueryBoxFontFaces_OnSelectionChanged"
+                                      HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <ItemsControl ItemsSource="{Binding AdjustedFaceNames}">
@@ -177,10 +207,15 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="2">
                             <TextBlock Text="{DynamicResource resultItemFont}" />
-                            <ComboBox Margin="5 -2 5 0" x:Name="ResultFontComboBox" ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectionChanged="OnResultFontSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160"/>
+                            <ComboBox Margin="5 -2 5 0" x:Name="ResultFontComboBox"
+                                      ItemsSource="{x:Static Fonts.SystemFontFamilies}"
+                                      SelectionChanged="OnResultFontSelectionChanged" HorizontalAlignment="Left"
+                                      VerticalAlignment="Top" Width="160" />
                             <ComboBox Margin="0 -2 0 0"
-								x:Name="ResultFontFacesComboBox"
-								ItemsSource="{Binding SelectedValue.FamilyTypefaces, ElementName=ResultFontComboBox}" SelectionChanged="OnResultFontFacesSelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
+                                      x:Name="ResultFontFacesComboBox"
+                                      ItemsSource="{Binding SelectedValue.FamilyTypefaces, ElementName=ResultFontComboBox}"
+                                      SelectionChanged="OnResultFontFacesSelectionChanged" HorizontalAlignment="Left"
+                                      VerticalAlignment="Top" Width="120">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <ItemsControl ItemsSource="{Binding AdjustedFaceNames}">
@@ -202,34 +237,35 @@
         <TabItem Header="{DynamicResource hotkey}" x:Name="tabHotkey">
             <Grid Margin="10">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="30"/>
-                    <RowDefinition/>
-                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="30" />
+                    <RowDefinition />
+                    <RowDefinition Height="50" />
                 </Grid.RowDefinitions>
-                <StackPanel  Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock VerticalAlignment="Center" Margin="0 0 10 0" Text="{DynamicResource woxHotkey}"></TextBlock>
-                    <wox:HotkeyControl x:Name="ctlHotkey"/>
+                <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center" Margin="0 0 10 0" Text="{DynamicResource woxHotkey}" />
+                    <wox:HotkeyControl x:Name="ctlHotkey" />
                 </StackPanel>
-                <Grid  Grid.Row="1">
+                <Grid Grid.Row="1">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>
-                        <RowDefinition/>
+                        <RowDefinition Height="20" />
+                        <RowDefinition />
                     </Grid.RowDefinitions>
-                    <TextBlock VerticalAlignment="Center" Grid.Row="0" Margin="0 0 10 0" Text="{DynamicResource customQueryHotkey}"></TextBlock>
+                    <TextBlock VerticalAlignment="Center" Grid.Row="0" Margin="0 0 10 0"
+                               Text="{DynamicResource customQueryHotkey}" />
                     <ListView x:Name="lvCustomHotkey" Margin="0 5 0 0" Grid.Row="1">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="{DynamicResource hotkey}"  Width="180">
+                                <GridViewColumn Header="{DynamicResource hotkey}" Width="180">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Hotkey}"/>
+                                            <TextBlock Text="{Binding Hotkey}" />
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
                                 <GridViewColumn Header="{DynamicResource actionKeywords}" Width="500">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding ActionKeywords}"/>
+                                            <TextBlock Text="{Binding ActionKeywords}" />
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
@@ -239,56 +275,61 @@
 
                 </Grid>
                 <StackPanel Grid.Row="2" HorizontalAlignment="Right" Orientation="Horizontal">
-                    <Button x:Name="btnDeleteCustomHotkey" Click="BtnDeleteCustomHotkey_OnClick" Width="100" Margin="10" Content="{DynamicResource delete}"/>
-                    <Button x:Name="btnEditCustomHotkey" Click="BtnEditCustomHotkey_OnClick" Width="100" Margin="10" Content="{DynamicResource edit}"/>
-                    <Button x:Name="btnAddCustomeHotkey" Click="BtnAddCustomeHotkey_OnClick" Width="100" Margin="10" Content="{DynamicResource add}"/>
+                    <Button x:Name="btnDeleteCustomHotkey" Click="BtnDeleteCustomHotkey_OnClick" Width="100"
+                            Margin="10" Content="{DynamicResource delete}" />
+                    <Button x:Name="btnEditCustomHotkey" Click="BtnEditCustomHotkey_OnClick" Width="100" Margin="10"
+                            Content="{DynamicResource edit}" />
+                    <Button x:Name="btnAddCustomeHotkey" Click="BtnAddCustomeHotkey_OnClick" Width="100" Margin="10"
+                            Content="{DynamicResource add}" />
                 </StackPanel>
             </Grid>
         </TabItem>
         <TabItem Header="{DynamicResource proxy}">
             <StackPanel>
                 <CheckBox x:Name="cbEnableProxy" Margin="10">
-                    <TextBlock Text="{DynamicResource enableProxy}"></TextBlock>
+                    <TextBlock Text="{DynamicResource enableProxy}" />
                 </CheckBox>
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
-                        <RowDefinition ></RowDefinition>
-                        <RowDefinition ></RowDefinition>
+                        <RowDefinition />
+                        <RowDefinition />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="80"></ColumnDefinition>
-                        <ColumnDefinition Width="220"></ColumnDefinition>
-                        <ColumnDefinition Width="80"></ColumnDefinition>
-                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="220" />
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <Border Grid.Row="0" Grid.Column="0" Padding="5">
-                        <TextBlock Text="{DynamicResource server}"></TextBlock>
+                        <TextBlock Text="{DynamicResource server}" />
                     </Border>
                     <Border Grid.Row="0" Grid.Column="1" Padding="5">
-                        <TextBox  Width="200" HorizontalAlignment="Left" x:Name="tbProxyServer"></TextBox>
+                        <TextBox Width="200" HorizontalAlignment="Left" x:Name="tbProxyServer" />
                     </Border>
                     <Border Grid.Row="0" Grid.Column="2" Padding="5">
-                        <TextBlock Text="{DynamicResource port}"></TextBlock>
+                        <TextBlock Text="{DynamicResource port}" />
                     </Border>
                     <Border Grid.Row="0" Grid.Column="3" Padding="5">
-                        <TextBox Width="50" HorizontalAlignment="Left" x:Name="tbProxyPort"></TextBox>
+                        <TextBox Width="50" HorizontalAlignment="Left" x:Name="tbProxyPort" />
                     </Border>
                     <Border Grid.Row="1" Grid.Column="0" Padding="5">
-                        <TextBlock Text="{DynamicResource userName}"></TextBlock>
+                        <TextBlock Text="{DynamicResource userName}" />
                     </Border>
                     <Border Grid.Row="1" Grid.Column="1" Padding="5">
-                        <TextBox Width="200" HorizontalAlignment="Left" x:Name="tbProxyUserName"></TextBox>
+                        <TextBox Width="200" HorizontalAlignment="Left" x:Name="tbProxyUserName" />
                     </Border>
                     <Border Grid.Row="1" Grid.Column="2" Padding="5">
-                        <TextBlock Text="{DynamicResource password}"></TextBlock>
+                        <TextBlock Text="{DynamicResource password}" />
                     </Border>
                     <Border Grid.Row="1" Grid.Column="3" Padding="5">
                         <PasswordBox Width="200" HorizontalAlignment="Left" x:Name="tbProxyPassword" />
                     </Border>
                 </Grid>
                 <StackPanel Orientation="Horizontal">
-                    <Button x:Name="btnTestProxy" Width="80" HorizontalAlignment="Left" Margin="10" Click="btnTestProxy_Click" Content="{DynamicResource testProxy}"></Button>
-                    <Button x:Name="btnSaveProxy" Width="80" HorizontalAlignment="Left" Margin="10" Click="btnSaveProxy_Click" Content="{DynamicResource save}"></Button>
+                    <Button x:Name="btnTestProxy" Width="80" HorizontalAlignment="Left" Margin="10"
+                            Click="btnTestProxy_Click" Content="{DynamicResource testProxy}" />
+                    <Button x:Name="btnSaveProxy" Width="80" HorizontalAlignment="Left" Margin="10"
+                            Click="btnSaveProxy_Click" Content="{DynamicResource save}" />
                 </StackPanel>
             </StackPanel>
         </TabItem>
@@ -300,24 +341,27 @@
                     </Style>
                 </Grid.Resources>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="80"></ColumnDefinition>
-                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Column="0" Grid.Row="0" Text="{DynamicResource website}"></TextBlock>
-                <TextBlock Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left" Cursor="Hand" MouseUp="tbWebsite_MouseUp" x:Name="tbWebsite" Foreground="Blue" Text="http://www.getwox.com"></TextBlock>
+                <TextBlock Grid.Column="0" Grid.Row="0" Text="{DynamicResource website}" />
+                <TextBlock Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left" Cursor="Hand"
+                           MouseUp="tbWebsite_MouseUp" x:Name="tbWebsite" Foreground="Blue"
+                           Text="http://www.getwox.com" />
 
-                <TextBlock Grid.Column="0" Grid.Row="1" Text="{DynamicResource version}"></TextBlock>
+                <TextBlock Grid.Column="0" Grid.Row="1" Text="{DynamicResource version}" />
                 <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal">
-                    <TextBlock HorizontalAlignment="Left" x:Name="tbVersion" Text="1.0.0"></TextBlock>
+                    <TextBlock HorizontalAlignment="Left" x:Name="tbVersion" Text="1.0.0" />
                 </StackPanel>
 
-                <TextBlock x:Name="tbActivatedTimes" Grid.Row="2" Grid.ColumnSpan="2" Text="{DynamicResource about_activate_times}"></TextBlock>
+                <TextBlock x:Name="tbActivatedTimes" Grid.Row="2" Grid.ColumnSpan="2"
+                           Text="{DynamicResource about_activate_times}" />
             </Grid>
         </TabItem>
     </TabControl>

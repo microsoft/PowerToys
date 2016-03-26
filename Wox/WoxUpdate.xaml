@@ -8,38 +8,39 @@
         Title="{DynamicResource update_wox_update}" Height="400" Width="600">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="100"></ColumnDefinition>
-            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition Width="100" />
+            <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="80"></RowDefinition>
-            <RowDefinition ></RowDefinition>
-            <RowDefinition Height="50"></RowDefinition>
+            <RowDefinition Height="80" />
+            <RowDefinition />
+            <RowDefinition Height="50" />
         </Grid.RowDefinitions>
-        <Image Source="Images/update.png" Width="64"></Image>
-        <TextBlock x:Name="tbNewVersionAvailable" Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" FontSize="20" Text="{DynamicResource update_wox_update_new_version_available}"></TextBlock>
+        <Image Source="Images/update.png" Width="64" />
+        <TextBlock x:Name="tbNewVersionAvailable" Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" FontSize="20"
+                   Text="{DynamicResource update_wox_update_new_version_available}" />
         <TabControl Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2">
             <TabItem Header="{DynamicResource update_wox_update_upadte_description}">
-                <WebBrowser x:Name="wbDetails" Grid.Row="1"></WebBrowser>
+                <WebBrowser x:Name="wbDetails" Grid.Row="1" />
             </TabItem>
             <TabItem Header="{DynamicResource update_wox_update_files}">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="30"></RowDefinition>
-                        <RowDefinition></RowDefinition>
+                        <RowDefinition Height="30" />
+                        <RowDefinition />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Padding="8" Text="{DynamicResource update_wox_update_upadte_files}"></TextBlock>
-                    <ListBox x:Name="lbUpdatedFiles" Grid.Row="1">
-                    </ListBox>
+                    <TextBlock Grid.Row="0" Padding="8" Text="{DynamicResource update_wox_update_upadte_files}" />
+                    <ListBox x:Name="lbUpdatedFiles" Grid.Row="1" />
                 </Grid>
             </TabItem>
         </TabControl>
         <StackPanel Grid.Column="1" Grid.Row="4" HorizontalAlignment="Right" Orientation="Horizontal">
-            <TextBlock Foreground="Gray" TextAlignment="Center" Margin="0 0 10 0" VerticalAlignment="Center" Text="{DynamicResource update_wox_update_restart_wox_tip}"></TextBlock>
-            <Button x:Name="btnUpdate" Padding="8 3" Margin="8" Click="btnUpdate_Click" Content="{DynamicResource update_wox_update}">
-            </Button>
-            <Button x:Name="btnCancel" Padding="8 3" Margin="8" Click="btnCancel_Click" Content="{DynamicResource update_wox_update_cancel}">
-            </Button>
+            <TextBlock Foreground="Gray" TextAlignment="Center" Margin="0 0 10 0" VerticalAlignment="Center"
+                       Text="{DynamicResource update_wox_update_restart_wox_tip}" />
+            <Button x:Name="btnUpdate" Padding="8 3" Margin="8" Click="btnUpdate_Click"
+                    Content="{DynamicResource update_wox_update}" />
+            <Button x:Name="btnCancel" Padding="8 3" Margin="8" Click="btnCancel_Click"
+                    Content="{DynamicResource update_wox_update_cancel}" />
         </StackPanel>
     </Grid>
 </Window>
