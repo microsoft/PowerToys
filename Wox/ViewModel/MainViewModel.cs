@@ -130,16 +130,15 @@ namespace Wox.ViewModel
                 _contextMenuVisibility = value;
                 OnPropertyChanged();
 
+                _ignoreTextChange = true;
                 if (!value.IsVisible())
                 {
-                    _ignoreTextChange = true;
                     QueryText = _queryTextBeforeLoadContextMenu;
                     ResultListBoxVisibility = Visibility.Visible;
                     OnCursorMovedToEnd();
                 }
                 else
                 {
-                    _ignoreTextChange = true;
                     _queryTextBeforeLoadContextMenu = QueryText;
                     QueryText = "";
                     ResultListBoxVisibility = Visibility.Collapsed;
