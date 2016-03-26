@@ -229,20 +229,33 @@ namespace Wox.Core.Plugin
         public static List<Result> GetContextMenusForPlugin(Result result)
         {
             var pluginPair = _contextMenuPlugins.FirstOrDefault(o => o.Metadata.ID == result.PluginID);
-            var plugin = (IContextMenu)pluginPair?.Plugin;
-            if (plugin != null)
+            if (pluginPair != null)
             {
+                var metadata = pluginPair.Metadata;
+                var plugin = (IContextMenu)pluginPair?.Plugin;
+
                 try
                 {
-                    return plugin.LoadContextMenus(result);
+                    var results = plugin.LoadContextMenus(result);
+                    foreach (var r in results)
+                    {
+                        r.PluginDirectory = metadata.PluginDirectory;
+                        r.PluginID = metadata.ID;
+                        r.OriginQuery = result.OriginQuery;
+                    }
+                    return results;
                 }
                 catch (Exception e)
                 {
-                    Log.Error(new WoxPluginException(pluginPair.Metadata.Name, $"Couldn't load plugin context menus", e));
+                    Log.Error(new WoxPluginException(metadata.Name, "Couldn't load plugin context menus", e));
+                    return new List<Result>();
                 }
             }
+            else
+            {
+                return new List<Result>();
+            }
 
-            return new List<Result>();
         }
 
         public static void UpdateActionKeywordForPlugin(PluginPair plugin, string oldActionKeyword, string newActionKeyword)

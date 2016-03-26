@@ -27,7 +27,8 @@
         d:DataContext="{d:DesignInstance vm:MainViewModel, IsDesignTimeCreatable=True}">
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:ResultsViewModel}">
-            <wox:ResultListBox></wox:ResultListBox>
+            <wox:ResultListBox PreviewMouseDown="OnPreviewMouseButtonDown">
+            </wox:ResultListBox>
         </DataTemplate>
     </Window.Resources>
     <Border Style="{DynamicResource WindowBorderStyle}" MouseDown="OnMouseDown">
@@ -43,10 +44,8 @@
                     <ToolTip IsOpen="{Binding IsProgressBarTooltipVisible}"></ToolTip>
                 </Line.ToolTip>
             </Line>
-            <ContentControl Content="{Binding Results}" Visibility="{Binding ResultListBoxVisibility}">
-            </ContentControl>
-            <ContentControl Content="{Binding ContextMenu}" Visibility="{Binding ContextMenuVisibility}">
-            </ContentControl>
+            <ContentControl Content="{Binding Results}" Visibility="{Binding ResultListBoxVisibility}"/>
+            <ContentControl Content="{Binding ContextMenu}" Visibility="{Binding ContextMenuVisibility}"/>
         </StackPanel>
     </Border>
 </Window>

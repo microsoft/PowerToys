@@ -104,6 +104,12 @@ namespace Wox.ViewModel
             }
         }
 
+        public void SelectResult(ResultViewModel result)
+        {
+            int i = Results.IndexOf(result);
+            SelectResult(i);
+        }
+
         public void SelectNextResult()
         {
             if (SelectedResult != null)
@@ -185,8 +191,7 @@ namespace Wox.ViewModel
         {
             lock (_resultsUpdateLock)
             {
-                var newResults = new List<ResultViewModel>();
-                newRawResults.ForEach((re) => { newResults.Add(new ResultViewModel(re)); });
+                var newResults = newRawResults.Select(r => new ResultViewModel(r)).ToList();
                 // todo use async to do new result calculation
                 var resultsCopy = Results.ToList();
                 var oldResults = resultsCopy.Where(r => r.RawResult.PluginID == resultId).ToList();
