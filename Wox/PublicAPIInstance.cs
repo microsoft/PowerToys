@@ -146,7 +146,6 @@ namespace Wox
 
         public event WoxKeyDownEventHandler BackKeyDownEvent;
         public event WoxGlobalKeyboardEventHandler GlobalKeyboardEvent;
-        public event ResultItemDropEventHandler ResultItemDropEvent;
 
         public void PushResults(Query query, PluginMetadata plugin, List<Result> results)
         {
