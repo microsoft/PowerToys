@@ -16,12 +16,6 @@ namespace Wox.Plugin
         void PushResults(Query query, PluginMetadata plugin, List<Result> results);
 
         /// <summary>
-        /// Show context menu with giving results
-        /// </summary>
-        /// <param name="results"></param>
-        void ShowContextMenu(PluginMetadata plugin, List<Result> results);
-
-        /// <summary>
         /// Change Wox query
         /// </summary>
         /// <param name="query">query text</param>
@@ -115,11 +109,5 @@ namespace Wox.Plugin
         /// if you want to hook something like Ctrl+R, you should use this event
         /// </summary>
         event WoxGlobalKeyboardEventHandler GlobalKeyboardEvent;
-
-        /// <summary>
-        /// Fired after drop to result item of current plugin 
-        /// </summary>
-        /// todo: ResultItem -> Result
-        event ResultItemDropEventHandler ResultItemDropEvent;
     }
 }

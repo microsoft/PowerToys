@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
+using System.Windows.Controls;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Core.Updater;
@@ -35,9 +36,9 @@ namespace Wox
         private void OnClosing(object sender, CancelEventArgs e)
         {
 
-                UserSettingStorage.Instance.WindowLeft = Left;
-                UserSettingStorage.Instance.WindowTop = Top;
-                UserSettingStorage.Instance.Save();
+            UserSettingStorage.Instance.WindowLeft = Left;
+            UserSettingStorage.Instance.WindowTop = Top;
+            UserSettingStorage.Instance.Save();
 
             e.Cancel = true;
         }
@@ -71,12 +72,13 @@ namespace Wox
                 }
                 else
                 {
-                        UserSettingStorage.Instance.WindowLeft = Left;
-                        UserSettingStorage.Instance.WindowTop = Top;
-                        UserSettingStorage.Instance.Save();
+                    UserSettingStorage.Instance.WindowLeft = Left;
+                    UserSettingStorage.Instance.WindowTop = Top;
+                    UserSettingStorage.Instance.Save();
                 }
             };
 
+            // happlebao todo delete
             vm.Left = GetWindowsLeft();
             vm.Top = GetWindowsTop();
             vm.MainWindowVisibility = Visibility.Visible;
@@ -160,7 +162,6 @@ namespace Wox
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             var vm = DataContext as MainViewModel;
-
             if (null == vm) return;
             //when alt is pressed, the real key should be e.SystemKey
             var key = (e.Key == Key.System ? e.SystemKey : e.Key);
@@ -202,8 +203,20 @@ namespace Wox
                 case Key.O:
                     if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
                     {
-                        vm.CtrlOCommand.Execute(null);
+                        vm.LoadContextMenuCommand.Execute(null);
                     }
+                    break;
+
+                case Key.Enter:
+                    if (GlobalHotkey.Instance.CheckModifiers().ShiftPressed)
+                    {
+                        vm.LoadContextMenuCommand.Execute(null);
+                    }
+                    else
+                    {
+                        vm.OpenResultCommand.Execute(null);
+                    }
+                    e.Handled = true;
                     break;
 
                 case Key.Down:
@@ -262,18 +275,6 @@ namespace Wox
                     vm.StartHelpCommand.Execute(null);
                     break;
 
-                case Key.Enter:
-                    if (GlobalHotkey.Instance.CheckModifiers().ShiftPressed)
-                    {
-                        vm.ShiftEnterCommand.Execute(null);
-                    }
-                    else
-                    {
-                        vm.OpenResultCommand.Execute(null);
-                    }
-                    e.Handled = true;
-                    break;
-
                 case Key.D1:
 
                     if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
@@ -315,9 +316,44 @@ namespace Wox
                         vm.OpenResultCommand.Execute(5);
                     }
                     break;
-
             }
         }
+
+        private void OnPreviewMouseButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender != null && e.OriginalSource != null)
+            {
+                var r = (ResultListBox)sender;
+                var d = (DependencyObject)e.OriginalSource;
+                var item = ItemsControl.ContainerFromElement(r, d) as ListBoxItem;
+                var result = (ResultViewModel)item?.DataContext;
+                if (result != null)
+                {
+                    var vm = DataContext as MainViewModel;
+                    if (vm != null)
+                    {
+                        if (vm.ContextMenuVisibility.IsVisible())
+                        {
+                            vm.ContextMenu.SelectResult(result);
+                        }
+                        else
+                        {
+                            vm.Results.SelectResult(result);
+                        }
+
+                        if (e.ChangedButton == MouseButton.Left)
+                        {
+                            vm.OpenResultCommand.Execute(null);
+                        }
+                        else if (e.ChangedButton == MouseButton.Right)
+                        {
+                            vm.LoadContextMenuCommand.Execute(null);
+                        }
+                    }
+                }
+            }
+        }
+
 
         private void OnDrop(object sender, DragEventArgs e)
         {

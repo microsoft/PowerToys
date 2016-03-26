@@ -16,18 +16,14 @@
                 <DataTemplate.DataType>
                     <x:Type TypeName="vm:ResultViewModel" />
                 </DataTemplate.DataType>
-                <Button Command="{Binding OpenResultListBoxItemCommand}">
-                    <Button.InputBindings>
-                        <MouseBinding Command="{Binding OpenContextMenuItemCommand}" MouseAction="RightClick"></MouseBinding>
-                    </Button.InputBindings>
+                <Button>
                     <Button.Template>
                         <ControlTemplate>
                             <ContentPresenter Content="{TemplateBinding Button.Content}"></ContentPresenter>
                         </ControlTemplate>
                     </Button.Template>
                     <Button.Content>
-                        <Grid HorizontalAlignment="Stretch" Height="40" VerticalAlignment="Stretch" Margin="5"
-                      Cursor="Hand">
+                        <Grid HorizontalAlignment="Stretch" Height="40" VerticalAlignment="Stretch" Margin="5" Cursor="Hand">
                             <Grid.Resources>
                                 <converters:ImagePathConverter x:Key="ImageConverter" />
                             </Grid.Resources>

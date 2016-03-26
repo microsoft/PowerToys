@@ -30,9 +30,10 @@ namespace Wox
             GlobalHotkey.Instance.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
 
-            MainVM.ListeningKeyPressed += (o, e) => {
+            MainVM.ListeningKeyPressed += (o, e) =>
+            {
 
-                if(e.KeyEventArgs.Key == Key.Back)
+                if (e.KeyEventArgs.Key == Key.Back)
                 {
                     BackKeyDownEvent?.Invoke(new WoxKeyDownEventArgs
                     {
@@ -156,20 +157,6 @@ namespace Wox
                 o.OriginQuery = query;
             });
             MainVM.UpdateResultView(results, plugin, query);
-        }
-
-        public void ShowContextMenu(PluginMetadata plugin, List<Result> results)
-        {
-            if (results != null && results.Count > 0)
-            {
-                results.ForEach(o =>
-                {
-                    o.PluginDirectory = plugin.PluginDirectory;
-                    o.PluginID = plugin.ID;
-                });
-
-                MainVM.ShowContextMenu(results, plugin.ID);
-            }
         }
 
         #endregion
