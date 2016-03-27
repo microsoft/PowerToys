@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -25,7 +26,7 @@ namespace Wox.Plugin.Program
             {"UserStartMenuProgramSource", typeof(UserStartMenuProgramSource)},
             {"AppPathsProgramSource", typeof(AppPathsProgramSource)}
         };
-        private PluginInitContext context;
+        private PluginInitContext _context;
 
         public List<Result> Query(Query query)
         {
@@ -43,9 +44,8 @@ namespace Wox.Plugin.Program
                                        ContextData = c,
                                        Action = e =>
                                        {
-                                           context.API.HideApp();
-                                           Process.Start(c.ExecutePath);
-                                           return true;
+                                           var hide = StartProcess(new ProcessStartInfo(c.ExecutePath));
+                                           return hide;
                                        }
                                    }).ToList();
             return results;
@@ -60,7 +60,7 @@ namespace Wox.Plugin.Program
 
         public void Init(PluginInitContext context)
         {
-            this.context = context;
+            this._context = context;
             Stopwatch.Debug("Preload programs", () =>
             {
                 programs = ProgramCacheStorage.Instance.Programs;
@@ -163,19 +163,19 @@ namespace Wox.Plugin.Program
 
         public Control CreateSettingPanel()
         {
-            return new ProgramSetting(context);
+            return new ProgramSetting(_context);
         }
 
         #endregion
 
         public string GetTranslatedPluginTitle()
         {
-            return context.API.GetTranslation("wox_plugin_program_plugin_name");
+            return _context.API.GetTranslation("wox_plugin_program_plugin_name");
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return context.API.GetTranslation("wox_plugin_program_plugin_description");
+            return _context.API.GetTranslation("wox_plugin_program_plugin_description");
         }
 
         public List<Result> LoadContextMenus(Result selectedResult)
@@ -185,35 +185,51 @@ namespace Wox.Plugin.Program
             {
                 new Result
                 {
-                    Title = context.API.GetTranslation("wox_plugin_program_run_as_administrator"),
+                    Title = _context.API.GetTranslation("wox_plugin_program_run_as_administrator"),
                     Action = _ =>
                     {
-                        context.API.HideApp();
-                        Process.Start( new ProcessStartInfo
+                        var hide = StartProcess(new ProcessStartInfo
                         {
                             FileName = p.ExecutePath,
                             Verb = "runas"
                         });
-                        return true;
+                        return hide;
                     },
                     IcoPath = "Images/cmd.png"
                 },
                 new Result
                 {
-                    Title = context.API.GetTranslation("wox_plugin_program_open_containing_folder"),
+                    Title = _context.API.GetTranslation("wox_plugin_program_open_containing_folder"),
                     Action = _ =>
                     {
-                        context.API.HideApp();
                         //get parent folder
                         var folderPath = Directory.GetParent(p.ExecutePath).FullName;
                         //open the folder
-                        Process.Start(folderPath);
-                        return true;
+                        var hide = StartProcess(new ProcessStartInfo(folderPath));
+                        return hide;
                     },
                     IcoPath = "Images/folder.png"
                 }
             };
             return contextMenus;
+        }
+
+        private bool StartProcess(ProcessStartInfo info)
+        {
+            bool hide;
+            try
+            {
+                Process.Start(info);
+                hide = true;
+            }
+            catch (Win32Exception)
+            {
+                var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
+                var message = "Can't open this file";
+                _context.API.ShowMsg(name, message, string.Empty);
+                hide = false;
+            }
+            return hide;
         }
     }
 }

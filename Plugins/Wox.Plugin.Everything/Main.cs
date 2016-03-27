@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -56,13 +57,24 @@ namespace Wox.Plugin.Everything
                         r.IcoPath = GetIconPath(s);
                         r.Action = c =>
                         {
-                            _context.API.HideApp();
-                            Process.Start(new ProcessStartInfo
+                            bool hide;
+                            try
                             {
-                                FileName = path,
-                                UseShellExecute = true
-                            });
-                            return true;
+                                Process.Start(new ProcessStartInfo
+                                {
+                                    FileName = path,
+                                    UseShellExecute = true
+                                });
+                                hide = true;
+                            }
+                            catch (Win32Exception)
+                            {
+                                var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
+                                var message = "Can't open this file";
+                                _context.API.ShowMsg(name, message, string.Empty);
+                                hide = false;
+                            }
+                            return hide;
                         };
                         r.ContextData = s;
                         results.Add(r);
