@@ -153,7 +153,6 @@
     <Compile Include="CommandArgs\ICommandArg.cs" />
     <Compile Include="CommandArgs\InstallPluginCommandArg.cs" />
     <Compile Include="CommandArgs\QueryCommandArg.cs" />
-    <Compile Include="CommandArgs\ReloadPluginCommandArg.cs" />
     <Compile Include="Helper\DataWebRequestFactory.cs" />
     <Compile Include="Helper\ErrorReporting.cs" />
     <Compile Include="ImageLoader\ImageLoader.cs" />
