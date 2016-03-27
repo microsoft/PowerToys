@@ -35,12 +35,9 @@ namespace Wox
 
         private void OnClosing(object sender, CancelEventArgs e)
         {
-
             UserSettingStorage.Instance.WindowLeft = Left;
             UserSettingStorage.Instance.WindowTop = Top;
             UserSettingStorage.Instance.Save();
-
-            e.Cancel = true;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs _)

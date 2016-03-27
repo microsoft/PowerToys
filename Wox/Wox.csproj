@@ -406,6 +406,10 @@ cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Infrastructure.pdb
 cd "$(TargetDir)Plugins" &amp; del /s /q Newtonsoft.Json.dll
 )</PostBuildEvent>
   </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
