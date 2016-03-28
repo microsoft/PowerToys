@@ -51,13 +51,19 @@ namespace Wox.ViewModel
             _queryText = "";
             _lastQuery = new Query();
             _settings = settings;
+            _queryHistory = QueryHistoryStorage.Instance;
+            _userSelectedRecord = UserSelectedRecordStorage.Instance;
+            _topMostRecord = TopMostRecordStorage.Instance;
 
             InitializeResultListBox();
             InitializeContextMenu();
             InitializeKeyCommands();
-            _queryHistory = QueryHistoryStorage.Instance;
-            _userSelectedRecord = UserSelectedRecordStorage.Instance;
-            _topMostRecord = TopMostRecordStorage.Instance;
+
+        }
+
+        public MainViewModel()
+        {
+            
         }
 
         #endregion
@@ -331,14 +337,14 @@ namespace Wox.ViewModel
 
         private void InitializeResultListBox()
         {
-            Results = new ResultsViewModel();
+            Results = new ResultsViewModel(_settings, _topMostRecord);
             ResultListBoxVisibility = Visibility.Collapsed;
         }
 
 
         private void InitializeContextMenu()
         {
-            ContextMenu = new ResultsViewModel();
+            ContextMenu = new ResultsViewModel(_settings, _topMostRecord);
             ContextMenuVisibility = Visibility.Collapsed;
         }
 

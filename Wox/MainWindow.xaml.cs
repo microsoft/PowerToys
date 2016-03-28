@@ -25,27 +25,33 @@ namespace Wox
         #region Private Fields
 
         private readonly Storyboard _progressBarStoryboard = new Storyboard();
+        private UserSettingStorage _settings;
 
         #endregion
 
+        public MainWindow(UserSettingStorage settings, MainViewModel mainVM)
+        {
+            DataContext = mainVM;
+            InitializeComponent();
+            _settings = settings;
+        }
         public MainWindow()
         {
             InitializeComponent();
         }
-
         private void OnClosing(object sender, CancelEventArgs e)
         {
-            UserSettingStorage.Instance.WindowLeft = Left;
-            UserSettingStorage.Instance.WindowTop = Top;
-            UserSettingStorage.Instance.Save();
+            _settings.WindowLeft = Left;
+            _settings.WindowTop = Top;
+            _settings.Save();
         }
 
         private void OnLoaded(object sender, RoutedEventArgs _)
         {
             CheckUpdate();
 
-            ThemeManager.Theme.ChangeTheme(UserSettingStorage.Instance.Theme);
-            InternationalizationManager.Instance.ChangeLanguage(UserSettingStorage.Instance.Language);
+            ThemeManager.Instance.ChangeTheme(_settings.Theme);
+            InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
 
             InitProgressbarAnimation();
             WindowIntelopHelper.DisableControlBox(this);
@@ -65,13 +71,13 @@ namespace Wox
                     QueryTextBox.Focus();
                     Left = GetWindowsLeft();
                     Top = GetWindowsTop();
-                    UserSettingStorage.Instance.IncreaseActivateTimes();
+                    _settings.IncreaseActivateTimes();
                 }
                 else
                 {
-                    UserSettingStorage.Instance.WindowLeft = Left;
-                    UserSettingStorage.Instance.WindowTop = Top;
-                    UserSettingStorage.Instance.Save();
+                    _settings.WindowLeft = Left;
+                    _settings.WindowTop = Top;
+                    _settings.Save();
                 }
             };
 
@@ -83,9 +89,9 @@ namespace Wox
 
         private double GetWindowsLeft()
         {
-            if (UserSettingStorage.Instance.RememberLastLaunchLocation)
+            if (_settings.RememberLastLaunchLocation)
             {
-                return UserSettingStorage.Instance.WindowLeft;
+                return _settings.WindowLeft;
             }
 
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
@@ -97,9 +103,9 @@ namespace Wox
 
         private double GetWindowsTop()
         {
-            if (UserSettingStorage.Instance.RememberLastLaunchLocation)
+            if (_settings.RememberLastLaunchLocation)
             {
-                return UserSettingStorage.Instance.WindowTop;
+                return _settings.WindowTop;
             }
 
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
@@ -132,15 +138,15 @@ namespace Wox
 
         private void InitProgressbarAnimation()
         {
-            var da = new DoubleAnimation(progressBar.X2, ActualWidth + 100, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
-            var da1 = new DoubleAnimation(progressBar.X1, ActualWidth, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
+            var da = new DoubleAnimation(ProgressBar.X2, ActualWidth + 100, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
+            var da1 = new DoubleAnimation(ProgressBar.X1, ActualWidth, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
             Storyboard.SetTargetProperty(da, new PropertyPath("(Line.X2)"));
             Storyboard.SetTargetProperty(da1, new PropertyPath("(Line.X1)"));
             _progressBarStoryboard.Children.Add(da);
             _progressBarStoryboard.Children.Add(da1);
             _progressBarStoryboard.RepeatBehavior = RepeatBehavior.Forever;
-            progressBar.Visibility = Visibility.Hidden;
-            progressBar.BeginStoryboard(_progressBarStoryboard);
+            ProgressBar.Visibility = Visibility.Hidden;
+            ProgressBar.BeginStoryboard(_progressBarStoryboard);
         }
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
@@ -150,7 +156,7 @@ namespace Wox
 
         private void OnDeactivated(object sender, EventArgs e)
         {
-            if (UserSettingStorage.Instance.HideWhenDeactive)
+            if (_settings.HideWhenDeactive)
             {
                 App.API.HideApp();
             }

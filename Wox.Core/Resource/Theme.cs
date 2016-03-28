@@ -15,6 +15,7 @@ namespace Wox.Core.Resource
     public class Theme : Resource
     {
         private static List<string> themeDirectories = new List<string>();
+        public UserSettingStorage Settings { get; set; }
 
         public Theme()
         {
@@ -53,8 +54,8 @@ namespace Wox.Core.Resource
                 }
             }
 
-            UserSettingStorage.Instance.Theme = themeName;
-            UserSettingStorage.Instance.Save();
+            Settings.Theme = themeName;
+            Settings.Save();
             ResourceMerger.UpdateResource(this);
 
             // Exception of FindResource can't be cathed if global exception handle is set
@@ -69,16 +70,16 @@ namespace Wox.Core.Resource
         {
             var dict = new ResourceDictionary
             {
-                Source = new Uri(GetThemePath(UserSettingStorage.Instance.Theme), UriKind.Absolute)
+                Source = new Uri(GetThemePath(Settings.Theme), UriKind.Absolute)
             };
 
             Style queryBoxStyle = dict["QueryBoxStyle"] as Style;
             if (queryBoxStyle != null)
             {
-                queryBoxStyle.Setters.Add(new Setter(TextBox.FontFamilyProperty, new FontFamily(UserSettingStorage.Instance.QueryBoxFont)));
-                queryBoxStyle.Setters.Add(new Setter(TextBox.FontStyleProperty, FontHelper.GetFontStyleFromInvariantStringOrNormal(UserSettingStorage.Instance.QueryBoxFontStyle)));
-                queryBoxStyle.Setters.Add(new Setter(TextBox.FontWeightProperty, FontHelper.GetFontWeightFromInvariantStringOrNormal(UserSettingStorage.Instance.QueryBoxFontWeight)));
-                queryBoxStyle.Setters.Add(new Setter(TextBox.FontStretchProperty, FontHelper.GetFontStretchFromInvariantStringOrNormal(UserSettingStorage.Instance.QueryBoxFontStretch)));
+                queryBoxStyle.Setters.Add(new Setter(TextBox.FontFamilyProperty, new FontFamily(Settings.QueryBoxFont)));
+                queryBoxStyle.Setters.Add(new Setter(TextBox.FontStyleProperty, FontHelper.GetFontStyleFromInvariantStringOrNormal(Settings.QueryBoxFontStyle)));
+                queryBoxStyle.Setters.Add(new Setter(TextBox.FontWeightProperty, FontHelper.GetFontWeightFromInvariantStringOrNormal(Settings.QueryBoxFontWeight)));
+                queryBoxStyle.Setters.Add(new Setter(TextBox.FontStretchProperty, FontHelper.GetFontStretchFromInvariantStringOrNormal(Settings.QueryBoxFontStretch)));
             }
 
             Style resultItemStyle = dict["ItemTitleStyle"] as Style;
@@ -87,10 +88,10 @@ namespace Wox.Core.Resource
             Style resultSubItemSelectedStyle = dict["ItemSubTitleSelectedStyle"] as Style;
             if (resultItemStyle != null && resultSubItemStyle != null && resultSubItemSelectedStyle != null && resultItemSelectedStyle != null)
             {
-                Setter fontFamily = new Setter(TextBlock.FontFamilyProperty, new FontFamily(UserSettingStorage.Instance.ResultFont));
-                Setter fontStyle = new Setter(TextBlock.FontStyleProperty, FontHelper.GetFontStyleFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultFontStyle));
-                Setter fontWeight = new Setter(TextBlock.FontWeightProperty, FontHelper.GetFontWeightFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultFontWeight));
-                Setter fontStretch = new Setter(TextBlock.FontStretchProperty, FontHelper.GetFontStretchFromInvariantStringOrNormal(UserSettingStorage.Instance.ResultFontStretch));
+                Setter fontFamily = new Setter(TextBlock.FontFamilyProperty, new FontFamily(Settings.ResultFont));
+                Setter fontStyle = new Setter(TextBlock.FontStyleProperty, FontHelper.GetFontStyleFromInvariantStringOrNormal(Settings.ResultFontStyle));
+                Setter fontWeight = new Setter(TextBlock.FontWeightProperty, FontHelper.GetFontWeightFromInvariantStringOrNormal(Settings.ResultFontWeight));
+                Setter fontStretch = new Setter(TextBlock.FontStretchProperty, FontHelper.GetFontStretchFromInvariantStringOrNormal(Settings.ResultFontStretch));
 
                 Setter[] setters = { fontFamily, fontStyle, fontWeight, fontStretch };
                 Array.ForEach(new[] { resultItemStyle, resultSubItemStyle, resultItemSelectedStyle, resultSubItemSelectedStyle }, o => Array.ForEach(setters, p => o.Setters.Add(p)));

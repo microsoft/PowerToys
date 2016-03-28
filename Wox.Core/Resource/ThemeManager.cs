@@ -5,7 +5,7 @@
         private static Theme instance;
         private static object syncObject = new object();
 
-        public static Theme Theme
+        public static Theme Instance
         {
             get
             {

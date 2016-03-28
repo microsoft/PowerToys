@@ -17,6 +17,7 @@ namespace Wox.Plugin.CMD
         private PluginInitContext context;
         private bool WinRStroked;
         private readonly KeyboardSimulator keyboardSimulator = new KeyboardSimulator(new InputSimulator());
+        private readonly CMDStorage _settings = CMDStorage.Instance;
 
         public List<Result> Query(Query query)
         {
@@ -80,7 +81,7 @@ namespace Wox.Plugin.CMD
 
         private List<Result> GetHistoryCmds(string cmd, Result result)
         {
-            IEnumerable<Result> history = CMDStorage.Instance.CMDHistory.Where(o => o.Key.Contains(cmd))
+            IEnumerable<Result> history = _settings.CMDHistory.Where(o => o.Key.Contains(cmd))
                 .OrderByDescending(o => o.Value)
                 .Select(m =>
                 {
@@ -126,7 +127,7 @@ namespace Wox.Plugin.CMD
 
         private List<Result> ResultsFromlHistory()
         {
-            IEnumerable<Result> history = CMDStorage.Instance.CMDHistory.OrderByDescending(o => o.Value)
+            IEnumerable<Result> history = _settings.CMDHistory.OrderByDescending(o => o.Value)
                 .Select(m => new Result
                 {
                     Title = m.Key,
@@ -143,7 +144,7 @@ namespace Wox.Plugin.CMD
 
         private void ExecuteCMD(string cmd, bool runAsAdministrator = false)
         {
-            var arguments = CMDStorage.Instance.LeaveCmdOpen ? $"/k {cmd}" : $"/c {cmd} & pause";
+            var arguments = _settings.LeaveCmdOpen ? $"/k {cmd}" : $"/c {cmd} & pause";
             var info = new ProcessStartInfo
             {
                 UseShellExecute = true,
@@ -154,7 +155,7 @@ namespace Wox.Plugin.CMD
             try
             {
                 Process.Start(info);
-                CMDStorage.Instance.AddCmdHistory(cmd);
+                _settings.AddCmdHistory(cmd);
             }
             catch (FileNotFoundException e)
             {
@@ -170,7 +171,7 @@ namespace Wox.Plugin.CMD
 
         bool API_GlobalKeyboardEvent(int keyevent, int vkcode, SpecialKeyState state)
         {
-            if (CMDStorage.Instance.ReplaceWinR)
+            if (_settings.ReplaceWinR)
             {
                 if (keyevent == (int)KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
                 {
@@ -196,7 +197,7 @@ namespace Wox.Plugin.CMD
 
         public Control CreateSettingPanel()
         {
-            return new CMDSetting();
+            return new CMDSetting(_settings);
         }
 
         public string GetTranslatedPluginTitle()

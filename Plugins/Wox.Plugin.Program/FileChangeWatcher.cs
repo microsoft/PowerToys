@@ -10,7 +10,7 @@ namespace Wox.Plugin.Program
         private static bool isIndexing;
         private static List<string> watchedPath = new List<string>(); 
 
-        public static void AddWatch(string path, bool includingSubDirectory = true)
+        public static void AddWatch(string path, string[] programSuffixes, bool includingSubDirectory = true)
         {
             if (watchedPath.Contains(path)) return;
             if (!Directory.Exists(path))
@@ -20,7 +20,7 @@ namespace Wox.Plugin.Program
             }
 
             watchedPath.Add(path);
-            foreach (string fileType in ProgramStorage.Instance.ProgramSuffixes.Split(';'))
+            foreach (string fileType in programSuffixes)
             {
                 FileSystemWatcher watcher = new FileSystemWatcher
                 {

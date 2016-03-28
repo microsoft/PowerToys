@@ -10,22 +10,24 @@ namespace Wox.Plugin.WebSearch
     /// </summary>
     public partial class WebSearchesSetting : UserControl
     {
+        private WebSearchStorage _settings;
         public PluginInitContext Context { get; }
         public WebSearchPlugin Plugin { get; }
 
-        public WebSearchesSetting(WebSearchPlugin plugin)
+        public WebSearchesSetting(WebSearchPlugin plugin, WebSearchStorage settings)
         {
             Context = plugin.Context;
             Plugin = plugin;
             InitializeComponent();
             Loaded += Setting_Loaded;
+            _settings = settings;
         }
 
         private void Setting_Loaded(object sender, RoutedEventArgs e)
         {
-            webSearchView.ItemsSource = WebSearchStorage.Instance.WebSearches;
-            cbEnableWebSearchSuggestion.IsChecked = WebSearchStorage.Instance.EnableWebSearchSuggestion;
-            comboBoxSuggestionSource.Visibility = WebSearchStorage.Instance.EnableWebSearchSuggestion
+            webSearchView.ItemsSource = _settings.WebSearches;
+            cbEnableWebSearchSuggestion.IsChecked = _settings.EnableWebSearchSuggestion;
+            comboBoxSuggestionSource.Visibility = _settings.EnableWebSearchSuggestion
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
@@ -34,7 +36,7 @@ namespace Wox.Plugin.WebSearch
                 new ComboBoxItem {Content = "Google"},
                 new ComboBoxItem {Content = "Baidu"}
             };
-            ComboBoxItem selected = items.FirstOrDefault(o => o.Content.ToString() == WebSearchStorage.Instance.WebSearchSuggestionSource);
+            ComboBoxItem selected = items.FirstOrDefault(o => o.Content.ToString() == _settings.WebSearchSuggestionSource);
             if (selected == null)
             {
                 selected = items[0];
@@ -51,7 +53,7 @@ namespace Wox.Plugin.WebSearch
 
         private void btnAddWebSearch_OnClick(object sender, RoutedEventArgs e)
         {
-            WebSearchSetting webSearch = new WebSearchSetting(this);
+            WebSearchSetting webSearch = new WebSearchSetting(this, _settings);
             webSearch.ShowDialog();
         }
 
@@ -64,7 +66,7 @@ namespace Wox.Plugin.WebSearch
 
                 if (MessageBox.Show(msg, string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
-                    WebSearchStorage.Instance.WebSearches.Remove(selectedWebSearch);
+                    _settings.WebSearches.Remove(selectedWebSearch);
                     webSearchView.Items.Refresh();
                 }
             }
@@ -80,7 +82,7 @@ namespace Wox.Plugin.WebSearch
             WebSearch selectedWebSearch = webSearchView.SelectedItem as WebSearch;
             if (selectedWebSearch != null)
             {
-                WebSearchSetting webSearch = new WebSearchSetting(this);
+                WebSearchSetting webSearch = new WebSearchSetting(this, _settings);
                 webSearch.UpdateItem(selectedWebSearch);
                 webSearch.ShowDialog();
             }
@@ -94,23 +96,23 @@ namespace Wox.Plugin.WebSearch
         private void CbEnableWebSearchSuggestion_OnChecked(object sender, RoutedEventArgs e)
         {
             comboBoxSuggestionSource.Visibility = Visibility.Visible;
-            WebSearchStorage.Instance.EnableWebSearchSuggestion = true;
-            WebSearchStorage.Instance.Save();
+            _settings.EnableWebSearchSuggestion = true;
+            _settings.Save();
         }
 
         private void CbEnableWebSearchSuggestion_OnUnchecked(object sender, RoutedEventArgs e)
         {
             comboBoxSuggestionSource.Visibility = Visibility.Collapsed;
-            WebSearchStorage.Instance.EnableWebSearchSuggestion = false;
-            WebSearchStorage.Instance.Save();
+            _settings.EnableWebSearchSuggestion = false;
+            _settings.Save();
         }
 
         private void ComboBoxSuggestionSource_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count > 0)
             {
-                WebSearchStorage.Instance.WebSearchSuggestionSource = ((ComboBoxItem)e.AddedItems[0]).Content.ToString();
-                WebSearchStorage.Instance.Save();
+                _settings.WebSearchSuggestionSource = ((ComboBoxItem)e.AddedItems[0]).Content.ToString();
+                _settings.Save();
             }
         }
     }

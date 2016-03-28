@@ -10,19 +10,19 @@ namespace Wox.Plugin.Program.ProgramSources
     [Serializable]
     public class FileSystemProgramSource : AbstractProgramSource
     {
-        private string baseDirectory;
-        private int maxDepth;
-        private string suffixes;
+        private string _baseDirectory;
+        private int _maxDepth;
+        private string[] _suffixes;
 
-        public FileSystemProgramSource(string baseDirectory, int maxDepth, string suffixes)
+        public FileSystemProgramSource(string baseDirectory, int maxDepth, string[] suffixes)
         {
-            this.baseDirectory = baseDirectory;
-            this.maxDepth = maxDepth;
-            this.suffixes = suffixes;
+            _baseDirectory = baseDirectory;
+            _maxDepth = maxDepth;
+            _suffixes = suffixes;
         }
 
-        public FileSystemProgramSource(string baseDirectory)
-            : this(baseDirectory, -1, "") {}
+        public FileSystemProgramSource(string baseDirectory, string[] suffixes)
+            : this(baseDirectory, -1, suffixes) {}
 
         public FileSystemProgramSource(ProgramSource source)
             : this(source.Location, source.MaxDepth, source.Suffixes)
@@ -33,10 +33,10 @@ namespace Wox.Plugin.Program.ProgramSources
         public override List<Program> LoadPrograms()
         {
             List<Program> list = new List<Program>();
-            if (Directory.Exists(baseDirectory))
+            if (Directory.Exists(_baseDirectory))
             {
-                GetAppFromDirectory(baseDirectory, list);
-                FileChangeWatcher.AddWatch(baseDirectory);
+                GetAppFromDirectory(_baseDirectory, list);
+                FileChangeWatcher.AddWatch(_baseDirectory, _suffixes);
             }
             return list;
         }
@@ -48,7 +48,7 @@ namespace Wox.Plugin.Program.ProgramSources
 
         private void GetAppFromDirectory(string path, List<Program> list, int depth)
         {
-            if(maxDepth != -1 && depth > maxDepth)
+            if(_maxDepth != -1 && depth > _maxDepth)
             {
                 return;
             }
@@ -56,8 +56,7 @@ namespace Wox.Plugin.Program.ProgramSources
             {
                 foreach (string file in Directory.GetFiles(path))
                 {
-                    if (ProgramStorage.Instance.ProgramSuffixes.Split(';').Any(o => file.EndsWith("." + o)) ||
-                        suffixes.Split(';').Any(o => file.EndsWith("." + o)))
+                    if (_suffixes.Any(o => file.EndsWith("." + o)))
                     {
                         Program p = CreateEntry(file);
                         list.Add(p);
@@ -78,7 +77,7 @@ namespace Wox.Plugin.Program.ProgramSources
 
         public override string ToString()
         {
-            return typeof(FileSystemProgramSource).Name + ":" + baseDirectory;
+            return typeof(FileSystemProgramSource).Name + ":" + _baseDirectory;
         }
     }
 }

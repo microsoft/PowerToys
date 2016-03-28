@@ -12,14 +12,16 @@ namespace Wox
 {
     public partial class CustomQueryHotkeySetting : Window
     {
-        private SettingWindow settingWidow;
+        private SettingWindow _settingWidow;
         private bool update;
         private CustomPluginHotkey updateCustomHotkey;
+        private UserSettingStorage _settings;
 
-        public CustomQueryHotkeySetting(SettingWindow settingWidow)
+        public CustomQueryHotkeySetting(SettingWindow settingWidow, UserSettingStorage settings)
         {
-            this.settingWidow = settingWidow;
+            _settingWidow = settingWidow;
             InitializeComponent();
+            _settings = settings;
         }
 
         private void BtnCancel_OnClick(object sender, RoutedEventArgs e)
@@ -37,9 +39,9 @@ namespace Wox
                     return;
                 }
 
-                if (UserSettingStorage.Instance.CustomPluginHotkeys == null)
+                if (_settings.CustomPluginHotkeys == null)
                 {
-                    UserSettingStorage.Instance.CustomPluginHotkeys = new List<CustomPluginHotkey>();
+                    _settings.CustomPluginHotkeys = new List<CustomPluginHotkey>();
                 }
 
                 var pluginHotkey = new CustomPluginHotkey
@@ -47,7 +49,7 @@ namespace Wox
                     Hotkey = ctlHotkey.CurrentHotkey.ToString(),
                     ActionKeyword = tbAction.Text
                 };
-                UserSettingStorage.Instance.CustomPluginHotkeys.Add(pluginHotkey);
+                _settings.CustomPluginHotkeys.Add(pluginHotkey);
 
                 SetHotkey(ctlHotkey.CurrentHotkey, delegate
                 {
@@ -76,14 +78,14 @@ namespace Wox
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
             }
 
-            UserSettingStorage.Instance.Save();
-            settingWidow.ReloadCustomPluginHotkeyView();
+            _settings.Save();
+            _settingWidow.ReloadCustomPluginHotkeyView();
             Close();
         }
 
         public void UpdateItem(CustomPluginHotkey item)
         {
-            updateCustomHotkey = UserSettingStorage.Instance.CustomPluginHotkeys.FirstOrDefault(o => o.ActionKeyword == item.ActionKeyword && o.Hotkey == item.Hotkey);
+            updateCustomHotkey = _settings.CustomPluginHotkeys.FirstOrDefault(o => o.ActionKeyword == item.ActionKeyword && o.Hotkey == item.Hotkey);
             if (updateCustomHotkey == null)
             {
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("invalidPluginHotkey"));

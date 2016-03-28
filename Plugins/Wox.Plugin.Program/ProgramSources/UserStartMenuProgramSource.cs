@@ -7,13 +7,13 @@ namespace Wox.Plugin.Program.ProgramSources
     [Browsable(false)]
     public class UserStartMenuProgramSource : FileSystemProgramSource
     {
-        public UserStartMenuProgramSource()
-            : base(Environment.GetFolderPath(Environment.SpecialFolder.Programs))
+        public UserStartMenuProgramSource(string[] suffixes)
+            : base(Environment.GetFolderPath(Environment.SpecialFolder.Programs), suffixes)
         {
         }
 
         public UserStartMenuProgramSource(ProgramSource source)
-            : this()
+            : this(source.Suffixes)
         {
             BonusPoints = source.BonusPoints;
         }

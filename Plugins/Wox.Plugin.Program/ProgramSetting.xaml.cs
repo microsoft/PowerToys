@@ -11,19 +11,21 @@ namespace Wox.Plugin.Program
     public partial class ProgramSetting : UserControl
     {
         private PluginInitContext context;
+        private ProgramStorage _settings;
 
-        public ProgramSetting(PluginInitContext context)
+        public ProgramSetting(PluginInitContext context, ProgramStorage settings)
         {
             this.context = context;
             InitializeComponent();
             Loaded += Setting_Loaded;
+            _settings = settings;
         }
 
         private void Setting_Loaded(object sender, RoutedEventArgs e)
         {
-            programSourceView.ItemsSource = ProgramStorage.Instance.ProgramSources;
-            StartMenuEnabled.IsChecked = ProgramStorage.Instance.EnableStartMenuSource;
-            RegistryEnabled.IsChecked = ProgramStorage.Instance.EnableRegistrySource;
+            programSourceView.ItemsSource = _settings.ProgramSources;
+            StartMenuEnabled.IsChecked = _settings.EnableStartMenuSource;
+            RegistryEnabled.IsChecked = _settings.EnableRegistrySource;
         }
 
         private void ReIndexing()
@@ -39,7 +41,7 @@ namespace Wox.Plugin.Program
 
         private void btnAddProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
-            var add = new AddProgramSource();
+            var add = new AddProgramSource(_settings);
             if(add.ShowDialog() ?? false)
             {
                 ReIndexing();
@@ -55,8 +57,8 @@ namespace Wox.Plugin.Program
 
                 if (MessageBox.Show(msg, string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
-                    ProgramStorage.Instance.ProgramSources.Remove(selectedProgramSource);
-                    ProgramStorage.Instance.Save();
+                    _settings.ProgramSources.Remove(selectedProgramSource);
+                    _settings.Save();
                     ReIndexing();
                 }
             }
@@ -72,7 +74,7 @@ namespace Wox.Plugin.Program
             ProgramSource selectedProgramSource = programSourceView.SelectedItem as ProgramSource;
             if (selectedProgramSource != null)
             {
-                var add = new AddProgramSource(selectedProgramSource);
+                var add = new AddProgramSource(selectedProgramSource, _settings);
                 if (add.ShowDialog() ?? false)
                 {
                     ReIndexing();
@@ -92,7 +94,7 @@ namespace Wox.Plugin.Program
 
         private void BtnProgramSuffixes_OnClick(object sender, RoutedEventArgs e)
         {
-            ProgramSuffixes p = new ProgramSuffixes(context);
+            ProgramSuffixes p = new ProgramSuffixes(context, _settings);
             p.ShowDialog();
         }
 
@@ -118,14 +120,14 @@ namespace Wox.Plugin.Program
                 {
                     if (Directory.Exists(s))
                     {
-                        ProgramStorage.Instance.ProgramSources.Add(new ProgramSource
+                        _settings.ProgramSources.Add(new ProgramSource
                         {
                             Location = s,
                             Type = "FileSystemProgramSource",
                             Enabled = true
                         });
 
-                        ProgramStorage.Instance.Save();
+                        _settings.Save();
                         ReIndexing();
                     }
                 }
@@ -134,15 +136,15 @@ namespace Wox.Plugin.Program
 
         private void StartMenuEnabled_Click(object sender, RoutedEventArgs e)
         {
-            ProgramStorage.Instance.EnableStartMenuSource = StartMenuEnabled.IsChecked ?? false;
-            ProgramStorage.Instance.Save();
+            _settings.EnableStartMenuSource = StartMenuEnabled.IsChecked ?? false;
+            _settings.Save();
             ReIndexing();
         }
 
         private void RegistryEnabled_Click(object sender, RoutedEventArgs e)
         {
-            ProgramStorage.Instance.EnableRegistrySource = RegistryEnabled.IsChecked ?? false;
-            ProgramStorage.Instance.Save();
+            _settings.EnableRegistrySource = RegistryEnabled.IsChecked ?? false;
+            _settings.Save();
             ReIndexing();
         }
     }

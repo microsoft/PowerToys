@@ -8,6 +8,7 @@ using System.Threading;
 using System.Windows;
 using Wox.CommandArgs;
 using Wox.Core.Plugin;
+using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure;
@@ -49,17 +50,21 @@ namespace Wox
 
                 PluginManager.Initialize();
                 UserSettingStorage settings = UserSettingStorage.Instance;
+
+                // happlebao temp fix for instance code logic
+                HttpProxy.Instance.Settings = settings;
+                InternationalizationManager.Instance.Settings = settings;
+                ThemeManager.Instance.Settings = settings;
+
                 MainViewModel mainVM = new MainViewModel(settings);
-                API = new PublicAPIInstance(mainVM);
+                API = new PublicAPIInstance(mainVM, settings);
                 PluginManager.InitializePlugins(API);
 
-                Window = new MainWindow {DataContext = mainVM};
+                Window = new MainWindow (settings, mainVM);
                 NotifyIconManager notifyIconManager = new NotifyIconManager(API);
                 CommandArgsFactory.Execute(e.Args.ToList());
 
-                // happlebao todo: the whole setting releated initialization should be put into seperate class/method
-                API.SetHotkey(UserSettingStorage.Instance.Hotkey, API.OnHotkey);
-                API.SetCustomPluginHotkey();
+
             });
 
         }

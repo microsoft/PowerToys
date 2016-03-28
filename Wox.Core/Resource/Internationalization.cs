@@ -12,6 +12,8 @@ namespace Wox.Core.Resource
 {
     public class Internationalization : Resource
     {
+        public UserSettingStorage Settings { get; set; }
+
         public Internationalization()
         {
             DirectoryName = "Languages";
@@ -64,8 +66,8 @@ namespace Wox.Core.Resource
                 }
             }
 
-            UserSettingStorage.Instance.Language = language.LanguageCode;
-            UserSettingStorage.Instance.Save();
+            Settings.Language = language.LanguageCode;
+            Settings.Save();
             ResourceMerger.UpdateResource(this);
         }
 
@@ -137,7 +139,7 @@ namespace Wox.Core.Resource
         {
             if (!Directory.Exists(folder)) return string.Empty;
 
-            string path = Path.Combine(folder, UserSettingStorage.Instance.Language + ".xaml");
+            string path = Path.Combine(folder, Settings.Language + ".xaml");
             if (File.Exists(path))
             {
                 return path;

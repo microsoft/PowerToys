@@ -36,6 +36,13 @@ namespace Wox.ImageLoader
             ".appref-ms"
         };
 
+        private static ImageCacheStroage _imageCache;
+
+        static ImageLoader()
+        {
+            _imageCache = ImageCacheStroage.Instance;
+        }
+
         private static ImageSource GetIcon(string fileName)
         {
             try
@@ -56,7 +63,7 @@ namespace Wox.ImageLoader
         public static void PreloadImages()
         {
             //ImageCacheStroage.Instance.TopUsedImages can be changed during foreach, so we need to make a copy
-            var imageList = new Dictionary<string, int>(ImageCacheStroage.Instance.TopUsedImages);
+            var imageList = new Dictionary<string, int>(_imageCache.TopUsedImages);
             Stopwatch.Debug($"Preload {imageList.Count} images", () =>
             {
                 foreach (var image in imageList)
@@ -87,7 +94,7 @@ namespace Wox.ImageLoader
 
                 if (addToCache)
                 {
-                    ImageCacheStroage.Instance.Add(path);
+                    _imageCache.Add(path);
                 }
 
 

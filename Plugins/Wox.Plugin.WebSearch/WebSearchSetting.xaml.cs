@@ -18,18 +18,20 @@ namespace Wox.Plugin.WebSearch
         private WebSearch _updateWebSearch;
         private readonly PluginInitContext _context;
         private readonly WebSearchPlugin _plugin;
+        private WebSearchStorage _settings;
 
-        public WebSearchSetting(WebSearchesSetting settingWidow)
+        public WebSearchSetting(WebSearchesSetting settingWidow, WebSearchStorage settings)
         {
             _plugin = settingWidow.Plugin;
             _context = settingWidow.Context;
             _settingWindow = settingWidow;
             InitializeComponent();
+            _settings = settings;
         }
 
         public void UpdateItem(WebSearch webSearch)
         {
-            _updateWebSearch = WebSearchStorage.Instance.WebSearches.FirstOrDefault(o => o == webSearch);
+            _updateWebSearch = _settings.WebSearches.FirstOrDefault(o => o == webSearch);
             if (_updateWebSearch == null || string.IsNullOrEmpty(_updateWebSearch.Url))
             {
 
@@ -110,7 +112,7 @@ namespace Wox.Plugin.WebSearch
                     MessageBox.Show(exception.Message);
                     return;
                 }
-                WebSearchStorage.Instance.WebSearches.Add(new WebSearch
+                _settings.WebSearches.Add(new WebSearch
                 {
                     ActionKeyword = newActionKeyword,
                     Enabled = cbEnable.IsChecked ?? false,
@@ -120,7 +122,7 @@ namespace Wox.Plugin.WebSearch
                 });
             }
 
-            WebSearchStorage.Instance.Save();
+            _settings.Save();
             _settingWindow.ReloadWebSearchView();
             Close();
         }

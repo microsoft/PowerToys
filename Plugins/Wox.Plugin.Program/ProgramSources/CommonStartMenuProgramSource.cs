@@ -21,13 +21,13 @@ namespace Wox.Plugin.Program.ProgramSources
             return commonStartMenuPath.ToString();
         }
 
-        public CommonStartMenuProgramSource()
-            : base(getPath())
+        public CommonStartMenuProgramSource(string[] suffixes)
+            : base(getPath(), suffixes)
         {
         }
 
         public CommonStartMenuProgramSource(ProgramSource source)
-            : this()
+            : this(source.Suffixes)
         {
             BonusPoints = source.BonusPoints;
         }

@@ -12,20 +12,21 @@ namespace Wox.Plugin.Folder
     {
         private static List<string> driverNames;
         private PluginInitContext context;
+        private FolderStorage _settings = FolderStorage.Instance;
 
         public Control CreateSettingPanel()
         {
-            return new FileSystemSettings(context.API);
+            return new FileSystemSettings(context.API, _settings);
         }
 
         public void Init(PluginInitContext context)
         {
             this.context = context;
             InitialDriverList();
-            if (FolderStorage.Instance.FolderLinks == null)
+            if (_settings.FolderLinks == null)
             {
-                FolderStorage.Instance.FolderLinks = new List<FolderLink>();
-                FolderStorage.Instance.Save();
+                _settings.FolderLinks = new List<FolderLink>();
+                _settings.Save();
             }
         }
 
@@ -33,7 +34,7 @@ namespace Wox.Plugin.Folder
         {
             string input = query.Search.ToLower();
 
-            List<FolderLink> userFolderLinks = FolderStorage.Instance.FolderLinks.Where(
+            List<FolderLink> userFolderLinks = _settings.FolderLinks.Where(
                 x => x.Nickname.StartsWith(input, StringComparison.OrdinalIgnoreCase)).ToList();
             List<Result> results =
                 userFolderLinks.Select(

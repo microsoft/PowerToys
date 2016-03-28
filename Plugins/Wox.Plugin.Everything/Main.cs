@@ -17,6 +17,7 @@ namespace Wox.Plugin.Everything
         private readonly EverythingAPI _api = new EverythingAPI();
         private static readonly List<string> ImageExts = new List<string> { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico" };
         private static readonly List<string> ExecutableExts = new List<string> { ".exe" };
+        private ContextMenuStorage _settings = ContextMenuStorage.Instance;
 
         public List<Result> Query(Query query)
         {
@@ -24,10 +25,10 @@ namespace Wox.Plugin.Everything
             if (!string.IsNullOrEmpty(query.Search))
             {
                 var keyword = query.Search;
-                if (ContextMenuStorage.Instance.MaxSearchCount <= 0)
+                if (_settings.MaxSearchCount <= 0)
                 {
-                    ContextMenuStorage.Instance.MaxSearchCount = 50;
-                    ContextMenuStorage.Instance.Save();
+                    _settings.MaxSearchCount = 50;
+                    _settings.Save();
                 }
 
                 if (keyword == "uninstalleverything")
@@ -47,7 +48,7 @@ namespace Wox.Plugin.Everything
 
                 try
                 {
-                    var searchList = _api.Search(keyword, maxCount: ContextMenuStorage.Instance.MaxSearchCount).ToList();
+                    var searchList = _api.Search(keyword, maxCount: _settings.MaxSearchCount).ToList();
                     foreach (var s in searchList)
                     {
                         var path = s.FullPath;
@@ -154,7 +155,7 @@ namespace Wox.Plugin.Everything
         public void Init(PluginInitContext context)
         {
             _context = context;
-            ContextMenuStorage.Instance.API = context.API;
+            _settings.API = context.API;
 
             LoadLibrary(Path.Combine(
                 Path.Combine(context.CurrentPluginMetadata.PluginDirectory, (IntPtr.Size == 4) ? "x86" : "x64"),
@@ -285,7 +286,7 @@ namespace Wox.Plugin.Everything
 
             List<ContextMenu> availableContextMenus = new List<ContextMenu>();
             availableContextMenus.AddRange(GetDefaultContextMenu());
-            availableContextMenus.AddRange(ContextMenuStorage.Instance.ContextMenus);
+            availableContextMenus.AddRange(_settings.ContextMenus);
 
             if (record.Type == ResultType.File)
             {

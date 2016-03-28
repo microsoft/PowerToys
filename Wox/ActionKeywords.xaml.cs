@@ -10,11 +10,13 @@ namespace Wox
     public partial class ActionKeywords : Window
     {
         private PluginPair _plugin;
+        private UserSettingStorage _settings;
 
-        public ActionKeywords(string pluginId)
+        public ActionKeywords(string pluginId, UserSettingStorage settings)
         {
             InitializeComponent();
             _plugin = PluginManager.GetPluginForId(pluginId);
+            _settings = settings;
             if (_plugin == null)
             {
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("cannotFindSpecifiedPlugin"));
@@ -48,7 +50,7 @@ namespace Wox
                 return;
             }
             // update persistant data
-            UserSettingStorage.Instance.UpdateActionKeyword(_plugin.Metadata);
+            _settings.UpdateActionKeyword(_plugin.Metadata);
 
             MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
             Close();

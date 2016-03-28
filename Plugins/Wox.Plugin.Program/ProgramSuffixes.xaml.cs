@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Linq;
 
 namespace Wox.Plugin.Program
 {
@@ -8,13 +9,14 @@ namespace Wox.Plugin.Program
     public partial class ProgramSuffixes
     {
         private PluginInitContext context;
+        private ProgramStorage _settings;
 
-        public ProgramSuffixes(PluginInitContext context)
+        public ProgramSuffixes(PluginInitContext context, ProgramStorage settings)
         {
             this.context = context;
             InitializeComponent();
-
-            tbSuffixes.Text = ProgramStorage.Instance.ProgramSuffixes;
+            _settings = settings;
+            tbSuffixes.Text = string.Join(ProgramSource.SuffixSeperator.ToString(), _settings.ProgramSuffixes);
         }
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
@@ -26,7 +28,7 @@ namespace Wox.Plugin.Program
                 return;
             }
 
-            ProgramStorage.Instance.ProgramSuffixes = tbSuffixes.Text;
+            _settings.ProgramSuffixes = tbSuffixes.Text.Split(ProgramSource.SuffixSeperator);
             string msg = context.API.GetTranslation("wox_plugin_program_update_file_suffixes");
             MessageBox.Show(msg);
         }

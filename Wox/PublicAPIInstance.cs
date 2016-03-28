@@ -22,11 +22,15 @@ namespace Wox
         private UserSettingStorage _settings;
         #region Constructor
 
-        public PublicAPIInstance(MainViewModel mainVM)
+        public PublicAPIInstance(MainViewModel mainVM, UserSettingStorage settings)
         {
             MainVM = mainVM;
+            _settings = settings;
             GlobalHotkey.Instance.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
+            SetHotkey(_settings.Hotkey, OnHotkey);
+            SetCustomPluginHotkey();
+
         }
 
         #endregion
@@ -94,7 +98,7 @@ namespace Wox
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                SettingWindow sw = SingletonWindowOpener.Open<SettingWindow>(this);
+                SettingWindow sw = SingletonWindowOpener.Open<SettingWindow>(this, _settings);
                 sw.SwitchTo(tabName);
             });
         }
@@ -206,7 +210,7 @@ namespace Wox
         private bool ShouldIgnoreHotkeys()
         {
             //double if to omit calling win32 function
-            if (UserSettingStorage.Instance.IgnoreHotkeysOnFullscreen)
+            if (_settings.IgnoreHotkeysOnFullscreen)
                 if (WindowIntelopHelper.IsWindowFullscreen())
                     return true;
 
@@ -215,8 +219,8 @@ namespace Wox
 
         internal void SetCustomPluginHotkey()
         {
-            if (UserSettingStorage.Instance.CustomPluginHotkeys == null) return;
-            foreach (CustomPluginHotkey hotkey in UserSettingStorage.Instance.CustomPluginHotkeys)
+            if (_settings.CustomPluginHotkeys == null) return;
+            foreach (CustomPluginHotkey hotkey in _settings.CustomPluginHotkeys)
             {
                 CustomPluginHotkey hotkey1 = hotkey;
                 SetHotkey(hotkey.Hotkey, delegate

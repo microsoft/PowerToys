@@ -5,39 +5,13 @@ namespace Wox.Core.UserSettings
     public class HttpProxy : IHttpProxy
     {
         private static readonly HttpProxy instance = new HttpProxy();
+        public UserSettingStorage Settings { get; set; }
+        public static HttpProxy Instance => instance;
 
-        private HttpProxy()
-        {
-        }
-
-        public static HttpProxy Instance
-        {
-            get { return instance; }
-        }
-
-        public bool Enabled
-        {
-            get { return UserSettingStorage.Instance.ProxyEnabled; }
-        }
-
-        public string Server
-        {
-            get { return UserSettingStorage.Instance.ProxyServer; }
-        }
-
-        public int Port
-        {
-            get { return UserSettingStorage.Instance.ProxyPort; }
-        }
-
-        public string UserName
-        {
-            get { return UserSettingStorage.Instance.ProxyUserName; }
-        }
-
-        public string Password
-        {
-            get { return UserSettingStorage.Instance.ProxyPassword; }
-        }
+        public bool Enabled => Settings.ProxyEnabled;
+        public string Server => Settings.ProxyServer;
+        public int Port => Settings.ProxyPort;
+        public string UserName => Settings.ProxyUserName;
+        public string Password => Settings.ProxyPassword;
     }
 }

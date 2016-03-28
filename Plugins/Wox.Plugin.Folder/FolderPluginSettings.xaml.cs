@@ -7,20 +7,21 @@ using DataFormats = System.Windows.DataFormats;
 using DragDropEffects = System.Windows.DragDropEffects;
 using DragEventArgs = System.Windows.DragEventArgs;
 using MessageBox = System.Windows.MessageBox;
-using UserControl = System.Windows.Controls.UserControl;
 
 namespace Wox.Plugin.Folder
 {
 
-    public partial class FileSystemSettings : UserControl
+    public partial class FileSystemSettings
     {
         private IPublicAPI woxAPI;
+        private FolderStorage _settings;
 
-        public FileSystemSettings(IPublicAPI woxAPI)
+        public FileSystemSettings(IPublicAPI woxAPI, FolderStorage settings)
         {
             this.woxAPI = woxAPI;
             InitializeComponent();
-            lbxFolders.ItemsSource = FolderStorage.Instance.FolderLinks;
+            _settings = settings;
+            lbxFolders.ItemsSource = _settings.FolderLinks;
         }
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
@@ -32,9 +33,9 @@ namespace Wox.Plugin.Folder
 
                 if (MessageBox.Show(msg, string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
-                    FolderStorage.Instance.FolderLinks.Remove(selectedFolder);
+                    _settings.FolderLinks.Remove(selectedFolder);
                     lbxFolders.Items.Refresh();
-                    FolderStorage.Instance.Save();
+                    _settings.Save();
                 }
             }
             else
@@ -53,10 +54,10 @@ namespace Wox.Plugin.Folder
                 folderBrowserDialog.SelectedPath = selectedFolder.Path;
                 if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
                 {
-                    var link = FolderStorage.Instance.FolderLinks.First(x => x.Path == selectedFolder.Path);
+                    var link = _settings.FolderLinks.First(x => x.Path == selectedFolder.Path);
                     link.Path = folderBrowserDialog.SelectedPath;
 
-                    FolderStorage.Instance.Save();
+                    _settings.Save();
                 }
 
                 lbxFolders.Items.Refresh();
@@ -78,13 +79,13 @@ namespace Wox.Plugin.Folder
                     Path = folderBrowserDialog.SelectedPath
                 };
 
-                if (FolderStorage.Instance.FolderLinks == null)
+                if (_settings.FolderLinks == null)
                 {
-                    FolderStorage.Instance.FolderLinks = new List<FolderLink>();
+                    _settings.FolderLinks = new List<FolderLink>();
                 }
 
-                FolderStorage.Instance.FolderLinks.Add(newFolder);
-                FolderStorage.Instance.Save();
+                _settings.FolderLinks.Add(newFolder);
+                _settings.Save();
             }
 
             lbxFolders.Items.Refresh();
@@ -96,9 +97,9 @@ namespace Wox.Plugin.Folder
 
             if (files != null && files.Count() > 0)
             {
-                if (FolderStorage.Instance.FolderLinks == null)
+                if (_settings.FolderLinks == null)
                 {
-                    FolderStorage.Instance.FolderLinks = new List<FolderLink>();
+                    _settings.FolderLinks = new List<FolderLink>();
                 }
 
                 foreach (string s in files)
@@ -110,8 +111,8 @@ namespace Wox.Plugin.Folder
                             Path = s
                         };
 
-                        FolderStorage.Instance.FolderLinks.Add(newFolder);
-                        FolderStorage.Instance.Save();
+                        _settings.FolderLinks.Add(newFolder);
+                        _settings.Save();
                     }
 
                     lbxFolders.Items.Refresh();

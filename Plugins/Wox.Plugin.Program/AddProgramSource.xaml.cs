@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Forms;
 
 namespace Wox.Plugin.Program
@@ -9,18 +10,23 @@ namespace Wox.Plugin.Program
     public partial class AddProgramSource
     {
         private ProgramSource _editing;
+        private ProgramStorage _settings;
 
-        public AddProgramSource()
+        public AddProgramSource(ProgramStorage settings)
         {
+            _settings = settings;
             InitializeComponent();
+            Suffixes.Text = string.Join(";", settings.ProgramSuffixes);
         }
 
-        public AddProgramSource(ProgramSource edit) : this()
+        public AddProgramSource(ProgramSource edit, ProgramStorage settings)
         {
             _editing = edit;
             Directory.Text = _editing.Location;
             MaxDepth.Text = _editing.MaxDepth.ToString();
-            Suffixes.Text = _editing.Suffixes;
+            Suffixes.Text = string.Join(";", _editing.Suffixes);
+            _settings = settings;
+            InitializeComponent();
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -43,11 +49,11 @@ namespace Wox.Plugin.Program
 
             if(_editing == null)
             {
-                ProgramStorage.Instance.ProgramSources.Add(new ProgramSource
+                _settings.ProgramSources.Add(new ProgramSource
                 {
                     Location = Directory.Text,
                     MaxDepth = max,
-                    Suffixes = Suffixes.Text,
+                    Suffixes = Suffixes.Text.Split(ProgramSource.SuffixSeperator),
                     Type = "FileSystemProgramSource",
                     Enabled = true
                 });
@@ -56,10 +62,10 @@ namespace Wox.Plugin.Program
             {
                 _editing.Location = Directory.Text;
                 _editing.MaxDepth = max;
-                _editing.Suffixes = Suffixes.Text;
+                _editing.Suffixes = Suffixes.Text.Split(ProgramSource.SuffixSeperator);
             }
 
-            ProgramStorage.Instance.Save();
+            _settings.Save();
             DialogResult = true;
             Close();
         }

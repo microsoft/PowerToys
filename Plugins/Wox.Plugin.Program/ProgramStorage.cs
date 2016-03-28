@@ -1,17 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
 
 namespace Wox.Plugin.Program
 {
+    [Serializable]
     public class ProgramStorage : JsonStrorage<ProgramStorage>
     {
         [JsonProperty]
         public List<ProgramSource> ProgramSources { get; set; }
 
+
         [JsonProperty]
-        public string ProgramSuffixes { get; set; }
+        public string[] ProgramSuffixes { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue(true)]
@@ -31,9 +34,9 @@ namespace Wox.Plugin.Program
 
         protected override void OnAfterLoad(ProgramStorage storage)
         {
-            if (string.IsNullOrEmpty(storage.ProgramSuffixes))
+            if (storage.ProgramSuffixes == null || storage.ProgramSuffixes.Length == 0)
             {
-                storage.ProgramSuffixes = "lnk;exe;appref-ms;bat";
+                storage.ProgramSuffixes = new[] {"bat", "appref-ms", "exe", "lnk"};
             }
         }
 

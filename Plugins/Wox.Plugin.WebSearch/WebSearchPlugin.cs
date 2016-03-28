@@ -10,13 +10,14 @@ namespace Wox.Plugin.WebSearch
 {
     public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IMultipleActionKeywords
     {
+        private WebSearchStorage _settings = WebSearchStorage.Instance;
         public PluginInitContext Context { get; private set; }
 
         public List<Result> Query(Query query)
         {
             List<Result> results = new List<Result>();
             WebSearch webSearch =
-                WebSearchStorage.Instance.WebSearches.FirstOrDefault(o => o.ActionKeyword == query.ActionKeyword && o.Enabled);
+                _settings.WebSearches.FirstOrDefault(o => o.ActionKeyword == query.ActionKeyword && o.Enabled);
 
             if (webSearch != null)
             {
@@ -42,7 +43,7 @@ namespace Wox.Plugin.WebSearch
                 };
                 results.Add(result);
 
-                if (WebSearchStorage.Instance.EnableWebSearchSuggestion && !string.IsNullOrEmpty(keyword))
+                if (_settings.EnableWebSearchSuggestion && !string.IsNullOrEmpty(keyword))
                 {
                     // todo use Task.Wait when .net upgraded
                     results.AddRange(ResultsFromSuggestions(keyword, subtitle, webSearch));
@@ -53,7 +54,7 @@ namespace Wox.Plugin.WebSearch
 
         private IEnumerable<Result> ResultsFromSuggestions(string keyword, string subtitle, WebSearch webSearch)
         {
-            ISuggestionSource sugg = SuggestionSourceFactory.GetSuggestionSource(WebSearchStorage.Instance.WebSearchSuggestionSource, Context);
+            ISuggestionSource sugg = SuggestionSourceFactory.GetSuggestionSource(_settings.WebSearchSuggestionSource, Context);
             var suggestions = sugg?.GetSuggestions(keyword);
             if (suggestions != null)
             {
@@ -83,7 +84,7 @@ namespace Wox.Plugin.WebSearch
 
         public Control CreateSettingPanel()
         {
-            return new WebSearchesSetting(this);
+            return new WebSearchesSetting(this, _settings);
         }
 
         #endregion
