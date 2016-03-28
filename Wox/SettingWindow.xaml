@@ -126,7 +126,7 @@
                                     <TextBlock Margin="5 0 0 0" ToolTip="Change Action Keywords" Cursor="Hand"
                                                MouseUp="PluginActionKeywords_OnMouseUp" Foreground="Blue" Text="keys"
                                                x:Name="pluginActionKeywords" />
-                                    <TextBlock Margin="10 0 0 0" Text="Init time: 0ms" x:Name="pluginInitTime" />
+                                    <TextBlock Margin="10 0 0 0" Text="Initialize time: 0ms" x:Name="pluginInitTime" />
                                     <TextBlock Margin="10 0 0 0" Text="Query time: 0ms" x:Name="pluginQueryTime" />
                                     <TextBlock HorizontalAlignment="Right" Cursor="Hand"
                                                MouseUp="tbOpenPluginDirecoty_MouseUp" Foreground="Blue"

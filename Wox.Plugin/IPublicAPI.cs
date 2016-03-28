@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Wox.Plugin
 {
@@ -13,6 +14,7 @@ namespace Wox.Plugin
         /// <param name="query"></param>
         /// <param name="plugin"></param>
         /// <param name="results"></param>
+        [Obsolete("This method will be removed in Wox 1.3")]
         void PushResults(Query query, PluginMetadata plugin, List<Result> results);
 
         /// <summary>
@@ -98,11 +100,6 @@ namespace Wox.Plugin
         /// </summary>
         /// <returns></returns>
         List<PluginPair> GetAllPlugins();
-
-        /// <summary>
-        /// Fired after Back key down in the Wox query box
-        /// </summary>
-        event WoxKeyDownEventHandler BackKeyDownEvent;
 
         /// <summary>
         /// Fired after global keyboard events

@@ -47,11 +47,14 @@ namespace Wox
                 ThreadPool.SetMinThreads(10, 5);
                 ThreadPool.QueueUserWorkItem(_ => { ImageLoader.ImageLoader.PreloadImages(); });
 
-                MainViewModel mainVM = new MainViewModel();
+                PluginManager.Initialize();
+                UserSettingStorage settings = UserSettingStorage.Instance;
+                MainViewModel mainVM = new MainViewModel(settings);
                 API = new PublicAPIInstance(mainVM);
+                PluginManager.InitializePlugins(API);
+
                 Window = new MainWindow {DataContext = mainVM};
                 NotifyIconManager notifyIconManager = new NotifyIconManager(API);
-                PluginManager.Init(API);
                 CommandArgsFactory.Execute(e.Args.ToList());
 
                 // happlebao todo: the whole setting releated initialization should be put into seperate class/method

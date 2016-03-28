@@ -21,32 +21,11 @@ namespace Wox.Plugin.Folder
         public void Init(PluginInitContext context)
         {
             this.context = context;
-            this.context.API.BackKeyDownEvent += ApiBackKeyDownEvent;
             InitialDriverList();
             if (FolderStorage.Instance.FolderLinks == null)
             {
                 FolderStorage.Instance.FolderLinks = new List<FolderLink>();
                 FolderStorage.Instance.Save();
-            }
-        }
-
-        private void ApiBackKeyDownEvent(WoxKeyDownEventArgs e)
-        {
-            string query = e.Query;
-            if (Directory.Exists(query))
-            {
-                if (query.EndsWith("\\"))
-                {
-                    query = query.Remove(query.Length - 1);
-                }
-
-                if (query.Contains("\\"))
-                {
-                    int index = query.LastIndexOf("\\");
-                    query = query.Remove(index) + "\\";
-                }
-
-                context.API.ChangeQuery(query);
             }
         }
 

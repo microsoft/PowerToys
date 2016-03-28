@@ -80,7 +80,7 @@ namespace Wox.Core.Plugin
                     //current solution is to restart wox. Ugly.
                     //if (MainWindow.Initialized)
                     //{
-                    //    Plugins.Init();
+                    //    Plugins.Initialize();
                     //}
                     if (MessageBox.Show($"You have installed plugin {plugin.Name} successfully.{Environment.NewLine}" +
                                         " Restart Wox to take effect?",

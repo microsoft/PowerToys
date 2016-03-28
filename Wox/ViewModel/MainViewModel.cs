@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
+using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
@@ -34,19 +36,28 @@ namespace Wox.ViewModel
         private string _queryTextBeforeLoadContextMenu;
         private string _queryText;
 
+        private UserSettingStorage _settings;
+        private QueryHistoryStorage _queryHistory;
+        private UserSelectedRecordStorage _userSelectedRecord;
+        private TopMostRecordStorage _topMostRecord;
+
         #endregion
 
         #region Constructor
 
-        public MainViewModel()
+        public MainViewModel(UserSettingStorage settings)
         {
             _queryTextBeforeLoadContextMenu = "";
             _queryText = "";
             _lastQuery = new Query();
+            _settings = settings;
 
             InitializeResultListBox();
             InitializeContextMenu();
             InitializeKeyCommands();
+            _queryHistory = QueryHistoryStorage.Instance;
+            _userSelectedRecord = UserSelectedRecordStorage.Instance;
+            _topMostRecord = TopMostRecordStorage.Instance;
         }
 
         #endregion
@@ -243,13 +254,13 @@ namespace Wox.ViewModel
 
             DisplayNextQueryCommand = new RelayCommand(_ =>
             {
-                var nextQuery = QueryHistoryStorage.Instance.Next();
+                var nextQuery = _queryHistory.Next();
                 DisplayQueryHistory(nextQuery);
             });
 
             DisplayPrevQueryCommand = new RelayCommand(_ =>
             {
-                var prev = QueryHistoryStorage.Instance.Previous();
+                var prev = _queryHistory.Previous();
                 DisplayQueryHistory(prev);
             });
 
@@ -288,8 +299,8 @@ namespace Wox.ViewModel
                     MainWindowVisibility = Visibility.Collapsed;
                 }
 
-                UserSelectedRecordStorage.Instance.Add(result);
-                QueryHistoryStorage.Instance.Add(result.OriginQuery.RawQuery);
+                _userSelectedRecord.Add(result);
+                _queryHistory.Add(result.OriginQuery.RawQuery);
             });
 
             LoadContextMenuCommand = new RelayCommand(_ =>
@@ -413,7 +424,19 @@ namespace Wox.ViewModel
                     }
                 };
                 action.Invoke();
-                PluginManager.QueryForAllPlugins(query);
+                var plugins = PluginManager.ValidPluginsForQuery(query);
+                foreach (var plugin in plugins)
+                {
+                    var config = _settings.CustomizedPluginConfigs[plugin.Metadata.ID];
+                    if (!config.Disabled)
+                    {
+                        ThreadPool.QueueUserWorkItem(o =>
+                        {
+                            var results = PluginManager.QueryForPlugin(plugin, query);
+                            UpdateResultView(results, plugin.Metadata, query);
+                        });
+                    }
+                }
             }
 
             IsProgressBarTooltipVisible = false;
@@ -422,7 +445,7 @@ namespace Wox.ViewModel
         private void ResetQueryHistoryIndex()
         {
             Results.RemoveResultsFor(QueryHistoryStorage.MetaData);
-            QueryHistoryStorage.Instance.Reset();
+            _queryHistory.Reset();
         }
 
         private void UpdateResultViewInternal(List<Result> list, PluginMetadata metadata)
@@ -462,14 +485,14 @@ namespace Wox.ViewModel
         }
         private Result GetTopMostContextMenu(Result result)
         {
-            if (TopMostRecordStorage.Instance.IsTopMost(result))
+            if (_topMostRecord.IsTopMost(result))
             {
                 return new Result(InternationalizationManager.Instance.GetTranslation("cancelTopMostInThisQuery"), "Images\\down.png")
                 {
                     PluginDirectory = WoxDirectroy.Executable,
                     Action = _ =>
                     {
-                        TopMostRecordStorage.Instance.Remove(result);
+                        _topMostRecord.Remove(result);
                         App.API.ShowMsg("Succeed");
                         return false;
                     }
@@ -482,7 +505,7 @@ namespace Wox.ViewModel
                     PluginDirectory = WoxDirectroy.Executable,
                     Action = _ =>
                     {
-                        TopMostRecordStorage.Instance.AddOrUpdate(result);
+                        _topMostRecord.AddOrUpdate(result);
                         App.API.ShowMsg("Succeed");
                         return false;
                     }
@@ -500,7 +523,7 @@ namespace Wox.ViewModel
 
             list.ForEach(o =>
             {
-                o.Score += UserSelectedRecordStorage.Instance.GetSelectedCount(o) * 5;
+                o.Score += _userSelectedRecord.GetSelectedCount(o) * 5;
             });
             if (originQuery.RawQuery == _lastQuery.RawQuery)
             {

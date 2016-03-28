@@ -19,36 +19,21 @@ namespace Wox
 {
     public class PublicAPIInstance : IPublicAPI
     {
-
+        private UserSettingStorage _settings;
         #region Constructor
 
         public PublicAPIInstance(MainViewModel mainVM)
         {
             MainVM = mainVM;
-
-
             GlobalHotkey.Instance.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
-
-            MainVM.ListeningKeyPressed += (o, e) =>
-            {
-
-                if (e.KeyEventArgs.Key == Key.Back)
-                {
-                    BackKeyDownEvent?.Invoke(new WoxKeyDownEventArgs
-                    {
-                        Query = MainVM.QueryText,
-                        keyEventArgs = e.KeyEventArgs
-                    });
-                }
-            };
         }
 
         #endregion
 
         #region Properties
 
-        private MainViewModel MainVM
+        public MainViewModel MainVM
         {
             get;
             set;
@@ -131,7 +116,11 @@ namespace Wox
 
         public void ReloadPlugins()
         {
-            Application.Current.Dispatcher.Invoke(() => PluginManager.Init(this));
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                PluginManager.Initialize();
+                PluginManager.InitializePlugins(this);
+            });
         }
 
         public string GetTranslation(string key)
@@ -144,9 +133,9 @@ namespace Wox
             return PluginManager.AllPlugins.ToList();
         }
 
-        public event WoxKeyDownEventHandler BackKeyDownEvent;
         public event WoxGlobalKeyboardEventHandler GlobalKeyboardEvent;
 
+        [Obsolete("This will be removed in Wox 1.3")]
         public void PushResults(Query query, PluginMetadata plugin, List<Result> results)
         {
             results.ForEach(o =>

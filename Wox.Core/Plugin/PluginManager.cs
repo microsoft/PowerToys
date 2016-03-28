@@ -63,12 +63,10 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// Load and init all Wox plugins
         /// </summary>
-        public static void Init(IPublicAPI api)
+        /// 
+        public static void Initialize()
         {
-            if (api == null) throw new WoxFatalException("api is null");
-
             SetupPluginDirectories();
-            API = api;
 
             var metadatas = PluginConfig.Parse(PluginDirectories);
             AllPlugins = (new CSharpPluginLoader().LoadPlugin(metadatas)).
@@ -76,7 +74,11 @@ namespace Wox.Core.Plugin
 
             //load plugin i18n languages
             ResourceMerger.UpdatePluginLanguages();
+        }
 
+        public static void InitializePlugins(IPublicAPI api)
+        {
+            API = api;
             foreach (PluginPair pluginPair in AllPlugins)
             {
                 PluginPair pair = pluginPair;
@@ -98,7 +100,6 @@ namespace Wox.Core.Plugin
 
             ThreadPool.QueueUserWorkItem(o =>
             {
-                InstantQueryPlugins = GetPluginsForInterface<IInstantQuery>();
                 _contextMenuPlugins = GetPluginsForInterface<IContextMenu>();
                 foreach (var plugin in AllPlugins)
                 {
@@ -149,53 +150,41 @@ namespace Wox.Core.Plugin
             };
         }
 
-        public static void QueryForAllPlugins(Query query)
+        public static List<PluginPair> ValidPluginsForQuery(Query query)
         {
-            var pluginPairs = NonGlobalPlugins.ContainsKey(query.ActionKeyword) ?
-                new List<PluginPair> { NonGlobalPlugins[query.ActionKeyword] } : GlobalPlugins;
-            foreach (var plugin in pluginPairs)
+            if (NonGlobalPlugins.ContainsKey(query.ActionKeyword))
             {
-                var customizedPluginConfig = UserSettingStorage.Instance.
-                    CustomizedPluginConfigs[plugin.Metadata.ID];
-                if (customizedPluginConfig.Disabled) continue;
-                if (IsInstantQueryPlugin(plugin))
-                {
-                    Stopwatch.Normal($"Instant QueryForPlugin for {plugin.Metadata.Name}", () =>
-                    {
-                        QueryForPlugin(plugin, query);
-                    });
-                }
-                else
-                {
-                    ThreadPool.QueueUserWorkItem(state =>
-                    {
-                        Stopwatch.Normal($"Normal QueryForPlugin for {plugin.Metadata.Name}", () =>
-                        {
-                            QueryForPlugin(plugin, query);
-                        });
-                    });
-                }
+                var plugin = NonGlobalPlugins[query.ActionKeyword];
+                return new List<PluginPair> { plugin };
+            }
+            else
+            {
+                return GlobalPlugins;
             }
         }
-
-        private static void QueryForPlugin(PluginPair pair, Query query)
+        public static List<Result> QueryForPlugin(PluginPair pair, Query query)
         {
+            var results = new List<Result>();
             try
             {
-                List<Result> results = new List<Result>();
                 var milliseconds = Stopwatch.Normal($"Plugin.Query cost for {pair.Metadata.Name}", () =>
                     {
                         results = pair.Plugin.Query(query) ?? results;
-                        results.ForEach(o => { o.PluginID = pair.Metadata.ID; });
+                        results.ForEach(o =>
+                        {
+                            o.PluginDirectory = pair.Metadata.PluginDirectory;
+                            o.PluginID = pair.Metadata.ID;
+                            o.OriginQuery = query;
+                        });
                     });
                 pair.QueryCount += 1;
                 pair.AvgQueryTime = pair.QueryCount == 1 ? milliseconds : (pair.AvgQueryTime + milliseconds) / 2;
-                API.PushResults(query, pair.Metadata, results);
             }
             catch (Exception e)
             {
                 throw new WoxPluginException(pair.Metadata.Name, $"QueryForPlugin failed", e);
             }
+            return results;
         }
 
         private static bool IsGlobalPlugin(PluginMetadata metadata)
