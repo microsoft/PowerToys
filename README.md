@@ -1,3 +1,4 @@
+[![Gitter](https://badges.gitter.im/Wox-launcher/Wox.svg)](https://gitter.im/Wox-launcher/Wox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e103)](https://ci.appveyor.com/project/qianlifeng/wox) [![Github All Releases](https://img.shields.io/github/downloads/Wox-launcher/Wox/total.svg)](https://github.com/Wox-launcher/Wox/releases)
 [![Bountysource](https://www.bountysource.com/badge/team?team_id=39433&style=raised)](https://www.bountysource.com/teams/wox?utm_source=Wox&utm_medium=shield&utm_campaign=raised) 
 [![Issue Stats](http://issuestats.com/github/Wox-launcher/Wox/badge/pr)](http://issuestats.com/github/Wox-launcher/Wox) 
