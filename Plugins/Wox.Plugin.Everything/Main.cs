@@ -13,10 +13,13 @@ namespace Wox.Plugin.Everything
 {
     public class Main : IPlugin, IPluginI18n, IContextMenu
     {
-        private PluginInitContext _context;
         private readonly EverythingAPI _api = new EverythingAPI();
         private static readonly List<string> ImageExts = new List<string> { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico" };
         private static readonly List<string> ExecutableExts = new List<string> { ".exe" };
+        private const string PortableEverything = "PortableEverything";
+        private const string EverythingProcessName = "Everything";
+
+        private PluginInitContext _context;
         private ContextMenuStorage _settings = ContextMenuStorage.Instance;
 
         public List<Result> Query(Query query)
@@ -157,12 +160,15 @@ namespace Wox.Plugin.Everything
             _context = context;
             _settings.API = context.API;
 
-            LoadLibrary(Path.Combine(
-                Path.Combine(context.CurrentPluginMetadata.PluginDirectory, (IntPtr.Size == 4) ? "x86" : "x64"),
-                "Everything.dll"
-            ));
+            LoadLibrary(Path.Combine(context.CurrentPluginMetadata.PluginDirectory,
+                  PortableEverything, GetCpuType(), "Everything.dll"));
 
             StartEverything();
+        }
+
+        private string GetCpuType()
+        {
+            return (IntPtr.Size == 4) ? "x86" : "x64";
         }
 
         private void StartEverything()
@@ -211,7 +217,7 @@ namespace Wox.Plugin.Everything
                 p.StartInfo.Arguments = "-uninstall-service";
                 p.Start();
 
-                Process[] proc = Process.GetProcessesByName("Everything");
+                Process[] proc = Process.GetProcessesByName(EverythingProcessName);
                 foreach (Process process in proc)
                 {
                     process.Kill();
@@ -245,7 +251,7 @@ namespace Wox.Plugin.Everything
         {
             try
             {
-                ServiceController sc = new ServiceController("Everything");
+                ServiceController sc = new ServiceController(EverythingProcessName);
                 return sc.Status == ServiceControllerStatus.Running;
             }
             catch
@@ -257,13 +263,13 @@ namespace Wox.Plugin.Everything
 
         private bool CheckEverythingIsRunning()
         {
-            return Process.GetProcessesByName("Everything").Length > 0;
+            return Process.GetProcessesByName(EverythingProcessName).Length > 0;
         }
 
         private string GetEverythingPath()
         {
             string directory = Path.Combine(_context.CurrentPluginMetadata.PluginDirectory,
-                                            "PortableEverything",
+                                            PortableEverything, GetCpuType(),
                                             "Everything.exe");
             return directory;
         }
