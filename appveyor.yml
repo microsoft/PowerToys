@@ -7,7 +7,7 @@ assembly_info:
   file: AssemblyInfo.*
   assembly_version: '{version}'
   assembly_file_version: '{version}'
-  assembly_informational_version: '{version}-beta.2-$(APPVEYOR_REPO_COMMIT)'
+  assembly_informational_version: '{version}-$(APPVEYOR_REPO_COMMIT)'
 before_build:
 - ps: nuget restore
 build:
@@ -29,3 +29,14 @@ deploy:
   artifact: nuget_package
   on:
     branch: api
+- provider: GitHub
+  description: 'Prerelease build'
+  auth_token:
+    # encriped using appveyor account -> encrypt data
+    secure: QWPF8at/Ber4dcTAtOVZd7kgbUii6GYrEFdJAKC6SaqmwMO9OAwkXccN2bqBAml9
+  artifact: /.*\.zip/            
+  prerelease: true
+  on:
+    branch: master
+    # deploy on tag push only                 
+    appveyor_repo_tag: true        
