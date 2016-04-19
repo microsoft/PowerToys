@@ -30,7 +30,7 @@ deploy:
   on:
     branch: api
 - provider: GitHub
-  description: 'Prerelease build'
+  description: 'Prerelease from every stable master build'
   auth_token:
     # encriped using appveyor account -> encrypt data
     secure: QWPF8at/Ber4dcTAtOVZd7kgbUii6GYrEFdJAKC6SaqmwMO9OAwkXccN2bqBAml9
