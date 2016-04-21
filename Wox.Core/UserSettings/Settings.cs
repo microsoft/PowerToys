@@ -31,7 +31,7 @@ namespace Wox.Core.UserSettings
 
         // Order defaults to 0 or -1, so 1 will let this property appear last
         [JsonProperty(Order = 1)]
-        public Dictionary<string, PluginSetting> PluginSettings { get; set; } = new Dictionary<string, PluginSetting>();
+        public Dictionary<string, PluginSettings> PluginSettings { get; set; } = new Dictionary<string, PluginSettings>();
         public List<CustomPluginHotkey> CustomPluginHotkeys { get; set; } = new List<CustomPluginHotkey>();
 
         [Obsolete]
@@ -60,7 +60,7 @@ namespace Wox.Core.UserSettings
             var metadatas = PluginManager.AllPlugins.Select(p => p.Metadata);
             if (PluginSettings == null)
             {
-                var configs = new Dictionary<string, PluginSetting>();
+                var configs = new Dictionary<string, PluginSettings>();
                 foreach (var metadata in metadatas)
                 {
                     addPluginMetadata(configs, metadata);
@@ -90,9 +90,9 @@ namespace Wox.Core.UserSettings
         }
 
 
-        private void addPluginMetadata(Dictionary<string, PluginSetting> configs, PluginMetadata metadata)
+        private void addPluginMetadata(Dictionary<string, PluginSettings> configs, PluginMetadata metadata)
         {
-            configs[metadata.ID] = new PluginSetting
+            configs[metadata.ID] = new PluginSettings
             {
                 ID = metadata.ID,
                 Name = metadata.Name,
