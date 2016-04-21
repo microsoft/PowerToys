@@ -59,7 +59,7 @@
     <Compile Include="FileChangeWatcher.cs" />
     <Compile Include="IProgramSource.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="ProgramCacheStorage.cs" />
+    <Compile Include="ProgramIndexCache.cs" />
     <Compile Include="Programs.cs" />
     <Compile Include="ProgramSetting.xaml.cs">
       <DependentUpon>ProgramSetting.xaml</DependentUpon>
@@ -69,7 +69,7 @@
     <Compile Include="ProgramSources\CommonStartMenuProgramSource.cs" />
     <Compile Include="ProgramSources\FileSystemProgramSource.cs" />
     <Compile Include="ProgramSources\UserStartMenuProgramSource.cs" />
-    <Compile Include="ProgramStorage.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="ProgramSuffixes.xaml.cs">
       <DependentUpon>ProgramSuffixes.xaml</DependentUpon>
     </Compile>

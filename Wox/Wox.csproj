@@ -131,9 +131,9 @@
     <Compile Include="ResultListBox.xaml.cs">
       <DependentUpon>ResultListBox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Storage\QueryHistoryStorage.cs" />
-    <Compile Include="Storage\TopMostRecordStorage.cs" />
-    <Compile Include="Storage\UserSelectedRecordStorage.cs" />
+    <Compile Include="Storage\QueryHistory.cs" />
+    <Compile Include="Storage\TopMostRecord.cs" />
+    <Compile Include="Storage\UserSelectedRecord.cs" />
     <Compile Include="ViewModel\BaseViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ResultViewModel.cs" />

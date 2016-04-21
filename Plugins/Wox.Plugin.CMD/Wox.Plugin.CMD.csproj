@@ -59,10 +59,10 @@
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CMD.cs" />
+    <Compile Include="CMDHistory.cs" />
     <Compile Include="CMDSetting.xaml.cs">
       <DependentUpon>CMDSetting.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CMDStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

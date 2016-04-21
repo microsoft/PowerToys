@@ -62,7 +62,7 @@
     <Compile Include="Everything\Exceptions\RegisterClassExException.cs" />
     <Compile Include="Everything\ResultType.cs" />
     <Compile Include="Everything\SearchResult.cs" />
-    <Compile Include="ContextMenuStorage.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

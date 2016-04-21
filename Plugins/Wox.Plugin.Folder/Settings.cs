@@ -8,6 +8,5 @@ namespace Wox.Plugin.Folder
     {
         [JsonProperty]
         public List<FolderLink> FolderLinks { get; set; }
-
     }
 }

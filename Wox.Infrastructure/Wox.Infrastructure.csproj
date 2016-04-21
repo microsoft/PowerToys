@@ -67,12 +67,10 @@
     <Compile Include="WoxDirectroy.cs" />
     <Compile Include="Stopwatch.cs" />
     <Compile Include="Storage\BinaryStorage.cs" />
-    <Compile Include="Storage\IStorage.cs" />
     <Compile Include="Storage\JsonStorage.cs" />
     <Compile Include="StringMatcher.cs" />
     <Compile Include="Unidecoder.Characters.cs" />
     <Compile Include="Http\HttpRequest.cs" />
-    <Compile Include="Storage\BaseStorage.cs" />
     <Compile Include="FuzzyMatcher.cs" />
     <Compile Include="Hotkey\GlobalHotkey.cs" />
     <Compile Include="Hotkey\HotkeyModel.cs" />
