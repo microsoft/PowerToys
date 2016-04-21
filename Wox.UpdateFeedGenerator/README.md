@@ -1,1 +1,0 @@
-﻿NAppUpdate feed generator for Wox. It's something like [FeedBuilder](https://github.com/synhershko/NAppUpdate/tree/master/FeedBuilder)

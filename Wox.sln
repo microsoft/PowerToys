@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25029.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Test", "Wox.Test\Wox.Test.csproj", "{FF742965-9A80-41A5-B042-D6C7D3A21708}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -18,7 +18,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{3A73
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox", "Wox\Wox.csproj", "{DB90F671-D861-46BB-93A3-F1304F5BA1C5}"
 	ProjectSection(ProjectDependencies) = postProject
-		{D120E62B-EC59-4FB4-8129-EFDD4C446A5F} = {D120E62B-EC59-4FB4-8129-EFDD4C446A5F}
 		{230AE83F-E92E-4E69-8355-426B305DA9C0} = {230AE83F-E92E-4E69-8355-426B305DA9C0}
 		{1EE20B48-82FB-48A2-8086-675D6DDAB4F0} = {1EE20B48-82FB-48A2-8086-675D6DDAB4F0}
 		{0B9DE348-9361-4940-ADB6-F5953BFFCCEC} = {0B9DE348-9361-4940-ADB6-F5953BFFCCEC}
@@ -70,8 +69,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.CrashReporter", "Wox.Cr
 	ProjectSection(ProjectDependencies) = postProject
 		{88731DA8-C020-476E-B79A-3ADEF65ACA9F} = {88731DA8-C020-476E-B79A-3ADEF65ACA9F}
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.UpdateFeedGenerator", "Wox.UpdateFeedGenerator\Wox.UpdateFeedGenerator.csproj", "{D120E62B-EC59-4FB4-8129-EFDD4C446A5F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Everything", "Plugins\Wox.Plugin.Everything\Wox.Plugin.Everything.csproj", "{230AE83F-E92E-4E69-8355-426B305DA9C0}"
 EndProject
@@ -301,14 +298,6 @@ Global
 		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Release|x64.Build.0 = Release|Any CPU
 		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Release|x86.ActiveCfg = Release|Any CPU
 		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Release|x86.Build.0 = Release|Any CPU
-		{D120E62B-EC59-4FB4-8129-EFDD4C446A5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D120E62B-EC59-4FB4-8129-EFDD4C446A5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D120E62B-EC59-4FB4-8129-EFDD4C446A5F}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{D120E62B-EC59-4FB4-8129-EFDD4C446A5F}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D120E62B-EC59-4FB4-8129-EFDD4C446A5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D120E62B-EC59-4FB4-8129-EFDD4C446A5F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D120E62B-EC59-4FB4-8129-EFDD4C446A5F}.Release|x64.ActiveCfg = Release|Any CPU
-		{D120E62B-EC59-4FB4-8129-EFDD4C446A5F}.Release|x86.ActiveCfg = Release|Any CPU
 		{230AE83F-E92E-4E69-8355-426B305DA9C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{230AE83F-E92E-4E69-8355-426B305DA9C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{230AE83F-E92E-4E69-8355-426B305DA9C0}.Debug|x64.ActiveCfg = Debug|Any CPU
