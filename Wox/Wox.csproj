@@ -125,7 +125,7 @@
     <Compile Include="Converters\StringNullOrEmptyToVisibilityConverter.cs" />
     <Compile Include="Helper\VisibilityExtensions.cs" />
     <Compile Include="Helper\SingletonWindowOpener.cs" />
-    <Compile Include="ImageLoader\ImageCacheStroage.cs" />
+    <Compile Include="ImageLoader\ImageCache.cs" />
     <Compile Include="NotifyIconManager.cs" />
     <Compile Include="PublicAPIInstance.cs" />
     <Compile Include="ResultListBox.xaml.cs">

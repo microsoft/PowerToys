@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Wox.Infrastructure.Storage;
@@ -8,39 +9,26 @@ namespace Wox.ImageLoader
     [Serializable]
     public class ImageCache
     {
-        private int counter;
-        private const int maxCached = 200;
-        public Dictionary<string, int> TopUsedImages = new Dictionary<string, int>();
+        private const int MaxCached = 200;
+        public ConcurrentDictionary<string, int> TopUsedImages = new ConcurrentDictionary<string, int>();
 
         public void Add(string path)
         {
             if (TopUsedImages.ContainsKey(path))
             {
-                TopUsedImages[path] = TopUsedImages[path] + 1 ;
+                TopUsedImages[path] = TopUsedImages[path] + 1;
             }
             else
             {
-                TopUsedImages.Add(path, 1);
+                TopUsedImages[path] = 1;
             }
 
-            if (TopUsedImages.Count > maxCached)
+            if (TopUsedImages.Count > MaxCached)
             {
-                TopUsedImages = TopUsedImages.OrderByDescending(o => o.Value)
-                    .Take(maxCached)
-                    .ToDictionary(i => i.Key, i => i.Value);
-            }
-
-            if (++counter == 30)
-            {
-                counter = 0;
-            }
-        }
-
-        public void Remove(string path)
-        {
-            if (TopUsedImages.ContainsKey(path))
-            {
-                TopUsedImages.Remove(path);
+                var images = TopUsedImages.OrderByDescending(o => o.Value)
+                                          .Take(MaxCached)
+                                          .ToDictionary(i => i.Key, i => i.Value);
+                TopUsedImages = new ConcurrentDictionary<string, int>(images);
             }
         }
     }

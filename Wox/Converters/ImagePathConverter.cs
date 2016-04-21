@@ -13,8 +13,7 @@ namespace Wox.Converters
             {
                 return null;
             }
-
-            return ImageLoader.ImageLoader.Load(value.ToString());
+            return App.ImageLoader.Load(value.ToString());
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

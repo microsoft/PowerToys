@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -7,6 +8,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Linq;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 
@@ -14,9 +16,9 @@ namespace Wox.ImageLoader
 {
     public class ImageLoader
     {
-        private static readonly Dictionary<string, ImageSource> ImageSources = new Dictionary<string, ImageSource>();
+        private readonly ConcurrentDictionary<string, ImageSource> ImageSources = new ConcurrentDictionary<string, ImageSource>();
 
-        private static readonly List<string> imageExts = new List<string>
+        private readonly List<string> ImageExts = new List<string>
         {
             ".png",
             ".jpg",
@@ -27,7 +29,7 @@ namespace Wox.ImageLoader
             ".ico"
         };
 
-        private static readonly List<string> selfExts = new List<string>
+        private readonly List<string> SelfExts = new List<string>
         {
             ".exe",
             ".lnk",
@@ -37,10 +39,10 @@ namespace Wox.ImageLoader
             ".appref-ms"
         };
 
-        private static readonly ImageCache _cache;
-        private static readonly BinaryStorage<ImageCache> _storage; 
+        private readonly ImageCache _cache;
+        private readonly BinaryStorage<ImageCache> _storage;
 
-        static ImageLoader()
+        public ImageLoader()
         {
             _storage = new BinaryStorage<ImageCache>();
             _cache = _storage.Load();
@@ -51,7 +53,7 @@ namespace Wox.ImageLoader
             _storage.Save();
         }
 
-        private static ImageSource GetIcon(string fileName)
+        private ImageSource GetIcon(string fileName)
         {
             try
             {
@@ -68,32 +70,28 @@ namespace Wox.ImageLoader
             return null;
         }
 
-        public static void PreloadImages()
+        public void PreloadImages()
         {
-            //ImageCacheStroage.Instance.TopUsedImages can be changed during foreach, so we need to make a copy
-            var imageList = new Dictionary<string, int>(_cache.TopUsedImages);
-            Stopwatch.Debug($"Preload {imageList.Count} images", () =>
+            Stopwatch.Debug($"Preload {_cache.TopUsedImages.Count} images", () =>
             {
-                foreach (var image in imageList)
-                {
-                    if (!ImageSources.ContainsKey(image.Key))
-                    {
-                        ImageSource img = Load(image.Key, false);
-                        if (img != null)
-                        {
-                            img.Freeze(); //to make it copy to UI thread
-                            if (!ImageSources.ContainsKey(image.Key))
-                            {
-                                KeyValuePair<string, int> copyedImg = image;
-                                ImageSources.Add(copyedImg.Key, img);
-                            }
-                        }
-                    }
-                }
+                _cache.TopUsedImages.AsParallel().Where(i => !ImageSources.ContainsKey(i.Key)).ForAll(i =>
+                 {
+                     var img = Load(i.Key, false);
+                     if (img != null)
+                     {
+                         // todo happlebao magic
+                         // the image created on other threads can be accessed from main ui thread,
+                         // this line made it possible
+                         // should be changed the Dispatcher.InvokeAsync in the future
+                         img.Freeze();
+
+                         ImageSources[i.Key] = img;
+                     }
+                 });
             });
         }
 
-        public static ImageSource Load(string path, bool addToCache = true)
+        public ImageSource Load(string path, bool addToCache = true)
         {
             if (string.IsNullOrEmpty(path)) return null;
             ImageSource img = null;
@@ -118,21 +116,20 @@ namespace Wox.ImageLoader
                     {
                         img = new BitmapImage(new Uri(path));
                     }
-                    else if (selfExts.Contains(ext) && File.Exists(path))
+                    else if (SelfExts.Contains(ext) && File.Exists(path))
                     {
                         img = GetIcon(path);
                     }
-                    else if (!string.IsNullOrEmpty(path) && imageExts.Contains(ext) && File.Exists(path))
+                    else if (!string.IsNullOrEmpty(path) && ImageExts.Contains(ext) && File.Exists(path))
                     {
                         img = new BitmapImage(new Uri(path));
                     }
-
 
                     if (img != null && addToCache)
                     {
                         if (!ImageSources.ContainsKey(path))
                         {
-                            ImageSources.Add(path, img);
+                            ImageSources[path] = img;
                         }
                     }
                 }
@@ -141,7 +138,7 @@ namespace Wox.ImageLoader
         }
 
         // http://blogs.msdn.com/b/oldnewthing/archive/2011/01/27/10120844.aspx
-        private static Icon GetFileIcon(string name)
+        private Icon GetFileIcon(string name)
         {
             SHFILEINFO shfi = new SHFILEINFO();
             uint flags = SHGFI_SYSICONINDEX;

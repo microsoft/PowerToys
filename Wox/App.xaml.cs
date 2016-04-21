@@ -23,7 +23,7 @@ namespace Wox
     {
         private const string Unique = "Wox_Unique_Application_Mutex";
         public static MainWindow Window { get; private set; }
-
+        public static ImageLoader.ImageLoader ImageLoader;
         public static PublicAPIInstance API { get; private set; }
 
         [STAThread]
@@ -48,7 +48,9 @@ namespace Wox
 
                 ThreadPool.SetMaxThreads(30, 10);
                 ThreadPool.SetMinThreads(10, 5);
-                ThreadPool.QueueUserWorkItem(_ => { ImageLoader.ImageLoader.PreloadImages(); });
+
+                ImageLoader = new ImageLoader.ImageLoader();
+                ThreadPool.QueueUserWorkItem(_ => { ImageLoader.PreloadImages(); });
 
                 PluginManager.Initialize();
  
