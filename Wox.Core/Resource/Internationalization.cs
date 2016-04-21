@@ -12,7 +12,7 @@ namespace Wox.Core.Resource
 {
     public class Internationalization : Resource
     {
-        public UserSettingStorage Settings { get; set; }
+        public UserSettings.Settings Settings { get; set; }
 
         public Internationalization()
         {
@@ -67,7 +67,6 @@ namespace Wox.Core.Resource
             }
 
             Settings.Language = language.LanguageCode;
-            Settings.Save();
             ResourceMerger.UpdateResource(this);
         }
 

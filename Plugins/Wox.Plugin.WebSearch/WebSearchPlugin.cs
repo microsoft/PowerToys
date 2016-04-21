@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Controls;
+using Wox.Infrastructure.Storage;
 using Wox.Plugin.WebSearch.Annotations;
 using Wox.Plugin.WebSearch.SuggestionSources;
 
@@ -10,8 +11,21 @@ namespace Wox.Plugin.WebSearch
 {
     public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IMultipleActionKeywords
     {
-        private WebSearchStorage _settings = WebSearchStorage.Instance;
         public PluginInitContext Context { get; private set; }
+
+        private readonly PluginSettingsStorage<Settings> _storage;
+        private readonly Settings _settings;
+
+        public WebSearchPlugin()
+        {
+            _storage = new PluginSettingsStorage<Settings>();
+            _settings = _storage.Load();
+        }
+
+        ~WebSearchPlugin()
+        {
+            _storage.Save();
+        }
 
         public List<Result> Query(Query query)
         {

@@ -25,11 +25,11 @@ namespace Wox
         #region Private Fields
 
         private readonly Storyboard _progressBarStoryboard = new Storyboard();
-        private UserSettingStorage _settings;
+        private Settings _settings;
 
         #endregion
 
-        public MainWindow(UserSettingStorage settings, MainViewModel mainVM)
+        public MainWindow(Settings settings, MainViewModel mainVM)
         {
             DataContext = mainVM;
             InitializeComponent();
@@ -43,7 +43,6 @@ namespace Wox
         {
             _settings.WindowLeft = Left;
             _settings.WindowTop = Top;
-            _settings.Save();
         }
 
         private void OnLoaded(object sender, RoutedEventArgs _)
@@ -71,13 +70,12 @@ namespace Wox
                     QueryTextBox.Focus();
                     Left = GetWindowsLeft();
                     Top = GetWindowsTop();
-                    _settings.IncreaseActivateTimes();
+                    _settings.ActivateTimes++;
                 }
                 else
                 {
                     _settings.WindowLeft = Left;
                     _settings.WindowTop = Top;
-                    _settings.Save();
                 }
             };
 

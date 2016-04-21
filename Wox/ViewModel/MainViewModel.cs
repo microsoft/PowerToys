@@ -7,10 +7,12 @@ using System.Windows;
 using System.Windows.Input;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
+using Wox.Core.Updater;
 using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
+using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Wox.Storage;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
@@ -36,24 +38,41 @@ namespace Wox.ViewModel
         private string _queryTextBeforeLoadContextMenu;
         private string _queryText;
 
-        private UserSettingStorage _settings;
-        private QueryHistoryStorage _queryHistory;
-        private UserSelectedRecordStorage _userSelectedRecord;
-        private TopMostRecordStorage _topMostRecord;
+        private readonly JsonStrorage<Settings> _settingsStorage;
+        private readonly JsonStrorage<QueryHistory> _queryHistoryStorage;
+        private readonly JsonStrorage<UserSelectedRecord> _userSelectedRecordStorage;
+        private readonly JsonStrorage<TopMostRecord> _topMostRecordStorage;
+        // todo happlebao this field should be private in the future
+        public readonly Settings _settings;
+        private readonly QueryHistory _queryHistory;
+        private readonly UserSelectedRecord _userSelectedRecord;
+        private readonly TopMostRecord _topMostRecord;
 
         #endregion
 
         #region Constructor
 
-        public MainViewModel(UserSettingStorage settings)
+        public MainViewModel()
         {
             _queryTextBeforeLoadContextMenu = "";
             _queryText = "";
             _lastQuery = new Query();
-            _settings = settings;
-            _queryHistory = QueryHistoryStorage.Instance;
-            _userSelectedRecord = UserSelectedRecordStorage.Instance;
-            _topMostRecord = TopMostRecordStorage.Instance;
+
+            _settingsStorage = new JsonStrorage<Settings>();
+            _settings = _settingsStorage.Load();
+
+            // happlebao todo temp fix for instance code logic
+            HttpProxy.Instance.Settings = _settings;
+            UpdaterManager.Instance.Settings = _settings;
+            InternationalizationManager.Instance.Settings = _settings;
+            ThemeManager.Instance.Settings = _settings;
+
+            _queryHistoryStorage = new JsonStrorage<QueryHistory>();
+            _userSelectedRecordStorage = new JsonStrorage<UserSelectedRecord>();
+            _topMostRecordStorage = new JsonStrorage<TopMostRecord>();
+            _queryHistory = _queryHistoryStorage.Load();
+            _userSelectedRecord = _userSelectedRecordStorage.Load();
+            _topMostRecord = _topMostRecordStorage.Load();
 
             InitializeResultListBox();
             InitializeContextMenu();
@@ -61,9 +80,12 @@ namespace Wox.ViewModel
 
         }
 
-        public MainViewModel()
+        ~MainViewModel()
         {
-            
+            _settingsStorage.Save();
+            _queryHistoryStorage.Save();
+            _userSelectedRecordStorage.Save();
+            _topMostRecordStorage.Save();
         }
 
         #endregion
@@ -433,7 +455,7 @@ namespace Wox.ViewModel
                 var plugins = PluginManager.ValidPluginsForQuery(query);
                 foreach (var plugin in plugins)
                 {
-                    var config = _settings.CustomizedPluginConfigs[plugin.Metadata.ID];
+                    var config = _settings.PluginSettings[plugin.Metadata.ID];
                     if (!config.Disabled)
                     {
                         ThreadPool.QueueUserWorkItem(o =>
@@ -450,7 +472,7 @@ namespace Wox.ViewModel
 
         private void ResetQueryHistoryIndex()
         {
-            Results.RemoveResultsFor(QueryHistoryStorage.MetaData);
+            Results.RemoveResultsFor(QueryHistory.MetaData);
             _queryHistory.Reset();
         }
 
@@ -464,7 +486,7 @@ namespace Wox.ViewModel
         {
             if (history != null)
             {
-                var historyMetadata = QueryHistoryStorage.MetaData;
+                var historyMetadata = QueryHistory.MetaData;
 
                 QueryText = history.Query;
                 OnTextBoxSelected();

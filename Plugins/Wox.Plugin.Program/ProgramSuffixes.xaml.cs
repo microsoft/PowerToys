@@ -9,9 +9,9 @@ namespace Wox.Plugin.Program
     public partial class ProgramSuffixes
     {
         private PluginInitContext context;
-        private ProgramStorage _settings;
+        private Settings _settings;
 
-        public ProgramSuffixes(PluginInitContext context, ProgramStorage settings)
+        public ProgramSuffixes(PluginInitContext context, Settings settings)
         {
             this.context = context;
             InitializeComponent();

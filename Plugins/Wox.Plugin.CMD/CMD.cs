@@ -8,6 +8,7 @@ using WindowsInput;
 using WindowsInput.Native;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Logger;
+using Wox.Infrastructure.Storage;
 using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.CMD
@@ -17,7 +18,20 @@ namespace Wox.Plugin.CMD
         private PluginInitContext context;
         private bool WinRStroked;
         private readonly KeyboardSimulator keyboardSimulator = new KeyboardSimulator(new InputSimulator());
-        private readonly CMDStorage _settings = CMDStorage.Instance;
+
+        private readonly CMDHistory _settings;
+        private readonly PluginSettingsStorage<CMDHistory> _storage;
+
+        public CMD()
+        {
+            _storage = new PluginSettingsStorage<CMDHistory>();
+            _settings = _storage.Load();
+        }
+
+        ~CMD()
+        {
+            _storage.Save();
+        }
 
         public List<Result> Query(Query query)
         {
@@ -81,7 +95,7 @@ namespace Wox.Plugin.CMD
 
         private List<Result> GetHistoryCmds(string cmd, Result result)
         {
-            IEnumerable<Result> history = _settings.CMDHistory.Where(o => o.Key.Contains(cmd))
+            IEnumerable<Result> history = _settings.Count.Where(o => o.Key.Contains(cmd))
                 .OrderByDescending(o => o.Value)
                 .Select(m =>
                 {
@@ -127,7 +141,7 @@ namespace Wox.Plugin.CMD
 
         private List<Result> ResultsFromlHistory()
         {
-            IEnumerable<Result> history = _settings.CMDHistory.OrderByDescending(o => o.Value)
+            IEnumerable<Result> history = _settings.Count.OrderByDescending(o => o.Value)
                 .Select(m => new Result
                 {
                     Title = m.Key,

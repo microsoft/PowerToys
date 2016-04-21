@@ -15,7 +15,7 @@ namespace Wox.Core.Resource
     public class Theme : Resource
     {
         private static List<string> themeDirectories = new List<string>();
-        public UserSettingStorage Settings { get; set; }
+        public UserSettings.Settings Settings { get; set; }
 
         public Theme()
         {
@@ -55,7 +55,6 @@ namespace Wox.Core.Resource
             }
 
             Settings.Theme = themeName;
-            Settings.Save();
             ResourceMerger.UpdateResource(this);
 
             // Exception of FindResource can't be cathed if global exception handle is set

@@ -3,7 +3,7 @@
 namespace Wox.Core.UserSettings
 {
 
-    public class CustomizedPluginConfig
+    public class PluginSetting
     {
         public string ID { get; set; }
 

@@ -37,6 +37,25 @@ namespace Wox.ViewModel
 
         public string FullIcoPath => RawResult.FullIcoPath;
 
+        public string PluginID => RawResult.PluginID;
+        public int Score
+        {
+            get { return RawResult.Score; }
+            set { RawResult.Score = value; }
+        }
+
+        public Query OriginQuery
+        {
+            get { return RawResult.OriginQuery; }
+            set { RawResult.OriginQuery = value; }
+        }
+
+        public Func<ActionContext, bool> Action
+        {
+            get { return RawResult.Action; }
+            set { RawResult.Action = value; }
+        }
+
         public bool IsSelected
         {
             get { return _isSelected; }
@@ -51,9 +70,15 @@ namespace Wox.ViewModel
 
         #region Properties
 
-        public Result RawResult { get; }
+        internal Result RawResult { get; }
 
         #endregion
+
+        public void Update(ResultViewModel newResult)
+        {
+            RawResult.Score = newResult.RawResult.Score;
+            RawResult.OriginQuery = newResult.RawResult.OriginQuery;
+        }
 
         public override bool Equals(object obj)
         {

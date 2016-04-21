@@ -22,7 +22,7 @@ namespace Wox.Core.Updater
         private const string UpdateFeedURL = "http://upgrade.getwox.com/update.xml";
         //private const string UpdateFeedURL = "http://127.0.0.1:8888/update.xml";
         private static SemanticVersion currentVersion;
-        private UserSettingStorage _settings;
+        public UserSettings.Settings Settings { get; set; }
 
         public event EventHandler PrepareUpdateReady;
         public event EventHandler UpdateError;
@@ -44,7 +44,6 @@ namespace Wox.Core.Updater
         private UpdaterManager()
         {
             UpdateManager.Instance.UpdateSource = GetUpdateSource();
-            _settings = UserSettingStorage.Instance;
         }
 
         public SemanticVersion CurrentVersion
@@ -89,7 +88,7 @@ namespace Wox.Core.Updater
                     try
                     {
                         NewRelease = JsonConvert.DeserializeObject<Release>(json);
-                        if (IsNewerThanCurrent(NewRelease) && !_settings.DontPromptUpdateMsg)
+                        if (IsNewerThanCurrent(NewRelease) && !Settings.DontPromptUpdateMsg)
                         {
                             StartUpdate();
                         }
@@ -148,7 +147,7 @@ namespace Wox.Core.Updater
             // get out of the way so the console window isn't obstructed
             try
             {
-                UpdateManager.Instance.ApplyUpdates(true, _settings.EnableUpdateLog, false);
+                UpdateManager.Instance.ApplyUpdates(true, Settings.EnableUpdateLog, false);
             }
             catch (Exception e)
             {

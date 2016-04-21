@@ -5,11 +5,9 @@ using Wox.Plugin;
 
 namespace Wox.Storage
 {
-    public class TopMostRecordStorage : JsonStrorage<TopMostRecordStorage>
+    public class TopMostRecord
     {
-        public Dictionary<string, TopMostRecord> records = new Dictionary<string, TopMostRecord>();
-
-        protected override string FileName { get; } = "TopMostRecords";
+        public Dictionary<string, Record> records = new Dictionary<string, Record>();
 
         internal bool IsTopMost(Result result)
         {
@@ -24,7 +22,6 @@ namespace Wox.Storage
             if (records.ContainsKey(result.OriginQuery.RawQuery))
             {
                 records.Remove(result.OriginQuery.RawQuery);
-                Save();
             }
         }
 
@@ -38,20 +35,18 @@ namespace Wox.Storage
             }
             else
             {
-                records.Add(result.OriginQuery.RawQuery, new TopMostRecord
+                records.Add(result.OriginQuery.RawQuery, new Record
                 {
                     PluginID = result.PluginID,
                     Title = result.Title,
                     SubTitle = result.SubTitle
                 });
             }
-
-            Save();
         }
     }
 
 
-    public class TopMostRecord
+    public class Record
     {
         public string Title { get; set; }
         public string SubTitle { get; set; }

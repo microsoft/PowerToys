@@ -7,18 +7,15 @@ using Wox.Plugin;
 
 namespace Wox.Storage
 {
-    public class QueryHistoryStorage : JsonStrorage<QueryHistoryStorage>
+    public class QueryHistory
     {
-        [JsonProperty]
-        private List<HistoryItem> History = new List<HistoryItem>();
+        public List<HistoryItem> History = new List<HistoryItem>();
 
         private int MaxHistory = 300;
         private int cursor;
 
         public static PluginMetadata MetaData { get; } = new PluginMetadata
             { ID = "Query history", Name = "Query history" };
-
-        protected override string FileName { get; } = "QueryHistory";
 
         public HistoryItem Previous()
         {
@@ -56,11 +53,6 @@ namespace Wox.Storage
                     Query = query,
                     ExecutedDateTime = DateTime.Now
                 });
-            }
-
-            if (History.Count % 5 == 0)
-            {
-                Save();
             }
 
             Reset();

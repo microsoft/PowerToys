@@ -5,9 +5,9 @@ namespace Wox.Plugin.CMD
 {
     public partial class CMDSetting : UserControl
     {
-        private readonly CMDStorage _settings;
+        private readonly CMDHistory _settings;
 
-        public CMDSetting(CMDStorage settings)
+        public CMDSetting(CMDHistory settings)
         {
             InitializeComponent();
             _settings = settings;
@@ -21,24 +21,20 @@ namespace Wox.Plugin.CMD
             cbLeaveCmdOpen.Checked += (o, e) =>
             {
                 _settings.LeaveCmdOpen = true;
-                _settings.Save();
             };
 
             cbLeaveCmdOpen.Unchecked += (o, e) =>
             {
                 _settings.LeaveCmdOpen = false;
-                _settings.Save();
             };
 
             cbReplaceWinR.Checked += (o, e) =>
             {
                 _settings.ReplaceWinR = true;
-                _settings.Save();
             };
             cbReplaceWinR.Unchecked += (o, e) =>
             {
                 _settings.ReplaceWinR = false;
-                _settings.Save();
             };
         }
     }

@@ -9,9 +9,11 @@ using System.Windows;
 using Wox.CommandArgs;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
+using Wox.Core.Updater;
 using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Storage;
 using Wox.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
@@ -49,18 +51,14 @@ namespace Wox
                 ThreadPool.QueueUserWorkItem(_ => { ImageLoader.ImageLoader.PreloadImages(); });
 
                 PluginManager.Initialize();
-                UserSettingStorage settings = UserSettingStorage.Instance;
-
-                // happlebao temp fix for instance code logic
-                HttpProxy.Instance.Settings = settings;
-                InternationalizationManager.Instance.Settings = settings;
-                ThemeManager.Instance.Settings = settings;
-
-                MainViewModel mainVM = new MainViewModel(settings);
-                API = new PublicAPIInstance(mainVM, settings);
+ 
+                MainViewModel mainVM = new MainViewModel(); 
+                API = new PublicAPIInstance(mainVM, mainVM._settings);
                 PluginManager.InitializePlugins(API);
 
-                Window = new MainWindow (settings, mainVM);
+                mainVM._settings.UpdatePluginSettings();
+
+                Window = new MainWindow (mainVM._settings, mainVM);
                 NotifyIconManager notifyIconManager = new NotifyIconManager(API);
                 CommandArgsFactory.Execute(e.Args.ToList());
 

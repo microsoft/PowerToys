@@ -10,16 +10,16 @@ namespace Wox.Plugin.Program
     public partial class AddProgramSource
     {
         private ProgramSource _editing;
-        private ProgramStorage _settings;
+        private Settings _settings;
 
-        public AddProgramSource(ProgramStorage settings)
+        public AddProgramSource(Settings settings)
         {
             _settings = settings;
             InitializeComponent();
             Suffixes.Text = string.Join(";", settings.ProgramSuffixes);
         }
 
-        public AddProgramSource(ProgramSource edit, ProgramStorage settings)
+        public AddProgramSource(ProgramSource edit, Settings settings)
         {
             _editing = edit;
             Directory.Text = _editing.Location;
@@ -65,7 +65,6 @@ namespace Wox.Plugin.Program
                 _editing.Suffixes = Suffixes.Text.Split(ProgramSource.SuffixSeperator);
             }
 
-            _settings.Save();
             DialogResult = true;
             Close();
         }

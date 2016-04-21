@@ -69,11 +69,6 @@ namespace Wox.Plugin
             return Title + SubTitle;
         }
 
-        public Result()
-        {
-
-        }
-
         public Result(string Title = null, string IcoPath = null, string SubTitle = null)
         {
             this.Title = Title;

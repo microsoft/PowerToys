@@ -25,7 +25,7 @@ namespace Wox.Core.Plugin
         /// </summary>
         private static readonly List<string> PluginDirectories = new List<string>();
 
-        public static IEnumerable<PluginPair> AllPlugins { get; private set; }
+        public static List<PluginPair> AllPlugins { get; private set; }
 
         public static readonly List<PluginPair> GlobalPlugins = new List<PluginPair>();
 
@@ -69,10 +69,8 @@ namespace Wox.Core.Plugin
             SetupPluginDirectories();
 
             var metadatas = PluginConfig.Parse(PluginDirectories);
-            AllPlugins = (new CSharpPluginLoader().LoadPlugin(metadatas)).
-                Concat(new JsonRPCPluginLoader<PythonPlugin>().LoadPlugin(metadatas));
-
-
+            AllPlugins = new CSharpPluginLoader().LoadPlugin(metadatas).Concat(
+                         new JsonRPCPluginLoader<PythonPlugin>().LoadPlugin(metadatas)).ToList();
         }
 
         public static void InitializePlugins(IPublicAPI api)
@@ -164,6 +162,42 @@ namespace Wox.Core.Plugin
                 return GlobalPlugins;
             }
         }
+
+        //happlebao todo prevent plugin initial when plugin is disabled
+        public static void DisablePlugin(PluginPair plugin)
+        {
+            var actionKeywords = plugin.Metadata.ActionKeywords;
+            if (actionKeywords == null || actionKeywords.Count == 0 || actionKeywords[0] == Query.GlobalPluginWildcardSign)
+            {
+                GlobalPlugins.Remove(plugin);
+            }
+            else
+            {
+                foreach (var actionkeyword in plugin.Metadata.ActionKeywords)
+                {
+                    NonGlobalPlugins.Remove(actionkeyword);
+                }
+            }
+            AllPlugins.Remove(plugin);
+        }
+
+        public static void EnablePlugin(PluginPair plugin)
+        {
+            var actionKeywords = plugin.Metadata.ActionKeywords;
+            if (actionKeywords == null || actionKeywords.Count == 0 || actionKeywords[0] == Query.GlobalPluginWildcardSign)
+            {
+                GlobalPlugins.Add(plugin);
+            }
+            else
+            {
+                foreach (var actionkeyword in plugin.Metadata.ActionKeywords)
+                {
+                    NonGlobalPlugins[actionkeyword] = plugin;
+                }
+            }
+            AllPlugins.Add(plugin);
+        }
+
         public static List<Result> QueryForPlugin(PluginPair pair, Query query)
         {
             var results = new List<Result>();
@@ -184,7 +218,7 @@ namespace Wox.Core.Plugin
             }
             catch (Exception e)
             {
-                throw new WoxPluginException(pair.Metadata.Name, $"QueryForPlugin failed", e);
+                throw new WoxPluginException(pair.Metadata.Name, "QueryForPlugin failed", e);
             }
             return results;
         }

@@ -6,13 +6,11 @@ using Wox.Infrastructure.Storage;
 namespace Wox.ImageLoader
 {
     [Serializable]
-    public class ImageCacheStroage : BinaryStorage<ImageCacheStroage>
+    public class ImageCache
     {
         private int counter;
         private const int maxCached = 200;
         public Dictionary<string, int> TopUsedImages = new Dictionary<string, int>();
-
-        protected override string FileName { get; } = "ImageCache";
 
         public void Add(string path)
         {
@@ -35,7 +33,6 @@ namespace Wox.ImageLoader
             if (++counter == 30)
             {
                 counter = 0;
-                Save();
             }
         }
 

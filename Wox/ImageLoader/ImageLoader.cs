@@ -8,12 +8,13 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Storage;
 
 namespace Wox.ImageLoader
 {
     public class ImageLoader
     {
-        private static readonly Dictionary<string, ImageSource> imageCache = new Dictionary<string, ImageSource>();
+        private static readonly Dictionary<string, ImageSource> ImageSources = new Dictionary<string, ImageSource>();
 
         private static readonly List<string> imageExts = new List<string>
         {
@@ -36,11 +37,18 @@ namespace Wox.ImageLoader
             ".appref-ms"
         };
 
-        private static ImageCacheStroage _imageCache;
+        private static readonly ImageCache _cache;
+        private static readonly BinaryStorage<ImageCache> _storage; 
 
         static ImageLoader()
         {
-            _imageCache = ImageCacheStroage.Instance;
+            _storage = new BinaryStorage<ImageCache>();
+            _cache = _storage.Load();
+        }
+
+        ~ImageLoader()
+        {
+            _storage.Save();
         }
 
         private static ImageSource GetIcon(string fileName)
@@ -63,21 +71,21 @@ namespace Wox.ImageLoader
         public static void PreloadImages()
         {
             //ImageCacheStroage.Instance.TopUsedImages can be changed during foreach, so we need to make a copy
-            var imageList = new Dictionary<string, int>(_imageCache.TopUsedImages);
+            var imageList = new Dictionary<string, int>(_cache.TopUsedImages);
             Stopwatch.Debug($"Preload {imageList.Count} images", () =>
             {
                 foreach (var image in imageList)
                 {
-                    if (!imageCache.ContainsKey(image.Key))
+                    if (!ImageSources.ContainsKey(image.Key))
                     {
                         ImageSource img = Load(image.Key, false);
                         if (img != null)
                         {
                             img.Freeze(); //to make it copy to UI thread
-                            if (!imageCache.ContainsKey(image.Key))
+                            if (!ImageSources.ContainsKey(image.Key))
                             {
                                 KeyValuePair<string, int> copyedImg = image;
-                                imageCache.Add(copyedImg.Key, img);
+                                ImageSources.Add(copyedImg.Key, img);
                             }
                         }
                     }
@@ -94,13 +102,13 @@ namespace Wox.ImageLoader
 
                 if (addToCache)
                 {
-                    _imageCache.Add(path);
+                    _cache.Add(path);
                 }
 
 
-                if (imageCache.ContainsKey(path))
+                if (ImageSources.ContainsKey(path))
                 {
-                    img = imageCache[path];
+                    img = ImageSources[path];
                 }
                 else
                 {
@@ -122,9 +130,9 @@ namespace Wox.ImageLoader
 
                     if (img != null && addToCache)
                     {
-                        if (!imageCache.ContainsKey(path))
+                        if (!ImageSources.ContainsKey(path))
                         {
-                            imageCache.Add(path, img);
+                            ImageSources.Add(path, img);
                         }
                     }
                 }

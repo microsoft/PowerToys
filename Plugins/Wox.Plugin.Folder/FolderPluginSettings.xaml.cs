@@ -14,9 +14,9 @@ namespace Wox.Plugin.Folder
     public partial class FileSystemSettings
     {
         private IPublicAPI woxAPI;
-        private FolderStorage _settings;
+        private Settings _settings;
 
-        public FileSystemSettings(IPublicAPI woxAPI, FolderStorage settings)
+        public FileSystemSettings(IPublicAPI woxAPI, Settings settings)
         {
             this.woxAPI = woxAPI;
             InitializeComponent();
@@ -35,7 +35,6 @@ namespace Wox.Plugin.Folder
                 {
                     _settings.FolderLinks.Remove(selectedFolder);
                     lbxFolders.Items.Refresh();
-                    _settings.Save();
                 }
             }
             else
@@ -56,8 +55,6 @@ namespace Wox.Plugin.Folder
                 {
                     var link = _settings.FolderLinks.First(x => x.Path == selectedFolder.Path);
                     link.Path = folderBrowserDialog.SelectedPath;
-
-                    _settings.Save();
                 }
 
                 lbxFolders.Items.Refresh();
@@ -85,7 +82,6 @@ namespace Wox.Plugin.Folder
                 }
 
                 _settings.FolderLinks.Add(newFolder);
-                _settings.Save();
             }
 
             lbxFolders.Items.Refresh();
@@ -112,7 +108,6 @@ namespace Wox.Plugin.Folder
                         };
 
                         _settings.FolderLinks.Add(newFolder);
-                        _settings.Save();
                     }
 
                     lbxFolders.Items.Refresh();

@@ -20,10 +20,10 @@ namespace Wox.ViewModel
         private Thickness _margin;
 
         private readonly object _resultsUpdateLock = new object();
-        private UserSettingStorage _settings;
-        private TopMostRecordStorage _topMostRecord;
+        private Settings _settings;
+        private TopMostRecord _topMostRecord;
 
-        public ResultsViewModel(UserSettingStorage settings, TopMostRecordStorage topMostRecord)
+        public ResultsViewModel(Settings settings, TopMostRecord topMostRecord)
         {
             _settings = settings;
             _topMostRecord = topMostRecord;
@@ -191,7 +191,7 @@ namespace Wox.ViewModel
         {
             lock (_resultsUpdateLock)
             {
-                Results.RemoveAll(r => r.RawResult.PluginID == metadata.ID);
+                Results.RemoveAll(r => r.PluginID == metadata.ID);
             }
         }
 
@@ -202,7 +202,7 @@ namespace Wox.ViewModel
                 var newResults = newRawResults.Select(r => new ResultViewModel(r)).ToList();
                 // todo use async to do new result calculation
                 var resultsCopy = Results.ToList();
-                var oldResults = resultsCopy.Where(r => r.RawResult.PluginID == resultId).ToList();
+                var oldResults = resultsCopy.Where(r => r.PluginID == resultId).ToList();
                 // intersection of A (old results) and B (new newResults)
                 var intersection = oldResults.Intersect(newResults).ToList();
                 // remove result of relative complement of B in A
@@ -216,7 +216,7 @@ namespace Wox.ViewModel
                 {
                     if (IsTopMostResult(result.RawResult))
                     {
-                        result.RawResult.Score = int.MaxValue;
+                        result.Score = int.MaxValue;
                     }
                 }
 
@@ -224,23 +224,26 @@ namespace Wox.ViewModel
                 foreach (var commonResult in intersection)
                 {
                     int oldIndex = resultsCopy.IndexOf(commonResult);
-                    int oldScore = resultsCopy[oldIndex].RawResult.Score;
-                    int newScore = newResults[newResults.IndexOf(commonResult)].RawResult.Score;
+                    int oldScore = resultsCopy[oldIndex].Score;
+                    var newResult = newResults[newResults.IndexOf(commonResult)];
+                    int newScore = newResult.Score;
                     if (newScore != oldScore)
                     {
                         var oldResult = resultsCopy[oldIndex];
-                        oldResult.RawResult.Score = newScore;
+
+                        oldResult.Score = newScore;
+                        oldResult.OriginQuery = newResult.OriginQuery;
+
                         resultsCopy.RemoveAt(oldIndex);
                         int newIndex = InsertIndexOf(newScore, resultsCopy);
                         resultsCopy.Insert(newIndex, oldResult);
-
                     }
                 }
 
                 // insert result in relative complement of A in B
                 foreach (var result in newResults.Except(intersection))
                 {
-                    int newIndex = InsertIndexOf(result.RawResult.Score, resultsCopy);
+                    int newIndex = InsertIndexOf(result.Score, resultsCopy);
                     resultsCopy.Insert(newIndex, result);
                 }
 
@@ -299,9 +302,9 @@ namespace Wox.ViewModel
                     {
                         this[i] = newResult;
                     }
-                    else if (oldResult.RawResult.Score != newResult.RawResult.Score)
+                    else if (oldResult.Score != newResult.Score)
                     {
-                        this[i].RawResult.Score = newResult.RawResult.Score;
+                        this[i].Score = newResult.Score;
                     }
                 }
 

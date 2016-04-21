@@ -2,7 +2,6 @@
 
 namespace Wox.Plugin.WebSearch
 {
-    [Serializable]
     public class WebSearch
     {
         public string Title { get; set; }

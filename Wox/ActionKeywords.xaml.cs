@@ -10,9 +10,9 @@ namespace Wox
     public partial class ActionKeywords : Window
     {
         private PluginPair _plugin;
-        private UserSettingStorage _settings;
+        private Settings _settings;
 
-        public ActionKeywords(string pluginId, UserSettingStorage settings)
+        public ActionKeywords(string pluginId, Settings settings)
         {
             InitializeComponent();
             _plugin = PluginManager.GetPluginForId(pluginId);

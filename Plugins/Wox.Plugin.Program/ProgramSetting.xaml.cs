@@ -11,9 +11,9 @@ namespace Wox.Plugin.Program
     public partial class ProgramSetting : UserControl
     {
         private PluginInitContext context;
-        private ProgramStorage _settings;
+        private Settings _settings;
 
-        public ProgramSetting(PluginInitContext context, ProgramStorage settings)
+        public ProgramSetting(PluginInitContext context, Settings settings)
         {
             this.context = context;
             InitializeComponent();
@@ -58,7 +58,6 @@ namespace Wox.Plugin.Program
                 if (MessageBox.Show(msg, string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
                     _settings.ProgramSources.Remove(selectedProgramSource);
-                    _settings.Save();
                     ReIndexing();
                 }
             }
@@ -127,7 +126,6 @@ namespace Wox.Plugin.Program
                             Enabled = true
                         });
 
-                        _settings.Save();
                         ReIndexing();
                     }
                 }
@@ -137,14 +135,12 @@ namespace Wox.Plugin.Program
         private void StartMenuEnabled_Click(object sender, RoutedEventArgs e)
         {
             _settings.EnableStartMenuSource = StartMenuEnabled.IsChecked ?? false;
-            _settings.Save();
             ReIndexing();
         }
 
         private void RegistryEnabled_Click(object sender, RoutedEventArgs e)
         {
             _settings.EnableRegistrySource = RegistryEnabled.IsChecked ?? false;
-            _settings.Save();
             ReIndexing();
         }
     }

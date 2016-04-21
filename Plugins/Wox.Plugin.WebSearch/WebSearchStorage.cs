@@ -4,22 +4,9 @@ using Wox.Infrastructure.Storage;
 
 namespace Wox.Plugin.WebSearch
 {
-    public class WebSearchStorage : JsonStrorage<WebSearchStorage>
+    public class Settings
     {
-        [JsonProperty]
-        public List<WebSearch> WebSearches { get; set; }
-
-        [JsonProperty]
-        public bool EnableWebSearchSuggestion { get; set; }
-
-        [JsonProperty]
-        public string WebSearchSuggestionSource { get; set; }
-
-        protected override string FileName { get; } = "settings_plugin_websearch";
-
-        protected override WebSearchStorage LoadDefault()
-        {
-            WebSearches = new List<WebSearch>(new List<WebSearch>()
+        public List<WebSearch> WebSearches { get; set; } = new List<WebSearch>
             {
                 new WebSearch
                 {
@@ -173,9 +160,10 @@ namespace Wox.Plugin.WebSearch
                     Url = "http://www.search.yahoo.com/search?p={q}",
                     Enabled = true
                 }
-            });
+            };
 
-            return this;
-        }
+        public bool EnableWebSearchSuggestion { get; set; }
+
+        public string WebSearchSuggestionSource { get; set; }
     }
 }

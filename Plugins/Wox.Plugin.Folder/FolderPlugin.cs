@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Wox.Infrastructure.Storage;
 
 namespace Wox.Plugin.Folder
 {
@@ -12,7 +13,20 @@ namespace Wox.Plugin.Folder
     {
         private static List<string> driverNames;
         private PluginInitContext context;
-        private FolderStorage _settings = FolderStorage.Instance;
+
+        private readonly Settings _settings;
+        private readonly PluginSettingsStorage<Settings> _storage;
+
+        public FolderPlugin()
+        {
+            _storage = new PluginSettingsStorage<Settings>();
+            _settings = _storage.Load();
+        }
+
+        ~FolderPlugin()
+        {
+            _storage.Save();
+        }
 
         public Control CreateSettingPanel()
         {
@@ -26,7 +40,6 @@ namespace Wox.Plugin.Folder
             if (_settings.FolderLinks == null)
             {
                 _settings.FolderLinks = new List<FolderLink>();
-                _settings.Save();
             }
         }
 

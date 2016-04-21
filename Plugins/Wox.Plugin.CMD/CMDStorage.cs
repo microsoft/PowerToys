@@ -1,40 +1,26 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
 
 namespace Wox.Plugin.CMD
 {
-    public class CMDStorage : JsonStrorage<CMDStorage>
+    public class CMDHistory
     {
-        [JsonProperty]
-        public bool ReplaceWinR { get; set; }
-
-        [JsonProperty]
+        public bool ReplaceWinR { get; set; } = true;
         public bool LeaveCmdOpen { get; set; }
-
-        [JsonProperty]
-        public Dictionary<string, int> CMDHistory = new Dictionary<string, int>();
-
-        protected override string FileName { get; } = "CMDHistory";
-
-        protected override CMDStorage LoadDefault()
-        {
-            ReplaceWinR = true;
-            return this;
-        }
+        public Dictionary<string, int> Count = new Dictionary<string, int>();
 
         public void AddCmdHistory(string cmdName)
         {
-            if (CMDHistory.ContainsKey(cmdName))
+            if (Count.ContainsKey(cmdName))
             {
-                CMDHistory[cmdName] += 1;
+                Count[cmdName] += 1;
             }
             else
             {
-                CMDHistory.Add(cmdName, 1);
+                Count.Add(cmdName, 1);
             }
-            Save();
         }
-
     }
 }

@@ -18,9 +18,9 @@ namespace Wox.Plugin.WebSearch
         private WebSearch _updateWebSearch;
         private readonly PluginInitContext _context;
         private readonly WebSearchPlugin _plugin;
-        private WebSearchStorage _settings;
+        private Settings _settings;
 
-        public WebSearchSetting(WebSearchesSetting settingWidow, WebSearchStorage settings)
+        public WebSearchSetting(WebSearchesSetting settingWidow, Settings settings)
         {
             _plugin = settingWidow.Plugin;
             _context = settingWidow.Context;
@@ -122,7 +122,6 @@ namespace Wox.Plugin.WebSearch
                 });
             }
 
-            _settings.Save();
             _settingWindow.ReloadWebSearchView();
             Close();
         }

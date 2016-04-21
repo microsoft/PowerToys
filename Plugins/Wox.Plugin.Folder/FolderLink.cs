@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace Wox.Plugin.Folder
 {
-    [Serializable]
+    [JsonObject(MemberSerialization.OptIn)]
     public class FolderLink
     {
         [JsonProperty]

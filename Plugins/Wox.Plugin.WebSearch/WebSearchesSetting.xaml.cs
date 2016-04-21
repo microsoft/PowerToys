@@ -10,11 +10,11 @@ namespace Wox.Plugin.WebSearch
     /// </summary>
     public partial class WebSearchesSetting : UserControl
     {
-        private WebSearchStorage _settings;
+        private Settings _settings;
         public PluginInitContext Context { get; }
         public WebSearchPlugin Plugin { get; }
 
-        public WebSearchesSetting(WebSearchPlugin plugin, WebSearchStorage settings)
+        public WebSearchesSetting(WebSearchPlugin plugin, Settings settings)
         {
             Context = plugin.Context;
             Plugin = plugin;
@@ -97,14 +97,12 @@ namespace Wox.Plugin.WebSearch
         {
             comboBoxSuggestionSource.Visibility = Visibility.Visible;
             _settings.EnableWebSearchSuggestion = true;
-            _settings.Save();
         }
 
         private void CbEnableWebSearchSuggestion_OnUnchecked(object sender, RoutedEventArgs e)
         {
             comboBoxSuggestionSource.Visibility = Visibility.Collapsed;
             _settings.EnableWebSearchSuggestion = false;
-            _settings.Save();
         }
 
         private void ComboBoxSuggestionSource_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -112,7 +110,6 @@ namespace Wox.Plugin.WebSearch
             if (e.AddedItems.Count > 0)
             {
                 _settings.WebSearchSuggestionSource = ((ComboBoxItem)e.AddedItems[0]).Content.ToString();
-                _settings.Save();
             }
         }
     }

@@ -15,9 +15,9 @@ namespace Wox
         private SettingWindow _settingWidow;
         private bool update;
         private CustomPluginHotkey updateCustomHotkey;
-        private UserSettingStorage _settings;
+        private Settings _settings;
 
-        public CustomQueryHotkeySetting(SettingWindow settingWidow, UserSettingStorage settings)
+        public CustomQueryHotkeySetting(SettingWindow settingWidow, Settings settings)
         {
             _settingWidow = settingWidow;
             InitializeComponent();
@@ -78,7 +78,6 @@ namespace Wox
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
             }
 
-            _settings.Save();
             _settingWidow.ReloadCustomPluginHotkeyView();
             Close();
         }

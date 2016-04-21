@@ -7,6 +7,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Windows;
+using Wox.Infrastructure.Storage;
+using Wox.Infrastructure;
 using Wox.Plugin.Everything.Everything;
 
 namespace Wox.Plugin.Everything
@@ -16,11 +18,26 @@ namespace Wox.Plugin.Everything
         private readonly EverythingAPI _api = new EverythingAPI();
         private static readonly List<string> ImageExts = new List<string> { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico" };
         private static readonly List<string> ExecutableExts = new List<string> { ".exe" };
-        private const string PortableEverything = "PortableEverything";
+
         private const string EverythingProcessName = "Everything";
+        private const string PortableEverything = "PortableEverything";
+        internal static string LibraryPath;
 
         private PluginInitContext _context;
-        private ContextMenuStorage _settings = ContextMenuStorage.Instance;
+
+        private readonly Settings _settings;
+        private readonly PluginSettingsStorage<Settings> _storage;
+
+        public Main()
+        {
+            _storage = new PluginSettingsStorage<Settings>();
+            _settings = _storage.Load();
+        }
+
+        ~Main()
+        {
+            _storage.Save();
+        }
 
         public List<Result> Query(Query query)
         {
@@ -31,7 +48,6 @@ namespace Wox.Plugin.Everything
                 if (_settings.MaxSearchCount <= 0)
                 {
                     _settings.MaxSearchCount = 50;
-                    _settings.Save();
                 }
 
                 if (keyword == "uninstalleverything")
@@ -158,18 +174,21 @@ namespace Wox.Plugin.Everything
         public void Init(PluginInitContext context)
         {
             _context = context;
-            _settings.API = context.API;
 
-            LoadLibrary(Path.Combine(context.CurrentPluginMetadata.PluginDirectory,
-                  PortableEverything, GetCpuType(), "Everything.dll"));
+            var pluginDirectory = context.CurrentPluginMetadata.PluginDirectory;
+            var libraryDirectory = Path.Combine(pluginDirectory, PortableEverything, CpuType());
+            LibraryPath = Path.Combine(libraryDirectory, "Everything.dll");
+            LoadLibrary(LibraryPath);
+            //Helper.AddDLLDirectory(libraryDirectory);
 
             StartEverything();
         }
 
-        private string GetCpuType()
+        private string CpuType()
         {
-            return (IntPtr.Size == 4) ? "x86" : "x64";
+            return Environment.Is64BitOperatingSystem ? "x64" : "x86";
         }
+
 
         private void StartEverything()
         {
@@ -268,9 +287,11 @@ namespace Wox.Plugin.Everything
 
         private string GetEverythingPath()
         {
-            string directory = Path.Combine(_context.CurrentPluginMetadata.PluginDirectory,
-                                            PortableEverything, GetCpuType(),
-                                            "Everything.exe");
+            string directory = Path.Combine(
+                _context.CurrentPluginMetadata.PluginDirectory,
+                PortableEverything, CpuType(),
+                "Everything.exe"
+                );
             return directory;
         }
 

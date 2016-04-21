@@ -5,12 +5,10 @@ using Wox.Plugin;
 
 namespace Wox.Storage
 {
-    public class UserSelectedRecordStorage : JsonStrorage<UserSelectedRecordStorage>
+    public class UserSelectedRecord
     {
         [JsonProperty]
         private Dictionary<string, int> records = new Dictionary<string, int>();
-
-        protected override string FileName { get; } = "UserSelectedRecords";
 
         public void Add(Result result)
         {
@@ -22,7 +20,6 @@ namespace Wox.Storage
             {
                 records.Add(result.ToString(), 1);
             }
-            Save();
         }
 
         public int GetSelectedCount(Result result)
