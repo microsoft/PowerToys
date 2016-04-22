@@ -46,9 +46,6 @@ namespace Wox
                 WoxDirectroy.Executable = Directory.GetParent(Assembly.GetExecutingAssembly().Location).ToString();
                 RegisterUnhandledException();
 
-                ThreadPool.SetMaxThreads(30, 10);
-                ThreadPool.SetMinThreads(10, 5);
-
                 ImageLoader = new ImageLoader.ImageLoader();
                 ThreadPool.QueueUserWorkItem(_ => { ImageLoader.PreloadImages(); });
 
