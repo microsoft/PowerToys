@@ -68,6 +68,7 @@
     <Compile Include="Hotkey\KeyEvent.cs" />
     <Compile Include="Logger\Log.cs" />
     <Compile Include="Storage\PluginSettingsStorage.cs" />
+    <Compile Include="SyntaxSuger.cs" />
     <Compile Include="WoxDirectroy.cs" />
     <Compile Include="Stopwatch.cs" />
     <Compile Include="Storage\BinaryStorage.cs" />
