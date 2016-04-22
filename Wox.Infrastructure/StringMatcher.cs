@@ -1,4 +1,7 @@
-﻿namespace Wox.Infrastructure
+﻿using System;
+using JetBrains.Annotations;
+
+namespace Wox.Infrastructure
 {
     public class StringMatcher
     {
