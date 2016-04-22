@@ -7,14 +7,14 @@ using Wox.Infrastructure;
 
 namespace Wox.Plugin.ControlPanel
 {
-    public class ControlPanel : IPlugin,IPluginI18n
+    public class ControlPanel : IPlugin, IPluginI18n
     {
         private PluginInitContext context;
         private List<ControlPanelItem> controlPanelItems = new List<ControlPanelItem>();
         private string iconFolder;
         private string fileType;
 
-        public  void Init(PluginInitContext context)
+        public void Init(PluginInitContext context)
         {
             this.context = context;
             controlPanelItems = ControlPanelList.Create(48);
@@ -46,25 +46,27 @@ namespace Wox.Plugin.ControlPanel
                 var fuzzyMather = FuzzyMatcher.Create(myQuery);
                 if (MatchProgram(item, fuzzyMather))
                 {
-                    results.Add(new Result
+                    var result = new Result
                     {
                         Title = item.LocalizedString,
                         SubTitle = item.InfoTip,
                         Score = item.Score,
-                        IcoPath = Path.Combine(context.CurrentPluginMetadata.PluginDirectory, @"Images\\ControlPanelIcons\\" + item.GUID + fileType),
+                        IcoPath = Path.Combine(context.CurrentPluginMetadata.PluginDirectory,
+                        @"Images\\ControlPanelIcons\\" + item.GUID + fileType),
                         Action = e =>
-                        {
-                            try
                             {
-                                Process.Start(item.ExecutablePath);
+                                try
+                                {
+                                    Process.Start(item.ExecutablePath);
+                                }
+                                catch (Exception)
+                                {
+                                //Silently Fail for now.. todo
                             }
-                            catch (Exception)
-                            {
-                                //Silently Fail for now..
+                                return true;
                             }
-                            return true;
-                        }
-                    });
+                    };
+                    results.Add(result);
                 }
             }
 

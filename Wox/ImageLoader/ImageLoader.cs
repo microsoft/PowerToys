@@ -16,7 +16,7 @@ namespace Wox.ImageLoader
 {
     public class ImageLoader
     {
-        private readonly ConcurrentDictionary<string, ImageSource> ImageSources = new ConcurrentDictionary<string, ImageSource>();
+        private readonly ConcurrentDictionary<string, ImageSource> _imageSources = new ConcurrentDictionary<string, ImageSource>();
 
         private readonly List<string> ImageExts = new List<string>
         {
@@ -40,7 +40,7 @@ namespace Wox.ImageLoader
         };
 
         private readonly ImageCache _cache;
-        private readonly BinaryStorage<ImageCache> _storage;
+        private  readonly BinaryStorage<ImageCache> _storage;
 
         public ImageLoader()
         {
@@ -74,7 +74,7 @@ namespace Wox.ImageLoader
         {
             Stopwatch.Debug($"Preload {_cache.TopUsedImages.Count} images", () =>
             {
-                _cache.TopUsedImages.AsParallel().Where(i => !ImageSources.ContainsKey(i.Key)).ForAll(i =>
+                _cache.TopUsedImages.AsParallel().Where(i => !_imageSources.ContainsKey(i.Key)).ForAll(i =>
                  {
                      var img = Load(i.Key, false);
                      if (img != null)
@@ -84,8 +84,7 @@ namespace Wox.ImageLoader
                          // this line made it possible
                          // should be changed the Dispatcher.InvokeAsync in the future
                          img.Freeze();
-
-                         ImageSources[i.Key] = img;
+                         _imageSources[i.Key] = img;
                      }
                  });
             });
@@ -104,9 +103,9 @@ namespace Wox.ImageLoader
                 }
 
 
-                if (ImageSources.ContainsKey(path))
+                if (_imageSources.ContainsKey(path))
                 {
-                    img = ImageSources[path];
+                    img = _imageSources[path];
                 }
                 else
                 {
@@ -127,9 +126,9 @@ namespace Wox.ImageLoader
 
                     if (img != null && addToCache)
                     {
-                        if (!ImageSources.ContainsKey(path))
+                        if (!_imageSources.ContainsKey(path))
                         {
-                            ImageSources[path] = img;
+                            _imageSources[path] = img;
                         }
                     }
                 }
