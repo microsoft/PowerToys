@@ -16,10 +16,7 @@ namespace Wox.Plugin.Program
     {
         public abstract List<Program> LoadPrograms();
 
-        public int BonusPoints
-        {
-            get; set;
-        }
+        public int BonusPoints { get; set; }
 
         protected Program CreateEntry(string file)
         {

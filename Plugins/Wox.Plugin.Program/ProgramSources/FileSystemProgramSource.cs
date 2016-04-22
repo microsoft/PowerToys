@@ -59,6 +59,7 @@ namespace Wox.Plugin.Program.ProgramSources
                     if (_suffixes.Any(o => file.EndsWith("." + o)))
                     {
                         Program p = CreateEntry(file);
+                        p.Source = this;
                         list.Add(p);
                     }
                 }

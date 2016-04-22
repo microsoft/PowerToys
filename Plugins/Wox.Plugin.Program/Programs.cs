@@ -17,20 +17,21 @@ namespace Wox.Plugin.Program
     public class Programs : ISettingProvider, IPlugin, IPluginI18n, IContextMenu
     {
         private static object lockObject = new object();
-        private static List<Program> programs = new List<Program>();
-        private static List<IProgramSource> sources = new List<IProgramSource>();
-        private static Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>
+        private static List<Program> _programs = new List<Program>();
+        private static List<IProgramSource> _sources = new List<IProgramSource>();
+        private static readonly Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>
         {
             {"FileSystemProgramSource", typeof(FileSystemProgramSource)},
             {"CommonStartMenuProgramSource", typeof(CommonStartMenuProgramSource)},
             {"UserStartMenuProgramSource", typeof(UserStartMenuProgramSource)},
             {"AppPathsProgramSource", typeof(AppPathsProgramSource)}
         };
+
         private PluginInitContext _context;
 
         private static ProgramIndexCache _cache;
         private static BinaryStorage<ProgramIndexCache> _cacheStorage;
-        private static Settings _settings ;
+        private static Settings _settings;
         private readonly PluginSettingsStorage<Settings> _settingsStorage;
 
         public Programs()
@@ -51,9 +52,10 @@ namespace Wox.Plugin.Program
         {
 
             var fuzzyMather = FuzzyMatcher.Create(query.Search);
-            var results = programs.Where(p => MatchProgram(p, fuzzyMather)).
-                                   Select(ScoreFilter).
-                                   OrderByDescending(p => p.Score)
+            var results = _programs.AsParallel()
+                                   .Where(p => MatchProgram(p, fuzzyMather))
+                                   .Select(ScoreFilter)
+                                   .OrderByDescending(p => p.Score)
                                    .Select(c => new Result
                                    {
                                        Title = c.Title,
@@ -82,86 +84,74 @@ namespace Wox.Plugin.Program
             _context = context;
             Stopwatch.Debug("Preload programs", () =>
             {
-                programs = _cache.Programs;
+                _programs = _cache.Programs;
             });
-            Log.Info($"Preload {programs.Count} programs from cache");
+            Log.Info($"Preload {_programs.Count} programs from cache");
             Stopwatch.Debug("Program Index", IndexPrograms);
         }
 
         public static void IndexPrograms()
         {
+            // todo why there is a lock??
             lock (lockObject)
             {
-                List<ProgramSource> programSources = new List<ProgramSource>();
-                programSources.AddRange(LoadDeaultProgramSources());
+                var sources = DefaultProgramSources();
                 if (_settings.ProgramSources != null &&
                     _settings.ProgramSources.Count(o => o.Enabled) > 0)
                 {
-                    programSources.AddRange(_settings.ProgramSources);
+                    sources.AddRange(_settings.ProgramSources);
                 }
+                // happlebao todo: temp hack for program suffixes
+                sources.AsParallel().ForAll(s => { s.Suffixes = _settings.ProgramSuffixes; });
 
-                sources.Clear();
-                foreach (var source in programSources.Where(o => o.Enabled))
-                {
-                    // happlebao todo: temp hack for program suffixes
-                    source.Suffixes = _settings.ProgramSuffixes;
+                _sources = sources.AsParallel()
+                                  .Where(s => s.Enabled && SourceTypes.ContainsKey(s.Type))
+                                  .Select(s =>
+                                  {
+                                      var sourceClass = SourceTypes[s.Type];
+                                      var constructorInfo = sourceClass.GetConstructor(new[] { typeof(ProgramSource) });
+                                      var programSource = constructorInfo?.Invoke(new object[] { s }) as IProgramSource;
+                                      return programSource;
+                                  })
+                                  .Where(s => s != null).ToList();
 
-                    Type sourceClass;
-                    if (SourceTypes.TryGetValue(source.Type, out sourceClass))
-                    {
-                        ConstructorInfo constructorInfo = sourceClass.GetConstructor(new[] { typeof(ProgramSource) });
-                        if (constructorInfo != null)
-                        {
-                            IProgramSource programSource =
-                                constructorInfo.Invoke(new object[] { source }) as IProgramSource;
-                            sources.Add(programSource);
-                        }
-                    }
-                }
+                _programs = _sources.AsParallel()
+                                    .SelectMany(s => s.LoadPrograms())
+                                    // filter duplicate program
+                                    .GroupBy(x => new { x.ExecutePath, x.ExecuteName })
+                                    .Select(g => g.First())
+                                    .ToList();
 
-                var tempPrograms = new List<Program>();
-                foreach (var source in sources)
-                {
-                    var list = source.LoadPrograms();
-                    list.ForEach(o =>
-                    {
-                        o.Source = source;
-                    });
-                    tempPrograms.AddRange(list);
-                }
-
-                // filter duplicate program
-                programs = tempPrograms.GroupBy(x => new { x.ExecutePath, x.ExecuteName })
-                    .Select(g => g.First()).ToList();
-
-                _cache.Programs = programs;
+                _cache.Programs = _programs;
             }
         }
 
         /// <summary>
         /// Load program sources that wox always provide
         /// </summary>
-        private static List<ProgramSource> LoadDeaultProgramSources()
+        private static List<ProgramSource> DefaultProgramSources()
         {
-            var list = new List<ProgramSource>();
-            list.Add(new ProgramSource
+            var list = new List<ProgramSource>
             {
-                BonusPoints = 0,
-                Enabled = _settings.EnableStartMenuSource,
-                Type = "CommonStartMenuProgramSource"
-            });
-            list.Add(new ProgramSource
-            {
-                BonusPoints = 0,
-                Enabled = _settings.EnableStartMenuSource,
-                Type = "UserStartMenuProgramSource"
-            });
-            list.Add(new ProgramSource
-            {
-                BonusPoints = -10,
-                Enabled = _settings.EnableRegistrySource,
-                Type = "AppPathsProgramSource"
-            });
+                new ProgramSource
+                {
+                    BonusPoints = 0,
+                    Enabled = _settings.EnableStartMenuSource,
+                    Type = "CommonStartMenuProgramSource"
+                },
+                new ProgramSource
+                {
+                    BonusPoints = 0,
+                    Enabled = _settings.EnableStartMenuSource,
+                    Type = "UserStartMenuProgramSource"
+                },
+                new ProgramSource
+                {
+                    BonusPoints = -10,
+                    Enabled = _settings.EnableRegistrySource,
+                    Type = "AppPathsProgramSource"
+                }
+            };
             return list;
         }
 
