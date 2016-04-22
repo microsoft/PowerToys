@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Controls;
+using JetBrains.Annotations;
 using Wox.Infrastructure.Storage;
-using Wox.Plugin.WebSearch.Annotations;
 using Wox.Plugin.WebSearch.SuggestionSources;
 
 namespace Wox.Plugin.WebSearch
