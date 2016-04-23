@@ -48,8 +48,8 @@
       <HintPath>..\packages\NLog.4.2.0\lib\net45\NLog.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Pinyin4Net, Version=2015.11.9.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Pinyin4DotNet.2015.11.9\lib\net452\Pinyin4Net.dll</HintPath>
+    <Reference Include="Pinyin4Net, Version=2016.4.24.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Pinyin4DotNet.2016.4.23.3\lib\net452\Pinyin4Net.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -78,13 +78,12 @@
     <Compile Include="Storage\BinaryStorage.cs" />
     <Compile Include="Storage\JsonStorage.cs" />
     <Compile Include="StringMatcher.cs" />
-    <Compile Include="Unidecoder.Characters.cs" />
     <Compile Include="Http\HttpRequest.cs" />
     <Compile Include="FuzzyMatcher.cs" />
     <Compile Include="Hotkey\GlobalHotkey.cs" />
     <Compile Include="Hotkey\HotkeyModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Unidecoder.cs" />
+    <Compile Include="Alphabet.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj">
@@ -95,6 +94,15 @@
   <ItemGroup>
     <Content Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="pinyindb\pinyin_gwoyeu_mapping.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="pinyindb\pinyin_mapping.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="pinyindb\unicode_to_hanyu_pinyin.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>

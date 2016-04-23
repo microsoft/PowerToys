@@ -60,10 +60,7 @@ namespace Wox
                 Window = new MainWindow (mainVM._settings, mainVM);
                 NotifyIconManager notifyIconManager = new NotifyIconManager(API);
                 CommandArgsFactory.Execute(e.Args.ToList());
-
-
             });
-
         }
 
         [Conditional("RELEASE")]

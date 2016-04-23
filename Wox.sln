@@ -78,6 +78,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		appveyor.yml = appveyor.yml
 		LICENSE = LICENSE
+		Performance1.psess = Performance1.psess
 		README.md = README.md
 		SolutionAssemblyInfo.cs = SolutionAssemblyInfo.cs
 	EndProjectSection
@@ -85,6 +86,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PreSolutionBuild", "PreSolutionBuild\PreSolutionBuild.vcxproj", "{88731DA8-C020-476E-B79A-3ADEF65ACA9F}"
 EndProject
 Global
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64

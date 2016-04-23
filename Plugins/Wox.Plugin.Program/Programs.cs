@@ -50,33 +50,34 @@ namespace Wox.Plugin.Program
 
         public List<Result> Query(Query query)
         {
-
-            var fuzzyMather = FuzzyMatcher.Create(query.Search);
             var results = _programs.AsParallel()
-                                   .Where(p => MatchProgram(p, fuzzyMather))
+                                   .Where(p => Score(p, query.Search) > 0)
                                    .Select(ScoreFilter)
                                    .OrderByDescending(p => p.Score)
-                                   .Select(c => new Result
+                                   .Select(p => new Result
                                    {
-                                       Title = c.Title,
-                                       SubTitle = c.ExecutePath,
-                                       IcoPath = c.IcoPath,
-                                       Score = c.Score,
-                                       ContextData = c,
+                                       Title = p.Title,
+                                       SubTitle = p.ExecutePath,
+                                       IcoPath = p.IcoPath,
+                                       Score = p.Score,
+                                       ContextData = p,
                                        Action = e =>
                                        {
-                                           var hide = StartProcess(new ProcessStartInfo(c.ExecutePath));
+                                           var hide = StartProcess(new ProcessStartInfo(p.ExecutePath));
                                            return hide;
                                        }
                                    }).ToList();
             return results;
         }
 
-        private bool MatchProgram(Program program, FuzzyMatcher matcher)
+        private int Score(Program program, string query)
         {
-            var scores = new List<string> { program.Title, program.PinyinTitle, program.AbbrTitle, program.ExecuteName };
-            program.Score = scores.Select(s => matcher.Evaluate(s ?? string.Empty).Score).Max();
-            return program.Score > 0;
+            var score1 = StringMatcher.Score(program.Title, query);
+            var score2 = StringMatcher.ScoreForPinyin(program.Title, query);
+            var score3 = StringMatcher.Score(program.ExecuteName, query);
+            var score = new[] {score1, score2, score3}.Max();
+            program.Score = score;
+            return score;
         }
 
         public void Init(PluginInitContext context)
