@@ -49,7 +49,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Pinyin4Net, Version=2016.4.24.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Pinyin4DotNet.2016.4.23.3\lib\net452\Pinyin4Net.dll</HintPath>
+      <HintPath>..\packages\Pinyin4DotNet.2016.4.23.4\lib\net452\Pinyin4Net.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
