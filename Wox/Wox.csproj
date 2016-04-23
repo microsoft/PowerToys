@@ -92,6 +92,10 @@
       <HintPath>..\packages\NHotkey.Wpf.1.2.1\lib\net35\NHotkey.Wpf.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Pinyin4Net, Version=2015.11.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Pinyin4DotNet.2015.11.9\lib\net452\Pinyin4Net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="PresentationUI, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="ReachFramework" />
     <Reference Include="System" />

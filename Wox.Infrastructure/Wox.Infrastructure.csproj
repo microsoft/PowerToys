@@ -48,6 +48,10 @@
       <HintPath>..\packages\NLog.4.2.0\lib\net45\NLog.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Pinyin4Net, Version=2015.11.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Pinyin4DotNet.2015.11.9\lib\net452\Pinyin4Net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml" />
