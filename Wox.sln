@@ -78,6 +78,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		appveyor.yml = appveyor.yml
 		LICENSE = LICENSE
+		Performance1.psess = Performance1.psess
 		README.md = README.md
 		SolutionAssemblyInfo.cs = SolutionAssemblyInfo.cs
 	EndProjectSection

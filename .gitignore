@@ -296,3 +296,6 @@ Wox/Images/Thumbs.db
 migrateToAutomaticPackageRestore.ps1
 *.pyd
 *.pyc
+*/pinyindb/*
+*.diagsession
+Output-Performance.txt

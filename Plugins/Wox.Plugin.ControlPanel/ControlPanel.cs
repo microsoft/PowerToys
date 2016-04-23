@@ -38,13 +38,12 @@ namespace Wox.Plugin.ControlPanel
 
         public List<Result> Query(Query query)
         {
-            string myQuery = query.Search.Trim();
             List<Result> results = new List<Result>();
 
             foreach (var item in controlPanelItems)
             {
-                var fuzzyMather = FuzzyMatcher.Create(myQuery);
-                if (MatchProgram(item, fuzzyMather))
+                item.Score = Score(item, query.Search);
+                if (item.Score > 0)
                 {
                     var result = new Result
                     {
@@ -61,8 +60,8 @@ namespace Wox.Plugin.ControlPanel
                                 }
                                 catch (Exception)
                                 {
-                                //Silently Fail for now.. todo
-                            }
+                                    //Silently Fail for now.. todo
+                                }
                                 return true;
                             }
                     };
@@ -74,14 +73,22 @@ namespace Wox.Plugin.ControlPanel
             return panelItems;
         }
 
-        private bool MatchProgram(ControlPanelItem item, FuzzyMatcher matcher)
+        private int Score(ControlPanelItem item, string query)
         {
-            if (item.LocalizedString != null && (item.Score = matcher.Evaluate(item.LocalizedString).Score) > 0) return true;
-            if (item.InfoTip != null && (item.Score = matcher.Evaluate(item.InfoTip).Score) > 0) return true;
-
-            if (item.LocalizedString != null && (item.Score = matcher.Evaluate(item.LocalizedString.Unidecode()).Score) > 0) return true;
-
-            return false;
+            var scores = new List<int>();
+            if (item.LocalizedString != null)
+            {
+                var score1 = StringMatcher.Score(item.LocalizedString, query);
+                var socre2 = StringMatcher.ScoreForPinyin(item.LocalizedString, query);
+                scores.Add(Math.Max(score1, socre2));
+            }
+            if (item.InfoTip != null)
+            {
+                // todo should we add pinyin score for infotip also?
+                var score = StringMatcher.Score(item.InfoTip, query);
+                scores.Add(score);
+            }
+            return scores.Max();
         }
 
         public string GetTranslatedPluginTitle()
