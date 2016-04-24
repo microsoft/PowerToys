@@ -78,7 +78,7 @@
     <Compile Include="ProgramSuffixes.xaml.cs">
       <DependentUpon>ProgramSuffixes.xaml</DependentUpon>
     </Compile>
-    <Compile Include="StringEmptyConverter.cs" />
+    <Compile Include="LocationConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
