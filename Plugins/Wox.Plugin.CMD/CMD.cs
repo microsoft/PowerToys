@@ -163,6 +163,7 @@ namespace Wox.Plugin.CMD
             {
                 UseShellExecute = true,
                 FileName = "cmd.exe",
+                WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                 Arguments = arguments,
                 Verb = runAsAdministrator ? "runas" : ""
             };

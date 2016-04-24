@@ -54,7 +54,7 @@ namespace Wox.Plugin.Program.ProgramSources
 
                             if (!File.Exists(path)) continue;
                             var entry = CreateEntry(path);
-                            entry.ExecuteName = item;
+                            entry.ExecutableName = item;
                             entry.Source = this;
                             list.Add(entry);
                         }

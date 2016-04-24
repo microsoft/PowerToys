@@ -24,13 +24,14 @@ namespace Wox.Plugin.Program
             {
                 Title = Path.GetFileNameWithoutExtension(file),
                 IcoPath = file,
-                ExecutePath = file
+                Path = file,
+                Directory = Directory.GetParent(file).FullName
             };
 
             switch (Path.GetExtension(file).ToLower())
             {
                 case ".exe":
-                    p.ExecuteName = Path.GetFileName(file);
+                    p.ExecutableName = Path.GetFileName(file);
                     try
                     {
                         FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(file);

@@ -57,13 +57,18 @@ namespace Wox.Plugin.Program
                                    .Select(p => new Result
                                    {
                                        Title = p.Title,
-                                       SubTitle = p.ExecutePath,
+                                       SubTitle = p.Path,
                                        IcoPath = p.IcoPath,
                                        Score = p.Score,
                                        ContextData = p,
                                        Action = e =>
                                        {
-                                           var hide = StartProcess(new ProcessStartInfo(p.ExecutePath));
+                                           var info = new ProcessStartInfo
+                                           {
+                                               FileName = p.Path,
+                                               WorkingDirectory = p.Directory
+                                           };
+                                           var hide = StartProcess(info);
                                            return hide;
                                        }
                                    }).ToList();
@@ -74,8 +79,8 @@ namespace Wox.Plugin.Program
         {
             var score1 = StringMatcher.Score(program.Title, query);
             var score2 = StringMatcher.ScoreForPinyin(program.Title, query);
-            var score3 = StringMatcher.Score(program.ExecuteName, query);
-            var score = new[] {score1, score2, score3}.Max();
+            var score3 = StringMatcher.Score(program.ExecutableName, query);
+            var score = new[] { score1, score2, score3 }.Max();
             program.Score = score;
             return score;
         }
@@ -119,7 +124,7 @@ namespace Wox.Plugin.Program
                 _programs = _sources.AsParallel()
                                     .SelectMany(s => s.LoadPrograms())
                                     // filter duplicate program
-                                    .GroupBy(x => new { x.ExecutePath, x.ExecuteName })
+                                    .GroupBy(x => new { ExecutePath = x.Path, ExecuteName = x.ExecutableName })
                                     .Select(g => g.First())
                                     .ToList();
 
@@ -200,11 +205,13 @@ namespace Wox.Plugin.Program
                     Title = _context.API.GetTranslation("wox_plugin_program_run_as_administrator"),
                     Action = _ =>
                     {
-                        var hide = StartProcess(new ProcessStartInfo
+                        var info = new ProcessStartInfo
                         {
-                            FileName = p.ExecutePath,
+                            FileName = p.Path,
+                            WorkingDirectory = p.Directory,
                             Verb = "runas"
-                        });
+                        };
+                        var hide = StartProcess(info);
                         return hide;
                     },
                     IcoPath = "Images/cmd.png"
@@ -214,10 +221,7 @@ namespace Wox.Plugin.Program
                     Title = _context.API.GetTranslation("wox_plugin_program_open_containing_folder"),
                     Action = _ =>
                     {
-                        //get parent folder
-                        var folderPath = Directory.GetParent(p.ExecutePath).FullName;
-                        //open the folder
-                        var hide = StartProcess(new ProcessStartInfo(folderPath));
+                        var hide = StartProcess(new ProcessStartInfo(p.Directory));
                         return hide;
                     },
                     IcoPath = "Images/folder.png"
