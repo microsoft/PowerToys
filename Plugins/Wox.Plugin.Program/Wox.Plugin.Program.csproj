@@ -62,6 +62,7 @@
     </Compile>
     <Compile Include="FileChangeWatcher.cs" />
     <Compile Include="IProgramSource.cs" />
+    <Compile Include="SuffixesConverter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProgramIndexCache.cs" />
     <Compile Include="Programs.cs" />
@@ -77,7 +78,7 @@
     <Compile Include="ProgramSuffixes.xaml.cs">
       <DependentUpon>ProgramSuffixes.xaml</DependentUpon>
     </Compile>
-    <Compile Include="StringEmptyConverter.cs" />
+    <Compile Include="LocationConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -28,14 +28,14 @@
                     <GridViewColumn Header="{DynamicResource wox_plugin_program_location}"  Width="250">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Location, ConverterParameter=(null), Converter={program:StringEmptyConverter}}"/>
+                                <TextBlock Text="{Binding Location, ConverterParameter=(null), Converter={program:LocationConverter}}"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
                     <GridViewColumn Header="{DynamicResource wox_plugin_program_suffixes_header}"  Width="220">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Suffixes, ConverterParameter=(null), Converter={program:StringEmptyConverter}}"/>
+                                <TextBlock Text="{Binding Suffixes, ConverterParameter=(null), Converter={program:SuffixesConvert}}"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
