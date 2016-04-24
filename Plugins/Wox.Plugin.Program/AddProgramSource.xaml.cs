@@ -49,14 +49,15 @@ namespace Wox.Plugin.Program
 
             if(_editing == null)
             {
-                _settings.ProgramSources.Add(new ProgramSource
+                var source = new ProgramSource
                 {
                     Location = Directory.Text,
                     MaxDepth = max,
                     Suffixes = Suffixes.Text.Split(ProgramSource.SuffixSeperator),
                     Type = "FileSystemProgramSource",
                     Enabled = true
-                });
+                };
+                _settings.ProgramSources.Add(source);
             }
             else
             {

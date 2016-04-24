@@ -62,6 +62,7 @@
     </Compile>
     <Compile Include="FileChangeWatcher.cs" />
     <Compile Include="IProgramSource.cs" />
+    <Compile Include="SuffixesConverter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProgramIndexCache.cs" />
     <Compile Include="Programs.cs" />
