@@ -107,8 +107,6 @@ namespace Wox.Plugin.Program
                 {
                     sources.AddRange(_settings.ProgramSources);
                 }
-                // happlebao todo: temp hack for program suffixes
-                sources.AsParallel().ForAll(s => { s.Suffixes = _settings.ProgramSuffixes; });
 
                 _sources = sources.AsParallel()
                                   .Where(s => s.Enabled && SourceTypes.ContainsKey(s.Type))
