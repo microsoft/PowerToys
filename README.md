@@ -46,5 +46,10 @@ Full documentation can be found here [Wox doc](http://doc.getwox.com). This is a
 
 In the future, all of the documentation will be moved back to Github wiki.
 
+# Development / Author Status
 
+1. unified directory `%APPDATA%` for all storage
+2. bring unitest for wox back
+3. add autoupdate
+4. disable plugin properly
 
