@@ -45,7 +45,6 @@
                                        VerticalAlignment="Center" ToolTip="{Binding Title}" x:Name="tbTitle"
                                        Text="{Binding Title}" />
                             <TextBlock Style="{DynamicResource ItemSubTitleStyle}" ToolTip="{Binding SubTitle}"
-                                       Visibility="{Binding SubTitle, Converter={converters:StringNullOrEmptyToVisibilityConverter}}"
                                        Grid.Row="1" x:Name="tbSubTitle" Text="{Binding SubTitle}" />
                         </Grid>
                     </Grid>

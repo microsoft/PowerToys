@@ -124,9 +124,6 @@
     <Compile Include="CommandArgs\ToggleCommandArg.cs" />
     <Compile Include="Converters\ConvertorBase.cs" />
     <Compile Include="Converters\ImagePathConverter.cs" />
-    <Compile Include="Converters\OpacityModeConverter.cs" />
-    <Compile Include="Converters\StringEmptyConverter.cs" />
-    <Compile Include="Converters\StringNullOrEmptyToVisibilityConverter.cs" />
     <Compile Include="Helper\VisibilityExtensions.cs" />
     <Compile Include="Helper\SingletonWindowOpener.cs" />
     <Compile Include="ImageLoader\ImageCache.cs" />

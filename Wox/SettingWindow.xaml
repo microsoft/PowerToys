@@ -79,7 +79,6 @@
                                         <TextBlock VerticalAlignment="Center" ToolTip="{Binding Metadata.Name}"
                                                    x:Name="tbTitle" Text="{Binding Metadata.Name}" />
                                         <TextBlock ToolTip="{Binding Metadata.Description}"
-                                                   Visibility="{Binding Metadata.Description, Converter={converters:StringNullOrEmptyToVisibilityConverter}}"
                                                    Grid.Row="1" x:Name="tbSubTitle"
                                                    Text="{Binding Metadata.Description}" Opacity="0.5" />
                                     </Grid>
@@ -115,8 +114,7 @@
                                                x:Name="pluginAuthor" Text="{DynamicResource author}" />
                                 </DockPanel>
                                 <TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5"
-                                           ToolTip="{Binding Source=pluginSubTitle, Path=Text}"
-                                           Visibility="{Binding Source=pluginSubTitle, Path=Text, Converter={converters:StringNullOrEmptyToVisibilityConverter}}" />
+                                           ToolTip="{Binding Source=pluginSubTitle, Path=Text}"/>
                                 <DockPanel Grid.Row="2" Margin="0 10 0 8">
                                     <CheckBox x:Name="cbDisablePlugin" Click="CbDisablePlugin_OnClick">
                                         <TextBlock Text="{DynamicResource disable}" />

@@ -389,6 +389,7 @@ namespace Wox.ViewModel
                 else
                 {
                     Results.Clear();
+                    ResultListBoxVisibility = Visibility.Collapsed;
                 }
             }
         }
@@ -565,6 +566,11 @@ namespace Wox.ViewModel
             {
                 ResultListBoxVisibility = Visibility.Visible;
             }
+            else
+            {
+                ResultListBoxVisibility = Visibility.Collapsed;
+            }
+
         }
 
         #endregion
