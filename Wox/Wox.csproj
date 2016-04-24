@@ -392,7 +392,7 @@
 xcopy /Y /E  $(ProjectDir)Images\* $(TargetDir)Images\
 xcopy /Y /D /E $(SolutionDir)PythonHome\* $(TargetDir)PythonHome\
  
-cd "$(TargetDir)" &amp; del /s /q *.xml
+
 
 if $(ConfigurationName) == Release (
 cd "$(TargetDir)Plugins" &amp; del /s /q NLog.dll
