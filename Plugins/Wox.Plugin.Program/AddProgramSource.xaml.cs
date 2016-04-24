@@ -15,6 +15,7 @@ namespace Wox.Plugin.Program
         public AddProgramSource(Settings settings)
         {
             _settings = settings;
+
             InitializeComponent();
             Suffixes.Text = string.Join(";", settings.ProgramSuffixes);
         }
@@ -22,11 +23,12 @@ namespace Wox.Plugin.Program
         public AddProgramSource(ProgramSource edit, Settings settings)
         {
             _editing = edit;
+            _settings = settings;
+
+            InitializeComponent();
             Directory.Text = _editing.Location;
             MaxDepth.Text = _editing.MaxDepth.ToString();
             Suffixes.Text = string.Join(";", _editing.Suffixes);
-            _settings = settings;
-            InitializeComponent();
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
