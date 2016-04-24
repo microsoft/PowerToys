@@ -24,8 +24,8 @@
                     </ControlTemplate>
                 </Button.Template>
                 <Button.Content>
-                    <Grid HorizontalAlignment="Stretch" Height="40" VerticalAlignment="Stretch" Margin="5"
-                          Cursor="Hand">
+                    <Grid HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Margin="5"
+                          Cursor="Hand" UseLayoutRounding="False">
                         <Grid.Resources>
                             <converters:ImagePathConverter x:Key="ImageConverter" />
                         </Grid.Resources>
@@ -66,14 +66,16 @@
     <!--http://stackoverflow.com/questions/16819577/setting-background-color-or-wpf-4-0-listbox-windows-8/#16820062-->
     <ListBox.ItemContainerStyle>
         <Style TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Height" Value="50" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ListBoxItem}">
                         <Border x:Name="Bd"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                Padding="{TemplateBinding Padding}"
                                 SnapsToDevicePixels="True">
                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
