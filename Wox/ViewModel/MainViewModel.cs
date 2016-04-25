@@ -453,6 +453,7 @@ namespace Wox.ViewModel
                     }
                 };
                 action.Invoke();
+
                 var plugins = PluginManager.ValidPluginsForQuery(query);
                 foreach (var plugin in plugins)
                 {
@@ -466,9 +467,9 @@ namespace Wox.ViewModel
                         });
                     }
                 }
-            }
 
-            IsProgressBarTooltipVisible = false;
+             
+            }
         }
 
         private void ResetQueryHistoryIndex()
@@ -479,8 +480,7 @@ namespace Wox.ViewModel
 
         private void UpdateResultViewInternal(List<Result> list, PluginMetadata metadata)
         {
-            Stopwatch.Normal($"UI update cost for {metadata.Name}",
-                    () => { Results.AddResults(list, metadata.ID); });
+            Results.AddResults(list, metadata.ID);
         }
 
         private void DisplayQueryHistory(HistoryItem history)
@@ -562,13 +562,9 @@ namespace Wox.ViewModel
                 });
             }
 
-            if (list.Count > 0)
+            if (list.Count > 0 && ! ResultListBoxVisibility.IsVisible())
             {
                 ResultListBoxVisibility = Visibility.Visible;
-            }
-            else
-            {
-                ResultListBoxVisibility = Visibility.Collapsed;
             }
 
         }
