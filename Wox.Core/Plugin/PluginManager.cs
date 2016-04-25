@@ -257,7 +257,7 @@ namespace Wox.Core.Plugin
             if (pluginPair != null)
             {
                 var metadata = pluginPair.Metadata;
-                var plugin = (IContextMenu)pluginPair?.Plugin;
+                var plugin = (IContextMenu)pluginPair.Plugin;
 
                 try
                 {
