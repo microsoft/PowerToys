@@ -15,7 +15,6 @@ using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Wox.Storage;
-using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox.ViewModel
 {
@@ -80,7 +79,6 @@ namespace Wox.ViewModel
             InitializeResultListBox();
             InitializeContextMenu();
             InitializeKeyCommands();
-
         }
 
         ~MainViewModel()
@@ -118,19 +116,6 @@ namespace Wox.ViewModel
                 {
                     HandleQueryTextUpdated();
                 }
-            }
-        }
-
-        public bool IsProgressBarTooltipVisible
-        {
-            get
-            {
-                return _isProgressBarTooltipVisible;
-            }
-            set
-            {
-                _isProgressBarTooltipVisible = value;
-                OnPropertyChanged();
             }
         }
 
@@ -375,7 +360,7 @@ namespace Wox.ViewModel
 
         private void HandleQueryTextUpdated()
         {
-            IsProgressBarTooltipVisible = false;
+            ProgressBarVisibility = Visibility.Hidden;
             _updateSource?.Cancel();
             _updateSource = new CancellationTokenSource();
             _updateToken = _updateSource.Token;
@@ -553,7 +538,7 @@ namespace Wox.ViewModel
         public void UpdateResultView(List<Result> list, PluginMetadata metadata, Query originQuery)
         {
             _queryHasReturn = true;
-            IsProgressBarTooltipVisible = false;
+            ProgressBarVisibility = Visibility.Hidden;
 
             list.ForEach(o =>
             {
@@ -567,7 +552,7 @@ namespace Wox.ViewModel
                 });
             }
 
-            if (list.Count > 0 && ! ResultListBoxVisibility.IsVisible())
+            if (list.Count > 0 && !ResultListBoxVisibility.IsVisible())
             {
                 ResultListBoxVisibility = Visibility.Visible;
             }

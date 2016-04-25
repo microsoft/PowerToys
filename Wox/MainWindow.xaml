@@ -37,12 +37,9 @@
                      PreviewDragOver="OnPreviewDragOver"
                      AllowDrop="True"
                      x:Name="QueryTextBox" />
-            <Line Style="{DynamicResource PendingLineStyle}" x:Name="ProgressBar" Y1="0" Y2="0" X2="100" Height="2"
-                  StrokeThickness="1"
-                  Visibility="{Binding ProgressBarVisibility}" HorizontalAlignment="Right" Width="752">
-                <Line.ToolTip>
-                    <ToolTip IsOpen="{Binding IsProgressBarTooltipVisible}" />
-                </Line.ToolTip>
+            <Line x:Name="ProgressBar" HorizontalAlignment="Right"
+                  Style="{DynamicResource PendingLineStyle}" Visibility="{Binding ProgressBarVisibility, Mode=TwoWay}" 
+                  Y1="0" Y2="0" X2="100" Height="2" Width="752" StrokeThickness="1">
             </Line>
             <ContentControl Content="{Binding Results}" Visibility="{Binding ResultListBoxVisibility}" />
             <ContentControl Content="{Binding ContextMenu}" Visibility="{Binding ContextMenuVisibility}" />
