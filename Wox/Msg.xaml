@@ -23,9 +23,10 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="32" />
             <ColumnDefinition />
-            <ColumnDefinition Width="16" />
+            <ColumnDefinition Width="2.852" />
+            <ColumnDefinition Width="13.148"/>
         </Grid.ColumnDefinitions>
-        <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" />
+        <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left" Margin="0,9" />
         <Grid HorizontalAlignment="Stretch" Margin="5 0 0 0" Grid.Column="1" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition />
@@ -35,6 +36,6 @@
             <TextBlock Grid.Row="1" Foreground="#8e94a4" x:Name="tbSubTitle">sdfdsf</TextBlock>
         </Grid>
         <Image x:Name="imgClose" Grid.Column="2" Cursor="Hand" Width="16" VerticalAlignment="Top"
-               HorizontalAlignment="Right" />
+               HorizontalAlignment="Right" Grid.ColumnSpan="2" />
     </Grid>
 </Window>

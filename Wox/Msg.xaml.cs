@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using Wox.Helper;
+using Wox.Infrastructure;
 
 namespace Wox
 {
@@ -36,9 +37,7 @@ namespace Wox
             Storyboard.SetTargetProperty(fadeOutAnimation, new PropertyPath(TopProperty));
             fadeOutStoryboard.Children.Add(fadeOutAnimation);
 
-
-            imgClose.Source = new BitmapImage(new Uri("Images\\close.pn", UriKind.Relative));
-            //imgClose.Source = new BitmapImage(new Uri(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Images\\close.png")));
+            imgClose.Source = App.ImageLoader.Load(Path.Combine(WoxDirectroy.Executable, "Images\\close.png"));
             imgClose.MouseUp += imgClose_MouseUp;
         }
 
@@ -56,7 +55,7 @@ namespace Wox
             Close();
         }
 
-        public void Show(string title, string subTitle, string icopath)
+        public void Show(string title, string subTitle, string iconPath)
         {
             tbTitle.Text = title;
             tbSubTitle.Text = subTitle;
@@ -64,12 +63,12 @@ namespace Wox
             {
                 tbSubTitle.Visibility = Visibility.Collapsed;
             }
-            if (!File.Exists(icopath))
+            if (!File.Exists(iconPath))
             {
-                imgIco.Source = new BitmapImage(new Uri("Images\\app.png", UriKind.Relative));
+                imgIco.Source = App.ImageLoader.Load(Path.Combine(WoxDirectroy.Executable, "Images\\app.png"));
             }
             else {
-                imgIco.Source = new BitmapImage(new Uri(icopath));
+                imgIco.Source = App.ImageLoader.Load(iconPath);
             }
 
             Show();
