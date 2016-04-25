@@ -40,7 +40,7 @@ namespace Wox.Plugin
         /// <summary>
         /// Plugin directory
         /// </summary>
-        public string PluginDirectory { get; internal set; }
+        public string PluginDirectory { get; set; }
 
         public override bool Equals(object obj)
         {

@@ -315,8 +315,11 @@ namespace Wox.ViewModel
                     MainWindowVisibility = Visibility.Collapsed;
                 }
 
-                _userSelectedRecord.Add(result);
-                _queryHistory.Add(result.OriginQuery.RawQuery);
+                if (!ContextMenuVisibility.IsVisible())
+                {
+                    _userSelectedRecord.Add(result);
+                    _queryHistory.Add(result.OriginQuery.RawQuery);
+                }
             });
 
             LoadContextMenuCommand = new RelayCommand(_ =>
@@ -324,13 +327,14 @@ namespace Wox.ViewModel
                 if (!ContextMenuVisibility.IsVisible())
                 {
                     var result = Results.SelectedResult.RawResult;
-                    var pluginID = result.PluginID;
+                    var id = result.PluginID;
 
-                    var contextMenuResults = PluginManager.GetContextMenusForPlugin(result);
-                    contextMenuResults.Add(GetTopMostContextMenu(result));
+                    var menus = PluginManager.GetContextMenusForPlugin(result);
+                    menus.Add(ContextMenuTopMost(result));
+                    menus.Add(ContextMenuPluginInfo(id));
 
                     ContextMenu.Clear();
-                    ContextMenu.AddResults(contextMenuResults, pluginID);
+                    ContextMenu.AddResults(menus, id);
                     ContextMenuVisibility = Visibility.Visible;
                 }
                 else
@@ -502,11 +506,12 @@ namespace Wox.ViewModel
                 }, historyMetadata);
             }
         }
-        private Result GetTopMostContextMenu(Result result)
+        private Result ContextMenuTopMost(Result result)
         {
+            Result menu;
             if (_topMostRecord.IsTopMost(result))
             {
-                return new Result(InternationalizationManager.Instance.GetTranslation("cancelTopMostInThisQuery"), "Images\\down.png")
+                menu = new Result(InternationalizationManager.Instance.GetTranslation("cancelTopMostInThisQuery"), "Images\\down.png")
                 {
                     PluginDirectory = WoxDirectroy.Executable,
                     Action = _ =>
@@ -519,7 +524,7 @@ namespace Wox.ViewModel
             }
             else
             {
-                return new Result(InternationalizationManager.Instance.GetTranslation("setAsTopMostInThisQuery"), "Images\\up.png")
+                menu = new Result(InternationalizationManager.Instance.GetTranslation("setAsTopMostInThisQuery"), "Images\\up.png")
                 {
                     PluginDirectory = WoxDirectroy.Executable,
                     Action = _ =>
@@ -530,6 +535,28 @@ namespace Wox.ViewModel
                     }
                 };
             }
+            return menu;
+        }
+
+        private Result ContextMenuPluginInfo(string id)
+        {
+            var metadata = PluginManager.GetPluginForId(id).Metadata;
+            var translator = InternationalizationManager.Instance;
+
+            var author = translator.GetTranslation("author");
+            var website = translator.GetTranslation("website");
+            var version = translator.GetTranslation("version");
+            var plugin = translator.GetTranslation("plugin");
+            var title = $"{plugin}: {metadata.Name}";
+            var icon = metadata.IcoPath;
+            var subtitle = $"{author}: {metadata.Author}, {website}: {metadata.Website} {version}: {metadata.Version}";
+
+            var menu = new Result(title, icon, subtitle)
+            {
+                PluginDirectory = metadata.PluginDirectory,
+                Action = _ => false
+            };
+            return menu;
         }
         #endregion
 
