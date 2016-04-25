@@ -26,7 +26,11 @@ namespace Wox.Infrastructure.Storage
 
             // use property initialization instead of DefaultValueAttribute
             // easier and flexible for default value of object
-            _serializerSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+            _serializerSettings = new JsonSerializerSettings
+            {
+                ObjectCreationHandling = ObjectCreationHandling.Replace,
+                NullValueHandling = NullValueHandling.Ignore
+            };
         }
 
         public T Load()
