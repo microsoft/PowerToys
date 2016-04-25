@@ -81,7 +81,7 @@ namespace Wox.Plugin.Sys
                 {
                     Title = "Shutdown",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_shutdown_computer"),
-                    IcoPath = "Images\\exit.png",
+                    IcoPath = "Images\\shutdown.png",
                     Action = c =>
                     {
                         var reuslt = MessageBox.Show("Are you sure you want to shut the computer down?",
@@ -97,7 +97,7 @@ namespace Wox.Plugin.Sys
                 {
                     Title = "Restart",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_restart_computer"),
-                    IcoPath = "Images\\restartcomp.png",
+                    IcoPath = "Images\\restart.png",
                     Action = c =>
                     {
                         var result = MessageBox.Show("Are you sure you want to restart the computer?",
@@ -169,7 +169,7 @@ namespace Wox.Plugin.Sys
                 {
                     Title = "Restart Wox",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_restart"),
-                    IcoPath = "Images\\restart.png",
+                    IcoPath = "Images\\app.png",
                     Action = c =>
                     {
                         context.API.RestarApp();

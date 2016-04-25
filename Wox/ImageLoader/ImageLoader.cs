@@ -40,7 +40,7 @@ namespace Wox.ImageLoader
         };
 
         private readonly ImageCache _cache;
-        private  readonly BinaryStorage<ImageCache> _storage;
+        private readonly BinaryStorage<ImageCache> _storage;
 
         public ImageLoader()
         {
@@ -93,7 +93,7 @@ namespace Wox.ImageLoader
         public ImageSource Load(string path, bool addToCache = true)
         {
             if (string.IsNullOrEmpty(path)) return null;
-            ImageSource img = null;
+            ImageSource image = null;
             Stopwatch.Debug($"Loading image path: {path}", () =>
             {
 
@@ -105,7 +105,7 @@ namespace Wox.ImageLoader
 
                 if (_imageSources.ContainsKey(path))
                 {
-                    img = _imageSources[path];
+                    image = _imageSources[path];
                 }
                 else
                 {
@@ -113,27 +113,43 @@ namespace Wox.ImageLoader
 
                     if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
                     {
-                        img = new BitmapImage(new Uri(path));
+                        image = new BitmapImage(new Uri(path));
                     }
                     else if (SelfExts.Contains(ext) && File.Exists(path))
                     {
-                        img = GetIcon(path);
+                        image = GetIcon(path);
                     }
-                    else if (!string.IsNullOrEmpty(path) && ImageExts.Contains(ext) && File.Exists(path))
+                    else if (!string.IsNullOrEmpty(path) && ImageExts.Contains(ext))
                     {
-                        img = new BitmapImage(new Uri(path));
+                        if (File.Exists(path))
+                        {
+                            image = new BitmapImage(new Uri(path));
+                        }
+                        else
+                        {
+                            path = Path.Combine(WoxDirectroy.Executable, "Images", Path.GetFileName(path));
+                            if (File.Exists(path))
+                            {
+                                image = new BitmapImage(new Uri(path));
+                            }
+                            else
+                            {
+                                path = Path.Combine(WoxDirectroy.Executable, "Images", "app.png");
+                                image = new BitmapImage(new Uri(path));
+                            }
+                        }
                     }
 
-                    if (img != null && addToCache)
+                    if (image != null && addToCache)
                     {
                         if (!_imageSources.ContainsKey(path))
                         {
-                            _imageSources[path] = img;
+                            _imageSources[path] = image;
                         }
                     }
                 }
             });
-            return img;
+            return image;
         }
 
         // http://blogs.msdn.com/b/oldnewthing/archive/2011/01/27/10120844.aspx
