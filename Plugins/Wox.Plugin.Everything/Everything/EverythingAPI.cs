@@ -9,8 +9,8 @@ namespace Wox.Plugin.Everything.Everything
     public sealed class EverythingAPI
     {
         #region DllImport
-        [DllImport(EVERYTHING_DLL_NAME)]
-        private static extern int Everything_SetSearch(string lpSearchString);
+        [DllImport(EVERYTHING_DLL_NAME, CharSet = CharSet.Unicode)]
+        private static extern int Everything_SetSearchW(string lpSearchString);
         [DllImport(EVERYTHING_DLL_NAME)]
         private static extern void Everything_SetMatchPath(bool bEnable);
         [DllImport(EVERYTHING_DLL_NAME)]
@@ -36,13 +36,13 @@ namespace Wox.Plugin.Everything.Everything
         private static extern UInt32 Everything_GetMax();
         [DllImport(EVERYTHING_DLL_NAME)]
         private static extern UInt32 Everything_GetOffset();
-        [DllImport(EVERYTHING_DLL_NAME)]
-        private static extern string Everything_GetSearch();
+        [DllImport(EVERYTHING_DLL_NAME, CharSet = CharSet.Unicode)]
+        private static extern string Everything_GetSearchW();
         [DllImport(EVERYTHING_DLL_NAME)]
         private static extern StateCode Everything_GetLastError();
 
-        [DllImport(EVERYTHING_DLL_NAME, EntryPoint = "Everything_QueryW")]
-        private static extern bool Everything_Query(bool bWait);
+        [DllImport(EVERYTHING_DLL_NAME, CharSet = CharSet.Unicode)]
+        private static extern bool Everything_QueryW(bool bWait);
 
         [DllImport(EVERYTHING_DLL_NAME)]
         private static extern void Everything_SortResultsByPath();
@@ -65,8 +65,8 @@ namespace Wox.Plugin.Everything.Everything
         private static extern bool Everything_IsFolderResult(int nIndex);
         [DllImport(EVERYTHING_DLL_NAME)]
         private static extern bool Everything_IsFileResult(int nIndex);
-        [DllImport(EVERYTHING_DLL_NAME)]
-        private static extern void Everything_GetResultFullPathName(int nIndex, StringBuilder lpString, int nMaxCount);
+        [DllImport(EVERYTHING_DLL_NAME, CharSet = CharSet.Unicode)]
+        private static extern void Everything_GetResultFullPathNameW(int nIndex, StringBuilder lpString, int nMaxCount);
         [DllImport(EVERYTHING_DLL_NAME)]
         private static extern void Everything_Reset();
         #endregion
@@ -200,12 +200,12 @@ namespace Wox.Plugin.Everything.Everything
                 Everything_SetRegex(true);
                 keyWord = keyWord.Substring(1);
             }
-            Everything_SetSearch(keyWord);
+            Everything_SetSearchW(keyWord);
             Everything_SetOffset(offset);
             Everything_SetMax(maxCount);
 
 
-            if (!Everything_Query(true))
+            if (!Everything_QueryW(true))
             {
                 switch (Everything_GetLastError())
                 {
@@ -231,7 +231,7 @@ namespace Wox.Plugin.Everything.Everything
             StringBuilder buffer = new StringBuilder(bufferSize);
             for (int idx = 0; idx < Everything_GetNumResults(); ++idx)
             {
-                Everything_GetResultFullPathName(idx, buffer, bufferSize);
+                Everything_GetResultFullPathNameW(idx, buffer, bufferSize);
 
                 var result = new SearchResult { FullPath = buffer.ToString() };
                 if (Everything_IsFolderResult(idx))
