@@ -5,15 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using Wox.CommandArgs;
 using Wox.Core.Plugin;
-using Wox.Core.Resource;
-using Wox.Core.Updater;
-using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Storage;
 using Wox.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
@@ -47,17 +44,16 @@ namespace Wox
                 RegisterUnhandledException();
 
                 ImageLoader = new ImageLoader.ImageLoader();
-                ThreadPool.QueueUserWorkItem(_ => { ImageLoader.PreloadImages(); });
-
+                Task.Factory.StartNew(ImageLoader.PreloadImages);
                 PluginManager.Initialize();
- 
-                MainViewModel mainVM = new MainViewModel(); 
+
+                MainViewModel mainVM = new MainViewModel();
                 API = new PublicAPIInstance(mainVM, mainVM._settings);
                 PluginManager.InitializePlugins(API);
 
                 mainVM._settings.UpdatePluginSettings();
 
-                Window = new MainWindow (mainVM._settings, mainVM);
+                Window = new MainWindow(mainVM._settings, mainVM);
                 NotifyIconManager notifyIconManager = new NotifyIconManager(API);
                 CommandArgsFactory.Execute(e.Args.ToList());
             });

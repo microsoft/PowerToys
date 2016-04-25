@@ -48,6 +48,9 @@ namespace Wox.ViewModel
         private readonly UserSelectedRecord _userSelectedRecord;
         private readonly TopMostRecord _topMostRecord;
 
+        private CancellationTokenSource _updateSource;
+        private CancellationToken _updateToken;
+
         #endregion
 
         #region Constructor
@@ -373,6 +376,10 @@ namespace Wox.ViewModel
         private void HandleQueryTextUpdated()
         {
             IsProgressBarTooltipVisible = false;
+            _updateSource?.Cancel();
+            _updateSource = new CancellationTokenSource();
+            _updateToken = _updateSource.Token;
+
             if (ContextMenuVisibility.IsVisible())
             {
                 QueryContextMenu();
@@ -442,17 +449,15 @@ namespace Wox.ViewModel
                         Results.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
                     }
                 }
-                _lastQuery = query;
 
-                Action action = async () =>
+                _lastQuery = query;
+                Task.Delay(200, _updateToken).ContinueWith(_ =>
                 {
-                    await Task.Delay(150);
-                    if (!string.IsNullOrEmpty(query.RawQuery) && query.RawQuery == _lastQuery.RawQuery && !_queryHasReturn)
+                    if (query.RawQuery == _lastQuery.RawQuery && !_queryHasReturn)
                     {
-                        IsProgressBarTooltipVisible = true;
+                        ProgressBarVisibility = Visibility.Visible;
                     }
-                };
-                action.Invoke();
+                }, _updateToken);
 
                 var plugins = PluginManager.ValidPluginsForQuery(query);
                 foreach (var plugin in plugins)
@@ -460,15 +465,15 @@ namespace Wox.ViewModel
                     var config = _settings.PluginSettings[plugin.Metadata.ID];
                     if (!config.Disabled)
                     {
-                        ThreadPool.QueueUserWorkItem(o =>
+                        Task.Factory.StartNew(() =>
                         {
                             var results = PluginManager.QueryForPlugin(plugin, query);
                             UpdateResultView(results, plugin.Metadata, query);
-                        });
+                        }, _updateToken);
                     }
                 }
 
-             
+
             }
         }
 
