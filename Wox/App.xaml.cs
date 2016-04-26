@@ -21,7 +21,6 @@ namespace Wox
     {
         private const string Unique = "Wox_Unique_Application_Mutex";
         public static MainWindow Window { get; private set; }
-        public static ImageLoader ImageLoader;
         public static PublicAPIInstance API { get; private set; }
 
         [STAThread]
@@ -44,7 +43,6 @@ namespace Wox
                 WoxDirectroy.Executable = Directory.GetParent(Assembly.GetExecutingAssembly().Location).ToString();
                 RegisterUnhandledException();
 
-                ImageLoader = new ImageLoader();
                 Task.Factory.StartNew(ImageLoader.PreloadImages);
                 PluginManager.Initialize();
 

@@ -73,13 +73,13 @@ namespace Wox.Infrastructure.Storage
             }
             catch (SerializationException e)
             {
-                Log.Error(e);
                 LoadDefault();
+                Log.Error(e);
             }
             catch (InvalidCastException e)
             {
-                Log.Error(e);
                 LoadDefault();
+                Log.Error(e);
             }
             finally
             {

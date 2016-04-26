@@ -53,8 +53,12 @@ namespace Wox.Plugin.WebSearch
 
         private void btnAddWebSearch_OnClick(object sender, RoutedEventArgs e)
         {
-            WebSearchSetting webSearch = new WebSearchSetting(this, _settings);
-            webSearch.ShowDialog();
+            var setting = new WebSearchSetting(this, _settings);
+            var webSearch = new WebSearch();
+            
+
+            setting.AddItem(webSearch);
+            setting.ShowDialog();
         }
 
         private void btnDeleteWebSearch_OnClick(object sender, RoutedEventArgs e)

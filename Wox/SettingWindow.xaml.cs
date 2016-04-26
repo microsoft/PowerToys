@@ -19,6 +19,7 @@ using Wox.Core.Updater;
 using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure.Hotkey;
+using Wox.Infrastructure.Image;
 using Wox.Plugin;
 using Wox.ViewModel;
 using Application = System.Windows.Forms.Application;
@@ -550,7 +551,7 @@ namespace Wox
             pluginAuthor.Text = InternationalizationManager.Instance.GetTranslation("author") + ": " + pair.Metadata.Author;
             pluginSubTitle.Text = pair.Metadata.Description;
             pluginId = pair.Metadata.ID;
-            pluginIcon.Source = App.ImageLoader.Load(pair.Metadata.FullIcoPath);
+            pluginIcon.Source = ImageLoader.Load(pair.Metadata.FullIcoPath);
 
             var customizedPluginConfig = _settings.PluginSettings[pluginId];
             cbDisablePlugin.IsChecked = customizedPluginConfig != null && customizedPluginConfig.Disabled;

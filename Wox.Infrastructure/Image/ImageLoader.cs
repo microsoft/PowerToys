@@ -13,11 +13,11 @@ using Wox.Infrastructure.Storage;
 
 namespace Wox.Infrastructure.Image
 {
-    public class ImageLoader
+    public static class ImageLoader
     {
-        private readonly ConcurrentDictionary<string, ImageSource> _imageSources = new ConcurrentDictionary<string, ImageSource>();
+        private static readonly ConcurrentDictionary<string, ImageSource> _imageSources = new ConcurrentDictionary<string, ImageSource>();
 
-        private readonly List<string> ImageExts = new List<string>
+        private static readonly List<string> ImageExts = new List<string>
         {
             ".png",
             ".jpg",
@@ -28,7 +28,7 @@ namespace Wox.Infrastructure.Image
             ".ico"
         };
 
-        private readonly List<string> SelfExts = new List<string>
+        private static readonly List<string> SelfExts = new List<string>
         {
             ".exe",
             ".lnk",
@@ -38,21 +38,21 @@ namespace Wox.Infrastructure.Image
             ".appref-ms"
         };
 
-        private readonly ImageCache _cache;
-        private readonly BinaryStorage<ImageCache> _storage;
+        private static readonly ImageCache _cache;
+        private static readonly BinaryStorage<ImageCache> _storage;
 
-        public ImageLoader()
+        static ImageLoader()
         {
             _storage = new BinaryStorage<ImageCache>();
             _cache = _storage.Load();
         }
 
-        ~ImageLoader()
+        public static void Save()
         {
             _storage.Save();
         }
 
-        private ImageSource GetIcon(string fileName)
+        private static ImageSource GetIcon(string fileName)
         {
             try
             {
@@ -69,7 +69,7 @@ namespace Wox.Infrastructure.Image
             return null;
         }
 
-        public void PreloadImages()
+        public static void PreloadImages()
         {
             Stopwatch.Debug($"Preload {_cache.TopUsedImages.Count} images", () =>
             {
@@ -89,10 +89,15 @@ namespace Wox.Infrastructure.Image
             });
         }
 
-        public ImageSource Load(string path, bool addToCache = true)
+        public static ImageSource Load(string path, bool addToCache = true)
         {
-            if (string.IsNullOrEmpty(path)) return null;
             ImageSource image = null;
+            if (string.IsNullOrEmpty(path))
+            {
+                path = Path.Combine(WoxDirectroy.Executable, "Images", "app.png");
+                image = new BitmapImage(new Uri(path));
+                return image;
+            }
             Stopwatch.Debug($"Loading image path: {path}", () =>
             {
 
@@ -152,7 +157,7 @@ namespace Wox.Infrastructure.Image
         }
 
         // http://blogs.msdn.com/b/oldnewthing/archive/2011/01/27/10120844.aspx
-        private Icon GetFileIcon(string name)
+        private static Icon GetFileIcon(string name)
         {
             SHFILEINFO shfi = new SHFILEINFO();
             uint flags = SHGFI_SYSICONINDEX;

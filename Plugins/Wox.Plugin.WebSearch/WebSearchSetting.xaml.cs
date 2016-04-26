@@ -2,37 +2,41 @@
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Exception;
+using Wox.Infrastructure.Image;
 
 namespace Wox.Plugin.WebSearch
 {
     public partial class WebSearchSetting : Window
     {
-        private const string _imageDirectoryName = "Images";
-        private string _pluginDirectory = WoxDirectroy.Executable;
+        private const string ImageDirectory = "Images";
+        private const string DefaultIcon = "web_search.png";
+        private readonly string _pluginDirectory;
         private readonly WebSearchesSetting _settingWindow;
         private bool _isUpdate;
-        private WebSearch _updateWebSearch;
+        private WebSearch _webSearch;
         private readonly PluginInitContext _context;
         private readonly WebSearchPlugin _plugin;
-        private Settings _settings;
+        private readonly Settings _settings;
 
         public WebSearchSetting(WebSearchesSetting settingWidow, Settings settings)
         {
+            InitializeComponent();
             _plugin = settingWidow.Plugin;
             _context = settingWidow.Context;
             _settingWindow = settingWidow;
-            InitializeComponent();
             _settings = settings;
+            _pluginDirectory = _settingWindow.Context.CurrentPluginMetadata.PluginDirectory;
         }
 
         public void UpdateItem(WebSearch webSearch)
         {
-            _updateWebSearch = _settings.WebSearches.FirstOrDefault(o => o == webSearch);
-            if (_updateWebSearch == null || string.IsNullOrEmpty(_updateWebSearch.Url))
+            _webSearch = _settings.WebSearches.FirstOrDefault(o => o == webSearch);
+            if (_webSearch == null || string.IsNullOrEmpty(_webSearch.Url))
             {
 
                 string warning = _context.API.GetTranslation("wox_plugin_websearch_invalid_web_search");
@@ -42,31 +46,61 @@ namespace Wox.Plugin.WebSearch
             }
 
             _isUpdate = true;
-            lblAdd.Text = "Update";
-            tbIconPath.Text = webSearch.IconPath;
-            ShowIcon(webSearch.IconPath);
-            cbEnable.IsChecked = webSearch.Enabled;
-            tbTitle.Text = webSearch.Title;
-            tbUrl.Text = webSearch.Url;
-            tbActionword.Text = webSearch.ActionKeyword;
+            ConfirmButton.Content = "Update";
+            WebSearchIcon.Source = LoadIcon(webSearch.IconPath);
+            EnableCheckBox.IsChecked = webSearch.Enabled;
+            WebSearchName.Text = webSearch.Title;
+            Url.Text = webSearch.Url;
+            Actionword.Text = webSearch.ActionKeyword;
         }
 
-        private void ShowIcon(string path)
+        public void AddItem(WebSearch websearch)
         {
-            imgIcon.Source = new BitmapImage(new Uri(Path.Combine(_pluginDirectory, path), UriKind.Absolute));
+            _webSearch = websearch;
+            if (string.IsNullOrEmpty(_webSearch.IconPath))
+            {
+                _webSearch.IconPath = DefaultIcon;
+                WebSearchIcon.Source = LoadIcon(_webSearch.IconPath);
+            }
         }
 
-        private void BtnCancel_OnClick(object sender, RoutedEventArgs e)
+        private void CancelButtonOnClick(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private ImageSource LoadIcon(string path)
+        {
+            if (path != null)
+            {
+                var releativePath = Path.Combine(_pluginDirectory, ImageDirectory, Path.GetFileName(path));
+                if (File.Exists(releativePath))
+                {
+                    _webSearch.IconPath = path;
+                    var source = ImageLoader.Load(releativePath);
+                    return source;
+                }
+                else
+                {
+                    _webSearch.IconPath = path;
+                    var source = ImageLoader.Load(path);
+                    return source;
+                }
+            }
+            else
+            {
+                var source = ImageLoader.Load(Path.Combine(_pluginDirectory, ImageDirectory, DefaultIcon));
+                return source;
+            }
+
         }
 
         /// <summary>
         /// Confirm button for both add and update
         /// </summary>
-        private void btnConfirm_OnClick(object sender, RoutedEventArgs e)
+        private void ConfirmButtonOnClick(object sender, RoutedEventArgs e)
         {
-            string title = tbTitle.Text;
+            string title = WebSearchName.Text;
             if (string.IsNullOrEmpty(title))
             {
                 string warning = _context.API.GetTranslation("wox_plugin_websearch_input_title");
@@ -74,7 +108,7 @@ namespace Wox.Plugin.WebSearch
                 return;
             }
 
-            string url = tbUrl.Text;
+            string url = Url.Text;
             if (string.IsNullOrEmpty(url))
             {
                 string warning = _context.API.GetTranslation("wox_plugin_websearch_input_url");
@@ -82,24 +116,19 @@ namespace Wox.Plugin.WebSearch
                 return;
             }
 
-            string newActionKeyword = tbActionword.Text.Trim();
+            string newActionKeyword = Actionword.Text.Trim();
+            
             if (_isUpdate)
             {
                 try
                 {
-                    _plugin.NotifyActionKeywordsUpdated(_updateWebSearch.ActionKeyword, newActionKeyword);
+                    _plugin.NotifyActionKeywordsUpdated(_webSearch.ActionKeyword, newActionKeyword);
                 }
                 catch (WoxPluginException exception)
                 {
                     MessageBox.Show(exception.Message);
                     return;
                 }
-
-                _updateWebSearch.ActionKeyword = newActionKeyword;
-                _updateWebSearch.IconPath = tbIconPath.Text;
-                _updateWebSearch.Enabled = cbEnable.IsChecked ?? false;
-                _updateWebSearch.Url = url;
-                _updateWebSearch.Title = title;
             }
             else
             {
@@ -112,42 +141,34 @@ namespace Wox.Plugin.WebSearch
                     MessageBox.Show(exception.Message);
                     return;
                 }
-                _settings.WebSearches.Add(new WebSearch
-                {
-                    ActionKeyword = newActionKeyword,
-                    Enabled = cbEnable.IsChecked ?? false,
-                    IconPath = tbIconPath.Text,
-                    Url = url,
-                    Title = title
-                });
+
+                _settings.WebSearches.Add(_webSearch);
             }
+
+            _webSearch.ActionKeyword = newActionKeyword;
+            _webSearch.Enabled = EnableCheckBox.IsChecked ?? false;
+            _webSearch.Url = url;
+            _webSearch.Title = title;
 
             _settingWindow.ReloadWebSearchView();
             Close();
         }
 
-        private void BtnSelectIcon_OnClick(object sender, RoutedEventArgs e)
+        private void SelectIconButtonOnClick(object sender, RoutedEventArgs e)
         {
-            if (!Directory.Exists(_pluginDirectory))
-            {
-                _pluginDirectory =
-                    Path.GetDirectoryName(WoxDirectroy.Executable);
-            }
-
             var dlg = new OpenFileDialog
             {
-                InitialDirectory = Path.Combine(_pluginDirectory, _imageDirectoryName),
+                InitialDirectory = Path.Combine(_pluginDirectory, ImageDirectory),
                 Filter = "Image files (*.jpg, *.jpeg, *.gif, *.png, *.bmp) |*.jpg; *.jpeg; *.gif; *.png; *.bmp"
             };
 
             bool? result = dlg.ShowDialog();
-            if (result == true)
+            if (result != null && result == true)
             {
-                string filename = dlg.FileName;
-                if (filename != null)
+                string fullpath = dlg.FileName;
+                if (fullpath != null)
                 {
-                    tbIconPath.Text = Path.Combine(_imageDirectoryName, Path.GetFileName(filename));
-                    ShowIcon(tbIconPath.Text);
+                    WebSearchIcon.Source = LoadIcon(fullpath);
                 }
             }
         }

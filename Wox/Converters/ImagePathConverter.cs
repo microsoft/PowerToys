@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using Wox.Infrastructure.Image;
 
 namespace Wox.Converters
 {
@@ -13,7 +14,7 @@ namespace Wox.Converters
             {
                 return null;
             }
-            var image = App.ImageLoader.Load(value.ToString());
+            var image = ImageLoader.Load(value.ToString());
             return image;
         }
 

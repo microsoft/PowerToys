@@ -115,8 +115,8 @@ namespace Wox.Core.Updater
                     }
                     catch (Exception e)
                     {
-                        Log.Error(e);
                         updManager.CleanUp();
+                        Log.Error(e);
                         return;
                     }
 

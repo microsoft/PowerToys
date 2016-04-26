@@ -12,7 +12,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Google",
                     ActionKeyword = "g",
-                    IconPath = "Images\\google.png",
+                    IconPath = "google.png",
                     Url = "https://www.google.com/search?q={q}",
                     Enabled = true
                 },
@@ -20,7 +20,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Wikipedia",
                     ActionKeyword = "wiki",
-                    IconPath = "Images\\wiki.png",
+                    IconPath = "wiki.png",
                     Url = "http://en.wikipedia.org/wiki/{q}",
                     Enabled = true
                 },
@@ -28,7 +28,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "FindIcon",
                     ActionKeyword = "findicon",
-                    IconPath = "Images\\pictures.png",
+                    IconPath = "pictures.png",
                     Url = "http://findicons.com/search/{q}",
                     Enabled = true
                 },
@@ -36,7 +36,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Facebook",
                     ActionKeyword = "facebook",
-                    IconPath = "Images\\facebook.png",
+                    IconPath = "facebook.png",
                     Url = "http://www.facebook.com/search/?q={q}",
                     Enabled = true
                 },
@@ -44,7 +44,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Twitter",
                     ActionKeyword = "twitter",
-                    IconPath = "Images\\twitter.png",
+                    IconPath = "twitter.png",
                     Url = "http://twitter.com/search?q={q}",
                     Enabled = true
                 },
@@ -52,7 +52,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Google Maps",
                     ActionKeyword = "maps",
-                    IconPath = "Images\\google_maps.png",
+                    IconPath = "google_maps.png",
                     Url = "http://maps.google.com/maps?q={q}",
                     Enabled = true
                 },
@@ -60,7 +60,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Google Translate",
                     ActionKeyword = "translate",
-                    IconPath = "Images\\google_translate.png",
+                    IconPath = "google_translate.png",
                     Url = "http://translate.google.com/#auto|en|{q}",
                     Enabled = true
                 },
@@ -68,7 +68,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Duckduckgo",
                     ActionKeyword = "duckduckgo",
-                    IconPath = "Images\\duckduckgo.png",
+                    IconPath = "duckduckgo.png",
                     Url = "https://duckduckgo.com/?q={q}",
                     Enabled = true
                 },
@@ -76,7 +76,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Github",
                     ActionKeyword = "github",
-                    IconPath = "Images\\github.png",
+                    IconPath = "github.png",
                     Url = "https://github.com/search?q={q}",
                     Enabled = true
                 },
@@ -84,7 +84,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Github Gist",
                     ActionKeyword = "gist",
-                    IconPath = "Images\\gist.png",
+                    IconPath = "gist.png",
                     Url = "https://gist.github.com/search?q={q}",
                     Enabled = true
                 },
@@ -92,7 +92,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Gmail",
                     ActionKeyword = "gmail",
-                    IconPath = "Images\\gmail.png",
+                    IconPath = "gmail.png",
                     Url = "https://mail.google.com/mail/ca/u/0/#apps/{q}",
                     Enabled = true
                 },
@@ -100,7 +100,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Google Drive",
                     ActionKeyword = "drive",
-                    IconPath = "Images\\google_drive.png",
+                    IconPath = "google_drive.png",
                     Url = "http://drive.google.com/?hl=en&tab=bo#search/{q}",
                     Enabled = true
                 },
@@ -108,7 +108,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Wolframalpha",
                     ActionKeyword = "wolframalpha",
-                    IconPath = "Images\\wolframalpha.png",
+                    IconPath = "wolframalpha.png",
                     Url = "http://www.wolframalpha.com/input/?i={q}",
                     Enabled = true
                 },
@@ -116,7 +116,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Stackoverflow",
                     ActionKeyword = "stackoverflow",
-                    IconPath = "Images\\stackoverflow.png",
+                    IconPath = "stackoverflow.png",
                     Url = "http://stackoverflow.com/search?q={q}",
                     Enabled = true
                 },
@@ -124,7 +124,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "I'm Feeling Lucky",
                     ActionKeyword = "lucky",
-                    IconPath = "Images\\google.png",
+                    IconPath = "google.png",
                     Url = "http://google.com/search?q={q}&btnI=I",
                     Enabled = true
                 },
@@ -132,7 +132,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Google Image",
                     ActionKeyword = "image",
-                    IconPath = "Images\\google.png",
+                    IconPath = "google.png",
                     Url = "https://www.google.com/search?q={q}&tbm=isch",
                     Enabled = true
                 },
@@ -140,7 +140,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Youtube",
                     ActionKeyword = "youtube",
-                    IconPath = "Images\\youtube.png",
+                    IconPath = "youtube.png",
                     Url = "http://www.youtube.com/results?search_query={q}",
                     Enabled = true
                 },
@@ -148,7 +148,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Bing",
                     ActionKeyword = "bing",
-                    IconPath = "Images\\bing.png",
+                    IconPath = "bing.png",
                     Url = "https://www.bing.com/search?q={q}",
                     Enabled = true
                 },
@@ -156,7 +156,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Yahoo",
                     ActionKeyword = "yahoo",
-                    IconPath = "Images\\yahoo.png",
+                    IconPath = "yahoo.png",
                     Url = "http://www.search.yahoo.com/search?p={q}",
                     Enabled = true
                 }
