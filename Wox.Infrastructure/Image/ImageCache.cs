@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
-using Wox.Infrastructure.Storage;
 
-namespace Wox.ImageLoader
+namespace Wox.Infrastructure.Image
 {
     [Serializable]
     public class ImageCache

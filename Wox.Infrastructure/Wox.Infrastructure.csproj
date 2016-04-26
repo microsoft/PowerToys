@@ -52,8 +52,12 @@
       <HintPath>..\packages\Pinyin4DotNet.2016.4.23.4\lib\net452\Pinyin4Net.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
@@ -70,6 +74,8 @@
     <Compile Include="Exception\WoxPluginException.cs" />
     <Compile Include="Hotkey\InterceptKeys.cs" />
     <Compile Include="Hotkey\KeyEvent.cs" />
+    <Compile Include="Image\ImageCache.cs" />
+    <Compile Include="Image\ImageLoader.cs" />
     <Compile Include="Logger\Log.cs" />
     <Compile Include="Storage\PluginSettingsStorage.cs" />
     <Compile Include="SyntaxSuger.cs" />

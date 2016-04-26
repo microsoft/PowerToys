@@ -126,7 +126,6 @@
     <Compile Include="Converters\ImagePathConverter.cs" />
     <Compile Include="Helper\VisibilityExtensions.cs" />
     <Compile Include="Helper\SingletonWindowOpener.cs" />
-    <Compile Include="ImageLoader\ImageCache.cs" />
     <Compile Include="NotifyIconManager.cs" />
     <Compile Include="PublicAPIInstance.cs" />
     <Compile Include="ResultListBox.xaml.cs">
@@ -156,7 +155,6 @@
     <Compile Include="CommandArgs\QueryCommandArg.cs" />
     <Compile Include="Helper\DataWebRequestFactory.cs" />
     <Compile Include="Helper\ErrorReporting.cs" />
-    <Compile Include="ImageLoader\ImageLoader.cs" />
     <Compile Include="Helper\SingleInstance.cs" />
     <Compile Include="Helper\SyntaxSugars.cs" />
     <Compile Include="Helper\WallpaperPathRetrieval.cs" />

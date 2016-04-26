@@ -3,16 +3,15 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Linq;
-using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 
-namespace Wox.ImageLoader
+namespace Wox.Infrastructure.Image
 {
     public class ImageLoader
     {
