@@ -20,11 +20,11 @@ namespace Wox.Plugin.CMD
         private readonly KeyboardSimulator keyboardSimulator = new KeyboardSimulator(new InputSimulator());
 
         private readonly CMDHistory _settings;
-        private readonly PluginSettingsStorage<CMDHistory> _storage;
+        private readonly PluginJsonStorage<CMDHistory> _storage;
 
         public CMD()
         {
-            _storage = new PluginSettingsStorage<CMDHistory>();
+            _storage = new PluginJsonStorage<CMDHistory>();
             _settings = _storage.Load();
         }
 

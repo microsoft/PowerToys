@@ -15,11 +15,11 @@ namespace Wox.Plugin.Folder
         private PluginInitContext context;
 
         private readonly Settings _settings;
-        private readonly PluginSettingsStorage<Settings> _storage;
+        private readonly PluginJsonStorage<Settings> _storage;
 
         public FolderPlugin()
         {
-            _storage = new PluginSettingsStorage<Settings>();
+            _storage = new PluginJsonStorage<Settings>();
             _settings = _storage.Load();
         }
 

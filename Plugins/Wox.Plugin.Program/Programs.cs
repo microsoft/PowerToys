@@ -32,11 +32,11 @@ namespace Wox.Plugin.Program
         private static ProgramIndexCache _cache;
         private static BinaryStorage<ProgramIndexCache> _cacheStorage;
         private static Settings _settings;
-        private readonly PluginSettingsStorage<Settings> _settingsStorage;
+        private readonly PluginJsonStorage<Settings> _settingsStorage;
 
         public Programs()
         {
-            _settingsStorage = new PluginSettingsStorage<Settings>();
+            _settingsStorage = new PluginJsonStorage<Settings>();
             _settings = _settingsStorage.Load();
             _cacheStorage = new BinaryStorage<ProgramIndexCache>();
             _cache = _cacheStorage.Load();

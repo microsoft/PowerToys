@@ -13,12 +13,12 @@ namespace Wox.Plugin.WebSearch
     {
         public PluginInitContext Context { get; private set; }
 
-        private readonly PluginSettingsStorage<Settings> _storage;
+        private readonly PluginJsonStorage<Settings> _storage;
         private readonly Settings _settings;
 
         public WebSearchPlugin()
         {
-            _storage = new PluginSettingsStorage<Settings>();
+            _storage = new PluginJsonStorage<Settings>();
             _settings = _storage.Load();
         }
 

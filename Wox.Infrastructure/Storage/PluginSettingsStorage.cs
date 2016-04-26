@@ -2,9 +2,9 @@
 
 namespace Wox.Infrastructure.Storage
 {
-    public class PluginSettingsStorage<T> :JsonStrorage<T> where T : new()
+    public class PluginJsonStorage<T> :JsonStrorage<T> where T : new()
     {
-        public PluginSettingsStorage()
+        public PluginJsonStorage()
         {
             var pluginDirectoryName = "Plugins";
 
