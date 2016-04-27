@@ -2,9 +2,12 @@
 
 namespace Wox.Infrastructure
 {
-    static class SyntaxSuger<T>
+    static class Helper
     {
-        public static T RequireNonNull(T obj)
+        /// <summary>
+        /// http://www.yinwang.org/blog-cn/2015/11/21/programming-philosophy
+        /// </summary>
+        public static T RequireNonNull<T>(this T obj)
         {
             if (obj == null)
             {
