@@ -83,11 +83,6 @@ namespace Wox.Plugin
         void InstallPlugin(string path);
 
         /// <summary>
-        /// Reload all plugins
-        /// </summary>
-        void ReloadPlugins();
-
-        /// <summary>
         /// Get translation of current language
         /// You need to implement IPluginI18n if you want to support multiple languages for your plugin
         /// </summary>

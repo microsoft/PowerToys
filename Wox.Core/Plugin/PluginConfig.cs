@@ -19,7 +19,7 @@ namespace Wox.Core.Plugin
         /// </summary>
         /// <param name="pluginDirectories"></param>
         /// <returns></returns>
-        public static List<PluginMetadata> Parse(List<string> pluginDirectories)
+        public static List<PluginMetadata> Parse(string[] pluginDirectories)
         {
             pluginMetadatas.Clear();
             foreach (string pluginDirectory in pluginDirectories)

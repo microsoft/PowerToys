@@ -118,15 +118,6 @@ namespace Wox
             Application.Current.Dispatcher.Invoke(() => PluginManager.InstallPlugin(path));
         }
 
-        public void ReloadPlugins()
-        {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                PluginManager.Initialize();
-                PluginManager.InitializePlugins(this);
-            });
-        }
-
         public string GetTranslation(string key)
         {
             return InternationalizationManager.Instance.GetTranslation(key);

@@ -94,7 +94,7 @@ namespace Wox.Infrastructure.Image
             ImageSource image = null;
             if (string.IsNullOrEmpty(path))
             {
-                path = Path.Combine(WoxDirectroy.Executable, "Images", "app.png");
+                path = Path.Combine(Wox.ProgramPath, "Images", "app.png");
                 image = new BitmapImage(new Uri(path));
                 return image;
             }
@@ -131,14 +131,14 @@ namespace Wox.Infrastructure.Image
                         }
                         else
                         {
-                            path = Path.Combine(WoxDirectroy.Executable, "Images", Path.GetFileName(path));
+                            path = Path.Combine(Wox.ProgramPath, "Images", Path.GetFileName(path));
                             if (File.Exists(path))
                             {
                                 image = new BitmapImage(new Uri(path));
                             }
                             else
                             {
-                                path = Path.Combine(WoxDirectroy.Executable, "Images", "app.png");
+                                path = Path.Combine(Wox.ProgramPath, "Images", "app.png");
                                 image = new BitmapImage(new Uri(path));
                             }
                         }

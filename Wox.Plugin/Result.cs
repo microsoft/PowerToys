@@ -60,7 +60,7 @@ namespace Wox.Plugin
         public override int GetHashCode()
         {
             var hashcode = (Title?.GetHashCode() ?? 0) ^
-                           (SubTitle?.GetHashCode() ?? 0) ;
+                           (SubTitle?.GetHashCode() ?? 0);
             return hashcode;
         }
 
@@ -69,18 +69,21 @@ namespace Wox.Plugin
             return Title + SubTitle;
         }
 
-        public Result(string Title = null, string IcoPath = null, string SubTitle = null)
+        [Obsolete("Use IContextMenu instead")]
+        /// <summary>
+        /// Context menus associate with this result
+        /// </summary>
+        public List<Result> ContextMenu { get; set; }
+
+        [Obsolete("Use Object initializers instead")]
+        public Result(string Titles, string IcoPath, string SubTitle = null)
         {
             this.Title = Title;
             this.IcoPath = IcoPath;
             this.SubTitle = SubTitle;
         }
 
-        [Obsolete("Use IContextMenu instead")]
-        /// <summary>
-        /// Context menus associate with this result
-        /// </summary>
-        public List<Result> ContextMenu { get; set; }
+        public Result() { }
 
         /// <summary>
         /// Additional data associate with this result

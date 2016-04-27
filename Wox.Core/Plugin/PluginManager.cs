@@ -17,13 +17,11 @@ namespace Wox.Core.Plugin
     /// </summary>
     public static class PluginManager
     {
-        public const string DirectoryName = "Plugins";
         private static IEnumerable<PluginPair> _contextMenuPlugins;
 
         /// <summary>
         /// Directories that will hold Wox plugin directory
         /// </summary>
-        private static readonly List<string> PluginDirectories = new List<string>();
 
         public static List<PluginPair> AllPlugins { get; private set; }
 
@@ -34,47 +32,31 @@ namespace Wox.Core.Plugin
         private static IEnumerable<PluginPair> InstantQueryPlugins { get; set; }
         public static IPublicAPI API { private set; get; }
 
-        public static readonly string PluginDirectory = Path.Combine(WoxDirectroy.Executable, DirectoryName);
+        public const string DirectoryName = "Plugins";
+        public static readonly string PreinstalledDirectory = Path.Combine(Infrastructure.Wox.ProgramPath, DirectoryName);
+        public static readonly string UserDirectory = Path.Combine(Infrastructure.Wox.DataPath, DirectoryName);
+        private static readonly string[] Directories = { PreinstalledDirectory, UserDirectory };
 
-        private static void SetupPluginDirectories()
+        private static void ValidateUserDirectory()
         {
-            PluginDirectories.Add(PluginDirectory);
-            MakesurePluginDirectoriesExist();
-        }
-
-        private static void MakesurePluginDirectoriesExist()
-        {
-            foreach (string pluginDirectory in PluginDirectories)
+            if (!Directory.Exists(UserDirectory))
             {
-                if (!Directory.Exists(pluginDirectory))
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(pluginDirectory);
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error(e);
-                    }
-                }
+                Directory.CreateDirectory(UserDirectory);
             }
         }
 
-        /// <summary>
-        /// Load and init all Wox plugins
-        /// </summary>
-        /// 
-        public static void Initialize()
+        static PluginManager()
         {
-            SetupPluginDirectories();
-
-            var metadatas = PluginConfig.Parse(PluginDirectories);
-            AllPlugins = new CSharpPluginLoader().LoadPlugin(metadatas).Concat(
-                         new JsonRPCPluginLoader<PythonPlugin>().LoadPlugin(metadatas)).ToList();
+            ValidateUserDirectory();
         }
 
         public static void InitializePlugins(IPublicAPI api)
         {
+            var metadatas = PluginConfig.Parse(Directories);
+            var plugins1 = new CSharpPluginLoader().LoadPlugin(metadatas);
+            var plugins2 = new JsonRPCPluginLoader<PythonPlugin>().LoadPlugin(metadatas);
+            AllPlugins = plugins1.Concat(plugins2).ToList();
+
             //load plugin i18n languages
             ResourceMerger.UpdatePluginLanguages();
 
@@ -226,14 +208,6 @@ namespace Wox.Core.Plugin
         private static bool IsGlobalPlugin(PluginMetadata metadata)
         {
             return metadata.ActionKeywords.Contains(Query.GlobalPluginWildcardSign);
-        }
-
-        private static bool IsInstantQueryPlugin(PluginPair plugin)
-        {
-            //any plugin that takes more than 200ms for AvgQueryTime won't be treated as IInstantQuery plugin anymore.
-            return plugin.AvgQueryTime < 200 &&
-                   plugin.Plugin is IInstantQuery &&
-                   InstantQueryPlugins.Any(p => p.Metadata.ID == plugin.Metadata.ID);
         }
 
         /// <summary>

@@ -78,8 +78,8 @@
     <Compile Include="Image\ImageLoader.cs" />
     <Compile Include="Logger\Log.cs" />
     <Compile Include="Storage\PluginSettingsStorage.cs" />
+    <Compile Include="Storage\Storage.cs" />
     <Compile Include="SyntaxSuger.cs" />
-    <Compile Include="WoxDirectroy.cs" />
     <Compile Include="Stopwatch.cs" />
     <Compile Include="Storage\BinaryStorage.cs" />
     <Compile Include="Storage\JsonStorage.cs" />
@@ -90,6 +90,7 @@
     <Compile Include="Hotkey\HotkeyModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Alphabet.cs" />
+    <Compile Include="Wox.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj">

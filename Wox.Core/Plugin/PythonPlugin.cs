@@ -8,7 +8,7 @@ namespace Wox.Core.Plugin
 {
     internal class PythonPlugin : JsonRPCPlugin
     {
-        private static readonly string PythonHome = Path.Combine(WoxDirectroy.Executable, "PythonHome");
+        private static readonly string PythonHome = Path.Combine(Infrastructure.Wox.ProgramPath, "PythonHome");
         private readonly ProcessStartInfo _startInfo;
 
         public override string SupportedLanguage => AllowedLanguage.Python;

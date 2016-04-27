@@ -7,22 +7,18 @@ namespace Wox.Infrastructure.Storage
     /// <summary>
     /// Serialize object using json format.
     /// </summary>
-    public class JsonStrorage<T> where T : new()
+    public class JsonStrorage<T> : Storage<T> where T : new()
     {
-        private T _json;
         private readonly JsonSerializerSettings _serializerSettings;
-
-        protected string FileName { get; set; }
-        protected string FilePath { get; set; }
-        protected const string FileSuffix = ".json";
-        protected string DirectoryPath { get; set; }
-        protected const string DirectoryName = "Config";
 
         internal JsonStrorage()
         {
-            FileName = typeof(T).Name;
-            DirectoryPath = Path.Combine(WoxDirectroy.Executable, DirectoryName);
+            FileSuffix = ".json";
+            DirectoryName = "Settings";
+            DirectoryPath = Path.Combine(DirectoryPath, DirectoryName);
             FilePath = Path.Combine(DirectoryPath, FileName + FileSuffix);
+
+            ValidateDirectory();
 
             // use property initialization instead of DefaultValueAttribute
             // easier and flexible for default value of object
@@ -33,13 +29,8 @@ namespace Wox.Infrastructure.Storage
             };
         }
 
-        public T Load()
+        public override T Load()
         {
-            if (!Directory.Exists(DirectoryPath))
-            {
-                Directory.CreateDirectory(DirectoryPath);
-            }
-
             if (File.Exists(FilePath))
             {
                 var searlized = File.ReadAllText(FilePath);
@@ -56,33 +47,31 @@ namespace Wox.Infrastructure.Storage
             {
                 LoadDefault();
             }
-
-            return _json;
+            return Data;
         }
 
         private void Deserialize(string searlized)
         {
             try
             {
-                _json = JsonConvert.DeserializeObject<T>(searlized, _serializerSettings);
+                Data = JsonConvert.DeserializeObject<T>(searlized, _serializerSettings);
             }
             catch (JsonSerializationException e)
             {
                 LoadDefault();
                 Log.Error(e);
             }
-
         }
 
-        private void LoadDefault()
+        public override void LoadDefault()
         {
-            _json = JsonConvert.DeserializeObject<T>("{}", _serializerSettings);
+            Data = JsonConvert.DeserializeObject<T>("{}", _serializerSettings);
             Save();
         }
 
-        public void Save()
+        public override void Save()
         {
-            string serialized = JsonConvert.SerializeObject(_json, Formatting.Indented);
+            string serialized = JsonConvert.SerializeObject(Data, Formatting.Indented);
             File.WriteAllText(FilePath, serialized);
         }
     }

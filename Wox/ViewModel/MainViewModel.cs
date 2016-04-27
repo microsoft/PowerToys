@@ -496,7 +496,7 @@ namespace Wox.ViewModel
                         Title = string.Format(executeQueryHistoryTitle,history.Query),
                         SubTitle = string.Format(lastExecuteTime,history.ExecutedDateTime),
                         IcoPath = "Images\\history.png",
-                        PluginDirectory = WoxDirectroy.Executable,
+                        PluginDirectory = Infrastructure.Wox.ProgramPath,
                         Action = _ =>{
                             QueryText = history.Query;
                             OnTextBoxSelected();
@@ -511,9 +511,11 @@ namespace Wox.ViewModel
             Result menu;
             if (_topMostRecord.IsTopMost(result))
             {
-                menu = new Result(InternationalizationManager.Instance.GetTranslation("cancelTopMostInThisQuery"), "Images\\down.png")
+                menu = new Result
                 {
-                    PluginDirectory = WoxDirectroy.Executable,
+                    Title = InternationalizationManager.Instance.GetTranslation("cancelTopMostInThisQuery"),
+                    IcoPath = "Images\\down.png",
+                    PluginDirectory = Infrastructure.Wox.ProgramPath,
                     Action = _ =>
                     {
                         _topMostRecord.Remove(result);
@@ -524,9 +526,11 @@ namespace Wox.ViewModel
             }
             else
             {
-                menu = new Result(InternationalizationManager.Instance.GetTranslation("setAsTopMostInThisQuery"), "Images\\up.png")
+                menu = new Result
                 {
-                    PluginDirectory = WoxDirectroy.Executable,
+                    Title = InternationalizationManager.Instance.GetTranslation("setAsTopMostInThisQuery"),
+                    IcoPath = "Images\\up.png",
+                    PluginDirectory = Infrastructure.Wox.ProgramPath,
                     Action = _ =>
                     {
                         _topMostRecord.AddOrUpdate(result);
@@ -551,8 +555,11 @@ namespace Wox.ViewModel
             var icon = metadata.IcoPath;
             var subtitle = $"{author}: {metadata.Author}, {website}: {metadata.Website} {version}: {metadata.Version}";
 
-            var menu = new Result(title, icon, subtitle)
+            var menu = new Result
             {
+                Title = title,
+                IcoPath = icon,
+                SubTitle = subtitle,
                 PluginDirectory = metadata.PluginDirectory,
                 Action = _ => false
             };

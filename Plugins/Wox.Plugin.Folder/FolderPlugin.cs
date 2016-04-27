@@ -51,8 +51,11 @@ namespace Wox.Plugin.Folder
                 x => x.Nickname.StartsWith(input, StringComparison.OrdinalIgnoreCase)).ToList();
             List<Result> results =
                 userFolderLinks.Select(
-                    item => new Result(item.Nickname, "Images/folder.png", "Ctrl + Enter to open the directory")
+                    item => new Result()
                     {
+                        Title = item.Nickname,
+                        IcoPath = "Images/folder.png",
+                        SubTitle = "Ctrl + Enter to open the directory",
                         Action = c =>
                         {
                             if (c.SpecialKeyState.CtrlPressed)
@@ -128,8 +131,10 @@ namespace Wox.Plugin.Folder
             string firstResult = "Open current directory";
             if (incompleteName.Length > 0)
                 firstResult = "Open " + rawQuery;
-            results.Add(new Result(firstResult, "Images/folder.png")
+            results.Add(new Result
             {
+                Title = firstResult,
+                IcoPath = "Images/folder.png",
                 Score = 10000,
                 Action = c =>
                 {
@@ -147,8 +152,11 @@ namespace Wox.Plugin.Folder
                 if (incompleteName.Length != 0 && !dir.Name.ToLower().StartsWith(incompleteName))
                     continue;
                 DirectoryInfo dirCopy = dir;
-                var result = new Result(dir.Name, "Images/folder.png", "Ctrl + Enter to open the directory")
+                var result = new Result
                 {
+                    Title = dir.Name,
+                    IcoPath = "Images/folder.png",
+                    SubTitle = "Ctrl + Enter to open the directory",
                     Action = c =>
                     {
                         if (c.SpecialKeyState.CtrlPressed)
@@ -180,8 +188,10 @@ namespace Wox.Plugin.Folder
                 if (incompleteName.Length != 0 && !file.Name.ToLower().StartsWith(incompleteName))
                     continue;
                 string filePath = file.FullName;
-                var result = new Result(Path.GetFileName(filePath), "Images/file.png")
+                var result = new Result
                 {
+                    Title = Path.GetFileName(filePath),
+                    IcoPath = "Images/file.png",
                     Action = c =>
                     {
                         try

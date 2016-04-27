@@ -13,30 +13,20 @@ namespace Wox.Infrastructure.Storage
     /// Normally, it has better performance, but not readable
     /// You MUST mark implement class as Serializable
     /// </summary>
-    public class BinaryStorage<T> where T : class, new()
+    public class BinaryStorage<T> : Storage<T> where T : new()
     {
-        private T _binary;
-
-        private string FilePath { get; }
-        private string FileName { get; }
-        private const string FileSuffix = ".dat";
-        private string DirectoryPath { get; }
-        private const string DirectoryName = "Config";
-
         public BinaryStorage()
         {
-            FileName = typeof(T).Name;
-            DirectoryPath = Path.Combine(WoxDirectroy.Executable, DirectoryName);
-            FilePath = Path.Combine(DirectoryPath, FileName + FileSuffix); ;
+            FileSuffix = ".dat";
+            DirectoryName = "Cache";
+            DirectoryPath = Path.Combine(DirectoryPath, DirectoryName);
+            FilePath = Path.Combine(DirectoryPath, FileName + FileSuffix);
+
+            ValidateDirectory();
         }
 
-        public T Load()
+        public override T Load()
         {
-            if (!Directory.Exists(DirectoryPath))
-            {
-                Directory.CreateDirectory(DirectoryPath);
-            }
-
             if (File.Exists(FilePath))
             {
                 using (var stream = new FileStream(FilePath, FileMode.Open))
@@ -55,7 +45,7 @@ namespace Wox.Infrastructure.Storage
             {
                 LoadDefault();
             }
-            return _binary;
+            return Data;
         }
 
         private void Deserialize(FileStream stream)
@@ -69,17 +59,17 @@ namespace Wox.Infrastructure.Storage
 
             try
             {
-                _binary = (T)binaryFormatter.Deserialize(stream);
+                Data = (T)binaryFormatter.Deserialize(stream);
             }
             catch (SerializationException e)
             {
-                LoadDefault();
                 Log.Error(e);
+                LoadDefault();
             }
             catch (InvalidCastException e)
             {
-                LoadDefault();
                 Log.Error(e);
+                LoadDefault();
             }
             finally
             {
@@ -87,9 +77,10 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        private void LoadDefault()
+        public override void LoadDefault()
         {
-            _binary = new T();
+            Data = new T();
+            Save();
         }
 
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
@@ -108,7 +99,7 @@ namespace Wox.Infrastructure.Storage
             return ayResult;
         }
 
-        public void Save()
+        public override void Save()
         {
             using (var stream = new FileStream(FilePath, FileMode.Create))
             {
@@ -119,7 +110,7 @@ namespace Wox.Infrastructure.Storage
 
                 try
                 {
-                    binaryFormatter.Serialize(stream, _binary);
+                    binaryFormatter.Serialize(stream, Data);
                 }
                 catch (SerializationException e)
                 {

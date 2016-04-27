@@ -153,7 +153,6 @@ namespace Wox.Plugin.PluginManagement
                                             string pluginUrl = APIBASE + "/media/" + r1.plugin_file;
                                             Client.DownloadFile(pluginUrl, filePath);
                                             context.API.InstallPlugin(filePath);
-                                            context.API.ReloadPlugins();
                                         }
                                         catch (Exception exception)
                                         {
