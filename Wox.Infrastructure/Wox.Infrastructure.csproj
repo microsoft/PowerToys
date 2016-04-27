@@ -72,6 +72,7 @@
     <Compile Include="Exception\WoxI18nException.cs" />
     <Compile Include="Exception\WoxJsonRPCException.cs" />
     <Compile Include="Exception\WoxPluginException.cs" />
+    <Compile Include="Helper.cs" />
     <Compile Include="Hotkey\InterceptKeys.cs" />
     <Compile Include="Hotkey\KeyEvent.cs" />
     <Compile Include="Image\ImageCache.cs" />
@@ -79,7 +80,6 @@
     <Compile Include="Logger\Log.cs" />
     <Compile Include="Storage\PluginSettingsStorage.cs" />
     <Compile Include="Storage\Storage.cs" />
-    <Compile Include="SyntaxSuger.cs" />
     <Compile Include="Stopwatch.cs" />
     <Compile Include="Storage\BinaryStorage.cs" />
     <Compile Include="Storage\JsonStorage.cs" />
