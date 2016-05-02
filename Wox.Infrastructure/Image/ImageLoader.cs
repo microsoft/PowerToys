@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 
 namespace Wox.Infrastructure.Image
@@ -71,7 +72,7 @@ namespace Wox.Infrastructure.Image
 
         public static void PreloadImages()
         {
-            Stopwatch.Debug($"Preload {_cache.TopUsedImages.Count} images", () =>
+            Stopwatch.Debug("Preload images from cache", () =>
             {
                 _cache.TopUsedImages.AsParallel().Where(i => !_imageSources.ContainsKey(i.Key)).ForAll(i =>
                  {
@@ -87,6 +88,7 @@ namespace Wox.Infrastructure.Image
                      }
                  });
             });
+            Log.Info($"Preload {_cache.TopUsedImages.Count} images from cache");
         }
 
         public static ImageSource Load(string path, bool addToCache = true)

@@ -13,11 +13,12 @@ using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox
 {
-    public partial class App : Application, ISingleInstanceApp
+    public partial class App : ISingleInstanceApp
     {
         private const string Unique = "Wox_Unique_Application_Mutex";
         public static MainWindow Window { get; private set; }
         public static PublicAPIInstance API { get; private set; }
+        private bool _saved;
 
         [STAThread]
         public static void Main()
@@ -69,6 +70,30 @@ namespace Wox
             else
             {
                 CommandArgsFactory.Execute(args);
+            }
+        }
+
+        private void OnExit(object sender, ExitEventArgs e)
+        {
+            Save();
+        }
+
+        private void OnSessionEnding(object sender, SessionEndingCancelEventArgs e)
+        {
+            Save();
+        }
+
+        private void Save()
+        {
+            // if sessionending is called, exit proverbially be called when log off / shutdown
+            // but if sessionending is not called, exit won't be called when log off / shutdown
+            if (!_saved)
+            {
+                var vm = (MainViewModel) Window.DataContext;
+                vm.Save();
+                PluginManager.Save();
+                ImageLoader.Save();
+                _saved = true;
             }
         }
     }

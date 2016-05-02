@@ -9,7 +9,7 @@ using Wox.Plugin.WebSearch.SuggestionSources;
 
 namespace Wox.Plugin.WebSearch
 {
-    public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IMultipleActionKeywords
+    public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IMultipleActionKeywords, ISavable
     {
         public PluginInitContext Context { get; private set; }
 
@@ -22,7 +22,7 @@ namespace Wox.Plugin.WebSearch
             _settings = _storage.Load();
         }
 
-        ~WebSearchPlugin()
+        public void Save()
         {
             _storage.Save();
         }

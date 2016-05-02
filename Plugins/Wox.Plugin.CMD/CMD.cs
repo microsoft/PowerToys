@@ -13,7 +13,7 @@ using Control = System.Windows.Controls.Control;
 
 namespace Wox.Plugin.CMD
 {
-    public class CMD : IPlugin, ISettingProvider, IPluginI18n, IInstantQuery, IContextMenu
+    public class CMD : IPlugin, ISettingProvider, IPluginI18n, IContextMenu
     {
         private PluginInitContext context;
         private bool WinRStroked;

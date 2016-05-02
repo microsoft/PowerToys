@@ -14,7 +14,7 @@ using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox.Plugin.Program
 {
-    public class Programs : ISettingProvider, IPlugin, IPluginI18n, IContextMenu
+    public class Programs : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
     {
         private static object lockObject = new object();
         private static List<Program> _programs = new List<Program>();
@@ -42,7 +42,7 @@ namespace Wox.Plugin.Program
             _cache = _cacheStorage.Load();
         }
 
-        ~Programs()
+        public void Save()
         {
             _settingsStorage.Save();
             _cacheStorage.Save();

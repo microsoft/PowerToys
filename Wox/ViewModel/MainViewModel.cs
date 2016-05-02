@@ -18,7 +18,7 @@ using Wox.Storage;
 
 namespace Wox.ViewModel
 {
-    public class MainViewModel : BaseViewModel
+    public class MainViewModel : BaseViewModel, ISavable
     {
         #region Private Fields
 
@@ -81,7 +81,7 @@ namespace Wox.ViewModel
             InitializeKeyCommands();
         }
 
-        ~MainViewModel()
+        public void Save()
         {
             _settingsStorage.Save();
             _queryHistoryStorage.Save();

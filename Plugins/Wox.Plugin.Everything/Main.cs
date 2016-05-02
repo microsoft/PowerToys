@@ -13,7 +13,7 @@ using Wox.Plugin.Everything.Everything;
 
 namespace Wox.Plugin.Everything
 {
-    public class Main : IPlugin, IPluginI18n, IContextMenu
+    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable
     {
         private readonly EverythingAPI _api = new EverythingAPI();
         private static readonly List<string> ImageExts = new List<string> { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico" };
@@ -34,7 +34,7 @@ namespace Wox.Plugin.Everything
             _settings = _storage.Load();
         }
 
-        ~Main()
+        public void Save()
         {
             _storage.Save();
         }

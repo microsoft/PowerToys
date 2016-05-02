@@ -78,6 +78,7 @@
     <Compile Include="Image\ImageCache.cs" />
     <Compile Include="Image\ImageLoader.cs" />
     <Compile Include="Logger\Log.cs" />
+    <Compile Include="Storage\ISavable.cs" />
     <Compile Include="Storage\PluginSettingsStorage.cs" />
     <Compile Include="Storage\Storage.cs" />
     <Compile Include="Stopwatch.cs" />

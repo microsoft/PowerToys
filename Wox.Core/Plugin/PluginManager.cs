@@ -8,6 +8,7 @@ using Wox.Core.UserSettings;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
+using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 
 namespace Wox.Core.Plugin
@@ -48,6 +49,15 @@ namespace Wox.Core.Plugin
         static PluginManager()
         {
             ValidateUserDirectory();
+        }
+
+        public static void Save()
+        {
+            foreach (var plugin in AllPlugins)
+            {
+                var savable = plugin.Plugin as ISavable;
+                savable?.Save();
+            }
         }
 
         public static void InitializePlugins(IPublicAPI api)
