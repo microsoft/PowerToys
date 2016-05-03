@@ -16,8 +16,6 @@ namespace Wox.Plugin.Everything
     public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable
     {
         private readonly EverythingAPI _api = new EverythingAPI();
-        private static readonly List<string> ImageExts = new List<string> { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico" };
-        private static readonly List<string> ExecutableExts = new List<string> { ".exe" };
 
         private const string EverythingProcessName = "Everything";
         private const string PortableEverything = "PortableEverything";
@@ -74,7 +72,7 @@ namespace Wox.Plugin.Everything
                         Result r = new Result();
                         r.Title = Path.GetFileName(path);
                         r.SubTitle = path;
-                        r.IcoPath = GetIconPath(s);
+                        r.IcoPath = path;
                         r.Action = c =>
                         {
                             bool hide;
@@ -129,28 +127,6 @@ namespace Wox.Plugin.Everything
             _api.Reset();
 
             return results;
-        }
-
-        private string GetIconPath(SearchResult s)
-        {
-            var ext = Path.GetExtension(s.FullPath);
-            if (s.Type == ResultType.Folder)
-            {
-                return "Images\\folder.png";
-            }
-            else if (!string.IsNullOrEmpty(ext))
-            {
-                if (ImageExts.Contains(ext.ToLower()))
-                {
-                    return "Images\\image.png";
-                }
-                else if (ExecutableExts.Contains(ext.ToLower()))
-                {
-                    return s.FullPath;
-                }
-            }
-
-            return "Images\\file.png";
         }
 
         [DllImport("kernel32.dll")]

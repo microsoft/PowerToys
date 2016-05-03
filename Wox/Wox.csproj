@@ -198,6 +198,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Resource Include="Images\history.png" />
+    <Resource Include="Images\app_error.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Content Include="Languages\en.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

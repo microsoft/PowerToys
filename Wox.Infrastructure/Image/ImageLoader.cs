@@ -17,9 +17,11 @@ namespace Wox.Infrastructure.Image
 {
     public static class ImageLoader
     {
-        private static readonly ConcurrentDictionary<string, ImageSource> _imageSources = new ConcurrentDictionary<string, ImageSource>();
+        private static readonly ConcurrentDictionary<string, ImageSource> ImageSources = new ConcurrentDictionary<string, ImageSource>();
+        private static readonly string DefaultIcon = Path.Combine(Wox.ProgramPath, "Images", "app.png");
+        private static readonly string ErrorIcon = Path.Combine(Wox.ProgramPath, "Images", "app_error.png");
 
-        private static readonly List<string> ImageExts = new List<string>
+        private static readonly string[] ImageExtions = 
         {
             ".png",
             ".jpg",
@@ -28,16 +30,6 @@ namespace Wox.Infrastructure.Image
             ".bmp",
             ".tiff",
             ".ico"
-        };
-
-        private static readonly List<string> SelfExts = new List<string>
-        {
-            ".exe",
-            ".lnk",
-            ".ani",
-            ".cur",
-            ".sln",
-            ".appref-ms"
         };
 
         private static readonly ImageCache _cache;
@@ -54,34 +46,67 @@ namespace Wox.Infrastructure.Image
             _storage.Save();
         }
 
-        private static ImageSource GetIcon(string fileName)
+        private static ImageSource ShellIcon(string fileName)
         {
             try
             {
-                Icon icon = GetFileIcon(fileName) ?? Icon.ExtractAssociatedIcon(fileName);
+                Icon icon = GetFileIcon(fileName);
                 if (icon != null)
                 {
-                    return Imaging.CreateBitmapSourceFromHIcon(icon.Handle,
-                        new Int32Rect(0, 0, icon.Width, icon.Height), BitmapSizeOptions.FromEmptyOptions());
+                    var image = ImageFromIcon(icon);
+                    return image;
+                }
+                else
+                {
+                    return ImageSources[ErrorIcon];
                 }
             }
             catch (System.Exception e)
             {
                 Log.Error(e);
+                return ImageSources[ErrorIcon];
             }
-
-            return null;
         }
 
+        private static ImageSource ImageFromIcon(Icon icon)
+        {
+            var image = Imaging.CreateBitmapSourceFromHIcon(
+                        icon.Handle,
+                        new Int32Rect(0, 0, icon.Width, icon.Height),
+                        BitmapSizeOptions.FromEmptyOptions());
+            return image;
+        }
+
+        private static ImageSource AssociatedIcon(string path)
+        {
+            try
+            {
+                Icon icon = Icon.ExtractAssociatedIcon(path);
+                if (icon != null)
+                {
+                    var image = ImageFromIcon(icon);
+                    return image;
+                }
+                else
+                {
+                    return ImageSources[ErrorIcon];
+                }
+            }
+            catch (System.Exception e)
+            {
+                Log.Error(e);
+                return ImageSources[ErrorIcon];
+            }
+        }
         public static void PreloadImages()
         {
-            var path = Path.Combine(Wox.ProgramPath, "Images", "app.png");
-            _imageSources[path] = new BitmapImage(new Uri(path));
+            ImageSources[DefaultIcon] = new BitmapImage(new Uri(DefaultIcon));
+            ImageSources[ErrorIcon] = new BitmapImage(new Uri(ErrorIcon));
             Task.Factory.StartNew(() =>
             {
                 Stopwatch.Debug("Preload images from cache", () =>
                 {
-                    _cache.TopUsedImages.AsParallel().Where(i => !_imageSources.ContainsKey(i.Key)).ForAll(i =>
+                    _cache.TopUsedImages.AsParallel().Where(i => !ImageSources.ContainsKey(i.Key)).ForAll(i =>
                     {
                         var img = Load(i.Key);
                         if (img != null)
@@ -91,7 +116,7 @@ namespace Wox.Infrastructure.Image
                             // this line made it possible
                             // should be changed the Dispatcher.InvokeAsync in the future
                             img.Freeze();
-                            _imageSources[i.Key] = img;
+                            ImageSources[i.Key] = img;
                         }
                     });
                 });
@@ -100,16 +125,15 @@ namespace Wox.Infrastructure.Image
         }
 
         public static ImageSource Load(string path)
-         {
+        {
             ImageSource image;
             if (string.IsNullOrEmpty(path))
             {
-                path = Path.Combine(Wox.ProgramPath, "Images", "app.png");
-                image = _imageSources[path];
+                image = ImageSources[ErrorIcon];
             }
-            else if (_imageSources.ContainsKey(path))
+            else if (ImageSources.ContainsKey(path))
             {
-                image = _imageSources[path];
+                image = ImageSources[path];
             }
             else
             {
@@ -118,37 +142,44 @@ namespace Wox.Infrastructure.Image
                 if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
                 {
                     image = new BitmapImage(new Uri(path));
-                    _imageSources[path] = image;
+                    ImageSources[path] = image;
                 }
-                else if (File.Exists(path) && Path.IsPathRooted(path))
+                else if (Path.IsPathRooted(path))
                 {
-                    if (SelfExts.Contains(ext))
+                    if (Directory.Exists(path))
                     {
-                        image = GetIcon(path);
-                        _imageSources[path] = image;
+                        image = ShellIcon(path);
+                        ImageSources[path] = image;
                     }
-                    else if (ImageExts.Contains(ext))
+                    else if (File.Exists(path))
                     {
-                        image = new BitmapImage(new Uri(path));
-                        _imageSources[path] = image;
+                        if (ImageExtions.Contains(ext))
+                        {
+                            image = new BitmapImage(new Uri(path));
+                            ImageSources[path] = image;
+                        }
+                        else
+                        {
+                            image = AssociatedIcon(path);
+                            ImageSources[path] = image;
+                        }
                     }
                     else
                     {
-                        path = Path.Combine(Wox.ProgramPath, "Images", "app.png");
-                        image = _imageSources[path];
+                        image = ImageSources[ErrorIcon];
                     }
                 }
                 else
                 {
-                    path = Path.Combine(Wox.ProgramPath, "Images", Path.GetFileName(path));
-                    if (File.Exists(path))
+                    var defaultDirectoryPath = Path.Combine(Wox.ProgramPath, "Images", Path.GetFileName(path));
+                    if (File.Exists(defaultDirectoryPath))
                     {
-                        image = new BitmapImage(new Uri(path));
+                        image = new BitmapImage(new Uri(defaultDirectoryPath));
+                        ImageSources[path] = image;
                     }
                     else
                     {
-                        path = Path.Combine(Wox.ProgramPath, "Images", "app.png");
-                        image = _imageSources[path];
+                        image = ImageSources[ErrorIcon];
                     }
                 }
             }

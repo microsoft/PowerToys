@@ -49,7 +49,7 @@ namespace Wox.Plugin
             set
             {
                 _pluginDirectory = value;
-                if (!string.IsNullOrEmpty(IcoPath) && Path.IsPathRooted(IcoPath))
+                if (!string.IsNullOrEmpty(IcoPath) && !Path.IsPathRooted(IcoPath))
                 {
                     IcoPath = Path.Combine(value, IcoPath);
                 }
