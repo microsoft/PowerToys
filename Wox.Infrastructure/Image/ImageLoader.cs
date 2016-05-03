@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -57,7 +58,6 @@ namespace Wox.Infrastructure.Image
         {
             try
             {
-                if (File.Exists(fileName) == false) return null;
                 Icon icon = GetFileIcon(fileName) ?? Icon.ExtractAssociatedIcon(fileName);
                 if (icon != null)
                 {
@@ -65,96 +65,93 @@ namespace Wox.Infrastructure.Image
                         new Int32Rect(0, 0, icon.Width, icon.Height), BitmapSizeOptions.FromEmptyOptions());
                 }
             }
-            catch { }
+            catch (System.Exception e)
+            {
+                Log.Error(e);
+            }
 
             return null;
         }
 
         public static void PreloadImages()
         {
-            Stopwatch.Debug("Preload images from cache", () =>
+            var path = Path.Combine(Wox.ProgramPath, "Images", "app.png");
+            _imageSources[path] = new BitmapImage(new Uri(path));
+            Task.Factory.StartNew(() =>
             {
-                _cache.TopUsedImages.AsParallel().Where(i => !_imageSources.ContainsKey(i.Key)).ForAll(i =>
-                 {
-                     var img = Load(i.Key, false);
-                     if (img != null)
-                     {
-                         // todo happlebao magic
-                         // the image created on other threads can be accessed from main ui thread,
-                         // this line made it possible
-                         // should be changed the Dispatcher.InvokeAsync in the future
-                         img.Freeze();
-                         _imageSources[i.Key] = img;
-                     }
-                 });
+                Stopwatch.Debug("Preload images from cache", () =>
+                {
+                    _cache.TopUsedImages.AsParallel().Where(i => !_imageSources.ContainsKey(i.Key)).ForAll(i =>
+                    {
+                        var img = Load(i.Key);
+                        if (img != null)
+                        {
+                            // todo happlebao magic
+                            // the image created on other threads can be accessed from main ui thread,
+                            // this line made it possible
+                            // should be changed the Dispatcher.InvokeAsync in the future
+                            img.Freeze();
+                            _imageSources[i.Key] = img;
+                        }
+                    });
+                });
             });
             Log.Info($"Preload {_cache.TopUsedImages.Count} images from cache");
         }
 
-        public static ImageSource Load(string path, bool addToCache = true)
-        {
-            ImageSource image = null;
+        public static ImageSource Load(string path)
+         {
+            ImageSource image;
             if (string.IsNullOrEmpty(path))
             {
                 path = Path.Combine(Wox.ProgramPath, "Images", "app.png");
-                image = new BitmapImage(new Uri(path));
-                return image;
+                image = _imageSources[path];
             }
-            Stopwatch.Debug($"Loading image path: {path}", () =>
+            else if (_imageSources.ContainsKey(path))
             {
+                image = _imageSources[path];
+            }
+            else
+            {
+                string ext = Path.GetExtension(path).ToLower();
 
-                if (addToCache)
+                if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
                 {
-                    _cache.Add(path);
+                    image = new BitmapImage(new Uri(path));
+                    _imageSources[path] = image;
                 }
-
-
-                if (_imageSources.ContainsKey(path))
+                else if (File.Exists(path) && Path.IsPathRooted(path))
                 {
-                    image = _imageSources[path];
+                    if (SelfExts.Contains(ext))
+                    {
+                        image = GetIcon(path);
+                        _imageSources[path] = image;
+                    }
+                    else if (ImageExts.Contains(ext))
+                    {
+                        image = new BitmapImage(new Uri(path));
+                        _imageSources[path] = image;
+                    }
+                    else
+                    {
+                        path = Path.Combine(Wox.ProgramPath, "Images", "app.png");
+                        image = _imageSources[path];
+                    }
                 }
                 else
                 {
-                    string ext = Path.GetExtension(path).ToLower();
-
-                    if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                    path = Path.Combine(Wox.ProgramPath, "Images", Path.GetFileName(path));
+                    if (File.Exists(path))
                     {
                         image = new BitmapImage(new Uri(path));
                     }
-                    else if (SelfExts.Contains(ext) && File.Exists(path))
+                    else
                     {
-                        image = GetIcon(path);
-                    }
-                    else if (!string.IsNullOrEmpty(path) && ImageExts.Contains(ext))
-                    {
-                        if (File.Exists(path))
-                        {
-                            image = new BitmapImage(new Uri(path));
-                        }
-                        else
-                        {
-                            path = Path.Combine(Wox.ProgramPath, "Images", Path.GetFileName(path));
-                            if (File.Exists(path))
-                            {
-                                image = new BitmapImage(new Uri(path));
-                            }
-                            else
-                            {
-                                path = Path.Combine(Wox.ProgramPath, "Images", "app.png");
-                                image = new BitmapImage(new Uri(path));
-                            }
-                        }
-                    }
-
-                    if (image != null && addToCache)
-                    {
-                        if (!_imageSources.ContainsKey(path))
-                        {
-                            _imageSources[path] = image;
-                        }
+                        path = Path.Combine(Wox.ProgramPath, "Images", "app.png");
+                        image = _imageSources[path];
                     }
                 }
-            });
+            }
             return image;
         }
 

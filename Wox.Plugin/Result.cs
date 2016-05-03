@@ -7,21 +7,24 @@ namespace Wox.Plugin
 
     public class Result
     {
+        private string _pluginDirectory;
+        private string _icoPath;
         public string Title { get; set; }
         public string SubTitle { get; set; }
-        public string IcoPath { get; set; }
 
-        public string FullIcoPath
+        public string IcoPath   
         {
-            get
+            get { return _icoPath; }
+            set
             {
-                if (string.IsNullOrEmpty(IcoPath)) return string.Empty;
-                if (IcoPath.StartsWith("data:"))
+                if (!string.IsNullOrEmpty(PluginDirectory) && !Path.IsPathRooted(value))
                 {
-                    return IcoPath;
+                    _icoPath = Path.Combine(value, IcoPath);
                 }
-
-                return Path.Combine(PluginDirectory, IcoPath);
+                else
+                {
+                    _icoPath = value;
+                }
             }
         }
 
@@ -40,7 +43,18 @@ namespace Wox.Plugin
         /// <summary>
         /// Plugin directory
         /// </summary>
-        public string PluginDirectory { get; set; }
+        public string PluginDirectory
+        {
+            get { return _pluginDirectory; }
+            set
+            {
+                _pluginDirectory = value;
+                if (!string.IsNullOrEmpty(IcoPath) && Path.IsPathRooted(IcoPath))
+                {
+                    IcoPath = Path.Combine(value, IcoPath);
+                }
+            }
+        }
 
         public override bool Equals(object obj)
         {

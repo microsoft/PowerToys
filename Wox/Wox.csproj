@@ -122,8 +122,6 @@
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CommandArgs\ToggleCommandArg.cs" />
-    <Compile Include="Converters\ConvertorBase.cs" />
-    <Compile Include="Converters\ImagePathConverter.cs" />
     <Compile Include="Helper\VisibilityExtensions.cs" />
     <Compile Include="Helper\SingletonWindowOpener.cs" />
     <Compile Include="NotifyIconManager.cs" />
@@ -378,9 +376,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Extensions\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /Y  $(ProjectDir)Themes\* $(TargetDir)Themes\

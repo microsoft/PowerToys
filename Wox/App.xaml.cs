@@ -39,7 +39,7 @@ namespace Wox
                 base.OnStartup(e);
                 RegisterUnhandledException();
 
-                Task.Factory.StartNew(ImageLoader.PreloadImages);
+                ImageLoader.PreloadImages();
 
                 MainViewModel mainVM = new MainViewModel();
                 API = new PublicAPIInstance(mainVM, mainVM._settings);

@@ -189,7 +189,7 @@ namespace Wox.Plugin.PluginManagement
                 {
                     Title = plugin.Name,
                     SubTitle = plugin.Description,
-                    IcoPath = plugin.FullIcoPath,
+                    IcoPath = plugin.IcoPath,
                     Action = e =>
                     {
                         UnInstallPlugin(plugin);
@@ -229,7 +229,7 @@ namespace Wox.Plugin.PluginManagement
                 {
                     Title = $"{plugin.Name} - Action Keywords: {actionKeywordString}",
                     SubTitle = plugin.Description,
-                    IcoPath = plugin.FullIcoPath
+                    IcoPath = plugin.IcoPath
                 });
             }
             return results;

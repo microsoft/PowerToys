@@ -35,9 +35,10 @@ namespace Wox.ViewModel
 
         public string SubTitle => RawResult.SubTitle;
 
-        public string FullIcoPath => RawResult.FullIcoPath;
-
         public string PluginID => RawResult.PluginID;
+
+        public string IcoPath => RawResult.IcoPath;
+
         public int Score
         {
             get { return RawResult.Score; }

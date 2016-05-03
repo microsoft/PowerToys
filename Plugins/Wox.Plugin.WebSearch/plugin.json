@@ -19,7 +19,8 @@
         "image",
         "youtube",
         "bing",
-        "yahoo"
+        "yahoo",
+        "bd"
     ],
     "Name": "Web Searches",
     "Description": "Provide the web search ability",

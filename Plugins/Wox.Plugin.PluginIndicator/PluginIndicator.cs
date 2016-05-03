@@ -19,7 +19,7 @@ namespace Wox.Plugin.PluginIndicator
                               Title = keyword,
                               SubTitle = $"Activate {metadata.Name} plugin",
                               Score = 100,
-                              IcoPath = metadata.FullIcoPath,
+                              IcoPath = metadata.IcoPath,
                               Action = c =>
                               {
                                   context.API.ChangeQuery($"{keyword}{Plugin.Query.TermSeperater}");

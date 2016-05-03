@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using Newtonsoft.Json;
-using Wox.Infrastructure.Storage;
 
 namespace Wox.Plugin.WebSearch
 {
@@ -12,23 +10,31 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Google",
                     ActionKeyword = "g",
-                    IconPath = "google.png",
+                    Icon = "google.png",
                     Url = "https://www.google.com/search?q={q}",
+                    Enabled = true
+                },
+                new WebSearch
+                {
+                    Title = "Google Scholar",
+                    ActionKeyword = "sc",
+                    Icon = "google.png",
+                    Url = "https://scholar.google.com/scholar?q={q}",
                     Enabled = true
                 },
                 new WebSearch
                 {
                     Title = "Wikipedia",
                     ActionKeyword = "wiki",
-                    IconPath = "wiki.png",
-                    Url = "http://en.wikipedia.org/wiki/{q}",
+                    Icon = "wiki.png",
+                    Url = "https://en.wikipedia.org/wiki/{q}",
                     Enabled = true
                 },
                 new WebSearch
                 {
                     Title = "FindIcon",
                     ActionKeyword = "findicon",
-                    IconPath = "pictures.png",
+                    Icon = "pictures.png",
                     Url = "http://findicons.com/search/{q}",
                     Enabled = true
                 },
@@ -36,39 +42,39 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Facebook",
                     ActionKeyword = "facebook",
-                    IconPath = "facebook.png",
-                    Url = "http://www.facebook.com/search/?q={q}",
+                    Icon = "facebook.png",
+                    Url = "https://www.facebook.com/search/?q={q}",
                     Enabled = true
                 },
                 new WebSearch
                 {
                     Title = "Twitter",
                     ActionKeyword = "twitter",
-                    IconPath = "twitter.png",
-                    Url = "http://twitter.com/search?q={q}",
+                    Icon = "twitter.png",
+                    Url = "https://twitter.com/search?q={q}",
                     Enabled = true
                 },
                 new WebSearch
                 {
                     Title = "Google Maps",
                     ActionKeyword = "maps",
-                    IconPath = "google_maps.png",
-                    Url = "http://maps.google.com/maps?q={q}",
+                    Icon = "google_maps.png",
+                    Url = "https://maps.google.com/maps?q={q}",
                     Enabled = true
                 },
                 new WebSearch
                 {
                     Title = "Google Translate",
                     ActionKeyword = "translate",
-                    IconPath = "google_translate.png",
-                    Url = "http://translate.google.com/#auto|en|{q}",
+                    Icon = "google_translate.png",
+                    Url = "https://translate.google.com/#auto|en|{q}",
                     Enabled = true
                 },
                 new WebSearch
                 {
                     Title = "Duckduckgo",
                     ActionKeyword = "duckduckgo",
-                    IconPath = "duckduckgo.png",
+                    Icon = "duckduckgo.png",
                     Url = "https://duckduckgo.com/?q={q}",
                     Enabled = true
                 },
@@ -76,7 +82,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Github",
                     ActionKeyword = "github",
-                    IconPath = "github.png",
+                    Icon = "github.png",
                     Url = "https://github.com/search?q={q}",
                     Enabled = true
                 },
@@ -84,7 +90,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Github Gist",
                     ActionKeyword = "gist",
-                    IconPath = "gist.png",
+                    Icon = "gist.png",
                     Url = "https://gist.github.com/search?q={q}",
                     Enabled = true
                 },
@@ -92,7 +98,7 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Gmail",
                     ActionKeyword = "gmail",
-                    IconPath = "gmail.png",
+                    Icon = "gmail.png",
                     Url = "https://mail.google.com/mail/ca/u/0/#apps/{q}",
                     Enabled = true
                 },
@@ -100,39 +106,39 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Google Drive",
                     ActionKeyword = "drive",
-                    IconPath = "google_drive.png",
-                    Url = "http://drive.google.com/?hl=en&tab=bo#search/{q}",
+                    Icon = "google_drive.png",
+                    Url = "https://drive.google.com/?hl=en&tab=bo#search/{q}",
                     Enabled = true
                 },
                 new WebSearch
                 {
                     Title = "Wolframalpha",
                     ActionKeyword = "wolframalpha",
-                    IconPath = "wolframalpha.png",
-                    Url = "http://www.wolframalpha.com/input/?i={q}",
+                    Icon = "wolframalpha.png",
+                    Url = "https://www.wolframalpha.com/input/?i={q}",
                     Enabled = true
                 },
                 new WebSearch
                 {
                     Title = "Stackoverflow",
                     ActionKeyword = "stackoverflow",
-                    IconPath = "stackoverflow.png",
-                    Url = "http://stackoverflow.com/search?q={q}",
+                    Icon = "stackoverflow.png",
+                    Url = "https://stackoverflow.com/search?q={q}",
                     Enabled = true
                 },
                 new WebSearch
                 {
                     Title = "I'm Feeling Lucky",
                     ActionKeyword = "lucky",
-                    IconPath = "google.png",
-                    Url = "http://google.com/search?q={q}&btnI=I",
+                    Icon = "google.png",
+                    Url = "https://google.com/search?q={q}&btnI=I",
                     Enabled = true
                 },
                 new WebSearch
                 {
                     Title = "Google Image",
                     ActionKeyword = "image",
-                    IconPath = "google.png",
+                    Icon = "google.png",
                     Url = "https://www.google.com/search?q={q}&tbm=isch",
                     Enabled = true
                 },
@@ -140,15 +146,15 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Youtube",
                     ActionKeyword = "youtube",
-                    IconPath = "youtube.png",
-                    Url = "http://www.youtube.com/results?search_query={q}",
+                    Icon = "youtube.png",
+                    Url = "https://www.youtube.com/results?search_query={q}",
                     Enabled = true
                 },
                 new WebSearch
                 {
                     Title = "Bing",
                     ActionKeyword = "bing",
-                    IconPath = "bing.png",
+                    Icon = "bing.png",
                     Url = "https://www.bing.com/search?q={q}",
                     Enabled = true
                 },
@@ -156,9 +162,17 @@ namespace Wox.Plugin.WebSearch
                 {
                     Title = "Yahoo",
                     ActionKeyword = "yahoo",
-                    IconPath = "yahoo.png",
-                    Url = "http://www.search.yahoo.com/search?p={q}",
+                    Icon = "yahoo.png",
+                    Url = "https://www.search.yahoo.com/search?p={q}",
                     Enabled = true
+                },
+                new WebSearch
+                {
+                    Title= "Baidu",
+                    ActionKeyword= "bd",
+                    Icon= "baidu.png",
+                    Url="https://www.baidu.com/#ie=UTF-8&wd={q}",
+                    Enabled= true
                 }
             };
 

@@ -551,7 +551,7 @@ namespace Wox
             pluginAuthor.Text = InternationalizationManager.Instance.GetTranslation("author") + ": " + pair.Metadata.Author;
             pluginSubTitle.Text = pair.Metadata.Description;
             pluginId = pair.Metadata.ID;
-            pluginIcon.Source = ImageLoader.Load(pair.Metadata.FullIcoPath);
+            pluginIcon.Source = ImageLoader.Load(pair.Metadata.IcoPath);
 
             var customizedPluginConfig = _settings.PluginSettings[pluginId];
             cbDisablePlugin.IsChecked = customizedPluginConfig != null && customizedPluginConfig.Disabled;

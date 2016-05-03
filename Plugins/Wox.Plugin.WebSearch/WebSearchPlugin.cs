@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Windows.Controls;
 using JetBrains.Annotations;
@@ -13,14 +14,10 @@ namespace Wox.Plugin.WebSearch
     {
         public PluginInitContext Context { get; private set; }
 
-        private readonly PluginJsonStorage<Settings> _storage;
-        private readonly Settings _settings;
-
-        public WebSearchPlugin()
-        {
-            _storage = new PluginJsonStorage<Settings>();
-            _settings = _storage.Load();
-        }
+        private PluginJsonStorage<Settings> _storage;
+        private Settings _settings;
+        public const string ImageDirectory = "Images";
+        public static string PluginDirectory;
 
         public void Save()
         {
@@ -48,7 +45,7 @@ namespace Wox.Plugin.WebSearch
                     Title = title,
                     SubTitle = subtitle,
                     Score = 6,
-                    IcoPath = webSearch.IconPath,
+                    IcoPath = webSearch.IconPath, 
                     Action = c =>
                     {
                         Process.Start(webSearch.Url.Replace("{q}", Uri.EscapeDataString(keyword ?? string.Empty)));
@@ -92,6 +89,9 @@ namespace Wox.Plugin.WebSearch
         public void Init(PluginInitContext context)
         {
             Context = context;
+            PluginDirectory = Context.CurrentPluginMetadata.PluginDirectory;
+            _storage = new PluginJsonStorage<Settings>();
+            _settings = _storage.Load();
         }
 
         #region ISettingProvider Members

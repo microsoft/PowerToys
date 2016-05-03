@@ -2,20 +2,14 @@
 using System.IO;
 using System.Linq;
 using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using Microsoft.Win32;
-using Wox.Infrastructure;
 using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Image;
 
 namespace Wox.Plugin.WebSearch
 {
-    public partial class WebSearchSetting : Window
+    public partial class WebSearchSetting
     {
-        private const string ImageDirectory = "Images";
-        private const string DefaultIcon = "web_search.png";
-        private readonly string _pluginDirectory;
         private readonly WebSearchesSetting _settingWindow;
         private bool _isUpdate;
         private WebSearch _webSearch;
@@ -30,7 +24,6 @@ namespace Wox.Plugin.WebSearch
             _context = settingWidow.Context;
             _settingWindow = settingWidow;
             _settings = settings;
-            _pluginDirectory = _settingWindow.Context.CurrentPluginMetadata.PluginDirectory;
         }
 
         public void UpdateItem(WebSearch webSearch)
@@ -47,52 +40,22 @@ namespace Wox.Plugin.WebSearch
 
             _isUpdate = true;
             ConfirmButton.Content = "Update";
-            WebSearchIcon.Source = LoadIcon(webSearch.IconPath);
+            WebSearchIcon.Source = ImageLoader.Load(webSearch.IconPath);
             EnableCheckBox.IsChecked = webSearch.Enabled;
             WebSearchName.Text = webSearch.Title;
             Url.Text = webSearch.Url;
             Actionword.Text = webSearch.ActionKeyword;
         }
 
-        public void AddItem(WebSearch websearch)
+        public void AddItem(WebSearch webSearch)
         {
-            _webSearch = websearch;
-            if (string.IsNullOrEmpty(_webSearch.IconPath))
-            {
-                _webSearch.IconPath = DefaultIcon;
-                WebSearchIcon.Source = LoadIcon(_webSearch.IconPath);
-            }
+            _webSearch = webSearch;
+            WebSearchIcon.Source = ImageLoader.Load(webSearch.IconPath);
         }
 
         private void CancelButtonOnClick(object sender, RoutedEventArgs e)
         {
             Close();
-        }
-
-        private ImageSource LoadIcon(string path)
-        {
-            if (path != null)
-            {
-                var releativePath = Path.Combine(_pluginDirectory, ImageDirectory, Path.GetFileName(path));
-                if (File.Exists(releativePath))
-                {
-                    _webSearch.IconPath = path;
-                    var source = ImageLoader.Load(releativePath);
-                    return source;
-                }
-                else
-                {
-                    _webSearch.IconPath = path;
-                    var source = ImageLoader.Load(path);
-                    return source;
-                }
-            }
-            else
-            {
-                var source = ImageLoader.Load(Path.Combine(_pluginDirectory, ImageDirectory, DefaultIcon));
-                return source;
-            }
-
         }
 
         /// <summary>
@@ -156,9 +119,10 @@ namespace Wox.Plugin.WebSearch
 
         private void SelectIconButtonOnClick(object sender, RoutedEventArgs e)
         {
+            var directory = Path.Combine(WebSearchPlugin.PluginDirectory, WebSearchPlugin.ImageDirectory);
             var dlg = new OpenFileDialog
             {
-                InitialDirectory = Path.Combine(_pluginDirectory, ImageDirectory),
+                InitialDirectory = directory,
                 Filter = "Image files (*.jpg, *.jpeg, *.gif, *.png, *.bmp) |*.jpg; *.jpeg; *.gif; *.png; *.bmp"
             };
 
@@ -168,7 +132,16 @@ namespace Wox.Plugin.WebSearch
                 string fullpath = dlg.FileName;
                 if (fullpath != null)
                 {
-                    WebSearchIcon.Source = LoadIcon(fullpath);
+                    _webSearch.Icon = Path.GetFileName(fullpath);
+                    if (File.Exists(_webSearch.IconPath))
+                    {
+                        WebSearchIcon.Source = ImageLoader.Load(_webSearch.IconPath);
+                    }
+                    else
+                    {
+                        _webSearch.Icon = WebSearch.DefaultIcon;
+                        MessageBox.Show($"The file should be put under {directory}");
+                    }
                 }
             }
         }

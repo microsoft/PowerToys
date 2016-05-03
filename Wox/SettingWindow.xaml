@@ -4,9 +4,7 @@
     xmlns:wox="clr-namespace:Wox"
     x:Class="Wox.SettingWindow"
     xmlns:woxPlugin="clr-namespace:Wox.Plugin;assembly=Wox.Plugin"
-    xmlns:converters="clr-namespace:Wox.Converters"
-    xmlns:userSettings="clr-namespace:Wox.Core.UserSettings;assembly=Wox.Core"
-    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:image="clr-namespace:Wox.Infrastructure.Image;assembly=Wox.Infrastructure"
     Icon="Images\app.png"
     Title="{DynamicResource woxsettings}"
     ResizeMode="NoResize"
@@ -18,7 +16,7 @@
                      IsHitTestVisible="False" x:Key="FeatureBoxSeperator">
             <Separator Width="{Binding ElementName=lbPlugins, Path=ActualWidth}" />
         </ListBoxItem>
-        <converters:ImagePathConverter x:Key="ImageConverter" />
+        <image:ImagePathConverter x:Key="ImageConverter" />
     </Window.Resources>
     <TabControl Height="auto" x:Name="settingTab" SelectionChanged="settingTab_SelectionChanged">
         <TabItem Header="{DynamicResource general}">
@@ -70,7 +68,7 @@
                                         <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
                                     <Image Width="32" Height="32" HorizontalAlignment="Left"
-                                           Source="{Binding Metadata.FullIcoPath,Converter={StaticResource ImageConverter},IsAsync=True}" />
+                                           Source="{Binding Metadata.IcoPath,Converter={StaticResource ImageConverter},IsAsync=True}" />
                                     <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
                                         <Grid.RowDefinitions>
                                             <RowDefinition />
