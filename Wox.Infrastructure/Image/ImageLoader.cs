@@ -130,43 +130,42 @@ namespace Wox.Infrastructure.Image
             if (string.IsNullOrEmpty(path))
             {
                 image = ImageSources[ErrorIcon];
+                _cache.Add(ErrorIcon);
             }
             else if (ImageSources.ContainsKey(path))
             {
                 image = ImageSources[path];
+                _cache.Add(path);
             }
             else
             {
-                string ext = Path.GetExtension(path).ToLower();
 
                 if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
                 {
                     image = new BitmapImage(new Uri(path));
-                    ImageSources[path] = image;
                 }
                 else if (Path.IsPathRooted(path))
                 {
                     if (Directory.Exists(path))
                     {
                         image = ShellIcon(path);
-                        ImageSources[path] = image;
                     }
                     else if (File.Exists(path))
                     {
-                        if (ImageExtions.Contains(ext))
+                        var externsion = Path.GetExtension(path).ToLower();
+                        if (ImageExtions.Contains(externsion))
                         {
                             image = new BitmapImage(new Uri(path));
-                            ImageSources[path] = image;
                         }
                         else
                         {
                             image = AssociatedIcon(path);
-                            ImageSources[path] = image;
                         }
                     }
                     else
                     {
                         image = ImageSources[ErrorIcon];
+                        path = ErrorIcon;
                     }
                 }
                 else
@@ -175,13 +174,16 @@ namespace Wox.Infrastructure.Image
                     if (File.Exists(defaultDirectoryPath))
                     {
                         image = new BitmapImage(new Uri(defaultDirectoryPath));
-                        ImageSources[path] = image;
                     }
                     else
                     {
                         image = ImageSources[ErrorIcon];
+                        path = ErrorIcon;
                     }
                 }
+
+                ImageSources[path] = image;
+                _cache.Add(path);
             }
             return image;
         }
