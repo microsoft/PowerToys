@@ -5,10 +5,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.ServiceProcess;
 using System.Windows;
 using Wox.Infrastructure.Storage;
-using Wox.Infrastructure;
 using Wox.Plugin.Everything.Everything;
 
 namespace Wox.Plugin.Everything
@@ -17,20 +15,14 @@ namespace Wox.Plugin.Everything
     {
         private readonly EverythingAPI _api = new EverythingAPI();
 
-        private const string EverythingProcessName = "Everything";
-        private const string PortableEverything = "PortableEverything";
-        internal static string LibraryPath;
+        public const string SDK = "EverythingSDK";
+        public const string DLL = "Everything.dll";
+        internal static string SDKPath;
 
         private PluginInitContext _context;
 
-        private readonly Settings _settings;
-        private readonly PluginJsonStorage<Settings> _storage;
-
-        public Main()
-        {
-            _storage = new PluginJsonStorage<Settings>();
-            _settings = _storage.Load();
-        }
+        private Settings _settings;
+        private PluginJsonStorage<Settings> _storage;
 
         public void Save()
         {
@@ -46,21 +38,6 @@ namespace Wox.Plugin.Everything
                 if (_settings.MaxSearchCount <= 0)
                 {
                     _settings.MaxSearchCount = 50;
-                }
-
-                if (keyword == "uninstalleverything")
-                {
-                    Result r = new Result();
-                    r.Title = "Uninstall Everything";
-                    r.SubTitle = "You need to uninstall everything service if you can not move/delete wox folder";
-                    r.IcoPath = "Images\\find.png";
-                    r.Action = c =>
-                    {
-                        UnInstallEverything();
-                        return true;
-                    };
-                    r.Score = 2000;
-                    results.Add(r);
                 }
 
                 try
@@ -100,7 +77,6 @@ namespace Wox.Plugin.Everything
                 }
                 catch (IPCErrorException)
                 {
-                    StartEverything();
                     results.Add(new Result
                     {
                         Title = _context.API.GetTranslation("wox_plugin_everything_is_not_running"),
@@ -150,125 +126,40 @@ namespace Wox.Plugin.Everything
         public void Init(PluginInitContext context)
         {
             _context = context;
+            _storage = new PluginJsonStorage<Settings>();
+            _settings = _storage.Load();
 
             var pluginDirectory = context.CurrentPluginMetadata.PluginDirectory;
-            var libraryDirectory = Path.Combine(pluginDirectory, PortableEverything, CpuType());
-            LibraryPath = Path.Combine(libraryDirectory, "Everything.dll");
-            LoadLibrary(LibraryPath);
-            //Helper.AddDLLDirectory(libraryDirectory);
+            var bundledSDKDirectory = Path.Combine(pluginDirectory, SDK, CpuType());
+            var bundledSDKPath = Path.Combine(bundledSDKDirectory, DLL);
 
-            StartEverything();
+            var SDKDirectory = Path.Combine(_storage.DirectoryPath, SDK, CpuType());
+            SDKPath = Path.Combine(SDKDirectory, DLL);
+            if (!Directory.Exists(SDKDirectory))
+            {
+                Directory.CreateDirectory(SDKDirectory);
+            }
+
+            if (!File.Exists(SDKPath))
+            {
+                File.Copy(bundledSDKPath, SDKPath);
+            }
+            else
+            {
+                var newSDK = new FileInfo(bundledSDKPath).LastWriteTimeUtc;
+                var oldSDK = new FileInfo(SDKPath).LastWriteTimeUtc;
+                if (oldSDK != newSDK)
+                {
+                    File.Copy(bundledSDKPath, SDKPath, true);
+                }
+            }
+
+            LoadLibrary(SDKPath);
         }
 
         private string CpuType()
         {
             return Environment.Is64BitOperatingSystem ? "x64" : "x86";
-        }
-
-
-        private void StartEverything()
-        {
-            if (!CheckEverythingServiceRunning())
-            {
-                if (InstallAndRunEverythingService())
-                {
-                    StartEverythingClient();
-                }
-            }
-            else
-            {
-                StartEverythingClient();
-            }
-        }
-
-        private bool InstallAndRunEverythingService()
-        {
-            try
-            {
-                Process p = new Process();
-                p.StartInfo.Verb = "runas";
-                p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                p.StartInfo.FileName = GetEverythingPath();
-                p.StartInfo.UseShellExecute = true;
-                p.StartInfo.Arguments = "-install-service";
-                p.Start();
-                return true;
-            }
-            catch (Exception e)
-            {
-                return false;
-            }
-        }
-
-        private bool UnInstallEverything()
-        {
-            try
-            {
-                Process p = new Process();
-                p.StartInfo.Verb = "runas";
-                p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                p.StartInfo.FileName = GetEverythingPath();
-                p.StartInfo.UseShellExecute = true;
-                p.StartInfo.Arguments = "-uninstall-service";
-                p.Start();
-
-                Process[] proc = Process.GetProcessesByName(EverythingProcessName);
-                foreach (Process process in proc)
-                {
-                    process.Kill();
-                }
-                return true;
-            }
-            catch (Exception e)
-            {
-                return false;
-            }
-        }
-
-        private void StartEverythingClient()
-        {
-            try
-            {
-                Process p = new Process();
-                p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                p.StartInfo.FileName = GetEverythingPath();
-                p.StartInfo.UseShellExecute = true;
-                p.StartInfo.Arguments = "-startup";
-                p.Start();
-            }
-            catch (Exception e)
-            {
-                _context.API.ShowMsg("Start Everything failed");
-            }
-        }
-
-        private bool CheckEverythingServiceRunning()
-        {
-            try
-            {
-                ServiceController sc = new ServiceController(EverythingProcessName);
-                return sc.Status == ServiceControllerStatus.Running;
-            }
-            catch
-            {
-
-            }
-            return false;
-        }
-
-        private bool CheckEverythingIsRunning()
-        {
-            return Process.GetProcessesByName(EverythingProcessName).Length > 0;
-        }
-
-        private string GetEverythingPath()
-        {
-            string directory = Path.Combine(
-                _context.CurrentPluginMetadata.PluginDirectory,
-                PortableEverything, CpuType(),
-                "Everything.exe"
-                );
-            return directory;
         }
 
         public string GetTranslatedPluginTitle()

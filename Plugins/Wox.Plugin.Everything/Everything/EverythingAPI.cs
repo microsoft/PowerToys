@@ -9,69 +9,68 @@ namespace Wox.Plugin.Everything.Everything
     public sealed class EverythingAPI
     {
         #region DllImport
-        [DllImport(EVERYTHING_DLL_NAME, CharSet = CharSet.Unicode)]
+        [DllImport(Main.DLL, CharSet = CharSet.Unicode)]
         private static extern int Everything_SetSearchW(string lpSearchString);
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern void Everything_SetMatchPath(bool bEnable);
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern void Everything_SetMatchCase(bool bEnable);
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern void Everything_SetMatchWholeWord(bool bEnable);
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern void Everything_SetRegex(bool bEnable);
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern void Everything_SetMax(int dwMax);
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern void Everything_SetOffset(int dwOffset);
 
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern bool Everything_GetMatchPath();
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern bool Everything_GetMatchCase();
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern bool Everything_GetMatchWholeWord();
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern bool Everything_GetRegex();
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern UInt32 Everything_GetMax();
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern UInt32 Everything_GetOffset();
-        [DllImport(EVERYTHING_DLL_NAME, CharSet = CharSet.Unicode)]
+        [DllImport(Main.DLL, CharSet = CharSet.Unicode)]
         private static extern string Everything_GetSearchW();
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern StateCode Everything_GetLastError();
 
-        [DllImport(EVERYTHING_DLL_NAME, CharSet = CharSet.Unicode)]
+        [DllImport(Main.DLL, CharSet = CharSet.Unicode)]
         private static extern bool Everything_QueryW(bool bWait);
 
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern void Everything_SortResultsByPath();
 
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern int Everything_GetNumFileResults();
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern int Everything_GetNumFolderResults();
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern int Everything_GetNumResults();
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern int Everything_GetTotFileResults();
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern int Everything_GetTotFolderResults();
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern int Everything_GetTotResults();
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern bool Everything_IsVolumeResult(int nIndex);
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern bool Everything_IsFolderResult(int nIndex);
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern bool Everything_IsFileResult(int nIndex);
-        [DllImport(EVERYTHING_DLL_NAME, CharSet = CharSet.Unicode)]
+        [DllImport(Main.DLL, CharSet = CharSet.Unicode)]
         private static extern void Everything_GetResultFullPathNameW(int nIndex, StringBuilder lpString, int nMaxCount);
-        [DllImport(EVERYTHING_DLL_NAME)]
+        [DllImport(Main.DLL)]
         private static extern void Everything_Reset();
         #endregion
 
-        const string EVERYTHING_DLL_NAME = "Everything.dll";
         enum StateCode
         {
             OK,

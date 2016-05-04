@@ -21,7 +21,7 @@ namespace Wox.Infrastructure.Image
         private static readonly string DefaultIcon = Path.Combine(Wox.ProgramPath, "Images", "app.png");
         private static readonly string ErrorIcon = Path.Combine(Wox.ProgramPath, "Images", "app_error.png");
 
-        private static readonly string[] ImageExtions = 
+        private static readonly string[] ImageExtions =
         {
             ".png",
             ".jpg",
@@ -100,8 +100,12 @@ namespace Wox.Infrastructure.Image
         }
         public static void PreloadImages()
         {
-            ImageSources[DefaultIcon] = new BitmapImage(new Uri(DefaultIcon));
-            ImageSources[ErrorIcon] = new BitmapImage(new Uri(ErrorIcon));
+            foreach (var icon in new[] { DefaultIcon, ErrorIcon })
+            {
+                ImageSource img = new BitmapImage(new Uri(DefaultIcon));
+                img.Freeze();
+                ImageSources[icon] = img;
+            }
             Task.Factory.StartNew(() =>
             {
                 Stopwatch.Debug("Preload images from cache", () =>

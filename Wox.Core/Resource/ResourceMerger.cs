@@ -34,7 +34,7 @@ namespace Wox.Core.Resource
 
         internal static void UpdatePluginLanguages()
         {
-            RemoveResource(PluginManager.DirectoryName);
+            RemoveResource(Infrastructure.Wox.Plugins);
             foreach (var plugin in PluginManager.GetPluginsForInterface<IPluginI18n>())
             {
                 var location = Assembly.GetAssembly(plugin.Plugin.GetType()).Location;

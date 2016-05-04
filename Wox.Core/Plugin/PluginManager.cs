@@ -33,16 +33,13 @@ namespace Wox.Core.Plugin
         private static IEnumerable<PluginPair> InstantQueryPlugins { get; set; }
         public static IPublicAPI API { private set; get; }
 
-        public const string DirectoryName = "Plugins";
-        public static readonly string PreinstalledDirectory = Path.Combine(Infrastructure.Wox.ProgramPath, DirectoryName);
-        public static readonly string UserDirectory = Path.Combine(Infrastructure.Wox.DataPath, DirectoryName);
-        private static readonly string[] Directories = { PreinstalledDirectory, UserDirectory };
+        private static readonly string[] Directories = {Infrastructure.Wox.PreinstalledDirectory, Infrastructure.Wox.UserDirectory };
 
         private static void ValidateUserDirectory()
         {
-            if (!Directory.Exists(UserDirectory))
+            if (!Directory.Exists(Infrastructure.Wox.UserDirectory))
             {
-                Directory.CreateDirectory(UserDirectory);
+                Directory.CreateDirectory(Infrastructure.Wox.UserDirectory);
             }
         }
 
