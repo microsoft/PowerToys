@@ -74,7 +74,7 @@ namespace Wox.Plugin.Folder
                             context.API.ChangeQuery(item.Path + (item.Path.EndsWith("\\")? "": "\\"));
                             return false;
                         },
-                        ContextData = item
+                        ContextData = item,
                     }).ToList();
 
             if (driverNames != null && !driverNames.Any(input.StartsWith))
@@ -86,6 +86,12 @@ namespace Wox.Plugin.Folder
             //    input = input + "\\";
             //}
             results.AddRange(QueryInternal_Directory_Exists(input));
+
+            // todo temp hack for scores
+            foreach (var result in results)
+            {
+                result.Score += 10;
+            }
 
             return results;
         }    private void InitialDriverList()
