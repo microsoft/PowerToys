@@ -7,6 +7,7 @@ using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -23,6 +24,12 @@ using Wox.Infrastructure.Image;
 using Wox.Plugin;
 using Wox.ViewModel;
 using Application = System.Windows.Forms.Application;
+using CheckBox = System.Windows.Controls.CheckBox;
+using Control = System.Windows.Controls.Control;
+using Cursors = System.Windows.Input.Cursors;
+using HorizontalAlignment = System.Windows.HorizontalAlignment;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using MessageBox = System.Windows.MessageBox;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox
@@ -239,6 +246,30 @@ namespace Wox
             }
         }
 
+        private void SelectPythonDirectoryOnClick(object sender, RoutedEventArgs e)
+        {
+            var dlg = new FolderBrowserDialog {RootFolder = Environment.SpecialFolder.ProgramFiles};
+
+            var result = dlg.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                string pythonDirectory = dlg.SelectedPath;
+                if (!string.IsNullOrEmpty(pythonDirectory))
+                {
+                    var pythonPath = Path.Combine(pythonDirectory, PluginsLoader.PythonExecutable);
+                    if (File.Exists(pythonPath))
+                    {
+                        PythonDirectory.Text = pythonDirectory;
+                        _settings.PluginSettings.PythonDirectory = pythonDirectory;
+                        MessageBox.Show("Remember to restart Wox use new Python path");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Can't find python in given directory");
+                    }
+                }
+            }
+        }
         #endregion
 
         #region Hotkey
@@ -553,7 +584,7 @@ namespace Wox
             pluginId = pair.Metadata.ID;
             pluginIcon.Source = ImageLoader.Load(pair.Metadata.IcoPath);
 
-            var customizedPluginConfig = _settings.PluginSettings[pluginId];
+            var customizedPluginConfig = _settings.PluginSettings.Plugins[pluginId];
             cbDisablePlugin.IsChecked = customizedPluginConfig != null && customizedPluginConfig.Disabled;
 
             PluginContentPanel.Content = null;
@@ -571,7 +602,7 @@ namespace Wox
                             // update in-memory data
                             PluginManager.UpdateActionKeywordForPlugin(pair, e.OldActionKeyword, e.NewActionKeyword);
                             // update persistant data
-                            _settings.UpdateActionKeyword(pair.Metadata);
+                            _settings.PluginSettings.UpdateActionKeyword(pair.Metadata);
 
                             MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
                         };
@@ -596,7 +627,7 @@ namespace Wox
             if (pair != null)
             {
                 var id = pair.Metadata.ID;
-                var customizedPluginConfig = _settings.PluginSettings[id];
+                var customizedPluginConfig = _settings.PluginSettings.Plugins[id];
                 if (customizedPluginConfig.Disabled)
                 {
                     PluginManager.DisablePlugin(pair);
@@ -804,5 +835,6 @@ namespace Wox
                 Close();
             }
         }
+
     }
 }

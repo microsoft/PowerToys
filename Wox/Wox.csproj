@@ -384,7 +384,7 @@
   <PropertyGroup>
     <PostBuildEvent>xcopy /Y  $(ProjectDir)Themes\* $(TargetDir)Themes\
 xcopy /Y /E  $(ProjectDir)Images\* $(TargetDir)Images\
-xcopy /Y /D /E $(SolutionDir)PythonHome\* $(TargetDir)PythonHome\
+xcopy /Y /D /E $(SolutionDir)Plugins\HelloWorldPython\* $(TargetDir)Plugins\HelloWorldPython\*
  
 
 

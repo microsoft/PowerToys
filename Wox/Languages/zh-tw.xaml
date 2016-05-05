@@ -24,6 +24,7 @@
     <system:String x:Key="language">語言</system:String>
     <system:String x:Key="maxShowResults">最大結果顯示個數</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">全屏模式下忽略熱鍵</system:String>
+    <system:String x:Key="pythonDirectory">Python Directory</system:String>
 
     <!--設置，插件-->
     <system:String x:Key="plugin">插件</system:String>

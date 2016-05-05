@@ -50,7 +50,7 @@ namespace Wox
                 return;
             }
             // update persistant data
-            _settings.UpdateActionKeyword(_plugin.Metadata);
+            _settings.PluginSettings.UpdateActionKeyword(_plugin.Metadata);
 
             MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
             Close();

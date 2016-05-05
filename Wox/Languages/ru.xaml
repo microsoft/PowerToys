@@ -24,7 +24,8 @@
     <system:String x:Key="language">Язык</system:String>
     <system:String x:Key="maxShowResults">Максимальное количество результатов</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Игнорировать горячие клавиши, если окно в полноэкранном режиме</system:String>
-    
+    <system:String x:Key="pythonDirectory">Python Directory</system:String>
+
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Плагины</system:String>
     <system:String x:Key="browserMorePlugins">Найти больше плагинов</system:String>

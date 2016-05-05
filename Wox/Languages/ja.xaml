@@ -24,6 +24,8 @@
     <system:String x:Key="language">言語</system:String>
     <system:String x:Key="maxShowResults">結果の最大表示件数</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">ウィンドウがフルスクリーン時にホットキーを無効にする</system:String>
+    <system:String x:Key="pythonDirectory">Python Directory</system:String>
+
     
     <!--Setting Plugin-->
     <system:String x:Key="plugin">プラグイン</system:String>

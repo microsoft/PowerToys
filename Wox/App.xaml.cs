@@ -42,10 +42,10 @@ namespace Wox
                 ImageLoader.PreloadImages();
 
                 MainViewModel mainVM = new MainViewModel();
+                var pluginsSettings = mainVM._settings.PluginSettings;
                 API = new PublicAPIInstance(mainVM, mainVM._settings);
-                PluginManager.InitializePlugins(API);
+                PluginManager.InitializePlugins(API, pluginsSettings);
 
-                mainVM._settings.UpdatePluginSettings();
 
                 Window = new MainWindow(mainVM._settings, mainVM);
                 NotifyIconManager notifyIconManager = new NotifyIconManager(API);

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using Wox.Core.Plugin;
-using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Newtonsoft.Json;
 
@@ -31,7 +29,7 @@ namespace Wox.Core.UserSettings
 
         // Order defaults to 0 or -1, so 1 will let this property appear last
         [JsonProperty(Order = 1)]
-        public Dictionary<string, PluginSettings> PluginSettings { get; set; } = new Dictionary<string, PluginSettings>();
+        public PluginsSettings PluginSettings { get; set; } = new PluginsSettings();
         public List<CustomPluginHotkey> CustomPluginHotkeys { get; set; } = new List<CustomPluginHotkey>();
 
         [Obsolete]
@@ -54,61 +52,9 @@ namespace Wox.Core.UserSettings
         public int ProxyPort { get; set; }
         public string ProxyUserName { get; set; }
         public string ProxyPassword { get; set; }
-
-        public void UpdatePluginSettings()
-        {
-            var metadatas = PluginManager.AllPlugins.Select(p => p.Metadata);
-            if (PluginSettings == null)
-            {
-                var configs = new Dictionary<string, PluginSettings>();
-                foreach (var metadata in metadatas)
-                {
-                    addPluginMetadata(configs, metadata);
-                }
-                PluginSettings = configs;
-            }
-            else
-            {
-                var configs = PluginSettings;
-                foreach (var metadata in metadatas)
-                {
-                    if (configs.ContainsKey(metadata.ID))
-                    {
-                        var config = configs[metadata.ID];
-                        if (config.ActionKeywords?.Count > 0)
-                        {
-                            metadata.ActionKeywords = config.ActionKeywords;
-                            metadata.ActionKeyword = config.ActionKeywords[0];
-                        }
-                    }
-                    else
-                    {
-                        addPluginMetadata(configs, metadata);
-                    }
-                }
-            }
-        }
-
-
-        private void addPluginMetadata(Dictionary<string, PluginSettings> configs, PluginMetadata metadata)
-        {
-            configs[metadata.ID] = new PluginSettings
-            {
-                ID = metadata.ID,
-                Name = metadata.Name,
-                ActionKeywords = metadata.ActionKeywords,
-                Disabled = false
-            };
-        }
-
-        public void UpdateActionKeyword(PluginMetadata metadata)
-        {
-            var config = PluginSettings[metadata.ID];
-            config.ActionKeywords = metadata.ActionKeywords;
-        }
-
     }
 
+    [Obsolete]
     public enum OpacityMode
     {
         Normal = 0,

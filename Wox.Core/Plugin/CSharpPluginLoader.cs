@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Wox.Infrastructure.Exception;
@@ -8,42 +9,105 @@ using Wox.Plugin;
 
 namespace Wox.Core.Plugin
 {
-    internal class CSharpPluginLoader : IPluginLoader
+    public static class PluginsLoader
     {
-        public IEnumerable<PluginPair> LoadPlugin(List<PluginMetadata> pluginMetadatas)
+        public const string PATH = "PATH";
+        public const string Python = "python";
+        public const string PythonExecutable = "pythonw.exe";
+
+        public static IEnumerable<PluginPair> CSharpPlugins(IEnumerable<PluginMetadata> source)
         {
             var plugins = new List<PluginPair>();
-            List<PluginMetadata> CSharpPluginMetadatas = pluginMetadatas.Where(o => o.Language.ToUpper() == AllowedLanguage.CSharp.ToUpper()).ToList();
+            var metadatas = source.Where(o => o.Language.ToUpper() == AllowedLanguage.CSharp);
 
-            foreach (PluginMetadata metadata in CSharpPluginMetadatas)
+            foreach (var metadata in metadatas)
             {
+                Assembly assembly;
                 try
                 {
-                    Assembly asm = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
-                    List<Type> types = asm.GetTypes().Where(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IPlugin))).ToList();
-                    if (types.Count == 0)
-                    {
-                        Log.Warn($"Couldn't load plugin {metadata.Name}: didn't find the class that implement IPlugin");
-                        continue;
-                    }
-
-                    foreach (Type type in types)
-                    {
-                        PluginPair pair = new PluginPair
-                        {
-                            Plugin = Activator.CreateInstance(type) as IPlugin,
-                            Metadata = metadata
-                        };
-
-                        plugins.Add(pair);
-                    }
+                    assembly = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
                 }
                 catch (Exception e)
                 {
-                    Log.Error(new WoxPluginException(metadata.Name, $"Couldn't load plugin", e));
+                    Log.Error(new WoxPluginException(metadata.Name, "Couldn't load assembly", e));
+                    continue;
+                }
+                var types = assembly.GetTypes();
+                Type type;
+                try
+                {
+                    type = types.First(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IPlugin)));
+                }
+                catch (InvalidOperationException e)
+                {
+                    Log.Error(new WoxPluginException(metadata.Name, "Can't find class implement IPlugin", e));
+                    continue;
+                }
+                IPlugin plugin;
+                try
+                {
+                    plugin = (IPlugin)Activator.CreateInstance(type);
+                }
+                catch (Exception e)
+                {
+                    Log.Error(new WoxPluginException(metadata.Name, "Can't create instance", e));
+                    continue;
+                }
+                PluginPair pair = new PluginPair
+                {
+                    Plugin = plugin,
+                    Metadata = metadata
+                };
+                plugins.Add(pair);
+            }
+            return plugins;
+        }
+
+        public static IEnumerable<PluginPair> PythonPlugins(IEnumerable<PluginMetadata> source, string pythonDirecotry)
+        {
+            var metadatas = source.Where(o => o.Language.ToUpper() == AllowedLanguage.Python);
+            string filename;
+
+            if (string.IsNullOrEmpty(pythonDirecotry))
+            {
+                var paths = Environment.GetEnvironmentVariable(PATH);
+                if (paths != null)
+                {
+                    var pythonPaths = paths.Split(';').Where(p => p.ToLower().Contains(Python));
+                    if (pythonPaths.Any())
+                    {
+                        filename = PythonExecutable;
+                    }
+                    else
+                    {
+                        Log.Error(new WoxException("Python can't be found in PATH."));
+                        return new List<PluginPair>();
+                    }
+                }
+                else
+                {
+                    Log.Error(new WoxException("Path variable is not set."));
+                    return new List<PluginPair>();
                 }
             }
-
+            else
+            {
+                var path = Path.Combine(pythonDirecotry, PythonExecutable);
+                if (File.Exists(path))
+                {
+                    filename = path;
+                }
+                else
+                {
+                    Log.Error(new WoxException("Can't find python executable in python directory"));
+                    return new List<PluginPair>();
+                }
+            }
+            var plugins = metadatas.Select(metadata => new PluginPair
+            {
+                Plugin = new PythonPlugin(filename),
+                Metadata = metadata
+            });
             return plugins;
         }
     }

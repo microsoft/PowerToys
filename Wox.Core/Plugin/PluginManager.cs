@@ -25,13 +25,11 @@ namespace Wox.Core.Plugin
         /// </summary>
 
         public static List<PluginPair> AllPlugins { get; private set; }
-
         public static readonly List<PluginPair> GlobalPlugins = new List<PluginPair>();
-
         public static readonly Dictionary<string, PluginPair> NonGlobalPlugins = new Dictionary<string, PluginPair>();
 
-        private static IEnumerable<PluginPair> InstantQueryPlugins { get; set; }
         public static IPublicAPI API { private set; get; }
+        private static PluginsSettings _settings;
 
         private static readonly string[] Directories = {Infrastructure.Wox.PreinstalledDirectory, Infrastructure.Wox.UserDirectory };
 
@@ -57,12 +55,15 @@ namespace Wox.Core.Plugin
             }
         }
 
-        public static void InitializePlugins(IPublicAPI api)
+        public static void InitializePlugins(IPublicAPI api, PluginsSettings settings)
         {
+            _settings = settings;
+
             var metadatas = PluginConfig.Parse(Directories);
-            var plugins1 = new CSharpPluginLoader().LoadPlugin(metadatas);
-            var plugins2 = new JsonRPCPluginLoader<PythonPlugin>().LoadPlugin(metadatas);
+            var plugins1 = PluginsLoader.CSharpPlugins(metadatas);
+            var plugins2 = PluginsLoader.PythonPlugins(metadatas, _settings.PythonDirectory);
             AllPlugins = plugins1.Concat(plugins2).ToList();
+            _settings.UpdatePluginSettings(AllPlugins);
 
             //load plugin i18n languages
             ResourceMerger.UpdatePluginLanguages();

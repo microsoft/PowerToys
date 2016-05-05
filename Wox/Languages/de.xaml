@@ -24,7 +24,8 @@
     <system:String x:Key="language">Sprache</system:String>
     <system:String x:Key="maxShowResults">Maximale Anzahl Ergebnisse</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignoriere Tastenkombination wenn Fenster im Vollbildmodus ist</system:String>
-    
+    <system:String x:Key="pythonDirectory">Python Directory</system:String>
+
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Plugin</system:String>
     <system:String x:Key="browserMorePlugins">Suche weitere Plugins</system:String>

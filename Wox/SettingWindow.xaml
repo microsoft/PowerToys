@@ -45,6 +45,11 @@
                     <TextBlock Text="{DynamicResource maxShowResults}" />
                     <ComboBox Margin="10 0 0 0" Width="45" Name="comboMaxResultsToShow" />
                 </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{DynamicResource pythonDirectory}"  Margin="10"/>
+                    <TextBox Width="300" Margin="10" x:Name="PythonDirectory" />
+                    <Button Click="SelectPythonDirectoryOnClick" Content="{DynamicResource selectPythonDirectory}" VerticalAlignment="Center"/>
+                </StackPanel>
             </StackPanel>
         </TabItem>
         <TabItem Header="{DynamicResource plugin}" x:Name="tabPlugin">
@@ -280,7 +285,7 @@
                 </StackPanel>
             </Grid>
         </TabItem>
-        <TabItem Header="{DynamicResource proxy}">
+        <TabItem Header="{DynamicResource proxy}" Height="22" VerticalAlignment="Top">
             <StackPanel>
                 <CheckBox x:Name="cbEnableProxy" Margin="10">
                     <TextBlock Text="{DynamicResource enableProxy}" />

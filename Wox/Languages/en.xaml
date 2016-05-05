@@ -24,6 +24,9 @@
     <system:String x:Key="language">Language</system:String>
     <system:String x:Key="maxShowResults">Maximum show results</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignore hotkeys if window is fullscreen</system:String>
+    <system:String x:Key="pythonDirectory">Python Directory</system:String>
+    <system:String x:Key="selectPythonDirectory">Select</system:String>
+    
     
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Plugin</system:String>

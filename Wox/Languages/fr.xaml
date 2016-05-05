@@ -24,7 +24,8 @@
     <system:String x:Key="language">Langue</system:String>
     <system:String x:Key="maxShowResults">Résultats à afficher</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignore les raccourcis lorsqu'une application est en plein écran</system:String>
-    
+    <system:String x:Key="pythonDirectory">Python Directory</system:String>
+
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Modules</system:String>
     <system:String x:Key="browserMorePlugins">Trouver plus de modules</system:String>

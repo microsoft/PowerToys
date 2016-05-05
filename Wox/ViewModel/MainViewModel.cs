@@ -451,7 +451,7 @@ namespace Wox.ViewModel
                 var plugins = PluginManager.ValidPluginsForQuery(query);
                 foreach (var plugin in plugins)
                 {
-                    var config = _settings.PluginSettings[plugin.Metadata.ID];
+                    var config = _settings.PluginSettings.Plugins[plugin.Metadata.ID];
                     if (!config.Disabled)
                     {
                         Task.Factory.StartNew(() =>

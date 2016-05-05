@@ -14,6 +14,7 @@ namespace Wox.Core.Plugin
 {
     /// <summary>
     /// Represent the plugin that using JsonPRC
+    /// every JsonRPC plugin should has its own plugin instance
     /// </summary>
     internal abstract class JsonRPCPlugin : IPlugin
     {
@@ -22,7 +23,7 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// The language this JsonRPCPlugin support
         /// </summary>
-        public abstract string SupportedLanguage { get; }
+        public abstract string SupportedLanguage { get; set; }
 
         protected abstract string ExecuteQuery(Query query);
         protected abstract string ExecuteCallback(JsonRPCRequestModel rpcRequest);
@@ -30,7 +31,7 @@ namespace Wox.Core.Plugin
         public List<Result> Query(Query query)
         {
             string output = ExecuteQuery(query);
-            if (!string.IsNullOrEmpty(output))
+            if (!String.IsNullOrEmpty(output))
             {
                 try
                 {
@@ -46,7 +47,7 @@ namespace Wox.Core.Plugin
                         {
                             if (result1.JsonRPCAction == null) return false;
 
-                            if (!string.IsNullOrEmpty(result1.JsonRPCAction.Method))
+                            if (!String.IsNullOrEmpty(result1.JsonRPCAction.Method))
                             {
                                 if (result1.JsonRPCAction.Method.StartsWith("Wox."))
                                 {
@@ -59,7 +60,7 @@ namespace Wox.Core.Plugin
                                         string actionReponse = ExecuteCallback(result1.JsonRPCAction);
                                         JsonRPCRequestModel jsonRpcRequestModel = JsonConvert.DeserializeObject<JsonRPCRequestModel>(actionReponse);
                                         if (jsonRpcRequestModel != null
-                                            && !string.IsNullOrEmpty(jsonRpcRequestModel.Method)
+                                            && !String.IsNullOrEmpty(jsonRpcRequestModel.Method)
                                             && jsonRpcRequestModel.Method.StartsWith("Wox."))
                                         {
                                             ExecuteWoxAPI(jsonRpcRequestModel.Method.Substring(4), jsonRpcRequestModel.Parameters);
@@ -125,7 +126,7 @@ namespace Wox.Core.Plugin
             {
                 using (Process process = Process.Start(startInfo))
                 {
-                    if (process != null)
+                     if (process != null)
                     {
                         using (StreamReader reader = process.StandardOutput)
                         {
@@ -135,12 +136,12 @@ namespace Wox.Core.Plugin
                                 MessageBox.Show(new Form { TopMost = true }, result.Substring(6));
                                 return "";
                             }
-                            if (string.IsNullOrEmpty(result))
+                            if (String.IsNullOrEmpty(result))
                             {
                                 using (StreamReader errorReader = process.StandardError)
                                 {
                                     string error = errorReader.ReadToEnd();
-                                    if (!string.IsNullOrEmpty(error))
+                                    if (!String.IsNullOrEmpty(error))
                                     {
                                         throw new WoxJsonRPCException(error);
                                     }
