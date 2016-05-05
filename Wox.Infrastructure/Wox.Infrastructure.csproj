@@ -80,7 +80,7 @@
     <Compile Include="Image\ImagePathConverter.cs" />
     <Compile Include="Logger\Log.cs" />
     <Compile Include="Storage\ISavable.cs" />
-    <Compile Include="Storage\PluginSettingsStorage.cs" />
+    <Compile Include="Storage\PluginJsonStorage.cs" />
     <Compile Include="Storage\Storage.cs" />
     <Compile Include="Stopwatch.cs" />
     <Compile Include="Storage\BinaryStorage.cs" />

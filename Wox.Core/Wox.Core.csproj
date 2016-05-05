@@ -65,6 +65,7 @@
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="APIServer.cs" />
+    <Compile Include="Plugin\PluginsLoader.cs" />
     <Compile Include="Updater\Release.cs" />
     <Compile Include="Updater\UpdaterManager.cs" />
     <Compile Include="Updater\WoxUpdateSource.cs" />
@@ -78,7 +79,6 @@
     <Compile Include="Resource\ResourceMerger.cs" />
     <Compile Include="Plugin\PluginInstaller.cs" />
     <Compile Include="Plugin\JsonRPCPlugin.cs" />
-    <Compile Include="Plugin\CSharpPluginLoader.cs" />
     <Compile Include="Plugin\JsonPRCModel.cs" />
     <Compile Include="Plugin\PluginConfig.cs" />
     <Compile Include="Plugin\PluginManager.cs" />
