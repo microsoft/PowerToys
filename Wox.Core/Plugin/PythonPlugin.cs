@@ -14,7 +14,7 @@ namespace Wox.Core.Plugin
         {
             _startInfo = new ProcessStartInfo
             {
-                FileName = @"C:\Program Files\Python 3.5\pythonw.exe",
+                FileName = filename,
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardOutput = true,
