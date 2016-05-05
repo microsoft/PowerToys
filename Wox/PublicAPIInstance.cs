@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 using NHotkey;
 using NHotkey.Wpf;
 using Wox.Core.Plugin;
@@ -139,7 +139,10 @@ namespace Wox
                 o.PluginID = plugin.ID;
                 o.OriginQuery = query;
             });
-            MainVM.UpdateResultView(results, plugin, query);
+            Task.Run(() =>
+            {
+                MainVM.UpdateResultView(results, plugin, query);
+            });
         }
 
         #endregion

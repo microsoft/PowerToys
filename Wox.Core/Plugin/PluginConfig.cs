@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
@@ -11,8 +13,8 @@ namespace Wox.Core.Plugin
 
     internal abstract class PluginConfig
     {
-        private const string pluginConfigName = "plugin.json";
-        private static List<PluginMetadata> pluginMetadatas = new List<PluginMetadata>();
+        private const string PluginConfigName = "plugin.json";
+        private static readonly List<PluginMetadata> PluginMetadatas = new List<PluginMetadata>();
 
         /// <summary>
         /// Parse plugin metadata in giving directories
@@ -21,45 +23,41 @@ namespace Wox.Core.Plugin
         /// <returns></returns>
         public static List<PluginMetadata> Parse(string[] pluginDirectories)
         {
-            pluginMetadatas.Clear();
-            foreach (string pluginDirectory in pluginDirectories)
-            {
-                ParsePluginConfigs(pluginDirectory);
-            }
-
-            return pluginMetadatas;
+            PluginMetadatas.Clear();
+            var directories = pluginDirectories.SelectMany(Directory.GetDirectories);
+            ParsePluginConfigs(directories);
+            return PluginMetadatas;
         }
 
-        private static void ParsePluginConfigs(string pluginDirectory)
+        private static void ParsePluginConfigs(IEnumerable<string> directories)
         {
-            if (!Directory.Exists(pluginDirectory)) return;
-
-            string[] directories = Directory.GetDirectories(pluginDirectory);
-            foreach (string directory in directories)
+            Parallel.ForEach(directories, directory =>
             {
-                if (File.Exists((Path.Combine(directory, "NeedDelete.txt"))))
+                if (File.Exists(Path.Combine(directory, "NeedDelete.txt")))
                 {
                     try
                     {
                         Directory.Delete(directory, true);
-                        continue;
                     }
                     catch (Exception e)
                     {
                         Log.Fatal(e);
                     }
                 }
-                PluginMetadata metadata = GetPluginMetadata(directory);
-                if (metadata != null)
+                else
                 {
-                    pluginMetadatas.Add(metadata);
+                    PluginMetadata metadata = GetPluginMetadata(directory);
+                    if (metadata != null)
+                    {
+                        PluginMetadatas.Add(metadata);
+                    }
                 }
-            }
+            });
         }
 
         private static PluginMetadata GetPluginMetadata(string pluginDirectory)
         {
-            string configPath = Path.Combine(pluginDirectory, pluginConfigName);
+            string configPath = Path.Combine(pluginDirectory, PluginConfigName);
             if (!File.Exists(configPath))
             {
                 Log.Warn($"parse plugin {configPath} failed: didn't find config file.");

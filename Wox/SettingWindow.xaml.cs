@@ -47,7 +47,7 @@ namespace Wox
             InitializeComponent();
             _settings = settings;
             _api = api;
-            ResultListBoxPreview.DataContext = new ResultsViewModel(_settings, null);
+            ResultListBoxPreview.DataContext = new ResultsViewModel(_settings);
             Loaded += Setting_Loaded;
         }
 

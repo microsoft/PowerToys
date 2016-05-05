@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -31,7 +31,7 @@ namespace Wox.Plugin.Program
         private void ReIndexing()
         {
             programSourceView.Items.Refresh();
-            ThreadPool.QueueUserWorkItem(t =>
+            Task.Run(() =>
             {
                 Dispatcher.Invoke(() => { indexingPanel.Visibility = Visibility.Visible; });
                 Programs.IndexPrograms();

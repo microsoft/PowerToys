@@ -106,7 +106,7 @@ namespace Wox.Infrastructure.Image
                 img.Freeze();
                 ImageSources[icon] = img;
             }
-            Task.Factory.StartNew(() =>
+            Task.Run(() =>
             {
                 Stopwatch.Debug("Preload images from cache", () =>
                 {

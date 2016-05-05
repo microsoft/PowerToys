@@ -15,7 +15,7 @@ namespace Wox.Core.Plugin
         public const string Python = "python";
         public const string PythonExecutable = "pythonw.exe";
 
-        public static IEnumerable<PluginPair> CSharpPlugins(IEnumerable<PluginMetadata> source)
+        public static IEnumerable<PluginPair> CSharpPlugins(List<PluginMetadata> source)
         {
             var plugins = new List<PluginPair>();
             var metadatas = source.Where(o => o.Language.ToUpper() == AllowedLanguage.CSharp);
@@ -63,7 +63,7 @@ namespace Wox.Core.Plugin
             return plugins;
         }
 
-        public static IEnumerable<PluginPair> PythonPlugins(IEnumerable<PluginMetadata> source, string pythonDirecotry)
+        public static IEnumerable<PluginPair> PythonPlugins(List<PluginMetadata> source, string pythonDirecotry)
         {
             var metadatas = source.Where(o => o.Language.ToUpper() == AllowedLanguage.Python);
             string filename;

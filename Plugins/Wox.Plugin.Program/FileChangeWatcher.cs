@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Plugin.Program
@@ -40,7 +41,7 @@ namespace Wox.Plugin.Program
         {
             if (!isIndexing)
             {
-                ThreadPool.QueueUserWorkItem(o =>
+                Task.Run(() =>
                 {
                     Programs.IndexPrograms();
                     isIndexing = false;

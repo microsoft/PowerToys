@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Exception;
@@ -55,17 +56,14 @@ namespace Wox.Core.Plugin
                                 }
                                 else
                                 {
-                                    ThreadPool.QueueUserWorkItem(state =>
+                                    string actionReponse = ExecuteCallback(result1.JsonRPCAction);
+                                    JsonRPCRequestModel jsonRpcRequestModel = JsonConvert.DeserializeObject<JsonRPCRequestModel>(actionReponse);
+                                    if (jsonRpcRequestModel != null
+                                        && !String.IsNullOrEmpty(jsonRpcRequestModel.Method)
+                                        && jsonRpcRequestModel.Method.StartsWith("Wox."))
                                     {
-                                        string actionReponse = ExecuteCallback(result1.JsonRPCAction);
-                                        JsonRPCRequestModel jsonRpcRequestModel = JsonConvert.DeserializeObject<JsonRPCRequestModel>(actionReponse);
-                                        if (jsonRpcRequestModel != null
-                                            && !String.IsNullOrEmpty(jsonRpcRequestModel.Method)
-                                            && jsonRpcRequestModel.Method.StartsWith("Wox."))
-                                        {
-                                            ExecuteWoxAPI(jsonRpcRequestModel.Method.Substring(4), jsonRpcRequestModel.Parameters);
-                                        }
-                                    });
+                                        ExecuteWoxAPI(jsonRpcRequestModel.Method.Substring(4), jsonRpcRequestModel.Parameters);
+                                    }
                                 }
                             }
                             return !result1.JsonRPCAction.DontHideAfterAction;
@@ -126,7 +124,7 @@ namespace Wox.Core.Plugin
             {
                 using (Process process = Process.Start(startInfo))
                 {
-                     if (process != null)
+                    if (process != null)
                     {
                         using (StreamReader reader = process.StandardOutput)
                         {
@@ -152,7 +150,7 @@ namespace Wox.Core.Plugin
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw new WoxJsonRPCException(e.Message);
             }

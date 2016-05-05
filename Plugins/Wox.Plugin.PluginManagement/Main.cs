@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using Newtonsoft.Json;
 
@@ -144,7 +145,7 @@ namespace Wox.Plugin.PluginManagement
                                 string filePath = Path.Combine(folder, Guid.NewGuid().ToString() + ".wox");
 
                                 context.API.StartLoadingBar();
-                                ThreadPool.QueueUserWorkItem(delegate
+                                Task.Run(() =>
                                 {
                                     using (WebClient Client = new WebClient())
                                     {

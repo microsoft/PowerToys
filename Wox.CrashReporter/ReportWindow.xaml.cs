@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
 using Exceptionless;
@@ -40,7 +41,7 @@ namespace Wox.CrashReporter
         private void SendReport()
         {
             Hide();
-            ThreadPool.QueueUserWorkItem(o =>
+            Task.Run(() =>
             {
                 string reproduceSteps = new TextRange(tbReproduceSteps.Document.ContentStart, tbReproduceSteps.Document.ContentEnd).Text;
                 exception.ToExceptionless()

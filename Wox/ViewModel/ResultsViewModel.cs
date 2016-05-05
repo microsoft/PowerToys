@@ -4,7 +4,9 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 using Wox.Core.UserSettings;
 using Wox.Plugin;
 using Wox.Storage;
@@ -16,17 +18,18 @@ namespace Wox.ViewModel
         #region Private Fields
 
         private ResultViewModel _selectedResult;
-        public ResultCollection Results { get; } = new ResultCollection();
+        public ResultCollection Results { get; }
         private Thickness _margin;
 
-        private readonly object _resultsUpdateLock = new object();
-        private Settings _settings;
-        private TopMostRecord _topMostRecord;
+        private readonly object _addResultsLock = new object();
+        private readonly object _collectionLock = new object();
+        private readonly Settings _settings;
 
-        public ResultsViewModel(Settings settings, TopMostRecord topMostRecord)
+        public ResultsViewModel(Settings settings)
         {
             _settings = settings;
-            _topMostRecord = topMostRecord;
+            Results = new ResultCollection();
+            BindingOperations.EnableCollectionSynchronization(Results, _collectionLock);
         }
 
         #endregion
@@ -80,11 +83,6 @@ namespace Wox.ViewModel
         #endregion
 
         #region Private Methods
-
-        private bool IsTopMostResult(Result result)
-        {
-            return _topMostRecord.IsTopMost(result);
-        }
 
         private int InsertIndexOf(int newScore, IList<ResultViewModel> list)
         {
@@ -181,43 +179,33 @@ namespace Wox.ViewModel
 
         public void RemoveResultsExcept(PluginMetadata metadata)
         {
-            lock (_resultsUpdateLock)
-            {
-                Results.RemoveAll(r => r.RawResult.PluginID != metadata.ID);
-            }
+            Results.RemoveAll(r => r.RawResult.PluginID != metadata.ID);
         }
 
         public void RemoveResultsFor(PluginMetadata metadata)
         {
-            lock (_resultsUpdateLock)
-            {
-                Results.RemoveAll(r => r.PluginID == metadata.ID);
-            }
+            Results.RemoveAll(r => r.PluginID == metadata.ID);
         }
 
+        /// <summary>
+        /// To avoid deadlock, this method should not called from main thread
+        /// </summary>
         public void AddResults(List<Result> newRawResults, string resultId)
         {
-            lock (_resultsUpdateLock)
+            lock (_addResultsLock)
             {
                 var newResults = newRawResults.Select(r => new ResultViewModel(r)).ToList();
                 // todo use async to do new result calculation
                 var resultsCopy = Results.ToList();
                 var oldResults = resultsCopy.Where(r => r.PluginID == resultId).ToList();
+
                 // intersection of A (old results) and B (new newResults)
                 var intersection = oldResults.Intersect(newResults).ToList();
+
                 // remove result of relative complement of B in A
                 foreach (var result in oldResults.Except(intersection))
                 {
                     resultsCopy.Remove(result);
-                }
-
-                // update scores
-                foreach (var result in newResults)
-                {
-                    if (IsTopMostResult(result.RawResult))
-                    {
-                        result.Score = int.MaxValue;
-                    }
                 }
 
                 // update index for result in intersection of A and B
@@ -300,6 +288,7 @@ namespace Wox.ViewModel
                     ResultViewModel newResult = newItems[i];
                     if (!oldResult.Equals(newResult))
                     {
+
                         this[i] = newResult;
                     }
                     else if (oldResult.Score != newResult.Score)
@@ -307,6 +296,7 @@ namespace Wox.ViewModel
                         this[i].Score = newResult.Score;
                     }
                 }
+
 
                 if (newCount > oldCount)
                 {
@@ -323,7 +313,6 @@ namespace Wox.ViewModel
                         RemoveAt(removeIndex);
                     }
                 }
-
             }
         }
 

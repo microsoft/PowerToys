@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 using Wox.Infrastructure;
@@ -31,7 +32,7 @@ namespace Wox.Core.Plugin
         public static IPublicAPI API { private set; get; }
         private static PluginsSettings _settings;
         private static List<PluginMetadata> _metadatas;
-        private static readonly string[] Directories = {Infrastructure.Wox.PreinstalledDirectory, Infrastructure.Wox.UserDirectory };
+        private static readonly string[] Directories = { Infrastructure.Wox.PreinstalledDirectory, Infrastructure.Wox.UserDirectory };
 
         private static void ValidateUserDirectory()
         {
@@ -69,43 +70,36 @@ namespace Wox.Core.Plugin
             ResourceMerger.UpdatePluginLanguages();
 
             API = api;
-            foreach (PluginPair pluginPair in AllPlugins)
+            Parallel.ForEach(AllPlugins, pair =>
             {
-                PluginPair pair = pluginPair;
-                ThreadPool.QueueUserWorkItem(o =>
+                var milliseconds = Stopwatch.Normal($"Plugin init: {pair.Metadata.Name}", () =>
                 {
-                    var milliseconds = Stopwatch.Normal($"Plugin init: {pair.Metadata.Name}", () =>
+                    pair.Plugin.Init(new PluginInitContext
                     {
-                        pair.Plugin.Init(new PluginInitContext
-                        {
-                            CurrentPluginMetadata = pair.Metadata,
-                            Proxy = HttpProxy.Instance,
-                            API = API
-                        });
+                        CurrentPluginMetadata = pair.Metadata,
+                        Proxy = HttpProxy.Instance,
+                        API = API
                     });
-                    pair.InitTime = milliseconds;
-                    InternationalizationManager.Instance.UpdatePluginMetadataTranslations(pair);
                 });
-            }
+                pair.InitTime = milliseconds;
+                InternationalizationManager.Instance.UpdatePluginMetadataTranslations(pair);
+            });
 
-            ThreadPool.QueueUserWorkItem(o =>
+            _contextMenuPlugins = GetPluginsForInterface<IContextMenu>();
+            foreach (var plugin in AllPlugins)
             {
-                _contextMenuPlugins = GetPluginsForInterface<IContextMenu>();
-                foreach (var plugin in AllPlugins)
+                if (IsGlobalPlugin(plugin.Metadata))
                 {
-                    if (IsGlobalPlugin(plugin.Metadata))
+                    GlobalPlugins.Add(plugin);
+                }
+                else
+                {
+                    foreach (string actionKeyword in plugin.Metadata.ActionKeywords)
                     {
-                        GlobalPlugins.Add(plugin);
-                    }
-                    else
-                    {
-                        foreach (string actionKeyword in plugin.Metadata.ActionKeywords)
-                        {
-                            NonGlobalPlugins[actionKeyword] = plugin;
-                        }
+                        NonGlobalPlugins[actionKeyword] = plugin;
                     }
                 }
-            });
+            }
 
         }
 

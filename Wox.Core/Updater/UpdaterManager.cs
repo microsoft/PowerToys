@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using NAppUpdate.Framework;
 using NAppUpdate.Framework.Common;
@@ -80,7 +81,7 @@ namespace Wox.Core.Updater
 
         public void CheckUpdate()
         {
-            ThreadPool.QueueUserWorkItem(o =>
+            Task.Run(() =>
             {
                 string json = HttpRequest.Get(VersionCheckURL, HttpProxy.Instance);
                 if (!string.IsNullOrEmpty(json))
