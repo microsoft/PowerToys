@@ -55,9 +55,9 @@ namespace Wox.Plugin
         event ResultUpdatedEventHandler ResultsUpdated;
     }
 
-    public delegate void ResultUpdatedEventHandler(IResultUpdated sender, ResultUpdatedEventHandlerArgs e);
+    public delegate void ResultUpdatedEventHandler(IResultUpdated sender, ResultUpdatedEventArgs e);
 
-    public class ResultUpdatedEventHandlerArgs
+    public class ResultUpdatedEventArgs : EventArgs
     {
         public List<Result> Results;
         public Query Query;

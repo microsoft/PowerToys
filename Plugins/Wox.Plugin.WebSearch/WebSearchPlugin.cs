@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using JetBrains.Annotations;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin.WebSearch.SuggestionSources;
@@ -85,28 +82,20 @@ namespace Wox.Plugin.WebSearch
         {
             if (_settings.EnableWebSearchSuggestion)
             {
-                var waittime = 300;
-                var fastDomain = Task.Factory.StartNew(() =>
-                {
-                    var ping = new Ping();
-                    var source = SuggestionSource.GetSuggestionSource(_settings.WebSearchSuggestionSource, Context);
-                    ping.Send(source.Domain);
-                }, _updateToken).Wait(waittime);
-                if (fastDomain)
+                const int waittime = 300;
+                var task = Task.Run(() =>
                 {
                     results.AddRange(ResultsFromSuggestions(keyword, subtitle, webSearch));
-                }
-                else
+                    
+                }, _updateToken);
+
+                if (!task.Wait(waittime))
                 {
-                    Task.Factory.StartNew(() =>
+                    task.ContinueWith(_ => ResultsUpdated?.Invoke(this, new ResultUpdatedEventArgs
                     {
-                        results.AddRange(ResultsFromSuggestions(keyword, subtitle, webSearch));
-                        ResultsUpdated?.Invoke(this, new ResultUpdatedEventHandlerArgs
-                        {
-                            Results = results,
-                            Query = query
-                        });
-                    }, _updateToken);
+                        Results = results,
+                        Query = query
+                    }), _updateToken);
                 }
             }
         }
