@@ -118,7 +118,7 @@ namespace Wox.ViewModel
 
         public void SelectNextResult()
         {
-            if (SelectedResult != null)
+            if (Results.Count > 0 && SelectedResult != null)
             {
                 var index = Results.IndexOf(SelectedResult);
                 if (index == Results.Count - 1)
@@ -131,7 +131,7 @@ namespace Wox.ViewModel
 
         public void SelectPrevResult()
         {
-            if (SelectedResult != null)
+            if (Results.Count > 0 && SelectedResult != null)
             {
                 var index = Results.IndexOf(SelectedResult);
                 if (index == 0)
@@ -144,32 +144,30 @@ namespace Wox.ViewModel
 
         public void SelectNextPage()
         {
-            var index = 0;
-            if (SelectedResult != null)
+            if (Results.Count > 0 && SelectedResult != null)
             {
-                index = Results.IndexOf(SelectedResult);
+                var index = Results.IndexOf(SelectedResult);
+                index += 5;
+                if (index > Results.Count - 1)
+                {
+                    index = Results.Count - 1;
+                }
+                SelectedResult = Results.ElementAt(index);
             }
-            index += 5;
-            if (index > Results.Count - 1)
-            {
-                index = Results.Count - 1;
-            }
-            SelectedResult = Results.ElementAt(index);
         }
 
         public void SelectPrevPage()
         {
-            var index = 0;
-            if (SelectedResult != null)
+            if (Results.Count > 0 && SelectedResult != null)
             {
-                index = Results.IndexOf(SelectedResult);
+                var index = Results.IndexOf(SelectedResult);
+                index -= 5;
+                if (index < 0)
+                {
+                    index = 0;
+                }
+                SelectedResult = Results.ElementAt(index);
             }
-            index -= 5;
-            if (index < 0)
-            {
-                index = 0;
-            }
-            SelectedResult = Results.ElementAt(index);
         }
 
         public void Clear()
