@@ -37,7 +37,7 @@ namespace Wox.Plugin
         string GetTranslatedPluginDescription();
     }
 
-    public interface IMultipleActionKeywords
+    public interface IMultipleActionKeywords : IFeatures
     {
         event ActionKeywordsChangedEventHandler ActionKeywordsChanged;
     }
@@ -49,4 +49,17 @@ namespace Wox.Plugin
     }
 
     public delegate void ActionKeywordsChangedEventHandler(IMultipleActionKeywords sender, ActionKeywordsChangedEventArgs e);
+
+    public interface IResultUpdated : IFeatures
+    {
+        event ResultUpdatedEventHandler ResultsUpdated;
+    }
+
+    public delegate void ResultUpdatedEventHandler(IResultUpdated sender, ResultUpdatedEventHandlerArgs e);
+
+    public class ResultUpdatedEventHandlerArgs
+    {
+        public List<Result> Results;
+        public Query Query;
+    }
 }

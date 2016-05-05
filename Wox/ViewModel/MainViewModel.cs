@@ -79,154 +79,22 @@ namespace Wox.ViewModel
             InitializeResultListBox();
             InitializeContextMenu();
             InitializeKeyCommands();
+            RegisterResultsUpdatedEvent();
         }
 
-        public void Save()
+        private void RegisterResultsUpdatedEvent()
         {
-            _settingsStorage.Save();
-            _queryHistoryStorage.Save();
-            _userSelectedRecordStorage.Save();
-            _topMostRecordStorage.Save();
-        }
-
-        #endregion
-
-        #region ViewModel Properties
-
-        public ResultsViewModel Results { get; private set; }
-
-        public ResultsViewModel ContextMenu { get; private set; }
-
-        public string QueryText
-        {
-            get
+            foreach (var pair in PluginManager.GetPluginsForInterface<IResultUpdated>())
             {
-                return _queryText;
-            }
-            set
-            {
-                _queryText = value;
-                OnPropertyChanged();
-
-                if (_ignoreTextChange)
+                var plugin = (IResultUpdated) pair.Plugin;
+                plugin.ResultsUpdated += (s, e) =>
                 {
-                    _ignoreTextChange = false;
-                }
-                else
-                {
-                    HandleQueryTextUpdated();
-                }
+                    PluginManager.UpdatePluginMetadata(e.Results, pair.Metadata, e.Query);
+                    UpdateResultView(e.Results, pair.Metadata, e.Query);
+                };
             }
         }
 
-        public double Left
-        {
-            get
-            {
-                return _left;
-            }
-            set
-            {
-                _left = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public double Top
-        {
-            get
-            {
-                return _top;
-            }
-            set
-            {
-                _top = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public Visibility ContextMenuVisibility
-
-        {
-            get
-            {
-                return _contextMenuVisibility;
-            }
-            set
-            {
-                _contextMenuVisibility = value;
-                OnPropertyChanged();
-
-                _ignoreTextChange = true;
-                if (!value.IsVisible())
-                {
-                    QueryText = _queryTextBeforeLoadContextMenu;
-                    ResultListBoxVisibility = Visibility.Visible;
-                    OnCursorMovedToEnd();
-                }
-                else
-                {
-                    _queryTextBeforeLoadContextMenu = QueryText;
-                    QueryText = "";
-                    ResultListBoxVisibility = Visibility.Collapsed;
-                }
-            }
-        }
-
-        public Visibility ProgressBarVisibility
-        {
-            get
-            {
-                return _progressBarVisibility;
-            }
-            set
-            {
-                _progressBarVisibility = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public Visibility ResultListBoxVisibility
-        {
-            get
-            {
-                return _resultListBoxVisibility;
-            }
-            set
-            {
-                _resultListBoxVisibility = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public Visibility MainWindowVisibility
-        {
-            get
-            {
-                return _mainWindowVisibility;
-            }
-            set
-            {
-                _mainWindowVisibility = value;
-                OnPropertyChanged();
-                MainWindowVisibilityChanged?.Invoke(this, new EventArgs());
-            }
-        }
-
-        public ICommand EscCommand { get; set; }
-        public ICommand SelectNextItemCommand { get; set; }
-        public ICommand SelectPrevItemCommand { get; set; }
-        public ICommand DisplayNextQueryCommand { get; set; }
-        public ICommand DisplayPrevQueryCommand { get; set; }
-        public ICommand SelectNextPageCommand { get; set; }
-        public ICommand SelectPrevPageCommand { get; set; }
-        public ICommand StartHelpCommand { get; set; }
-        public ICommand LoadContextMenuCommand { get; set; }
-        public ICommand OpenResultCommand { get; set; }
-        public ICommand BackCommand { get; set; }
-        #endregion
-
-        #region Private Methods
 
         private void InitializeKeyCommands()
         {
@@ -389,6 +257,144 @@ namespace Wox.ViewModel
                 }
             }
         }
+        #endregion
+
+        #region ViewModel Properties
+
+        public ResultsViewModel Results { get; private set; }
+
+        public ResultsViewModel ContextMenu { get; private set; }
+
+        public string QueryText
+        {
+            get
+            {
+                return _queryText;
+            }
+            set
+            {
+                _queryText = value;
+                OnPropertyChanged();
+
+                if (_ignoreTextChange)
+                {
+                    _ignoreTextChange = false;
+                }
+                else
+                {
+                    HandleQueryTextUpdated();
+                }
+            }
+        }
+
+        public double Left
+        {
+            get
+            {
+                return _left;
+            }
+            set
+            {
+                _left = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public double Top
+        {
+            get
+            {
+                return _top;
+            }
+            set
+            {
+                _top = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public Visibility ContextMenuVisibility
+
+        {
+            get
+            {
+                return _contextMenuVisibility;
+            }
+            set
+            {
+                _contextMenuVisibility = value;
+                OnPropertyChanged();
+
+                _ignoreTextChange = true;
+                if (!value.IsVisible())
+                {
+                    QueryText = _queryTextBeforeLoadContextMenu;
+                    ResultListBoxVisibility = Visibility.Visible;
+                    OnCursorMovedToEnd();
+                }
+                else
+                {
+                    _queryTextBeforeLoadContextMenu = QueryText;
+                    QueryText = "";
+                    ResultListBoxVisibility = Visibility.Collapsed;
+                }
+            }
+        }
+
+        public Visibility ProgressBarVisibility
+        {
+            get
+            {
+                return _progressBarVisibility;
+            }
+            set
+            {
+                _progressBarVisibility = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public Visibility ResultListBoxVisibility
+        {
+            get
+            {
+                return _resultListBoxVisibility;
+            }
+            set
+            {
+                _resultListBoxVisibility = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public Visibility MainWindowVisibility
+        {
+            get
+            {
+                return _mainWindowVisibility;
+            }
+            set
+            {
+                _mainWindowVisibility = value;
+                OnPropertyChanged();
+                MainWindowVisibilityChanged?.Invoke(this, new EventArgs());
+            }
+        }
+
+        public ICommand EscCommand { get; set; }
+        public ICommand SelectNextItemCommand { get; set; }
+        public ICommand SelectPrevItemCommand { get; set; }
+        public ICommand DisplayNextQueryCommand { get; set; }
+        public ICommand DisplayPrevQueryCommand { get; set; }
+        public ICommand SelectNextPageCommand { get; set; }
+        public ICommand SelectPrevPageCommand { get; set; }
+        public ICommand StartHelpCommand { get; set; }
+        public ICommand LoadContextMenuCommand { get; set; }
+        public ICommand OpenResultCommand { get; set; }
+        public ICommand BackCommand { get; set; }
+        #endregion
+
+        #region Private Methods
 
         private void QueryContextMenu()
         {
@@ -568,6 +574,14 @@ namespace Wox.ViewModel
         #endregion
 
         #region Public Methods
+
+        public void Save()
+        {
+            _settingsStorage.Save();
+            _queryHistoryStorage.Save();
+            _userSelectedRecordStorage.Save();
+            _topMostRecordStorage.Save();
+        }
 
         public void UpdateResultView(List<Result> list, PluginMetadata metadata, Query originQuery)
         {

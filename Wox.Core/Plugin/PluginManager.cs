@@ -30,7 +30,7 @@ namespace Wox.Core.Plugin
 
         public static IPublicAPI API { private set; get; }
         private static PluginsSettings _settings;
-
+        private static List<PluginMetadata> _metadatas;
         private static readonly string[] Directories = {Infrastructure.Wox.PreinstalledDirectory, Infrastructure.Wox.UserDirectory };
 
         private static void ValidateUserDirectory()
@@ -39,11 +39,6 @@ namespace Wox.Core.Plugin
             {
                 Directory.CreateDirectory(Infrastructure.Wox.UserDirectory);
             }
-        }
-
-        static PluginManager()
-        {
-            ValidateUserDirectory();
         }
 
         public static void Save()
@@ -55,14 +50,19 @@ namespace Wox.Core.Plugin
             }
         }
 
+        static PluginManager()
+        {
+            ValidateUserDirectory();
+
+            // todo happlebao temp hack to let MainVM to register ResultsUpdated event
+            _metadatas = PluginConfig.Parse(Directories);
+            AllPlugins = PluginsLoader.CSharpPlugins(_metadatas).ToList();
+        }
         public static void InitializePlugins(IPublicAPI api, PluginsSettings settings)
         {
             _settings = settings;
-
-            var metadatas = PluginConfig.Parse(Directories);
-            var plugins1 = PluginsLoader.CSharpPlugins(metadatas);
-            var plugins2 = PluginsLoader.PythonPlugins(metadatas, _settings.PythonDirectory);
-            AllPlugins = plugins1.Concat(plugins2).ToList();
+            var plugins = PluginsLoader.PythonPlugins(_metadatas, _settings.PythonDirectory);
+            AllPlugins = AllPlugins.Concat(plugins).ToList();
             _settings.UpdatePluginSettings(AllPlugins);
 
             //load plugin i18n languages
@@ -106,6 +106,7 @@ namespace Wox.Core.Plugin
                     }
                 }
             });
+
         }
 
         public static void InstallPlugin(string path)
@@ -193,16 +194,12 @@ namespace Wox.Core.Plugin
             var results = new List<Result>();
             try
             {
-                var milliseconds = Stopwatch.Normal($"Plugin.Query cost for {pair.Metadata.Name}", () =>
-                    {
-                        results = pair.Plugin.Query(query) ?? results;
-                        results.ForEach(o =>
-                        {
-                            o.PluginDirectory = pair.Metadata.PluginDirectory;
-                            o.PluginID = pair.Metadata.ID;
-                            o.OriginQuery = query;
-                        });
-                    });
+                var metadata = pair.Metadata;
+                var milliseconds = Stopwatch.Normal($"Plugin.Query cost for {metadata.Name}", () =>
+                {
+                    results = pair.Plugin.Query(query) ?? results;
+                    UpdatePluginMetadata(results, metadata, query);
+                });
                 pair.QueryCount += 1;
                 pair.AvgQueryTime = pair.QueryCount == 1 ? milliseconds : (pair.AvgQueryTime + milliseconds) / 2;
             }
@@ -211,6 +208,16 @@ namespace Wox.Core.Plugin
                 throw new WoxPluginException(pair.Metadata.Name, "QueryForPlugin failed", e);
             }
             return results;
+        }
+
+        public static void UpdatePluginMetadata(List<Result> results, PluginMetadata metadata, Query query)
+        {
+            foreach (var r in results)
+            {
+                r.PluginDirectory = metadata.PluginDirectory;
+                r.PluginID = metadata.ID;
+                r.OriginQuery = query;
+            }
         }
 
         private static bool IsGlobalPlugin(PluginMetadata metadata)

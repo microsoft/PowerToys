@@ -46,7 +46,6 @@ namespace Wox
                 API = new PublicAPIInstance(mainVM, mainVM._settings);
                 PluginManager.InitializePlugins(API, pluginsSettings);
 
-
                 Window = new MainWindow(mainVM._settings, mainVM);
                 NotifyIconManager notifyIconManager = new NotifyIconManager(API);
                 CommandArgsFactory.Execute(e.Args.ToList());

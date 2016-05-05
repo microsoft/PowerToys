@@ -7,6 +7,7 @@ namespace Wox.Plugin
 
     public class Result
     {
+
         private string _pluginDirectory;
         private string _icoPath;
         public string Title { get; set; }

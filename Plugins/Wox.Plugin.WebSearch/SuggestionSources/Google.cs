@@ -7,8 +7,9 @@ using Wox.Infrastructure.Http;
 
 namespace Wox.Plugin.WebSearch.SuggestionSources
 {
-    public class Google : AbstractSuggestionSource
+    public class Google : SuggestionSource
     {
+        public override string Domain { get; set; } = "www.google.com";
         public override List<string> GetSuggestions(string query)
         {
             var result = HttpRequest.Get("https://www.google.com/complete/search?output=chrome&q=" + Uri.EscapeUriString(query), Proxy);

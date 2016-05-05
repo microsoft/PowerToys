@@ -8,8 +8,10 @@ using Wox.Infrastructure.Http;
 
 namespace Wox.Plugin.WebSearch.SuggestionSources
 {
-    public class Baidu : AbstractSuggestionSource
+    public class Baidu : SuggestionSource
     {
+        public override string Domain { get; set; } = "www.baidu.com";
+
         Regex reg = new Regex("window.baidu.sug\\((.*)\\)");
 
         public override List<string> GetSuggestions(string query)

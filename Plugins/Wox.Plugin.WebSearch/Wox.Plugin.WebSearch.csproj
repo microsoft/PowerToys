@@ -61,7 +61,6 @@
     <Compile Include="SuggestionSources\Baidu.cs" />
     <Compile Include="SuggestionSources\Google.cs" />
     <Compile Include="SuggestionSources\ISuggestionSource.cs" />
-    <Compile Include="SuggestionSources\SuggestionSourceFactory.cs" />
     <Compile Include="WebSearch.cs" />
     <Compile Include="WebSearchesSetting.xaml.cs">
       <DependentUpon>WebSearchesSetting.xaml</DependentUpon>
