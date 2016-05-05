@@ -48,7 +48,7 @@ In the future, all of the documentation will be moved back to Github wiki.
 
 # Development / Author Status
 
-- [ ] unified directory `%APPDATA%` for all storage
+- [x] unified directory `%APPDATA%` for all storage
 - [ ] bring unitest for wox back
 - [ ] add autoupdate / installer
 - [ ] disable plugin properly
