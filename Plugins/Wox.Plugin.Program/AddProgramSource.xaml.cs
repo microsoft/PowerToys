@@ -14,10 +14,10 @@ namespace Wox.Plugin.Program
 
         public AddProgramSource(Settings settings)
         {
-            _settings = settings;
-
             InitializeComponent();
+            _settings = settings;
             Suffixes.Text = string.Join(";", settings.ProgramSuffixes);
+            Directory.Focus();
         }
 
         public AddProgramSource(ProgramSource edit, Settings settings)

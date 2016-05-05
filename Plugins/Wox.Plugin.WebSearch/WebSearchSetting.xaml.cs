@@ -20,6 +20,7 @@ namespace Wox.Plugin.WebSearch
         public WebSearchSetting(WebSearchesSetting settingWidow, Settings settings)
         {
             InitializeComponent();
+            WebSearchName.Focus();
             _plugin = settingWidow.Plugin;
             _context = settingWidow.Context;
             _settingWindow = settingWidow;
