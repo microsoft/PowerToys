@@ -400,6 +400,10 @@ cd "$(TargetDir)Plugins" &amp; del /s /q NAppUpdate.Framework.dll
 cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Infrastructure.dll
 cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Infrastructure.pdb
 cd "$(TargetDir)Plugins" &amp; del /s /q Newtonsoft.Json.dll
+cd "$(TargetDir)Plugins" &amp; del /s /q JetBrains.Annotations.dll
+cd "$(TargetDir)Plugins" &amp; del /s /q Pinyin4Net.dll
+
+cd "$(TargetDir)" &amp; del /s /q *.xml
 )</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
