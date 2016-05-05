@@ -19,16 +19,20 @@ namespace Wox.Plugin.WebSearch
             get { return _icon; }
             set
             {
-                _icon = value; 
+                _icon = value;
                 IconPath = Path.Combine(WebSearchPlugin.PluginDirectory, WebSearchPlugin.ImageDirectory, value);
             }
         }
+
         /// <summary>
         /// All icon should be put under Images directory
         /// </summary>
         [NotNull]
         [JsonIgnore]
-        internal string IconPath { get; private set; }
+        internal string IconPath { get; private set; } = Path.Combine
+        (
+            WebSearchPlugin.PluginDirectory, WebSearchPlugin.ImageDirectory, DefaultIcon
+        );
 
         public string Url { get; set; }
         public bool Enabled { get; set; }
