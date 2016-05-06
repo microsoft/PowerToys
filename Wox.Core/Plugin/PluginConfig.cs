@@ -31,7 +31,8 @@ namespace Wox.Core.Plugin
 
         private static void ParsePluginConfigs(IEnumerable<string> directories)
         {
-            Parallel.ForEach(directories, directory =>
+            // todo use linq when diable plugin is implmented since parallel.foreach + list is not thread saft
+            foreach (var directory in directories)
             {
                 if (File.Exists(Path.Combine(directory, "NeedDelete.txt")))
                 {
@@ -52,7 +53,7 @@ namespace Wox.Core.Plugin
                         PluginMetadatas.Add(metadata);
                     }
                 }
-            });
+            }
         }
 
         private static PluginMetadata GetPluginMetadata(string pluginDirectory)
