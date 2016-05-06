@@ -4,12 +4,10 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using Wox.Core.UserSettings;
 using Wox.Plugin;
-using Wox.Storage;
 
 namespace Wox.ViewModel
 {
@@ -17,7 +15,7 @@ namespace Wox.ViewModel
     {
         #region Private Fields
 
-        private ResultViewModel _selectedResult;
+        private int _selectedIndex;
         public ResultCollection Results { get; }
         private Thickness _margin;
 
@@ -38,35 +36,17 @@ namespace Wox.ViewModel
 
         public int MaxHeight => _settings.MaxResultsToShow * 50;
 
-        public ResultViewModel SelectedResult
+        public int SelectedIndex
         {
-            get
-            {
-                return _selectedResult;
-            }
+            get { return _selectedIndex; }
             set
             {
-                if (value != null)
-                {
-                    if (_selectedResult != null)
-                    {
-                        _selectedResult.IsSelected = false;
-                    }
-
-                    _selectedResult = value;
-
-                    if (_selectedResult != null)
-                    {
-                        _selectedResult.IsSelected = true;
-                    }
-
-                }
-
+                _selectedIndex = value;
                 OnPropertyChanged();
-
             }
         }
 
+        public ResultViewModel SelectedItem { get; set; }
         public Thickness Margin
         {
             get
@@ -98,76 +78,44 @@ namespace Wox.ViewModel
             return index;
         }
 
+        private int NewIndex(int i)
+        {
+            var n = Results.Count;
+            if (n > 0)
+            {
+                i = (n + i) % n;
+                return i;
+            }
+            else
+            {
+                // SelectedIndex returns -1 if selection is empty.
+                return -1;
+            }
+        }
+
+
         #endregion
 
         #region Public Methods
 
-        public void SelectResult(int index)
-        {
-            if (index <= Results.Count - 1)
-            {
-                SelectedResult = Results[index];
-            }
-        }
-
-        public void SelectResult(ResultViewModel result)
-        {
-            int i = Results.IndexOf(result);
-            SelectResult(i);
-        }
-
         public void SelectNextResult()
         {
-            if (Results.Count > 0 && SelectedResult != null)
-            {
-                var index = Results.IndexOf(SelectedResult);
-                if (index == Results.Count - 1)
-                {
-                    index = -1;
-                }
-                SelectedResult = Results.ElementAt(index + 1);
-            }
+            SelectedIndex = NewIndex(SelectedIndex + 1);
         }
 
         public void SelectPrevResult()
         {
-            if (Results.Count > 0 && SelectedResult != null)
-            {
-                var index = Results.IndexOf(SelectedResult);
-                if (index == 0)
-                {
-                    index = Results.Count;
-                }
-                SelectedResult = Results.ElementAt(index - 1);
-            }
+            SelectedIndex = NewIndex(SelectedIndex - 1);
         }
 
         public void SelectNextPage()
         {
-            if (Results.Count > 0 && SelectedResult != null)
-            {
-                var index = Results.IndexOf(SelectedResult);
-                index += 5;
-                if (index > Results.Count - 1)
-                {
-                    index = Results.Count - 1;
-                }
-                SelectedResult = Results.ElementAt(index);
-            }
+            SelectedIndex = NewIndex(SelectedIndex + _settings.MaxResultsToShow);
         }
 
         public void SelectPrevPage()
         {
-            if (Results.Count > 0 && SelectedResult != null)
-            {
-                var index = Results.IndexOf(SelectedResult);
-                index -= 5;
-                if (index < 0)
-                {
-                    index = 0;
-                }
-                SelectedResult = Results.ElementAt(index);
-            }
+            SelectedIndex = NewIndex(SelectedIndex - _settings.MaxResultsToShow);
         }
 
         public void Clear()
@@ -239,7 +187,7 @@ namespace Wox.ViewModel
                 if (Results.Count > 0)
                 {
                     Margin = new Thickness { Top = 8 };
-                    SelectedResult = Results[0];
+                    SelectedIndex = 0;
                 }
                 else
                 {
@@ -314,6 +262,8 @@ namespace Wox.ViewModel
             }
         }
 
+
+        public ResultViewModel this[int selectedIndex] => Results[selectedIndex];
     }
 
 }

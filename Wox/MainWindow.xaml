@@ -41,8 +41,8 @@
                   Style="{DynamicResource PendingLineStyle}" Visibility="{Binding ProgressBarVisibility, Mode=TwoWay}" 
                   Y1="0" Y2="0" X2="100" Height="2" Width="752" StrokeThickness="1">
             </Line>
-            <ContentControl Content="{Binding Results}" Visibility="{Binding ResultListBoxVisibility}" />
-            <ContentControl Content="{Binding ContextMenu}" Visibility="{Binding ContextMenuVisibility}" />
+            <ContentControl Name="Results" Content="{Binding Results}" Visibility="{Binding ResultListBoxVisibility}" />
+            <ContentControl Name ="ContextMenu" Content="{Binding ContextMenu}" Visibility="{Binding ContextMenuVisibility}" />
         </StackPanel>
     </Border>
 </Window>

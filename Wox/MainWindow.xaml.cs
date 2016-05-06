@@ -333,15 +333,6 @@ namespace Wox
                     var vm = DataContext as MainViewModel;
                     if (vm != null)
                     {
-                        if (vm.ContextMenuVisibility.IsVisible())
-                        {
-                            vm.ContextMenu.SelectResult(result);
-                        }
-                        else
-                        {
-                            vm.Results.SelectResult(result);
-                        }
-
                         if (e.ChangedButton == MouseButton.Left)
                         {
                             vm.OpenResultCommand.Execute(null);
