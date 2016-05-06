@@ -113,6 +113,8 @@ namespace Wox
             var maxResults = _settings.MaxResultsToShow;
             comboMaxResultsToShow.SelectedItem = maxResults == 0 ? 6 : maxResults;
 
+            PythonDirectory.Text = _settings.PluginSettings.PythonDirectory;
+
             #endregion
 
             #region Proxy
@@ -248,7 +250,10 @@ namespace Wox
 
         private void SelectPythonDirectoryOnClick(object sender, RoutedEventArgs e)
         {
-            var dlg = new FolderBrowserDialog {RootFolder = Environment.SpecialFolder.ProgramFiles};
+            var dlg = new FolderBrowserDialog
+            {
+                SelectedPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)
+            };
 
             var result = dlg.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
