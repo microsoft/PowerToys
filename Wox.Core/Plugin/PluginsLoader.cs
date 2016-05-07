@@ -110,5 +110,18 @@ namespace Wox.Core.Plugin
             });
             return plugins;
         }
+
+        public static IEnumerable<PluginPair> ExecutablePlugins(IEnumerable<PluginMetadata> source)
+        {
+            var metadatas = source.Where(o => o.Language.ToUpper() == AllowedLanguage.Executable);
+
+            var plugins = metadatas.Select(metadata => new PluginPair
+            {
+                Plugin = new ExecutablePlugin(metadata.ExecuteFilePath),
+                Metadata = metadata
+            });
+            return plugins;
+        }
+
     }
 }

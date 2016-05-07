@@ -63,7 +63,8 @@ namespace Wox.Core.Plugin
         {
             _settings = settings;
             var plugins = PluginsLoader.PythonPlugins(_metadatas, _settings.PythonDirectory);
-            AllPlugins = AllPlugins.Concat(plugins).ToList();
+            var executable_plugins = PluginsLoader.ExecutablePlugins(_metadatas);
+            AllPlugins = AllPlugins.Concat(plugins).Concat(executable_plugins).ToList();
             _settings.UpdatePluginSettings(AllPlugins);
 
             //load plugin i18n languages
