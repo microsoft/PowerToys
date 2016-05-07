@@ -49,9 +49,6 @@ namespace Wox
         {
             CheckUpdate();
 
-            ThemeManager.Instance.ChangeTheme(_settings.Theme);
-            InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
-
             InitProgressbarAnimation();
             WindowIntelopHelper.DisableControlBox(this);
 

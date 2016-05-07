@@ -67,7 +67,9 @@ namespace Wox.ViewModel
             HttpProxy.Instance.Settings = _settings;
             UpdaterManager.Instance.Settings = _settings;
             InternationalizationManager.Instance.Settings = _settings;
+            InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
             ThemeManager.Instance.Settings = _settings;
+            ThemeManager.Instance.ChangeTheme(_settings.Theme);
 
             _queryHistoryStorage = new JsonStrorage<QueryHistory>();
             _userSelectedRecordStorage = new JsonStrorage<UserSelectedRecord>();
