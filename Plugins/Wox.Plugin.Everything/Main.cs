@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin.Everything.Everything;
 
@@ -15,9 +16,7 @@ namespace Wox.Plugin.Everything
     {
         private readonly EverythingAPI _api = new EverythingAPI();
 
-        public const string SDK = "EverythingSDK";
         public const string DLL = "Everything.dll";
-        internal static string SDKPath;
 
         private PluginInitContext _context;
 
@@ -130,34 +129,16 @@ namespace Wox.Plugin.Everything
             _settings = _storage.Load();
 
             var pluginDirectory = context.CurrentPluginMetadata.PluginDirectory;
-            var bundledSDKDirectory = Path.Combine(pluginDirectory, SDK, CpuType());
-            var bundledSDKPath = Path.Combine(bundledSDKDirectory, DLL);
+            const string sdk = "EverythingSDK";
+            var bundledSDKDirectory = Path.Combine(pluginDirectory, sdk, CpuType());
+            var sdkDirectory = Path.Combine(_storage.DirectoryPath, sdk, CpuType());
+            Helper.ValidateDataDirectory(bundledSDKDirectory, sdkDirectory);
 
-            var SDKDirectory = Path.Combine(_storage.DirectoryPath, SDK, CpuType());
-            SDKPath = Path.Combine(SDKDirectory, DLL);
-            if (!Directory.Exists(SDKDirectory))
-            {
-                Directory.CreateDirectory(SDKDirectory);
-            }
-
-            if (!File.Exists(SDKPath))
-            {
-                File.Copy(bundledSDKPath, SDKPath);
-            }
-            else
-            {
-                var newSDK = new FileInfo(bundledSDKPath).LastWriteTimeUtc;
-                var oldSDK = new FileInfo(SDKPath).LastWriteTimeUtc;
-                if (oldSDK != newSDK)
-                {
-                    File.Copy(bundledSDKPath, SDKPath, true);
-                }
-            }
-
-            LoadLibrary(SDKPath);
+            var sdkPath = Path.Combine(sdkDirectory, DLL);
+            LoadLibrary(sdkPath);
         }
 
-        private string CpuType()
+        private static string CpuType()
         {
             return Environment.Is64BitOperatingSystem ? "x64" : "x86";
         }

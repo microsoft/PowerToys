@@ -120,7 +120,7 @@ namespace Wox.Plugin.WebSearch
 
         private void SelectIconButtonOnClick(object sender, RoutedEventArgs e)
         {
-            var directory = Path.Combine(Main.PluginDirectory, Main.ImageDirectory);
+            var directory = Path.Combine(Main.ImagesDirectory, Main.Images);
             var dlg = new OpenFileDialog
             {
                 InitialDirectory = directory,

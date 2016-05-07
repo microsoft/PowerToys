@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using JetBrains.Annotations;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin.WebSearch.SuggestionSources;
 
@@ -20,8 +22,8 @@ namespace Wox.Plugin.WebSearch
         private CancellationTokenSource _updateSource;
         private CancellationToken _updateToken;
 
-        public const string ImageDirectory = "Images";
-        public static string PluginDirectory;
+        public const string Images = "Images";
+        public static string ImagesDirectory;
 
         public void Save()
         {
@@ -86,7 +88,7 @@ namespace Wox.Plugin.WebSearch
                 var task = Task.Run(() =>
                 {
                     results.AddRange(ResultsFromSuggestions(keyword, subtitle, webSearch));
-                    
+
                 }, _updateToken);
 
                 if (!task.Wait(waittime))
@@ -123,12 +125,24 @@ namespace Wox.Plugin.WebSearch
             return new List<Result>();
         }
 
+        static Main()
+        {
+            var plugins = Infrastructure.Wox.Plugins;
+            var assemblyName = typeof(Main).Assembly.GetName().Name;
+            var pluginDirectory = Path.Combine(Infrastructure.Wox.SettingsPath, plugins, assemblyName);
+            ImagesDirectory = Path.Combine(pluginDirectory, Images);
+        }
+
         public void Init(PluginInitContext context)
         {
             Context = context;
-            PluginDirectory = Context.CurrentPluginMetadata.PluginDirectory;
+
             _storage = new PluginJsonStorage<Settings>();
             _settings = _storage.Load();
+
+            var pluginDirectory = context.CurrentPluginMetadata.PluginDirectory;
+            var bundledImagesDirectory = Path.Combine(pluginDirectory, Images);
+            Helper.ValidateDataDirectory(bundledImagesDirectory, ImagesDirectory);
         }
 
         #region ISettingProvider Members

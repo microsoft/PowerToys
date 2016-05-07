@@ -20,7 +20,7 @@ namespace Wox.Plugin.WebSearch
             set
             {
                 _icon = value;
-                IconPath = Path.Combine(Main.PluginDirectory, Main.ImageDirectory, value);
+                IconPath = Path.Combine(Main.ImagesDirectory, value);
             }
         }
 
@@ -31,7 +31,7 @@ namespace Wox.Plugin.WebSearch
         [JsonIgnore]
         internal string IconPath { get; private set; } = Path.Combine
         (
-            Main.PluginDirectory, Main.ImageDirectory, DefaultIcon
+            Main.ImagesDirectory, DefaultIcon
         );
 
         public string Url { get; set; }

@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Newtonsoft.Json;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Infrastructure.Storage
@@ -14,8 +15,8 @@ namespace Wox.Infrastructure.Storage
         internal JsonStrorage()
         {
             FileSuffix = ".json";
-            DirectoryName = "Settings";
-            DirectoryPath = Path.Combine(DirectoryPath, DirectoryName);
+            DirectoryName = Wox.Settings;
+            DirectoryPath = Wox.SettingsPath;
             FilePath = Path.Combine(DirectoryPath, FileName + FileSuffix);
 
             ValidateDirectory();

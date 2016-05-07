@@ -29,10 +29,10 @@ namespace Wox.Infrastructure.Logger
         private static string CallerType()
         {
             var stackTrace = new StackTrace();
-            var stackFrames = stackTrace.GetFrames().RequireNonNull();
+            var stackFrames = stackTrace.GetFrames().NonNull();
             var callingFrame = stackFrames[2];
             var method = callingFrame.GetMethod();
-            var type = $"{method.DeclaringType.RequireNonNull().FullName}.{method.Name}";
+            var type = $"{method.DeclaringType.NonNull().FullName}.{method.Name}";
             return type;
         }
         public static void Error(System.Exception e)
