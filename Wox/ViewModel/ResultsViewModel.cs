@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
@@ -140,49 +138,10 @@ namespace Wox.ViewModel
         {
             lock (_addResultsLock)
             {
-                var newResults = newRawResults.Select(r => new ResultViewModel(r)).ToList();
-                // todo use async to do new result calculation
-                var resultsCopy = Results.ToList();
-                var oldResults = resultsCopy.Where(r => r.PluginID == resultId).ToList();
-
-                // intersection of A (old results) and B (new newResults)
-                var intersection = oldResults.Intersect(newResults).ToList();
-
-                // remove result of relative complement of B in A
-                foreach (var result in oldResults.Except(intersection))
-                {
-                    resultsCopy.Remove(result);
-                }
-
-                // update index for result in intersection of A and B
-                foreach (var commonResult in intersection)
-                {
-                    int oldIndex = resultsCopy.IndexOf(commonResult);
-                    int oldScore = resultsCopy[oldIndex].Score;
-                    var newResult = newResults[newResults.IndexOf(commonResult)];
-                    int newScore = newResult.Score;
-                    if (newScore != oldScore)
-                    {
-                        var oldResult = resultsCopy[oldIndex];
-
-                        oldResult.Score = newScore;
-                        oldResult.OriginQuery = newResult.OriginQuery;
-
-                        resultsCopy.RemoveAt(oldIndex);
-                        int newIndex = InsertIndexOf(newScore, resultsCopy);
-                        resultsCopy.Insert(newIndex, oldResult);
-                    }
-                }
-
-                // insert result in relative complement of A in B
-                foreach (var result in newResults.Except(intersection))
-                {
-                    int newIndex = InsertIndexOf(result.Score, resultsCopy);
-                    resultsCopy.Insert(newIndex, result);
-                }
+                var newResults = NewResults(newRawResults, resultId);
 
                 // update UI in one run, so it can avoid UI flickering
-                Results.Update(resultsCopy);
+                Results.Update(newResults);
 
                 if (Results.Count > 0)
                 {
@@ -196,6 +155,51 @@ namespace Wox.ViewModel
             }
         }
 
+        private List<ResultViewModel> NewResults(List<Result> newRawResults, string resultId)
+        {
+            var newResults = newRawResults.Select(r => new ResultViewModel(r)).ToList();
+            var results = Results.ToList();
+            var oldResults = results.Where(r => r.PluginID == resultId).ToList();
+
+            // intersection of A (old results) and B (new newResults)
+            var intersection = oldResults.Intersect(newResults).ToList();
+
+            // remove result of relative complement of B in A
+            foreach (var result in oldResults.Except(intersection))
+            {
+                results.Remove(result);
+            }
+
+            // update index for result in intersection of A and B
+            foreach (var commonResult in intersection)
+            {
+                int oldIndex = results.IndexOf(commonResult);
+                int oldScore = results[oldIndex].Score;
+                var newResult = newResults[newResults.IndexOf(commonResult)];
+                int newScore = newResult.Score;
+                if (newScore != oldScore)
+                {
+                    var oldResult = results[oldIndex];
+
+                    oldResult.Score = newScore;
+                    oldResult.OriginQuery = newResult.OriginQuery;
+
+                    results.RemoveAt(oldIndex);
+                    int newIndex = InsertIndexOf(newScore, results);
+                    results.Insert(newIndex, oldResult);
+                }
+            }
+
+            // insert result in relative complement of A in B
+            foreach (var result in newResults.Except(intersection))
+            {
+                int newIndex = InsertIndexOf(result.Score, results);
+                results.Insert(newIndex, result);
+            }
+
+            return results;
+        }
+
 
         #endregion
 
@@ -206,21 +210,13 @@ namespace Wox.ViewModel
             {
                 CheckReentrancy();
 
-                List<ResultViewModel> itemsToRemove = Items.Where(x => predicate(x)).ToList();
-                if (itemsToRemove.Count > 0)
+                for (int i = Count - 1; i >= 0; i--)
                 {
-                    itemsToRemove.ForEach(item => { Items.Remove(item); });
-
-                    OnPropertyChanged(new PropertyChangedEventArgs("Count"));
-                    OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
-                    // fuck ms 
-                    // http://blogs.msdn.com/b/nathannesbit/archive/2009/04/20/addrange-and-observablecollection.aspx
-                    // http://geekswithblogs.net/NewThingsILearned/archive/2008/01/16/listcollectionviewcollectionview-doesnt-support-notifycollectionchanged-with-multiple-items.aspx
-                    // PS: don't use Reset for other data updates, it will cause UI flickering
-                    OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    if (predicate(this[i]))
+                    {
+                        RemoveAt(i);
+                    }
                 }
-
-
             }
 
             public void Update(List<ResultViewModel> newItems)
@@ -228,13 +224,13 @@ namespace Wox.ViewModel
                 int newCount = newItems.Count;
                 int oldCount = Items.Count;
                 int location = newCount > oldCount ? oldCount : newCount;
+
                 for (int i = 0; i < location; i++)
                 {
-                    ResultViewModel oldResult = Items[i];
+                    ResultViewModel oldResult = this[i];
                     ResultViewModel newResult = newItems[i];
                     if (!oldResult.Equals(newResult))
                     {
-
                         this[i] = newResult;
                     }
                     else if (oldResult.Score != newResult.Score)
@@ -244,7 +240,7 @@ namespace Wox.ViewModel
                 }
 
 
-                if (newCount > oldCount)
+                if (newCount >= oldCount)
                 {
                     for (int i = oldCount; i < newCount; i++)
                     {
@@ -253,17 +249,12 @@ namespace Wox.ViewModel
                 }
                 else
                 {
-                    int removeIndex = newCount;
-                    for (int i = newCount; i < oldCount; i++)
+                    for (int i = oldCount - 1; i >= newCount; i--)
                     {
-                        RemoveAt(removeIndex);
+                        RemoveAt(i);
                     }
                 }
             }
         }
-
-
-        public ResultViewModel this[int selectedIndex] => Results[selectedIndex];
     }
-
 }

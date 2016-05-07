@@ -629,7 +629,6 @@ namespace Wox.ViewModel
             {
                 ResultListBoxVisibility = Visibility.Visible;
             }
-
         }
 
         #endregion
