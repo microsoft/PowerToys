@@ -59,7 +59,7 @@
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="FolderLink.cs" />
-    <Compile Include="FolderPlugin.cs" />
+    <Compile Include="Main.cs" />
     <Compile Include="FolderPluginSettings.xaml.cs">
       <DependentUpon>FolderPluginSettings.xaml</DependentUpon>
     </Compile>

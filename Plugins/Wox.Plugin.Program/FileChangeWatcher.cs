@@ -43,7 +43,7 @@ namespace Wox.Plugin.Program
             {
                 Task.Run(() =>
                 {
-                    Programs.IndexPrograms();
+                    Main.IndexPrograms();
                     isIndexing = false;
                 });
             }

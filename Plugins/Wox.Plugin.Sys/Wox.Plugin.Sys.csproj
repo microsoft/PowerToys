@@ -55,7 +55,7 @@
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Sys.cs" />
+    <Compile Include="Main.cs" />
     <Compile Include="SysSettings.xaml.cs">
       <DependentUpon>SysSettings.xaml</DependentUpon>
     </Compile>

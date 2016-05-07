@@ -13,7 +13,7 @@ using MessageBox = System.Windows.MessageBox;
 
 namespace Wox.Plugin.Sys
 {
-    public class Sys : IPlugin, ISettingProvider, IPluginI18n
+    public class Main : IPlugin, ISettingProvider, IPluginI18n
     {
         List<Result> availableResults = new List<Result>();
         private PluginInitContext context;

@@ -6,7 +6,7 @@ using YAMP;
 
 namespace Wox.Plugin.Caculator
 {
-    public class Calculator : IPlugin, IPluginI18n
+    public class Main : IPlugin, IPluginI18n
     {
         private static Regex regValidExpressChar = new Regex(
                         @"^(" +
@@ -20,7 +20,7 @@ namespace Wox.Plugin.Caculator
         private static ParseContext yampContext;
         private PluginInitContext context { get; set; }
 
-        static Calculator()
+        static Main()
         {
             yampContext = Parser.PrimaryContext;
             Parser.InteractiveMode = false;

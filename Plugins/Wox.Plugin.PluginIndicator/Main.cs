@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Wox.Core.Plugin;
-using Wox.Core.UserSettings;
 
 namespace Wox.Plugin.PluginIndicator
 {
-    public class PluginIndicator : IPlugin, IPluginI18n
+    public class Main : IPlugin, IPluginI18n
     {
         private PluginInitContext context;
 

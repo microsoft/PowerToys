@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Windows.Controls;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
@@ -14,7 +12,7 @@ using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox.Plugin.Program
 {
-    public class Programs : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
+    public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
     {
         private static object lockObject = new object();
         private static List<Program> _programs = new List<Program>();
@@ -34,7 +32,7 @@ namespace Wox.Plugin.Program
         private static Settings _settings;
         private readonly PluginJsonStorage<Settings> _settingsStorage;
 
-        public Programs()
+        public Main()
         {
             _settingsStorage = new PluginJsonStorage<Settings>();
             _settings = _settingsStorage.Load();

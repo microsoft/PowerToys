@@ -14,7 +14,7 @@ namespace Wox.Plugin.WebSearch
         private bool _isUpdate;
         private WebSearch _webSearch;
         private readonly PluginInitContext _context;
-        private readonly WebSearchPlugin _plugin;
+        private readonly Main _plugin;
         private readonly Settings _settings;
 
         public WebSearchSetting(WebSearchesSetting settingWidow, Settings settings)
@@ -120,7 +120,7 @@ namespace Wox.Plugin.WebSearch
 
         private void SelectIconButtonOnClick(object sender, RoutedEventArgs e)
         {
-            var directory = Path.Combine(WebSearchPlugin.PluginDirectory, WebSearchPlugin.ImageDirectory);
+            var directory = Path.Combine(Main.PluginDirectory, Main.ImageDirectory);
             var dlg = new OpenFileDialog
             {
                 InitialDirectory = directory,

@@ -11,7 +11,7 @@ using Wox.Plugin.WebSearch.SuggestionSources;
 
 namespace Wox.Plugin.WebSearch
 {
-    public class WebSearchPlugin : IPlugin, ISettingProvider, IPluginI18n, IMultipleActionKeywords, ISavable, IResultUpdated
+    public class Main : IPlugin, ISettingProvider, IPluginI18n, IMultipleActionKeywords, ISavable, IResultUpdated
     {
         public PluginInitContext Context { get; private set; }
 

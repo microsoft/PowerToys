@@ -7,7 +7,7 @@ using Wox.Infrastructure;
 
 namespace Wox.Plugin.ControlPanel
 {
-    public class ControlPanel : IPlugin, IPluginI18n
+    public class Main : IPlugin, IPluginI18n
     {
         private PluginInitContext context;
         private List<ControlPanelItem> controlPanelItems = new List<ControlPanelItem>();

@@ -12,9 +12,9 @@ namespace Wox.Plugin.WebSearch
     {
         private Settings _settings;
         public PluginInitContext Context { get; }
-        public WebSearchPlugin Plugin { get; }
+        public Main Plugin { get; }
 
-        public WebSearchesSetting(WebSearchPlugin plugin, Settings settings)
+        public WebSearchesSetting(Main plugin, Settings settings)
         {
             Context = plugin.Context;
             Plugin = plugin;

@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace Wox.Plugin.Url
 {
-    public class UrlPlugin : IPlugin, IPluginI18n
+    public class Main : IPlugin, IPluginI18n
     {
         //based on https://gist.github.com/dperini/729294
         private const string urlPattern = "^" +

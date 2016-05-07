@@ -34,7 +34,7 @@ namespace Wox.Plugin.Program
             Task.Run(() =>
             {
                 Dispatcher.Invoke(() => { indexingPanel.Visibility = Visibility.Visible; });
-                Programs.IndexPrograms();
+                Main.IndexPrograms();
                 Dispatcher.Invoke(() => { indexingPanel.Visibility = Visibility.Hidden; });
             });
         }

@@ -9,7 +9,7 @@ using Wox.Infrastructure.Storage;
 
 namespace Wox.Plugin.Folder
 {
-    public class FolderPlugin : IPlugin, ISettingProvider, IPluginI18n, ISavable
+    public class Main : IPlugin, ISettingProvider, IPluginI18n, ISavable
     {
         private static List<string> driverNames;
         private PluginInitContext context;
@@ -17,7 +17,7 @@ namespace Wox.Plugin.Folder
         private readonly Settings _settings;
         private readonly PluginJsonStorage<Settings> _storage;
 
-        public FolderPlugin()
+        public Main()
         {
             _storage = new PluginJsonStorage<Settings>();
             _settings = _storage.Load();
