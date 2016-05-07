@@ -22,7 +22,8 @@ namespace Wox.CommandArgs
         public static void Execute(IList<string> args)
         {
             // todo restart command line args?
-            if (args.Count > 0 && args[0] != SingleInstance<App>.Restart)
+            //if (args.Count > 0 && args[0] != SingleInstance<App>.Restart)
+            if (args.Count > 0)
             {
                 string command = args[0];
                 ICommandArg cmd = commandArgs.FirstOrDefault(o => o.Command.ToLower() == command);

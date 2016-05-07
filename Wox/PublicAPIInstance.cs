@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using NHotkey;
 using NHotkey.Wpf;
+using Squirrel;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Core.UserSettings;
@@ -67,12 +68,7 @@ namespace Wox
 
         public void RestarApp()
         {
-            ProcessStartInfo info = new ProcessStartInfo
-            {
-                FileName = Application.ResourceAssembly.Location,
-                Arguments = SingleInstance<App>.Restart
-            };
-            Process.Start(info);
+            UpdateManager.RestartApp();
         }
 
         public void HideApp()

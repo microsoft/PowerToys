@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Wox</id>
+    <title>Wox</title>
+    <version>$version$</version>
+    <authors>happlebao</authors>
+    <projectUrl>https://github.com/Wox-launcher/Wox</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/Wox-launcher/Wox/master/Wox/Images/app.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Wox - a launcher for windows</description>
+  </metadata>
+  <files>
+    <file src="..\Output\Release\**\*.*" target="lib\net45\" exclude="*.nupkg;*.vshost.*"/>
+  </files>
+</package>

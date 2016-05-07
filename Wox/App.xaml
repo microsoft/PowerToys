@@ -1,8 +1,8 @@
 ﻿<Application x:Class="Wox.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Exit="OnExit"
-             SessionEnding="OnSessionEnding">
+             Startup="OnStartup"
+             Activated="OnActivated">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

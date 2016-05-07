@@ -15,5 +15,6 @@ namespace Wox.Infrastructure
         public static readonly string UserDirectory = Path.Combine(DataPath, Plugins);
         public static readonly string PreinstalledDirectory = Path.Combine(ProgramPath, Plugins);
         public static readonly string SettingsPath = Path.Combine(DataPath, Settings);
+        public const string Github = "https://github.com/Wox-launcher/Wox";
     }
 }

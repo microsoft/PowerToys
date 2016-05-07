@@ -16,16 +16,17 @@ after_test:
 - ps: >-
     .\Deploy\nuget.ps1
     
-    .\Deploy\build-release.ps1
+    .\Deploy\binary_zip.ps1
+    
+    .\Deploy\squirrel_installer.ps1
 artifacts:
 - path: 'Wox-*.zip'
-  name: release_binary
+  name: zipped_binary
 - path: '*.nupkg'
   name: nuget_package
-deploy:
-- provider: NuGet
-  api_key:
-    secure: yybUOFgBuGVpbmOVZxsurC8OpkClzt9dR+/54WpMWcq6b6oyMatciaelRPnXsjRn
-  artifact: nuget_package
-  on:
-    branch: api
+- path: '\Releases\*.exe'
+  name: installer
+- path: '\Releases\*.nupkg'
+  name: installer
+- path: 'Releases\RELEASES'
+  name: installer
