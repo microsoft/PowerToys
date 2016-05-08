@@ -68,6 +68,10 @@ namespace Wox
 
         public void RestarApp()
         {
+            // we must force dispose application
+            // UpdateManager.RestartApp() will call Environment.Exit(0)
+            // which will cause ungraceful exit
+            ((IDisposable) Application.Current).Dispose();
             UpdateManager.RestartApp();
         }
 
