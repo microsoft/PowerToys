@@ -17,16 +17,10 @@ after_test:
     .\Deploy\nuget.ps1
     
     .\Deploy\binary_zip.ps1
-    
-    .\Deploy\squirrel_installer.ps1
 artifacts:
 - path: 'Wox-*.zip'
   name: zipped_binary
 - path: '*.nupkg'
   name: nuget_package
-- path: '\Releases\*.exe'
-  name: installer
-- path: '\Releases\*.nupkg'
-  name: installer
-- path: 'Releases\RELEASES'
+- path: '\Output\Releases\Installer\*.*'
   name: installer
