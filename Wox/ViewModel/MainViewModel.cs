@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Input;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
-using Wox.Core.Updater;
 using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure;
@@ -64,7 +63,6 @@ namespace Wox.ViewModel
 
             // happlebao todo temp fix for instance code logic
             HttpProxy.Instance.Settings = _settings;
-            UpdaterManager.Instance.Settings = _settings;
             InternationalizationManager.Instance.Settings = _settings;
             InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
             ThemeManager.Instance.Settings = _settings;

@@ -67,9 +67,6 @@
     <Compile Include="APIServer.cs" />
     <Compile Include="Plugin\ExecutablePlugin.cs" />
     <Compile Include="Plugin\PluginsLoader.cs" />
-    <Compile Include="Updater\Release.cs" />
-    <Compile Include="Updater\UpdaterManager.cs" />
-    <Compile Include="Updater\WoxUpdateSource.cs" />
     <Compile Include="UserSettings\HttpProxy.cs" />
     <Compile Include="Resource\AvailableLanguages.cs" />
     <Compile Include="Resource\Internationalization.cs" />
@@ -90,7 +87,6 @@
     <Compile Include="UserSettings\PluginSettings.cs" />
     <Compile Include="UserSettings\PluginHotkey.cs" />
     <Compile Include="UserSettings\Settings.cs" />
-    <Compile Include="Updater\SemanticVersion.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

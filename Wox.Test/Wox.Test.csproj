@@ -52,7 +52,6 @@
     <Compile Include="Plugins\PluginInitTest.cs" />
     <Compile Include="QueryTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SemanticVersionTest.cs" />
     <Compile Include="UrlPluginTest.cs" />
   </ItemGroup>
   <ItemGroup>
