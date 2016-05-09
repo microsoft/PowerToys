@@ -66,6 +66,7 @@ namespace Wox
         private async void Setting_Loaded(object sender, RoutedEventArgs ev)
         {
             #region General
+
             cbHideWhenDeactive.Checked += (o, e) =>
             {
                 _settings.HideWhenDeactive = true;
@@ -143,6 +144,7 @@ namespace Wox
             #endregion
 
             #region About
+
             string activateTimes = string.Format(
                 InternationalizationManager.Instance.GetTranslation("about_activate_times"), _settings.ActivateTimes);
             ActivatedTimes.Text = activateTimes;
@@ -227,7 +229,9 @@ namespace Wox
 
         private void AddApplicationToStartup()
         {
-            using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+            using (
+                RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                    true))
             {
                 key.SetValue("Wox", "\"" + Application.ExecutablePath + "\" --hidestart");
             }
@@ -235,7 +239,9 @@ namespace Wox
 
         private void RemoveApplicationFromStartup()
         {
-            using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+            using (
+                RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                    true))
             {
                 key.DeleteValue("Wox", false);
             }
@@ -243,7 +249,9 @@ namespace Wox
 
         private bool CheckApplicationIsStartupWithWindow()
         {
-            using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+            using (
+                RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                    true))
             {
                 return key.GetValue("Wox") != null;
             }
@@ -276,6 +284,7 @@ namespace Wox
                 }
             }
         }
+
         #endregion
 
         #region Hotkey
@@ -309,7 +318,8 @@ namespace Wox
             }
             catch (Exception)
             {
-                string errorMsg = string.Format(InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
+                string errorMsg =
+                    string.Format(InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
                 MessageBox.Show(errorMsg);
             }
         }
@@ -338,8 +348,12 @@ namespace Wox
                 return;
             }
 
-            string deleteWarning = string.Format(InternationalizationManager.Instance.GetTranslation("deleteCustomHotkeyWarning"), item.Hotkey);
-            if (MessageBox.Show(deleteWarning, InternationalizationManager.Instance.GetTranslation("delete"), MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            string deleteWarning =
+                string.Format(InternationalizationManager.Instance.GetTranslation("deleteCustomHotkeyWarning"),
+                    item.Hotkey);
+            if (
+                MessageBox.Show(deleteWarning, InternationalizationManager.Instance.GetTranslation("delete"),
+                    MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 _settings.CustomPluginHotkeys.Remove(item);
                 lvCustomHotkey.Items.Refresh();
@@ -396,22 +410,26 @@ namespace Wox
             {
                 cbQueryBoxFont.Text = _settings.QueryBoxFont;
 
-                cbQueryBoxFontFaces.SelectedItem = SyntaxSugars.CallOrRescueDefault(() => ((FontFamily)cbQueryBoxFont.SelectedItem).ConvertFromInvariantStringsOrNormal(
-                    _settings.QueryBoxFontStyle,
-                    _settings.QueryBoxFontWeight,
-                    _settings.QueryBoxFontStretch
-                    ));
+                cbQueryBoxFontFaces.SelectedItem =
+                    SyntaxSugars.CallOrRescueDefault(
+                        () => ((FontFamily)cbQueryBoxFont.SelectedItem).ConvertFromInvariantStringsOrNormal(
+                            _settings.QueryBoxFontStyle,
+                            _settings.QueryBoxFontWeight,
+                            _settings.QueryBoxFontStretch
+                            ));
             }
             if (!string.IsNullOrEmpty(_settings.ResultFont) &&
                 Fonts.SystemFontFamilies.Count(o => o.FamilyNames.Values.Contains(_settings.ResultFont)) > 0)
             {
                 ResultFontComboBox.Text = _settings.ResultFont;
 
-                ResultFontFacesComboBox.SelectedItem = SyntaxSugars.CallOrRescueDefault(() => ((FontFamily)ResultFontComboBox.SelectedItem).ConvertFromInvariantStringsOrNormal(
-                    _settings.ResultFontStyle,
-                    _settings.ResultFontWeight,
-                    _settings.ResultFontStretch
-                    ));
+                ResultFontFacesComboBox.SelectedItem =
+                    SyntaxSugars.CallOrRescueDefault(
+                        () => ((FontFamily)ResultFontComboBox.SelectedItem).ConvertFromInvariantStringsOrNormal(
+                            _settings.ResultFontStyle,
+                            _settings.ResultFontWeight,
+                            _settings.ResultFontStretch
+                            ));
             }
 
             ResultListBoxPreview.AddResults(new List<Result>
@@ -532,7 +550,8 @@ namespace Wox
             if (!settingsLoaded) return;
             string resultItemFont = ResultFontComboBox.SelectedItem.ToString();
             _settings.ResultFont = resultItemFont;
-            ResultFontFacesComboBox.SelectedItem = ((FontFamily)ResultFontComboBox.SelectedItem).ChooseRegularFamilyTypeface();
+            ResultFontFacesComboBox.SelectedItem =
+                ((FontFamily)ResultFontComboBox.SelectedItem).ChooseRegularFamilyTypeface();
             ThemeManager.Instance.ChangeTheme(_settings.Theme);
         }
 
@@ -570,7 +589,8 @@ namespace Wox
             pluginInitTime.Text =
                 string.Format(InternationalizationManager.Instance.GetTranslation("plugin_init_time"), pair.InitTime);
             pluginQueryTime.Text =
-                string.Format(InternationalizationManager.Instance.GetTranslation("plugin_query_time"), pair.AvgQueryTime);
+                string.Format(InternationalizationManager.Instance.GetTranslation("plugin_query_time"),
+                    pair.AvgQueryTime);
             if (actionKeywords.Count > 1)
             {
                 pluginActionKeywordsTitle.Visibility = Visibility.Collapsed;
@@ -585,7 +605,8 @@ namespace Wox
             pluginTitle.Text = pair.Metadata.Name;
             pluginTitle.Cursor = Cursors.Hand;
             pluginActionKeywords.Text = string.Join(Query.ActionKeywordSeperater, actionKeywords.ToArray());
-            pluginAuthor.Text = InternationalizationManager.Instance.GetTranslation("author") + ": " + pair.Metadata.Author;
+            pluginAuthor.Text = InternationalizationManager.Instance.GetTranslation("author") + ": " +
+                                pair.Metadata.Author;
             pluginSubTitle.Text = pair.Metadata.Description;
             pluginId = pair.Metadata.ID;
             pluginIcon.Source = ImageLoader.Load(pair.Metadata.IcoPath);
@@ -657,7 +678,9 @@ namespace Wox
                     ActionKeywords changeKeywordsWindow = new ActionKeywords(id, _settings);
                     changeKeywordsWindow.ShowDialog();
                     PluginPair plugin = PluginManager.GetPluginForId(id);
-                    if (plugin != null) pluginActionKeywords.Text = string.Join(Query.ActionKeywordSeperater, pair.Metadata.ActionKeywords.ToArray());
+                    if (plugin != null)
+                        pluginActionKeywords.Text = string.Join(Query.ActionKeywordSeperater,
+                            pair.Metadata.ActionKeywords.ToArray());
                 }
             }
         }
@@ -677,7 +700,8 @@ namespace Wox
                             Process.Start(pair.Metadata.Website);
                         }
                         catch
-                        { }
+                        {
+                        }
                     }
                 }
             }
@@ -698,7 +722,8 @@ namespace Wox
                             Process.Start(pair.Metadata.PluginDirectory);
                         }
                         catch
-                        { }
+                        {
+                        }
                     }
                 }
             }
@@ -725,6 +750,7 @@ namespace Wox
         #endregion
 
         #region Proxy
+
         private void btnSaveProxy_Click(object sender, RoutedEventArgs e)
         {
             _settings.ProxyEnabled = ToggleProxy.IsChecked ?? false;
@@ -828,23 +854,28 @@ namespace Wox
 
         private async void OnCheckUpdates(object sender, RoutedEventArgs e)
         {
+            var version = await NewVersion();
+            if (!string.IsNullOrEmpty(version))
+            {
+                var newVersion = NumericVersion(version);
+                var oldVersion = NumericVersion(Infrastructure.Wox.Version);
+                if (newVersion > oldVersion)
+                {
+                    NewVersionTips.Text = string.Format(NewVersionTips.Text, version);
+                    NewVersionTips.Visibility = Visibility.Visible;
+                    UpdateApp();
+                }
+            }
+        }
+
+        private async void UpdateApp()
+        {
             try
             {
-                var version = await NewVersion();
-                if (!string.IsNullOrEmpty(version))
+                using (var updater = await UpdateManager.GitHubUpdateManager(Infrastructure.Wox.Github, prerelease: true))
                 {
-                    var newVersion = NumericVersion(version);
-                    var oldVersion = NumericVersion(Infrastructure.Wox.Version);
-                    if (newVersion > oldVersion)
-                    {
-                        NewVersionTips.Text = string.Format(NewVersionTips.Text, version);
-                        NewVersionTips.Visibility = Visibility.Visible;
-                        using (var updater = await UpdateManager.GitHubUpdateManager(Infrastructure.Wox.Github, prerelease: true))
-                        {
-                            // todo 5/9 the return value of UpdateApp() is NULL, fucking useless!
-                            await updater.UpdateApp();
-                        }
-                    }
+                    // todo 5/9 the return value of UpdateApp() is NULL, fucking useless!
+                    await updater.UpdateApp();
                 }
             }
             catch (Exception ex)
@@ -852,7 +883,6 @@ namespace Wox
                 Log.Error(ex);
             }
         }
-
         private async Task<string> NewVersion()
         {
             const string githubAPI = @"https://api.github.com/repos/wox-launcher/wox/releases/latest";
@@ -863,7 +893,7 @@ namespace Wox
                 JContainer json;
                 try
                 {
-                    json = (JContainer) JsonConvert.DeserializeObject(response);
+                    json = (JContainer)JsonConvert.DeserializeObject(response);
                 }
                 catch (JsonSerializationException e)
                 {
