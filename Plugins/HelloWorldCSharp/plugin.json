@@ -1,0 +1,12 @@
+{
+    "ID":"CEA0FDFC6D3B4085823D60DC76F28844",
+    "ActionKeyword":"hc",
+    "Name":"Hello World CSharp",
+    "Description":"Hello World CSharp",
+    "Author":"happlebao",
+    "Version":"1.0.0",
+    "Language":"csharp",
+    "Website":"https://github.com/Wox-launcher/Wox",
+    "ExecuteFileName":"HelloWorldCSharp.dll",
+    "IcoPath":"app.png"
+}
