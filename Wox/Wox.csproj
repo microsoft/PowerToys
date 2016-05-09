@@ -428,7 +428,6 @@
       cd "$(TargetDir)Plugins" &amp; del /s /q Pinyin4Net.dll
 
       cd "$(TargetDir)" &amp; del /s /q *.xml
-      cd "$(TargetDir)Installer" &amp; del /s /q *
       )
 </PostBuildEvent>
   </PropertyGroup>
