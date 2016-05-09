@@ -32,15 +32,14 @@ Wox is a launcher for Windows, an alternative to [Alfred](https://www.alfredapp.
 
 # Contribute  
 
-If you are a developer, please feel free to send a pull request to the **Dev** branch. We still have a lot of features and bugs to resolve. Take a look at [issues page](https://github.com/Wox-launcher/Wox/issues), especially for [help_needed](https://github.com/Wox-launcher/Wox/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp_needed) labeled issue. :)
-
-If you are not a developer, please try  **Pre-release** in [Releases](https://github.com/Wox-launcher/Wox/releases) and report bugs.
+- Send PR to **dev** branch
+- I'd appreciate if you could solve [help_needed](https://github.com/Wox-launcher/Wox/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp_needed)
+- Don't hesitate to ask questions in the [issues](https://github.com/Wox-launcher/Wox/issues)
 
 # Docs
 
-Full documentation can be found here [Wox doc](http://doc.getwox.com). This is a good place to start if you are installing Wox for the first time.
-
-In the future, all of the documentation will be moved back to Github wiki.
+Outdated doc: [Wox doc](http://doc.getwox.com).
+Just ask questions in the [issues](https://github.com/Wox-launcher/Wox/issues)
 
 # Development / Author Status
 
