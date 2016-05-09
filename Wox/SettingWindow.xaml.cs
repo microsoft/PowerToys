@@ -878,6 +878,10 @@ namespace Wox
                     await updater.UpdateApp();
                 }
             }
+            catch (WebException ex)
+            {
+                Log.Error(ex);
+            }
             catch (Exception ex)
             {
                 Log.Error(ex);

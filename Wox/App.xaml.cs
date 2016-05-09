@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Net;
 using System.Windows;
 using Squirrel;
 using Wox.Core.Plugin;
@@ -62,12 +63,16 @@ namespace Wox
                     await Updater.UpdateApp();
                 }
             }
+            catch (WebException ex)
+            {
+                Log.Error(ex);
+            }
             catch (Exception exception)
             {
                 const string info = "Update.exe not found, not a Squirrel-installed app?";
                 if (exception.Message == info)
                 {
-                    Log.Warn("info");
+                    Log.Warn(info);
                 }
                 else
                 {
