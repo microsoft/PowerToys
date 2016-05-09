@@ -22,8 +22,8 @@ Wox is a launcher for Windows, an alternative to [Alfred](https://www.alfredapp.
 
 # Installation
 
-1. Latest stable version: [release page](https://github.com/Wox-launcher/Wox/releases).
-2. Latest build: [English guide](https://github.com/Wox-launcher/Wox/wiki/FAQ-English#how-to-install-latest-build),  [中文说明](https://github.com/Wox-launcher/Wox/wiki/FAQ-%E4%B8%AD%E6%96%87#%E5%A6%82%E4%BD%95%E5%AE%89%E8%A3%85%E6%9C%80%E6%96%B0-build)
+1. Latest stable version: [releases](https://github.com/Wox-launcher/Wox/releases).
+2. Latest beta version: try **Pre-release** labeled release in [releases](https://github.com/Wox-launcher/Wox/releases) 
 
 
 # Simple Usage
