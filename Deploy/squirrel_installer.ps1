@@ -5,7 +5,8 @@ Write-Host "Current path: " + $currentPath
 
 $path = $env:APPVEYOR_BUILD_FOLDER + "\Deploy\wox.nuspec"
 Write-Host "nuspec path: " + $path
-& nuget.exe pack $path -Version $env:APPVEYOR_BUILD_VERSION -Properties Configuration=Release
+$releasePath = $env:APPVEYOR_BUILD_FOLDER + "\Output\Release"
+& nuget.exe pack $path -Version $env:APPVEYOR_BUILD_VERSION -Properties Configuration=Release -BasePath $releasePath
 
 $nupkgPath = $env:APPVEYOR_BUILD_FOLDER + "\Wox." + $env:APPVEYOR_BUILD_VERSION + ".nupkg"
 Write-Host "nupkg path: " + $nupkgPath
