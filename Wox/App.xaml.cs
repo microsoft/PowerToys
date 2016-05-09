@@ -38,13 +38,11 @@ namespace Wox
 
                 ImageLoader.PreloadImages();
 
-                MainViewModel mainVM = new MainViewModel();
-                var pluginsSettings = mainVM._settings.PluginSettings;
-                API = new PublicAPIInstance(mainVM, mainVM._settings);
+                var vm = new MainViewModel();
+                var pluginsSettings = vm._settings.PluginSettings;
+                var window = new MainWindow(vm._settings, vm);
+                API = new PublicAPIInstance(vm._settings, vm);
                 PluginManager.InitializePlugins(API, pluginsSettings);
-
-                var _notifyIconManager = new NotifyIconManager(API);
-                var window = new MainWindow(mainVM._settings, mainVM);
 
                 RegisterExitEvents();
 

@@ -20,17 +20,17 @@ namespace Wox
 {
     public class PublicAPIInstance : IPublicAPI
     {
-        private Settings _settings;
+        private readonly Settings _settings;
+
         #region Constructor
 
-        public PublicAPIInstance(MainViewModel mainVM, Settings settings)
+        public PublicAPIInstance(Settings settings, MainViewModel mainVM)
         {
-            MainVM = mainVM;
             _settings = settings;
+            MainVM = mainVM;
+            //_settings = settings;
             GlobalHotkey.Instance.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
-            SetHotkey(_settings.Hotkey, OnHotkey);
-            SetCustomPluginHotkey();
 
         }
 
@@ -170,83 +170,6 @@ namespace Wox
             MainVM.MainWindowVisibility = Visibility.Visible;
             MainVM.OnTextBoxSelected();
         }
-
-        internal void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
-        {
-            var hotkey = new HotkeyModel(hotkeyStr);
-            SetHotkey(hotkey, action);
-        }
-
-        public void SetHotkey(HotkeyModel hotkey, EventHandler<HotkeyEventArgs> action)
-        {
-            string hotkeyStr = hotkey.ToString();
-            try
-            {
-                HotkeyManager.Current.AddOrReplace(hotkeyStr, hotkey.CharKey, hotkey.ModifierKeys, action);
-            }
-            catch (Exception)
-            {
-                string errorMsg = string.Format(InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
-                MessageBox.Show(errorMsg);
-            }
-        }
-
-        public void RemoveHotkey(string hotkeyStr)
-        {
-            if (!string.IsNullOrEmpty(hotkeyStr))
-            {
-                HotkeyManager.Current.Remove(hotkeyStr);
-            }
-        }
-
-        /// <summary>
-        /// Checks if Wox should ignore any hotkeys
-        /// </summary>
-        /// <returns></returns>
-        private bool ShouldIgnoreHotkeys()
-        {
-            //double if to omit calling win32 function
-            if (_settings.IgnoreHotkeysOnFullscreen)
-                if (WindowIntelopHelper.IsWindowFullscreen())
-                    return true;
-
-            return false;
-        }
-
-        internal void SetCustomPluginHotkey()
-        {
-            if (_settings.CustomPluginHotkeys == null) return;
-            foreach (CustomPluginHotkey hotkey in _settings.CustomPluginHotkeys)
-            {
-                CustomPluginHotkey hotkey1 = hotkey;
-                SetHotkey(hotkey.Hotkey, delegate
-                {
-                    if (ShouldIgnoreHotkeys()) return;
-                    ShowApp();
-                    ChangeQuery(hotkey1.ActionKeyword, true);
-                });
-            }
-        }
-
-        protected internal void OnHotkey(object sender, HotkeyEventArgs e)
-        {
-            if (ShouldIgnoreHotkeys()) return;
-            ToggleWox();
-            e.Handled = true;
-        }
-
-        private void ToggleWox()
-        {
-            if (!MainVM.MainWindowVisibility.IsVisible())
-            {
-                ShowWox();
-            }
-            else
-            {
-                HideWox();
-            }
-        }
-
         #endregion
     }
 }
