@@ -440,7 +440,7 @@
        !-->
   <Target Name="BeforeBuild">
   </Target>
-  <Target Name="AfterBuild" Condition=" '$(Configuration)' == 'Release'">
+  <Target Name="AfterBuild" Condition=" '$(Configuration)' == 'Release' And '$(APPVEYOR_BUILD_FOLDER)' == '' ">
     <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
       <Output TaskParameter="Assemblies" ItemName="myAssemblyInfo" />
     </GetAssemblyIdentity>
