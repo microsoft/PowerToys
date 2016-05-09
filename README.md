@@ -20,10 +20,8 @@ Launcher for Windows, an alternative to [Alfred](https://www.alfredapp.com/) and
 - Use **pinyin** to search programs / 支持用 **拼音** 搜索程序 e.g. yyy / wangyiyun -> 网易云音乐
 
 # Installation
-
-1. Latest stable version: [releases](https://github.com/Wox-launcher/Wox/releases).
-2. Latest beta version: try **Pre-release** labeled release in [releases](https://github.com/Wox-launcher/Wox/releases) 
-
+- Latest stable version: [releases](https://github.com/Wox-launcher/Wox/releases).
+- Latest beta version: try **Pre-release** labeled release in [releases](https://github.com/Wox-launcher/Wox/releases) 
 
 # Usage
 - Launch: <kbd>Alt</kbd>+<kbd>Space</kbd>
