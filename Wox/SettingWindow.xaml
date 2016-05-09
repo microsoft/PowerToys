@@ -340,27 +340,42 @@
                     </Style>
                 </Grid.Resources>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="80" />
-                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Column="0" Grid.Row="0" Text="{DynamicResource website}" />
-                <TextBlock Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left" Cursor="Hand"
-                           MouseUp="tbWebsite_MouseUp" x:Name="tbWebsite" Foreground="Blue"
-                           Text="http://www.getwox.com" />
-
-                <TextBlock Grid.Column="0" Grid.Row="1" Text="{DynamicResource version}" />
-                <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal">
-                    <TextBlock HorizontalAlignment="Left" x:Name="tbVersion" Text="1.0.0" />
-                </StackPanel>
-
-                <TextBlock x:Name="tbActivatedTimes" Grid.Row="2" Grid.ColumnSpan="2"
+                <TextBlock x:Name="ActivatedTimes" Grid.Row="0" Grid.ColumnSpan="3"
                            Text="{DynamicResource about_activate_times}" />
+
+                <TextBlock Grid.Column="0" Grid.Row="1" Text="{DynamicResource website}" />
+                <TextBlock Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" >
+                    <Hyperlink NavigateUri="https://github.com/Wox-launcher/Wox" RequestNavigate="OnRequestNavigate">
+                        https://github.com/Wox-launcher/Wox
+                    </Hyperlink>
+                </TextBlock>
+
+
+                <TextBlock Grid.Column="0" Grid.Row="2" Text="{DynamicResource version}" />
+                <TextBlock Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" x:Name="tbVersion" Text="1.0.0"  />
+
+                <TextBlock Grid.Column="0" Grid.Row="3" Text="{DynamicResource releaseNotes}"></TextBlock>
+                <TextBlock Grid.Column="1" Grid.Row="3" HorizontalAlignment="Left" >
+                    <Hyperlink NavigateUri="https://github.com/Wox-launcher/Wox/releases/latest" RequestNavigate="OnRequestNavigate">
+                        https://github.com/Wox-launcher/Wox/releases/latest
+                    </Hyperlink>
+                </TextBlock>
+
+                <Button Grid.Column="0" Grid.Row="4" Content="{DynamicResource checkUpdates}" HorizontalAlignment="Left" Margin="10 10 10 10" 
+                Click="OnCheckUpdates"/>
+                <TextBlock Grid.Column="1" Grid.Row="4" Name="NewVersionTips" HorizontalAlignment="Left" Text="{DynamicResource newVersionTips}" Visibility="Hidden"/>
+
             </Grid>
         </TabItem>
     </TabControl>

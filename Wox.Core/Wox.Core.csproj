@@ -64,7 +64,6 @@
     <Compile Include="..\SolutionAssemblyInfo.cs">
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="APIServer.cs" />
     <Compile Include="Plugin\ExecutablePlugin.cs" />
     <Compile Include="Plugin\PluginsLoader.cs" />
     <Compile Include="UserSettings\HttpProxy.cs" />

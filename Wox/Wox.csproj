@@ -215,10 +215,6 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Page Include="WoxUpdate.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Resource Include="Images\update.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
@@ -432,8 +428,9 @@
       cd "$(TargetDir)Plugins" &amp; del /s /q Pinyin4Net.dll
 
       cd "$(TargetDir)" &amp; del /s /q *.xml
+      cd "$(TargetDir)Installer" &amp; del /s /q *
       )
-    </PostBuildEvent>
+</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>
@@ -446,7 +443,7 @@
   </Target>
   <Target Name="AfterBuild" Condition=" '$(Configuration)' == 'Release'">
     <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
-      <Output TaskParameter="Assemblies" ItemName="myAssemblyInfo"/>
+      <Output TaskParameter="Assemblies" ItemName="myAssemblyInfo" />
     </GetAssemblyIdentity>
     <Exec Command="nuget pack $(SolutionDir)Deploy\wox.nuspec -Version %(myAssemblyInfo.Version) -Properties Configuration=Release -OutputDirectory $(TargetDir) -BasePath $(TargetDir)" />
     <Exec Command="squirrel --releasify $(TargetDir)Wox.%(myAssemblyInfo.Version).nupkg --releaseDir $(TargetDir)Installer --no-msi" />

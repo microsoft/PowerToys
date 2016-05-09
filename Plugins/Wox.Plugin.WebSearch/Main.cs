@@ -85,10 +85,10 @@ namespace Wox.Plugin.WebSearch
             if (_settings.EnableWebSearchSuggestion)
             {
                 const int waittime = 300;
-                var task = Task.Run(() =>
+                var task = Task.Run(async () =>
                 {
-                    results.AddRange(ResultsFromSuggestions(keyword, subtitle, webSearch));
-
+                    var suggestions = await Suggestions(keyword, subtitle, webSearch);
+                    results.AddRange(suggestions);
                 }, _updateToken);
 
                 if (!task.Wait(waittime))
@@ -102,12 +102,12 @@ namespace Wox.Plugin.WebSearch
             }
         }
 
-        private IEnumerable<Result> ResultsFromSuggestions(string keyword, string subtitle, WebSearch webSearch)
+        private async Task<IEnumerable<Result>> Suggestions(string keyword, string subtitle, WebSearch webSearch)
         {
             var source = SuggestionSource.GetSuggestionSource(_settings.WebSearchSuggestionSource, Context);
-            var suggestions = source?.GetSuggestions(keyword);
-            if (suggestions != null)
+            if (source != null)
             {
+                var suggestions = await source.GetSuggestions(keyword);
                 var resultsFromSuggestion = suggestions.Select(o => new Result
                 {
                     Title = o,

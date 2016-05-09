@@ -64,7 +64,15 @@ namespace Wox
             }
             catch (Exception exception)
             {
-                Log.Error(exception);
+                const string info = "Update.exe not found, not a Squirrel-installed app?";
+                if (exception.Message == info)
+                {
+                    Log.Warn("info");
+                }
+                else
+                {
+                    throw;
+                }
             }
         }
 
