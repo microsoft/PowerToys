@@ -7,7 +7,7 @@ assembly_info:
   file: AssemblyInfo.*
   assembly_version: '{version}'
   assembly_file_version: '{version}'
-  assembly_informational_version: '{version}-$(APPVEYOR_REPO_COMMIT)'
+  assembly_informational_version: '{version}'
 before_build:
 - ps: nuget restore
 build:
