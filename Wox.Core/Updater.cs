@@ -16,10 +16,14 @@ namespace Wox.Core
         [Conditional("RELEASE")]
         public static async void UpdateApp()
         {
+
+            var client = new WebClient {Proxy = HttpRequest.WebProxy(HttpProxy.Instance)};
+            var downloader = new FileDownloader(client);
+
             try
             {
                 // todo 5/9 the return value of UpdateApp() is NULL, fucking useless!
-                using (var updater= await UpdateManager.GitHubUpdateManager(Infrastructure.Wox.Github))
+                using (var updater= await UpdateManager.GitHubUpdateManager(Infrastructure.Wox.Github, urlDownloader:downloader))
                 {
                     await updater.UpdateApp();
                 }
