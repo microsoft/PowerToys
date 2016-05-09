@@ -5,12 +5,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using NHotkey;
+using NHotkey.Wpf;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
+using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Wox.Storage;
@@ -47,6 +50,7 @@ namespace Wox.ViewModel
 
         private CancellationTokenSource _updateSource;
         private CancellationToken _updateToken;
+        private bool _saved;
 
         #endregion
 
@@ -54,6 +58,7 @@ namespace Wox.ViewModel
 
         public MainViewModel()
         {
+            _saved = false;
             _queryTextBeforeLoadContextMenu = "";
             _queryText = "";
             _lastQuery = new Query();
@@ -66,7 +71,6 @@ namespace Wox.ViewModel
             InternationalizationManager.Instance.Settings = _settings;
             InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
             ThemeManager.Instance.Settings = _settings;
-            ThemeManager.Instance.ChangeTheme(_settings.Theme);
 
             _queryHistoryStorage = new JsonStrorage<QueryHistory>();
             _userSelectedRecordStorage = new JsonStrorage<UserSelectedRecord>();
@@ -79,13 +83,16 @@ namespace Wox.ViewModel
             InitializeContextMenu();
             InitializeKeyCommands();
             RegisterResultsUpdatedEvent();
+
+            SetHotkey(_settings.Hotkey, OnHotkey);
+            SetCustomPluginHotkey();
         }
 
         private void RegisterResultsUpdatedEvent()
         {
             foreach (var pair in PluginManager.GetPluginsForInterface<IResultUpdated>())
             {
-                var plugin = (IResultUpdated)pair.Plugin;
+                var plugin = (IResultUpdated) pair.Plugin;
                 plugin.ResultsUpdated += (s, e) =>
                 {
                     Task.Run(() =>
@@ -224,10 +231,6 @@ namespace Wox.ViewModel
                 }
             });
 
-            BackCommand = new RelayCommand(_ =>
-            {
-                ListeningKeyPressed?.Invoke(this, new ListeningKeyPressedEventArgs(_ as KeyEventArgs));
-            });
         }
 
         private void InitializeResultListBox()
@@ -270,6 +273,7 @@ namespace Wox.ViewModel
                 }
             }
         }
+
         #endregion
 
         #region ViewModel Properties
@@ -280,10 +284,7 @@ namespace Wox.ViewModel
 
         public string QueryText
         {
-            get
-            {
-                return _queryText;
-            }
+            get { return _queryText; }
             set
             {
                 _queryText = value;
@@ -302,10 +303,7 @@ namespace Wox.ViewModel
 
         public double Left
         {
-            get
-            {
-                return _left;
-            }
+            get { return _left; }
             set
             {
                 _left = value;
@@ -315,10 +313,7 @@ namespace Wox.ViewModel
 
         public double Top
         {
-            get
-            {
-                return _top;
-            }
+            get { return _top; }
             set
             {
                 _top = value;
@@ -329,10 +324,7 @@ namespace Wox.ViewModel
         public Visibility ContextMenuVisibility
 
         {
-            get
-            {
-                return _contextMenuVisibility;
-            }
+            get { return _contextMenuVisibility; }
             set
             {
                 _contextMenuVisibility = value;
@@ -356,10 +348,7 @@ namespace Wox.ViewModel
 
         public Visibility ProgressBarVisibility
         {
-            get
-            {
-                return _progressBarVisibility;
-            }
+            get { return _progressBarVisibility; }
             set
             {
                 _progressBarVisibility = value;
@@ -369,10 +358,7 @@ namespace Wox.ViewModel
 
         public Visibility ResultListBoxVisibility
         {
-            get
-            {
-                return _resultListBoxVisibility;
-            }
+            get { return _resultListBoxVisibility; }
             set
             {
                 _resultListBoxVisibility = value;
@@ -382,10 +368,7 @@ namespace Wox.ViewModel
 
         public Visibility MainWindowVisibility
         {
-            get
-            {
-                return _mainWindowVisibility;
-            }
+            get { return _mainWindowVisibility; }
             set
             {
                 _mainWindowVisibility = value;
@@ -404,7 +387,7 @@ namespace Wox.ViewModel
         public ICommand StartHelpCommand { get; set; }
         public ICommand LoadContextMenuCommand { get; set; }
         public ICommand OpenResultCommand { get; set; }
-        public ICommand BackCommand { get; set; }
+
         #endregion
 
         #region Private Methods
@@ -523,10 +506,11 @@ namespace Wox.ViewModel
                 };
                 Task.Run(() =>
                 {
-                    Results.AddResults(new List<Result> { result }, historyMetadata.ID);
+                    Results.AddResults(new List<Result> {result}, historyMetadata.ID);
                 }, _updateToken);
             }
         }
+
         private Result ContextMenuTopMost(Result result)
         {
             Result menu;
@@ -586,16 +570,106 @@ namespace Wox.ViewModel
             };
             return menu;
         }
+
+        #endregion
+        #region Hotkey
+
+        internal void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
+        {
+            var hotkey = new HotkeyModel(hotkeyStr);
+            SetHotkey(hotkey, action);
+        }
+
+        public void SetHotkey(HotkeyModel hotkey, EventHandler<HotkeyEventArgs> action)
+        {
+            string hotkeyStr = hotkey.ToString();
+            try
+            {
+                HotkeyManager.Current.AddOrReplace(hotkeyStr, hotkey.CharKey, hotkey.ModifierKeys, action);
+            }
+            catch (Exception)
+            {
+                string errorMsg =
+                    string.Format(InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
+                MessageBox.Show(errorMsg);
+            }
+        }
+
+        public void RemoveHotkey(string hotkeyStr)
+        {
+            if (!string.IsNullOrEmpty(hotkeyStr))
+            {
+                HotkeyManager.Current.Remove(hotkeyStr);
+            }
+        }
+
+        /// <summary>
+        /// Checks if Wox should ignore any hotkeys
+        /// </summary>
+        /// <returns></returns>
+        private bool ShouldIgnoreHotkeys()
+        {
+            //double if to omit calling win32 function
+            if (_settings.IgnoreHotkeysOnFullscreen)
+                if (WindowIntelopHelper.IsWindowFullscreen())
+                    return true;
+
+            return false;
+        }
+
+        private void SetCustomPluginHotkey()
+        {
+            if (_settings.CustomPluginHotkeys == null) return;
+            foreach (CustomPluginHotkey hotkey in _settings.CustomPluginHotkeys)
+            {
+                CustomPluginHotkey hotkey1 = hotkey;
+                SetHotkey(hotkey.Hotkey, delegate
+                {
+                    if (ShouldIgnoreHotkeys()) return;
+                    App.API.ShowApp();
+                    App.API.ChangeQuery(hotkey1.ActionKeyword, true);
+                });
+            }
+        }
+
+        private void OnHotkey(object sender, HotkeyEventArgs e)
+        {
+            if (ShouldIgnoreHotkeys()) return;
+            ToggleWox();
+            e.Handled = true;
+        }
+
+        private void ToggleWox()
+        {
+            if (!MainWindowVisibility.IsVisible())
+            {
+                MainWindowVisibility = Visibility.Visible;
+                OnTextBoxSelected();
+            }
+            else
+            {
+                MainWindowVisibility = Visibility.Collapsed;
+            }
+        }
+
         #endregion
 
         #region Public Methods
 
         public void Save()
         {
-            _settingsStorage.Save();
-            _queryHistoryStorage.Save();
-            _userSelectedRecordStorage.Save();
-            _topMostRecordStorage.Save();
+            if (!_saved)
+            {
+                _settingsStorage.Save();
+                _queryHistoryStorage.Save();
+                _userSelectedRecordStorage.Save();
+                _topMostRecordStorage.Save();
+
+                PluginManager.Save();
+                ImageLoader.Save();
+
+                _saved = true;
+            }
         }
 
         /// <summary>
@@ -614,7 +688,7 @@ namespace Wox.ViewModel
                 }
                 else
                 {
-                    result.Score += _userSelectedRecord.GetSelectedCount(result) * 5;
+                    result.Score += _userSelectedRecord.GetSelectedCount(result)*5;
                 }
             }
 
@@ -631,29 +705,19 @@ namespace Wox.ViewModel
 
         #endregion
 
-        public event EventHandler<ListeningKeyPressedEventArgs> ListeningKeyPressed;
         public event EventHandler MainWindowVisibilityChanged;
-
         public event EventHandler CursorMovedToEnd;
+
         public void OnCursorMovedToEnd()
         {
             CursorMovedToEnd?.Invoke(this, new EventArgs());
         }
 
         public event EventHandler TextBoxSelected;
+
         public void OnTextBoxSelected()
         {
             TextBoxSelected?.Invoke(this, new EventArgs());
         }
     }
-
-    public class ListeningKeyPressedEventArgs : EventArgs
-    {
-        public KeyEventArgs KeyEventArgs { get; private set; }
-
-        public ListeningKeyPressedEventArgs(KeyEventArgs keyEventArgs)
-        {
-            KeyEventArgs = keyEventArgs;
-        }
-    }
-}
+} 

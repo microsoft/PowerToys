@@ -1,24 +1,20 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Net;
 using System.Windows;
-using Squirrel;
+using Wox.Core;
 using Wox.Core.Plugin;
 using Wox.Helper;
 using Wox.Infrastructure.Image;
 using Wox.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
-using Wox.Infrastructure.Logger;
 
 namespace Wox
 {
-    public partial class App : ISingleInstanceApp, IDisposable
+    public partial class App : IDisposable, ISingleInstanceApp
     {
-        private const string Unique = "Wox_Unique_Application_Mutex";
-        public static MainWindow Window { get; private set; }
         public static PublicAPIInstance API { get; private set; }
+        private const string Unique = "Wox_Unique_Application_Mutex";
         private static bool _disposed;
-        public static UpdateManager Updater;
 
         [STAThread]
         public static void Main()
@@ -42,43 +38,23 @@ namespace Wox
 
                 ImageLoader.PreloadImages();
 
-                MainViewModel mainVM = new MainViewModel();
-                var pluginsSettings = mainVM._settings.PluginSettings;
-                API = new PublicAPIInstance(mainVM, mainVM._settings);
+                var vm = new MainViewModel();
+                var pluginsSettings = vm._settings.PluginSettings;
+                var window = new MainWindow(vm._settings, vm);
+                API = new PublicAPIInstance(vm._settings, vm);
                 PluginManager.InitializePlugins(API, pluginsSettings);
 
-                Window = new MainWindow(mainVM._settings, mainVM);
-                var _notifyIconManager = new NotifyIconManager(API);
-
                 RegisterExitEvents();
+
+                Current.MainWindow = window;
+                Current.MainWindow.Title = Infrastructure.Wox.Name;
+                window.Show();
             });
         }
 
         private async void OnActivated(object sender, EventArgs e)
         {
-            try
-            {
-                using (Updater = await UpdateManager.GitHubUpdateManager(Infrastructure.Wox.Github))
-                {
-                    await Updater.UpdateApp();
-                }
-            }
-            catch (WebException ex)
-            {
-                Log.Error(ex);
-            }
-            catch (Exception exception)
-            {
-                const string info = "Update.exe not found, not a Squirrel-installed app?";
-                if (exception.Message == info)
-                {
-                    Log.Warn(info);
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            Updater.UpdateApp();
         }
 
         private void RegisterExitEvents()
@@ -101,31 +77,20 @@ namespace Wox
             AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
         }
 
-        public void OnActivate()
-        {
-            API.ShowApp();
-        }
-
-        private static void Save()
-        {
-            var vm = (MainViewModel)Window.DataContext;
-            vm.Save();
-            PluginManager.Save();
-            ImageLoader.Save();
-            _disposed = true;
-        }
-
-
         public void Dispose()
         {
             // if sessionending is called, exit proverbially be called when log off / shutdown
             // but if sessionending is not called, exit won't be called when log off / shutdown
             if (!_disposed)
             {
-                Save();
-                Updater?.Dispose();
-                SingleInstance<App>.Cleanup();
+                ((MainViewModel)Current.MainWindow?.DataContext)?.Save();
+                _disposed = true;
             }
+        }
+
+        public void OnSecondAppStarted()
+        {
+            API.ShowApp();
         }
     }
 }

@@ -186,7 +186,7 @@ namespace Wox.Helper
 
     public interface ISingleInstanceApp 
     { 
-         void OnActivate(); 
+         void OnSecondAppStarted(); 
     } 
 
     /// <summary>
@@ -416,7 +416,7 @@ namespace Wox.Helper
                 return;
             }
 
-            ((TApplication)Application.Current).OnActivate();
+            ((TApplication)Application.Current).OnSecondAppStarted();
         }
 
         #endregion
@@ -437,8 +437,7 @@ namespace Wox.Helper
                 if (Application.Current != null)
                 {
                     // Do an asynchronous call to ActivateFirstInstance function
-                    Application.Current.Dispatcher.BeginInvoke(
-                        DispatcherPriority.Normal, new DispatcherOperationCallback(ActivateFirstInstanceCallback));
+                    Application.Current.Dispatcher.Invoke(ActivateFirstInstance);
                 }
             }
 

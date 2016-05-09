@@ -11,9 +11,11 @@ using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure.Hotkey;
 using Wox.ViewModel;
+using ContextMenu = System.Windows.Forms.ContextMenu;
 using DataFormats = System.Windows.DataFormats;
 using DragEventArgs = System.Windows.DragEventArgs;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using MenuItem = System.Windows.Forms.MenuItem;
 using MessageBox = System.Windows.MessageBox;
 
 namespace Wox
@@ -25,6 +27,7 @@ namespace Wox
 
         private readonly Storyboard _progressBarStoryboard = new Storyboard();
         private Settings _settings;
+        private NotifyIcon _notifyIcon;
 
         #endregion
 
@@ -40,16 +43,33 @@ namespace Wox
         }
         private void OnClosing(object sender, CancelEventArgs e)
         {
+            _notifyIcon.Visible = false;
             _settings.WindowLeft = Left;
             _settings.WindowTop = Top;
+            var vm = (MainViewModel)DataContext;
+            vm.Save();
         }
+
+
 
         private void OnLoaded(object sender, RoutedEventArgs _)
         {
             InitProgressbarAnimation();
             WindowIntelopHelper.DisableControlBox(this);
+            ThemeManager.Instance.ChangeTheme(_settings.Theme);
+            InitializeNotifyIcon();
 
             var vm = (MainViewModel)DataContext;
+            RegisterEvents(vm);
+
+            // happlebao todo delete
+            vm.Left = GetWindowsLeft();
+            vm.Top = GetWindowsTop();
+            vm.MainWindowVisibility = Visibility.Visible;
+        }
+
+        private void RegisterEvents(MainViewModel vm)
+        {
             vm.TextBoxSelected += (o, e) => QueryTextBox.SelectAll();
             vm.CursorMovedToEnd += (o, e) =>
             {
@@ -72,11 +92,22 @@ namespace Wox
                     _settings.WindowTop = Top;
                 }
             };
+        }
 
-            // happlebao todo delete
-            vm.Left = GetWindowsLeft();
-            vm.Top = GetWindowsTop();
-            vm.MainWindowVisibility = Visibility.Visible;
+        private void InitializeNotifyIcon()
+        {
+            _notifyIcon = new NotifyIcon { Text = Infrastructure.Wox.Name, Icon = Properties.Resources.app, Visible = true };
+            _notifyIcon.Click += (o, e) => App.API.ShowApp();
+            var open = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTrayOpen"));
+            open.Click += (o, e) => App.API.ShowApp();
+            var setting = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTraySettings"));
+            setting.Click += (o, e) => App.API.OpenSettingDialog();
+            var about = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTrayAbout"));
+            about.Click += (o, e) => App.API.OpenSettingDialog("about");
+            var exit = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTrayExit"));
+            exit.Click += (o, e) => Close();
+            MenuItem[] childen = { open, setting, about, exit };
+            _notifyIcon.ContextMenu = new ContextMenu(childen);
         }
 
         private double GetWindowsLeft()
@@ -239,10 +270,6 @@ namespace Wox
                 case Key.PageUp:
                     vm.SelectPrevPageCommand.Execute(null);
                     e.Handled = true;
-                    break;
-
-                case Key.Back:
-                    vm.BackCommand.Execute(e);
                     break;
 
                 case Key.F1:

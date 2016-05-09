@@ -13,7 +13,7 @@ namespace Wox.Infrastructure.Http
 {
     public static class HttpRequest
     {
-        private static WebProxy GetWebProxy(IHttpProxy proxy)
+        public static WebProxy WebProxy(IHttpProxy proxy)
         {
             if (proxy != null && proxy.Enabled && !string.IsNullOrEmpty(proxy.Server))
             {
@@ -43,7 +43,7 @@ namespace Wox.Infrastructure.Http
             HttpWebRequest request = WebRequest.CreateHttp(url);
             request.Method = "GET";
             request.Timeout = 10 * 1000;
-            request.Proxy = GetWebProxy(proxy);
+            request.Proxy = WebProxy(proxy);
             request.UserAgent = @"Mozilla/5.0 (Trident/7.0; rv:11.0) like Gecko";
             HttpWebResponse response;
             try

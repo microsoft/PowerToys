@@ -4,44 +4,30 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using Microsoft.Win32;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NHotkey;
 using NHotkey.Wpf;
-using Squirrel;
+using Wox.Core;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure.Hotkey;
-using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Image;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 using Wox.ViewModel;
-using Application = System.Windows.Forms.Application;
-using CheckBox = System.Windows.Controls.CheckBox;
-using Control = System.Windows.Controls.Control;
-using Cursors = System.Windows.Input.Cursors;
-using HorizontalAlignment = System.Windows.HorizontalAlignment;
-using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-using MessageBox = System.Windows.MessageBox;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox
 {
-    public partial class SettingWindow : Window
+    public partial class SettingWindow
     {
         public readonly IPublicAPI _api;
         bool settingsLoaded;
@@ -233,7 +219,7 @@ namespace Wox
                 RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
                     true))
             {
-                key.SetValue("Wox", "\"" + Application.ExecutablePath + "\" --hidestart");
+                key.SetValue("Wox", "\"" + Infrastructure.Wox.ProgramPath + "\" --hidestart");
             }
         }
 
@@ -259,7 +245,7 @@ namespace Wox
 
         private void SelectPythonDirectoryOnClick(object sender, RoutedEventArgs e)
         {
-            var dlg = new FolderBrowserDialog
+            var dlg = new System.Windows.Forms.FolderBrowserDialog
             {
                 SelectedPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)
             };
@@ -295,7 +281,7 @@ namespace Wox
             {
                 SetHotkey(ctlHotkey.CurrentHotkey, delegate
                 {
-                    if (!App.Window.IsVisible)
+                    if (!System.Windows.Application.Current.MainWindow.IsVisible)
                     {
                         _api.ShowApp();
                     }
@@ -439,48 +425,48 @@ namespace Wox
                     Title = "Wox is an effective launcher for windows",
                     SubTitle = "Wox provide bundles of features let you access infomations quickly.",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
                 },
                 new Result
                 {
                     Title = "Search applications",
                     SubTitle = "Search applications, files (via everything plugin) and browser bookmarks",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
                 },
                 new Result
                 {
                     Title = "Search web contents with shortcuts",
                     SubTitle = "e.g. search google with g keyword or youtube keyword)",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
                 },
                 new Result
                 {
                     Title = "clipboard history ",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
                 },
                 new Result
                 {
                     Title = "Themes support",
                     SubTitle = "get more themes from http://www.getwox.com/theme",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
                 },
                 new Result
                 {
                     Title = "Plugins support",
                     SubTitle = "get more plugins from http://www.getwox.com/plugin",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
                 },
                 new Result
                 {
                     Title = "Wox is an open-source software",
                     SubTitle = "Wox benefits from the open-source community a lot",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
                 }
             });
 
@@ -834,15 +820,6 @@ namespace Wox
 
         #endregion
 
-        #region About
-
-        private void tbWebsite_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            Process.Start(Infrastructure.Wox.Github);
-        }
-
-        #endregion
-
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             // Hide window with ESC, but make sure it is not pressed as a hotkey
@@ -854,78 +831,20 @@ namespace Wox
 
         private async void OnCheckUpdates(object sender, RoutedEventArgs e)
         {
-            var version = await NewVersion();
+            var version = await Updater.NewVersion();
             if (!string.IsNullOrEmpty(version))
             {
-                var newVersion = NumericVersion(version);
-                var oldVersion = NumericVersion(Infrastructure.Wox.Version);
+                var newVersion = Updater.NumericVersion(version);
+                var oldVersion = Updater.NumericVersion(Infrastructure.Wox.Version);
                 if (newVersion > oldVersion)
                 {
                     NewVersionTips.Text = string.Format(NewVersionTips.Text, version);
                     NewVersionTips.Visibility = Visibility.Visible;
-                    UpdateApp();
+                    Updater.UpdateApp();
                 }
             }
         }
 
-        private async void UpdateApp()
-        {
-            try
-            {
-                using (var updater = await UpdateManager.GitHubUpdateManager(Infrastructure.Wox.Github))
-                {
-                    // todo 5/9 the return value of UpdateApp() is NULL, fucking useless!
-                    await updater.UpdateApp();
-                }
-            }
-            catch (WebException ex)
-            {
-                Log.Error(ex);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex);
-            }
-        }
-        private async Task<string> NewVersion()
-        {
-            const string githubAPI = @"https://api.github.com/repos/wox-launcher/wox/releases/latest";
-            var response = await HttpRequest.Get(githubAPI, HttpProxy.Instance);
-
-            if (!string.IsNullOrEmpty(response))
-            {
-                JContainer json;
-                try
-                {
-                    json = (JContainer)JsonConvert.DeserializeObject(response);
-                }
-                catch (JsonSerializationException e)
-                {
-                    Log.Error(e);
-                    return string.Empty;
-                }
-                var version = json?["tag_name"]?.ToString();
-                if (!string.IsNullOrEmpty(version))
-                {
-                    return version;
-                }
-                else
-                {
-                    return string.Empty;
-                }
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
-
-        private
-            int NumericVersion(string version)
-        {
-            var newVersion = version.Replace("v", ".").Replace(".", "").Replace("*", "");
-            return int.Parse(newVersion);
-        }
         private void OnRequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
