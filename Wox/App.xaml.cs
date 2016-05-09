@@ -57,7 +57,7 @@ namespace Wox
         {
             try
             {
-                using (Updater = await UpdateManager.GitHubUpdateManager(Infrastructure.Wox.Github, prerelease: true))
+                using (Updater = await UpdateManager.GitHubUpdateManager(Infrastructure.Wox.Github))
                 {
                     await Updater.UpdateApp();
                 }

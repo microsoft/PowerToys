@@ -872,7 +872,7 @@ namespace Wox
         {
             try
             {
-                using (var updater = await UpdateManager.GitHubUpdateManager(Infrastructure.Wox.Github, prerelease: true))
+                using (var updater = await UpdateManager.GitHubUpdateManager(Infrastructure.Wox.Github))
                 {
                     // todo 5/9 the return value of UpdateApp() is NULL, fucking useless!
                     await updater.UpdateApp();
