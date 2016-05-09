@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Net;
 using System.Windows;
-using Squirrel;
+using Wox.Core;
 using Wox.Core.Plugin;
 using Wox.Helper;
 using Wox.Infrastructure.Image;
 using Wox.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
-using Wox.Infrastructure.Logger;
 
 namespace Wox
 {
@@ -18,7 +16,6 @@ namespace Wox
         public static MainWindow Window { get; private set; }
         public static PublicAPIInstance API { get; private set; }
         private static bool _disposed;
-        public static UpdateManager Updater;
 
         [STAThread]
         public static void Main()
@@ -56,29 +53,7 @@ namespace Wox
 
         private async void OnActivated(object sender, EventArgs e)
         {
-            try
-            {
-                using (Updater = await UpdateManager.GitHubUpdateManager(Infrastructure.Wox.Github))
-                {
-                    await Updater.UpdateApp();
-                }
-            }
-            catch (WebException ex)
-            {
-                Log.Error(ex);
-            }
-            catch (Exception exception)
-            {
-                const string info = "Update.exe not found, not a Squirrel-installed app?";
-                if (exception.Message == info)
-                {
-                    Log.Warn(info);
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            Updater.UpdateApp();
         }
 
         private void RegisterExitEvents()
@@ -123,7 +98,6 @@ namespace Wox
             if (!_disposed)
             {
                 Save();
-                Updater?.Dispose();
                 SingleInstance<App>.Cleanup();
             }
         }

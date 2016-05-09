@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -15,19 +13,15 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using Microsoft.Win32;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NHotkey;
 using NHotkey.Wpf;
-using Squirrel;
+using Wox.Core;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure.Hotkey;
-using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Image;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 using Wox.ViewModel;
 using Application = System.Windows.Forms.Application;
@@ -834,15 +828,6 @@ namespace Wox
 
         #endregion
 
-        #region About
-
-        private void tbWebsite_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            Process.Start(Infrastructure.Wox.Github);
-        }
-
-        #endregion
-
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             // Hide window with ESC, but make sure it is not pressed as a hotkey
@@ -854,78 +839,20 @@ namespace Wox
 
         private async void OnCheckUpdates(object sender, RoutedEventArgs e)
         {
-            var version = await NewVersion();
+            var version = await Updater.NewVersion();
             if (!string.IsNullOrEmpty(version))
             {
-                var newVersion = NumericVersion(version);
-                var oldVersion = NumericVersion(Infrastructure.Wox.Version);
+                var newVersion = Updater.NumericVersion(version);
+                var oldVersion = Updater.NumericVersion(Infrastructure.Wox.Version);
                 if (newVersion > oldVersion)
                 {
                     NewVersionTips.Text = string.Format(NewVersionTips.Text, version);
                     NewVersionTips.Visibility = Visibility.Visible;
-                    UpdateApp();
+                    Updater.UpdateApp();
                 }
             }
         }
 
-        private async void UpdateApp()
-        {
-            try
-            {
-                using (var updater = await UpdateManager.GitHubUpdateManager(Infrastructure.Wox.Github))
-                {
-                    // todo 5/9 the return value of UpdateApp() is NULL, fucking useless!
-                    await updater.UpdateApp();
-                }
-            }
-            catch (WebException ex)
-            {
-                Log.Error(ex);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex);
-            }
-        }
-        private async Task<string> NewVersion()
-        {
-            const string githubAPI = @"https://api.github.com/repos/wox-launcher/wox/releases/latest";
-            var response = await HttpRequest.Get(githubAPI, HttpProxy.Instance);
-
-            if (!string.IsNullOrEmpty(response))
-            {
-                JContainer json;
-                try
-                {
-                    json = (JContainer)JsonConvert.DeserializeObject(response);
-                }
-                catch (JsonSerializationException e)
-                {
-                    Log.Error(e);
-                    return string.Empty;
-                }
-                var version = json?["tag_name"]?.ToString();
-                if (!string.IsNullOrEmpty(version))
-                {
-                    return version;
-                }
-                else
-                {
-                    return string.Empty;
-                }
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
-
-        private
-            int NumericVersion(string version)
-        {
-            var newVersion = version.Replace("v", ".").Replace(".", "").Replace("*", "");
-            return int.Parse(newVersion);
-        }
         private void OnRequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
