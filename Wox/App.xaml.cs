@@ -85,8 +85,7 @@ namespace Wox
             // but if sessionending is not called, exit won't be called when log off / shutdown
             if (!_disposed)
             {
-                var vm = (MainViewModel)Current.MainWindow.DataContext;
-                vm.Save();
+                ((MainViewModel)Current.MainWindow?.DataContext)?.Save();
                 _disposed = true;
             }
         }

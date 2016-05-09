@@ -53,6 +53,7 @@ namespace Wox
         {
             InitProgressbarAnimation();
             WindowIntelopHelper.DisableControlBox(this);
+            ThemeManager.Instance.ChangeTheme(_settings.Theme);
 
             var vm = (MainViewModel)DataContext;
             vm.TextBoxSelected += (o, e) => QueryTextBox.SelectAll();
