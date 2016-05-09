@@ -5,20 +5,19 @@
 
 =========
 
-Wox is a launcher for Windows, an alternative to [Alfred](https://www.alfredapp.com/) and [Launchy](http://www.launchy.net/). You can launch everything with just a few keystrokes!
+Launcher for Windows, an alternative to [Alfred](https://www.alfredapp.com/) and [Launchy](http://www.launchy.net/).
 
 # Demo
-
 
 ![demo](http://i.imgur.com/DtxNBJi.gif)
 
 # Features
 
-1. Search all applications, folders, files.
-2. Search Web using keyword (e.g. search google with `g search_term`)
-3. Build custom themes in [http://www.getwox.com/theme/builder](http://www.getwox.com/theme/builder)
-4. Install plugins from [http://www.getwox.com/plugin](http://www.getwox.com/plugin)
-5. Use **pinyin** to search programs / 支持用 **拼音** 搜索程序 e.g. yyy / wangyiyun -> 网易云音乐
+- Search all applications, folders, files.
+- Search Web using keyword (e.g. search google with `g search_term`)
+- Build custom themes in [http://www.getwox.com/theme/builder](http://www.getwox.com/theme/builder)
+- Install plugins from [http://www.getwox.com/plugin](http://www.getwox.com/plugin)
+- Use **pinyin** to search programs / 支持用 **拼音** 搜索程序 e.g. yyy / wangyiyun -> 网易云音乐
 
 # Installation
 
@@ -26,14 +25,14 @@ Wox is a launcher for Windows, an alternative to [Alfred](https://www.alfredapp.
 2. Latest beta version: try **Pre-release** labeled release in [releases](https://github.com/Wox-launcher/Wox/releases) 
 
 
-# Simple Usage
+# Usage
 - Launch: <kbd>Alt</kbd>+<kbd>Space</kbd>
 - Install/Uninstall plugin: type `wpm install/uninstall`
 
 # Contribute  
 
 - Send PR to **dev** branch
-- I'd appreciate if you could solve [help_needed](https://github.com/Wox-launcher/Wox/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp_needed)
+- I'd appreciate if you could solve [help_needed](https://github.com/Wox-launcher/Wox/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp_needed) labeled issue
 - Don't hesitate to ask questions in the [issues](https://github.com/Wox-launcher/Wox/issues)
 
 # Docs
