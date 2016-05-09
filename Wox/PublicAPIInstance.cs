@@ -63,16 +63,17 @@ namespace Wox
         public void CloseApp()
         {
             //notifyIcon.Visible = false;
-            Application.Current.Shutdown();
+            Application.Current.MainWindow.Close();
         }
 
         public void RestarApp()
         {
             HideWox();
-            // we must force dispose application
+            // we must manually save
             // UpdateManager.RestartApp() will call Environment.Exit(0)
             // which will cause ungraceful exit
-            ((IDisposable) Application.Current).Dispose();
+            var vm = (MainViewModel) Application.Current.MainWindow.DataContext;
+            vm.Save();
             UpdateManager.RestartApp();
         }
 

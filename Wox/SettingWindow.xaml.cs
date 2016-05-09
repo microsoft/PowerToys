@@ -7,7 +7,6 @@ using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -24,18 +23,11 @@ using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
 using Wox.ViewModel;
-using Application = System.Windows.Forms.Application;
-using CheckBox = System.Windows.Controls.CheckBox;
-using Control = System.Windows.Controls.Control;
-using Cursors = System.Windows.Input.Cursors;
-using HorizontalAlignment = System.Windows.HorizontalAlignment;
-using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-using MessageBox = System.Windows.MessageBox;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox
 {
-    public partial class SettingWindow : Window
+    public partial class SettingWindow
     {
         public readonly IPublicAPI _api;
         bool settingsLoaded;
@@ -227,7 +219,7 @@ namespace Wox
                 RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
                     true))
             {
-                key.SetValue("Wox", "\"" + Application.ExecutablePath + "\" --hidestart");
+                key.SetValue("Wox", "\"" + Infrastructure.Wox.ProgramPath + "\" --hidestart");
             }
         }
 
@@ -253,7 +245,7 @@ namespace Wox
 
         private void SelectPythonDirectoryOnClick(object sender, RoutedEventArgs e)
         {
-            var dlg = new FolderBrowserDialog
+            var dlg = new System.Windows.Forms.FolderBrowserDialog
             {
                 SelectedPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)
             };
@@ -289,7 +281,7 @@ namespace Wox
             {
                 SetHotkey(ctlHotkey.CurrentHotkey, delegate
                 {
-                    if (!App.Window.IsVisible)
+                    if (!System.Windows.Application.Current.MainWindow.IsVisible)
                     {
                         _api.ShowApp();
                     }
@@ -433,48 +425,48 @@ namespace Wox
                     Title = "Wox is an effective launcher for windows",
                     SubTitle = "Wox provide bundles of features let you access infomations quickly.",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
                 },
                 new Result
                 {
                     Title = "Search applications",
                     SubTitle = "Search applications, files (via everything plugin) and browser bookmarks",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
                 },
                 new Result
                 {
                     Title = "Search web contents with shortcuts",
                     SubTitle = "e.g. search google with g keyword or youtube keyword)",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
                 },
                 new Result
                 {
                     Title = "clipboard history ",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
                 },
                 new Result
                 {
                     Title = "Themes support",
                     SubTitle = "get more themes from http://www.getwox.com/theme",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
                 },
                 new Result
                 {
                     Title = "Plugins support",
                     SubTitle = "get more plugins from http://www.getwox.com/plugin",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
                 },
                 new Result
                 {
                     Title = "Wox is an open-source software",
                     SubTitle = "Wox benefits from the open-source community a lot",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
                 }
             });
 

@@ -6,13 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Test", "Wox.Test\Wox.Test.csproj", "{FF742965-9A80-41A5-B042-D6C7D3A21708}"
 	ProjectSection(ProjectDependencies) = postProject
 		{DB90F671-D861-46BB-93A3-F1304F5BA1C5} = {DB90F671-D861-46BB-93A3-F1304F5BA1C5}
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F} = {88731DA8-C020-476E-B79A-3ADEF65ACA9F}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin", "Wox.Plugin\Wox.Plugin.csproj", "{8451ECDD-2EA4-4966-BB0A-7BBC40138E80}"
-	ProjectSection(ProjectDependencies) = postProject
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F} = {88731DA8-C020-476E-B79A-3ADEF65ACA9F}
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{3A73F5A7-0335-40D8-BF7C-F20BE5D0BA87}"
 EndProject
@@ -25,7 +21,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox", "Wox\Wox.csproj", "{D
 		{59BD9891-3837-438A-958D-ADC7F91F6F7E} = {59BD9891-3837-438A-958D-ADC7F91F6F7E}
 		{C21BFF9C-2C99-4B5F-B7C9-A5E6DDDB37B0} = {C21BFF9C-2C99-4B5F-B7C9-A5E6DDDB37B0}
 		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4} = {787B8AA6-CA93-4C84-96FE-DF31110AD1C4}
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F} = {88731DA8-C020-476E-B79A-3ADEF65ACA9F}
 		{F35190AA-4758-4D9E-A193-E3BDF6AD3567} = {F35190AA-4758-4D9E-A193-E3BDF6AD3567}
 		{FDED22C8-B637-42E8-824A-63B5B6E05A3A} = {FDED22C8-B637-42E8-824A-63B5B6E05A3A}
 		{A3DCCBCA-ACC1-421D-B16E-210896234C26} = {A3DCCBCA-ACC1-421D-B16E-210896234C26}
@@ -34,16 +29,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox", "Wox\Wox.csproj", "{D
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Infrastructure", "Wox.Infrastructure\Wox.Infrastructure.csproj", "{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}"
-	ProjectSection(ProjectDependencies) = postProject
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F} = {88731DA8-C020-476E-B79A-3ADEF65ACA9F}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.PluginManagement", "Plugins\Wox.Plugin.PluginManagement\Wox.Plugin.PluginManagement.csproj", "{049490F0-ECD2-4148-9B39-2135EC346EBE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Core", "Wox.Core\Wox.Core.csproj", "{B749F0DB-8E75-47DB-9E5E-265D16D0C0D2}"
-	ProjectSection(ProjectDependencies) = postProject
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F} = {88731DA8-C020-476E-B79A-3ADEF65ACA9F}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Program", "Plugins\Wox.Plugin.Program\Wox.Plugin.Program.csproj", "{FDB3555B-58EF-4AE6-B5F1-904719637AB4}"
 EndProject
@@ -66,9 +55,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Color", "Plugins\Wox.Plugin.Color\Wox.Plugin.Color.csproj", "{F35190AA-4758-4D9E-A193-E3BDF6AD3567}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.CrashReporter", "Wox.CrashReporter\Wox.CrashReporter.csproj", "{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}"
-	ProjectSection(ProjectDependencies) = postProject
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F} = {88731DA8-C020-476E-B79A-3ADEF65ACA9F}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Everything", "Plugins\Wox.Plugin.Everything\Wox.Plugin.Everything.csproj", "{230AE83F-E92E-4E69-8355-426B305DA9C0}"
 EndProject
@@ -82,8 +68,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 		SolutionAssemblyInfo.cs = SolutionAssemblyInfo.cs
 	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PreSolutionBuild", "PreSolutionBuild\PreSolutionBuild.vcxproj", "{88731DA8-C020-476E-B79A-3ADEF65ACA9F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloWorldCSharp", "Plugins\HelloWorldCSharp\HelloWorldCSharp.csproj", "{03FFA443-5F50-48D5-8869-F3DF316803AA}"
 EndProject
@@ -314,18 +298,6 @@ Global
 		{230AE83F-E92E-4E69-8355-426B305DA9C0}.Release|x64.Build.0 = Release|Any CPU
 		{230AE83F-E92E-4E69-8355-426B305DA9C0}.Release|x86.ActiveCfg = Release|Any CPU
 		{230AE83F-E92E-4E69-8355-426B305DA9C0}.Release|x86.Build.0 = Release|Any CPU
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F}.Debug|Any CPU.Build.0 = Debug|Win32
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F}.Debug|x64.ActiveCfg = Debug|x64
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F}.Debug|x64.Build.0 = Debug|x64
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F}.Debug|x86.ActiveCfg = Debug|Win32
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F}.Debug|x86.Build.0 = Debug|Win32
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F}.Release|Any CPU.ActiveCfg = Release|x64
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F}.Release|Any CPU.Build.0 = Release|x64
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F}.Release|x64.ActiveCfg = Release|x64
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F}.Release|x64.Build.0 = Release|x64
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F}.Release|x86.ActiveCfg = Release|Win32
-		{88731DA8-C020-476E-B79A-3ADEF65ACA9F}.Release|x86.Build.0 = Release|Win32
 		{03FFA443-5F50-48D5-8869-F3DF316803AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{03FFA443-5F50-48D5-8869-F3DF316803AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03FFA443-5F50-48D5-8869-F3DF316803AA}.Debug|x64.ActiveCfg = Debug|Any CPU

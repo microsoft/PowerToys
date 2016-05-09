@@ -11,6 +11,7 @@ using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
+using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Wox.Storage;
@@ -47,6 +48,7 @@ namespace Wox.ViewModel
 
         private CancellationTokenSource _updateSource;
         private CancellationToken _updateToken;
+        private bool _saved;
 
         #endregion
 
@@ -54,6 +56,7 @@ namespace Wox.ViewModel
 
         public MainViewModel()
         {
+            _saved = false;
             _queryTextBeforeLoadContextMenu = "";
             _queryText = "";
             _lastQuery = new Query();
@@ -592,10 +595,18 @@ namespace Wox.ViewModel
 
         public void Save()
         {
-            _settingsStorage.Save();
-            _queryHistoryStorage.Save();
-            _userSelectedRecordStorage.Save();
-            _topMostRecordStorage.Save();
+            if (!_saved)
+            {
+                _settingsStorage.Save();
+                _queryHistoryStorage.Save();
+                _userSelectedRecordStorage.Save();
+                _topMostRecordStorage.Save();
+
+                PluginManager.Save();
+                ImageLoader.Save();
+
+                _saved = true;
+            }
         }
 
         /// <summary>

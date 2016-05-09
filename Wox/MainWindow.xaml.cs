@@ -10,6 +10,7 @@ using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure.Hotkey;
+using Wox.Infrastructure.Logger;
 using Wox.ViewModel;
 using DataFormats = System.Windows.DataFormats;
 using DragEventArgs = System.Windows.DragEventArgs;
@@ -42,7 +43,11 @@ namespace Wox
         {
             _settings.WindowLeft = Left;
             _settings.WindowTop = Top;
+            var vm = (MainViewModel) DataContext;
+            vm.Save();
         }
+
+        
 
         private void OnLoaded(object sender, RoutedEventArgs _)
         {

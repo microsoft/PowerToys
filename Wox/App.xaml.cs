@@ -10,11 +10,10 @@ using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox
 {
-    public partial class App : ISingleInstanceApp, IDisposable
+    public partial class App : IDisposable, ISingleInstanceApp
     {
-        private const string Unique = "Wox_Unique_Application_Mutex";
-        public static MainWindow Window { get; private set; }
         public static PublicAPIInstance API { get; private set; }
+        private const string Unique = "Wox_Unique_Application_Mutex";
         private static bool _disposed;
 
         [STAThread]
@@ -44,10 +43,14 @@ namespace Wox
                 API = new PublicAPIInstance(mainVM, mainVM._settings);
                 PluginManager.InitializePlugins(API, pluginsSettings);
 
-                Window = new MainWindow(mainVM._settings, mainVM);
                 var _notifyIconManager = new NotifyIconManager(API);
+                var window = new MainWindow(mainVM._settings, mainVM);
 
                 RegisterExitEvents();
+
+                Current.MainWindow = window;
+                Current.MainWindow.Title = Infrastructure.Wox.Name;
+                window.Show();
             });
         }
 
@@ -76,30 +79,21 @@ namespace Wox
             AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
         }
 
-        public void OnActivate()
-        {
-            API.ShowApp();
-        }
-
-        private static void Save()
-        {
-            var vm = (MainViewModel)Window.DataContext;
-            vm.Save();
-            PluginManager.Save();
-            ImageLoader.Save();
-            _disposed = true;
-        }
-
-
         public void Dispose()
         {
             // if sessionending is called, exit proverbially be called when log off / shutdown
             // but if sessionending is not called, exit won't be called when log off / shutdown
             if (!_disposed)
             {
-                Save();
-                SingleInstance<App>.Cleanup();
+                var vm = (MainViewModel)Current.MainWindow.DataContext;
+                vm.Save();
+                _disposed = true;
             }
+        }
+
+        public void OnSecondAppStarted()
+        {
+            API.ShowApp();
         }
     }
 }
