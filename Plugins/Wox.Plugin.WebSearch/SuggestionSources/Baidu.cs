@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Wox.Infrastructure.Http;
+using Wox.Infrastructure.Logger;
 
 namespace Wox.Plugin.WebSearch.SuggestionSources
 {
@@ -14,20 +16,24 @@ namespace Wox.Plugin.WebSearch.SuggestionSources
 
         Regex reg = new Regex("window.baidu.sug\\((.*)\\)");
 
-        public override List<string> GetSuggestions(string query)
+        public override async Task<List<string>> GetSuggestions(string query)
         {
-            var result = HttpRequest.Get("http://suggestion.baidu.com/su?json=1&wd=" + Uri.EscapeUriString(query), Proxy, "GB2312");
+            var result = await HttpRequest.Get("http://suggestion.baidu.com/su?json=1&wd=" + Uri.EscapeUriString(query), Proxy, "GB2312");
             if (string.IsNullOrEmpty(result)) return new List<string>();
 
             Match match = reg.Match(result);
             if (match.Success)
             {
-                JContainer json = null;
+                JContainer json;
                 try
                 {
                     json = JsonConvert.DeserializeObject(match.Groups[1].Value) as JContainer;
                 }
-                catch { }
+                catch (JsonSerializationException e)
+                {
+                    Log.Error(e);
+                    return new List<string>();
+                }
 
                 if (json != null)
                 {

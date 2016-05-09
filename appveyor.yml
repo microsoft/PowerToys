@@ -7,7 +7,7 @@ assembly_info:
   file: AssemblyInfo.*
   assembly_version: '{version}'
   assembly_file_version: '{version}'
-  assembly_informational_version: '{version}-$(APPVEYOR_REPO_COMMIT)'
+  assembly_informational_version: '{version}'
 before_build:
 - ps: nuget restore
 build:
@@ -17,7 +17,7 @@ after_test:
     .\Deploy\nuget.ps1
     
     .\Deploy\binary_zip.ps1
-    
+        
     .\Deploy\squirrel_installer.ps1
 artifacts:
 - path: 'Wox-*.zip'

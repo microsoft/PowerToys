@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Wox.Plugin.WebSearch.SuggestionSources
 {
@@ -12,7 +13,7 @@ namespace Wox.Plugin.WebSearch.SuggestionSources
             Proxy = httpProxy;
         }
 
-        public abstract List<string> GetSuggestions(string query);
+        public abstract Task<List<string>> GetSuggestions(string query);
 
         public static SuggestionSource GetSuggestionSource(string name, PluginInitContext context)
         {

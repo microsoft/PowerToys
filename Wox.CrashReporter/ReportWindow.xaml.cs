@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Documents;
 using Exceptionless;
 using Wox.Core.Resource;
-using Wox.Core.Updater;
+using Wox.Infrastructure;
 
 namespace Wox.CrashReporter
 {
@@ -23,7 +23,7 @@ namespace Wox.CrashReporter
         private void SetException(Exception exception)
         {
             tbSummary.AppendText(exception.Message);
-            tbVersion.Text = UpdaterManager.Instance.CurrentVersion.ToString();
+            tbVersion.Text = Infrastructure.Wox.Version;
             tbDatetime.Text = DateTime.Now.ToString();
             tbStackTrace.AppendText(exception.StackTrace);
             tbSource.Text = exception.Source;

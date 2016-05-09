@@ -7,7 +7,6 @@ using System.Windows.Media.Animation;
 using System.Windows.Controls;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
-using Wox.Core.Updater;
 using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure.Hotkey;
@@ -47,8 +46,6 @@ namespace Wox
 
         private void OnLoaded(object sender, RoutedEventArgs _)
         {
-            CheckUpdate();
-
             InitProgressbarAnimation();
             WindowIntelopHelper.DisableControlBox(this);
 
@@ -108,27 +105,6 @@ namespace Wox
             var dip2 = WindowIntelopHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
             var top = (dip2.Y - ActualHeight) / 4 + dip1.Y;
             return top;
-        }
-
-        private void CheckUpdate()
-        {
-            UpdaterManager.Instance.PrepareUpdateReady += OnPrepareUpdateReady;
-            UpdaterManager.Instance.UpdateError += OnUpdateError;
-            UpdaterManager.Instance.CheckUpdate();
-        }
-
-        void OnUpdateError(object sender, EventArgs e)
-        {
-            string updateError = InternationalizationManager.Instance.GetTranslation("update_wox_update_error");
-            MessageBox.Show(updateError);
-        }
-
-        private void OnPrepareUpdateReady(object sender, EventArgs e)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                new WoxUpdate().ShowDialog();
-            });
         }
 
         private void InitProgressbarAnimation()

@@ -1,120 +1,79 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
 namespace Wox.Infrastructure.Http
 {
-    public class HttpRequest
+    public static class HttpRequest
     {
-        public static string Get(string url, IHttpProxy proxy, string encoding = "UTF-8")
-        {
-            return Get(url, encoding, proxy);
-        }
-
-        public static WebProxy GetWebProxy(IHttpProxy proxy)
+        private static WebProxy GetWebProxy(IHttpProxy proxy)
         {
             if (proxy != null && proxy.Enabled && !string.IsNullOrEmpty(proxy.Server))
             {
                 if (string.IsNullOrEmpty(proxy.UserName) || string.IsNullOrEmpty(proxy.Password))
                 {
-                    return new WebProxy(proxy.Server, proxy.Port);
-                }
-
-                return new WebProxy(proxy.Server, proxy.Port)
-                {
-                    Credentials = new NetworkCredential(proxy.UserName, proxy.Password)
-                };
-            }
-
-            return null;
-        }
-
-        private static string Get(string url, string encoding, IHttpProxy proxy)
-        {
-            if (string.IsNullOrEmpty(url)) return string.Empty;
-
-            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-            request.Method = "GET";
-            request.Timeout = 10 * 1000;
-            request.Proxy = GetWebProxy(proxy);
-
-            try
-            {
-                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-                if (response != null)
-                {
-                    Stream stream = response.GetResponseStream();
-                    if (stream != null)
-                    {
-                        using (StreamReader reader = new StreamReader(stream, Encoding.GetEncoding(encoding)))
-                        {
-                            return reader.ReadToEnd();
-                        }
-                    }
-                }
-            }
-            catch (System.Exception e)
-            {
-                Log.Error(e);
-                return string.Empty;
-            }
-
-            return string.Empty;
-        }
-
-        public static string Post(string url, string jsonData, IHttpProxy proxy)
-        {
-            if (string.IsNullOrEmpty(url)) return string.Empty;
-
-            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-            request.Method = "POST";
-            request.ContentType = "text/json";
-            request.Timeout = 10 * 1000;
-            if (proxy != null && proxy.Enabled && !string.IsNullOrEmpty(proxy.Server))
-            {
-                if (string.IsNullOrEmpty(proxy.UserName) || string.IsNullOrEmpty(proxy.Password))
-                {
-                    request.Proxy = new WebProxy(proxy.Server, proxy.Port);
+                    var webProxy = new WebProxy(proxy.Server, proxy.Port);
+                    return webProxy;
                 }
                 else
                 {
-                    request.Proxy = new WebProxy(proxy.Server, proxy.Port)
+                    var webProxy = new WebProxy(proxy.Server, proxy.Port)
                     {
                         Credentials = new NetworkCredential(proxy.UserName, proxy.Password)
                     };
+                    return webProxy;
                 }
             }
-            using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+            else
             {
-                streamWriter.Write(jsonData);
-                streamWriter.Flush();
-                streamWriter.Close();
+                return null;
             }
+        }
 
+        public static async Task<string> Get([NotNull] string url, IHttpProxy proxy, string encoding = "UTF-8")
+        {
+
+            HttpWebRequest request = WebRequest.CreateHttp(url);
+            request.Method = "GET";
+            request.Timeout = 10 * 1000;
+            request.Proxy = GetWebProxy(proxy);
+            request.UserAgent = @"Mozilla/5.0 (Trident/7.0; rv:11.0) like Gecko";
+            HttpWebResponse response;
             try
             {
-                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-                if (response != null)
-                {
-                    Stream stream = response.GetResponseStream();
-                    if (stream != null)
-                    {
-                        using (StreamReader reader = new StreamReader(stream, Encoding.GetEncoding("UTF-8")))
-                        {
-                            return reader.ReadToEnd();
-                        }
-                    }
-                }
+                response = await request.GetResponseAsync() as HttpWebResponse;
             }
-            catch (System.Exception e)
+            catch (WebException e)
             {
                 Log.Error(e);
                 return string.Empty;
             }
-
-            return string.Empty;
+            if (response != null)
+            {
+                var stream = response.GetResponseStream();
+                if (stream != null)
+                {
+                    using (var reader = new StreamReader(stream, Encoding.GetEncoding(encoding)))
+                    {
+                        return await reader.ReadToEndAsync();
+                    }
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
     }
 }

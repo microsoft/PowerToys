@@ -78,6 +78,9 @@
     <system:String x:Key="about">About</system:String>
     <system:String x:Key="website">Website</system:String>
     <system:String x:Key="version">Version</system:String>
+    <system:String x:Key="checkUpdates">Check Updates</system:String>
+    <system:String x:Key="newVersionTips">New Version {0} avaiable, please restart</system:String>
+    <system:String x:Key="releaseNotes">Release Notes:</system:String>
     <system:String x:Key="about_activate_times">You have activated Wox {0} times</system:String>
 
     <!--Action Keyword Setting Dialog-->
