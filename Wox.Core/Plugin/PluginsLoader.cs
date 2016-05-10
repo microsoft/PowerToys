@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Wox.Core.UserSettings;
 using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
@@ -14,6 +15,16 @@ namespace Wox.Core.Plugin
         public const string PATH = "PATH";
         public const string Python = "python";
         public const string PythonExecutable = "pythonw.exe";
+
+        public static List<PluginPair> Plugins(List<PluginMetadata> source, PluginsSettings settings)
+        {
+            var metadatas = source.Where(m => !settings.Plugins[m.ID].Disabled).ToList();
+            var csharpPlugins = CSharpPlugins(metadatas).ToList();
+            var pythonPlugins = PythonPlugins(metadatas, settings.PythonDirectory);
+            var executablePlugins = ExecutablePlugins(metadatas);
+            var plugins = csharpPlugins.Concat(pythonPlugins).Concat(executablePlugins).ToList();
+            return plugins;
+        }
 
         public static IEnumerable<PluginPair> CSharpPlugins(List<PluginMetadata> source)
         {

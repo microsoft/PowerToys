@@ -42,8 +42,7 @@ namespace Wox.ViewModel
         private readonly JsonStrorage<QueryHistory> _queryHistoryStorage;
         private readonly JsonStrorage<UserSelectedRecord> _userSelectedRecordStorage;
         private readonly JsonStrorage<TopMostRecord> _topMostRecordStorage;
-        // todo happlebao this field should be private in the future
-        public readonly Settings _settings;
+        private readonly Settings _settings;
         private readonly QueryHistory _queryHistory;
         private readonly UserSelectedRecord _userSelectedRecord;
         private readonly TopMostRecord _topMostRecord;
@@ -56,15 +55,15 @@ namespace Wox.ViewModel
 
         #region Constructor
 
-        public MainViewModel()
+        public MainViewModel(Settings settings, JsonStrorage<Settings> storage)
         {
             _saved = false;
             _queryTextBeforeLoadContextMenu = "";
             _queryText = "";
             _lastQuery = new Query();
 
-            _settingsStorage = new JsonStrorage<Settings>();
-            _settings = _settingsStorage.Load();
+            _settingsStorage = storage;
+            _settings = settings;
 
             // happlebao todo temp fix for instance code logic
             HttpProxy.Instance.Settings = _settings;
