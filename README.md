@@ -43,5 +43,5 @@ Just ask questions in the [issues](https://github.com/Wox-launcher/Wox/issues)
 - [x] unified directory `%APPDATA%` for all storage
 - [ ] bring unitest for wox back
 - [x] add autoupdate / installer
-- [ ] disable plugin properly
+- [x] disable plugin properly
 
