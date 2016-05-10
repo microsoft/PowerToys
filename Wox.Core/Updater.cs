@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -23,14 +25,25 @@ namespace Wox.Core
             try
             {
                 // todo 5/9 the return value of UpdateApp() is NULL, fucking useless!
-                using (var updater= await UpdateManager.GitHubUpdateManager(Infrastructure.Wox.Github, urlDownloader:downloader))
+                using (
+                    var updater =
+                        await UpdateManager.GitHubUpdateManager(Infrastructure.Wox.Github, urlDownloader: downloader))
                 {
                     await updater.UpdateApp();
                 }
             }
-            catch (WebException ex)
+            catch (HttpRequestException he)
             {
-                Log.Error(ex);
+                Log.Error(he);
+            }
+            catch (WebException we)
+            {
+                Log.Error(we);
+            }
+            catch (SocketException sc)
+            {
+                Log.Info("Socket exception happened!, which method cause this exception??");
+                Log.Error(sc);
             }
             catch (Exception exception)
             {
