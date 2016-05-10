@@ -8,6 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Newtonsoft.Json;
+using Wox.Infrastructure.Http;
+using Wox.Infrastructure.Logger;
 
 namespace Wox.Plugin.PluginManagement
 {
@@ -108,68 +110,71 @@ namespace Wox.Plugin.PluginManagement
             List<Result> results = new List<Result>();
             string pluginName = query.SecondSearch;
             if (string.IsNullOrEmpty(pluginName)) return results;
-            HttpWebResponse response = HttpRequest.CreateGetHttpResponse(pluginSearchUrl + pluginName, context.Proxy);
-            Stream s = response.GetResponseStream();
-            if (s != null)
+            string json;
+            try
             {
-                StreamReader reader = new StreamReader(s, Encoding.UTF8);
-                string json = reader.ReadToEnd();
-                List<WoxPluginResult> searchedPlugins = null;
-                try
-                {
-                    searchedPlugins = JsonConvert.DeserializeObject<List<WoxPluginResult>>(json);
-                }
-                catch
-                {
-                    context.API.ShowMsg("Coundn't parse api search results", "Please update your Wox!", string.Empty);
-                    return results;
-                }
+                var task = Http.Get(pluginSearchUrl + pluginName, context.Proxy);
+                task.RunSynchronously();
+                json = task.Result;
+            }
+            catch (WebException e)
+            {
+                Log.Warn("Can't connect to Wox plugin website, check your conenction");
+                Log.Error(e);
+                return new List<Result>();
+            }
+            List<WoxPluginResult> searchedPlugins;
+            try
+            {
+                searchedPlugins = JsonConvert.DeserializeObject<List<WoxPluginResult>>(json);
+            }
+            catch(JsonSerializationException e)
+            {
+                context.API.ShowMsg("Coundn't parse api search results", "Please update your Wox!", string.Empty);
+                Log.Error(e);
+                return results;
+            }
 
-                foreach (WoxPluginResult r in searchedPlugins)
+            foreach (WoxPluginResult r in searchedPlugins)
+            {
+                WoxPluginResult r1 = r;
+                results.Add(new Result
                 {
-                    WoxPluginResult r1 = r;
-                    results.Add(new Result
+                    Title = r.name,
+                    SubTitle = r.description,
+                    IcoPath = "Images\\plugin.png",
+                    Action = c =>
                     {
-                        Title = r.name,
-                        SubTitle = r.description,
-                        IcoPath = "Images\\plugin.png",
-                        Action = e =>
+                        MessageBoxResult result = MessageBox.Show("Are your sure to install " + r.name + " plugin",
+                            "Install plugin", MessageBoxButton.YesNo);
+
+                        if (result == MessageBoxResult.Yes)
                         {
-                            MessageBoxResult result = MessageBox.Show("Are your sure to install " + r.name + " plugin",
-                                "Install plugin", MessageBoxButton.YesNo);
+                            string folder = Path.Combine(Path.GetTempPath(), "WoxPluginDownload");
+                            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+                            string filePath = Path.Combine(folder, Guid.NewGuid().ToString() + ".wox");
 
-                            if (result == MessageBoxResult.Yes)
+                            context.API.StartLoadingBar();
+                            string pluginUrl = APIBASE + "/media/" + r1.plugin_file;
+
+                            try
                             {
-                                string folder = Path.Combine(Path.GetTempPath(), "WoxPluginDownload");
-                                if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-                                string filePath = Path.Combine(folder, Guid.NewGuid().ToString() + ".wox");
-
-                                context.API.StartLoadingBar();
-                                Task.Run(() =>
-                                {
-                                    using (WebClient Client = new WebClient())
-                                    {
-                                        try
-                                        {
-                                            string pluginUrl = APIBASE + "/media/" + r1.plugin_file;
-                                            Client.DownloadFile(pluginUrl, filePath);
-                                            context.API.InstallPlugin(filePath);
-                                        }
-                                        catch (Exception exception)
-                                        {
-                                            MessageBox.Show("download plugin " + r.name + "failed. " + exception.Message);
-                                        }
-                                        finally
-                                        {
-                                            context.API.StopLoadingBar();
-                                        }
-                                    }
-                                });
+                                Http.Download(pluginUrl, filePath, context.Proxy);
                             }
-                            return false;
+                            catch (WebException e)
+                            {
+                                var info = "download plugin " + r.name + "failed.";
+                                MessageBox.Show(info);
+                                Log.Warn(info);
+                                Log.Error(e);
+                                return false;
+                            }
+                            context.API.InstallPlugin(filePath);
+                            context.API.StopLoadingBar();
                         }
-                    });
-                }
+                        return false;
+                    }
+                });
             }
             return results;
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -18,7 +19,20 @@ namespace Wox.Plugin.WebSearch.SuggestionSources
 
         public override async Task<List<string>> GetSuggestions(string query)
         {
-            var result = await HttpRequest.Get("http://suggestion.baidu.com/su?json=1&wd=" + Uri.EscapeUriString(query), Proxy, "GB2312");
+            string result;
+
+            try
+            {
+                const string api = "http://suggestion.baidu.com/su?json=1&wd=";
+                result = await Http.Get(api + Uri.EscapeUriString(query), Proxy, "GB2312");
+            }
+            catch (WebException e)
+            {
+                Log.Warn("Can't get suggestion from baidu");
+                Log.Error(e);
+                return new List<string>(); ;
+            }
+
             if (string.IsNullOrEmpty(result)) return new List<string>();
 
             Match match = reg.Match(result);

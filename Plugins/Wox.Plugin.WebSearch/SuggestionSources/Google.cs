@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -14,7 +15,18 @@ namespace Wox.Plugin.WebSearch.SuggestionSources
         public override string Domain { get; set; } = "www.google.com";
         public override async Task<List<string>> GetSuggestions(string query)
         {
-            var result = await HttpRequest.Get("https://www.google.com/complete/search?output=chrome&q=" + Uri.EscapeUriString(query), Proxy);
+            string result;
+            try
+            {
+                const string api = "https://www.google.com/complete/search?output=chrome&q=";
+                result = await Http.Get(api + Uri.EscapeUriString(query), Proxy);
+            }
+            catch (WebException e)
+            {
+                Log.Warn("Can't get suggestion from google");
+                Log.Error(e);
+                return new List<string>(); ;
+            }
             if (string.IsNullOrEmpty(result)) return new List<string>();
             JContainer json;
             try

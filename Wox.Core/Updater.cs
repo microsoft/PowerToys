@@ -19,7 +19,7 @@ namespace Wox.Core
         public static async void UpdateApp()
         {
 
-            var client = new WebClient {Proxy = HttpRequest.WebProxy(HttpProxy.Instance)};
+            var client = new WebClient {Proxy = Http.WebProxy(HttpProxy.Instance)};
             var downloader = new FileDownloader(client);
 
             try
@@ -59,10 +59,22 @@ namespace Wox.Core
             }
         }
 
+
         public static async Task<string> NewVersion()
         {
             const string githubAPI = @"https://api.github.com/repos/wox-launcher/wox/releases/latest";
-            var response = await HttpRequest.Get(githubAPI, HttpProxy.Instance);
+
+            string response;
+            try
+            {
+                response = await Http.Get(githubAPI, HttpProxy.Instance);
+            }
+            catch (WebException e)
+            {
+                Log.Warn("Can't connect to github api to check new version");
+                Log.Error(e);
+                return string.Empty;
+            }
 
             if (!string.IsNullOrEmpty(response))
             {

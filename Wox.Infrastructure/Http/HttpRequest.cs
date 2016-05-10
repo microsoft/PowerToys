@@ -1,17 +1,13 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
 namespace Wox.Infrastructure.Http
 {
-    public static class HttpRequest
+    public static class Http
     {
         public static WebProxy WebProxy(IHttpProxy proxy)
         {
@@ -37,6 +33,14 @@ namespace Wox.Infrastructure.Http
             }
         }
 
+        /// <exception cref="WebException">Can't download file </exception>
+        public static void Download([NotNull] string url, [NotNull] string filePath, IHttpProxy proxy)
+        {
+            var client = new WebClient { Proxy = WebProxy(proxy) };
+            client.DownloadFile(url, filePath);
+        }
+
+        /// <exception cref="WebException">Can't get response from http get </exception>
         public static async Task<string> Get([NotNull] string url, IHttpProxy proxy, string encoding = "UTF-8")
         {
 
@@ -45,16 +49,7 @@ namespace Wox.Infrastructure.Http
             request.Timeout = 10 * 1000;
             request.Proxy = WebProxy(proxy);
             request.UserAgent = @"Mozilla/5.0 (Trident/7.0; rv:11.0) like Gecko";
-            HttpWebResponse response;
-            try
-            {
-                response = await request.GetResponseAsync() as HttpWebResponse;
-            }
-            catch (WebException e)
-            {
-                Log.Error(e);
-                return string.Empty;
-            }
+            var response = await request.GetResponseAsync() as HttpWebResponse;
             if (response != null)
             {
                 var stream = response.GetResponseStream();
