@@ -55,18 +55,22 @@ namespace Wox.Core.Plugin
         {
             ValidateUserDirectory();
 
-            // todo happlebao temp hack to let MainVM to register ResultsUpdated event
-            _metadatas = PluginConfig.Parse(Directories);
-            AllPlugins = PluginsLoader.CSharpPlugins(_metadatas).ToList();
         }
-        public static void InitializePlugins(IPublicAPI api, PluginsSettings settings)
-        {
-            _settings = settings;
-            var plugins = PluginsLoader.PythonPlugins(_metadatas, _settings.PythonDirectory);
-            var executable_plugins = PluginsLoader.ExecutablePlugins(_metadatas);
-            AllPlugins = AllPlugins.Concat(plugins).Concat(executable_plugins).ToList();
-            _settings.UpdatePluginSettings(AllPlugins);
 
+        /// <summary>
+        /// because InitializePlugins needs API, so LoadPlugins needs to be called first
+        /// todo happlebao The API should be removed
+        /// </summary>
+        /// <param name="settings"></param>
+        public static void LoadPlugins(PluginsSettings settings)
+        {
+            _metadatas = PluginConfig.Parse(Directories);
+            _settings = settings;
+            AllPlugins = PluginsLoader.Plugins(_metadatas, _settings);
+            _settings.UpdatePluginSettings(AllPlugins);
+        }
+        public static void InitializePlugins(IPublicAPI api)
+        {
             //load plugin i18n languages
             ResourceMerger.UpdatePluginLanguages();
 
@@ -149,7 +153,7 @@ namespace Wox.Core.Plugin
             }
         }
 
-        //happlebao todo prevent plugin initial when plugin is disabled
+        //happlebao todo dynamic release corresponding dll / exe / process
         public static void DisablePlugin(PluginPair plugin)
         {
             var actionKeywords = plugin.Metadata.ActionKeywords;

@@ -3,8 +3,10 @@ using System.Diagnostics;
 using System.Windows;
 using Wox.Core;
 using Wox.Core.Plugin;
+using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure.Image;
+using Wox.Infrastructure.Storage;
 using Wox.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
@@ -38,11 +40,15 @@ namespace Wox
 
                 ImageLoader.PreloadImages();
 
-                var vm = new MainViewModel();
-                var pluginsSettings = vm._settings.PluginSettings;
-                var window = new MainWindow(vm._settings, vm);
-                API = new PublicAPIInstance(vm._settings, vm);
-                PluginManager.InitializePlugins(API, pluginsSettings);
+                var storage = new JsonStrorage<Settings>();
+                var settings = storage.Load();
+
+                PluginManager.LoadPlugins(settings.PluginSettings);
+                var vm = new MainViewModel(settings, storage);
+                var pluginsSettings = settings.PluginSettings;
+                var window = new MainWindow(settings, vm);
+                API = new PublicAPIInstance(settings, vm);
+                PluginManager.InitializePlugins(API);
 
                 RegisterExitEvents();
 
