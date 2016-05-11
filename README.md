@@ -13,11 +13,11 @@ Launcher for Windows, an alternative to [Alfred](https://www.alfredapp.com/) and
 
 # Features
 
-- Search all applications, folders, files.
+- Search all applications, folders and files.
+- Use **pinyin** to search programs / 支持用 **拼音** 搜索程序 e.g. yyy / wangyiyun -> 网易云音乐
 - Search Web using keyword (e.g. search google with `g search_term`)
 - Build custom themes in [http://www.getwox.com/theme/builder](http://www.getwox.com/theme/builder)
 - Install plugins from [http://www.getwox.com/plugin](http://www.getwox.com/plugin)
-- Use **pinyin** to search programs / 支持用 **拼音** 搜索程序 e.g. yyy / wangyiyun -> 网易云音乐
 
 # Installation
 - Latest stable version: [releases](https://github.com/Wox-launcher/Wox/releases).
@@ -28,10 +28,11 @@ Launcher for Windows, an alternative to [Alfred](https://www.alfredapp.com/) and
 - Install/Uninstall plugin: type `wpm install/uninstall`
 
 # Contribute  
-
+- First and most importantly, star it!
 - Send PR to **dev** branch
 - I'd appreciate if you could solve [help_needed](https://github.com/Wox-launcher/Wox/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp_needed) labeled issue
 - Don't hesitate to ask questions in the [issues](https://github.com/Wox-launcher/Wox/issues)
+- 中文开发直接发我邮件我们聊 qq
 
 # Docs
 
