@@ -17,6 +17,7 @@ namespace Wox
         public static PublicAPIInstance API { get; private set; }
         private const string Unique = "Wox_Unique_Application_Mutex";
         private static bool _disposed;
+        private Settings _settings;
 
         [STAThread]
         public static void Main()
@@ -41,13 +42,13 @@ namespace Wox
                 ImageLoader.PreloadImages();
 
                 var storage = new JsonStrorage<Settings>();
-                var settings = storage.Load();
+                _settings = storage.Load();
 
-                PluginManager.LoadPlugins(settings.PluginSettings);
-                var vm = new MainViewModel(settings, storage);
-                var pluginsSettings = settings.PluginSettings;
-                var window = new MainWindow(settings, vm);
-                API = new PublicAPIInstance(settings, vm);
+                PluginManager.LoadPlugins(_settings.PluginSettings);
+                var vm = new MainViewModel(_settings, storage);
+                var pluginsSettings = _settings.PluginSettings;
+                var window = new MainWindow(_settings, vm);
+                API = new PublicAPIInstance(_settings, vm);
                 PluginManager.InitializePlugins(API);
 
                 RegisterExitEvents();
@@ -60,7 +61,11 @@ namespace Wox
 
         private async void OnActivated(object sender, EventArgs e)
         {
-            Updater.UpdateApp();
+            // todo happlebao add option in gui
+            if (_settings.AutoUpdates)
+            {
+                Updater.UpdateApp();
+            }
         }
 
         private void RegisterExitEvents()
