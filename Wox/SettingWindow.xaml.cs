@@ -21,6 +21,7 @@ using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Image;
+using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 using Wox.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
@@ -566,7 +567,7 @@ namespace Wox
         private void lbPlugins_OnSelectionChanged(object sender, SelectionChangedEventArgs _)
         {
 
-            var pair = lbPlugins.SelectedItem as PluginPair;
+            var pair = PluginsListBox.SelectedItem as PluginPair;
             string pluginId = string.Empty;
             List<string> actionKeywords = null;
             if (pair == null) return;
@@ -631,24 +632,19 @@ namespace Wox
             }
         }
 
-        private void CbDisablePlugin_OnClick(object sender, RoutedEventArgs e)
+        private void OnDisablePluginClicked(object sender, RoutedEventArgs e)
         {
-            CheckBox cbDisabled = e.Source as CheckBox;
-            if (cbDisabled == null) return;
-
-            var pair = lbPlugins.SelectedItem as PluginPair;
-            if (pair != null)
+            var checkBox = (CheckBox)e.Source;
+            var pair = (PluginPair)PluginsListBox.SelectedItem;
+            var id = pair.Metadata.ID;
+            if (checkBox.IsChecked != null)
             {
-                var id = pair.Metadata.ID;
-                var customizedPluginConfig = _settings.PluginSettings.Plugins[id];
-                if (customizedPluginConfig.Disabled)
-                {
-                    PluginManager.DisablePlugin(pair);
-                }
-                else
-                {
-                    PluginManager.EnablePlugin(pair);
-                }
+                var disabled = (bool) checkBox.IsChecked;
+                _settings.PluginSettings.Plugins[id].Disabled = disabled;
+            }
+            else
+            {
+                Log.Warn($"IsChecked for checkbox is null for plugin: {pair.Metadata.Name}");
             }
         }
 
@@ -656,7 +652,7 @@ namespace Wox
         {
             if (e.ChangedButton == MouseButton.Left)
             {
-                var pair = lbPlugins.SelectedItem as PluginPair;
+                var pair = PluginsListBox.SelectedItem as PluginPair;
                 if (pair != null)
                 {
                     //third-party plugin
@@ -675,7 +671,7 @@ namespace Wox
         {
             if (e.ChangedButton == MouseButton.Left)
             {
-                var pair = lbPlugins.SelectedItem as PluginPair;
+                var pair = PluginsListBox.SelectedItem as PluginPair;
                 if (pair != null)
                 {
                     //third-party plugin
@@ -697,7 +693,7 @@ namespace Wox
         {
             if (e.ChangedButton == MouseButton.Left)
             {
-                var pair = lbPlugins.SelectedItem as PluginPair;
+                var pair = PluginsListBox.SelectedItem as PluginPair;
                 if (pair != null)
                 {
                     //third-party plugin
@@ -729,8 +725,8 @@ namespace Wox
                     Collection = PluginManager.AllPlugins
                 }
             };
-            lbPlugins.ItemsSource = plugins;
-            lbPlugins.SelectedIndex = 0;
+            PluginsListBox.ItemsSource = plugins;
+            PluginsListBox.SelectedIndex = 0;
         }
 
         #endregion

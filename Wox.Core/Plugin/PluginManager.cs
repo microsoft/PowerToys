@@ -30,7 +30,8 @@ namespace Wox.Core.Plugin
         public static readonly Dictionary<string, PluginPair> NonGlobalPlugins = new Dictionary<string, PluginPair>();
 
         public static IPublicAPI API { private set; get; }
-        private static PluginsSettings _settings;
+        // todo happlebao, this should not be public, the indicator function should be embeded 
+        public static PluginsSettings Settings;
         private static List<PluginMetadata> _metadatas;
         private static readonly string[] Directories = { Infrastructure.Wox.PreinstalledDirectory, Infrastructure.Wox.UserDirectory };
 
@@ -65,9 +66,9 @@ namespace Wox.Core.Plugin
         public static void LoadPlugins(PluginsSettings settings)
         {
             _metadatas = PluginConfig.Parse(Directories);
-            _settings = settings;
-            AllPlugins = PluginsLoader.Plugins(_metadatas, _settings);
-            _settings.UpdatePluginSettings(AllPlugins);
+            Settings = settings;
+            Settings.UpdatePluginSettings(_metadatas);
+            AllPlugins = PluginsLoader.Plugins(_metadatas, Settings);
         }
         public static void InitializePlugins(IPublicAPI api)
         {
@@ -122,13 +123,14 @@ namespace Wox.Core.Plugin
             var search = rawQuery;
             List<string> actionParameters = terms.ToList();
             if (terms.Length == 0) return null;
-            if (NonGlobalPlugins.ContainsKey(terms[0]))
+            if (NonGlobalPlugins.ContainsKey(terms[0]) &&
+                !Settings.Plugins[NonGlobalPlugins[terms[0]].Metadata.ID].Disabled)
             {
                 actionKeyword = terms[0];
                 actionParameters = terms.Skip(1).ToList();
                 search = string.Join(Query.TermSeperater, actionParameters.ToArray());
             }
-            return new Query
+            var query = new Query
             {
                 Terms = terms,
                 RawQuery = rawQuery,
@@ -138,6 +140,7 @@ namespace Wox.Core.Plugin
                 ActionName = actionKeyword,
                 ActionParameters = actionParameters
             };
+            return query;
         }
 
         public static List<PluginPair> ValidPluginsForQuery(Query query)
@@ -151,41 +154,6 @@ namespace Wox.Core.Plugin
             {
                 return GlobalPlugins;
             }
-        }
-
-        //happlebao todo dynamic release corresponding dll / exe / process
-        public static void DisablePlugin(PluginPair plugin)
-        {
-            var actionKeywords = plugin.Metadata.ActionKeywords;
-            if (actionKeywords == null || actionKeywords.Count == 0 || actionKeywords[0] == Query.GlobalPluginWildcardSign)
-            {
-                GlobalPlugins.Remove(plugin);
-            }
-            else
-            {
-                foreach (var actionkeyword in plugin.Metadata.ActionKeywords)
-                {
-                    NonGlobalPlugins.Remove(actionkeyword);
-                }
-            }
-            AllPlugins.Remove(plugin);
-        }
-
-        public static void EnablePlugin(PluginPair plugin)
-        {
-            var actionKeywords = plugin.Metadata.ActionKeywords;
-            if (actionKeywords == null || actionKeywords.Count == 0 || actionKeywords[0] == Query.GlobalPluginWildcardSign)
-            {
-                GlobalPlugins.Add(plugin);
-            }
-            else
-            {
-                foreach (var actionkeyword in plugin.Metadata.ActionKeywords)
-                {
-                    NonGlobalPlugins[actionkeyword] = plugin;
-                }
-            }
-            AllPlugins.Add(plugin);
         }
 
         public static List<Result> QueryForPlugin(PluginPair pair, Query query)

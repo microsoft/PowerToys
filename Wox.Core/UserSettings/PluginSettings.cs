@@ -10,9 +10,8 @@ namespace Wox.Core.UserSettings
         public string PythonDirectory { get; set; }
         public Dictionary<string, Plugin> Plugins { get; set; } = new Dictionary<string, Plugin>();
 
-        public void UpdatePluginSettings(List<PluginPair> plugins)
+        public void UpdatePluginSettings(List<PluginMetadata> metadatas)
         {
-            var metadatas = plugins.Select(p => p.Metadata);
             foreach (var metadata in metadatas)
             {
                 if (Plugins.ContainsKey(metadata.ID))

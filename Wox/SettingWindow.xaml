@@ -14,7 +14,7 @@
         <ListBoxItem HorizontalContentAlignment="Stretch"
                      IsEnabled="False"
                      IsHitTestVisible="False" x:Key="FeatureBoxSeperator">
-            <Separator Width="{Binding ElementName=lbPlugins, Path=ActualWidth}" />
+            <Separator Width="{Binding ElementName=PluginsListBox, Path=ActualWidth}" />
         </ListBoxItem>
         <image:ImagePathConverter x:Key="ImageConverter" />
     </Window.Resources>
@@ -62,7 +62,7 @@
                     <TextBlock DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Left" Cursor="Hand"
                                MouseUp="tbMorePlugins_MouseUp" x:Name="tbMorePlugins" Foreground="Blue"
                                Text="{DynamicResource browserMorePlugins}" />
-                    <ListBox x:Name="lbPlugins" Margin="10, 0, 10, 10" SelectionChanged="lbPlugins_OnSelectionChanged"
+                    <ListBox x:Name="PluginsListBox" Margin="10, 0, 10, 10" SelectionChanged="lbPlugins_OnSelectionChanged"
                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True">
                         <ListBox.Resources>
@@ -119,7 +119,7 @@
                                 <TextBlock Grid.Row="1" x:Name="pluginSubTitle" Opacity="0.5"
                                            ToolTip="{Binding Source=pluginSubTitle, Path=Text}"/>
                                 <DockPanel Grid.Row="2" Margin="0 10 0 8">
-                                    <CheckBox x:Name="cbDisablePlugin" Click="CbDisablePlugin_OnClick">
+                                    <CheckBox x:Name="cbDisablePlugin" Click="OnDisablePluginClicked">
                                         <TextBlock Text="{DynamicResource disable}" />
                                     </CheckBox>
                                     <TextBlock x:Name="pluginActionKeywordsTitle" Margin="20 0 0 0"

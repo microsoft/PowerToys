@@ -16,9 +16,8 @@ namespace Wox.Core.Plugin
         public const string Python = "python";
         public const string PythonExecutable = "pythonw.exe";
 
-        public static List<PluginPair> Plugins(List<PluginMetadata> source, PluginsSettings settings)
+        public static List<PluginPair> Plugins(List<PluginMetadata> metadatas, PluginsSettings settings)
         {
-            var metadatas = source.Where(m => !settings.Plugins[m.ID].Disabled).ToList();
             var csharpPlugins = CSharpPlugins(metadatas).ToList();
             var pythonPlugins = PythonPlugins(metadatas, settings.PythonDirectory);
             var executablePlugins = ExecutablePlugins(metadatas);
