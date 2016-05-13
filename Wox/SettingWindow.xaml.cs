@@ -95,6 +95,17 @@ namespace Wox
                 _settings.IgnoreHotkeysOnFullscreen = false;
             };
 
+            AutoUpdatesCheckBox.Checked += (o, e) =>
+            {
+                _settings.AutoUpdates = true;
+            };
+
+
+            AutoUpdatesCheckBox.Unchecked += (o, e) =>
+            {
+                _settings.AutoUpdates = false;
+            };
+
 
             cbStartWithWindows.IsChecked = CheckApplicationIsStartupWithWindow();
             comboMaxResultsToShow.SelectionChanged += (o, e) =>
@@ -107,6 +118,7 @@ namespace Wox
             cbDontPromptUpdateMsg.IsChecked = _settings.DontPromptUpdateMsg;
             cbRememberLastLocation.IsChecked = _settings.RememberLastLaunchLocation;
             cbIgnoreHotkeysOnFullscreen.IsChecked = _settings.IgnoreHotkeysOnFullscreen;
+            AutoUpdatesCheckBox.IsChecked = _settings.AutoUpdates;
 
             LoadLanguages();
             comboMaxResultsToShow.ItemsSource = Enumerable.Range(2, 16);
@@ -639,7 +651,7 @@ namespace Wox
             var id = pair.Metadata.ID;
             if (checkBox.IsChecked != null)
             {
-                var disabled = (bool) checkBox.IsChecked;
+                var disabled = (bool)checkBox.IsChecked;
                 _settings.PluginSettings.Plugins[id].Disabled = disabled;
             }
             else

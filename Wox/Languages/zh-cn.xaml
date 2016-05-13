@@ -25,6 +25,7 @@
     <system:String x:Key="maxShowResults">最大结果显示个数</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">全屏模式下忽略热键</system:String>
     <system:String x:Key="pythonDirectory">Python 路径</system:String>
+    <system:String x:Key="autoUpdates">自动更新</system:String>
 
     <!--设置，插件-->
     <system:String x:Key="plugin">插件</system:String>

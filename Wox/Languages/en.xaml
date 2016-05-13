@@ -26,6 +26,7 @@
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignore hotkeys if window is fullscreen</system:String>
     <system:String x:Key="pythonDirectory">Python Directory</system:String>
     <system:String x:Key="selectPythonDirectory">Select</system:String>
+    <system:String x:Key="autoUpdates">Auto Updates</system:String>
     
     
     <!--Setting Plugin-->
