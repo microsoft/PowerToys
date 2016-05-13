@@ -59,7 +59,7 @@ namespace Wox
             });
         }
 
-        private async void OnActivated(object sender, EventArgs e)
+        private void OnActivated(object sender, EventArgs e)
         {
             // todo happlebao add option in gui
             if (_settings.AutoUpdates)
