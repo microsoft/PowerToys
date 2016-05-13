@@ -113,9 +113,7 @@ namespace Wox.Plugin.PluginManagement
             string json;
             try
             {
-                var task = Http.Get(pluginSearchUrl + pluginName, context.Proxy);
-                task.RunSynchronously();
-                json = task.Result;
+                json = Http.Get(pluginSearchUrl + pluginName, context.Proxy).Result;
             }
             catch (WebException e)
             {
