@@ -9,7 +9,7 @@ namespace Wox.Infrastructure.Http
 {
     public static class Http
     {
-        public static WebProxy WebProxy(IHttpProxy proxy)
+        public static IWebProxy WebProxy(IHttpProxy proxy)
         {
             if (proxy != null && proxy.Enabled && !string.IsNullOrEmpty(proxy.Server))
             {
@@ -29,7 +29,7 @@ namespace Wox.Infrastructure.Http
             }
             else
             {
-                return null;
+                return WebRequest.GetSystemWebProxy();
             }
         }
 
