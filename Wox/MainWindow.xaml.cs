@@ -65,7 +65,7 @@ namespace Wox
             // happlebao todo delete
             vm.Left = GetWindowsLeft();
             vm.Top = GetWindowsTop();
-            vm.MainWindowVisibility = Visibility.Visible;
+            vm.MainWindowVisibility = _settings.HideOnStartup ? Visibility.Hidden : Visibility.Visible;
         }
 
         private void RegisterEvents(MainViewModel vm)

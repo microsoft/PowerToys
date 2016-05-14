@@ -25,6 +25,9 @@
                           Checked="CbStartWithWindows_OnChecked" Margin="10">
                     <TextBlock Text="{DynamicResource startWoxOnSystemStartup}" />
                 </CheckBox>
+                <CheckBox x:Name="cbHideOnStartup" Margin="10">
+                    <TextBlock Text="{DynamicResource hideOnStartup}" />
+                </CheckBox>
                 <CheckBox x:Name="cbHideWhenDeactive" Margin="10">
                     <TextBlock Text="{DynamicResource hideWoxWhenLoseFocus}" />
                 </CheckBox>

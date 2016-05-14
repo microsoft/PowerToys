@@ -44,6 +44,7 @@ namespace Wox.Core.UserSettings
         public bool EnableUpdateLog { get; set; }
 
         public bool StartWoxOnSystemStartup { get; set; }
+        public bool HideOnStartup { get; set; }
         public bool LeaveCmdOpen { get; set; }
         public bool HideWhenDeactive { get; set; }
         public bool RememberLastLaunchLocation { get; set; }

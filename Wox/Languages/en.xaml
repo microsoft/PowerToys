@@ -18,6 +18,7 @@
     <system:String x:Key="wox_settings">Wox Settings</system:String>
     <system:String x:Key="general">General</system:String>
     <system:String x:Key="startWoxOnSystemStartup">Start Wox on system startup</system:String>
+    <system:String x:Key="hideOnStartup">Hide Wox on startup</system:String>
     <system:String x:Key="hideWoxWhenLoseFocus">Hide Wox when loses focus</system:String>
     <system:String x:Key="dontPromptUpdateMsg">Don't show upgrade msg if new version available</system:String>
     <system:String x:Key="rememberLastLocation">Remember last launch location</system:String>

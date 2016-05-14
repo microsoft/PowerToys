@@ -18,6 +18,7 @@
     <system:String x:Key="woxsettings">Wox设置</system:String>
     <system:String x:Key="general">通用</system:String>
     <system:String x:Key="startWoxOnSystemStartup">开机启动</system:String>
+    <system:String x:Key="hideOnStartup">启动时不显示主窗口</system:String>
     <system:String x:Key="hideWoxWhenLoseFocus">失去焦点时自动隐藏Wox</system:String>
     <system:String x:Key="dontPromptUpdateMsg">不显示新版本提示</system:String>
     <system:String x:Key="rememberLastLocation">记住上次启动位置</system:String>
