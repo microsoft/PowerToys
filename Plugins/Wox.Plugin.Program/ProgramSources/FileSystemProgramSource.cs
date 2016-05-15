@@ -72,7 +72,7 @@ namespace Wox.Plugin.Program.ProgramSources
             catch (Exception e)
             {
                 var woxPluginException = new WoxPluginException("Program", $"GetAppFromDirectory failed: {path}", e);
-                Log.Error(woxPluginException);
+                Log.Exception(woxPluginException);
             }
         }
 

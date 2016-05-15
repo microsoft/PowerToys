@@ -87,7 +87,7 @@ namespace Wox.Plugin.CMD
                 }
                 catch (Exception e)
                 {
-                    Log.Error(e);
+                    Log.Exception(e);
                 }
                 return results;
             }

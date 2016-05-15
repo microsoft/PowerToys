@@ -118,7 +118,7 @@ namespace Wox.Plugin.PluginManagement
             catch (WebException e)
             {
                 Log.Warn("Can't connect to Wox plugin website, check your conenction");
-                Log.Error(e);
+                Log.Exception(e);
                 return new List<Result>();
             }
             List<WoxPluginResult> searchedPlugins;
@@ -129,7 +129,7 @@ namespace Wox.Plugin.PluginManagement
             catch(JsonSerializationException e)
             {
                 context.API.ShowMsg("Coundn't parse api search results", "Please update your Wox!", string.Empty);
-                Log.Error(e);
+                Log.Exception(e);
                 return results;
             }
 
@@ -164,7 +164,7 @@ namespace Wox.Plugin.PluginManagement
                                 var info = "download plugin " + r.name + "failed.";
                                 MessageBox.Show(info);
                                 Log.Warn(info);
-                                Log.Error(e);
+                                Log.Exception(e);
                                 return false;
                             }
                             context.API.InstallPlugin(filePath);

@@ -36,7 +36,7 @@ namespace Wox.Core.Resource
                     }
                     catch (Exception e)
                     {
-                        Log.Error(e);
+                        Log.Exception(e);
                     }
                 }
             }

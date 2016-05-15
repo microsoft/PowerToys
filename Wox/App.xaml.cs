@@ -6,6 +6,7 @@ using Wox.Core.Plugin;
 using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure.Image;
+using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
@@ -22,7 +23,8 @@ namespace Wox
         [STAThread]
         public static void Main()
         {
-            RegisterAppDomainUnhandledException();
+            RegisterAppDomainExceptions();
+
             if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
             {
                 using (var application = new App())
@@ -74,18 +76,31 @@ namespace Wox
             Current.Exit += (s, e) => Dispose();
             Current.SessionEnding += (s, e) => Dispose();
         }
+
+        /// <summary>
+        /// let exception throw as normal is better for Debug 
+        /// </summary>
         [Conditional("RELEASE")]
         private void RegisterDispatcherUnhandledException()
         {
-            // let exception throw as normal is better for Debug 
             DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
         }
 
+
+
+        /// <summary>
+        /// let exception throw as normal is better for Debug 
+        /// </summary>
         [Conditional("RELEASE")]
-        private static void RegisterAppDomainUnhandledException()
+        private static void RegisterAppDomainExceptions()
         {
-            // let exception throw as normal is better for Debug 
+            
             AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
+            AppDomain.CurrentDomain.FirstChanceException += (s, e) =>
+            {
+                Log.Error("First Chance Exception:");
+                Log.Exception(e.Exception);
+            };
         }
 
         public void Dispose()

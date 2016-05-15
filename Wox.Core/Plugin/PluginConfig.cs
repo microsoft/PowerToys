@@ -78,7 +78,7 @@ namespace Wox.Core.Plugin
             catch (Exception e)
             {
                 string msg = $"Parse plugin config {configPath} failed: json format is not valid";
-                Log.Error(new WoxException(msg));
+                Log.Exception(new WoxException(msg));
                 return null;
             }
 
@@ -86,14 +86,14 @@ namespace Wox.Core.Plugin
             if (!AllowedLanguage.IsAllowed(metadata.Language))
             {
                 string msg = $"Parse plugin config {configPath} failed: invalid language {metadata.Language}";
-                Log.Error(new WoxException(msg));
+                Log.Exception(new WoxException(msg));
                 return null;
             }
 
             if (!File.Exists(metadata.ExecuteFilePath))
             {
                 string msg = $"Parse plugin config {configPath} failed: ExecuteFile {metadata.ExecuteFilePath} didn't exist";
-                Log.Error(new WoxException(msg));
+                Log.Exception(new WoxException(msg));
                 return null;
             }
 

@@ -228,7 +228,7 @@ namespace Wox.Core.Plugin
                 }
                 catch (Exception e)
                 {
-                    Log.Error(new WoxPluginException(metadata.Name, "Couldn't load plugin context menus", e));
+                    Log.Exception(new WoxPluginException(metadata.Name, "Couldn't load plugin context menus", e));
                     return new List<Result>();
                 }
             }

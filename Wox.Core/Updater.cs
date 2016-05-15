@@ -34,16 +34,16 @@ namespace Wox.Core
             }
             catch (HttpRequestException he)
             {
-                Log.Error(he);
+                Log.Exception(he);
             }
             catch (WebException we)
             {
-                Log.Error(we);
+                Log.Exception(we);
             }
             catch (SocketException sc)
             {
                 Log.Info("Socket exception happened!, which method cause this exception??");
-                Log.Error(sc);
+                Log.Exception(sc);
             }
             catch (Exception exception)
             {
@@ -72,7 +72,7 @@ namespace Wox.Core
             catch (WebException e)
             {
                 Log.Warn("Can't connect to github api to check new version");
-                Log.Error(e);
+                Log.Exception(e);
                 return string.Empty;
             }
 
@@ -85,7 +85,7 @@ namespace Wox.Core
                 }
                 catch (JsonSerializationException e)
                 {
-                    Log.Error(e);
+                    Log.Exception(e);
                     return string.Empty;
                 }
                 var version = json?["tag_name"]?.ToString();

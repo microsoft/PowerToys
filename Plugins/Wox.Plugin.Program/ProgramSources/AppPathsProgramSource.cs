@@ -61,7 +61,7 @@ namespace Wox.Plugin.Program.ProgramSources
                     }
                     catch (Exception e)
                     {
-                        Log.Error(e);
+                        Log.Exception(e);
                     }
                 }
             }

@@ -39,7 +39,7 @@ namespace Wox.Core.Plugin
                 }
                 catch (Exception e)
                 {
-                    Log.Error(new WoxPluginException(metadata.Name, "Couldn't load assembly", e));
+                    Log.Exception(new WoxPluginException(metadata.Name, "Couldn't load assembly", e));
                     continue;
                 }
                 var types = assembly.GetTypes();
@@ -50,7 +50,7 @@ namespace Wox.Core.Plugin
                 }
                 catch (InvalidOperationException e)
                 {
-                    Log.Error(new WoxPluginException(metadata.Name, "Can't find class implement IPlugin", e));
+                    Log.Exception(new WoxPluginException(metadata.Name, "Can't find class implement IPlugin", e));
                     continue;
                 }
                 IPlugin plugin;
@@ -60,7 +60,7 @@ namespace Wox.Core.Plugin
                 }
                 catch (Exception e)
                 {
-                    Log.Error(new WoxPluginException(metadata.Name, "Can't create instance", e));
+                    Log.Exception(new WoxPluginException(metadata.Name, "Can't create instance", e));
                     continue;
                 }
                 PluginPair pair = new PluginPair
@@ -90,13 +90,13 @@ namespace Wox.Core.Plugin
                     }
                     else
                     {
-                        Log.Error(new WoxException("Python can't be found in PATH."));
+                        Log.Exception(new WoxException("Python can't be found in PATH."));
                         return new List<PluginPair>();
                     }
                 }
                 else
                 {
-                    Log.Error(new WoxException("Path variable is not set."));
+                    Log.Exception(new WoxException("Path variable is not set."));
                     return new List<PluginPair>();
                 }
             }
@@ -109,7 +109,7 @@ namespace Wox.Core.Plugin
                 }
                 else
                 {
-                    Log.Error(new WoxException("Can't find python executable in python directory"));
+                    Log.Exception(new WoxException("Can't find python executable in python directory"));
                     return new List<PluginPair>();
                 }
             }

@@ -60,7 +60,7 @@ namespace Wox.Infrastructure.Storage
             catch (JsonSerializationException e)
             {
                 LoadDefault();
-                Log.Error(e);
+                Log.Exception(e);
             }
         }
 

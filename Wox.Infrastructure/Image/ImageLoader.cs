@@ -63,7 +63,7 @@ namespace Wox.Infrastructure.Image
             }
             catch (System.Exception e)
             {
-                Log.Error(e);
+                Log.Exception(e);
                 return ImageSources[ErrorIcon];
             }
         }
@@ -94,7 +94,7 @@ namespace Wox.Infrastructure.Image
             }
             catch (System.Exception e)
             {
-                Log.Error(e);
+                Log.Exception(e);
                 return ImageSources[ErrorIcon];
             }
         }

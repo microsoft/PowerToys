@@ -74,7 +74,7 @@ namespace Wox.Core.Plugin
                 }
                 catch (Exception e)
                 {
-                    Log.Error(e);
+                    Log.Exception(e);
                 }
             }
             return null;

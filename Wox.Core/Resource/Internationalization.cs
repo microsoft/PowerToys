@@ -29,7 +29,7 @@ namespace Wox.Core.Resource
                 }
                 catch (Exception e)
                 {
-                    Log.Error(e);
+                    Log.Exception(e);
                 }
             }
         }
@@ -117,7 +117,7 @@ namespace Wox.Core.Resource
             catch (Exception e)
             {
                 var woxPluginException = new WoxPluginException(pluginPair.Metadata.Name, "Update Plugin metadata translation failed:", e);
-                Log.Error(woxPluginException);
+                Log.Exception(woxPluginException);
             }
         }
 

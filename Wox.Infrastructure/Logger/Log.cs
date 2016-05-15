@@ -35,19 +35,29 @@ namespace Wox.Infrastructure.Logger
             var type = $"{method.DeclaringType.NonNull().FullName}.{method.Name}";
             return type;
         }
-        public static void Error(System.Exception e)
+
+        public static void Error(string msg)
         {
             var type = CallerType();
             var logger = LogManager.GetLogger(type);
+            System.Diagnostics.Debug.WriteLine($"ERROR: {msg}");
+            logger.Error(msg);
+        }
+
+        public static void Exception(System.Exception e)
+        {
 #if DEBUG
             throw e;
 #else
-            while (e.InnerException != null)
+            var type = CallerType();
+            var logger = LogManager.GetLogger(type);
+
+            do
             {
                 logger.Error(e.Message);
-                logger.Error(e.StackTrace);
+                logger.Error($"\n{e.StackTrace}");
                 e = e.InnerException;
-            }
+            } while (e != null);
 #endif
         }
 

@@ -24,7 +24,7 @@ namespace Wox.Plugin.WebSearch.SuggestionSources
             catch (WebException e)
             {
                 Log.Warn("Can't get suggestion from google");
-                Log.Error(e);
+                Log.Exception(e);
                 return new List<string>(); ;
             }
             if (string.IsNullOrEmpty(result)) return new List<string>();
@@ -35,7 +35,7 @@ namespace Wox.Plugin.WebSearch.SuggestionSources
             }
             catch (JsonSerializationException e)
             {
-                Log.Error(e);
+                Log.Exception(e);
                 return new List<string>();
             }
             if (json != null)
