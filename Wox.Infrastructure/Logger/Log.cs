@@ -87,11 +87,11 @@ namespace Wox.Infrastructure.Logger
 
         public static void Fatal(System.Exception e)
         {
-            var type = CallerType();
-            var logger = LogManager.GetLogger(type);
 #if DEBUG
             throw e;
 #else
+            var type = CallerType();
+            var logger = LogManager.GetLogger(type);
             logger.Fatal(ExceptionFormatter.FormatExcpetion(e));
 #endif
         }

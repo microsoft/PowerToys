@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using Wox.Core;
@@ -50,7 +49,6 @@ namespace Wox
 
                 PluginManager.LoadPlugins(_settings.PluginSettings);
                 var vm = new MainViewModel(_settings, storage);
-                var pluginsSettings = _settings.PluginSettings;
                 var window = new MainWindow(_settings, vm);
                 API = new PublicAPIInstance(_settings, vm);
                 PluginManager.InitializePlugins(API);
