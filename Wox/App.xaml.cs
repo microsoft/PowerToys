@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using Wox.Core;
 using Wox.Core.Plugin;
@@ -53,22 +55,33 @@ namespace Wox
                 API = new PublicAPIInstance(_settings, vm);
                 PluginManager.InitializePlugins(API);
 
-                RegisterExitEvents();
-
                 Current.MainWindow = window;
                 Current.MainWindow.Title = Infrastructure.Wox.Name;
+
+                RegisterExitEvents();
+
+                AutoUpdates();
+
                 window.Show();
             });
         }
 
-        private void OnActivated(object sender, EventArgs e)
+        private void AutoUpdates()
         {
             if (_settings.AutoUpdates)
             {
+                // check udpate every 5 hours
+                var timer = new Timer(1000 * 60 * 60 * 5);
+                timer.Elapsed += (s, e) =>
+                {
+                    Updater.UpdateApp();
+                };
+                timer.Start();
+
+                // check updates on startup
                 Updater.UpdateApp();
             }
         }
-
         private void RegisterExitEvents()
         {
             AppDomain.CurrentDomain.ProcessExit += (s, e) => Dispose();
