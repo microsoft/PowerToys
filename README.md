@@ -20,8 +20,16 @@ Launcher for Windows, an alternative to [Alfred](https://www.alfredapp.com/) and
 - Install plugins from [http://www.getwox.com/plugin](http://www.getwox.com/plugin)
 
 # Installation
-- Latest stable version: [releases](https://github.com/Wox-launcher/Wox/releases).
-- Latest beta version: try **Pre-release** labeled release in [releases](https://github.com/Wox-launcher/Wox/releases) 
+
+download `setup.exe`.
+if windows complains about security, just run it. code will be signed in the future
+
+- Requirements:
+  - .net >= 4.5.2
+  - [everything](https://www.voidtools.com/): `.exe` installer + use x64 if your windows is x64
+  - [python3](https://www.python.org/downloads/): `.exe` installer
+- Stable: [releases](https://github.com/Wox-launcher/Wox/releases).
+- Beta: try **Pre-release** labeled release in [releases](https://github.com/Wox-launcher/Wox/releases) 
 
 # Usage
 - Launch: <kbd>Alt</kbd>+<kbd>Space</kbd>
