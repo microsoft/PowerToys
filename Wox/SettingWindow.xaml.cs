@@ -30,6 +30,7 @@ namespace Wox
 {
     public partial class SettingWindow
     {
+        private const string StartupPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
         public readonly IPublicAPI _api;
         bool settingsLoaded;
         private Dictionary<ISettingProvider, Control> featureControls = new Dictionary<ISettingProvider, Control>();
@@ -117,7 +118,7 @@ namespace Wox
             };
 
 
-            cbStartWithWindows.IsChecked = CheckApplicationIsStartupWithWindow();
+            cbStartWithWindows.IsChecked = _settings.StartWoxOnSystemStartup;
             comboMaxResultsToShow.SelectionChanged += (o, e) =>
             {
                 _settings.MaxResultsToShow = (int)comboMaxResultsToShow.SelectedItem;
@@ -227,43 +228,47 @@ namespace Wox
 
         private void CbStartWithWindows_OnChecked(object sender, RoutedEventArgs e)
         {
-            AddApplicationToStartup();
+            SetStartup();
             _settings.StartWoxOnSystemStartup = true;
         }
 
         private void CbStartWithWindows_OnUnchecked(object sender, RoutedEventArgs e)
         {
-            RemoveApplicationFromStartup();
+            RemoveStartup();
             _settings.StartWoxOnSystemStartup = false;
         }
 
-        private void AddApplicationToStartup()
+        public static void SetStartup()
         {
-            using (
-                RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
-                    true))
+            using (var key = Registry.CurrentUser.OpenSubKey(StartupPath, true))
             {
-                key.SetValue("Wox", "\"" + Infrastructure.Wox.ProgramPath + "\" --hidestart");
+                var executable = Path.Combine(Infrastructure.Wox.ProgramPath, Infrastructure.Wox.Name + ".exe");
+                key?.SetValue(Infrastructure.Wox.Name, executable);
             }
         }
 
-        private void RemoveApplicationFromStartup()
+        private void RemoveStartup()
         {
-            using (
-                RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
-                    true))
+            using (var key = Registry.CurrentUser.OpenSubKey(StartupPath, true))
             {
-                key.DeleteValue("Wox", false);
+                key?.DeleteValue(Infrastructure.Wox.Name, false);
             }
         }
 
-        private bool CheckApplicationIsStartupWithWindow()
+        public static bool StartupSet()
         {
-            using (
-                RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
-                    true))
+            using (var key = Registry.CurrentUser.OpenSubKey(StartupPath, true))
             {
-                return key.GetValue("Wox") != null;
+                var path = key?.GetValue("Wox") as string;
+                if (path != null)
+                {
+                    var executable = Path.Combine(Infrastructure.Wox.ProgramPath, Infrastructure.Wox.Name + ".exe");
+                    return path == executable;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 

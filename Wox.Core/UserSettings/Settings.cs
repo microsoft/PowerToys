@@ -43,7 +43,7 @@ namespace Wox.Core.UserSettings
         public bool DontPromptUpdateMsg { get; set; }
         public bool EnableUpdateLog { get; set; }
 
-        public bool StartWoxOnSystemStartup { get; set; }
+        public bool StartWoxOnSystemStartup { get; set; } = true;
         public bool HideOnStartup { get; set; }
         public bool LeaveCmdOpen { get; set; }
         public bool HideWhenDeactive { get; set; }

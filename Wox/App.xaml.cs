@@ -58,10 +58,22 @@ namespace Wox
 
                 RegisterExitEvents();
 
+                AutoStartup();
                 AutoUpdates();
 
                 window.Show();
             });
+        }
+
+        private void AutoStartup()
+        {
+            if (_settings.StartWoxOnSystemStartup)
+            {
+                if (!SettingWindow.StartupSet())
+                {
+                    SettingWindow.SetStartup();
+                }
+            }
         }
 
         private void AutoUpdates()
