@@ -158,7 +158,7 @@ namespace Wox
             string activateTimes = string.Format(
                 InternationalizationManager.Instance.GetTranslation("about_activate_times"), _settings.ActivateTimes);
             ActivatedTimes.Text = activateTimes;
-            tbVersion.Text = Infrastructure.Wox.Version;
+            tbVersion.Text = Infrastructure.Constant.Version;
 
             #endregion
 
@@ -242,8 +242,7 @@ namespace Wox
         {
             using (var key = Registry.CurrentUser.OpenSubKey(StartupPath, true))
             {
-                var executable = Path.Combine(Infrastructure.Wox.ProgramPath, Infrastructure.Wox.Name + ".exe");
-                key?.SetValue(Infrastructure.Wox.Name, executable);
+                key?.SetValue(Infrastructure.Constant.Wox, Infrastructure.Constant.ExecutablePath);
             }
         }
 
@@ -251,7 +250,7 @@ namespace Wox
         {
             using (var key = Registry.CurrentUser.OpenSubKey(StartupPath, true))
             {
-                key?.DeleteValue(Infrastructure.Wox.Name, false);
+                key?.DeleteValue(Infrastructure.Constant.Wox, false);
             }
         }
 
@@ -262,8 +261,7 @@ namespace Wox
                 var path = key?.GetValue("Wox") as string;
                 if (path != null)
                 {
-                    var executable = Path.Combine(Infrastructure.Wox.ProgramPath, Infrastructure.Wox.Name + ".exe");
-                    return path == executable;
+                    return path == Infrastructure.Constant.ExecutablePath;
                 }
                 else
                 {
@@ -454,48 +452,48 @@ namespace Wox
                     Title = "Wox is an effective launcher for windows",
                     SubTitle = "Wox provide bundles of features let you access infomations quickly.",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Constant.ProgramDirectory)
                 },
                 new Result
                 {
                     Title = "Search applications",
                     SubTitle = "Search applications, files (via everything plugin) and browser bookmarks",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Constant.ProgramDirectory)
                 },
                 new Result
                 {
                     Title = "Search web contents with shortcuts",
                     SubTitle = "e.g. search google with g keyword or youtube keyword)",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Constant.ProgramDirectory)
                 },
                 new Result
                 {
                     Title = "clipboard history ",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Constant.ProgramDirectory)
                 },
                 new Result
                 {
                     Title = "Themes support",
                     SubTitle = "get more themes from http://www.getwox.com/theme",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Constant.ProgramDirectory)
                 },
                 new Result
                 {
                     Title = "Plugins support",
                     SubTitle = "get more plugins from http://www.getwox.com/plugin",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Constant.ProgramDirectory)
                 },
                 new Result
                 {
                     Title = "Wox is an open-source software",
                     SubTitle = "Wox benefits from the open-source community a lot",
                     IcoPath = "Images/app.png",
-                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Wox.ProgramPath)
+                    PluginDirectory = Path.GetDirectoryName(Infrastructure.Constant.ProgramDirectory)
                 }
             });
 
@@ -859,7 +857,7 @@ namespace Wox
             if (!string.IsNullOrEmpty(version))
             {
                 var newVersion = Updater.NumericVersion(version);
-                var oldVersion = Updater.NumericVersion(Infrastructure.Wox.Version);
+                var oldVersion = Updater.NumericVersion(Infrastructure.Constant.Version);
                 if (newVersion > oldVersion)
                 {
                     NewVersionTips.Text = string.Format(NewVersionTips.Text, version);

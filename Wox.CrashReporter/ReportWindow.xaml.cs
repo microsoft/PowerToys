@@ -23,7 +23,7 @@ namespace Wox.CrashReporter
         private void SetException(Exception exception)
         {
             tbSummary.AppendText(exception.Message);
-            tbVersion.Text = Infrastructure.Wox.Version;
+            tbVersion.Text = Infrastructure.Constant.Version;
             tbDatetime.Text = DateTime.Now.ToString();
             tbStackTrace.AppendText(exception.StackTrace);
             tbSource.Text = exception.Source;

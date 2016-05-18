@@ -18,8 +18,8 @@ namespace Wox.Infrastructure.Image
     public static class ImageLoader
     {
         private static readonly ConcurrentDictionary<string, ImageSource> ImageSources = new ConcurrentDictionary<string, ImageSource>();
-        private static readonly string DefaultIcon = Path.Combine(Wox.ProgramPath, "Images", "app.png");
-        private static readonly string ErrorIcon = Path.Combine(Wox.ProgramPath, "Images", "app_error.png");
+        private static readonly string DefaultIcon = Path.Combine(Constant.ProgramDirectory, "Images", "app.png");
+        private static readonly string ErrorIcon = Path.Combine(Constant.ProgramDirectory, "Images", "app_error.png");
 
         private static readonly string[] ImageExtions =
         {
@@ -174,7 +174,7 @@ namespace Wox.Infrastructure.Image
                 }
                 else
                 {
-                    var defaultDirectoryPath = Path.Combine(Wox.ProgramPath, "Images", Path.GetFileName(path));
+                    var defaultDirectoryPath = Path.Combine(Constant.ProgramDirectory, "Images", Path.GetFileName(path));
                     if (File.Exists(defaultDirectoryPath))
                     {
                         image = new BitmapImage(new Uri(defaultDirectoryPath));

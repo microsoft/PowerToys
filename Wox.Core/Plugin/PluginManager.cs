@@ -33,13 +33,13 @@ namespace Wox.Core.Plugin
         // todo happlebao, this should not be public, the indicator function should be embeded 
         public static PluginsSettings Settings;
         private static List<PluginMetadata> _metadatas;
-        private static readonly string[] Directories = { Infrastructure.Wox.PreinstalledDirectory, Infrastructure.Wox.UserDirectory };
+        private static readonly string[] Directories = { Infrastructure.Constant.PreinstalledDirectory, Infrastructure.Constant.UserDirectory };
 
         private static void ValidateUserDirectory()
         {
-            if (!Directory.Exists(Infrastructure.Wox.UserDirectory))
+            if (!Directory.Exists(Infrastructure.Constant.UserDirectory))
             {
-                Directory.CreateDirectory(Infrastructure.Wox.UserDirectory);
+                Directory.CreateDirectory(Infrastructure.Constant.UserDirectory);
             }
         }
 

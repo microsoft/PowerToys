@@ -27,7 +27,7 @@ namespace Wox.Core
                 // todo 5/9 the return value of UpdateApp() is NULL, fucking useless!
                 using (
                     var updater =
-                        await UpdateManager.GitHubUpdateManager(Infrastructure.Wox.Github, urlDownloader: downloader))
+                        await UpdateManager.GitHubUpdateManager(Infrastructure.Constant.Github, urlDownloader: downloader))
                 {
                     await updater.UpdateApp();
                 }

@@ -495,7 +495,7 @@ namespace Wox.ViewModel
                     Title = string.Format(executeQueryHistoryTitle, history.Query),
                     SubTitle = string.Format(lastExecuteTime, history.ExecutedDateTime),
                     IcoPath = "Images\\history.png",
-                    PluginDirectory = Infrastructure.Wox.ProgramPath,
+                    PluginDirectory = Infrastructure.Constant.ProgramDirectory,
                     Action = _ =>
                     {
                         QueryText = history.Query;
@@ -519,7 +519,7 @@ namespace Wox.ViewModel
                 {
                     Title = InternationalizationManager.Instance.GetTranslation("cancelTopMostInThisQuery"),
                     IcoPath = "Images\\down.png",
-                    PluginDirectory = Infrastructure.Wox.ProgramPath,
+                    PluginDirectory = Infrastructure.Constant.ProgramDirectory,
                     Action = _ =>
                     {
                         _topMostRecord.Remove(result);
@@ -534,7 +534,7 @@ namespace Wox.ViewModel
                 {
                     Title = InternationalizationManager.Instance.GetTranslation("setAsTopMostInThisQuery"),
                     IcoPath = "Images\\up.png",
-                    PluginDirectory = Infrastructure.Wox.ProgramPath,
+                    PluginDirectory = Infrastructure.Constant.ProgramDirectory,
                     Action = _ =>
                     {
                         _topMostRecord.AddOrUpdate(result);

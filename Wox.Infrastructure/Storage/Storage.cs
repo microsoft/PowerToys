@@ -32,7 +32,7 @@ namespace Wox.Infrastructure.Storage
         {
             DataType = typeof (T);
             FileName = DataType.Name;
-            DirectoryPath = Wox.DataPath;
+            DirectoryPath = Constant.DataDirectory;
         }
 
         protected void ValidateDirectory()

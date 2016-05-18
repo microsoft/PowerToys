@@ -12,7 +12,7 @@ namespace Wox.Infrastructure.Logger
         static Log()
         {
             var directoryName = "Logs";
-            var path = Path.Combine(Wox.DataPath, directoryName, Wox.Version);
+            var path = Path.Combine(Constant.DataDirectory, directoryName, Constant.Version);
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
@@ -21,7 +21,7 @@ namespace Wox.Infrastructure.Logger
             var configuration = new LoggingConfiguration();
             var target = new FileTarget();
             configuration.AddTarget("file", target);
-            target.FileName = "${specialfolder:folder=ApplicationData}/" + Wox.Name + "/" + directoryName + "/" + Wox.Version + "/${shortdate}.log";
+            target.FileName = "${specialfolder:folder=ApplicationData}/" + Constant.Wox + "/" + directoryName + "/" + Constant.Version + "/${shortdate}.log";
             var rule = new LoggingRule("*", LogLevel.Info, target);
             configuration.LoggingRules.Add(rule);
             LogManager.Configuration = configuration;

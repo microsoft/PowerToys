@@ -34,7 +34,7 @@ namespace Wox.Core.Plugin
                     return;
                 }
 
-                string pluginFolerPath = Infrastructure.Wox.UserDirectory;
+                string pluginFolerPath = Infrastructure.Constant.UserDirectory;
 
                 string newPluginName = plugin.Name
                     .Replace("/", "_")

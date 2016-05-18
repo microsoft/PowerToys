@@ -54,7 +54,7 @@ namespace Wox
                 PluginManager.InitializePlugins(API);
 
                 Current.MainWindow = window;
-                Current.MainWindow.Title = Infrastructure.Wox.Name;
+                Current.MainWindow.Title = Infrastructure.Constant.Wox;
 
                 RegisterExitEvents();
 

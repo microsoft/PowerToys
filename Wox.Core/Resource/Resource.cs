@@ -8,7 +8,7 @@ namespace Wox.Core.Resource
     {
         public string DirectoryName { get; protected set; }
 
-        protected string DirectoryPath => Path.Combine(Infrastructure.Wox.ProgramPath, DirectoryName);
+        protected string DirectoryPath => Path.Combine(Infrastructure.Constant.ProgramDirectory, DirectoryName);
 
         public abstract ResourceDictionary GetResourceDictionary();
     }

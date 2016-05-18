@@ -127,9 +127,9 @@ namespace Wox.Plugin.WebSearch
 
         static Main()
         {
-            var plugins = Infrastructure.Wox.Plugins;
+            var plugins = Infrastructure.Constant.Plugins;
             var assemblyName = typeof(Main).Assembly.GetName().Name;
-            var pluginDirectory = Path.Combine(Infrastructure.Wox.SettingsPath, plugins, assemblyName);
+            var pluginDirectory = Path.Combine(Infrastructure.Constant.SettingsPath, plugins, assemblyName);
             ImagesDirectory = Path.Combine(pluginDirectory, Images);
         }
 
