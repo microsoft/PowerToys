@@ -7,6 +7,6 @@
     "Version":"1.0.0",
     "Language":"csharp",
     "Website":"http://www.getwox.com/plugin",
-    "ExecuteFileName":"Wox.Plugin.CMD.dll",
-    "IcoPath":"Images\\cmd.png"
+    "ExecuteFileName":"Wox.Plugin.Shell.dll",
+    "IcoPath":"Images\\shell.png"
 }

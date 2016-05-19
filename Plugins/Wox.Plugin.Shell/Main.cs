@@ -15,6 +15,7 @@ namespace Wox.Plugin.CMD
 {
     public class CMD : IPlugin, ISettingProvider, IPluginI18n, IContextMenu
     {
+        private const string Image = "Images/shell.png";
         private PluginInitContext context;
         private bool WinRStroked;
         private readonly KeyboardSimulator keyboardSimulator = new KeyboardSimulator(new InputSimulator());
@@ -76,7 +77,7 @@ namespace Wox.Plugin.CMD
                         results.AddRange(autocomplete.ConvertAll(m => new Result
                         {
                             Title = m,
-                            IcoPath = "Images/cmd.png",
+                            IcoPath = Image,
                             Action = c =>
                             {
                                 ExecuteCommand(m);
@@ -109,7 +110,7 @@ namespace Wox.Plugin.CMD
                     {
                         Title = m.Key,
                         SubTitle = string.Format(context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
-                        IcoPath = "Images/cmd.png",
+                        IcoPath = Image,
                         Action = c =>
                         {
                             ExecuteCommand(m.Key);
@@ -128,7 +129,7 @@ namespace Wox.Plugin.CMD
                 Title = cmd,
                 Score = 5000,
                 SubTitle = context.API.GetTranslation("wox_plugin_cmd_execute_through_shell"),
-                IcoPath = "Images/cmd.png",
+                IcoPath = Image,
                 Action = c =>
                 {
                     ExecuteCommand(cmd);
@@ -146,7 +147,7 @@ namespace Wox.Plugin.CMD
                 {
                     Title = m.Key,
                     SubTitle = string.Format(context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
-                    IcoPath = "Images/cmd.png",
+                    IcoPath = Image,
                     Action = c =>
                     {
                         ExecuteCommand(m.Key);
@@ -320,7 +321,7 @@ namespace Wox.Plugin.CMD
                                 ExecuteCommand(selectedResult.Title, true);
                                 return true;
                             },
-                            IcoPath = "Images/cmd.png"
+                            IcoPath = Image
                         }
                      };
         }
