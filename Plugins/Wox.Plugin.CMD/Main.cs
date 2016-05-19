@@ -174,20 +174,26 @@ namespace Wox.Plugin.CMD
             else if (_settings.Shell == Shell.RunCommand)
             {
                 var parts = command.Split(new[] { ' ' }, 2);
-                var filename = parts[0];
-                var path = FullPath(filename);
-                if (string.IsNullOrEmpty(path) || parts.Length == 1)
+                if (parts.Length == 1)
                 {
                     info = new ProcessStartInfo(command);
                 }
                 else
                 {
-                    var arguemtns = parts[1];
-                    info = new ProcessStartInfo
+                    var filename = parts[0];
+                    if (ExistInPath(filename))
                     {
-                        FileName = filename,
-                        Arguments = arguemtns
-                    };
+                        info = new ProcessStartInfo(command);
+                    }
+                    else
+                    {
+                        var arguemtns = parts[1];
+                        info = new ProcessStartInfo
+                        {
+                            FileName = filename,
+                            Arguments = arguemtns
+                        };
+                    }
                 }
             }
             else
@@ -223,11 +229,11 @@ namespace Wox.Plugin.CMD
             }
         }
 
-        private string FullPath(string filename)
+        private bool ExistInPath(string filename)
         {
             if (File.Exists(filename))
             {
-                return filename;
+                return true;
             }
             else
             {
@@ -236,22 +242,18 @@ namespace Wox.Plugin.CMD
                 {
                     foreach (var path in values.Split(';'))
                     {
-                        var fullPath1 = Path.Combine(path, filename);
-                        var fullPath2 = Path.Combine(path, filename + ".exe");
-                        if (File.Exists(fullPath1))
+                        var path1 = Path.Combine(path, filename);
+                        var path2 = Path.Combine(path, filename + ".exe");
+                        if (File.Exists(path1) || File.Exists(path2))
                         {
-                            return fullPath1;
-                        }
-                        else if (File.Exists(fullPath2))
-                        {
-                            return fullPath2;
+                            return true;
                         }
                     }
-                    return string.Empty;
+                    return false;
                 }
                 else
                 {
-                    return string.Empty;
+                    return false;
                 }
             }
         }
