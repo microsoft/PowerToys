@@ -744,14 +744,22 @@ namespace Wox
 
         private void OnPluginTabSelected()
         {
-            var plugins = new CompositeCollection
+            var plugins = PluginManager.AllPlugins;
+            //move all disabled to bottom
+            plugins.Sort(delegate (PluginPair a, PluginPair b)
+            {
+                int res = _settings.PluginSettings.Plugins[a.Metadata.ID].Disabled ? 1 : 0;
+                res += _settings.PluginSettings.Plugins[b.Metadata.ID].Disabled ? -1 : 0;
+                return res;
+            });
+
+            PluginsListBox.ItemsSource = new CompositeCollection
             {
                 new CollectionContainer
                 {
-                    Collection = PluginManager.AllPlugins
+                    Collection = plugins
                 }
-            };
-            PluginsListBox.ItemsSource = plugins;
+            }; ;
             PluginsListBox.SelectedIndex = 0;
         }
 
