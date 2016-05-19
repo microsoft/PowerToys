@@ -80,7 +80,7 @@ namespace Wox.Plugin.CMD
                             IcoPath = Image,
                             Action = c =>
                             {
-                                ExecuteCommand(m);
+                                Execute(m);
                                 return true;
                             }
                         }));
@@ -113,7 +113,7 @@ namespace Wox.Plugin.CMD
                         IcoPath = Image,
                         Action = c =>
                         {
-                            ExecuteCommand(m.Key);
+                            Execute(m.Key);
                             return true;
                         }
                     };
@@ -132,7 +132,7 @@ namespace Wox.Plugin.CMD
                 IcoPath = Image,
                 Action = c =>
                 {
-                    ExecuteCommand(cmd);
+                    Execute(cmd);
                     return true;
                 }
             };
@@ -150,14 +150,14 @@ namespace Wox.Plugin.CMD
                     IcoPath = Image,
                     Action = c =>
                     {
-                        ExecuteCommand(m.Key);
+                        Execute(m.Key);
                         return true;
                     }
                 }).Take(5);
             return history.ToList();
         }
 
-        private void ExecuteCommand(string command, bool runAsAdministrator = false)
+        private void Execute(string command, bool runAsAdministrator = false)
         {
             command = command.Trim();
             command = Environment.ExpandEnvironmentVariables(command);
@@ -172,32 +172,7 @@ namespace Wox.Plugin.CMD
                     Arguments = arguments,
                 };
             }
-            else if (_settings.Shell == Shell.RunCommand)
-            {
-                var parts = command.Split(new[] { ' ' }, 2);
-                if (parts.Length == 1)
-                {
-                    info = new ProcessStartInfo(command);
-                }
-                else
-                {
-                    var filename = parts[0];
-                    if (ExistInPath(filename))
-                    {
-                        info = new ProcessStartInfo(command);
-                    }
-                    else
-                    {
-                        var arguemtns = parts[1];
-                        info = new ProcessStartInfo
-                        {
-                            FileName = filename,
-                            Arguments = arguemtns
-                        };
-                    }
-                }
-            }
-            else
+            else if (_settings.Shell == Shell.Powershell)
             {
                 string arguments;
                 if (_settings.LeaveShellOpen)
@@ -214,6 +189,36 @@ namespace Wox.Plugin.CMD
                     Arguments = arguments
                 };
             }
+            else if (_settings.Shell == Shell.RunCommand)
+            {
+                var parts = command.Split(new[] {' '}, 2);
+                if (parts.Length == 2)
+                {
+                    var filename = parts[0];
+                    if (ExistInPath(filename))
+                    {
+                        var arguemtns = parts[1];
+                        info = new ProcessStartInfo
+                        {
+                            FileName = filename,
+                            Arguments = arguemtns
+                        };
+                    }
+                    else
+                    {
+                        info = new ProcessStartInfo(command);
+                    }
+                }
+                else
+                {
+                    info = new ProcessStartInfo(command);
+                }
+            }
+            else
+            {
+                return;
+            }
+
 
             info.UseShellExecute = true;
             info.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -318,7 +323,7 @@ namespace Wox.Plugin.CMD
                             Action = c =>
                             {
                                 context.API.HideApp();
-                                ExecuteCommand(selectedResult.Title, true);
+                                Execute(selectedResult.Title, true);
                                 return true;
                             },
                             IcoPath = Image
