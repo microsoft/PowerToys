@@ -63,7 +63,7 @@
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Main.cs" />
-    <Compile Include="CMDHistory.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="CMDSetting.xaml.cs">
       <DependentUpon>CMDSetting.xaml</DependentUpon>
     </Compile>
