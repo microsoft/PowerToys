@@ -9,17 +9,17 @@
     <Border BorderBrush="Gray" Margin="10" BorderThickness="1">
         <Grid Margin="10" VerticalAlignment="Top" >
             <Grid.RowDefinitions>
-                <RowDefinition></RowDefinition>
-                <RowDefinition></RowDefinition>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
             </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0" Orientation="Horizontal">
-                <CheckBox x:Name="cbReplaceWinR" Content="{DynamicResource wox_plugin_cmd_relace_winr}" ></CheckBox>
-            </StackPanel>
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0 10 0 0">
-                <CheckBox x:Name="cbLeaveCmdOpen" Content="{DynamicResource wox_plugin_cmd_leave_cmd_open}">
-                    
-                </CheckBox>
-            </StackPanel>
+            <CheckBox Grid.Row="0" x:Name="ReplaceWinR" Content="{DynamicResource wox_plugin_cmd_relace_winr}" Margin="10" HorizontalAlignment="Left"/>
+            <CheckBox Grid.Row="1" x:Name="LeaveShellOpen" Content="{DynamicResource wox_plugin_cmd_leave_cmd_open}" Margin="10" HorizontalAlignment="Left"/>
+            <ComboBox Grid.Row="2" x:Name="ShellComboBox" Margin="10" HorizontalAlignment="Left" >
+                <ComboBoxItem>CMD</ComboBoxItem>
+                <ComboBoxItem>PowerShell</ComboBoxItem>
+                <ComboBoxItem>RunCommand</ComboBoxItem>
+            </ComboBox>
         </Grid>
     </Border>
 </UserControl>

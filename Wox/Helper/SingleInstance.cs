@@ -204,8 +204,6 @@ namespace Wox.Helper
                 where   TApplication: Application ,  ISingleInstanceApp 
                                     
     {
-        public const string Restart = "Restart";
-
         #region Private Fields
 
         /// <summary>

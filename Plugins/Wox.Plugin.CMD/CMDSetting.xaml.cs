@@ -5,9 +5,9 @@ namespace Wox.Plugin.CMD
 {
     public partial class CMDSetting : UserControl
     {
-        private readonly CMDHistory _settings;
+        private readonly Settings _settings;
 
-        public CMDSetting(CMDHistory settings)
+        public CMDSetting(Settings settings)
         {
             InitializeComponent();
             _settings = settings;
@@ -15,26 +15,34 @@ namespace Wox.Plugin.CMD
 
         private void CMDSetting_OnLoaded(object sender, RoutedEventArgs re)
         {
-            cbReplaceWinR.IsChecked = _settings.ReplaceWinR;
-            cbLeaveCmdOpen.IsChecked = _settings.LeaveCmdOpen;
+            ReplaceWinR.IsChecked = _settings.ReplaceWinR;
+            LeaveShellOpen.IsChecked = _settings.LeaveShellOpen;
+            LeaveShellOpen.IsEnabled = _settings.Shell != Shell.RunCommand;
 
-            cbLeaveCmdOpen.Checked += (o, e) =>
+            LeaveShellOpen.Checked += (o, e) =>
             {
-                _settings.LeaveCmdOpen = true;
+                _settings.LeaveShellOpen = true;
             };
 
-            cbLeaveCmdOpen.Unchecked += (o, e) =>
+            LeaveShellOpen.Unchecked += (o, e) =>
             {
-                _settings.LeaveCmdOpen = false;
+                _settings.LeaveShellOpen = false;
             };
 
-            cbReplaceWinR.Checked += (o, e) =>
+            ReplaceWinR.Checked += (o, e) =>
             {
                 _settings.ReplaceWinR = true;
             };
-            cbReplaceWinR.Unchecked += (o, e) =>
+            ReplaceWinR.Unchecked += (o, e) =>
             {
                 _settings.ReplaceWinR = false;
+            };
+
+            ShellComboBox.SelectedIndex = (int) _settings.Shell;
+            ShellComboBox.SelectionChanged += (o, e) =>
+            {
+                _settings.Shell = (Shell) ShellComboBox.SelectedIndex;
+                LeaveShellOpen.IsEnabled = _settings.Shell != Shell.RunCommand;
             };
         }
     }
