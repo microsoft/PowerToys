@@ -2,13 +2,13 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
     <!--MainWindow-->
-    <system:String x:Key="registerHotkeyFailed">Register hotkey: {0} failed</system:String>
+    <system:String x:Key="registerHotkeyFailed">Failed to register hotkey: {0}</system:String>
     <system:String x:Key="couldnotStartCmd">Could not start {0}</system:String>
-    <system:String x:Key="invalidWoxPluginFileFormat">Invalid wox plugin file format</system:String>
+    <system:String x:Key="invalidWoxPluginFileFormat">Invalid Wox plugin file format</system:String>
     <system:String x:Key="setAsTopMostInThisQuery">Set as topmost in this query</system:String>
     <system:String x:Key="cancelTopMostInThisQuery">Cancel topmost in this query</system:String>
-    <system:String x:Key="executeQuery">Execute query:{0}</system:String>
-    <system:String x:Key="lastExecuteTime">Last execute time:{0}</system:String>
+    <system:String x:Key="executeQuery">Execute query: {0}</system:String>
+    <system:String x:Key="lastExecuteTime">Last execution time: {0}</system:String>
     <system:String x:Key="iconTrayOpen">Open</system:String>
     <system:String x:Key="iconTraySettings">Settings</system:String>
     <system:String x:Key="iconTrayAbout">About</system:String>
@@ -19,25 +19,25 @@
     <system:String x:Key="general">General</system:String>
     <system:String x:Key="startWoxOnSystemStartup">Start Wox on system startup</system:String>
     <system:String x:Key="hideOnStartup">Hide Wox on startup</system:String>
-    <system:String x:Key="hideWoxWhenLoseFocus">Hide Wox when loses focus</system:String>
-    <system:String x:Key="dontPromptUpdateMsg">Don't show upgrade msg if new version available</system:String>
+    <system:String x:Key="hideWoxWhenLoseFocus">Hide Wox when focus lost</system:String>
+    <system:String x:Key="dontPromptUpdateMsg">Do not show new version notifications</system:String>
     <system:String x:Key="rememberLastLocation">Remember last launch location</system:String>
     <system:String x:Key="language">Language</system:String>
-    <system:String x:Key="maxShowResults">Maximum show results</system:String>
-    <system:String x:Key="ignoreHotkeysOnFullscreen">Ignore hotkeys if window is fullscreen</system:String>
+    <system:String x:Key="maxShowResults">Maximum results shown</system:String>
+    <system:String x:Key="ignoreHotkeysOnFullscreen">Ignore hotkeys in fullscreen mode</system:String>
     <system:String x:Key="pythonDirectory">Python Directory</system:String>
     <system:String x:Key="selectPythonDirectory">Select</system:String>
-    <system:String x:Key="autoUpdates">Auto Updates</system:String>
+    <system:String x:Key="autoUpdates">Auto Update</system:String>
     
     
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Plugin</system:String>
-    <system:String x:Key="browserMorePlugins">Browse more plugins</system:String>
+    <system:String x:Key="browserMorePlugins">Find more plugins</system:String>
     <system:String x:Key="disable">Disable</system:String>
     <system:String x:Key="actionKeywords">Action keywords</system:String>
     <system:String x:Key="pluginDirectory">Plugin Directory</system:String>
     <system:String x:Key="author">Author</system:String>
-    <system:String x:Key="plugin_init_time">Initialize time: {0}ms</system:String>
+    <system:String x:Key="plugin_init_time">Init time: {0}ms</system:String>
     <system:String x:Key="plugin_query_time">Query time: {0}ms</system:String>
 
     <!--Setting Theme-->
@@ -70,20 +70,20 @@
     <system:String x:Key="testProxy">Test Proxy</system:String>
     <system:String x:Key="save">Save</system:String>
     <system:String x:Key="serverCantBeEmpty">Server can't be empty</system:String>
-    <system:String x:Key="portCantBeEmpty">Server port can't be empty</system:String>
+    <system:String x:Key="portCantBeEmpty">Port can't be empty</system:String>
     <system:String x:Key="invalidPortFormat">Invalid port format</system:String>
-    <system:String x:Key="saveProxySuccessfully">Save proxy successfully</system:String>
-    <system:String x:Key="proxyIsCorrect">Proxy is correct</system:String>
-    <system:String x:Key="proxyConnectFailed">Proxy connect failed</system:String>
+    <system:String x:Key="saveProxySuccessfully">Proxy saved successfully</system:String>
+    <system:String x:Key="proxyIsCorrect">Proxy configured correctly</system:String>
+    <system:String x:Key="proxyConnectFailed">Proxy connection failed</system:String>
 
     <!--Setting About-->
     <system:String x:Key="about">About</system:String>
     <system:String x:Key="website">Website</system:String>
     <system:String x:Key="version">Version</system:String>
-    <system:String x:Key="checkUpdates">Check Updates</system:String>
-    <system:String x:Key="newVersionTips">New Version {0} avaiable, please restart</system:String>
+    <system:String x:Key="checkUpdates">Check for Updates</system:String>
+    <system:String x:Key="newVersionTips">New version {0} avaiable, please restart</system:String>
     <system:String x:Key="releaseNotes">Release Notes:</system:String>
-    <system:String x:Key="about_activate_times">You have activated Wox {0} times</system:String>
+    <system:String x:Key="about_activate_times">You have activated Wox for {0} times</system:String>
 
     <!--Action Keyword Setting Dialog-->
     <system:String x:Key="oldActionKeywords">Old Action Keyword</system:String>
@@ -124,7 +124,7 @@
     <system:String x:Key="reportWindow_wox_got_an_error">Wox got an error</system:String>
 
     <!--update-->
-    <system:String x:Key="update_wox_update_new_version_available">Wox new version V{0} is available</system:String>
+    <system:String x:Key="update_wox_update_new_version_available">New Wox release {0} now available</system:String>
     <system:String x:Key="update_wox_update_error">An error occurred while trying to install software updates</system:String>
     <system:String x:Key="update_wox_update">Update</system:String>
     <system:String x:Key="update_wox_update_cancel">Cancel</system:String>
