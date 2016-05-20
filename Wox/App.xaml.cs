@@ -42,8 +42,6 @@ namespace Wox
             {
                 RegisterDispatcherUnhandledException();
 
-                ImageLoader.PreloadImages();
-
                 var storage = new JsonStrorage<Settings>();
                 _settings = storage.Load();
 
@@ -52,6 +50,8 @@ namespace Wox
                 var window = new MainWindow(_settings, vm);
                 API = new PublicAPIInstance(_settings, vm);
                 PluginManager.InitializePlugins(API);
+
+                ImageLoader.PreloadImages();
 
                 Current.MainWindow = window;
                 Current.MainWindow.Title = Infrastructure.Constant.Wox;
