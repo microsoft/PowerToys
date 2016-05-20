@@ -132,6 +132,8 @@ namespace Wox
             cbIgnoreHotkeysOnFullscreen.IsChecked = _settings.IgnoreHotkeysOnFullscreen;
             AutoUpdatesCheckBox.IsChecked = _settings.AutoUpdates;
 
+            LoadLanguages();
+
             comboMaxResultsToShow.ItemsSource = Enumerable.Range(2, 16);
             var maxResults = _settings.MaxResultsToShow;
             comboMaxResultsToShow.SelectedItem = maxResults == 0 ? 6 : maxResults;
@@ -162,7 +164,6 @@ namespace Wox
 
             #endregion
 
-            LoadLanguages();
             settingsLoaded = true;
         }
 

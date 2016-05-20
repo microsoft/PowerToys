@@ -15,7 +15,7 @@
     <system:String x:Key="iconTrayExit">退出</system:String>
     
     <!--設置，通用-->
-    <system:String x:Key="woxsettings">Wox設置</system:String>
+    <system:String x:Key="wox_settings">Wox設置</system:String>
     <system:String x:Key="general">通用</system:String>
     <system:String x:Key="startWoxOnSystemStartup">開機啟動</system:String>
     <system:String x:Key="hideWoxWhenLoseFocus">失去焦點時自動隱藏Wox</system:String>
@@ -24,7 +24,10 @@
     <system:String x:Key="language">語言</system:String>
     <system:String x:Key="maxShowResults">最大結果顯示個數</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">全屏模式下忽略熱鍵</system:String>
-    <system:String x:Key="pythonDirectory">Python Directory</system:String>
+    <system:String x:Key="pythonDirectory">Python 路径</system:String>
+    <system:String x:Key="autoUpdates">自动更新</system:String>
+    <system:String x:Key="selectPythonDirectory">Select</system:String>
+    <system:String x:Key="hideOnStartup">启动时不显示主窗口</system:String>
 
     <!--設置，插件-->
     <system:String x:Key="plugin">插件</system:String>
@@ -71,12 +74,15 @@
     <system:String x:Key="proxyIsCorrect">代理設置正確</system:String>
     <system:String x:Key="proxyConnectFailed">代理連接失敗</system:String>
 
-    <!--設置，版本-->
+    <!--設置，關於-->
     <system:String x:Key="about">關於</system:String>
     <system:String x:Key="website">網站</system:String>
     <system:String x:Key="version">版本</system:String>
     <system:String x:Key="about_activate_times">你已經激活了Wox {0} 次</system:String>
-
+    <system:String x:Key="checkUpdates">检查更新</system:String>
+    <system:String x:Key="newVersionTips">发现新版本 {0} , 请重启 wox</system:String>
+    <system:String x:Key="releaseNotes">更新说明:</system:String>
+    
     <!--Action Keyword 設置對話框-->
     <system:String x:Key="oldActionKeywords">舊觸發關鍵字</system:String>
     <system:String x:Key="newActionKeywords">新觸發關鍵字</system:String>

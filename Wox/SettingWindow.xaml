@@ -6,7 +6,7 @@
     xmlns:woxPlugin="clr-namespace:Wox.Plugin;assembly=Wox.Plugin"
     xmlns:image="clr-namespace:Wox.Infrastructure.Image;assembly=Wox.Infrastructure"
     Icon="Images\app.png"
-    Title="{DynamicResource woxsettings}"
+    Title="{DynamicResource wox_settings}"
     ResizeMode="NoResize"
     WindowStartupLocation="CenterScreen"
     Height="600" Width="800" PreviewKeyDown="Window_PreviewKeyDown">

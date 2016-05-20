@@ -15,7 +15,7 @@
     <system:String x:Key="iconTrayExit">終了</system:String>
 
     <!--Setting General-->
-    <system:String x:Key="woxsettings">Wox設定</system:String>
+    <system:String x:Key="wox_settings">Wox設定</system:String>
     <system:String x:Key="general">一般</system:String>
     <system:String x:Key="startWoxOnSystemStartup">スタートアップ時にWoxを起動する</system:String>
     <system:String x:Key="hideWoxWhenLoseFocus">フォーカスを失った時にWoxを隠す</system:String>
@@ -25,7 +25,9 @@
     <system:String x:Key="maxShowResults">結果の最大表示件数</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">ウィンドウがフルスクリーン時にホットキーを無効にする</system:String>
     <system:String x:Key="pythonDirectory">Python Directory</system:String>
-
+    <system:String x:Key="autoUpdates">Auto Update</system:String>
+    <system:String x:Key="selectPythonDirectory">Select</system:String>
+    <system:String x:Key="hideOnStartup">Hide Wox on startup</system:String>
     
     <!--Setting Plugin-->
     <system:String x:Key="plugin">プラグイン</system:String>
@@ -45,7 +47,6 @@
     <system:String x:Key="resultItemFont">アイテムフォントの結果</system:String>
     <system:String x:Key="windowMode">ウィンドウモード</system:String>
     <system:String x:Key="opacity">透過度</system:String>
-    
     
     <!--Setting Hotkey-->
     <system:String x:Key="hotkey">ホットキー</system:String>
@@ -78,6 +79,9 @@
     <system:String x:Key="website">ウェブサイト</system:String>
     <system:String x:Key="version">バージョン</system:String>
     <system:String x:Key="about_activate_times">あなたはWoxを {0} 回利用しました</system:String>
+    <system:String x:Key="checkUpdates">Check for Updates</system:String>
+    <system:String x:Key="newVersionTips">New version {0} avaiable, please restart wox</system:String>
+    <system:String x:Key="releaseNotes">Release Notes:</system:String>
 
     <!--Action Keyword Setting Dialog-->
     <system:String x:Key="oldActionKeywords">古いアクションキーボード</system:String>
@@ -90,7 +94,6 @@
     <system:String x:Key="succeed">成功しました</system:String>
     <system:String x:Key="actionkeyword_tips">アクションキーボードを指定しない場合、* を使用してください</system:String>
     
-    
     <!--Custom Query Hotkey Dialog-->
     <system:String x:Key="preview">プレビュー</system:String>
     <system:String x:Key="hotkeyIsNotUnavailable">ホットキーは使用できません。新しいホットキーを選択してください</system:String>
@@ -99,7 +102,6 @@
     
     <!--Hotkey Control-->
     <system:String x:Key="hotkeyUnavailable">ホットキーは使用できません</system:String>
-    
     
     <!--Crash Reporter-->
     <system:String x:Key="reportWindow_version">バージョン</system:String>
@@ -127,5 +129,4 @@
     <system:String x:Key="update_wox_update_files">更新ファイル一覧</system:String>
     <system:String x:Key="update_wox_update_upadte_description">アップデートの詳細</system:String>
     
-
 </ResourceDictionary>

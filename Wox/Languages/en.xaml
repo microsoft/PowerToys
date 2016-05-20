@@ -18,7 +18,6 @@
     <system:String x:Key="wox_settings">Wox Settings</system:String>
     <system:String x:Key="general">General</system:String>
     <system:String x:Key="startWoxOnSystemStartup">Start Wox on system startup</system:String>
-    <system:String x:Key="hideOnStartup">Hide Wox on startup</system:String>
     <system:String x:Key="hideWoxWhenLoseFocus">Hide Wox when focus lost</system:String>
     <system:String x:Key="dontPromptUpdateMsg">Do not show new version notifications</system:String>
     <system:String x:Key="rememberLastLocation">Remember last launch location</system:String>
@@ -26,10 +25,10 @@
     <system:String x:Key="maxShowResults">Maximum results shown</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignore hotkeys in fullscreen mode</system:String>
     <system:String x:Key="pythonDirectory">Python Directory</system:String>
-    <system:String x:Key="selectPythonDirectory">Select</system:String>
     <system:String x:Key="autoUpdates">Auto Update</system:String>
-    
-    
+    <system:String x:Key="selectPythonDirectory">Select</system:String>
+    <system:String x:Key="hideOnStartup">Hide Wox on startup</system:String>
+
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Plugin</system:String>
     <system:String x:Key="browserMorePlugins">Find more plugins</system:String>
@@ -48,8 +47,7 @@
     <system:String x:Key="resultItemFont">Result Item Font</system:String>
     <system:String x:Key="windowMode">Window Mode</system:String>
     <system:String x:Key="opacity">Opacity</system:String>
-    
-    
+
     <!--Setting Hotkey-->
     <system:String x:Key="hotkey">Hotkey</system:String>
     <system:String x:Key="woxHotkey">Wox Hotkey</system:String>
@@ -80,10 +78,10 @@
     <system:String x:Key="about">About</system:String>
     <system:String x:Key="website">Website</system:String>
     <system:String x:Key="version">Version</system:String>
-    <system:String x:Key="checkUpdates">Check for Updates</system:String>
-    <system:String x:Key="newVersionTips">New version {0} avaiable, please restart</system:String>
-    <system:String x:Key="releaseNotes">Release Notes:</system:String>
     <system:String x:Key="about_activate_times">You have activated Wox for {0} times</system:String>
+    <system:String x:Key="checkUpdates">Check for Updates</system:String>
+    <system:String x:Key="newVersionTips">New version {0} avaiable, please restart wox</system:String>
+    <system:String x:Key="releaseNotes">Release Notes:</system:String>
 
     <!--Action Keyword Setting Dialog-->
     <system:String x:Key="oldActionKeywords">Old Action Keyword</system:String>
@@ -95,18 +93,16 @@
     <system:String x:Key="newActionKeywordsHasBeenAssigned">New ActionKeywords has been assigned to other plugin, please assign another new action keyword</system:String>
     <system:String x:Key="succeed">Succeed</system:String>
     <system:String x:Key="actionkeyword_tips">Use * if you don't want to specify a action keyword</system:String>
-    
-    
+
     <!--Custom Query Hotkey Dialog-->
     <system:String x:Key="preview">Preview</system:String>
     <system:String x:Key="hotkeyIsNotUnavailable">Hotkey is unavailable, please select a new hotkey</system:String>
     <system:String x:Key="invalidPluginHotkey">Invalid plugin hotkey</system:String>
     <system:String x:Key="update">Update</system:String>
-    
+
     <!--Hotkey Control-->
     <system:String x:Key="hotkeyUnavailable">Hotkey unavailable</system:String>
-    
-    
+
     <!--Crash Reporter-->
     <system:String x:Key="reportWindow_version">Version</system:String>
     <system:String x:Key="reportWindow_time">Time</system:String>
@@ -132,6 +128,5 @@
     <system:String x:Key="update_wox_update_upadte_files">Following files will be updated</system:String>
     <system:String x:Key="update_wox_update_files">Update files</system:String>
     <system:String x:Key="update_wox_update_upadte_description">Update description</system:String>
-    
 
 </ResourceDictionary>

@@ -15,7 +15,7 @@
     <system:String x:Key="iconTrayExit">Закрыть</system:String>
 
     <!--Setting General-->
-    <system:String x:Key="woxsettings">Настройки Wox</system:String>
+    <system:String x:Key="wox_settings">Настройки Wox</system:String>
     <system:String x:Key="general">Общие</system:String>
     <system:String x:Key="startWoxOnSystemStartup">Запускать Wox при запуске системы</system:String>
     <system:String x:Key="hideWoxWhenLoseFocus">Скрывать Wox если потерян фокус</system:String>
@@ -25,7 +25,10 @@
     <system:String x:Key="maxShowResults">Максимальное количество результатов</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Игнорировать горячие клавиши, если окно в полноэкранном режиме</system:String>
     <system:String x:Key="pythonDirectory">Python Directory</system:String>
-
+    <system:String x:Key="autoUpdates">Auto Update</system:String>
+    <system:String x:Key="selectPythonDirectory">Select</system:String>
+    <system:String x:Key="hideOnStartup">Hide Wox on startup</system:String>
+    
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Плагины</system:String>
     <system:String x:Key="browserMorePlugins">Найти больше плагинов</system:String>
@@ -76,6 +79,9 @@
     <system:String x:Key="website">Сайт</system:String>
     <system:String x:Key="version">Версия</system:String>
     <system:String x:Key="about_activate_times">Вы воспользовались Wox уже {0} раз</system:String>
+    <system:String x:Key="checkUpdates">Check for Updates</system:String>
+    <system:String x:Key="newVersionTips">New version {0} avaiable, please restart wox</system:String>
+    <system:String x:Key="releaseNotes">Release Notes:</system:String>
 
     <!--Action Keyword Setting Dialog-->
     <system:String x:Key="oldActionKeywords">Текущая горячая клавиша</system:String>
@@ -88,7 +94,6 @@
     <system:String x:Key="succeed">Сохранено</system:String>
     <system:String x:Key="actionkeyword_tips">Используйте * в случае, если вы не хотите задавать конкретную горячую клавишу</system:String>
     
-    
     <!--Custom Query Hotkey Dialog-->
     <system:String x:Key="preview">Проверить</system:String>
     <system:String x:Key="hotkeyIsNotUnavailable">Горячая клавиша недоступна. Пожалуйста, зайдайте новую</system:String>
@@ -97,7 +102,6 @@
     
     <!--Hotkey Control-->
     <system:String x:Key="hotkeyUnavailable">Горячая клавиша недоступна</system:String>
-    
     
     <!--Crash Reporter-->
     <system:String x:Key="reportWindow_version">Версия</system:String>
@@ -125,5 +129,4 @@
     <system:String x:Key="update_wox_update_files">Обновить файлы</system:String>
     <system:String x:Key="update_wox_update_upadte_description">Описание обновления</system:String>
     
-
 </ResourceDictionary>

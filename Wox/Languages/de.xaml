@@ -15,7 +15,7 @@
     <system:String x:Key="iconTrayExit">Schließen</system:String>
 
     <!--Setting General-->
-    <system:String x:Key="woxsettings">Wox Einstellungen</system:String>
+    <system:String x:Key="wox_settings">Wox Einstellungen</system:String>
     <system:String x:Key="general">Allgemein</system:String>
     <system:String x:Key="startWoxOnSystemStartup">Starte Wox bei Systemstart</system:String>
     <system:String x:Key="hideWoxWhenLoseFocus">Verstecke Wox wenn der Focus verloren geht</system:String>
@@ -25,7 +25,10 @@
     <system:String x:Key="maxShowResults">Maximale Anzahl Ergebnisse</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignoriere Tastenkombination wenn Fenster im Vollbildmodus ist</system:String>
     <system:String x:Key="pythonDirectory">Python Directory</system:String>
-
+    <system:String x:Key="autoUpdates">Auto Update</system:String>
+    <system:String x:Key="selectPythonDirectory">Select</system:String>
+    <system:String x:Key="hideOnStartup">Hide Wox on startup</system:String>
+    
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Plugin</system:String>
     <system:String x:Key="browserMorePlugins">Suche weitere Plugins</system:String>
@@ -44,7 +47,6 @@
     <system:String x:Key="resultItemFont">Ergebnis Schriftart</system:String>
     <system:String x:Key="windowMode">Fenstermodus</system:String>
     <system:String x:Key="opacity">Druchsichtigkeit</system:String>
-    
     
     <!--Setting Hotkey-->
     <system:String x:Key="hotkey">Tastenkombination</system:String>
@@ -77,6 +79,9 @@
     <system:String x:Key="website">Webseite</system:String>
     <system:String x:Key="version">Version</system:String>
     <system:String x:Key="about_activate_times">Du hast Wox {0} mal aktiviert</system:String>
+    <system:String x:Key="checkUpdates">Check for Updates</system:String>
+    <system:String x:Key="newVersionTips">New version {0} avaiable, please restart wox</system:String>
+    <system:String x:Key="releaseNotes">Release Notes:</system:String>
 
     <!--Action Keyword Setting Dialog-->
     <system:String x:Key="oldActionKeywords">Altes Aktionsschlüsselwort</system:String>
@@ -89,7 +94,6 @@
     <system:String x:Key="succeed">Erfolgreich</system:String>
     <system:String x:Key="actionkeyword_tips">Benutze * wenn du ein Aktionsschlüsselwort definieren willst</system:String>
     
-    
     <!--Custom Query Hotkey Dialog-->
     <system:String x:Key="preview">Vorschau</system:String>
     <system:String x:Key="hotkeyIsNotUnavailable">Tastenkombination ist nicht verfügbar, bitte wähle eine andere Tastenkombination</system:String>
@@ -98,7 +102,6 @@
     
     <!--Hotkey Control-->
     <system:String x:Key="hotkeyUnavailable">Tastenkombination nicht verfügbar</system:String>
-    
     
     <!--Crash Reporter-->
     <system:String x:Key="reportWindow_version">Version</system:String>
@@ -126,5 +129,4 @@
     <system:String x:Key="update_wox_update_files">Aktualisiere Dateien</system:String>
     <system:String x:Key="update_wox_update_upadte_description">Aktualisierungbeschreibung</system:String>
     
-
 </ResourceDictionary>
