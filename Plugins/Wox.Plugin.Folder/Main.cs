@@ -54,7 +54,7 @@ namespace Wox.Plugin.Folder
                     item => new Result()
                     {
                         Title = item.Nickname,
-                        IcoPath = "Images/folder.png",
+                        IcoPath = item.Path,
                         SubTitle = "Ctrl + Enter to open the directory",
                         Action = c =>
                         {
@@ -142,7 +142,7 @@ namespace Wox.Plugin.Folder
             results.Add(new Result
             {
                 Title = firstResult,
-                IcoPath = "Images/folder.png",
+                IcoPath = search,
                 Score = 10000,
                 Action = c =>
                 {
@@ -163,7 +163,7 @@ namespace Wox.Plugin.Folder
                 var result = new Result
                 {
                     Title = dir.Name,
-                    IcoPath = "Images/folder.png",
+                    IcoPath = dir.FullName,
                     SubTitle = "Ctrl + Enter to open the directory",
                     Action = c =>
                     {
@@ -199,7 +199,7 @@ namespace Wox.Plugin.Folder
                 var result = new Result
                 {
                     Title = Path.GetFileName(filePath),
-                    IcoPath = "Images/file.png",
+                    IcoPath = filePath,
                     Action = c =>
                     {
                         try
