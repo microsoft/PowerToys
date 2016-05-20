@@ -1,4 +1,4 @@
-﻿<Window x:Class="Wox.CrashReporter.ReportWindow"
+﻿<Window x:Class="Wox.ReportWindow"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -12,68 +12,12 @@
              Height="455"
              Title="{DynamicResource reportWindow_wox_got_an_error}"
              d:DesignHeight="300" d:DesignWidth="600" x:ClassModifier="internal">
-    <StackPanel>
-        <TabControl >
-            <TabItem Header="{DynamicResource reportWindow_general}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"></ColumnDefinition>
-                        <ColumnDefinition></ColumnDefinition>
-                        <ColumnDefinition Width="40"></ColumnDefinition>
-                        <ColumnDefinition></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="80"></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition Height="200"></RowDefinition>
-                    </Grid.RowDefinitions>
-                    <Image Source="Images/crash_warning.png" Width="64"></Image>
-                    <RichTextBox Grid.Row="0" Grid.ColumnSpan="3" Grid.Column="1" IsReadOnly="True" x:Name="tbSummary"></RichTextBox>
-                    <TextBlock Padding="0 5 0 0" Grid.Row="1" Grid.Column="0" Text="{DynamicResource reportWindow_version}"></TextBlock>
-                    <TextBlock Padding="0 5 0 0" Grid.Row="1" Grid.Column="1" Text="Version"  x:Name="tbVersion"></TextBlock>
-                    <TextBlock Padding="0 5 0 0" Grid.Row="1" Grid.Column="2" Text="{DynamicResource reportWindow_time}"></TextBlock>
-                    <TextBlock Padding="0 5 0 0" Grid.Row="1" Grid.Column="3" Text="10201211-21-21"  x:Name="tbDatetime"></TextBlock>
-                    <TextBlock Padding="0 5 0 5" Grid.ColumnSpan="4" Grid.Row="2" Grid.Column="0" Text="{DynamicResource reportWindow_reproduce}"></TextBlock>
-                    <RichTextBox Grid.Row="3" Grid.ColumnSpan="4" Grid.Column="0" Background="#FFFFE1" x:Name="tbReproduceSteps"></RichTextBox>
-                </Grid>
-            </TabItem>
-            <TabItem Header="{DynamicResource reportWindow_exceptions}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="37*"/>
-                        <ColumnDefinition Width="547*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                    </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="{DynamicResource reportWindow_exception_type}" Padding="5" Grid.ColumnSpan="2"></TextBlock>
-                    <TextBox IsReadOnly="True" Grid.Row="1" Padding="5" x:Name="tbType" Grid.ColumnSpan="2"></TextBox>
-                    <TextBlock Grid.Row="2" Text="{DynamicResource reportWindow_source}" Padding="5" Grid.ColumnSpan="2"></TextBlock>
-                    <TextBox IsReadOnly="True" Grid.Row="3" Padding="5" x:Name="tbSource" Grid.ColumnSpan="2"></TextBox>
-                    <TextBlock Grid.Row="4" Text="{DynamicResource reportWindow_stack_trace}" Padding="5" Grid.ColumnSpan="2"></TextBlock>
-                    <RichTextBox Grid.Row="5" x:Name="tbStackTrace" Height="190" Grid.ColumnSpan="2" Margin="0,0,0,-0.001"></RichTextBox>
-                </Grid>
-            </TabItem>
-        </TabControl>
-        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-            <Button x:Name="btnSend" Padding="8 3" Margin="8" Click="btnSend_Click">
-                <StackPanel Orientation="Horizontal">
-                    <Image Source="Images/crash_go.png" Margin="0 5 5 0"/>
-                    <Label Padding="0" Margin="0 10 0 0" x:Name="tbSendReport" Content="{DynamicResource reportWindow_send_report}"></Label>
-                </StackPanel>
-            </Button>
-            <Button x:Name="btnCancel" Padding="8 3" Margin="8" Click="btnCancel_Click">
-                <StackPanel Orientation="Horizontal">
-                    <Image Source="Images/crash_stop.png" Margin="0 5 5 0"/>
-                    <Label Padding="0" Margin="0 10 0 0"  Content="{DynamicResource reportWindow_cancel}"></Label>
-                </StackPanel>
-            </Button>
-        </StackPanel>
-    </StackPanel>
+    <RichTextBox x:Name="ErrorTextbox" 
+                 IsDocumentEnabled="True"
+                 VerticalScrollBarVisibility="Auto" 
+                 HorizontalScrollBarVisibility="Auto" 
+                 FontSize="14" 
+                 Margin="10"
+                 BorderThickness="0"/>
+
 </Window>

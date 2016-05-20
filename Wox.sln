@@ -52,8 +52,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Url", "Plugins\W
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Color", "Plugins\Wox.Plugin.Color\Wox.Plugin.Color.csproj", "{F35190AA-4758-4D9E-A193-E3BDF6AD3567}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.CrashReporter", "Wox.CrashReporter\Wox.CrashReporter.csproj", "{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Everything", "Plugins\Wox.Plugin.Everything\Wox.Plugin.Everything.csproj", "{230AE83F-E92E-4E69-8355-426B305DA9C0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FFD651C7-0546-441F-BC8C-D4EE8FD01EA7}"
@@ -262,18 +260,6 @@ Global
 		{F35190AA-4758-4D9E-A193-E3BDF6AD3567}.Release|x64.Build.0 = Release|Any CPU
 		{F35190AA-4758-4D9E-A193-E3BDF6AD3567}.Release|x86.ActiveCfg = Release|Any CPU
 		{F35190AA-4758-4D9E-A193-E3BDF6AD3567}.Release|x86.Build.0 = Release|Any CPU
-		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Debug|x64.Build.0 = Debug|Any CPU
-		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Debug|x86.Build.0 = Debug|Any CPU
-		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Release|x64.ActiveCfg = Release|Any CPU
-		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Release|x64.Build.0 = Release|Any CPU
-		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Release|x86.ActiveCfg = Release|Any CPU
-		{2FEB2298-7653-4009-B1EA-FFFB1A768BCC}.Release|x86.Build.0 = Release|Any CPU
 		{230AE83F-E92E-4E69-8355-426B305DA9C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{230AE83F-E92E-4E69-8355-426B305DA9C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{230AE83F-E92E-4E69-8355-426B305DA9C0}.Debug|x64.ActiveCfg = Debug|Any CPU

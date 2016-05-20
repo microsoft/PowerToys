@@ -11,7 +11,7 @@ namespace Wox.Helper
         public static void Report(Exception e)
         {
             Log.Fatal(e);
-            new CrashReporter.CrashReporter(e).Show();
+            new CrashReporter(e).Show();
         }
 
         public static void UnhandledExceptionHandle(object sender, UnhandledExceptionEventArgs e)

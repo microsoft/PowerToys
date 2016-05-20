@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Wox.CrashReporter
+namespace Wox
 {
     public class CrashReporter
     {

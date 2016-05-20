@@ -1,63 +1,66 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Text;
+using System.Linq;
 using System.Windows;
 using System.Windows.Documents;
-using Exceptionless;
-using Wox.Core.Resource;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Logger;
 
-namespace Wox.CrashReporter
+namespace Wox
 {
     internal partial class ReportWindow
     {
-        private Exception exception;
-
         public ReportWindow(Exception exception)
         {
-            this.exception = exception;
             InitializeComponent();
+            ErrorTextbox.Document.Blocks.FirstBlock.Margin = new Thickness(0);
             SetException(exception);
         }
 
         private void SetException(Exception exception)
         {
-            tbSummary.AppendText(exception.Message);
-            tbVersion.Text = Infrastructure.Constant.Version;
-            tbDatetime.Text = DateTime.Now.ToString();
-            tbStackTrace.AppendText(exception.StackTrace);
-            tbSource.Text = exception.Source;
-            tbType.Text = exception.GetType().ToString();
+            string path = Path.Combine(Constant.DataDirectory, Log.DirectoryName, Constant.Version);
+            var directory = new DirectoryInfo(path);
+            var log = directory.GetFiles().OrderByDescending(f => f.LastWriteTime).First();
+
+            var paragraph  = Hyperlink("Please open new issue in: " , Constant.Issue);
+            paragraph.Inlines.Add($"1. upload log file: {log.FullName}\n");
+            paragraph.Inlines.Add($"2. copy below exception message");
+            ErrorTextbox.Document.Blocks.Add(paragraph);
+
+            StringBuilder content = new StringBuilder();
+            content.AppendLine($"Wox version: {Constant.Version}");
+            content.AppendLine($"OS Version: {Environment.OSVersion.VersionString}");
+            content.AppendLine($"Date: {DateTime.Now.ToString(CultureInfo.InvariantCulture)}");
+            content.AppendLine("Exception:");
+            content.AppendLine(exception.Source);
+            content.AppendLine(exception.GetType().ToString());
+            content.AppendLine(exception.Message);
+            content.AppendLine(exception.StackTrace);
+            paragraph = new Paragraph();
+            paragraph.Inlines.Add(content.ToString());
+            ErrorTextbox.Document.Blocks.Add(paragraph);
         }
 
-        private void btnSend_Click(object sender, RoutedEventArgs e)
+        private Paragraph Hyperlink(string textBeforeUrl, string url)
         {
-            string sendingMsg = InternationalizationManager.Instance.GetTranslation("reportWindow_sending");
-            tbSendReport.Content = sendingMsg;
-            btnSend.IsEnabled = false;
-            SendReport();
-        }
+            var paragraph = new Paragraph();
+            paragraph.Margin = new Thickness(0);
 
-        private void SendReport()
-        {
-            Hide();
-            Task.Run(() =>
-            {
-                string reproduceSteps = new TextRange(tbReproduceSteps.Document.ContentStart, tbReproduceSteps.Document.ContentEnd).Text;
-                exception.ToExceptionless()
-                    .SetUserDescription(reproduceSteps)
-                    .Submit();
-                ExceptionlessClient.Current.ProcessQueue();
-                Dispatcher.Invoke(() =>
-                {
-                    Close();
-                });
-            });
-        }
+            var link = new Hyperlink {IsEnabled = true};
+            link.Inlines.Add(url);
+            link.NavigateUri = new Uri(url);
+            link.RequestNavigate += (s, e) => Process.Start(e.Uri.ToString());
+            link.Click += (s, e) => Process.Start(url);
 
-        private void btnCancel_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
+            paragraph.Inlines.Add(textBeforeUrl);
+            paragraph.Inlines.Add(link);
+            paragraph.Inlines.Add("\n");
+
+            return paragraph;
         }
     }
 }
