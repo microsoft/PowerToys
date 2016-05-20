@@ -184,7 +184,7 @@ namespace Wox.ViewModel
                 var result = results.SelectedItem?.RawResult;
                 if (result != null) // SelectedItem returns null if selection is empty.
                 {
-                    bool hideWindow = result.Action(new ActionContext
+                    bool hideWindow = result.Action != null && result.Action(new ActionContext
                     {
                         SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
                     });
