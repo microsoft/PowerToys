@@ -45,10 +45,10 @@ namespace Wox.Plugin.Folder
 
         public List<Result> Query(Query query)
         {
-            string input = query.Search.ToLower();
+            string search = query.Search.ToLower();
 
             List<FolderLink> userFolderLinks = _settings.FolderLinks.Where(
-                x => x.Nickname.StartsWith(input, StringComparison.OrdinalIgnoreCase)).ToList();
+                x => x.Nickname.StartsWith(search, StringComparison.OrdinalIgnoreCase)).ToList();
             List<Result> results =
                 userFolderLinks.Select(
                     item => new Result()
@@ -71,13 +71,13 @@ namespace Wox.Plugin.Folder
                                     return false;
                                 }
                             }
-                            context.API.ChangeQuery(item.Path + (item.Path.EndsWith("\\")? "": "\\"));
+                            context.API.ChangeQuery($"{query.ActionKeyword} {item.Path}{(item.Path.EndsWith("\\") ? "" : "\\")}");
                             return false;
                         },
                         ContextData = item,
                     }).ToList();
 
-            if (driverNames != null && !driverNames.Any(input.StartsWith))
+            if (driverNames != null && !driverNames.Any(search.StartsWith))
                 return results;
 
             //if (!input.EndsWith("\\"))
@@ -85,7 +85,7 @@ namespace Wox.Plugin.Folder
             //    //"c:" means "the current directory on the C drive" whereas @"c:\" means "root of the C drive"
             //    input = input + "\\";
             //}
-            results.AddRange(QueryInternal_Directory_Exists(input));
+            results.AddRange(QueryInternal_Directory_Exists(query));
 
             // todo temp hack for scores
             foreach (var result in results)
@@ -94,7 +94,8 @@ namespace Wox.Plugin.Folder
             }
 
             return results;
-        }    private void InitialDriverList()
+        }
+        private void InitialDriverList()
         {
             if (driverNames == null)
             {
@@ -107,22 +108,23 @@ namespace Wox.Plugin.Folder
             }
         }
 
-        private List<Result> QueryInternal_Directory_Exists(string rawQuery)
+        private List<Result> QueryInternal_Directory_Exists(Query query)
         {
+            var search = query.Search.ToLower();
             var results = new List<Result>();
-            
+
             string incompleteName = "";
-            if (!Directory.Exists(rawQuery + "\\"))
+            if (!Directory.Exists(search + "\\"))
             {
                 //if the last component of the path is incomplete,
                 //then make auto complete for it.
-                int index = rawQuery.LastIndexOf('\\');
-                if (index > 0 && index < (rawQuery.Length - 1))
+                int index = search.LastIndexOf('\\');
+                if (index > 0 && index < (search.Length - 1))
                 {
-                    incompleteName = rawQuery.Substring(index + 1);
+                    incompleteName = search.Substring(index + 1);
                     incompleteName = incompleteName.ToLower();
-                    rawQuery = rawQuery.Substring(0, index + 1);
-                    if (!Directory.Exists(rawQuery))
+                    search = search.Substring(0, index + 1);
+                    if (!Directory.Exists(search))
                         return results;
                 }
                 else
@@ -130,13 +132,13 @@ namespace Wox.Plugin.Folder
             }
             else
             {
-                if (!rawQuery.EndsWith("\\"))
-                    rawQuery += "\\";
+                if (!search.EndsWith("\\"))
+                    search += "\\";
             }
 
             string firstResult = "Open current directory";
             if (incompleteName.Length > 0)
-                firstResult = "Open " + rawQuery;
+                firstResult = "Open " + search;
             results.Add(new Result
             {
                 Title = firstResult,
@@ -144,13 +146,13 @@ namespace Wox.Plugin.Folder
                 Score = 10000,
                 Action = c =>
                 {
-                    Process.Start(rawQuery);
+                    Process.Start(search);
                     return true;
                 }
             });
 
             //Add children directories
-            DirectoryInfo[] dirs = new DirectoryInfo(rawQuery).GetDirectories();
+            DirectoryInfo[] dirs = new DirectoryInfo(search).GetDirectories();
             foreach (DirectoryInfo dir in dirs)
             {
                 if ((dir.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
@@ -178,7 +180,7 @@ namespace Wox.Plugin.Folder
                                 return false;
                             }
                         }
-                        context.API.ChangeQuery(dirCopy.FullName + "\\");
+                        context.API.ChangeQuery($"{query.ActionKeyword} {dirCopy.FullName}\\");
                         return false;
                     }
                 };
@@ -187,7 +189,7 @@ namespace Wox.Plugin.Folder
             }
 
             //Add children files
-            FileInfo[] files = new DirectoryInfo(rawQuery).GetFiles();
+            FileInfo[] files = new DirectoryInfo(search).GetFiles();
             foreach (FileInfo file in files)
             {
                 if ((file.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
