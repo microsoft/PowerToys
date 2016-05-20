@@ -7,7 +7,6 @@
         <Setter Property="Background" Value="#EDEDED" />
         <Setter Property="Foreground" Value="#222222" />
         <Setter Property="FontSize" Value="38" />
-        <Setter Property="FontFamily" Value="Calibri" />
     </Style>
     <Style x:Key="WindowBorderStyle" BasedOn="{StaticResource BaseWindowBorderStyle}" TargetType="{x:Type Border}">
         <Setter Property="BorderBrush" Value="#B0B0B0" />
