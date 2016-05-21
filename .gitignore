@@ -290,6 +290,21 @@ Output/*
 /Python.Runtime.dll
 Wox/Images/websearch/Thumbs.db
 Wox/Images/Thumbs.db
+Plugins/*
+!Plugins/HelloWorldCSharp
+!Plugins/HelloWorldPython
+!Plugins/Wox.Plugin.Caculator
+!Plugins/Wox.Plugin.Color
+!Plugins/Wox.Plugin.ControlPanel
+!Plugins/Wox.Plugin.Everything
+!Plugins/Wox.Plugin.Folder
+!Plugins/Wox.Plugin.PluginIndicator
+!Plugins/Wox.Plugin.PluginManagement
+!Plugins/Wox.Plugin.Program
+!Plugins/Wox.Plugin.Shell
+!Plugins/Wox.Plugin.Sys
+!Plugins/Wox.Plugin.Url
+!Plugins/Wox.Plugin.WebSearch
 
 *.sublime-*
 *.dgml
