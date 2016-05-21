@@ -22,6 +22,8 @@ namespace Wox.ViewModel
         public Settings Settings { get; set; }
         public List<Language> Languages => InternationalizationManager.Instance.LoadAvailableLanguages();
         public IEnumerable<int> MaxResultsRange => Enumerable.Range(2, 16);
+        public Tab SelectedTab { get; set; } = Tab.General;
+
         public SettingWindowViewModel()
         {
             _storage = new JsonStrorage<Settings>();
@@ -33,6 +35,14 @@ namespace Wox.ViewModel
             _storage.Save();
         }
 
-       
+        public enum Tab
+        {
+            General = 0,
+            Plugin = 1,
+            Theme = 2,
+            Hotkey = 3,
+            Proxy = 4,
+            About = 5
+        }
     }
 }

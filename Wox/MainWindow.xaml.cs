@@ -103,7 +103,7 @@ namespace Wox
             var setting = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTraySettings"));
             setting.Click += (o, e) => App.API.OpenSettingDialog();
             var about = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTrayAbout"));
-            about.Click += (o, e) => App.API.OpenSettingDialog("about");
+            about.Click += (o, e) => App.API.OpenSettingDialog((int) SettingWindowViewModel.Tab.About);
             var exit = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTrayExit"));
             exit.Click += (o, e) => Close();
             MenuItem[] childen = { open, setting, about, exit };

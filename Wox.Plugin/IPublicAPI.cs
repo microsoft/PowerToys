@@ -64,7 +64,7 @@ namespace Wox.Plugin
         /// <summary>
         /// Open setting dialog
         /// </summary>
-        void OpenSettingDialog(string tabName = "general");
+        void OpenSettingDialog(int tab = 0);
 
         /// <summary>
         /// Show loading animation

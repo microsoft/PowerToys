@@ -18,7 +18,7 @@
     <Window.Resources>
         <image:ImagePathConverter x:Key="ImageConverter" />
     </Window.Resources>
-    <TabControl Height="auto" x:Name="SettingTab" SelectionChanged="OnTabChanged">
+    <TabControl Height="auto" SelectedIndex="{Binding SelectedTab}">
         <TabItem Header="{DynamicResource general}">
             <StackPanel Orientation="Vertical">
                 <CheckBox IsChecked="{Binding Settings.StartWoxOnSystemStartup}" Margin="10">
@@ -57,7 +57,7 @@
                 </StackPanel>
             </StackPanel>
         </TabItem>
-        <TabItem Header="{DynamicResource plugin}" x:Name="PluginTab">
+        <TabItem Header="{DynamicResource plugin}" Selector.Selected="OnPluginTabSelected">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="39.5" />
@@ -150,7 +150,7 @@
                 </Grid>
             </Grid>
         </TabItem>
-        <TabItem Header="{DynamicResource theme}" x:Name="ThemeTab">
+        <TabItem Header="{DynamicResource theme}" Selector.Selected="OnThemeTabSelected">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="200" />
@@ -240,7 +240,7 @@
                 </Grid>
             </Grid>
         </TabItem>
-        <TabItem Header="{DynamicResource hotkey}" x:Name="HotkeyTab">
+        <TabItem Header="{DynamicResource hotkey}" Selector.Selected="OnThemeTabSelected">
             <Grid Margin="10">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="30" />

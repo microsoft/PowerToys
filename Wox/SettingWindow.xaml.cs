@@ -79,50 +79,6 @@ namespace Wox
             settingsLoaded = true;
         }
 
-        public void SwitchTo(string tabName)
-        {
-            switch (tabName)
-            {
-                case "general":
-                    SettingTab.SelectedIndex = 0;
-                    break;
-                case "plugin":
-                    SettingTab.SelectedIndex = 1;
-                    break;
-                case "theme":
-                    SettingTab.SelectedIndex = 2;
-                    break;
-                case "hotkey":
-                    SettingTab.SelectedIndex = 3;
-                    break;
-                case "proxy":
-                    SettingTab.SelectedIndex = 4;
-                    break;
-                case "about":
-                    SettingTab.SelectedIndex = 5;
-                    break;
-            }
-        }
-
-        private void OnTabChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // Update controls inside the selected tab
-            if (e.OriginalSource != SettingTab) return;
-
-            if (PluginTab.IsSelected)
-            {
-                OnPluginTabSelected();
-            }
-            else if (ThemeTab.IsSelected)
-            {
-                OnThemeTabSelected();
-            }
-            else if (HotkeyTab.IsSelected)
-            {
-                OnHotkeyTabSelected();
-            }
-        }
-
         #region General
 
         void OnLanguageChanged(object sender, SelectionChangedEventArgs e)
@@ -247,7 +203,7 @@ namespace Wox
             }
         }
 
-        private void OnHotkeyTabSelected()
+        public void OnHotkeyTabSelected(object sender, RoutedEventArgs e)
         {
             HotkeyControl.HotkeyChanged += ctlHotkey_OnHotkeyChanged;
             HotkeyControl.SetHotkey(_settings.Hotkey, false);
@@ -310,7 +266,7 @@ namespace Wox
             Process.Start("http://www.getwox.com/theme");
         }
 
-        private void OnThemeTabSelected()
+        public void OnThemeTabSelected(object sender, RoutedEventArgs e)
         {
             Stopwatch.Debug("theme load", () =>
             {
@@ -644,7 +600,7 @@ namespace Wox
             Process.Start("http://www.getwox.com/plugin");
         }
 
-        private void OnPluginTabSelected()
+        public void OnPluginTabSelected(object sender, RoutedEventArgs e)
         {
             var plugins = PluginManager.AllPlugins;
             //move all disabled to bottom

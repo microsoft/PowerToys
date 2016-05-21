@@ -15,6 +15,7 @@ using Wox.Helper;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
 using Wox.ViewModel;
+using static Wox.ViewModel.SettingWindowViewModel;
 
 namespace Wox
 {
@@ -96,12 +97,12 @@ namespace Wox
             });
         }
 
-        public void OpenSettingDialog(string tabName = "general")
+        public void OpenSettingDialog(int tab = 0)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
                 SettingWindow sw = SingletonWindowOpener.Open<SettingWindow>(this, _settingsViewModel);
-                sw.SwitchTo(tabName);
+                _settingsViewModel.SelectedTab = (Tab) tab;
             });
         }
 
