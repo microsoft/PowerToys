@@ -37,10 +37,11 @@ namespace Wox
         private bool themeTabLoaded;
         private Settings _settings;
 
-        public SettingWindow(IPublicAPI api, Settings settings)
+        public SettingWindow(IPublicAPI api, SettingWindowViewModel viewModel)
         {
             InitializeComponent();
-            _settings = settings;
+            _settings = viewModel.Settings;
+            DataContext = viewModel;
             _api = api;
             ResultListBoxPreview.DataContext = new ResultsViewModel(_settings);
             Loaded += Setting_Loaded;

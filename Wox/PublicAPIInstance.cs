@@ -20,13 +20,13 @@ namespace Wox
 {
     public class PublicAPIInstance : IPublicAPI
     {
-        private readonly Settings _settings;
+        private readonly SettingWindowViewModel _settingsViewModel;
 
         #region Constructor
 
-        public PublicAPIInstance(Settings settings, MainViewModel mainVM)
+        public PublicAPIInstance(SettingWindowViewModel settingsViewModel, MainViewModel mainVM)
         {
-            _settings = settings;
+            _settingsViewModel = settingsViewModel;
             MainVM = mainVM;
             //_settings = settings;
             GlobalHotkey.Instance.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
@@ -100,7 +100,7 @@ namespace Wox
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                SettingWindow sw = SingletonWindowOpener.Open<SettingWindow>(this, _settings);
+                SettingWindow sw = SingletonWindowOpener.Open<SettingWindow>(this, _settingsViewModel);
                 sw.SwitchTo(tabName);
             });
         }

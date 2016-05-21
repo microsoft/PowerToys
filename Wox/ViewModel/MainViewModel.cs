@@ -38,7 +38,6 @@ namespace Wox.ViewModel
         private string _queryTextBeforeLoadContextMenu;
         private string _queryText;
 
-        private readonly JsonStrorage<Settings> _settingsStorage;
         private readonly JsonStrorage<QueryHistory> _queryHistoryStorage;
         private readonly JsonStrorage<UserSelectedRecord> _userSelectedRecordStorage;
         private readonly JsonStrorage<TopMostRecord> _topMostRecordStorage;
@@ -55,14 +54,13 @@ namespace Wox.ViewModel
 
         #region Constructor
 
-        public MainViewModel(Settings settings, JsonStrorage<Settings> storage)
+        public MainViewModel(Settings settings)
         {
             _saved = false;
             _queryTextBeforeLoadContextMenu = "";
             _queryText = "";
             _lastQuery = new Query();
 
-            _settingsStorage = storage;
             _settings = settings;
 
             // happlebao todo temp fix for instance code logic
@@ -659,7 +657,6 @@ namespace Wox.ViewModel
         {
             if (!_saved)
             {
-                _settingsStorage.Save();
                 _queryHistoryStorage.Save();
                 _userSelectedRecordStorage.Save();
                 _topMostRecordStorage.Save();
