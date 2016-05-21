@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using Wox.Core.Plugin;
-using Wox.Plugin;
 using Newtonsoft.Json;
+using PropertyChanged;
 
 namespace Wox.Core.UserSettings
 {
+    [ImplementPropertyChanged]
     public class Settings
     {
         public string Hotkey { get; set; } = "Alt + Space";
