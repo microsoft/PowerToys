@@ -52,86 +52,8 @@ namespace Wox
             _settings.ProxyEnabled = ToggleProxy.IsChecked ?? false;
         }
 
-        private async void Setting_Loaded(object sender, RoutedEventArgs ev)
+        private void Setting_Loaded(object sender, RoutedEventArgs ev)
         {
-            #region General
-
-            HideOnStartup.Checked += (o, e) =>
-            {
-                _settings.HideOnStartup = true;
-            };
-
-            HideOnStartup.Unchecked += (o, e) =>
-            {
-                _settings.HideOnStartup = false;
-            };
-
-            HideWhenDeactive.Checked += (o, e) =>
-            {
-                _settings.HideWhenDeactive = true;
-            };
-
-            HideWhenDeactive.Unchecked += (o, e) =>
-            {
-                _settings.HideWhenDeactive = false;
-            };
-
-            RememberLastLocation.Checked += (o, e) =>
-            {
-                _settings.RememberLastLaunchLocation = true;
-            };
-
-            RememberLastLocation.Unchecked += (o, e) =>
-            {
-                _settings.RememberLastLaunchLocation = false;
-            };
-
-            IgnoreHotkeysOnFullscreen.Checked += (o, e) =>
-            {
-                _settings.IgnoreHotkeysOnFullscreen = true;
-            };
-
-
-            IgnoreHotkeysOnFullscreen.Unchecked += (o, e) =>
-            {
-                _settings.IgnoreHotkeysOnFullscreen = false;
-            };
-
-            AutoUpdates.Checked += (o, e) =>
-            {
-                _settings.AutoUpdates = true;
-            };
-
-
-            AutoUpdates.Unchecked += (o, e) =>
-            {
-                _settings.AutoUpdates = false;
-            };
-
-
-            AutoStartup.IsChecked = _settings.StartWoxOnSystemStartup;
-            MaxResults.SelectionChanged += (o, e) =>
-            {
-                _settings.MaxResultsToShow = (int)MaxResults.SelectedItem;
-                //MainWindow.pnlResult.lbResults.GetBindingExpression(MaxHeightProperty).UpdateTarget();
-            };
-
-            HideOnStartup.IsChecked = _settings.HideOnStartup;
-            HideWhenDeactive.IsChecked = _settings.HideWhenDeactive;
-            RememberLastLocation.IsChecked = _settings.RememberLastLaunchLocation;
-            IgnoreHotkeysOnFullscreen.IsChecked = _settings.IgnoreHotkeysOnFullscreen;
-            AutoUpdates.IsChecked = _settings.AutoUpdates;
-
-            LoadLanguages();
-
-            MaxResults.ItemsSource = Enumerable.Range(2, 16);
-            var maxResults = _settings.MaxResultsToShow;
-            MaxResults.SelectedItem = maxResults == 0 ? 6 : maxResults;
-
-            PythonDirectory.Text = _settings.PluginSettings.PythonDirectory;
-
-            #endregion
-
             #region Proxy
 
             ToggleProxy.IsChecked = _settings.ProxyEnabled;
@@ -182,7 +104,7 @@ namespace Wox
             }
         }
 
-        private void settingTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void OnTabChanged(object sender, SelectionChangedEventArgs e)
         {
             // Update controls inside the selected tab
             if (e.OriginalSource != SettingTab) return;
@@ -203,30 +125,20 @@ namespace Wox
 
         #region General
 
-        private void LoadLanguages()
+        void OnLanguageChanged(object sender, SelectionChangedEventArgs e)
         {
-            Languages.ItemsSource = InternationalizationManager.Instance.LoadAvailableLanguages();
-            Languages.DisplayMemberPath = "Display";
-            Languages.SelectedValuePath = "LanguageCode";
-            Languages.SelectedValue = _settings.Language;
-            Languages.SelectionChanged += cbLanguages_SelectionChanged;
+            var language = (Language)e.AddedItems[0];
+            InternationalizationManager.Instance.ChangeLanguage(language);
         }
 
-        void cbLanguages_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            InternationalizationManager.Instance.ChangeLanguage(Languages.SelectedItem as Language);
-        }
-
-        private void CbStartWithWindows_OnChecked(object sender, RoutedEventArgs e)
+        private void OnAutoStartupChecked(object sender, RoutedEventArgs e)
         {
             SetStartup();
-            _settings.StartWoxOnSystemStartup = true;
         }
 
-        private void CbStartWithWindows_OnUnchecked(object sender, RoutedEventArgs e)
+        private void OnAutoStartupUncheck(object sender, RoutedEventArgs e)
         {
             RemoveStartup();
-            _settings.StartWoxOnSystemStartup = false;
         }
 
         public static void SetStartup()
@@ -249,7 +161,7 @@ namespace Wox
         {
             using (var key = Registry.CurrentUser.OpenSubKey(StartupPath, true))
             {
-                var path = key?.GetValue("Wox") as string;
+                var path = key?.GetValue(Infrastructure.Constant.Wox) as string;
                 if (path != null)
                 {
                     return path == Infrastructure.Constant.ExecutablePath;
@@ -261,7 +173,7 @@ namespace Wox
             }
         }
 
-        private void SelectPythonDirectoryOnClick(object sender, RoutedEventArgs e)
+        private void OnSelectPythonDirectoryClick(object sender, RoutedEventArgs e)
         {
             var dlg = new System.Windows.Forms.FolderBrowserDialog
             {
@@ -277,7 +189,6 @@ namespace Wox
                     var pythonPath = Path.Combine(pythonDirectory, PluginsLoader.PythonExecutable);
                     if (File.Exists(pythonPath))
                     {
-                        PythonDirectory.Text = pythonDirectory;
                         _settings.PluginSettings.PythonDirectory = pythonDirectory;
                         MessageBox.Show("Remember to restart Wox use new Python path");
                     }
@@ -581,7 +492,7 @@ namespace Wox
 
         #region Plugin
 
-        private void lbPlugins_OnSelectionChanged(object sender, SelectionChangedEventArgs _)
+        private void OnPluginsSelectionChanged(object sender, SelectionChangedEventArgs _)
         {
 
             var pair = PluginsListBox.SelectedItem as PluginPair;
