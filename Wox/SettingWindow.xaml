@@ -52,7 +52,7 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Margin="10" Text="{DynamicResource pythonDirectory}" />
-                    <TextBox Width="300" Margin="10" x:Name="PythonDirectory" Text="{Binding Settings.PluginSettings.PythonDirectory}"/>
+                    <TextBox Width="300" Margin="10" Text="{Binding Settings.PluginSettings.PythonDirectory}"/>
                     <Button Margin="10" Click="OnSelectPythonDirectoryClick"  Content="{DynamicResource selectPythonDirectory}" />
                 </StackPanel>
             </StackPanel>
