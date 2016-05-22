@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -20,8 +19,6 @@ using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure.Hotkey;
-using Wox.Infrastructure.Image;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 using Wox.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
@@ -31,17 +28,19 @@ namespace Wox
     public partial class SettingWindow
     {
         private const string StartupPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
+
         public readonly IPublicAPI _api;
         bool settingsLoaded;
-        private Dictionary<ISettingProvider, Control> featureControls = new Dictionary<ISettingProvider, Control>();
         private bool themeTabLoaded;
         private Settings _settings;
+        private SettingWindowViewModel _viewModel;
 
         public SettingWindow(IPublicAPI api, SettingWindowViewModel viewModel)
         {
             InitializeComponent();
             _settings = viewModel.Settings;
             DataContext = viewModel;
+            _viewModel = viewModel;
             _api = api;
             ResultListBoxPreview.DataContext = new ResultsViewModel(_settings);
             Loaded += Setting_Loaded;
@@ -448,177 +447,56 @@ namespace Wox
 
         #region Plugin
 
-        private void OnPluginsSelectionChanged(object sender, SelectionChangedEventArgs _)
+        private void OnPluginToggled(object sender, RoutedEventArgs e)
         {
-
-            var pair = PluginsListBox.SelectedItem as PluginPair;
-            string pluginId = string.Empty;
-            List<string> actionKeywords = null;
-            if (pair == null) return;
-            actionKeywords = pair.Metadata.ActionKeywords;
-            PluginAuthor.Visibility = Visibility.Visible;
-            PluginInitTime.Text =
-                string.Format(InternationalizationManager.Instance.GetTranslation("plugin_init_time"), pair.InitTime);
-            PluginQueryTime.Text =
-                string.Format(InternationalizationManager.Instance.GetTranslation("plugin_query_time"),
-                    pair.AvgQueryTime);
-            if (actionKeywords.Count > 1)
-            {
-                PluginActionKeywordsTitle.Visibility = Visibility.Collapsed;
-                PluginActionKeywords.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                PluginActionKeywordsTitle.Visibility = Visibility.Visible;
-                PluginActionKeywords.Visibility = Visibility.Visible;
-            }
-            OpenPluginDirecoty.Visibility = Visibility.Visible;
-            PluginTitle.Text = pair.Metadata.Name;
-            PluginTitle.Cursor = Cursors.Hand;
-            PluginActionKeywords.Text = string.Join(Query.ActionKeywordSeperater, actionKeywords.ToArray());
-            PluginAuthor.Text = InternationalizationManager.Instance.GetTranslation("author") + ": " +
-                                pair.Metadata.Author;
-            PluginSubTitle.Text = pair.Metadata.Description;
-            pluginId = pair.Metadata.ID;
-            PluginIcon.Source = ImageLoader.Load(pair.Metadata.IcoPath);
-
-            var customizedPluginConfig = _settings.PluginSettings.Plugins[pluginId];
-            DisablePlugin.IsChecked = customizedPluginConfig != null && customizedPluginConfig.Disabled;
-
-            PluginContentPanel.Content = null;
-            var settingProvider = pair.Plugin as ISettingProvider;
-            if (settingProvider != null)
-            {
-                Control control;
-                if (!featureControls.TryGetValue(settingProvider, out control))
-                {
-                    var multipleActionKeywordsProvider = settingProvider as IMultipleActionKeywords;
-                    if (multipleActionKeywordsProvider != null)
-                    {
-                        multipleActionKeywordsProvider.ActionKeywordsChanged += (o, e) =>
-                        {
-                            // update in-memory data
-                            PluginManager.UpdateActionKeywordForPlugin(pair, e.OldActionKeyword, e.NewActionKeyword);
-                            // update persistant data
-                            _settings.PluginSettings.UpdateActionKeyword(pair.Metadata);
-
-                            MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
-                        };
-                    }
-
-                    featureControls.Add(settingProvider, control = settingProvider.CreateSettingPanel());
-                }
-                PluginContentPanel.Content = control;
-                control.HorizontalAlignment = HorizontalAlignment.Stretch;
-                control.VerticalAlignment = VerticalAlignment.Stretch;
-                control.Width = Double.NaN;
-                control.Height = Double.NaN;
-            }
+            var id = _viewModel.SelectedPlugin.Metadata.ID;
+            _settings.PluginSettings.Plugins[id].Disabled = _viewModel.SelectedPlugin.Metadata.Disabled;
         }
 
-        private void OnDisablePluginClicked(object sender, RoutedEventArgs e)
-        {
-            var checkBox = (CheckBox)e.Source;
-            var pair = (PluginPair)PluginsListBox.SelectedItem;
-            var id = pair.Metadata.ID;
-            if (checkBox.IsChecked != null)
-            {
-                var disabled = (bool)checkBox.IsChecked;
-                _settings.PluginSettings.Plugins[id].Disabled = disabled;
-            }
-            else
-            {
-                Log.Warn($"IsChecked for checkbox is null for plugin: {pair.Metadata.Name}");
-            }
-        }
-
-        private void PluginActionKeywords_OnMouseUp(object sender, MouseButtonEventArgs e)
+        private void OnPluginActionKeywordsClick(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
             {
-                var pair = PluginsListBox.SelectedItem as PluginPair;
-                if (pair != null)
-                {
-                    //third-party plugin
-                    string id = pair.Metadata.ID;
-                    ActionKeywords changeKeywordsWindow = new ActionKeywords(id, _settings);
-                    changeKeywordsWindow.ShowDialog();
-                    PluginPair plugin = PluginManager.GetPluginForId(id);
-                    if (plugin != null)
-                        PluginActionKeywords.Text = string.Join(Query.ActionKeywordSeperater,
-                            pair.Metadata.ActionKeywords.ToArray());
-                }
+                var id = _viewModel.SelectedPlugin.Metadata.ID;
+                ActionKeywords changeKeywordsWindow = new ActionKeywords(id, _settings);
+                changeKeywordsWindow.ShowDialog();
             }
         }
 
-        private void PluginTitle_OnMouseUp(object sender, MouseButtonEventArgs e)
+        private void OnPluginNameClick(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
             {
-                var pair = PluginsListBox.SelectedItem as PluginPair;
-                if (pair != null)
+                if (e.ChangedButton == MouseButton.Left)
                 {
-                    //third-party plugin
-                    if (!string.IsNullOrEmpty(pair.Metadata.Website))
+                    var website = _viewModel.SelectedPlugin.Metadata.Website;
+                    if (!string.IsNullOrEmpty(website))
                     {
-                        try
+                        var uri = new Uri(website);
+                        if (Uri.CheckSchemeName(uri.Scheme))
                         {
-                            Process.Start(pair.Metadata.Website);
-                        }
-                        catch
-                        {
+                            Process.Start(website);
                         }
                     }
                 }
             }
         }
 
-        private void tbOpenPluginDirecoty_MouseUp(object sender, MouseButtonEventArgs e)
+        private void OnPluginDirecotyClick(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
             {
-                var pair = PluginsListBox.SelectedItem as PluginPair;
-                if (pair != null)
+                var directory = _viewModel.SelectedPlugin.Metadata.PluginDirectory;
+                if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
                 {
-                    //third-party plugin
-                    if (!string.IsNullOrEmpty(pair.Metadata.Website))
-                    {
-                        try
-                        {
-                            Process.Start(pair.Metadata.PluginDirectory);
-                        }
-                        catch
-                        {
-                        }
-                    }
+                    Process.Start(directory);
                 }
             }
         }
 
-        private void tbMorePlugins_MouseUp(object sender, MouseButtonEventArgs e)
+        private void OnMorePluginsClicked(object sender, MouseButtonEventArgs e)
         {
             Process.Start("http://www.getwox.com/plugin");
-        }
-
-        public void OnPluginTabSelected(object sender, RoutedEventArgs e)
-        {
-            var plugins = PluginManager.AllPlugins;
-            //move all disabled to bottom
-            plugins.Sort(delegate (PluginPair a, PluginPair b)
-            {
-                int res = _settings.PluginSettings.Plugins[a.Metadata.ID].Disabled ? 1 : 0;
-                res += _settings.PluginSettings.Plugins[b.Metadata.ID].Disabled ? -1 : 0;
-                return res;
-            });
-
-            PluginsListBox.ItemsSource = new CompositeCollection
-            {
-                new CollectionContainer
-                {
-                    Collection = plugins
-                }
-            }; ;
-            PluginsListBox.SelectedIndex = 0;
         }
 
         #endregion
@@ -738,5 +616,6 @@ namespace Wox
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
             e.Handled = true;
         }
+
     }
 }

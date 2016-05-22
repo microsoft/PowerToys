@@ -22,6 +22,7 @@ namespace Wox.Core.UserSettings
                         metadata.ActionKeywords = settings.ActionKeywords;
                         metadata.ActionKeyword = settings.ActionKeywords[0];
                     }
+                    metadata.Disabled = settings.Disabled;
                 }
                 else
                 {

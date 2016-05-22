@@ -87,7 +87,7 @@ namespace Wox.Core.Plugin
                         API = API
                     });
                 });
-                pair.InitTime = milliseconds;
+                pair.Metadata.InitTime = milliseconds;
                 InternationalizationManager.Instance.UpdatePluginMetadataTranslations(pair);
             });
 
@@ -167,8 +167,8 @@ namespace Wox.Core.Plugin
                     results = pair.Plugin.Query(query) ?? results;
                     UpdatePluginMetadata(results, metadata, query);
                 });
-                pair.QueryCount += 1;
-                pair.AvgQueryTime = pair.QueryCount == 1 ? milliseconds : (pair.AvgQueryTime + milliseconds) / 2;
+                metadata.QueryCount += 1;
+                metadata.AvgQueryTime = metadata.QueryCount == 1 ? milliseconds : (metadata.AvgQueryTime + milliseconds) / 2;
             }
             catch (Exception e)
             {

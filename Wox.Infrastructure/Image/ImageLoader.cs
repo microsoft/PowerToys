@@ -43,6 +43,7 @@ namespace Wox.Infrastructure.Image
 
         public static void Save()
         {
+            _cache.Cleanup();
             _storage.Save();
         }
 
@@ -115,11 +116,6 @@ namespace Wox.Infrastructure.Image
                         var img = Load(i.Key);
                         if (img != null)
                         {
-                            // todo happlebao magic
-                            // the image created on other threads can be accessed from main ui thread,
-                            // this line made it possible
-                            // should be changed the Dispatcher.InvokeAsync in the future
-                            img.Freeze();
                             ImageSources[i.Key] = img;
                         }
                     });
@@ -185,9 +181,9 @@ namespace Wox.Infrastructure.Image
                         path = ErrorIcon;
                     }
                 }
-
                 ImageSources[path] = image;
                 _cache.Add(path);
+                image.Freeze();
             }
             return image;
         }

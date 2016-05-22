@@ -38,7 +38,7 @@ namespace Wox
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            Stopwatch.Debug("Startup Time", () =>
+            Stopwatch.Normal("Startup Time", () =>
             {
                 RegisterDispatcherUnhandledException();
 

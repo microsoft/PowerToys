@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:wox="clr-namespace:Wox"
     xmlns:vm="clr-namespace:Wox.ViewModel"
-    xmlns:woxPlugin="clr-namespace:Wox.Plugin;assembly=Wox.Plugin"
     xmlns:image="clr-namespace:Wox.Infrastructure.Image;assembly=Wox.Infrastructure"
     x:Class="Wox.SettingWindow"
     mc:Ignorable="d"
@@ -15,11 +14,8 @@
     WindowStartupLocation="CenterScreen"
     Height="600" Width="800" PreviewKeyDown="Window_PreviewKeyDown"
     d:DataContext="{d:DesignInstance vm:SettingWindowViewModel}">
-    <Window.Resources>
-        <image:ImagePathConverter x:Key="ImageConverter" />
-    </Window.Resources>
     <TabControl Height="auto" SelectedIndex="{Binding SelectedTab}">
-        <TabItem Header="{DynamicResource general}">
+        <TabItem Header="{DynamicResource general}" Height="24" VerticalAlignment="Top">
             <StackPanel Orientation="Vertical">
                 <CheckBox IsChecked="{Binding Settings.StartWoxOnSystemStartup}" Margin="10">
                     <TextBlock Text="{DynamicResource startWoxOnSystemStartup}" />
@@ -36,7 +32,7 @@
                 <CheckBox Margin="10" IsChecked="{Binding Settings.IgnoreHotkeysOnFullscreen}">
                     <TextBlock Text="{DynamicResource ignoreHotkeysOnFullscreen}" />
                 </CheckBox>
-                <CheckBox Margin="10" IsChecked="{Binding Settings.AutoUpdates}" 
+                <CheckBox Margin="10" IsChecked="{Binding Settings.AutoUpdates}"
                           Checked="OnAutoStartupChecked" Unchecked="OnAutoStartupUncheck">
                     <TextBlock Text="{DynamicResource autoUpdates}" />
                 </CheckBox>
@@ -44,108 +40,116 @@
                     <TextBlock Text="{DynamicResource language}" />
                     <ComboBox Margin="10 0 0 0" Width="120" SelectionChanged="OnLanguageChanged"
                               ItemsSource="{Binding Languages}" SelectedValue="{Binding Settings.Language}"
-                              DisplayMemberPath="Display" SelectedValuePath = "LanguageCode" />
+                              DisplayMemberPath="Display" SelectedValuePath="LanguageCode" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="10">
                     <TextBlock Text="{DynamicResource maxShowResults}" />
-                    <ComboBox Margin="10 0 0 0" Width="45" ItemsSource="{Binding MaxResultsRange}" SelectedItem="{Binding Settings.MaxResultsToShow}"/>
+                    <ComboBox Margin="10 0 0 0" Width="45" ItemsSource="{Binding MaxResultsRange}"
+                              SelectedItem="{Binding Settings.MaxResultsToShow}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Margin="10" Text="{DynamicResource pythonDirectory}" />
-                    <TextBox Width="300" Margin="10" Text="{Binding Settings.PluginSettings.PythonDirectory}"/>
-                    <Button Margin="10" Click="OnSelectPythonDirectoryClick"  Content="{DynamicResource selectPythonDirectory}" />
+                    <TextBox Width="300" Margin="10" Text="{Binding Settings.PluginSettings.PythonDirectory}" />
+                    <Button Margin="10" Click="OnSelectPythonDirectoryClick"
+                            Content="{DynamicResource selectPythonDirectory}" />
                 </StackPanel>
             </StackPanel>
         </TabItem>
-        <TabItem Header="{DynamicResource plugin}" Selector.Selected="OnPluginTabSelected">
+        <TabItem Header="{DynamicResource plugin}">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="39.5" />
-                    <ColumnDefinition Width="160.5"/>
+                    <ColumnDefinition Width="200" />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <DockPanel Grid.Column="0" Grid.ColumnSpan="2">
-                    <TextBlock DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Left" Cursor="Hand"
-                               MouseUp="tbMorePlugins_MouseUp" Foreground="Blue"
+                <DockPanel Grid.Column="0">
+                    <TextBlock DockPanel.Dock="Top" Margin="10" Cursor="Hand"
+                               MouseUp="OnMorePluginsClicked" Foreground="Blue"
                                Text="{DynamicResource browserMorePlugins}" />
-                    <ListBox x:Name="PluginsListBox" Margin="10, 0, 10, 10"
-                             SelectionChanged="OnPluginsSelectionChanged"
-                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True">
-                        <ListBox.Resources>
-                            <DataTemplate DataType="{x:Type woxPlugin:PluginPair}">
-                                <Grid Height="36" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="3">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="32" />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-                                    <Image Width="32" Height="32" HorizontalAlignment="Left"
-                                           Source="{Binding Metadata.IcoPath,Converter={StaticResource ImageConverter},IsAsync=True}" />
-                                    <Grid Margin="3 0 3 0" Grid.Column="1" HorizontalAlignment="Stretch">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
-                                        <TextBlock VerticalAlignment="Center" ToolTip="{Binding Metadata.Name}"
-                                                   x:Name="tbTitle" Text="{Binding Metadata.Name}" />
-                                        <TextBlock ToolTip="{Binding Metadata.Description}"
-                                                   Grid.Row="1" x:Name="tbSubTitle"
-                                                   Text="{Binding Metadata.Description}" Opacity="0.5" />
-                                    </Grid>
-                                </Grid>
+                    <ListBox SelectedIndex="0" SelectedItem="{Binding SelectedPlugin}"
+                             ItemsSource="{Binding MetadataViewModels}"
+                             Margin="10, 0, 10, 10" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="3">
+                                    <Image Source="{Binding Image, IsAsync=True}"
+                                        Width="32" Height="32" />
+                                    <StackPanel Margin="3 0 3 0">
+                                        <TextBlock Text="{Binding Metadata.Name}" 
+                                                   ToolTip="{Binding Metadata.Name}" />
+                                        <TextBlock Text="{Binding Metadata.Description}"
+                                                   ToolTip="{Binding Metadata.Description}"
+                                                   Opacity="0.5" />
+                                    </StackPanel>
+                                </StackPanel>
                             </DataTemplate>
-                        </ListBox.Resources>
+                        </ListBox.ItemTemplate>
                     </ListBox>
                 </DockPanel>
-                <Grid Margin="0" Grid.Column="2">
+                <Grid Grid.Column="1">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <ContentControl Grid.ColumnSpan="1" Grid.Row="0" Margin="10 10 10 0">
+                    <ContentControl DataContext="{Binding Path=SelectedPlugin}"
+                                    Grid.ColumnSpan="1" Grid.Row="0" Margin="10 10 10 0">
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="48" />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <Image Width="48" Height="48" HorizontalAlignment="Left" VerticalAlignment="Top"
-                                   x:Name="PluginIcon" />
+                            <Image Source="{Binding Image, IsAsync=True}"
+                                   Width="48" Height="48" HorizontalAlignment="Left" VerticalAlignment="Top" />
                             <Grid Margin="10,0,0,0" Grid.Column="1" HorizontalAlignment="Stretch">
                                 <Grid.RowDefinitions>
                                     <RowDefinition />
                                     <RowDefinition />
                                     <RowDefinition />
                                 </Grid.RowDefinitions>
-                                <DockPanel Grid.Row="0">
-                                    <TextBlock x:Name="PluginTitle" Text="Plugin Title" Cursor="Hand"
-                                               MouseUp="PluginTitle_OnMouseUp"
-                                               ToolTip="{Binding Source=pluginTitle, Path=Text}" FontSize="24" />
-                                    <TextBlock Opacity="0.5" VerticalAlignment="Bottom" HorizontalAlignment="Right"
-                                               x:Name="PluginAuthor" Text="{DynamicResource author}" />
-                                </DockPanel>
-                                <TextBlock Grid.Row="1" x:Name="PluginSubTitle" Opacity="0.5"
-                                           ToolTip="{Binding Source=pluginSubTitle, Path=Text}" />
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Metadata.Name}"
+                                               ToolTip="{Binding Metadata.Name}"
+                                               Grid.Column="0"
+                                               Cursor="Hand" MouseUp="OnPluginNameClick" FontSize="24"
+                                               HorizontalAlignment="Left" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right"
+                                                VerticalAlignment="Bottom" Opacity="0.5">
+                                        <TextBlock Text="{DynamicResource author}" />
+                                        <TextBlock Text=": " />
+                                        <TextBlock Text="{Binding Metadata.Author}" ToolTip="{Binding Metadata.Author}" />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Text="{Binding Metadata.Description}"
+                                           ToolTip="{Binding Metadata.Description}"
+                                           Grid.Row="1" Opacity="0.5" />
                                 <DockPanel Grid.Row="2" Margin="0 10 0 8">
-                                    <CheckBox x:Name="DisablePlugin" Click="OnDisablePluginClicked">
+                                    <CheckBox IsChecked="{Binding Metadata.Disabled}" Checked="OnPluginToggled"
+                                              Unchecked="OnPluginToggled">
                                         <TextBlock Text="{DynamicResource disable}" />
                                     </CheckBox>
-                                    <TextBlock Margin="20 0 0 0"
-                                               x:Name="PluginActionKeywordsTitle"
-                                               Text="{DynamicResource actionKeywords}" />
-                                    <TextBlock Margin="5 0 0 0" ToolTip="Change Action Keywords" Cursor="Hand"
-                                               MouseUp="PluginActionKeywords_OnMouseUp" Foreground="Blue" Text="keys"
-                                               x:Name="PluginActionKeywords" />
-                                    <TextBlock Margin="10 0 0 0" Text="Initialize time: 0ms" x:Name="PluginInitTime" />
-                                    <TextBlock Margin="10 0 0 0" Text="Query time: 0ms" x:Name="PluginQueryTime" />
-                                    <TextBlock HorizontalAlignment="Right" Cursor="Hand"
-                                               MouseUp="tbOpenPluginDirecoty_MouseUp" Foreground="Blue"
-                                               Text="{DynamicResource pluginDirectory}" x:Name="OpenPluginDirecoty" />
+                                    <TextBlock Text="{DynamicResource actionKeywords}"
+                                               Visibility="{Binding ActionKeywordsVisibility}"
+                                               Margin="20 0 0 0" />
+                                    <TextBlock Text="{Binding ActionKeywordsText}"
+                                               Visibility="{Binding ActionKeywordsVisibility}"
+                                               ToolTip="Change Action Keywords"
+                                               Margin="5 0 0 0" Cursor="Hand" Foreground="Blue"
+                                               MouseUp="OnPluginActionKeywordsClick" />
+                                    <TextBlock Text="{Binding InitilizaTime}" Margin="10 0 0 0" />
+                                    <TextBlock Text="{Binding QueryTime}" Margin="10 0 0 0" />
+                                    <TextBlock Text="{DynamicResource pluginDirectory}"
+                                               HorizontalAlignment="Right" Cursor="Hand"
+                                               MouseUp="OnPluginDirecotyClick" Foreground="Blue" />
                                 </DockPanel>
                             </Grid>
                         </Grid>
                     </ContentControl>
 
-                    <ContentControl x:Name="PluginContentPanel" Grid.ColumnSpan="1" Grid.Row="1" Margin="0"
+                    <ContentControl Content="{Binding SettingProvider}"
+                                    Grid.ColumnSpan="1" Grid.Row="1"
                                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                 </Grid>
             </Grid>

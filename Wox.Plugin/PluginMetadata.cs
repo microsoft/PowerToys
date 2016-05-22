@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-
+using Newtonsoft.Json;
+using PropertyChanged;
 namespace Wox.Plugin
 {
+    [ImplementPropertyChanged]
+    [JsonObject(MemberSerialization.OptOut)]
     public class PluginMetadata
     {
         private string _pluginDirectory;
@@ -13,9 +16,8 @@ namespace Wox.Plugin
         public string Version { get; set; }
         public string Language { get; set; }
         public string Description { get; set; }
-
         public string Website { get; set; }
-
+        public bool Disabled { get; set; }
         public string ExecuteFilePath { get; private set;}
 
         public string ExecuteFileName { get; set; }
@@ -31,7 +33,6 @@ namespace Wox.Plugin
             }
         }
 
-        [Obsolete("Use ActionKeywords instead, because Wox now support multiple action keywords. This will be remove in v1.3.0")]
         public string ActionKeyword { get; set; }
 
         public List<string> ActionKeywords { get; set; }
@@ -45,5 +46,12 @@ namespace Wox.Plugin
 
         [Obsolete("Use IcoPath")]
         public string FullIcoPath => IcoPath;
+
+        [JsonIgnore]
+        public long InitTime { get; set; }
+        [JsonIgnore]
+        public long AvgQueryTime { get; set; }
+        [JsonIgnore]
+        public int QueryCount { get; set; }
     }
 }

@@ -20,7 +20,10 @@ namespace Wox.Infrastructure.Image
             {
                 TopUsedImages[path] = 1;
             }
+        }
 
+        public void Cleanup()
+        {
             if (TopUsedImages.Count > MaxCached)
             {
                 var images = TopUsedImages.OrderByDescending(o => o.Value)

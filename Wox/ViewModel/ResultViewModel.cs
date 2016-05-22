@@ -1,10 +1,9 @@
 ﻿using System;
-using Wox.Core.Plugin;
-using Wox.Core.Resource;
-using Wox.Infrastructure;
-using Wox.Infrastructure.Hotkey;
+using System.Windows.Media;
+using System.Windows;
+using Wox.Infrastructure.Image;
 using Wox.Plugin;
-using Wox.Storage;
+
 
 namespace Wox.ViewModel
 {
@@ -37,7 +36,14 @@ namespace Wox.ViewModel
 
         public string PluginID => RawResult.PluginID;
 
-        public string IcoPath => RawResult.IcoPath;
+        public ImageSource Image
+        {
+            get
+            {
+                var image = ImageLoader.Load(RawResult.IcoPath);
+                return image;
+            }
+        }
 
         public int Score
         {

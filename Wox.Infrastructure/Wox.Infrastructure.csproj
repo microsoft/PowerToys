@@ -78,7 +78,6 @@
     <Compile Include="Hotkey\KeyEvent.cs" />
     <Compile Include="Image\ImageCache.cs" />
     <Compile Include="Image\ImageLoader.cs" />
-    <Compile Include="Image\ImagePathConverter.cs" />
     <Compile Include="Logger\Log.cs" />
     <Compile Include="Storage\ISavable.cs" />
     <Compile Include="Storage\PluginJsonStorage.cs" />
