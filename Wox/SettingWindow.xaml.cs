@@ -7,8 +7,6 @@ using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using Microsoft.Win32;
 using NHotkey;
@@ -17,11 +15,9 @@ using Wox.Core;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Core.UserSettings;
-using Wox.Helper;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
 using Wox.ViewModel;
-using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox
 {

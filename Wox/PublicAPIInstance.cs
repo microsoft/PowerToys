@@ -1,21 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
-using NHotkey;
-using NHotkey.Wpf;
 using Squirrel;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
-using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure.Hotkey;
 using Wox.Plugin;
 using Wox.ViewModel;
-using static Wox.ViewModel.SettingWindowViewModel;
 
 namespace Wox
 {

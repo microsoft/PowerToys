@@ -1,11 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Remoting.Contexts;
-using System.Windows;
+﻿using System.Runtime.Remoting.Contexts;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Wox.Plugin;
-using Wox.ViewModel;
 
 namespace Wox
 {
