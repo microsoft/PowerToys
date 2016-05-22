@@ -23,7 +23,6 @@ namespace Wox.ViewModel
         public Settings Settings { get; set; }
 
         private readonly JsonStrorage<Settings> _storage;
-        private readonly Dictionary<ISettingProvider, Control> _featureControls = new Dictionary<ISettingProvider, Control>();
 
         #region general
         public List<Language> Languages => InternationalizationManager.Instance.LoadAvailableLanguages();
@@ -68,26 +67,21 @@ namespace Wox.ViewModel
                 var settingProvider = SelectedPlugin.Plugin as ISettingProvider;
                 if (settingProvider != null)
                 {
-                    Control control;
-                    if (!_featureControls.TryGetValue(settingProvider, out control))
+                    var multipleActionKeywordsProvider = settingProvider as IMultipleActionKeywords;
+                    if (multipleActionKeywordsProvider != null)
                     {
-                        var multipleActionKeywordsProvider = settingProvider as IMultipleActionKeywords;
-                        if (multipleActionKeywordsProvider != null)
+                        multipleActionKeywordsProvider.ActionKeywordsChanged += (o, e) =>
                         {
-                            multipleActionKeywordsProvider.ActionKeywordsChanged += (o, e) =>
-                            {
-                                // update in-memory data
-                                PluginManager.UpdateActionKeywordForPlugin(SelectedPlugin.PluginPair, e.OldActionKeyword,
-                                    e.NewActionKeyword);
-                                // update persistant data
-                                Settings.PluginSettings.UpdateActionKeyword(SelectedPlugin.Metadata);
+                            // update in-memory data
+                            PluginManager.UpdateActionKeywordForPlugin(SelectedPlugin.PluginPair, e.OldActionKeyword,
+                            e.NewActionKeyword);
+                            // update persistant data
+                            Settings.PluginSettings.UpdateActionKeyword(SelectedPlugin.Metadata);
 
-                                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
-                            };
-                        }
-
-                        _featureControls.Add(settingProvider, control = settingProvider.CreateSettingPanel());
+                            MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
+                        };
                     }
+                    var control = settingProvider.CreateSettingPanel();
                     control.HorizontalAlignment = HorizontalAlignment.Stretch;
                     control.VerticalAlignment = VerticalAlignment.Stretch;
                     return control;
