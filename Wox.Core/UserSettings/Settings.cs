@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Drawing;
 using Newtonsoft.Json;
 using PropertyChanged;
@@ -31,7 +32,7 @@ namespace Wox.Core.UserSettings
         // Order defaults to 0 or -1, so 1 will let this property appear last
         [JsonProperty(Order = 1)]
         public PluginsSettings PluginSettings { get; set; } = new PluginsSettings();
-        public List<CustomPluginHotkey> CustomPluginHotkeys { get; set; } = new List<CustomPluginHotkey>();
+        public ObservableCollection<CustomPluginHotkey> CustomPluginHotkeys { get; set; } = new ObservableCollection<CustomPluginHotkey>();
 
         [Obsolete]
         public double Opacity { get; set; } = 1;

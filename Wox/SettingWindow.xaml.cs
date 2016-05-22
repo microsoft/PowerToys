@@ -154,13 +154,18 @@ namespace Wox
 
         #region Hotkey
 
-        void ctlHotkey_OnHotkeyChanged(object sender, EventArgs e)
+        private void OnHotkeyControlLoaded(object sender, RoutedEventArgs e)
+        {
+            HotkeyControl.SetHotkey(_viewModel.Settings.Hotkey, false);
+        }
+
+        void OnHotkeyChanged(object sender, EventArgs e)
         {
             if (HotkeyControl.CurrentHotkeyAvailable)
             {
                 SetHotkey(HotkeyControl.CurrentHotkey, delegate
                 {
-                    if (!System.Windows.Application.Current.MainWindow.IsVisible)
+                    if (!Application.Current.MainWindow.IsVisible)
                     {
                         _api.ShowApp();
                     }
@@ -197,16 +202,9 @@ namespace Wox
             }
         }
 
-        public void OnHotkeyTabSelected(object sender, RoutedEventArgs e)
+        private void OnDeleteCustomHotkeyClick(object sender, RoutedEventArgs e)
         {
-            HotkeyControl.HotkeyChanged += ctlHotkey_OnHotkeyChanged;
-            HotkeyControl.SetHotkey(_settings.Hotkey, false);
-            CustomHotkies.ItemsSource = _settings.CustomPluginHotkeys;
-        }
-
-        private void BtnDeleteCustomHotkey_OnClick(object sender, RoutedEventArgs e)
-        {
-            CustomPluginHotkey item = CustomHotkies.SelectedItem as CustomPluginHotkey;
+            var item = _viewModel.SelectedCustomPluginHotkey;
             if (item == null)
             {
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("pleaseSelectAnItem"));
@@ -221,14 +219,13 @@ namespace Wox
                     MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 _settings.CustomPluginHotkeys.Remove(item);
-                CustomHotkies.Items.Refresh();
                 RemoveHotkey(item.Hotkey);
             }
         }
 
-        private void BtnEditCustomHotkey_OnClick(object sender, RoutedEventArgs e)
+        private void OnnEditCustomHotkeyClick(object sender, RoutedEventArgs e)
         {
-            CustomPluginHotkey item = CustomHotkies.SelectedItem as CustomPluginHotkey;
+            var item = _viewModel.SelectedCustomPluginHotkey;
             if (item != null)
             {
                 CustomQueryHotkeySetting window = new CustomQueryHotkeySetting(this, _settings);
@@ -241,14 +238,9 @@ namespace Wox
             }
         }
 
-        private void BtnAddCustomeHotkey_OnClick(object sender, RoutedEventArgs e)
+        private void OnAddCustomeHotkeyClick(object sender, RoutedEventArgs e)
         {
             new CustomQueryHotkeySetting(this, _settings).ShowDialog();
-        }
-
-        public void ReloadCustomPluginHotkeyView()
-        {
-            CustomHotkies.Items.Refresh();
         }
 
         #endregion
@@ -432,6 +424,7 @@ namespace Wox
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
             e.Handled = true;
         }
+
 
     }
 }

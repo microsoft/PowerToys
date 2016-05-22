@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using NHotkey;
@@ -41,7 +42,7 @@ namespace Wox
 
                 if (_settings.CustomPluginHotkeys == null)
                 {
-                    _settings.CustomPluginHotkeys = new List<CustomPluginHotkey>();
+                    _settings.CustomPluginHotkeys = new ObservableCollection<CustomPluginHotkey>();
                 }
 
                 var pluginHotkey = new CustomPluginHotkey
@@ -78,7 +79,6 @@ namespace Wox
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
             }
 
-            _settingWidow.ReloadCustomPluginHotkeyView();
             Close();
         }
 

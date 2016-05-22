@@ -72,11 +72,11 @@ namespace Wox.ViewModel
                     {
                         multipleActionKeywordsProvider.ActionKeywordsChanged += (o, e) =>
                         {
-                            // update in-memory data
-                            PluginManager.UpdateActionKeywordForPlugin(SelectedPlugin.PluginPair, e.OldActionKeyword,
-                            e.NewActionKeyword);
-                            // update persistant data
-                            Settings.PluginSettings.UpdateActionKeyword(SelectedPlugin.Metadata);
+                                // update in-memory data
+                                PluginManager.UpdateActionKeywordForPlugin(SelectedPlugin.PluginPair, e.OldActionKeyword,
+                                e.NewActionKeyword);
+                                // update persistant data
+                                Settings.PluginSettings.UpdateActionKeyword(SelectedPlugin.Metadata);
 
                             MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
                         };
@@ -276,6 +276,10 @@ namespace Wox.ViewModel
         }
 
 
+        #endregion
+        #region hotkey
+
+        public CustomPluginHotkey SelectedCustomPluginHotkey {get;set;}
         #endregion
         public SettingWindowViewModel()
         {
