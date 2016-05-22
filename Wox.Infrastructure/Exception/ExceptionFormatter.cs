@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Xml;
@@ -63,7 +64,7 @@ namespace Wox.Infrastructure.Exception
             sb.Append("* Command Line: ");
             sb.AppendLine(Environment.CommandLine);
             sb.Append("* Timestamp: ");
-            sb.AppendLine(XmlConvert.ToString(DateTime.Now));
+            sb.AppendLine(DateTime.Now.ToString(CultureInfo.InvariantCulture));
             sb.Append("* IntPtr Length: ");
             sb.AppendLine(IntPtr.Size.ToString());
             sb.Append("* System Version: ");

@@ -21,12 +21,11 @@ namespace Wox.ViewModel
         private readonly JsonStrorage<Settings> _storage;
         private readonly Dictionary<ISettingProvider, Control> _featureControls = new Dictionary<ISettingProvider, Control>();
 
+        public Tab SelectedTab { get; set; } = Tab.General;
         public List<Language> Languages => InternationalizationManager.Instance.LoadAvailableLanguages();
         public IEnumerable<int> MaxResultsRange => Enumerable.Range(2, 16);
-        public Tab SelectedTab { get; set; } = Tab.General;
         public PluginViewModel SelectedPlugin { get; set; }
-
-        public IList<PluginViewModel> MetadataViewModels
+        public IList<PluginViewModel> PluginViewModels
         {
             get
             {
@@ -54,12 +53,6 @@ namespace Wox.ViewModel
                 }).ToList();
                 return metadatas;
             }
-        }
-
-        public SettingWindowViewModel()
-        {
-            _storage = new JsonStrorage<Settings>();
-            Settings = _storage.Load();
         }
 
         public Control SettingProvider
@@ -99,6 +92,14 @@ namespace Wox.ViewModel
                 }
             }
         }
+
+        public SettingWindowViewModel()
+        {
+            _storage = new JsonStrorage<Settings>();
+            Settings = _storage.Load();
+        }
+
+
 
 
         public void Save()
