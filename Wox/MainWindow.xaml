@@ -9,7 +9,6 @@
         Topmost="True"
         Loaded="OnLoaded"
         Closing="OnClosing"
-        PreviewKeyDown="OnPreviewKeyDown"
         Drop="OnDrop"
         Deactivated="OnDeactivated"
         SizeToContent="Height"
@@ -25,6 +24,32 @@
         Top="{Binding Top, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
+    <Window.InputBindings>
+        <KeyBinding Key="Escape" Command="{Binding EscCommand}"></KeyBinding>
+        <KeyBinding Key="F1" Command="{Binding StartHelpCommand}"></KeyBinding>
+        <KeyBinding Key="Tab" Command="{Binding SelectNextItemCommand}"></KeyBinding>
+        <KeyBinding Key="Tab" Modifiers="Shift" Command="{Binding SelectPrevItemCommand}"></KeyBinding>
+        <KeyBinding Key="Down" Command="{Binding SelectNextItemCommand}"></KeyBinding>
+        <KeyBinding Key="Up" Command="{Binding SelectPrevItemCommand}"></KeyBinding>
+        <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding SelectNextItemCommand}"></KeyBinding>
+        <KeyBinding Key="J" Modifiers="Ctrl" Command="{Binding SelectNextItemCommand}"></KeyBinding>
+        <KeyBinding Key="D" Modifiers="Ctrl" Command="{Binding SelectNextPageCommand}"></KeyBinding>
+        <KeyBinding Key="P" Modifiers="Ctrl" Command="{Binding SelectPrevItemCommand}"></KeyBinding>
+        <KeyBinding Key="K" Modifiers="Ctrl" Command="{Binding SelectPrevItemCommand}"></KeyBinding>
+        <KeyBinding Key="U" Modifiers="Ctrl" Command="{Binding SelectPrevPageCommand}"></KeyBinding>
+        <KeyBinding Key="O" Modifiers="Ctrl" Command="{Binding LoadContextMenuCommand}"></KeyBinding>
+        <KeyBinding Key="Enter" Modifiers="Shift" Command="{Binding LoadContextMenuCommand}"></KeyBinding>
+        <KeyBinding Key="Enter" Command="{Binding OpenResultCommand}"></KeyBinding>
+        <KeyBinding Key="D1" Modifiers="Alt" Command="{Binding OpenResultCommand}" CommandParameter="0"></KeyBinding>
+        <KeyBinding Key="D2" Modifiers="Alt" Command="{Binding OpenResultCommand}" CommandParameter="1"></KeyBinding>
+        <KeyBinding Key="D3" Modifiers="Alt" Command="{Binding OpenResultCommand}" CommandParameter="2"></KeyBinding>
+        <KeyBinding Key="D4" Modifiers="Alt" Command="{Binding OpenResultCommand}" CommandParameter="3"></KeyBinding>
+        <KeyBinding Key="D5" Modifiers="Alt" Command="{Binding OpenResultCommand}" CommandParameter="4"></KeyBinding>
+        <KeyBinding Key="D6" Modifiers="Alt" Command="{Binding OpenResultCommand}" CommandParameter="5"></KeyBinding>
+        <KeyBinding Key="D7" Modifiers="Alt" Command="{Binding OpenResultCommand}" CommandParameter="6"></KeyBinding>
+        <KeyBinding Key="D8" Modifiers="Alt" Command="{Binding OpenResultCommand}" CommandParameter="7"></KeyBinding>
+        <KeyBinding Key="D9" Modifiers="Alt" Command="{Binding OpenResultCommand}" CommandParameter="8"></KeyBinding>
+    </Window.InputBindings>
     <Border Style="{DynamicResource WindowBorderStyle}" MouseDown="OnMouseDown">
         <StackPanel Orientation="Vertical">
             <TextBox Style="{DynamicResource QueryBoxStyle}"

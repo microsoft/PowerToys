@@ -9,12 +9,10 @@ using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 using Wox.Helper;
-using Wox.Infrastructure.Hotkey;
 using Wox.ViewModel;
 using ContextMenu = System.Windows.Forms.ContextMenu;
 using DataFormats = System.Windows.DataFormats;
 using DragEventArgs = System.Windows.DragEventArgs;
-using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MenuItem = System.Windows.Forms.MenuItem;
 using MessageBox = System.Windows.MessageBox;
 
@@ -159,162 +157,6 @@ namespace Wox
             if (_settings.HideWhenDeactive)
             {
                 App.API.HideApp();
-            }
-        }
-
-        private void OnPreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            var vm = DataContext as MainViewModel;
-            if (null == vm) return;
-            //when alt is pressed, the real key should be e.SystemKey
-            var key = (e.Key == Key.System ? e.SystemKey : e.Key);
-            switch (key)
-            {
-                case Key.Escape:
-                    vm.EscCommand.Execute(null);
-                    e.Handled = true;
-                    break;
-
-                case Key.Tab:
-                    if (GlobalHotkey.Instance.CheckModifiers().ShiftPressed)
-                    {
-                        vm.SelectPrevItemCommand.Execute(null);
-                    }
-                    else
-                    {
-                        vm.SelectNextItemCommand.Execute(null);
-                    }
-                    e.Handled = true;
-                    break;
-
-                case Key.N:
-                case Key.J:
-                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
-                    {
-                        vm.SelectNextItemCommand.Execute(null);
-                    }
-                    break;
-
-                case Key.P:
-                case Key.K:
-                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
-                    {
-                        vm.SelectPrevItemCommand.Execute(null);
-                    }
-                    break;
-
-                case Key.O:
-                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
-                    {
-                        vm.LoadContextMenuCommand.Execute(null);
-                    }
-                    break;
-
-                case Key.Enter:
-                    if (GlobalHotkey.Instance.CheckModifiers().ShiftPressed)
-                    {
-                        vm.LoadContextMenuCommand.Execute(null);
-                    }
-                    else
-                    {
-                        vm.OpenResultCommand.Execute(null);
-                    }
-                    e.Handled = true;
-                    break;
-
-                case Key.Down:
-                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
-                    {
-                        vm.DisplayNextQueryCommand.Execute(null);
-                    }
-                    else
-                    {
-                        vm.SelectNextItemCommand.Execute(null);
-                    }
-                    e.Handled = true;
-                    break;
-
-                case Key.Up:
-                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
-                    {
-                        vm.DisplayPrevQueryCommand.Execute(null);
-                    }
-                    else
-                    {
-                        vm.SelectPrevItemCommand.Execute(null);
-                    }
-                    e.Handled = true;
-                    break;
-
-                case Key.D:
-                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
-                    {
-                        vm.SelectNextPageCommand.Execute(null);
-                    }
-                    break;
-
-                case Key.PageDown:
-                    vm.SelectNextPageCommand.Execute(null);
-                    e.Handled = true;
-                    break;
-
-                case Key.U:
-                    if (GlobalHotkey.Instance.CheckModifiers().CtrlPressed)
-                    {
-                        vm.SelectPrevPageCommand.Execute(null);
-                    }
-                    break;
-
-                case Key.PageUp:
-                    vm.SelectPrevPageCommand.Execute(null);
-                    e.Handled = true;
-                    break;
-
-                case Key.F1:
-                    vm.StartHelpCommand.Execute(null);
-                    break;
-
-                case Key.D1:
-
-                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
-                    {
-                        vm.OpenResultCommand.Execute(0);
-                    }
-                    break;
-
-                case Key.D2:
-                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
-                    {
-                        vm.OpenResultCommand.Execute(1);
-                    }
-                    break;
-
-                case Key.D3:
-                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
-                    {
-                        vm.OpenResultCommand.Execute(2);
-                    }
-                    break;
-
-                case Key.D4:
-                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
-                    {
-                        vm.OpenResultCommand.Execute(3);
-                    }
-                    break;
-
-                case Key.D5:
-                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
-                    {
-                        vm.OpenResultCommand.Execute(4);
-                    }
-                    break;
-                case Key.D6:
-                    if (GlobalHotkey.Instance.CheckModifiers().AltPressed)
-                    {
-                        vm.OpenResultCommand.Execute(5);
-                    }
-                    break;
             }
         }
 
