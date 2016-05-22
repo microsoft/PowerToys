@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using PropertyChanged;
@@ -32,7 +33,6 @@ namespace Wox.ViewModel
         public Settings Settings { get; set; }
 
 
-        //todo happlebao save
         public void Save()
         {
             _storage.Save();

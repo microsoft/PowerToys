@@ -11,8 +11,15 @@
         Title="{DynamicResource wox_settings}"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
-        Height="600" Width="800" PreviewKeyDown="Window_PreviewKeyDown"
+        Height="600" Width="800" 
+        Closed="OnClosed"
         d:DataContext="{d:DesignInstance vm:SettingWindowViewModel}">
+    <Window.InputBindings>
+        <KeyBinding Key="Escape" Command="Close"/>
+    </Window.InputBindings>
+    <Window.CommandBindings>
+        <CommandBinding Command="Close" Executed="OnCloseExecuted"/>
+    </Window.CommandBindings>
     <TabControl Height="auto" SelectedIndex="0">
         <TabItem Header="{DynamicResource general}">
             <StackPanel Orientation="Vertical">
