@@ -11,6 +11,7 @@ using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 using Wox.Helper;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using static System.String;
@@ -20,17 +21,36 @@ namespace Wox.ViewModel
     [ImplementPropertyChanged]
     public class SettingWindowViewModel
     {
-        public Settings Settings { get; set; }
         private readonly JsonStrorage<Settings> _storage;
 
+        public SettingWindowViewModel()
+        {
+            _storage = new JsonStrorage<Settings>();
+            Settings = _storage.Load();
+        }
+
+        public Settings Settings { get; set; }
+
+
+        //todo happlebao save
+        public void Save()
+        {
+            _storage.Save();
+        }
+
         #region general
+
         public List<Language> Languages => _translater.LoadAvailableLanguages();
         private Internationalization _translater => InternationalizationManager.Instance;
         public IEnumerable<int> MaxResultsRange => Enumerable.Range(2, 16);
+
         #endregion
+
         #region plugin
+
         public static string Plugin => "http://www.getwox.com/plugin";
         public PluginViewModel SelectedPlugin { get; set; }
+
         public IList<PluginViewModel> PluginViewModels
         {
             get
@@ -75,7 +95,7 @@ namespace Wox.ViewModel
                         {
                             // update in-memory data
                             PluginManager.UpdateActionKeywordForPlugin(SelectedPlugin.PluginPair, e.OldActionKeyword,
-                            e.NewActionKeyword);
+                                e.NewActionKeyword);
                             // update persistant data
                             Settings.PluginSettings.UpdateActionKeyword(SelectedPlugin.Metadata);
 
@@ -93,23 +113,25 @@ namespace Wox.ViewModel
                 }
             }
         }
+
         #endregion
+
         #region theme
 
         public static string Theme => @"http://www.getwox.com/theme";
+
         public string SelectedTheme
         {
-            get
-            {
-                return Settings.Theme;
-            }
+            get { return Settings.Theme; }
             set
             {
                 Settings.Theme = value;
                 ThemeManager.Instance.ChangeTheme(value);
             }
         }
-        public List<string> Themes => ThemeManager.Instance.LoadAvailableThemes().Select(Path.GetFileNameWithoutExtension).ToList();
+
+        public List<string> Themes
+            => ThemeManager.Instance.LoadAvailableThemes().Select(Path.GetFileNameWithoutExtension).ToList();
 
         public Brush PreviewBackground
         {
@@ -123,7 +145,7 @@ namespace Wox.ViewModel
                     bitmap.BeginInit();
                     bitmap.StreamSource = memStream;
                     bitmap.EndInit();
-                    var brush = new ImageBrush(bitmap) { Stretch = Stretch.UniformToFill };
+                    var brush = new ImageBrush(bitmap) {Stretch = Stretch.UniformToFill};
                     return brush;
                 }
                 else
@@ -139,45 +161,37 @@ namespace Wox.ViewModel
         {
             get
             {
-
-                const string image = "app.png";
-                
-                List<Result> results = new List<Result>
+                var results = new List<Result>
                 {
                     new Result
                     {
                         Title = "WoX is a launcher for Windows that simply works.",
-                        SubTitle = "You can call it Windows omni-eXecutor if you want a long name.",
-                        IcoPath = image,
+                        SubTitle = "You can call it Windows omni-eXecutor if you want a long name."
                     },
                     new Result
                     {
                         Title = "Search for everything—applications, folders, files and more.",
-                        SubTitle = "Use pinyin to search for programs. (yyy / wangyiyun → 网易云音乐)",
-                        IcoPath = image,
+                        SubTitle = "Use pinyin to search for programs. (yyy / wangyiyun → 网易云音乐)"
                     },
                     new Result
                     {
                         Title = "Keyword plugin search.",
-                        SubTitle = "search google with g search_term.",
-                        IcoPath = image,
+                        SubTitle = "search google with g search_term."
                     },
                     new Result
                     {
                         Title = "Build custom themes at: ",
-                        SubTitle = Theme,
+                        SubTitle = Theme
                     },
                     new Result
                     {
                         Title = "Install plugins from: ",
-                        SubTitle = Plugin,
-                        IcoPath = image,
+                        SubTitle = Plugin
                     },
                     new Result
                     {
-                        Title = $"Open Source: {Infrastructure.Constant.Github}",
-                        SubTitle = "Please star it!",
-                        IcoPath = image,
+                        Title = $"Open Source: {Constant.Github}",
+                        SubTitle = "Please star it!"
                     }
                 };
                 var vm = new ResultsViewModel(6);
@@ -276,17 +290,21 @@ namespace Wox.ViewModel
             }
         }
 
+        #endregion
+
+        #region hotkey
+
+        public CustomPluginHotkey SelectedCustomPluginHotkey { get; set; }
 
         #endregion
-        #region hotkey
-        public CustomPluginHotkey SelectedCustomPluginHotkey { get; set; }
-        #endregion
+
         #region about
 
-        public static string Github => Infrastructure.Constant.Github;
+        public static string Github => Constant.Github;
         public static string ReleaseNotes => @"https://github.com/Wox-launcher/Wox/releases/latest";
-        public static string Version => Infrastructure.Constant.Version;
-        public string ActivatedTimes => Format(_translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
+        public static string Version => Constant.Version;
+        public string ActivatedTimes
+            => Format(_translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
         private string _newVersionTips;
         public string NewVersionTips
         {
@@ -298,17 +316,7 @@ namespace Wox.ViewModel
             }
         }
         public Visibility NewVersionTipsVisibility { get; set; }
-        #endregion
-        public SettingWindowViewModel()
-        {
-            _storage = new JsonStrorage<Settings>();
-            Settings = _storage.Load();
-        }
 
-        //todo happlebao save
-        public void Save()
-        {
-            _storage.Save();
-        }
+        #endregion
     }
 }

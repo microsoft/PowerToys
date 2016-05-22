@@ -63,7 +63,7 @@
                 <DockPanel Grid.Column="0">
                     <TextBlock DockPanel.Dock="Top" Margin="10">
                         <Hyperlink NavigateUri="{Binding Plugin, Mode=OneWay}" RequestNavigate="OnRequestNavigate">
-                            <Run Text="{DynamicResource browserMorePlugins}"/>
+                            <Run Text="{DynamicResource browserMorePlugins}" />
                         </Hyperlink>
                     </TextBlock>
                     <ListBox SelectedIndex="0" SelectedItem="{Binding SelectedPlugin}"
@@ -164,13 +164,13 @@
                 <DockPanel Grid.Column="0">
                     <TextBlock DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Left">
                         <Hyperlink NavigateUri="{Binding Theme, Mode=OneWay}" RequestNavigate="OnRequestNavigate">
-                            <Run Text="{DynamicResource browserMoreThemes}"/>
+                            <Run Text="{DynamicResource browserMoreThemes}" />
                         </Hyperlink>
                     </TextBlock>
 
                     <ListBox SelectedItem="{Binding SelectedTheme}" ItemsSource="{Binding Themes}"
                              Margin="10, 0, 10, 10" Width="180"
-                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  />
+                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                 </DockPanel>
                 <Grid Margin="0" Grid.Column="1">
                     <Grid.RowDefinitions>
@@ -201,10 +201,10 @@
                             <TextBlock Text="{DynamicResource queryBoxFont}" />
                             <ComboBox ItemsSource="{x:Static Fonts.SystemFontFamilies}"
                                       SelectedItem="{Binding SelectedQueryBoxFont}"
-                                      HorizontalAlignment="Left" VerticalAlignment="Top" Width="160" Margin="10 -2 5 0"/>
+                                      HorizontalAlignment="Left" VerticalAlignment="Top" Width="160" Margin="10 -2 5 0" />
                             <ComboBox ItemsSource="{Binding SelectedQueryBoxFont.FamilyTypefaces}"
                                       SelectedItem="{Binding SelectedQueryBoxFontFaces}"
-                                      HorizontalAlignment="Left" VerticalAlignment="Top" 
+                                      HorizontalAlignment="Left" VerticalAlignment="Top"
                                       Width="120" Margin="0 -2 0 0">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
@@ -223,11 +223,11 @@
                             <TextBlock Text="{DynamicResource resultItemFont}" />
                             <ComboBox ItemsSource="{x:Static Fonts.SystemFontFamilies}"
                                       SelectedItem="{Binding SelectedResultFont}"
-                                      HorizontalAlignment="Left" VerticalAlignment="Top" 
+                                      HorizontalAlignment="Left" VerticalAlignment="Top"
                                       Width="160" Margin="5 -2 5 0" />
                             <ComboBox ItemsSource="{Binding SelectedResultFont.FamilyTypefaces}"
                                       SelectedItem="{Binding SelectedResultFontFaces}"
-                                      HorizontalAlignment="Left" VerticalAlignment="Top" 
+                                      HorizontalAlignment="Left" VerticalAlignment="Top"
                                       Width="120" Margin="0 -2 0 0">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
@@ -250,16 +250,18 @@
             <Grid Margin="10">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="35" />
-                    <RowDefinition Height="20"/>
-                    <RowDefinition Height="400"/>
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="400" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Height="24" Margin="0,4,0,3">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Height="24"
+                            Margin="0,4,0,3">
                     <TextBlock VerticalAlignment="Center" Margin="0 0 10 0" Text="{DynamicResource woxHotkey}" />
-                    <wox:HotkeyControl x:Name="HotkeyControl" HotkeyChanged="OnHotkeyChanged" Loaded="OnHotkeyControlLoaded" />
+                    <wox:HotkeyControl x:Name="HotkeyControl" HotkeyChanged="OnHotkeyChanged"
+                                       Loaded="OnHotkeyControlLoaded" />
                 </StackPanel>
                 <TextBlock VerticalAlignment="Center" Grid.Row="1" Margin="0,3,10,2"
-                               Text="{DynamicResource customQueryHotkey}"/>
+                           Text="{DynamicResource customQueryHotkey}" />
                 <ListView ItemsSource="{Binding Settings.CustomPluginHotkeys}"
                           SelectedItem="{Binding SelectedCustomPluginHotkey}"
                           Margin="0 5 0 0" Grid.Row="2">
@@ -268,7 +270,7 @@
                             <GridViewColumn Header="{DynamicResource hotkey}" Width="180">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate DataType="s:CustomPluginHotkey">
-                                        <TextBlock Text="{Binding Hotkey}"/>
+                                        <TextBlock Text="{Binding Hotkey}" />
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
@@ -282,7 +284,8 @@
                         </GridView>
                     </ListView.View>
                 </ListView>
-                <StackPanel Grid.Row="3" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Orientation="Horizontal" Height="40" Width="360">
+                <StackPanel Grid.Row="3" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                            Orientation="Horizontal" Height="40" Width="360">
                     <Button Click="OnDeleteCustomHotkeyClick" Width="100"
                             Margin="10" Content="{DynamicResource delete}" />
                     <Button Click="OnnEditCustomHotkeyClick" Width="100" Margin="10"
@@ -292,7 +295,7 @@
                 </StackPanel>
             </Grid>
         </TabItem>
-        <TabItem Header="{DynamicResource proxy}" >
+        <TabItem Header="{DynamicResource proxy}">
             <StackPanel>
                 <CheckBox Margin="10" IsChecked="{Binding Settings.ProxyEnabled}">
                     <TextBlock Text="{DynamicResource enableProxy}" />
@@ -306,19 +309,19 @@
                         <ColumnDefinition Width="100" />
                         <ColumnDefinition Width="200" />
                         <ColumnDefinition Width="100" />
-                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="200" />
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="{DynamicResource server}" Grid.Row="0" Grid.Column="0" Padding="5" />
                     <TextBox Text="{Binding Settings.ProxyServer}" Grid.Row="0" Grid.Column="1" Padding="5" />
-                    <TextBlock Text="{DynamicResource port}" Grid.Row="0" Grid.Column="2" Padding="5"/>
-                    <TextBox Text="{Binding Settings.ProxyPort}" Grid.Row="0" Grid.Column="3" Padding="5"/>
-                    <TextBlock Text="{DynamicResource userName}" Grid.Row="1" Grid.Column="0" Padding="5"/>
-                    <TextBox Text="{Binding Settings.ProxyUserName}" Grid.Row="1" Grid.Column="1" Padding="5"/>
+                    <TextBlock Text="{DynamicResource port}" Grid.Row="0" Grid.Column="2" Padding="5" />
+                    <TextBox Text="{Binding Settings.ProxyPort}" Grid.Row="0" Grid.Column="3" Padding="5" />
+                    <TextBlock Text="{DynamicResource userName}" Grid.Row="1" Grid.Column="0" Padding="5" />
+                    <TextBox Text="{Binding Settings.ProxyUserName}" Grid.Row="1" Grid.Column="1" Padding="5" />
                     <TextBlock Text="{DynamicResource password}" Grid.Row="1" Grid.Column="2" Padding="5" />
                     <TextBox Text="{Binding Settings.ProxyPassword}" Grid.Row="1" Grid.Column="3" Padding="5" />
                 </Grid>
                 <Button Content="{DynamicResource testProxy}" IsEnabled="{Binding Settings.ProxyEnabled}"
-                        Width="80" HorizontalAlignment="Left" Margin="10" Click="OnTestProxyClick"/>
+                        Width="80" HorizontalAlignment="Left" Margin="10" Click="OnTestProxyClick" />
             </StackPanel>
         </TabItem>
         <TabItem Header="{DynamicResource about}">
@@ -340,24 +343,24 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="{Binding ActivatedTimes}" />
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource website}"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource website}" />
                 <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left">
                     <Hyperlink NavigateUri="{Binding Github, Mode=OneWay}" RequestNavigate="OnRequestNavigate">
-                        <Run Text="{Binding Github, Mode=OneWay}"/>
+                        <Run Text="{Binding Github, Mode=OneWay}" />
                     </Hyperlink>
                 </TextBlock>
                 <TextBlock Grid.Row="2" Grid.Column="0" Text="{DynamicResource version}" />
                 <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Version}" />
                 <TextBlock Grid.Row="3" Grid.Column="0" Text="{DynamicResource releaseNotes}" />
-                <TextBlock Grid.Row="3" Grid.Column="1" >
+                <TextBlock Grid.Row="3" Grid.Column="1">
                     <Hyperlink NavigateUri="{Binding ReleaseNotes, Mode=OneWay}"
                                RequestNavigate="OnRequestNavigate">
-                        <Run Text="{Binding ReleaseNotes, Mode=OneWay}"/>
+                        <Run Text="{Binding ReleaseNotes, Mode=OneWay}" />
                     </Hyperlink>
                 </TextBlock>
-                <Button Grid.Row="4" Grid.Column="0" 
+                <Button Grid.Row="4" Grid.Column="0"
                         Content="{DynamicResource checkUpdates}" Click="OnCheckUpdates"
-                        HorizontalAlignment="Left" Margin="10 10 10 10"  />
+                        HorizontalAlignment="Left" Margin="10 10 10 10" />
                 <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding NewVersionTips}"
                            HorizontalAlignment="Left" Visibility="{Binding NewVersionTipsVisibility}" />
             </Grid>
