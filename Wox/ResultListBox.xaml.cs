@@ -12,15 +12,6 @@ namespace Wox
     [Synchronization]
     public partial class ResultListBox
     {
-        public void AddResults(List<Result> newRawResults)
-        {
-            var vm = (ResultsViewModel) DataContext;
-            var newResults = newRawResults.Select(r => new ResultViewModel(r)).ToList();
-            vm.Results.Update(newResults);
-            vm.SelectedIndex = 0;
-        }
-        
-
         public ResultListBox()
         {
             InitializeComponent();

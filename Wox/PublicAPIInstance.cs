@@ -101,8 +101,8 @@ namespace Wox
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
+                _settingsViewModel.SelectedTab = (Tab)tab;
                 SettingWindow sw = SingletonWindowOpener.Open<SettingWindow>(this, _settingsViewModel);
-                _settingsViewModel.SelectedTab = (Tab) tab;
             });
         }
 

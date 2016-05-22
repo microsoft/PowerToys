@@ -19,20 +19,23 @@ namespace Wox.ViewModel
 
         private readonly object _addResultsLock = new object();
         private readonly object _collectionLock = new object();
-        private readonly Settings _settings;
+        public int MaxResults = 6;
 
-        public ResultsViewModel(Settings settings)
+        public ResultsViewModel()
         {
-            _settings = settings;
             Results = new ResultCollection();
             BindingOperations.EnableCollectionSynchronization(Results, _collectionLock);
+        }
+        public ResultsViewModel(int maxResults) : this()
+        {
+            MaxResults = maxResults;
         }
 
         #endregion
 
         #region ViewModel Properties
 
-        public int MaxHeight => _settings.MaxResultsToShow * 50;
+        public int MaxHeight => MaxResults * 50;
 
         public int SelectedIndex
         {
@@ -108,12 +111,12 @@ namespace Wox.ViewModel
 
         public void SelectNextPage()
         {
-            SelectedIndex = NewIndex(SelectedIndex + _settings.MaxResultsToShow);
+            SelectedIndex = NewIndex(SelectedIndex + MaxResults);
         }
 
         public void SelectPrevPage()
         {
-            SelectedIndex = NewIndex(SelectedIndex - _settings.MaxResultsToShow);
+            SelectedIndex = NewIndex(SelectedIndex - MaxResults);
         }
 
         public void Clear()

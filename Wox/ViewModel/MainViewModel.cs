@@ -232,14 +232,14 @@ namespace Wox.ViewModel
 
         private void InitializeResultListBox()
         {
-            Results = new ResultsViewModel(_settings);
+            Results = new ResultsViewModel(_settings.MaxResultsToShow);
             ResultListBoxVisibility = Visibility.Collapsed;
         }
 
 
         private void InitializeContextMenu()
         {
-            ContextMenu = new ResultsViewModel(_settings);
+            ContextMenu = new ResultsViewModel(_settings.MaxResultsToShow);
             ContextMenuVisibility = Visibility.Collapsed;
         }
 

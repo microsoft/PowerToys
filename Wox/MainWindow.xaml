@@ -24,12 +24,7 @@
         Left="{Binding Left, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         Top="{Binding Top, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-        d:DataContext="{d:DesignInstance vm:MainViewModel, IsDesignTimeCreatable=True}">
-    <Window.Resources>
-        <DataTemplate DataType="{x:Type vm:ResultsViewModel}">
-            <wox:ResultListBox PreviewMouseDown="OnPreviewMouseButtonDown" />
-        </DataTemplate>
-    </Window.Resources>
+        d:DataContext="{d:DesignInstance vm:MainViewModel}">
     <Border Style="{DynamicResource WindowBorderStyle}" MouseDown="OnMouseDown">
         <StackPanel Orientation="Vertical">
             <TextBox Style="{DynamicResource QueryBoxStyle}"
@@ -51,8 +46,12 @@
                   Style="{DynamicResource PendingLineStyle}" Visibility="{Binding ProgressBarVisibility, Mode=TwoWay}" 
                   Y1="0" Y2="0" X2="100" Height="2" Width="752" StrokeThickness="1">
             </Line>
-            <ContentControl Name="Results" Content="{Binding Results}" Visibility="{Binding ResultListBoxVisibility}" />
-            <ContentControl Name ="ContextMenu" Content="{Binding ContextMenu}" Visibility="{Binding ContextMenuVisibility}" />
+            <ContentControl Visibility="{Binding ResultListBoxVisibility}" >
+                <wox:ResultListBox DataContext="{Binding Results}" PreviewMouseDown="OnPreviewMouseButtonDown" />
+            </ContentControl>
+            <ContentControl Visibility="{Binding ContextMenuVisibility}">
+                <wox:ResultListBox DataContext="{Binding ContextMenu}" PreviewMouseDown="OnPreviewMouseButtonDown" />
+            </ContentControl>
         </StackPanel>
     </Border>
 </Window>

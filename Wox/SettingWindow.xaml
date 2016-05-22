@@ -12,7 +12,7 @@
         WindowStartupLocation="CenterScreen"
         Height="600" Width="800" PreviewKeyDown="Window_PreviewKeyDown"
         d:DataContext="{d:DesignInstance vm:SettingWindowViewModel}">
-    <TabControl Height="auto" SelectedIndex="{Binding SelectedTab}">
+    <TabControl Height="auto" SelectedIndex="{Binding SelectedTab, FallbackValue=0}">
         <TabItem Header="{DynamicResource general}" Height="24" VerticalAlignment="Top">
             <StackPanel Orientation="Vertical">
                 <CheckBox IsChecked="{Binding Settings.StartWoxOnSystemStartup}" Margin="10">
@@ -64,7 +64,7 @@
                                MouseUp="OnMorePluginsClicked" Foreground="Blue"
                                Text="{DynamicResource browserMorePlugins}" />
                     <ListBox SelectedIndex="0" SelectedItem="{Binding SelectedPlugin}"
-                             ItemsSource="{Binding MetadataViewModels}"
+                             ItemsSource="{Binding PluginViewModels}"
                              Margin="10, 0, 10, 10" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
@@ -152,7 +152,7 @@
                 </Grid>
             </Grid>
         </TabItem>
-        <TabItem Header="{DynamicResource theme}" Selector.Selected="OnThemeTabSelected">
+        <TabItem Header="{DynamicResource theme}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="200" />
@@ -160,18 +160,18 @@
                 </Grid.ColumnDefinitions>
                 <DockPanel Grid.Column="0">
                     <TextBlock DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Left" Cursor="Hand"
-                               MouseUp="tbMoreThemes_MouseUp" Foreground="Blue"
+                               MouseUp="OnMoreThemesClick" Foreground="Blue"
                                Text="{DynamicResource browserMoreThemes}" />
-                    <ListBox x:Name="Theme" Margin="10, 0, 10, 10"
-                             SelectionChanged="ThemeComboBox_OnSelectionChanged" HorizontalAlignment="Stretch"
-                             VerticalAlignment="Stretch" Width="180" />
+                    <ListBox SelectedItem="{Binding SelectedTheme}" ItemsSource="{Binding Themes}"
+                             Margin="10, 0, 10, 10" Width="180"
+                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  />
                 </DockPanel>
                 <Grid Margin="0" Grid.Column="1">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition Height="100" />
                     </Grid.RowDefinitions>
-                    <StackPanel x:Name="PreviewPanel" Grid.Row="0" Margin="0">
+                    <StackPanel Background="{Binding PreviewBackground}" Grid.Row="0" Margin="0">
                         <StackPanel Orientation="Horizontal" Margin="10"
                                     HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Border Width="500" Style="{DynamicResource WindowBorderStyle}">
@@ -182,7 +182,9 @@
                                     </Grid.RowDefinitions>
                                     <TextBox Text="{DynamicResource helloWox}" IsReadOnly="True"
                                              Style="{DynamicResource QueryBoxStyle}" Grid.Row="0" />
-                                    <wox:ResultListBox Grid.Row="1" x:Name="ResultListBoxPreview" />
+                                    <ContentControl Visibility="Visible" Grid.Row="1">
+                                        <wox:ResultListBox DataContext="{Binding PreviewResults}" />
+                                    </ContentControl>
                                 </Grid>
                             </Border>
                         </StackPanel>
@@ -191,15 +193,13 @@
                     <StackPanel Grid.Row="1" Margin="0 10 0 10" Orientation="Vertical">
                         <StackPanel Orientation="Horizontal" Margin="2">
                             <TextBlock Text="{DynamicResource queryBoxFont}" />
-                            <ComboBox Margin="10 -2 5 0" x:Name="QueryBoxFont"
-                                      ItemsSource="{x:Static Fonts.SystemFontFamilies}"
-                                      SelectionChanged="CbQueryBoxFont_OnSelectionChanged" HorizontalAlignment="Left"
-                                      VerticalAlignment="Top" Width="160" />
-                            <ComboBox Margin="0 -2 0 0"
-                                      x:Name="QueryBoxFontFaces"
-                                      ItemsSource="{Binding SelectedValue.FamilyTypefaces, ElementName=QueryBoxFont}"
-                                      SelectionChanged="CbQueryBoxFontFaces_OnSelectionChanged"
-                                      HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
+                            <ComboBox ItemsSource="{x:Static Fonts.SystemFontFamilies}"
+                                      SelectedItem="{Binding SelectedQueryBoxFont}"
+                                      HorizontalAlignment="Left" VerticalAlignment="Top" Width="160" Margin="10 -2 5 0"/>
+                            <ComboBox ItemsSource="{Binding SelectedQueryBoxFont.FamilyTypefaces}"
+                                      SelectedItem="{Binding SelectedQueryBoxFontFaces}"
+                                      HorizontalAlignment="Left" VerticalAlignment="Top" 
+                                      Width="120" Margin="0 -2 0 0">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <ItemsControl ItemsSource="{Binding AdjustedFaceNames}">
@@ -215,15 +215,14 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="2">
                             <TextBlock Text="{DynamicResource resultItemFont}" />
-                            <ComboBox Margin="5 -2 5 0" x:Name="ResultFontComboBox"
-                                      ItemsSource="{x:Static Fonts.SystemFontFamilies}"
-                                      SelectionChanged="OnResultFontSelectionChanged" HorizontalAlignment="Left"
-                                      VerticalAlignment="Top" Width="160" />
-                            <ComboBox Margin="0 -2 0 0"
-                                      x:Name="ResultFontFacesComboBox"
-                                      ItemsSource="{Binding SelectedValue.FamilyTypefaces, ElementName=ResultFontComboBox}"
-                                      SelectionChanged="OnResultFontFacesSelectionChanged" HorizontalAlignment="Left"
-                                      VerticalAlignment="Top" Width="120">
+                            <ComboBox ItemsSource="{x:Static Fonts.SystemFontFamilies}"
+                                      SelectedItem="{Binding SelectedResultFont}"
+                                      HorizontalAlignment="Left" VerticalAlignment="Top" 
+                                      Width="160" Margin="5 -2 5 0" />
+                            <ComboBox ItemsSource="{Binding SelectedResultFont.FamilyTypefaces}"
+                                      SelectedItem="{Binding SelectedResultFontFaces}"
+                                      HorizontalAlignment="Left" VerticalAlignment="Top" 
+                                      Width="120" Margin="0 -2 0 0">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <ItemsControl ItemsSource="{Binding AdjustedFaceNames}">
@@ -242,7 +241,7 @@
                 </Grid>
             </Grid>
         </TabItem>
-        <TabItem Header="{DynamicResource hotkey}" Selector.Selected="OnThemeTabSelected">
+        <TabItem Header="{DynamicResource hotkey}" Selector.Selected="OnHotkeyTabSelected">
             <Grid Margin="10">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="30" />
