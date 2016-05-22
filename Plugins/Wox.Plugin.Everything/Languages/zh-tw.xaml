@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
 
-    <system:String x:Key="wox_plugin_everything_is_not_running">Everything沒有運行，我們將自動為您啟動內置Everything，請稍後進行查詢</system:String>
+    <system:String x:Key="wox_plugin_everything_is_not_running">Everything沒有運行</system:String>
     <system:String x:Key="wox_plugin_everything_query_error">Everything插件發生了一個錯誤（回車拷貝具體錯誤信息）</system:String>
     <system:String x:Key="wox_plugin_everything_copied">拷貝成功</system:String>
     <system:String x:Key="wox_plugin_everything_canot_start">不能啟動 {0}</system:String>
