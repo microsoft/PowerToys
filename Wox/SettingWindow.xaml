@@ -14,7 +14,7 @@
         Height="600" Width="800" PreviewKeyDown="Window_PreviewKeyDown"
         d:DataContext="{d:DesignInstance vm:SettingWindowViewModel}">
     <TabControl Height="auto" SelectedIndex="0">
-        <TabItem Header="{DynamicResource general}" Height="24" VerticalAlignment="Top">
+        <TabItem Header="{DynamicResource general}">
             <StackPanel Orientation="Vertical">
                 <CheckBox IsChecked="{Binding Settings.StartWoxOnSystemStartup}" Margin="10">
                     <TextBlock Text="{DynamicResource startWoxOnSystemStartup}" />
@@ -61,9 +61,11 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <DockPanel Grid.Column="0">
-                    <TextBlock DockPanel.Dock="Top" Margin="10" Cursor="Hand"
-                               MouseUp="OnMorePluginsClicked" Foreground="Blue"
-                               Text="{DynamicResource browserMorePlugins}" />
+                    <TextBlock DockPanel.Dock="Top" Margin="10">
+                        <Hyperlink NavigateUri="{Binding Plugin, Mode=OneWay}" RequestNavigate="OnRequestNavigate">
+                            <Run Text="{DynamicResource browserMorePlugins}"/>
+                        </Hyperlink>
+                    </TextBlock>
                     <ListBox SelectedIndex="0" SelectedItem="{Binding SelectedPlugin}"
                              ItemsSource="{Binding PluginViewModels}"
                              Margin="10, 0, 10, 10" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -160,9 +162,12 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <DockPanel Grid.Column="0">
-                    <TextBlock DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Left" Cursor="Hand"
-                               MouseUp="OnMoreThemesClick" Foreground="Blue"
-                               Text="{DynamicResource browserMoreThemes}" />
+                    <TextBlock DockPanel.Dock="Top" Margin="10" HorizontalAlignment="Left">
+                        <Hyperlink NavigateUri="{Binding Theme, Mode=OneWay}" RequestNavigate="OnRequestNavigate">
+                            <Run Text="{DynamicResource browserMoreThemes}"/>
+                        </Hyperlink>
+                    </TextBlock>
+
                     <ListBox SelectedItem="{Binding SelectedTheme}" ItemsSource="{Binding Themes}"
                              Margin="10, 0, 10, 10" Width="180"
                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  />
@@ -287,53 +292,33 @@
                 </StackPanel>
             </Grid>
         </TabItem>
-        <TabItem Header="{DynamicResource proxy}" Height="22" VerticalAlignment="Top">
+        <TabItem Header="{DynamicResource proxy}" >
             <StackPanel>
-                <CheckBox x:Name="ToggleProxy" Margin="10" Checked="ProxyToggled" Unchecked="ProxyToggled">
+                <CheckBox Margin="10" IsChecked="{Binding Settings.ProxyEnabled}">
                     <TextBlock Text="{DynamicResource enableProxy}" />
                 </CheckBox>
-                <Grid Margin="10" IsEnabled="{Binding IsChecked, ElementName=ToggleProxy}">
+                <Grid Margin="10" IsEnabled="{Binding Settings.ProxyEnabled}">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="80" />
-                        <ColumnDefinition Width="220" />
-                        <ColumnDefinition Width="80" />
-                        <ColumnDefinition />
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="200" />
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="200"/>
                     </Grid.ColumnDefinitions>
-                    <Border Grid.Row="0" Grid.Column="0" Padding="5">
-                        <TextBlock Text="{DynamicResource server}" />
-                    </Border>
-                    <Border Grid.Row="0" Grid.Column="1" Padding="5">
-                        <TextBox Width="200" HorizontalAlignment="Left" x:Name="ProxyServer" />
-                    </Border>
-                    <Border Grid.Row="0" Grid.Column="2" Padding="5">
-                        <TextBlock Text="{DynamicResource port}" />
-                    </Border>
-                    <Border Grid.Row="0" Grid.Column="3" Padding="5">
-                        <TextBox Width="50" HorizontalAlignment="Left" x:Name="ProxyPort" />
-                    </Border>
-                    <Border Grid.Row="1" Grid.Column="0" Padding="5">
-                        <TextBlock Text="{DynamicResource userName}" />
-                    </Border>
-                    <Border Grid.Row="1" Grid.Column="1" Padding="5">
-                        <TextBox Width="200" HorizontalAlignment="Left" x:Name="ProxyUserName" />
-                    </Border>
-                    <Border Grid.Row="1" Grid.Column="2" Padding="5">
-                        <TextBlock Text="{DynamicResource password}" />
-                    </Border>
-                    <Border Grid.Row="1" Grid.Column="3" Padding="5">
-                        <PasswordBox Width="200" HorizontalAlignment="Left" x:Name="ProxyPassword" />
-                    </Border>
+                    <TextBlock Text="{DynamicResource server}" Grid.Row="0" Grid.Column="0" Padding="5" />
+                    <TextBox Text="{Binding Settings.ProxyServer}" Grid.Row="0" Grid.Column="1" Padding="5" />
+                    <TextBlock Text="{DynamicResource port}" Grid.Row="0" Grid.Column="2" Padding="5"/>
+                    <TextBox Text="{Binding Settings.ProxyPort}" Grid.Row="0" Grid.Column="3" Padding="5"/>
+                    <TextBlock Text="{DynamicResource userName}" Grid.Row="1" Grid.Column="0" Padding="5"/>
+                    <TextBox Text="{Binding Settings.ProxyUserName}" Grid.Row="1" Grid.Column="1" Padding="5"/>
+                    <TextBlock Text="{DynamicResource password}" Grid.Row="1" Grid.Column="2" Padding="5" />
+                    <TextBox Text="{Binding Settings.ProxyPassword}" Grid.Row="1" Grid.Column="3" Padding="5" />
                 </Grid>
-                <StackPanel Orientation="Horizontal" IsEnabled="{Binding IsChecked, ElementName=ToggleProxy}">
-                    <Button Width="80" HorizontalAlignment="Left" Margin="10" Click="btnTestProxy_Click"
-                            Content="{DynamicResource testProxy}" />
-                    <Button Width="80" HorizontalAlignment="Left" Margin="10" Click="btnSaveProxy_Click"
-                            Content="{DynamicResource save}" />
-                </StackPanel>
+                <Button Content="{DynamicResource testProxy}" IsEnabled="{Binding Settings.ProxyEnabled}"
+                        Width="80" HorizontalAlignment="Left" Margin="10" Click="OnTestProxyClick"/>
             </StackPanel>
         </TabItem>
         <TabItem Header="{DynamicResource about}">
@@ -354,34 +339,27 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-
-                <TextBlock x:Name="ActivatedTimes" Grid.Row="0" Grid.ColumnSpan="3"
-                           Text="{DynamicResource about_activate_times}" />
-
-                <TextBlock Grid.Column="0" Grid.Row="1" Text="{DynamicResource website}" />
-                <TextBlock Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left">
-                    <Hyperlink NavigateUri="https://github.com/Wox-launcher/Wox" RequestNavigate="OnRequestNavigate">
-                        https://github.com/Wox-launcher/Wox
+                <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="{Binding ActivatedTimes}" />
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource website}"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left">
+                    <Hyperlink NavigateUri="{Binding Github, Mode=OneWay}" RequestNavigate="OnRequestNavigate">
+                        <Run Text="{Binding Github, Mode=OneWay}"/>
                     </Hyperlink>
                 </TextBlock>
-
-
-                <TextBlock Grid.Column="0" Grid.Row="2" Text="{DynamicResource version}" />
-                <TextBlock Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" x:Name="Version" Text="1.0.0" />
-
-                <TextBlock Grid.Column="0" Grid.Row="3" Text="{DynamicResource releaseNotes}" />
-                <TextBlock Grid.Column="1" Grid.Row="3" HorizontalAlignment="Left">
-                    <Hyperlink NavigateUri="https://github.com/Wox-launcher/Wox/releases/latest"
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="{DynamicResource version}" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Version}" />
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="{DynamicResource releaseNotes}" />
+                <TextBlock Grid.Row="3" Grid.Column="1" >
+                    <Hyperlink NavigateUri="{Binding ReleaseNotes, Mode=OneWay}"
                                RequestNavigate="OnRequestNavigate">
-                        https://github.com/Wox-launcher/Wox/releases/latest
+                        <Run Text="{Binding ReleaseNotes, Mode=OneWay}"/>
                     </Hyperlink>
                 </TextBlock>
-
-                <Button Grid.Column="0" Grid.Row="4" Content="{DynamicResource checkUpdates}"
-                        HorizontalAlignment="Left" Margin="10 10 10 10" Click="OnCheckUpdates" />
-                <TextBlock Grid.Column="1" Grid.Row="4" Name="NewVersionTips" HorizontalAlignment="Left"
-                           Text="{DynamicResource newVersionTips}" Visibility="Hidden" />
-
+                <Button Grid.Row="4" Grid.Column="0" 
+                        Content="{DynamicResource checkUpdates}" Click="OnCheckUpdates"
+                        HorizontalAlignment="Left" Margin="10 10 10 10"  />
+                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding NewVersionTips}"
+                           HorizontalAlignment="Left" Visibility="{Binding NewVersionTipsVisibility}" />
             </Grid>
         </TabItem>
     </TabControl>

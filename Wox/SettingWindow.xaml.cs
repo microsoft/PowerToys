@@ -26,8 +26,6 @@ namespace Wox
         private const string StartupPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
 
         public readonly IPublicAPI _api;
-        bool settingsLoaded;
-        private bool themeTabLoaded;
         private Settings _settings;
         private SettingWindowViewModel _viewModel;
 
@@ -38,39 +36,6 @@ namespace Wox
             DataContext = viewModel;
             _viewModel = viewModel;
             _api = api;
-            Loaded += Setting_Loaded;
-        }
-
-        private void ProxyToggled(object sender, RoutedEventArgs e)
-        {
-            _settings.ProxyEnabled = ToggleProxy.IsChecked ?? false;
-        }
-
-        private void Setting_Loaded(object sender, RoutedEventArgs ev)
-        {
-            #region Proxy
-
-            ToggleProxy.IsChecked = _settings.ProxyEnabled;
-            ProxyServer.Text = _settings.ProxyServer;
-            if (_settings.ProxyPort != 0)
-            {
-                ProxyPort.Text = _settings.ProxyPort.ToString();
-            }
-            ProxyUserName.Text = _settings.ProxyUserName;
-            ProxyPassword.Password = _settings.ProxyPassword;
-
-            #endregion
-
-            #region About
-
-            string activateTimes = string.Format(
-                InternationalizationManager.Instance.GetTranslation("about_activate_times"), _settings.ActivateTimes);
-            ActivatedTimes.Text = activateTimes;
-            Version.Text = Infrastructure.Constant.Version;
-
-            #endregion
-
-            settingsLoaded = true;
         }
 
         #region General
@@ -245,14 +210,6 @@ namespace Wox
 
         #endregion
 
-        #region Theme
-
-        private void OnMoreThemesClick(object sender, MouseButtonEventArgs e)
-        {
-            Process.Start("http://www.getwox.com/theme");
-        }
-        #endregion
-
         #region Plugin
 
         private void OnPluginToggled(object sender, RoutedEventArgs e)
@@ -301,82 +258,40 @@ namespace Wox
                 }
             }
         }
-
-        private void OnMorePluginsClicked(object sender, MouseButtonEventArgs e)
-        {
-            Process.Start("http://www.getwox.com/plugin");
-        }
-
         #endregion
 
         #region Proxy
 
-        private void btnSaveProxy_Click(object sender, RoutedEventArgs e)
+        private void OnTestProxyClick(object sender, RoutedEventArgs e)
         {
-            _settings.ProxyEnabled = ToggleProxy.IsChecked ?? false;
-
-            int port = 80;
-            if (_settings.ProxyEnabled)
-            {
-                if (string.IsNullOrEmpty(ProxyServer.Text))
-                {
-                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("serverCantBeEmpty"));
-                    return;
-                }
-                if (string.IsNullOrEmpty(ProxyPort.Text))
-                {
-                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("portCantBeEmpty"));
-                    return;
-                }
-                if (!int.TryParse(ProxyPort.Text, out port))
-                {
-                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("invalidPortFormat"));
-                    return;
-                }
-            }
-
-            _settings.ProxyServer = ProxyServer.Text;
-            _settings.ProxyPort = port;
-            _settings.ProxyUserName = ProxyUserName.Text;
-            _settings.ProxyPassword = ProxyPassword.Password;
-
-            MessageBox.Show(InternationalizationManager.Instance.GetTranslation("saveProxySuccessfully"));
-        }
-
-        private void btnTestProxy_Click(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(ProxyServer.Text))
+            if (string.IsNullOrEmpty(_settings.ProxyServer))
             {
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("serverCantBeEmpty"));
                 return;
             }
-            if (string.IsNullOrEmpty(ProxyPort.Text))
+            if (_settings.ProxyPort > 0)
             {
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("portCantBeEmpty"));
                 return;
             }
-            int port;
-            if (!int.TryParse(ProxyPort.Text, out port))
-            {
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("invalidPortFormat"));
-                return;
-            }
 
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://www.baidu.com");
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Infrastructure.Constant.Github);
             request.Timeout = 1000 * 5;
             request.ReadWriteTimeout = 1000 * 5;
-            if (string.IsNullOrEmpty(ProxyUserName.Text))
+            if (string.IsNullOrEmpty(_settings.ProxyUserName) || string.IsNullOrEmpty(_settings.ProxyPassword))
             {
-                request.Proxy = new WebProxy(ProxyServer.Text, port);
+                request.Proxy = new WebProxy(_settings.ProxyServer, _settings.ProxyPort);
             }
             else
             {
-                request.Proxy = new WebProxy(ProxyServer.Text, port);
-                request.Proxy.Credentials = new NetworkCredential(ProxyUserName.Text, ProxyPassword.Password);
+                request.Proxy = new WebProxy(_settings.ProxyServer, _settings.ProxyPort)
+                {
+                    Credentials = new NetworkCredential(_settings.ProxyUserName, _settings.ProxyPassword)
+                };
             }
             try
             {
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                var response = (HttpWebResponse)request.GetResponse();
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     MessageBox.Show(InternationalizationManager.Instance.GetTranslation("proxyIsCorrect"));
@@ -412,9 +327,8 @@ namespace Wox
                 var oldVersion = Updater.NumericVersion(Infrastructure.Constant.Version);
                 if (newVersion > oldVersion)
                 {
-                    NewVersionTips.Text = string.Format(NewVersionTips.Text, version);
-                    NewVersionTips.Visibility = Visibility.Visible;
                     Updater.UpdateApp();
+                    _viewModel.NewVersionTips = version;
                 }
             }
         }
@@ -424,7 +338,5 @@ namespace Wox
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
             e.Handled = true;
         }
-
-
     }
 }

@@ -21,14 +21,15 @@ namespace Wox.ViewModel
     public class SettingWindowViewModel
     {
         public Settings Settings { get; set; }
-
         private readonly JsonStrorage<Settings> _storage;
 
         #region general
-        public List<Language> Languages => InternationalizationManager.Instance.LoadAvailableLanguages();
+        public List<Language> Languages => _translater.LoadAvailableLanguages();
+        private Internationalization _translater => InternationalizationManager.Instance;
         public IEnumerable<int> MaxResultsRange => Enumerable.Range(2, 16);
         #endregion
         #region plugin
+        public static string Plugin => "http://www.getwox.com/plugin";
         public PluginViewModel SelectedPlugin { get; set; }
         public IList<PluginViewModel> PluginViewModels
         {
@@ -72,13 +73,13 @@ namespace Wox.ViewModel
                     {
                         multipleActionKeywordsProvider.ActionKeywordsChanged += (o, e) =>
                         {
-                                // update in-memory data
-                                PluginManager.UpdateActionKeywordForPlugin(SelectedPlugin.PluginPair, e.OldActionKeyword,
-                                e.NewActionKeyword);
-                                // update persistant data
-                                Settings.PluginSettings.UpdateActionKeyword(SelectedPlugin.Metadata);
+                            // update in-memory data
+                            PluginManager.UpdateActionKeywordForPlugin(SelectedPlugin.PluginPair, e.OldActionKeyword,
+                            e.NewActionKeyword);
+                            // update persistant data
+                            Settings.PluginSettings.UpdateActionKeyword(SelectedPlugin.Metadata);
 
-                            MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
+                            MessageBox.Show(_translater.GetTranslation("succeed"));
                         };
                     }
                     var control = settingProvider.CreateSettingPanel();
@@ -95,6 +96,7 @@ namespace Wox.ViewModel
         #endregion
         #region theme
 
+        public static string Theme => @"http://www.getwox.com/theme";
         public string SelectedTheme
         {
             get
@@ -139,8 +141,7 @@ namespace Wox.ViewModel
             {
 
                 const string image = "app.png";
-                const string theme = "http://www.getwox.com/theme/builder";
-                const string plugin = "http://www.getwox.com/plugin";
+                
                 List<Result> results = new List<Result>
                 {
                     new Result
@@ -164,12 +165,12 @@ namespace Wox.ViewModel
                     new Result
                     {
                         Title = "Build custom themes at: ",
-                        SubTitle = theme,
+                        SubTitle = Theme,
                     },
                     new Result
                     {
                         Title = "Install plugins from: ",
-                        SubTitle = plugin,
+                        SubTitle = Plugin,
                         IcoPath = image,
                     },
                     new Result
@@ -278,8 +279,25 @@ namespace Wox.ViewModel
 
         #endregion
         #region hotkey
+        public CustomPluginHotkey SelectedCustomPluginHotkey { get; set; }
+        #endregion
+        #region about
 
-        public CustomPluginHotkey SelectedCustomPluginHotkey {get;set;}
+        public static string Github => Infrastructure.Constant.Github;
+        public static string ReleaseNotes => @"https://github.com/Wox-launcher/Wox/releases/latest";
+        public static string Version => Infrastructure.Constant.Version;
+        public string ActivatedTimes => Format(_translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
+        private string _newVersionTips;
+        public string NewVersionTips
+        {
+            get { return _newVersionTips; }
+            set
+            {
+                _newVersionTips = Format(_translater.GetTranslation("newVersionTips"), value);
+                NewVersionTipsVisibility = Visibility.Visible;
+            }
+        }
+        public Visibility NewVersionTipsVisibility { get; set; }
         #endregion
         public SettingWindowViewModel()
         {
