@@ -1,19 +1,17 @@
-﻿<Window
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:wox="clr-namespace:Wox"
-    xmlns:vm="clr-namespace:Wox.ViewModel"
-    xmlns:image="clr-namespace:Wox.Infrastructure.Image;assembly=Wox.Infrastructure"
-    x:Class="Wox.SettingWindow"
-    mc:Ignorable="d"
-    Icon="Images\app.png"
-    Title="{DynamicResource wox_settings}"
-    ResizeMode="NoResize"
-    WindowStartupLocation="CenterScreen"
-    Height="600" Width="800" PreviewKeyDown="Window_PreviewKeyDown"
-    d:DataContext="{d:DesignInstance vm:SettingWindowViewModel}">
+﻿<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:wox="clr-namespace:Wox"
+        xmlns:vm="clr-namespace:Wox.ViewModel"
+        x:Class="Wox.SettingWindow"
+        mc:Ignorable="d"
+        Icon="Images\app.png"
+        Title="{DynamicResource wox_settings}"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Height="600" Width="800" PreviewKeyDown="Window_PreviewKeyDown"
+        d:DataContext="{d:DesignInstance vm:SettingWindowViewModel}">
     <TabControl Height="auto" SelectedIndex="{Binding SelectedTab}">
         <TabItem Header="{DynamicResource general}" Height="24" VerticalAlignment="Top">
             <StackPanel Orientation="Vertical">
@@ -72,9 +70,9 @@
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" Margin="3">
                                     <Image Source="{Binding Image, IsAsync=True}"
-                                        Width="32" Height="32" />
+                                           Width="32" Height="32" />
                                     <StackPanel Margin="3 0 3 0">
-                                        <TextBlock Text="{Binding Metadata.Name}" 
+                                        <TextBlock Text="{Binding Metadata.Name}"
                                                    ToolTip="{Binding Metadata.Name}" />
                                         <TextBlock Text="{Binding Metadata.Description}"
                                                    ToolTip="{Binding Metadata.Description}"

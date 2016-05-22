@@ -3,7 +3,6 @@
          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-         xmlns:image="clr-namespace:Wox.Infrastructure.Image;assembly=Wox.Infrastructure"
          xmlns:vm="clr-namespace:Wox.ViewModel"
          mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100"
          d:DataContext="{d:DesignInstance vm:ResultsViewModel}"
@@ -19,9 +18,6 @@
     <!--IsSynchronizedWithCurrentItem: http://stackoverflow.com/a/7833798/2833083-->
     <ListBox.ItemTemplate>
         <DataTemplate>
-            <DataTemplate.DataType>
-                <x:Type TypeName="vm:ResultViewModel" />
-            </DataTemplate.DataType>
             <Button>
                 <Button.Template>
                     <ControlTemplate>
