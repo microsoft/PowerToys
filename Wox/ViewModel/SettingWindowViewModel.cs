@@ -26,7 +26,6 @@ namespace Wox.ViewModel
         private readonly JsonStrorage<Settings> _storage;
         private readonly Dictionary<ISettingProvider, Control> _featureControls = new Dictionary<ISettingProvider, Control>();
 
-        public Tab SelectedTab { get; set; } = Tab.General;
         #region general
         public List<Language> Languages => InternationalizationManager.Instance.LoadAvailableLanguages();
         public IEnumerable<int> MaxResultsRange => Enumerable.Range(2, 16);
@@ -295,16 +294,6 @@ namespace Wox.ViewModel
         public void Save()
         {
             _storage.Save();
-        }
-
-        public enum Tab
-        {
-            General = 0,
-            Plugin = 1,
-            Theme = 2,
-            Hotkey = 3,
-            Proxy = 4,
-            About = 5
         }
     }
 }

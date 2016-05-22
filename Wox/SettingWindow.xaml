@@ -12,7 +12,7 @@
         WindowStartupLocation="CenterScreen"
         Height="600" Width="800" PreviewKeyDown="Window_PreviewKeyDown"
         d:DataContext="{d:DesignInstance vm:SettingWindowViewModel}">
-    <TabControl Height="auto" SelectedIndex="{Binding SelectedTab, FallbackValue=0}">
+    <TabControl Height="auto" SelectedIndex="0">
         <TabItem Header="{DynamicResource general}" Height="24" VerticalAlignment="Top">
             <StackPanel Orientation="Vertical">
                 <CheckBox IsChecked="{Binding Settings.StartWoxOnSystemStartup}" Margin="10">

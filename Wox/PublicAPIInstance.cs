@@ -97,11 +97,10 @@ namespace Wox
             });
         }
 
-        public void OpenSettingDialog(int tab = 0)
+        public void OpenSettingDialog()
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                _settingsViewModel.SelectedTab = (Tab)tab;
                 SettingWindow sw = SingletonWindowOpener.Open<SettingWindow>(this, _settingsViewModel);
             });
         }
