@@ -5,9 +5,8 @@ using Newtonsoft.Json;
 using PropertyChanged;
 namespace Wox.Plugin
 {
-    [ImplementPropertyChanged]
     [JsonObject(MemberSerialization.OptOut)]
-    public class PluginMetadata
+    public class PluginMetadata : BaseModel
     {
         private string _pluginDirectory;
         public string ID { get; set; }

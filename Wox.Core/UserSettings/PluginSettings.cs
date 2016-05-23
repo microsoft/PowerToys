@@ -1,13 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using PropertyChanged;
-using Wox.Core.Plugin;
 using Wox.Plugin;
 
 namespace Wox.Core.UserSettings
 {
-    [ImplementPropertyChanged]
-    public class PluginsSettings
+    public class PluginsSettings : BaseModel
     {
         public string PythonDirectory { get; set; }
         public Dictionary<string, Plugin> Plugins { get; set; } = new Dictionary<string, Plugin>();

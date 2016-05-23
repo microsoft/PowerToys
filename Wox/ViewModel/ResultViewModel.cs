@@ -7,7 +7,7 @@ using Wox.Plugin;
 
 namespace Wox.ViewModel
 {
-    public class ResultViewModel : BaseViewModel
+    public class ResultViewModel : BaseModel
     {
         #region Private Fields
 

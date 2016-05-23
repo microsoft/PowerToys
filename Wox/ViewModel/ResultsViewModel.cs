@@ -6,10 +6,11 @@ using System.Windows;
 using System.Windows.Data;
 using Wox.Core.UserSettings;
 using Wox.Plugin;
+using PropertyChanged;
 
 namespace Wox.ViewModel
 {
-    public class ResultsViewModel : BaseViewModel
+    public class ResultsViewModel : BaseModel
     {
         #region Private Fields
 
@@ -19,16 +20,24 @@ namespace Wox.ViewModel
 
         private readonly object _addResultsLock = new object();
         private readonly object _collectionLock = new object();
-        public int MaxResults = 6;
+        private readonly Settings _settings;
+        private int MaxResults => _settings?.MaxResultsToShow ?? 6;
 
         public ResultsViewModel()
         {
             Results = new ResultCollection();
             BindingOperations.EnableCollectionSynchronization(Results, _collectionLock);
         }
-        public ResultsViewModel(int maxResults) : this()
+        public ResultsViewModel(Settings settings) : this()
         {
-            MaxResults = maxResults;
+            _settings = settings;
+            _settings.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(_settings.MaxResultsToShow))
+                {
+                    OnPropertyChanged(nameof(MaxHeight));
+                }
+            };
         }
 
         #endregion

@@ -1,21 +1,9 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
 namespace Wox.ViewModel
 {
-    public class BaseViewModel : INotifyPropertyChanged
-    {
-
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-    }
-
+    //todo rename file
     public class RelayCommand : ICommand
     {
 

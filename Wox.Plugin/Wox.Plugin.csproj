@@ -60,6 +60,7 @@
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AllowedLanguage.cs" />
+    <Compile Include="BaseModel.cs" />
     <Compile Include="EventHandler.cs" />
     <Compile Include="Feature.cs" />
     <Compile Include="Features\IContextMenu.cs" />

@@ -1,10 +1,8 @@
-﻿using System;
-using PropertyChanged;
+﻿using Wox.Plugin;
 
 namespace Wox.Core.UserSettings
 {
-    [ImplementPropertyChanged]
-    public class CustomPluginHotkey
+    public class CustomPluginHotkey : BaseModel
     {
         public string Hotkey { get; set; }
         public string ActionKeyword { get; set; }

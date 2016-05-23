@@ -1,14 +1,12 @@
 ﻿using System.Windows;
 using System.Windows.Media;
 using Wox.Plugin;
-using PropertyChanged;
 using Wox.Core.Resource;
 using Wox.Infrastructure.Image;
 
 namespace Wox.ViewModel
 {
-    [ImplementPropertyChanged]
-    public class PluginViewModel
+    public class PluginViewModel : BaseModel
     {
         public PluginPair PluginPair { get; set; }
         public PluginMetadata Metadata { get; set; }

@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using Newtonsoft.Json;
-using PropertyChanged;
+using Wox.Plugin;
 
 namespace Wox.Core.UserSettings
 {
-    [ImplementPropertyChanged]
-    public class Settings
+    public class Settings : BaseModel
     {
         public string Hotkey { get; set; } = "Alt + Space";
         public string Language { get; set; } = "en";
@@ -55,6 +54,7 @@ namespace Wox.Core.UserSettings
         public int ProxyPort { get; set; }
         public string ProxyUserName { get; set; }
         public string ProxyPassword { get; set; }
+        
     }
 
     [Obsolete]

@@ -4,10 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using PropertyChanged;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Core.UserSettings;
@@ -15,12 +13,10 @@ using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
-using static System.String;
 
 namespace Wox.ViewModel
 {
-    [ImplementPropertyChanged]
-    public class SettingWindowViewModel
+    public class SettingWindowViewModel : BaseModel
     {
         private readonly JsonStrorage<Settings> _storage;
 
@@ -28,6 +24,13 @@ namespace Wox.ViewModel
         {
             _storage = new JsonStrorage<Settings>();
             Settings = _storage.Load();
+            Settings.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(Settings.ActivateTimes))
+                {
+                    OnPropertyChanged(nameof(ActivatedTimes));
+                }
+            };
         }
 
         public Settings Settings { get; set; }
@@ -63,7 +66,7 @@ namespace Wox.ViewModel
                     var d2 = settings[b.Metadata.ID].Disabled;
                     if (d1 == d2)
                     {
-                        return Compare(a.Metadata.Name, b.Metadata.Name, StringComparison.CurrentCulture);
+                        return string.Compare(a.Metadata.Name, b.Metadata.Name, StringComparison.CurrentCulture);
                     }
                     else
                     {
@@ -145,7 +148,7 @@ namespace Wox.ViewModel
                     bitmap.BeginInit();
                     bitmap.StreamSource = memStream;
                     bitmap.EndInit();
-                    var brush = new ImageBrush(bitmap) {Stretch = Stretch.UniformToFill};
+                    var brush = new ImageBrush(bitmap) { Stretch = Stretch.UniformToFill };
                     return brush;
                 }
                 else
@@ -194,7 +197,7 @@ namespace Wox.ViewModel
                         SubTitle = "Please star it!"
                     }
                 };
-                var vm = new ResultsViewModel(6);
+                var vm = new ResultsViewModel();
                 vm.AddResults(results, "PREVIEW");
                 return vm;
             }
@@ -303,15 +306,14 @@ namespace Wox.ViewModel
         public static string Github => Constant.Github;
         public static string ReleaseNotes => @"https://github.com/Wox-launcher/Wox/releases/latest";
         public static string Version => Constant.Version;
-        public string ActivatedTimes
-            => Format(_translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
+        public string ActivatedTimes => string.Format(_translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
         private string _newVersionTips;
         public string NewVersionTips
         {
             get { return _newVersionTips; }
             set
             {
-                _newVersionTips = Format(_translater.GetTranslation("newVersionTips"), value);
+                _newVersionTips = string.Format(_translater.GetTranslation("newVersionTips"), value);
                 NewVersionTipsVisibility = Visibility.Visible;
             }
         }

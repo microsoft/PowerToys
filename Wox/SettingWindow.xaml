@@ -349,7 +349,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="{Binding ActivatedTimes}" />
+                <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="{Binding ActivatedTimes, Mode=OneWay}" />
                 <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource website}" />
                 <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left">
                     <Hyperlink NavigateUri="{Binding Github, Mode=OneWay}" RequestNavigate="OnRequestNavigate">

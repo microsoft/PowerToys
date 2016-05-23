@@ -20,7 +20,7 @@ using Wox.Storage;
 
 namespace Wox.ViewModel
 {
-    public class MainViewModel : BaseViewModel, ISavable
+    public class MainViewModel : BaseModel, ISavable
     {
         #region Private Fields
 
@@ -231,15 +231,15 @@ namespace Wox.ViewModel
         }
 
         private void InitializeResultListBox()
-        {
-            Results = new ResultsViewModel(_settings.MaxResultsToShow);
+        {   
+            Results = new ResultsViewModel(_settings);
             ResultListBoxVisibility = Visibility.Collapsed;
         }
 
 
         private void InitializeContextMenu()
         {
-            ContextMenu = new ResultsViewModel(_settings.MaxResultsToShow);
+            ContextMenu = new ResultsViewModel(_settings);
             ContextMenuVisibility = Visibility.Collapsed;
         }
 
