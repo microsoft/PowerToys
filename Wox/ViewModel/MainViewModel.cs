@@ -24,13 +24,7 @@ namespace Wox.ViewModel
     {
         #region Private Fields
 
-        private double _left;
-        private double _top;
-
         private Visibility _contextMenuVisibility;
-        private Visibility _progressBarVisibility;
-        private Visibility _resultListBoxVisibility;
-        private Visibility _mainWindowVisibility;
 
         private bool _queryHasReturn;
         private Query _lastQuery;
@@ -285,8 +279,6 @@ namespace Wox.ViewModel
             set
             {
                 _queryText = value;
-                OnPropertyChanged();
-
                 if (_ignoreTextChange)
                 {
                     _ignoreTextChange = false;
@@ -298,25 +290,9 @@ namespace Wox.ViewModel
             }
         }
 
-        public double Left
-        {
-            get { return _left; }
-            set
-            {
-                _left = value;
-                OnPropertyChanged();
-            }
-        }
+        public double Left { get; set; }
 
-        public double Top
-        {
-            get { return _top; }
-            set
-            {
-                _top = value;
-                OnPropertyChanged();
-            }
-        }
+        public double Top { get; set; }
 
         public Visibility ContextMenuVisibility
 
@@ -325,7 +301,6 @@ namespace Wox.ViewModel
             set
             {
                 _contextMenuVisibility = value;
-                OnPropertyChanged();
 
                 _ignoreTextChange = true;
                 if (!value.IsVisible())
@@ -343,40 +318,16 @@ namespace Wox.ViewModel
             }
         }
 
-        public Visibility ProgressBarVisibility
-        {
-            get { return _progressBarVisibility; }
-            set
-            {
-                _progressBarVisibility = value;
-                OnPropertyChanged();
-            }
-        }
+        public Visibility ProgressBarVisibility { get; set; }
 
-        public Visibility ResultListBoxVisibility
-        {
-            get { return _resultListBoxVisibility; }
-            set
-            {
-                _resultListBoxVisibility = value;
-                OnPropertyChanged();
-            }
-        }
+        public Visibility ResultListBoxVisibility { get; set; }
 
-        public Visibility MainWindowVisibility
-        {
-            get { return _mainWindowVisibility; }
-            set
-            {
-                _mainWindowVisibility = value;
-                OnPropertyChanged();
-                MainWindowVisibilityChanged?.Invoke(this, new EventArgs());
-            }
-        }
+        public Visibility MainWindowVisibility { get; set; }
 
         public ICommand EscCommand { get; set; }
         public ICommand SelectNextItemCommand { get; set; }
         public ICommand SelectPrevItemCommand { get; set; }
+        //todo happlebao restore history command
         public ICommand DisplayNextQueryCommand { get; set; }
         public ICommand DisplayPrevQueryCommand { get; set; }
         public ICommand SelectNextPageCommand { get; set; }
@@ -701,7 +652,6 @@ namespace Wox.ViewModel
 
         #endregion
 
-        public event EventHandler MainWindowVisibilityChanged;
         public event EventHandler CursorMovedToEnd;
 
         public void OnCursorMovedToEnd()

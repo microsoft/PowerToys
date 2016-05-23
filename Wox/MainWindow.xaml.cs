@@ -74,20 +74,23 @@ namespace Wox
                 QueryTextBox.Focus();
                 QueryTextBox.CaretIndex = QueryTextBox.Text.Length;
             };
-            vm.MainWindowVisibilityChanged += (o, e) =>
+            vm.PropertyChanged += (o, e) =>
             {
-                if (vm.MainWindowVisibility.IsVisible())
+                if (e.PropertyName == nameof(vm.MainWindowVisibility))
                 {
-                    Activate();
-                    QueryTextBox.Focus();
-                    Left = GetWindowsLeft();
-                    Top = GetWindowsTop();
-                    _settings.ActivateTimes++;
-                }
-                else
-                {
-                    _settings.WindowLeft = Left;
-                    _settings.WindowTop = Top;
+                    if (vm.MainWindowVisibility.IsVisible())
+                    {
+                        Activate();
+                        QueryTextBox.Focus();
+                        Left = GetWindowsLeft();
+                        Top = GetWindowsTop();
+                        _settings.ActivateTimes++;
+                    }
+                    else
+                    {
+                        _settings.WindowLeft = Left;
+                        _settings.WindowTop = Top;
+                    }
                 }
             };
         }

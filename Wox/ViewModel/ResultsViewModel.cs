@@ -13,9 +13,7 @@ namespace Wox.ViewModel
     {
         #region Private Fields
 
-        private int _selectedIndex;
         public ResultCollection Results { get; }
-        private Thickness _margin;
 
         private readonly object _addResultsLock = new object();
         private readonly object _collectionLock = new object();
@@ -45,29 +43,10 @@ namespace Wox.ViewModel
 
         public int MaxHeight => MaxResults * 50;
 
-        public int SelectedIndex
-        {
-            get { return _selectedIndex; }
-            set
-            {
-                _selectedIndex = value;
-                OnPropertyChanged();
-            }
-        }
+        public int SelectedIndex { get; set; }
 
         public ResultViewModel SelectedItem { get; set; }
-        public Thickness Margin
-        {
-            get
-            {
-                return _margin;
-            }
-            set
-            {
-                _margin = value;
-                OnPropertyChanged();
-            }
-        }
+        public Thickness Margin { get; set; }
 
         #endregion
 
