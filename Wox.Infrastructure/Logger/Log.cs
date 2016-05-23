@@ -22,7 +22,7 @@ namespace Wox.Infrastructure.Logger
             var configuration = new LoggingConfiguration();
             var target = new FileTarget();
             configuration.AddTarget("file", target);
-            target.FileName = "${specialfolder:folder=ApplicationData}/" + Constant.Wox + "/" + DirectoryName + "/" + Constant.Version + "/${shortdate}.log";
+            target.FileName = "${specialfolder:folder=ApplicationData}/" + Constant.Wox + "/" + DirectoryName + "/" + Constant.Version + "/${shortdate}.txt";
             var rule = new LoggingRule("*", LogLevel.Info, target);
             configuration.LoggingRules.Add(rule);
             LogManager.Configuration = configuration;
