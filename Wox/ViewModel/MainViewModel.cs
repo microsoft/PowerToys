@@ -136,7 +136,7 @@ namespace Wox.ViewModel
             });
 
 
-
+            /**
             DisplayNextQueryCommand = new RelayCommand(_ =>
             {
                 var nextQuery = _queryHistory.Next();
@@ -148,6 +148,7 @@ namespace Wox.ViewModel
                 var prev = _queryHistory.Previous();
                 DisplayQueryHistory(prev);
             });
+            **/
 
             SelectNextPageCommand = new RelayCommand(_ =>
             {
@@ -426,7 +427,7 @@ namespace Wox.ViewModel
             Results.RemoveResultsFor(QueryHistory.MetaData);
             _queryHistory.Reset();
         }
-
+        /**
         private void DisplayQueryHistory(HistoryItem history)
         {
             if (history != null)
@@ -458,6 +459,7 @@ namespace Wox.ViewModel
                 }, _updateToken);
             }
         }
+        **/
 
         private Result ContextMenuTopMost(Result result)
         {
