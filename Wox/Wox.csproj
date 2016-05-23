@@ -169,7 +169,7 @@
     <Compile Include="Storage\QueryHistory.cs" />
     <Compile Include="Storage\TopMostRecord.cs" />
     <Compile Include="Storage\UserSelectedRecord.cs" />
-    <Compile Include="ViewModel\BaseViewModel.cs" />
+    <Compile Include="ViewModel\RelayCommand.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\PluginViewModel.cs" />
     <Compile Include="ViewModel\ResultViewModel.cs" />

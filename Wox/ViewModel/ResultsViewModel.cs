@@ -6,7 +6,6 @@ using System.Windows;
 using System.Windows.Data;
 using Wox.Core.UserSettings;
 using Wox.Plugin;
-using PropertyChanged;
 
 namespace Wox.ViewModel
 {

@@ -3,7 +3,6 @@ using System.Windows.Input;
 
 namespace Wox.ViewModel
 {
-    //todo rename file
     public class RelayCommand : ICommand
     {
 
