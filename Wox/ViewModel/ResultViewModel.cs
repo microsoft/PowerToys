@@ -63,16 +63,6 @@ namespace Wox.ViewModel
             set { RawResult.Action = value; }
         }
 
-        public bool IsSelected
-        {
-            get { return _isSelected; }
-            set
-            {
-                _isSelected = value;
-                OnPropertyChanged();
-            }
-        }
-
         #endregion
 
         #region Properties

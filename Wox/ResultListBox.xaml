@@ -6,12 +6,12 @@
          xmlns:vm="clr-namespace:Wox.ViewModel"
          mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100"
          d:DataContext="{d:DesignInstance vm:ResultsViewModel}"
-         MaxHeight="{Binding MaxHeight}" 
+         MaxHeight="{Binding MaxHeight}"
          SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}"
-         SelectedItem="{Binding SelectedItem, Mode=OneWayToSource}" 
-         HorizontalContentAlignment="Stretch" ItemsSource="{Binding Results}" 
+         SelectedItem="{Binding SelectedItem, Mode=OneWayToSource}"
+         HorizontalContentAlignment="Stretch" ItemsSource="{Binding Results}"
          Margin="{Binding Margin}"
-         Style="{DynamicResource BaseListboxStyle}"  Focusable="False"
+         Style="{DynamicResource BaseListboxStyle}" Focusable="False"
          KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single"
          VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Standard"
          SelectionChanged="OnSelectionChanged"
@@ -26,7 +26,7 @@
                     </ControlTemplate>
                 </Button.Template>
                 <Button.Content>
-                    <Grid HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Margin="5"
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5"
                           Cursor="Hand" UseLayoutRounding="False">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="32" />
@@ -41,22 +41,21 @@
                                 <RowDefinition Height="Auto" x:Name="SubTitleRowDefinition" />
                             </Grid.RowDefinitions>
                             <TextBlock Style="{DynamicResource ItemTitleStyle}" DockPanel.Dock="Left"
-                                       VerticalAlignment="Center" ToolTip="{Binding Title}" x:Name="tbTitle"
+                                       VerticalAlignment="Center" ToolTip="{Binding Title}" x:Name="Title"
                                        Text="{Binding Title}" />
                             <TextBlock Style="{DynamicResource ItemSubTitleStyle}" ToolTip="{Binding SubTitle}"
-                                       Grid.Row="1" x:Name="tbSubTitle" Text="{Binding SubTitle}" />
+                                       Grid.Row="1" x:Name="SubTitle" Text="{Binding SubTitle}" />
                         </Grid>
                     </Grid>
                 </Button.Content>
             </Button>
             <!-- a result item height is 50 including margin -->
             <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
-                    <Setter TargetName="tbTitle" Property="Style" Value="{DynamicResource ItemTitleSelectedStyle}" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
-                    <Setter TargetName="tbSubTitle" Property="Style"
-                            Value="{DynamicResource ItemSubTitleSelectedStyle}" />
+                <DataTrigger
+                    Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListBoxItem}}, Path=IsSelected}"
+                    Value="True">
+                    <Setter TargetName="Title" Property="Style" Value="{DynamicResource ItemTitleSelectedStyle}" />
+                    <Setter TargetName="SubTitle" Property="Style" Value="{DynamicResource ItemSubTitleSelectedStyle}" />
                 </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
@@ -64,11 +63,11 @@
     <!--http://stackoverflow.com/questions/16819577/setting-background-color-or-wpf-4-0-listbox-windows-8/#16820062-->
     <ListBox.ItemContainerStyle>
         <Style TargetType="{x:Type ListBoxItem}">
-            <EventSetter Event="MouseEnter" Handler="OnMouseEnter"></EventSetter>
+            <EventSetter Event="MouseEnter" Handler="OnMouseEnter" />
             <Setter Property="Height" Value="50" />
             <Setter Property="Margin" Value="0" />
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ListBoxItem}">
