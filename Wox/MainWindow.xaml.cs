@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows;
-using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Controls;
@@ -10,11 +9,10 @@ using Wox.Core.Resource;
 using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.ViewModel;
+using Screen = System.Windows.Forms.Screen;
 using ContextMenu = System.Windows.Forms.ContextMenu;
-using DataFormats = System.Windows.DataFormats;
-using DragEventArgs = System.Windows.DragEventArgs;
 using MenuItem = System.Windows.Forms.MenuItem;
-using MessageBox = System.Windows.MessageBox;
+using NotifyIcon = System.Windows.Forms.NotifyIcon;
 
 namespace Wox
 {
@@ -26,29 +24,27 @@ namespace Wox
         private readonly Storyboard _progressBarStoryboard = new Storyboard();
         private Settings _settings;
         private NotifyIcon _notifyIcon;
+        private MainViewModel _viewModel;
 
         #endregion
 
         public MainWindow(Settings settings, MainViewModel mainVM)
         {
-            DataContext = mainVM;
             InitializeComponent();
+            DataContext = mainVM;
+            _viewModel = mainVM;
             _settings = settings;
         }
         public MainWindow()
         {
             InitializeComponent();
         }
+
         private void OnClosing(object sender, CancelEventArgs e)
         {
             _notifyIcon.Visible = false;
-            _settings.WindowLeft = Left;
-            _settings.WindowTop = Top;
-            var vm = (MainViewModel)DataContext;
-            vm.Save();
+            _viewModel.Save();
         }
-
-
 
         private void OnLoaded(object sender, RoutedEventArgs _)
         {
@@ -56,85 +52,20 @@ namespace Wox
             WindowIntelopHelper.DisableControlBox(this);
             ThemeManager.Instance.ChangeTheme(_settings.Theme);
             InitializeNotifyIcon();
-
-            var vm = (MainViewModel)DataContext;
-            RegisterEvents(vm);
-
-            // happlebao todo delete
-            vm.Left = GetWindowsLeft();
-            vm.Top = GetWindowsTop();
-            vm.MainWindowVisibility = _settings.HideOnStartup ? Visibility.Hidden : Visibility.Visible;
-        }
-
-        private void RegisterEvents(MainViewModel vm)
-        {
-            vm.TextBoxSelected += (o, e) => QueryTextBox.SelectAll();
-            vm.CursorMovedToEnd += (o, e) =>
-            {
-                QueryTextBox.Focus();
-                QueryTextBox.CaretIndex = QueryTextBox.Text.Length;
-            };
-            vm.PropertyChanged += (o, e) =>
-            {
-                if (e.PropertyName == nameof(vm.MainWindowVisibility))
-                {
-                    if (vm.MainWindowVisibility.IsVisible())
-                    {
-                        Activate();
-                        QueryTextBox.Focus();
-                        Left = GetWindowsLeft();
-                        Top = GetWindowsTop();
-                        _settings.ActivateTimes++;
-                    }
-                    else
-                    {
-                        _settings.WindowLeft = Left;
-                        _settings.WindowTop = Top;
-                    }
-                }
-            };
         }
 
         private void InitializeNotifyIcon()
         {
             _notifyIcon = new NotifyIcon { Text = Infrastructure.Constant.Wox, Icon = Properties.Resources.app, Visible = true };
-            _notifyIcon.Click += (o, e) => App.API.ShowApp();
+            _notifyIcon.Click += (o, e) => Visibility = Visibility.Visible;
             var open = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTrayOpen"));
-            open.Click += (o, e) => App.API.ShowApp();
+            open.Click += (o, e) => Visibility = Visibility.Visible;
             var setting = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTraySettings"));
             setting.Click += (o, e) => App.API.OpenSettingDialog();
             var exit = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTrayExit"));
             exit.Click += (o, e) => Close();
             MenuItem[] childen = { open, setting, exit };
             _notifyIcon.ContextMenu = new ContextMenu(childen);
-        }
-
-        private double GetWindowsLeft()
-        {
-            if (_settings.RememberLastLaunchLocation)
-            {
-                return _settings.WindowLeft;
-            }
-
-            var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-            var dip1 = WindowIntelopHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
-            var dip2 = WindowIntelopHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
-            var left = (dip2.X - ActualWidth) / 2 + dip1.X;
-            return left;
-        }
-
-        private double GetWindowsTop()
-        {
-            if (_settings.RememberLastLaunchLocation)
-            {
-                return _settings.WindowTop;
-            }
-
-            var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-            var dip1 = WindowIntelopHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
-            var dip2 = WindowIntelopHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
-            var top = (dip2.Y - ActualHeight) / 4 + dip1.Y;
-            return top;
         }
 
         private void InitProgressbarAnimation()
@@ -146,21 +77,13 @@ namespace Wox
             _progressBarStoryboard.Children.Add(da);
             _progressBarStoryboard.Children.Add(da1);
             _progressBarStoryboard.RepeatBehavior = RepeatBehavior.Forever;
-            ProgressBar.Visibility = Visibility.Hidden;
             ProgressBar.BeginStoryboard(_progressBarStoryboard);
+            _viewModel.ProgressBarVisibility = Visibility.Hidden;
         }
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left) DragMove();
-        }
-
-        private void OnDeactivated(object sender, EventArgs e)
-        {
-            if (_settings.HideWhenDeactive)
-            {
-                App.API.HideApp();
-            }
         }
 
         private void OnPreviewMouseButtonDown(object sender, MouseButtonEventArgs e)
@@ -173,17 +96,13 @@ namespace Wox
                 var result = (ResultViewModel)item?.DataContext;
                 if (result != null)
                 {
-                    var vm = DataContext as MainViewModel;
-                    if (vm != null)
+                    if (e.ChangedButton == MouseButton.Left)
                     {
-                        if (e.ChangedButton == MouseButton.Left)
-                        {
-                            vm.OpenResultCommand.Execute(null);
-                        }
-                        else if (e.ChangedButton == MouseButton.Right)
-                        {
-                            vm.LoadContextMenuCommand.Execute(null);
-                        }
+                        _viewModel.OpenResultCommand.Execute(null);
+                    }
+                    else if (e.ChangedButton == MouseButton.Right)
+                    {
+                        _viewModel.LoadContextMenuCommand.Execute(null);
                     }
                 }
             }
@@ -217,5 +136,110 @@ namespace Wox
         {
             App.API.OpenSettingDialog();
         }
+
+
+        private void OnDeactivated(object sender, EventArgs e)
+        {
+            if (_settings.HideWhenDeactive)
+            {
+                Hide();
+            }
+        }
+
+        private void OnQueryVisible(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var visible = (bool)e.NewValue;
+            if (visible)
+            {
+                // the Focusable and the IsVisible both needs to be true when set focus
+                // logical is set in xaml
+                QueryTextBox.Focus();
+
+                if (_viewModel.QueryTextSelected)
+                {
+                    QueryTextBox.SelectAll();
+                    _viewModel.QueryTextSelected = false;
+                }
+            }
+        }
+
+        private void OnQueryChanged(object sender, TextChangedEventArgs e)
+        {
+            QueryTextBox.CaretIndex = QueryTextBox.Text.Length;
+        }
+
+        private void OnMainWindowVisible(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var visible = (bool)e.NewValue;
+            if (visible)
+            {
+                SetWindowPosition();
+                _settings.ActivateTimes++;
+            }
+        }
+
+        private bool _startup = true;
+        private void SetWindowPosition()
+        {
+            if (!_settings.RememberLastLaunchLocation && !_startup)
+            {
+                Left = WindowLeft();
+                Top = WindowTop();
+            }
+            else
+            {
+                _startup = false;
+            }
+        }
+
+
+
+        /// <summary>
+        // used to set correct position on windows first startup
+        // since the actual width and actual height will be avaiable after this event
+        /// </summary>
+        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Left = WindowLeft();
+            Top = WindowTop();
+        }
+
+        private double WindowLeft()
+        {
+            var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+            var dip1 = WindowIntelopHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
+            var dip2 = WindowIntelopHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
+            var left = (dip2.X - ActualWidth) / 2 + dip1.X;
+            return left;
+        }
+
+        private double WindowTop()
+        {
+            var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+            var dip1 = WindowIntelopHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
+            var dip2 = WindowIntelopHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
+            var top = (dip2.Y - QueryTextBox.ActualHeight) / 4 + dip1.Y;
+            return top;
+        }
+
+        /// <summary>
+        /// Register up and down key
+        /// todo: any way to put this in xaml ?
+        /// </summary>
+        private void OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Down)
+            {
+                _viewModel.SelectNextItemCommand.Execute(null);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Up)
+            {
+                _viewModel.SelectPrevItemCommand.Execute(null);
+                e.Handled = true;
+            }
+        }
+
+
     }
 }

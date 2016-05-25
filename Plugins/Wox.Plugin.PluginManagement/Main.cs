@@ -152,7 +152,6 @@ namespace Wox.Plugin.PluginManagement
                             if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
                             string filePath = Path.Combine(folder, Guid.NewGuid().ToString() + ".wox");
 
-                            context.API.StartLoadingBar();
                             string pluginUrl = APIBASE + "/media/" + r1.plugin_file;
 
                             try
@@ -168,7 +167,6 @@ namespace Wox.Plugin.PluginManagement
                                 return false;
                             }
                             context.API.InstallPlugin(filePath);
-                            context.API.StopLoadingBar();
                         }
                         return false;
                     }

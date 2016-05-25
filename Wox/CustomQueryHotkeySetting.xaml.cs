@@ -55,7 +55,7 @@ namespace Wox
                 SetHotkey(ctlHotkey.CurrentHotkey, delegate
                 {
                     App.API.ChangeQuery(pluginHotkey.ActionKeyword);
-                    App.API.ShowApp();
+                    Application.Current.MainWindow.Visibility = Visibility.Visible;
                 });
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
             }
@@ -73,8 +73,8 @@ namespace Wox
                 RemoveHotkey(oldHotkey);
                 SetHotkey(new HotkeyModel(updateCustomHotkey.Hotkey), delegate
                 {
-                    App.API.ShowApp();
                     App.API.ChangeQuery(updateCustomHotkey.ActionKeyword);
+                    Application.Current.MainWindow.Visibility = Visibility.Visible;
                 });
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
             }
@@ -100,8 +100,8 @@ namespace Wox
 
         private void BtnTestActionKeyword_OnClick(object sender, RoutedEventArgs e)
         {
-            App.API.ShowApp();
             App.API.ChangeQuery(tbAction.Text);
+            Application.Current.MainWindow.Visibility = Visibility.Visible;
         }
 
         private void RemoveHotkey(string hotkeyStr)

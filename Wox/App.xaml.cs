@@ -8,7 +8,6 @@ using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
-using Wox.Infrastructure.Storage;
 using Wox.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
@@ -61,7 +60,10 @@ namespace Wox
                 AutoStartup();
                 AutoUpdates();
 
-                window.Show();
+                if (!_settings.HideOnStartup)
+                {
+                    mainVM.MainWindowVisibility = Visibility.Visible;
+                }
             });
         }
 
@@ -116,7 +118,7 @@ namespace Wox
         [Conditional("RELEASE")]
         private static void RegisterAppDomainExceptions()
         {
-            
+
             AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
             AppDomain.CurrentDomain.FirstChanceException += (s, e) =>
             {
@@ -131,14 +133,14 @@ namespace Wox
             // but if sessionending is not called, exit won't be called when log off / shutdown
             if (!_disposed)
             {
-                Current.Dispatcher.Invoke(() => ((MainViewModel) Current.MainWindow?.DataContext)?.Save());
+                Current.Dispatcher.Invoke(() => ((MainViewModel)Current.MainWindow?.DataContext)?.Save());
                 _disposed = true;
             }
         }
 
         public void OnSecondAppStarted()
         {
-            API.ShowApp();
+            Current.MainWindow.Visibility = Visibility.Visible;
         }
     }
 }

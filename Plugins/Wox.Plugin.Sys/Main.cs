@@ -161,7 +161,7 @@ namespace Wox.Plugin.Sys
                     IcoPath = "Images\\app.png",
                     Action = c =>
                     {
-                        context.API.CloseApp();
+                        Application.Current.MainWindow.Close();
                         return true;
                     }
                 },

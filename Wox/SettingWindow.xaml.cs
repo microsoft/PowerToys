@@ -128,15 +128,15 @@ namespace Wox
         {
             if (HotkeyControl.CurrentHotkeyAvailable)
             {
-                SetHotkey(HotkeyControl.CurrentHotkey, delegate
+                SetHotkey(HotkeyControl.CurrentHotkey, (o, args) =>
                 {
                     if (!Application.Current.MainWindow.IsVisible)
                     {
-                        _api.ShowApp();
+                        Application.Current.MainWindow.Visibility = Visibility.Visible;
                     }
                     else
                     {
-                        _api.HideApp();
+                        Application.Current.MainWindow.Visibility = Visibility.Hidden;
                     }
                 });
                 RemoveHotkey(_settings.Hotkey);

@@ -7,10 +7,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         Title="Wox"
         Topmost="True"
-        Loaded="OnLoaded"
-        Closing="OnClosing"
-        Drop="OnDrop"
-        Deactivated="OnDeactivated"
         SizeToContent="Height"
         ResizeMode="NoResize"
         WindowStyle="None"
@@ -20,17 +16,22 @@
         Style="{DynamicResource WindowStyle}"
         Icon="Images\app.png"
         AllowsTransparency="True"
-        Left="{Binding Left, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-        Top="{Binding Top, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+        Loaded="OnLoaded"
+        Closing="OnClosing"
+        Drop="OnDrop"
+        SizeChanged="OnSizeChanged"
+        IsVisibleChanged="OnMainWindowVisible"
+        Deactivated="OnDeactivated"
+        PreviewKeyDown="OnKeyDown"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-        d:DataContext="{d:DesignInstance vm:MainViewModel}">
+        d:DataContext="{d:DesignInstance vm:MainViewModel}"
+        FocusManager.FocusedElement="{Binding ElementName=QueryTextBox}"
+        FocusManager.IsFocusScope="True">
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscCommand}"></KeyBinding>
         <KeyBinding Key="F1" Command="{Binding StartHelpCommand}"></KeyBinding>
         <KeyBinding Key="Tab" Command="{Binding SelectNextItemCommand}"></KeyBinding>
         <KeyBinding Key="Tab" Modifiers="Shift" Command="{Binding SelectPrevItemCommand}"></KeyBinding>
-        <KeyBinding Key="Down" Command="{Binding SelectNextItemCommand}"></KeyBinding>
-        <KeyBinding Key="Up" Command="{Binding SelectPrevItemCommand}"></KeyBinding>
         <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding SelectNextItemCommand}"></KeyBinding>
         <KeyBinding Key="J" Modifiers="Ctrl" Command="{Binding SelectNextItemCommand}"></KeyBinding>
         <KeyBinding Key="D" Modifiers="Ctrl" Command="{Binding SelectNextPageCommand}"></KeyBinding>
@@ -50,12 +51,16 @@
         <KeyBinding Key="D8" Modifiers="Alt" Command="{Binding OpenResultCommand}" CommandParameter="7"></KeyBinding>
         <KeyBinding Key="D9" Modifiers="Alt" Command="{Binding OpenResultCommand}" CommandParameter="8"></KeyBinding>
     </Window.InputBindings>
-    <Border Style="{DynamicResource WindowBorderStyle}" MouseDown="OnMouseDown">
+    <Border Style="{DynamicResource WindowBorderStyle}" MouseDown="OnMouseDown" >
         <StackPanel Orientation="Vertical">
             <TextBox Style="{DynamicResource QueryBoxStyle}"
                      Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      PreviewDragOver="OnPreviewDragOver"
+                     IsVisibleChanged="OnQueryVisible"
+                     TextChanged="OnQueryChanged"
                      AllowDrop="True"
+                     Focusable="True"
+                     Visibility="Visible"
                      x:Name="QueryTextBox">
                 <TextBox.ContextMenu>
                     <ContextMenu>

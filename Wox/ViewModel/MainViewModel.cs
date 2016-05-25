@@ -291,9 +291,7 @@ namespace Wox.ViewModel
             }
         }
 
-        public double Left { get; set; }
-
-        public double Top { get; set; }
+        public bool QueryTextSelected { get; set; }
 
         public Visibility ContextMenuVisibility
 
@@ -308,7 +306,6 @@ namespace Wox.ViewModel
                 {
                     QueryText = _queryTextBeforeLoadContextMenu;
                     ResultListBoxVisibility = Visibility.Visible;
-                    OnCursorMovedToEnd();
                 }
                 else
                 {
@@ -572,12 +569,11 @@ namespace Wox.ViewModel
             if (_settings.CustomPluginHotkeys == null) return;
             foreach (CustomPluginHotkey hotkey in _settings.CustomPluginHotkeys)
             {
-                CustomPluginHotkey hotkey1 = hotkey;
-                SetHotkey(hotkey.Hotkey, delegate
+                SetHotkey(hotkey.Hotkey, (s, e) =>
                 {
                     if (ShouldIgnoreHotkeys()) return;
-                    App.API.ShowApp();
-                    App.API.ChangeQuery(hotkey1.ActionKeyword, true);
+                    QueryText = hotkey.ActionKeyword;
+                    MainWindowVisibility = Visibility.Visible;
                 });
             }
         }
@@ -585,6 +581,7 @@ namespace Wox.ViewModel
         private void OnHotkey(object sender, HotkeyEventArgs e)
         {
             if (ShouldIgnoreHotkeys()) return;
+            QueryTextSelected = true;
             ToggleWox();
             e.Handled = true;
         }
@@ -594,7 +591,6 @@ namespace Wox.ViewModel
             if (!MainWindowVisibility.IsVisible())
             {
                 MainWindowVisibility = Visibility.Visible;
-                OnTextBoxSelected();
             }
             else
             {
@@ -653,19 +649,5 @@ namespace Wox.ViewModel
         }
 
         #endregion
-
-        public event EventHandler CursorMovedToEnd;
-
-        public void OnCursorMovedToEnd()
-        {
-            CursorMovedToEnd?.Invoke(this, new EventArgs());
-        }
-
-        public event EventHandler TextBoxSelected;
-
-        public void OnTextBoxSelected()
-        {
-            TextBoxSelected?.Invoke(this, new EventArgs());
-        }
     }
 } 

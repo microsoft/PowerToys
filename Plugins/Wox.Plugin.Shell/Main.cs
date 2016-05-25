@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
+using System.Windows;
 using WindowsInput;
-using WindowsInput.Native;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
+using Application = System.Windows.Application;
 using Control = System.Windows.Controls.Control;
+using Keys = System.Windows.Forms.Keys;
 
 namespace Wox.Plugin.CMD
 {
@@ -191,7 +192,7 @@ namespace Wox.Plugin.CMD
             }
             else if (_settings.Shell == Shell.RunCommand)
             {
-                var parts = command.Split(new[] {' '}, 2);
+                var parts = command.Split(new[] { ' ' }, 2);
                 if (parts.Length == 2)
                 {
                     var filename = parts[0];
@@ -283,17 +284,16 @@ namespace Wox.Plugin.CMD
                 if (keyevent == (int)KeyEvent.WM_KEYUP && WinRStroked && vkcode == (int)Keys.LWin)
                 {
                     WinRStroked = false;
-                    keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.CONTROL);
                     return false;
                 }
             }
-            return true;
+            return false;
         }
 
         private void OnWinRPressed()
         {
-            context.API.ShowApp();
             context.API.ChangeQuery($"{context.CurrentPluginMetadata.ActionKeywords[0]}{Plugin.Query.TermSeperater}");
+            Application.Current.MainWindow.Visibility = Visibility.Visible;
         }
 
         public Control CreateSettingPanel()
@@ -311,8 +311,6 @@ namespace Wox.Plugin.CMD
             return context.API.GetTranslation("wox_plugin_cmd_plugin_description");
         }
 
-        public bool IsInstantQuery(string query) => false;
-
         public List<Result> LoadContextMenus(Result selectedResult)
         {
             return new List<Result>
@@ -322,7 +320,6 @@ namespace Wox.Plugin.CMD
                             Title = context.API.GetTranslation("wox_plugin_cmd_run_as_administrator"),
                             Action = c =>
                             {
-                                context.API.HideApp();
                                 Execute(selectedResult.Title, true);
                                 return true;
                             },
