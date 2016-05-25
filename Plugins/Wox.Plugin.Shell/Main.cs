@@ -287,7 +287,7 @@ namespace Wox.Plugin.CMD
                     return false;
                 }
             }
-            return false;
+            return true;
         }
 
         private void OnWinRPressed()
