@@ -14,7 +14,7 @@ using Keys = System.Windows.Forms.Keys;
 
 namespace Wox.Plugin.CMD
 {
-    public class CMD : IPlugin, ISettingProvider, IPluginI18n, IContextMenu
+    public class CMD : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
     {
         private const string Image = "Images/shell.png";
         private PluginInitContext context;
@@ -30,10 +30,11 @@ namespace Wox.Plugin.CMD
             _settings = _storage.Load();
         }
 
-        ~CMD()
+        public void Save()
         {
             _storage.Save();
         }
+
 
         public List<Result> Query(Query query)
         {
