@@ -48,7 +48,6 @@ namespace Wox
 
         private void OnLoaded(object sender, RoutedEventArgs _)
         {
-            InitProgressbarAnimation();
             WindowIntelopHelper.DisableControlBox(this);
             ThemeManager.Instance.ChangeTheme(_settings.Theme);
             InitializeNotifyIcon();
@@ -202,6 +201,7 @@ namespace Wox
         {
             Left = WindowLeft();
             Top = WindowTop();
+            InitProgressbarAnimation();
         }
 
         private double WindowLeft()
