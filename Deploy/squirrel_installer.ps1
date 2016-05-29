@@ -16,3 +16,6 @@ $squirrelPath = $env:APPVEYOR_BUILD_FOLDER + "\packages\squirrel*\tools\Squirrel
 Write-Host "squirrel path: " + $squirrelPath
 $iconPath = $env:APPVEYOR_BUILD_FOLDER + "\Wox\Resources\app.ico"
 & $squirrelPath --releasify $nupkgPath --setupIcon $iconPath --no-msi
+
+$path = "Releases\" + "Wox-" + $env:APPVEYOR_BUILD_VERSION + ".exe"
+mv Releases\Setup.exe $path
