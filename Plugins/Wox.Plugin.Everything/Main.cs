@@ -6,13 +6,14 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Controls;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin.Everything.Everything;
 
 namespace Wox.Plugin.Everything
 {
-    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable
+    public class Main : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
     {
         private readonly EverythingAPI _api = new EverythingAPI();
 
@@ -45,6 +46,11 @@ namespace Wox.Plugin.Everything
                     foreach (var s in searchList)
                     {
                         var path = s.FullPath;
+
+                        string workingDir = null;
+                        if (_settings.UseLocationAsWorkingDir)
+                            workingDir = Path.GetDirectoryName(path);
+
                         Result r = new Result();
                         r.Title = Path.GetFileName(path);
                         r.SubTitle = path;
@@ -57,7 +63,8 @@ namespace Wox.Plugin.Everything
                                 Process.Start(new ProcessStartInfo
                                 {
                                     FileName = path,
-                                    UseShellExecute = true
+                                    UseShellExecute = true,
+                                    WorkingDirectory = workingDir
                                 });
                                 hide = true;
                             }
@@ -191,6 +198,11 @@ namespace Wox.Plugin.Everything
             }
 
             return contextMenus;
+        }
+
+        public Control CreateSettingPanel()
+        {
+            return new EverythingSettings(_settings);
         }
     }
 }

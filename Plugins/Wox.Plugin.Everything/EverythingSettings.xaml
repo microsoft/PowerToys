@@ -1,0 +1,14 @@
+﻿<UserControl x:Class="Wox.Plugin.Everything.EverythingSettings"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             Loaded="View_Loaded"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Border BorderBrush="Gray" Margin="10" BorderThickness="1">
+        <StackPanel>
+            <CheckBox x:Name="UseLocationAsWorkingDir" Content="{DynamicResource wox_plugin_everything_use_location_as_working_dir}" Margin="10" HorizontalAlignment="Left" />
+        </StackPanel>
+    </Border>
+</UserControl>

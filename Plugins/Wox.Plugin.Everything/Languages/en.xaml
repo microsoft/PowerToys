@@ -11,4 +11,6 @@
     <system:String x:Key="wox_plugin_everything_plugin_name">Everything</system:String>
     <system:String x:Key="wox_plugin_everything_plugin_description">Search on-disk files using Everything</system:String>
 
+    <system:String x:Key="wox_plugin_everything_use_location_as_working_dir">Use search result's location as executable working directory</system:String>
+
 </ResourceDictionary>
