@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
@@ -51,18 +52,60 @@ namespace Wox.Helper
         [DllImport("user32.dll", SetLastError = true)]
         private static extern int GetWindowRect(IntPtr hwnd, out RECT rc);
 
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+        [DllImport("user32.DLL")]
+        public static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
+
+
+        const string WINDOW_CLASS_CONSOLE = "ConsoleWindowClass";
+        const string WINDOW_CLASS_WINTAB = "Flip3D";
+        const string WINDOW_CLASS_PROGMAN = "Progman";
+        const string WINDOW_CLASS_WORKERW = "WorkerW";
+
         public static bool IsWindowFullscreen()
         {
-            RECT foreWinBounds;
-            Rectangle screenBounds;
-            var hWnd = GetForegroundWindow();
-            if (!hWnd.Equals(IntPtr.Zero))
+            //get current active window
+            IntPtr hWnd = GetForegroundWindow();
+
+            if (hWnd != null && !hWnd.Equals(IntPtr.Zero))
             {
+                //if current active window is NOT desktop or shell
                 if (!(hWnd.Equals(HWND_DESKTOP) || hWnd.Equals(HWND_SHELL)))
                 {
-                    GetWindowRect(hWnd, out foreWinBounds);
-                    screenBounds = Screen.FromHandle(hWnd).Bounds;
-                    if ((foreWinBounds.Bottom - foreWinBounds.Top) == screenBounds.Height && (foreWinBounds.Right - foreWinBounds.Left) == screenBounds.Width)
+                    StringBuilder sb = new StringBuilder(256);
+                    GetClassName(hWnd, sb, sb.Capacity);
+                    string windowClass = sb.ToString();
+
+                    //for Win+Tab (Flip3D)
+                    if (windowClass == WINDOW_CLASS_WINTAB)
+                    {
+                        return false;
+                    }
+
+                    RECT appBounds;
+                    GetWindowRect(hWnd, out appBounds);
+
+                    //for console (ConsoleWindowClass), we have to check for negative dimensions
+                    if (windowClass == WINDOW_CLASS_CONSOLE)
+                    {
+                        return appBounds.Top < 0 && appBounds.Bottom < 0;
+                    }
+
+                    //for desktop (Progman or WorkerW, depends on the system), we have to check 
+                    if (windowClass == WINDOW_CLASS_PROGMAN || windowClass == WINDOW_CLASS_WORKERW)
+                    {
+                        IntPtr hWndDesktop = FindWindowEx(hWnd, IntPtr.Zero, "SHELLDLL_DefView", null);
+                        hWndDesktop = FindWindowEx(hWndDesktop, IntPtr.Zero, "SysListView32", "FolderView");
+                        if (hWndDesktop != null && !hWndDesktop.Equals(IntPtr.Zero))
+                        {
+                            return false;
+                        }
+                    }
+
+                    Rectangle screenBounds = Screen.FromHandle(hWnd).Bounds;
+                    if ((appBounds.Bottom - appBounds.Top) == screenBounds.Height && (appBounds.Right - appBounds.Left) == screenBounds.Width)
                     {
                         return true;
                     }
@@ -104,7 +147,7 @@ namespace Wox.Helper
                     matrix = src.CompositionTarget.TransformFromDevice;
                 }
             }
-            return new Point((int) (matrix.M11*unitX), (int) (matrix.M22*unitY));
+            return new Point((int)(matrix.M11 * unitX), (int)(matrix.M22 * unitY));
         }
 
 
