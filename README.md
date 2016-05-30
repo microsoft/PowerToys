@@ -52,15 +52,6 @@ Contribution
 Documentation
 -------------
 
-Outdated doc: [WoX doc](http://doc.getwox.com).
-
-Just ask questions in [issues](https://github.com/Wox-launcher/Wox/issues) for now.
-
-TODO
-----
-
-- [x] unified directory `%APPDATA%` for all storage
-- [ ] bring unitest for wox back
-- [x] add autoupdate / installer
-- [x] disable plugin properly
+- Outdated doc: [WoX doc](http://doc.getwox.com).
+- Just ask questions in [issues](https://github.com/Wox-launcher/Wox/issues) for now.
 
