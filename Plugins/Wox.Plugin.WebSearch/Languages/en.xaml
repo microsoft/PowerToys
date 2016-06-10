@@ -22,10 +22,10 @@
     <system:String x:Key="wox_plugin_websearch_input_title">Please enter a title</system:String>
     <system:String x:Key="wox_plugin_websearch_input_action_keyword">Please enter an action keyword</system:String>
     <system:String x:Key="wox_plugin_websearch_input_url">Please enter a URL</system:String>
-    <system:String x:Key="wox_plugin_websearch_action_keyword_exist">ActionKeyword exists, please enter a different one</system:String>
+    <system:String x:Key="wox_plugin_websearch_action_keyword_exist">Action keyword already exists, please enter a different one</system:String>
     <system:String x:Key="wox_plugin_websearch_succeed">Success</system:String>
 
     <system:String x:Key="wox_plugin_websearch_plugin_name">Web Searches</system:String>
-    <system:String x:Key="wox_plugin_websearch_plugin_description">Provides web search ability</system:String>
+    <system:String x:Key="wox_plugin_websearch_plugin_description">Allows to perform web searches</system:String>
 
 </ResourceDictionary>

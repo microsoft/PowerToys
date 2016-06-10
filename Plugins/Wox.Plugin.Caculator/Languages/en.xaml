@@ -3,6 +3,6 @@
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
 
     <system:String x:Key="wox_plugin_caculator_plugin_name">Calculator</system:String>
-    <system:String x:Key="wox_plugin_caculator_plugin_description">Provide mathematical calculations.(Try 5*3-2 in Wox)</system:String>
+    <system:String x:Key="wox_plugin_caculator_plugin_description">Allows to do mathematical calculations.(Try 5*3-2 in Wox)</system:String>
     
 </ResourceDictionary>

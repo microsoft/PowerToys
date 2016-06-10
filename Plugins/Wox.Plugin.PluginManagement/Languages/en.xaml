@@ -3,6 +3,6 @@
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
 
     <system:String x:Key="wox_plugin_plugin_management_plugin_name">Wox Plugin Management</system:String>
-    <system:String x:Key="wox_plugin_plugin_management_plugin_description">Install/Remove/Update wox plugins</system:String>
+    <system:String x:Key="wox_plugin_plugin_management_plugin_description">Install, remove or update Wox plugins</system:String>
     
 </ResourceDictionary>

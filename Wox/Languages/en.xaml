@@ -18,7 +18,7 @@
     <system:String x:Key="wox_settings">Wox Settings</system:String>
     <system:String x:Key="general">General</system:String>
     <system:String x:Key="startWoxOnSystemStartup">Start Wox on system startup</system:String>
-    <system:String x:Key="hideWoxWhenLoseFocus">Hide Wox when focus lost</system:String>
+    <system:String x:Key="hideWoxWhenLoseFocus">Hide Wox when focus is lost</system:String>
     <system:String x:Key="dontPromptUpdateMsg">Do not show new version notifications</system:String>
     <system:String x:Key="rememberLastLocation">Remember last launch location</system:String>
     <system:String x:Key="language">Language</system:String>
@@ -56,7 +56,7 @@
     <system:String x:Key="edit">Edit</system:String>
     <system:String x:Key="add">Add</system:String>
     <system:String x:Key="pleaseSelectAnItem">Please select an item</system:String>
-    <system:String x:Key="deleteCustomHotkeyWarning">Are your sure to delete {0} plugin hotkey?</system:String>
+    <system:String x:Key="deleteCustomHotkeyWarning">Are you sure you want to delete {0} plugin hotkey?</system:String>
 
     <!--Setting Proxy-->
     <system:String x:Key="proxy">Proxy</system:String>
@@ -67,8 +67,8 @@
     <system:String x:Key="password">Password</system:String>
     <system:String x:Key="testProxy">Test Proxy</system:String>
     <system:String x:Key="save">Save</system:String>
-    <system:String x:Key="serverCantBeEmpty">Server can't be empty</system:String>
-    <system:String x:Key="portCantBeEmpty">Port can't be empty</system:String>
+    <system:String x:Key="serverCantBeEmpty">Server field can't be empty</system:String>
+    <system:String x:Key="portCantBeEmpty">Port field can't be empty</system:String>
     <system:String x:Key="invalidPortFormat">Invalid port format</system:String>
     <system:String x:Key="saveProxySuccessfully">Proxy saved successfully</system:String>
     <system:String x:Key="proxyIsCorrect">Proxy configured correctly</system:String>
@@ -78,9 +78,9 @@
     <system:String x:Key="about">About</system:String>
     <system:String x:Key="website">Website</system:String>
     <system:String x:Key="version">Version</system:String>
-    <system:String x:Key="about_activate_times">You have activated Wox for {0} times</system:String>
+    <system:String x:Key="about_activate_times">You have activated Wox {0} times</system:String>
     <system:String x:Key="checkUpdates">Check for Updates</system:String>
-    <system:String x:Key="newVersionTips">New version {0} avaiable, please restart wox</system:String>
+    <system:String x:Key="newVersionTips">New version {0} is available, please restart Wox</system:String>
     <system:String x:Key="releaseNotes">Release Notes:</system:String>
 
     <!--Action Keyword Setting Dialog-->
@@ -90,9 +90,9 @@
     <system:String x:Key="done">Done</system:String>
     <system:String x:Key="cannotFindSpecifiedPlugin">Can't find specified plugin</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">New Action Keyword can't be empty</system:String>
-    <system:String x:Key="newActionKeywordsHasBeenAssigned">New ActionKeywords has been assigned to other plugin, please assign another new action keyword</system:String>
+    <system:String x:Key="newActionKeywordsHasBeenAssigned">New Action Keywords have been assigned to another plugin, please assign other new action keyword</system:String>
     <system:String x:Key="succeed">Succeed</system:String>
-    <system:String x:Key="actionkeyword_tips">Use * if you don't want to specify a action keyword</system:String>
+    <system:String x:Key="actionkeyword_tips">Use * if you don't want to specify an action keyword</system:String>
 
     <!--Custom Query Hotkey Dialog-->
     <system:String x:Key="preview">Preview</system:String>
@@ -120,7 +120,7 @@
     <system:String x:Key="reportWindow_wox_got_an_error">Wox got an error</system:String>
 
     <!--update-->
-    <system:String x:Key="update_wox_update_new_version_available">New Wox release {0} now available</system:String>
+    <system:String x:Key="update_wox_update_new_version_available">New Wox release {0} is now available</system:String>
     <system:String x:Key="update_wox_update_error">An error occurred while trying to install software updates</system:String>
     <system:String x:Key="update_wox_update">Update</system:String>
     <system:String x:Key="update_wox_update_cancel">Cancel</system:String>
