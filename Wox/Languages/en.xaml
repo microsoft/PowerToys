@@ -41,7 +41,7 @@
 
     <!--Setting Theme-->
     <system:String x:Key="theme">Theme</system:String>
-    <system:String x:Key="browserMoreThemes">Browse more themes</system:String>
+    <system:String x:Key="browserMoreThemes">Browse for more themes</system:String>
     <system:String x:Key="helloWox">Hello Wox</system:String>
     <system:String x:Key="queryBoxFont">Query Box Font</system:String>
     <system:String x:Key="resultItemFont">Result Item Font</system:String>
@@ -70,7 +70,7 @@
     <system:String x:Key="serverCantBeEmpty">Server field can't be empty</system:String>
     <system:String x:Key="portCantBeEmpty">Port field can't be empty</system:String>
     <system:String x:Key="invalidPortFormat">Invalid port format</system:String>
-    <system:String x:Key="saveProxySuccessfully">Proxy saved successfully</system:String>
+    <system:String x:Key="saveProxySuccessfully">Proxy configuration saved successfully</system:String>
     <system:String x:Key="proxyIsCorrect">Proxy configured correctly</system:String>
     <system:String x:Key="proxyConnectFailed">Proxy connection failed</system:String>
 
@@ -115,8 +115,8 @@
     <system:String x:Key="reportWindow_source">Source</system:String>
     <system:String x:Key="reportWindow_stack_trace">Stack Trace</system:String>
     <system:String x:Key="reportWindow_sending">Sending</system:String>
-    <system:String x:Key="reportWindow_report_succeed">Report succeed</system:String>
-    <system:String x:Key="reportWindow_report_failed">Report failed</system:String>
+    <system:String x:Key="reportWindow_report_succeed">Report sent successfully</system:String>
+    <system:String x:Key="reportWindow_report_failed">Failed to send report</system:String>
     <system:String x:Key="reportWindow_wox_got_an_error">Wox got an error</system:String>
 
     <!--update-->
