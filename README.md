@@ -24,7 +24,7 @@ Features
 Installation
 ------------
 
-Download [`setup.exe`](https://github.com/Wox-launcher/Wox/releases/download/latest/Setup.exe) from [releases](https://github.com/Wox-launcher/Wox/releases).
+Download [`Wox-xxx.exe`](https://github.com/Wox-launcher/Wox/releases/download/v1.3.67/Wox-1.3.67.exe) from [releases](https://github.com/Wox-launcher/Wox/releases).
 Just ignore Windows' complaints about security, we will sign the code in the future.
 
 Versions marked as **pre-release** are unstable pre-release versions.
