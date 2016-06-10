@@ -31,8 +31,8 @@ Versions marked as **pre-release** are unstable pre-release versions.
 
 - Requirements:
   - .net >= 4.5.2
-  - [everything](https://www.voidtools.com/): `.exe` installer + use x64 if your windows is x64
-  - [python3](https://www.python.org/downloads/): `.exe` installer
+  - [everything](https://www.voidtools.com/): `.exe` installer + use x64 if your windows is x64 + everything service is running
+  - [python3](https://www.python.org/downloads/): `.exe` installer + add it to `%PATH%` or set it in WoX settings
 
 Usage
 -----
