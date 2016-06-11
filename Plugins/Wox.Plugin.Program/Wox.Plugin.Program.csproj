@@ -104,16 +104,16 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Languages\zh-cn.xaml">
+    <Content Include="Languages\zh-cn.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Languages\zh-tw.xaml">
+    </Content>
+    <Content Include="Languages\zh-tw.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
     <Content Include="Languages\de.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
