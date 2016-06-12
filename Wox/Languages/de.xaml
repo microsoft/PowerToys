@@ -18,20 +18,20 @@
     <system:String x:Key="wox_settings">Wox Einstellungen</system:String>
     <system:String x:Key="general">Allgemein</system:String>
     <system:String x:Key="startWoxOnSystemStartup">Starte Wox bei Systemstart</system:String>
-    <system:String x:Key="hideWoxWhenLoseFocus">Verstecke Wox wenn der Focus verloren geht</system:String>
+    <system:String x:Key="hideWoxWhenLoseFocus">Verstecke Wox wenn der Fokus verloren geht</system:String>
     <system:String x:Key="dontPromptUpdateMsg">Zeige keine Nachricht wenn eine neue Version vorhanden ist</system:String>
     <system:String x:Key="rememberLastLocation">Merke letzte Ausführungsposition</system:String>
     <system:String x:Key="language">Sprache</system:String>
-    <system:String x:Key="maxShowResults">Maximale Anzahl Ergebnisse</system:String>
+    <system:String x:Key="maxShowResults">Maximale Anzahl Ergebnissen</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignoriere Tastenkombination wenn Fenster im Vollbildmodus ist</system:String>
-    <system:String x:Key="pythonDirectory">Python Directory</system:String>
-    <system:String x:Key="autoUpdates">Auto Update</system:String>
-    <system:String x:Key="selectPythonDirectory">Select</system:String>
-    <system:String x:Key="hideOnStartup">Hide Wox on startup</system:String>
+    <system:String x:Key="pythonDirectory">Python-Verzeichnis</system:String>
+    <system:String x:Key="autoUpdates">Automatische Aktuallisierung</system:String>
+    <system:String x:Key="selectPythonDirectory">Auswählen</system:String>
+    <system:String x:Key="hideOnStartup">Verstecke Wox bei Systemstart</system:String>
     
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Plugin</system:String>
-    <system:String x:Key="browserMorePlugins">Suche weitere Plugins</system:String>
+    <system:String x:Key="browserMorePlugins">Suche nach weiteren Plugins</system:String>
     <system:String x:Key="disable">Deaktivieren</system:String>
     <system:String x:Key="actionKeywords">Aktionsschlüsselwörter</system:String>
     <system:String x:Key="pluginDirectory">Pluginordner</system:String>
@@ -41,7 +41,7 @@
 
     <!--Setting Theme-->
     <system:String x:Key="theme">Thema</system:String>
-    <system:String x:Key="browserMoreThemes">Suche weitere Themas</system:String>
+    <system:String x:Key="browserMoreThemes">Suche nach weiteren Themas</system:String>
     <system:String x:Key="helloWox">Hallo Wox</system:String>
     <system:String x:Key="queryBoxFont">Abfragebox Schriftart</system:String>
     <system:String x:Key="resultItemFont">Ergebnis Schriftart</system:String>
@@ -56,7 +56,7 @@
     <system:String x:Key="edit">Bearbeiten</system:String>
     <system:String x:Key="add">Hinzufügen</system:String>
     <system:String x:Key="pleaseSelectAnItem">Bitte einen Eintrag auswählen</system:String>
-    <system:String x:Key="deleteCustomHotkeyWarning">Sind sie sicher die {0} Plugin Tastenkombination zu löschen?</system:String>
+    <system:String x:Key="deleteCustomHotkeyWarning">Wollen Sie die {0} Plugin Tastenkombination wirklich löschen?</system:String>
 
     <!--Setting Proxy-->
     <system:String x:Key="proxy">Proxy</system:String>
@@ -78,10 +78,10 @@
     <system:String x:Key="about">Über</system:String>
     <system:String x:Key="website">Webseite</system:String>
     <system:String x:Key="version">Version</system:String>
-    <system:String x:Key="about_activate_times">Du hast Wox {0} mal aktiviert</system:String>
-    <system:String x:Key="checkUpdates">Check for Updates</system:String>
-    <system:String x:Key="newVersionTips">New version {0} avaiable, please restart wox</system:String>
-    <system:String x:Key="releaseNotes">Release Notes:</system:String>
+    <system:String x:Key="about_activate_times">Sie haben Wox {0} mal aktiviert</system:String>
+    <system:String x:Key="checkUpdates">Nach Aktuallisierungen Suchen</system:String>
+    <system:String x:Key="newVersionTips">Eine neue Version ({0}) ist vorhanden. Bitte starten Sie Wox neu.</system:String>
+    <system:String x:Key="releaseNotes">Versionshinweise:</system:String>
 
     <!--Action Keyword Setting Dialog-->
     <system:String x:Key="oldActionKeywords">Altes Aktionsschlüsselwort</system:String>
@@ -90,9 +90,9 @@
     <system:String x:Key="done">Fertig</system:String>
     <system:String x:Key="cannotFindSpecifiedPlugin">Kann das angegebene Plugin nicht finden</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">Neues Aktionsschlüsselwort darf nicht leer sein</system:String>
-    <system:String x:Key="newActionKeywordsHasBeenAssigned">Neues Aktionsschlüsselwort ist schon bei einem anderen Plugin in verwendung. Bitte stelle ein anderes Aktionsschlüsselwort ein.</system:String>
+    <system:String x:Key="newActionKeywordsHasBeenAssigned">Aktionsschlüsselwort ist schon bei einem anderen Plugin in verwendung. Bitte stellen Sie ein anderes Aktionsschlüsselwort ein.</system:String>
     <system:String x:Key="succeed">Erfolgreich</system:String>
-    <system:String x:Key="actionkeyword_tips">Benutze * wenn du ein Aktionsschlüsselwort definieren willst</system:String>
+    <system:String x:Key="actionkeyword_tips">Benutzen Sie * wenn Sie ein Aktionsschlüsselwort definieren wollen.</system:String>
     
     <!--Custom Query Hotkey Dialog-->
     <system:String x:Key="preview">Vorschau</system:String>
@@ -106,7 +106,7 @@
     <!--Crash Reporter-->
     <system:String x:Key="reportWindow_version">Version</system:String>
     <system:String x:Key="reportWindow_time">Zeit</system:String>
-    <system:String x:Key="reportWindow_reproduce">Bitte Teile uns mit wie die Anwendung abgesürtzt ist, damit wir sie reparieren können.</system:String>
+    <system:String x:Key="reportWindow_reproduce">Bitte teilen Sie uns mit, wie die Anwendung abgestürzt ist, damit wir den Fehler beheben können.</system:String>
     <system:String x:Key="reportWindow_send_report">Sende Report</system:String>
     <system:String x:Key="reportWindow_cancel">Abbrechen</system:String>
     <system:String x:Key="reportWindow_general">Allgemein</system:String>
