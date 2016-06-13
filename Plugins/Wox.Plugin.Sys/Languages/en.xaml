@@ -16,6 +16,6 @@
     <system:String x:Key="wox_plugin_sys_emptyrecyclebin">Empty recycle bin</system:String>
 
     <system:String x:Key="wox_plugin_sys_plugin_name">System Commands</system:String>
-    <system:String x:Key="wox_plugin_sys_plugin_description">Provide System related commands. e.g. shutdown,lock,setting etc.</system:String>
+    <system:String x:Key="wox_plugin_sys_plugin_description">Provides System related commands. e.g. shutdown, lock, settings etc.</system:String>
 
 </ResourceDictionary>
