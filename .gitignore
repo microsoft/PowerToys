@@ -314,3 +314,4 @@ migrateToAutomaticPackageRestore.ps1
 */pinyindb/*
 *.diagsession
 Output-Performance.txt
+*.diff
