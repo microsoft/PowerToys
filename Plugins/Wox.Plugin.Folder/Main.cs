@@ -11,8 +11,8 @@ namespace Wox.Plugin.Folder
 {
     public class Main : IPlugin, ISettingProvider, IPluginI18n, ISavable
     {
-        private static List<string> driverNames;
-        private PluginInitContext context;
+        private static List<string> _driverNames;
+        private PluginInitContext _context;
 
         private readonly Settings _settings;
         private readonly PluginJsonStorage<Settings> _storage;
@@ -21,6 +21,7 @@ namespace Wox.Plugin.Folder
         {
             _storage = new PluginJsonStorage<Settings>();
             _settings = _storage.Load();
+            InitialDriverList();
         }
 
         public void Save()
@@ -30,17 +31,13 @@ namespace Wox.Plugin.Folder
 
         public Control CreateSettingPanel()
         {
-            return new FileSystemSettings(context.API, _settings);
+            return new FileSystemSettings(_context.API, _settings);
         }
 
         public void Init(PluginInitContext context)
         {
-            this.context = context;
-            InitialDriverList();
-            if (_settings.FolderLinks == null)
-            {
-                _settings.FolderLinks = new List<FolderLink>();
-            }
+            _context = context;
+            
         }
 
         public List<Result> Query(Query query)
@@ -71,13 +68,13 @@ namespace Wox.Plugin.Folder
                                     return false;
                                 }
                             }
-                            context.API.ChangeQuery($"{query.ActionKeyword} {item.Path}{(item.Path.EndsWith("\\") ? "" : "\\")}");
+                            _context.API.ChangeQuery($"{query.ActionKeyword} {item.Path}{(item.Path.EndsWith("\\") ? "" : "\\")}");
                             return false;
                         },
                         ContextData = item,
                     }).ToList();
 
-            if (driverNames != null && !driverNames.Any(search.StartsWith))
+            if (_driverNames != null && !_driverNames.Any(search.StartsWith))
                 return results;
 
             //if (!input.EndsWith("\\"))
@@ -97,13 +94,13 @@ namespace Wox.Plugin.Folder
         }
         private void InitialDriverList()
         {
-            if (driverNames == null)
+            if (_driverNames == null)
             {
-                driverNames = new List<string>();
+                _driverNames = new List<string>();
                 DriveInfo[] allDrives = DriveInfo.GetDrives();
                 foreach (DriveInfo driver in allDrives)
                 {
-                    driverNames.Add(driver.Name.ToLower().TrimEnd('\\'));
+                    _driverNames.Add(driver.Name.ToLower().TrimEnd('\\'));
                 }
             }
         }
@@ -180,7 +177,7 @@ namespace Wox.Plugin.Folder
                                 return false;
                             }
                         }
-                        context.API.ChangeQuery($"{query.ActionKeyword} {dirCopy.FullName}\\");
+                        _context.API.ChangeQuery($"{query.ActionKeyword} {dirCopy.FullName}\\");
                         return false;
                     }
                 };
@@ -223,12 +220,12 @@ namespace Wox.Plugin.Folder
 
         public string GetTranslatedPluginTitle()
         {
-            return context.API.GetTranslation("wox_plugin_folder_plugin_name");
+            return _context.API.GetTranslation("wox_plugin_folder_plugin_name");
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return context.API.GetTranslation("wox_plugin_folder_plugin_description");
+            return _context.API.GetTranslation("wox_plugin_folder_plugin_description");
         }
     }
 }
