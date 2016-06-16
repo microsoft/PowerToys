@@ -51,6 +51,29 @@ namespace Wox
             WindowIntelopHelper.DisableControlBox(this);
             ThemeManager.Instance.ChangeTheme(_settings.Theme);
             InitializeNotifyIcon();
+            InitProgressbarAnimation();
+
+            _viewModel.PropertyChanged += (o, e) =>
+            {
+                if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
+                {
+                    if (_viewModel.MainWindowVisibility.IsVisible())
+                    {
+                        Activate();
+                        QueryTextBox.Focus();
+                        SetWindowPosition();
+                        _settings.ActivateTimes++;
+                        if (_viewModel.QueryTextSelected)
+                        {
+                            QueryTextBox.SelectAll();
+                            _viewModel.QueryTextSelected = false;
+                        }
+                    }
+                }
+            };
+            // since the default main window visibility is visible
+            // so we need set focus during startup
+            QueryTextBox.Focus();
         }
 
         private void InitializeNotifyIcon()
@@ -145,38 +168,6 @@ namespace Wox
             }
         }
 
-        private void OnQueryVisible(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            var visible = (bool)e.NewValue;
-            if (visible)
-            {
-                // the Focusable and the IsVisible both needs to be true when set focus
-                // logical is set in xaml
-                QueryTextBox.Focus();
-
-                if (_viewModel.QueryTextSelected)
-                {
-                    QueryTextBox.SelectAll();
-                    _viewModel.QueryTextSelected = false;
-                }
-            }
-        }
-
-        private void OnQueryChanged(object sender, TextChangedEventArgs e)
-        {
-            QueryTextBox.CaretIndex = QueryTextBox.Text.Length;
-        }
-
-        private void OnMainWindowVisible(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            var visible = (bool)e.NewValue;
-            if (visible)
-            {
-                SetWindowPosition();
-                _settings.ActivateTimes++;
-            }
-        }
-
         private bool _startup = true;
         private void SetWindowPosition()
         {
@@ -191,8 +182,6 @@ namespace Wox
             }
         }
 
-
-
         /// <summary>
         // used to set correct position on windows first startup
         // since the actual width and actual height will be avaiable after this event
@@ -201,7 +190,6 @@ namespace Wox
         {
             Left = WindowLeft();
             Top = WindowTop();
-            InitProgressbarAnimation();
         }
 
         private double WindowLeft()
@@ -239,7 +227,5 @@ namespace Wox
                 e.Handled = true;
             }
         }
-
-
     }
 }

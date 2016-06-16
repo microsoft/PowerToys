@@ -20,13 +20,10 @@
         Closing="OnClosing"
         Drop="OnDrop"
         SizeChanged="OnSizeChanged"
-        IsVisibleChanged="OnMainWindowVisible"
         Deactivated="OnDeactivated"
         PreviewKeyDown="OnKeyDown"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-        d:DataContext="{d:DesignInstance vm:MainViewModel}"
-        FocusManager.FocusedElement="{Binding ElementName=QueryTextBox}"
-        FocusManager.IsFocusScope="True">
+        d:DataContext="{d:DesignInstance vm:MainViewModel}">
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscCommand}"></KeyBinding>
         <KeyBinding Key="F1" Command="{Binding StartHelpCommand}"></KeyBinding>
@@ -56,10 +53,7 @@
             <TextBox Style="{DynamicResource QueryBoxStyle}"
                      Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      PreviewDragOver="OnPreviewDragOver"
-                     IsVisibleChanged="OnQueryVisible"
-                     TextChanged="OnQueryChanged"
                      AllowDrop="True"
-                     Focusable="True"
                      Visibility="Visible"
                      x:Name="QueryTextBox">
                 <TextBox.ContextMenu>
