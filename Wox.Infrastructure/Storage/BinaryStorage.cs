@@ -37,6 +37,7 @@ namespace Wox.Infrastructure.Storage
                     }
                     else
                     {
+                        stream.Close();
                         LoadDefault();
                     }
                 }
@@ -64,11 +65,13 @@ namespace Wox.Infrastructure.Storage
             catch (SerializationException e)
             {
                 Log.Exception(e);
+                stream.Close();
                 LoadDefault();
             }
             catch (InvalidCastException e)
             {
                 Log.Exception(e);
+                stream.Close();
                 LoadDefault();
             }
             finally
