@@ -59,9 +59,9 @@
     <system:String x:Key="deleteCustomHotkeyWarning">Wollen Sie die {0} Plugin Tastenkombination wirklich löschen?</system:String>
 
     <!--Setting Proxy-->
-    <system:String x:Key="proxy">Proxy</system:String>
-    <system:String x:Key="enableProxy">Aktiviere Proxy</system:String>
-    <system:String x:Key="server">Server</system:String>
+    <system:String x:Key="proxy">HTTP Proxy</system:String>
+    <system:String x:Key="enableProxy">Aktiviere HTTP Proxy</system:String>
+    <system:String x:Key="server">HTTP Server</system:String>
     <system:String x:Key="port">Port</system:String>
     <system:String x:Key="userName">Benutzername</system:String>
     <system:String x:Key="password">Passwort</system:String>

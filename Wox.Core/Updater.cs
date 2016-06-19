@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Squirrel;
-using Wox.Core.UserSettings;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Logger;
 
@@ -19,7 +18,7 @@ namespace Wox.Core
         public static async void UpdateApp()
         {
 
-            var client = new WebClient {Proxy = Http.WebProxy(HttpProxy.Instance)};
+            var client = new WebClient {Proxy = Http.WebProxy()};
             var downloader = new FileDownloader(client);
 
             try
@@ -67,7 +66,7 @@ namespace Wox.Core
             string response;
             try
             {
-                response = await Http.Get(githubAPI, HttpProxy.Instance);
+                response = await Http.Get(githubAPI);
             }
             catch (WebException e)
             {

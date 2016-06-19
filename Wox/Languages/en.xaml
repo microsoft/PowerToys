@@ -59,9 +59,9 @@
     <system:String x:Key="deleteCustomHotkeyWarning">Are you sure you want to delete {0} plugin hotkey?</system:String>
 
     <!--Setting Proxy-->
-    <system:String x:Key="proxy">Proxy</system:String>
-    <system:String x:Key="enableProxy">Enable Proxy</system:String>
-    <system:String x:Key="server">Server</system:String>
+    <system:String x:Key="proxy">HTTP Proxy</system:String>
+    <system:String x:Key="enableProxy">Enable HTTP Proxy</system:String>
+    <system:String x:Key="server">HTTP Server</system:String>
     <system:String x:Key="port">Port</system:String>
     <system:String x:Key="userName">User Name</system:String>
     <system:String x:Key="password">Password</system:String>

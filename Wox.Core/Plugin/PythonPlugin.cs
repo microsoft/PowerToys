@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using Wox.Core.UserSettings;
 using Wox.Plugin;
 
 namespace Wox.Core.Plugin
@@ -28,7 +27,6 @@ namespace Wox.Core.Plugin
             {
                 Method = "query",
                 Parameters = new object[] { query.Search },
-                HttpProxy = HttpProxy.Instance
             };
             //Add -B flag to tell python don't write .py[co] files. Because .pyc contains location infos which will prevent python portable
             _startInfo.Arguments = $"-B \"{context.CurrentPluginMetadata.ExecuteFilePath}\" \"{request}\"";

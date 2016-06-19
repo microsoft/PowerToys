@@ -59,9 +59,9 @@
     <system:String x:Key="deleteCustomHotkeyWarning">Вы уверены что хотите удалить горячую клавишу для плагина {0}?</system:String>
 
     <!--Setting Proxy-->
-    <system:String x:Key="proxy">Прокси</system:String>
-    <system:String x:Key="enableProxy">Включить прокси</system:String>
-    <system:String x:Key="server">Сервер</system:String>
+    <system:String x:Key="proxy">HTTP Прокси</system:String>
+    <system:String x:Key="enableProxy">Включить HTTP прокси</system:String>
+    <system:String x:Key="server">HTTP Сервер</system:String>
     <system:String x:Key="port">Порт</system:String>
     <system:String x:Key="userName">Логин</system:String>
     <system:String x:Key="password">Пароль</system:String>

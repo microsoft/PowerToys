@@ -59,9 +59,9 @@
     <system:String x:Key="deleteCustomHotkeyWarning">Czy jesteś pewien że chcesz usunąć skrót klawiszowy {0} wtyczki?</system:String>
 
     <!--Setting Proxy-->
-    <system:String x:Key="proxy">Serwer proxy</system:String>
-    <system:String x:Key="enableProxy">Używaj proxy</system:String>
-    <system:String x:Key="server">Serwer</system:String>
+    <system:String x:Key="proxy">Serwer proxy HTTP</system:String>
+    <system:String x:Key="enableProxy">Używaj HTTP proxy</system:String>
+    <system:String x:Key="server">HTTP Serwer</system:String>
     <system:String x:Key="port">Port</system:String>
     <system:String x:Key="userName">Nazwa użytkownika</system:String>
     <system:String x:Key="password">Hasło</system:String>

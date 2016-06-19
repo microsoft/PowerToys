@@ -59,9 +59,9 @@
     <system:String x:Key="deleteCustomHotkeyWarning">Voulez-vous vraiment supprimer {0} raccourci(s) ?</system:String>
 
     <!--Setting Proxy-->
-    <system:String x:Key="proxy">Proxy</system:String>
-    <system:String x:Key="enableProxy">Activer le proxy</system:String>
-    <system:String x:Key="server">Serveur</system:String>
+    <system:String x:Key="proxy">HTTP Proxy</system:String>
+    <system:String x:Key="enableProxy">Activer le HTTP proxy</system:String>
+    <system:String x:Key="server">HTTP Serveur</system:String>
     <system:String x:Key="port">Port</system:String>
     <system:String x:Key="userName">Utilisateur</system:String>
     <system:String x:Key="password">Mot de passe</system:String>

@@ -3,8 +3,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:wox="clr-namespace:Wox"
-        xmlns:s="clr-namespace:Wox.Core.UserSettings;assembly=Wox.Core"
         xmlns:vm="clr-namespace:Wox.ViewModel"
+        xmlns:userSettings="clr-namespace:Wox.Infrastructure.UserSettings;assembly=Wox.Infrastructure"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         x:Class="Wox.SettingWindow"
         mc:Ignorable="d"
         Icon="Images\app.png"
@@ -276,14 +277,14 @@
                         <GridView>
                             <GridViewColumn Header="{DynamicResource hotkey}" Width="180">
                                 <GridViewColumn.CellTemplate>
-                                    <DataTemplate DataType="s:CustomPluginHotkey">
+                                    <DataTemplate DataType="userSettings:CustomPluginHotkey">
                                         <TextBlock Text="{Binding Hotkey}" />
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
                             <GridViewColumn Header="{DynamicResource actionKeywords}" Width="500">
                                 <GridViewColumn.CellTemplate>
-                                    <DataTemplate DataType="s:CustomPluginHotkey">
+                                    <DataTemplate DataType="userSettings:CustomPluginHotkey">
                                         <TextBlock Text="{Binding ActionKeyword}" />
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
@@ -304,10 +305,10 @@
         </TabItem>
         <TabItem Header="{DynamicResource proxy}">
             <StackPanel>
-                <CheckBox Margin="10" IsChecked="{Binding Settings.ProxyEnabled}">
+                <CheckBox Margin="10" IsChecked="{Binding Settings.Proxy.Enabled}">
                     <TextBlock Text="{DynamicResource enableProxy}" />
                 </CheckBox>
-                <Grid Margin="10" IsEnabled="{Binding Settings.ProxyEnabled}">
+                <Grid Margin="10" IsEnabled="{Binding Settings.Proxy.Enabled}">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition />
@@ -319,15 +320,15 @@
                         <ColumnDefinition Width="200" />
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="{DynamicResource server}" Grid.Row="0" Grid.Column="0" Padding="5" />
-                    <TextBox Text="{Binding Settings.ProxyServer}" Grid.Row="0" Grid.Column="1" Padding="5" />
+                    <TextBox Text="{Binding Settings.Proxy.Server}" Grid.Row="0" Grid.Column="1" Padding="5" />
                     <TextBlock Text="{DynamicResource port}" Grid.Row="0" Grid.Column="2" Padding="5" />
-                    <TextBox Text="{Binding Settings.ProxyPort}" Grid.Row="0" Grid.Column="3" Padding="5" />
+                    <TextBox Text="{Binding Settings.Proxy.Port, TargetNullValue={x:Static sys:String.Empty} }" Grid.Row="0" Grid.Column="3" Padding="5" />
                     <TextBlock Text="{DynamicResource userName}" Grid.Row="1" Grid.Column="0" Padding="5" />
-                    <TextBox Text="{Binding Settings.ProxyUserName}" Grid.Row="1" Grid.Column="1" Padding="5" />
+                    <TextBox Text="{Binding Settings.Proxy.UserName}" Grid.Row="1" Grid.Column="1" Padding="5" />
                     <TextBlock Text="{DynamicResource password}" Grid.Row="1" Grid.Column="2" Padding="5" />
-                    <TextBox Text="{Binding Settings.ProxyPassword}" Grid.Row="1" Grid.Column="3" Padding="5" />
+                    <TextBox Text="{Binding Settings.Proxy.Password}" Grid.Row="1" Grid.Column="3" Padding="5" />
                 </Grid>
-                <Button Content="{DynamicResource testProxy}" IsEnabled="{Binding Settings.ProxyEnabled}"
+                <Button Content="{DynamicResource testProxy}" IsEnabled="{Binding Settings.Proxy.Enabled}"
                         Width="80" HorizontalAlignment="Left" Margin="10" Click="OnTestProxyClick" />
             </StackPanel>
         </TabItem>

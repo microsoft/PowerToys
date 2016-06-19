@@ -104,7 +104,7 @@ namespace Wox.Plugin.WebSearch
 
         private async Task<IEnumerable<Result>> Suggestions(string keyword, string subtitle, WebSearch webSearch)
         {
-            var source = SuggestionSource.GetSuggestionSource(_settings.WebSearchSuggestionSource, Context);
+            var source = SuggestionSource.GetSuggestionSource(_settings.WebSearchSuggestionSource);
             if (source != null)
             {
                 var suggestions = await source.GetSuggestions(keyword);

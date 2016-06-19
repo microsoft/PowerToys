@@ -24,7 +24,7 @@ namespace Wox.Plugin.WebSearch.SuggestionSources
             try
             {
                 const string api = "http://suggestion.baidu.com/su?json=1&wd=";
-                result = await Http.Get(api + Uri.EscapeUriString(query), Proxy, "GB2312");
+                result = await Http.Get(api + Uri.EscapeUriString(query), "GB2312");
             }
             catch (WebException e)
             {
@@ -60,10 +60,6 @@ namespace Wox.Plugin.WebSearch.SuggestionSources
             }
 
             return new List<string>();
-        }
-
-        public Baidu(IHttpProxy httpProxy) : base(httpProxy)
-        {
         }
     }
 }

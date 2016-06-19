@@ -1,8 +1,8 @@
 ﻿using System.Windows;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
-using Wox.Core.UserSettings;
 using Wox.Infrastructure.Exception;
+using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
 namespace Wox

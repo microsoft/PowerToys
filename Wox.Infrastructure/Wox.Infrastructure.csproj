@@ -92,6 +92,10 @@
     <Compile Include="Hotkey\HotkeyModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Alphabet.cs" />
+    <Compile Include="UserSettings\HttpProxy.cs" />
+    <Compile Include="UserSettings\PluginHotkey.cs" />
+    <Compile Include="UserSettings\PluginSettings.cs" />
+    <Compile Include="UserSettings\Settings.cs" />
     <Compile Include="Wox.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -59,9 +59,9 @@
     <system:String x:Key="deleteCustomHotkeyWarning">確定要刪除外掛 {0} 的熱鍵嗎？</system:String>
 
     <!--設置，代理-->
-    <system:String x:Key="proxy">代理</system:String>
-    <system:String x:Key="enableProxy">啟用代理</system:String>
-    <system:String x:Key="server">伺服器</system:String>
+    <system:String x:Key="proxy">HTTP 代理</system:String>
+    <system:String x:Key="enableProxy">啟用 HTTP 代理</system:String>
+    <system:String x:Key="server">HTTP 伺服器</system:String>
     <system:String x:Key="Port">Port</system:String>
     <system:String x:Key="userName">使用者</system:String>
     <system:String x:Key="password">密碼</system:String>

@@ -19,7 +19,7 @@ namespace Wox.Plugin.WebSearch.SuggestionSources
             try
             {
                 const string api = "https://www.google.com/complete/search?output=chrome&q=";
-                result = await Http.Get(api + Uri.EscapeUriString(query), Proxy);
+                result = await Http.Get(api + Uri.EscapeUriString(query));
             }
             catch (WebException e)
             {
@@ -47,10 +47,6 @@ namespace Wox.Plugin.WebSearch.SuggestionSources
                 }
             }
             return new List<string>();
-        }
-
-        public Google(IHttpProxy httpProxy) : base(httpProxy)
-        {
         }
     }
 }

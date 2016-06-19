@@ -59,9 +59,9 @@
     <system:String x:Key="deleteCustomHotkeyWarning">你确定要删除插件 {0} 的热键吗？</system:String>
 
     <!--设置，代理-->
-    <system:String x:Key="proxy">代理</system:String>
-    <system:String x:Key="enableProxy">启用代理</system:String>
-    <system:String x:Key="server">服务器</system:String>
+    <system:String x:Key="proxy">HTTP 代理</system:String>
+    <system:String x:Key="enableProxy">启用 HTTP 代理</system:String>
+    <system:String x:Key="server">HTTP 服务器</system:String>
     <system:String x:Key="port">端口</system:String>
     <system:String x:Key="userName">用户名</system:String>
     <system:String x:Key="password">密码</system:String>

@@ -8,10 +8,11 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
-using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Storage;
+using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
 namespace Wox.ViewModel
@@ -31,6 +32,12 @@ namespace Wox.ViewModel
                     OnPropertyChanged(nameof(ActivatedTimes));
                 }
             };
+
+            // happlebao todo temp fix for instance code logic
+            InternationalizationManager.Instance.Settings = Settings;
+            InternationalizationManager.Instance.ChangeLanguage(Settings.Language);
+            ThemeManager.Instance.Settings = Settings;
+            Http.Proxy = Settings.Proxy;
         }
 
         public Settings Settings { get; set; }

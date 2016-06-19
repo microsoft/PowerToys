@@ -5,11 +5,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Wox.Core.Resource;
-using Wox.Core.UserSettings;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
+using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
 namespace Wox.Core.Plugin
@@ -83,7 +83,6 @@ namespace Wox.Core.Plugin
                     pair.Plugin.Init(new PluginInitContext
                     {
                         CurrentPluginMetadata = pair.Metadata,
-                        Proxy = HttpProxy.Instance,
                         API = API
                     });
                 });
