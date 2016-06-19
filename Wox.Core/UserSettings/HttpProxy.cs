@@ -1,17 +1,11 @@
-﻿using Wox.Plugin;
-
-namespace Wox.Core.UserSettings
+﻿namespace Wox.Infrastructure.UserSettings
 {
-    public class HttpProxy : IHttpProxy
+    public class HttpProxy
     {
-        private static readonly HttpProxy instance = new HttpProxy();
-        public Settings Settings { get; set; }
-        public static HttpProxy Instance => instance;
-
-        public bool Enabled => Settings.ProxyEnabled;
-        public string Server => Settings.ProxyServer;
-        public int Port => Settings.ProxyPort;
-        public string UserName => Settings.ProxyUserName;
-        public string Password => Settings.ProxyPassword;
+        public bool Enabled { get; set; } = false;
+        public string Server { get; set; }
+        public int Port { get; set; }
+        public string UserName { get; set; }
+        public string Password { get; set; }
     }
 }
