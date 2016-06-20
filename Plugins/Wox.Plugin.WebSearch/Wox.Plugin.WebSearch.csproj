@@ -59,6 +59,8 @@
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SearchSourceViewModel.cs" />
+    <Compile Include="SettingsViewModel.cs" />
     <Compile Include="SuggestionSources\Baidu.cs" />
     <Compile Include="SuggestionSources\Google.cs" />
     <Compile Include="SuggestionSources\ISuggestionSource.cs" />
@@ -162,6 +164,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Wox.Core\Wox.Core.csproj">
+      <Project>{B749F0DB-8E75-47DB-9E5E-265D16D0C0D2}</Project>
+      <Name>Wox.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj">
       <Project>{4fd29318-a8ab-4d8f-aa47-60bc241b8da3}</Project>
       <Name>Wox.Infrastructure</Name>

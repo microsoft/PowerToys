@@ -1,150 +1,150 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Windows;
 using Microsoft.Win32;
-using Wox.Infrastructure.Exception;
-using Wox.Infrastructure.Image;
+using Wox.Core.Plugin;
 
 namespace Wox.Plugin.WebSearch
 {
-    public partial class WebSearchSetting
+    public partial class SearchSourceSettingWindow
     {
-        private readonly WebSearchesSetting _settingWindow;
-        private bool _isUpdate;
-        private WebSearch _webSearch;
-        private readonly PluginInitContext _context;
-        private readonly Main _plugin;
-        private readonly Settings _settings;
+        private readonly SearchSource _oldSearchSource;
+        private SearchSource _searchSource;
+        private IList<SearchSource> _searchSources;
+        private Action _action;
+        private PluginInitContext _context;
+        private IPublicAPI _api;
+        private SearchSourceViewModel _viewModel;
 
-        public WebSearchSetting(WebSearchesSetting settingWidow, Settings settings)
+
+        public SearchSourceSettingWindow(IList<SearchSource> sources, PluginInitContext context, SearchSource old)
+        {
+            _oldSearchSource = old;
+            _viewModel = new SearchSourceViewModel { SearchSource = old.DeepCopy() };
+            Initilize(sources, context, Action.Edit);
+        }
+
+        public SearchSourceSettingWindow(IList<SearchSource> sources, PluginInitContext context)
+        {
+            _viewModel = new SearchSourceViewModel { SearchSource = new SearchSource() };
+            Initilize(sources, context, Action.Add);
+        }
+
+        private void Initilize(IList<SearchSource> sources, PluginInitContext context, Action action)
         {
             InitializeComponent();
-            WebSearchName.Focus();
-            _plugin = settingWidow.Plugin;
-            _context = settingWidow.Context;
-            _settingWindow = settingWidow;
-            _settings = settings;
+            DataContext = _viewModel;
+            _searchSource = _viewModel.SearchSource;
+            _searchSources = sources;
+            _action = action;
+            _context = context;
+            _api = _context.API;
         }
 
-        public void UpdateItem(WebSearch webSearch)
-        {
-            _webSearch = _settings.WebSearches.FirstOrDefault(o => o == webSearch);
-            if (_webSearch == null || string.IsNullOrEmpty(_webSearch.Url))
-            {
-
-                string warning = _context.API.GetTranslation("wox_plugin_websearch_invalid_web_search");
-                MessageBox.Show(warning);
-                Close();
-                return;
-            }
-
-            _isUpdate = true;
-            ConfirmButton.Content = "Update";
-            WebSearchIcon.Source = ImageLoader.Load(webSearch.IconPath);
-            EnableCheckBox.IsChecked = webSearch.Enabled;
-            WebSearchName.Text = webSearch.Title;
-            Url.Text = webSearch.Url;
-            Actionword.Text = webSearch.ActionKeyword;
-        }
-
-        public void AddItem(WebSearch webSearch)
-        {
-            _webSearch = webSearch;
-            WebSearchIcon.Source = ImageLoader.Load(webSearch.IconPath);
-        }
-
-        private void CancelButtonOnClick(object sender, RoutedEventArgs e)
+        private void OnCancelButtonClick(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        /// <summary>
-        /// Confirm button for both add and update
-        /// </summary>
-        private void ConfirmButtonOnClick(object sender, RoutedEventArgs e)
+        private void OnConfirmButtonClick(object sender, RoutedEventArgs e)
         {
-            string title = WebSearchName.Text;
-            if (string.IsNullOrEmpty(title))
-            {
-                string warning = _context.API.GetTranslation("wox_plugin_websearch_input_title");
-                MessageBox.Show(warning);
-                return;
-            }
 
-            string url = Url.Text;
-            if (string.IsNullOrEmpty(url))
+            if (string.IsNullOrEmpty(_searchSource.Title))
             {
-                string warning = _context.API.GetTranslation("wox_plugin_websearch_input_url");
+                var warning = _api.GetTranslation("wox_plugin_websearch_input_title");
                 MessageBox.Show(warning);
-                return;
             }
-
-            string newActionKeyword = Actionword.Text.Trim();
-            
-            if (_isUpdate)
+            else if (string.IsNullOrEmpty(_searchSource.Url))
             {
-                try
-                {
-                    _plugin.NotifyActionKeywordsUpdated(_webSearch.ActionKeyword, newActionKeyword);
-                }
-                catch (WoxPluginException exception)
-                {
-                    MessageBox.Show(exception.Message);
-                    return;
-                }
+                var warning = _api.GetTranslation("wox_plugin_websearch_input_url");
+                MessageBox.Show(warning);
+            }
+            else if (string.IsNullOrEmpty(_searchSource.ActionKeyword))
+            {
+                var warning = _api.GetTranslation("wox_plugin_websearch_input_action_keyword");
+                MessageBox.Show(warning);
+            }
+            else if (_action == Action.Add)
+            {
+                AddSearchSource();
+            }
+            else if (_action == Action.Edit)
+            {
+                EditSearchSource();
+            }
+        }
+
+        private void AddSearchSource()
+        {
+            var keyword = _searchSource.ActionKeyword;
+            if (!PluginManager.ActionKeywordRegistered(keyword))
+            {
+                var id = _context.CurrentPluginMetadata.ID;
+                PluginManager.AddActionKeyword(id, keyword);
+
+                _searchSources.Add(_searchSource);
+
+                var info = _api.GetTranslation("succeed");
+                MessageBox.Show(info);
+                Close();
             }
             else
             {
-                try
-                {
-                    _plugin.NotifyActionKeywordsAdded(newActionKeyword);
-                }
-                catch (WoxPluginException exception)
-                {
-                    MessageBox.Show(exception.Message);
-                    return;
-                }
-
-                _settings.WebSearches.Add(_webSearch);
+                var warning = _api.GetTranslation("newActionKeywordsHasBeenAssigned");
+                MessageBox.Show(warning);
             }
-
-            _webSearch.ActionKeyword = newActionKeyword;
-            _webSearch.Enabled = EnableCheckBox.IsChecked ?? false;
-            _webSearch.Url = url;
-            _webSearch.Title = title;
-
-            _settingWindow.ReloadWebSearchView();
-            Close();
         }
 
-        private void SelectIconButtonOnClick(object sender, RoutedEventArgs e)
+        private void EditSearchSource()
+        {
+            var keyword = _searchSource.ActionKeyword;
+            if (!PluginManager.ActionKeywordRegistered(keyword))
+            {
+                var newKeyword = keyword;
+                var oldKeyword = _oldSearchSource.ActionKeyword;
+                var id = _context.CurrentPluginMetadata.ID;
+                PluginManager.ReplaceActionKeyword(id, oldKeyword, newKeyword);
+
+                var index = _searchSources.IndexOf(_oldSearchSource);
+                _searchSources[index] = _searchSource;
+
+                var info = _api.GetTranslation("succeed");
+                MessageBox.Show(info);
+                Close();
+            }
+            else
+            {
+                var warning = _api.GetTranslation("newActionKeywordsHasBeenAssigned");
+                MessageBox.Show(warning);
+            }
+        }
+
+        private void OnSelectIconClick(object sender, RoutedEventArgs e)
         {
             var directory = Path.Combine(Main.ImagesDirectory, Main.Images);
-            var dlg = new OpenFileDialog
-            {
-                InitialDirectory = directory,
-                Filter = "Image files (*.jpg, *.jpeg, *.gif, *.png, *.bmp) |*.jpg; *.jpeg; *.gif; *.png; *.bmp"
-            };
+            const string filter = "Image files (*.jpg, *.jpeg, *.gif, *.png, *.bmp) |*.jpg; *.jpeg; *.gif; *.png; *.bmp";
+            var dialog = new OpenFileDialog { InitialDirectory = directory, Filter = filter };
 
-            bool? result = dlg.ShowDialog();
-            if (result != null && result == true)
+            var result = dialog.ShowDialog();
+            if (result == true)
             {
-                string fullpath = dlg.FileName;
-                if (fullpath != null)
+                var fullpath = dialog.FileName;
+                if (!string.IsNullOrEmpty(fullpath))
                 {
-                    _webSearch.Icon = Path.GetFileName(fullpath);
-                    if (File.Exists(_webSearch.IconPath))
+                    _searchSource.Icon = Path.GetFileName(fullpath);
+                    if (!File.Exists(_searchSource.IconPath))
                     {
-                        WebSearchIcon.Source = ImageLoader.Load(_webSearch.IconPath);
-                    }
-                    else
-                    {
-                        _webSearch.Icon = WebSearch.DefaultIcon;
+                        _searchSource.Icon = SearchSource.DefaultIcon;
                         MessageBox.Show($"The file should be put under {directory}");
                     }
                 }
             }
         }
+    }
+
+    public enum Action
+    {
+        Add,
+        Edit
     }
 }

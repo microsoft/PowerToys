@@ -36,14 +36,7 @@ namespace Wox.ViewModel
 
         public string PluginID => RawResult.PluginID;
 
-        public ImageSource Image
-        {
-            get
-            {
-                var image = ImageLoader.Load(RawResult.IcoPath);
-                return image;
-            }
-        }
+        public ImageSource Image => ImageLoader.Load(RawResult.IcoPath);
 
         public int Score
         {

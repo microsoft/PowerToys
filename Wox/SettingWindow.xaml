@@ -83,10 +83,10 @@
                                     <Image Source="{Binding Image, IsAsync=True}"
                                            Width="32" Height="32" />
                                     <StackPanel Margin="3 0 3 0">
-                                        <TextBlock Text="{Binding Metadata.Name}"
-                                                   ToolTip="{Binding Metadata.Name}" />
-                                        <TextBlock Text="{Binding Metadata.Description}"
-                                                   ToolTip="{Binding Metadata.Description}"
+                                        <TextBlock Text="{Binding PluginPair.Metadata.Name}"
+                                                   ToolTip="{Binding PluginPair.Metadata.Name}" />
+                                        <TextBlock Text="{Binding PluginPair.Metadata.Description}"
+                                                   ToolTip="{Binding PluginPair.Metadata.Description}"
                                                    Opacity="0.5" />
                                     </StackPanel>
                                 </StackPanel>
@@ -119,8 +119,8 @@
                                         <ColumnDefinition />
                                         <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{Binding Metadata.Name}"
-                                               ToolTip="{Binding Metadata.Name}"
+                                    <TextBlock Text="{Binding PluginPair.Metadata.Name}"
+                                               ToolTip="{Binding PluginPair.Metadata.Name}"
                                                Grid.Column="0"
                                                Cursor="Hand" MouseUp="OnPluginNameClick" FontSize="24"
                                                HorizontalAlignment="Left" />
@@ -128,14 +128,14 @@
                                                 VerticalAlignment="Bottom" Opacity="0.5">
                                         <TextBlock Text="{DynamicResource author}" />
                                         <TextBlock Text=": " />
-                                        <TextBlock Text="{Binding Metadata.Author}" ToolTip="{Binding Metadata.Author}" />
+                                        <TextBlock Text="{Binding PluginPair.Metadata.Author}" ToolTip="{Binding PluginPair.Metadata.Author}" />
                                     </StackPanel>
                                 </Grid>
-                                <TextBlock Text="{Binding Metadata.Description}"
-                                           ToolTip="{Binding Metadata.Description}"
+                                <TextBlock Text="{Binding PluginPair.Metadata.Description}"
+                                           ToolTip="{Binding PluginPair.Metadata.Description}"
                                            Grid.Row="1" Opacity="0.5" />
                                 <DockPanel Grid.Row="2" Margin="0 10 0 8">
-                                    <CheckBox IsChecked="{Binding Metadata.Disabled}" Checked="OnPluginToggled"
+                                    <CheckBox IsChecked="{Binding PluginPair.Metadata.Disabled}" Checked="OnPluginToggled"
                                               Unchecked="OnPluginToggled">
                                         <TextBlock Text="{DynamicResource disable}" />
                                     </CheckBox>

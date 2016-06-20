@@ -1,12 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.ObjectModel;
+using Newtonsoft.Json;
+using Wox.Plugin.WebSearch.SuggestionSources;
 
 namespace Wox.Plugin.WebSearch
 {
-    public class Settings
+    public class Settings : BaseModel
     {
-        public List<WebSearch> WebSearches { get; set; } = new List<WebSearch>
+        public Settings()
+        {
+            SelectedSuggestion = Suggestions[0];
+            if (SearchSources.Count > 0)
             {
-                new WebSearch
+                SelectedSearchSource = SearchSources[0];
+            }
+        }
+        public ObservableCollection<SearchSource> SearchSources { get; set; } = new ObservableCollection<SearchSource>
+            {
+                new SearchSource
                 {
                     Title = "Google",
                     ActionKeyword = "g",
@@ -14,7 +25,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://www.google.com/search?q={q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Google Scholar",
                     ActionKeyword = "sc",
@@ -22,7 +33,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://scholar.google.com/scholar?q={q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Wikipedia",
                     ActionKeyword = "wiki",
@@ -30,7 +41,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://en.wikipedia.org/wiki/{q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "FindIcon",
                     ActionKeyword = "findicon",
@@ -38,7 +49,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "http://findicons.com/search/{q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Facebook",
                     ActionKeyword = "facebook",
@@ -46,7 +57,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://www.facebook.com/search/?q={q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Twitter",
                     ActionKeyword = "twitter",
@@ -54,7 +65,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://twitter.com/search?q={q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Google Maps",
                     ActionKeyword = "maps",
@@ -62,7 +73,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://maps.google.com/maps?q={q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Google Translate",
                     ActionKeyword = "translate",
@@ -70,7 +81,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://translate.google.com/#auto|en|{q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Duckduckgo",
                     ActionKeyword = "duckduckgo",
@@ -78,7 +89,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://duckduckgo.com/?q={q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Github",
                     ActionKeyword = "github",
@@ -86,7 +97,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://github.com/search?q={q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Github Gist",
                     ActionKeyword = "gist",
@@ -94,7 +105,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://gist.github.com/search?q={q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Gmail",
                     ActionKeyword = "gmail",
@@ -102,7 +113,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://mail.google.com/mail/ca/u/0/#apps/{q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Google Drive",
                     ActionKeyword = "drive",
@@ -110,7 +121,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://drive.google.com/?hl=en&tab=bo#search/{q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Wolframalpha",
                     ActionKeyword = "wolframalpha",
@@ -118,7 +129,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://www.wolframalpha.com/input/?i={q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Stackoverflow",
                     ActionKeyword = "stackoverflow",
@@ -126,7 +137,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://stackoverflow.com/search?q={q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "I'm Feeling Lucky",
                     ActionKeyword = "lucky",
@@ -134,7 +145,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://google.com/search?q={q}&btnI=I",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Google Image",
                     ActionKeyword = "image",
@@ -142,7 +153,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://www.google.com/search?q={q}&tbm=isch",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Youtube",
                     ActionKeyword = "youtube",
@@ -150,7 +161,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://www.youtube.com/results?search_query={q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Bing",
                     ActionKeyword = "bing",
@@ -158,7 +169,7 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://www.bing.com/search?q={q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
                     Title = "Yahoo",
                     ActionKeyword = "yahoo",
@@ -166,18 +177,50 @@ namespace Wox.Plugin.WebSearch
                     Url = "https://www.search.yahoo.com/search?p={q}",
                     Enabled = true
                 },
-                new WebSearch
+                new SearchSource
                 {
-                    Title= "Baidu",
-                    ActionKeyword= "bd",
-                    Icon= "baidu.png",
-                    Url="https://www.baidu.com/#ie=UTF-8&wd={q}",
-                    Enabled= true
+                    Title = "Baidu",
+                    ActionKeyword = "bd",
+                    Icon = "baidu.png",
+                    Url = "https://www.baidu.com/#ie=UTF-8&wd={q}",
+                    Enabled = true
                 }
             };
 
-        public bool EnableWebSearchSuggestion { get; set; }
+        [JsonIgnore]
+        public SearchSource SelectedSearchSource { get; set; }
 
-        public string WebSearchSuggestionSource { get; set; }
+        public bool EnableSuggestion { get; set; }
+
+        [JsonIgnore]
+        public SuggestionSource[] Suggestions { get; set; } = {
+            new Google(),
+            new Baidu()
+        };
+
+        [JsonIgnore]
+        public SuggestionSource SelectedSuggestion { get; set; }
+
+        /// <summary>
+        /// used to store Settings.json only
+        /// </summary>
+        public string Suggestion
+        {
+            get
+            {
+                return SelectedSuggestion.ToString();
+            }
+            set
+            {
+                foreach (var s in Suggestions)
+                {
+                    if (string.Equals(s.ToString(), value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        SelectedSuggestion = s;
+                    }
+                }
+            }
+        }
+
     }
 }

@@ -214,15 +214,15 @@ namespace Wox
 
         private void OnPluginToggled(object sender, RoutedEventArgs e)
         {
-            var id = _viewModel.SelectedPlugin.Metadata.ID;
-            _settings.PluginSettings.Plugins[id].Disabled = _viewModel.SelectedPlugin.Metadata.Disabled;
+            var id = _viewModel.SelectedPlugin.PluginPair.Metadata.ID;
+            _settings.PluginSettings.Plugins[id].Disabled = _viewModel.SelectedPlugin.PluginPair.Metadata.Disabled;
         }
 
         private void OnPluginActionKeywordsClick(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
             {
-                var id = _viewModel.SelectedPlugin.Metadata.ID;
+                var id = _viewModel.SelectedPlugin.PluginPair.Metadata.ID;
                 ActionKeywords changeKeywordsWindow = new ActionKeywords(id, _settings);
                 changeKeywordsWindow.ShowDialog();
             }
@@ -234,7 +234,7 @@ namespace Wox
             {
                 if (e.ChangedButton == MouseButton.Left)
                 {
-                    var website = _viewModel.SelectedPlugin.Metadata.Website;
+                    var website = _viewModel.SelectedPlugin.PluginPair.Metadata.Website;
                     if (!string.IsNullOrEmpty(website))
                     {
                         var uri = new Uri(website);
@@ -251,7 +251,7 @@ namespace Wox
         {
             if (e.ChangedButton == MouseButton.Left)
             {
-                var directory = _viewModel.SelectedPlugin.Metadata.PluginDirectory;
+                var directory = _viewModel.SelectedPlugin.PluginPair.Metadata.PluginDirectory;
                 if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
                 {
                     Process.Start(directory);

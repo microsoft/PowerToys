@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Wox.Core.Resource;
 using Wox.Infrastructure;
@@ -30,16 +29,17 @@ namespace Wox.Core.Plugin
         public static readonly Dictionary<string, PluginPair> NonGlobalPlugins = new Dictionary<string, PluginPair>();
 
         public static IPublicAPI API { private set; get; }
+
         // todo happlebao, this should not be public, the indicator function should be embeded 
         public static PluginsSettings Settings;
         private static List<PluginMetadata> _metadatas;
-        private static readonly string[] Directories = { Infrastructure.Constant.PreinstalledDirectory, Infrastructure.Constant.UserDirectory };
+        private static readonly string[] Directories = { Constant.PreinstalledDirectory, Constant.UserDirectory };
 
         private static void ValidateUserDirectory()
         {
-            if (!Directory.Exists(Infrastructure.Constant.UserDirectory))
+            if (!Directory.Exists(Constant.UserDirectory))
             {
-                Directory.CreateDirectory(Infrastructure.Constant.UserDirectory);
+                Directory.CreateDirectory(Constant.UserDirectory);
             }
         }
 
@@ -238,59 +238,58 @@ namespace Wox.Core.Plugin
 
         }
 
-        public static void UpdateActionKeywordForPlugin(PluginPair plugin, string oldActionKeyword, string newActionKeyword)
+        public static bool ActionKeywordRegistered(string actionKeyword)
         {
-            var actionKeywords = plugin.Metadata.ActionKeywords;
-            if (string.IsNullOrEmpty(newActionKeyword))
+            if (actionKeyword != Query.GlobalPluginWildcardSign &&
+                NonGlobalPlugins.ContainsKey(actionKeyword))
             {
-                string msg = InternationalizationManager.Instance.GetTranslation("newActionKeywordsCannotBeEmpty");
-                throw new WoxPluginException(plugin.Metadata.Name, msg);
+                return true;
             }
-            // do nothing if they are same
-            if (oldActionKeyword == newActionKeyword) return;
-            if (NonGlobalPlugins.ContainsKey(newActionKeyword))
-            {
-                string msg = InternationalizationManager.Instance.GetTranslation("newActionKeywordsHasBeenAssigned");
-                throw new WoxPluginException(plugin.Metadata.Name, msg);
-            }
-
-            // add new action keyword
-            if (string.IsNullOrEmpty(oldActionKeyword))
-            {
-                actionKeywords.Add(newActionKeyword);
-                if (newActionKeyword == Query.GlobalPluginWildcardSign)
-                {
-                    GlobalPlugins.Add(plugin);
-                }
-                else
-                {
-                    NonGlobalPlugins[newActionKeyword] = plugin;
-                }
-            }
-            // update existing action keyword
             else
             {
-                int index = actionKeywords.IndexOf(oldActionKeyword);
-                actionKeywords[index] = newActionKeyword;
-                if (oldActionKeyword == Query.GlobalPluginWildcardSign)
-                {
-                    GlobalPlugins.Remove(plugin);
-                }
-                else
-                {
-                    NonGlobalPlugins.Remove(oldActionKeyword);
-                }
-                if (newActionKeyword == Query.GlobalPluginWildcardSign)
-                {
-                    GlobalPlugins.Add(plugin);
-                }
-                else
-                {
-                    NonGlobalPlugins[newActionKeyword] = plugin;
-                }
+                return false;
             }
-
         }
 
+        public static void AddActionKeyword(string id, string newActionKeyword)
+        {
+            var plugin = GetPluginForId(id);
+            if (newActionKeyword == Query.GlobalPluginWildcardSign)
+            {
+                GlobalPlugins.Add(plugin);
+            }
+            else
+            {
+                NonGlobalPlugins[newActionKeyword] = plugin;
+            }
+            AllPlugins.Add(plugin);
+
+            plugin.Metadata.ActionKeywords.Add(newActionKeyword);
+        }
+
+        public static void RemoveActionKeyword(string id, string oldActionkeyword)
+        {
+            var plugin = GetPluginForId(id);
+            if (oldActionkeyword == Query.GlobalPluginWildcardSign)
+            {
+                GlobalPlugins.Remove(plugin);
+            }
+            else
+            {
+                NonGlobalPlugins.Remove(oldActionkeyword);
+            }
+            AllPlugins.Remove(plugin);
+
+            plugin.Metadata.ActionKeywords.Remove(oldActionkeyword);
+        }
+
+        public static void ReplaceActionKeyword(string id, string oldActionKeyword, string newActionKeyword)
+        {
+            if (oldActionKeyword != newActionKeyword)
+            {
+                AddActionKeyword(id, newActionKeyword);
+                RemoveActionKeyword(id, oldActionKeyword);
+            }
+        }
     }
 }

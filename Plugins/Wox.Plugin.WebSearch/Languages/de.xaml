@@ -5,6 +5,7 @@
     <system:String x:Key="wox_plugin_websearch_delete">Löschen</system:String>
     <system:String x:Key="wox_plugin_websearch_edit">Bearbeiten</system:String>
     <system:String x:Key="wox_plugin_websearch_add">Hinzufügen</system:String>
+    <system:String x:Key="wox_plugin_websearch_confirm">Confirm</system:String>
     <system:String x:Key="wox_plugin_websearch_action_keyword">Aktionsschlüsselwort</system:String>
     <system:String x:Key="wox_plugin_websearch_url">URL</system:String>
     <system:String x:Key="wox_plugin_websearch_search">Suche</system:String>
@@ -12,7 +13,7 @@
     <system:String x:Key="wox_plugin_websearch_pls_select_web_search">Bitte wähle einen Suchdienst</system:String>
     <system:String x:Key="wox_plugin_websearch_delete_warning">Willst du wirklich {0} löschen?</system:String>
 
-    
+
     <!--web search edit-->
     <system:String x:Key="wox_plugin_websearch_title">Titel</system:String>
     <system:String x:Key="wox_plugin_websearch_enable">Aktivieren</system:String>

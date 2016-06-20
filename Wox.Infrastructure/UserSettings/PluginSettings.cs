@@ -34,12 +34,6 @@ namespace Wox.Infrastructure.UserSettings
                 }
             }
         }
-
-        public void UpdateActionKeyword(PluginMetadata metadata)
-        {
-            var settings = Plugins[metadata.ID];
-            settings.ActionKeywords = metadata.ActionKeywords;
-        }
     }
     public class Plugin
     {
