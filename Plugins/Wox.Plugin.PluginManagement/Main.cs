@@ -113,7 +113,7 @@ namespace Wox.Plugin.PluginManagement
             string json;
             try
             {
-                json = Http.Get(pluginSearchUrl + pluginName, context.Proxy).Result;
+                json = Http.Get(pluginSearchUrl + pluginName).Result;
             }
             catch (WebException e)
             {
@@ -156,7 +156,7 @@ namespace Wox.Plugin.PluginManagement
 
                             try
                             {
-                                Http.Download(pluginUrl, filePath, context.Proxy);
+                                Http.Download(pluginUrl, filePath);
                             }
                             catch (WebException e)
                             {

@@ -5,6 +5,7 @@
     <system:String x:Key="wox_plugin_websearch_delete">删除</system:String>
     <system:String x:Key="wox_plugin_websearch_edit">编辑</system:String>
     <system:String x:Key="wox_plugin_websearch_add">添加</system:String>
+    <system:String x:Key="wox_plugin_websearch_confirm">确认</system:String>
     <system:String x:Key="wox_plugin_websearch_action_keyword">触发关键字</system:String>
     <system:String x:Key="wox_plugin_websearch_url">URL</system:String>
     <system:String x:Key="wox_plugin_websearch_search">搜索</system:String>

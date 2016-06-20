@@ -7,15 +7,15 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
-using Wox.Core.UserSettings;
 using Wox.Infrastructure.Logger;
+using Wox.Infrastructure.UserSettings;
 
 namespace Wox.Core.Resource
 {
     public class Theme : Resource
     {
         private static List<string> themeDirectories = new List<string>();
-        public UserSettings.Settings Settings { get; set; }
+        public Settings Settings { get; set; }
 
         public Theme()
         {

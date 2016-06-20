@@ -14,8 +14,8 @@ using NHotkey.Wpf;
 using Wox.Core;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
-using Wox.Core.UserSettings;
 using Wox.Infrastructure.Hotkey;
+using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.ViewModel;
 
@@ -214,15 +214,15 @@ namespace Wox
 
         private void OnPluginToggled(object sender, RoutedEventArgs e)
         {
-            var id = _viewModel.SelectedPlugin.Metadata.ID;
-            _settings.PluginSettings.Plugins[id].Disabled = _viewModel.SelectedPlugin.Metadata.Disabled;
+            var id = _viewModel.SelectedPlugin.PluginPair.Metadata.ID;
+            _settings.PluginSettings.Plugins[id].Disabled = _viewModel.SelectedPlugin.PluginPair.Metadata.Disabled;
         }
 
         private void OnPluginActionKeywordsClick(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
             {
-                var id = _viewModel.SelectedPlugin.Metadata.ID;
+                var id = _viewModel.SelectedPlugin.PluginPair.Metadata.ID;
                 ActionKeywords changeKeywordsWindow = new ActionKeywords(id, _settings);
                 changeKeywordsWindow.ShowDialog();
             }
@@ -234,7 +234,7 @@ namespace Wox
             {
                 if (e.ChangedButton == MouseButton.Left)
                 {
-                    var website = _viewModel.SelectedPlugin.Metadata.Website;
+                    var website = _viewModel.SelectedPlugin.PluginPair.Metadata.Website;
                     if (!string.IsNullOrEmpty(website))
                     {
                         var uri = new Uri(website);
@@ -251,7 +251,7 @@ namespace Wox
         {
             if (e.ChangedButton == MouseButton.Left)
             {
-                var directory = _viewModel.SelectedPlugin.Metadata.PluginDirectory;
+                var directory = _viewModel.SelectedPlugin.PluginPair.Metadata.PluginDirectory;
                 if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
                 {
                     Process.Start(directory);
@@ -264,29 +264,27 @@ namespace Wox
 
         private void OnTestProxyClick(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(_settings.ProxyServer))
+            if (string.IsNullOrEmpty(_settings.Proxy.Server))
             {
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("serverCantBeEmpty"));
                 return;
             }
-            if (_settings.ProxyPort > 0)
+            if (_settings.Proxy.Port <= 0)
             {
                 MessageBox.Show(InternationalizationManager.Instance.GetTranslation("portCantBeEmpty"));
                 return;
             }
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Infrastructure.Constant.Github);
-            request.Timeout = 1000 * 5;
-            request.ReadWriteTimeout = 1000 * 5;
-            if (string.IsNullOrEmpty(_settings.ProxyUserName) || string.IsNullOrEmpty(_settings.ProxyPassword))
+            if (string.IsNullOrEmpty(_settings.Proxy.UserName) || string.IsNullOrEmpty(_settings.Proxy.Password))
             {
-                request.Proxy = new WebProxy(_settings.ProxyServer, _settings.ProxyPort);
+                request.Proxy = new WebProxy(_settings.Proxy.Server, _settings.Proxy.Port);
             }
             else
             {
-                request.Proxy = new WebProxy(_settings.ProxyServer, _settings.ProxyPort)
+                request.Proxy = new WebProxy(_settings.Proxy.Server, _settings.Proxy.Port)
                 {
-                    Credentials = new NetworkCredential(_settings.ProxyUserName, _settings.ProxyPassword)
+                    Credentials = new NetworkCredential(_settings.Proxy.UserName, _settings.Proxy.Password)
                 };
             }
             try

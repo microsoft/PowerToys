@@ -100,18 +100,6 @@ namespace Wox.Core.Plugin
     /// </summary>
     public class JsonRPCServerRequestModel : JsonRPCRequestModel
     {
-        public IHttpProxy HttpProxy { get; set; }
-
-        public override string ToString()
-        {
-            string rpc = base.ToString();
-            if (HttpProxy != null)
-            {
-                rpc += string.Format(@",\""proxy\"":{{\""enabled\"":{0},\""server\"":\""{1}\"",\""port\"":{2},\""username\"":\""{3}\"",\""password\"":\""{4}\""}}",
-                    HttpProxy.Enabled.ToString().ToLower(), HttpProxy.Server, HttpProxy.Port, HttpProxy.UserName, HttpProxy.Password);
-            }
-            return rpc + "}";
-        }
     }
 
     /// <summary>

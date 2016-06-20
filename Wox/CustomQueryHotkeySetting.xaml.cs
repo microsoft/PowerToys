@@ -6,8 +6,8 @@ using System.Windows;
 using NHotkey;
 using NHotkey.Wpf;
 using Wox.Core.Resource;
-using Wox.Core.UserSettings;
 using Wox.Infrastructure.Hotkey;
+using Wox.Infrastructure.UserSettings;
 
 namespace Wox
 {

@@ -5,13 +5,14 @@
     <system:String x:Key="wox_plugin_websearch_delete">Usuń</system:String>
     <system:String x:Key="wox_plugin_websearch_edit">Edytuj</system:String>
     <system:String x:Key="wox_plugin_websearch_add">Dodaj</system:String>
+    <system:String x:Key="wox_plugin_websearch_confirm">Confirm</system:String>
     <system:String x:Key="wox_plugin_websearch_action_keyword">Wyzwalacz</system:String>
     <system:String x:Key="wox_plugin_websearch_url">Adres URL</system:String>
     <system:String x:Key="wox_plugin_websearch_search">Szukaj</system:String>
     <system:String x:Key="wox_plugin_websearch_enable_suggestion">Pokazuj podpowiedzi wyszukiwania</system:String>
     <system:String x:Key="wox_plugin_websearch_pls_select_web_search">Musisz wybrać coś z listy</system:String>
     <system:String x:Key="wox_plugin_websearch_delete_warning">Czy jesteś pewnie że chcesz usunąć {0}?</system:String>
-    
+
     <!--web search edit-->
     <system:String x:Key="wox_plugin_websearch_title">Tytuł</system:String>
     <system:String x:Key="wox_plugin_websearch_enable">Aktywne</system:String>

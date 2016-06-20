@@ -4,10 +4,10 @@ using System.Timers;
 using System.Windows;
 using Wox.Core;
 using Wox.Core.Plugin;
-using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
+using Wox.Infrastructure.UserSettings;
 using Wox.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 

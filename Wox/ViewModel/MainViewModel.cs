@@ -9,12 +9,12 @@ using NHotkey;
 using NHotkey.Wpf;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
-using Wox.Core.UserSettings;
 using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Storage;
+using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Storage;
 
@@ -56,12 +56,6 @@ namespace Wox.ViewModel
             _lastQuery = new Query();
 
             _settings = settings;
-
-            // happlebao todo temp fix for instance code logic
-            HttpProxy.Instance.Settings = _settings;
-            InternationalizationManager.Instance.Settings = _settings;
-            InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
-            ThemeManager.Instance.Settings = _settings;
 
             _queryHistoryStorage = new JsonStrorage<QueryHistory>();
             _userSelectedRecordStorage = new JsonStrorage<UserSelectedRecord>();

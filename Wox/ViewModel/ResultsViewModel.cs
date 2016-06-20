@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
-using Wox.Core.UserSettings;
+using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
 namespace Wox.ViewModel

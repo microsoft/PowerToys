@@ -59,9 +59,9 @@
     <system:String x:Key="deleteCustomHotkeyWarning">{0} プラグインのホットキーを本当に削除しますか?</system:String>
 
     <!--Setting Proxy-->
-    <system:String x:Key="proxy">プロキシ</system:String>
-    <system:String x:Key="enableProxy">プロキシを有効化</system:String>
-    <system:String x:Key="server">サーバ</system:String>
+    <system:String x:Key="proxy">HTTP プロキシ</system:String>
+    <system:String x:Key="enableProxy">HTTP プロキシを有効化</system:String>
+    <system:String x:Key="server">HTTP サーバ</system:String>
     <system:String x:Key="port">ポート</system:String>
     <system:String x:Key="userName">ユーザ名</system:String>
     <system:String x:Key="password">パスワード</system:String>

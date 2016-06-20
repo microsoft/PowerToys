@@ -3,26 +3,27 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Wox.Plugin;
+using Wox.Infrastructure.UserSettings;
 
 namespace Wox.Infrastructure.Http
 {
     public static class Http
     {
-        public static IWebProxy WebProxy(IHttpProxy proxy)
+        public static HttpProxy Proxy { private get; set; }
+        public static IWebProxy WebProxy()
         {
-            if (proxy != null && proxy.Enabled && !string.IsNullOrEmpty(proxy.Server))
+            if (Proxy != null && Proxy.Enabled && !string.IsNullOrEmpty(Proxy.Server))
             {
-                if (string.IsNullOrEmpty(proxy.UserName) || string.IsNullOrEmpty(proxy.Password))
+                if (string.IsNullOrEmpty(Proxy.UserName) || string.IsNullOrEmpty(Proxy.Password))
                 {
-                    var webProxy = new WebProxy(proxy.Server, proxy.Port);
+                    var webProxy = new WebProxy(Proxy.Server, Proxy.Port);
                     return webProxy;
                 }
                 else
                 {
-                    var webProxy = new WebProxy(proxy.Server, proxy.Port)
+                    var webProxy = new WebProxy(Proxy.Server, Proxy.Port)
                     {
-                        Credentials = new NetworkCredential(proxy.UserName, proxy.Password)
+                        Credentials = new NetworkCredential(Proxy.UserName, Proxy.Password)
                     };
                     return webProxy;
                 }
@@ -34,20 +35,20 @@ namespace Wox.Infrastructure.Http
         }
 
         /// <exception cref="WebException">Can't download file </exception>
-        public static void Download([NotNull] string url, [NotNull] string filePath, IHttpProxy proxy)
+        public static void Download([NotNull] string url, [NotNull] string filePath)
         {
-            var client = new WebClient { Proxy = WebProxy(proxy) };
+            var client = new WebClient { Proxy = WebProxy() };
             client.DownloadFile(url, filePath);
         }
 
         /// <exception cref="WebException">Can't get response from http get </exception>
-        public static async Task<string> Get([NotNull] string url, IHttpProxy proxy, string encoding = "UTF-8")
+        public static async Task<string> Get([NotNull] string url, string encoding = "UTF-8")
         {
 
             HttpWebRequest request = WebRequest.CreateHttp(url);
             request.Method = "GET";
             request.Timeout = 10 * 1000;
-            request.Proxy = WebProxy(proxy);
+            request.Proxy = WebProxy();
             request.UserAgent = @"Mozilla/5.0 (Trident/7.0; rv:11.0) like Gecko";
             var response = await request.GetResponseAsync() as HttpWebResponse;
             if (response != null)
