@@ -20,13 +20,13 @@ namespace Wox.Plugin.WebSearch
         public SearchSourceSettingWindow(IList<SearchSource> sources, PluginInitContext context, SearchSource old)
         {
             _oldSearchSource = old;
-            _viewModel = new SearchSourceViewModel { SearchSource = old.DeepCopy() };
+            _viewModel = new SearchSourceViewModel {SearchSource = old.DeepCopy()};
             Initilize(sources, context, Action.Edit);
         }
 
         public SearchSourceSettingWindow(IList<SearchSource> sources, PluginInitContext context)
         {
-            _viewModel = new SearchSourceViewModel { SearchSource = new SearchSource() };
+            _viewModel = new SearchSourceViewModel {SearchSource = new SearchSource()};
             Initilize(sources, context, Action.Add);
         }
 
@@ -48,7 +48,6 @@ namespace Wox.Plugin.WebSearch
 
         private void OnConfirmButtonClick(object sender, RoutedEventArgs e)
         {
-
             if (string.IsNullOrEmpty(_searchSource.Title))
             {
                 var warning = _api.GetTranslation("wox_plugin_websearch_input_title");
@@ -123,7 +122,7 @@ namespace Wox.Plugin.WebSearch
         {
             var directory = Path.Combine(Main.ImagesDirectory, Main.Images);
             const string filter = "Image files (*.jpg, *.jpeg, *.gif, *.png, *.bmp) |*.jpg; *.jpeg; *.gif; *.png; *.bmp";
-            var dialog = new OpenFileDialog { InitialDirectory = directory, Filter = filter };
+            var dialog = new OpenFileDialog {InitialDirectory = directory, Filter = filter};
 
             var result = dialog.ShowDialog();
             if (result == true)

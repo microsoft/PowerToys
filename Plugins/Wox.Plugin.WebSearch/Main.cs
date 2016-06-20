@@ -50,7 +50,7 @@ namespace Wox.Plugin.WebSearch
                         SubTitle = string.Empty,
                         IcoPath = searchSource.IconPath
                     };
-                    return new List<Result> { result };
+                    return new List<Result> {result};
                 }
                 else
                 {
@@ -127,7 +127,7 @@ namespace Wox.Plugin.WebSearch
         static Main()
         {
             var plugins = Constant.Plugins;
-            var assemblyName = typeof(Main).Assembly.GetName().Name;
+            var assemblyName = typeof (Main).Assembly.GetName().Name;
             var pluginDirectory = Path.Combine(Constant.SettingsPath, plugins, assemblyName);
             ImagesDirectory = Path.Combine(pluginDirectory, Images);
         }

@@ -45,9 +45,9 @@ namespace Wox.Plugin.WebSearch
         {
             var selected = _settings.SelectedSearchSource;
             var webSearch = new SearchSourceSettingWindow
-            (
+                (
                 _settings.SearchSources, _context, selected
-            );
+                );
             webSearch.ShowDialog();
         }
     }

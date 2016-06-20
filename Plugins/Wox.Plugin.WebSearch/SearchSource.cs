@@ -21,6 +21,7 @@ namespace Wox.Plugin.WebSearch
         [NotNull]
         [JsonIgnore]
         internal string IconPath => Path.Combine(Main.ImagesDirectory, Icon);
+
         [JsonIgnore]
         public ImageSource Image => ImageLoader.Load(IconPath);
 
