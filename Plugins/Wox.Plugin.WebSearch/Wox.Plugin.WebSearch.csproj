@@ -63,14 +63,14 @@
     <Compile Include="SettingsViewModel.cs" />
     <Compile Include="SuggestionSources\Baidu.cs" />
     <Compile Include="SuggestionSources\Google.cs" />
-    <Compile Include="SuggestionSources\ISuggestionSource.cs" />
-    <Compile Include="WebSearch.cs" />
-    <Compile Include="WebSearchesSetting.xaml.cs">
-      <DependentUpon>WebSearchesSetting.xaml</DependentUpon>
+    <Compile Include="SuggestionSources\SuggestionSource.cs" />
+    <Compile Include="SearchSource.cs" />
+    <Compile Include="SettingsControl.xaml.cs">
+      <DependentUpon>SettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Main.cs" />
-    <Compile Include="WebSearchSetting.xaml.cs">
-      <DependentUpon>WebSearchSetting.xaml</DependentUpon>
+    <Compile Include="SearchSourceSetting.xaml.cs">
+      <DependentUpon>SearchSourceSetting.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings.cs" />
   </ItemGroup>
@@ -154,11 +154,11 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Page Include="WebSearchesSetting.xaml">
+    <Page Include="SettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="WebSearchSetting.xaml">
+    <Page Include="SearchSourceSetting.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
