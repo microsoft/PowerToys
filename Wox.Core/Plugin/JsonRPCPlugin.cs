@@ -20,6 +20,7 @@ namespace Wox.Core.Plugin
     internal abstract class JsonRPCPlugin : IPlugin
     {
         protected PluginInitContext context;
+        public const string JsonRPC = "JsonRPC";
 
         /// <summary>
         /// The language this JsonRPCPlugin support

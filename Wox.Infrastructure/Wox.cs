@@ -15,7 +15,7 @@ namespace Wox.Infrastructure
         public static readonly string ProgramDirectory = Directory.GetParent(Assembly.Location).ToString();
         public static readonly string ExecutablePath = Path.Combine(ProgramDirectory, Wox + ".exe");
         public static readonly string DataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Wox);
-        public static readonly string UserDirectory = Path.Combine(DataDirectory, Plugins);
+        public static readonly string PluginsDirectory = Path.Combine(DataDirectory, Plugins);
         public static readonly string PreinstalledDirectory = Path.Combine(ProgramDirectory, Plugins);
         public static readonly string SettingsPath = Path.Combine(DataDirectory, Settings);
         public const string Github = "https://github.com/Wox-launcher/Wox";

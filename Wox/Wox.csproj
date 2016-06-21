@@ -422,9 +422,10 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
-xcopy /Y  $(ProjectDir)Themes\* $(TargetDir)Themes\
+xcopy /Y /E $(ProjectDir)Themes\* $(TargetDir)Themes\
 xcopy /Y /E  $(ProjectDir)Images\* $(TargetDir)Images\
 xcopy /Y /D /E $(SolutionDir)Plugins\HelloWorldPython\* $(TargetDir)Plugins\HelloWorldPython\*
+xcopy /Y /E $(SolutionDir)JsonRPC\* $(TargetDir)JsonRPC\
 
 cd $(SolutionDir)packages\squirrel*\tools
 copy /Y Squirrel.exe $(TargetDir)..\Update.exe
