@@ -100,6 +100,11 @@ namespace Wox.Core.Plugin
     /// </summary>
     public class JsonRPCServerRequestModel : JsonRPCRequestModel
     {
+        public override string ToString()
+        {
+            string rpc = base.ToString();
+            return rpc + "}";
+        }
     }
 
     /// <summary>
