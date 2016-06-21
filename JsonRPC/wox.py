@@ -11,7 +11,8 @@ class Wox(object):
 
     def __init__(self):
         rpc_request = json.loads(sys.argv[1])
-        self.proxy = rpc_request.get("proxy",{})
+        # proxy is not working now
+        self.proxy = rpc_request.get("proxy",{}) 
         request_method_name = rpc_request.get("method")
         request_parameters = rpc_request.get("parameters")
         methods = inspect.getmembers(self, predicate=inspect.ismethod)
