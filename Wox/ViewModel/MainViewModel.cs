@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -168,7 +169,7 @@ namespace Wox.ViewModel
                     results.SelectedIndex = int.Parse(index.ToString());
                 }
 
-                var result = results.SelectedItem?.RawResult;
+                var result = results.SelectedItem?.Result;
                 if (result != null) // SelectedItem returns null if selection is empty.
                 {
                     bool hideWindow = result.Action != null && result.Action(new ActionContext
@@ -193,7 +194,7 @@ namespace Wox.ViewModel
             {
                 if (!ContextMenuVisibility.IsVisible())
                 {
-                    var result = Results.SelectedItem?.RawResult;
+                    var result = Results.SelectedItem?.Result;
 
                     if (result != null) // SelectedItem returns null if selection is empty.
                     {
@@ -340,12 +341,13 @@ namespace Wox.ViewModel
             {
 
                 List<Result> filterResults = new List<Result>();
-                foreach (var contextMenu in ContextMenu.Results)
+                foreach (var result in ContextMenu.Results.Select(r => r.Result))
                 {
-                    if (StringMatcher.IsMatch(contextMenu.Title, query)
-                        || StringMatcher.IsMatch(contextMenu.SubTitle, query))
+                    var matched = StringMatcher.IsMatch(result.Title, query) ||
+                                  StringMatcher.IsMatch(result.SubTitle, query);
+                    if (matched)
                     {
-                        filterResults.Add(contextMenu.RawResult);
+                        filterResults.Add(result);
                     }
                 }
                 ContextMenu.Clear();
