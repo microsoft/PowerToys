@@ -266,6 +266,10 @@ namespace Wox.Core.Plugin
             }
         }
 
+        /// <summary>
+        /// used to add action keyword for multiple action keyword plugin
+        /// e.g. web search
+        /// </summary>
         public static void AddActionKeyword(string id, string newActionKeyword)
         {
             var plugin = GetPluginForId(id);
@@ -277,11 +281,13 @@ namespace Wox.Core.Plugin
             {
                 NonGlobalPlugins[newActionKeyword] = plugin;
             }
-            AllPlugins.Add(plugin);
-
             plugin.Metadata.ActionKeywords.Add(newActionKeyword);
         }
 
+        /// <summary>
+        /// used to add action keyword for multiple action keyword plugin
+        /// e.g. web search
+        /// </summary>
         public static void RemoveActionKeyword(string id, string oldActionkeyword)
         {
             var plugin = GetPluginForId(id);
@@ -293,8 +299,6 @@ namespace Wox.Core.Plugin
             {
                 NonGlobalPlugins.Remove(oldActionkeyword);
             }
-            AllPlugins.Remove(plugin);
-
             plugin.Metadata.ActionKeywords.Remove(oldActionkeyword);
         }
 
