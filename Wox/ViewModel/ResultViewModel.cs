@@ -21,7 +21,7 @@ namespace Wox.ViewModel
 
         public override bool Equals(object obj)
         {
-            ResultViewModel r = obj as ResultViewModel;
+            var r = obj as ResultViewModel;
             if (r != null)
             {
                 return Result.Equals(r.Result);

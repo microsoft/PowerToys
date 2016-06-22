@@ -25,11 +25,8 @@ namespace Wox.ViewModel
     {
         #region Private Fields
 
-        private Visibility _contextMenuVisibility;
-
         private bool _queryHasReturn;
         private Query _lastQuery;
-        private bool _ignoreTextChange;
         private string _queryTextBeforeLoadContextMenu;
         private string _queryText;
 
@@ -65,8 +62,10 @@ namespace Wox.ViewModel
             _userSelectedRecord = _userSelectedRecordStorage.Load();
             _topMostRecord = _topMostRecordStorage.Load();
 
-            InitializeResultListBox();
-            InitializeContextMenu();
+            ContextMenu = new ResultsViewModel(_settings);
+            Results = new ResultsViewModel(_settings);
+            _selectedResults = Results;
+
             InitializeKeyCommands();
             RegisterResultsUpdatedEvent();
 
@@ -78,7 +77,7 @@ namespace Wox.ViewModel
         {
             foreach (var pair in PluginManager.GetPluginsForInterface<IResultUpdated>())
             {
-                var plugin = (IResultUpdated) pair.Plugin;
+                var plugin = (IResultUpdated)pair.Plugin;
                 plugin.ResultsUpdated += (s, e) =>
                 {
                     Task.Run(() =>
@@ -96,9 +95,9 @@ namespace Wox.ViewModel
         {
             EscCommand = new RelayCommand(_ =>
             {
-                if (ContextMenuVisibility.IsVisible())
+                if (!ResultsSelected())
                 {
-                    ContextMenuVisibility = Visibility.Collapsed;
+                    SelectedResults = Results;
                 }
                 else
                 {
@@ -108,26 +107,12 @@ namespace Wox.ViewModel
 
             SelectNextItemCommand = new RelayCommand(_ =>
             {
-                if (ContextMenuVisibility.IsVisible())
-                {
-                    ContextMenu.SelectNextResult();
-                }
-                else
-                {
-                    Results.SelectNextResult();
-                }
+                SelectedResults.SelectNextResult();
             });
 
             SelectPrevItemCommand = new RelayCommand(_ =>
             {
-                if (ContextMenuVisibility.IsVisible())
-                {
-                    ContextMenu.SelectPrevResult();
-                }
-                else
-                {
-                    Results.SelectPrevResult();
-                }
+                SelectedResults.SelectPrevResult();
             });
 
 
@@ -147,12 +132,12 @@ namespace Wox.ViewModel
 
             SelectNextPageCommand = new RelayCommand(_ =>
             {
-                Results.SelectNextPage();
+                SelectedResults.SelectNextPage();
             });
 
             SelectPrevPageCommand = new RelayCommand(_ =>
             {
-                Results.SelectPrevPage();
+                SelectedResults.SelectPrevPage();
             });
 
             StartHelpCommand = new RelayCommand(_ =>
@@ -162,7 +147,7 @@ namespace Wox.ViewModel
 
             OpenResultCommand = new RelayCommand(index =>
             {
-                var results = ContextMenuVisibility.IsVisible() ? ContextMenu : Results;
+                var results = SelectedResults;
 
                 if (index != null)
                 {
@@ -182,7 +167,7 @@ namespace Wox.ViewModel
                         MainWindowVisibility = Visibility.Collapsed;
                     }
 
-                    if (!ContextMenuVisibility.IsVisible())
+                    if (ResultsSelected())
                     {
                         _userSelectedRecord.Add(result);
                         _queryHistory.Add(result.OriginQuery.RawQuery);
@@ -192,73 +177,16 @@ namespace Wox.ViewModel
 
             LoadContextMenuCommand = new RelayCommand(_ =>
             {
-                if (!ContextMenuVisibility.IsVisible())
+                if (ResultsSelected())
                 {
-                    var result = Results.SelectedItem?.Result;
-
-                    if (result != null) // SelectedItem returns null if selection is empty.
-                    {
-                        var id = result.PluginID;
-
-                        var menus = PluginManager.GetContextMenusForPlugin(result);
-                        menus.Add(ContextMenuTopMost(result));
-                        menus.Add(ContextMenuPluginInfo(id));
-
-                        ContextMenu.Clear();
-                        Task.Run(() =>
-                        {
-                            ContextMenu.AddResults(menus, id);
-                        }, _updateToken);
-                        ContextMenuVisibility = Visibility.Visible;
-                    }
+                    SelectedResults = ContextMenu;
                 }
                 else
                 {
-                    ContextMenuVisibility = Visibility.Collapsed;
+                    SelectedResults = Results;
                 }
             });
 
-        }
-
-        private void InitializeResultListBox()
-        {   
-            Results = new ResultsViewModel(_settings);
-            ResultListBoxVisibility = Visibility.Collapsed;
-        }
-
-
-        private void InitializeContextMenu()
-        {
-            ContextMenu = new ResultsViewModel(_settings);
-            ContextMenuVisibility = Visibility.Collapsed;
-        }
-
-        private void HandleQueryTextUpdated()
-        {
-            ProgressBarVisibility = Visibility.Hidden;
-            _updateSource?.Cancel();
-            _updateSource = new CancellationTokenSource();
-            _updateToken = _updateSource.Token;
-
-            if (ContextMenuVisibility.IsVisible())
-            {
-                QueryContextMenu();
-            }
-            else
-            {
-                string query = QueryText.Trim();
-                if (!string.IsNullOrEmpty(query))
-                {
-                    Query(query);
-                    //reset query history index after user start new query
-                    ResetQueryHistoryIndex();
-                }
-                else
-                {
-                    Results.Clear();
-                    ResultListBoxVisibility = Visibility.Collapsed;
-                }
-            }
         }
 
         #endregion
@@ -275,45 +203,51 @@ namespace Wox.ViewModel
             set
             {
                 _queryText = value;
-                if (_ignoreTextChange)
+                ProgressBarVisibility = Visibility.Hidden;
+
+                _updateSource?.Cancel();
+                _updateSource = new CancellationTokenSource();
+                _updateToken = _updateSource.Token;
+
+                if (ResultsSelected())
                 {
-                    _ignoreTextChange = false;
+                    QueryResults();
                 }
                 else
                 {
-                    HandleQueryTextUpdated();
+                    QueryContextMenu();
                 }
             }
         }
 
+
+
         public bool QueryTextSelected { get; set; }
 
-        public Visibility ContextMenuVisibility
+        private ResultsViewModel _selectedResults;
 
+        private ResultsViewModel SelectedResults
         {
-            get { return _contextMenuVisibility; }
+            get { return _selectedResults; }
             set
             {
-                _contextMenuVisibility = value;
-
-                _ignoreTextChange = true;
-                if (!value.IsVisible())
+                _selectedResults = value;
+                if (ResultsSelected())
                 {
                     QueryText = _queryTextBeforeLoadContextMenu;
-                    ResultListBoxVisibility = Visibility.Visible;
+                    ContextMenu.Visbility = Visibility.Collapsed;
                 }
                 else
                 {
                     _queryTextBeforeLoadContextMenu = QueryText;
                     QueryText = "";
-                    ResultListBoxVisibility = Visibility.Collapsed;
+                    Results.Visbility = Visibility.Collapsed;
                 }
+                _selectedResults.Visbility = Visibility.Visible;
             }
         }
 
         public Visibility ProgressBarVisibility { get; set; }
-
-        public Visibility ResultListBoxVisibility { get; set; }
 
         public Visibility MainWindowVisibility { get; set; }
 
@@ -335,26 +269,48 @@ namespace Wox.ViewModel
 
         private void QueryContextMenu()
         {
-            var contextMenuId = "Context Menu Id";
-            var query = QueryText.ToLower();
-            if (!string.IsNullOrEmpty(query))
-            {
+            const string contextMenuId = "Context Menu Id";
+            var query = QueryText.ToLower().Trim();
+            ContextMenu.Clear();
 
-                List<Result> filterResults = new List<Result>();
-                foreach (var result in ContextMenu.Results.Select(r => r.Result))
+            var selected = Results.SelectedItem?.Result;
+
+            if (selected != null) // SelectedItem returns null if selection is empty.
+            {
+                var id = selected.PluginID;
+
+                var results = PluginManager.GetContextMenusForPlugin(selected);
+                results.Add(ContextMenuTopMost(selected));
+                results.Add(ContextMenuPluginInfo(id));
+
+                if (!string.IsNullOrEmpty(query))
                 {
-                    var matched = StringMatcher.IsMatch(result.Title, query) ||
-                                  StringMatcher.IsMatch(result.SubTitle, query);
-                    if (matched)
-                    {
-                        filterResults.Add(result);
-                    }
+                    var filtered = results.Where
+                    (
+                        r => StringMatcher.IsMatch(r.Title, query) ||
+                             StringMatcher.IsMatch(r.SubTitle, query)
+                    ).ToList();
+                    ContextMenu.AddResults(filtered, contextMenuId);
                 }
-                ContextMenu.Clear();
-                Task.Run(() =>
+                else
                 {
-                    ContextMenu.AddResults(filterResults, contextMenuId);
-                }, _updateToken);
+                    ContextMenu.AddResults(results, contextMenuId);
+                }
+            }
+        }
+
+        private void QueryResults()
+        {
+            if (!string.IsNullOrEmpty(QueryText))
+            {
+                Query(QueryText.Trim());
+                //reset query history index after user start new query
+                ResetQueryHistoryIndex();
+            }
+            else
+            {
+                Results.Clear();
+                Results.Visbility = Visibility.Collapsed;
             }
         }
 
@@ -409,9 +365,6 @@ namespace Wox.ViewModel
                         }
                     });
                 }, _updateToken);
-
-
-
             }
         }
 
@@ -463,7 +416,7 @@ namespace Wox.ViewModel
                 {
                     Title = InternationalizationManager.Instance.GetTranslation("cancelTopMostInThisQuery"),
                     IcoPath = "Images\\down.png",
-                    PluginDirectory = Infrastructure.Constant.ProgramDirectory,
+                    PluginDirectory = Constant.ProgramDirectory,
                     Action = _ =>
                     {
                         _topMostRecord.Remove(result);
@@ -478,7 +431,7 @@ namespace Wox.ViewModel
                 {
                     Title = InternationalizationManager.Instance.GetTranslation("setAsTopMostInThisQuery"),
                     IcoPath = "Images\\up.png",
-                    PluginDirectory = Infrastructure.Constant.ProgramDirectory,
+                    PluginDirectory = Constant.ProgramDirectory,
                     Action = _ =>
                     {
                         _topMostRecord.AddOrUpdate(result);
@@ -514,16 +467,22 @@ namespace Wox.ViewModel
             return menu;
         }
 
+        private bool ResultsSelected()
+        {
+            var selected = SelectedResults == Results;
+            return selected;
+        }
+
         #endregion
         #region Hotkey
 
-        internal void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
+        private void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
         {
             var hotkey = new HotkeyModel(hotkeyStr);
             SetHotkey(hotkey, action);
         }
 
-        public void SetHotkey(HotkeyModel hotkey, EventHandler<HotkeyEventArgs> action)
+        private void SetHotkey(HotkeyModel hotkey, EventHandler<HotkeyEventArgs> action)
         {
             string hotkeyStr = hotkey.ToString();
             try
@@ -584,7 +543,7 @@ namespace Wox.ViewModel
 
         private void ToggleWox()
         {
-            if (!MainWindowVisibility.IsVisible())
+            if (MainWindowVisibility != Visibility.Visible)
             {
                 MainWindowVisibility = Visibility.Visible;
             }
@@ -629,7 +588,7 @@ namespace Wox.ViewModel
                 }
                 else
                 {
-                    result.Score += _userSelectedRecord.GetSelectedCount(result)*5;
+                    result.Score += _userSelectedRecord.GetSelectedCount(result) * 5;
                 }
             }
 
@@ -638,12 +597,12 @@ namespace Wox.ViewModel
                 Results.AddResults(list, metadata.ID);
             }
 
-            if (list.Count > 0 && !ResultListBoxVisibility.IsVisible())
+            if (Results.Visbility != Visibility.Visible && list.Count > 0)
             {
-                ResultListBoxVisibility = Visibility.Visible;
+                Results.Visbility = Visibility.Visible;
             }
         }
 
         #endregion
     }
-} 
+}

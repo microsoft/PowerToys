@@ -53,6 +53,7 @@
             <TextBox Style="{DynamicResource QueryBoxStyle}"
                      Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      PreviewDragOver="OnPreviewDragOver"
+                     TextChanged="OnTextChanged"
                      AllowDrop="True"
                      Visibility="Visible"
                      x:Name="QueryTextBox">
@@ -70,10 +71,10 @@
                   Style="{DynamicResource PendingLineStyle}" Visibility="{Binding ProgressBarVisibility, Mode=TwoWay}" 
                   Y1="0" Y2="0" X2="100" Height="2" Width="752" StrokeThickness="1">
             </Line>
-            <ContentControl Visibility="{Binding ResultListBoxVisibility}" >
+            <ContentControl>
                 <wox:ResultListBox DataContext="{Binding Results}" PreviewMouseDown="OnPreviewMouseButtonDown" />
             </ContentControl>
-            <ContentControl Visibility="{Binding ContextMenuVisibility}">
+            <ContentControl>
                 <wox:ResultListBox DataContext="{Binding ContextMenu}" PreviewMouseDown="OnPreviewMouseButtonDown" />
             </ContentControl>
         </StackPanel>

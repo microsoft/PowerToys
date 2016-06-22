@@ -39,7 +39,7 @@ namespace Wox.ViewModel
 
         #endregion
 
-        #region ViewModel Properties
+        #region Properties
 
         public int MaxHeight => MaxResults * 50;
 
@@ -47,6 +47,7 @@ namespace Wox.ViewModel
 
         public ResultViewModel SelectedItem { get; set; }
         public Thickness Margin { get; set; }
+        public Visibility Visbility { get; set; } = Visibility.Collapsed;
 
         #endregion
 

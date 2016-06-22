@@ -11,6 +11,7 @@
          SelectedItem="{Binding SelectedItem, Mode=OneWayToSource}"
          HorizontalContentAlignment="Stretch" ItemsSource="{Binding Results}"
          Margin="{Binding Margin}"
+         Visibility="{Binding Visbility}"
          Style="{DynamicResource BaseListboxStyle}" Focusable="False"
          KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single"
          VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Standard"
