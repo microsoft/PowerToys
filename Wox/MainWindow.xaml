@@ -36,6 +36,7 @@
         <KeyBinding Key="K" Modifiers="Ctrl" Command="{Binding SelectPrevItemCommand}"></KeyBinding>
         <KeyBinding Key="U" Modifiers="Ctrl" Command="{Binding SelectPrevPageCommand}"></KeyBinding>
         <KeyBinding Key="O" Modifiers="Ctrl" Command="{Binding LoadContextMenuCommand}"></KeyBinding>
+        <KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding LoadHistoryCommand}"></KeyBinding>
         <KeyBinding Key="Enter" Modifiers="Shift" Command="{Binding LoadContextMenuCommand}"></KeyBinding>
         <KeyBinding Key="Enter" Command="{Binding OpenResultCommand}"></KeyBinding>
         <KeyBinding Key="D1" Modifiers="Alt" Command="{Binding OpenResultCommand}" CommandParameter="0"></KeyBinding>
@@ -76,6 +77,9 @@
             </ContentControl>
             <ContentControl>
                 <wox:ResultListBox DataContext="{Binding ContextMenu}" PreviewMouseDown="OnPreviewMouseButtonDown" />
+            </ContentControl>
+            <ContentControl>
+                <wox:ResultListBox DataContext="{Binding History}" PreviewMouseDown="OnPreviewMouseButtonDown" />
             </ContentControl>
         </StackPanel>
     </Border>

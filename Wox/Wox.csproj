@@ -165,6 +165,7 @@
     <Compile Include="ResultListBox.xaml.cs">
       <DependentUpon>ResultListBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Storage\HistoryItem.cs" />
     <Compile Include="Storage\QueryHistory.cs" />
     <Compile Include="Storage\TopMostRecord.cs" />
     <Compile Include="Storage\UserSelectedRecord.cs" />
