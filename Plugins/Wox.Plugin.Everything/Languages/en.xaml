@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
 
-    <system:String x:Key="wox_plugin_everything_is_not_running">Everything is not running</system:String>
+    <system:String x:Key="wox_plugin_everything_is_not_running">Everything Service is not running</system:String>
     <system:String x:Key="wox_plugin_everything_query_error">Error while querying Everything</system:String>
     <system:String x:Key="wox_plugin_everything_copied">Copied</system:String>
     <system:String x:Key="wox_plugin_everything_canot_start">Can’t start {0}</system:String>
