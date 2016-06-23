@@ -39,7 +39,7 @@ namespace Wox.ViewModel
 
         #endregion
 
-        #region ViewModel Properties
+        #region Properties
 
         public int MaxHeight => MaxResults * 50;
 
@@ -47,6 +47,7 @@ namespace Wox.ViewModel
 
         public ResultViewModel SelectedItem { get; set; }
         public Thickness Margin { get; set; }
+        public Visibility Visbility { get; set; } = Visibility.Collapsed;
 
         #endregion
 
@@ -58,7 +59,7 @@ namespace Wox.ViewModel
             for (; index < list.Count; index++)
             {
                 var result = list[index];
-                if (newScore > result.RawResult.Score)
+                if (newScore > result.Result.Score)
                 {
                     break;
                 }
@@ -113,12 +114,12 @@ namespace Wox.ViewModel
 
         public void RemoveResultsExcept(PluginMetadata metadata)
         {
-            Results.RemoveAll(r => r.RawResult.PluginID != metadata.ID);
+            Results.RemoveAll(r => r.Result.PluginID != metadata.ID);
         }
 
         public void RemoveResultsFor(PluginMetadata metadata)
         {
-            Results.RemoveAll(r => r.PluginID == metadata.ID);
+            Results.RemoveAll(r => r.Result.PluginID == metadata.ID);
         }
 
         /// <summary>
@@ -149,7 +150,7 @@ namespace Wox.ViewModel
         {
             var newResults = newRawResults.Select(r => new ResultViewModel(r)).ToList();
             var results = Results.ToList();
-            var oldResults = results.Where(r => r.PluginID == resultId).ToList();
+            var oldResults = results.Where(r => r.Result.PluginID == resultId).ToList();
 
             // intersection of A (old results) and B (new newResults)
             var intersection = oldResults.Intersect(newResults).ToList();
@@ -164,15 +165,15 @@ namespace Wox.ViewModel
             foreach (var commonResult in intersection)
             {
                 int oldIndex = results.IndexOf(commonResult);
-                int oldScore = results[oldIndex].Score;
+                int oldScore = results[oldIndex].Result.Score;
                 var newResult = newResults[newResults.IndexOf(commonResult)];
-                int newScore = newResult.Score;
+                int newScore = newResult.Result.Score;
                 if (newScore != oldScore)
                 {
                     var oldResult = results[oldIndex];
 
-                    oldResult.Score = newScore;
-                    oldResult.OriginQuery = newResult.OriginQuery;
+                    oldResult.Result.Score = newScore;
+                    oldResult.Result.OriginQuery = newResult.Result.OriginQuery;
 
                     results.RemoveAt(oldIndex);
                     int newIndex = InsertIndexOf(newScore, results);
@@ -183,7 +184,7 @@ namespace Wox.ViewModel
             // insert result in relative complement of A in B
             foreach (var result in newResults.Except(intersection))
             {
-                int newIndex = InsertIndexOf(result.Score, results);
+                int newIndex = InsertIndexOf(result.Result.Score, results);
                 results.Insert(newIndex, result);
             }
 
@@ -223,9 +224,9 @@ namespace Wox.ViewModel
                     {
                         this[i] = newResult;
                     }
-                    else if (oldResult.Score != newResult.Score)
+                    else if (oldResult.Result.Score != newResult.Result.Score)
                     {
-                        this[i].Score = newResult.Score;
+                        this[i].Result.Score = newResult.Result.Score;
                     }
                 }
 

@@ -11,6 +11,7 @@
          SelectedItem="{Binding SelectedItem, Mode=OneWayToSource}"
          HorizontalContentAlignment="Stretch" ItemsSource="{Binding Results}"
          Margin="{Binding Margin}"
+         Visibility="{Binding Visbility}"
          Style="{DynamicResource BaseListboxStyle}" Focusable="False"
          KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single"
          VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Standard"
@@ -41,10 +42,10 @@
                                 <RowDefinition Height="Auto" x:Name="SubTitleRowDefinition" />
                             </Grid.RowDefinitions>
                             <TextBlock Style="{DynamicResource ItemTitleStyle}" DockPanel.Dock="Left"
-                                       VerticalAlignment="Center" ToolTip="{Binding Title}" x:Name="Title"
-                                       Text="{Binding Title}" />
-                            <TextBlock Style="{DynamicResource ItemSubTitleStyle}" ToolTip="{Binding SubTitle}"
-                                       Grid.Row="1" x:Name="SubTitle" Text="{Binding SubTitle}" />
+                                       VerticalAlignment="Center" ToolTip="{Binding Result.Title}" x:Name="Title"
+                                       Text="{Binding Result.Title}" />
+                            <TextBlock Style="{DynamicResource ItemSubTitleStyle}" ToolTip="{Binding Result.SubTitle}"
+                                       Grid.Row="1" x:Name="SubTitle" Text="{Binding Result.SubTitle}" />
                         </Grid>
                     </Grid>
                 </Button.Content>

@@ -57,7 +57,7 @@ namespace Wox
             {
                 if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
                 {
-                    if (_viewModel.MainWindowVisibility.IsVisible())
+                    if (Visibility == Visibility.Visible)
                     {
                         Activate();
                         QueryTextBox.Focus();
@@ -226,6 +226,11 @@ namespace Wox
                 _viewModel.SelectPrevItemCommand.Execute(null);
                 e.Handled = true;
             }
+        }
+
+        private void OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            QueryTextBox.CaretIndex = QueryTextBox.Text.Length;
         }
     }
 }

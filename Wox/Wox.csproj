@@ -159,13 +159,13 @@
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CrashReporter.cs" />
-    <Compile Include="Helper\VisibilityExtensions.cs" />
     <Compile Include="Helper\SingletonWindowOpener.cs" />
     <Compile Include="PublicAPIInstance.cs" />
     <Compile Include="ReportWindow.xaml.cs" />
     <Compile Include="ResultListBox.xaml.cs">
       <DependentUpon>ResultListBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Storage\HistoryItem.cs" />
     <Compile Include="Storage\QueryHistory.cs" />
     <Compile Include="Storage\TopMostRecord.cs" />
     <Compile Include="Storage\UserSelectedRecord.cs" />

@@ -36,6 +36,7 @@
         <KeyBinding Key="K" Modifiers="Ctrl" Command="{Binding SelectPrevItemCommand}"></KeyBinding>
         <KeyBinding Key="U" Modifiers="Ctrl" Command="{Binding SelectPrevPageCommand}"></KeyBinding>
         <KeyBinding Key="O" Modifiers="Ctrl" Command="{Binding LoadContextMenuCommand}"></KeyBinding>
+        <KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding LoadHistoryCommand}"></KeyBinding>
         <KeyBinding Key="Enter" Modifiers="Shift" Command="{Binding LoadContextMenuCommand}"></KeyBinding>
         <KeyBinding Key="Enter" Command="{Binding OpenResultCommand}"></KeyBinding>
         <KeyBinding Key="D1" Modifiers="Alt" Command="{Binding OpenResultCommand}" CommandParameter="0"></KeyBinding>
@@ -53,6 +54,7 @@
             <TextBox Style="{DynamicResource QueryBoxStyle}"
                      Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      PreviewDragOver="OnPreviewDragOver"
+                     TextChanged="OnTextChanged"
                      AllowDrop="True"
                      Visibility="Visible"
                      x:Name="QueryTextBox">
@@ -70,11 +72,14 @@
                   Style="{DynamicResource PendingLineStyle}" Visibility="{Binding ProgressBarVisibility, Mode=TwoWay}" 
                   Y1="0" Y2="0" X2="100" Height="2" Width="752" StrokeThickness="1">
             </Line>
-            <ContentControl Visibility="{Binding ResultListBoxVisibility}" >
+            <ContentControl>
                 <wox:ResultListBox DataContext="{Binding Results}" PreviewMouseDown="OnPreviewMouseButtonDown" />
             </ContentControl>
-            <ContentControl Visibility="{Binding ContextMenuVisibility}">
+            <ContentControl>
                 <wox:ResultListBox DataContext="{Binding ContextMenu}" PreviewMouseDown="OnPreviewMouseButtonDown" />
+            </ContentControl>
+            <ContentControl>
+                <wox:ResultListBox DataContext="{Binding History}" PreviewMouseDown="OnPreviewMouseButtonDown" />
             </ContentControl>
         </StackPanel>
     </Border>

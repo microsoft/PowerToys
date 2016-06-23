@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -24,25 +25,23 @@ namespace Wox.ViewModel
     {
         #region Private Fields
 
-        private Visibility _contextMenuVisibility;
-
         private bool _queryHasReturn;
         private Query _lastQuery;
-        private bool _ignoreTextChange;
-        private string _queryTextBeforeLoadContextMenu;
-        private string _queryText;
+        private string _queryTextBeforeLeaveResults;
 
-        private readonly JsonStrorage<QueryHistory> _queryHistoryStorage;
+        private readonly JsonStrorage<History> _historyItemsStorage;
         private readonly JsonStrorage<UserSelectedRecord> _userSelectedRecordStorage;
         private readonly JsonStrorage<TopMostRecord> _topMostRecordStorage;
         private readonly Settings _settings;
-        private readonly QueryHistory _queryHistory;
+        private readonly History _history;
         private readonly UserSelectedRecord _userSelectedRecord;
         private readonly TopMostRecord _topMostRecord;
 
         private CancellationTokenSource _updateSource;
         private CancellationToken _updateToken;
         private bool _saved;
+
+        private Internationalization _translator = InternationalizationManager.Instance;
 
         #endregion
 
@@ -51,21 +50,24 @@ namespace Wox.ViewModel
         public MainViewModel(Settings settings)
         {
             _saved = false;
-            _queryTextBeforeLoadContextMenu = "";
+            _queryTextBeforeLeaveResults = "";
             _queryText = "";
             _lastQuery = new Query();
 
             _settings = settings;
 
-            _queryHistoryStorage = new JsonStrorage<QueryHistory>();
+            _historyItemsStorage = new JsonStrorage<History>();
             _userSelectedRecordStorage = new JsonStrorage<UserSelectedRecord>();
             _topMostRecordStorage = new JsonStrorage<TopMostRecord>();
-            _queryHistory = _queryHistoryStorage.Load();
+            _history = _historyItemsStorage.Load();
             _userSelectedRecord = _userSelectedRecordStorage.Load();
             _topMostRecord = _topMostRecordStorage.Load();
 
-            InitializeResultListBox();
-            InitializeContextMenu();
+            ContextMenu = new ResultsViewModel(_settings);
+            Results = new ResultsViewModel(_settings);
+            History = new ResultsViewModel(_settings);
+            _selectedResults = Results;
+
             InitializeKeyCommands();
             RegisterResultsUpdatedEvent();
 
@@ -77,12 +79,11 @@ namespace Wox.ViewModel
         {
             foreach (var pair in PluginManager.GetPluginsForInterface<IResultUpdated>())
             {
-                var plugin = (IResultUpdated) pair.Plugin;
+                var plugin = (IResultUpdated)pair.Plugin;
                 plugin.ResultsUpdated += (s, e) =>
                 {
                     Task.Run(() =>
                     {
-
                         PluginManager.UpdatePluginMetadata(e.Results, pair.Metadata, e.Query);
                         UpdateResultView(e.Results, pair.Metadata, e.Query);
                     }, _updateToken);
@@ -95,9 +96,9 @@ namespace Wox.ViewModel
         {
             EscCommand = new RelayCommand(_ =>
             {
-                if (ContextMenuVisibility.IsVisible())
+                if (!ResultsSelected())
                 {
-                    ContextMenuVisibility = Visibility.Collapsed;
+                    SelectedResults = Results;
                 }
                 else
                 {
@@ -107,51 +108,22 @@ namespace Wox.ViewModel
 
             SelectNextItemCommand = new RelayCommand(_ =>
             {
-                if (ContextMenuVisibility.IsVisible())
-                {
-                    ContextMenu.SelectNextResult();
-                }
-                else
-                {
-                    Results.SelectNextResult();
-                }
+                SelectedResults.SelectNextResult();
             });
 
             SelectPrevItemCommand = new RelayCommand(_ =>
             {
-                if (ContextMenuVisibility.IsVisible())
-                {
-                    ContextMenu.SelectPrevResult();
-                }
-                else
-                {
-                    Results.SelectPrevResult();
-                }
+                SelectedResults.SelectPrevResult();
             });
-
-
-            /**
-            DisplayNextQueryCommand = new RelayCommand(_ =>
-            {
-                var nextQuery = _queryHistory.Next();
-                DisplayQueryHistory(nextQuery);
-            });
-
-            DisplayPrevQueryCommand = new RelayCommand(_ =>
-            {
-                var prev = _queryHistory.Previous();
-                DisplayQueryHistory(prev);
-            });
-            **/
 
             SelectNextPageCommand = new RelayCommand(_ =>
             {
-                Results.SelectNextPage();
+                SelectedResults.SelectNextPage();
             });
 
             SelectPrevPageCommand = new RelayCommand(_ =>
             {
-                Results.SelectPrevPage();
+                SelectedResults.SelectPrevPage();
             });
 
             StartHelpCommand = new RelayCommand(_ =>
@@ -161,14 +133,14 @@ namespace Wox.ViewModel
 
             OpenResultCommand = new RelayCommand(index =>
             {
-                var results = ContextMenuVisibility.IsVisible() ? ContextMenu : Results;
+                var results = SelectedResults;
 
                 if (index != null)
                 {
                     results.SelectedIndex = int.Parse(index.ToString());
                 }
 
-                var result = results.SelectedItem?.RawResult;
+                var result = results.SelectedItem?.Result;
                 if (result != null) // SelectedItem returns null if selection is empty.
                 {
                     bool hideWindow = result.Action != null && result.Action(new ActionContext
@@ -181,83 +153,38 @@ namespace Wox.ViewModel
                         MainWindowVisibility = Visibility.Collapsed;
                     }
 
-                    if (!ContextMenuVisibility.IsVisible())
+                    if (ResultsSelected())
                     {
                         _userSelectedRecord.Add(result);
-                        _queryHistory.Add(result.OriginQuery.RawQuery);
+                        _history.Add(result.OriginQuery.RawQuery);
                     }
                 }
             });
 
             LoadContextMenuCommand = new RelayCommand(_ =>
             {
-                if (!ContextMenuVisibility.IsVisible())
+                if (ResultsSelected())
                 {
-                    var result = Results.SelectedItem?.RawResult;
-
-                    if (result != null) // SelectedItem returns null if selection is empty.
-                    {
-                        var id = result.PluginID;
-
-                        var menus = PluginManager.GetContextMenusForPlugin(result);
-                        menus.Add(ContextMenuTopMost(result));
-                        menus.Add(ContextMenuPluginInfo(id));
-
-                        ContextMenu.Clear();
-                        Task.Run(() =>
-                        {
-                            ContextMenu.AddResults(menus, id);
-                        }, _updateToken);
-                        ContextMenuVisibility = Visibility.Visible;
-                    }
+                    SelectedResults = ContextMenu;
                 }
                 else
                 {
-                    ContextMenuVisibility = Visibility.Collapsed;
+                    SelectedResults = Results;
                 }
             });
 
-        }
-
-        private void InitializeResultListBox()
-        {   
-            Results = new ResultsViewModel(_settings);
-            ResultListBoxVisibility = Visibility.Collapsed;
-        }
-
-
-        private void InitializeContextMenu()
-        {
-            ContextMenu = new ResultsViewModel(_settings);
-            ContextMenuVisibility = Visibility.Collapsed;
-        }
-
-        private void HandleQueryTextUpdated()
-        {
-            ProgressBarVisibility = Visibility.Hidden;
-            _updateSource?.Cancel();
-            _updateSource = new CancellationTokenSource();
-            _updateToken = _updateSource.Token;
-
-            if (ContextMenuVisibility.IsVisible())
+            LoadHistoryCommand = new RelayCommand(_ =>
             {
-                QueryContextMenu();
-            }
-            else
-            {
-                string query = QueryText.Trim();
-                if (!string.IsNullOrEmpty(query))
+                if (ResultsSelected())
                 {
-                    Query(query);
-                    //reset query history index after user start new query
-                    ResetQueryHistoryIndex();
+                    SelectedResults = History;
+                    History.SelectedIndex = _history.Items.Count - 1;
                 }
                 else
                 {
-                    Results.Clear();
-                    ResultListBoxVisibility = Visibility.Collapsed;
+                    SelectedResults = Results;
                 }
-            }
+            });
         }
 
         #endregion
@@ -265,192 +192,228 @@ namespace Wox.ViewModel
         #region ViewModel Properties
 
         public ResultsViewModel Results { get; private set; }
-
         public ResultsViewModel ContextMenu { get; private set; }
+        public ResultsViewModel History { get; private set; }
 
+        private string _queryText;
         public string QueryText
         {
             get { return _queryText; }
             set
             {
                 _queryText = value;
-                if (_ignoreTextChange)
-                {
-                    _ignoreTextChange = false;
-                }
-                else
-                {
-                    HandleQueryTextUpdated();
-                }
+                Query();
             }
         }
-
         public bool QueryTextSelected { get; set; }
 
-        public Visibility ContextMenuVisibility
-
+        private ResultsViewModel _selectedResults;
+        private ResultsViewModel SelectedResults
         {
-            get { return _contextMenuVisibility; }
+            get { return _selectedResults; }
             set
             {
-                _contextMenuVisibility = value;
-
-                _ignoreTextChange = true;
-                if (!value.IsVisible())
+                _selectedResults = value;
+                if (ResultsSelected())
                 {
-                    QueryText = _queryTextBeforeLoadContextMenu;
-                    ResultListBoxVisibility = Visibility.Visible;
+                    ContextMenu.Visbility = Visibility.Collapsed;
+                    History.Visbility = Visibility.Collapsed;
+                    QueryText = _queryTextBeforeLeaveResults;
                 }
                 else
                 {
-                    _queryTextBeforeLoadContextMenu = QueryText;
-                    QueryText = "";
-                    ResultListBoxVisibility = Visibility.Collapsed;
+                    Results.Visbility = Visibility.Collapsed;
+                    _queryTextBeforeLeaveResults = QueryText;
+
+
+                    // Because of Fody's optimization
+                    // setter won't be called when property value is not changed.
+                    // so we need manually call Query()
+                    // http://stackoverflow.com/posts/25895769/revisions
+                    if (string.IsNullOrEmpty(QueryText))
+                    {
+                        Query();
+                    }
+                    else
+                    {
+                        QueryText = string.Empty;
+                    }
                 }
+                _selectedResults.Visbility = Visibility.Visible;
             }
         }
 
         public Visibility ProgressBarVisibility { get; set; }
-
-        public Visibility ResultListBoxVisibility { get; set; }
 
         public Visibility MainWindowVisibility { get; set; }
 
         public ICommand EscCommand { get; set; }
         public ICommand SelectNextItemCommand { get; set; }
         public ICommand SelectPrevItemCommand { get; set; }
-        //todo happlebao restore history command
-        public ICommand DisplayNextQueryCommand { get; set; }
-        public ICommand DisplayPrevQueryCommand { get; set; }
         public ICommand SelectNextPageCommand { get; set; }
         public ICommand SelectPrevPageCommand { get; set; }
         public ICommand StartHelpCommand { get; set; }
         public ICommand LoadContextMenuCommand { get; set; }
+        public ICommand LoadHistoryCommand { get; set; }
         public ICommand OpenResultCommand { get; set; }
 
         #endregion
 
-        #region Private Methods
+        public void Query()
+        {
+            if (ResultsSelected())
+            {
+                QueryResults();
+            }
+            else if (ContextMenuSelected())
+            {
+                QueryContextMenu();
+            }
+            else if (HistorySelected())
+            {
+                QueryHistory();
+            }
+        }
 
         private void QueryContextMenu()
         {
-            var contextMenuId = "Context Menu Id";
-            var query = QueryText.ToLower();
-            if (!string.IsNullOrEmpty(query))
-            {
+            const string id = "Context Menu ID";
+            var query = QueryText.ToLower().Trim();
+            ContextMenu.Clear();
 
-                List<Result> filterResults = new List<Result>();
-                foreach (var contextMenu in ContextMenu.Results)
-                {
-                    if (StringMatcher.IsMatch(contextMenu.Title, query)
-                        || StringMatcher.IsMatch(contextMenu.SubTitle, query))
-                    {
-                        filterResults.Add(contextMenu.RawResult);
-                    }
-                }
-                ContextMenu.Clear();
-                Task.Run(() =>
-                {
-                    ContextMenu.AddResults(filterResults, contextMenuId);
-                }, _updateToken);
-            }
-        }
+            var selected = Results.SelectedItem?.Result;
 
-        private void Query(string text)
-        {
-            _queryHasReturn = false;
-            var query = PluginManager.QueryInit(text);
-            if (query != null)
+            if (selected != null) // SelectedItem returns null if selection is empty.
             {
-                // handle the exclusiveness of plugin using action keyword
-                string lastKeyword = _lastQuery.ActionKeyword;
-                string keyword = query.ActionKeyword;
-                if (string.IsNullOrEmpty(lastKeyword))
+                var results = PluginManager.GetContextMenusForPlugin(selected);
+                results.Add(ContextMenuTopMost(selected));
+                results.Add(ContextMenuPluginInfo(selected.PluginID));
+
+                if (!string.IsNullOrEmpty(query))
                 {
-                    if (!string.IsNullOrEmpty(keyword))
-                    {
-                        Results.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
-                    }
+                    var filtered = results.Where
+                    (
+                        r => StringMatcher.IsMatch(r.Title, query) ||
+                             StringMatcher.IsMatch(r.SubTitle, query)
+                    ).ToList();
+                    ContextMenu.AddResults(filtered, id);
                 }
                 else
                 {
-                    if (string.IsNullOrEmpty(keyword))
-                    {
-                        Results.RemoveResultsFor(PluginManager.NonGlobalPlugins[lastKeyword].Metadata);
-                    }
-                    else if (lastKeyword != keyword)
-                    {
-                        Results.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
-                    }
+                    ContextMenu.AddResults(results, id);
                 }
-
-                _lastQuery = query;
-                Task.Delay(200, _updateToken).ContinueWith(_ =>
-                {
-                    if (query.RawQuery == _lastQuery.RawQuery && !_queryHasReturn)
-                    {
-                        ProgressBarVisibility = Visibility.Visible;
-                    }
-                }, _updateToken);
-
-                var plugins = PluginManager.ValidPluginsForQuery(query);
-                Task.Run(() =>
-                {
-                    Parallel.ForEach(plugins, plugin =>
-                    {
-                        var config = _settings.PluginSettings.Plugins[plugin.Metadata.ID];
-                        if (!config.Disabled)
-                        {
-
-                            var results = PluginManager.QueryForPlugin(plugin, query);
-                            UpdateResultView(results, plugin.Metadata, query);
-                        }
-                    });
-                }, _updateToken);
-
-
-
             }
         }
 
-        private void ResetQueryHistoryIndex()
+        private void QueryHistory()
         {
-            Results.RemoveResultsFor(QueryHistory.MetaData);
-            _queryHistory.Reset();
-        }
-        /**
-        private void DisplayQueryHistory(HistoryItem history)
-        {
-            if (history != null)
+            const string id = "Query History ID";
+            var query = QueryText.ToLower().Trim();
+            History.Clear();
+
+            var results = new List<Result>();
+            foreach (var h in _history.Items)
             {
-                var historyMetadata = QueryHistory.MetaData;
-
-                QueryText = history.Query;
-                OnTextBoxSelected();
-
-                var executeQueryHistoryTitle = InternationalizationManager.Instance.GetTranslation("executeQuery");
-                var lastExecuteTime = InternationalizationManager.Instance.GetTranslation("lastExecuteTime");
-                Results.RemoveResultsExcept(historyMetadata);
+                var title = _translator.GetTranslation("executeQuery");
+                var time = _translator.GetTranslation("lastExecuteTime");
                 var result = new Result
                 {
-                    Title = string.Format(executeQueryHistoryTitle, history.Query),
-                    SubTitle = string.Format(lastExecuteTime, history.ExecutedDateTime),
+                    Title = string.Format(title, h.Query),
+                    SubTitle = string.Format(time, h.ExecutedDateTime),
                     IcoPath = "Images\\history.png",
-                    PluginDirectory = Infrastructure.Constant.ProgramDirectory,
+                    OriginQuery = new Query { RawQuery = h.Query },
                     Action = _ =>
                     {
-                        QueryText = history.Query;
-                        OnTextBoxSelected();
+                        SelectedResults = Results;
+                        QueryText = h.Query;
                         return false;
                     }
                 };
-                Task.Run(() =>
-                {
-                    Results.AddResults(new List<Result> {result}, historyMetadata.ID);
-                }, _updateToken);
+                results.Add(result);
+            }
+
+            if (!string.IsNullOrEmpty(query))
+            {
+                var filtered = results.Where
+                (
+                    r => StringMatcher.IsMatch(r.Title, query) ||
+                         StringMatcher.IsMatch(r.SubTitle, query)
+                ).ToList();
+                History.AddResults(filtered, id);
+            }
+            else
+            {
+                History.AddResults(results, id);
             }
         }
-        **/
+
+        private void QueryResults()
+        {
+            if (!string.IsNullOrEmpty(QueryText))
+            {
+                _updateSource?.Cancel();
+                _updateSource = new CancellationTokenSource();
+                _updateToken = _updateSource.Token;
+
+                ProgressBarVisibility = Visibility.Hidden;
+                _queryHasReturn = false;
+                var query = PluginManager.QueryInit(QueryText.Trim());
+                if (query != null)
+                {
+                    // handle the exclusiveness of plugin using action keyword
+                    string lastKeyword = _lastQuery.ActionKeyword;
+                    string keyword = query.ActionKeyword;
+                    if (string.IsNullOrEmpty(lastKeyword))
+                    {
+                        if (!string.IsNullOrEmpty(keyword))
+                        {
+                            Results.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
+                        }
+                    }
+                    else
+                    {
+                        if (string.IsNullOrEmpty(keyword))
+                        {
+                            Results.RemoveResultsFor(PluginManager.NonGlobalPlugins[lastKeyword].Metadata);
+                        }
+                        else if (lastKeyword != keyword)
+                        {
+                            Results.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
+                        }
+                    }
+
+                    _lastQuery = query;
+                    Task.Delay(200, _updateToken).ContinueWith(_ =>
+                    {
+                        if (query.RawQuery == _lastQuery.RawQuery && !_queryHasReturn)
+                        {
+                            ProgressBarVisibility = Visibility.Visible;
+                        }
+                    }, _updateToken);
+
+                    var plugins = PluginManager.ValidPluginsForQuery(query);
+                    Task.Run(() =>
+                    {
+                        Parallel.ForEach(plugins, plugin =>
+                        {
+                            var config = _settings.PluginSettings.Plugins[plugin.Metadata.ID];
+                            if (!config.Disabled)
+                            {
+
+                                var results = PluginManager.QueryForPlugin(plugin, query);
+                                UpdateResultView(results, plugin.Metadata, query);
+                            }
+                        });
+                    }, _updateToken);
+                }
+            }
+            else
+            {
+                Results.Clear();
+                Results.Visbility = Visibility.Collapsed;
+            }
+        }
+
 
         private Result ContextMenuTopMost(Result result)
         {
@@ -461,7 +424,7 @@ namespace Wox.ViewModel
                 {
                     Title = InternationalizationManager.Instance.GetTranslation("cancelTopMostInThisQuery"),
                     IcoPath = "Images\\down.png",
-                    PluginDirectory = Infrastructure.Constant.ProgramDirectory,
+                    PluginDirectory = Constant.ProgramDirectory,
                     Action = _ =>
                     {
                         _topMostRecord.Remove(result);
@@ -476,7 +439,7 @@ namespace Wox.ViewModel
                 {
                     Title = InternationalizationManager.Instance.GetTranslation("setAsTopMostInThisQuery"),
                     IcoPath = "Images\\up.png",
-                    PluginDirectory = Infrastructure.Constant.ProgramDirectory,
+                    PluginDirectory = Constant.ProgramDirectory,
                     Action = _ =>
                     {
                         _topMostRecord.AddOrUpdate(result);
@@ -512,16 +475,33 @@ namespace Wox.ViewModel
             return menu;
         }
 
-        #endregion
+        private bool ResultsSelected()
+        {
+            var selected = SelectedResults == Results;
+            return selected;
+        }
+
+        private bool ContextMenuSelected()
+        {
+            var selected = SelectedResults == ContextMenu;
+            return selected;
+        }
+
+
+        private bool HistorySelected()
+        {
+            var selected = SelectedResults == History;
+            return selected;
+        }
         #region Hotkey
 
-        internal void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
+        private void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
         {
             var hotkey = new HotkeyModel(hotkeyStr);
             SetHotkey(hotkey, action);
         }
 
-        public void SetHotkey(HotkeyModel hotkey, EventHandler<HotkeyEventArgs> action)
+        private void SetHotkey(HotkeyModel hotkey, EventHandler<HotkeyEventArgs> action)
         {
             string hotkeyStr = hotkey.ToString();
             try
@@ -566,8 +546,8 @@ namespace Wox.ViewModel
                 SetHotkey(hotkey.Hotkey, (s, e) =>
                 {
                     if (ShouldIgnoreHotkeys()) return;
-                    QueryText = hotkey.ActionKeyword;
                     MainWindowVisibility = Visibility.Visible;
+                    QueryText = hotkey.ActionKeyword;
                 });
             }
         }
@@ -582,7 +562,7 @@ namespace Wox.ViewModel
 
         private void ToggleWox()
         {
-            if (!MainWindowVisibility.IsVisible())
+            if (MainWindowVisibility != Visibility.Visible)
             {
                 MainWindowVisibility = Visibility.Visible;
             }
@@ -600,7 +580,7 @@ namespace Wox.ViewModel
         {
             if (!_saved)
             {
-                _queryHistoryStorage.Save();
+                _historyItemsStorage.Save();
                 _userSelectedRecordStorage.Save();
                 _topMostRecordStorage.Save();
 
@@ -627,7 +607,7 @@ namespace Wox.ViewModel
                 }
                 else
                 {
-                    result.Score += _userSelectedRecord.GetSelectedCount(result)*5;
+                    result.Score += _userSelectedRecord.GetSelectedCount(result) * 5;
                 }
             }
 
@@ -636,12 +616,12 @@ namespace Wox.ViewModel
                 Results.AddResults(list, metadata.ID);
             }
 
-            if (list.Count > 0 && !ResultListBoxVisibility.IsVisible())
+            if (Results.Visbility != Visibility.Visible && list.Count > 0)
             {
-                ResultListBoxVisibility = Visibility.Visible;
+                Results.Visbility = Visibility.Visible;
             }
         }
 
         #endregion
     }
-} 
+}
