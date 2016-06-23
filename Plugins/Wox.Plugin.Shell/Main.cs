@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using WindowsInput;
+using WindowsInput.Native;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
@@ -285,6 +286,7 @@ namespace Wox.Plugin.Shell
                 if (keyevent == (int)KeyEvent.WM_KEYUP && _winRStroked && vkcode == (int)Keys.LWin)
                 {
                     _winRStroked = false;
+                    _keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.CONTROL);
                     return false;
                 }
             }
