@@ -5,6 +5,7 @@ WoX
 [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e103)](https://ci.appveyor.com/project/happlebao/wox)
 [![Github All Releases](https://img.shields.io/github/downloads/Wox-launcher/Wox/total.svg)](https://github.com/Wox-launcher/Wox/releases)
 [![Issue Stats](http://issuestats.com/github/Wox-launcher/Wox/badge/pr)](http://issuestats.com/github/Wox-launcher/Wox) 
+[![RamenBless](https://cdn.rawgit.com/LunaGao/BlessYourCodeTag/master/tags/ramen.svg)](https://github.com/LunaGao/BlessYourCodeTag)
 
 **WoX** is a launcher for Windows that simply works. It's an alternative to [Alfred](https://www.alfredapp.com/) and [Launchy](http://www.launchy.net/). You can call it Windows omni-eXecutor if you want a long name.
 
