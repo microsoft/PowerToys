@@ -17,6 +17,7 @@
         Icon="Images\app.png"
         AllowsTransparency="True"
         Loaded="OnLoaded"
+        Initialized="OnInitialized"
         Closing="OnClosing"
         Drop="OnDrop"
         SizeChanged="OnSizeChanged"

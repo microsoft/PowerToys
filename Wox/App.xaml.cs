@@ -60,10 +60,7 @@ namespace Wox
                 AutoStartup();
                 AutoUpdates();
 
-                if (!_settings.HideOnStartup)
-                {
-                    mainVM.MainWindowVisibility = Visibility.Visible;
-                }
+                mainVM.MainWindowVisibility = _settings.HideOnStartup ? Visibility.Hidden : Visibility.Visible;
             });
         }
 
@@ -102,7 +99,7 @@ namespace Wox
         }
 
         /// <summary>
-        /// let exception throw as normal is better for Debug 
+        /// let exception throw as normal is better for Debug
         /// </summary>
         [Conditional("RELEASE")]
         private void RegisterDispatcherUnhandledException()
@@ -113,7 +110,7 @@ namespace Wox
 
 
         /// <summary>
-        /// let exception throw as normal is better for Debug 
+        /// let exception throw as normal is better for Debug
         /// </summary>
         [Conditional("RELEASE")]
         private static void RegisterAppDomainExceptions()

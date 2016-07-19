@@ -46,11 +46,16 @@ namespace Wox
             _viewModel.Save();
         }
 
+        private void OnInitialized(object sender, EventArgs e)
+        {
+            // show notify icon when wox is hided
+            InitializeNotifyIcon();
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs _)
         {
             WindowIntelopHelper.DisableControlBox(this);
             ThemeManager.Instance.ChangeTheme(_settings.Theme);
-            InitializeNotifyIcon();
             InitProgressbarAnimation();
 
             _viewModel.PropertyChanged += (o, e) =>
