@@ -15,6 +15,7 @@ namespace Wox.Core.Resource
     public class Theme : Resource
     {
         private static List<string> themeDirectories = new List<string>();
+        private static Version supportedAccentsVersion = new Version(6, 2);
         public Settings Settings { get; set; }
 
         public Theme()
@@ -59,7 +60,7 @@ namespace Wox.Core.Resource
 
             // Exception of FindResource can't be cathed if global exception handle is set
             var isBlur = Application.Current.TryFindResource("ThemeBlurEnabled");
-            if (isBlur is bool)
+            if (isBlur is bool && Environment.OSVersion.Version >= supportedAccentsVersion)
             {
                 SetBlurForWindow(Application.Current.MainWindow, (bool)isBlur);
             }
