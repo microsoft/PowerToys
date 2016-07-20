@@ -205,7 +205,19 @@ namespace Wox.ViewModel
                 Query();
             }
         }
+
+        /// <summary>
+        /// we need move cursor to end when we manually changed query
+        /// but we don't want to move cursor to end when query is updated from TextBox
+        /// </summary>
+        /// <param name="queryText"></param>
+        public void ChangeQueryText(string queryText)
+        {
+            QueryTextCursorMovedToEnd = true;
+            QueryText = queryText;
+        }
         public bool QueryTextSelected { get; set; }
+        public bool QueryTextCursorMovedToEnd { get; set; }
 
         private ResultsViewModel _selectedResults;
         private ResultsViewModel SelectedResults
@@ -218,7 +230,7 @@ namespace Wox.ViewModel
                 {
                     ContextMenu.Visbility = Visibility.Collapsed;
                     History.Visbility = Visibility.Collapsed;
-                    QueryText = _queryTextBeforeLeaveResults;
+                    ChangeQueryText(_queryTextBeforeLeaveResults);
                 }
                 else
                 {
@@ -325,7 +337,7 @@ namespace Wox.ViewModel
                     Action = _ =>
                     {
                         SelectedResults = Results;
-                        QueryText = h.Query;
+                        ChangeQueryText(h.Query);
                         return false;
                     }
                 };
@@ -547,7 +559,7 @@ namespace Wox.ViewModel
                 {
                     if (ShouldIgnoreHotkeys()) return;
                     MainWindowVisibility = Visibility.Visible;
-                    QueryText = hotkey.ActionKeyword;
+                    ChangeQueryText(hotkey.ActionKeyword);
                 });
             }
         }
