@@ -14,7 +14,7 @@ namespace Wox.Plugin.Program
 {
     public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
     {
-        private static object lockObject = new object();
+        private static readonly object IndexLock = new object();
         private static List<Program> _programs = new List<Program>();
         private static List<IProgramSource> _sources = new List<IProgramSource>();
         private static readonly Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>
@@ -96,8 +96,7 @@ namespace Wox.Plugin.Program
 
         public static void IndexPrograms()
         {
-            // todo why there is a lock??
-            lock (lockObject)
+            lock (IndexLock)
             {
                 var sources = DefaultProgramSources();
                 if (_settings.ProgramSources != null &&
