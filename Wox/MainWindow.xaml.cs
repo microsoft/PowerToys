@@ -235,7 +235,11 @@ namespace Wox
 
         private void OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            QueryTextBox.CaretIndex = QueryTextBox.Text.Length;
+            if (_viewModel.QueryTextCursorMovedToEnd)
+            {
+                QueryTextBox.CaretIndex = QueryTextBox.Text.Length;
+                _viewModel.QueryTextCursorMovedToEnd = false;
+            }
         }
     }
 }
