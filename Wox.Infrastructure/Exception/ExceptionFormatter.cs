@@ -24,54 +24,52 @@ namespace Wox.Infrastructure.Exception
             sb.AppendLine();
             sb.AppendLine("```");
 
-                var exlist = new List<StringBuilder>();
+            var exlist = new List<StringBuilder>();
 
-                while (ex != null)
+            while (ex != null)
+            {
+                var exsb = new StringBuilder();
+                exsb.Append(ex.GetType().FullName);
+                exsb.Append(": ");
+                exsb.AppendLine(ex.Message);
+                if (ex.Source != null)
                 {
-                    var exsb = new StringBuilder();
-                    exsb.Append(ex.GetType().FullName);
-                    exsb.Append(": ");
-                    exsb.AppendLine(ex.Message);
-                    if (ex.Source != null)
-                    {
-                        exsb.Append("   Source: ");
-                        exsb.AppendLine(ex.Source);
-                    }
-                    if (ex.TargetSite != null)
-                    {
-                        exsb.Append("   TargetAssembly: ");
-                        exsb.AppendLine(ex.TargetSite.Module.Assembly.ToString());
-                        exsb.Append("   TargetModule: ");
-                        exsb.AppendLine(ex.TargetSite.Module.ToString());
-                        exsb.Append("   TargetSite: ");
-                        exsb.AppendLine(ex.TargetSite.ToString());
-                    }
-                    exsb.AppendLine(ex.StackTrace);
-                    exlist.Add(exsb);
-
-                    ex = ex.InnerException;
+                    exsb.Append("   Source: ");
+                    exsb.AppendLine(ex.Source);
                 }
-
-                foreach (var result in exlist.Select(o => o.ToString()).Reverse())
+                if (ex.TargetSite != null)
                 {
-                    sb.AppendLine(result);
+                    exsb.Append("   TargetAssembly: ");
+                    exsb.AppendLine(ex.TargetSite.Module.Assembly.ToString());
+                    exsb.Append("   TargetModule: ");
+                    exsb.AppendLine(ex.TargetSite.Module.ToString());
+                    exsb.Append("   TargetSite: ");
+                    exsb.AppendLine(ex.TargetSite.ToString());
                 }
-                sb.AppendLine("```");
-                sb.AppendLine();
+                exsb.AppendLine(ex.StackTrace);
+                exlist.Add(exsb);
+
+                ex = ex.InnerException;
+            }
+
+            foreach (var result in exlist.Select(o => o.ToString()).Reverse())
+            {
+                sb.AppendLine(result);
+            }
+            sb.AppendLine("```");
+            sb.AppendLine();
 
             sb.AppendLine("## Environment");
-            sb.AppendLine();
-            sb.Append("* Command Line: ");
-            sb.AppendLine(Environment.CommandLine);
-            sb.Append("* Timestamp: ");
-            sb.AppendLine(DateTime.Now.ToString(CultureInfo.InvariantCulture));
-            sb.Append("* IntPtr Length: ");
-            sb.AppendLine(IntPtr.Size.ToString());
-            sb.Append("* System Version: ");
-            sb.AppendLine(Environment.OSVersion.VersionString);
-            sb.Append("* CLR Version: ");
-            sb.AppendLine(Environment.Version.ToString());
-            sb.AppendLine("* Installed .NET Framework: ");
+            sb.AppendLine($"* Command Line: {Environment.CommandLine}");
+            sb.AppendLine($"* Timestamp: {DateTime.Now.ToString(CultureInfo.InvariantCulture)}");
+            sb.AppendLine($"* Wox version: {Constant.Version}");
+            sb.AppendLine($"* OS Version: {Environment.OSVersion.VersionString}");
+            sb.AppendLine($"* IntPtr Length: {IntPtr.Size}");
+            sb.AppendLine($"* x64: {Environment.Is64BitOperatingSystem}");
+            sb.AppendLine($"* Python Path: {Constant.PythonPath}");
+            sb.AppendLine($"* Everything SDK Path: {Constant.EverythingSDKPath}");
+            sb.AppendLine($"* CLR Version: {Environment.Version}");
+            sb.AppendLine($"* Installed .NET Framework: ");
             foreach (var result in GetFrameworkVersionFromRegistry())
             {
                 sb.Append("   * ");

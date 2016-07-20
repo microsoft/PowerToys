@@ -34,6 +34,10 @@ namespace Wox
             StringBuilder content = new StringBuilder();
             content.AppendLine($"Wox version: {Constant.Version}");
             content.AppendLine($"OS Version: {Environment.OSVersion.VersionString}");
+            content.AppendLine($"IntPtr Length: {IntPtr.Size}");
+            content.AppendLine($"x64: {Environment.Is64BitOperatingSystem}");
+            content.AppendLine($"Python Path: {Constant.PythonPath}");
+            content.AppendLine($"Everything SDK Path: {Constant.EverythingSDKPath}");
             content.AppendLine($"Date: {DateTime.Now.ToString(CultureInfo.InvariantCulture)}");
             content.AppendLine("Exception:");
             content.AppendLine(exception.Source);

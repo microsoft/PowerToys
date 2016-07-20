@@ -142,6 +142,7 @@ namespace Wox.Plugin.Everything
             Helper.ValidateDataDirectory(bundledSDKDirectory, sdkDirectory);
 
             var sdkPath = Path.Combine(sdkDirectory, DLL);
+            Constant.EverythingSDKPath = sdkPath;
             LoadLibrary(sdkPath);
         }
 

@@ -21,5 +21,8 @@ namespace Wox.Infrastructure
         public const string Github = "https://github.com/Wox-launcher/Wox";
         public const string Issue = "https://github.com/Wox-launcher/Wox/issues/new";
         public static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location).ProductVersion;
+
+        public static string PythonPath;
+        public static string EverythingSDKPath;
     }
 }
