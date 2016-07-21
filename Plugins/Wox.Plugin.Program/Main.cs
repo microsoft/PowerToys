@@ -14,7 +14,6 @@ namespace Wox.Plugin.Program
 {
     public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
     {
-        private static readonly object IndexLock = new object();
         private static List<Program> _programs = new List<Program>();
 
         private PluginInitContext _context;
@@ -88,24 +87,21 @@ namespace Wox.Plugin.Program
 
         public static void IndexPrograms()
         {
-            lock (IndexLock)
+            var sources = DefaultProgramSources();
+            if (_settings.ProgramSources != null &&
+                _settings.ProgramSources.Count(o => o.Enabled) > 0)
             {
-                var sources = DefaultProgramSources();
-                if (_settings.ProgramSources != null &&
-                    _settings.ProgramSources.Count(o => o.Enabled) > 0)
-                {
-                    sources.AddRange(_settings.ProgramSources);
-                }
-
-                _programs = sources.AsParallel()
-                                    .SelectMany(s => s.LoadPrograms())
-                                    // filter duplicate program
-                                    .GroupBy(x => new { ExecutePath = x.Path, ExecuteName = x.ExecutableName })
-                                    .Select(g => g.First())
-                                    .ToList();
-
-                _cache.Programs = _programs;
+                sources.AddRange(_settings.ProgramSources);
             }
+
+            _programs = sources.AsParallel()
+                                .SelectMany(s => s.LoadPrograms())
+                                // filter duplicate program
+                                .GroupBy(x => new { ExecutePath = x.Path, ExecuteName = x.ExecutableName })
+                                .Select(g => g.First())
+                                .ToList();
+
+            _cache.Programs = _programs;
         }
 
         /// <summary>
