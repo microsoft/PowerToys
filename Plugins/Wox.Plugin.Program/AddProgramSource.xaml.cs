@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Forms;
+using Wox.Plugin.Program.ProgramSources;
 
 namespace Wox.Plugin.Program
 {
@@ -9,7 +10,7 @@ namespace Wox.Plugin.Program
     /// </summary>
     public partial class AddProgramSource
     {
-        private ProgramSource _editing;
+        private FileSystemProgramSource _editing;
         private Settings _settings;
 
         public AddProgramSource(Settings settings)
@@ -20,7 +21,7 @@ namespace Wox.Plugin.Program
             Directory.Focus();
         }
 
-        public AddProgramSource(ProgramSource edit, Settings settings)
+        public AddProgramSource(FileSystemProgramSource edit, Settings settings)
         {
             _editing = edit;
             _settings = settings;
@@ -51,12 +52,11 @@ namespace Wox.Plugin.Program
 
             if(_editing == null)
             {
-                var source = new ProgramSource
+                var source = new FileSystemProgramSource
                 {
                     Location = Directory.Text,
                     MaxDepth = max,
                     Suffixes = Suffixes.Text.Split(ProgramSource.SuffixSeperator),
-                    Type = "FileSystemProgramSource",
                     Enabled = true
                 };
                 _settings.ProgramSources.Add(source);

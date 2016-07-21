@@ -2,6 +2,7 @@ using System;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Wox.Infrastructure;
+using Wox.Plugin.Program.ProgramSources;
 
 namespace Wox.Plugin.Program
 {
@@ -14,6 +15,6 @@ namespace Wox.Plugin.Program
         public string Directory { get; set; }
         public string ExecutableName { get; set; }
         public int Score { get; set; }
-        public IProgramSource Source { get; set; }
+        public ProgramSource Source { get; set; }
     }
 }

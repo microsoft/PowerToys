@@ -8,35 +8,17 @@ using Wox.Infrastructure.Logger;
 namespace Wox.Plugin.Program.ProgramSources
 {
     [Serializable]
-    public class FileSystemProgramSource : AbstractProgramSource
+    public class FileSystemProgramSource : ProgramSource
     {
-        private string _baseDirectory;
-        private int _maxDepth;
-        private string[] _suffixes;
-
-        public FileSystemProgramSource(string baseDirectory, int maxDepth, string[] suffixes)
-        {
-            _baseDirectory = baseDirectory;
-            _maxDepth = maxDepth;
-            _suffixes = suffixes;
-        }
-
-        public FileSystemProgramSource(string baseDirectory, string[] suffixes)
-            : this(baseDirectory, -1, suffixes) {}
-
-        public FileSystemProgramSource(ProgramSource source)
-            : this(source.Location, source.MaxDepth, source.Suffixes)
-        {
-            BonusPoints = source.BonusPoints;
-        }
+        public string Location { get; set; } = "";
 
         public override List<Program> LoadPrograms()
         {
-            List<Program> list = new List<Program>();
-            if (Directory.Exists(_baseDirectory))
+            var list = new List<Program>();
+            if (Directory.Exists(Location))
             {
-                GetAppFromDirectory(_baseDirectory, list);
-                FileChangeWatcher.AddWatch(_baseDirectory, _suffixes);
+                GetAppFromDirectory(Location, list);
+                FileChangeWatcher.AddWatch(Location, Suffixes);
             }
             return list;
         }
@@ -48,17 +30,17 @@ namespace Wox.Plugin.Program.ProgramSources
 
         private void GetAppFromDirectory(string path, List<Program> list, int depth)
         {
-            if(_maxDepth != -1 && depth > _maxDepth)
+            if (MaxDepth != -1 && depth > MaxDepth)
             {
                 return;
             }
             try
             {
-                foreach (string file in Directory.GetFiles(path))
+                foreach (var file in Directory.GetFiles(path))
                 {
-                    if (_suffixes.Any(o => file.EndsWith("." + o)))
+                    if (Suffixes.Any(o => file.EndsWith("." + o)))
                     {
-                        Program p = CreateEntry(file);
+                        var p = CreateEntry(file);
                         p.Source = this;
                         list.Add(p);
                     }
@@ -75,10 +57,10 @@ namespace Wox.Plugin.Program.ProgramSources
                 Log.Exception(woxPluginException);
             }
         }
-
         public override string ToString()
         {
-            return typeof(FileSystemProgramSource).Name + ":" + _baseDirectory;
+            var display = GetType().Name + Location;
+            return display;
         }
     }
 }

@@ -16,14 +16,6 @@ namespace Wox.Plugin.Program
     {
         private static readonly object IndexLock = new object();
         private static List<Program> _programs = new List<Program>();
-        private static List<IProgramSource> _sources = new List<IProgramSource>();
-        private static readonly Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>
-        {
-            {"FileSystemProgramSource", typeof(FileSystemProgramSource)},
-            {"CommonStartMenuProgramSource", typeof(CommonStartMenuProgramSource)},
-            {"UserStartMenuProgramSource", typeof(UserStartMenuProgramSource)},
-            {"AppPathsProgramSource", typeof(AppPathsProgramSource)}
-        };
 
         private PluginInitContext _context;
 
@@ -105,18 +97,7 @@ namespace Wox.Plugin.Program
                     sources.AddRange(_settings.ProgramSources);
                 }
 
-                _sources = sources.AsParallel()
-                                  .Where(s => s.Enabled && SourceTypes.ContainsKey(s.Type))
-                                  .Select(s =>
-                                  {
-                                      var sourceClass = SourceTypes[s.Type];
-                                      var constructorInfo = sourceClass.GetConstructor(new[] { typeof(ProgramSource) });
-                                      var programSource = constructorInfo?.Invoke(new object[] { s }) as IProgramSource;
-                                      return programSource;
-                                  })
-                                  .Where(s => s != null).ToList();
-
-                _programs = _sources.AsParallel()
+                _programs = sources.AsParallel()
                                     .SelectMany(s => s.LoadPrograms())
                                     // filter duplicate program
                                     .GroupBy(x => new { ExecutePath = x.Path, ExecuteName = x.ExecutableName })
@@ -134,23 +115,20 @@ namespace Wox.Plugin.Program
         {
             var list = new List<ProgramSource>
             {
-                new ProgramSource
+                new CommonStartMenuProgramSource
                 {
                     BonusPoints = 0,
                     Enabled = _settings.EnableStartMenuSource,
-                    Type = "CommonStartMenuProgramSource"
                 },
-                new ProgramSource
+                new UserStartMenuProgramSource
                 {
                     BonusPoints = 0,
                     Enabled = _settings.EnableStartMenuSource,
-                    Type = "UserStartMenuProgramSource"
                 },
-                new ProgramSource
+                new AppPathsProgramSource
                 {
                     BonusPoints = -10,
                     Enabled = _settings.EnableRegistrySource,
-                    Type = "AppPathsProgramSource"
                 }
             };
             return list;

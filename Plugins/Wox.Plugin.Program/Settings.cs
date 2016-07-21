@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using Wox.Plugin.Program.ProgramSources;
 
 namespace Wox.Plugin.Program
 {
     public class Settings
     {
-        public List<ProgramSource> ProgramSources { get; set; } = new List<ProgramSource>();
+        public List<FileSystemProgramSource> ProgramSources { get; set; } = new List<FileSystemProgramSource>();
         public string[] ProgramSuffixes { get; set; } = {"bat", "appref-ms", "exe", "lnk"};
 
         public bool EnableStartMenuSource { get; set; } = true;
