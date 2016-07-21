@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using Microsoft.Win32;
 using Wox.Infrastructure.Logger;
@@ -8,24 +7,19 @@ using Wox.Infrastructure.Logger;
 namespace Wox.Plugin.Program.ProgramSources
 {
     [Serializable]
-    [Browsable(false)]
-    public class AppPathsProgramSource : AbstractProgramSource
+    public class AppPathsProgramSource : ProgramSource
     {
         public AppPathsProgramSource()
         {
             BonusPoints = -10;
         }
 
-        public AppPathsProgramSource(ProgramSource source) : this()
-        {
-            BonusPoints = source.BonusPoints;
-        }
-
         public override List<Program> LoadPrograms()
         {
             var list = new List<Program>();
             ReadAppPaths(@"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths", list);
-            ReadAppPaths(@"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\App Paths", list); //TODO: need test more on 64-bit
+            ReadAppPaths(@"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\App Paths", list);
+                //TODO: need test more on 64-bit
             return list;
         }
 
@@ -40,12 +34,12 @@ namespace Wox.Plugin.Program.ProgramSources
                     {
                         using (var key = root.OpenSubKey(item))
                         {
-                            string path = key.GetValue("") as string;
+                            var path = key.GetValue("") as string;
                             if (string.IsNullOrEmpty(path)) continue;
 
                             // fix path like this ""\"C:\\folder\\executable.exe\"""
                             const int begin = 0;
-                            int end = path.Length - 1;
+                            var end = path.Length - 1;
                             const char quotationMark = '"';
                             if (path[begin] == quotationMark && path[end] == quotationMark)
                             {
@@ -65,11 +59,6 @@ namespace Wox.Plugin.Program.ProgramSources
                     }
                 }
             }
-        }
-
-        public override string ToString()
-        {
-            return typeof(AppPathsProgramSource).Name;
         }
     }
 }

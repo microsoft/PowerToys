@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Wox.Plugin.Program.ProgramSources;
 
 namespace Wox.Plugin.Program
 {
@@ -50,7 +51,7 @@ namespace Wox.Plugin.Program
 
         private void btnDeleteProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
-            ProgramSource selectedProgramSource = programSourceView.SelectedItem as ProgramSource;
+            var selectedProgramSource = programSourceView.SelectedItem as FileSystemProgramSource;
             if (selectedProgramSource != null)
             {
                 string msg = string.Format(context.API.GetTranslation("wox_plugin_program_delete_program_source"), selectedProgramSource.Location);
@@ -70,7 +71,7 @@ namespace Wox.Plugin.Program
 
         private void btnEditProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
-            ProgramSource selectedProgramSource = programSourceView.SelectedItem as ProgramSource;
+            var selectedProgramSource = programSourceView.SelectedItem as FileSystemProgramSource;
             if (selectedProgramSource != null)
             {
                 var add = new AddProgramSource(selectedProgramSource, _settings);
@@ -119,10 +120,9 @@ namespace Wox.Plugin.Program
                 {
                     if (Directory.Exists(s))
                     {
-                        _settings.ProgramSources.Add(new ProgramSource
+                        _settings.ProgramSources.Add(new FileSystemProgramSource
                         {
                             Location = s,
-                            Type = "FileSystemProgramSource",
                             Enabled = true
                         });
 

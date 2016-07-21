@@ -1,40 +1,30 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Wox.Plugin.Program.ProgramSources
 {
     [Serializable]
-    [Browsable(false)]
-    public class CommonStartMenuProgramSource : FileSystemProgramSource
+    public sealed class CommonStartMenuProgramSource : FileSystemProgramSource
     {
+        private const int CSIDL_COMMON_PROGRAMS = 0x17;
+        
+        // todo happlebao how to pass location before loadPrograms
+        public CommonStartMenuProgramSource()
+        {
+            Location = getPath();
+        }
+
         [DllImport("shell32.dll")]
-        static extern bool SHGetSpecialFolderPath(IntPtr hwndOwner, [Out] StringBuilder lpszPath, int nFolder, bool fCreate);
-        const int CSIDL_COMMON_PROGRAMS = 0x17;
+        private static extern bool SHGetSpecialFolderPath(IntPtr hwndOwner, [Out] StringBuilder lpszPath, int nFolder,
+            bool fCreate);
 
         private static string getPath()
         {
-            StringBuilder commonStartMenuPath = new StringBuilder(560);
+            var commonStartMenuPath = new StringBuilder(560);
             SHGetSpecialFolderPath(IntPtr.Zero, commonStartMenuPath, CSIDL_COMMON_PROGRAMS, false);
 
             return commonStartMenuPath.ToString();
-        }
-
-        public CommonStartMenuProgramSource(string[] suffixes)
-            : base(getPath(), suffixes)
-        {
-        }
-
-        public CommonStartMenuProgramSource(ProgramSource source)
-            : this(source.Suffixes)
-        {
-            BonusPoints = source.BonusPoints;
-        }
-
-        public override string ToString()
-        {
-            return typeof(CommonStartMenuProgramSource).Name;
         }
     }
 }

@@ -1,24 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 
-namespace Wox.Plugin.Program
+namespace Wox.Plugin.Program.ProgramSources
 {
     [Serializable]
-    public class ProgramSource
+    public abstract class ProgramSource
     {
-        public string Location { get; set; }
-        public string Type { get; set; }
-        public int BonusPoints { get; set; }
-        public bool Enabled { get; set; }
+        public const char SuffixSeperator = ';';
+        
+        public int BonusPoints { get; set; } = 0;
+        public bool Enabled { get; set; } = true;
         // happlebao todo: temp hack for program suffixes
         public string[] Suffixes { get; set; } = {"bat", "appref-ms", "exe", "lnk"};
-        public const char SuffixSeperator = ';';
-        public int MaxDepth { get; set; }
-        public Dictionary<string, string> Meta { get; set; }
+        public int MaxDepth { get; set; } = -1;
 
-        public override string ToString()
+        public abstract List<Program> LoadPrograms();
+
+        protected Program CreateEntry(string file)
         {
-            return (Type ?? "") + ":" + Location ?? "";
+            var p = new Program
+            {
+                Title = Path.GetFileNameWithoutExtension(file),
+                IcoPath = file,
+                Path = file,
+                Directory = Directory.GetParent(file).FullName
+            };
+
+            switch (Path.GetExtension(file).ToLower())
+            {
+                case ".exe":
+                    p.ExecutableName = Path.GetFileName(file);
+                    try
+                    {
+                        var versionInfo = FileVersionInfo.GetVersionInfo(file);
+                        if (!string.IsNullOrEmpty(versionInfo.FileDescription))
+                        {
+                            p.Title = versionInfo.FileDescription;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    break;
+            }
+            return p;
         }
     }
 }
