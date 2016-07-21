@@ -96,11 +96,10 @@ namespace Wox.Plugin.WebSearch
 
         private void EditSearchSource()
         {
-            var keyword = _searchSource.ActionKeyword;
-            if (!PluginManager.ActionKeywordRegistered(keyword))
+            var newKeyword = _searchSource.ActionKeyword;
+            var oldKeyword = _oldSearchSource.ActionKeyword;
+            if (!PluginManager.ActionKeywordRegistered(newKeyword) || oldKeyword == newKeyword)
             {
-                var newKeyword = keyword;
-                var oldKeyword = _oldSearchSource.ActionKeyword;
                 var id = _context.CurrentPluginMetadata.ID;
                 PluginManager.ReplaceActionKeyword(id, oldKeyword, newKeyword);
 
