@@ -9,6 +9,8 @@ namespace Wox.Infrastructure.Http
 {
     public static class Http
     {
+        private const string UserAgent = @"Mozilla/5.0 (Trident/7.0; rv:11.0) like Gecko";
+
         public static HttpProxy Proxy { private get; set; }
         public static IWebProxy WebProxy()
         {
@@ -38,6 +40,7 @@ namespace Wox.Infrastructure.Http
         public static void Download([NotNull] string url, [NotNull] string filePath)
         {
             var client = new WebClient { Proxy = WebProxy() };
+            client.Headers.Add("user-agent", UserAgent);
             client.DownloadFile(url, filePath);
         }
 
@@ -49,7 +52,7 @@ namespace Wox.Infrastructure.Http
             request.Method = "GET";
             request.Timeout = 10 * 1000;
             request.Proxy = WebProxy();
-            request.UserAgent = @"Mozilla/5.0 (Trident/7.0; rv:11.0) like Gecko";
+            request.UserAgent = UserAgent;
             var response = await request.GetResponseAsync() as HttpWebResponse;
             if (response != null)
             {
