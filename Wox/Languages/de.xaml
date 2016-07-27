@@ -25,7 +25,7 @@
     <system:String x:Key="maxShowResults">Maximale Anzahl Ergebnissen</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignoriere Tastenkombination wenn Fenster im Vollbildmodus ist</system:String>
     <system:String x:Key="pythonDirectory">Python-Verzeichnis</system:String>
-    <system:String x:Key="autoUpdates">Automatische Aktuallisierung</system:String>
+    <system:String x:Key="autoUpdates">Automatische Aktualisierung</system:String>
     <system:String x:Key="selectPythonDirectory">Auswählen</system:String>
     <system:String x:Key="hideOnStartup">Verstecke Wox bei Systemstart</system:String>
     
@@ -40,13 +40,13 @@
     <system:String x:Key="plugin_query_time">Abfragezeit: {0}ms</system:String>
 
     <!--Setting Theme-->
-    <system:String x:Key="theme">Thema</system:String>
-    <system:String x:Key="browserMoreThemes">Suche nach weiteren Themas</system:String>
+    <system:String x:Key="theme">Theme</system:String>
+    <system:String x:Key="browserMoreThemes">Suche nach weiteren Themes</system:String>
     <system:String x:Key="helloWox">Hallo Wox</system:String>
     <system:String x:Key="queryBoxFont">Abfragebox Schriftart</system:String>
     <system:String x:Key="resultItemFont">Ergebnis Schriftart</system:String>
     <system:String x:Key="windowMode">Fenstermodus</system:String>
-    <system:String x:Key="opacity">Druchsichtigkeit</system:String>
+    <system:String x:Key="opacity">Transparenz</system:String>
     
     <!--Setting Hotkey-->
     <system:String x:Key="hotkey">Tastenkombination</system:String>
