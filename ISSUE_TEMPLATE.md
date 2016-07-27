@@ -6,7 +6,7 @@ Try search existing issues before you open new one
 2. Steps to **reproduce** the bug:
 3. Windows version:
 4. Exception:
-5. **logs** （`%APPDATA%\Wox\Logs\version\date.txt`):
+5. **whole** log file （`%APPDATA%\Wox\Logs\version\date.txt`):
 6. Screenshot (optional): 
 
 ## 中文 / Chinese
@@ -17,5 +17,5 @@ Try search existing issues before you open new one
 2. 如何**重现** bug：
 3. Windows 版本：
 4. Exception：
-5. **logs** （`%APPDATA%\Wox\Logs\version\date.txt`)：
+5. **整个** log 文件 （`%APPDATA%\Wox\Logs\version\date.txt`）：
 6. 截图 （可选）：
