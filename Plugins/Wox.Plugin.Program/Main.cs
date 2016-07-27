@@ -14,16 +14,7 @@ namespace Wox.Plugin.Program
 {
     public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
     {
-        private static object lockObject = new object();
         private static List<Program> _programs = new List<Program>();
-        private static List<IProgramSource> _sources = new List<IProgramSource>();
-        private static readonly Dictionary<string, Type> SourceTypes = new Dictionary<string, Type>
-        {
-            {"FileSystemProgramSource", typeof(FileSystemProgramSource)},
-            {"CommonStartMenuProgramSource", typeof(CommonStartMenuProgramSource)},
-            {"UserStartMenuProgramSource", typeof(UserStartMenuProgramSource)},
-            {"AppPathsProgramSource", typeof(AppPathsProgramSource)}
-        };
 
         private PluginInitContext _context;
 
@@ -36,8 +27,15 @@ namespace Wox.Plugin.Program
         {
             _settingsStorage = new PluginJsonStorage<Settings>();
             _settings = _settingsStorage.Load();
-            _cacheStorage = new BinaryStorage<ProgramIndexCache>();
-            _cache = _cacheStorage.Load();
+
+            Stopwatch.Debug("Preload programs", () =>
+            {
+                _cacheStorage = new BinaryStorage<ProgramIndexCache>();
+                _cache = _cacheStorage.Load();
+                _programs = _cache.Programs;
+            });
+            Log.Info($"Preload {_programs.Count} programs from cache");
+            Stopwatch.Debug("Program Index", IndexPrograms);
         }
 
         public void Save()
@@ -50,27 +48,33 @@ namespace Wox.Plugin.Program
         {
             var results = _programs.AsParallel()
                                    .Where(p => Score(p, query.Search) > 0)
-                                   .Select(ScoreFilter)
                                    .OrderByDescending(p => p.Score)
-                                   .Select(p => new Result
-                                   {
-                                       Title = p.Title,
-                                       SubTitle = p.Path,
-                                       IcoPath = p.IcoPath,
-                                       Score = p.Score,
-                                       ContextData = p,
-                                       Action = e =>
-                                       {
-                                           var info = new ProcessStartInfo
-                                           {
-                                               FileName = p.Path,
-                                               WorkingDirectory = p.Directory
-                                           };
-                                           var hide = StartProcess(info);
-                                           return hide;
-                                       }
-                                   }).ToList();
+                                   .Select(ResultFromProgram)
+                                   .ToList();
             return results;
+        }
+
+        public Result ResultFromProgram(Program p)
+        {
+            var result = new Result
+            {
+                Title = p.Title,
+                SubTitle = p.Path,
+                IcoPath = p.IcoPath,
+                Score = p.Score,
+                ContextData = p,
+                Action = e =>
+                {
+                    var info = new ProcessStartInfo
+                    {
+                        FileName = p.Path,
+                        WorkingDirectory = p.Directory
+                    };
+                    var hide = StartProcess(info);
+                    return hide;
+                }
+            };
+            return result;
         }
 
         private int Score(Program program, string query)
@@ -86,100 +90,82 @@ namespace Wox.Plugin.Program
         public void Init(PluginInitContext context)
         {
             _context = context;
-            Stopwatch.Debug("Preload programs", () =>
-            {
-                _programs = _cache.Programs;
-            });
-            Log.Info($"Preload {_programs.Count} programs from cache");
-            Stopwatch.Debug("Program Index", IndexPrograms);
         }
 
         public static void IndexPrograms()
         {
-            // todo why there is a lock??
-            lock (lockObject)
-            {
-                var sources = DefaultProgramSources();
-                if (_settings.ProgramSources != null &&
-                    _settings.ProgramSources.Count(o => o.Enabled) > 0)
-                {
-                    sources.AddRange(_settings.ProgramSources);
-                }
+            var sources = ProgramSources();
 
-                _sources = sources.AsParallel()
-                                  .Where(s => s.Enabled && SourceTypes.ContainsKey(s.Type))
-                                  .Select(s =>
-                                  {
-                                      var sourceClass = SourceTypes[s.Type];
-                                      var constructorInfo = sourceClass.GetConstructor(new[] { typeof(ProgramSource) });
-                                      var programSource = constructorInfo?.Invoke(new object[] { s }) as IProgramSource;
-                                      return programSource;
-                                  })
-                                  .Where(s => s != null).ToList();
+            var programs = sources.AsParallel()
+                    .SelectMany(s => s.LoadPrograms())
+                // filter duplicate program
+                .GroupBy(x => new { ExecutePath = x.Path, ExecuteName = x.ExecutableName })
+                .Select(g => g.First());
+            programs = programs.Select(ScoreFilter);
 
-                _programs = _sources.AsParallel()
-                                    .SelectMany(s => s.LoadPrograms())
-                                    // filter duplicate program
-                                    .GroupBy(x => new { ExecutePath = x.Path, ExecuteName = x.ExecutableName })
-                                    .Select(g => g.First())
-                                    .ToList();
-
-                _cache.Programs = _programs;
-            }
+            _programs = programs.ToList();
+            _cache.Programs = _programs;
         }
 
-        /// <summary>
-        /// Load program sources that wox always provide
-        /// </summary>
-        private static List<ProgramSource> DefaultProgramSources()
+        private static List<ProgramSource> ProgramSources()
         {
-            var list = new List<ProgramSource>
+            var sources = new List<ProgramSource>
             {
-                new ProgramSource
+                new CommonStartMenuProgramSource
                 {
                     BonusPoints = 0,
                     Enabled = _settings.EnableStartMenuSource,
-                    Type = "CommonStartMenuProgramSource"
                 },
-                new ProgramSource
+                new UserStartMenuProgramSource
                 {
                     BonusPoints = 0,
                     Enabled = _settings.EnableStartMenuSource,
-                    Type = "UserStartMenuProgramSource"
                 },
-                new ProgramSource
+                new AppPathsProgramSource
                 {
                     BonusPoints = -10,
                     Enabled = _settings.EnableRegistrySource,
-                    Type = "AppPathsProgramSource"
                 }
             };
-            return list;
+
+            if (_settings.ProgramSources.Count(o => o.Enabled) > 0)
+            {
+                sources.AddRange(_settings.ProgramSources);
+            }
+
+            return sources;
         }
 
-        private Program ScoreFilter(Program p)
+        private static Program ScoreFilter(Program p)
         {
             p.Score += p.Source.BonusPoints;
+            var start = new[] { "启动", "start" };
+            var doc = new[] { "帮助", "help", "文档", "documentation" };
+            var uninstall = new[] { "卸载", "uninstall" };
 
-            if (p.Title.Contains("启动") || p.Title.ToLower().Contains("start"))
+            var contained = start.Any(s => p.Title.ToLower().Contains(s));
+            if (contained)
+            {
                 p.Score += 10;
-
-            if (p.Title.Contains("帮助") || p.Title.ToLower().Contains("help") || p.Title.Contains("文档") || p.Title.ToLower().Contains("documentation"))
+            }
+            contained = doc.Any(d => p.Title.ToLower().Contains(d));
+            if (contained)
+            {
                 p.Score -= 10;
-
-            if (p.Title.Contains("卸载") || p.Title.ToLower().Contains("uninstall"))
+            }
+            contained = uninstall.Any(u => p.Title.ToLower().Contains(u));
+            if (contained)
+            {
                 p.Score -= 20;
+            }
+
             return p;
         }
-
-        #region ISettingProvider Members
 
         public Control CreateSettingPanel()
         {
             return new ProgramSetting(_context, _settings);
         }
-
-        #endregion
 
         public string GetTranslatedPluginTitle()
         {

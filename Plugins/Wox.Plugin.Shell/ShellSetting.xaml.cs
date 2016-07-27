@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
-namespace Wox.Plugin.CMD
+namespace Wox.Plugin.Shell
 {
     public partial class CMDSetting : UserControl
     {

@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
-namespace Wox.Plugin.Program
+namespace Wox.Plugin.Program.ProgramSources
 {
-    public interface IProgramSource
-    {
-        List<Program> LoadPrograms();
-        int BonusPoints { get; set; }
-    }
-
     [Serializable]
-    public abstract class AbstractProgramSource : IProgramSource
+    public abstract class ProgramSource
     {
-        public abstract List<Program> LoadPrograms();
+        public const char SuffixSeperator = ';';
+        
+        public int BonusPoints { get; set; } = 0;
+        public bool Enabled { get; set; } = true;
+        // happlebao todo: temp hack for program suffixes
+        public string[] Suffixes { get; set; } = {"bat", "appref-ms", "exe", "lnk"};
+        public int MaxDepth { get; set; } = -1;
 
-        public int BonusPoints { get; set; }
+        public abstract List<Program> LoadPrograms();
 
         protected Program CreateEntry(string file)
         {
@@ -34,13 +34,15 @@ namespace Wox.Plugin.Program
                     p.ExecutableName = Path.GetFileName(file);
                     try
                     {
-                        FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(file);
+                        var versionInfo = FileVersionInfo.GetVersionInfo(file);
                         if (!string.IsNullOrEmpty(versionInfo.FileDescription))
                         {
                             p.Title = versionInfo.FileDescription;
                         }
                     }
-                    catch (Exception) { }
+                    catch (Exception)
+                    {
+                    }
                     break;
             }
             return p;

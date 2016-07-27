@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Linq;
+using Wox.Plugin.Program.ProgramSources;
 
 namespace Wox.Plugin.Program
 {

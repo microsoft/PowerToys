@@ -61,7 +61,6 @@
       <DependentUpon>AddProgramSource.xaml</DependentUpon>
     </Compile>
     <Compile Include="FileChangeWatcher.cs" />
-    <Compile Include="IProgramSource.cs" />
     <Compile Include="SuffixesConverter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProgramIndexCache.cs" />
@@ -69,7 +68,7 @@
     <Compile Include="ProgramSetting.xaml.cs">
       <DependentUpon>ProgramSetting.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ProgramSource.cs" />
+    <Compile Include="ProgramSources\ProgramSource.cs" />
     <Compile Include="ProgramSources\AppPathsProgramSource.cs" />
     <Compile Include="ProgramSources\CommonStartMenuProgramSource.cs" />
     <Compile Include="ProgramSources\FileSystemProgramSource.cs" />

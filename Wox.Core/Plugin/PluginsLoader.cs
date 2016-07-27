@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
@@ -113,6 +114,7 @@ namespace Wox.Core.Plugin
                     return new List<PluginPair>();
                 }
             }
+            Constant.PythonPath = filename;
             var plugins = metadatas.Select(metadata => new PluginPair
             {
                 Plugin = new PythonPlugin(filename),

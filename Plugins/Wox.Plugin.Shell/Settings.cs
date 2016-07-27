@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 
-namespace Wox.Plugin.CMD
+namespace Wox.Plugin.Shell
 {
     public class Settings
     {
-        public Shell Shell { get; set; } = Shell.CMD;
+        public Shell Shell { get; set; } = Shell.Cmd;
         public bool ReplaceWinR { get; set; } = true;
         public bool LeaveShellOpen { get; set; }
         public Dictionary<string, int> Count = new Dictionary<string, int>();
@@ -24,7 +24,7 @@ namespace Wox.Plugin.CMD
 
     public enum Shell
     {
-        CMD = 0,
+        Cmd = 0,
         Powershell = 1,
         RunCommand = 2,
 

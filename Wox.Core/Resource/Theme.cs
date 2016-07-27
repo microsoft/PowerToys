@@ -59,7 +59,7 @@ namespace Wox.Core.Resource
 
             // Exception of FindResource can't be cathed if global exception handle is set
             var isBlur = Application.Current.TryFindResource("ThemeBlurEnabled");
-            if (isBlur is bool)
+            if (isBlur is bool && Environment.OSVersion.Version >= new Version(6, 2))
             {
                 SetBlurForWindow(Application.Current.MainWindow, (bool)isBlur);
             }
