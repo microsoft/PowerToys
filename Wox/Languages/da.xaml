@@ -1,0 +1,132 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+    <!--MainWindow-->
+    <system:String x:Key="registerHotkeyFailed">Kunne ikke registrere genvejstast: {0}</system:String>
+    <system:String x:Key="couldnotStartCmd">Kunne ikke starte {0}</system:String>
+    <system:String x:Key="invalidWoxPluginFileFormat">Ugyldigt Wox plugin filformat</system:String>
+    <system:String x:Key="setAsTopMostInThisQuery">Sæt øverst i denne søgning</system:String>
+    <system:String x:Key="cancelTopMostInThisQuery">Annuller øverst i denne søgning</system:String>
+    <system:String x:Key="executeQuery">Udfør søgning: {0}</system:String>
+    <system:String x:Key="lastExecuteTime">Seneste afviklingstid: {0}</system:String>
+    <system:String x:Key="iconTrayOpen">Åben</system:String>
+    <system:String x:Key="iconTraySettings">Indstillinger</system:String>
+    <system:String x:Key="iconTrayAbout">Om</system:String>
+    <system:String x:Key="iconTrayExit">Afslut</system:String>
+
+    <!--Setting General-->
+    <system:String x:Key="wox_settings">Wox indstillinger</system:String>
+    <system:String x:Key="general">Generelt</system:String>
+    <system:String x:Key="startWoxOnSystemStartup">Start Wox ved system start</system:String>
+    <system:String x:Key="hideWoxWhenLoseFocus">Skjul Wox ved mistet fokus</system:String>
+    <system:String x:Key="dontPromptUpdateMsg">Vis ikke notifikationer om nye versioner</system:String>
+    <system:String x:Key="rememberLastLocation">Husk seneste position</system:String>
+    <system:String x:Key="language">Sprog</system:String>
+    <system:String x:Key="maxShowResults">Maksimum antal resultater vist</system:String>
+    <system:String x:Key="ignoreHotkeysOnFullscreen">Ignorer genvejstaster i fuldskærmsmode</system:String>
+    <system:String x:Key="pythonDirectory">Python bibliotek</system:String>
+    <system:String x:Key="autoUpdates">Autoopdatering</system:String>
+    <system:String x:Key="selectPythonDirectory">Vælg</system:String>
+    <system:String x:Key="hideOnStartup">Skjul Wox ved opstart</system:String>
+
+    <!--Setting Plugin-->
+    <system:String x:Key="plugin">Plugin</system:String>
+    <system:String x:Key="browserMorePlugins">Find flere plugins</system:String>
+    <system:String x:Key="disable">Deaktiver</system:String>
+    <system:String x:Key="actionKeywords">Nøgleord</system:String>
+    <system:String x:Key="pluginDirectory">Plugin bibliotek</system:String>
+    <system:String x:Key="author">Forfatter</system:String>
+    <system:String x:Key="plugin_init_time">Initaliseringstid: {0}ms</system:String>
+    <system:String x:Key="plugin_query_time">Søgetid: {0}ms</system:String>
+
+    <!--Setting Theme-->
+    <system:String x:Key="theme">Tema</system:String>
+    <system:String x:Key="browserMoreThemes">Søg efter flere temaer</system:String>
+    <system:String x:Key="helloWox">Hej Wox</system:String>
+    <system:String x:Key="queryBoxFont">Søgefelt skrifttype</system:String>
+    <system:String x:Key="resultItemFont">Resultat skrifttype</system:String>
+    <system:String x:Key="windowMode">Vindue mode</system:String>
+    <system:String x:Key="opacity">Gennemsigtighed</system:String>
+
+    <!--Setting Hotkey-->
+    <system:String x:Key="hotkey">Genvejstast</system:String>
+    <system:String x:Key="woxHotkey">Wox genvejstast</system:String>
+    <system:String x:Key="customQueryHotkey">Tilpasset søgegenvejstast</system:String>
+    <system:String x:Key="delete">Slet</system:String>
+    <system:String x:Key="edit">Rediger</system:String>
+    <system:String x:Key="add">Tilføj</system:String>
+    <system:String x:Key="pleaseSelectAnItem">Vælg venligst</system:String>
+    <system:String x:Key="deleteCustomHotkeyWarning">Er du sikker på du vil slette {0} plugin genvejstast?</system:String>
+
+    <!--Setting Proxy-->
+    <system:String x:Key="proxy">HTTP Proxy</system:String>
+    <system:String x:Key="enableProxy">Aktiver HTTP Proxy</system:String>
+    <system:String x:Key="server">HTTP Server</system:String>
+    <system:String x:Key="port">Port</system:String>
+    <system:String x:Key="userName">Brugernavn</system:String>
+    <system:String x:Key="password">Adgangskode</system:String>
+    <system:String x:Key="testProxy">Test Proxy</system:String>
+    <system:String x:Key="save">Gem</system:String>
+    <system:String x:Key="serverCantBeEmpty">Server felt må ikke være tomt</system:String>
+    <system:String x:Key="portCantBeEmpty">Port felt må ikke være tomt</system:String>
+    <system:String x:Key="invalidPortFormat">Ugyldigt port format</system:String>
+    <system:String x:Key="saveProxySuccessfully">Proxy konfiguration gemt</system:String>
+    <system:String x:Key="proxyIsCorrect">Proxy konfiguret korrekt</system:String>
+    <system:String x:Key="proxyConnectFailed">Proxy forbindelse fejlet</system:String>
+
+    <!--Setting About-->
+    <system:String x:Key="about">Om</system:String>
+    <system:String x:Key="website">Website</system:String>
+    <system:String x:Key="version">Version</system:String>
+    <system:String x:Key="about_activate_times">Du har aktiveret Wox {0} gange</system:String>
+    <system:String x:Key="checkUpdates">Tjek for opdateringer</system:String>
+    <system:String x:Key="newVersionTips">Ny version {0} er tilgængelig, genstart venligst Wox</system:String>
+    <system:String x:Key="releaseNotes">Release Notes:</system:String>
+
+    <!--Action Keyword Setting Dialog-->
+    <system:String x:Key="oldActionKeywords">Gammelt nøgleord</system:String>
+    <system:String x:Key="newActionKeywords">Nyt nøgleord</system:String>
+    <system:String x:Key="cancel">Annuller</system:String>
+    <system:String x:Key="done">Færdig</system:String>
+    <system:String x:Key="cannotFindSpecifiedPlugin">Kan ikke finde det valgte plugin</system:String>
+    <system:String x:Key="newActionKeywordsCannotBeEmpty">Nyt nøgleord må ikke være tomt</system:String>
+    <system:String x:Key="newActionKeywordsHasBeenAssigned">Nyt nøgleord er tilknyttet et andet plugin, tilknyt venligst et andet nyt nøgeleord</system:String>
+    <system:String x:Key="succeed">Fortsæt</system:String>
+    <system:String x:Key="actionkeyword_tips">Brug * hvis du ikke vil angive et nøgleord</system:String>
+
+    <!--Custom Query Hotkey Dialog-->
+    <system:String x:Key="preview">Vis</system:String>
+    <system:String x:Key="hotkeyIsNotUnavailable">Genvejstast er utilgængelig, vælg venligst en ny genvejstast</system:String>
+    <system:String x:Key="invalidPluginHotkey">Ugyldig plugin genvejstast</system:String>
+    <system:String x:Key="update">Opdater</system:String>
+
+    <!--Hotkey Control-->
+    <system:String x:Key="hotkeyUnavailable">Genvejstast utilgængelig</system:String>
+
+    <!--Crash Reporter-->
+    <system:String x:Key="reportWindow_version">Version</system:String>
+    <system:String x:Key="reportWindow_time">Tid</system:String>
+    <system:String x:Key="reportWindow_reproduce">Beskriv venligst hvordan Wox crashede, så vi kan rette det.</system:String>
+    <system:String x:Key="reportWindow_send_report">Send rapport</system:String>
+    <system:String x:Key="reportWindow_cancel">Annuller</system:String>
+    <system:String x:Key="reportWindow_general">Generelt</system:String>
+    <system:String x:Key="reportWindow_exceptions">Exceptions</system:String>
+    <system:String x:Key="reportWindow_exception_type">Exception Type</system:String>
+    <system:String x:Key="reportWindow_source">Kilde</system:String>
+    <system:String x:Key="reportWindow_stack_trace">Stack Trace</system:String>
+    <system:String x:Key="reportWindow_sending">Sender</system:String>
+    <system:String x:Key="reportWindow_report_succeed">Rapport sendt korrekt</system:String>
+    <system:String x:Key="reportWindow_report_failed">Kunne ikke sende rapport</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">Wox fik en fejl</system:String>
+
+    <!--update-->
+    <system:String x:Key="update_wox_update_new_version_available">Ny Wox udgivelse {0} er nu tilgængelig</system:String>
+    <system:String x:Key="update_wox_update_error">Der skete en fejl ifm. opdatering af Wox</system:String>
+    <system:String x:Key="update_wox_update">Opdater</system:String>
+    <system:String x:Key="update_wox_update_cancel">Annuler</system:String>
+    <system:String x:Key="update_wox_update_restart_wox_tip">Denne opdatering vil genstarte Wox</system:String>
+    <system:String x:Key="update_wox_update_upadte_files">Følgende filer bliver opdateret</system:String>
+    <system:String x:Key="update_wox_update_files">Opdatereringsfiler</system:String>
+    <system:String x:Key="update_wox_update_upadte_description">Opdateringsbeskrivelse</system:String>
+
+</ResourceDictionary>
