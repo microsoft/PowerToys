@@ -119,7 +119,7 @@ namespace Wox.Plugin.WebSearch
 
         private void OnSelectIconClick(object sender, RoutedEventArgs e)
         {
-            var directory = Path.Combine(Main.ImagesDirectory, Main.Images);
+            var directory = Main.ImagesDirectory;
             const string filter = "Image files (*.jpg, *.jpeg, *.gif, *.png, *.bmp) |*.jpg; *.jpeg; *.gif; *.png; *.bmp";
             var dialog = new OpenFileDialog {InitialDirectory = directory, Filter = filter};
 

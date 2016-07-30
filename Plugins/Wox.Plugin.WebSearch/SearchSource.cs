@@ -13,7 +13,7 @@ namespace Wox.Plugin.WebSearch
         public string ActionKeyword { get; set; }
 
         [NotNull]
-        public string Icon { private get; set; } = DefaultIcon;
+        public string Icon { get; set; } = DefaultIcon;
 
         /// <summary>
         /// All icon should be put under Images directory
