@@ -10,7 +10,7 @@ using Point = System.Windows.Point;
 
 namespace Wox.Helper
 {
-    public class WindowIntelopHelper
+    public class WindowsInteropHelper
     {
         private const int GWL_STYLE = -16; //WPF's Message code for Title Bar's Style 
         private const int WS_SYSMENU = 0x80000; //WPF's Message code for System Menu

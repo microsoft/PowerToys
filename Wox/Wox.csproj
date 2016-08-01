@@ -187,7 +187,7 @@
     <Compile Include="Helper\SingleInstance.cs" />
     <Compile Include="Helper\SyntaxSugars.cs" />
     <Compile Include="Helper\WallpaperPathRetrieval.cs" />
-    <Compile Include="Helper\WindowIntelopHelper.cs" />
+    <Compile Include="Helper\WindowsInteropHelper.cs" />
     <Compile Include="CustomQueryHotkeySetting.xaml.cs">
       <DependentUpon>CustomQueryHotkeySetting.xaml</DependentUpon>
     </Compile>

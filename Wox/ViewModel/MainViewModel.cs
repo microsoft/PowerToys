@@ -544,7 +544,7 @@ namespace Wox.ViewModel
         {
             //double if to omit calling win32 function
             if (_settings.IgnoreHotkeysOnFullscreen)
-                if (WindowIntelopHelper.IsWindowFullscreen())
+                if (WindowsInteropHelper.IsWindowFullscreen())
                     return true;
 
             return false;

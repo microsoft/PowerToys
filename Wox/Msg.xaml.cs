@@ -20,7 +20,7 @@ namespace Wox
         {
             InitializeComponent();
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-            var dipWorkingArea = WindowIntelopHelper.TransformPixelsToDIP(this,
+            var dipWorkingArea = WindowsInteropHelper.TransformPixelsToDIP(this,
                 screen.WorkingArea.Width,
                 screen.WorkingArea.Height);
             Left = dipWorkingArea.X - Width;

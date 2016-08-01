@@ -54,7 +54,7 @@ namespace Wox
 
         private void OnLoaded(object sender, RoutedEventArgs _)
         {
-            WindowIntelopHelper.DisableControlBox(this);
+            WindowsInteropHelper.DisableControlBox(this);
             ThemeManager.Instance.ChangeTheme(_settings.Theme);
             InitProgressbarAnimation();
 
@@ -200,8 +200,8 @@ namespace Wox
         private double WindowLeft()
         {
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-            var dip1 = WindowIntelopHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
-            var dip2 = WindowIntelopHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
+            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
+            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
             var left = (dip2.X - ActualWidth) / 2 + dip1.X;
             return left;
         }
@@ -209,8 +209,8 @@ namespace Wox
         private double WindowTop()
         {
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-            var dip1 = WindowIntelopHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
-            var dip2 = WindowIntelopHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
+            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
+            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
             var top = (dip2.Y - QueryTextBox.ActualHeight) / 4 + dip1.Y;
             return top;
         }
