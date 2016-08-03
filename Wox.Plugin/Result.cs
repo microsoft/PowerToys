@@ -91,7 +91,7 @@ namespace Wox.Plugin
         public List<Result> ContextMenu { get; set; }
 
         [Obsolete("Use Object initializers instead")]
-        public Result(string Titles, string IcoPath, string SubTitle = null)
+        public Result(string Title, string IcoPath, string SubTitle = null)
         {
             this.Title = Title;
             this.IcoPath = IcoPath;

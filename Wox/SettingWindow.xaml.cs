@@ -232,16 +232,13 @@ namespace Wox
         {
             if (e.ChangedButton == MouseButton.Left)
             {
-                if (e.ChangedButton == MouseButton.Left)
+                var website = _viewModel.SelectedPlugin.PluginPair.Metadata.Website;
+                if (!string.IsNullOrEmpty(website))
                 {
-                    var website = _viewModel.SelectedPlugin.PluginPair.Metadata.Website;
-                    if (!string.IsNullOrEmpty(website))
+                    var uri = new Uri(website);
+                    if (Uri.CheckSchemeName(uri.Scheme))
                     {
-                        var uri = new Uri(website);
-                        if (Uri.CheckSchemeName(uri.Scheme))
-                        {
-                            Process.Start(website);
-                        }
+                        Process.Start(website);
                     }
                 }
             }
