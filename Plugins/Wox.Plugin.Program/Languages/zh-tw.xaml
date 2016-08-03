@@ -5,33 +5,33 @@
     <!--Program setting-->
     <system:String x:Key="wox_plugin_program_delete">刪除</system:String>
     <system:String x:Key="wox_plugin_program_edit">編輯</system:String>
-    <system:String x:Key="wox_plugin_program_add">增加</system:String>
-    <system:String x:Key="wox_plugin_program_location">位置</system:String>
-    <system:String x:Key="wox_plugin_program_suffixes">索引文件後綴</system:String>
-    <system:String x:Key="wox_plugin_program_reindex">重新索引</system:String>
-    <system:String x:Key="wox_plugin_program_indexing">索引中</system:String>
-    <system:String x:Key="wox_plugin_program_index_start">指数开始菜单</system:String>
-    <system:String x:Key="wox_plugin_program_index_registry">指数注册</system:String>
-    <system:String x:Key="wox_plugin_program_suffixes_header">后缀</system:String>
+    <system:String x:Key="wox_plugin_program_add">新增</system:String>
+    <system:String x:Key="wox_plugin_program_location">路徑</system:String>
+    <system:String x:Key="wox_plugin_program_suffixes">索引副檔名清單</system:String>
+    <system:String x:Key="wox_plugin_program_reindex">重新建立索引</system:String>
+    <system:String x:Key="wox_plugin_program_indexing">正在建立索引</system:String>
+    <system:String x:Key="wox_plugin_program_index_start">替開始選單建立索引</system:String>
+    <system:String x:Key="wox_plugin_program_index_registry">替登錄檔建立索引</system:String>
+    <system:String x:Key="wox_plugin_program_suffixes_header">副檔名</system:String>
     <system:String x:Key="wox_plugin_program_max_depth_header">最大深度</system:String>
 
-    <system:String x:Key="wox_plugin_program_directory">目录</system:String>
-    <system:String x:Key="wox_plugin_program_browse">浏览</system:String>
-    <system:String x:Key="wox_plugin_program_file_suffixes">文件后缀</system:String>
-    <system:String x:Key="wox_plugin_program_max_search_depth">最大搜索深度（-1是无限的）：</system:String>
+    <system:String x:Key="wox_plugin_program_directory">目錄</system:String>
+    <system:String x:Key="wox_plugin_program_browse">瀏覽</system:String>
+    <system:String x:Key="wox_plugin_program_file_suffixes">副檔名</system:String>
+    <system:String x:Key="wox_plugin_program_max_search_depth">最大搜尋深度（-1是無限的）：</system:String>
 
     <system:String x:Key="wox_plugin_program_pls_select_program_source">請先選擇一項</system:String>
     <system:String x:Key="wox_plugin_program_delete_program_source">你確定要刪除{0}嗎？</system:String>
 
     <system:String x:Key="wox_plugin_program_update">更新</system:String>
-    <system:String x:Key="wox_plugin_program_only_index_tip">Wox僅索引下列後綴的文件：</system:String>
-    <system:String x:Key="wox_plugin_program_split_by_tip">（每個後綴以英文狀態下的分號分隔）</system:String>
-    <system:String x:Key="wox_plugin_program_update_file_suffixes">成功更新索引文件後綴</system:String>
-    <system:String x:Key="wox_plugin_program_suffixes_cannot_empty">文件後綴不能為空</system:String>
+    <system:String x:Key="wox_plugin_program_only_index_tip">Wox 僅索引下列副檔名的檔案：</system:String>
+    <system:String x:Key="wox_plugin_program_split_by_tip">（每個副檔名以英文的分號分隔）</system:String>
+    <system:String x:Key="wox_plugin_program_update_file_suffixes">成功更新索引副檔名清單</system:String>
+    <system:String x:Key="wox_plugin_program_suffixes_cannot_empty">副檔名不能為空</system:String>
     
-    <system:String x:Key="wox_plugin_program_run_as_administrator">以管理員身份運行</system:String>
-    <system:String x:Key="wox_plugin_program_open_containing_folder">打開所屬文件夾</system:String>
+    <system:String x:Key="wox_plugin_program_run_as_administrator">以系統管理員身分執行</system:String>
+    <system:String x:Key="wox_plugin_program_open_containing_folder">開啟檔案位置</system:String>
 
-    <system:String x:Key="wox_plugin_program_plugin_name">程序</system:String>
-    <system:String x:Key="wox_plugin_program_plugin_description">在Wox中搜索程序</system:String>
+    <system:String x:Key="wox_plugin_program_plugin_name">程式</system:String>
+    <system:String x:Key="wox_plugin_program_plugin_description">在 Wox 中搜尋程式</system:String>
 </ResourceDictionary>
