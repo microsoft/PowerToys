@@ -10,7 +10,7 @@ namespace Wox.Plugin.Caculator
     {
         private static Regex regValidExpressChar = new Regex(
                         @"^(" +
-                        @"ceil|floor|exp|pi|e|max|min|det|abs|log|ln" +
+                        @"ceil|floor|exp|pi|e|max|min|det|abs|log|ln|sqrt" +
                         @"sin|cos|tan|arcsin|arccos|arctan|" +
                         @"eigval|eigvec|eig|sum|polar|plot|round|sort|real|zeta|" +
                         @"bin2dec|hex2dec|oct2dec|" +
