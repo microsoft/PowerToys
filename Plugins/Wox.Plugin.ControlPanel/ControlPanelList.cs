@@ -230,6 +230,12 @@ namespace Wox.Plugin.ControlPanel
                 if (currentKey.OpenSubKey("DefaultIcon").GetValue(null) != null)
                 {
                     iconString = new List<string>(currentKey.OpenSubKey("DefaultIcon").GetValue(null).ToString().Split(new[] { ',' }, 2));
+                    if (string.IsNullOrEmpty(iconString[0]))
+                    {
+                        // fallback to default icon
+                        return null;
+                    }
+
                     if (iconString[0][0] == '@')
                     {
                         iconString[0] = iconString[0].Substring(1);
