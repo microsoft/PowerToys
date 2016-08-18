@@ -15,7 +15,7 @@ namespace Wox.Plugin.Program
     public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
     {
         private static List<Program> _programs = new List<Program>();
-        private static List<UWPApp> _uwpApps = new List<UWPApp>();
+        private static List<UWP> _uwpApps = new List<UWP>();
 
         private PluginInitContext _context;
 
@@ -81,15 +81,15 @@ namespace Wox.Plugin.Program
             };
             return result;
         }
-        public Result ResultFromUWPApp(UWPApp uwpApp)
+        public Result ResultFromUWPApp(UWP uwp)
         {
-            var app = uwpApp.Apps[0];
+            var app = uwp.Apps[0];
             var result = new Result
             {
                 Title = app.DisplayName,
                 SubTitle = $"Windows Store app: {app.Description}",
                 Icon = app.Logo,
-                Score = uwpApp.Score,
+                Score = uwp.Score,
                 ContextData = app,
                 Action = e =>
                 {
@@ -111,7 +111,7 @@ namespace Wox.Plugin.Program
             return score;
         }
 
-        private int Score(UWPApp app, string query)
+        private int Score(UWP app, string query)
         {
             var score1 = StringMatcher.Score(app.Apps[0].DisplayName, query);
             var score2 = StringMatcher.ScoreForPinyin(app.Apps[0].DisplayName, query);
@@ -144,7 +144,7 @@ namespace Wox.Plugin.Program
             var support = Environment.OSVersion.Version.Major >= windows10.Major;
             if (support)
             {
-                _uwpApps = UWPApp.All();
+                _uwpApps = UWP.All();
             }
         }
 

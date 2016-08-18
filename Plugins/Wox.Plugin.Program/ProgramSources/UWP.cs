@@ -6,21 +6,23 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading;
 using Windows.ApplicationModel;
 using Windows.Management.Deployment;
 using Windows.ApplicationModel.Core;
-using Windows.Foundation;
 using Windows.Storage.Streams;
 using AppxPackaing;
 using Shell;
 using Wox.Infrastructure.Logger;
 using IStream = AppxPackaing.IStream;
+using Path = System.IO.Path;
+using Size = Windows.Foundation.Size;
 
 namespace Wox.Plugin.Program.ProgramSources
 {
-    public class UWPApp
+    public class UWP
     {
         public string Name { get; }
         public string FullName { get; }
@@ -41,7 +43,7 @@ namespace Wox.Plugin.Program.ProgramSources
 
 
 
-        public UWPApp(Package package)
+        public UWP(Package package)
         {
             Package = package;
             Name = Package.Id.Name;
@@ -50,7 +52,7 @@ namespace Wox.Plugin.Program.ProgramSources
             Location = Package.InstalledLocation.Path;
 
             InitializeAppDisplayInfo(package);
-            InitializeAppInfo(package);
+            InitializeAppInfo();
             Apps = Apps.Where(a =>
             {
                 var valid = !string.IsNullOrEmpty(a.Executable) &&
@@ -60,7 +62,7 @@ namespace Wox.Plugin.Program.ProgramSources
             }).ToArray();
         }
 
-        private void InitializeAppInfo(Package package)
+        private void InitializeAppInfo()
         {
             var manifestPath = Path.Combine(Location, "AppxManifest.xml");
             var appxFactory = new AppxFactory();
@@ -90,11 +92,10 @@ namespace Wox.Plugin.Program.ProgramSources
                 while (apps.GetHasCurrent() != 0 && i <= Apps.Length)
                 {
                     var currentApp = apps.GetCurrent();
-                    var userModelId = currentApp.GetAppUserModelId();
-                    var executable = currentApp.GetStringValue("Executable");
-
-                    Apps[i].Executable = executable;
-                    Apps[i].UserModelId = userModelId;
+                    Apps[i].UserModelId = currentApp.GetAppUserModelId();
+                    Apps[i].Executable = currentApp.GetStringValue("Executable");
+                    Apps[i].BackgroundColor = currentApp.GetStringValue("BackgroundColor");
+                    Apps[i].LogoPath = Path.Combine(Location, currentApp.GetStringValue("Square44x44Logo"));
 
                     apps.MoveNext();
                     i++;
@@ -126,19 +127,19 @@ namespace Wox.Plugin.Program.ProgramSources
             {
                 DisplayName = a.DisplayInfo.DisplayName,
                 Description = a.DisplayInfo.Description,
-                LogoStream = a.DisplayInfo.GetLogo(new Size(150, 150))
+                LogoStream = a.DisplayInfo.GetLogo(new Size(10, 10))
             }).ToArray();
         }
 
-        public static List<UWPApp> All()
+        public static List<UWP> All()
         {
             var packages = CurrentUserPackages();
-            var uwps = new List<UWPApp>();
+            var uwps = new List<UWP>();
             Parallel.ForEach(packages, p =>
             {
                 try
                 {
-                    var u = new UWPApp(p);
+                    var u = new UWP(p);
                     if (u.Apps.Length > 0)
                     {
                         uwps.Add(u);
@@ -186,7 +187,7 @@ namespace Wox.Plugin.Program.ProgramSources
 
         public override bool Equals(object obj)
         {
-            var uwp = obj as UWPApp;
+            var uwp = obj as UWP;
             if (uwp != null)
             {
                 return FamilyName.Equals(uwp.FamilyName);
@@ -211,6 +212,8 @@ namespace Wox.Plugin.Program.ProgramSources
             public string UserModelId { get; set; }
             public string Executable { get; set; }
             public string PublisherDisplayName { get; set; }
+            public string BackgroundColor { get; set; }
+            public string LogoPath { get; set; }
 
             // todo: wrap with try exception
             public void Launch()
@@ -223,27 +226,98 @@ namespace Wox.Plugin.Program.ProgramSources
             }
 
 
-            public BitmapImage Logo()
+            public ImageSource Logo()
             {
-                IRandomAccessStreamWithContentType stream;
-                try
+                BitmapImage image;
+                if (!string.IsNullOrEmpty(LogoPath))
                 {
-                    stream = LogoStream.OpenReadAsync().AsTask().Result;
+                    // https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
+                    var extension = LogoPath.Substring(LogoPath.Length - 4);
+                    var filename = LogoPath.Substring(0, LogoPath.Length - 4);
+                    // todo: remove hard cod scale
+                    var path1 = $"{filename}.scale-200{extension}";
+                    var path2 = $"{filename}.scale-100{extension}";
+                    var uri = File.Exists(path1) ? new Uri(path1) : new Uri(path2);
+                    image = new BitmapImage(uri);
                 }
-                catch (Exception e)
+                else
                 {
-                    var message = $"{e.Message} @ {DisplayName}";
-                    Log.Error(message);
-                    throw;
+                    IRandomAccessStreamWithContentType stream;
+                    try
+                    {
+                        stream = LogoStream.OpenReadAsync().AsTask().Result;
+                    }
+                    catch (Exception e)
+                    {
+                        var message = $"{e.Message} @ {DisplayName}";
+                        Log.Error(message);
+                        throw;
+                    }
+
+                    image = new BitmapImage();
+                    image.BeginInit();
+                    image.StreamSource = stream.AsStream();
+                    image.EndInit();
                 }
-                var image = new BitmapImage();
-                image.BeginInit();
-                image.StreamSource = stream.AsStream();
-                image.CacheOption = BitmapCacheOption.OnLoad;
-                image.EndInit();
-                // magic! don't know why UI thread can't own it
-                image.Freeze();
-                return image;
+
+                if (!string.IsNullOrEmpty(BackgroundColor) || BackgroundColor == "transparent")
+                {
+                    return PlatedImage(image);
+                }
+                else
+                {
+                    image.Freeze();
+                    return image;
+                }
+            }
+
+            private ImageSource PlatedImage(BitmapImage image)
+            {
+                var width = image.Width;
+                var height = image.Height;
+                var x = 0;
+                var y = 0;
+
+                var group = new DrawingGroup();
+
+                var converted = ColorConverter.ConvertFromString(BackgroundColor);
+                if (converted != null)
+                {
+                    var color = (Color)converted;
+                    var brush = new SolidColorBrush(color);
+                    var pen = new Pen(brush, 1);
+                    var backgroundArea = new Rect(0, 0, width, width);
+                    var rectabgle = new RectangleGeometry(backgroundArea);
+                    var rectDrawing = new GeometryDrawing(brush, pen, rectabgle);
+                    group.Children.Add(rectDrawing);
+
+                    var imageArea = new Rect(x, y, image.Width, image.Height);
+                    var imageDrawing = new ImageDrawing(image, imageArea);
+                    group.Children.Add(imageDrawing);
+
+                    // http://stackoverflow.com/questions/6676072/get-system-drawing-bitmap-of-a-wpf-area-using-visualbrush
+                    var visual = new DrawingVisual();
+                    var context = visual.RenderOpen();
+                    context.DrawDrawing(group);
+                    context.Close();
+                    var scale100DPI = 96;
+                    var bitmap = new RenderTargetBitmap(
+                        Convert.ToInt32(width), Convert.ToInt32(height),
+                        scale100DPI, scale100DPI,
+                        PixelFormats.Pbgra32
+                    );
+                    bitmap.Render(visual);
+
+                    // todo magic! temp fix for cross thread object
+                    bitmap.Freeze();
+                    return bitmap;
+                }
+                else
+                {
+                    var bitmap = new BitmapImage();
+                    bitmap.Freeze();
+                    return bitmap;
+                }
             }
 
             public override string ToString()
