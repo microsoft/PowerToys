@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Windows.Media;
 
 namespace Wox.Plugin
 {
@@ -13,7 +14,7 @@ namespace Wox.Plugin
         public string Title { get; set; }
         public string SubTitle { get; set; }
 
-        public string IcoPath   
+        public string IcoPath
         {
             get { return _icoPath; }
             set
@@ -28,6 +29,11 @@ namespace Wox.Plugin
                 }
             }
         }
+
+        public delegate ImageSource IconDelegate();
+
+        public IconDelegate Icon;
+
 
         /// <summary>
         /// return true to hide wox after select result

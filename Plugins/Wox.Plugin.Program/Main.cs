@@ -15,6 +15,7 @@ namespace Wox.Plugin.Program
     public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
     {
         private static List<Program> _programs = new List<Program>();
+        private static List<UWPApp> _uwpApps = new List<UWPApp>();
 
         private PluginInitContext _context;
 
@@ -46,12 +47,16 @@ namespace Wox.Plugin.Program
 
         public List<Result> Query(Query query)
         {
-            var results = _programs.AsParallel()
-                                   .Where(p => Score(p, query.Search) > 0)
-                                   .OrderByDescending(p => p.Score)
-                                   .Select(ResultFromProgram)
-                                   .ToList();
-            return results;
+            var results1 = _programs.AsParallel()
+                .Where(p => Score(p, query.Search) > 0)
+                .Select(ResultFromProgram);
+
+            var results2 = _uwpApps.AsParallel()
+                .Where(u => Score(u, query.Search) > 0)
+                .Select(ResultFromUWPApp);
+            var result = results1.Concat(results2).ToList();
+
+            return result;
         }
 
         public Result ResultFromProgram(Program p)
@@ -76,6 +81,25 @@ namespace Wox.Plugin.Program
             };
             return result;
         }
+        public Result ResultFromUWPApp(UWPApp uwpApp)
+        {
+            var app = uwpApp.Apps[0];
+            var result = new Result
+            {
+                Title = app.DisplayName,
+                SubTitle = $"Windows Store app: {app.Description}",
+                Icon = app.Logo,
+                Score = uwpApp.Score,
+                ContextData = app,
+                Action = e =>
+                {
+                    app.Launch();
+                    return true;
+                }
+            };
+            return result;
+        }
+
 
         private int Score(Program program, string query)
         {
@@ -84,6 +108,16 @@ namespace Wox.Plugin.Program
             var score3 = StringMatcher.Score(program.ExecutableName, query);
             var score = new[] { score1, score2, score3 }.Max();
             program.Score = score;
+            return score;
+        }
+
+        private int Score(UWPApp app, string query)
+        {
+            var score1 = StringMatcher.Score(app.Apps[0].DisplayName, query);
+            var score2 = StringMatcher.ScoreForPinyin(app.Apps[0].DisplayName, query);
+            var score3 = StringMatcher.Score(app.Apps[0].Description, query);
+            var score = new[] { score1, score2, score3 }.Max();
+            app.Score = score;
             return score;
         }
 
@@ -105,6 +139,13 @@ namespace Wox.Plugin.Program
 
             _programs = programs.ToList();
             _cache.Programs = _programs;
+
+            var windows10 = new Version(10, 0);
+            var support = Environment.OSVersion.Version.Major >= windows10.Major;
+            if (support)
+            {
+                _uwpApps = UWPApp.All();
+            }
         }
 
         private static List<ProgramSource> ProgramSources()
@@ -180,36 +221,43 @@ namespace Wox.Plugin.Program
         public List<Result> LoadContextMenus(Result selectedResult)
         {
             Program p = selectedResult.ContextData as Program;
-            List<Result> contextMenus = new List<Result>
+            if (p != null)
             {
-                new Result
+                List<Result> contextMenus = new List<Result>
                 {
-                    Title = _context.API.GetTranslation("wox_plugin_program_run_as_administrator"),
-                    Action = _ =>
+                    new Result
                     {
-                        var info = new ProcessStartInfo
+                        Title = _context.API.GetTranslation("wox_plugin_program_run_as_administrator"),
+                        Action = _ =>
                         {
-                            FileName = p.Path,
-                            WorkingDirectory = p.Directory,
-                            Verb = "runas"
-                        };
-                        var hide = StartProcess(info);
-                        return hide;
+                            var info = new ProcessStartInfo
+                            {
+                                FileName = p.Path,
+                                WorkingDirectory = p.Directory,
+                                Verb = "runas"
+                            };
+                            var hide = StartProcess(info);
+                            return hide;
+                        },
+                        IcoPath = "Images/cmd.png"
                     },
-                    IcoPath = "Images/cmd.png"
-                },
-                new Result
-                {
-                    Title = _context.API.GetTranslation("wox_plugin_program_open_containing_folder"),
-                    Action = _ =>
+                    new Result
                     {
-                        var hide = StartProcess(new ProcessStartInfo(p.Directory));
-                        return hide;
-                    },
-                    IcoPath = "Images/folder.png"
-                }
-            };
-            return contextMenus;
+                        Title = _context.API.GetTranslation("wox_plugin_program_open_containing_folder"),
+                        Action = _ =>
+                        {
+                            var hide = StartProcess(new ProcessStartInfo(p.Directory));
+                            return hide;
+                        },
+                        IcoPath = "Images/folder.png"
+                    }
+                };
+                return contextMenus;
+            }
+            else
+            {
+                return new List<Result>();
+            }
         }
 
         private bool StartProcess(ProcessStartInfo info)
