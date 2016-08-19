@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Win32;
-using Wox.Infrastructure.Logger;
 
 namespace Wox.Plugin.Program.ProgramSources
 {
@@ -11,49 +11,59 @@ namespace Wox.Plugin.Program.ProgramSources
     {
         public override List<Program> LoadPrograms()
         {
-            var list = new List<Program>();
-            ReadAppPaths(@"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths", list);
-            ReadAppPaths(@"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\App Paths", list);
-                //TODO: need test more on 64-bit
-            return list;
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
+            var programs = new List<Program>();
+            const string appPaths = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
+            using (var root = Registry.LocalMachine.OpenSubKey(appPaths))
+            {
+                if (root != null)
+                {
+                    programs.AddRange(ProgramsFromRegistryKey(root));
+                }
+            }
+            using (var root = Registry.CurrentUser.OpenSubKey(appPaths))
+            {
+                if (root != null)
+                {
+                    programs.AddRange(ProgramsFromRegistryKey(root));
+                }
+            }
+            return programs;
         }
 
-        private void ReadAppPaths(string rootpath, List<Program> list)
+        private IEnumerable<Program> ProgramsFromRegistryKey(RegistryKey root)
         {
-            using (var root = Registry.LocalMachine.OpenSubKey(rootpath))
+            var programs = root.GetSubKeyNames()
+                               .Select(subkey => ProgramFromRegistrySubkey(root, subkey))
+                               .Where(p => !string.IsNullOrEmpty(p.Title));
+            return programs;
+        }
+
+        private Program ProgramFromRegistrySubkey(RegistryKey root, string subkey)
+        {
+            using (var key = root.OpenSubKey(subkey))
             {
-                if (root == null) return;
-                foreach (var item in root.GetSubKeyNames())
+                if (key != null)
                 {
-                    try
+                    var defaultValue = string.Empty;
+                    var path = key.GetValue(defaultValue) as string;
+                    if (!string.IsNullOrEmpty(path))
                     {
-                        using (var key = root.OpenSubKey(item))
+                        // fix path like this: ""\"C:\\folder\\executable.exe\""
+                        path = path.Trim('"');
+                        path = Environment.ExpandEnvironmentVariables(path);
+
+                        if (File.Exists(path))
                         {
-                            var path = key.GetValue("") as string;
-                            if (string.IsNullOrEmpty(path)) continue;
-
-                            // fix path like this ""\"C:\\folder\\executable.exe\"""
-                            const int begin = 0;
-                            var end = path.Length - 1;
-                            const char quotationMark = '"';
-                            if (path[begin] == quotationMark && path[end] == quotationMark)
-                            {
-                                path = path.Substring(begin + 1, path.Length - 2);
-                            }
-
-                            if (!File.Exists(path)) continue;
                             var entry = CreateEntry(path);
-                            entry.ExecutableName = item;
+                            entry.ExecutableName = subkey;
                             entry.Source = this;
-                            list.Add(entry);
+                            return entry;
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Exception(e);
                     }
                 }
             }
+            return new Program();
         }
     }
 }
