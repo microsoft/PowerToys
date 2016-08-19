@@ -154,17 +154,14 @@ namespace Wox.Plugin.Program
             {
                 new CommonStartMenuProgramSource
                 {
-                    BonusPoints = 0,
                     Enabled = _settings.EnableStartMenuSource,
                 },
                 new UserStartMenuProgramSource
                 {
-                    BonusPoints = 0,
                     Enabled = _settings.EnableStartMenuSource,
                 },
                 new AppPathsProgramSource
                 {
-                    BonusPoints = -10,
                     Enabled = _settings.EnableRegistrySource,
                 }
             };
@@ -179,7 +176,6 @@ namespace Wox.Plugin.Program
 
         private static Program ScoreFilter(Program p)
         {
-            p.Score += p.Source.BonusPoints;
             var start = new[] { "启动", "start" };
             var doc = new[] { "帮助", "help", "文档", "documentation" };
             var uninstall = new[] { "卸载", "uninstall" };

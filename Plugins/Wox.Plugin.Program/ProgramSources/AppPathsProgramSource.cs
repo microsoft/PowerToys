@@ -9,11 +9,6 @@ namespace Wox.Plugin.Program.ProgramSources
     [Serializable]
     public class AppPathsProgramSource : ProgramSource
     {
-        public AppPathsProgramSource()
-        {
-            BonusPoints = -10;
-        }
-
         public override List<Program> LoadPrograms()
         {
             var list = new List<Program>();
