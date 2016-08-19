@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -17,7 +16,6 @@ using AppxPackaing;
 using Shell;
 using Wox.Infrastructure.Logger;
 using IStream = AppxPackaing.IStream;
-using Path = System.IO.Path;
 using Size = Windows.Foundation.Size;
 
 namespace Wox.Plugin.Program.ProgramSources
@@ -31,7 +29,6 @@ namespace Wox.Plugin.Program.ProgramSources
 
         public string DisplayName { get; set; }
         public string Description { get; set; }
-        public string Logo { get; set; } //todo
         public string PublisherDisplayName { get; set; }
         public string Location { get; set; }
 
@@ -40,8 +37,6 @@ namespace Wox.Plugin.Program.ProgramSources
         public Package Package { get; }
 
         public int Score { get; set; }
-
-
 
         public UWP(Package package)
         {
@@ -64,25 +59,18 @@ namespace Wox.Plugin.Program.ProgramSources
 
         private void InitializeAppInfo()
         {
-            var manifestPath = Path.Combine(Location, "AppxManifest.xml");
-            var appxFactory = new AppxFactory();
-            IStream manifestStream;
-            var result = SHCreateStreamOnFileEx(
-                manifestPath,
-                Stgm.Read | Stgm.ShareExclusive,
-                0,
-                false,
-                null,
-                out manifestStream
-            );
+            var path = Path.Combine(Location, "AppxManifest.xml");
+            var appx = new AppxFactory();
+            IStream stream;
+            const uint noAttribute = 0x80;
+            const Stgm exclusiveRead = Stgm.Read | Stgm.ShareExclusive;
+            var result = SHCreateStreamOnFileEx(path, exclusiveRead, noAttribute, false, null, out stream);
 
             if (result == Hresult.Ok)
             {
-                var reader = appxFactory.CreateManifestReader(manifestStream);
+                var reader = appx.CreateManifestReader(stream);
 
                 var properties = reader.GetProperties();
-                Logo = properties.GetStringValue("Logo");
-                Logo = Path.Combine(Location, Logo);
                 PublisherDisplayName = properties.GetStringValue("PublisherDisplayName");
                 DisplayName = properties.GetStringValue("DisplayName");
                 Description = properties.GetStringValue("Description");
@@ -127,7 +115,8 @@ namespace Wox.Plugin.Program.ProgramSources
             {
                 DisplayName = a.DisplayInfo.DisplayName,
                 Description = a.DisplayInfo.Description,
-                LogoStream = a.DisplayInfo.GetLogo(new Size(10, 10))
+                // todo: which size is valid?
+                LogoStream = a.DisplayInfo.GetLogo(new Size(44, 44))
             }).ToArray();
         }
 
@@ -228,47 +217,48 @@ namespace Wox.Plugin.Program.ProgramSources
 
             public ImageSource Logo()
             {
-                BitmapImage image;
-                if (!string.IsNullOrEmpty(LogoPath))
-                {
-                    // https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
-                    var extension = LogoPath.Substring(LogoPath.Length - 4);
-                    var filename = LogoPath.Substring(0, LogoPath.Length - 4);
-                    // todo: remove hard cod scale
-                    var path1 = $"{filename}.scale-200{extension}";
-                    var path2 = $"{filename}.scale-100{extension}";
-                    var uri = File.Exists(path1) ? new Uri(path1) : new Uri(path2);
-                    image = new BitmapImage(uri);
-                }
-                else
-                {
-                    IRandomAccessStreamWithContentType stream;
-                    try
-                    {
-                        stream = LogoStream.OpenReadAsync().AsTask().Result;
-                    }
-                    catch (Exception e)
-                    {
-                        var message = $"{e.Message} @ {DisplayName}";
-                        Log.Error(message);
-                        throw;
-                    }
+                var logo = !string.IsNullOrEmpty(LogoPath) ? ImageFromPath(LogoPath) : ImageFromStream(LogoStream);
 
-                    image = new BitmapImage();
-                    image.BeginInit();
-                    image.StreamSource = stream.AsStream();
-                    image.EndInit();
+                var validBaground = !string.IsNullOrEmpty(BackgroundColor) && BackgroundColor != "transparent";
+                var plated = validBaground ? PlatedImage(logo) : logo;
+
+                // todo magic! temp fix for cross thread object
+                plated.Freeze();
+                return plated;
+            }
+
+            private BitmapImage ImageFromPath(string path)
+            {
+                // https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
+                var extension = path.Substring(path.Length - 4);
+                var filename = path.Substring(0, path.Length - 4);
+                // todo: remove hard cod scale
+                var path1 = $"{filename}.scale-200{extension}";
+                var path2 = $"{filename}.scale-100{extension}";
+                var uri = File.Exists(path1) ? new Uri(path1) : new Uri(path2);
+                var image = new BitmapImage(uri);
+                return image;
+            }
+
+            private BitmapImage ImageFromStream(RandomAccessStreamReference reference)
+            {
+                IRandomAccessStreamWithContentType stream;
+                try
+                {
+                    stream = reference.OpenReadAsync().AsTask().Result;
+                }
+                catch (Exception e)
+                {
+                    var message = $"{e.Message} @ {DisplayName}";
+                    Log.Error(message);
+                    throw;
                 }
 
-                if (!string.IsNullOrEmpty(BackgroundColor) || BackgroundColor == "transparent")
-                {
-                    return PlatedImage(image);
-                }
-                else
-                {
-                    image.Freeze();
-                    return image;
-                }
+                var image = new BitmapImage();
+                image.BeginInit();
+                image.StreamSource = stream.AsStream();
+                image.EndInit();
+                return image;
             }
 
             private ImageSource PlatedImage(BitmapImage image)
@@ -300,22 +290,18 @@ namespace Wox.Plugin.Program.ProgramSources
                     var context = visual.RenderOpen();
                     context.DrawDrawing(group);
                     context.Close();
-                    var scale100DPI = 96;
+                    const int dpiScale100 = 96;
                     var bitmap = new RenderTargetBitmap(
                         Convert.ToInt32(width), Convert.ToInt32(height),
-                        scale100DPI, scale100DPI,
+                        dpiScale100, dpiScale100,
                         PixelFormats.Pbgra32
                     );
                     bitmap.Render(visual);
-
-                    // todo magic! temp fix for cross thread object
-                    bitmap.Freeze();
                     return bitmap;
                 }
                 else
                 {
                     var bitmap = new BitmapImage();
-                    bitmap.Freeze();
                     return bitmap;
                 }
             }

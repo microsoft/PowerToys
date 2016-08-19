@@ -15,7 +15,7 @@ namespace Wox.Plugin.Program
     public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
     {
         private static List<Program> _programs = new List<Program>();
-        private static List<UWP> _uwpApps = new List<UWP>();
+        private static List<UWP> _uwps = new List<UWP>();
 
         private PluginInitContext _context;
 
@@ -51,7 +51,7 @@ namespace Wox.Plugin.Program
                 .Where(p => Score(p, query.Search) > 0)
                 .Select(ResultFromProgram);
 
-            var results2 = _uwpApps.AsParallel()
+            var results2 = _uwps.AsParallel()
                 .Where(u => Score(u, query.Search) > 0)
                 .Select(ResultFromUWPApp);
             var result = results1.Concat(results2).ToList();
@@ -144,7 +144,7 @@ namespace Wox.Plugin.Program
             var support = Environment.OSVersion.Version.Major >= windows10.Major;
             if (support)
             {
-                _uwpApps = UWP.All();
+                _uwps = UWP.All();
             }
         }
 

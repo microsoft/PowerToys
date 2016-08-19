@@ -24,7 +24,6 @@ namespace Wox.ViewModel
             {
                 if (string.IsNullOrEmpty(Result.IcoPath))
                 {
-                    ImageSource icon = null;
                     try
                     {
                         return Result.Icon();
