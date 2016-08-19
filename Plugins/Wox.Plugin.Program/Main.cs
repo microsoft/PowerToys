@@ -152,24 +152,28 @@ namespace Wox.Plugin.Program
 
         private static List<ProgramSource> ProgramSources()
         {
-            var fileSystemSource = new List<FileSystemProgramSource>();
+            var sources = new List<ProgramSource>();
+            var source1 = _settings.ProgramSources;
+            sources.AddRange(source1);
             if (_settings.EnableStartMenuSource)
             {
-                fileSystemSource.Add(new CommonStartMenuProgramSource());
-                fileSystemSource.Add(new UserStartMenuProgramSource());
+                var source2 = new StartMenu();
+                sources.Add(source2);
             }
-            fileSystemSource.AddRange(_settings.ProgramSources);
-            FileChangeWatcher.AddAll(fileSystemSource, _settings.ProgramSuffixes);
-            foreach (var s in fileSystemSource)
-            {
-                s.Suffixes = _settings.ProgramSuffixes;
-            }
-
-            var sources = new List<ProgramSource>();
-            sources.AddRange(fileSystemSource);
             if (_settings.EnableRegistrySource)
             {
-                sources.Add(new AppPathsProgramSource());
+                var source3 = new AppPathsProgramSource();
+                sources.Add(source3);
+            }
+
+            FileChangeWatcher.AddAll(source1, _settings.ProgramSuffixes);
+            foreach (var source in sources)
+            {
+                var win32 = source as Win32;
+                if (win32 != null)
+                {
+                    win32.Suffixes = _settings.ProgramSuffixes;
+                }
             }
 
             return sources;

@@ -71,7 +71,9 @@
       <DependentUpon>AddProgramSource.xaml</DependentUpon>
     </Compile>
     <Compile Include="FileChangeWatcher.cs" />
+    <Compile Include="ProgramSources\StartMenu.cs" />
     <Compile Include="ProgramSources\UWP.cs" />
+    <Compile Include="ProgramSources\Win32.cs" />
     <Compile Include="SuffixesConverter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProgramIndexCache.cs" />
@@ -81,9 +83,7 @@
     </Compile>
     <Compile Include="ProgramSources\ProgramSource.cs" />
     <Compile Include="ProgramSources\AppPathsProgramSource.cs" />
-    <Compile Include="ProgramSources\CommonStartMenuProgramSource.cs" />
     <Compile Include="ProgramSources\FileSystemProgramSource.cs" />
-    <Compile Include="ProgramSources\UserStartMenuProgramSource.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="ProgramSuffixes.xaml.cs">
       <DependentUpon>ProgramSuffixes.xaml</DependentUpon>

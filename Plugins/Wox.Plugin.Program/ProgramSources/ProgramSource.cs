@@ -8,37 +8,6 @@ namespace Wox.Plugin.Program.ProgramSources
     [Serializable]
     public abstract class ProgramSource
     {
-
         public abstract List<Program> LoadPrograms();
-
-        protected Program CreateEntry(string file)
-        {
-            var p = new Program
-            {
-                Title = Path.GetFileNameWithoutExtension(file),
-                IcoPath = file,
-                Path = file,
-                Directory = Directory.GetParent(file).FullName
-            };
-
-            switch (Path.GetExtension(file).ToLower())
-            {
-                case ".exe":
-                    p.ExecutableName = Path.GetFileName(file);
-                    try
-                    {
-                        var versionInfo = FileVersionInfo.GetVersionInfo(file);
-                        if (!string.IsNullOrEmpty(versionInfo.FileDescription))
-                        {
-                            p.Title = versionInfo.FileDescription;
-                        }
-                    }
-                    catch (Exception)
-                    {
-                    }
-                    break;
-            }
-            return p;
-        }
     }
 }

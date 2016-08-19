@@ -15,6 +15,5 @@ namespace Wox.Plugin.Program
         public string Directory { get; set; }
         public string ExecutableName { get; set; }
         public int Score { get; set; }
-        public ProgramSource Source { get; set; }
     }
 }

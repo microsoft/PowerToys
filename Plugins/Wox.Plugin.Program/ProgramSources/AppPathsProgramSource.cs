@@ -7,7 +7,7 @@ using Microsoft.Win32;
 namespace Wox.Plugin.Program.ProgramSources
 {
     [Serializable]
-    public class AppPathsProgramSource : ProgramSource
+    public class AppPathsProgramSource : Win32
     {
         public override List<Program> LoadPrograms()
         {
@@ -57,7 +57,6 @@ namespace Wox.Plugin.Program.ProgramSources
                         {
                             var entry = CreateEntry(path);
                             entry.ExecutableName = subkey;
-                            entry.Source = this;
                             return entry;
                         }
                     }
