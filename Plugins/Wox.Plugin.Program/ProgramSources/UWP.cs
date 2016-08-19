@@ -235,9 +235,21 @@ namespace Wox.Plugin.Program.ProgramSources
                 // todo: remove hard cod scale
                 var path1 = $"{filename}.scale-200{extension}";
                 var path2 = $"{filename}.scale-100{extension}";
-                var uri = File.Exists(path1) ? new Uri(path1) : new Uri(path2);
-                var image = new BitmapImage(uri);
-                return image;
+                if (File.Exists(path1))
+                {
+                    var image = new BitmapImage(new Uri(path1));
+                    return image;
+                }
+                else if (File.Exists(path2))
+                {
+                    var image = new BitmapImage(new Uri(path2));
+                    return image;
+                }
+                else
+                {
+                    // todo: replaced with wox error logo
+                    return new BitmapImage();
+                }
             }
 
             private BitmapImage ImageFromStream(RandomAccessStreamReference reference)
