@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Windows.Controls;
 using Wox.Infrastructure;
@@ -130,6 +131,7 @@ namespace Wox.Plugin.Program
         {
             var sources = ProgramSources();
 
+
             var programs = sources.AsParallel()
                     .SelectMany(s => s.LoadPrograms())
                 // filter duplicate program
@@ -150,19 +152,30 @@ namespace Wox.Plugin.Program
 
         private static List<ProgramSource> ProgramSources()
         {
-            var sources = new List<ProgramSource>();
+            var fileSystemSource = new List<FileSystemProgramSource>();
             if (_settings.EnableStartMenuSource)
             {
-                sources.Add(new CommonStartMenuProgramSource());
-                sources.Add(new UserStartMenuProgramSource());
+                fileSystemSource.Add(new CommonStartMenuProgramSource());
+                fileSystemSource.Add(new UserStartMenuProgramSource());
             }
+            fileSystemSource.AddRange(_settings.ProgramSources);
+            FileChangeWatcher.AddAll(fileSystemSource, _settings.ProgramSuffixes);
+            foreach (var s in fileSystemSource)
+            {
+                s.Suffixes = _settings.ProgramSuffixes;
+            }
+
+            var sources = new List<ProgramSource>();
+            sources.AddRange(fileSystemSource);
             if (_settings.EnableRegistrySource)
             {
                 sources.Add(new AppPathsProgramSource());
             }
-            sources.AddRange(_settings.ProgramSources);
+
             return sources;
         }
+
+        
 
         private static Program ScoreFilter(Program p)
         {

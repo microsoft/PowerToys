@@ -17,7 +17,6 @@ namespace Wox.Plugin.Program
         {
             InitializeComponent();
             _settings = settings;
-            Suffixes.Text = string.Join(";", settings.ProgramSuffixes);
             Directory.Focus();
         }
 
@@ -29,7 +28,6 @@ namespace Wox.Plugin.Program
             InitializeComponent();
             Directory.Text = _editing.Location;
             MaxDepth.Text = _editing.MaxDepth.ToString();
-            Suffixes.Text = string.Join(";", _editing.Suffixes);
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -56,7 +54,6 @@ namespace Wox.Plugin.Program
                 {
                     Location = Directory.Text,
                     MaxDepth = max,
-                    Suffixes = Suffixes.Text.Split(ProgramSource.SuffixSeperator),
                 };
                 _settings.ProgramSources.Add(source);
             }
@@ -64,7 +61,6 @@ namespace Wox.Plugin.Program
             {
                 _editing.Location = Directory.Text;
                 _editing.MaxDepth = max;
-                _editing.Suffixes = Suffixes.Text.Split(ProgramSource.SuffixSeperator);
             }
 
             DialogResult = true;

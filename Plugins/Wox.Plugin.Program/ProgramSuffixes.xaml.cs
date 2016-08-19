@@ -17,7 +17,7 @@ namespace Wox.Plugin.Program
             this.context = context;
             InitializeComponent();
             _settings = settings;
-            tbSuffixes.Text = string.Join(ProgramSource.SuffixSeperator.ToString(), _settings.ProgramSuffixes);
+            tbSuffixes.Text = string.Join(Settings.SuffixSeperator.ToString(), _settings.ProgramSuffixes);
         }
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
@@ -29,7 +29,7 @@ namespace Wox.Plugin.Program
                 return;
             }
 
-            _settings.ProgramSuffixes = tbSuffixes.Text.Split(ProgramSource.SuffixSeperator);
+            _settings.ProgramSuffixes = tbSuffixes.Text.Split(Settings.SuffixSeperator);
             string msg = context.API.GetTranslation("wox_plugin_program_update_file_suffixes");
             MessageBox.Show(msg);
         }

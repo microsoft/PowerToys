@@ -8,11 +8,6 @@ namespace Wox.Plugin.Program.ProgramSources
     [Serializable]
     public abstract class ProgramSource
     {
-        public const char SuffixSeperator = ';';
-        
-        // happlebao todo: temp hack for program suffixes
-        public string[] Suffixes { get; set; } = {"bat", "appref-ms", "exe", "lnk"};
-        public int MaxDepth { get; set; } = -1;
 
         public abstract List<Program> LoadPrograms();
 

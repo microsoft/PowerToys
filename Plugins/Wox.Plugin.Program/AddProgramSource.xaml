@@ -15,10 +15,6 @@
             <Button Name="BrowseButton" Content="{DynamicResource wox_plugin_program_browse}" HorizontalAlignment="Left" VerticalAlignment="Center" Width="75" Click="BrowseButton_Click" />
         </StackPanel>
         <StackPanel Orientation="Horizontal">
-            <Label Content="{DynamicResource wox_plugin_program_file_suffixes}" />
-            <TextBox x:Name="Suffixes" VerticalAlignment="Center" Width="297" Margin="0,7" />
-        </StackPanel>
-        <StackPanel Orientation="Horizontal">
             <Label Content="{DynamicResource wox_plugin_program_max_search_depth}" />
             <TextBox Name="MaxDepth" Text="-1" VerticalAlignment="Center" Width="146" Margin="0,7" />
         </StackPanel>

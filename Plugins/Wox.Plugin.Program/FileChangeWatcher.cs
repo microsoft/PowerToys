@@ -2,12 +2,24 @@
 using System.IO;
 using System.Threading.Tasks;
 using Wox.Infrastructure.Logger;
+using Wox.Plugin.Program.ProgramSources;
 
 namespace Wox.Plugin.Program
 {
     internal static class FileChangeWatcher
     {
         private static readonly List<string> WatchedPath = new List<string>();
+        // todo remove previous watcher events
+        public static void AddAll(List<FileSystemProgramSource> sources, string[] suffixes)
+        {
+            foreach (var s in sources)
+            {
+                if (Directory.Exists(s.Location))
+                {
+                    AddWatch(s.Location, suffixes);
+                }
+            }
+        }
 
         public static void AddWatch(string path, string[] programSuffixes, bool includingSubDirectory = true)
         {

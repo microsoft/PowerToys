@@ -32,13 +32,6 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="{DynamicResource wox_plugin_program_suffixes_header}"  Width="220">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Suffixes, ConverterParameter=(null), Converter={program:SuffixesConvert}}"/>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
                     <GridViewColumn Header="{DynamicResource wox_plugin_program_max_depth_header}"  Width="75">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>

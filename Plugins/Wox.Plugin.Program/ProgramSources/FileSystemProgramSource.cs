@@ -11,56 +11,52 @@ namespace Wox.Plugin.Program.ProgramSources
     public class FileSystemProgramSource : ProgramSource
     {
         public string Location { get; set; } = "";
+        public int MaxDepth { get; set; } = -1;
+        internal string[] Suffixes { get; set; }  = { "" };
 
         public override List<Program> LoadPrograms()
         {
-            var list = new List<Program>();
-            if (Directory.Exists(Location))
+            if (Directory.Exists(Location) && MaxDepth >= -1)
             {
-                GetAppFromDirectory(Location, list);
-                FileChangeWatcher.AddWatch(Location, Suffixes);
+                var apps = new List<Program>();
+                GetAppFromDirectory(apps, Location, 0);
+                return apps;
             }
-            return list;
+            else
+            {
+                return new List<Program>();
+            }
         }
 
-        private void GetAppFromDirectory(string path, List<Program> list)
+        private void GetAppFromDirectory(List<Program> apps, string path, int depth)
         {
-            GetAppFromDirectory(path, list, 0);
-        }
-
-        private void GetAppFromDirectory(string path, List<Program> list, int depth)
-        {
-            if (MaxDepth != -1 && depth > MaxDepth)
-            {
-                return;
-            }
-            try
+            if (MaxDepth != depth)
             {
                 foreach (var file in Directory.GetFiles(path))
                 {
                     if (Suffixes.Any(o => file.EndsWith("." + o)))
                     {
-                        var p = CreateEntry(file);
+                        Program p;
+                        try
+                        {
+                            p = CreateEntry(file);
+                        }
+                        catch (Exception e)
+                        {
+                            var woxPluginException = new WoxPluginException("Program",
+                                $"GetAppFromDirectory failed: {path}", e);
+                            Log.Exception(woxPluginException);
+                            continue;
+                        }
                         p.Source = this;
-                        list.Add(p);
+                        apps.Add(p);
                     }
                 }
-
-                foreach (var subDirectory in Directory.GetDirectories(path))
+                foreach (var d in Directory.GetDirectories(path))
                 {
-                    GetAppFromDirectory(subDirectory, list, depth + 1);
+                    GetAppFromDirectory(apps, d, depth + 1);
                 }
             }
-            catch (Exception e)
-            {
-                var woxPluginException = new WoxPluginException("Program", $"GetAppFromDirectory failed: {path}", e);
-                Log.Exception(woxPluginException);
-            }
-        }
-        public override string ToString()
-        {
-            var display = GetType().Name + Location;
-            return display;
         }
     }
 }
