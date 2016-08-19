@@ -75,15 +75,15 @@
     <Compile Include="ProgramSources\UWP.cs" />
     <Compile Include="ProgramSources\Win32.cs" />
     <Compile Include="SuffixesConverter.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="ProgramSources\Program.cs" />
     <Compile Include="ProgramIndexCache.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="ProgramSetting.xaml.cs">
       <DependentUpon>ProgramSetting.xaml</DependentUpon>
     </Compile>
     <Compile Include="ProgramSources\ProgramSource.cs" />
-    <Compile Include="ProgramSources\AppPathsProgramSource.cs" />
-    <Compile Include="ProgramSources\FileSystemProgramSource.cs" />
+    <Compile Include="ProgramSources\AppPathsPrograms.cs" />
+    <Compile Include="ProgramSources\UnregisteredPrograms.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="ProgramSuffixes.xaml.cs">
       <DependentUpon>ProgramSuffixes.xaml</DependentUpon>
