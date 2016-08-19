@@ -57,7 +57,6 @@ namespace Wox.Plugin.Program
                     Location = Directory.Text,
                     MaxDepth = max,
                     Suffixes = Suffixes.Text.Split(ProgramSource.SuffixSeperator),
-                    Enabled = true
                 };
                 _settings.ProgramSources.Add(source);
             }

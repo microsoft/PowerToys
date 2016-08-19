@@ -123,7 +123,6 @@ namespace Wox.Plugin.Program
                         _settings.ProgramSources.Add(new FileSystemProgramSource
                         {
                             Location = s,
-                            Enabled = true
                         });
 
                         ReIndexing();

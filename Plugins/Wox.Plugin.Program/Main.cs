@@ -150,27 +150,17 @@ namespace Wox.Plugin.Program
 
         private static List<ProgramSource> ProgramSources()
         {
-            var sources = new List<ProgramSource>
+            var sources = new List<ProgramSource>();
+            if (_settings.EnableStartMenuSource)
             {
-                new CommonStartMenuProgramSource
-                {
-                    Enabled = _settings.EnableStartMenuSource,
-                },
-                new UserStartMenuProgramSource
-                {
-                    Enabled = _settings.EnableStartMenuSource,
-                },
-                new AppPathsProgramSource
-                {
-                    Enabled = _settings.EnableRegistrySource,
-                }
-            };
-
-            if (_settings.ProgramSources.Count(o => o.Enabled) > 0)
-            {
-                sources.AddRange(_settings.ProgramSources);
+                sources.Add(new CommonStartMenuProgramSource());
+                sources.Add(new UserStartMenuProgramSource());
             }
-
+            if (_settings.EnableRegistrySource)
+            {
+                sources.Add(new AppPathsProgramSource());
+            }
+            sources.AddRange(_settings.ProgramSources);
             return sources;
         }
 

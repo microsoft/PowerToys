@@ -10,7 +10,6 @@ namespace Wox.Plugin.Program.ProgramSources
     {
         public const char SuffixSeperator = ';';
         
-        public bool Enabled { get; set; } = true;
         // happlebao todo: temp hack for program suffixes
         public string[] Suffixes { get; set; } = {"bat", "appref-ms", "exe", "lnk"};
         public int MaxDepth { get; set; } = -1;
