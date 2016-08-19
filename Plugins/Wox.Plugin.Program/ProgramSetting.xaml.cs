@@ -51,7 +51,7 @@ namespace Wox.Plugin.Program
 
         private void btnDeleteProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
-            var selectedProgramSource = programSourceView.SelectedItem as FileSystemProgramSource;
+            var selectedProgramSource = programSourceView.SelectedItem as UnregisteredPrograms;
             if (selectedProgramSource != null)
             {
                 string msg = string.Format(context.API.GetTranslation("wox_plugin_program_delete_program_source"), selectedProgramSource.Location);
@@ -71,7 +71,7 @@ namespace Wox.Plugin.Program
 
         private void btnEditProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
-            var selectedProgramSource = programSourceView.SelectedItem as FileSystemProgramSource;
+            var selectedProgramSource = programSourceView.SelectedItem as UnregisteredPrograms;
             if (selectedProgramSource != null)
             {
                 var add = new AddProgramSource(selectedProgramSource, _settings);
@@ -120,9 +120,9 @@ namespace Wox.Plugin.Program
                 {
                     if (Directory.Exists(s))
                     {
-                        _settings.ProgramSources.Add(new FileSystemProgramSource
+                        _settings.ProgramSources.Add(new UnregisteredPrograms
                         {
-                            Location = s,
+                            Location = s
                         });
 
                         ReIndexing();

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Forms;
 using Wox.Plugin.Program.ProgramSources;
 
@@ -10,7 +9,7 @@ namespace Wox.Plugin.Program
     /// </summary>
     public partial class AddProgramSource
     {
-        private FileSystemProgramSource _editing;
+        private UnregisteredPrograms _editing;
         private Settings _settings;
 
         public AddProgramSource(Settings settings)
@@ -20,7 +19,7 @@ namespace Wox.Plugin.Program
             Directory.Focus();
         }
 
-        public AddProgramSource(FileSystemProgramSource edit, Settings settings)
+        public AddProgramSource(UnregisteredPrograms edit, Settings settings)
         {
             _editing = edit;
             _settings = settings;
@@ -50,10 +49,10 @@ namespace Wox.Plugin.Program
 
             if(_editing == null)
             {
-                var source = new FileSystemProgramSource
+                var source = new UnregisteredPrograms
                 {
                     Location = Directory.Text,
-                    MaxDepth = max,
+                    MaxDepth = max
                 };
                 _settings.ProgramSources.Add(source);
             }

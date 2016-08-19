@@ -10,7 +10,7 @@ namespace Wox.Plugin.Program
     {
         private static readonly List<string> WatchedPath = new List<string>();
         // todo remove previous watcher events
-        public static void AddAll(List<FileSystemProgramSource> sources, string[] suffixes)
+        public static void AddAll(List<UnregisteredPrograms> sources, string[] suffixes)
         {
             foreach (var s in sources)
             {

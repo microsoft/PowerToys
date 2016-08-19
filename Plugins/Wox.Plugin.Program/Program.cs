@@ -1,8 +1,4 @@
 using System;
-using System.Text.RegularExpressions;
-using System.Threading;
-using Wox.Infrastructure;
-using Wox.Plugin.Program.ProgramSources;
 
 namespace Wox.Plugin.Program
 {

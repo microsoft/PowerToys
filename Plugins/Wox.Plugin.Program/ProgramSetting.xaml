@@ -14,11 +14,11 @@
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch">
             <StackPanel Orientation="Vertical" Width="310">
-                <CheckBox Name="StartMenuEnabled" Click="StartMenuEnabled_Click" Margin="5" Content="{DynamicResource wox_plugin_program_index_start}"></CheckBox>
-                <CheckBox Name="RegistryEnabled" Click="RegistryEnabled_Click"  Margin="5" Content="{DynamicResource wox_plugin_program_index_registry}"></CheckBox>
+                <CheckBox Name="StartMenuEnabled" Click="StartMenuEnabled_Click" Margin="5" Content="{DynamicResource wox_plugin_program_index_start}" />
+                <CheckBox Name="RegistryEnabled" Click="RegistryEnabled_Click"  Margin="5" Content="{DynamicResource wox_plugin_program_index_registry}" />
             </StackPanel>
-            <Button Height="30" HorizontalAlignment="Right" x:Name="btnProgramSuffixes" Width="130" Click="BtnProgramSuffixes_OnClick" Content="{DynamicResource wox_plugin_program_suffixes}"></Button>
-            <Button Height="30" HorizontalAlignment="Right" Margin="10 0 0 0" x:Name="btnReindex" Width="100" Click="btnReindex_Click" Content="{DynamicResource wox_plugin_program_reindex}"></Button>
+            <Button Height="30" HorizontalAlignment="Right" x:Name="btnProgramSuffixes" Width="130" Click="BtnProgramSuffixes_OnClick" Content="{DynamicResource wox_plugin_program_suffixes}" />
+            <Button Height="30" HorizontalAlignment="Right" Margin="10 0 0 0" x:Name="btnReindex" Width="100" Click="btnReindex_Click" Content="{DynamicResource wox_plugin_program_reindex}" />
         </StackPanel>
         <ListView x:Name="programSourceView" Grid.Row="1" AllowDrop="True"
             DragEnter="programSourceView_DragEnter"
@@ -44,8 +44,8 @@
         </ListView>
         <DockPanel  Grid.Row="2">
             <StackPanel x:Name="indexingPanel" Visibility="Hidden" HorizontalAlignment="Left" Orientation="Horizontal">
-                <ProgressBar x:Name="progressBarIndexing" Height="20" Width="80" Minimum="0" Maximum="100" IsIndeterminate="True"></ProgressBar>
-                <TextBlock Margin="10 0 0 0" Height="20" HorizontalAlignment="Center" Text="{DynamicResource wox_plugin_program_indexing}"></TextBlock>
+                <ProgressBar x:Name="progressBarIndexing" Height="20" Width="80" Minimum="0" Maximum="100" IsIndeterminate="True" />
+                <TextBlock Margin="10 0 0 0" Height="20" HorizontalAlignment="Center" Text="{DynamicResource wox_plugin_program_indexing}" />
             </StackPanel>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                 <Button x:Name="btnDeleteProgramSource" Click="btnDeleteProgramSource_OnClick" Width="100" Margin="10" Content="{DynamicResource wox_plugin_program_delete}"/>
@@ -55,3 +55,66 @@
         </DockPanel>
     </Grid>
 </UserControl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

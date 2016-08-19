@@ -5,18 +5,18 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Windows.ApplicationModel;
-using Windows.Management.Deployment;
 using Windows.ApplicationModel.Core;
+using Windows.Foundation;
+using Windows.Management.Deployment;
 using Windows.Storage.Streams;
 using AppxPackaing;
 using Shell;
 using Wox.Infrastructure.Logger;
 using IStream = AppxPackaing.IStream;
-using Size = Windows.Foundation.Size;
+using Rect = System.Windows.Rect;
 
 namespace Wox.Plugin.Program.ProgramSources
 {
@@ -26,14 +26,12 @@ namespace Wox.Plugin.Program.ProgramSources
         public string FullName { get; }
         public string FamilyName { get; }
 
-
         public string DisplayName { get; set; }
         public string Description { get; set; }
         public string PublisherDisplayName { get; set; }
         public string Location { get; set; }
 
         public Application[] Apps { get; set; }
-
         public Package Package { get; }
 
         public int Score { get; set; }
@@ -95,7 +93,6 @@ namespace Wox.Plugin.Program.ProgramSources
                 }
             }
         }
-
 
         private void InitializeAppDisplayInfo(Package package)
         {
@@ -328,12 +325,12 @@ namespace Wox.Plugin.Program.ProgramSources
         private enum Stgm : uint
         {
             Read = 0x0,
-            ShareExclusive = 0x10,
+            ShareExclusive = 0x10
         }
 
         private enum Hresult : uint
         {
-            Ok = 0x0000,
+            Ok = 0x0000
         }
 
         [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]

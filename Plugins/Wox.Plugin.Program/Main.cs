@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Windows.Controls;
 using Wox.Infrastructure;
@@ -162,7 +161,7 @@ namespace Wox.Plugin.Program
             }
             if (_settings.EnableRegistrySource)
             {
-                var source3 = new AppPathsProgramSource();
+                var source3 = new AppPathsPrograms();
                 sources.Add(source3);
             }
 

@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using Wox.Infrastructure.Exception;
-using Wox.Infrastructure.Logger;
 
 namespace Wox.Plugin.Program.ProgramSources
 {
     [Serializable]
-    public class FileSystemProgramSource : Win32
+    public class UnregisteredPrograms : Win32
     {
         public string Location { get; set; } = "";
 

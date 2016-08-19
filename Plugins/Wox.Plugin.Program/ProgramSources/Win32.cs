@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 

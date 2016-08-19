@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Wox.Infrastructure.Storage;
 
 namespace Wox.Plugin.Program
 {
