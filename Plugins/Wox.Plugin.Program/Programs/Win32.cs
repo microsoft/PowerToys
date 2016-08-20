@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using IWshRuntimeLibrary;
 using Microsoft.Win32;
+using Shell;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Plugin.Program.Programs
@@ -43,22 +45,34 @@ namespace Wox.Plugin.Program.Programs
 
         private static Win32 LnkProgram(string path)
         {
-            var shell = new WshShell();
-            var shortcut = (IWshShortcut)shell.CreateShortcut(path);
             var program = Win32Program(path);
 
             try
             {
-                var description = shortcut.Description;
+                var link = new ShellLink();
+                const uint STGM_READ = 0;
+                ((IPersistFile)link).Load(path, STGM_READ);
+                var hwnd = new _RemotableHandle();
+                link.Resolve(ref hwnd, 0);
+
+                const int MAX_PATH = 260;
+                StringBuilder buffer = new StringBuilder(MAX_PATH);
+                link.GetDescription(buffer, MAX_PATH);
+                var description = buffer.ToString();
                 if (!string.IsNullOrEmpty(description))
                 {
                     program.FullName += $": {description}";
                 }
                 else
                 {
-                    if (!string.IsNullOrEmpty(shortcut.TargetPath))
+                    buffer = new StringBuilder(MAX_PATH);
+                    var data = new _WIN32_FIND_DATAW();
+                    const uint SLGP_SHORTPATH = 1;
+                    link.GetPath(buffer, buffer.Capacity, ref data, SLGP_SHORTPATH);
+                    var target = buffer.ToString();
+                    if (!string.IsNullOrEmpty(target))
                     {
-                        var info = FileVersionInfo.GetVersionInfo(shortcut.TargetPath);
+                        var info = FileVersionInfo.GetVersionInfo(target);
                         if (!string.IsNullOrEmpty(info.FileDescription))
                         {
                             program.FullName += $": {info.FileDescription}";
@@ -77,10 +91,10 @@ namespace Wox.Plugin.Program.Programs
         private static Win32 ExeProgram(string path)
         {
             var program = Win32Program(path);
-            var versionInfo = FileVersionInfo.GetVersionInfo(path);
-            if (!string.IsNullOrEmpty(versionInfo.FileDescription))
+            var info = FileVersionInfo.GetVersionInfo(path);
+            if (!string.IsNullOrEmpty(info.FileDescription))
             {
-                program.FullName = versionInfo.FileDescription;
+                program.FullName += $": {info.FileDescription}";
             }
             return program;
         }
