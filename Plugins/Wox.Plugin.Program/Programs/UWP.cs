@@ -200,7 +200,6 @@ namespace Wox.Plugin.Program.Programs
             public string PublisherDisplayName { get; set; }
             public string BackgroundColor { get; set; }
             public string LogoPath { get; set; }
-            public string AppListEntry { get; set; }
 
             public int Score { get; set; }
             public string Location { get; set; }
