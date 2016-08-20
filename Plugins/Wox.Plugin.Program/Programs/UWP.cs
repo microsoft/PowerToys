@@ -35,12 +35,6 @@ namespace Wox.Plugin.Program.Programs
         public Application[] Apps { get; set; }
         public Package Package { get; }
 
-        public int Score { get; set; }
-
-        public UWP()
-        {
-            Apps = new Application[] { };
-        }
         public UWP(Package package)
         {
             Package = package;
@@ -122,32 +116,32 @@ namespace Wox.Plugin.Program.Programs
             }).ToArray();
         }
 
-        public static UWP[] All()
+        public static Application[] All()
         {
             var windows10 = new Version(10, 0);
             var support = Environment.OSVersion.Version.Major >= windows10.Major;
             if (support)
             {
-                var packages = CurrentUserPackages().AsParallel().Select(p =>
+                var application = CurrentUserPackages().AsParallel().SelectMany(p =>
                 {
                     try
                     {
                         var u = new UWP(p);
-                        return u;
+                        return u.Apps;
                     }
                     catch (Exception e)
                     {
                         // if there are errors, just ignore it and continue
                         var message = $"Can't parse {p.Id.Name}: {e.Message}";
                         Log.Error(message);
-                        return new UWP();
+                        return new Application[] { };
                     }
-                }).Where(u => u.Apps.Length > 0);
-                return packages.ToArray();
+                });
+                return application.ToArray();
             }
             else
             {
-                return new UWP[] { };
+                return new Application[] { };
             }
         }
 
@@ -210,6 +204,7 @@ namespace Wox.Plugin.Program.Programs
             public string PublisherDisplayName { get; set; }
             public string BackgroundColor { get; set; }
             public string LogoPath { get; set; }
+            public int Score { get; set; }
 
             // todo: wrap with try exception
             public void Launch()

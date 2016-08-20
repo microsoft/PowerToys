@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Windows;
 using System.Windows.Controls;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
@@ -16,7 +15,7 @@ namespace Wox.Plugin.Program
     public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
     {
         private static Win32[] _win32s = { };
-        private static UWP[] _uwps = { };
+        private static UWP.Application[] _uwps = { };
 
         private PluginInitContext _context;
 
@@ -50,18 +49,16 @@ namespace Wox.Plugin.Program
         public List<Result> Query(Query query)
         {
             var results1 = _win32s.AsParallel()
-                .Where(p => Score(p, query.Search) > 0)
-                .Select(ResultFromProgram);
-
+                                   .Where(p => Score(p, query.Search) > 0)
+                                   .Select(ResultFromWin32);
             var results2 = _uwps.AsParallel()
-                .Where(u => Score(u, query.Search) > 0)
-                .Select(ResultFromUWPApp);
+                                .Where(app => Score(app, query.Search) > 0)
+                                .Select(ResultFromUWP);
             var result = results1.Concat(results2).ToList();
-
             return result;
         }
 
-        public Result ResultFromProgram(Win32 p)
+        public Result ResultFromWin32(Win32 p)
         {
             var result = new Result
             {
@@ -83,15 +80,14 @@ namespace Wox.Plugin.Program
             };
             return result;
         }
-        public Result ResultFromUWPApp(UWP uwp)
+        public Result ResultFromUWP(UWP.Application app)
         {
-            var app = uwp.Apps[0];
             var result = new Result
             {
                 Title = app.DisplayName,
                 SubTitle = $"Windows Store app: {app.Description}",
                 Icon = app.Logo,
-                Score = uwp.Score,
+                Score = app.Score,
                 ContextData = app,
                 Action = e =>
                 {
@@ -113,11 +109,11 @@ namespace Wox.Plugin.Program
             return score;
         }
 
-        private int Score(UWP app, string query)
+        private int Score(UWP.Application app, string query)
         {
-            var score1 = StringMatcher.Score(app.Apps[0].DisplayName, query);
-            var score2 = StringMatcher.ScoreForPinyin(app.Apps[0].DisplayName, query);
-            var score3 = StringMatcher.Score(app.Apps[0].Description, query);
+            var score1 = StringMatcher.Score(app.DisplayName, query);
+            var score2 = StringMatcher.ScoreForPinyin(app.DisplayName, query);
+            var score3 = StringMatcher.Score(app.Description, query);
             var score = new[] { score1, score2, score3 }.Max();
             app.Score = score;
             return score;
