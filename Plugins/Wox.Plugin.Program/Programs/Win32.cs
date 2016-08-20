@@ -197,7 +197,7 @@ namespace Wox.Plugin.Program.Programs
                         path = path.Trim('"');
                         path = Environment.ExpandEnvironmentVariables(path);
 
-                        if (System.IO.File.Exists(path))
+                        if (File.Exists(path))
                         {
                             var entry = Win32Program(path);
                             entry.ExecutableName = subkey;
