@@ -13,11 +13,12 @@ namespace Wox.Plugin.Program.Programs
     [Serializable]
     public class Win32
     {
-        public string FullName { get; set; }
+        public string Name { get; set; }
         public string IcoPath { get; set; }
         public string FullPath { get; set; }
         public string ParentDirectory { get; set; }
         public string ExecutableName { get; set; }
+        public string Description { get; set; }
         public int Score { get; set; }
 
         private const string ShortcutExtension = "lnk";
@@ -33,10 +34,11 @@ namespace Wox.Plugin.Program.Programs
         {
             var p = new Win32
             {
-                FullName = Path.GetFileNameWithoutExtension(path),
+                Name = Path.GetFileNameWithoutExtension(path),
                 IcoPath = path,
                 FullPath = path,
                 ParentDirectory = Directory.GetParent(path).FullName,
+                Description = string.Empty
             };
             return p;
         }
@@ -59,7 +61,7 @@ namespace Wox.Plugin.Program.Programs
                 var description = buffer.ToString();
                 if (!string.IsNullOrEmpty(description))
                 {
-                    program.FullName += $": {description}";
+                    program.Description = description;
                 }
                 else
                 {
@@ -73,7 +75,7 @@ namespace Wox.Plugin.Program.Programs
                         var info = FileVersionInfo.GetVersionInfo(target);
                         if (!string.IsNullOrEmpty(info.FileDescription))
                         {
-                            program.FullName += $": {info.FileDescription}";
+                            program.Description = info.FileDescription;
                         }
                     }
                 }
@@ -92,7 +94,7 @@ namespace Wox.Plugin.Program.Programs
             var info = FileVersionInfo.GetVersionInfo(path);
             if (!string.IsNullOrEmpty(info.FileDescription))
             {
-                program.FullName += $": {info.FileDescription}";
+                program.Description = info.FileDescription;
             }
             return program;
         }
@@ -179,7 +181,7 @@ namespace Wox.Plugin.Program.Programs
         {
             var programs = root.GetSubKeyNames()
                                .Select(subkey => ProgramFromRegistrySubkey(root, subkey))
-                               .Where(p => !string.IsNullOrEmpty(p.FullName));
+                               .Where(p => !string.IsNullOrEmpty(p.Name));
             return programs;
         }
 
@@ -215,17 +217,17 @@ namespace Wox.Plugin.Program.Programs
             var doc = new[] { "帮助", "help", "文档", "documentation" };
             var uninstall = new[] { "卸载", "uninstall" };
 
-            var contained = start.Any(s => p.FullName.ToLower().Contains(s));
+            var contained = start.Any(s => p.Name.ToLower().Contains(s));
             if (contained)
             {
                 p.Score += 10;
             }
-            contained = doc.Any(d => p.FullName.ToLower().Contains(d));
+            contained = doc.Any(d => p.Name.ToLower().Contains(d));
             if (contained)
             {
                 p.Score -= 10;
             }
-            contained = uninstall.Any(u => p.FullName.ToLower().Contains(u));
+            contained = uninstall.Any(u => p.Name.ToLower().Contains(u));
             if (contained)
             {
                 p.Score -= 20;

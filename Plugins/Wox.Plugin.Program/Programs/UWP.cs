@@ -81,6 +81,7 @@ namespace Wox.Plugin.Program.Programs
                     Apps[i].Executable = currentApp.GetStringValue("Executable");
                     Apps[i].BackgroundColor = currentApp.GetStringValue("BackgroundColor");
                     Apps[i].LogoPath = Path.Combine(Location, currentApp.GetStringValue("Square44x44Logo"));
+                    Apps[i].Location = Location;
 
                     apps.MoveNext();
                     i++;
@@ -204,7 +205,10 @@ namespace Wox.Plugin.Program.Programs
             public string PublisherDisplayName { get; set; }
             public string BackgroundColor { get; set; }
             public string LogoPath { get; set; }
+
             public int Score { get; set; }
+            public string Location { get; set; }
+
 
             // todo: wrap with try exception
             public void Launch()

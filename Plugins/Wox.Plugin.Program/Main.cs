@@ -58,34 +58,47 @@ namespace Wox.Plugin.Program
             return result;
         }
 
-        public Result ResultFromWin32(Win32 p)
+        public Result ResultFromWin32(Win32 program)
         {
             var result = new Result
             {
-                Title = p.FullName,
-                SubTitle = p.FullPath,
-                IcoPath = p.IcoPath,
-                Score = p.Score,
-                ContextData = p,
+                SubTitle = program.FullPath,
+                IcoPath = program.IcoPath,
+                Score = program.Score,
+                ContextData = program,
                 Action = e =>
                 {
                     var info = new ProcessStartInfo
                     {
-                        FileName = p.FullPath,
-                        WorkingDirectory = p.ParentDirectory
+                        FileName = program.FullPath,
+                        WorkingDirectory = program.ParentDirectory
                     };
                     var hide = StartProcess(info);
                     return hide;
                 }
             };
+
+            if (program.Description.Length >= program.Name.Length &&
+                program.Description.Substring(0, program.Name.Length) == program.Name)
+            {
+                result.Title = program.Description;
+            }
+            else if (!string.IsNullOrEmpty(program.Description))
+            {
+                result.Title = $"{program.Name}: {program.Description}";
+            }
+            else
+            {
+                result.Title = program.Name;
+            }
+
             return result;
         }
         public Result ResultFromUWP(UWP.Application app)
         {
             var result = new Result
             {
-                Title = app.DisplayName,
-                SubTitle = $"Windows Store app: {app.Description}",
+                SubTitle = $"{app.Location}",
                 Icon = app.Logo,
                 Score = app.Score,
                 ContextData = app,
@@ -95,16 +108,32 @@ namespace Wox.Plugin.Program
                     return true;
                 }
             };
+
+            if (app.Description.Length >= app.DisplayName.Length &&
+                app.Description.Substring(0, app.DisplayName.Length) == app.DisplayName)
+            {
+                result.Title = app.Description;
+            }
+            else if (!string.IsNullOrEmpty(app.Description))
+            {
+                result.Title = $"{app.DisplayName}: {app.Description}";
+            }
+            else
+            {
+                result.Title = app.DisplayName;
+            }
             return result;
         }
 
 
         private int Score(Win32 program, string query)
         {
-            var score1 = StringMatcher.Score(program.FullName, query);
-            var score2 = StringMatcher.ScoreForPinyin(program.FullName, query);
-            var score3 = StringMatcher.Score(program.ExecutableName, query);
-            var score = new[] { score1, score2, score3 }.Max();
+            var score1 = StringMatcher.Score(program.Name, query);
+            var score2 = StringMatcher.ScoreForPinyin(program.Name, query);
+            var score3 = StringMatcher.Score(program.Description, query);
+            var score4 = StringMatcher.ScoreForPinyin(program.Description, query);
+            var score5 = StringMatcher.Score(program.ExecutableName, query);
+            var score = new[] { score1, score2, score3, score4, score5 }.Max();
             program.Score = score;
             return score;
         }
