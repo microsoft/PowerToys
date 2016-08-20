@@ -77,12 +77,15 @@ namespace Wox.Plugin.Program.Programs
                 while (apps.GetHasCurrent() != 0 && i <= Apps.Length)
                 {
                     var currentApp = apps.GetCurrent();
-                    Apps[i].UserModelId = currentApp.GetAppUserModelId();
-                    Apps[i].Executable = currentApp.GetStringValue("Executable");
-                    Apps[i].BackgroundColor = currentApp.GetStringValue("BackgroundColor");
-                    Apps[i].LogoPath = Path.Combine(Location, currentApp.GetStringValue("Square44x44Logo"));
-                    Apps[i].Location = Location;
-
+                    var appListEntry = currentApp.GetStringValue("AppListEntry");
+                    if (appListEntry != "nonoe")
+                    {
+                        Apps[i].UserModelId = currentApp.GetAppUserModelId();
+                        Apps[i].Executable = currentApp.GetStringValue("Executable") ?? string.Empty;
+                        Apps[i].BackgroundColor = currentApp.GetStringValue("BackgroundColor") ?? string.Empty;
+                        Apps[i].LogoPath = Path.Combine(Location, currentApp.GetStringValue("Square44x44Logo"));
+                        Apps[i].Location = Location;
+                    }
                     apps.MoveNext();
                     i++;
                 }
@@ -107,7 +110,6 @@ namespace Wox.Plugin.Program.Programs
                 Console.WriteLine(message);
                 return;
             }
-
             Apps = apps.Select(a => new Application
             {
                 DisplayName = a.DisplayInfo.DisplayName,
@@ -148,21 +150,14 @@ namespace Wox.Plugin.Program.Programs
 
         private static IEnumerable<Package> CurrentUserPackages()
         {
-            var user = WindowsIdentity.GetCurrent()?.User;
+            var user = WindowsIdentity.GetCurrent().User;
 
             if (user != null)
             {
                 var userSecurityId = user.Value;
                 var packageManager = new PackageManager();
                 var packages = packageManager.FindPackagesForUser(userSecurityId);
-                // cw5n1h2txyewy is PublisherID for unnormal package
-                // e.g. ShellExperienceHost
-                // but WindowsFeedBack is flitered
-                // tested with windows 10 1511  
-                const string filteredPublisherID = "cw5n1h2txyewy";
-                packages = packages.Where(
-                    p => !p.IsFramework && p.Id.PublisherId != filteredPublisherID
-                );
+                packages = packages.Where(p => !p.IsFramework && !string.IsNullOrEmpty(p.InstalledLocation.Path));
                 return packages;
             }
             else
@@ -205,6 +200,7 @@ namespace Wox.Plugin.Program.Programs
             public string PublisherDisplayName { get; set; }
             public string BackgroundColor { get; set; }
             public string LogoPath { get; set; }
+            public string AppListEntry { get; set; }
 
             public int Score { get; set; }
             public string Location { get; set; }
