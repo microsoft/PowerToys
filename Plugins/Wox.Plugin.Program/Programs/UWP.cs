@@ -126,6 +126,7 @@ namespace Wox.Plugin.Program.Programs
             {
                 var packages = CurrentUserPackages();
                 var uwps = new List<UWP>();
+                // todo use parallel linq
                 Parallel.ForEach(packages, p =>
                 {
                     try

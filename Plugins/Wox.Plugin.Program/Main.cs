@@ -42,6 +42,7 @@ namespace Wox.Plugin.Program
         public void Save()
         {
             _settingsStorage.Save();
+            _cache.Programs = _programs;
             _cacheStorage.Save();
         }
 
@@ -128,7 +129,7 @@ namespace Wox.Plugin.Program
 
         public static void IndexPrograms()
         {
-            _cache.Programs = AllWin32Programs();
+            _programs = AllWin32Programs();
             _uwps = UWP.All();
         }
 
