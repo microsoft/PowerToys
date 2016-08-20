@@ -33,6 +33,12 @@ namespace Wox.Core.Plugin
 
             foreach (var metadata in metadatas)
             {
+#if DEBUG
+                var assembly = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
+                var types = assembly.GetTypes();
+                var type = types.First(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IPlugin)));
+                var plugin = (IPlugin)Activator.CreateInstance(type);
+#else
                 Assembly assembly;
                 try
                 {
@@ -64,6 +70,7 @@ namespace Wox.Core.Plugin
                     Log.Exception(new WoxPluginException(metadata.Name, "Can't create instance", e));
                     continue;
                 }
+#endif
                 PluginPair pair = new PluginPair
                 {
                     Plugin = plugin,

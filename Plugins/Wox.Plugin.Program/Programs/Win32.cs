@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Wox.Infrastructure.Exception;
+using System.Windows;
+using IWshRuntimeLibrary;
+using Microsoft.Win32;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Plugin.Program.Programs
@@ -11,80 +13,231 @@ namespace Wox.Plugin.Program.Programs
     [Serializable]
     public class Win32
     {
-        public string Title { get; set; }
+        public string FullName { get; set; }
         public string IcoPath { get; set; }
-        public string ExecutablePath { get; set; }
-        public string Directory { get; set; }
+        public string FullPath { get; set; }
+        public string ParentDirectory { get; set; }
         public string ExecutableName { get; set; }
         public int Score { get; set; }
 
-        protected static Win32 CreateEntry(string file)
+        private const string ShortcutExtension = "lnk";
+        private const string ApplicationReferenceExtension = "appref-ms";
+        private const string ExeExtension = "exe";
+
+        public override string ToString()
+        {
+            return ExecutableName;
+        }
+
+        private static Win32 Win32Program(string path)
         {
             var p = new Win32
             {
-                Title = Path.GetFileNameWithoutExtension(file),
-                IcoPath = file,
-                ExecutablePath = file,
-                Directory = System.IO.Directory.GetParent(file).FullName
+                FullName = Path.GetFileNameWithoutExtension(path),
+                IcoPath = path,
+                FullPath = path,
+                ParentDirectory = Directory.GetParent(path).FullName,
             };
-
-            switch (Path.GetExtension(file).ToLower())
-            {
-                case ".exe":
-                    p.ExecutableName = Path.GetFileName(file);
-                    try
-                    {
-                        var versionInfo = FileVersionInfo.GetVersionInfo(file);
-                        if (!string.IsNullOrEmpty(versionInfo.FileDescription))
-                        {
-                            p.Title = versionInfo.FileDescription;
-                        }
-                    }
-                    catch (Exception)
-                    {
-                    }
-                    break;
-            }
             return p;
         }
 
-        protected static void GetAppFromDirectory(List<Win32> apps, string directory, int depth, string[] suffixes)
+        private static Win32 LnkProgram(string path)
         {
-            if (depth == -1)
+            var shell = new WshShell();
+            var shortcut = (IWshShortcut)shell.CreateShortcut(path);
+            var program = Win32Program(path);
+
+            try
             {
+                var description = shortcut.Description;
+                if (!string.IsNullOrEmpty(description))
+                {
+                    program.FullName += $": {description}";
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(shortcut.TargetPath))
+                    {
+                        var info = FileVersionInfo.GetVersionInfo(shortcut.TargetPath);
+                        if (!string.IsNullOrEmpty(info.FileDescription))
+                        {
+                            program.FullName += $": {info.FileDescription}";
+                        }
+                    }
+                }
+                return program;
             }
-            else if (depth > 0)
+            catch (Exception)
             {
-                depth = depth - 1;
+                Log.Error($"Error when parsing shortcut: {path}");
+                return program;
+            }
+        }
+
+        private static Win32 ExeProgram(string path)
+        {
+            var program = Win32Program(path);
+            var versionInfo = FileVersionInfo.GetVersionInfo(path);
+            if (!string.IsNullOrEmpty(versionInfo.FileDescription))
+            {
+                program.FullName = versionInfo.FileDescription;
+            }
+            return program;
+        }
+
+        private static IEnumerable<string> ProgramPaths(string directory, string[] suffixes)
+        {
+            if (Directory.Exists(directory))
+            {
+                var files = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories).Where(
+                    f => suffixes.Contains(Extension(f))
+                );
+                return files;
             }
             else
             {
-                return;
+                return new string[] { };
             }
+        }
 
-            foreach (var f in System.IO.Directory.GetFiles(directory))
+        private static string Extension(string path)
+        {
+            var extension = Path.GetExtension(path)?.ToLower();
+            if (!string.IsNullOrEmpty(extension))
             {
-                if (suffixes.Any(o => f.EndsWith("." + o)))
+                return extension.Substring(1);
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        private static ParallelQuery<Win32> UnregisteredPrograms(List<Settings.ProgramSource> sources, string[] suffixes)
+        {
+            var paths = sources.Where(s => Directory.Exists(s.Location))
+                               .SelectMany(s => ProgramPaths(s.Location, suffixes))
+                               .ToArray();
+            var programs1 = paths.AsParallel().Where(p => Extension(p) == ExeExtension).Select(ExeProgram);
+            var programs2 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(ExeProgram);
+            var programs3 = from p in paths.AsParallel()
+                            let e = Extension(p)
+                            where e != ShortcutExtension && e != ExeExtension
+                            select Win32Program(p);
+            return programs1.Concat(programs2).Concat(programs3);
+        }
+
+        private static ParallelQuery<Win32> StartMenuPrograms(string[] suffixes)
+        {
+            var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
+            var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
+            var paths1 = ProgramPaths(directory1, suffixes);
+            var paths2 = ProgramPaths(directory2, suffixes);
+            var paths = paths1.Concat(paths2).ToArray();
+            var programs1 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
+            var programs2 = paths.AsParallel().Where(p => Extension(p) == ApplicationReferenceExtension).Select(Win32Program);
+            return programs1.Concat(programs2);
+        }
+
+
+        private static ParallelQuery<Win32> AppPathsPrograms(string[] suffixes)
+        {
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
+            const string appPaths = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
+            var programs = new List<Win32>();
+            using (var root = Registry.LocalMachine.OpenSubKey(appPaths))
+            {
+                if (root != null)
                 {
-                    Win32 p;
-                    try
-                    {
-                        p = CreateEntry(f);
-                    }
-                    catch (Exception e)
-                    {
-                        var woxPluginException = new WoxPluginException("Program",
-                            $"GetAppFromDirectory failed: {directory}", e);
-                        Log.Exception(woxPluginException);
-                        continue;
-                    }
-                    apps.Add(p);
+                    programs.AddRange(ProgramsFromRegistryKey(root));
                 }
             }
-            foreach (var d in System.IO.Directory.GetDirectories(directory))
+            using (var root = Registry.CurrentUser.OpenSubKey(appPaths))
             {
-                GetAppFromDirectory(apps, d, depth, suffixes);
+                if (root != null)
+                {
+                    programs.AddRange(ProgramsFromRegistryKey(root));
+                }
             }
+            var filtered = programs.AsParallel().Where(p => suffixes.Contains(Extension(p.ExecutableName)));
+            return filtered;
+        }
+
+        private static IEnumerable<Win32> ProgramsFromRegistryKey(RegistryKey root)
+        {
+            var programs = root.GetSubKeyNames()
+                               .Select(subkey => ProgramFromRegistrySubkey(root, subkey))
+                               .Where(p => !string.IsNullOrEmpty(p.FullName));
+            return programs;
+        }
+
+        private static Win32 ProgramFromRegistrySubkey(RegistryKey root, string subkey)
+        {
+            using (var key = root.OpenSubKey(subkey))
+            {
+                if (key != null)
+                {
+                    var defaultValue = string.Empty;
+                    var path = key.GetValue(defaultValue) as string;
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        // fix path like this: ""\"C:\\folder\\executable.exe\""
+                        path = path.Trim('"');
+                        path = Environment.ExpandEnvironmentVariables(path);
+
+                        if (System.IO.File.Exists(path))
+                        {
+                            var entry = Win32Program(path);
+                            entry.ExecutableName = subkey;
+                            return entry;
+                        }
+                    }
+                }
+            }
+            return new Win32();
+        }
+
+        private static Win32 ScoreFilter(Win32 p)
+        {
+            var start = new[] { "启动", "start" };
+            var doc = new[] { "帮助", "help", "文档", "documentation" };
+            var uninstall = new[] { "卸载", "uninstall" };
+
+            var contained = start.Any(s => p.FullName.ToLower().Contains(s));
+            if (contained)
+            {
+                p.Score += 10;
+            }
+            contained = doc.Any(d => p.FullName.ToLower().Contains(d));
+            if (contained)
+            {
+                p.Score -= 10;
+            }
+            contained = uninstall.Any(u => p.FullName.ToLower().Contains(u));
+            if (contained)
+            {
+                p.Score -= 20;
+            }
+
+            return p;
+        }
+
+        public static Win32[] All(Settings settings)
+        {
+            ParallelQuery<Win32> programs = new List<Win32>().AsParallel();
+            if (settings.EnableRegistrySource)
+            {
+                var appPaths = AppPathsPrograms(settings.ProgramSuffixes);
+                programs = programs.Concat(appPaths);
+            }
+            if (settings.EnableStartMenuSource)
+            {
+                var startMenu = StartMenuPrograms(settings.ProgramSuffixes);
+                programs = programs.Concat(startMenu);
+            }
+            var unregistered = UnregisteredPrograms(settings.ProgramSources, settings.ProgramSuffixes);
+            programs = programs.Concat(unregistered).Select(ScoreFilter);
+            return programs.ToArray();
         }
     }
 }

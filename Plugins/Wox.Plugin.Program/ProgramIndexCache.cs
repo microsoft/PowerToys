@@ -7,6 +7,6 @@ namespace Wox.Plugin.Program
     [Serializable]
     public class ProgramIndexCache
     {
-        public List<Win32> Programs = new List<Win32>();
+        public Win32[] Programs = { };
     }
 }

@@ -4,20 +4,19 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-                Width="400"
-                Height="180"
-        WindowStartupLocation="CenterScreen"
-             d:DesignHeight="400" d:DesignWidth="300">
+             Width="400"
+             Height="120"
+             WindowStartupLocation="CenterScreen">
     <StackPanel Orientation="Vertical">
         <StackPanel Orientation="Horizontal">
             <Label Content="{DynamicResource wox_plugin_program_directory}"/>
-            <TextBox Name="Directory" VerticalAlignment="Center" Width="238" Margin="0,7" />
-            <Button Name="BrowseButton" Content="{DynamicResource wox_plugin_program_browse}" HorizontalAlignment="Left" VerticalAlignment="Center" Width="75" Click="BrowseButton_Click" />
+            <TextBox Name="Directory" VerticalAlignment="Center" Width="300" Margin="0,7" />
         </StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <Label Content="{DynamicResource wox_plugin_program_max_search_depth}" />
-            <TextBox Name="MaxDepth" Text="-1" VerticalAlignment="Center" Width="146" Margin="0,7" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Click="BrowseButton_Click" Content="{DynamicResource wox_plugin_program_browse}" 
+                HorizontalAlignment="Right" Margin="10" Height="20" Width="70"   />
+            <Button Click="ButtonAdd_OnClick"  Content="{DynamicResource wox_plugin_program_update}" 
+                HorizontalAlignment="Right" Margin="10" Height="20" Width="70"  />
         </StackPanel>
-        <Button VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10" Height="20" Width="70"  Click="ButtonAdd_OnClick"  Content="{DynamicResource wox_plugin_program_update}"   />
     </StackPanel>
 </Window>

@@ -17,7 +17,6 @@ namespace Wox.Plugin.Program
         public class ProgramSource
         {
             public string Location { get; set; }
-            public int MaxDepth { get; set; }
         }
     }
 }

@@ -26,7 +26,6 @@ namespace Wox.Plugin.Program
 
             InitializeComponent();
             Directory.Text = _editing.Location;
-            MaxDepth.Text = _editing.MaxDepth.ToString();
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -41,25 +40,17 @@ namespace Wox.Plugin.Program
 
         private void ButtonAdd_OnClick(object sender, RoutedEventArgs e)
         {
-            int max;
-            if(!int.TryParse(MaxDepth.Text, out max))
-            {
-                max = -1;
-            }
-
             if(_editing == null)
             {
                 var source = new Settings.ProgramSource
                 {
                     Location = Directory.Text,
-                    MaxDepth = max
                 };
                 _settings.ProgramSources.Add(source);
             }
             else
             {
                 _editing.Location = Directory.Text;
-                _editing.MaxDepth = max;
             }
 
             DialogResult = true;

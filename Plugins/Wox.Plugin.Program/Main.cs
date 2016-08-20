@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
@@ -14,8 +15,8 @@ namespace Wox.Plugin.Program
 {
     public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
     {
-        private static List<Win32> _programs = new List<Win32>();
-        private static List<UWP> _uwps = new List<UWP>();
+        private static Win32[] _win32s = { };
+        private static UWP[] _uwps = { };
 
         private PluginInitContext _context;
 
@@ -33,22 +34,22 @@ namespace Wox.Plugin.Program
             {
                 _cacheStorage = new BinaryStorage<ProgramIndexCache>();
                 _cache = _cacheStorage.Load();
-                _programs = _cache.Programs;
+                _win32s = _cache.Programs;
             });
-            Log.Info($"Preload {_programs.Count} programs from cache");
+            Log.Info($"Preload {_win32s.Length} programs from cache");
             Stopwatch.Debug("Program Index", IndexPrograms);
         }
 
         public void Save()
         {
             _settingsStorage.Save();
-            _cache.Programs = _programs;
+            _cache.Programs = _win32s;
             _cacheStorage.Save();
         }
 
         public List<Result> Query(Query query)
         {
-            var results1 = _programs.AsParallel()
+            var results1 = _win32s.AsParallel()
                 .Where(p => Score(p, query.Search) > 0)
                 .Select(ResultFromProgram);
 
@@ -64,8 +65,8 @@ namespace Wox.Plugin.Program
         {
             var result = new Result
             {
-                Title = p.Title,
-                SubTitle = p.ExecutablePath,
+                Title = p.FullName,
+                SubTitle = p.FullPath,
                 IcoPath = p.IcoPath,
                 Score = p.Score,
                 ContextData = p,
@@ -73,8 +74,8 @@ namespace Wox.Plugin.Program
                 {
                     var info = new ProcessStartInfo
                     {
-                        FileName = p.ExecutablePath,
-                        WorkingDirectory = p.Directory
+                        FileName = p.FullPath,
+                        WorkingDirectory = p.ParentDirectory
                     };
                     var hide = StartProcess(info);
                     return hide;
@@ -104,8 +105,8 @@ namespace Wox.Plugin.Program
 
         private int Score(Win32 program, string query)
         {
-            var score1 = StringMatcher.Score(program.Title, query);
-            var score2 = StringMatcher.ScoreForPinyin(program.Title, query);
+            var score1 = StringMatcher.Score(program.FullName, query);
+            var score2 = StringMatcher.ScoreForPinyin(program.FullName, query);
             var score3 = StringMatcher.Score(program.ExecutableName, query);
             var score = new[] { score1, score2, score3 }.Max();
             program.Score = score;
@@ -129,49 +130,8 @@ namespace Wox.Plugin.Program
 
         public static void IndexPrograms()
         {
-            _programs = AllWin32Programs();
+            _win32s = Win32.All(_settings);
             _uwps = UWP.All();
-        }
-
-        private static List<Win32> AllWin32Programs()
-        {
-            var appPaths = AppPathsPrograms.All();
-            var startMenu = StartMenu.All(_settings.ProgramSuffixes);
-            var unregistered = UnregisteredPrograms.All(_settings.ProgramSources, _settings.ProgramSuffixes);
-            var programs = appPaths.Concat(startMenu).Concat(unregistered);
-
-            programs = programs.AsParallel()
-                                // filter duplicate program
-                               .GroupBy(x => new { ExecutePath = x.ExecutablePath, ExecuteName = x.ExecutableName })
-                               .Select(g => g.First())
-                               .Select(ScoreFilter);
-
-            return programs.ToList();
-        }
-
-        private static Win32 ScoreFilter(Win32 p)
-        {
-            var start = new[] { "启动", "start" };
-            var doc = new[] { "帮助", "help", "文档", "documentation" };
-            var uninstall = new[] { "卸载", "uninstall" };
-
-            var contained = start.Any(s => p.Title.ToLower().Contains(s));
-            if (contained)
-            {
-                p.Score += 10;
-            }
-            contained = doc.Any(d => p.Title.ToLower().Contains(d));
-            if (contained)
-            {
-                p.Score -= 10;
-            }
-            contained = uninstall.Any(u => p.Title.ToLower().Contains(u));
-            if (contained)
-            {
-                p.Score -= 20;
-            }
-
-            return p;
         }
 
         public Control CreateSettingPanel()
@@ -203,8 +163,8 @@ namespace Wox.Plugin.Program
                         {
                             var info = new ProcessStartInfo
                             {
-                                FileName = p.ExecutablePath,
-                                WorkingDirectory = p.Directory,
+                                FileName = p.FullPath,
+                                WorkingDirectory = p.ParentDirectory,
                                 Verb = "runas"
                             };
                             var hide = StartProcess(info);
@@ -217,7 +177,7 @@ namespace Wox.Plugin.Program
                         Title = _context.API.GetTranslation("wox_plugin_program_open_containing_folder"),
                         Action = _ =>
                         {
-                            var hide = StartProcess(new ProcessStartInfo(p.Directory));
+                            var hide = StartProcess(new ProcessStartInfo(p.ParentDirectory));
                             return hide;
                         },
                         IcoPath = "Images/folder.png"
