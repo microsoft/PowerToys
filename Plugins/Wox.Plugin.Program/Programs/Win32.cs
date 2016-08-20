@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows;
-using IWshRuntimeLibrary;
 using Microsoft.Win32;
 using Shell;
 using Wox.Infrastructure.Logger;
