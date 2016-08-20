@@ -14,11 +14,12 @@ using Windows.Management.Deployment;
 using Windows.Storage.Streams;
 using AppxPackaing;
 using Shell;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
 using IStream = AppxPackaing.IStream;
 using Rect = System.Windows.Rect;
 
-namespace Wox.Plugin.Program.ProgramSources
+namespace Wox.Plugin.Program.Programs
 {
     public class UWP
     {
@@ -119,26 +120,35 @@ namespace Wox.Plugin.Program.ProgramSources
 
         public static List<UWP> All()
         {
-            var packages = CurrentUserPackages();
-            var uwps = new List<UWP>();
-            Parallel.ForEach(packages, p =>
+            var windows10 = new Version(10, 0);
+            var support = Environment.OSVersion.Version.Major >= windows10.Major;
+            if (support)
             {
-                try
+                var packages = CurrentUserPackages();
+                var uwps = new List<UWP>();
+                Parallel.ForEach(packages, p =>
                 {
-                    var u = new UWP(p);
-                    if (u.Apps.Length > 0)
+                    try
                     {
-                        uwps.Add(u);
+                        var u = new UWP(p);
+                        if (u.Apps.Length > 0)
+                        {
+                            uwps.Add(u);
+                        }
                     }
-                }
-                catch (Exception e)
-                {
-                    // if there are errors, just ignore it and continue
-                    var message = $"Can't parse {p.Id.Name}: {e.Message}";
-                    Log.Error(message);
-                }
-            });
-            return uwps;
+                    catch (Exception e)
+                    {
+                        // if there are errors, just ignore it and continue
+                        var message = $"Can't parse {p.Id.Name}: {e.Message}";
+                        Log.Error(message);
+                    }
+                });
+                return uwps;
+            }
+            else
+            {
+                return new List<UWP>();
+            }
         }
 
         private static IEnumerable<Package> CurrentUserPackages()
@@ -244,8 +254,7 @@ namespace Wox.Plugin.Program.ProgramSources
                 }
                 else
                 {
-                    // todo: replaced with wox error logo
-                    return new BitmapImage();
+                    return new BitmapImage(new Uri(Constant.ErrorIcon));
                 }
             }
 
@@ -310,8 +319,7 @@ namespace Wox.Plugin.Program.ProgramSources
                 }
                 else
                 {
-                    var bitmap = new BitmapImage();
-                    return bitmap;
+                    return new BitmapImage(new Uri(Constant.ErrorIcon));
                 }
             }
 

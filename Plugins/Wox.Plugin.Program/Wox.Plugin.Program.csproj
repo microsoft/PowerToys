@@ -75,13 +75,11 @@
     <Compile Include="Programs\UWP.cs" />
     <Compile Include="Programs\Win32.cs" />
     <Compile Include="SuffixesConverter.cs" />
-    <Compile Include="Programs\Program.cs" />
     <Compile Include="ProgramIndexCache.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="ProgramSetting.xaml.cs">
       <DependentUpon>ProgramSetting.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Programs\ProgramSource.cs" />
     <Compile Include="Programs\AppPathsPrograms.cs" />
     <Compile Include="Programs\UnregisteredPrograms.cs" />
     <Compile Include="Settings.cs" />

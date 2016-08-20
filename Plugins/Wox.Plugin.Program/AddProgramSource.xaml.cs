@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Forms;
-using Wox.Plugin.Program.ProgramSources;
+using Wox.Plugin.Program.Programs;
 
 namespace Wox.Plugin.Program
 {
@@ -9,7 +9,7 @@ namespace Wox.Plugin.Program
     /// </summary>
     public partial class AddProgramSource
     {
-        private UnregisteredPrograms _editing;
+        private Settings.ProgramSource _editing;
         private Settings _settings;
 
         public AddProgramSource(Settings settings)
@@ -19,7 +19,7 @@ namespace Wox.Plugin.Program
             Directory.Focus();
         }
 
-        public AddProgramSource(UnregisteredPrograms edit, Settings settings)
+        public AddProgramSource(Settings.ProgramSource edit, Settings settings)
         {
             _editing = edit;
             _settings = settings;
@@ -49,7 +49,7 @@ namespace Wox.Plugin.Program
 
             if(_editing == null)
             {
-                var source = new UnregisteredPrograms
+                var source = new Settings.ProgramSource
                 {
                     Location = Directory.Text,
                     MaxDepth = max

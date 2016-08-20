@@ -4,15 +4,15 @@ using System.IO;
 using System.Linq;
 using Microsoft.Win32;
 
-namespace Wox.Plugin.Program.ProgramSources
+namespace Wox.Plugin.Program.Programs
 {
     [Serializable]
     public class AppPathsPrograms : Win32
     {
-        public override List<Program> LoadPrograms()
+        public static IEnumerable<Win32> All()
         {
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
-            var programs = new List<Program>();
+            var programs = new List<Win32>();
             const string appPaths = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
             using (var root = Registry.LocalMachine.OpenSubKey(appPaths))
             {
@@ -31,7 +31,7 @@ namespace Wox.Plugin.Program.ProgramSources
             return programs;
         }
 
-        private IEnumerable<Program> ProgramsFromRegistryKey(RegistryKey root)
+        private static IEnumerable<Win32> ProgramsFromRegistryKey(RegistryKey root)
         {
             var programs = root.GetSubKeyNames()
                                .Select(subkey => ProgramFromRegistrySubkey(root, subkey))
@@ -39,7 +39,7 @@ namespace Wox.Plugin.Program.ProgramSources
             return programs;
         }
 
-        private Program ProgramFromRegistrySubkey(RegistryKey root, string subkey)
+        private static Win32 ProgramFromRegistrySubkey(RegistryKey root, string subkey)
         {
             using (var key = root.OpenSubKey(subkey))
             {
@@ -62,7 +62,7 @@ namespace Wox.Plugin.Program.ProgramSources
                     }
                 }
             }
-            return new Program();
+            return new Win32();
         }
     }
 }

@@ -7,14 +7,14 @@ using System.Windows.Controls;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
-using Wox.Plugin.Program.ProgramSources;
+using Wox.Plugin.Program.Programs;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox.Plugin.Program
 {
     public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
     {
-        private static List<Program> _programs = new List<Program>();
+        private static List<Win32> _programs = new List<Win32>();
         private static List<UWP> _uwps = new List<UWP>();
 
         private PluginInitContext _context;
@@ -59,12 +59,12 @@ namespace Wox.Plugin.Program
             return result;
         }
 
-        public Result ResultFromProgram(Program p)
+        public Result ResultFromProgram(Win32 p)
         {
             var result = new Result
             {
                 Title = p.Title,
-                SubTitle = p.Path,
+                SubTitle = p.ExecutablePath,
                 IcoPath = p.IcoPath,
                 Score = p.Score,
                 ContextData = p,
@@ -72,7 +72,7 @@ namespace Wox.Plugin.Program
                 {
                     var info = new ProcessStartInfo
                     {
-                        FileName = p.Path,
+                        FileName = p.ExecutablePath,
                         WorkingDirectory = p.Directory
                     };
                     var hide = StartProcess(info);
@@ -101,7 +101,7 @@ namespace Wox.Plugin.Program
         }
 
 
-        private int Score(Program program, string query)
+        private int Score(Win32 program, string query)
         {
             var score1 = StringMatcher.Score(program.Title, query);
             var score2 = StringMatcher.ScoreForPinyin(program.Title, query);
@@ -128,59 +128,27 @@ namespace Wox.Plugin.Program
 
         public static void IndexPrograms()
         {
-            var sources = ProgramSources();
-
-
-            var programs = sources.AsParallel()
-                    .SelectMany(s => s.LoadPrograms())
-                // filter duplicate program
-                .GroupBy(x => new { ExecutePath = x.Path, ExecuteName = x.ExecutableName })
-                .Select(g => g.First());
-            programs = programs.Select(ScoreFilter);
-
-            _programs = programs.ToList();
-            _cache.Programs = _programs;
-
-            var windows10 = new Version(10, 0);
-            var support = Environment.OSVersion.Version.Major >= windows10.Major;
-            if (support)
-            {
-                _uwps = UWP.All();
-            }
+            _cache.Programs = AllWin32Programs();
+            _uwps = UWP.All();
         }
 
-        private static List<ProgramSource> ProgramSources()
+        private static List<Win32> AllWin32Programs()
         {
-            var sources = new List<ProgramSource>();
-            var source1 = _settings.ProgramSources;
-            sources.AddRange(source1);
-            if (_settings.EnableStartMenuSource)
-            {
-                var source2 = new StartMenu();
-                sources.Add(source2);
-            }
-            if (_settings.EnableRegistrySource)
-            {
-                var source3 = new AppPathsPrograms();
-                sources.Add(source3);
-            }
+            var appPaths = AppPathsPrograms.All();
+            var startMenu = StartMenu.All(_settings.ProgramSuffixes);
+            var unregistered = UnregisteredPrograms.All(_settings.ProgramSources, _settings.ProgramSuffixes);
+            var programs = appPaths.Concat(startMenu).Concat(unregistered);
 
-            FileChangeWatcher.AddAll(source1, _settings.ProgramSuffixes);
-            foreach (var source in sources)
-            {
-                var win32 = source as Win32;
-                if (win32 != null)
-                {
-                    win32.Suffixes = _settings.ProgramSuffixes;
-                }
-            }
+            programs = programs.AsParallel()
+                                // filter duplicate program
+                               .GroupBy(x => new { ExecutePath = x.ExecutablePath, ExecuteName = x.ExecutableName })
+                               .Select(g => g.First())
+                               .Select(ScoreFilter);
 
-            return sources;
+            return programs.ToList();
         }
 
-        
-
-        private static Program ScoreFilter(Program p)
+        private static Win32 ScoreFilter(Win32 p)
         {
             var start = new[] { "启动", "start" };
             var doc = new[] { "帮助", "help", "文档", "documentation" };
@@ -222,7 +190,7 @@ namespace Wox.Plugin.Program
 
         public List<Result> LoadContextMenus(Result selectedResult)
         {
-            Program p = selectedResult.ContextData as Program;
+            Win32 p = selectedResult.ContextData as Win32;
             if (p != null)
             {
                 List<Result> contextMenus = new List<Result>
@@ -234,7 +202,7 @@ namespace Wox.Plugin.Program
                         {
                             var info = new ProcessStartInfo
                             {
-                                FileName = p.Path,
+                                FileName = p.ExecutablePath,
                                 WorkingDirectory = p.Directory,
                                 Verb = "runas"
                             };

@@ -6,22 +6,26 @@ using System.Linq;
 using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 
-namespace Wox.Plugin.Program.ProgramSources
+namespace Wox.Plugin.Program.Programs
 {
     [Serializable]
-    public abstract class Win32 : ProgramSource
+    public class Win32
     {
-        public int MaxDepth { get; set; } = -1;
-        public string[] Suffixes { get; set; } = { "" };
+        public string Title { get; set; }
+        public string IcoPath { get; set; }
+        public string ExecutablePath { get; set; }
+        public string Directory { get; set; }
+        public string ExecutableName { get; set; }
+        public int Score { get; set; }
 
-        protected Program CreateEntry(string file)
+        protected static Win32 CreateEntry(string file)
         {
-            var p = new Program
+            var p = new Win32
             {
                 Title = Path.GetFileNameWithoutExtension(file),
                 IcoPath = file,
-                Path = file,
-                Directory = Directory.GetParent(file).FullName
+                ExecutablePath = file,
+                Directory = System.IO.Directory.GetParent(file).FullName
             };
 
             switch (Path.GetExtension(file).ToLower())
@@ -44,33 +48,42 @@ namespace Wox.Plugin.Program.ProgramSources
             return p;
         }
 
-        protected void GetAppFromDirectory(List<Program> apps, string directory, int depth)
+        protected static void GetAppFromDirectory(List<Win32> apps, string directory, int depth, string[] suffixes)
         {
-            if (MaxDepth == -1 || MaxDepth < depth)
+            if (depth == -1)
             {
-                foreach (var f in Directory.GetFiles(directory))
+            }
+            else if (depth > 0)
+            {
+                depth = depth - 1;
+            }
+            else
+            {
+                return;
+            }
+
+            foreach (var f in System.IO.Directory.GetFiles(directory))
+            {
+                if (suffixes.Any(o => f.EndsWith("." + o)))
                 {
-                    if (Suffixes.Any(o => f.EndsWith("." + o)))
+                    Win32 p;
+                    try
                     {
-                        Program p;
-                        try
-                        {
-                            p = CreateEntry(f);
-                        }
-                        catch (Exception e)
-                        {
-                            var woxPluginException = new WoxPluginException("Program",
-                                $"GetAppFromDirectory failed: {directory}", e);
-                            Log.Exception(woxPluginException);
-                            continue;
-                        }
-                        apps.Add(p);
+                        p = CreateEntry(f);
                     }
+                    catch (Exception e)
+                    {
+                        var woxPluginException = new WoxPluginException("Program",
+                            $"GetAppFromDirectory failed: {directory}", e);
+                        Log.Exception(woxPluginException);
+                        continue;
+                    }
+                    apps.Add(p);
                 }
-                foreach (var d in Directory.GetDirectories(directory))
-                {
-                    GetAppFromDirectory(apps, d, depth - 1);
-                }
+            }
+            foreach (var d in System.IO.Directory.GetDirectories(directory))
+            {
+                GetAppFromDirectory(apps, d, depth, suffixes);
             }
         }
     }
