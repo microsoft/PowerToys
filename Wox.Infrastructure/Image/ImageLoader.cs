@@ -18,8 +18,7 @@ namespace Wox.Infrastructure.Image
     public static class ImageLoader
     {
         private static readonly ConcurrentDictionary<string, ImageSource> ImageSources = new ConcurrentDictionary<string, ImageSource>();
-        private static readonly string DefaultIcon = Path.Combine(Constant.ProgramDirectory, "Images", "app.png");
-        private static readonly string ErrorIcon = Path.Combine(Constant.ProgramDirectory, "Images", "app_error.png");
+
 
         private static readonly string[] ImageExtions =
         {
@@ -59,13 +58,13 @@ namespace Wox.Infrastructure.Image
                 }
                 else
                 {
-                    return ImageSources[ErrorIcon];
+                    return ImageSources[Constant.ErrorIcon];
                 }
             }
             catch (System.Exception e)
             {
                 Log.Exception(e);
-                return ImageSources[ErrorIcon];
+                return ImageSources[Constant.ErrorIcon];
             }
         }
 
@@ -90,20 +89,20 @@ namespace Wox.Infrastructure.Image
                 }
                 else
                 {
-                    return ImageSources[ErrorIcon];
+                    return ImageSources[Constant.ErrorIcon];
                 }
             }
             catch (System.Exception e)
             {
                 Log.Exception(e);
-                return ImageSources[ErrorIcon];
+                return ImageSources[Constant.ErrorIcon];
             }
         }
         public static void PreloadImages()
         {
-            foreach (var icon in new[] { DefaultIcon, ErrorIcon })
+            foreach (var icon in new[] { Constant.DefaultIcon, Constant.ErrorIcon })
             {
-                ImageSource img = new BitmapImage(new Uri(DefaultIcon));
+                ImageSource img = new BitmapImage(new Uri(Constant.DefaultIcon));
                 img.Freeze();
                 ImageSources[icon] = img;
             }
@@ -129,8 +128,8 @@ namespace Wox.Infrastructure.Image
             ImageSource image;
             if (string.IsNullOrEmpty(path))
             {
-                image = ImageSources[ErrorIcon];
-                _cache.Add(ErrorIcon);
+                image = ImageSources[Constant.ErrorIcon];
+                _cache.Add(Constant.ErrorIcon);
             }
             else if (ImageSources.ContainsKey(path))
             {
@@ -164,8 +163,8 @@ namespace Wox.Infrastructure.Image
                     }
                     else
                     {
-                        image = ImageSources[ErrorIcon];
-                        path = ErrorIcon;
+                        image = ImageSources[Constant.ErrorIcon];
+                        path = Constant.ErrorIcon;
                     }
                 }
                 else
@@ -177,8 +176,8 @@ namespace Wox.Infrastructure.Image
                     }
                     else
                     {
-                        image = ImageSources[ErrorIcon];
-                        path = ErrorIcon;
+                        image = ImageSources[Constant.ErrorIcon];
+                        path = Constant.ErrorIcon;
                     }
                 }
                 ImageSources[path] = image;
