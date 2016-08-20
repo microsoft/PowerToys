@@ -60,16 +60,11 @@ namespace Wox.Infrastructure.Storage
 
             try
             {
-                Data = (T)binaryFormatter.Deserialize(stream);
+                Data = (T) binaryFormatter.Deserialize(stream);
             }
-            catch (SerializationException e)
+            catch (System.Exception e)
             {
-                Log.Exception(e);
-                stream.Close();
-                LoadDefault();
-            }
-            catch (InvalidCastException e)
-            {
+                Log.Error($"Broken cache file: {FilePath}");
                 Log.Exception(e);
                 stream.Close();
                 LoadDefault();
