@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Windows.ApplicationModel;
@@ -190,7 +190,7 @@ namespace Wox.Plugin.Program.Programs
         }
 
 
-        public class Application
+        public class Application : IProgram
         {
             public string DisplayName { get; set; }
             public string Description { get; set; }
@@ -201,18 +201,82 @@ namespace Wox.Plugin.Program.Programs
             public string BackgroundColor { get; set; }
             public string LogoPath { get; set; }
 
-            public int Score { get; set; }
             public string Location { get; set; }
 
-
-            // todo: wrap with try exception
-            public void Launch()
+            private int Score(string query)
             {
-                var appManager = new ApplicationActivationManager();
-                uint unusedPid;
-                const string noArgs = "";
-                const ACTIVATEOPTIONS noFlags = ACTIVATEOPTIONS.AO_NONE;
-                appManager.ActivateApplication(UserModelId, noArgs, noFlags, out unusedPid);
+                var score1 = StringMatcher.Score(DisplayName, query);
+                var score2 = StringMatcher.ScoreForPinyin(DisplayName, query);
+                var score3 = StringMatcher.Score(Description, query);
+                var score = new[] { score1, score2, score3 }.Max();
+                return score;
+            }
+
+            public Result Result(string query, IPublicAPI api)
+            {
+                var result = new Result
+                {
+                    SubTitle = Location,
+                    Icon = Logo,
+                    Score = Score(query),
+                    ContextData = this,
+                    Action = e =>
+                    {
+                        Launch(api);
+                        return true;
+                    }
+                };
+
+                if (Description.Length >= DisplayName.Length &&
+                    Description.Substring(0, DisplayName.Length) == DisplayName)
+                {
+                    result.Title = Description;
+                }
+                else if (!string.IsNullOrEmpty(Description))
+                {
+                    result.Title = $"{DisplayName}: {Description}";
+                }
+                else
+                {
+                    result.Title = DisplayName;
+                }
+                return result;
+            }
+
+            public List<Result> ContextMenus(IPublicAPI api)
+            {
+                var contextMenus = new List<Result>
+                {
+                    new Result
+                    {
+                        Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
+                        Action = _ =>
+                        {
+                            var hide = Main.StartProcess(new ProcessStartInfo(Location));
+                            return hide;
+                        },
+                        IcoPath = "Images/folder.png"
+                    }
+                };
+                return contextMenus;
+            }
+
+            private void Launch(IPublicAPI api)
+            {
+                try
+                {
+                    var appManager = new ApplicationActivationManager();
+                    uint unusedPid;
+                    const string noArgs = "";
+                    const ACTIVATEOPTIONS noFlags = ACTIVATEOPTIONS.AO_NONE;
+                    appManager.ActivateApplication(UserModelId, noArgs, noFlags, out unusedPid);
+                }
+                catch (Exception)
+                {
+                    var name = "Plugin: Program";
+                    var message = $"Can't start UWP: {DisplayName}";
+                    api.ShowMsg(name, message, string.Empty);
+                }
             }
 
 

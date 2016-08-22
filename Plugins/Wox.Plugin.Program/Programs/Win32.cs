@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Win32;
 using Shell;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Plugin.Program.Programs
 {
     [Serializable]
-    public class Win32
+    public class Win32 : IProgram
     {
         public string Name { get; set; }
         public string IcoPath { get; set; }
@@ -19,11 +21,96 @@ namespace Wox.Plugin.Program.Programs
         public string ParentDirectory { get; set; }
         public string ExecutableName { get; set; }
         public string Description { get; set; }
-        public int Score { get; set; }
 
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
         private const string ExeExtension = "exe";
+
+        private int Score(string query)
+        {
+            var score1 = StringMatcher.Score(Name, query);
+            var score2 = StringMatcher.ScoreForPinyin(Name, query);
+            var score3 = StringMatcher.Score(Description, query);
+            var score4 = StringMatcher.ScoreForPinyin(Description, query);
+            var score5 = StringMatcher.Score(ExecutableName, query);
+            var score = new[] { score1, score2, score3, score4, score5 }.Max();
+            return score;
+        }
+
+
+        public Result Result(string query, IPublicAPI api)
+        {
+            var result = new Result
+            {
+                SubTitle = FullPath,
+                IcoPath = IcoPath,
+                Score = Score(query),
+                ContextData = this,
+                Action = e =>
+                {
+                    var info = new ProcessStartInfo
+                    {
+                        FileName = FullPath,
+                        WorkingDirectory = ParentDirectory
+                    };
+                    var hide = Main.StartProcess(info);
+                    return hide;
+                }
+            };
+
+            if (Description.Length >= Name.Length &&
+                Description.Substring(0, Name.Length) == Name)
+            {
+                result.Title = Description;
+            }
+            else if (!string.IsNullOrEmpty(Description))
+            {
+                result.Title = $"{Name}: {Description}";
+            }
+            else
+            {
+                result.Title = Name;
+            }
+
+            return result;
+        }
+
+
+        public List<Result> ContextMenus(IPublicAPI api)
+        {
+            var contextMenus = new List<Result>
+            {
+                new Result
+                {
+                    Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
+                    Action = _ =>
+                    {
+                        var info = new ProcessStartInfo
+                        {
+                            FileName = FullPath,
+                            WorkingDirectory = ParentDirectory,
+                            Verb = "runas"
+                        };
+                        var hide = Main.StartProcess(info);
+                        return hide;
+                    },
+                    IcoPath = "Images/cmd.png"
+                },
+                new Result
+                {
+                    Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
+                    Action = _ =>
+                    {
+                        var hide = Main.StartProcess(new ProcessStartInfo(ParentDirectory));
+                        return hide;
+                    },
+                    IcoPath = "Images/folder.png"
+                }
+            };
+            return contextMenus;
+        }
+
+
 
         public override string ToString()
         {
@@ -211,30 +298,30 @@ namespace Wox.Plugin.Program.Programs
             return new Win32();
         }
 
-        private static Win32 ScoreFilter(Win32 p)
-        {
-            var start = new[] { "启动", "start" };
-            var doc = new[] { "帮助", "help", "文档", "documentation" };
-            var uninstall = new[] { "卸载", "uninstall" };
+        //private static Win32 ScoreFilter(Win32 p)
+        //{
+        //    var start = new[] { "启动", "start" };
+        //    var doc = new[] { "帮助", "help", "文档", "documentation" };
+        //    var uninstall = new[] { "卸载", "uninstall" };
 
-            var contained = start.Any(s => p.Name.ToLower().Contains(s));
-            if (contained)
-            {
-                p.Score += 10;
-            }
-            contained = doc.Any(d => p.Name.ToLower().Contains(d));
-            if (contained)
-            {
-                p.Score -= 10;
-            }
-            contained = uninstall.Any(u => p.Name.ToLower().Contains(u));
-            if (contained)
-            {
-                p.Score -= 20;
-            }
+        //    var contained = start.Any(s => p.Name.ToLower().Contains(s));
+        //    if (contained)
+        //    {
+        //        p.Score += 10;
+        //    }
+        //    contained = doc.Any(d => p.Name.ToLower().Contains(d));
+        //    if (contained)
+        //    {
+        //        p.Score -= 10;
+        //    }
+        //    contained = uninstall.Any(u => p.Name.ToLower().Contains(u));
+        //    if (contained)
+        //    {
+        //        p.Score -= 20;
+        //    }
 
-            return p;
-        }
+        //    return p;
+        //}
 
         public static Win32[] All(Settings settings)
         {
@@ -250,7 +337,8 @@ namespace Wox.Plugin.Program.Programs
                 programs = programs.Concat(startMenu);
             }
             var unregistered = UnregisteredPrograms(settings.ProgramSources, settings.ProgramSuffixes);
-            programs = programs.Concat(unregistered).Select(ScoreFilter);
+            programs = programs.Concat(unregistered);
+            //.Select(ScoreFilter);
             return programs.ToArray();
         }
     }

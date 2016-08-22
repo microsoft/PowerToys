@@ -17,7 +17,7 @@ namespace Wox.Plugin.Program
         private static Win32[] _win32s = { };
         private static UWP.Application[] _uwps = { };
 
-        private PluginInitContext _context;
+        private static PluginInitContext _context;
 
         private static ProgramIndexCache _cache;
         private static BinaryStorage<ProgramIndexCache> _cacheStorage;
@@ -49,103 +49,13 @@ namespace Wox.Plugin.Program
         public List<Result> Query(Query query)
         {
             var results1 = _win32s.AsParallel()
-                                   .Where(p => Score(p, query.Search) > 0)
-                                   .Select(ResultFromWin32);
+                                  .Select(p => p.Result(query.Search, _context.API))
+                                  .Where(r => r.Score > 0);
             var results2 = _uwps.AsParallel()
-                                .Where(app => Score(app, query.Search) > 0)
-                                .Select(ResultFromUWP);
+                                .Select(p => p.Result(query.Search, _context.API))
+                                .Where(r => r.Score > 0);
             var result = results1.Concat(results2).ToList();
             return result;
-        }
-
-        public Result ResultFromWin32(Win32 program)
-        {
-            var result = new Result
-            {
-                SubTitle = program.FullPath,
-                IcoPath = program.IcoPath,
-                Score = program.Score,
-                ContextData = program,
-                Action = e =>
-                {
-                    var info = new ProcessStartInfo
-                    {
-                        FileName = program.FullPath,
-                        WorkingDirectory = program.ParentDirectory
-                    };
-                    var hide = StartProcess(info);
-                    return hide;
-                }
-            };
-
-            if (program.Description.Length >= program.Name.Length &&
-                program.Description.Substring(0, program.Name.Length) == program.Name)
-            {
-                result.Title = program.Description;
-            }
-            else if (!string.IsNullOrEmpty(program.Description))
-            {
-                result.Title = $"{program.Name}: {program.Description}";
-            }
-            else
-            {
-                result.Title = program.Name;
-            }
-
-            return result;
-        }
-        public Result ResultFromUWP(UWP.Application app)
-        {
-            var result = new Result
-            {
-                SubTitle = $"{app.Location}",
-                Icon = app.Logo,
-                Score = app.Score,
-                ContextData = app,
-                Action = e =>
-                {
-                    app.Launch();
-                    return true;
-                }
-            };
-
-            if (app.Description.Length >= app.DisplayName.Length &&
-                app.Description.Substring(0, app.DisplayName.Length) == app.DisplayName)
-            {
-                result.Title = app.Description;
-            }
-            else if (!string.IsNullOrEmpty(app.Description))
-            {
-                result.Title = $"{app.DisplayName}: {app.Description}";
-            }
-            else
-            {
-                result.Title = app.DisplayName;
-            }
-            return result;
-        }
-
-
-        private int Score(Win32 program, string query)
-        {
-            var score1 = StringMatcher.Score(program.Name, query);
-            var score2 = StringMatcher.ScoreForPinyin(program.Name, query);
-            var score3 = StringMatcher.Score(program.Description, query);
-            var score4 = StringMatcher.ScoreForPinyin(program.Description, query);
-            var score5 = StringMatcher.Score(program.ExecutableName, query);
-            var score = new[] { score1, score2, score3, score4, score5 }.Max();
-            program.Score = score;
-            return score;
-        }
-
-        private int Score(UWP.Application app, string query)
-        {
-            var score1 = StringMatcher.Score(app.DisplayName, query);
-            var score2 = StringMatcher.ScoreForPinyin(app.DisplayName, query);
-            var score3 = StringMatcher.Score(app.Description, query);
-            var score = new[] { score1, score2, score3 }.Max();
-            app.Score = score;
-            return score;
         }
 
         public void Init(PluginInitContext context)
@@ -176,39 +86,11 @@ namespace Wox.Plugin.Program
 
         public List<Result> LoadContextMenus(Result selectedResult)
         {
-            Win32 p = selectedResult.ContextData as Win32;
-            if (p != null)
+            var program = selectedResult.ContextData as IProgram;
+            if (program != null)
             {
-                List<Result> contextMenus = new List<Result>
-                {
-                    new Result
-                    {
-                        Title = _context.API.GetTranslation("wox_plugin_program_run_as_administrator"),
-                        Action = _ =>
-                        {
-                            var info = new ProcessStartInfo
-                            {
-                                FileName = p.FullPath,
-                                WorkingDirectory = p.ParentDirectory,
-                                Verb = "runas"
-                            };
-                            var hide = StartProcess(info);
-                            return hide;
-                        },
-                        IcoPath = "Images/cmd.png"
-                    },
-                    new Result
-                    {
-                        Title = _context.API.GetTranslation("wox_plugin_program_open_containing_folder"),
-                        Action = _ =>
-                        {
-                            var hide = StartProcess(new ProcessStartInfo(p.ParentDirectory));
-                            return hide;
-                        },
-                        IcoPath = "Images/folder.png"
-                    }
-                };
-                return contextMenus;
+                var menus = program.ContextMenus(_context.API);
+                return menus;
             }
             else
             {
@@ -216,7 +98,7 @@ namespace Wox.Plugin.Program
             }
         }
 
-        private bool StartProcess(ProcessStartInfo info)
+        public static bool StartProcess(ProcessStartInfo info)
         {
             bool hide;
             try
@@ -224,10 +106,10 @@ namespace Wox.Plugin.Program
                 Process.Start(info);
                 hide = true;
             }
-            catch (Win32Exception)
+            catch (Exception)
             {
-                var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
-                var message = "Can't open this file";
+                var name = "Plugin: Program";
+                var message = $"Can't start: {info.FileName}";
                 _context.API.ShowMsg(name, message, string.Empty);
                 hide = false;
             }
