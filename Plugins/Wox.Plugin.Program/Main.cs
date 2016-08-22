@@ -48,13 +48,9 @@ namespace Wox.Plugin.Program
 
         public List<Result> Query(Query query)
         {
-            var results1 = _win32s.AsParallel()
-                                  .Select(p => p.Result(query.Search, _context.API))
-                                  .Where(r => r.Score > 0);
-            var results2 = _uwps.AsParallel()
-                                .Select(p => p.Result(query.Search, _context.API))
-                                .Where(r => r.Score > 0);
-            var result = results1.Concat(results2).ToList();
+            var results1 = _win32s.AsParallel().Select(p => p.Result(query.Search, _context.API));
+            var results2 = _uwps.AsParallel().Select(p => p.Result(query.Search, _context.API));
+            var result = results1.Concat(results2).Where(r => r.Score > 0).ToList();
             return result;
         }
 
