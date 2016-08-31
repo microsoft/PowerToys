@@ -47,8 +47,7 @@ namespace Wox.Plugin.Program.Programs
             InitializeAppInfo();
             Apps = Apps.Where(a =>
             {
-                var valid = !string.IsNullOrEmpty(a.Executable) &&
-                            !string.IsNullOrEmpty(a.UserModelId) &&
+                var valid = !string.IsNullOrEmpty(a.UserModelId) &&
                             !string.IsNullOrEmpty(a.DisplayName);
                 return valid;
             }).ToArray();
@@ -81,7 +80,6 @@ namespace Wox.Plugin.Program.Programs
                     if (appListEntry != "nonoe")
                     {
                         Apps[i].UserModelId = currentApp.GetAppUserModelId();
-                        Apps[i].Executable = currentApp.GetStringValue("Executable") ?? string.Empty;
                         Apps[i].BackgroundColor = currentApp.GetStringValue("BackgroundColor") ?? string.Empty;
                         Apps[i].LogoPath = Path.Combine(Location, currentApp.GetStringValue("Square44x44Logo"));
                         Apps[i].Location = Location;
@@ -157,7 +155,7 @@ namespace Wox.Plugin.Program.Programs
                 var userSecurityId = user.Value;
                 var packageManager = new PackageManager();
                 var packages = packageManager.FindPackagesForUser(userSecurityId);
-                packages = packages.Where(p => !p.IsFramework && !string.IsNullOrEmpty(p.InstalledLocation.Path));
+                packages = packages.Where(p => !p.IsFramework && !p.IsDevelopmentMode && !string.IsNullOrEmpty(p.InstalledLocation.Path));
                 return packages;
             }
             else
@@ -196,7 +194,6 @@ namespace Wox.Plugin.Program.Programs
             public string Description { get; set; }
             public RandomAccessStreamReference LogoStream { get; set; }
             public string UserModelId { get; set; }
-            public string Executable { get; set; }
             public string PublisherDisplayName { get; set; }
             public string BackgroundColor { get; set; }
             public string LogoPath { get; set; }
