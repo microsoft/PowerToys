@@ -1,7 +1,6 @@
 WoX
 ===
 
-[![Gitter](https://badges.gitter.im/Wox-launcher/Wox.svg)](https://gitter.im/Wox-launcher/Wox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e103)](https://ci.appveyor.com/project/happlebao/wox)
 [![Github All Releases](https://img.shields.io/github/downloads/Wox-launcher/Wox/total.svg)](https://github.com/Wox-launcher/Wox/releases)
 [![Issue Stats](http://issuestats.com/github/Wox-launcher/Wox/badge/pr)](http://issuestats.com/github/Wox-launcher/Wox) 
@@ -40,6 +39,7 @@ Usage
 
 - Launch: <kbd>Alt</kbd>+<kbd>Space</kbd>
 - Install/Uninstall plugin: type `wpm install/uninstall`
+- Reset: delete `%APPDATA%\Wox`
 
 Contribution
 ------------
