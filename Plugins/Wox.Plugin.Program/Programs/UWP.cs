@@ -139,29 +139,29 @@ namespace Wox.Plugin.Program.Programs
 
         private Application[] MergedApps()
         {
-
-            var infos = AppInfos();
-            if (infos.Length > 0)
+            // todo can't find api, so just hard code it
+            if (Location.Contains("SystemApps") || Location.Contains("WindowsApps"))
             {
-                var displayInfos = AppDisplayInfos();
-                var apps = infos;
-                // todo: temp hack for multipla application mismatch problem
-                // e.g. mail and calendar, skype video and messaging
-                // https://github.com/Wox-launcher/Wox/issues/198#issuecomment-244778783
-                var length = infos.Length;
-                for (int i = 0; i < length; i++)
+                var infos = AppInfos();
+                if (infos.Length > 0)
                 {
-                    var j = length - i - 1;
-                    apps[i].DisplayName = displayInfos[j].DisplayName;
-                    apps[i].Description = displayInfos[j].Description;
-                    apps[i].LogoStream = displayInfos[j].LogoStream;
+                    var displayInfos = AppDisplayInfos();
+                    var apps = infos;
+                    // todo: temp hack for multipla application mismatch problem
+                    // e.g. mail and calendar, skype video and messaging
+                    // https://github.com/Wox-launcher/Wox/issues/198#issuecomment-244778783
+                    var length = infos.Length;
+                    for (int i = 0; i < length; i++)
+                    {
+                        var j = length - i - 1;
+                        apps[i].DisplayName = displayInfos[j].DisplayName;
+                        apps[i].Description = displayInfos[j].Description;
+                        apps[i].LogoStream = displayInfos[j].LogoStream;
+                    }
+                    return apps;
                 }
-                return apps;
             }
-            else
-            {
-                return new Application[] { };
-            }
+            return new Application[] { };
         }
 
         public static Application[] All()
