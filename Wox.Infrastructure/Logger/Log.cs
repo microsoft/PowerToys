@@ -47,8 +47,6 @@ namespace Wox.Infrastructure.Logger
 
         public static void Exception(System.Exception e)
         {
-#if DEBUG
-#else
             var type = CallerType();
             var logger = LogManager.GetLogger(type);
 
@@ -58,7 +56,6 @@ namespace Wox.Infrastructure.Logger
                 logger.Error($"\n{e.StackTrace}");
                 e = e.InnerException;
             } while (e != null);
-#endif
         }
 
         public static void Debug(string msg)

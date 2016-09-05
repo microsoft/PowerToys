@@ -45,12 +45,6 @@ namespace Wox.Plugin.Program.Programs
 
             InitializeAppDisplayInfo(package);
             InitializeAppInfo();
-            Apps = Apps.Where(a =>
-            {
-                var valid = !string.IsNullOrEmpty(a.UserModelId) &&
-                            !string.IsNullOrEmpty(a.DisplayName);
-                return valid;
-            }).ToArray();
         }
 
         private void InitializeAppInfo()
@@ -75,15 +69,17 @@ namespace Wox.Plugin.Program.Programs
                 int i = 0;
                 while (apps.GetHasCurrent() != 0 && i <= Apps.Length)
                 {
-                    var currentApp = apps.GetCurrent();
-                    var appListEntry = currentApp.GetStringValue("AppListEntry");
+                    var current = apps.GetCurrent();
+                    var appListEntry = current.GetStringValue("AppListEntry");
                     if (appListEntry != "nonoe")
                     {
-                        Apps[i].UserModelId = currentApp.GetAppUserModelId();
-                        Apps[i].BackgroundColor = currentApp.GetStringValue("BackgroundColor") ?? string.Empty;
-                        // todo use hidpi logo when use hidpi screen
-                        Apps[i].LogoPath = Path.Combine(Location, currentApp.GetStringValue("Square44x44Logo"));
+                        Apps[i].UserModelId = current.GetAppUserModelId();
+                        Apps[i].BackgroundColor = current.GetStringValue("BackgroundColor") ?? string.Empty;
                         Apps[i].Location = Location;
+                        Apps[i].Valid = !string.IsNullOrEmpty(Apps[i].UserModelId);
+
+                        // todo use hidpi logo when use hidpi screen
+                        Apps[i].LogoPath = Application.LogoFromManifest(current, Location);
                     }
                     apps.MoveNext();
                     i++;
@@ -109,13 +105,30 @@ namespace Wox.Plugin.Program.Programs
                 Console.WriteLine(message);
                 return;
             }
-            Apps = apps.Select(a => new Application
+            Apps = apps.Select(a =>
             {
-                DisplayName = a.DisplayInfo.DisplayName,
-                Description = a.DisplayInfo.Description,
-                // todo: which size is valid?
-                LogoStream = a.DisplayInfo.GetLogo(new Size(44, 44))
-            }).ToArray();
+                RandomAccessStreamReference logo;
+                try
+                {
+                    // todo: which size is valid?
+                    logo = a.DisplayInfo.GetLogo(new Size(44, 44));
+                }
+                catch (Exception e)
+                {
+                    var message = $"Can't get logo for {Name}";
+                    Log.Error(message);
+                    Log.Exception(e);
+                    logo = RandomAccessStreamReference.CreateFromUri(new Uri(Constant.ErrorIcon));
+                }
+                var parsed = new Application
+                {
+                    DisplayName = a.DisplayInfo.DisplayName,
+                    Description = a.DisplayInfo.Description,
+                    LogoStream = logo
+                };
+                return parsed;
+            }
+        ).ToArray();
         }
 
         public static Application[] All()
@@ -124,22 +137,9 @@ namespace Wox.Plugin.Program.Programs
             var support = Environment.OSVersion.Version.Major >= windows10.Major;
             if (support)
             {
-                var application = CurrentUserPackages().AsParallel().SelectMany(p =>
-                {
-                    try
-                    {
-                        var u = new UWP(p);
-                        return u.Apps;
-                    }
-                    catch (Exception e)
-                    {
-                        // if there are errors, just ignore it and continue
-                        var message = $"Can't parse {p.Id.Name}: {e.Message}";
-                        Log.Error(message);
-                        return new Application[] { };
-                    }
-                });
-                return application.ToArray();
+                var applications = CurrentUserPackages().AsParallel().SelectMany(p => new UWP(p).Apps);
+                applications = applications.Where(a => a.Valid);
+                return applications.ToArray();
             }
             else
             {
@@ -200,6 +200,7 @@ namespace Wox.Plugin.Program.Programs
             public string LogoPath { get; set; }
 
             public string Location { get; set; }
+            public bool Valid { get; set; }
 
             private int Score(string query)
             {
@@ -289,25 +290,98 @@ namespace Wox.Plugin.Program.Programs
                 return plated;
             }
 
+            internal static string LogoFromManifest(IAppxManifestApplication application, string location)
+            {
+                // todo use hidpi logo when use hidpi screen
+                var path1 = Path.Combine(location, application.GetStringValue("Square44x44Logo"));
+                path1 = LogoFromPath(path1);
+                if (!string.IsNullOrEmpty(path1))
+                {
+                    return path1;
+                }
+                else
+                {
+                    var path2 = Path.Combine(location, application.GetStringValue("Square150x150Logo"));
+                    path2 = LogoFromPath(path2);
+                    if (!string.IsNullOrEmpty(path2))
+                    {
+                        return path2;
+                    }
+                    else
+                    {
+                        return Constant.ErrorIcon;
+                    }
+                }
+            }
+
+            private static string LogoFromPath(string path)
+            {
+                if (!File.Exists(path))
+                {
+                    // https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
+                    var extension = Path.GetExtension(path);
+                    if (!string.IsNullOrEmpty(extension))
+                    {
+                        var paths = new List<string>();
+                        var end = path.Length - extension.Length;
+                        var prefix = path.Substring(0, end);
+                        // todo: remove hard cod scale
+                        paths.Add($"{prefix}.scale-200{extension}");
+                        paths.Add($"{prefix}.scale-100{extension}");
+                        
+                        // hack for C:\Windows\ImmersiveControlPanel
+                        var directory = Directory.GetParent(path).FullName;
+                        var filename = Path.GetFileNameWithoutExtension(path);
+                        prefix = Path.Combine(directory, "images", filename);
+                        paths.Add($"{prefix}.scale-200{extension}");
+                        paths.Add($"{prefix}.scale-100{extension}");
+
+                        foreach (var p in paths)
+                        {
+                            if (File.Exists(p))
+                            {
+                                return p;
+                            }
+                        }
+                        return string.Empty;
+                    }
+                    return string.Empty;
+                }
+                else
+                {
+                    // for js based application, e.g cut the rope
+                    return path;
+                }
+            }
+
             private BitmapImage ImageFromPath(string path)
             {
                 if (!File.Exists(path))
                 {
                     // https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
-                    var extension = path.Substring(path.Length - 4);
-                    var filename = path.Substring(0, path.Length - 4);
-                    // todo: remove hard cod scale
-                    var path1 = $"{filename}.scale-200{extension}";
-                    var path2 = $"{filename}.scale-100{extension}";
-                    if (File.Exists(path1))
+
+                    var extension = Path.GetExtension(path);
+                    if (!string.IsNullOrEmpty(extension))
                     {
-                        var image = new BitmapImage(new Uri(path1));
-                        return image;
-                    }
-                    else if (File.Exists(path2))
-                    {
-                        var image = new BitmapImage(new Uri(path2));
-                        return image;
+                        var paths = new List<string>();
+                        var prefix = path.Substring(0, extension.Length);
+                        // todo: remove hard cod scale
+                        paths.Add($"{prefix}.scale-200{extension}");
+                        paths.Add($"{prefix}.scale-100{extension}");
+                        // hack for C:\Windows\ImmersiveControlPanel
+                        var directory = Directory.GetParent(path).FullName;
+                        var filename = Path.GetFileNameWithoutExtension(path);
+                        prefix = Path.Combine(directory, "images", filename);
+                        paths.Add($"{prefix}.scale-200{extension}");
+                        paths.Add($"{prefix}.scale-100{extension}");
+                        foreach (var p in paths)
+                        {
+                            if (File.Exists(p))
+                            {
+                                return new BitmapImage(new Uri(p));
+                            }
+                        }
+                        return new BitmapImage(new Uri(Constant.ErrorIcon));
                     }
                     else
                     {
@@ -333,7 +407,8 @@ namespace Wox.Plugin.Program.Programs
                 {
                     var message = $"{e.Message} @ {DisplayName}";
                     Log.Error(message);
-                    throw;
+                    Log.Exception(e);
+                    return new BitmapImage(new Uri(Constant.ErrorIcon));
                 }
 
                 var image = new BitmapImage();
