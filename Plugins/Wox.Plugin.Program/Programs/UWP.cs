@@ -42,12 +42,10 @@ namespace Wox.Plugin.Program.Programs
             FullName = Package.Id.FullName;
             FamilyName = Package.Id.FamilyName;
             Location = Package.InstalledLocation.Path;
-
-            InitializeAppDisplayInfo(package);
-            InitializeAppInfo();
+            Apps = MergedApps();
         }
 
-        private void InitializeAppInfo()
+        private Application[] AppInfos()
         {
             var path = Path.Combine(Location, "AppxManifest.xml");
             var appx = new AppxFactory();
@@ -66,46 +64,50 @@ namespace Wox.Plugin.Program.Programs
                 Description = properties.GetStringValue("Description");
 
                 var apps = reader.GetApplications();
-                int i = 0;
-                while (apps.GetHasCurrent() != 0 && i <= Apps.Length)
+                var parsedApps = new List<Application>();
+                while (apps.GetHasCurrent() != 0)
                 {
                     var current = apps.GetCurrent();
                     var appListEntry = current.GetStringValue("AppListEntry");
-                    if (appListEntry != "nonoe")
+                    if (appListEntry != "none")
                     {
-                        Apps[i].UserModelId = current.GetAppUserModelId();
-                        Apps[i].BackgroundColor = current.GetStringValue("BackgroundColor") ?? string.Empty;
-                        Apps[i].Location = Location;
-                        Apps[i].Valid = !string.IsNullOrEmpty(Apps[i].UserModelId);
+                        var app = new Application
+                        {
+                            UserModelId = current.GetAppUserModelId(),
+                            BackgroundColor = current.GetStringValue("BackgroundColor") ?? string.Empty,
+                            Location = Location,
+                            LogoPath = Application.LogoFromManifest(current, Location)
+                        };
 
-                        // todo use hidpi logo when use hidpi screen
-                        Apps[i].LogoPath = Application.LogoFromManifest(current, Location);
+                        app.Valid = !string.IsNullOrEmpty(app.UserModelId);
+                        parsedApps.Add(app);
                     }
                     apps.MoveNext();
-                    i++;
                 }
-                if (i != Apps.Length)
-                {
-                    var message = $"Wrong application number - {Name}: {i}";
-                    Console.WriteLine(message);
-                }
+
+                return parsedApps.ToArray();
+            }
+            else
+            {
+                return new Application[] { };
             }
         }
 
-        private void InitializeAppDisplayInfo(Package package)
+        private Application[] AppDisplayInfos()
         {
             IReadOnlyList<AppListEntry> apps;
             try
             {
-                apps = package.GetAppListEntriesAsync().AsTask().Result;
+                apps = Package.GetAppListEntriesAsync().AsTask().Result;
             }
             catch (Exception e)
             {
                 var message = $"{e.Message} @ {Name}";
                 Console.WriteLine(message);
-                return;
+                return new Application[] { };
             }
-            Apps = apps.Select(a =>
+
+            var displayinfos = apps.Select(a =>
             {
                 RandomAccessStreamReference logo;
                 try
@@ -127,8 +129,37 @@ namespace Wox.Plugin.Program.Programs
                     LogoStream = logo
                 };
                 return parsed;
+            }).ToArray();
+
+            return displayinfos;
+        }
+
+        private Application[] MergedApps()
+        {
+
+            var infos = AppInfos();
+            var displayInfos = AppDisplayInfos();
+
+            if (infos.Length > 0)
+            {
+                var apps = infos;
+                // todo: temp hack for multipla application mismatch problem
+                // e.g. mail and calendar, skype video and messaging
+                // https://github.com/Wox-launcher/Wox/issues/198#issuecomment-244778783
+                var length = infos.Length;
+                for (int i = 0; i < length; i++)
+                {
+                    var j = length - i - 1;
+                    apps[i].DisplayName = displayInfos[j].DisplayName;
+                    apps[i].Description = displayInfos[j].Description;
+                    apps[i].LogoStream = displayInfos[j].LogoStream;
+                }
+                return apps;
             }
-        ).ToArray();
+            else
+            {
+                return new Application[] { };
+            }
         }
 
         public static Application[] All()
@@ -328,7 +359,7 @@ namespace Wox.Plugin.Program.Programs
                         // todo: remove hard cod scale
                         paths.Add($"{prefix}.scale-200{extension}");
                         paths.Add($"{prefix}.scale-100{extension}");
-                        
+
                         // hack for C:\Windows\ImmersiveControlPanel
                         var directory = Directory.GetParent(path).FullName;
                         var filename = Path.GetFileNameWithoutExtension(path);
