@@ -76,11 +76,14 @@ namespace Wox.Plugin.Program.Programs
                             UserModelId = current.GetAppUserModelId(),
                             BackgroundColor = current.GetStringValue("BackgroundColor") ?? string.Empty,
                             Location = Location,
-                            LogoPath = Application.LogoFromManifest(current, Location)
+                            LogoPath = Application.LogoFromManifest(current, Location),
+                            Valid = true // useless for now
                         };
 
-                        app.Valid = !string.IsNullOrEmpty(app.UserModelId);
-                        parsedApps.Add(app);
+                        if (!string.IsNullOrEmpty(app.UserModelId))
+                        {
+                            parsedApps.Add(app);
+                        }
                     }
                     apps.MoveNext();
                 }
@@ -138,10 +141,9 @@ namespace Wox.Plugin.Program.Programs
         {
 
             var infos = AppInfos();
-            var displayInfos = AppDisplayInfos();
-
             if (infos.Length > 0)
             {
+                var displayInfos = AppDisplayInfos();
                 var apps = infos;
                 // todo: temp hack for multipla application mismatch problem
                 // e.g. mail and calendar, skype video and messaging
