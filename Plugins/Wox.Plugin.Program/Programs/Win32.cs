@@ -21,6 +21,7 @@ namespace Wox.Plugin.Program.Programs
         public string ParentDirectory { get; set; }
         public string ExecutableName { get; set; }
         public string Description { get; set; }
+        public bool Valid { get; set; }
 
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
@@ -125,7 +126,8 @@ namespace Wox.Plugin.Program.Programs
                 IcoPath = path,
                 FullPath = path,
                 ParentDirectory = Directory.GetParent(path).FullName,
-                Description = string.Empty
+                Description = string.Empty,
+                Valid = true
             };
             return p;
         }
@@ -133,7 +135,6 @@ namespace Wox.Plugin.Program.Programs
         private static Win32 LnkProgram(string path)
         {
             var program = Win32Program(path);
-
             try
             {
                 var link = new ShellLink();
@@ -144,20 +145,23 @@ namespace Wox.Plugin.Program.Programs
 
                 const int MAX_PATH = 260;
                 StringBuilder buffer = new StringBuilder(MAX_PATH);
-                link.GetDescription(buffer, MAX_PATH);
-                var description = buffer.ToString();
-                if (!string.IsNullOrEmpty(description))
+
+                var data = new _WIN32_FIND_DATAW();
+                const uint SLGP_SHORTPATH = 1;
+                link.GetPath(buffer, buffer.Capacity, ref data, SLGP_SHORTPATH);
+                var target = buffer.ToString();
+                if (!string.IsNullOrEmpty(target) && Extension(target) == ExeExtension)
                 {
-                    program.Description = description;
-                }
-                else
-                {
+                    program.Valid = true;
+
                     buffer = new StringBuilder(MAX_PATH);
-                    var data = new _WIN32_FIND_DATAW();
-                    const uint SLGP_SHORTPATH = 1;
-                    link.GetPath(buffer, buffer.Capacity, ref data, SLGP_SHORTPATH);
-                    var target = buffer.ToString();
-                    if (!string.IsNullOrEmpty(target))
+                    link.GetDescription(buffer, MAX_PATH);
+                    var description = buffer.ToString();
+                    if (!string.IsNullOrEmpty(description))
+                    {
+                        program.Description = description;
+                    }
+                    else
                     {
                         var info = FileVersionInfo.GetVersionInfo(target);
                         if (!string.IsNullOrEmpty(info.FileDescription))
@@ -165,6 +169,10 @@ namespace Wox.Plugin.Program.Programs
                             program.Description = info.FileDescription;
                         }
                     }
+                }
+                else
+                {
+                    program.Valid = false;
                 }
                 return program;
             }
@@ -237,7 +245,8 @@ namespace Wox.Plugin.Program.Programs
             var paths = paths1.Concat(paths2).ToArray();
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p) == ApplicationReferenceExtension).Select(Win32Program);
-            return programs1.Concat(programs2);
+            var programs = programs1.Concat(programs2).Where(p => p.Valid);
+            return programs;
         }
 
 
