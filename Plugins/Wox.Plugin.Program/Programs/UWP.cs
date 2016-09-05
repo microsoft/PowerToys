@@ -81,6 +81,7 @@ namespace Wox.Plugin.Program.Programs
                     {
                         Apps[i].UserModelId = currentApp.GetAppUserModelId();
                         Apps[i].BackgroundColor = currentApp.GetStringValue("BackgroundColor") ?? string.Empty;
+                        // todo use hidpi logo when use hidpi screen
                         Apps[i].LogoPath = Path.Combine(Location, currentApp.GetStringValue("Square44x44Logo"));
                         Apps[i].Location = Location;
                     }
@@ -280,7 +281,6 @@ namespace Wox.Plugin.Program.Programs
             public ImageSource Logo()
             {
                 var logo = !string.IsNullOrEmpty(LogoPath) ? ImageFromPath(LogoPath) : ImageFromStream(LogoStream);
-
                 var validBaground = !string.IsNullOrEmpty(BackgroundColor) && BackgroundColor != "transparent";
                 var plated = validBaground ? PlatedImage(logo) : logo;
 
@@ -291,25 +291,34 @@ namespace Wox.Plugin.Program.Programs
 
             private BitmapImage ImageFromPath(string path)
             {
-                // https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
-                var extension = path.Substring(path.Length - 4);
-                var filename = path.Substring(0, path.Length - 4);
-                // todo: remove hard cod scale
-                var path1 = $"{filename}.scale-200{extension}";
-                var path2 = $"{filename}.scale-100{extension}";
-                if (File.Exists(path1))
+                if (!File.Exists(path))
                 {
-                    var image = new BitmapImage(new Uri(path1));
-                    return image;
-                }
-                else if (File.Exists(path2))
-                {
-                    var image = new BitmapImage(new Uri(path2));
-                    return image;
+                    // https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
+                    var extension = path.Substring(path.Length - 4);
+                    var filename = path.Substring(0, path.Length - 4);
+                    // todo: remove hard cod scale
+                    var path1 = $"{filename}.scale-200{extension}";
+                    var path2 = $"{filename}.scale-100{extension}";
+                    if (File.Exists(path1))
+                    {
+                        var image = new BitmapImage(new Uri(path1));
+                        return image;
+                    }
+                    else if (File.Exists(path2))
+                    {
+                        var image = new BitmapImage(new Uri(path2));
+                        return image;
+                    }
+                    else
+                    {
+                        return new BitmapImage(new Uri(Constant.ErrorIcon));
+                    }
                 }
                 else
                 {
-                    return new BitmapImage(new Uri(Constant.ErrorIcon));
+                    // for js based application, e.g cut the rope
+                    var image = new BitmapImage(new Uri(path));
+                    return image;
                 }
             }
 
