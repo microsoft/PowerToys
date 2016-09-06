@@ -142,6 +142,7 @@ namespace Wox.Plugin.Program.Programs
             // todo can't find api, so just hard code it
             if (Location.Contains("SystemApps") || Location.Contains("WindowsApps"))
             {
+                // we must parse AppInfo first, because we want to make sure AppListEntry != "none"
                 var infos = AppInfos();
                 if (infos.Length > 0)
                 {
