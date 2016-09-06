@@ -150,10 +150,9 @@ namespace Wox.Plugin.Program.Programs
                 const uint SLGP_SHORTPATH = 1;
                 link.GetPath(buffer, buffer.Capacity, ref data, SLGP_SHORTPATH);
                 var target = buffer.ToString();
-                if (!string.IsNullOrEmpty(target) && Extension(target) == ExeExtension)
+                var extension = Extension(target);
+                if (!string.IsNullOrEmpty(target) && (extension == ExeExtension))
                 {
-                    program.Valid = true;
-
                     buffer = new StringBuilder(MAX_PATH);
                     link.GetDescription(buffer, MAX_PATH);
                     var description = buffer.ToString();
@@ -169,10 +168,6 @@ namespace Wox.Plugin.Program.Programs
                             program.Description = info.FileDescription;
                         }
                     }
-                }
-                else
-                {
-                    program.Valid = false;
                 }
                 return program;
             }
