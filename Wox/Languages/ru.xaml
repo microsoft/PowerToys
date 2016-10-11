@@ -90,13 +90,13 @@
     <system:String x:Key="done">Подтвердить</system:String>
     <system:String x:Key="cannotFindSpecifiedPlugin">Не удалось найти заданный плагин</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">Новая горячая клавиша не может быть пустой</system:String>
-    <system:String x:Key="newActionKeywordsHasBeenAssigned">Новая горячая клавиша уже используется другим плагином. Пожалуйста, зайдайте новую</system:String>
+    <system:String x:Key="newActionKeywordsHasBeenAssigned">Новая горячая клавиша уже используется другим плагином. Пожалуйста, задайте новую</system:String>
     <system:String x:Key="succeed">Сохранено</system:String>
     <system:String x:Key="actionkeyword_tips">Используйте * в случае, если вы не хотите задавать конкретную горячую клавишу</system:String>
     
     <!--Custom Query Hotkey Dialog-->
     <system:String x:Key="preview">Проверить</system:String>
-    <system:String x:Key="hotkeyIsNotUnavailable">Горячая клавиша недоступна. Пожалуйста, зайдайте новую</system:String>
+    <system:String x:Key="hotkeyIsNotUnavailable">Горячая клавиша недоступна. Пожалуйста, задайте новую</system:String>
     <system:String x:Key="invalidPluginHotkey">Недействительная горячая клавиша плагина</system:String>
     <system:String x:Key="update">Изменить</system:String>
     
