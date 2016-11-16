@@ -21,11 +21,18 @@ Features
 - Build custom themes at http://www.getwox.com/theme/builder
 - Install plugins from http://www.getwox.com/plugin
 
+Getting started guide
+------------
+[You can find a getting started guide that covers installation and usage here](https://github.com/Wox-launcher/Wox/wiki/Getting-started)
+
+Otherwise follow the steps below. 
+
 Installation
 ------------
 
-Download [`Wox-xxx.exe`](https://github.com/Wox-launcher/Wox/releases/download/v1.3.67/Wox-1.3.67.exe) from [releases](https://github.com/Wox-launcher/Wox/releases).
-Just ignore Windows' complaints about security, we will sign the code in the future.
+Download `Wox-xxx.exe` from [releases](https://github.com/Wox-launcher/Wox/releases). Latest as of now is [`1.3.183`](https://github.com/Wox-launcher/Wox/releases/download/v1.3.183/Wox-1.3.183.exe)
+
+Windows may complain about security due to code not being signed. This will be fixed later. 
 
 Versions marked as **pre-release** are unstable pre-release versions.
 
@@ -41,6 +48,7 @@ Usage
 - Install/Uninstall plugin: type `wpm install/uninstall`
 - Reset: delete `%APPDATA%\Wox`
 
+
 Contribution
 ------------
 
@@ -55,4 +63,3 @@ Documentation
 
 - Outdated doc: [WoX doc](http://doc.getwox.com).
 - Just ask questions in [issues](https://github.com/Wox-launcher/Wox/issues) for now.
-

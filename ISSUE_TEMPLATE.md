@@ -1,4 +1,4 @@
-## Known problems for 1.3.813:
+## Known problems for 1.3.183:
 
 1. `System.NullReferenceException`: try reset wox by delete %APPDATA%\Wox, backup before you do that
 2. `System.UriFormatException`: delete your old theme file
