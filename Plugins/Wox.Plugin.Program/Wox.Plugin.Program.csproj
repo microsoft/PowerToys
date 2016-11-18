@@ -149,16 +149,13 @@
       <Name>Wox.Plugin</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="..\..\packages\UwpDesktop.10.0.10586.2\analyzers\dotnet\UwpDesktopAnalyzer.dll" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\..\packages\UwpDesktop.10.0.10586.2\build\portable-net45+uap\UwpDesktop.targets" Condition="Exists('..\..\packages\UwpDesktop.10.0.10586.2\build\portable-net45+uap\UwpDesktop.targets')" />
+  <Import Project="..\..\packages\UwpDesktop.10.0.14393.2\build\portable-net45+uap\UwpDesktop.targets" Condition="Exists('..\..\packages\UwpDesktop.10.0.14393.2\build\portable-net45+uap\UwpDesktop.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\UwpDesktop.10.0.10586.2\build\portable-net45+uap\UwpDesktop.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\UwpDesktop.10.0.10586.2\build\portable-net45+uap\UwpDesktop.targets'))" />
+    <Error Condition="!Exists('..\..\packages\UwpDesktop.10.0.14393.2\build\portable-net45+uap\UwpDesktop.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\UwpDesktop.10.0.14393.2\build\portable-net45+uap\UwpDesktop.targets'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
