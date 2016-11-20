@@ -114,7 +114,7 @@ namespace Wox.ViewModel
 
         #region theme
 
-        public static string Theme => @"http://www.getwox.com/theme";
+        public static string Theme => @"http://www.getwox.com/theme/builder";
 
         public string SelectedTheme
         {
