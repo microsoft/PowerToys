@@ -74,19 +74,7 @@ namespace Wox.Plugin.Program.Programs
                     var appListEntry = manifestApp.GetStringValue("AppListEntry");
                     if (appListEntry != "none")
                     {
-                        var app = new Application
-                        {
-                            UserModelId = manifestApp.GetAppUserModelId(),
-                            DisplayName = manifestApp.GetStringValue("DisplayName"),
-                            Description = manifestApp.GetStringValue("Description"),
-                            BackgroundColor = manifestApp.GetStringValue("BackgroundColor"),
-                            Location = Location
-                        };
-                        app.DisplayName = ResourceFromPri(FullName, app.DisplayName);
-                        app.Description = ResourceFromPri(FullName, app.Description);
-                        // todo move into Application class, so it can specific app info when logo error
-                        app.LogoUri = LogoUriFromManifest(manifestApp);
-                        app.LogoPath = LogoPathFromUri(app.LogoUri);
+                        var app = new Application(manifestApp, this);
                         apps.Add(app);
                     }
                     manifestApps.MoveNext();
@@ -95,8 +83,10 @@ namespace Wox.Plugin.Program.Programs
             }
         }
 
+
+
         /// http://www.hanselman.com/blog/GetNamespacesFromAnXMLDocumentWithXPathDocumentAndLINQToXML.aspx
-        private static string[] XmlNamespaces(string path)
+        private string[] XmlNamespaces(string path)
         {
             XDocument z = XDocument.Load(path);
             if (z.Root != null)
@@ -114,7 +104,7 @@ namespace Wox.Plugin.Program.Programs
             else
             {
                 Log.Error($"can't find namespaces for <{path}>");
-                return new string[] {};
+                return new string[] { };
             }
         }
 
@@ -136,156 +126,18 @@ namespace Wox.Plugin.Program.Programs
                 }
             }
 
-            Log.Error($"Unknown Appmanifest version: {FullName}");
+            Log.Error($"Unknown Appmanifest version: {FullName}, Package location: <{Location}>.");
             Version = PackageVersion.Unknown;
         }
 
-        private string LogoUriFromManifest(IAppxManifestApplication app)
-        {
-            var logoKeyFromVersion = new Dictionary<PackageVersion, string>
-            {
-                {PackageVersion.Windows10, "Square44x44Logo"},
-                {PackageVersion.Windows81, "Square30x30Logo"},
-                {PackageVersion.Windows8, "SmallLogo"},
-            };
-            if (logoKeyFromVersion.ContainsKey(Version))
-            {
-                var key = logoKeyFromVersion[Version];
-                var logoUri = app.GetStringValue(key);
-                return logoUri;
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
-
-        private string LogoPathFromUri(string uri)
-        {
-            // all https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
-            // windows 10 https://msdn.microsoft.com/en-us/library/windows/apps/dn934817.aspx
-            // windows 8.1 https://msdn.microsoft.com/en-us/library/windows/apps/hh965372.aspx#target_size
-            // windows 8 https://msdn.microsoft.com/en-us/library/windows/apps/br211475.aspx
-
-            string path;
-            if (uri.Contains("\\"))
-            {
-                path = Path.Combine(Location, uri);
-            }
-            else
-            {
-                // for C:\Windows\MiracastView etc
-                path = Path.Combine(Location, "Assets", uri);
-            }
-
-            var extension = Path.GetExtension(path);
-            if (extension != null)
-            {
-                var end = path.Length - extension.Length;
-                var prefix = path.Substring(0, end);
-                var paths = new List<string> {path};
-
-                // todo hidpi icon
-                if (Version == PackageVersion.Windows10)
-                {
-                    paths.Add($"{prefix}.scale-100{extension}");
-                    paths.Add($"{prefix}.scale-200{extension}");
-                }
-                else if (Version == PackageVersion.Windows81)
-                {
-                    paths.Add($"{prefix}.scale-100{extension}");
-                    paths.Add($"{prefix}.scale-120{extension}");
-                    paths.Add($"{prefix}.scale-140{extension}");
-                    paths.Add($"{prefix}.scale-160{extension}");
-                    paths.Add($"{prefix}.scale-180{extension}");
-                }
-                else if (Version == PackageVersion.Windows8)
-                {
-                    paths.Add($"{prefix}.scale-100{extension}");
-                }
-
-                var selected = paths.FirstOrDefault(File.Exists);
-                if (!string.IsNullOrEmpty(selected))
-                {
-                    return selected;
-                }
-                else
-                {
-                    Log.Error($"<{FullName}> can't find logo uri: <{uri}>");
-                    return string.Empty;
-                }
-            }
-            else
-            {
-                Log.Error($"<{FullName}> cantains uri doesn't have extension: <{uri}>");
-                return string.Empty;
-            }
-        }
 
 
-        private string ResourceFromPri(string packageFullName, string resourceReference)
-        {
-            const string prefix = "ms-resource:";
-            if (!string.IsNullOrWhiteSpace(resourceReference) && resourceReference.StartsWith(prefix))
-            {
-                // magic comes from @talynone
-                // https://github.com/talynone/Wox.Plugin.WindowsUniversalAppLauncher/blob/master/StoreAppLauncher/Helpers/NativeApiHelper.cs#L139-L153
-                string key = resourceReference.Substring(prefix.Length);
-                string parsed;
-                if (key.StartsWith("//"))
-                {
-                    parsed = prefix + key;
-                }
-                else if (key.StartsWith("/"))
-                {
-                    parsed = prefix + "//" + key;
-                }
-                else
-                {
-                    parsed = $"{prefix}//{Name}/resources/{key}";
-                }
 
-                var outBuffer = new StringBuilder(128);
-                string source = $"@{{{packageFullName}? {parsed}}}";
-                var capacity = (uint) outBuffer.Capacity;
-                var hResult = SHLoadIndirectString(source, outBuffer, capacity, IntPtr.Zero);
-                if (hResult == Hresult.Ok)
-                {
-                    var loaded = outBuffer.ToString();
-                    if (!string.IsNullOrEmpty(loaded))
-                    {
-                        return loaded;
-                    }
-                    else
-                    {
-                        var error = $"Load {source} failed, null or empty result";
-                        Log.Error(error);
-                        return string.Empty;
-                    }
-                }
-                else
-                {
-                    // known hresult 2147942522:
-                    // 'Microsoft Corporation' violates pattern constraint of '\bms-resource:.{1,256}'.
-                    // for
-                    // Microsoft.MicrosoftOfficeHub_17.7608.23501.0_x64__8wekyb3d8bbwe: ms-resource://Microsoft.MicrosoftOfficeHub/officehubintl/AppManifest_GetOffice_Description
-                    // Microsoft.BingFoodAndDrink_3.0.4.336_x64__8wekyb3d8bbwe: ms-resource:AppDescription
-                    var message = $"Load {source} failed, HResult error code: {hResult}";
-                    Log.Error(message);
-                    var exception = Marshal.GetExceptionForHR((int) hResult);
-                    Log.Exception(exception);
-                    return string.Empty;
-                }
-            }
-            else
-            {
-                return resourceReference;
-            }
-        }
+
 
         public static Application[] All()
         {
-            
+
 
             var windows10 = new Version(10, 0);
             var support = Environment.OSVersion.Version.Major >= windows10.Major;
@@ -304,7 +156,7 @@ namespace Wox.Plugin.Program.Programs
             }
             else
             {
-                return new Application[] {};
+                return new Application[] { };
             }
 
 
@@ -326,7 +178,7 @@ namespace Wox.Plugin.Program.Programs
             }
             else
             {
-                return new Package[] {};
+                return new Package[] { };
             }
         }
 
@@ -365,13 +217,14 @@ namespace Wox.Plugin.Program.Programs
             public string LogoUri { get; set; }
             public string LogoPath { get; set; }
             public string Location { get; set; }
+            public UWP Package { get; set; }
 
             private int Score(string query)
             {
                 var score1 = StringMatcher.Score(DisplayName, query);
                 var score2 = StringMatcher.ScoreForPinyin(DisplayName, query);
                 var score3 = StringMatcher.Score(Description, query);
-                var score = new[] {score1, score2, score3}.Max();
+                var score = new[] { score1, score2, score3 }.Max();
                 return score;
             }
 
@@ -445,6 +298,162 @@ namespace Wox.Plugin.Program.Programs
                 });
             }
 
+            public Application(IAppxManifestApplication manifestApp, UWP package)
+            {
+                UserModelId = manifestApp.GetAppUserModelId();
+                DisplayName = manifestApp.GetStringValue("DisplayName");
+                Description = manifestApp.GetStringValue("Description");
+                BackgroundColor = manifestApp.GetStringValue("BackgroundColor");
+                Location = Location;
+                Package = package;
+                
+                DisplayName = ResourceFromPri(package.FullName, DisplayName);
+                Description = ResourceFromPri(package.FullName, Description);
+                LogoUri = LogoUriFromManifest(manifestApp);
+                LogoPath = LogoPathFromUri(LogoUri);
+            }
+
+            internal string ResourceFromPri(string packageFullName, string resourceReference)
+            {
+                const string prefix = "ms-resource:";
+                if (!string.IsNullOrWhiteSpace(resourceReference) && resourceReference.StartsWith(prefix))
+                {
+                    // magic comes from @talynone
+                    // https://github.com/talynone/Wox.Plugin.WindowsUniversalAppLauncher/blob/master/StoreAppLauncher/Helpers/NativeApiHelper.cs#L139-L153
+                    string key = resourceReference.Substring(prefix.Length);
+                    string parsed;
+                    if (key.StartsWith("//"))
+                    {
+                        parsed = prefix + key;
+                    }
+                    else if (key.StartsWith("/"))
+                    {
+                        parsed = prefix + "//" + key;
+                    }
+                    else
+                    {
+                        parsed = prefix + "///resources/" + key;
+                    }
+
+                    var outBuffer = new StringBuilder(128);
+                    string source = $"@{{{packageFullName}? {parsed}}}";
+                    var capacity = (uint)outBuffer.Capacity;
+                    var hResult = SHLoadIndirectString(source, outBuffer, capacity, IntPtr.Zero);
+                    if (hResult == Hresult.Ok)
+                    {
+                        var loaded = outBuffer.ToString();
+                        if (!string.IsNullOrEmpty(loaded))
+                        {
+                            return loaded;
+                        }
+                        else
+                        {
+                            Log.Error($"Load {source} failed, null or empty result. Package location: <{Location}>.");
+                            return string.Empty;
+                        }
+                    }
+                    else
+                    {
+                        // known hresult 2147942522:
+                        // 'Microsoft Corporation' violates pattern constraint of '\bms-resource:.{1,256}'.
+                        // for
+                        // Microsoft.MicrosoftOfficeHub_17.7608.23501.0_x64__8wekyb3d8bbwe: ms-resource://Microsoft.MicrosoftOfficeHub/officehubintl/AppManifest_GetOffice_Description
+                        // Microsoft.BingFoodAndDrink_3.0.4.336_x64__8wekyb3d8bbwe: ms-resource:AppDescription
+                        Log.Error($"Load {source} failed, HResult error code: {hResult}. Package location: <{Location}>.");
+                        var exception = Marshal.GetExceptionForHR((int)hResult);
+                        Log.Exception(exception);
+                        return string.Empty;
+                    }
+                }
+                else
+                {
+                    return resourceReference;
+                }
+            }
+
+
+            internal string LogoUriFromManifest(IAppxManifestApplication app)
+            {
+                var logoKeyFromVersion = new Dictionary<PackageVersion, string>
+            {
+                {PackageVersion.Windows10, "Square44x44Logo"},
+                {PackageVersion.Windows81, "Square30x30Logo"},
+                {PackageVersion.Windows8, "SmallLogo"},
+            };
+                if (logoKeyFromVersion.ContainsKey(Package.Version))
+                {
+                    var key = logoKeyFromVersion[Package.Version];
+                    var logoUri = app.GetStringValue(key);
+                    return logoUri;
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+
+            internal string LogoPathFromUri(string uri)
+            {
+                // all https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
+                // windows 10 https://msdn.microsoft.com/en-us/library/windows/apps/dn934817.aspx
+                // windows 8.1 https://msdn.microsoft.com/en-us/library/windows/apps/hh965372.aspx#target_size
+                // windows 8 https://msdn.microsoft.com/en-us/library/windows/apps/br211475.aspx
+
+                string path;
+                if (uri.Contains("\\"))
+                {
+                    path = Path.Combine(Location, uri);
+                }
+                else
+                {
+                    // for C:\Windows\MiracastView etc
+                    path = Path.Combine(Location, "Assets", uri);
+                }
+
+                var extension = Path.GetExtension(path);
+                if (extension != null)
+                {
+                    var end = path.Length - extension.Length;
+                    var prefix = path.Substring(0, end);
+                    var paths = new List<string> { path };
+
+                    // todo hidpi icon
+                    if (Package.Version == PackageVersion.Windows10)
+                    {
+                        paths.Add($"{prefix}.scale-100{extension}");
+                        paths.Add($"{prefix}.scale-200{extension}");
+                    }
+                    else if (Package.Version == PackageVersion.Windows81)
+                    {
+                        paths.Add($"{prefix}.scale-100{extension}");
+                        paths.Add($"{prefix}.scale-120{extension}");
+                        paths.Add($"{prefix}.scale-140{extension}");
+                        paths.Add($"{prefix}.scale-160{extension}");
+                        paths.Add($"{prefix}.scale-180{extension}");
+                    }
+                    else if (Package.Version == PackageVersion.Windows8)
+                    {
+                        paths.Add($"{prefix}.scale-100{extension}");
+                    }
+
+                    var selected = paths.FirstOrDefault(File.Exists);
+                    if (!string.IsNullOrEmpty(selected))
+                    {
+                        return selected;
+                    }
+                    else
+                    {
+                        Log.Error($"<{UserModelId}> can't find logo uri: <{uri}>, Package location: <{Package.Location}>.");
+                        return string.Empty;
+                    }
+                }
+                else
+                {
+                    Log.Error($"<{UserModelId}> cantains uri doesn't have extension: <{uri}>, Package location: <{Package.Location}>.");
+                    return string.Empty;
+                }
+            }
+
 
             public ImageSource Logo()
             {
@@ -466,7 +475,7 @@ namespace Wox.Plugin.Program.Programs
                 }
                 else
                 {
-                    Log.Error($"Can't get logo for <{UserModelId}> with path <{path}>");
+                    Log.Error($"Can't get logo for <{UserModelId}> with path <{path}>, Package location: <{Package.Location}>..");
                     return new BitmapImage(new Uri(Constant.ErrorIcon));
                 }
             }
@@ -485,7 +494,7 @@ namespace Wox.Plugin.Program.Programs
                     var converted = ColorConverter.ConvertFromString(BackgroundColor);
                     if (converted != null)
                     {
-                        var color = (Color) converted;
+                        var color = (Color)converted;
                         var brush = new SolidColorBrush(color);
                         var pen = new Pen(brush, 1);
                         var backgroundArea = new Rect(0, 0, width, width);
@@ -513,7 +522,7 @@ namespace Wox.Plugin.Program.Programs
                     }
                     else
                     {
-                        Log.Error($"Can't convert background string <{BackgroundColor}> to color");
+                        Log.Error($"Can't convert background string <{BackgroundColor}> to color, Package location: <{Package.Location}>.");
                         return new BitmapImage(new Uri(Constant.ErrorIcon));
                     }
                 }
