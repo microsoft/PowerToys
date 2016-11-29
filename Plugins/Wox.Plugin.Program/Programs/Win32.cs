@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32;
 using Shell;
@@ -139,7 +140,7 @@ namespace Wox.Plugin.Program.Programs
             {
                 var link = new ShellLink();
                 const uint STGM_READ = 0;
-                ((IPersistFile)link).Load(path, STGM_READ);
+                ((IPersistFile) link).Load(path, STGM_READ);
                 var hwnd = new _RemotableHandle();
                 link.Resolve(ref hwnd, 0);
 
@@ -150,30 +151,43 @@ namespace Wox.Plugin.Program.Programs
                 const uint SLGP_SHORTPATH = 1;
                 link.GetPath(buffer, buffer.Capacity, ref data, SLGP_SHORTPATH);
                 var target = buffer.ToString();
-                var extension = Extension(target);
-                if (!string.IsNullOrEmpty(target) && (extension == ExeExtension))
+                if (!string.IsNullOrEmpty(target))
                 {
-                    buffer = new StringBuilder(MAX_PATH);
-                    link.GetDescription(buffer, MAX_PATH);
-                    var description = buffer.ToString();
-                    if (!string.IsNullOrEmpty(description))
+                    var extension = Extension(target);
+                    if (extension == ExeExtension && File.Exists(target))
                     {
-                        program.Description = description;
-                    }
-                    else
-                    {
-                        var info = FileVersionInfo.GetVersionInfo(target);
-                        if (!string.IsNullOrEmpty(info.FileDescription))
+                        buffer = new StringBuilder(MAX_PATH);
+                        link.GetDescription(buffer, MAX_PATH);
+                        var description = buffer.ToString();
+                        if (!string.IsNullOrEmpty(description))
                         {
-                            program.Description = info.FileDescription;
+                            program.Description = description;
+                        }
+                        else
+                        {
+                            var info = FileVersionInfo.GetVersionInfo(target);
+                            if (!string.IsNullOrEmpty(info.FileDescription))
+                            {
+                                program.Description = info.FileDescription;
+                            }
                         }
                     }
                 }
                 return program;
             }
-            catch (Exception)
+            catch (COMException e)
+            {
+                // C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\MiracastView.lnk always cause exception
+                Log.Error($"COMException when parsing shortcut: {path}, HResult: {e.HResult}");
+                Log.Exception(e);
+                program.Valid = false;
+                return program;
+            }
+            catch (Exception e)
             {
                 Log.Error($"Error when parsing shortcut: {path}");
+                Log.Exception(e);
+                program.Valid = false;
                 return program;
             }
         }

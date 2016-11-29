@@ -61,9 +61,9 @@ namespace Wox.Plugin.Program.Programs
             IStream stream;
             const uint noAttribute = 0x80;
             const Stgm exclusiveRead = Stgm.Read | Stgm.ShareExclusive;
-            var result = SHCreateStreamOnFileEx(path, exclusiveRead, noAttribute, false, null, out stream);
+            var hResult = SHCreateStreamOnFileEx(path, exclusiveRead, noAttribute, false, null, out stream);
 
-            if (result == Hresult.Ok)
+            if (hResult == Hresult.Ok)
             {
                 var reader = appxFactory.CreateManifestReader(stream);
                 var manifestApps = reader.GetApplications();
@@ -80,6 +80,12 @@ namespace Wox.Plugin.Program.Programs
                     manifestApps.MoveNext();
                 }
                 Apps = apps.Where(a => a.AppListEntry != "none").ToArray();
+            }
+            else
+            {
+                Log.Error($"SHCreateStreamOnFileEx on path: <{path}> failed, HResult error code: {hResult}. Package location: <{Location}>.");
+                var exception = Marshal.GetExceptionForHR((int)hResult);
+                Log.Exception(exception);
             }
         }
 
