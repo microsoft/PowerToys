@@ -259,7 +259,7 @@ namespace Wox.Plugin.Program.Programs
                     else
                     {
                         var error = $"Load {source} failed, null or empty result";
-                        Debug.WriteLine(error);
+                        Log.Error(error);
                         return string.Empty;
                     }
                 }
