@@ -216,7 +216,6 @@ namespace Wox.Plugin.Program.Programs
 
             public string LogoUri { get; set; }
             public string LogoPath { get; set; }
-            public string Location { get; set; }
             public UWP Package { get; set; }
 
             private int Score(string query)
@@ -232,7 +231,7 @@ namespace Wox.Plugin.Program.Programs
             {
                 var result = new Result
                 {
-                    SubTitle = Location,
+                    SubTitle = Package.Location,
                     Icon = Logo,
                     Score = Score(query),
                     ContextData = this,
@@ -268,7 +267,7 @@ namespace Wox.Plugin.Program.Programs
                         Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
                         Action = _ =>
                         {
-                            var hide = Main.StartProcess(new ProcessStartInfo(Location));
+                            var hide = Main.StartProcess(new ProcessStartInfo(Package.Location));
                             return hide;
                         },
                         IcoPath = "Images/folder.png"
@@ -304,9 +303,8 @@ namespace Wox.Plugin.Program.Programs
                 DisplayName = manifestApp.GetStringValue("DisplayName");
                 Description = manifestApp.GetStringValue("Description");
                 BackgroundColor = manifestApp.GetStringValue("BackgroundColor");
-                Location = Location;
                 Package = package;
-                
+
                 DisplayName = ResourceFromPri(package.FullName, DisplayName);
                 Description = ResourceFromPri(package.FullName, Description);
                 LogoUri = LogoUriFromManifest(manifestApp);
@@ -348,7 +346,7 @@ namespace Wox.Plugin.Program.Programs
                         }
                         else
                         {
-                            Log.Error($"Load {source} failed, null or empty result. Package location: <{Location}>.");
+                            Log.Error($"Load {source} failed, null or empty result. Package location: <{Package.Location}>.");
                             return string.Empty;
                         }
                     }
@@ -359,7 +357,7 @@ namespace Wox.Plugin.Program.Programs
                         // for
                         // Microsoft.MicrosoftOfficeHub_17.7608.23501.0_x64__8wekyb3d8bbwe: ms-resource://Microsoft.MicrosoftOfficeHub/officehubintl/AppManifest_GetOffice_Description
                         // Microsoft.BingFoodAndDrink_3.0.4.336_x64__8wekyb3d8bbwe: ms-resource:AppDescription
-                        Log.Error($"Load {source} failed, HResult error code: {hResult}. Package location: <{Location}>.");
+                        Log.Error($"Load {source} failed, HResult error code: {hResult}. Package location: <{Package.Location}>.");
                         var exception = Marshal.GetExceptionForHR((int)hResult);
                         Log.Exception(exception);
                         return string.Empty;
@@ -402,12 +400,12 @@ namespace Wox.Plugin.Program.Programs
                 string path;
                 if (uri.Contains("\\"))
                 {
-                    path = Path.Combine(Location, uri);
+                    path = Path.Combine(Package.Location, uri);
                 }
                 else
                 {
                     // for C:\Windows\MiracastView etc
-                    path = Path.Combine(Location, "Assets", uri);
+                    path = Path.Combine(Package.Location, "Assets", uri);
                 }
 
                 var extension = Path.GetExtension(path);
