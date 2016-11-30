@@ -33,50 +33,56 @@ namespace Wox.Core.Plugin
 
             foreach (var metadata in metadatas)
             {
+                var milliseconds = Stopwatch.Debug($"C# plugin constructor init: {metadata.Name}", () =>
+                {
+
 #if DEBUG
-                var assembly = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
-                var types = assembly.GetTypes();
-                var type = types.First(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IPlugin)));
-                var plugin = (IPlugin)Activator.CreateInstance(type);
+                    var assembly = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
+                    var types = assembly.GetTypes();
+                    var type = types.First(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IPlugin)));
+                    var plugin = (IPlugin)Activator.CreateInstance(type);
 #else
-                Assembly assembly;
-                try
-                {
-                    assembly = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
-                }
-                catch (Exception e)
-                {
-                    Log.Exception(new WoxPluginException(metadata.Name, "Couldn't load assembly", e));
-                    continue;
-                }
-                var types = assembly.GetTypes();
-                Type type;
-                try
-                {
-                    type = types.First(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IPlugin)));
-                }
-                catch (InvalidOperationException e)
-                {
-                    Log.Exception(new WoxPluginException(metadata.Name, "Can't find class implement IPlugin", e));
-                    continue;
-                }
-                IPlugin plugin;
-                try
-                {
-                    plugin = (IPlugin)Activator.CreateInstance(type);
-                }
-                catch (Exception e)
-                {
-                    Log.Exception(new WoxPluginException(metadata.Name, "Can't create instance", e));
-                    continue;
-                }
+                    Assembly assembly;
+                    try
+                    {
+                        assembly = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Exception(new WoxPluginException(metadata.Name, "Couldn't load assembly", e));
+                        return;
+                    }
+                    var types = assembly.GetTypes();
+                    Type type;
+                    try
+                    {
+                        type = types.First(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IPlugin)));
+                    }
+                    catch (InvalidOperationException e)
+                    {
+                        Log.Exception(new WoxPluginException(metadata.Name, "Can't find class implement IPlugin", e));
+                        return;
+                    }
+                    IPlugin plugin;
+                    try
+                    {
+                        plugin = (IPlugin)Activator.CreateInstance(type);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Exception(new WoxPluginException(metadata.Name, "Can't create instance", e));
+                        return;
+                    }
 #endif
-                PluginPair pair = new PluginPair
-                {
-                    Plugin = plugin,
-                    Metadata = metadata
-                };
-                plugins.Add(pair);
+                    PluginPair pair = new PluginPair
+                    {
+                        Plugin = plugin,
+                        Metadata = metadata
+                    };
+                    plugins.Add(pair);
+                });
+                metadata.InitTime += milliseconds;
+
             }
             return plugins;
         }

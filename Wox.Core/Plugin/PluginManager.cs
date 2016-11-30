@@ -93,7 +93,7 @@ namespace Wox.Core.Plugin
             API = api;
             Parallel.ForEach(AllPlugins, pair =>
             {
-                var milliseconds = Stopwatch.Normal($"Plugin init: {pair.Metadata.Name}", () =>
+                var milliseconds = Stopwatch.Debug($"Plugin init: {pair.Metadata.Name}", () =>
                 {
                     pair.Plugin.Init(new PluginInitContext
                     {
@@ -101,7 +101,8 @@ namespace Wox.Core.Plugin
                         API = API
                     });
                 });
-                pair.Metadata.InitTime = milliseconds;
+                pair.Metadata.InitTime += milliseconds;
+                Log.Info($"Total init for {pair.Metadata.Name}: {pair.Metadata.InitTime}ms");
                 InternationalizationManager.Instance.UpdatePluginMetadataTranslations(pair);
             });
 
