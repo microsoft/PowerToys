@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Controls;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
@@ -61,8 +62,15 @@ namespace Wox.Plugin.Program
 
         public static void IndexPrograms()
         {
-            _win32s = Win32.All(_settings);
-            _uwps = UWP.All();
+            var t1 = Task.Run(() =>
+            {
+                _win32s = Win32.All(_settings);
+            });
+            var t2 = Task.Run(() =>
+            {
+                _uwps = UWP.All();
+            });
+            Task.WaitAll(t1, t2);
         }
 
         public Control CreateSettingPanel()
