@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -22,11 +23,13 @@ namespace Wox.Infrastructure.Logger
             var configuration = new LoggingConfiguration();
             var target = new FileTarget();
             configuration.AddTarget("file", target);
-            target.FileName = "${specialfolder:folder=ApplicationData}/" + Constant.Wox + "/" + DirectoryName + "/" + Constant.Version + "/${shortdate}.txt";
+            target.FileName = "${specialfolder:folder=ApplicationData}/" + Constant.Wox + "/" + DirectoryName + "/" +
+                              Constant.Version + "/${shortdate}.txt";
             var rule = new LoggingRule("*", LogLevel.Info, target);
             configuration.LoggingRules.Add(rule);
             LogManager.Configuration = configuration;
         }
+
         private static string CallerType()
         {
             var stackTrace = new StackTrace();
@@ -45,6 +48,24 @@ namespace Wox.Infrastructure.Logger
             logger.Error(msg);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public static void Error(System.Exception e, string msg)
+        {
+            var type = CallerType();
+            var logger = LogManager.GetLogger(type);
+            System.Diagnostics.Debug.WriteLine($"ERROR: {msg}");
+            logger.Error("-------------------------- Begin exception --------------------------");
+            logger.Error(msg);
+            do
+            {
+                logger.Error($"Exception message:\n <{e.Message}>");
+                logger.Error($"Exception stack trace:\n<{e.StackTrace}>");
+                e = e.InnerException;
+            } while (e != null);
+            logger.Error("-------------------------- End exception --------------------------");
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public static void Exception(System.Exception e)
         {
             var type = CallerType();
@@ -52,8 +73,8 @@ namespace Wox.Infrastructure.Logger
 
             do
             {
-                logger.Error(e.Message);
-                logger.Error($"\n{e.StackTrace}");
+                logger.Error($"Exception message:\n <{e.Message}>");
+                logger.Error($"Exception stack trace:\n<{e.StackTrace}>");
                 e = e.InnerException;
             } while (e != null);
         }

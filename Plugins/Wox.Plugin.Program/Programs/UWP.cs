@@ -363,9 +363,8 @@ namespace Wox.Plugin.Program.Programs
                         // for
                         // Microsoft.MicrosoftOfficeHub_17.7608.23501.0_x64__8wekyb3d8bbwe: ms-resource://Microsoft.MicrosoftOfficeHub/officehubintl/AppManifest_GetOffice_Description
                         // Microsoft.BingFoodAndDrink_3.0.4.336_x64__8wekyb3d8bbwe: ms-resource:AppDescription
-                        Log.Error($"Load {source} failed, HResult error code: {hResult}. Package location: <{Package.Location}>.");
-                        var exception = Marshal.GetExceptionForHR((int)hResult);
-                        Log.Exception(exception);
+                        var e = Marshal.GetExceptionForHR((int)hResult);
+                        Log.Error(e, $"Load {source} failed, HResult error code: {hResult}. Package location: <{Package.Location}>.");
                         return string.Empty;
                     }
                 }
