@@ -176,7 +176,7 @@ namespace Wox.Core.Plugin
             try
             {
                 var metadata = pair.Metadata;
-                var milliseconds = Stopwatch.Normal($"Plugin.Query cost for {metadata.Name}", () =>
+                var milliseconds = Stopwatch.Debug($"Plugin.Query cost for {metadata.Name}", () =>
                 {
                     results = pair.Plugin.Query(query) ?? results;
                     UpdatePluginMetadata(results, metadata, query);

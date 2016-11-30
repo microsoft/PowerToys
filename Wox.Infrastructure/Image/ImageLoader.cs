@@ -92,7 +92,7 @@ namespace Wox.Infrastructure.Image
             }
             Task.Run(() =>
             {
-                Stopwatch.Debug("Preload images from cache", () =>
+                Stopwatch.Normal("Preload images from cache", () =>
                 {
                     _cache.TopUsedImages.AsParallel().Where(i => !ImageSources.ContainsKey(i.Key)).ForAll(i =>
                     {

@@ -11,13 +11,16 @@ namespace Wox.Infrastructure
         /// <summary>
         /// This stopwatch will appear only in Debug mode
         /// </summary>
-        public static void Debug(string name, Action action)
+        public static long Debug(string name, Action action)
         {
-#if DEBUG
-            Normal(name, action);
-#else
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
             action();
-#endif
+            stopWatch.Stop();
+            var milliseconds = stopWatch.ElapsedMilliseconds;
+            string info = $"{name} : {milliseconds}ms";
+            Log.Debug(info);
+            return milliseconds;
         }
 
         public static long Normal(string name, Action action)
@@ -28,7 +31,7 @@ namespace Wox.Infrastructure
             stopWatch.Stop();
             var milliseconds = stopWatch.ElapsedMilliseconds;
             string info = $"{name} : {milliseconds}ms";
-            Log.Debug(info);
+            Log.Info(info);
             return milliseconds;
         }
 

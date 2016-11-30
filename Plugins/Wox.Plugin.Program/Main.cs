@@ -29,14 +29,14 @@ namespace Wox.Plugin.Program
             _settingsStorage = new PluginJsonStorage<Settings>();
             _settings = _settingsStorage.Load();
 
-            Stopwatch.Debug("Preload programs", () =>
+            Stopwatch.Normal("Preload programs", () =>
             {
                 _cacheStorage = new BinaryStorage<ProgramIndexCache>();
                 _cache = _cacheStorage.Load();
                 _win32s = _cache.Programs;
             });
             Log.Info($"Preload {_win32s.Length} programs from cache");
-            Stopwatch.Debug("Program Index", IndexPrograms);
+            Stopwatch.Normal("Program Index", IndexPrograms);
         }
 
         public void Save()
