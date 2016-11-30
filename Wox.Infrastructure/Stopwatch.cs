@@ -19,7 +19,8 @@ namespace Wox.Infrastructure
             stopWatch.Stop();
             var milliseconds = stopWatch.ElapsedMilliseconds;
             string info = $"{name} : {milliseconds}ms";
-            Log.Debug(info);
+            var type = Log.CallerType();
+            Log.Debug(type, info);
             return milliseconds;
         }
 
@@ -31,7 +32,8 @@ namespace Wox.Infrastructure
             stopWatch.Stop();
             var milliseconds = stopWatch.ElapsedMilliseconds;
             string info = $"{name} : {milliseconds}ms";
-            Log.Info(info);
+            var type = Log.CallerType();
+            Log.Info(type, info);
             return milliseconds;
         }
 

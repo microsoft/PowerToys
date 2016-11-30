@@ -30,7 +30,7 @@ namespace Wox.Infrastructure.Logger
             LogManager.Configuration = configuration;
         }
 
-        private static string CallerType()
+        public static string CallerType()
         {
             var stackTrace = new StackTrace();
             var stackFrames = stackTrace.GetFrames().NonNull();
@@ -79,20 +79,30 @@ namespace Wox.Infrastructure.Logger
             } while (e != null);
         }
 
-        public static void Debug(string msg)
+        public static void Debug(string type, string msg)
         {
-            var type = CallerType();
             var logger = LogManager.GetLogger(type);
             System.Diagnostics.Debug.WriteLine($"DEBUG: {msg}");
             logger.Debug(msg);
         }
 
-        public static void Info(string msg)
+        public static void Debug(string msg)
         {
             var type = CallerType();
+            Debug(type, msg);
+        }
+
+        public static void Info(string type, string msg)
+        {
             var logger = LogManager.GetLogger(type);
             System.Diagnostics.Debug.WriteLine($"INFO: {msg}");
             logger.Info(msg);
+        }
+
+        public static void Info(string msg)
+        {
+            var type = CallerType();
+            Info(type, msg);
         }
 
         public static void Warn(string msg)
