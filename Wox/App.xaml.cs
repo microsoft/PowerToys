@@ -39,6 +39,7 @@ namespace Wox
         {
             Stopwatch.Normal("Startup Time", () =>
             {
+                Log.Info("-------------------------- Begin Wox startup --------------------------");
                 RegisterDispatcherUnhandledException();
 
                 var settingVM = new SettingWindowViewModel();
@@ -61,6 +62,7 @@ namespace Wox
                 AutoUpdates();
 
                 mainVM.MainWindowVisibility = _settings.HideOnStartup ? Visibility.Hidden : Visibility.Visible;
+                Log.Info("--------------------------  End Wox startup --------------------------");
             });
         }
 
