@@ -25,7 +25,11 @@ namespace Wox.Infrastructure.Logger
             configuration.AddTarget("file", target);
             target.FileName = "${specialfolder:folder=ApplicationData}/" + Constant.Wox + "/" + DirectoryName + "/" +
                               Constant.Version + "/${shortdate}.txt";
+#if DEBUG
+            var rule = new LoggingRule("*", LogLevel.Debug, target);
+#else
             var rule = new LoggingRule("*", LogLevel.Info, target);
+#endif
             configuration.LoggingRules.Add(rule);
             LogManager.Configuration = configuration;
         }
