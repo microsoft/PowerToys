@@ -71,6 +71,19 @@ namespace Wox.Plugin.Program
                 _uwps = UWP.All();
             });
             Task.WaitAll(t1, t2);
+
+            var characters = _win32s.Select(p => p.Name)
+                .Concat(_win32s.Select(p => p.Description))
+                .Concat(_uwps.Select(p => p.DisplayName))
+                .Concat(_uwps.Select(p => p.Description));
+
+            Parallel.ForEach(characters, c =>
+            {
+                if (!string.IsNullOrWhiteSpace(c) && Alphabet.ContainsChinese(c))
+                {
+                    Alphabet.PinyinComination(c);
+                }
+            });
         }
 
         public Control CreateSettingPanel()
