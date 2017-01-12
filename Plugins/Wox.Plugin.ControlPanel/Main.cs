@@ -63,19 +63,19 @@ namespace Wox.Plugin.ControlPanel
                         SubTitle = item.InfoTip,
                         Score = item.Score,
                         IcoPath = Path.Combine(context.CurrentPluginMetadata.PluginDirectory,
-                        @"Images\\ControlPanelIcons\\" + item.GUID + fileType),
+                            @"Images\\ControlPanelIcons\\" + item.GUID + fileType),
                         Action = e =>
+                        {
+                            try
                             {
-                                try
-                                {
-                                    Process.Start(item.ExecutablePath);
-                                }
-                                catch (Exception)
-                                {
-                                    //Silently Fail for now.. todo
-                                }
-                                return true;
+                                Process.Start(item.ExecutablePath);
                             }
+                            catch (Exception)
+                            {
+                                //Silently Fail for now.. todo
+                            }
+                            return true;
+                        }
                     };
                     results.Add(result);
                 }
