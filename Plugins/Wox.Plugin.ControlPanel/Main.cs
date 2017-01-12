@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Wox.Infrastructure;
 
 namespace Wox.Plugin.ControlPanel
@@ -34,6 +35,17 @@ namespace Wox.Plugin.ControlPanel
                     item.Icon.ToBitmap().Save(iconFolder + item.GUID + fileType);
                 }
             }
+
+            var characters = controlPanelItems.Select(i => i.LocalizedString)
+                .Concat(controlPanelItems.Select(i => i.InfoTip));
+
+            Parallel.ForEach(characters, c =>
+            {
+                if (!string.IsNullOrWhiteSpace(c) && Alphabet.ContainsChinese(c))
+                {
+                    Alphabet.PinyinComination(c);
+                }
+            });
         }
 
         public List<Result> Query(Query query)
