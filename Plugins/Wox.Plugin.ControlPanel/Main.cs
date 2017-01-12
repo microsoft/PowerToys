@@ -87,18 +87,20 @@ namespace Wox.Plugin.ControlPanel
 
         private int Score(ControlPanelItem item, string query)
         {
-            var scores = new List<int>();
-            if (item.LocalizedString != null)
+            var scores = new List<int> {0};
+            if (string.IsNullOrEmpty(item.LocalizedString))
             {
                 var score1 = StringMatcher.Score(item.LocalizedString, query);
-                var socre2 = StringMatcher.ScoreForPinyin(item.LocalizedString, query);
-                scores.Add(Math.Max(score1, socre2));
+                var score2 = StringMatcher.ScoreForPinyin(item.LocalizedString, query);
+                scores.Add(score1);
+                scores.Add(score2);
             }
-            if (item.InfoTip != null)
+            if (!string.IsNullOrEmpty(item.InfoTip))
             {
-                // todo should we add pinyin score for infotip also?
-                var score = StringMatcher.Score(item.InfoTip, query);
-                scores.Add(score);
+                var score1 = StringMatcher.Score(item.InfoTip, query);
+                var score2 = StringMatcher.ScoreForPinyin(item.InfoTip, query);
+                scores.Add(score1);
+                scores.Add(score2);
             }
             return scores.Max();
         }
