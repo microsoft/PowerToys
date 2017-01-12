@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using hyjiacan.util.p4n;
@@ -8,11 +9,12 @@ namespace Wox.Infrastructure
 {
     public static class Alphabet
     {
-        public static HanyuPinyinOutputFormat format = new HanyuPinyinOutputFormat();
+        private static readonly HanyuPinyinOutputFormat Format = new HanyuPinyinOutputFormat();
+        private static readonly ConcurrentDictionary<string, string[][]> PinyinCache = new ConcurrentDictionary<string, string[][]>();
 
         static Alphabet()
         {
-            format.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
+            Format.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
         }
 
         /// <summary>
@@ -36,27 +38,42 @@ namespace Wox.Infrastructure
         /// e.g. 音乐 will return yinyue and yinle
         /// <param name="characters"> should be word or sentence, instead of single character. e.g. 微软 </param>
         /// </summmary>
-        public static IEnumerable<string[]> PinyinComination(string characters)
+        public static string[][] PinyinComination(string characters)
         {
-            var allPinyins = new List<string[]>();
-            foreach (var c in characters)
+            if (!string.IsNullOrEmpty(characters))
             {
-                var pinyins = PinyinHelper.toHanyuPinyinStringArray(c, format);
-                if (pinyins != null)
+                if (!PinyinCache.ContainsKey(characters))
                 {
-                    var r = pinyins.Distinct().ToArray();
-                    allPinyins.Add(r);
+
+                    var allPinyins = new List<string[]>();
+                    foreach (var c in characters)
+                    {
+                        var pinyins = PinyinHelper.toHanyuPinyinStringArray(c, Format);
+                        if (pinyins != null)
+                        {
+                            var r = pinyins.Distinct().ToArray();
+                            allPinyins.Add(r);
+                        }
+                        else
+                        {
+                            var r = new[] { c.ToString() };
+                            allPinyins.Add(r);
+                        }
+                    }
+
+                    var combination = allPinyins.Aggregate(Combination).Select(c => c.Split(';')).ToArray();
+                    PinyinCache[characters] = combination;
+                    return combination;
                 }
                 else
                 {
-                    var r = new[] { c.ToString() };
-                    allPinyins.Add(r);
+                    return PinyinCache[characters];
                 }
             }
-
-            var comination = allPinyins.Aggregate(Combination).Select(c => c.Split(';'));
-
-            return comination;
+            else
+            {
+                return new string[][] { };
+            }
         }
 
         public static string Acronym(string[] pinyin)

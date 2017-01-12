@@ -27,7 +27,6 @@ namespace Wox.Infrastructure
             if (!string.IsNullOrEmpty(source) && !string.IsNullOrEmpty(target))
             {
                 FuzzyMatcher matcher = FuzzyMatcher.Create(target);
-                //todo happlebao currently generate pinyin on every query, should be generate on startup/index
                 if (Alphabet.ContainsChinese(source))
                 {
                     var combination = Alphabet.PinyinComination(source);
