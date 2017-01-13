@@ -15,6 +15,7 @@ namespace Wox.Plugin.Program
 {
     public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
     {
+        private static readonly object IndexLock = new object();
         private static Win32[] _win32s = { };
         private static UWP.Application[] _uwps = { };
 
@@ -34,25 +35,38 @@ namespace Wox.Plugin.Program
             {
                 _cacheStorage = new BinaryStorage<ProgramIndexCache>();
                 _cache = _cacheStorage.Load();
-                _win32s = _cache.Programs;
+
+                var w = _cache.Win32s;
+                _win32s = w ?? new Win32[] {};
+                var u = _cache.UWPs;
+                _uwps = u ?? new UWP.Application[] { };
+
             });
-            Log.Info($"Preload {_win32s.Length} programs from cache");
-            Stopwatch.Normal("Program Index", IndexPrograms);
+            Log.Info($"Preload {_win32s.Length} win32 programs from cache");
+            Log.Info($"Preload {_uwps.Length} uwps from cache");
+            Task.Run(() =>
+            {
+                Stopwatch.Normal("Program Index", IndexPrograms);
+            });
         }
 
         public void Save()
         {
             _settingsStorage.Save();
-            _cache.Programs = _win32s;
+            _cache.Win32s = _win32s;
+            _cache.UWPs = _uwps;
             _cacheStorage.Save();
         }
 
         public List<Result> Query(Query query)
         {
-            var results1 = _win32s.AsParallel().Select(p => p.Result(query.Search, _context.API));
-            var results2 = _uwps.AsParallel().Select(p => p.Result(query.Search, _context.API));
-            var result = results1.Concat(results2).Where(r => r.Score > 0).ToList();
-            return result;
+            lock (IndexLock)
+            {
+                var results1 = _win32s.AsParallel().Select(p => p.Result(query.Search, _context.API));
+                var results2 = _uwps.AsParallel().Select(p => p.Result(query.Search, _context.API));
+                var result = results1.Concat(results2).Where(r => r.Score > 0).ToList();
+                return result;
+            }
         }
 
         public void Init(PluginInitContext context)
@@ -62,20 +76,22 @@ namespace Wox.Plugin.Program
 
         public static void IndexPrograms()
         {
+            Win32[] w = {} ;
+            UWP.Application[] u = {};
             var t1 = Task.Run(() =>
             {
-                _win32s = Win32.All(_settings);
+                w = Win32.All(_settings);
             });
             var t2 = Task.Run(() =>
             {
-                _uwps = UWP.All();
+                u = UWP.All();
             });
             Task.WaitAll(t1, t2);
 
-            var characters = _win32s.Select(p => p.Name)
-                .Concat(_win32s.Select(p => p.Description))
-                .Concat(_uwps.Select(p => p.DisplayName))
-                .Concat(_uwps.Select(p => p.Description));
+            var characters = w.Select(p => p.Name)
+                .Concat(w.Select(p => p.Description))
+                .Concat(u.Select(p => p.DisplayName))
+                .Concat(u.Select(p => p.Description));
 
             Parallel.ForEach(characters, c =>
             {
@@ -84,6 +100,12 @@ namespace Wox.Plugin.Program
                     Alphabet.PinyinComination(c);
                 }
             });
+
+            lock (IndexLock)
+            {
+                _win32s = w;
+                _uwps = u;
+            }
         }
 
         public Control CreateSettingPanel()

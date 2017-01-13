@@ -21,6 +21,7 @@ using Rect = System.Windows.Rect;
 
 namespace Wox.Plugin.Program.Programs
 {
+    [Serializable]
     public class UWP
     {
         public string Name { get; }
@@ -29,17 +30,16 @@ namespace Wox.Plugin.Program.Programs
         public string Location { get; set; }
 
         public Application[] Apps { get; set; }
-        public Package Package { get; }
 
         public PackageVersion Version { get; set; }
 
         public UWP(Package package)
         {
-            Package = package;
-            Location = Package.InstalledLocation.Path;
-            Name = Package.Id.Name;
-            FullName = Package.Id.FullName;
-            FamilyName = Package.Id.FamilyName;
+            
+            Location = package.InstalledLocation.Path;
+            Name = package.Id.Name;
+            FullName = package.Id.FullName;
+            FamilyName = package.Id.FamilyName;
             InitializeAppInfo();
             Apps = Apps.Where(a =>
             {
@@ -143,8 +143,6 @@ namespace Wox.Plugin.Program.Programs
 
         public static Application[] All()
         {
-
-
             var windows10 = new Version(10, 0);
             var support = Environment.OSVersion.Version.Major >= windows10.Major;
             if (support)
@@ -211,7 +209,7 @@ namespace Wox.Plugin.Program.Programs
             return FamilyName.GetHashCode();
         }
 
-
+        [Serializable]
         public class Application : IProgram
         {
             public string AppListEntry { get; set; }
