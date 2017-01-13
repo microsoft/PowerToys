@@ -103,8 +103,8 @@ namespace Wox.Infrastructure.Image
                         }
                     });
                 });
+                Log.Info($"Preload {_cache.TopUsedImages.Count} images from cache");
             });
-            Log.Info($"Preload {_cache.TopUsedImages.Count} images from cache");
         }
 
         public static ImageSource Load(string path)
