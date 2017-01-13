@@ -36,15 +36,18 @@ namespace Wox.Plugin.ControlPanel
                 }
             }
 
-            var characters = controlPanelItems.Select(i => i.LocalizedString)
-                .Concat(controlPanelItems.Select(i => i.InfoTip));
-
-            Parallel.ForEach(characters, c =>
+            Task.Run(() =>
             {
-                if (!string.IsNullOrWhiteSpace(c) && Alphabet.ContainsChinese(c))
+                var characters = controlPanelItems.Select(i => i.LocalizedString)
+                    .Concat(controlPanelItems.Select(i => i.InfoTip));
+
+                Parallel.ForEach(characters, c =>
                 {
-                    Alphabet.PinyinComination(c);
-                }
+                    if (!string.IsNullOrWhiteSpace(c) && Alphabet.ContainsChinese(c))
+                    {
+                        Alphabet.PinyinComination(c);
+                    }
+                });
             });
         }
 
