@@ -147,23 +147,13 @@ namespace Wox.Plugin.Program.Programs
             var support = Environment.OSVersion.Version.Major >= windows10.Major;
             if (support)
             {
-                var watch = new System.Diagnostics.Stopwatch();
-                watch.Start();
-
                 var applications = CurrentUserPackages().AsParallel().SelectMany(p => new UWP(p).Apps).ToArray();
-
-                watch.Stop();
-                Log.Info("UWP ALL" + watch.ElapsedMilliseconds);
-
                 return applications;
-
             }
             else
             {
                 return new Application[] { };
             }
-
-
         }
 
         private static IEnumerable<Package> CurrentUserPackages()
