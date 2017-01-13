@@ -76,7 +76,6 @@
     <Compile Include="Programs\UWP.cs" />
     <Compile Include="Programs\Win32.cs" />
     <Compile Include="SuffixesConverter.cs" />
-    <Compile Include="ProgramIndexCache.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="ProgramSetting.xaml.cs">
       <DependentUpon>ProgramSetting.xaml</DependentUpon>

@@ -16,13 +16,13 @@ namespace Wox.Plugin.Program
     public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
     {
         private static readonly object IndexLock = new object();
-        private static Win32[] _win32s = { };
-        private static UWP.Application[] _uwps = { };
+        private static Win32[] _win32s;
+        private static UWP.Application[] _uwps;
 
         private static PluginInitContext _context;
 
-        private static ProgramIndexCache _cache;
-        private static BinaryStorage<ProgramIndexCache> _cacheStorage;
+        private static BinaryStorage<Win32[]> _win32Storage;
+        private static BinaryStorage<UWP.Application[]> _uwpStorage;
         private static Settings _settings;
         private readonly PluginJsonStorage<Settings> _settingsStorage;
 
@@ -33,13 +33,10 @@ namespace Wox.Plugin.Program
 
             Stopwatch.Normal("Preload programs", () =>
             {
-                _cacheStorage = new BinaryStorage<ProgramIndexCache>();
-                _cache = _cacheStorage.Load();
-
-                var w = _cache.Win32s;
-                _win32s = w ?? new Win32[] {};
-                var u = _cache.UWPs;
-                _uwps = u ?? new UWP.Application[] { };
+                _win32Storage = new BinaryStorage<Win32[]>("Win32Cache");
+                _win32s = _win32Storage.TryLoad(new Win32[] { });
+                _uwpStorage = new BinaryStorage<UWP.Application[]>("UWPCache");
+                _uwps = _uwpStorage.TryLoad(new UWP.Application[] { });
 
             });
             Log.Info($"Preload {_win32s.Length} win32 programs from cache");
@@ -53,9 +50,8 @@ namespace Wox.Plugin.Program
         public void Save()
         {
             _settingsStorage.Save();
-            _cache.Win32s = _win32s;
-            _cache.UWPs = _uwps;
-            _cacheStorage.Save();
+            _win32Storage.Save(_win32s);
+            _uwpStorage.Save(_uwps);
         }
 
         public List<Result> Query(Query query)
@@ -76,8 +72,8 @@ namespace Wox.Plugin.Program
 
         public static void IndexPrograms()
         {
-            Win32[] w = {} ;
-            UWP.Application[] u = {};
+            Win32[] w = { };
+            UWP.Application[] u = { };
             var t1 = Task.Run(() =>
             {
                 w = Win32.All(_settings);

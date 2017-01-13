@@ -13,19 +13,20 @@ namespace Wox.Infrastructure.Storage
     /// Normally, it has better performance, but not readable
     /// You MUST mark implement class as Serializable
     /// </summary>
-    public class BinaryStorage<T> : Storage<T> where T : new()
+    public class BinaryStorage<T> : Storage<T>
     {
-        public BinaryStorage()
+        public BinaryStorage(string filename)
         {
-            FileSuffix = ".dat";
+            FileSuffix = ".cache";
             DirectoryName = "Cache";
             DirectoryPath = Path.Combine(DirectoryPath, DirectoryName);
+            FileName = filename;
             FilePath = Path.Combine(DirectoryPath, FileName + FileSuffix);
 
             ValidateDirectory();
         }
 
-        public override T Load()
+        public T TryLoad(T defaultData)
         {
             if (File.Exists(FilePath))
             {
@@ -33,23 +34,25 @@ namespace Wox.Infrastructure.Storage
                 {
                     if (stream.Length > 0)
                     {
-                        Deserialize(stream);
+                        var d = Deserialize(stream, defaultData);
+                        return d;
                     }
                     else
                     {
                         stream.Close();
-                        LoadDefault();
+                        Save(defaultData);
+                        return defaultData;
                     }
                 }
             }
             else
             {
-                LoadDefault();
+                Save(defaultData);
+                return defaultData;
             }
-            return Data;
         }
 
-        private void Deserialize(FileStream stream)
+        private T Deserialize(FileStream stream, T defaultData)
         {
             //http://stackoverflow.com/questions/2120055/binaryformatter-deserialize-gives-serializationexception
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
@@ -60,25 +63,20 @@ namespace Wox.Infrastructure.Storage
 
             try
             {
-                Data = (T) binaryFormatter.Deserialize(stream);
+                var t = (T) binaryFormatter.Deserialize(stream);
+                return t;
             }
             catch (System.Exception e)
             {
                 Log.Error($"Broken cache file: {FilePath}");
                 Log.Exception(e);
                 stream.Close();
-                LoadDefault();
+                return defaultData;
             }
             finally
             {
                 AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             }
-        }
-
-        public override void LoadDefault()
-        {
-            Data = new T();
-            Save();
         }
 
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
@@ -97,7 +95,7 @@ namespace Wox.Infrastructure.Storage
             return ayResult;
         }
 
-        public override void Save()
+        public void Save(T data)
         {
             using (var stream = new FileStream(FilePath, FileMode.Create))
             {
@@ -108,7 +106,7 @@ namespace Wox.Infrastructure.Storage
 
                 try
                 {
-                    binaryFormatter.Serialize(stream, Data);
+                    binaryFormatter.Serialize(stream, data);
                 }
                 catch (SerializationException e)
                 {

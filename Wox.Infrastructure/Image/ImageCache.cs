@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Media;
 
 namespace Wox.Infrastructure.Image
 {
@@ -8,29 +10,35 @@ namespace Wox.Infrastructure.Image
     public class ImageCache
     {
         private const int MaxCached = 200;
-        public ConcurrentDictionary<string, int> TopUsedImages = new ConcurrentDictionary<string, int>();
+        public ConcurrentDictionary<string, int> Usage = new ConcurrentDictionary<string, int>();
+        private readonly ConcurrentDictionary<string, ImageSource> _data = new ConcurrentDictionary<string, ImageSource>();
 
-        public void Add(string path)
+
+        public ImageSource this[string path]
         {
-            if (TopUsedImages.ContainsKey(path))
+            get
             {
-                TopUsedImages[path] = TopUsedImages[path] + 1;
+                Usage.AddOrUpdate(path, 1, (k, v) => v + 1);
+                var i = _data[path];
+                return i;
             }
-            else
-            {
-                TopUsedImages[path] = 1;
-            }
+            set { _data[path] = value; }
         }
 
         public void Cleanup()
         {
-            if (TopUsedImages.Count > MaxCached)
-            {
-                var images = TopUsedImages.OrderByDescending(o => o.Value)
-                                          .Take(MaxCached)
-                                          .ToDictionary(i => i.Key, i => i.Value);
-                TopUsedImages = new ConcurrentDictionary<string, int>(images);
-            }
+            var images = Usage
+                .OrderByDescending(o => o.Value)
+                .Take(MaxCached)
+                .ToDictionary(i => i.Key, i => i.Value);
+            Usage = new ConcurrentDictionary<string, int>(images);
+        }
+
+        public bool ContainsKey(string key)
+        {
+            var contains = _data.ContainsKey(key);
+            return contains;
         }
     }
+
 }

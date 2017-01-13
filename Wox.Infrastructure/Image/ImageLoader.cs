@@ -15,7 +15,8 @@ namespace Wox.Infrastructure.Image
 {
     public static class ImageLoader
     {
-        private static readonly ConcurrentDictionary<string, ImageSource> ImageSources = new ConcurrentDictionary<string, ImageSource>();
+        private static readonly ImageCache ImageCache = new ImageCache();
+        private static readonly BinaryStorage<ConcurrentDictionary<string, int>> Storage;
 
 
         private static readonly string[] ImageExtions =
@@ -29,19 +30,17 @@ namespace Wox.Infrastructure.Image
             ".ico"
         };
 
-        private static readonly ImageCache _cache;
-        private static readonly BinaryStorage<ImageCache> _storage;
 
         static ImageLoader()
         {
-            _storage = new BinaryStorage<ImageCache>();
-            _cache = _storage.Load();
+            Storage = new BinaryStorage<ConcurrentDictionary<string, int>> ("ImageCache");
+            ImageCache.Usage = Storage.TryLoad(new ConcurrentDictionary<string, int>());
         }
 
         public static void Save()
         {
-            _cache.Cleanup();
-            _storage.Save();
+            ImageCache.Cleanup();
+            Storage.Save(ImageCache.Usage);
         }
 
         private static ImageSource ShellIcon(string fileName)
@@ -78,7 +77,7 @@ namespace Wox.Infrastructure.Image
             catch (System.Exception e)
             {
                 Log.Exception(e);
-                return ImageSources[Constant.ErrorIcon];
+                return ImageCache[Constant.ErrorIcon];
             }
         }
 
@@ -88,22 +87,22 @@ namespace Wox.Infrastructure.Image
             {
                 ImageSource img = new BitmapImage(new Uri(icon));
                 img.Freeze();
-                ImageSources[icon] = img;
+                ImageCache[icon] = img;
             }
             Task.Run(() =>
             {
                 Stopwatch.Normal("Preload images from cache", () =>
                 {
-                    _cache.TopUsedImages.AsParallel().Where(i => !ImageSources.ContainsKey(i.Key)).ForAll(i =>
+                    ImageCache.Usage.AsParallel().Where(i => !ImageCache.ContainsKey(i.Key)).ForAll(i =>
                     {
                         var img = Load(i.Key);
                         if (img != null)
                         {
-                            ImageSources[i.Key] = img;
+                            ImageCache[i.Key] = img;
                         }
                     });
                 });
-                Log.Info($"Preload {_cache.TopUsedImages.Count} images from cache");
+                Log.Info($"Preload {ImageCache.Usage.Count} images from cache");
             });
         }
 
@@ -112,13 +111,11 @@ namespace Wox.Infrastructure.Image
             ImageSource image;
             if (string.IsNullOrEmpty(path))
             {
-                image = ImageSources[Constant.ErrorIcon];
-                _cache.Add(Constant.ErrorIcon);
+                image = ImageCache[Constant.ErrorIcon];
             }
-            else if (ImageSources.ContainsKey(path))
+            else if (ImageCache.ContainsKey(path))
             {
-                image = ImageSources[path];
-                _cache.Add(path);
+                image = ImageCache[path];
             }
             else
             {
@@ -146,7 +143,7 @@ namespace Wox.Infrastructure.Image
                     }
                     else
                     {
-                        image = ImageSources[Constant.ErrorIcon];
+                        image = ImageCache[Constant.ErrorIcon];
                         path = Constant.ErrorIcon;
                     }
                 }
@@ -159,12 +156,11 @@ namespace Wox.Infrastructure.Image
                     }
                     else
                     {
-                        image = ImageSources[Constant.ErrorIcon];
+                        image = ImageCache[Constant.ErrorIcon];
                         path = Constant.ErrorIcon;
                     }
                 }
-                ImageSources[path] = image;
-                _cache.Add(path);
+                ImageCache[path] = image;
                 image.Freeze();
             }
             return image;

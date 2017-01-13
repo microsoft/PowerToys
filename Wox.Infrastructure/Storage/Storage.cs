@@ -7,7 +7,7 @@ namespace Wox.Infrastructure.Storage
     {
         protected T Data;
         protected Type DataType { get; }
-        public string FileName { get; }
+        public string FileName { get; set; }
         public string FilePath { get; set; }
         public string FileSuffix { get; set; }
         public string DirectoryPath { get; set; }
