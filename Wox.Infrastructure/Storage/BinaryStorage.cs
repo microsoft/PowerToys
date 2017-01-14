@@ -39,7 +39,7 @@ namespace Wox.Infrastructure.Storage
                     }
                     else
                     {
-                        stream.Close();
+                        Log.Error($"Zero length cache file: {FilePath}");
                         Save(defaultData);
                         return defaultData;
                     }
@@ -47,6 +47,7 @@ namespace Wox.Infrastructure.Storage
             }
             else
             {
+                Log.Info("Cache file not exist, load default data");
                 Save(defaultData);
                 return defaultData;
             }
@@ -68,9 +69,8 @@ namespace Wox.Infrastructure.Storage
             }
             catch (System.Exception e)
             {
-                Log.Error($"Broken cache file: {FilePath}");
+                Log.Error($"Deserialize error for cache file: {FilePath}");
                 Log.Exception(e);
-                stream.Close();
                 return defaultData;
             }
             finally
@@ -110,6 +110,7 @@ namespace Wox.Infrastructure.Storage
                 }
                 catch (SerializationException e)
                 {
+                    Log.Error($"Serialize error for cache file: {FilePath}");
                     Log.Exception(e);
                 }
             }
