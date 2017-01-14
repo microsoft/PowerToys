@@ -33,7 +33,7 @@ namespace Wox.Infrastructure.Image
 
         static ImageLoader()
         {
-            Storage = new BinaryStorage<ConcurrentDictionary<string, int>> ("ImageCache");
+            Storage = new BinaryStorage<ConcurrentDictionary<string, int>> ("Image");
             ImageCache.Usage = Storage.TryLoad(new ConcurrentDictionary<string, int>());
         }
 

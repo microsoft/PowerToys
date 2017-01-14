@@ -33,9 +33,9 @@ namespace Wox.Plugin.Program
 
             Stopwatch.Normal("Preload programs", () =>
             {
-                _win32Storage = new BinaryStorage<Win32[]>("Win32Cache");
+                _win32Storage = new BinaryStorage<Win32[]>("Win32");
                 _win32s = _win32Storage.TryLoad(new Win32[] { });
-                _uwpStorage = new BinaryStorage<UWP.Application[]>("UWPCache");
+                _uwpStorage = new BinaryStorage<UWP.Application[]>("UWP");
                 _uwps = _uwpStorage.TryLoad(new UWP.Application[] { });
 
             });
