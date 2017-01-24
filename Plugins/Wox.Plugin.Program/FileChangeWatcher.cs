@@ -26,7 +26,7 @@ namespace Wox.Plugin.Program
     //        if (WatchedPath.Contains(path)) return;
     //        if (!Directory.Exists(path))
     //        {
-    //            Log.Warn($"FileChangeWatcher: {path} doesn't exist");
+    //            Log.Warn($"|FileChangeWatcher|{path} doesn't exist");
     //            return;
     //        }
 

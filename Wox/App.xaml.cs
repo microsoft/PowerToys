@@ -37,9 +37,9 @@ namespace Wox
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            Stopwatch.Normal("Startup Time", () =>
+            Stopwatch.Normal("|App.OnStartup|Startup cost", () =>
             {
-                Log.Info("-------------------------- Begin Wox startup --------------------------");
+                Log.Info("|App.OnStartup|Begin Wox startup ----------------------------------------------------");
                 RegisterDispatcherUnhandledException();
 
                 var settingVM = new SettingWindowViewModel();
@@ -62,7 +62,7 @@ namespace Wox
                 AutoUpdates();
 
                 mainVM.MainWindowVisibility = _settings.HideOnStartup ? Visibility.Hidden : Visibility.Visible;
-                Log.Info("--------------------------  End Wox startup --------------------------");
+                Log.Info("|App.OnStartup|End Wox startup ----------------------------------------------------  ");
             });
         }
 
@@ -121,8 +121,7 @@ namespace Wox
             AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
             AppDomain.CurrentDomain.FirstChanceException += (s, e) =>
             {
-                Log.Error("First Chance Exception:");
-                Log.Exception(e.Exception);
+                Log.Exception("|App.RegisterAppDomainExceptions|First Chance Exception:", e.Exception);
             };
         }
 

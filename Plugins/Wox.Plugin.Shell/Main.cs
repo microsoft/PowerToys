@@ -91,7 +91,7 @@ namespace Wox.Plugin.Shell
                 }
                 catch (Exception e)
                 {
-                    Log.Exception(e);
+                    Log.Exception($"|Wox.Plugin.Shell.Main.Query|Exception when query for <{query}>", e);
                 }
                 return results;
             }

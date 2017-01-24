@@ -93,7 +93,7 @@ namespace Wox.Core.Plugin
             API = api;
             Parallel.ForEach(AllPlugins, pair =>
             {
-                var milliseconds = Stopwatch.Debug($"Plugin init: {pair.Metadata.Name}", () =>
+                var milliseconds = Stopwatch.Debug($"|PluginManager.InitializePlugins|Init method time cost for <{pair.Metadata.Name}>", () =>
                 {
                     pair.Plugin.Init(new PluginInitContext
                     {
@@ -102,7 +102,7 @@ namespace Wox.Core.Plugin
                     });
                 });
                 pair.Metadata.InitTime += milliseconds;
-                Log.Info($"Total init for {pair.Metadata.Name}: {pair.Metadata.InitTime}ms");
+                Log.Info($"|PluginManager.InitializePlugins|Total init cost for <{pair.Metadata.Name}> is <{pair.Metadata.InitTime}ms>");
                 InternationalizationManager.Instance.UpdatePluginMetadataTranslations(pair);
             });
 
@@ -177,7 +177,7 @@ namespace Wox.Core.Plugin
             try
             {
                 var metadata = pair.Metadata;
-                var milliseconds = Stopwatch.Debug($"Plugin.Query cost for {metadata.Name}", () =>
+                var milliseconds = Stopwatch.Debug($"|PluginManager.QueryForPlugin|Cost for {metadata.Name}", () =>
                 {
                     results = pair.Plugin.Query(query) ?? results;
                     UpdatePluginMetadata(results, metadata, query);
@@ -243,7 +243,7 @@ namespace Wox.Core.Plugin
                 }
                 catch (Exception e)
                 {
-                    Log.Exception(new WoxPluginException(metadata.Name, "Couldn't load plugin context menus", e));
+                    Log.Exception($"|PluginManager.GetContextMenusForPlugin|Can't load context menus for plugin <{metadata.Name}>", e);
                     return new List<Result>();
                 }
             }

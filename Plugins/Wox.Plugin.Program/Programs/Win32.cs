@@ -140,7 +140,7 @@ namespace Wox.Plugin.Program.Programs
             {
                 var link = new ShellLink();
                 const uint STGM_READ = 0;
-                ((IPersistFile) link).Load(path, STGM_READ);
+                ((IPersistFile)link).Load(path, STGM_READ);
                 var hwnd = new _RemotableHandle();
                 link.Resolve(ref hwnd, 0);
 
@@ -178,15 +178,13 @@ namespace Wox.Plugin.Program.Programs
             catch (COMException e)
             {
                 // C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\MiracastView.lnk always cause exception
-                Log.Error($"COMException when parsing shortcut: {path}, HResult: {e.HResult}");
-                Log.Exception(e);
+                Log.Exception($"|Win32.LnkProgram|COMException when parsing shortcut <{path}> with HResult <{e.HResult}>", e);
                 program.Valid = false;
                 return program;
             }
             catch (Exception e)
             {
-                Log.Error($"Error when parsing shortcut: {path}");
-                Log.Exception(e);
+                Log.Exception($"|Win32.LnkProgram|Exception when parsing shortcut <{path}>", e);
                 program.Valid = false;
                 return program;
             }
@@ -301,7 +299,7 @@ namespace Wox.Plugin.Program.Programs
                     if (!string.IsNullOrEmpty(path))
                     {
                         // fix path like this: ""\"C:\\folder\\executable.exe\""
-                        path = path.Trim('"');
+                        path = path.Trim('"', ' ');
                         path = Environment.ExpandEnvironmentVariables(path);
 
                         if (File.Exists(path))

@@ -117,8 +117,9 @@ namespace Wox.Plugin.PluginManagement
             }
             catch (WebException e)
             {
-                Log.Warn("Can't connect to Wox plugin website, check your conenction");
-                Log.Exception(e);
+                //todo happlebao add option in log to decide give user prompt or not
+                context.API.ShowMsg("PluginManagement.ResultForInstallPlugin: Can't connect to Wox plugin website, check your conenction");
+                Log.Exception("|PluginManagement.ResultForInstallPlugin|Can't connect to Wox plugin website, check your conenction", e);
                 return new List<Result>();
             }
             List<WoxPluginResult> searchedPlugins;
@@ -126,10 +127,10 @@ namespace Wox.Plugin.PluginManagement
             {
                 searchedPlugins = JsonConvert.DeserializeObject<List<WoxPluginResult>>(json);
             }
-            catch(JsonSerializationException e)
+            catch (JsonSerializationException e)
             {
-                context.API.ShowMsg("Coundn't parse api search results", "Please update your Wox!", string.Empty);
-                Log.Exception(e);
+                context.API.ShowMsg("PluginManagement.ResultForInstallPlugin: Coundn't parse api search results, Please update your Wox!");
+                Log.Exception("|PluginManagement.ResultForInstallPlugin|Coundn't parse api search results, Please update your Wox!", e);
                 return results;
             }
 
@@ -160,10 +161,8 @@ namespace Wox.Plugin.PluginManagement
                             }
                             catch (WebException e)
                             {
-                                var info = "download plugin " + r.name + "failed.";
-                                MessageBox.Show(info);
-                                Log.Warn(info);
-                                Log.Exception(e);
+                                context.API.ShowMsg($"PluginManagement.ResultForInstallPlugin: download failed for <{r.name}>");
+                                Log.Exception($"|PluginManagement.ResultForInstallPlugin|download failed for <{r.name}>", e);
                                 return false;
                             }
                             context.API.InstallPlugin(filePath);

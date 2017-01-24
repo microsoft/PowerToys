@@ -75,7 +75,7 @@ namespace Wox.Core.Plugin
                 }
                 catch (Exception e)
                 {
-                    Log.Exception(e);
+                    Log.Exception($"|Wox.Core.Plugin.JsonRPCPlugin.Query|Exception when query <{query}>", e);
                 }
             }
             return null;

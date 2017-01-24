@@ -42,7 +42,7 @@ namespace Wox.Core.Plugin
                     }
                     catch (Exception e)
                     {
-                        Log.Fatal(e);
+                        Log.Exception($"|PluginConfig.ParsePLuginConfigs|Can't delete <{directory}>", e);
                     }
                 }
                 else
@@ -61,7 +61,7 @@ namespace Wox.Core.Plugin
             string configPath = Path.Combine(pluginDirectory, PluginConfigName);
             if (!File.Exists(configPath))
             {
-                Log.Warn($"parse plugin {configPath} failed: didn't find config file.");
+                Log.Error($"|PluginConfig.GetPluginMetadata|Didn't find config file <{configPath}>");
                 return null;
             }
 
@@ -77,23 +77,20 @@ namespace Wox.Core.Plugin
             }
             catch (Exception e)
             {
-                string msg = $"Parse plugin config {configPath} failed: json format is not valid";
-                Log.Exception(new WoxException(msg));
+                Log.Exception($"|PluginConfig.GetPluginMetadata|invalid json for config <{configPath}>", e);
                 return null;
             }
 
 
             if (!AllowedLanguage.IsAllowed(metadata.Language))
             {
-                string msg = $"Parse plugin config {configPath} failed: invalid language {metadata.Language}";
-                Log.Exception(new WoxException(msg));
+                Log.Error($"|PluginConfig.GetPluginMetadata|Invalid language <{metadata.Language}> for config <{configPath}>");
                 return null;
             }
 
             if (!File.Exists(metadata.ExecuteFilePath))
             {
-                string msg = $"Parse plugin config {configPath} failed: ExecuteFile {metadata.ExecuteFilePath} didn't exist";
-                Log.Exception(new WoxException(msg));
+                Log.Error($"|PluginConfig.GetPluginMetadata|execute file path didn't exist <{metadata.ExecuteFilePath}> for conifg <{configPath}");
                 return null;
             }
 

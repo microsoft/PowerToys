@@ -18,7 +18,7 @@ namespace Wox.Core
         public static async void UpdateApp()
         {
 
-            var client = new WebClient {Proxy = Http.WebProxy()};
+            var client = new WebClient { Proxy = Http.WebProxy() };
             var downloader = new FileDownloader(client);
 
             try
@@ -33,23 +33,22 @@ namespace Wox.Core
             }
             catch (HttpRequestException he)
             {
-                Log.Exception(he);
+                Log.Exception("|Updater.UpdateApp|network error", he);
             }
             catch (WebException we)
             {
-                Log.Exception(we);
+                Log.Exception("|Updater.UpdateApp|network error", we);
             }
             catch (SocketException sc)
             {
-                Log.Info("Socket exception happened!, which method cause this exception??");
-                Log.Exception(sc);
+                Log.Exception("|Updater.UpdateApp|Socket exception happened, which method cause this exception??", sc);
             }
             catch (Exception exception)
             {
                 const string info = "Update.exe not found, not a Squirrel-installed app?";
                 if (exception.Message == info)
                 {
-                    Log.Warn(info);
+                    Log.Warn($"|Updater.UpdateApp|{info}");
                 }
                 else
                 {
@@ -70,8 +69,7 @@ namespace Wox.Core
             }
             catch (WebException e)
             {
-                Log.Warn("Can't connect to github api to check new version");
-                Log.Exception(e);
+                Log.Exception("|Updater.NewVersion|Can't connect to github api to check new version", e);
                 return string.Empty;
             }
 
@@ -84,7 +82,7 @@ namespace Wox.Core
                 }
                 catch (JsonSerializationException e)
                 {
-                    Log.Exception(e);
+                    Log.Exception("|Updater.NewVersion|can't parse response", e);
                     return string.Empty;
                 }
                 var version = json?["tag_name"]?.ToString();
@@ -94,13 +92,13 @@ namespace Wox.Core
                 }
                 else
                 {
-                    Log.Warn("Can't find tag_name from Github API response");
+                    Log.Warn("|Updater.NewVersion|Can't find tag_name from Github API response");
                     return string.Empty;
                 }
             }
             else
             {
-                Log.Warn("Can't get response from Github API");
+                Log.Warn("|Updater.NewVersion|Can't get response from Github API");
                 return string.Empty;
             }
         }

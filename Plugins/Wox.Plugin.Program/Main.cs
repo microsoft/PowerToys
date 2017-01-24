@@ -31,19 +31,18 @@ namespace Wox.Plugin.Program
             _settingsStorage = new PluginJsonStorage<Settings>();
             _settings = _settingsStorage.Load();
 
-            Stopwatch.Normal("Preload programs", () =>
+            Stopwatch.Normal("|Wox.Plugin.Program.Main|Preload programs cost", () =>
             {
                 _win32Storage = new BinaryStorage<Win32[]>("Win32");
                 _win32s = _win32Storage.TryLoad(new Win32[] { });
                 _uwpStorage = new BinaryStorage<UWP.Application[]>("UWP");
                 _uwps = _uwpStorage.TryLoad(new UWP.Application[] { });
-
             });
-            Log.Info($"Preload {_win32s.Length} win32 programs from cache");
-            Log.Info($"Preload {_uwps.Length} uwps from cache");
+            Log.Info($"|Wox.Plugin.Program.Main|Number of preload win32 programs<{_win32s.Length}>");
+            Log.Info($"|Wox.Plugin.Program.Main|Number of preload uwps <{_uwps.Length}>");
             Task.Run(() =>
             {
-                Stopwatch.Normal("Program Index", IndexPrograms);
+                Stopwatch.Normal("|Wox.Plugin.Program.Main|Program index cost", IndexPrograms);
             });
         }
 

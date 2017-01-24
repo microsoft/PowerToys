@@ -30,7 +30,7 @@ namespace Wox.Core.Resource
                 }
                 catch (Exception e)
                 {
-                    Log.Exception(e);
+                    Log.Exception($"|Internationalization.MakesureDirectoriesExist|Exception when create directory <{DirectoryPath}>", e);
                 }
             }
         }
@@ -117,8 +117,7 @@ namespace Wox.Core.Resource
             }
             catch (Exception e)
             {
-                var woxPluginException = new WoxPluginException(pluginPair.Metadata.Name, "Update Plugin metadata translation failed:", e);
-                Log.Exception(woxPluginException);
+                Log.Exception($"|Internationalization.UpdatePluginMetadataTranslations|Update Plugin metadata translation failed for <{pluginPair.Metadata.Name}>", e);
             }
         }
 

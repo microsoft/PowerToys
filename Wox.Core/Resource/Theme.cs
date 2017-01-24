@@ -36,7 +36,7 @@ namespace Wox.Core.Resource
                     }
                     catch (Exception e)
                     {
-                        Log.Exception(e);
+                        Log.Exception($"|Theme.MakesureThemeDirectoriesExist|Exception when create directory <{pluginDirectory}>", e);
                     }
                 }
             }

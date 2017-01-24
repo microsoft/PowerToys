@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
-using Wox.Infrastructure.Exception;
 
 namespace Wox.Infrastructure.Logger
 {
@@ -34,98 +33,104 @@ namespace Wox.Infrastructure.Logger
             LogManager.Configuration = configuration;
         }
 
-        public static string CallerType()
+        private static void LogFaultyFormat(string message)
         {
-            var stackTrace = new StackTrace();
-            var stackFrames = stackTrace.GetFrames().NonNull();
-            var callingFrame = stackFrames[2];
-            var method = callingFrame.GetMethod();
-            var type = $"{method.DeclaringType.NonNull().FullName}.{method.Name}";
-            return type;
+            var logger = LogManager.GetLogger("FaultyLogger");
+            message = $"Wrong logger message format <{message}>";
+            System.Diagnostics.Debug.WriteLine($"FATAL|{message}");
+            logger.Fatal(message);
         }
 
-        public static void Error(string msg)
+        public static void Error(string message)
         {
-            var type = CallerType();
-            var logger = LogManager.GetLogger(type);
-            System.Diagnostics.Debug.WriteLine($"ERROR: {msg}");
-            logger.Error(msg);
+            var parts = message.Split('|');
+            if (parts.Length == 3 && !string.IsNullOrWhiteSpace(parts[1]) && !string.IsNullOrWhiteSpace(parts[2]))
+            {
+                var logger = LogManager.GetLogger(parts[1]);
+                System.Diagnostics.Debug.WriteLine($"ERROR|{message}");
+                logger.Error(parts[2]);
+            }
+            else
+            {
+                LogFaultyFormat(message);
+            }
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static void Error(System.Exception e, string msg)
-        {
-            var type = CallerType();
-            var logger = LogManager.GetLogger(type);
-            System.Diagnostics.Debug.WriteLine($"ERROR: {msg}");
-            logger.Error("-------------------------- Begin exception --------------------------");
-            logger.Error(msg);
-            do
-            {
-                logger.Error($"Exception message:\n <{e.Message}>");
-                logger.Error($"Exception stack trace:\n<{e.StackTrace}>");
-                e = e.InnerException;
-            } while (e != null);
-            logger.Error("-------------------------- End exception --------------------------");
-        }
-
-        [MethodImpl(MethodImplOptions.Synchronized)]
-        public static void Exception(System.Exception e)
-        {
-            var type = CallerType();
-            var logger = LogManager.GetLogger(type);
-
-            do
-            {
-                logger.Error($"Exception message:\n <{e.Message}>");
-                logger.Error($"Exception stack trace:\n<{e.StackTrace}>");
-                e = e.InnerException;
-            } while (e != null);
-        }
-
-        public static void Debug(string type, string msg)
-        {
-            var logger = LogManager.GetLogger(type);
-            System.Diagnostics.Debug.WriteLine($"DEBUG: {msg}");
-            logger.Debug(msg);
-        }
-
-        public static void Debug(string msg)
-        {
-            var type = CallerType();
-            Debug(type, msg);
-        }
-
-        public static void Info(string type, string msg)
-        {
-            var logger = LogManager.GetLogger(type);
-            System.Diagnostics.Debug.WriteLine($"INFO: {msg}");
-            logger.Info(msg);
-        }
-
-        public static void Info(string msg)
-        {
-            var type = CallerType();
-            Info(type, msg);
-        }
-
-        public static void Warn(string msg)
-        {
-            var type = CallerType();
-            var logger = LogManager.GetLogger(type);
-            System.Diagnostics.Debug.WriteLine($"WARN: {msg}");
-            logger.Warn(msg);
-        }
-
-        public static void Fatal(System.Exception e)
+        public static void Exception(string message, System.Exception e)
         {
 #if DEBUG
             throw e;
 #else
-            var type = CallerType();
-            var logger = LogManager.GetLogger(type);
-            logger.Fatal(ExceptionFormatter.FormatExcpetion(e));
+            var parts = message.Split('|');
+            if (parts.Length == 3 && !string.IsNullOrWhiteSpace(parts[1]) && !string.IsNullOrWhiteSpace(parts[2]))
+            {
+                var logger = LogManager.GetLogger(parts[1]);
+
+                System.Diagnostics.Debug.WriteLine($"ERROR|{message}");
+
+                logger.Error("-------------------------- Begin exception --------------------------");
+                logger.Error(parts[2]);
+
+                do
+                {
+                    logger.Error($"Exception message:\n <{e.Message}>");
+                    logger.Error($"Exception stack trace:\n<{e.StackTrace}>");
+                    e = e.InnerException;
+                } while (e != null);
+
+                logger.Error("-------------------------- End exception --------------------------");
+            }
+            else
+            {
+                LogFaultyFormat(message);
+            }
 #endif
+        }
+
+        public static void Debug(string message)
+        {
+            var parts = message.Split('|');
+            if (parts.Length == 3 && !string.IsNullOrWhiteSpace(parts[1]) && !string.IsNullOrWhiteSpace(parts[2]))
+            {
+                var logger = LogManager.GetLogger(parts[1]);
+                System.Diagnostics.Debug.WriteLine($"DEBUG|{message}");
+                logger.Debug(parts[2]);
+            }
+            else
+            {
+                LogFaultyFormat(message);
+            }
+        }
+
+        public static void Info(string message)
+        {
+            var parts = message.Split('|');
+            if (parts.Length == 3 && !string.IsNullOrWhiteSpace(parts[1]) && !string.IsNullOrWhiteSpace(parts[2]))
+            {
+                var logger = LogManager.GetLogger(parts[1]);
+                System.Diagnostics.Debug.WriteLine($"INFO|{message}");
+                logger.Info(parts[2]);
+            }
+            else
+            {
+                LogFaultyFormat(message);
+            }
+        }
+
+        public static void Warn(string message)
+        {
+            var parts = message.Split('|');
+            if (parts.Length == 3 && !string.IsNullOrWhiteSpace(parts[1]) && !string.IsNullOrWhiteSpace(parts[2]))
+            {
+                var logger = LogManager.GetLogger(parts[1]);
+                System.Diagnostics.Debug.WriteLine($"WARN|{message}");
+                logger.Warn(parts[2]);
+            }
+            else
+            {
+                LogFaultyFormat(message);
+            }
         }
     }
 }

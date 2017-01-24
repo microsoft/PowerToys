@@ -35,7 +35,7 @@ namespace Wox.Plugin.Program.Programs
 
         public UWP(Package package)
         {
-            
+
             Location = package.InstalledLocation.Path;
             Name = package.Id.Name;
             FullName = package.Id.FullName;
@@ -83,9 +83,8 @@ namespace Wox.Plugin.Program.Programs
             }
             else
             {
-                Log.Error($"SHCreateStreamOnFileEx on path: <{path}> failed, HResult error code: {hResult}. Package location: <{Location}>.");
-                var exception = Marshal.GetExceptionForHR((int)hResult);
-                Log.Exception(exception);
+                var e = Marshal.GetExceptionForHR((int)hResult);
+                Log.Exception($"|UWP.InitializeAppInfo|SHCreateStreamOnFileEx on path <{path}> failed with HResult <{hResult}> and location <{Location}>.", e);
             }
         }
 
@@ -109,7 +108,7 @@ namespace Wox.Plugin.Program.Programs
             }
             else
             {
-                Log.Error($"can't find namespaces for <{path}>");
+                Log.Error($"|UWP.XmlNamespaces|can't find namespaces for <{path}>");
                 return new string[] { };
             }
         }
@@ -132,7 +131,7 @@ namespace Wox.Plugin.Program.Programs
                 }
             }
 
-            Log.Error($"Unknown Appmanifest version: {FullName}, Package location: <{Location}>.");
+            Log.Error($"|UWP.InitPackageVersion| Unknown Appmanifest version UWP <{FullName}> with location <{Location}>.");
             Version = PackageVersion.Unknown;
         }
 
@@ -217,7 +216,7 @@ namespace Wox.Plugin.Program.Programs
                 var score1 = StringMatcher.Score(DisplayName, query);
                 var score2 = StringMatcher.ScoreForPinyin(DisplayName, query);
                 var score3 = StringMatcher.Score(Description, query);
-                var score4= StringMatcher.ScoreForPinyin(Description, query);
+                var score4 = StringMatcher.ScoreForPinyin(Description, query);
                 var score = new[] { score1, score2, score3, score4 }.Max();
                 return score;
             }
@@ -341,7 +340,7 @@ namespace Wox.Plugin.Program.Programs
                         }
                         else
                         {
-                            Log.Error($"Load {source} failed, null or empty result. Package location: <{Package.Location}>.");
+                            Log.Error($"|UWP.ResourceFromPri|Can't load null or empty result pri <{source}> with uwp location <{Package.Location}>.");
                             return string.Empty;
                         }
                     }
@@ -353,7 +352,7 @@ namespace Wox.Plugin.Program.Programs
                         // Microsoft.MicrosoftOfficeHub_17.7608.23501.0_x64__8wekyb3d8bbwe: ms-resource://Microsoft.MicrosoftOfficeHub/officehubintl/AppManifest_GetOffice_Description
                         // Microsoft.BingFoodAndDrink_3.0.4.336_x64__8wekyb3d8bbwe: ms-resource:AppDescription
                         var e = Marshal.GetExceptionForHR((int)hResult);
-                        Log.Error(e, $"Load {source} failed, HResult error code: {hResult}. Package location: <{Package.Location}>.");
+                        Log.Exception($"|UWP.ResourceFromPri|Load pri failed <{source}> with HResult <{hResult}> and location <{Package.Location}>.", e);
                         return string.Empty;
                     }
                 }
@@ -435,13 +434,13 @@ namespace Wox.Plugin.Program.Programs
                     }
                     else
                     {
-                        Log.Error($"<{UserModelId}> can't find logo uri: <{uri}>, Package location: <{Package.Location}>.");
+                        Log.Error($"|UWP.LogoPathFromUri| <{UserModelId}> can't find logo uri for <{uri}>, Package location <{Package.Location}>.");
                         return string.Empty;
                     }
                 }
                 else
                 {
-                    Log.Error($"<{UserModelId}> cantains uri doesn't have extension: <{uri}>, Package location: <{Package.Location}>.");
+                    Log.Error($"|UWP.LogoPathFromUri| <{UserModelId}> cantains can't find extension for <{uri}> Package location <{Package.Location}>.");
                     return string.Empty;
                 }
             }
@@ -467,7 +466,7 @@ namespace Wox.Plugin.Program.Programs
                 }
                 else
                 {
-                    Log.Error($"Can't get logo for <{UserModelId}> with path <{path}>, Package location: <{Package.Location}>..");
+                    Log.Error($"|UWP.ImageFromPath|Can't get logo for <{UserModelId}> with path <{path}> and location <{Package.Location}>");
                     return new BitmapImage(new Uri(Constant.ErrorIcon));
                 }
             }
@@ -514,7 +513,7 @@ namespace Wox.Plugin.Program.Programs
                     }
                     else
                     {
-                        Log.Error($"Can't convert background string <{BackgroundColor}> to color, Package location: <{Package.Location}>.");
+                        Log.Error($"|UWP.PlatedImage| Can't convert background string <{BackgroundColor}> to color for <{Package.Location}>.");
                         return new BitmapImage(new Uri(Constant.ErrorIcon));
                     }
                 }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Threading;
+using NLog;
 using Wox.Infrastructure.Exception;
-using Wox.Infrastructure.Logger;
 
 namespace Wox.Helper
 {
@@ -10,7 +10,8 @@ namespace Wox.Helper
     {
         public static void Report(Exception e)
         {
-            Log.Fatal(e);
+            var logger = LogManager.GetLogger("UnHandledException");
+            logger.Fatal(ExceptionFormatter.FormatExcpetion(e));
             new CrashReporter(e).Show();
         }
 

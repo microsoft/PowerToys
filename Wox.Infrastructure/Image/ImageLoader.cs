@@ -76,7 +76,7 @@ namespace Wox.Infrastructure.Image
             }
             catch (System.Exception e)
             {
-                Log.Exception(e);
+                Log.Exception($"|ImageLoader.ShellIcon|can't get shell icon for <{fileName}>", e);
                 return ImageCache[Constant.ErrorIcon];
             }
         }
@@ -91,7 +91,7 @@ namespace Wox.Infrastructure.Image
             }
             Task.Run(() =>
             {
-                Stopwatch.Normal("Preload images from cache", () =>
+                Stopwatch.Normal("|ImageLoader.PreLoadImages|Preload images cost", () =>
                 {
                     ImageCache.Usage.AsParallel().Where(i => !ImageCache.ContainsKey(i.Key)).ForAll(i =>
                     {
@@ -102,7 +102,7 @@ namespace Wox.Infrastructure.Image
                         }
                     });
                 });
-                Log.Info($"Preload {ImageCache.Usage.Count} images from cache");
+                Log.Info($"|ImageLoader.PreLoadImages|Number of preload images is <{ImageCache.Usage.Count}>");
             });
         }
 
