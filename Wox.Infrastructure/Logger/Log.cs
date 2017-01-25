@@ -41,14 +41,25 @@ namespace Wox.Infrastructure.Logger
             logger.Fatal(message);
         }
 
-        public static void Error(string message)
+        private static bool FormatValid(string message)
         {
             var parts = message.Split('|');
-            if (parts.Length == 3 && !string.IsNullOrWhiteSpace(parts[1]) && !string.IsNullOrWhiteSpace(parts[2]))
+            var valid = parts.Length == 3 && !string.IsNullOrWhiteSpace(parts[1]) && !string.IsNullOrWhiteSpace(parts[2]);
+            return valid;
+        }
+
+        /// <param name="message">example: "|prefix|unprefixed" </param>
+        public static void Error(string message)
+        {
+            if (FormatValid(message))
             {
-                var logger = LogManager.GetLogger(parts[1]);
+                var parts = message.Split('|');
+                var prefix = parts[1];
+                var unprefixed = parts[2];
+                var logger = LogManager.GetLogger(prefix);
+
                 System.Diagnostics.Debug.WriteLine($"ERROR|{message}");
-                logger.Error(parts[2]);
+                logger.Error(unprefixed);
             }
             else
             {
@@ -56,26 +67,29 @@ namespace Wox.Infrastructure.Logger
             }
         }
 
+        /// <param name="message">example: "|prefix|unprefixed" </param>
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static void Exception(string message, System.Exception e)
         {
 #if DEBUG
             throw e;
 #else
-            var parts = message.Split('|');
-            if (parts.Length == 3 && !string.IsNullOrWhiteSpace(parts[1]) && !string.IsNullOrWhiteSpace(parts[2]))
+            if (FormatValid(message))
             {
-                var logger = LogManager.GetLogger(parts[1]);
+                var parts = message.Split('|');
+                var prefix = parts[1];
+                var unprefixed = parts[2];
+                var logger = LogManager.GetLogger(prefix);
 
                 System.Diagnostics.Debug.WriteLine($"ERROR|{message}");
 
                 logger.Error("-------------------------- Begin exception --------------------------");
-                logger.Error(parts[2]);
+                logger.Error(unprefixed);
 
                 do
                 {
                     logger.Error($"Exception message:\n <{e.Message}>");
-                    logger.Error($"Exception stack trace:\n<{e.StackTrace}>");
+                    logger.Error($"Exception stack trace:\n <{e.StackTrace}>");
                     e = e.InnerException;
                 } while (e != null);
 
@@ -87,15 +101,19 @@ namespace Wox.Infrastructure.Logger
             }
 #endif
         }
-
+        
+        /// <param name="message">example: "|prefix|unprefixed" </param>
         public static void Debug(string message)
         {
-            var parts = message.Split('|');
-            if (parts.Length == 3 && !string.IsNullOrWhiteSpace(parts[1]) && !string.IsNullOrWhiteSpace(parts[2]))
+            if (FormatValid(message))
             {
-                var logger = LogManager.GetLogger(parts[1]);
+                var parts = message.Split('|');
+                var prefix = parts[1];
+                var unprefixed = parts[2];
+                var logger = LogManager.GetLogger(prefix);
+
                 System.Diagnostics.Debug.WriteLine($"DEBUG|{message}");
-                logger.Debug(parts[2]);
+                logger.Debug(unprefixed);
             }
             else
             {
@@ -103,14 +121,18 @@ namespace Wox.Infrastructure.Logger
             }
         }
 
+        /// <param name="message">example: "|prefix|unprefixed" </param>
         public static void Info(string message)
         {
-            var parts = message.Split('|');
-            if (parts.Length == 3 && !string.IsNullOrWhiteSpace(parts[1]) && !string.IsNullOrWhiteSpace(parts[2]))
+            if (FormatValid(message))
             {
-                var logger = LogManager.GetLogger(parts[1]);
+                var parts = message.Split('|');
+                var prefix = parts[1];
+                var unprefixed = parts[2];
+                var logger = LogManager.GetLogger(prefix);
+
                 System.Diagnostics.Debug.WriteLine($"INFO|{message}");
-                logger.Info(parts[2]);
+                logger.Info(unprefixed);
             }
             else
             {
@@ -118,14 +140,18 @@ namespace Wox.Infrastructure.Logger
             }
         }
 
+        /// <param name="message">example: "|prefix|unprefixed" </param>
         public static void Warn(string message)
         {
-            var parts = message.Split('|');
-            if (parts.Length == 3 && !string.IsNullOrWhiteSpace(parts[1]) && !string.IsNullOrWhiteSpace(parts[2]))
+            if (FormatValid(message))
             {
-                var logger = LogManager.GetLogger(parts[1]);
+                var parts = message.Split('|');
+                var prefix = parts[1];
+                var unprefixed = parts[2];
+                var logger = LogManager.GetLogger(prefix);
+
                 System.Diagnostics.Debug.WriteLine($"WARN|{message}");
-                logger.Warn(parts[2]);
+                logger.Warn(unprefixed);
             }
             else
             {
