@@ -38,7 +38,7 @@ namespace Wox.Plugin.Program
                 _uwpStorage = new BinaryStorage<UWP.Application[]>("UWP");
                 _uwps = _uwpStorage.TryLoad(new UWP.Application[] { });
             });
-            Log.Info($"|Wox.Plugin.Program.Main|Number of preload win32 programs<{_win32s.Length}>");
+            Log.Info($"|Wox.Plugin.Program.Main|Number of preload win32 programs <{_win32s.Length}>");
             Log.Info($"|Wox.Plugin.Program.Main|Number of preload uwps <{_uwps.Length}>");
             Task.Run(() =>
             {
