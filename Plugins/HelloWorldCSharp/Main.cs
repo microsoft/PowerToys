@@ -13,7 +13,7 @@ namespace HelloWorldCSharp
         {
             var result = new Result
             {
-                Title = "Hello Word from CSharp",
+                Title = "Hello World from CSharp",
                 SubTitle = $"Query: {query.Search}",
                 IcoPath = "app.png"
             };
