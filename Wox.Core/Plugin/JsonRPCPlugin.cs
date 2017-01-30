@@ -75,7 +75,7 @@ namespace Wox.Core.Plugin
                 }
                 catch (Exception e)
                 {
-                    Log.Exception($"|Wox.Core.Plugin.JsonRPCPlugin.Query|Exception when query <{query}>", e);
+                    Log.Exception($"|JsonRPCPlugin.Query|Exception when query <{query}>", e);
                 }
             }
             return null;
@@ -123,39 +123,53 @@ namespace Wox.Core.Plugin
         {
             try
             {
-                using (Process process = Process.Start(startInfo))
+                using (var process = Process.Start(startInfo))
                 {
                     if (process != null)
                     {
-                        using (StreamReader reader = process.StandardOutput)
+                        using (var standardOutput = process.StandardOutput)
                         {
-                            string result = reader.ReadToEnd();
-                            if (result.StartsWith("DEBUG:"))
+                            var result = standardOutput.ReadToEnd();
+                            if (string.IsNullOrEmpty(result))
                             {
-                                MessageBox.Show(new Form { TopMost = true }, result.Substring(6));
-                                return "";
-                            }
-                            if (String.IsNullOrEmpty(result))
-                            {
-                                using (StreamReader errorReader = process.StandardError)
+                                using (var standardError = process.StandardError)
                                 {
-                                    string error = errorReader.ReadToEnd();
-                                    if (!String.IsNullOrEmpty(error))
+                                    var error = standardError.ReadToEnd();
+                                    if (!string.IsNullOrEmpty(error))
                                     {
-                                        throw new WoxJsonRPCException(error);
+                                        Log.Error($"|JsonRPCPlugin.Execute|{error}");
+                                        return string.Empty;
+                                    }
+                                    else
+                                    {
+                                        Log.Error("|JsonRPCPlugin.Execute|Empty standard output and standard error.");
+                                        return string.Empty;
                                     }
                                 }
                             }
-                            return result;
+                            else if (result.StartsWith("DEBUG:"))
+                            {
+                                MessageBox.Show(new Form {TopMost = true}, result.Substring(6));
+                                return string.Empty;
+                            }
+                            else
+                            {
+                                return result;
+                            }
                         }
+                    }
+                    else
+                    {
+                        Log.Error("|JsonRPCPlugin.Execute|Can't start new process");
+                        return string.Empty;
                     }
                 }
             }
             catch (Exception e)
             {
-                throw new WoxJsonRPCException(e.Message);
+                Log.Exception($"|JsonRPCPlugin.Execute|Exception for filename <{startInfo.FileName}> with argument <{startInfo.Arguments}>", e);
+                return string.Empty;
             }
-            return null;
         }
 
         public void Init(PluginInitContext ctx)

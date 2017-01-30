@@ -43,31 +43,43 @@ namespace Wox.Core.Resource
 
         private Language GetLanguageByLanguageCode(string languageCode)
         {
-            Language language = AvailableLanguages.GetAvailableLanguages().FirstOrDefault(o => o.LanguageCode.ToLower() == languageCode.ToLower());
+            var lowercase = languageCode.ToLower();
+            var language = AvailableLanguages.GetAvailableLanguages().FirstOrDefault(o => o.LanguageCode.ToLower() == lowercase);
             if (language == null)
             {
-                throw new WoxI18nException("Invalid language code:" + languageCode);
+                Log.Error($"|Internationalization.GetLanguageByLanguageCode|Language code can't be found <{languageCode}>");
+                return AvailableLanguages.English;
             }
-
-            return language;
+            else
+            {
+                return language;
+            }
         }
 
         public void ChangeLanguage(Language language)
         {
-            if (language == null) throw new WoxI18nException("language can't be null");
-
-            string path = GetLanguagePath(language);
-            if (string.IsNullOrEmpty(path))
+            if (language != null)
             {
-                path = GetLanguagePath(AvailableLanguages.English);
-                if (string.IsNullOrEmpty(path))
+                string path = GetLanguagePath(language);
+                if (!string.IsNullOrEmpty(path))
                 {
-                    throw new Exception("Change Language failed");
+                    Settings.Language = language.LanguageCode;
+                    ResourceMerger.UpdateResource(this);
+                }
+                else
+                {
+                    Log.Error($"|Internationalization.ChangeLanguage|Language path can't be found <{path}>");
+                    path = GetLanguagePath(AvailableLanguages.English);
+                    if (string.IsNullOrEmpty(path))
+                    {
+                        Log.Error($"|Internationalization.ChangeLanguage|Default english language path can't be found <{path}>");
+                    }
                 }
             }
-
-            Settings.Language = language.LanguageCode;
-            ResourceMerger.UpdateResource(this);
+            else
+            {
+                Log.Error("|Internationalization.ChangeLanguage|Language can't be null");
+            }
         }
 
 

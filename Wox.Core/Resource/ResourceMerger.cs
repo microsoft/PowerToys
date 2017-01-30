@@ -6,6 +6,7 @@ using System.Windows;
 using Wox.Core.Plugin;
 using Wox.Plugin;
 using Wox.Infrastructure.Exception;
+using Wox.Infrastructure.Logger;
 
 namespace Wox.Core.Resource
 {
@@ -54,7 +55,7 @@ namespace Wox.Core.Resource
                 }
                 else
                 {
-                    throw new WoxPluginException(plugin.Metadata.Name, "Can't find plugin location.");
+                    Log.Error($"|ResourceMerger.UpdatePluginLanguages|Can't find plugin path <{location}> for <{plugin.Metadata.Name}>");
                 }
                 
             }

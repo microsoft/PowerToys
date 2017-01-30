@@ -21,10 +21,6 @@ namespace Wox.Helper
             Application.Current.MainWindow.Dispatcher.Invoke(() =>
             {
                 Report((Exception)e.ExceptionObject);
-                if (!(e.ExceptionObject is WoxException))
-                {
-                    Environment.Exit(0);
-                }
             });
         }
 

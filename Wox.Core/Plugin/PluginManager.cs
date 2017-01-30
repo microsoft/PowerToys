@@ -184,12 +184,13 @@ namespace Wox.Core.Plugin
                 });
                 metadata.QueryCount += 1;
                 metadata.AvgQueryTime = metadata.QueryCount == 1 ? milliseconds : (metadata.AvgQueryTime + milliseconds) / 2;
+                return results;
             }
             catch (Exception e)
             {
-                throw new WoxPluginException(pair.Metadata.Name, "QueryForPlugin failed", e);
+                Log.Exception($"|PluginManager.QueryForPlugin|Exception for plugin <{pair.Metadata.Name}> when query <{query}>", e);
+                return new List<Result>();
             }
-            return results;
         }
 
         public static void UpdatePluginMetadata(List<Result> results, PluginMetadata metadata, Query query)
