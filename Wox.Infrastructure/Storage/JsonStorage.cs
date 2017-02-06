@@ -15,8 +15,8 @@ namespace Wox.Infrastructure.Storage
         internal JsonStrorage()
         {
             FileSuffix = ".json";
-            DirectoryName = Constant.Settings;
-            DirectoryPath = Constant.SettingsPath;
+            DirectoryName = "Settings"; 
+            DirectoryPath = Path.Combine(Constant.DataDirectory, DirectoryName);
             FilePath = Path.Combine(DirectoryPath, FileName + FileSuffix);
 
             ValidateDirectory();
