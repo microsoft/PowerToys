@@ -13,21 +13,6 @@ namespace Wox.Infrastructure.Storage
         public string DirectoryPath { get; set; }
         public string DirectoryName { get; set; }
 
-        public virtual T Load()
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual void Save()
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual void LoadDefault()
-        {
-            throw new NotImplementedException();
-        }
-
         protected Storage()
         {
             DataType = typeof (T);

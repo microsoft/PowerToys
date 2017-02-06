@@ -30,7 +30,7 @@ namespace Wox.Infrastructure.Storage
             };
         }
 
-        public override T Load()
+        public T Load()
         {
             if (File.Exists(FilePath))
             {
@@ -64,13 +64,13 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        public override void LoadDefault()
+        public void LoadDefault()
         {
             Data = JsonConvert.DeserializeObject<T>("{}", _serializerSettings);
             Save();
         }
 
-        public override void Save()
+        public void Save()
         {
             string serialized = JsonConvert.SerializeObject(Data, Formatting.Indented);
             File.WriteAllText(FilePath, serialized);
