@@ -21,7 +21,7 @@ namespace Wox.Plugin.WebSearch
         private CancellationToken _updateToken;
 
         public const string Images = "Images";
-        public static readonly string ImagesDirectory;
+        public static string ImagesDirectory;
 
         public void Save()
         {
@@ -124,14 +124,6 @@ namespace Wox.Plugin.WebSearch
             return new List<Result>();
         }
 
-        static Main()
-        {
-            var plugins = Constant.Plugins;
-            var assemblyName = typeof (Main).Assembly.GetName().Name;
-            var pluginDirectory = Path.Combine(Constant.SettingsPath, plugins, assemblyName);
-            ImagesDirectory = Path.Combine(pluginDirectory, Images);
-        }
-
         public Main()
         {
             _viewModel = new SettingsViewModel();
@@ -140,10 +132,10 @@ namespace Wox.Plugin.WebSearch
 
         public void Init(PluginInitContext context)
         {
-            _context = context;
 
             var pluginDirectory = context.CurrentPluginMetadata.PluginDirectory;
             var bundledImagesDirectory = Path.Combine(pluginDirectory, Images);
+            ImagesDirectory = Path.Combine(_context.CurrentPluginMetadata.PluginDirectory, Images);
             Helper.ValidateDataDirectory(bundledImagesDirectory, ImagesDirectory);
         }
 
