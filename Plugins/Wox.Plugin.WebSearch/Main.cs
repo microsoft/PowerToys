@@ -134,6 +134,7 @@ namespace Wox.Plugin.WebSearch
         {
 
             var pluginDirectory = context.CurrentPluginMetadata.PluginDirectory;
+            _context = context;
             var bundledImagesDirectory = Path.Combine(pluginDirectory, Images);
             ImagesDirectory = Path.Combine(_context.CurrentPluginMetadata.PluginDirectory, Images);
             Helper.ValidateDataDirectory(bundledImagesDirectory, ImagesDirectory);
