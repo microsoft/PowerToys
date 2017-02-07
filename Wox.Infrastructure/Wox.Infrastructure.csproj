@@ -75,10 +75,10 @@
     <Compile Include="Logger\Log.cs" />
     <Compile Include="Storage\ISavable.cs" />
     <Compile Include="Storage\PluginJsonStorage.cs" />
-    <Compile Include="Storage\Storage.cs" />
     <Compile Include="Stopwatch.cs" />
     <Compile Include="Storage\BinaryStorage.cs" />
     <Compile Include="Storage\JsonStorage.cs" />
+    <Compile Include="Storage\WoxJsonStorage.cs" />
     <Compile Include="StringMatcher.cs" />
     <Compile Include="Http\Http.cs" />
     <Compile Include="FuzzyMatcher.cs" />

@@ -55,5 +55,13 @@ namespace Wox.Infrastructure
                 }
             }
         }
+
+        public static void ValidateDirectory(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+        }
     }
 }

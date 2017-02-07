@@ -4,7 +4,7 @@ namespace Wox.Plugin.WebSearch
 {
     public class SettingsViewModel
     {
-        private readonly JsonStrorage<Settings> _storage;
+        private readonly PluginJsonStorage<Settings> _storage;
 
         public SettingsViewModel()
         {

@@ -1,6 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Newtonsoft.Json;
-using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Infrastructure.Storage
@@ -8,19 +8,19 @@ namespace Wox.Infrastructure.Storage
     /// <summary>
     /// Serialize object using json format.
     /// </summary>
-    public class JsonStrorage<T> : Storage<T> where T : new()
+    public class JsonStrorage<T>
     {
         private readonly JsonSerializerSettings _serializerSettings;
+        private T _data;
+        // need a new directory name
+        public const string DirectoryName = "Settings";
+        public const string FileSuffix = ".json";
+        public string FilePath { get; set; }
+        public string DirectoryPath { get; set; }
+
 
         internal JsonStrorage()
         {
-            FileSuffix = ".json";
-            DirectoryName = "Settings"; 
-            DirectoryPath = Path.Combine(Constant.DataDirectory, DirectoryName);
-            FilePath = Path.Combine(DirectoryPath, FileName + FileSuffix);
-
-            ValidateDirectory();
-
             // use property initialization instead of DefaultValueAttribute
             // easier and flexible for default value of object
             _serializerSettings = new JsonSerializerSettings
@@ -48,14 +48,14 @@ namespace Wox.Infrastructure.Storage
             {
                 LoadDefault();
             }
-            return Data;
+            return _data;
         }
 
         private void Deserialize(string searlized)
         {
             try
             {
-                Data = JsonConvert.DeserializeObject<T>(searlized, _serializerSettings);
+                _data = JsonConvert.DeserializeObject<T>(searlized, _serializerSettings);
             }
             catch (JsonSerializationException e)
             {
@@ -66,13 +66,13 @@ namespace Wox.Infrastructure.Storage
 
         public void LoadDefault()
         {
-            Data = JsonConvert.DeserializeObject<T>("{}", _serializerSettings);
+            _data = JsonConvert.DeserializeObject<T>("{}", _serializerSettings);
             Save();
         }
 
         public void Save()
         {
-            string serialized = JsonConvert.SerializeObject(Data, Formatting.Indented);
+            string serialized = JsonConvert.SerializeObject(_data, Formatting.Indented);
             File.WriteAllText(FilePath, serialized);
         }
     }

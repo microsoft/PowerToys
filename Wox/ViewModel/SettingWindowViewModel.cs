@@ -19,11 +19,11 @@ namespace Wox.ViewModel
 {
     public class SettingWindowViewModel : BaseModel
     {
-        private readonly JsonStrorage<Settings> _storage;
+        private readonly WoxJsonStorage<Settings> _storage;
 
         public SettingWindowViewModel()
         {
-            _storage = new JsonStrorage<Settings>();
+            _storage = new WoxJsonStorage<Settings>();
             Settings = _storage.Load();
             Settings.PropertyChanged += (s, e) =>
             {

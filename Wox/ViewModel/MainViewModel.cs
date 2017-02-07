@@ -29,9 +29,9 @@ namespace Wox.ViewModel
         private Query _lastQuery;
         private string _queryTextBeforeLeaveResults;
 
-        private readonly JsonStrorage<History> _historyItemsStorage;
-        private readonly JsonStrorage<UserSelectedRecord> _userSelectedRecordStorage;
-        private readonly JsonStrorage<TopMostRecord> _topMostRecordStorage;
+        private readonly WoxJsonStorage<History> _historyItemsStorage;
+        private readonly WoxJsonStorage<UserSelectedRecord> _userSelectedRecordStorage;
+        private readonly WoxJsonStorage<TopMostRecord> _topMostRecordStorage;
         private readonly Settings _settings;
         private readonly History _history;
         private readonly UserSelectedRecord _userSelectedRecord;
@@ -56,9 +56,9 @@ namespace Wox.ViewModel
 
             _settings = settings;
 
-            _historyItemsStorage = new JsonStrorage<History>();
-            _userSelectedRecordStorage = new JsonStrorage<UserSelectedRecord>();
-            _topMostRecordStorage = new JsonStrorage<TopMostRecord>();
+            _historyItemsStorage = new WoxJsonStorage<History>();
+            _userSelectedRecordStorage = new WoxJsonStorage<UserSelectedRecord>();
+            _topMostRecordStorage = new WoxJsonStorage<TopMostRecord>();
             _history = _historyItemsStorage.Load();
             _userSelectedRecord = _userSelectedRecordStorage.Load();
             _topMostRecord = _topMostRecordStorage.Load();

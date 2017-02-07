@@ -11,20 +11,20 @@ namespace Wox.Infrastructure.Storage
     /// <summary>
     /// Stroage object using binary data
     /// Normally, it has better performance, but not readable
-    /// You MUST mark implement class as Serializable
     /// </summary>
-    public class BinaryStorage<T> : Storage<T>
+    public class BinaryStorage<T>
     {
         public BinaryStorage(string filename)
         {
-            FileSuffix = ".cache";
-            DirectoryName = "Cache";
-            DirectoryPath = Path.Combine(DirectoryPath, DirectoryName);
-            FileName = filename;
-            FilePath = Path.Combine(DirectoryPath, FileName + FileSuffix);
+            const string directoryName = "Cache";
+            var directoryPath = Path.Combine(Constant.DataDirectory, directoryName);
+            Helper.ValidateDirectory(directoryPath);
 
-            ValidateDirectory();
+            const string fileSuffix = ".cache";
+            FilePath = Path.Combine(directoryPath, $"{filename}{fileSuffix}");
         }
+
+        public string FilePath { get; }
 
         public T TryLoad(T defaultData)
         {
