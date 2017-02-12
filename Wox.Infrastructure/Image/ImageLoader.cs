@@ -16,7 +16,7 @@ namespace Wox.Infrastructure.Image
     public static class ImageLoader
     {
         private static readonly ImageCache ImageCache = new ImageCache();
-        private static readonly BinaryStorage<ConcurrentDictionary<string, int>> Storage;
+        private static BinaryStorage<ConcurrentDictionary<string, int>> _storage;
 
 
         private static readonly string[] ImageExtions =
@@ -31,16 +31,38 @@ namespace Wox.Infrastructure.Image
         };
 
 
-        static ImageLoader()
+        public static void Initialize()
         {
-            Storage = new BinaryStorage<ConcurrentDictionary<string, int>> ("Image");
-            ImageCache.Usage = Storage.TryLoad(new ConcurrentDictionary<string, int>());
+            _storage = new BinaryStorage<ConcurrentDictionary<string, int>> ("Image");
+            ImageCache.Usage = _storage.TryLoad(new ConcurrentDictionary<string, int>());
+
+            foreach (var icon in new[] { Constant.DefaultIcon, Constant.ErrorIcon })
+            {
+                ImageSource img = new BitmapImage(new Uri(icon));
+                img.Freeze();
+                ImageCache[icon] = img;
+            }
+            Task.Run(() =>
+            {
+                Stopwatch.Normal("|ImageLoader.Initialize|Preload images cost", () =>
+                {
+                    ImageCache.Usage.AsParallel().Where(i => !ImageCache.ContainsKey(i.Key)).ForAll(i =>
+                    {
+                        var img = Load(i.Key);
+                        if (img != null)
+                        {
+                            ImageCache[i.Key] = img;
+                        }
+                    });
+                });
+                Log.Info($"|ImageLoader.Initialize|Number of preload images is <{ImageCache.Usage.Count}>");
+            });
         }
 
         public static void Save()
         {
             ImageCache.Cleanup();
-            Storage.Save(ImageCache.Usage);
+            _storage.Save(ImageCache.Usage);
         }
 
         private static ImageSource ShellIcon(string fileName)
@@ -79,31 +101,6 @@ namespace Wox.Infrastructure.Image
                 Log.Exception($"|ImageLoader.ShellIcon|can't get shell icon for <{fileName}>", e);
                 return ImageCache[Constant.ErrorIcon];
             }
-        }
-
-        public static void PreloadImages()
-        {
-            foreach (var icon in new[] { Constant.DefaultIcon, Constant.ErrorIcon })
-            {
-                ImageSource img = new BitmapImage(new Uri(icon));
-                img.Freeze();
-                ImageCache[icon] = img;
-            }
-            Task.Run(() =>
-            {
-                Stopwatch.Normal("|ImageLoader.PreLoadImages|Preload images cost", () =>
-                {
-                    ImageCache.Usage.AsParallel().Where(i => !ImageCache.ContainsKey(i.Key)).ForAll(i =>
-                    {
-                        var img = Load(i.Key);
-                        if (img != null)
-                        {
-                            ImageCache[i.Key] = img;
-                        }
-                    });
-                });
-                Log.Info($"|ImageLoader.PreLoadImages|Number of preload images is <{ImageCache.Usage.Count}>");
-            });
         }
 
         public static ImageSource Load(string path)

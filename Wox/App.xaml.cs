@@ -5,6 +5,7 @@ using System.Windows;
 using Wox.Core;
 using Wox.Core.Plugin;
 using Wox.Helper;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
@@ -51,7 +52,7 @@ namespace Wox
                 API = new PublicAPIInstance(settingVM, mainVM);
                 PluginManager.InitializePlugins(API);
 
-                ImageLoader.PreloadImages();
+                ImageLoader.Initialize();
 
                 Current.MainWindow = window;
                 Current.MainWindow.Title = Infrastructure.Constant.Wox;
@@ -132,6 +133,10 @@ namespace Wox
             if (!_disposed)
             {
                 Current.Dispatcher.Invoke(() => ((MainViewModel)Current.MainWindow?.DataContext)?.Save());
+
+                PluginManager.Save();
+                ImageLoader.Save();
+
                 _disposed = true;
             }
         }

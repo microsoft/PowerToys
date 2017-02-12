@@ -596,9 +596,6 @@ namespace Wox.ViewModel
                 _userSelectedRecordStorage.Save();
                 _topMostRecordStorage.Save();
 
-                PluginManager.Save();
-                ImageLoader.Save();
-
                 _saved = true;
             }
         }
