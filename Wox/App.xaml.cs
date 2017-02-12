@@ -43,6 +43,9 @@ namespace Wox
                 Log.Info("|App.OnStartup|Begin Wox startup ----------------------------------------------------");
                 RegisterDispatcherUnhandledException();
 
+                ImageLoader.Initialize();
+                Alphabet.Initialize();
+
                 var settingVM = new SettingWindowViewModel();
                 _settings = settingVM.Settings;
 
@@ -52,11 +55,8 @@ namespace Wox
                 API = new PublicAPIInstance(settingVM, mainVM);
                 PluginManager.InitializePlugins(API);
 
-                ImageLoader.Initialize();
-                Alphabet.Initialize();
-
                 Current.MainWindow = window;
-                Current.MainWindow.Title = Infrastructure.Constant.Wox;
+                Current.MainWindow.Title = Constant.Wox;
 
                 RegisterExitEvents();
 
