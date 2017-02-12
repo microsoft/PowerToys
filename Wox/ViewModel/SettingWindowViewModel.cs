@@ -50,8 +50,30 @@ namespace Wox.ViewModel
 
         #region general
 
-        public List<Language> Languages => _translater.LoadAvailableLanguages();
+        public class LastQueryMode
+        {
+            public string Display { get; set; }
+            public Infrastructure.UserSettings.LastQueryMode Value { get; set; }
+        }
+        public List<LastQueryMode> LastQueryModes
+        {
+            get
+            {
+                List<LastQueryMode> modes = new List<LastQueryMode>();
+                var enums = (Infrastructure.UserSettings.LastQueryMode[])Enum.GetValues(typeof(Infrastructure.UserSettings.LastQueryMode));
+                foreach (var e in enums)
+                {
+                    var key = $"LastQuery{e}";
+                    var display = _translater.GetTranslation(key);
+                    var m = new LastQueryMode { Display = display, Value = e, };
+                    modes.Add(m);
+                }
+                return modes;
+            }
+        }
+
         private Internationalization _translater => InternationalizationManager.Instance;
+        public List<Language> Languages => _translater.LoadAvailableLanguages();
         public IEnumerable<int> MaxResultsRange => Enumerable.Range(2, 16);
 
         #endregion

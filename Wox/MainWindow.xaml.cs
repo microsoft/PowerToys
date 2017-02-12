@@ -68,10 +68,10 @@ namespace Wox
                         QueryTextBox.Focus();
                         SetWindowPosition();
                         _settings.ActivateTimes++;
-                        if (_viewModel.QueryTextSelected)
+                        if (!_viewModel.LastQuerySelected)
                         {
                             QueryTextBox.SelectAll();
-                            _viewModel.QueryTextSelected = false;
+                            _viewModel.LastQuerySelected = true;
                         }
                     }
                 }

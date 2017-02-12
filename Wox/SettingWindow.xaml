@@ -44,6 +44,12 @@
                     <TextBlock Text="{DynamicResource autoUpdates}" />
                 </CheckBox>
                 <StackPanel Margin="10" Orientation="Horizontal">
+                    <TextBlock Text="{DynamicResource lastQueryMode}" />
+                    <ComboBox Margin="10 0 0 0" Width="120"
+                              ItemsSource="{Binding LastQueryModes}" SelectedValue="{Binding Settings.LastQueryMode}"
+                              DisplayMemberPath="Display" SelectedValuePath="Value" />
+                </StackPanel>
+                <StackPanel Margin="10" Orientation="Horizontal">
                     <TextBlock Text="{DynamicResource language}" />
                     <ComboBox Margin="10 0 0 0" Width="120" SelectionChanged="OnLanguageChanged"
                               ItemsSource="{Binding Languages}" SelectedValue="{Binding Settings.Language}"

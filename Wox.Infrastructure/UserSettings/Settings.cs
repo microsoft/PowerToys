@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Drawing;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Wox.Plugin;
 
 namespace Wox.Infrastructure.UserSettings
@@ -49,6 +50,17 @@ namespace Wox.Infrastructure.UserSettings
         public bool IgnoreHotkeysOnFullscreen { get; set; }
 
         public HttpProxy Proxy { get; set; } = new HttpProxy();
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public LastQueryMode LastQueryMode { get; set; } = LastQueryMode.Selected;
+
+    }
+
+    public enum LastQueryMode
+    {
+        Selected,
+        Empty,
+        Preserved
     }
 
     [Obsolete]

@@ -22,6 +22,10 @@
     <system:String x:Key="dontPromptUpdateMsg">Do not show new version notifications</system:String>
     <system:String x:Key="rememberLastLocation">Remember last launch location</system:String>
     <system:String x:Key="language">Language</system:String>
+    <system:String x:Key="lastQueryMode">Last Query Style</system:String>
+    <system:String x:Key="LastQueryPreserved">Preserve Last Query</system:String>
+    <system:String x:Key="LastQuerySelected">Select last Query</system:String>
+    <system:String x:Key="LastQueryEmpty">Empty last Query</system:String>
     <system:String x:Key="maxShowResults">Maximum results shown</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignore hotkeys in fullscreen mode</system:String>
     <system:String x:Key="pythonDirectory">Python Directory</system:String>

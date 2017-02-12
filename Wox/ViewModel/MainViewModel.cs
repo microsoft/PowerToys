@@ -216,7 +216,7 @@ namespace Wox.ViewModel
             QueryTextCursorMovedToEnd = true;
             QueryText = queryText;
         }
-        public bool QueryTextSelected { get; set; }
+        public bool LastQuerySelected { get; set; }
         public bool QueryTextCursorMovedToEnd { get; set; }
 
         private ResultsViewModel _selectedResults;
@@ -566,10 +566,29 @@ namespace Wox.ViewModel
 
         private void OnHotkey(object sender, HotkeyEventArgs e)
         {
-            if (ShouldIgnoreHotkeys()) return;
-            QueryTextSelected = true;
-            ToggleWox();
-            e.Handled = true;
+            if (!ShouldIgnoreHotkeys())
+            {
+
+                if (_settings.LastQueryMode == LastQueryMode.Empty)
+                {
+                    ChangeQueryText(string.Empty);
+                }
+                else if (_settings.LastQueryMode == LastQueryMode.Preserved)
+                {
+                    LastQuerySelected = true;
+                }
+                else if (_settings.LastQueryMode == LastQueryMode.Selected)
+                {
+                    LastQuerySelected = false;
+                }
+                else
+                {
+                    throw new ArgumentException($"wrong LastQueryMode: <{_settings.LastQueryMode}>");
+                }
+
+                ToggleWox();
+                e.Handled = true;
+            }
         }
 
         private void ToggleWox()
