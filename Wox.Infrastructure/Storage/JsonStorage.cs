@@ -55,7 +55,7 @@ namespace Wox.Infrastructure.Storage
         {
             try
             {
-                _data = JsonConvert.DeserializeObject<T>(searlized, _serializerSettings);
+                _data = JsonConvert.DeserializeObject<T>(searlized, _serializerSettings).NonNull();
             }
             catch (JsonSerializationException e)
             {
