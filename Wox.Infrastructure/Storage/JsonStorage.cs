@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Logger;
@@ -64,10 +65,22 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        public void LoadDefault()
+        private void LoadDefault()
         {
+            BackupOriginFile();
             _data = JsonConvert.DeserializeObject<T>("{}", _serializerSettings);
             Save();
+        }
+
+        private void BackupOriginFile()
+        {
+            var timestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fffffff", CultureInfo.CurrentUICulture);
+            var directory = Path.GetDirectoryName(FilePath).NonNull();
+            var originName = Path.GetFileNameWithoutExtension(FilePath);
+            var backupName = $"{originName}-{timestamp}{FileSuffix}";
+            var backupPath = Path.Combine(directory, backupName);
+            File.Copy(FilePath, backupPath, true);
+            // todo give user notification for the backup process
         }
 
         public void Save()
