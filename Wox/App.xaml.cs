@@ -53,6 +53,7 @@ namespace Wox
                 PluginManager.InitializePlugins(API);
 
                 ImageLoader.Initialize();
+                Alphabet.Initialize();
 
                 Current.MainWindow = window;
                 Current.MainWindow.Title = Infrastructure.Constant.Wox;
@@ -136,6 +137,7 @@ namespace Wox
 
                 PluginManager.Save();
                 ImageLoader.Save();
+                Alphabet.Save();
 
                 _disposed = true;
             }

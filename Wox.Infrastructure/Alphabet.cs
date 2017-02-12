@@ -4,17 +4,32 @@ using System.Collections.Generic;
 using System.Linq;
 using hyjiacan.util.p4n;
 using hyjiacan.util.p4n.format;
+using Wox.Infrastructure.Logger;
+using Wox.Infrastructure.Storage;
 
 namespace Wox.Infrastructure
 {
     public static class Alphabet
     {
         private static readonly HanyuPinyinOutputFormat Format = new HanyuPinyinOutputFormat();
-        private static readonly ConcurrentDictionary<string, string[][]> PinyinCache = new ConcurrentDictionary<string, string[][]>();
+        private static ConcurrentDictionary<string, string[][]> PinyinCache;
+        private static BinaryStorage<ConcurrentDictionary<string, string[][]>> _pinyinStorage;
 
-        static Alphabet()
+        public static void Initialize()
         {
             Format.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
+
+            Stopwatch.Normal("|Wox.Infrastructure.Alphabet.Initialize|Preload pinyin cache", () =>
+            {
+                _pinyinStorage = new BinaryStorage<ConcurrentDictionary<string, string[][]>>("Pinyin");
+                PinyinCache = _pinyinStorage.TryLoad(new ConcurrentDictionary<string, string[][]>());
+            });
+            Log.Info($"|Wox.Infrastructure.Alphabet.Initialize|Number of preload pinyin combination<{PinyinCache.Count}>");
+        }
+
+        public static void Save()
+        {
+            _pinyinStorage.Save(PinyinCache);
         }
 
         /// <summary>
@@ -98,5 +113,7 @@ namespace Wox.Infrastructure
             ).ToArray();
             return combination;
         }
+
+
     }
 }

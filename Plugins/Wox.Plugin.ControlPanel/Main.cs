@@ -35,20 +35,6 @@ namespace Wox.Plugin.ControlPanel
                     item.Icon.ToBitmap().Save(iconFolder + item.GUID + fileType);
                 }
             }
-
-            Task.Run(() =>
-            {
-                var characters = controlPanelItems.Select(i => i.LocalizedString)
-                    .Concat(controlPanelItems.Select(i => i.InfoTip));
-
-                Parallel.ForEach(characters, c =>
-                {
-                    if (!string.IsNullOrWhiteSpace(c) && Alphabet.ContainsChinese(c))
-                    {
-                        Alphabet.PinyinComination(c);
-                    }
-                });
-            });
         }
 
         public List<Result> Query(Query query)

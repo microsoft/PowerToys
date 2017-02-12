@@ -83,19 +83,6 @@ namespace Wox.Plugin.Program
             });
             Task.WaitAll(t1, t2);
 
-            var characters = w.Select(p => p.Name)
-                .Concat(w.Select(p => p.Description))
-                .Concat(u.Select(p => p.DisplayName))
-                .Concat(u.Select(p => p.Description));
-
-            Parallel.ForEach(characters, c =>
-            {
-                if (!string.IsNullOrWhiteSpace(c) && Alphabet.ContainsChinese(c))
-                {
-                    Alphabet.PinyinComination(c);
-                }
-            });
-
             lock (IndexLock)
             {
                 _win32s = w;
