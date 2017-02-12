@@ -346,6 +346,7 @@ namespace Wox.Plugin.Program.Programs
                     }
                     else
                     {
+                        // https://github.com/Wox-launcher/Wox/issues/964
                         // known hresult 2147942522:
                         // 'Microsoft Corporation' violates pattern constraint of '\bms-resource:.{1,256}'.
                         // for
