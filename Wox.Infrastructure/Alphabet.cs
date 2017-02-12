@@ -23,6 +23,8 @@ namespace Wox.Infrastructure
             {
                 _pinyinStorage = new BinaryStorage<ConcurrentDictionary<string, string[][]>>("Pinyin");
                 PinyinCache = _pinyinStorage.TryLoad(new ConcurrentDictionary<string, string[][]>());
+                // force pinyin library static constructor initialize
+                PinyinHelper.toHanyuPinyinStringArray('T', Format);
             });
             Log.Info($"|Wox.Infrastructure.Alphabet.Initialize|Number of preload pinyin combination<{PinyinCache.Count}>");
         }
