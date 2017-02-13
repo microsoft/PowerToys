@@ -67,7 +67,11 @@ namespace Wox.Infrastructure.Storage
 
         private void LoadDefault()
         {
-            BackupOriginFile();
+            if (File.Exists(FilePath))
+            {
+                BackupOriginFile();
+            }
+
             _data = JsonConvert.DeserializeObject<T>("{}", _serializerSettings);
             Save();
         }
