@@ -64,7 +64,7 @@ namespace Wox.Infrastructure.Storage
 
             try
             {
-                var t = (T)binaryFormatter.Deserialize(stream);
+                var t = ((T)binaryFormatter.Deserialize(stream)).NonNull();
                 return t;
             }
             catch (System.Exception e)

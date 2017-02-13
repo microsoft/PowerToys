@@ -49,19 +49,24 @@ namespace Wox.Infrastructure.Storage
             {
                 LoadDefault();
             }
-            return _data;
+            return _data.NonNull();
         }
 
         private void Deserialize(string searlized)
         {
             try
             {
-                _data = JsonConvert.DeserializeObject<T>(searlized, _serializerSettings).NonNull();
+                _data = JsonConvert.DeserializeObject<T>(searlized, _serializerSettings);
             }
             catch (JsonSerializationException e)
             {
                 LoadDefault();
                 Log.Exception($"|JsonStrorage.Deserialize|Deserialize error for json <{FilePath}>", e);
+            }
+
+            if (_data == null)
+            {
+                LoadDefault();
             }
         }
 
