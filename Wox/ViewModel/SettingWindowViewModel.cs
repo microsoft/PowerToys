@@ -50,6 +50,7 @@ namespace Wox.ViewModel
 
         #region general
 
+        // todo a better name?
         public class LastQueryMode
         {
             public string Display { get; set; }
