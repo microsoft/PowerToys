@@ -58,10 +58,20 @@ namespace Wox.Core.Resource
             ResourceMerger.UpdateResource(this);
 
             // Exception of FindResource can't be cathed if global exception handle is set
-            var isBlur = Application.Current.TryFindResource("ThemeBlurEnabled");
-            if (isBlur is bool && Environment.OSVersion.Version >= new Version(6, 2))
+            if (Environment.OSVersion.Version >= new Version(6, 2))
             {
-                SetBlurForWindow(Application.Current.MainWindow, (bool)isBlur);
+                var resource = Application.Current.TryFindResource("ThemeBlurEnabled");
+                bool blur;
+                if (resource is bool)
+                {
+                    blur = (bool)resource;
+                }
+                else
+                {
+                    blur = false;
+                }
+
+                SetBlurForWindow(Application.Current.MainWindow, blur);
             }
         }
 
@@ -165,20 +175,24 @@ namespace Wox.Core.Resource
         /// <summary>
         /// Sets the blur for a window via SetWindowCompositionAttribute
         /// </summary>
-        /// <param name="wind">window to blur</param>
-        /// <param name="isBlur">true/false - on or off correspondingly</param>
-        private void SetBlurForWindow(Window wind, bool isBlur)
+        /// <param name="w">window to blur</param>
+        /// <param name="blur">true/false - on or off correspondingly</param>
+        private void SetBlurForWindow(Window w, bool blur)
         {
-            if (isBlur)
+            if (blur)
             {
-                SetWindowAccent(wind, AccentState.ACCENT_ENABLE_BLURBEHIND);
+                SetWindowAccent(w, AccentState.ACCENT_ENABLE_BLURBEHIND);
+            }
+            else
+            {
+                SetWindowAccent(w, AccentState.ACCENT_DISABLED);
             }
         }
 
-        private void SetWindowAccent(Window wind, AccentState themeAccentMode)
+        private void SetWindowAccent(Window w, AccentState state)
         {
-            var windowHelper = new WindowInteropHelper(wind);
-            var accent = new AccentPolicy { AccentState = themeAccentMode };
+            var windowHelper = new WindowInteropHelper(w);
+            var accent = new AccentPolicy { AccentState = state };
             var accentStructSize = Marshal.SizeOf(accent);
 
             var accentPtr = Marshal.AllocHGlobal(accentStructSize);
