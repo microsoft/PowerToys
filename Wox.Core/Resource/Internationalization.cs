@@ -86,9 +86,10 @@ namespace Wox.Core.Resource
 
         public override ResourceDictionary GetResourceDictionary()
         {
+            var uri = GetLanguageFile(DirectoryPath);
             var dictionary = new ResourceDictionary
             {
-                Source = new Uri(GetLanguageFile(DirectoryPath), UriKind.Absolute)
+                Source = new Uri(uri, UriKind.Absolute)
             };
             return dictionary;
         }

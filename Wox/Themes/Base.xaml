@@ -20,6 +20,7 @@
     </Style>
     <Style x:Key="BaseWindowStyle" TargetType="{x:Type Window}">
         <Setter Property="Width" Value="800" />
+        <Setter Property="MaxWidth" Value="800" />
     </Style>
 
     <Style x:Key="BasePendingLineStyle" TargetType="{x:Type Line}">

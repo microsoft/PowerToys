@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
 using Wox.Core.Plugin;
+using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
@@ -12,18 +14,23 @@ namespace Wox.Core.Resource
 {
     public static class ResourceMerger
     {
+        static ResourceMerger()
+        {
+            // remove all dictionaries defined in xaml e.g.g App.xaml
+            Application.Current.Resources.MergedDictionaries.Clear();
+        }
         private static void RemoveResource(string directoryName)
         {
-            directoryName = $"{Path.DirectorySeparatorChar}{directoryName}";
             var dictionaries = Application.Current.Resources.MergedDictionaries;
-            foreach (var resource in dictionaries)
+            var invalids = dictionaries.Where(dict =>
             {
-                string currentDirectoryName = Path.GetDirectoryName(resource.Source.AbsolutePath);
-                if (currentDirectoryName == directoryName)
-                {
-                    dictionaries.Remove(resource);
-                    break;
-                }
+                var dir = Path.GetDirectoryName(dict.Source.AbsolutePath).NonNull();
+                var invalid = dir.Contains(directoryName);
+                return invalid;
+            }).ToList();
+            foreach (var i in invalids)
+            {
+                dictionaries.Remove(i);
             }
         }
 
@@ -44,13 +51,15 @@ namespace Wox.Core.Resource
                 {
                     var internationalization = InternationalizationManager.Instance;
                     var folder = Path.Combine(directoryName, internationalization.DirectoryName);
+
                     var file = internationalization.GetLanguageFile(folder);
                     if (!string.IsNullOrEmpty(file))
                     {
-                        Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
+                        var resource = new ResourceDictionary
                         {
                             Source = new Uri(file, UriKind.Absolute)
-                        });
+                        };
+                        Application.Current.Resources.MergedDictionaries.Add(resource);
                     }
                 }
                 else

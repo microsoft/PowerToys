@@ -77,9 +77,10 @@ namespace Wox.Core.Resource
 
         public override ResourceDictionary GetResourceDictionary()
         {
+            var uri = GetThemePath(Settings.Theme);
             var dict = new ResourceDictionary
             {
-                Source = new Uri(GetThemePath(Settings.Theme), UriKind.Absolute)
+                Source = new Uri(uri, UriKind.Absolute)
             };
 
             Style queryBoxStyle = dict["QueryBoxStyle"] as Style;
