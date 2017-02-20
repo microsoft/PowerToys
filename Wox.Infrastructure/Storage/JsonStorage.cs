@@ -58,7 +58,7 @@ namespace Wox.Infrastructure.Storage
             {
                 _data = JsonConvert.DeserializeObject<T>(searlized, _serializerSettings);
             }
-            catch (JsonSerializationException e)
+            catch (JsonException e)
             {
                 LoadDefault();
                 Log.Exception($"|JsonStrorage.Deserialize|Deserialize error for json <{FilePath}>", e);
