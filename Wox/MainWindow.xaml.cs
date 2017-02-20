@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Helper;
@@ -11,7 +12,12 @@ using Wox.Infrastructure.UserSettings;
 using Wox.ViewModel;
 using Screen = System.Windows.Forms.Screen;
 using ContextMenu = System.Windows.Forms.ContextMenu;
+using ContextMenuStrip = System.Windows.Forms.ContextMenuStrip;
+using DataFormats = System.Windows.DataFormats;
+using DragEventArgs = System.Windows.DragEventArgs;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MenuItem = System.Windows.Forms.MenuItem;
+using MessageBox = System.Windows.MessageBox;
 using NotifyIcon = System.Windows.Forms.NotifyIcon;
 
 namespace Wox
@@ -83,16 +89,38 @@ namespace Wox
 
         private void InitializeNotifyIcon()
         {
-            _notifyIcon = new NotifyIcon { Text = Infrastructure.Constant.Wox, Icon = Properties.Resources.app, Visible = true };
-            _notifyIcon.Click += (o, e) => Visibility = Visibility.Visible;
-            var open = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTrayOpen"));
+            _notifyIcon = new NotifyIcon
+            {
+                Text = Infrastructure.Constant.Wox,
+                Icon = Properties.Resources.app,
+                Visible = true
+            };
+            var menu = new ContextMenuStrip();
+            var items = menu.Items;
+
+            var open = items.Add(InternationalizationManager.Instance.GetTranslation("iconTrayOpen"));
             open.Click += (o, e) => Visibility = Visibility.Visible;
-            var setting = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTraySettings"));
+            var setting = items.Add(InternationalizationManager.Instance.GetTranslation("iconTraySettings"));
             setting.Click += (o, e) => App.API.OpenSettingDialog();
-            var exit = new MenuItem(InternationalizationManager.Instance.GetTranslation("iconTrayExit"));
+            var exit = items.Add(InternationalizationManager.Instance.GetTranslation("iconTrayExit"));
             exit.Click += (o, e) => Close();
-            MenuItem[] childen = { open, setting, exit };
-            _notifyIcon.ContextMenu = new ContextMenu(childen);
+
+            _notifyIcon.ContextMenuStrip = menu;
+            _notifyIcon.MouseClick += (o, e) =>
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    if (menu.Visible)
+                    {
+                        menu.Close();
+                    }
+                    else
+                    {
+                        var p = System.Windows.Forms.Cursor.Position;
+                        menu.Show(p);
+                    }
+                }
+            };
         }
 
         private void InitProgressbarAnimation()
