@@ -18,7 +18,6 @@ namespace Wox.Core.Resource
     {
         public Settings Settings { get; set; }
         private const string DirectoryName = "Languages";
-        private string DirectoryPath => Path.Combine(Constant.ProgramDirectory, DirectoryName);
         private readonly List<string> _languageDirectories = new List<string>();
         private readonly List<ResourceDictionary> _oldResources = new List<ResourceDictionary>();
 

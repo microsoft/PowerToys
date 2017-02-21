@@ -15,31 +15,30 @@ namespace Wox.Core.Resource
 {
     public class Theme
     {
-        private static List<string> themeDirectories = new List<string>();
+        private readonly List<string> _themeDirectories = new List<string>();
         public Settings Settings { get; set; }
-        protected string DirectoryPath => Path.Combine(Constant.ProgramDirectory, DirectoryName);
-        public string DirectoryName { get; protected set; }
+        private string DirectoryPath => Path.Combine(Constant.ProgramDirectory, DirectoryName);
+        private const string DirectoryName = "Themes";
 
         public Theme()
         {
-            DirectoryName = "Themes";
-            themeDirectories.Add(DirectoryPath);
+            _themeDirectories.Add(DirectoryPath);
             MakesureThemeDirectoriesExist();
         }
 
-        private static void MakesureThemeDirectoriesExist()
+        private void MakesureThemeDirectoriesExist()
         {
-            foreach (string pluginDirectory in themeDirectories)
+            foreach (string dir in _themeDirectories)
             {
-                if (!Directory.Exists(pluginDirectory))
+                if (!Directory.Exists(dir))
                 {
                     try
                     {
-                        Directory.CreateDirectory(pluginDirectory);
+                        Directory.CreateDirectory(dir);
                     }
                     catch (Exception e)
                     {
-                        Log.Exception($"|Theme.MakesureThemeDirectoriesExist|Exception when create directory <{pluginDirectory}>", e);
+                        Log.Exception($"|Theme.MakesureThemeDirectoriesExist|Exception when create directory <{dir}>", e);
                     }
                 }
             }
@@ -122,7 +121,7 @@ namespace Wox.Core.Resource
         public List<string> LoadAvailableThemes()
         {
             List<string> themes = new List<string>();
-            foreach (var themeDirectory in themeDirectories)
+            foreach (var themeDirectory in _themeDirectories)
             {
                 themes.AddRange(
                     Directory.GetFiles(themeDirectory)
@@ -134,7 +133,7 @@ namespace Wox.Core.Resource
 
         private string GetThemePath(string themeName)
         {
-            foreach (string themeDirectory in themeDirectories)
+            foreach (string themeDirectory in _themeDirectories)
             {
                 string path = Path.Combine(themeDirectory, themeName + ".xaml");
                 if (File.Exists(path))
