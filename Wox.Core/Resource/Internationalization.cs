@@ -41,23 +41,6 @@ namespace Wox.Core.Resource
                     Log.Error($"|ResourceMerger.UpdatePluginLanguages|Can't find plugin path <{location}> for <{plugin.Metadata.Name}>");
                 }
             }
-
-            MakesureDirectoriesExist();
-        }
-
-        private void MakesureDirectoriesExist()
-        {
-            if (!Directory.Exists(DirectoryPath))
-            {
-                try
-                {
-                    Directory.CreateDirectory(DirectoryPath);
-                }
-                catch (Exception e)
-                {
-                    Log.Exception($"|Internationalization.MakesureDirectoriesExist|Exception when create directory <{DirectoryPath}>", e);
-                }
-            }
         }
 
         public void ChangeLanguage(string languageCode)
