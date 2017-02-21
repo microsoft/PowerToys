@@ -7,15 +7,18 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
 
 namespace Wox.Core.Resource
 {
-    public class Theme : Resource
+    public class Theme
     {
         private static List<string> themeDirectories = new List<string>();
         public Settings Settings { get; set; }
+        protected string DirectoryPath => Path.Combine(Constant.ProgramDirectory, DirectoryName);
+        public string DirectoryName { get; protected set; }
 
         public Theme()
         {
@@ -42,40 +45,47 @@ namespace Wox.Core.Resource
             }
         }
 
-        public void ChangeTheme(string themeName)
+        public void ChangeTheme(string theme)
         {
-            string themePath = GetThemePath(themeName);
-            if (string.IsNullOrEmpty(themePath))
-            {
-                themePath = GetThemePath("Dark");
-                if (string.IsNullOrEmpty(themePath))
-                {
-                    throw new Exception("Change theme failed");
-                }
-            }
+            const string dark = "Dark";
+            bool valid;
 
-            Settings.Theme = themeName;
-            ResourceMerger.UpdateResource(this);
-
-            // Exception of FindResource can't be cathed if global exception handle is set
-            if (Environment.OSVersion.Version >= new Version(6, 2))
+            string path = GetThemePath(theme);
+            if (string.IsNullOrEmpty(path))
             {
-                var resource = Application.Current.TryFindResource("ThemeBlurEnabled");
-                bool blur;
-                if (resource is bool)
+                Log.Error($"|Theme.ChangeTheme|Theme path can't be found <{path}>, use default dark theme");
+                path = GetThemePath(dark);
+                if (string.IsNullOrEmpty(path))
                 {
-                    blur = (bool)resource;
+                    valid = false;
+                    Log.Error($"|Theme.ChangeTheme|Default theme path can't be found <{path}>");
                 }
                 else
                 {
-                    blur = false;
+                    valid = true;
+                    theme = dark;
                 }
+            }
+            else
+            {
+                valid = true;
+            }
 
-                SetBlurForWindow(Application.Current.MainWindow, blur);
+            if (valid)
+            {
+                Settings.Theme = theme;
+
+                var dicts = Application.Current.Resources.MergedDictionaries;
+                // OnStartup, there is nothing to remove
+                var oldResource = dicts.FirstOrDefault(d => d.Source.AbsolutePath == path) ?? new ResourceDictionary();
+                dicts.Remove(oldResource);
+                var newResource = GetResourceDictionary();
+                dicts.Add(newResource);
+
             }
         }
 
-        public override ResourceDictionary GetResourceDictionary()
+        public ResourceDictionary GetResourceDictionary()
         {
             var uri = GetThemePath(Settings.Theme);
             var dict = new ResourceDictionary
@@ -176,17 +186,31 @@ namespace Wox.Core.Resource
         /// <summary>
         /// Sets the blur for a window via SetWindowCompositionAttribute
         /// </summary>
-        /// <param name="w">window to blur</param>
-        /// <param name="blur">true/false - on or off correspondingly</param>
-        private void SetBlurForWindow(Window w, bool blur)
+        public void SetBlurForWindow()
         {
-            if (blur)
+
+            // Exception of FindResource can't be cathed if global exception handle is set
+            if (Environment.OSVersion.Version >= new Version(6, 2))
             {
-                SetWindowAccent(w, AccentState.ACCENT_ENABLE_BLURBEHIND);
-            }
-            else
-            {
-                SetWindowAccent(w, AccentState.ACCENT_DISABLED);
+                var resource = Application.Current.TryFindResource("ThemeBlurEnabled");
+                bool blur;
+                if (resource is bool)
+                {
+                    blur = (bool)resource;
+                }
+                else
+                {
+                    blur = false;
+                }
+
+                if (blur)
+                {
+                    SetWindowAccent(Application.Current.MainWindow, AccentState.ACCENT_ENABLE_BLURBEHIND);
+                }
+                else
+                {
+                    SetWindowAccent(Application.Current.MainWindow, AccentState.ACCENT_DISABLED);
+                }
             }
         }
 

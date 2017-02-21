@@ -15,7 +15,6 @@ namespace Wox.Plugin.Sys
 {
     public class Main : IPlugin, ISettingProvider, IPluginI18n
     {
-        List<Result> availableResults = new List<Result>();
         private PluginInitContext context;
 
         #region DllImport
@@ -47,21 +46,23 @@ namespace Wox.Plugin.Sys
 
         public Control CreateSettingPanel()
         {
-            return new SysSettings(availableResults);
+            var results = Commands();
+            return new SysSettings(results);
         }
 
         public List<Result> Query(Query query)
         {
-            List<Result> results = new List<Result>();
-            foreach (Result availableResult in availableResults)
+            var commands = Commands();
+            var results = new List<Result>();
+            foreach (var c in commands)
             {
-                var titleScore = StringMatcher.Score(availableResult.Title, query.Search);
-                var subTitleScore = StringMatcher.Score(availableResult.SubTitle, query.Search);
+                var titleScore = StringMatcher.Score(c.Title, query.Search);
+                var subTitleScore = StringMatcher.Score(c.SubTitle, query.Search);
                 var score = Math.Max(titleScore, subTitleScore);
                 if (score > 0)
                 {
-                    availableResult.Score = score;
-                    results.Add(availableResult);
+                    c.Score = score;
+                    results.Add(c);
                 }
             }
             return results;
@@ -70,12 +71,12 @@ namespace Wox.Plugin.Sys
         public void Init(PluginInitContext context)
         {
             this.context = context;
-            LoadCommands();
         }
 
-        private void LoadCommands()
+        private List<Result> Commands()
         {
-            availableResults.AddRange(new[]
+            var results = new List<Result>();
+            results.AddRange(new[]
             {
                 new Result
                 {
@@ -126,7 +127,7 @@ namespace Wox.Plugin.Sys
                         LockWorkStation();
                         return true;
                     }
-                },  
+                },
                 new Result
                 {
                     Title = "Sleep",
@@ -188,6 +189,7 @@ namespace Wox.Plugin.Sys
                     }
                 }
             });
+            return results;
         }
 
         public string GetTranslatedPluginTitle()

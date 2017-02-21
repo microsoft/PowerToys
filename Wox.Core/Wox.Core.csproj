@@ -115,8 +115,6 @@
     <Compile Include="Resource\InternationalizationManager.cs" />
     <Compile Include="Resource\Language.cs" />
     <Compile Include="Resource\ThemeManager.cs" />
-    <Compile Include="Resource\Resource.cs" />
-    <Compile Include="Resource\ResourceMerger.cs" />
     <Compile Include="Plugin\PluginInstaller.cs" />
     <Compile Include="Plugin\JsonRPCPlugin.cs" />
     <Compile Include="Plugin\JsonPRCModel.cs" />

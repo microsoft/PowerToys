@@ -4,8 +4,10 @@ using System.Timers;
 using System.Windows;
 using Wox.Core;
 using Wox.Core.Plugin;
+using Wox.Core.Resource;
 using Wox.Helper;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
@@ -58,6 +60,18 @@ namespace Wox
                 Current.MainWindow = window;
                 Current.MainWindow.Title = Constant.Wox;
 
+                // happlebao todo temp fix for instance code logic
+                // remove all dictionaries defined in xaml e.g.g App.xaml
+                Current.Resources.MergedDictionaries.Clear();
+                // load plugin before change language, because plugin language also needs be changed
+                InternationalizationManager.Instance.Settings = _settings;
+                InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
+                // main windows needs initialized before theme change because of blur settigns
+                ThemeManager.Instance.Settings = _settings;
+                ThemeManager.Instance.ChangeTheme(_settings.Theme);
+
+                Http.Proxy = _settings.Proxy;
+
                 RegisterExitEvents();
 
                 AutoStartup();
@@ -67,6 +81,7 @@ namespace Wox
                 Log.Info("|App.OnStartup|End Wox startup ----------------------------------------------------  ");
             });
         }
+
 
         private void AutoStartup()
         {

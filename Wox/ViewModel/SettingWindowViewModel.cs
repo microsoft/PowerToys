@@ -33,11 +33,7 @@ namespace Wox.ViewModel
                 }
             };
 
-            // happlebao todo temp fix for instance code logic
-            InternationalizationManager.Instance.Settings = Settings;
-            InternationalizationManager.Instance.ChangeLanguage(Settings.Language);
-            ThemeManager.Instance.Settings = Settings;
-            Http.Proxy = Settings.Proxy;
+
         }
 
         public Settings Settings { get; set; }

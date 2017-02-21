@@ -87,9 +87,6 @@ namespace Wox.Core.Plugin
         }
         public static void InitializePlugins(IPublicAPI api)
         {
-            //load plugin i18n languages
-            ResourceMerger.UpdatePluginLanguages();
-
             API = api;
             Parallel.ForEach(AllPlugins, pair =>
             {
@@ -103,7 +100,6 @@ namespace Wox.Core.Plugin
                 });
                 pair.Metadata.InitTime += milliseconds;
                 Log.Info($"|PluginManager.InitializePlugins|Total init cost for <{pair.Metadata.Name}> is <{pair.Metadata.InitTime}ms>");
-                InternationalizationManager.Instance.UpdatePluginMetadataTranslations(pair);
             });
 
             _contextMenuPlugins = GetPluginsForInterface<IContextMenu>();

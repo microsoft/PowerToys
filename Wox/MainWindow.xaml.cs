@@ -60,8 +60,9 @@ namespace Wox
 
         private void OnLoaded(object sender, RoutedEventArgs _)
         {
+            // todo is there a way to set blur only once?
+            ThemeManager.Instance.SetBlurForWindow();
             WindowsInteropHelper.DisableControlBox(this);
-            ThemeManager.Instance.ChangeTheme(_settings.Theme);
             InitProgressbarAnimation();
 
             _viewModel.PropertyChanged += (o, e) =>
