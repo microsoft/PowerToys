@@ -20,7 +20,7 @@
         Initialized="OnInitialized"
         Closing="OnClosing"
         Drop="OnDrop"
-        SizeChanged="OnSizeChanged"
+        LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"
         PreviewKeyDown="OnKeyDown"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

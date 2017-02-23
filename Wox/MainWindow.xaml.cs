@@ -36,10 +36,10 @@ namespace Wox
 
         public MainWindow(Settings settings, MainViewModel mainVM)
         {
-            InitializeComponent();
             DataContext = mainVM;
             _viewModel = mainVM;
             _settings = settings;
+            InitializeComponent();
         }
         public MainWindow()
         {
@@ -64,6 +64,10 @@ namespace Wox
             ThemeManager.Instance.SetBlurForWindow();
             WindowsInteropHelper.DisableControlBox(this);
             InitProgressbarAnimation();
+            InitializePosition();
+            // since the default main window visibility is visible
+            // so we need set focus during startup
+            QueryTextBox.Focus();
 
             _viewModel.PropertyChanged += (o, e) =>
             {
@@ -73,7 +77,7 @@ namespace Wox
                     {
                         Activate();
                         QueryTextBox.Focus();
-                        SetWindowPosition();
+                        UpdatePosition();
                         _settings.ActivateTimes++;
                         if (!_viewModel.LastQuerySelected)
                         {
@@ -83,9 +87,15 @@ namespace Wox
                     }
                 }
             };
-            // since the default main window visibility is visible
-            // so we need set focus during startup
-            QueryTextBox.Focus();
+            InitializePosition();
+        }
+
+        private void InitializePosition()
+        {
+            Top = WindowTop();
+            Left = WindowLeft();
+            _settings.WindowTop = Top;
+            _settings.WindowLeft = Left;
         }
 
         private void InitializeNotifyIcon()
@@ -202,28 +212,27 @@ namespace Wox
             }
         }
 
-        private bool _startup = true;
-        private void SetWindowPosition()
+        private void UpdatePosition()
         {
-            if (!_settings.RememberLastLaunchLocation && !_startup)
+            if (_settings.RememberLastLaunchLocation)
+            {
+                Left = _settings.WindowLeft;
+                Top = _settings.WindowTop;
+            }
+            else
             {
                 Left = WindowLeft();
                 Top = WindowTop();
             }
-            else
-            {
-                _startup = false;
-            }
         }
 
-        /// <summary>
-        // used to set correct position on windows first startup
-        // since the actual width and actual height will be avaiable after this event
-        /// </summary>
-        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+        private void OnLocationChanged(object sender, EventArgs e)
         {
-            Left = WindowLeft();
-            Top = WindowTop();
+            if (_settings.RememberLastLaunchLocation)
+            {
+                _settings.WindowLeft = Left;
+                _settings.WindowTop = Top;
+            }
         }
 
         private double WindowLeft()
@@ -270,5 +279,7 @@ namespace Wox
                 _viewModel.QueryTextCursorMovedToEnd = false;
             }
         }
+
+
     }
 }
