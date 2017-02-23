@@ -79,7 +79,16 @@ namespace Wox.Plugin.Program
             });
             var t2 = Task.Run(() =>
             {
-                u = UWP.All();
+                var windows10 = new Version(10, 0);
+                var support = Environment.OSVersion.Version.Major >= windows10.Major;
+                if (support)
+                {
+                    u = UWP.All();
+                }
+                else
+                {
+                    u = new UWP.Application[] { };
+                }
             });
             Task.WaitAll(t1, t2);
 
