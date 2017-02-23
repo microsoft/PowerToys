@@ -231,6 +231,16 @@ namespace Wox
                 _viewModel.SelectPrevItemCommand.Execute(null);
                 e.Handled = true;
             }
+            else if (e.Key == Key.PageDown)
+            {
+                _viewModel.SelectNextPageCommand.Execute(null);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.PageUp)
+            {
+                _viewModel.SelectPrevPageCommand.Execute(null);
+                e.Handled = true;
+            }
         }
 
         private void OnTextChanged(object sender, TextChangedEventArgs e)
