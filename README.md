@@ -55,7 +55,6 @@ Contribution
 - Send PR to **dev** branch
 - I'd appreciate if you could solve [help_needed](https://github.com/Wox-launcher/Wox/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp_needed) labeled issue
 - Don't hesitate to ask questions in the [issues](https://github.com/Wox-launcher/Wox/issues)
-- 中文开发直接发我邮件我们聊 QQ
 
 Documentation
 -------------
