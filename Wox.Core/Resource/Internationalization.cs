@@ -111,7 +111,9 @@ namespace Wox.Core.Resource
             }
             else
             {
-                return "NoTranslation";
+                var m = $"No Translation for key {key}";
+                Log.Error($"|Internationalization.GetTranslation|{m}");
+                return m;
             }
         }
 
