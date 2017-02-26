@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Wox.Infrastructure
 {
@@ -62,6 +64,16 @@ namespace Wox.Infrastructure
             {
                 Directory.CreateDirectory(path);
             }
+        }
+
+        public static string Formatted<T>(this T t)
+        {
+            var formatted = JsonConvert.SerializeObject(
+               t,
+               Formatting.Indented,
+               new StringEnumConverter()
+           );
+            return formatted;
         }
     }
 }
