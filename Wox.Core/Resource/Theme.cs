@@ -16,14 +16,30 @@ namespace Wox.Core.Resource
     public class Theme
     {
         private readonly List<string> _themeDirectories = new List<string>();
+        private ResourceDictionary _oldResource;
+        private string _oldTheme;
         public Settings Settings { get; set; }
-        private string DirectoryPath => Path.Combine(Constant.ProgramDirectory, DirectoryName);
-        private const string DirectoryName = "Themes";
+        private const string Folder = "Themes";
+        private const string Extension = ".xaml";
+        private string DirectoryPath => Path.Combine(Constant.ProgramDirectory, Folder);
 
         public Theme()
         {
             _themeDirectories.Add(DirectoryPath);
             MakesureThemeDirectoriesExist();
+
+            var dicts = Application.Current.Resources.MergedDictionaries;
+            _oldResource = dicts.First(d =>
+            {
+                var p = d.Source.AbsolutePath;
+                var dir = Path.GetDirectoryName(p).NonNull();
+                var info = new DirectoryInfo(dir);
+                var f = info.Name;
+                var e = Path.GetExtension(p);
+                var found = f == Folder && e == Extension;
+                return found;
+            });
+            _oldTheme = Path.GetFileNameWithoutExtension(_oldResource.Source.AbsolutePath);
         }
 
         private void MakesureThemeDirectoriesExist()
@@ -75,12 +91,16 @@ namespace Wox.Core.Resource
                 Settings.Theme = theme;
 
                 var dicts = Application.Current.Resources.MergedDictionaries;
-                // OnStartup, there is nothing to remove
-                var oldResource = dicts.FirstOrDefault(d => d.Source.AbsolutePath == path) ?? new ResourceDictionary();
-                dicts.Remove(oldResource);
-                var newResource = GetResourceDictionary();
-                dicts.Add(newResource);
-
+                Log.Debug($"|TEST1|{dicts.Select(d => d.Source.AbsolutePath).Formatted()}");
+                if (_oldTheme != theme)
+                {
+                    dicts.Remove(_oldResource);
+                    var newResource = GetResourceDictionary();
+                    dicts.Add(newResource);
+                    _oldResource = newResource;
+                    _oldTheme = Path.GetFileNameWithoutExtension(_oldResource.Source.AbsolutePath);
+                }
+                Log.Debug($"|TEST2|{dicts.Select(d => d.Source.AbsolutePath).Formatted()}");
             }
         }
 
@@ -125,7 +145,7 @@ namespace Wox.Core.Resource
             {
                 themes.AddRange(
                     Directory.GetFiles(themeDirectory)
-                        .Where(filePath => filePath.EndsWith(".xaml") && !filePath.EndsWith("Base.xaml"))
+                        .Where(filePath => filePath.EndsWith(Extension) && !filePath.EndsWith("Base.xaml"))
                         .ToList());
             }
             return themes.OrderBy(o => o).ToList();
@@ -135,7 +155,7 @@ namespace Wox.Core.Resource
         {
             foreach (string themeDirectory in _themeDirectories)
             {
-                string path = Path.Combine(themeDirectory, themeName + ".xaml");
+                string path = Path.Combine(themeDirectory, themeName + Extension);
                 if (File.Exists(path))
                 {
                     return path;
