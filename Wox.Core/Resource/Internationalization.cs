@@ -4,10 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
-using JetBrains.Annotations;
 using Wox.Core.Plugin;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
@@ -17,29 +15,51 @@ namespace Wox.Core.Resource
     public class Internationalization
     {
         public Settings Settings { get; set; }
-        private const string DirectoryName = "Languages";
+        private const string Folder = "Languages";
+        private const string DefaultFile = "en.xaml";
+        private const string Extension = ".xaml";
         private readonly List<string> _languageDirectories = new List<string>();
         private readonly List<ResourceDictionary> _oldResources = new List<ResourceDictionary>();
 
         public Internationalization()
         {
-            var woxThemeDirectory = Path.Combine(Constant.ProgramDirectory, DirectoryName);
-            _languageDirectories.Add(woxThemeDirectory);
+            AddPluginLanguageDirectories();
+            LoadDefaultLanguage();
+            // we don't want to load /Languages/en.xaml twice
+            // so add wox language directory after load plugin language files
+            AddWoxLanguageDirectory();
+        }
 
+
+        private void AddWoxLanguageDirectory()
+        {
+            var directory = Path.Combine(Constant.ProgramDirectory, Folder);
+            _languageDirectories.Add(directory);
+        }
+
+
+        private void AddPluginLanguageDirectories()
+        {
             foreach (var plugin in PluginManager.GetPluginsForInterface<IPluginI18n>())
             {
                 var location = Assembly.GetAssembly(plugin.Plugin.GetType()).Location;
                 var dir = Path.GetDirectoryName(location);
                 if (dir != null)
                 {
-                    var pluginThemeDirectory = Path.Combine(dir, DirectoryName);
+                    var pluginThemeDirectory = Path.Combine(dir, Folder);
                     _languageDirectories.Add(pluginThemeDirectory);
                 }
                 else
                 {
-                    Log.Error($"|ResourceMerger.UpdatePluginLanguages|Can't find plugin path <{location}> for <{plugin.Metadata.Name}>");
+                    Log.Error($"|Internationalization.AddPluginLanguageDirectories|Can't find plugin path <{location}> for <{plugin.Metadata.Name}>");
                 }
             }
+        }
+
+        private void LoadDefaultLanguage()
+        {
+            LoadLanguage(AvailableLanguages.English);
+            _oldResources.Clear();
         }
 
         public void ChangeLanguage(string languageCode)
@@ -68,17 +88,38 @@ namespace Wox.Core.Resource
         {
             language = language.NonNull();
 
-            var files = _languageDirectories.Select(LanguageFile).Where(f => !string.IsNullOrEmpty(f)).ToArray();
+            Settings.Language = language.LanguageCode;
+
+            RemoveOldLanguageFiles();
+            if (language != AvailableLanguages.English)
+            {
+                LoadLanguage(language);
+            }
+            Log.Debug($"|TEST|{Application.Current.Resources.MergedDictionaries.Select(d => d.Source.AbsolutePath).Formatted()}");
+            UpdatePluginMetadataTranslations();
+
+        }
+
+        private void RemoveOldLanguageFiles()
+        {
+            var dicts = Application.Current.Resources.MergedDictionaries;
+            foreach (var r in _oldResources)
+            {
+                dicts.Remove(r);
+            }
+        }
+
+        private void LoadLanguage(Language language)
+        {
+            var dicts = Application.Current.Resources.MergedDictionaries;
+            var filename = $"{language.LanguageCode}{Extension}";
+            var files = _languageDirectories
+                .Select(d => LanguageFile(d, filename))
+                .Where(f => !string.IsNullOrEmpty(f))
+                .ToArray();
 
             if (files.Length > 0)
             {
-                Settings.Language = language.LanguageCode;
-
-                var dicts = Application.Current.Resources.MergedDictionaries;
-                foreach (var r in _oldResources)
-                {
-                    dicts.Remove(r);
-                }
                 foreach (var f in files)
                 {
                     var r = new ResourceDictionary
@@ -89,13 +130,7 @@ namespace Wox.Core.Resource
                     _oldResources.Add(r);
                 }
             }
-
-            foreach (var plugin in PluginManager.GetPluginsForInterface<IPluginI18n>())
-            {
-                UpdatePluginMetadataTranslations(plugin);
-            }
         }
-
 
         public List<Language> LoadAvailableLanguages()
         {
@@ -111,32 +146,34 @@ namespace Wox.Core.Resource
             }
             else
             {
-                var m = $"No Translation for key {key}";
-                Log.Error($"|Internationalization.GetTranslation|{m}");
-                return m;
+                Log.Error($"|Internationalization.GetTranslation|No Translation for key {key}");
+                return $"No Translation for key {key}";
             }
         }
 
-        private void UpdatePluginMetadataTranslations(PluginPair pluginPair)
+        private void UpdatePluginMetadataTranslations()
         {
-            var pluginI18n = pluginPair.Plugin as IPluginI18n;
-            if (pluginI18n == null) return;
-            try
+            foreach (var p in PluginManager.GetPluginsForInterface<IPluginI18n>())
             {
-                pluginPair.Metadata.Name = pluginI18n.GetTranslatedPluginTitle();
-                pluginPair.Metadata.Description = pluginI18n.GetTranslatedPluginDescription();
-            }
-            catch (Exception e)
-            {
-                Log.Exception($"|Internationalization.UpdatePluginMetadataTranslations|Update Plugin metadata translation failed for <{pluginPair.Metadata.Name}>", e);
+                var pluginI18N = p.Plugin as IPluginI18n;
+                if (pluginI18N == null) return;
+                try
+                {
+                    p.Metadata.Name = pluginI18N.GetTranslatedPluginTitle();
+                    p.Metadata.Description = pluginI18N.GetTranslatedPluginDescription();
+                }
+                catch (Exception e)
+                {
+                    Log.Exception($"|Internationalization.UpdatePluginMetadataTranslations|Failed for <{p.Metadata.Name}>", e);
+                }
             }
         }
 
-        public string LanguageFile(string folder)
+        public string LanguageFile(string folder, string language)
         {
             if (Directory.Exists(folder))
             {
-                string path = Path.Combine(folder, Settings.Language + ".xaml");
+                string path = Path.Combine(folder, language);
                 if (File.Exists(path))
                 {
                     return path;
@@ -144,7 +181,7 @@ namespace Wox.Core.Resource
                 else
                 {
                     Log.Error($"|Internationalization.LanguageFile|Language path can't be found <{path}>");
-                    string english = Path.Combine(folder, "en.xaml");
+                    string english = Path.Combine(folder, DefaultFile);
                     if (File.Exists(english))
                     {
                         return english;
@@ -162,5 +199,4 @@ namespace Wox.Core.Resource
             }
         }
     }
-
 }

@@ -61,8 +61,6 @@ namespace Wox
                 Current.MainWindow.Title = Constant.Wox;
 
                 // happlebao todo temp fix for instance code logic
-                // remove all dictionaries defined in xaml e.g.g App.xaml
-                Current.Resources.MergedDictionaries.Clear();
                 // load plugin before change language, because plugin language also needs be changed
                 InternationalizationManager.Instance.Settings = _settings;
                 InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
