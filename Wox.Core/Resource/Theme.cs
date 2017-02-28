@@ -91,7 +91,6 @@ namespace Wox.Core.Resource
                 Settings.Theme = theme;
 
                 var dicts = Application.Current.Resources.MergedDictionaries;
-                Log.Debug($"|TEST1|{dicts.Select(d => d.Source.AbsolutePath).Formatted()}");
                 if (_oldTheme != theme)
                 {
                     dicts.Remove(_oldResource);
@@ -100,7 +99,6 @@ namespace Wox.Core.Resource
                     _oldResource = newResource;
                     _oldTheme = Path.GetFileNameWithoutExtension(_oldResource.Source.AbsolutePath);
                 }
-                Log.Debug($"|TEST2|{dicts.Select(d => d.Source.AbsolutePath).Formatted()}");
             }
         }
 

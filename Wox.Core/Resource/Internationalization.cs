@@ -95,7 +95,6 @@ namespace Wox.Core.Resource
             {
                 LoadLanguage(language);
             }
-            Log.Debug($"|TEST|{Application.Current.Resources.MergedDictionaries.Select(d => d.Source.AbsolutePath).Formatted()}");
             UpdatePluginMetadataTranslations();
 
         }
