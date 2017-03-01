@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 using Microsoft.Win32;
 using Shell;
@@ -205,9 +206,17 @@ namespace Wox.Plugin.Program.Programs
         {
             if (Directory.Exists(directory))
             {
-                var files = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories).Where(
-                    f => suffixes.Contains(Extension(f))
-                );
+                IEnumerable<string> files;
+                try
+                {
+                    files = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories);
+                }
+                catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
+                {
+                    Log.Exception($"|Program.Win32.ProgramPaths|Can't parse directory <{directory}>", e);
+                    return new string[] { };
+                }
+                files = files.Where(f => suffixes.Contains(Extension(f)));
                 return files;
             }
             else
@@ -308,10 +317,21 @@ namespace Wox.Plugin.Program.Programs
                             entry.ExecutableName = subkey;
                             return entry;
                         }
+                        else
+                        {
+                            return new Win32();
+                        }
+                    }
+                    else
+                    {
+                        return new Win32();
                     }
                 }
+                else
+                {
+                    return new Win32();
+                }
             }
-            return new Win32();
         }
 
         //private static Win32 ScoreFilter(Win32 p)
