@@ -22,6 +22,8 @@ namespace Wox
         private const string Unique = "Wox_Unique_Application_Mutex";
         private static bool _disposed;
         private Settings _settings;
+        private MainViewModel _mainVM;
+        private SettingWindowViewModel _settingsVM;
 
         [STAThread]
         public static void Main()
@@ -48,13 +50,13 @@ namespace Wox
                 ImageLoader.Initialize();
                 Alphabet.Initialize();
 
-                var settingVM = new SettingWindowViewModel();
-                _settings = settingVM.Settings;
+                _settingsVM = new SettingWindowViewModel();
+                _settings = _settingsVM.Settings;
 
                 PluginManager.LoadPlugins(_settings.PluginSettings);
-                var mainVM = new MainViewModel(_settings);
-                var window = new MainWindow(_settings, mainVM);
-                API = new PublicAPIInstance(settingVM, mainVM);
+                _mainVM = new MainViewModel(_settings);
+                var window = new MainWindow(_settings, _mainVM);
+                API = new PublicAPIInstance(_settingsVM, _mainVM);
                 PluginManager.InitializePlugins(API);
 
                 Current.MainWindow = window;
@@ -75,7 +77,7 @@ namespace Wox
                 AutoStartup();
                 AutoUpdates();
 
-                mainVM.MainWindowVisibility = _settings.HideOnStartup ? Visibility.Hidden : Visibility.Visible;
+                _mainVM.MainWindowVisibility = _settings.HideOnStartup ? Visibility.Hidden : Visibility.Visible;
                 Log.Info("|App.OnStartup|End Wox startup ----------------------------------------------------  ");
             });
         }
@@ -98,16 +100,14 @@ namespace Wox
             {
                 // check udpate every 5 hours
                 var timer = new Timer(1000 * 60 * 60 * 5);
-                timer.Elapsed += (s, e) =>
-                {
-                    Updater.UpdateApp();
-                };
+                timer.Elapsed += (s, e) => { Updater.UpdateApp(); };
                 timer.Start();
 
                 // check updates on startup
                 Updater.UpdateApp();
             }
         }
+
         private void RegisterExitEvents()
         {
             AppDomain.CurrentDomain.ProcessExit += (s, e) => Dispose();
@@ -125,19 +125,15 @@ namespace Wox
         }
 
 
-
         /// <summary>
         /// let exception throw as normal is better for Debug
         /// </summary>
         [Conditional("RELEASE")]
         private static void RegisterAppDomainExceptions()
         {
-
             AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
-            AppDomain.CurrentDomain.FirstChanceException += (s, e) =>
-            {
-                Log.Exception("|App.RegisterAppDomainExceptions|First Chance Exception:", e.Exception);
-            };
+            AppDomain.CurrentDomain.FirstChanceException +=
+                (s, e) => { Log.Exception("|App.RegisterAppDomainExceptions|First Chance Exception:", e.Exception); };
         }
 
         public void Dispose()
@@ -146,7 +142,8 @@ namespace Wox
             // but if sessionending is not called, exit won't be called when log off / shutdown
             if (!_disposed)
             {
-                Current.Dispatcher.Invoke(() => ((MainViewModel)Current.MainWindow?.DataContext)?.Save());
+                _mainVM.Save();
+                _settingsVM.Save();
 
                 PluginManager.Save();
                 ImageLoader.Save();

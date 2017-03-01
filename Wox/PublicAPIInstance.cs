@@ -8,7 +8,9 @@ using Squirrel;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Helper;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
+using Wox.Infrastructure.Image;
 using Wox.Plugin;
 using Wox.ViewModel;
 
@@ -53,11 +55,16 @@ namespace Wox
         public void RestarApp()
         {
             _mainVM.MainWindowVisibility = Visibility.Hidden;
+
             // we must manually save
             // UpdateManager.RestartApp() will call Environment.Exit(0)
             // which will cause ungraceful exit
-            var vm = (MainViewModel) Application.Current.MainWindow.DataContext;
-            vm.Save();
+            _mainVM.Save();
+            _settingsVM.Save();
+            PluginManager.Save();
+            ImageLoader.Save();
+            Alphabet.Save();
+
             UpdateManager.RestartApp();
         }
 
