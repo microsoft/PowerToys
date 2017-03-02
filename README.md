@@ -20,11 +20,6 @@ Features
 - Build custom themes at http://www.getwox.com/theme/builder
 - Install plugins from http://www.getwox.com/plugin
 
-Getting started guide
-------------
-[You can find a getting started guide that covers installation and usage here](https://github.com/Wox-launcher/Wox/wiki/Getting-started)
-
-Otherwise follow the steps below. 
 
 Installation
 ------------
@@ -48,6 +43,12 @@ Usage
 - Reset: delete `%APPDATA%\Wox`
 
 
+FAQ
+---
+
+How to reset?: delete `%APPDATA%\Wox`
+Where is log?: `%APPDATA%\Wox\Logs`
+
 Contribution
 ------------
 
@@ -59,6 +60,6 @@ Contribution
 
 Documentation
 -------------
-
+- [Wili](https://github.com/Wox-launcher/Wox/wiki)
 - Outdated doc: [WoX doc](http://doc.getwox.com).
 - Just ask questions in [issues](https://github.com/Wox-launcher/Wox/issues) for now.
