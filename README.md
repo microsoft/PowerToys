@@ -12,7 +12,7 @@ WoX
 Features
 --------
 
-- Search for everything—applications, folders, files and more.
+- Search for everything—applications, **uwp**, folders, files and more.
 - Use *pinyin* to search for programs / 支持用 **拼音** 搜索程序
   - yyy / wangyiyun → 网易云音乐
 - Keyword plugin search 
@@ -46,8 +46,8 @@ Usage
 FAQ
 ---
 
-How to reset?: delete `%APPDATA%\Wox`
-Where is log?: `%APPDATA%\Wox\Logs`
+- Reset Wox: delete `%APPDATA%\Wox`
+- Log location: `%APPDATA%\Wox\Logs`
 
 Contribution
 ------------
@@ -60,6 +60,6 @@ Contribution
 
 Documentation
 -------------
-- [Wili](https://github.com/Wox-launcher/Wox/wiki)
+- [Wiki](https://github.com/Wox-launcher/Wox/wiki)
 - Outdated doc: [WoX doc](http://doc.getwox.com).
 - Just ask questions in [issues](https://github.com/Wox-launcher/Wox/issues) for now.
