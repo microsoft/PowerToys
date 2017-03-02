@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:wox="clr-namespace:Wox"
         xmlns:vm="clr-namespace:Wox.ViewModel"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:userSettings="clr-namespace:Wox.Infrastructure.UserSettings;assembly=Wox.Infrastructure"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         x:Class="Wox.SettingWindow"
@@ -21,6 +22,14 @@
     <Window.CommandBindings>
         <CommandBinding Command="Close" Executed="OnCloseExecuted"/>
     </Window.CommandBindings>
+    <Window.Resources>
+        <CollectionViewSource Source="{Binding Source={x:Static Fonts.SystemFontFamilies}}" x:Key="SortedFonts">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="Source"/>
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </Window.Resources>
+
     <TabControl Height="auto" SelectedIndex="0">
         <TabItem Header="{DynamicResource general}">
             <StackPanel Orientation="Vertical">
@@ -213,7 +222,7 @@
                     <StackPanel Grid.Row="1" Margin="0 10 0 10" Orientation="Vertical">
                         <StackPanel Orientation="Horizontal" Margin="2">
                             <TextBlock Text="{DynamicResource queryBoxFont}" />
-                            <ComboBox ItemsSource="{x:Static Fonts.SystemFontFamilies}"
+                            <ComboBox ItemsSource="{Binding Source={StaticResource SortedFonts}}"
                                       SelectedItem="{Binding SelectedQueryBoxFont}"
                                       HorizontalAlignment="Left" VerticalAlignment="Top" Width="160" Margin="10 -2 5 0" />
                             <ComboBox ItemsSource="{Binding SelectedQueryBoxFont.FamilyTypefaces}"
@@ -235,7 +244,7 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="2">
                             <TextBlock Text="{DynamicResource resultItemFont}" />
-                            <ComboBox ItemsSource="{x:Static Fonts.SystemFontFamilies}"
+                            <ComboBox ItemsSource="{Binding Source={StaticResource SortedFonts}}"
                                       SelectedItem="{Binding SelectedResultFont}"
                                       HorizontalAlignment="Left" VerticalAlignment="Top"
                                       Width="160" Margin="5 -2 5 0" />
