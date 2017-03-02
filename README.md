@@ -41,13 +41,7 @@ Usage
 - Launch: <kbd>Alt</kbd>+<kbd>Space</kbd>
 - Install/Uninstall plugin: type `wpm install/uninstall`
 - Reset: delete `%APPDATA%\Wox`
-
-
-FAQ
----
-
-- Reset Wox: delete `%APPDATA%\Wox`
-- Log location: `%APPDATA%\Wox\Logs`
+- Log: `%APPDATA%\Wox\Logs`
 
 Contribution
 ------------
