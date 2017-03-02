@@ -1,6 +1,6 @@
 ## Known problems for 1.3.183:
 
-1. `System.NullReferenceException`: try reset wox by delete %APPDATA%\Wox, backup before you do that
+1. `System.NullReferenceException`: https://github.com/Wox-launcher/Wox/releases/tag/v1.3.357
 2. `System.UriFormatException`: delete your old theme file
 3. `System.Threading.Tasks.TaskCanceledException`: 设置 http 代理
 
