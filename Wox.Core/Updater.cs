@@ -14,8 +14,7 @@ namespace Wox.Core
 {
     public static class Updater
     {
-        [Conditional("RELEASE")]
-        public static async void UpdateApp()
+        public static async Task UpdateApp()
         {
 
             var client = new WebClient { Proxy = Http.WebProxy() };
@@ -24,9 +23,7 @@ namespace Wox.Core
             try
             {
                 // todo 5/9 the return value of UpdateApp() is NULL, fucking useless!
-                using (
-                    var updater =
-                        await UpdateManager.GitHubUpdateManager(Infrastructure.Constant.Github, urlDownloader: downloader))
+                using (var updater = await UpdateManager.GitHubUpdateManager(Infrastructure.Constant.Github, urlDownloader: downloader))
                 {
                     await updater.UpdateApp();
                 }

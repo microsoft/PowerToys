@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using Wox.Core;
@@ -94,18 +95,25 @@ namespace Wox
             }
         }
 
+        [Conditional("RELEASE")]
         private void AutoUpdates()
         {
-            if (_settings.AutoUpdates)
+            Task.Run(async () =>
             {
-                // check udpate every 5 hours
-                var timer = new Timer(1000 * 60 * 60 * 5);
-                timer.Elapsed += (s, e) => { Updater.UpdateApp(); };
-                timer.Start();
+                if (_settings.AutoUpdates)
+                {
+                    // check udpate every 5 hours
+                    var timer = new Timer(1000 * 60 * 60 * 5);
+                    timer.Elapsed += async (s, e) =>
+                    {
+                        await Updater.UpdateApp();
+                    };
+                    timer.Start();
 
-                // check updates on startup
-                Updater.UpdateApp();
-            }
+                    // check updates on startup
+                    await Updater.UpdateApp();
+                }
+            });
         }
 
         private void RegisterExitEvents()
