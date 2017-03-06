@@ -95,7 +95,7 @@ namespace Wox
             }
         }
 
-        [Conditional("RELEASE")]
+        //[Conditional("RELEASE")]
         private void AutoUpdates()
         {
             Task.Run(async () =>
