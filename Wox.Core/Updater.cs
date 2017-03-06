@@ -17,35 +17,29 @@ namespace Wox.Core
         public static async Task UpdateApp()
         {
 
-            var client = new WebClient { Proxy = Http.WebProxy() };
-            var downloader = new FileDownloader(client);
+            var c = new WebClient { Proxy = Http.WebProxy() };
+            var d = new FileDownloader(c);
 
             try
             {
+                const string url = Infrastructure.Constant.Github;
                 // todo 5/9 the return value of UpdateApp() is NULL, fucking useless!
-                using (var updater = await UpdateManager.GitHubUpdateManager(Infrastructure.Constant.Github, urlDownloader: downloader))
+                using (var m = await UpdateManager.GitHubUpdateManager(url, urlDownloader: d))
                 {
-                    await updater.UpdateApp();
+                    await m.UpdateApp();
                 }
             }
-            catch (HttpRequestException he)
+            catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
             {
-                Log.Exception("|Updater.UpdateApp|network error", he);
+                Log.Exception("|Updater.UpdateApp|Network error", e);
+
             }
-            catch (WebException we)
-            {
-                Log.Exception("|Updater.UpdateApp|network error", we);
-            }
-            catch (SocketException sc)
-            {
-                Log.Exception("|Updater.UpdateApp|Socket exception happened, which method cause this exception??", sc);
-            }
-            catch (Exception exception)
+            catch (Exception e)
             {
                 const string info = "Update.exe not found, not a Squirrel-installed app?";
-                if (exception.Message == info)
+                if (e.Message == info)
                 {
-                    Log.Warn($"|Updater.UpdateApp|{info}");
+                    Log.Error($"|Updater.UpdateApp|{info}");
                 }
                 else
                 {
