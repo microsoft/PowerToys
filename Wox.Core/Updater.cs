@@ -4,9 +4,12 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using System.Windows;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Squirrel;
+using Wox.Core.Resource;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Logger;
 
@@ -22,11 +25,24 @@ namespace Wox.Core
 
             try
             {
-                const string url = Infrastructure.Constant.Github;
-                // todo 5/9 the return value of UpdateApp() is NULL, fucking useless!
+                const string url = Constant.Github;
+                // UpdateApp() will return value only if the app is squirrel installed
                 using (var m = await UpdateManager.GitHubUpdateManager(url, urlDownloader: d))
                 {
-                    await m.UpdateApp();
+                    var e = await m.CheckForUpdate().NonNull();
+                    var fe = e.FutureReleaseEntry;
+                    var ce = e.CurrentlyInstalledVersion;
+                    if (fe.Version > ce.Version)
+                    {
+                        var t = NewVersinoTips(fe.Version.ToString());
+                        MessageBox.Show(t);
+
+                        await m.DownloadReleases(e.ReleasesToApply);
+                        await m.ApplyReleases(e);
+                        await m.CreateUninstallerRegistryEntry();
+
+                        Log.Info($"|Updater.UpdateApp|Future Release <{fe.Formatted()}>");
+                    }
                 }
             }
             catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
@@ -99,5 +115,13 @@ namespace Wox.Core
             var newVersion = version.Replace("v", ".").Replace(".", "").Replace("*", "");
             return int.Parse(newVersion);
         }
+
+        public static string NewVersinoTips(string version)
+        {
+            var translater = InternationalizationManager.Instance;
+            var tips = string.Format(translater.GetTranslation("newVersionTips"), version);
+            return tips;
+        }
+
     }
 }
