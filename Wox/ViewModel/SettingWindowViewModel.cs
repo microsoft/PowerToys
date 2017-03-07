@@ -206,7 +206,7 @@ namespace Wox.ViewModel
                     },
                     new Result
                     {
-                        Title = $"Open Source: {Constant.Github}",
+                        Title = $"Open Source: {Constant.Repository}",
                         SubTitle = "Please star it!"
                     }
                 };
@@ -316,7 +316,7 @@ namespace Wox.ViewModel
 
         #region about
 
-        public static string Github => Constant.Github;
+        public static string Github => Constant.Repository;
         public static string ReleaseNotes => @"https://github.com/Wox-launcher/Wox/releases/latest";
         public static string Version => Constant.Version;
         public string ActivatedTimes => string.Format(_translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);

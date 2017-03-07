@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Squirrel;
+using Newtonsoft.Json;
 using Wox.Core.Resource;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Http;
@@ -16,14 +19,9 @@ namespace Wox.Core
     {
         public static async Task UpdateApp()
         {
-
-            var c = new WebClient { Proxy = Http.WebProxy() };
-            var d = new FileDownloader(c);
-
             try
             {
-                const string url = Constant.Github;
-                using (var m = await UpdateManager.GitHubUpdateManager(url, urlDownloader: d))
+                using (var m = await GitHubUpdateManager(Constant.Repository))
                 {
                     // UpdateApp CheckForUpdate will return value only if the app is squirrel installed
                     var e = await m.CheckForUpdate().NonNull();
@@ -45,7 +43,6 @@ namespace Wox.Core
             catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
             {
                 Log.Exception("|Updater.UpdateApp|Network error", e);
-
             }
             catch (Exception e)
             {
@@ -68,5 +65,36 @@ namespace Wox.Core
             return tips;
         }
 
+        class GithubRelease
+        {
+            [JsonProperty("prerelease")]
+            public bool Prerelease { get; set; }
+
+            [JsonProperty("published_at")]
+            public DateTime PublishedAt { get; set; }
+
+            [JsonProperty("html_url")]
+            public string HtmlUrl { get; set; }
+        }
+
+        /// https://github.com/Squirrel/Squirrel.Windows/blob/master/src/Squirrel/UpdateManager.Factory.cs
+        private static async Task<UpdateManager> GitHubUpdateManager(string repository)
+        {
+            var uri = new Uri(repository);
+            var api = $"https://api.github.com/{uri.AbsolutePath}/releases";
+
+            var json = await Http.Get(api);
+
+            var releases = JsonConvert.DeserializeObject<List<GithubRelease>>(json);
+            var latest = releases.Where(r => r.Prerelease).OrderByDescending(r => r.PublishedAt).First();
+            var latestUrl = latest.HtmlUrl.Replace("/tag/", "/download/");
+
+            var client = new WebClient { Proxy = Http.WebProxy() };
+            var downloader = new FileDownloader(client);
+
+            var manager = new UpdateManager(latestUrl, urlDownloader: downloader);
+
+            return manager;
+        }
     }
 }

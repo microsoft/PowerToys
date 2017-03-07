@@ -272,7 +272,7 @@ namespace Wox
                 return;
             }
 
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Infrastructure.Constant.Github);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Infrastructure.Constant.Repository);
             if (string.IsNullOrEmpty(_settings.Proxy.UserName) || string.IsNullOrEmpty(_settings.Proxy.Password))
             {
                 request.Proxy = new WebProxy(_settings.Proxy.Server, _settings.Proxy.Port);
