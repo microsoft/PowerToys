@@ -23,9 +23,9 @@ namespace Wox.Core
             try
             {
                 const string url = Constant.Github;
-                // UpdateApp() will return value only if the app is squirrel installed
                 using (var m = await UpdateManager.GitHubUpdateManager(url, urlDownloader: d))
                 {
+                    // UpdateApp CheckForUpdate will return value only if the app is squirrel installed
                     var e = await m.CheckForUpdate().NonNull();
                     var fe = e.FutureReleaseEntry;
                     var ce = e.CurrentlyInstalledVersion;
