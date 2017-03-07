@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using JetBrains.Annotations;
 using Squirrel;
 using Newtonsoft.Json;
 using Wox.Core.Resource;
@@ -65,7 +66,8 @@ namespace Wox.Core
             return tips;
         }
 
-        class GithubRelease
+        [UsedImplicitly]
+        private class GithubRelease
         {
             [JsonProperty("prerelease")]
             public bool Prerelease { get; set; }
