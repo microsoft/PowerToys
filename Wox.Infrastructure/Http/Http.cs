@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -47,31 +48,26 @@ namespace Wox.Infrastructure.Http
         /// <exception cref="WebException">Can't get response from http get </exception>
         public static async Task<string> Get([NotNull] string url, string encoding = "UTF-8")
         {
-
-            HttpWebRequest request = WebRequest.CreateHttp(url);
+            var request = WebRequest.CreateHttp(url);
             request.Method = "GET";
-            request.Timeout = 10 * 1000;
+            request.Timeout = 1000;
             request.Proxy = WebProxy();
             request.UserAgent = UserAgent;
             var response = await request.GetResponseAsync() as HttpWebResponse;
-            if (response != null)
+            response = response.NonNull();
+            var stream = response.GetResponseStream().NonNull();
+
+            using (var reader = new StreamReader(stream, Encoding.GetEncoding(encoding)))
             {
-                var stream = response.GetResponseStream();
-                if (stream != null)
+                var content = await reader.ReadToEndAsync();
+                if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    using (var reader = new StreamReader(stream, Encoding.GetEncoding(encoding)))
-                    {
-                        return await reader.ReadToEndAsync();
-                    }
+                    return content;
                 }
                 else
                 {
-                    return string.Empty;
+                    throw new HttpRequestException($"Error code <{response.StatusCode}> with content <{content}> returned from <{url}>");
                 }
-            }
-            else
-            {
-                return string.Empty;
             }
         }
     }
