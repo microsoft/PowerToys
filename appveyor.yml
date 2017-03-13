@@ -14,21 +14,17 @@ build:
   project: Wox.sln
 after_test:
 - ps: >-
-    .\Deploy\nuget.ps1
-    
-    .\Deploy\binary_zip.ps1
-        
-    .\Deploy\squirrel_installer.ps1
+    .\Scripts\build.ps1
 artifacts:
-- path: 'Wox-*.zip'
+- path: 'Output\Packages\Wox-*.zip'
   name: zipped_binary
-- path: '*.nupkg'
+- path: 'Output\Packages\Wox.Plugin.*.nupkg'
   name: nuget_package
-- path: '\Releases\*.exe'
+- path: 'Output\Packages\*.exe'
   name: installer
-- path: '\Releases\*.nupkg'
+- path: 'Output\Packages\Wox.*-full.nupkg'
   name: installer
-- path: 'Releases\RELEASES'
+- path: 'Output\Packages\RELEASES'
   name: installer
 deploy:
   provider: NuGet

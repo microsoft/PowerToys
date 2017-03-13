@@ -57,10 +57,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		appveyor.yml = appveyor.yml
+		Scripts\binary_zip.ps1 = Scripts\binary_zip.ps1
 		LICENSE = LICENSE
+		Scripts\nuget.ps1 = Scripts\nuget.ps1
 		Performance1.psess = Performance1.psess
 		README.md = README.md
+		Scripts\setup.ps1 = Scripts\setup.ps1
 		SolutionAssemblyInfo.cs = SolutionAssemblyInfo.cs
+		Scripts\squirrel_installer.ps1 = Scripts\squirrel_installer.ps1
+		Scripts\wox.nuspec = Scripts\wox.nuspec
+		Scripts\wox.plugin.nuspec = Scripts\wox.plugin.nuspec
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloWorldCSharp", "Plugins\HelloWorldCSharp\HelloWorldCSharp.csproj", "{03FFA443-5F50-48D5-8869-F3DF316803AA}"
