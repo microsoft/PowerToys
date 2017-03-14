@@ -433,33 +433,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-xcopy /Y /E $(ProjectDir)Themes\* $(TargetDir)Themes\
-xcopy /Y /E  $(ProjectDir)Images\* $(TargetDir)Images\
-xcopy /Y /D /E $(SolutionDir)Plugins\HelloWorldPython\* $(TargetDir)Plugins\HelloWorldPython\*
-xcopy /Y /E $(SolutionDir)JsonRPC\* $(TargetDir)JsonRPC\
-
-cd $(SolutionDir)packages\squirrel*\tools
-copy /Y Squirrel.exe $(TargetDir)..\Update.exe
-cd $(SolutionDir)
-
-if $(ConfigurationName) == Release (
-cd "$(TargetDir)Plugins" &amp; del /s /q NLog.dll
-cd "$(TargetDir)Plugins" &amp; del /s /q NLog.config
-cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Plugin.pdb
-cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Plugin.dll
-cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Core.dll
-cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Core.pdb
-cd "$(TargetDir)Plugins" &amp; del /s /q ICSharpCode.SharpZipLib.dll
-cd "$(TargetDir)Plugins" &amp; del /s /q NAppUpdate.Framework.dll
-cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Infrastructure.dll
-cd "$(TargetDir)Plugins" &amp; del /s /q Wox.Infrastructure.pdb
-cd "$(TargetDir)Plugins" &amp; del /s /q Newtonsoft.Json.dll
-cd "$(TargetDir)Plugins" &amp; del /s /q JetBrains.Annotations.dll
-cd "$(TargetDir)Plugins" &amp; del /s /q Pinyin4Net.dll
-cd "$(TargetDir)" &amp; del /s /q *.xml
-)
-</PostBuildEvent>
+    <PostBuildEvent>powershell.exe -NoProfile -File $(SolutionDir)Scripts\build.ps1 $(ConfigurationName) $(SolutionDir)</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>taskkill /f /fi "IMAGENAME eq Wox.exe"</PreBuildEvent>

@@ -1,3 +1,6 @@
+param([string]$config, [string]$solution)
+Write-Host "Current config is $config"
+
 function Build-Version {
     if ([string]::IsNullOrEmpty($env:APPVEYOR_BUILD_VERSION)) {
         $v = "1.2.0"
@@ -10,16 +13,41 @@ function Build-Version {
 }
 
 function Build-Path {
-    if ([string]::IsNullOrEmpty($env:APPVEYOR_BUILD_FOLDER)) {
-        $p = Convert-Path .
-    } else {
+    if (![string]::IsNullOrEmpty($env:APPVEYOR_BUILD_FOLDER)) {
         $p = $env:APPVEYOR_BUILD_FOLDER
+    } elseif (![string]::IsNullOrEmpty($solution)) {
+        $p = $solution
+    } else {
+        $p = Get-Location
     }
 
     Write-Host "Build Folder: $p"
     Set-Location $p
 
     return $p
+}
+
+function Copy-Resources ($path, $config) {
+    $project = "$path\Wox"
+    $output = "$path\Output"
+    $target = "$output\$config"
+    Copy-Item -Recurse -Force $project\Themes\* $target\Themes\
+    Copy-Item -Recurse -Force $project\Images\* $target\Images\
+    Copy-Item -Recurse -Force $path\Plugins\HelloWorldPython $target\Plugins\HelloWorldPython
+    Copy-Item -Recurse -Force $path\JsonRPC $target\JsonRPC
+    Copy-Item -Force $path\packages\squirrel*\tools\Squirrel.exe $output\Update.exe
+}
+
+function Delete-Unused ($path, $config) {
+    $target = "$path\Output\$config"
+    $included = @(
+        "Wox.Plugin.pdb", "Wox.Plugin.dll", "Wox.Core.*", "Wox.Infrastructure.*", 
+        "ICSharpCode.*", "JetBrains.*", "Pinyin4Net.*", "NLog.*"
+    )
+    foreach ($i in $included){
+        Remove-Item -Path $target\Plugins -Include $i -Recurse 
+    }
+    Remove-Item -Path $target -Include "*.xml" -Recurse 
 }
 
 function Validate-Directory ($output) {
@@ -65,13 +93,14 @@ function Pack-Squirrel-Installer ($path, $version, $output) {
     $nupkg = "$output\Wox.$version.nupkg"
     Write-Host "nupkg path: $nupkg"
     $icon = "$path\Wox\Resources\app.ico"
+    Write-Host "icon: $icon"
     # Squirrel.com: https://github.com/Squirrel/Squirrel.Windows/issues/369
     New-Alias Squirrel $path\packages\squirrel*\tools\Squirrel.exe -Force
     # why we need Write-Output: https://github.com/Squirrel/Squirrel.Windows/issues/489#issuecomment-156039327
     # directory of releaseDir in fucking squirrel can't be same as directory ($nupkg) in releasify
     $temp = "$output\Temp"
 
-    Squirrel --releasify $nupkg --releaseDir $temp --setupIcon $iconPath --no-msi | Write-Output
+    Squirrel --releasify $nupkg --releaseDir $temp --setupIcon $icon --no-msi | Write-Output
     Move-Item $temp\* $output -Force
     Remove-Item $temp
     
@@ -84,23 +113,27 @@ function Pack-Squirrel-Installer ($path, $version, $output) {
 }
 
 function Main {
-    $v = Build-Version
     $p = Build-Path
-    $o = "$p\Output\Packages"
-    New-Alias Nuget $p\packages\NuGet.CommandLine.*\tools\NuGet.exe -Force
+    $v = Build-Version
+    Copy-Resources $p $config
 
-    Validate-Directory $o
+    if ($config -eq "Release"){
+
+        Delete-Unused $p $config
+        $o = "$p\Output\Packages"
+        Validate-Directory $o
+        New-Alias Nuget $p\packages\NuGet.CommandLine.*\tools\NuGet.exe -Force
+        Pack-Squirrel-Installer $p $v $o
     
-    $isInCI = $env:APPVEYOR
-    if ($isInCI) {
-        Pack-Nuget $p $v $o
-        Zip-Release $p $v $o
+        $isInCI = $env:APPVEYOR
+        if ($isInCI) {
+            Pack-Nuget $p $v $o
+            Zip-Release $p $v $o
+        }
+
+        Write-Host "List output directory"
+        Get-ChildItem $o
     }
-
-    Pack-Squirrel-Installer $p $v $o
-
-    Write-Host "List output directory"
-    Get-ChildItem $o
 }
 
 Main
