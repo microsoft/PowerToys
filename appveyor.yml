@@ -13,8 +13,6 @@ before_build:
 build:
   project: Wox.sln
 after_test:
-- ps: >-
-    .\Scripts\build.ps1
 artifacts:
 - path: 'Output\Packages\Wox-*.zip'
   name: zipped_binary
