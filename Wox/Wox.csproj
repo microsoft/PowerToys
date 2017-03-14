@@ -433,7 +433,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>powershell.exe -NoProfile -File $(SolutionDir)Scripts\build.ps1 $(ConfigurationName) $(SolutionDir)</PostBuildEvent>
+    <PostBuildEvent>powershell.exe -NoProfile -File $(SolutionDir)Scripts\post_build.ps1 $(ConfigurationName) $(SolutionDir)</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>taskkill /f /fi "IMAGENAME eq Wox.exe"</PreBuildEvent>
