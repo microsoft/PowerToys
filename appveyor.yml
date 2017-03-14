@@ -20,9 +20,7 @@ artifacts:
   name: zipped_binary
 - path: 'Output\Packages\Wox.Plugin.*.nupkg'
   name: nuget_package
-- path: 'Output\Packages\*.exe'
-  name: installer
-- path: 'Output\Packages\Wox.*-full.nupkg'
+- path: 'Output\Packages\Wox-*.*'
   name: installer
 - path: 'Output\Packages\RELEASES'
   name: installer
