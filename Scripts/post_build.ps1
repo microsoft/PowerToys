@@ -1,5 +1,8 @@
-param([string]$config, [string]$solution)
-Write-Host "Current config is $config"
+param(
+    [string]$config = "Release", 
+    [string]$solution
+)
+Write-Host "Config: $config"
 
 function Build-Version {
     if ([string]::IsNullOrEmpty($env:APPVEYOR_BUILD_VERSION)) {
