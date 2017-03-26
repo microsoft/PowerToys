@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
 
 namespace Wox.Infrastructure.Http
@@ -37,7 +38,6 @@ namespace Wox.Infrastructure.Http
             }
         }
 
-        /// <exception cref="WebException">Can't download file </exception>
         public static void Download([NotNull] string url, [NotNull] string filePath)
         {
             var client = new WebClient { Proxy = WebProxy() };
@@ -45,9 +45,9 @@ namespace Wox.Infrastructure.Http
             client.DownloadFile(url, filePath);
         }
 
-        /// <exception cref="WebException">Can't get response from http get </exception>
         public static async Task<string> Get([NotNull] string url, string encoding = "UTF-8")
         {
+            Log.Debug($"|Http.Get|Url <{url}>");
             var request = WebRequest.CreateHttp(url);
             request.Method = "GET";
             request.Timeout = 1000;

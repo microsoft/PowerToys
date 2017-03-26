@@ -84,7 +84,12 @@
     <system:String x:Key="version">Version</system:String>
     <system:String x:Key="about_activate_times">You have activated Wox {0} times</system:String>
     <system:String x:Key="checkUpdates">Check for Updates</system:String>
-    <system:String x:Key="newVersionTips">New version {0} is available, please restart Wox</system:String>
+    <system:String x:Key="newVersionTips">New version {0} is available, please restart Wox.</system:String>
+    <system:String x:Key="checkUpdatesFailed">Check updates failed, please check your connection and proxy settings to api.github.com.</system:String>
+    <system:String x:Key="downloadUpdatesFailed">
+        Download updates failed, please check your connection and proxy settings to github-cloud.s3.amazonaws.com, 
+        or go to https://github.com/Wox-launcher/Wox/releases to download updates manually.
+    </system:String>
     <system:String x:Key="releaseNotes">Release Notes:</system:String>
 
     <!--Action Keyword Setting Dialog-->

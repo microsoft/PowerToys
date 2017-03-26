@@ -18,77 +18,91 @@ namespace Wox.Core
 {
     public static class Updater
     {
+        private static readonly Internationalization Translater = InternationalizationManager.Instance;
+
         public static async Task UpdateApp()
         {
+            UpdateManager m;
+            UpdateInfo u;
+
             try
             {
-                using (var m = await GitHubUpdateManager(Constant.Repository))
-                {
-                    // UpdateApp CheckForUpdate will return value only if the app is squirrel installed
-                    var e = await m.CheckForUpdate().NonNull();
-                    var fe = e.FutureReleaseEntry;
-                    var ce = e.CurrentlyInstalledVersion;
-                    if (fe.Version > ce.Version)
-                    {
-                        var t = NewVersinoTips(fe.Version.ToString());
-                        MessageBox.Show(t);
-
-                        await m.DownloadReleases(e.ReleasesToApply);
-                        await m.ApplyReleases(e);
-                        await m.CreateUninstallerRegistryEntry();
-
-                        Log.Info($"|Updater.UpdateApp|Future Release <{fe.Formatted()}>");
-                    }
-                }
+                m = await GitHubUpdateManager(Constant.Repository);
             }
             catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
             {
-                Log.Exception("|Updater.UpdateApp|Network error", e);
+                var checkUpdatesFailed = Translater.GetTranslation("checkUpdatesFailed");
+                Log.Exception($"|Updater.UpdateApp|{checkUpdatesFailed}", e);
+                MessageBox.Show(checkUpdatesFailed);
+                return;
             }
-            catch (Exception e)
-            {
-                const string info = "Update.exe not found, not a Squirrel-installed app?";
-                if (e.Message == info)
-                {
-                    Log.Error($"|Updater.UpdateApp|{info}");
-                }
-                else
-                {
-                    throw;
-                }
-            }
-        }
 
-        private static string NewVersinoTips(string version)
-        {
-            var translater = InternationalizationManager.Instance;
-            var tips = string.Format(translater.GetTranslation("newVersionTips"), version);
-            return tips;
+            try
+            {
+                // UpdateApp CheckForUpdate will return value only if the app is squirrel installed
+                u = await m.CheckForUpdate().NonNull();
+            }
+            catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
+            {
+                var checkUpdatesFailed = Translater.GetTranslation("checkUpdatesFailed");
+                Log.Exception($"|Updater.UpdateApp|{checkUpdatesFailed}", e);
+                MessageBox.Show(checkUpdatesFailed);
+                m.Dispose();
+                return;
+            }
+
+            var fr = u.FutureReleaseEntry;
+            var cr = u.CurrentlyInstalledVersion;
+            Log.Info($"|Updater.UpdateApp|Future Release <{fr.Formatted()}>");
+            if (fr.Version > cr.Version)
+            {
+                try
+                {
+                    await m.DownloadReleases(u.ReleasesToApply);
+                }
+                catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
+                {
+                    var downloadUpdatesFailed = Translater.GetTranslation("downloadUpdatesFailed");
+                    Log.Exception($"|Updater.UpdateApp|{downloadUpdatesFailed}", e);
+                    MessageBox.Show(downloadUpdatesFailed);
+                    m.Dispose();
+                    return;
+                }
+
+                await m.ApplyReleases(u);
+                await m.CreateUninstallerRegistryEntry();
+                m.Dispose();
+
+                var newVersionTips = Translater.GetTranslation("newVersionTips");
+                newVersionTips = string.Format(newVersionTips, fr.Version);
+                MessageBox.Show(newVersionTips);
+                Log.Info($"|Updater.UpdateApp|Update succeed:{newVersionTips}");
+            }
         }
 
         [UsedImplicitly]
         private class GithubRelease
         {
             [JsonProperty("prerelease")]
-            public bool Prerelease { get; set; }
+            public bool Prerelease { get; [UsedImplicitly] set; }
 
             [JsonProperty("published_at")]
-            public DateTime PublishedAt { get; set; }
+            public DateTime PublishedAt { get; [UsedImplicitly] set; }
 
             [JsonProperty("html_url")]
-            public string HtmlUrl { get; set; }
+            public string HtmlUrl { get; [UsedImplicitly] set; }
         }
 
         /// https://github.com/Squirrel/Squirrel.Windows/blob/master/src/Squirrel/UpdateManager.Factory.cs
         private static async Task<UpdateManager> GitHubUpdateManager(string repository)
         {
             var uri = new Uri(repository);
-            var api = $"https://api.github.com/{uri.AbsolutePath}/releases";
+            var api = $"https://api.github.com/repos{uri.AbsolutePath}/releases";
 
             var json = await Http.Get(api);
 
             var releases = JsonConvert.DeserializeObject<List<GithubRelease>>(json);
-            var latest = releases.Where(r => r.Prerelease).OrderByDescending(r => r.PublishedAt).First();
+            var latest = releases.Where(r => !r.Prerelease).OrderByDescending(r => r.PublishedAt).First();
             var latestUrl = latest.HtmlUrl.Replace("/tag/", "/download/");
 
             var client = new WebClient { Proxy = Http.WebProxy() };
