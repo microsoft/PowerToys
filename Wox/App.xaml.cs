@@ -141,6 +141,8 @@ namespace Wox
         private static void RegisterAppDomainExceptions()
         {
             AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
+            AppDomain.CurrentDomain.FirstChanceException +=
+                (s, e) => { Log.Exception("|App.RegisterAppDomainExceptions|First Chance Exception:", e.Exception); };
         }
 
         public void Dispose()
