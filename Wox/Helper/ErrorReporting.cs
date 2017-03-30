@@ -28,8 +28,6 @@ namespace Wox.Helper
         {
             //handle ui thread exceptions
             Report(e.Exception);
-            //prevent crash
-            e.Handled = true;
         }
     }
 }
