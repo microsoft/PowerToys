@@ -27,7 +27,7 @@ namespace Wox.Infrastructure.Logger
 #if DEBUG
             var rule = new LoggingRule("*", LogLevel.Debug, target);
 #else
-            var rule = new LoggingRule("*", LogLevel.Debug, target);
+            var rule = new LoggingRule("*", LogLevel.Info, target);
 #endif
             configuration.LoggingRules.Add(rule);
             LogManager.Configuration = configuration;
