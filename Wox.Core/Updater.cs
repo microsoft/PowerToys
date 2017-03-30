@@ -71,13 +71,15 @@ namespace Wox.Core
 
                 await m.ApplyReleases(u);
                 await m.CreateUninstallerRegistryEntry();
-                m.Dispose();
 
                 var newVersionTips = Translater.GetTranslation("newVersionTips");
                 newVersionTips = string.Format(newVersionTips, fr.Version);
                 MessageBox.Show(newVersionTips);
                 Log.Info($"|Updater.UpdateApp|Update succeed:{newVersionTips}");
             }
+            
+            // always dispose UpdateManager
+            m.Dispose();
         }
 
         [UsedImplicitly]
