@@ -43,12 +43,10 @@ function Copy-Resources ($path, $config) {
 
 function Delete-Unused ($path, $config) {
     $target = "$path\Output\$config"
-    $included = @(
-        "Wox.Plugin.pdb", "Wox.Plugin.dll", "Wox.Core.*", "Wox.Infrastructure.*", 
-        "ICSharpCode.*", "JetBrains.*", "Pinyin4Net.*", "NLog.*"
-    )
+    $included = Get-ChildItem $target -Filter "*.dll"
     foreach ($i in $included){
         Remove-Item -Path $target\Plugins -Include $i -Recurse 
+        Write-Host "Deleting duplicated $i"
     }
     Remove-Item -Path $target -Include "*.xml" -Recurse 
 }
