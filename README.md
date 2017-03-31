@@ -52,6 +52,12 @@ Contribution
 - I'd appreciate if you could solve [help_needed](https://github.com/Wox-launcher/Wox/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp_needed) labeled issue
 - Don't hesitate to ask questions in the [issues](https://github.com/Wox-launcher/Wox/issues)
 
+Build
+-----
+
+1. Install Visual Studio 2015 and tick all Windows 10 sdk options
+2. Open powershell with admin permission and `Set-ExecutionPolicy Unrestricted -Scope CurrentUser`
+
 Documentation
 -------------
 - [Wiki](https://github.com/Wox-launcher/Wox/wiki)
