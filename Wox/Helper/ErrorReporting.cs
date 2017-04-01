@@ -26,6 +26,8 @@ namespace Wox.Helper
         {
             //handle ui thread exceptions
             Report(e.Exception);
+            //prevent application exist, so the user can copy prompted error info
+            e.Handled = true;
         }
 
         public static string RuntimeInfo()
