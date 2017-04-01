@@ -34,6 +34,7 @@ namespace Wox
 
             StringBuilder content = new StringBuilder();
             content.AppendLine(ErrorReporting.RuntimeInfo());
+            content.AppendLine(ErrorReporting.DependenciesInfo());
             content.AppendLine($"Date: {DateTime.Now.ToString(CultureInfo.InvariantCulture)}");
             content.AppendLine("Exception:");
             content.AppendLine(exception.Source);

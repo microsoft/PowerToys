@@ -43,8 +43,8 @@ namespace Wox
         {
             Stopwatch.Normal("|App.OnStartup|Startup cost", () =>
             {
-                Log.Info("|App.Main|Begin Wox startup ----------------------------------------------------");
-                Log.Info($"|App.OnStartup|{ErrorReporting.RuntimeInfo()}");
+                Log.Info("|App.OnStartup|Begin Wox startup ----------------------------------------------------");
+                Log.Info($"|App.OnStartup|Runtime info:{ErrorReporting.RuntimeInfo()}");
                 RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
 
@@ -59,6 +59,7 @@ namespace Wox
                 var window = new MainWindow(_settings, _mainVM);
                 API = new PublicAPIInstance(_settingsVM, _mainVM);
                 PluginManager.InitializePlugins(API);
+                Log.Info($"|App.OnStartup|Dependencies Info:{ErrorReporting.DependenciesInfo()}");
 
                 Current.MainWindow = window;
                 Current.MainWindow.Title = Constant.Wox;
