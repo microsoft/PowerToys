@@ -93,6 +93,7 @@ namespace Wox.Infrastructure.Logger
                     logger.Error($"Exception stack trace:\n <{e.StackTrace}>");
                     logger.Error($"Exception source:\n <{e.Source}>");
                     logger.Error($"Exception target site:\n <{e.TargetSite}>");
+                    logger.Error($"Exception HResult:\n <{e.HResult}>");
                     e = e.InnerException;
                 } while (e != null);
 
