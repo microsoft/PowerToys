@@ -29,8 +29,6 @@ namespace Wox
         [STAThread]
         public static void Main()
         {
-            RegisterAppDomainExceptions();
-
             if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
             {
                 using (var application = new App())
@@ -45,7 +43,9 @@ namespace Wox
         {
             Stopwatch.Normal("|App.OnStartup|Startup cost", () =>
             {
-                Log.Info("|App.OnStartup|Begin Wox startup ----------------------------------------------------");
+                Log.Info("|App.Main|Begin Wox startup ----------------------------------------------------");
+                Log.Info($"|App.OnStartup|{ErrorReporting.RuntimeInfo()}");
+                RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
 
                 ImageLoader.Initialize();
