@@ -81,11 +81,6 @@
     <system:String x:Key="about_activate_times">您已經啟動了 Wox {0} 次</system:String>
     <system:String x:Key="checkUpdates">檢查更新</system:String>
     <system:String x:Key="newVersionTips">發現有新版本 {0}， 請重新啟動 Wox。</system:String>
-    <system:String x:Key="checkUpdatesFailed">检查更新失败，请检查你到 api.github.com 的网络连接和代理设置。</system:String>
-    <system:String x:Key="downloadUpdatesFailed">
-        下载更新失败，请检查你到 github-cloud.s3.amazonaws.com, 的网络连接和代理设置，
-        或去 https://github.com/Wox-launcher/Wox/releases 手动下载更新。
-    </system:String>
     <system:String x:Key="releaseNotes">更新說明:</system:String>
 
     <!--Action Keyword 設定對話框-->

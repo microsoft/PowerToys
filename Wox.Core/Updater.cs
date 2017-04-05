@@ -31,9 +31,7 @@ namespace Wox.Core
             }
             catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
             {
-                var checkUpdatesFailed = Translater.GetTranslation("checkUpdatesFailed");
-                Log.Exception($"|Updater.UpdateApp|{checkUpdatesFailed}", e);
-                MessageBox.Show(checkUpdatesFailed);
+                Log.Exception($"|Updater.UpdateApp|Please check your connection and proxy settings to api.github.com.", e);
                 return;
             }
 
@@ -44,9 +42,7 @@ namespace Wox.Core
             }
             catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
             {
-                var checkUpdatesFailed = Translater.GetTranslation("checkUpdatesFailed");
-                Log.Exception($"|Updater.UpdateApp|{checkUpdatesFailed}", e);
-                MessageBox.Show(checkUpdatesFailed);
+                Log.Exception($"|Updater.UpdateApp|Check your connection and proxy settings to api.github.com.", e);
                 m.Dispose();
                 return;
             }
@@ -62,9 +58,7 @@ namespace Wox.Core
                 }
                 catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
                 {
-                    var downloadUpdatesFailed = Translater.GetTranslation("downloadUpdatesFailed");
-                    Log.Exception($"|Updater.UpdateApp|{downloadUpdatesFailed}", e);
-                    MessageBox.Show(downloadUpdatesFailed);
+                    Log.Exception($"|Updater.UpdateApp|Check your connection and proxy settings to github-cloud.s3.amazonaws.com.", e);
                     m.Dispose();
                     return;
                 }
