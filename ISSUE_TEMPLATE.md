@@ -2,7 +2,7 @@
 
 1. `System.NullReferenceException`: https://github.com/Wox-launcher/Wox/releases/tag/v1.3.357
 2. `System.UriFormatException`: delete your old theme file
-3. `System.Threading.Tasks.TaskCanceledException`: https://ci.appveyor.com/project/happlebao/wox/build/1.3.414/artifacts
+3. `System.Threading.Tasks.TaskCanceledException`: https://ci.appveyor.com/project/happlebao/wox/build/1.3.423/artifacts
 
 
 ## English
