@@ -29,8 +29,6 @@ namespace Wox
         [STAThread]
         public static void Main()
         {
-            RegisterAppDomainExceptions();
-
             if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
             {
                 using (var application = new App())
@@ -46,6 +44,8 @@ namespace Wox
             Stopwatch.Normal("|App.OnStartup|Startup cost", () =>
             {
                 Log.Info("|App.OnStartup|Begin Wox startup ----------------------------------------------------");
+                Log.Info($"|App.OnStartup|Runtime info:{ErrorReporting.RuntimeInfo()}");
+                RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
 
                 ImageLoader.Initialize();
@@ -59,6 +59,7 @@ namespace Wox
                 var window = new MainWindow(_settings, _mainVM);
                 API = new PublicAPIInstance(_settingsVM, _mainVM);
                 PluginManager.InitializePlugins(API);
+                Log.Info($"|App.OnStartup|Dependencies Info:{ErrorReporting.DependenciesInfo()}");
 
                 Current.MainWindow = window;
                 Current.MainWindow.Title = Constant.Wox;
@@ -140,8 +141,10 @@ namespace Wox
         private static void RegisterAppDomainExceptions()
         {
             AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
-            AppDomain.CurrentDomain.FirstChanceException +=
-                (s, e) => { Log.Exception("|App.RegisterAppDomainExceptions|First Chance Exception:", e.Exception); };
+            AppDomain.CurrentDomain.FirstChanceException += (_, e) =>
+            {
+                Log.Exception("|App.RegisterAppDomainExceptions|First Chance Exception:", e.Exception);
+            };
         }
 
         public void Dispose()

@@ -1,8 +1,8 @@
 ## Known problems for 1.3.183:
 
-1. `System.NullReferenceException`: https://github.com/Wox-launcher/Wox/releases/tag/v1.3.357
+1. `System.NullReferenceException`: https://github.com/Wox-launcher/Wox/releases/tag/v1.3.424
 2. `System.UriFormatException`: delete your old theme file
-3. `System.Threading.Tasks.TaskCanceledException`: 设置 http 代理
+3. `System.Threading.Tasks.TaskCanceledException`: https://github.com/Wox-launcher/Wox/releases/tag/v1.3.424
 
 
 ## English

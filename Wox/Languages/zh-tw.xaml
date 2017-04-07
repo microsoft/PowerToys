@@ -80,7 +80,7 @@
     <system:String x:Key="version">版本</system:String>
     <system:String x:Key="about_activate_times">您已經啟動了 Wox {0} 次</system:String>
     <system:String x:Key="checkUpdates">檢查更新</system:String>
-    <system:String x:Key="newVersionTips">發現有新版本 {0} , 請重新啟動 Wox</system:String>
+    <system:String x:Key="newVersionTips">發現有新版本 {0}， 請重新啟動 Wox。</system:String>
     <system:String x:Key="releaseNotes">更新說明:</system:String>
 
     <!--Action Keyword 設定對話框-->

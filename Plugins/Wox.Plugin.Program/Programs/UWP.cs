@@ -146,7 +146,20 @@ namespace Wox.Plugin.Program.Programs
             var support = Environment.OSVersion.Version.Major >= windows10.Major;
             if (support)
             {
-                var applications = CurrentUserPackages().AsParallel().SelectMany(p => new UWP(p).Apps).ToArray();
+                var applications = CurrentUserPackages().AsParallel().SelectMany(p =>
+                {
+                    UWP u;
+                    try
+                    {
+                        u = new UWP(p);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Exception($"|UWP.All|Can't convert Package to UWP for <{p.Id.FullName}>:", e);
+                        return new Application[] { };
+                    }
+                    return u.Apps;
+                }).ToArray();
                 return applications;
             }
             else
@@ -157,17 +170,31 @@ namespace Wox.Plugin.Program.Programs
 
         private static IEnumerable<Package> CurrentUserPackages()
         {
-            var user = WindowsIdentity.GetCurrent().User;
+            var u = WindowsIdentity.GetCurrent().User;
 
-            if (user != null)
+            if (u != null)
             {
-                var userSecurityId = user.Value;
-                var packageManager = new PackageManager();
-                var packages = packageManager.FindPackagesForUser(userSecurityId);
-                packages =
-                    packages.Where(
-                        p => !p.IsFramework && !p.IsDevelopmentMode && !string.IsNullOrEmpty(p.InstalledLocation.Path));
-                return packages;
+                var id = u.Value;
+                var m = new PackageManager();
+                var ps = m.FindPackagesForUser(id);
+                ps = ps.Where(p =>
+                {
+                    bool valid;
+                    try
+                    {
+                        var f = p.IsFramework;
+                        var d = p.IsDevelopmentMode;
+                        var path = p.InstalledLocation.Path;
+                        valid = !f && !d && !string.IsNullOrEmpty(path);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Exception($"|UWP.CurrentUserPackages|Can't get package info for <{p.Id.FullName}>", e);
+                        valid = false;
+                    }
+                    return valid;
+                });
+                return ps;
             }
             else
             {

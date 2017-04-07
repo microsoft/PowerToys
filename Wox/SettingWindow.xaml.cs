@@ -272,7 +272,7 @@ namespace Wox
                 return;
             }
 
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Infrastructure.Constant.Github);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Infrastructure.Constant.Repository);
             if (string.IsNullOrEmpty(_settings.Proxy.UserName) || string.IsNullOrEmpty(_settings.Proxy.Password))
             {
                 request.Proxy = new WebProxy(_settings.Proxy.Server, _settings.Proxy.Port);
@@ -306,17 +306,7 @@ namespace Wox
 
         private async void OnCheckUpdates(object sender, RoutedEventArgs e)
         {
-            var version = await Updater.NewVersion();
-            if (!string.IsNullOrEmpty(version))
-            {
-                var newVersion = Updater.NumericVersion(version);
-                var oldVersion = Updater.NumericVersion(Infrastructure.Constant.Version);
-                if (newVersion > oldVersion)
-                {
-                    Updater.UpdateApp();
-                    _viewModel.NewVersionTips = version;
-                }
-            }
+            await Updater.UpdateApp();
         }
 
         private void OnRequestNavigate(object sender, RequestNavigateEventArgs e)

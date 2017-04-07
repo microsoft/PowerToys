@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Wox.Core;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Helper;
@@ -205,7 +206,7 @@ namespace Wox.ViewModel
                     },
                     new Result
                     {
-                        Title = $"Open Source: {Constant.Github}",
+                        Title = $"Open Source: {Constant.Repository}",
                         SubTitle = "Please star it!"
                     }
                 };
@@ -315,22 +316,10 @@ namespace Wox.ViewModel
 
         #region about
 
-        public static string Github => Constant.Github;
+        public static string Github => Constant.Repository;
         public static string ReleaseNotes => @"https://github.com/Wox-launcher/Wox/releases/latest";
         public static string Version => Constant.Version;
         public string ActivatedTimes => string.Format(_translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
-        private string _newVersionTips;
-        public string NewVersionTips
-        {
-            get { return _newVersionTips; }
-            set
-            {
-                _newVersionTips = string.Format(_translater.GetTranslation("newVersionTips"), value);
-                NewVersionTipsVisibility = Visibility.Visible;
-            }
-        }
-        public Visibility NewVersionTipsVisibility { get; set; }
-
         #endregion
     }
 }

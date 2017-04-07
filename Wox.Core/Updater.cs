@@ -1,13 +1,14 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using JetBrains.Annotations;
 using Squirrel;
+using Newtonsoft.Json;
 using Wox.Core.Resource;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Http;
@@ -17,107 +18,95 @@ namespace Wox.Core
 {
     public static class Updater
     {
+        private static readonly Internationalization Translater = InternationalizationManager.Instance;
+
         public static async Task UpdateApp()
         {
-
-            var c = new WebClient { Proxy = Http.WebProxy() };
-            var d = new FileDownloader(c);
+            UpdateManager m;
+            UpdateInfo u;
 
             try
             {
-                const string url = Constant.Github;
-                // UpdateApp() will return value only if the app is squirrel installed
-                using (var m = await UpdateManager.GitHubUpdateManager(url, urlDownloader: d))
-                {
-                    var e = await m.CheckForUpdate();
-                    var fe = e.FutureReleaseEntry;
-                    var ce = e.CurrentlyInstalledVersion;
-                    if (fe.Version > ce.Version)
-                    {
-                        var t = NewVersinoTips(fe.Version.ToString());
-                        MessageBox.Show(t);
-
-                        await m.DownloadReleases(e.ReleasesToApply);
-                        await m.ApplyReleases(e);
-                        await m.CreateUninstallerRegistryEntry();
-
-                        Log.Info($"|Updater.UpdateApp|TEST <{e.Formatted()}>");
-                        Log.Info($"|Updater.UpdateApp|TEST <{fe.Formatted()}>");
-                        Log.Info($"|Updater.UpdateApp|TEST <{ce.Formatted()}>");
-                        Log.Info($"|Updater.UpdateApp|TEST <{e.ReleasesToApply.Formatted()}>");
-                        Log.Info($"|Updater.UpdateApp|TEST <{t.Formatted()}>");
-                    }
-                }
+                m = await GitHubUpdateManager(Constant.Repository);
             }
             catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
             {
-                Log.Exception("|Updater.UpdateApp|Network error", e);
-
+                Log.Exception($"|Updater.UpdateApp|Please check your connection and proxy settings to api.github.com.", e);
+                return;
             }
-            catch (Exception e)
-            {
-                const string info = "Update.exe not found, not a Squirrel-installed app?";
-                if (e.Message == info)
-                {
-                    Log.Error($"|Updater.UpdateApp|{info}");
-                }
-                else
-                {
-                    throw;
-                }
-            }
-        }
 
-
-        public static async Task<string> NewVersion()
-        {
-            const string githubAPI = @"https://api.github.com/repos/wox-launcher/wox/releases/latest";
-
-            string response;
             try
             {
-                response = await Http.Get(githubAPI);
+                // UpdateApp CheckForUpdate will return value only if the app is squirrel installed
+                u = await m.CheckForUpdate().NonNull();
             }
-            catch (WebException e)
+            catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
             {
-                Log.Exception("|Updater.NewVersion|Can't connect to github api to check new version", e);
-                return string.Empty;
+                Log.Exception($"|Updater.UpdateApp|Check your connection and proxy settings to api.github.com.", e);
+                m.Dispose();
+                return;
             }
 
-            if (!string.IsNullOrEmpty(response))
+            var fr = u.FutureReleaseEntry;
+            var cr = u.CurrentlyInstalledVersion;
+            Log.Info($"|Updater.UpdateApp|Future Release <{fr.Formatted()}>");
+            if (fr.Version > cr.Version)
             {
-                JContainer json;
                 try
                 {
-                    json = (JContainer)JsonConvert.DeserializeObject(response);
+                    await m.DownloadReleases(u.ReleasesToApply);
                 }
-                catch (JsonSerializationException e)
+                catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
                 {
-                    Log.Exception("|Updater.NewVersion|can't parse response", e);
-                    return string.Empty;
+                    Log.Exception($"|Updater.UpdateApp|Check your connection and proxy settings to github-cloud.s3.amazonaws.com.", e);
+                    m.Dispose();
+                    return;
                 }
-                var version = json?["tag_name"]?.ToString();
-                if (!string.IsNullOrEmpty(version))
-                {
-                    return version;
-                }
-                else
-                {
-                    Log.Warn("|Updater.NewVersion|Can't find tag_name from Github API response");
-                    return string.Empty;
-                }
+
+                await m.ApplyReleases(u);
+                await m.CreateUninstallerRegistryEntry();
+
+                var newVersionTips = Translater.GetTranslation("newVersionTips");
+                newVersionTips = string.Format(newVersionTips, fr.Version);
+                MessageBox.Show(newVersionTips);
+                Log.Info($"|Updater.UpdateApp|Update succeed:{newVersionTips}");
             }
-            else
-            {
-                Log.Warn("|Updater.NewVersion|Can't get response from Github API");
-                return string.Empty;
-            }
+            
+            // always dispose UpdateManager
+            m.Dispose();
         }
 
-        public static int NumericVersion(string version)
+        [UsedImplicitly]
+        private class GithubRelease
         {
-            var newVersion = version.Replace("v", ".").Replace(".", "").Replace("*", "");
-            return int.Parse(newVersion);
+            [JsonProperty("prerelease")]
+            public bool Prerelease { get; [UsedImplicitly] set; }
+
+            [JsonProperty("published_at")]
+            public DateTime PublishedAt { get; [UsedImplicitly] set; }
+
+            [JsonProperty("html_url")]
+            public string HtmlUrl { get; [UsedImplicitly] set; }
+        }
+
+        /// https://github.com/Squirrel/Squirrel.Windows/blob/master/src/Squirrel/UpdateManager.Factory.cs
+        private static async Task<UpdateManager> GitHubUpdateManager(string repository)
+        {
+            var uri = new Uri(repository);
+            var api = $"https://api.github.com/repos{uri.AbsolutePath}/releases";
+
+            var json = await Http.Get(api);
+
+            var releases = JsonConvert.DeserializeObject<List<GithubRelease>>(json);
+            var latest = releases.Where(r => !r.Prerelease).OrderByDescending(r => r.PublishedAt).First();
+            var latestUrl = latest.HtmlUrl.Replace("/tag/", "/download/");
+
+            var client = new WebClient { Proxy = Http.WebProxy() };
+            var downloader = new FileDownloader(client);
+
+            var manager = new UpdateManager(latestUrl, urlDownloader: downloader);
+
+            return manager;
         }
 
         public static string NewVersinoTips(string version)

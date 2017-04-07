@@ -384,8 +384,6 @@
                 <Button Grid.Row="4" Grid.Column="0"
                         Content="{DynamicResource checkUpdates}" Click="OnCheckUpdates"
                         HorizontalAlignment="Left" Margin="10 10 10 10" />
-                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding NewVersionTips}"
-                           HorizontalAlignment="Left" Visibility="{Binding NewVersionTipsVisibility}" />
             </Grid>
         </TabItem>
     </TabControl>
