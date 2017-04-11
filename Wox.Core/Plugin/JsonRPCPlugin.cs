@@ -48,41 +48,41 @@ namespace Wox.Core.Plugin
         {
             if (!String.IsNullOrEmpty(output))
             {
-                    List<Result> results = new List<Result>();
+                List<Result> results = new List<Result>();
 
-                    JsonRPCQueryResponseModel queryResponseModel = JsonConvert.DeserializeObject<JsonRPCQueryResponseModel>(output);
-                    if (queryResponseModel.Result == null) return null;
+                JsonRPCQueryResponseModel queryResponseModel = JsonConvert.DeserializeObject<JsonRPCQueryResponseModel>(output);
+                if (queryResponseModel.Result == null) return null;
 
-                    foreach (JsonRPCResult result in queryResponseModel.Result)
+                foreach (JsonRPCResult result in queryResponseModel.Result)
+                {
+                    JsonRPCResult result1 = result;
+                    result.Action = c =>
                     {
-                        JsonRPCResult result1 = result;
-                        result.Action = c =>
-                        {
-                            if (result1.JsonRPCAction == null) return false;
+                        if (result1.JsonRPCAction == null) return false;
 
-                            if (!String.IsNullOrEmpty(result1.JsonRPCAction.Method))
+                        if (!String.IsNullOrEmpty(result1.JsonRPCAction.Method))
+                        {
+                            if (result1.JsonRPCAction.Method.StartsWith("Wox."))
                             {
-                                if (result1.JsonRPCAction.Method.StartsWith("Wox."))
+                                ExecuteWoxAPI(result1.JsonRPCAction.Method.Substring(4), result1.JsonRPCAction.Parameters);
+                            }
+                            else
+                            {
+                                string actionReponse = ExecuteCallback(result1.JsonRPCAction);
+                                JsonRPCRequestModel jsonRpcRequestModel = JsonConvert.DeserializeObject<JsonRPCRequestModel>(actionReponse);
+                                if (jsonRpcRequestModel != null
+                                    && !String.IsNullOrEmpty(jsonRpcRequestModel.Method)
+                                    && jsonRpcRequestModel.Method.StartsWith("Wox."))
                                 {
-                                    ExecuteWoxAPI(result1.JsonRPCAction.Method.Substring(4), result1.JsonRPCAction.Parameters);
-                                }
-                                else
-                                {
-                                    string actionReponse = ExecuteCallback(result1.JsonRPCAction);
-                                    JsonRPCRequestModel jsonRpcRequestModel = JsonConvert.DeserializeObject<JsonRPCRequestModel>(actionReponse);
-                                    if (jsonRpcRequestModel != null
-                                        && !String.IsNullOrEmpty(jsonRpcRequestModel.Method)
-                                        && jsonRpcRequestModel.Method.StartsWith("Wox."))
-                                    {
-                                        ExecuteWoxAPI(jsonRpcRequestModel.Method.Substring(4), jsonRpcRequestModel.Parameters);
-                                    }
+                                    ExecuteWoxAPI(jsonRpcRequestModel.Method.Substring(4), jsonRpcRequestModel.Parameters);
                                 }
                             }
-                            return !result1.JsonRPCAction.DontHideAfterAction;
-                        };
-                        results.Add(result);
-                    }
-                    return results;
+                        }
+                        return !result1.JsonRPCAction.DontHideAfterAction;
+                    };
+                    results.Add(result);
+                }
+                return results;
             }
             return null;
         }
@@ -156,7 +156,7 @@ namespace Wox.Core.Plugin
                             }
                             else if (result.StartsWith("DEBUG:"))
                             {
-                                MessageBox.Show(new Form {TopMost = true}, result.Substring(6));
+                                MessageBox.Show(new Form { TopMost = true }, result.Substring(6));
                                 return string.Empty;
                             }
                             else
