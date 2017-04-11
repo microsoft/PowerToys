@@ -33,10 +33,21 @@ namespace Wox.Core.Plugin
         public List<Result> Query(Query query)
         {
             string output = ExecuteQuery(query);
+            try
+            {
+                return DeserializedResult(output);
+            }
+            catch (Exception e)
+            {
+                Log.Exception($"|JsonRPCPlugin.Query|Exception when query <{query}>", e);
+                return null;
+            }
+        }
+
+        public List<Result> DeserializedResult(string output)
+        {
             if (!String.IsNullOrEmpty(output))
             {
-                try
-                {
                     List<Result> results = new List<Result>();
 
                     JsonRPCQueryResponseModel queryResponseModel = JsonConvert.DeserializeObject<JsonRPCQueryResponseModel>(output);
@@ -72,14 +83,10 @@ namespace Wox.Core.Plugin
                         results.Add(result);
                     }
                     return results;
-                }
-                catch (Exception e)
-                {
-                    Log.Exception($"|JsonRPCPlugin.Query|Exception when query <{query}>", e);
-                }
             }
             return null;
         }
+
 
         private void ExecuteWoxAPI(string method, object[] parameters)
         {
