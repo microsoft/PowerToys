@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -20,6 +21,7 @@ namespace Wox.Plugin.Caculator
         private static Regex regBrackets = new Regex(@"[\(\)\[\]]", RegexOptions.Compiled);
         private static ParseContext yampContext;
         private PluginInitContext context { get; set; }
+        private NumberTranslator _numberTranslator;
 
         static Main()
         {
@@ -36,34 +38,37 @@ namespace Wox.Plugin.Caculator
 
             try
             {
-                var result = yampContext.Run(query.Search);
+                var result = yampContext.Run(this._numberTranslator?.Translate(query.Search) ?? query.Search);
                 if (result.Output != null && !string.IsNullOrEmpty(result.Result))
                 {
+                    string resultValue = this._numberTranslator?.TranslateBack(result.Result) ?? result.Result;
                     return new List<Result>
-                    { new Result
-                    { 
-                        Title = result.Result, 
-                        IcoPath = "Images/calculator.png", 
-                        Score = 300,
-                        SubTitle = "Copy this number to the clipboard", 
-                        Action = c =>
+                    {
+                        new Result
                         {
-                            try
+                            Title = resultValue,
+                            IcoPath = "Images/calculator.png",
+                            Score = 300,
+                            SubTitle = "Copy this number to the clipboard",
+                            Action = c =>
                             {
-                                Clipboard.SetText(result.Result);
-                                return true;
-                            }
-                            catch (ExternalException e)
-                            {
-                                MessageBox.Show("Copy failed, please try later");
-                                return false;
+                                try
+                                {
+                                    Clipboard.SetText(resultValue);
+                                    return true;
+                                }
+                                catch (ExternalException e)
+                                {
+                                    MessageBox.Show("Copy failed, please try later");
+                                    return false;
+                                }
                             }
                         }
-                    } };
+                    };
                 }
             }
             catch
-            {}
+            { }
 
             return new List<Result>();
         }
@@ -90,6 +95,7 @@ namespace Wox.Plugin.Caculator
         public void Init(PluginInitContext context)
         {
             this.context = context;
+            this._numberTranslator = NumberTranslator.Create(CultureInfo.CurrentCulture, CultureInfo.InvariantCulture);
         }
 
         public string GetTranslatedPluginTitle()
