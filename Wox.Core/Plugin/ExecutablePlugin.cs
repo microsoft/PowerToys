@@ -39,5 +39,16 @@ namespace Wox.Core.Plugin
             _startInfo.Arguments = $"\"{rpcRequest}\"";
             return Execute(_startInfo);
         }
+
+        protected override string ExecuteContextMenu(Result selectedResult) {
+            JsonRPCServerRequestModel request = new JsonRPCServerRequestModel {
+                Method = "contextmenu",
+                Parameters = new object[] { selectedResult.ContextData },
+            };
+
+            _startInfo.Arguments = $"\"{request}\"";
+
+            return Execute(_startInfo);
+        }
     }
 }

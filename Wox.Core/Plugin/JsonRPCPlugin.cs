@@ -17,7 +17,7 @@ namespace Wox.Core.Plugin
     /// Represent the plugin that using JsonPRC
     /// every JsonRPC plugin should has its own plugin instance
     /// </summary>
-    internal abstract class JsonRPCPlugin : IPlugin
+    internal abstract class JsonRPCPlugin : IPlugin, IContextMenu
     {
         protected PluginInitContext context;
         public const string JsonRPC = "JsonRPC";
@@ -29,6 +29,7 @@ namespace Wox.Core.Plugin
 
         protected abstract string ExecuteQuery(Query query);
         protected abstract string ExecuteCallback(JsonRPCRequestModel rpcRequest);
+        protected abstract string ExecuteContextMenu(Result selectedResult);
 
         public List<Result> Query(Query query)
         {
@@ -44,7 +45,21 @@ namespace Wox.Core.Plugin
             }
         }
 
-        public List<Result> DeserializedResult(string output)
+        public List<Result> LoadContextMenus(Result selectedResult)
+        {
+            string output = ExecuteContextMenu(selectedResult);
+            try
+            {
+                return DeserializedResult(output);
+            }
+            catch (Exception e)
+            {
+                Log.Exception($"|JsonRPCPlugin.LoadContextMenus|Exception on result <{selectedResult}>", e);
+                return null;
+            }
+        }
+
+        private List<Result> DeserializedResult(string output)
         {
             if (!String.IsNullOrEmpty(output))
             {
@@ -84,9 +99,11 @@ namespace Wox.Core.Plugin
                 }
                 return results;
             }
-            return null;
+            else
+            {
+                return null;
+            }
         }
-
 
         private void ExecuteWoxAPI(string method, object[] parameters)
         {
