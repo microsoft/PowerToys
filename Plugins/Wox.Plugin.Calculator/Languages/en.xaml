@@ -4,7 +4,7 @@
 
     <system:String x:Key="wox_plugin_caculator_plugin_name">Calculator</system:String>
     <system:String x:Key="wox_plugin_caculator_plugin_description">Allows to do mathematical calculations.(Try 5*3-2 in Wox)</system:String>
-    <system:String x:Key="wox_plugin_calculator_not_a_number">Not a Number (NaN)</system:String>
-    <system:String x:Key="wox_plugin_calculator_expression_not_complete">Expression wrong or incomplete (Did you forget some Brackets?)</system:String>
-    <system:String x:Key="wox_plugin_calculator_copy_number_to_clipboard">Copy this Number to the clipboard</system:String>
+    <system:String x:Key="wox_plugin_calculator_not_a_number">Not a number (NaN)</system:String>
+    <system:String x:Key="wox_plugin_calculator_expression_not_complete">Expression wrong or incomplete (Did you forget some parentheses?)</system:String>
+    <system:String x:Key="wox_plugin_calculator_copy_number_to_clipboard">Copy this number to the clipboard</system:String>
 </ResourceDictionary>

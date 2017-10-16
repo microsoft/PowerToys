@@ -2,14 +2,13 @@
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows;
-using Mages;
 using Mages.Core;
 
 namespace Wox.Plugin.Caculator
 {
     public class Main : IPlugin, IPluginI18n
     {
-        private static Regex regValidExpressChar = new Regex(
+        private static readonly Regex RegValidExpressChar = new Regex(
                         @"^(" +
                         @"ceil|floor|exp|pi|e|max|min|det|abs|log|ln|sqrt|" +
                         @"sin|cos|tan|arcsin|arccos|arctan|" +
@@ -18,66 +17,70 @@ namespace Wox.Plugin.Caculator
                         @"==|~=|&&|\|\||" +
                         @"[ei]|[0-9]|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
                         @")+$", RegexOptions.Compiled);
-        private static Regex regBrackets = new Regex(@"[\(\)\[\]]", RegexOptions.Compiled);
-        private static Mages.Core.Engine magesEngine;
-        private PluginInitContext context { get; set; }
+        private static readonly Regex RegBrackets = new Regex(@"[\(\)\[\]]", RegexOptions.Compiled);
+        private static readonly Engine MagesEngine;
+        private PluginInitContext Context { get; set; }
 
         static Main()
         {
-            magesEngine = new Engine();
+            MagesEngine = new Engine();
         }
 
         public List<Result> Query(Query query)
         {
             if (query.Search.Length <= 2          // don't affect when user only input "e" or "i" keyword
-                || !regValidExpressChar.IsMatch(query.Search)
+                || !RegValidExpressChar.IsMatch(query.Search)
                 || !IsBracketComplete(query.Search)) return new List<Result>();
 
             try
             {
-                var result = magesEngine.Interpret(query.Search);
+                var result = MagesEngine.Interpret(query.Search);
 
                 if (result.ToString() == "NaN")
-                    result = context.API.GetTranslation("wox_plugin_calculator_not_a_number");
+                    result = Context.API.GetTranslation("wox_plugin_calculator_not_a_number");
 
                 if (result is Function)
-                    result = context.API.GetTranslation("wox_plugin_calculator_expression_not_complete");
+                    result = Context.API.GetTranslation("wox_plugin_calculator_expression_not_complete");
 
 
-                if (result != null && !string.IsNullOrEmpty(result.ToString()))
+                if (!string.IsNullOrEmpty(result?.ToString()))
                 {
                     return new List<Result>
-                    { new Result
                     {
-                        Title = result.ToString(),
-                        IcoPath = "Images/calculator.png",
-                        Score = 300,
-                        SubTitle = context.API.GetTranslation("wox_plugin_calculator_copy_number_to_clipboard"),
-                        Action = c =>
+                        new Result
                         {
-                            try
+                            Title = result.ToString(),
+                            IcoPath = "Images/calculator.png",
+                            Score = 300,
+                            SubTitle = Context.API.GetTranslation("wox_plugin_calculator_copy_number_to_clipboard"),
+                            Action = c =>
                             {
-                                Clipboard.SetText(result.ToString());
-                                return true;
+                                try
+                                {
+                                    Clipboard.SetText(result.ToString());
+                                    return true;
+                                }
+                                catch (ExternalException)
+                                {
+                                    MessageBox.Show("Copy failed, please try later");
+                                    return false;
+                                }
                             }
-                            catch (ExternalException e)
-                            {
-                                MessageBox.Show("Copy failed, please try later");
-                                return false;
-                            }
-                        }
-                    } };
+                        } 
+                    };
                 }
             }
             catch
-            { }
+            {
+                // ignored
+            }
 
             return new List<Result>();
         }
 
         private bool IsBracketComplete(string query)
         {
-            var matchs = regBrackets.Matches(query);
+            var matchs = RegBrackets.Matches(query);
             var leftBracketCount = 0;
             foreach (Match match in matchs)
             {
@@ -96,17 +99,17 @@ namespace Wox.Plugin.Caculator
 
         public void Init(PluginInitContext context)
         {
-            this.context = context;
+            Context = context;
         }
 
         public string GetTranslatedPluginTitle()
         {
-            return context.API.GetTranslation("wox_plugin_caculator_plugin_name");
+            return Context.API.GetTranslation("wox_plugin_caculator_plugin_name");
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return context.API.GetTranslation("wox_plugin_caculator_plugin_description");
+            return Context.API.GetTranslation("wox_plugin_caculator_plugin_description");
         }
     }
 }
