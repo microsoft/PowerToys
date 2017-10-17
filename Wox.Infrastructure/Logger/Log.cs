@@ -72,7 +72,7 @@ namespace Wox.Infrastructure.Logger
         public static void Exception(string message, System.Exception e)
         {
 #if DEBUG
-            //throw e;
+            throw e;
 #else
             if (FormatValid(message))
             {
