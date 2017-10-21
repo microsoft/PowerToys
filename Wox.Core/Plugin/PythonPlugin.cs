@@ -49,5 +49,16 @@ namespace Wox.Core.Plugin
             _startInfo.WorkingDirectory = context.CurrentPluginMetadata.PluginDirectory;
             return Execute(_startInfo);
         }
+
+        protected override string ExecuteContextMenu(Result selectedResult) {
+            JsonRPCServerRequestModel request = new JsonRPCServerRequestModel {
+                Method = "context_menu",
+                Parameters = new object[] { selectedResult.ContextData },
+            };
+            _startInfo.Arguments = $"-B \"{context.CurrentPluginMetadata.ExecuteFilePath}\" \"{request}\"";
+            _startInfo.WorkingDirectory = context.CurrentPluginMetadata.PluginDirectory;
+
+            return Execute(_startInfo);
+        }
     }
 }

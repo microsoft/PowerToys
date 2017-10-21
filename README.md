@@ -1,3 +1,7 @@
+NOTE
+====
+This project will not be maintained by @happlebao for about 2 month due to personal reason.
+
 WoX
 ===
 

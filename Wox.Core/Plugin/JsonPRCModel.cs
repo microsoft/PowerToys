@@ -56,7 +56,7 @@ namespace Wox.Core.Plugin
             string rpc = string.Empty;
             if (Parameters != null && Parameters.Length > 0)
             {
-                string parameters = Parameters.Aggregate("[", (current, o) => current + (GetParamterByType(o) + ","));
+                string parameters = Parameters.Aggregate("[", (current, o) => current + (GetParameterByType(o) + ","));
                 parameters = parameters.Substring(0, parameters.Length - 1) + "]";
                 rpc = string.Format(@"{{\""method\"":\""{0}\"",\""parameters\"":{1}", Method, parameters);
             }
@@ -69,25 +69,27 @@ namespace Wox.Core.Plugin
 
         }
 
-        private string GetParamterByType(object paramter)
+        private string GetParameterByType(object parameter)
         {
-
-            if (paramter is string)
-            {
-                return string.Format(@"\""{0}\""", RepalceEscapes(paramter.ToString()));
+            if (parameter == null) {
+                return "null";
             }
-            if (paramter is int || paramter is float || paramter is double)
+            if (parameter is string)
             {
-                return string.Format(@"{0}", paramter);
+                return string.Format(@"\""{0}\""", ReplaceEscapes(parameter.ToString()));
             }
-            if (paramter is bool)
+            if (parameter is int || parameter is float || parameter is double)
             {
-                return string.Format(@"{0}", paramter.ToString().ToLower());
+                return string.Format(@"{0}", parameter);
             }
-            return paramter.ToString();
+            if (parameter is bool)
+            {
+                return string.Format(@"{0}", parameter.ToString().ToLower());
+            }
+            return parameter.ToString();
         }
 
-        private string RepalceEscapes(string str)
+        private string ReplaceEscapes(string str)
         {
             return str.Replace(@"\", @"\\") //Escapes in ProcessStartInfo
                 .Replace(@"\", @"\\") //Escapes itself when passed to client

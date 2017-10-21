@@ -17,7 +17,7 @@ namespace Wox.Core.Plugin
     /// Represent the plugin that using JsonPRC
     /// every JsonRPC plugin should has its own plugin instance
     /// </summary>
-    internal abstract class JsonRPCPlugin : IPlugin
+    internal abstract class JsonRPCPlugin : IPlugin, IContextMenu
     {
         protected PluginInitContext context;
         public const string JsonRPC = "JsonRPC";
@@ -29,56 +29,80 @@ namespace Wox.Core.Plugin
 
         protected abstract string ExecuteQuery(Query query);
         protected abstract string ExecuteCallback(JsonRPCRequestModel rpcRequest);
+        protected abstract string ExecuteContextMenu(Result selectedResult);
 
         public List<Result> Query(Query query)
         {
             string output = ExecuteQuery(query);
+            try
+            {
+                return DeserializedResult(output);
+            }
+            catch (Exception e)
+            {
+                Log.Exception($"|JsonRPCPlugin.Query|Exception when query <{query}>", e);
+                return null;
+            }
+        }
+
+        public List<Result> LoadContextMenus(Result selectedResult)
+        {
+            string output = ExecuteContextMenu(selectedResult);
+            try
+            {
+                return DeserializedResult(output);
+            }
+            catch (Exception e)
+            {
+                Log.Exception($"|JsonRPCPlugin.LoadContextMenus|Exception on result <{selectedResult}>", e);
+                return null;
+            }
+        }
+
+        private List<Result> DeserializedResult(string output)
+        {
             if (!String.IsNullOrEmpty(output))
             {
-                try
+                List<Result> results = new List<Result>();
+
+                JsonRPCQueryResponseModel queryResponseModel = JsonConvert.DeserializeObject<JsonRPCQueryResponseModel>(output);
+                if (queryResponseModel.Result == null) return null;
+
+                foreach (JsonRPCResult result in queryResponseModel.Result)
                 {
-                    List<Result> results = new List<Result>();
-
-                    JsonRPCQueryResponseModel queryResponseModel = JsonConvert.DeserializeObject<JsonRPCQueryResponseModel>(output);
-                    if (queryResponseModel.Result == null) return null;
-
-                    foreach (JsonRPCResult result in queryResponseModel.Result)
+                    JsonRPCResult result1 = result;
+                    result.Action = c =>
                     {
-                        JsonRPCResult result1 = result;
-                        result.Action = c =>
-                        {
-                            if (result1.JsonRPCAction == null) return false;
+                        if (result1.JsonRPCAction == null) return false;
 
-                            if (!String.IsNullOrEmpty(result1.JsonRPCAction.Method))
+                        if (!String.IsNullOrEmpty(result1.JsonRPCAction.Method))
+                        {
+                            if (result1.JsonRPCAction.Method.StartsWith("Wox."))
                             {
-                                if (result1.JsonRPCAction.Method.StartsWith("Wox."))
+                                ExecuteWoxAPI(result1.JsonRPCAction.Method.Substring(4), result1.JsonRPCAction.Parameters);
+                            }
+                            else
+                            {
+                                string actionReponse = ExecuteCallback(result1.JsonRPCAction);
+                                JsonRPCRequestModel jsonRpcRequestModel = JsonConvert.DeserializeObject<JsonRPCRequestModel>(actionReponse);
+                                if (jsonRpcRequestModel != null
+                                    && !String.IsNullOrEmpty(jsonRpcRequestModel.Method)
+                                    && jsonRpcRequestModel.Method.StartsWith("Wox."))
                                 {
-                                    ExecuteWoxAPI(result1.JsonRPCAction.Method.Substring(4), result1.JsonRPCAction.Parameters);
-                                }
-                                else
-                                {
-                                    string actionReponse = ExecuteCallback(result1.JsonRPCAction);
-                                    JsonRPCRequestModel jsonRpcRequestModel = JsonConvert.DeserializeObject<JsonRPCRequestModel>(actionReponse);
-                                    if (jsonRpcRequestModel != null
-                                        && !String.IsNullOrEmpty(jsonRpcRequestModel.Method)
-                                        && jsonRpcRequestModel.Method.StartsWith("Wox."))
-                                    {
-                                        ExecuteWoxAPI(jsonRpcRequestModel.Method.Substring(4), jsonRpcRequestModel.Parameters);
-                                    }
+                                    ExecuteWoxAPI(jsonRpcRequestModel.Method.Substring(4), jsonRpcRequestModel.Parameters);
                                 }
                             }
-                            return !result1.JsonRPCAction.DontHideAfterAction;
-                        };
-                        results.Add(result);
-                    }
-                    return results;
+                        }
+                        return !result1.JsonRPCAction.DontHideAfterAction;
+                    };
+                    results.Add(result);
                 }
-                catch (Exception e)
-                {
-                    Log.Exception($"|JsonRPCPlugin.Query|Exception when query <{query}>", e);
-                }
+                return results;
             }
-            return null;
+            else
+            {
+                return null;
+            }
         }
 
         private void ExecuteWoxAPI(string method, object[] parameters)
@@ -149,7 +173,7 @@ namespace Wox.Core.Plugin
                             }
                             else if (result.StartsWith("DEBUG:"))
                             {
-                                MessageBox.Show(new Form {TopMost = true}, result.Substring(6));
+                                MessageBox.Show(new Form { TopMost = true }, result.Substring(6));
                                 return string.Empty;
                             }
                             else
