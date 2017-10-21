@@ -108,5 +108,13 @@ namespace Wox.Core
 
             return manager;
         }
+
+        public static string NewVersinoTips(string version)
+        {
+            var translater = InternationalizationManager.Instance;
+            var tips = string.Format(translater.GetTranslation("newVersionTips"), version);
+            return tips;
+        }
+
     }
 }

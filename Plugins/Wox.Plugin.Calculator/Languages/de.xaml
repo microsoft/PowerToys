@@ -4,5 +4,7 @@
 
     <system:String x:Key="wox_plugin_caculator_plugin_name">Rechner</system:String>
     <system:String x:Key="wox_plugin_caculator_plugin_description">Stellt mathematische Berechnungen bereit.(Versuche 5*3-2 in Wox)</system:String>
-    
+    <system:String x:Key="wox_plugin_calculator_not_a_number">Keine Zahl (NaN)</system:String>
+    <system:String x:Key="wox_plugin_calculator_expression_not_complete">Ausdruck falsch oder nicht vollständig (Klammern vergessen?)</system:String>
+    <system:String x:Key="wox_plugin_calculator_copy_number_to_clipboard">Diese Zahl in die Zwischenablage kopieren</system:String>
 </ResourceDictionary>
