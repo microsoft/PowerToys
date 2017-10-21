@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows;
-using YAMP;
+using Mages.Core;
 
 namespace Wox.Plugin.Caculator
 {
     public class Main : IPlugin, IPluginI18n
     {
-        private static Regex regValidExpressChar = new Regex(
+        private static readonly Regex RegValidExpressChar = new Regex(
                         @"^(" +
                         @"ceil|floor|exp|pi|e|max|min|det|abs|log|ln|sqrt|" +
                         @"sin|cos|tan|arcsin|arccos|arctan|" +
@@ -18,64 +17,70 @@ namespace Wox.Plugin.Caculator
                         @"==|~=|&&|\|\||" +
                         @"[ei]|[0-9]|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
                         @")+$", RegexOptions.Compiled);
-        private static Regex regBrackets = new Regex(@"[\(\)\[\]]", RegexOptions.Compiled);
-        private static ParseContext yampContext;
-        private PluginInitContext context { get; set; }
-        private NumberTranslator _numberTranslator;
+        private static readonly Regex RegBrackets = new Regex(@"[\(\)\[\]]", RegexOptions.Compiled);
+        private static readonly Engine MagesEngine;
+        private PluginInitContext Context { get; set; }
 
         static Main()
         {
-            yampContext = Parser.PrimaryContext;
-            Parser.InteractiveMode = false;
-            Parser.UseScripting = false;
+            MagesEngine = new Engine();
         }
 
         public List<Result> Query(Query query)
         {
             if (query.Search.Length <= 2          // don't affect when user only input "e" or "i" keyword
-                || !regValidExpressChar.IsMatch(query.Search)
+                || !RegValidExpressChar.IsMatch(query.Search)
                 || !IsBracketComplete(query.Search)) return new List<Result>();
 
             try
             {
-                var result = yampContext.Run(this._numberTranslator?.Translate(query.Search) ?? query.Search);
-                if (result.Output != null && !string.IsNullOrEmpty(result.Result))
+                var result = MagesEngine.Interpret(query.Search);
+
+                if (result.ToString() == "NaN")
+                    result = Context.API.GetTranslation("wox_plugin_calculator_not_a_number");
+
+                if (result is Function)
+                    result = Context.API.GetTranslation("wox_plugin_calculator_expression_not_complete");
+
+
+                if (!string.IsNullOrEmpty(result?.ToString()))
                 {
-                    string resultValue = this._numberTranslator?.TranslateBack(result.Result) ?? result.Result;
                     return new List<Result>
                     {
                         new Result
                         {
-                            Title = resultValue,
+                            Title = result.ToString(),
                             IcoPath = "Images/calculator.png",
                             Score = 300,
-                            SubTitle = "Copy this number to the clipboard",
+                            SubTitle = Context.API.GetTranslation("wox_plugin_calculator_copy_number_to_clipboard"),
                             Action = c =>
                             {
                                 try
                                 {
-                                    Clipboard.SetText(resultValue);
+                                    Clipboard.SetText(result.ToString());
                                     return true;
                                 }
-                                catch (ExternalException e)
+                                catch (ExternalException)
                                 {
                                     MessageBox.Show("Copy failed, please try later");
                                     return false;
                                 }
                             }
-                        }
+                        } 
                     };
                 }
             }
             catch
-            { }
+            {
+                // ignored
+            }
 
             return new List<Result>();
         }
 
         private bool IsBracketComplete(string query)
         {
-            var matchs = regBrackets.Matches(query);
+            var matchs = RegBrackets.Matches(query);
             var leftBracketCount = 0;
             foreach (Match match in matchs)
             {
@@ -94,18 +99,17 @@ namespace Wox.Plugin.Caculator
 
         public void Init(PluginInitContext context)
         {
-            this.context = context;
-            this._numberTranslator = NumberTranslator.Create(CultureInfo.CurrentCulture, CultureInfo.InvariantCulture);
+            Context = context;
         }
 
         public string GetTranslatedPluginTitle()
         {
-            return context.API.GetTranslation("wox_plugin_caculator_plugin_name");
+            return Context.API.GetTranslation("wox_plugin_caculator_plugin_name");
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return context.API.GetTranslation("wox_plugin_caculator_plugin_description");
+            return Context.API.GetTranslation("wox_plugin_caculator_plugin_description");
         }
     }
 }
