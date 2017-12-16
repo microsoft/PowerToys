@@ -22,6 +22,10 @@
     <system:String x:Key="dontPromptUpdateMsg">Ne pas afficher le message de mise à jour pour les nouvelles versions</system:String>
     <system:String x:Key="rememberLastLocation">Se souvenir du dernier emplacement de la fenêtre</system:String>
     <system:String x:Key="language">Langue</system:String>
+    <system:String x:Key="lastQueryMode">Affichage de la dernière recherche</system:String>
+    <system:String x:Key="LastQueryPreserved">Conserver la dernière recherche</system:String>
+    <system:String x:Key="LastQuerySelected">Sélectionner la dernière recherche</system:String>
+    <system:String x:Key="LastQueryEmpty">Ne pas afficher la dernière recherche</system:String>
     <system:String x:Key="maxShowResults">Résultats maximums à afficher</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignore les raccourcis lorsqu'une application est en plein écran</system:String>
     <system:String x:Key="pythonDirectory">Répertoire de Python</system:String>
@@ -81,6 +85,8 @@
     <system:String x:Key="about_activate_times">Vous avez utilisé Wox {0} fois</system:String>
     <system:String x:Key="checkUpdates">Vérifier les mises à jour</system:String>
     <system:String x:Key="newVersionTips">Nouvelle version {0} disponible, veuillez redémarrer Wox</system:String>
+    <system:String x:Key="checkUpdatesFailed">Échec de la vérification de la mise à jour, vérifiez votre connexion et vos paramètres de configuration proxy pour pouvoir acceder à api.github.com.</system:String>
+    <system:String x:Key="downloadUpdatesFailed">Échec du téléchargement de la mise à jour, vérifiez votre connexion et vos paramètres de configuration proxy pour pouvoir acceder à github-cloud.s3.amazonaws.com, ou téléchargez manuelement la mise à jour sur https://github.com/Wox-launcher/Wox/releases.</system:String>
     <system:String x:Key="releaseNotes">Notes de changement :</system:String>
 
     <!--Action Keyword Setting Dialog-->
