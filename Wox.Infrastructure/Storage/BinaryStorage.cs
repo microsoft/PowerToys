@@ -30,19 +30,17 @@ namespace Wox.Infrastructure.Storage
         {
             if (File.Exists(FilePath))
             {
+                if (new FileInfo(FilePath).Length == 0)
+                {
+                    Log.Error($"|BinaryStorage.TryLoad|Zero length cache file <{FilePath}>");
+                    Save(defaultData);
+                    return defaultData;
+                }
+
                 using (var stream = new FileStream(FilePath, FileMode.Open))
                 {
-                    if (stream.Length > 0)
-                    {
-                        var d = Deserialize(stream, defaultData);
-                        return d;
-                    }
-                    else
-                    {
-                        Log.Error($"|BinaryStorage.TryLoad|Zero length cache file <{FilePath}>");
-                        Save(defaultData);
-                        return defaultData;
-                    }
+                    var d = Deserialize(stream, defaultData);
+                    return d;
                 }
             }
             else
