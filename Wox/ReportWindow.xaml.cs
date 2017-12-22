@@ -37,10 +37,7 @@ namespace Wox
             content.AppendLine(ErrorReporting.DependenciesInfo());
             content.AppendLine($"Date: {DateTime.Now.ToString(CultureInfo.InvariantCulture)}");
             content.AppendLine("Exception:");
-            content.AppendLine(exception.Source);
-            content.AppendLine(exception.GetType().ToString());
-            content.AppendLine(exception.Message);
-            content.AppendLine(exception.StackTrace);
+            content.AppendLine(exception.ToString());
             paragraph = new Paragraph();
             paragraph.Inlines.Add(content.ToString());
             ErrorTextbox.Document.Blocks.Add(paragraph);
