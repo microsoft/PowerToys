@@ -18,7 +18,7 @@ Features
 
 - Search for everything—applications, **uwp**, folders, files and more.
 - Use *pinyin* to search for programs / 支持用 **拼音** 搜索程序
-  - yyy / wangyiyun → 网易云音乐
+  - wyy / wangyiyun → 网易云音乐
 - Keyword plugin search 
   - search google with `g search_term`
 - Build custom themes at http://www.getwox.com/theme/builder
