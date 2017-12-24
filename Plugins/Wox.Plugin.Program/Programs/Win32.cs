@@ -206,28 +206,37 @@ namespace Wox.Plugin.Program.Programs
         {
             if (!Directory.Exists(directory))
                 return new string[] { };
-
-            var ds = Directory.GetDirectories(directory);
-
-            var paths = ds.SelectMany(d =>
+            var files = new List<string>();
+            var folderQueue = new Queue<string>();
+            folderQueue.Enqueue(directory);
+            do
             {
+                var currentDirectory = folderQueue.Dequeue();
                 try
                 {
-                    var paths_for_suffixes = suffixes.SelectMany(s =>
+                    foreach (var suffix in suffixes)
                     {
-                        var pattern = $"*.{s}";
-                        var ps = Directory.EnumerateFiles(d, pattern, SearchOption.AllDirectories);
-                        return ps;
-                    });
-                    return paths_for_suffixes;
+                        files.AddRange(Directory.EnumerateFiles(currentDirectory, $"*.{suffix}", SearchOption.TopDirectoryOnly));
+                    }
                 }
                 catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
                 {
-                    Log.Exception($"|Program.Win32.ProgramPaths|Don't have permission on <{directory}>", e);
-                    return new List<string>();
+                    Log.Exception($"|Program.Win32.ProgramPaths|Don't have permission on <{currentDirectory}>", e);
                 }
-            });
-            return paths;
+
+                try
+                {
+                    foreach (var childDirectory in Directory.EnumerateDirectories(currentDirectory, "*", SearchOption.TopDirectoryOnly))
+                    {
+                        folderQueue.Enqueue(childDirectory);
+                    }
+                }
+                catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
+                {
+                    Log.Exception($"|Program.Win32.ProgramPaths|Don't have permission on <{currentDirectory}>", e);
+                }
+            } while (folderQueue.Any());
+            return files;
         }
 
         private static string Extension(string path)
