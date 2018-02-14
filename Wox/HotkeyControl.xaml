@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:input="clr-namespace:System.Windows.Input;assembly=PresentationCore"
              mc:Ignorable="d"
              Height="24"
              d:DesignHeight="300" d:DesignWidth="300">
@@ -12,7 +13,7 @@
             <ColumnDefinition Width="120" />
         </Grid.ColumnDefinitions>
         <TextBox x:Name="tbHotkey" TabIndex="100" VerticalContentAlignment="Center" Grid.Column="0"
-                 PreviewKeyDown="TbHotkey_OnPreviewKeyDown" />
+                 PreviewKeyDown="TbHotkey_OnPreviewKeyDown" input:InputMethod.IsInputMethodEnabled="False"/>
         <TextBlock x:Name="tbMsg" Visibility="Hidden" Margin="5 0 0 0" VerticalAlignment="Center" Grid.Column="1" />
     </Grid>
 </UserControl>
