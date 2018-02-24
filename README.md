@@ -21,8 +21,8 @@ Features
   - wyy / wangyiyun → 网易云音乐
 - Keyword plugin search 
   - search google with `g search_term`
-- Build custom themes at http://www.getwox.com/theme/builder
-- Install plugins from http://www.getwox.com/plugin
+- Build custom themes at http://www.wox.one/theme/builder
+- Install plugins from http://www.wox.one/plugin
 
 
 Installation
@@ -65,5 +65,5 @@ Build
 Documentation
 -------------
 - [Wiki](https://github.com/Wox-launcher/Wox/wiki)
-- Outdated doc: [WoX doc](http://doc.getwox.com).
+- Outdated doc: [WoX doc](http://doc.wox.one).
 - Just ask questions in [issues](https://github.com/Wox-launcher/Wox/issues) for now.

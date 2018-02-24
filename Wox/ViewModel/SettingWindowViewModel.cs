@@ -78,7 +78,7 @@ namespace Wox.ViewModel
 
         #region plugin
 
-        public static string Plugin => "http://www.getwox.com/plugin";
+        public static string Plugin => "http://www.wox.one/plugin";
         public PluginViewModel SelectedPlugin { get; set; }
 
         public IList<PluginViewModel> PluginViewModels
@@ -134,7 +134,7 @@ namespace Wox.ViewModel
 
         #region theme
 
-        public static string Theme => @"http://www.getwox.com/theme/builder";
+        public static string Theme => @"http://www.wox.one/theme/builder";
 
         public string SelectedTheme
         {

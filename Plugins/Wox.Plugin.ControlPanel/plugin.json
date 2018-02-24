@@ -6,7 +6,7 @@
     "Author":"CoenraadS",
     "Version":"1.0.0",
     "Language":"csharp",
-    "Website":"http://www.getwox.com/plugin",
+    "Website":"http://www.wox.one/plugin",
     "ExecuteFileName":"Wox.Plugin.ControlPanel.dll",
     "IcoPath":"Images\\ControlPanel.png"
 }
