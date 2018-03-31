@@ -9,7 +9,7 @@ namespace Wox.Infrastructure.Image
     [Serializable]
     public class ImageCache
     {
-        private const int MaxCached = 200;
+        private const int MaxCached = 5000;
         public ConcurrentDictionary<string, int> Usage = new ConcurrentDictionary<string, int>();
         private readonly ConcurrentDictionary<string, ImageSource> _data = new ConcurrentDictionary<string, ImageSource>();
 
