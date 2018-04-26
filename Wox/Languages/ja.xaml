@@ -13,6 +13,8 @@
     <system:String x:Key="iconTraySettings">設定</system:String>
     <system:String x:Key="iconTrayAbout">Woxについて</system:String>
     <system:String x:Key="iconTrayExit">終了</system:String>
+    <system:String x:Key="pluginInitErrorsTitle">プラグイン初期化エラー</system:String>
+    <system:String x:Key="pluginInitErrorsBody">次のプラグインは初期化に失敗したため、無効になります：</system:String>
 
     <!--Setting General-->
     <system:String x:Key="wox_settings">Wox設定</system:String>
@@ -22,12 +24,20 @@
     <system:String x:Key="dontPromptUpdateMsg">最新版が入手可能であっても、アップグレードメッセージを表示しない</system:String>
     <system:String x:Key="rememberLastLocation">前回のランチャーの位置を記憶</system:String>
     <system:String x:Key="language">言語</system:String>
+    <!-- REQUIRES TRANSLATION. REMOVE COMMENT WHEN TRANSLATED -->
+    <system:String x:Key="lastQueryMode">Last Query Style</system:String>
+    <!-- REQUIRES TRANSLATION. REMOVE COMMENT WHEN TRANSLATED -->
+    <system:String x:Key="LastQueryPreserved">Preserve Last Query</system:String>
+    <!-- REQUIRES TRANSLATION. REMOVE COMMENT WHEN TRANSLATED -->
+    <system:String x:Key="LastQuerySelected">Select last Query</system:String>
+    <!-- REQUIRES TRANSLATION. REMOVE COMMENT WHEN TRANSLATED -->
+    <system:String x:Key="LastQueryEmpty">Empty last Query</system:String>
     <system:String x:Key="maxShowResults">結果の最大表示件数</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">ウィンドウがフルスクリーン時にホットキーを無効にする</system:String>
-    <system:String x:Key="pythonDirectory">Python Directory</system:String>
-    <system:String x:Key="autoUpdates">Auto Update</system:String>
-    <system:String x:Key="selectPythonDirectory">Select</system:String>
-    <system:String x:Key="hideOnStartup">Hide Wox on startup</system:String>
+    <system:String x:Key="pythonDirectory">Pythonのディレクトリ</system:String>
+    <system:String x:Key="autoUpdates">自動更新</system:String>
+    <system:String x:Key="selectPythonDirectory">選択</system:String>
+    <system:String x:Key="hideOnStartup">起動時にWoxを隠す</system:String>
     
     <!--Setting Plugin-->
     <system:String x:Key="plugin">プラグイン</system:String>
@@ -79,9 +89,9 @@
     <system:String x:Key="website">ウェブサイト</system:String>
     <system:String x:Key="version">バージョン</system:String>
     <system:String x:Key="about_activate_times">あなたはWoxを {0} 回利用しました</system:String>
-    <system:String x:Key="checkUpdates">Check for Updates</system:String>
-    <system:String x:Key="newVersionTips">New version {0} avaiable, please restart wox</system:String>
-    <system:String x:Key="releaseNotes">Release Notes:</system:String>
+    <system:String x:Key="checkUpdates">アップデートを確認する</system:String>
+    <system:String x:Key="newVersionTips">新しいバージョン {0} が利用可能です。Woxを再起動してください。</system:String>
+    <system:String x:Key="releaseNotes">リリースノート:</system:String>
 
     <!--Action Keyword Setting Dialog-->
     <system:String x:Key="oldActionKeywords">古いアクションキーボード</system:String>
