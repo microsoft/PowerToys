@@ -24,7 +24,7 @@ Features
 Installation
 ------------
 
-Download `Wox-xxx.exe` from [releases](https://github.com/Wox-launcher/Wox/releases). Latest as of now is [`1.3.183`](https://github.com/Wox-launcher/Wox/releases/download/v1.3.183/Wox-1.3.183.exe)
+Download `Wox-xxx.exe` from [releases](https://github.com/Wox-launcher/Wox/releases). Latest as of now is [`1.3.524`](https://github.com/Wox-launcher/Wox/releases/download/v1.3.524/Wox-1.3.524.exe)
 
 Windows may complain about security due to code not being signed. This will be fixed later. 
 
