@@ -144,7 +144,7 @@ namespace Wox.Plugin.PluginManagement
                     IcoPath = "Images\\plugin.png",
                     Action = c =>
                     {
-                        MessageBoxResult result = MessageBox.Show("Are your sure to install " + r.name + " plugin",
+                        MessageBoxResult result = MessageBox.Show("Are you sure you wish to install the \'" + r.name + "\' plugin",
                             "Install plugin", MessageBoxButton.YesNo);
 
                         if (result == MessageBoxResult.Yes)
