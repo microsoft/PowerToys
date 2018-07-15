@@ -1,5 +1,5 @@
 version: 1.3.{build}
-os: Visual Studio 2015
+image: Visual Studio 2017
 configuration: Release
 platform: Any CPU
 assembly_info:
