@@ -394,11 +394,11 @@ namespace Wox.Plugin.Program.Programs
             internal string LogoUriFromManifest(IAppxManifestApplication app)
             {
                 var logoKeyFromVersion = new Dictionary<PackageVersion, string>
-            {
-                {PackageVersion.Windows10, "Square44x44Logo"},
-                {PackageVersion.Windows81, "Square30x30Logo"},
-                {PackageVersion.Windows8, "SmallLogo"},
-            };
+                {
+                    { PackageVersion.Windows10, "Square44x44Logo" },
+                    { PackageVersion.Windows81, "Square30x30Logo" },
+                    { PackageVersion.Windows8, "SmallLogo" },
+                };
                 if (logoKeyFromVersion.ContainsKey(Package.Version))
                 {
                     var key = logoKeyFromVersion[Package.Version];
@@ -436,23 +436,20 @@ namespace Wox.Plugin.Program.Programs
                     var prefix = path.Substring(0, end);
                     var paths = new List<string> { path };
 
-                    // todo hidpi icon
-                    if (Package.Version == PackageVersion.Windows10)
+                    var scaleFactors = new Dictionary<PackageVersion, List<int>>
                     {
-                        paths.Add($"{prefix}.scale-100{extension}");
-                        paths.Add($"{prefix}.scale-200{extension}");
-                    }
-                    else if (Package.Version == PackageVersion.Windows81)
+                        // scale factors on win10: https://docs.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets#asset-size-tables,
+                        { PackageVersion.Windows10, new List<int> { 100, 125, 150, 200, 400 } },
+                        { PackageVersion.Windows81, new List<int> { 100, 120, 140, 160, 180 } },
+                        { PackageVersion.Windows8, new List<int> { 100 } }
+                    };
+
+                    if (scaleFactors.ContainsKey(Package.Version))
                     {
-                        paths.Add($"{prefix}.scale-100{extension}");
-                        paths.Add($"{prefix}.scale-120{extension}");
-                        paths.Add($"{prefix}.scale-140{extension}");
-                        paths.Add($"{prefix}.scale-160{extension}");
-                        paths.Add($"{prefix}.scale-180{extension}");
-                    }
-                    else if (Package.Version == PackageVersion.Windows8)
-                    {
-                        paths.Add($"{prefix}.scale-100{extension}");
+                        foreach (var factor in scaleFactors[Package.Version])
+                        {
+                            paths.Add($"{prefix}.scale-{factor}{extension}");
+                        }
                     }
 
                     var selected = paths.FirstOrDefault(File.Exists);
