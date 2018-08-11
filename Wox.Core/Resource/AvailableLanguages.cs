@@ -18,6 +18,7 @@ namespace Wox.Core.Resource
         public static Language Korean = new Language("ko", "한국어");
         public static Language Serbian = new Language("sr", "Srpski");
         public static Language Portuguese_BR = new Language("pt-br", "Português (Brasil)");
+		public static Language Italian = new Language("it", "Italiano");
 
         public static List<Language> GetAvailableLanguages()
         {
@@ -37,6 +38,7 @@ namespace Wox.Core.Resource
                 Korean,
                 Serbian,
                 Portuguese_BR,
+				Italian
             };
             return languages;
         }
