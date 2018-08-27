@@ -1,0 +1,141 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+    <!--MainWindow-->
+    <system:String x:Key="registerHotkeyFailed">Kunne ikke registrere hurtigtast: {0}</system:String>
+    <system:String x:Key="couldnotStartCmd">Kunne ikke starte {0}</system:String>
+    <system:String x:Key="invalidWoxPluginFileFormat">Ugyldig filformat for Wox-utvidelse</system:String>
+    <system:String x:Key="setAsTopMostInThisQuery">Sett til øverste for denne spørringen</system:String>
+    <system:String x:Key="cancelTopMostInThisQuery">Avbryt øverste for denne spørringen</system:String>
+    <system:String x:Key="executeQuery">Utfør spørring: {0}</system:String>
+    <system:String x:Key="lastExecuteTime">Tid for siste gjennomføring: {0}</system:String>
+    <system:String x:Key="iconTrayOpen">Åpne</system:String>
+    <system:String x:Key="iconTraySettings">Innstillinger</system:String>
+    <system:String x:Key="iconTrayAbout">Om</system:String>
+    <system:String x:Key="iconTrayExit">Avslutt</system:String>
+
+    <!--Setting General-->
+    <system:String x:Key="wox_settings">Wox-innstillinger</system:String>
+    <system:String x:Key="general">Generelt</system:String>
+    <system:String x:Key="startWoxOnSystemStartup">Start Wox ved systemstart</system:String>
+    <system:String x:Key="hideWoxWhenLoseFocus">Skjul Wox ved mistet fokus</system:String>
+    <system:String x:Key="dontPromptUpdateMsg">Ikke vis varsel om ny versjon</system:String>
+    <system:String x:Key="rememberLastLocation">Husk siste plassering</system:String>
+    <system:String x:Key="language">Språk</system:String>
+    <system:String x:Key="lastQueryMode">Stil for siste spørring</system:String>
+    <system:String x:Key="LastQueryPreserved">Bevar siste spørring</system:String>
+    <system:String x:Key="LastQuerySelected">Velg siste spørring</system:String>
+    <system:String x:Key="LastQueryEmpty">Tøm siste spørring</system:String>
+    <system:String x:Key="maxShowResults">Maks antall resultater vist</system:String>
+    <system:String x:Key="ignoreHotkeysOnFullscreen">Ignorer hurtigtaster i fullskjermsmodus</system:String>
+    <system:String x:Key="pythonDirectory">Python-mappe</system:String>
+    <system:String x:Key="autoUpdates">Oppdater automatisk</system:String>
+    <system:String x:Key="selectPythonDirectory">Velg</system:String>
+    <system:String x:Key="hideOnStartup">Skjul Wox ved oppstart</system:String>
+
+    <!--Setting Plugin-->
+    <system:String x:Key="plugin">Utvidelse</system:String>
+    <system:String x:Key="browserMorePlugins">Finn flere utvidelser</system:String>
+    <system:String x:Key="disable">Deaktiver</system:String>
+    <system:String x:Key="actionKeywords">Handlingsnøkkelord</system:String>
+    <system:String x:Key="pluginDirectory">Utvidelseskatalog</system:String>
+    <system:String x:Key="author">Forfatter</system:String>
+    <system:String x:Key="plugin_init_time">Oppstartstid: {0}ms</system:String>
+    <system:String x:Key="plugin_query_time">Spørringstid: {0}ms</system:String>
+
+    <!--Setting Theme-->
+    <system:String x:Key="theme">Tema</system:String>
+    <system:String x:Key="browserMoreThemes">Finn flere temaer</system:String>
+    <system:String x:Key="helloWox">Hallo Wox</system:String>
+    <system:String x:Key="queryBoxFont">Font for spørringsboks</system:String>
+    <system:String x:Key="resultItemFont">Font for resultat</system:String>
+    <system:String x:Key="windowMode">Vindusmodus</system:String>
+    <system:String x:Key="opacity">Gjennomsiktighet</system:String>
+
+    <!--Setting Hotkey-->
+    <system:String x:Key="hotkey">Hurtigtast</system:String>
+    <system:String x:Key="woxHotkey">Wox-hurtigtast</system:String>
+    <system:String x:Key="customQueryHotkey">Egendefinerd spørringshurtigtast</system:String>
+    <system:String x:Key="delete">Slett</system:String>
+    <system:String x:Key="edit">Rediger</system:String>
+    <system:String x:Key="add">Legg til</system:String>
+    <system:String x:Key="pleaseSelectAnItem">Vennligst velg et element</system:String>
+    <system:String x:Key="deleteCustomHotkeyWarning">Er du sikker på at du vil slette utvidelserhurtigtasten for {0}?</system:String>
+
+    <!--Setting Proxy-->
+    <system:String x:Key="proxy">HTTP-proxy</system:String>
+    <system:String x:Key="enableProxy">Aktiver HTTP-proxy</system:String>
+    <system:String x:Key="server">HTTP-server</system:String>
+    <system:String x:Key="port">Port</system:String>
+    <system:String x:Key="userName">Brukernavn</system:String>
+    <system:String x:Key="password">Passord</system:String>
+    <system:String x:Key="testProxy">Test proxy</system:String>
+    <system:String x:Key="save">Lagre</system:String>
+    <system:String x:Key="serverCantBeEmpty">Serverfeltet kan ikke være tomt</system:String>
+    <system:String x:Key="portCantBeEmpty">Portfelter kan ikke være tomt</system:String>
+    <system:String x:Key="invalidPortFormat">Ugyldig portformat</system:String>
+    <system:String x:Key="saveProxySuccessfully">Proxy-konfigurasjon lagret med suksess</system:String>
+    <system:String x:Key="proxyIsCorrect">Proxy konfigurert riktig</system:String>
+    <system:String x:Key="proxyConnectFailed">Proxy-tilkobling feilet</system:String>
+
+    <!--Setting About-->
+    <system:String x:Key="about">Om</system:String>
+    <system:String x:Key="website">Netside</system:String>
+    <system:String x:Key="version">Versjon</system:String>
+    <system:String x:Key="about_activate_times">Du har aktivert Wox {0} ganger</system:String>
+    <system:String x:Key="checkUpdates">Sjekk for oppdatering</system:String>
+    <system:String x:Key="newVersionTips">Ny versjon {0} er tilgjengelig, vennligst start Wox på nytt.</system:String>
+    <system:String x:Key="checkUpdatesFailed">Oppdateringssjekk feilet, vennligst sjekk tilkoblingen og proxy-innstillene for api.github.com.</system:String>
+    <system:String x:Key="downloadUpdatesFailed">
+        Nedlastning av oppdateringer feilet, vennligst sjekk tilkoblingen og proxy-innstillene for github-cloud.s3.amazonaws.com, 
+        eller gå til https://github.com/Wox-launcher/Wox/releases for å laste ned oppdateringer manuelt.
+    </system:String>
+    <system:String x:Key="releaseNotes">Versjonsmerknader:</system:String>
+
+    <!--Action Keyword Setting Dialog-->
+    <system:String x:Key="oldActionKeywords">Gammelt handlingsnøkkelord</system:String>
+    <system:String x:Key="newActionKeywords">Nytt handlingsnøkkelord</system:String>
+    <system:String x:Key="cancel">Avbryt</system:String>
+    <system:String x:Key="done">Ferdig</system:String>
+    <system:String x:Key="cannotFindSpecifiedPlugin">Kan ikke finne den angitte utvidelsen</system:String>
+    <system:String x:Key="newActionKeywordsCannotBeEmpty">Nytt handlingsnøkkelord kan ikke være tomt</system:String>
+    <system:String x:Key="newActionKeywordsHasBeenAssigned">De nye handlingsnøkkelordene er tildelt en annen utvidelse, vennligst velg et annet nøkkelord</system:String>
+    <system:String x:Key="succeed">Vellykket</system:String>
+    <system:String x:Key="actionkeyword_tips">Bruk * hvis du ikke ønsker å angi et handlingsnøkkelord</system:String>
+
+    <!--Custom Query Hotkey Dialog-->
+    <system:String x:Key="preview">Forhåndsvis</system:String>
+    <system:String x:Key="hotkeyIsNotUnavailable">Hurtigtasten er ikke tilgjengelig, vennligst velg en ny hurtigtast</system:String>
+    <system:String x:Key="invalidPluginHotkey">Ugyldig hurtigtast for utvidelse</system:String>
+    <system:String x:Key="update">Oppdater</system:String>
+
+    <!--Hotkey Control-->
+    <system:String x:Key="hotkeyUnavailable">Hurtigtast utilgjengelig</system:String>
+
+    <!--Crash Reporter-->
+    <system:String x:Key="reportWindow_version">Versjon</system:String>
+    <system:String x:Key="reportWindow_time">Tid</system:String>
+    <system:String x:Key="reportWindow_reproduce">Fortell oss hvordan programmet krasjet, så vi kan fikse det</system:String>
+    <system:String x:Key="reportWindow_send_report">Send rapport</system:String>
+    <system:String x:Key="reportWindow_cancel">Avbryt</system:String>
+    <system:String x:Key="reportWindow_general">Generelt</system:String>
+    <system:String x:Key="reportWindow_exceptions">Unntak</system:String>
+    <system:String x:Key="reportWindow_exception_type">Unntakstype</system:String>
+    <system:String x:Key="reportWindow_source">Kilde</system:String>
+    <system:String x:Key="reportWindow_stack_trace">Stack Trace</system:String>
+    <system:String x:Key="reportWindow_sending">Sender</system:String>
+    <system:String x:Key="reportWindow_report_succeed">Rapport sendt med suksess</system:String>
+    <system:String x:Key="reportWindow_report_failed">Kunne ikke sende rapport</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">Wox møtte på en feil</system:String>
+
+    <!--update-->
+    <system:String x:Key="update_wox_update_new_version_available">Versjon {0} av Wox er nå tilgjengelig</system:String>
+    <system:String x:Key="update_wox_update_error">En feil oppstod under installasjon av programvareoppdateringer</system:String>
+    <system:String x:Key="update_wox_update">Oppdater</system:String>
+    <system:String x:Key="update_wox_update_cancel">Avbryt</system:String>
+    <system:String x:Key="update_wox_update_restart_wox_tip">Denne opgraderingen vil starte Wox på nytt</system:String>
+    <system:String x:Key="update_wox_update_upadte_files">Følgende filer vil bli oppdatert</system:String>
+    <system:String x:Key="update_wox_update_files">Oppdateringsfiler</system:String>
+    <system:String x:Key="update_wox_update_upadte_description">Oppdateringsbeskrivelse</system:String>
+
+</ResourceDictionary>
