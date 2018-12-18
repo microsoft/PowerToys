@@ -4,7 +4,6 @@
     <Style x:Key="BaseQueryBoxStyle" TargetType="{x:Type TextBox}">
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="FontSize" Value="28" />
-        <Setter Property="FontFamily" Value="Segoe UI, Microsoft YaHei" />
         <Setter Property="FontWeight" Value="Medium" />
         <Setter Property="Height" Value="46" />
         <Setter Property="Background" Value="#616161" />
@@ -32,11 +31,9 @@
         <Setter Property="Foreground" Value="#FFFFF8" />
         <Setter Property="FontSize" Value="16" />
         <Setter Property="FontWeight" Value="Medium" />
-        <Setter Property="FontFamily" Value="Segoe UI, Microsoft YaHei" />
     </Style>
     <Style x:Key="BaseItemSubTitleStyle" TargetType="{x:Type TextBlock}" >
         <Setter Property="Foreground" Value="#D9D9D4" />
-        <Setter Property="FontFamily" Value="Segoe UI, Microsoft YaHei" />
     </Style>
     <Style x:Key="BaseItemNumberStyle" TargetType="{x:Type TextBlock}">
         <Setter Property="VerticalAlignment" Value="Center" />
