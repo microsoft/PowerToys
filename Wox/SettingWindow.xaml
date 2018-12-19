@@ -42,6 +42,9 @@
                 <CheckBox Margin="10" IsChecked="{Binding Settings.HideWhenDeactive}">
                     <TextBlock Text="{DynamicResource hideWoxWhenLoseFocus}" />
                 </CheckBox>
+                <CheckBox Margin="10" IsChecked="{Binding Settings.HideNotifyIcon}">
+                    <TextBlock Text="{DynamicResource hideNotifyIcon}" />
+                </CheckBox>
                 <CheckBox Margin="10" IsChecked="{Binding Settings.RememberLastLaunchLocation}">
                     <TextBlock Text="{DynamicResource rememberLastLocation}" />
                 </CheckBox>

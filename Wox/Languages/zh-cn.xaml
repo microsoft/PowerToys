@@ -32,6 +32,7 @@
     <system:String x:Key="autoUpdates">自动更新</system:String>
     <system:String x:Key="selectPythonDirectory">Select</system:String>
     <system:String x:Key="hideOnStartup">启动时不显示主窗口</system:String>
+    <system:String x:Key="hideNotifyIcon">隐藏任务栏图标</system:String>
 
     <!--设置，插件-->
     <system:String x:Key="plugin">插件</system:String>
