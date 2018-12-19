@@ -26,9 +26,15 @@ namespace Wox.Infrastructure
         {
             if (!string.IsNullOrEmpty(source) && !string.IsNullOrEmpty(target))
             {
-                FuzzyMatcher matcher = FuzzyMatcher.Create(target);
+                if(source.Length > 40)
+                {
+                    Log.Debug($"|Wox.Infrastructure.StringMatcher.ScoreForPinyin|skip too long string: {source}");
+                    return 0;
+                }
+                
                 if (Alphabet.ContainsChinese(source))
                 {
+                    FuzzyMatcher matcher = FuzzyMatcher.Create(target);
                     var combination = Alphabet.PinyinComination(source);
                     var pinyinScore = combination.Select(pinyin => matcher.Evaluate(string.Join("", pinyin)).Score)
                         .Max();
