@@ -22,10 +22,12 @@ namespace Wox.Core.Resource
         private const string Folder = "Themes";
         private const string Extension = ".xaml";
         private string DirectoryPath => Path.Combine(Constant.ProgramDirectory, Folder);
+        private string UserDirectoryPath => Path.Combine(Constant.DataDirectory, Folder);
 
         public Theme()
         {
             _themeDirectories.Add(DirectoryPath);
+            _themeDirectories.Add(UserDirectoryPath);
             MakesureThemeDirectoriesExist();
 
             var dicts = Application.Current.Resources.MergedDictionaries;
@@ -94,6 +96,7 @@ namespace Wox.Core.Resource
                 if (_oldTheme != theme)
                 {
                     dicts.Remove(_oldResource);
+                    //fixme if something goes wrong here
                     var newResource = GetResourceDictionary();
                     dicts.Add(newResource);
                     _oldResource = newResource;
