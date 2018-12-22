@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Markup;
 using System.Windows.Media;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
@@ -62,47 +63,50 @@ namespace Wox.Core.Resource
             }
         }
 
-        public void ChangeTheme(string theme)
+        public bool ChangeTheme(string theme)
         {
-            const string dark = "Dark";
-            bool valid;
+            const string defaultTheme = "Dark";
 
             string path = GetThemePath(theme);
-            if (string.IsNullOrEmpty(path))
+            try
             {
-                Log.Error($"|Theme.ChangeTheme|Theme path can't be found <{path}>, use default dark theme");
-                path = GetThemePath(dark);
                 if (string.IsNullOrEmpty(path))
-                {
-                    valid = false;
-                    Log.Error($"|Theme.ChangeTheme|Default theme path can't be found <{path}>");
-                }
-                else
-                {
-                    valid = true;
-                    theme = dark;
-                }
-            }
-            else
-            {
-                valid = true;
-            }
+                    throw new DirectoryNotFoundException("Theme path can't be found <{path}>");
 
-            if (valid)
-            {
                 Settings.Theme = theme;
 
                 var dicts = Application.Current.Resources.MergedDictionaries;
-                if (_oldTheme != theme)
+                //always allow re-loading default theme, in case of failure of switching to a new theme from default theme
+                if (_oldTheme != theme || theme == defaultTheme)
                 {
                     dicts.Remove(_oldResource);
-                    //fixme if something goes wrong here
                     var newResource = GetResourceDictionary();
                     dicts.Add(newResource);
                     _oldResource = newResource;
                     _oldTheme = Path.GetFileNameWithoutExtension(_oldResource.Source.AbsolutePath);
                 }
             }
+            catch (DirectoryNotFoundException e)
+            {
+                Log.Error($"|Theme.ChangeTheme|Theme <{theme}> path can't be found");
+                if (theme != defaultTheme)
+                {
+                    MessageBox.Show(string.Format(InternationalizationManager.Instance.GetTranslation("theme_load_failure_path_not_exists"), theme));
+                    ChangeTheme(defaultTheme);
+                }
+                return false;
+            }
+            catch (XamlParseException e)
+            {
+                Log.Error($"|Theme.ChangeTheme|Theme <{theme}> fail to parse");
+                if (theme != defaultTheme)
+                {
+                    MessageBox.Show(string.Format(InternationalizationManager.Instance.GetTranslation("theme_load_failure_parse_error"), theme));
+                    ChangeTheme(defaultTheme);
+                }
+                return false;
+            }
+            return true;
         }
 
         public ResourceDictionary GetResourceDictionary()

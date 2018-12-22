@@ -52,6 +52,8 @@
     <system:String x:Key="resultItemFont">Result Item Font</system:String>
     <system:String x:Key="windowMode">Window Mode</system:String>
     <system:String x:Key="opacity">Opacity</system:String>
+    <system:String x:Key="theme_load_failure_path_not_exists">Theme {0} not exists, fallback to default theme</system:String>
+    <system:String x:Key="theme_load_failure_parse_error">Fail to load theme {0}, fallback to default theme</system:String>
 
     <!--Setting Hotkey-->
     <system:String x:Key="hotkey">Hotkey</system:String>
