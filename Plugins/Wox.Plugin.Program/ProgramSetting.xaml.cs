@@ -42,7 +42,7 @@ namespace Wox.Plugin.Program
 
         private void btnAddProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
-            var add = new AddProgramSource(_settings);
+            var add = new AddProgramSource(context, _settings);
             if(add.ShowDialog() ?? false)
             {
                 ReIndexing();

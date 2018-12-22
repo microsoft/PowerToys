@@ -9,12 +9,14 @@ namespace Wox.Plugin.Program
     /// </summary>
     public partial class AddProgramSource
     {
+        private PluginInitContext _context;
         private Settings.ProgramSource _editing;
         private Settings _settings;
 
-        public AddProgramSource(Settings settings)
+        public AddProgramSource(PluginInitContext context, Settings settings)
         {
             InitializeComponent();
+            _context = context;
             _settings = settings;
             Directory.Focus();
         }
@@ -40,7 +42,13 @@ namespace Wox.Plugin.Program
 
         private void ButtonAdd_OnClick(object sender, RoutedEventArgs e)
         {
-            if(_editing == null)
+            string s = Directory.Text;
+            if (!System.IO.Directory.Exists(s))
+            {
+                System.Windows.MessageBox.Show(_context.API.GetTranslation("wox_plugin_program_invalid_path"));
+                return;
+            }
+            if (_editing == null)
             {
                 var source = new Settings.ProgramSource
                 {

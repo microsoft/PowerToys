@@ -35,4 +35,6 @@
     <system:String x:Key="wox_plugin_program_plugin_name">程序</system:String>
     <system:String x:Key="wox_plugin_program_plugin_description">在Wox中搜索程序</system:String>
 
+    <system:String x:Key="wox_plugin_program_invalid_path">无效路径</system:String>
+
 </ResourceDictionary>
