@@ -9,6 +9,10 @@
     <system:String x:Key="wox_plugin_everything_open_containing_folder">打开所属文件夹</system:String>
     <system:String x:Key="wox_plugin_everything_open_with_editor">使用{0}打开</system:String>
     <system:String x:Key="wox_plugin_everything_editor_path">编辑器路径</system:String>
+    <system:String x:Key="wox_plugin_everything_copy_path">拷贝路径</system:String>
+    <system:String x:Key="wox_plugin_everything_copy">拷贝</system:String>
+    <system:String x:Key="wox_plugin_everything_delete">删除</system:String>
+    <system:String x:Key="wox_plugin_everything_canot_delete">无法删除 {0}</system:String>
     
     <system:String x:Key="wox_plugin_everything_plugin_name">Everything</system:String>
     <system:String x:Key="wox_plugin_everything_plugin_description">利用 Everything 搜索磁盘文件</system:String>

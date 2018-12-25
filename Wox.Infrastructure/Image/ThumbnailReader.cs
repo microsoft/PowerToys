@@ -99,8 +99,8 @@ namespace Wox.Infrastructure.Image
             private int width;
             private int height;
 
-            public int Width { set => width = value; }
-            public int Height { set => height = value; }
+            public int Width { set { width = value; } }
+            public int Height { set { height = value; } }
         };
 
 

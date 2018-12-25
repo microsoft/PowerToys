@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Windows.Controls;
+using Wox.Infrastructure.Storage;
 
 namespace Wox.Plugin.Url
 {
-    public class Main : IPlugin, IPluginI18n
+    public class Main : ISettingProvider,IPlugin, IPluginI18n, ISavable
     {
         //based on https://gist.github.com/dperini/729294
         private const string urlPattern = "^" +
@@ -42,6 +44,19 @@ namespace Wox.Plugin.Url
             "$";
         Regex reg = new Regex(urlPattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private PluginInitContext context;
+        private readonly Settings _settings;
+        private readonly PluginJsonStorage<Settings> _storage;
+
+        public Main()
+        {
+            _storage = new PluginJsonStorage<Settings>();
+            _settings = _storage.Load();
+        }
+
+        public void Save()
+        {
+            _storage.Save();
+        }
 
         public List<Result> Query(Query query)
         {
@@ -64,7 +79,15 @@ namespace Wox.Plugin.Url
                             }
                             try
                             {
-                                Process.Start(raw);
+                                if (_settings.BrowserPath.Length == 0)
+                                {
+                                    Process.Start(raw);
+                                }
+                                else
+                                {
+                                    Process.Start(_settings.BrowserPath,raw);
+                                }
+
                                 return true;
                             }
                             catch(Exception ex)
@@ -77,6 +100,12 @@ namespace Wox.Plugin.Url
                 };
             }
             return new List<Result>(0);
+        }
+
+
+        public Control CreateSettingPanel()
+        {
+            return new SettingsControl(context.API,_settings);
         }
 
         public bool IsURL(string raw)
