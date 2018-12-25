@@ -126,6 +126,19 @@ namespace Wox.Plugin.Everything
             };
 
             defaultContextMenus.Add(openFolderContextMenu);
+
+            string editorPath = string.IsNullOrEmpty(_settings.EditorPath) ? "notepad.exe" : _settings.EditorPath;
+
+            ContextMenu openWithEditorContextMenu = new ContextMenu
+            {
+                Name = string.Format(_context.API.GetTranslation("wox_plugin_everything_open_with_editor"), Path.GetFileNameWithoutExtension(editorPath)),
+                Command = editorPath,
+                Argument = " \"{path}\"",
+                ImagePath = editorPath
+            };
+
+            defaultContextMenus.Add(openWithEditorContextMenu);
+
             return defaultContextMenus;
         }
 

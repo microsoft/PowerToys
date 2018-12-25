@@ -7,7 +7,9 @@
     <system:String x:Key="wox_plugin_everything_copied">拷贝成功</system:String>
     <system:String x:Key="wox_plugin_everything_canot_start">不能启动 {0}</system:String>
     <system:String x:Key="wox_plugin_everything_open_containing_folder">打开所属文件夹</system:String>
-
+    <system:String x:Key="wox_plugin_everything_open_with_editor">使用{0}打开</system:String>
+    <system:String x:Key="wox_plugin_everything_editor_path">编辑器路径</system:String>
+    
     <system:String x:Key="wox_plugin_everything_plugin_name">Everything</system:String>
     <system:String x:Key="wox_plugin_everything_plugin_description">利用 Everything 搜索磁盘文件</system:String>
 

@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Win32;
 
 namespace Wox.Plugin.Everything
 {
@@ -26,6 +27,23 @@ namespace Wox.Plugin.Everything
             {
                 _settings.UseLocationAsWorkingDir = false;
             };
+
+            EditorPath.Content = _settings.EditorPath;
+        }
+
+        private void EditorPath_Clicked(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Executable File(*.exe)| *.exe";
+            if (!string.IsNullOrEmpty(_settings.EditorPath))
+                openFileDialog.InitialDirectory = System.IO.Path.GetDirectoryName(_settings.EditorPath);
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                _settings.EditorPath = openFileDialog.FileName;
+            }
+
+            EditorPath.Content = _settings.EditorPath;
         }
     }
 }

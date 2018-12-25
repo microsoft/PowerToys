@@ -7,6 +7,8 @@ namespace Wox.Plugin.Everything
 {
     public class Settings
     {
+        public string EditorPath { get; set; } = "";
+
         public List<ContextMenu> ContextMenus = new List<ContextMenu>();
 
         public int MaxSearchCount { get; set; } = 100;

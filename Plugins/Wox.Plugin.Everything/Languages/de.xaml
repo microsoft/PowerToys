@@ -7,6 +7,8 @@
     <system:String x:Key="wox_plugin_everything_copied">kopiert</system:String>
     <system:String x:Key="wox_plugin_everything_canot_start">Kann {0} nicht starten</system:String>
     <system:String x:Key="wox_plugin_everything_open_containing_folder">Öffne enthaltenden Ordner</system:String>
+    <system:String x:Key="wox_plugin_everything_open_with_editor">Openen met {0}</system:String>
+    <system:String x:Key="wox_plugin_everything_editor_path">Editor pad</system:String>
     
     <system:String x:Key="wox_plugin_everything_plugin_name">Everything</system:String>
     <system:String x:Key="wox_plugin_everything_plugin_description">Suche Dateien mit Everything</system:String>

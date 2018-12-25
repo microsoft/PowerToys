@@ -7,6 +7,8 @@
     <system:String x:Key="wox_plugin_everything_copied">Skopiowano</system:String>
     <system:String x:Key="wox_plugin_everything_canot_start">Nie udało się uruchomić {0}</system:String>
     <system:String x:Key="wox_plugin_everything_open_containing_folder">Otwórz folder nadrzędny.</system:String>
+    <system:String x:Key="wox_plugin_everything_open_with_editor">Otwórz za pomocą {0}</system:String>
+    <system:String x:Key="wox_plugin_everything_editor_path">Ścieżka edytora</system:String>
     
     <system:String x:Key="wox_plugin_everything_plugin_name">Everything</system:String>
     <system:String x:Key="wox_plugin_everything_plugin_description">Szukaj w plikach na dysku używając programu Everything</system:String>

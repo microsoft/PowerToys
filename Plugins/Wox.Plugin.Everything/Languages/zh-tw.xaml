@@ -7,6 +7,8 @@
     <system:String x:Key="wox_plugin_everything_copied">複製成功</system:String>
     <system:String x:Key="wox_plugin_everything_canot_start">無法啟動 {0}</system:String>
     <system:String x:Key="wox_plugin_everything_open_containing_folder">開啟檔案位置</system:String>
+    <system:String x:Key="wox_plugin_everything_open_with_editor">利用{0}啟動</system:String>
+    <system:String x:Key="wox_plugin_everything_editor_path">編輯器路径</system:String>
 
     <system:String x:Key="wox_plugin_everything_plugin_name">Everything</system:String>
     <system:String x:Key="wox_plugin_everything_plugin_description">利用 Everything 搜尋磁碟上的檔案</system:String>
