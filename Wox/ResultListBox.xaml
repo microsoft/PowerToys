@@ -16,7 +16,8 @@
          KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single"
          VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Standard"
          SelectionChanged="OnSelectionChanged"
-         IsSynchronizedWithCurrentItem="True">
+         IsSynchronizedWithCurrentItem="True"
+         PreviewMouseDown="ListBox_PreviewMouseDown">
     <!--IsSynchronizedWithCurrentItem: http://stackoverflow.com/a/7833798/2833083-->
     <ListBox.ItemTemplate>
         <DataTemplate>
@@ -65,6 +66,7 @@
     <ListBox.ItemContainerStyle>
         <Style TargetType="{x:Type ListBoxItem}">
             <EventSetter Event="MouseEnter" Handler="OnMouseEnter" />
+            <EventSetter Event="MouseMove" Handler="OnMouseMove" />
             <Setter Property="Height" Value="50" />
             <Setter Property="Margin" Value="0" />
             <Setter Property="Padding" Value="0" />
