@@ -211,6 +211,53 @@ namespace Wox.Plugin.Everything
                 }
             }
 
+            var icoPath = (record.Type == ResultType.File) ? "Images\\file.png" : "Images\\folder.png";
+            contextMenus.Add(new Result
+            {
+                Title = _context.API.GetTranslation("wox_plugin_everything_copy_path"),
+                Action = (context) =>
+                {
+                    Clipboard.SetText(record.FullPath);
+                    return true;
+                },
+                IcoPath = icoPath
+            });
+
+            contextMenus.Add(new Result
+            {
+                Title = _context.API.GetTranslation("wox_plugin_everything_copy"),
+                Action = (context) =>
+                {
+                    Clipboard.SetFileDropList(new System.Collections.Specialized.StringCollection { record.FullPath });
+                    return true;
+                },
+                IcoPath = icoPath
+            });
+
+            if (record.Type == ResultType.File || record.Type == ResultType.Folder)
+                contextMenus.Add(new Result
+                {
+                    Title = _context.API.GetTranslation("wox_plugin_everything_delete"),
+                    Action = (context) =>
+                    {
+                        try
+                        {
+                            if (record.Type == ResultType.File)
+                                System.IO.File.Delete(record.FullPath);
+                            else
+                                System.IO.Directory.Delete(record.FullPath);
+                        }
+                        catch
+                        {
+                            _context.API.ShowMsg(string.Format(_context.API.GetTranslation("wox_plugin_everything_canot_delete"), record.FullPath), string.Empty, string.Empty);
+                            return false;
+                        }
+
+                        return true;
+                    },
+                    IcoPath = icoPath
+                });
+
             return contextMenus;
         }
 

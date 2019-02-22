@@ -8,4 +8,8 @@
     <system:String x:Key="wox_plugin_url_plugin_name">URL</system:String>
     <system:String x:Key="wox_plugin_url_plugin_description">从Wox打开链接</system:String>
 
+    <system:String x:Key="wox_plugin_url_plugin_set_tip">请设置你的浏览器路径:</system:String>
+    <system:String x:Key="wox_plugin_url_plugin_choose">选择</system:String>
+    <system:String x:Key="wox_plugin_url_plugin_apply">应用</system:String>
+    <system:String x:Key="wox_plugin_url_plugin_filter">程序文件(*.exe)|*.exe|所有文件|*.*</system:String>
 </ResourceDictionary>

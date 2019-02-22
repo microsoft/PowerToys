@@ -52,6 +52,8 @@
     <system:String x:Key="resultItemFont">结果项字体</system:String>
     <system:String x:Key="windowMode">窗口模式</system:String>
     <system:String x:Key="opacity">透明度</system:String>
+    <system:String x:Key="theme_load_failure_path_not_exists">无法找到主题 {0} ，切换为默认主题</system:String>
+    <system:String x:Key="theme_load_failure_parse_error">无法加载主题 {0} ，切换为默认主题</system:String>
     
     <!--设置，热键-->
     <system:String x:Key="hotkey">热键</system:String>
