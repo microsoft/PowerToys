@@ -1,0 +1,142 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+    <!--MainWindow-->
+    <system:String x:Key="registerHotkeyFailed">Nepodarilo sa registrovať klávesovú skratku {0}</system:String>
+    <system:String x:Key="couldnotStartCmd">Nepodarilo sa spustiť {0}</system:String>
+    <system:String x:Key="invalidWoxPluginFileFormat">Neplatný formát súboru pre plugin Wox</system:String>
+    <system:String x:Key="setAsTopMostInThisQuery">Pri tomto dopyte umiestniť navrchu</system:String>
+    <system:String x:Key="cancelTopMostInThisQuery">Zrušiť umiestnenie navrchu pri tomto dopyte</system:String>
+    <system:String x:Key="executeQuery">Spustiť dopyt: {0}</system:String>
+    <system:String x:Key="lastExecuteTime">Posledný čas realizácie: {0}</system:String>
+    <system:String x:Key="iconTrayOpen">Otvoriť</system:String>
+    <system:String x:Key="iconTraySettings">Nastavenia</system:String>
+    <system:String x:Key="iconTrayAbout">O aplikácii</system:String>
+    <system:String x:Key="iconTrayExit">Ukončiť</system:String>
+
+    <!--Setting General-->
+    <system:String x:Key="wox_settings">Nastavenia Wox</system:String>
+    <system:String x:Key="general">Všeobecné</system:String>
+    <system:String x:Key="startWoxOnSystemStartup">Spustiť Wox po štarte systému</system:String>
+    <system:String x:Key="hideWoxWhenLoseFocus">Schovať Wox po strate fokusu</system:String>
+    <system:String x:Key="dontPromptUpdateMsg">Nezobrazovať upozornenia na novú verziu</system:String>
+    <system:String x:Key="rememberLastLocation">Zapamätať si posledné umiestnenie</system:String>
+    <system:String x:Key="language">Jazyk</system:String>
+    <system:String x:Key="lastQueryMode">Posledný dopyt</system:String>
+    <system:String x:Key="LastQueryPreserved">Ponechať</system:String>
+    <system:String x:Key="LastQuerySelected">Označiť posledný dopyt</system:String>
+    <system:String x:Key="LastQueryEmpty">Prázdne</system:String>
+    <system:String x:Key="maxShowResults">Max. výsledkov</system:String>
+    <system:String x:Key="ignoreHotkeysOnFullscreen">Ignorovať klávesové skraty v režime na celú obrazovku</system:String>
+    <system:String x:Key="pythonDirectory">Priečinok s Pythonom</system:String>
+    <system:String x:Key="autoUpdates">Automatická aktualizácia</system:String>
+    <system:String x:Key="selectPythonDirectory">Vybrať</system:String>
+    <system:String x:Key="hideOnStartup">Schovať Wox po spustení</system:String>
+    <system:String x:Key="hideNotifyIcon">Schovať ikonu v oblasti oznámení</system:String>
+
+    <!--Setting Plugin-->
+    <system:String x:Key="plugin">Plugin</system:String>
+    <system:String x:Key="browserMorePlugins">Nájsť ďalšie pluginy</system:String>
+    <system:String x:Key="disable">Zakázať</system:String>
+    <system:String x:Key="actionKeywords">Skratka akcie</system:String>
+    <system:String x:Key="pluginDirectory">Priečinok s pluginmy</system:String>
+    <system:String x:Key="author">Autor</system:String>
+    <system:String x:Key="plugin_init_time">Čas inic.: {0}ms</system:String>
+    <system:String x:Key="plugin_query_time">Čas dopytu: {0}ms</system:String>
+
+    <!--Setting Theme-->
+    <system:String x:Key="theme">Motív</system:String>
+    <system:String x:Key="browserMoreThemes">Prehliadať viac motívov</system:String>
+    <system:String x:Key="helloWox">Ahoj Wox</system:String>
+    <system:String x:Key="queryBoxFont">Písmo poľa pre dopyt</system:String>
+    <system:String x:Key="resultItemFont">Písmo výsledkov</system:String>
+    <system:String x:Key="windowMode">Režim okno</system:String>
+    <system:String x:Key="opacity">Nepriehľadnosť</system:String>
+
+    <!--Setting Hotkey-->
+    <system:String x:Key="hotkey">Klávesová skratka</system:String>
+    <system:String x:Key="woxHotkey">Klávesová skratka pre Wox</system:String>
+    <system:String x:Key="customQueryHotkey">Vlastná klávesová skratka pre dopyt</system:String>
+    <system:String x:Key="delete">Odstrániť</system:String>
+    <system:String x:Key="edit">Upraviť</system:String>
+    <system:String x:Key="add">Pridať</system:String>
+    <system:String x:Key="pleaseSelectAnItem">Vyberte položku, prosím</system:String>
+    <system:String x:Key="deleteCustomHotkeyWarning">Ste si istý, že chcete odstrániť klávesovú skratku {0} pre plugin?</system:String>
+
+    <!--Setting Proxy-->
+    <system:String x:Key="proxy">HTTP Proxy</system:String>
+    <system:String x:Key="enableProxy">Povoliť HTTP Proxy</system:String>
+    <system:String x:Key="server">HTTP Server</system:String>
+    <system:String x:Key="port">Port</system:String>
+    <system:String x:Key="userName">Používateľské meno</system:String>
+    <system:String x:Key="password">Heslo</system:String>
+    <system:String x:Key="testProxy">Test Proxy</system:String>
+    <system:String x:Key="save">Uložiť</system:String>
+    <system:String x:Key="serverCantBeEmpty">Pole Server nemôže byť prázdne</system:String>
+    <system:String x:Key="portCantBeEmpty">Pole Port nemôže byť prázdne</system:String>
+    <system:String x:Key="invalidPortFormat">Neplatný formát portu</system:String>
+    <system:String x:Key="saveProxySuccessfully">Nastavenie proxy úspešne uložené</system:String>
+    <system:String x:Key="proxyIsCorrect">Nastavenie proxy je v poriadku</system:String>
+    <system:String x:Key="proxyConnectFailed">Pripojenie proxy zlyhalo</system:String>
+
+    <!--Setting About-->
+    <system:String x:Key="about">O aplikácii</system:String>
+    <system:String x:Key="website">Webstránka</system:String>
+    <system:String x:Key="version">Verzia</system:String>
+    <system:String x:Key="about_activate_times">Wox bol aktivovaný {0}-krát</system:String>
+    <system:String x:Key="checkUpdates">Skontrolovať aktualizácie</system:String>
+    <system:String x:Key="newVersionTips">Je dostupná nová verzia {0}, prosím, reštartujte Wox.</system:String>
+    <system:String x:Key="checkUpdatesFailed">Kontrola aktualizácií zlyhala, prosím, skontrolujte pripojenie na internet a nastavenie proxy k api.github.com.</system:String>
+    <system:String x:Key="downloadUpdatesFailed">
+        Sťahovanie aktualizácií zlyhalo, skontrolujte pripojenie na internet a nastavenie proxy k github-cloud.s3.amazonaws.com, 
+        alebo prejdite na https://github.com/Wox-launcher/Wox/releases pre manuálne stiahnutie aktualizácií.
+    </system:String>
+    <system:String x:Key="releaseNotes">Poznámky k vydaniu:</system:String>
+
+    <!--Action Keyword Setting Dialog-->
+    <system:String x:Key="oldActionKeywords">Stará skratka akcie</system:String>
+    <system:String x:Key="newActionKeywords">Nová skratka akcie</system:String>
+    <system:String x:Key="cancel">Zrušiť</system:String>
+    <system:String x:Key="done">Hotovo</system:String>
+    <system:String x:Key="cannotFindSpecifiedPlugin">Nepodarilo sa nájsť zadaný plugin</system:String>
+    <system:String x:Key="newActionKeywordsCannotBeEmpty">Nová skratka pre akciu nemôže byť prázdna</system:String>
+    <system:String x:Key="newActionKeywordsHasBeenAssigned">Nová skratka pre akciu bola priradená pre iný plugin, prosím, zvoľte inú skratku</system:String>
+    <system:String x:Key="succeed">Úspešné</system:String>
+    <system:String x:Key="actionkeyword_tips">Použite * ak nechcete určiť skratku pre akciu</system:String>
+
+    <!--Custom Query Hotkey Dialog-->
+    <system:String x:Key="preview">Náhľad</system:String>
+    <system:String x:Key="hotkeyIsNotUnavailable">Klávesová skratka je nedostupná, prosím, zadajte novú</system:String>
+    <system:String x:Key="invalidPluginHotkey">Neplatná klávesová skratka pluginu</system:String>
+    <system:String x:Key="update">Aktualizovať</system:String>
+
+    <!--Hotkey Control-->
+    <system:String x:Key="hotkeyUnavailable">Klávesová skratka nedostupná</system:String>
+
+    <!--Crash Reporter-->
+    <system:String x:Key="reportWindow_version">Verzia</system:String>
+    <system:String x:Key="reportWindow_time">Čas</system:String>
+    <system:String x:Key="reportWindow_reproduce">Prosím, napíšte nám, ako došlo k pádu aplikácie, aby sme to mohli opraviť</system:String>
+    <system:String x:Key="reportWindow_send_report">Odoslať hlásenie</system:String>
+    <system:String x:Key="reportWindow_cancel">Zrušiť</system:String>
+    <system:String x:Key="reportWindow_general">Všeobecné</system:String>
+    <system:String x:Key="reportWindow_exceptions">Výnimky</system:String>
+    <system:String x:Key="reportWindow_exception_type">Typ výnimky</system:String>
+    <system:String x:Key="reportWindow_source">Zdroj</system:String>
+    <system:String x:Key="reportWindow_stack_trace">Stack Trace</system:String>
+    <system:String x:Key="reportWindow_sending">Odosiela sa</system:String>
+    <system:String x:Key="reportWindow_report_succeed">Hlásenie bolo úspešne odoslané</system:String>
+    <system:String x:Key="reportWindow_report_failed">Odoslanie hlásenia zlyhalo</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">Wox zaznamenal chybu</system:String>
+
+    <!--update-->
+    <system:String x:Key="update_wox_update_new_version_available">Je dostupné nové vydanie Wox {0}</system:String>
+    <system:String x:Key="update_wox_update_error">Počas inštalácie aktualizácií došlo k chybe</system:String>
+    <system:String x:Key="update_wox_update">Aktualizovať</system:String>
+    <system:String x:Key="update_wox_update_cancel">Zrušiť</system:String>
+    <system:String x:Key="update_wox_update_restart_wox_tip">Tento upgrade reštartuje Wox</system:String>
+    <system:String x:Key="update_wox_update_upadte_files">Nasledujúce súbory budú aktualizované</system:String>
+    <system:String x:Key="update_wox_update_files">Aktualizovať súbory</system:String>
+    <system:String x:Key="update_wox_update_upadte_description">Aktualizovať popis</system:String>
+
+</ResourceDictionary>
