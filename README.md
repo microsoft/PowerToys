@@ -9,11 +9,11 @@ PowerToys is a set of utilities for power users to tune and streamline their Win
 
 The first two utilities we're working on are:
 
-1. Maximize to new desktop widget - The MTND widget shows a pop-up button when a user hovers over the maximize / restoore button on any window.  Clicking it creates a new desktop, sends the app to that desktop and maximizes the app on the new desktop.
+1. Maximize to new desktop widget - The MTND widget shows a pop-up button when a user hovers over the maximize / restore button on any window.  Clicking it creates a new desktop, sends the app to that desktop and maximizes the app on the new desktop.
 
 ![Maximize to new desktop widget](MTNDWidget.jpg)
 
-2. Windows key shortcut guide - The shortcut guide appears when a user holds the Windows key down for more than one second and shows all the available shortcuts for the current state of the desktop.
+2. Windows key shortcut guide - The shortcut guide appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.
 
 ![Windows key shortcut guide](WindowsKeyShortcutGuide.jpg)
 
