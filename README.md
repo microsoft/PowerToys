@@ -3,7 +3,7 @@
 
 PowerToys is a set of utilities for power users to tune and streamline their Windows expereince for greater productivity.  
 
-![logo](logo.jpg)
+![logo](Logo.jpg)
 
 # Backlog
 
