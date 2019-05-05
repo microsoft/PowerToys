@@ -1,4 +1,39 @@
 
+# Overview
+
+PowerToys is a set of utilities for power users to tune and streamline their Windows expereince for greater productivity.  
+
+![logo](Logo.jpg)
+
+# What's Happening
+
+The first two utilities we're working on are:
+
+1. Maximize to new desktop widget - The MTND widget shows a pop-up button when a user hovers over the maximize / restore button on any window.  Clicking it creates a new desktop, sends the app to that desktop and maximizes the app on the new desktop.
+
+![Maximize to new desktop widget](MTNDWidget.jpg)
+
+2. Windows key shortcut guide - The shortcut guide appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.
+
+![Windows key shortcut guide](WindowsKeyShortcutGuide.jpg)
+
+The first preview of these two utilities and corresponding source code will be released Summer 2020.
+
+# Backlog
+
+Here's the current set of utilities we're considering.  Please use issues and +1's to guide the project to suugest new ideas and help us prioritize th list below.
+
+1. Full window manager including specific layouts for docking and undocking laptops
+2. Keyboard shortcut manager
+3. Win+R replacement
+4. Better alt+tab including browser tab integration and search for running apps
+5. Battery tracker
+6. Batch file re-namer
+6. Quick resolution swaps in taskbar
+8. Mouse events without focus
+9. Cmd (or PS or Bash) from here
+10. Contents menu file browsing
+
 # Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
