@@ -11,9 +11,13 @@ The first two utilities we're working on are:
 
 1. Maximize to new desktop widget - The MTND widget shows a pop-up button when a user hovers over the maximize / restoore button on any window.  Clicking it creates a new desktop, sends the app to that desktop and maximizes the app on the new desktop.
 
+![Maximize to new desktop widget](MTNDWidget.jpg)
+
 2. Windows key shortcut guide - The shortcut guide appears when a user holds the Windows key down for more than one second and shows all the available shortcuts for the current state of the desktop.
 
-The first preview of these two utilities and the code for them will be released Summer 2020.
+![Windows key shortcut guide](WindowsKeyShortcutGuide.jpg)
+
+The first preview of these two utilities and corresponding source code will be released Summer 2020.
 
 # Backlog
 
