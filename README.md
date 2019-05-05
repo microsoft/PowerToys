@@ -3,6 +3,8 @@
 
 PowerToys is a set of utilities for power users to tune and streamline their Windows expereince for greater productivity.  
 
+The first preview of these utilities and corresponding source code will be released Summer 2019.
+
 ![logo](Logo.jpg)
 
 # What's Happening
@@ -16,8 +18,6 @@ The first two utilities we're working on are:
 2. Windows key shortcut guide - The shortcut guide appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.
 
 ![Windows key shortcut guide](WindowsKeyShortcutGuide.jpg)
-
-The first preview of these two utilities and corresponding source code will be released Summer 2020.
 
 # Backlog
 
