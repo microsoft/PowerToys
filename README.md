@@ -1,4 +1,23 @@
 
+# Overview
+
+PowerToys is a set of utilities for power users to tune and streamline their Windows expereince for productivity.  
+
+# Backlog
+
+Here's the current set of utilities we're considering.  Please use issues and +1's to guide the project to suugest new ideas and help us prioritize th list below.
+
+1. Full window manager including specific layouts for docking and undocking laptops
+2. Keyboard shortcut manager
+3. Win+R replacement
+4. Better alt+tab including browser tab integration and search for running apps
+5. Battery tracker
+6. Batch file re-namer
+6. Quick resolution swaps in taskbar
+8. Mouse events without focus
+9. Cmd (or PS or Bash) from here
+10. Contents menu file browsing
+
 # Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
