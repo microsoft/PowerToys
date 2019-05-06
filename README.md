@@ -3,6 +3,8 @@
 
 PowerToys is a set of utilities for power users to tune and streamline their Windows expereince for greater productivity.  
 
+Inspired by the [Windows 95 era PowerToys project](https://en.wikipedia.org/wiki/Microsoft_PowerToys), this reboot provides power users with ways to squeeze more efficiency out of the Windows 10 shell and customize it for individual workflows.  A great overview of the Windows 95 PowerToys can be found [here](https://socket3.wordpress.com/2016/10/22/using-windows-95-powertoys/).
+
 The first preview of these utilities and corresponding source code will be released Summer 2019.
 
 ![logo](Logo.jpg)
