@@ -1,0 +1,8 @@
+This directory contains useful and/or popular command-line tools for Windows 10 power users.
+
+The following text explains what each tool does, in simple terms.
+
+> Software Repair.bat: A simple BATCH script designed to perform three things:
+	1.	Download and install latest recovery image from Microsoft servers using DISM.
+	2.	Check the current Windows installation for corruption, repairing as-needed.
+	3.	Re-download and register all Microsoft Store applications and other .AppX program installs.
