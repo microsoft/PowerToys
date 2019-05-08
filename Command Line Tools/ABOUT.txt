@@ -6,3 +6,4 @@ The following text explains what each tool does, in simple terms.
 	1.	Download and install latest recovery image from Microsoft servers using DISM.
 	2.	Check the current Windows installation for corruption, repairing as-needed.
 	3.	Re-download and register all Microsoft Store applications and other .AppX program installs.
+> Install WSL.bat: A simple BATCH script designed to ready Windows 10 systems for use of WSL distributions.
