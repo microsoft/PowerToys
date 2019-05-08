@@ -23,7 +23,7 @@ The first two utilities we're working on are:
 
 # Backlog
 
-Here's the current set of utilities we're considering.  Please use issues and +1's to guide the project to suugest new ideas and help us prioritize th list below.
+Here's the current set of utilities we're considering.  Please use issues and +1's to guide the project to suggest new ideas and help us prioritize th list below.
 
 1. Full window manager including specific layouts for docking and undocking laptops
 2. Keyboard shortcut manager
