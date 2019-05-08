@@ -1,7 +1,7 @@
 
 # Overview
 
-PowerToys is a set of utilities for power users to tune and streamline their Windows expereince for greater productivity.  
+PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.  
 
 Inspired by the [Windows 95 era PowerToys project](https://en.wikipedia.org/wiki/Microsoft_PowerToys), this reboot provides power users with ways to squeeze more efficiency out of the Windows 10 shell and customize it for individual workflows.  A great overview of the Windows 95 PowerToys can be found [here](https://socket3.wordpress.com/2016/10/22/using-windows-95-powertoys/).
 
@@ -23,12 +23,12 @@ The first two utilities we're working on are:
 
 # Backlog
 
-Here's the current set of utilities we're considering.  Please use issues and +1's to guide the project to suugest new ideas and help us prioritize th list below.
+Here's the current set of utilities we're considering.  Please use issues and +1's to guide the project to suggest new ideas and help us prioritize the list below.
 
 1. Full window manager including specific layouts for docking and undocking laptops
 2. Keyboard shortcut manager
 3. Win+R replacement
-4. Better alt+tab including browser tab integration and search for running apps
+4. Better Alt+Tab including browser tab integration and search for running apps
 5. Battery tracker
 6. Batch file re-namer
 6. Quick resolution swaps in taskbar
