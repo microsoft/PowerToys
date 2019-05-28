@@ -19,7 +19,7 @@
 
 &nbsp; &nbsp; &nbsp; &nbsp; **1.4. Existing Solutions or Expectations**
 
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Users currently must traverse program by program using the mouse, Tab, or arrow keys to search and select the program they want to access.  Atkernatively, they can access running programs from the taskbar.  There are also third-party resources that allow users to switch tasks similarly.
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Users currently must traverse program by program using the mouse, Tab, or arrow keys to search and select the program they want to access.  Alternatively, they can access running programs from the taskbar.  There are also third-party resources that allow users to switch tasks similarly.
 
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; We expect users to install and enable PowerToys for Windows in order to access the new Alt+Tab utility.
 
