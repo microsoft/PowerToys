@@ -13,8 +13,6 @@
     <system:String x:Key="iconTraySettings">設定</system:String>
     <system:String x:Key="iconTrayAbout">Woxについて</system:String>
     <system:String x:Key="iconTrayExit">終了</system:String>
-    <system:String x:Key="pluginInitErrorsTitle">プラグイン初期化エラー</system:String>
-    <system:String x:Key="pluginInitErrorsBody">次のプラグインは初期化に失敗したため、無効になります：</system:String>
 
     <!--Setting General-->
     <system:String x:Key="wox_settings">Wox設定</system:String>
@@ -24,20 +22,17 @@
     <system:String x:Key="dontPromptUpdateMsg">最新版が入手可能であっても、アップグレードメッセージを表示しない</system:String>
     <system:String x:Key="rememberLastLocation">前回のランチャーの位置を記憶</system:String>
     <system:String x:Key="language">言語</system:String>
-    <!-- REQUIRES TRANSLATION. REMOVE COMMENT WHEN TRANSLATED -->
-    <system:String x:Key="lastQueryMode">Last Query Style</system:String>
-    <!-- REQUIRES TRANSLATION. REMOVE COMMENT WHEN TRANSLATED -->
-    <system:String x:Key="LastQueryPreserved">Preserve Last Query</system:String>
-    <!-- REQUIRES TRANSLATION. REMOVE COMMENT WHEN TRANSLATED -->
-    <system:String x:Key="LastQuerySelected">Select last Query</system:String>
-    <!-- REQUIRES TRANSLATION. REMOVE COMMENT WHEN TRANSLATED -->
-    <system:String x:Key="LastQueryEmpty">Empty last Query</system:String>
+    <system:String x:Key="lastQueryMode">前回のクエリの扱い</system:String>
+    <system:String x:Key="LastQueryPreserved">前回のクエリを保存</system:String>
+    <system:String x:Key="LastQuerySelected">前回のクエリを選択</system:String>
+    <system:String x:Key="LastQueryEmpty">前回のクエリを消去</system:String>
     <system:String x:Key="maxShowResults">結果の最大表示件数</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">ウィンドウがフルスクリーン時にホットキーを無効にする</system:String>
     <system:String x:Key="pythonDirectory">Pythonのディレクトリ</system:String>
     <system:String x:Key="autoUpdates">自動更新</system:String>
     <system:String x:Key="selectPythonDirectory">選択</system:String>
     <system:String x:Key="hideOnStartup">起動時にWoxを隠す</system:String>
+    <system:String x:Key="hideNotifyIcon">トレイアイコンを隠す</system:String>
     
     <!--Setting Plugin-->
     <system:String x:Key="plugin">プラグイン</system:String>
@@ -53,10 +48,12 @@
     <system:String x:Key="theme">テーマ</system:String>
     <system:String x:Key="browserMoreThemes">テーマを探す</system:String>
     <system:String x:Key="helloWox">こんにちは Wox</system:String>
-    <system:String x:Key="queryBoxFont">クエリボックスのフォント</system:String>
-    <system:String x:Key="resultItemFont">アイテムフォントの結果</system:String>
+    <system:String x:Key="queryBoxFont">検索ボックスのフォント</system:String>
+    <system:String x:Key="resultItemFont">検索結果一覧のフォント</system:String>
     <system:String x:Key="windowMode">ウィンドウモード</system:String>
     <system:String x:Key="opacity">透過度</system:String>
+    <system:String x:Key="theme_load_failure_path_not_exists">テーマ {0} が存在しません、デフォルトのテーマに戻します。</system:String>
+    <system:String x:Key="theme_load_failure_parse_error">テーマ {0} を読み込めません、デフォルトのテーマに戻します。</system:String>
     
     <!--Setting Hotkey-->
     <system:String x:Key="hotkey">ホットキー</system:String>
@@ -66,7 +63,7 @@
     <system:String x:Key="edit">編集</system:String>
     <system:String x:Key="add">追加</system:String>
     <system:String x:Key="pleaseSelectAnItem">項目選択してください</system:String>
-    <system:String x:Key="deleteCustomHotkeyWarning">{0} プラグインのホットキーを本当に削除しますか?</system:String>
+    <system:String x:Key="deleteCustomHotkeyWarning">{0} プラグインのホットキーを本当に削除しますか？</system:String>
 
     <!--Setting Proxy-->
     <system:String x:Key="proxy">HTTP プロキシ</system:String>
@@ -91,6 +88,11 @@
     <system:String x:Key="about_activate_times">あなたはWoxを {0} 回利用しました</system:String>
     <system:String x:Key="checkUpdates">アップデートを確認する</system:String>
     <system:String x:Key="newVersionTips">新しいバージョン {0} が利用可能です。Woxを再起動してください。</system:String>
+    <system:String x:Key="checkUpdatesFailed">アップデートの確認に失敗しました、api.github.com への接続とプロキシ設定を確認してください。</system:String>
+    <system:String x:Key="downloadUpdatesFailed">
+        更新のダウンロードに失敗しました、github-cloud.s3.amazonaws.com への接続とプロキシ設定を確認するか、
+        https://github.com/Wox-launcher/Wox/releases から手動でアップデートをダウンロードしてください。
+    </system:String>
     <system:String x:Key="releaseNotes">リリースノート:</system:String>
 
     <!--Action Keyword Setting Dialog-->
