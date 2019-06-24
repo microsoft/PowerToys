@@ -58,6 +58,15 @@ Build
 1. Install Visual Studio 2015 and tick all Windows 10 sdk options
 2. Open powershell with admin permission and `Set-ExecutionPolicy Unrestricted -Scope CurrentUser`
 
+3. Building with VS 2019:
+    - Apparently last Windows 10 SDK which supported UwpDesktop is version 14393.
+    (see *https://github.com/Wox-launcher/Wox/pull/1827#commitcomment-26475392* )
+    - This is needed to compile "Programs" Plugin (UWP.cs)
+    - If you use a later SDK version, you will see the "References" of Plugin.Programs as broken.
+    - However this SDK cannot be intsalled via installer of VS 2019.
+    - If you encounter problems building using VS 2019, then install above listed SDK using the installer of VS 2017.
+    - After that you can build using VS 2019.
+
 Documentation
 -------------
 - [Wiki](https://github.com/Wox-launcher/Wox/wiki)
