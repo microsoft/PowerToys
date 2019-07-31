@@ -10,9 +10,9 @@ namespace Wox.Plugin.Folder
         [JsonProperty]
         public string Path { get; set; }
 
-        public string Nickname
-        {
-            get { return Path.Split(new[] { System.IO.Path.DirectorySeparatorChar }, StringSplitOptions.None).Last(); }
-        }
+        public string Nickname =>
+           Path.Split(new[] { System.IO.Path.DirectorySeparatorChar }, StringSplitOptions.None)
+               .Last()
+           + " (" + System.IO.Path.GetDirectoryName(Path) + ")";
     }
 }
