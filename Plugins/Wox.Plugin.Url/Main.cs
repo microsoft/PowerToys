@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -85,7 +85,7 @@ namespace Wox.Plugin.Url
                                 }
                                 else
                                 {
-                                    Process.Start(_settings.BrowserPath,raw);
+                                    Process.Start(_settings.BrowserPath,"--new-window" + raw);
                                 }
 
                                 return true;
