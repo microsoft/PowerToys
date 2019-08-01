@@ -462,7 +462,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>powershell -command "$policy = Get-ExecutionPolicy"; "Set-ExecutionPolicy RemoteSigned"; "'-NoProfile -File $(SolutionDir)Scripts\post_build.ps1 $(ConfigurationName) $(SolutionDir)'"; "Set-ExecutionPolicy $policy"</PostBuildEvent>
+    <PostBuildEvent>PowerShell -ExecutionPolicy Bypass -Command "$(SolutionDir)Scripts\post_build.ps1 $(ConfigurationName) '$(SolutionDir)'"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>taskkill /f /fi "IMAGENAME eq Wox.exe"</PreBuildEvent>
