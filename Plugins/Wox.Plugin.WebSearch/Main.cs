@@ -23,6 +23,8 @@ namespace Wox.Plugin.WebSearch
         public const string Images = "Images";
         public static string ImagesDirectory;
 
+        private readonly string SystemPluginSearchSourceWildCardSign = "*";
+
         public void Save()
         {
             _viewModel.Save();
@@ -33,49 +35,55 @@ namespace Wox.Plugin.WebSearch
             _updateSource?.Cancel();
             _updateSource = new CancellationTokenSource();
             _updateToken = _updateSource.Token;
+            
+            var searchSourceList = new List<SearchSource>();
+            
+            _settings.SearchSources.Where(o => (o.ActionKeyword == query.ActionKeyword || o.ActionKeyword == SystemPluginSearchSourceWildCardSign) 
+                                               && o.Enabled)
+                                    .ToList()
+                                    .ForEach(x => searchSourceList.Add(x));
 
-            SearchSource searchSource =
-                _settings.SearchSources.FirstOrDefault(o => o.ActionKeyword == query.ActionKeyword && o.Enabled);
-
-            if (searchSource != null)
+            if (searchSourceList.Any())
             {
-                string keyword = query.Search;
-                string title = keyword;
-                string subtitle = _context.API.GetTranslation("wox_plugin_websearch_search") + " " + searchSource.Title;
-                if (string.IsNullOrEmpty(keyword))
+                foreach (SearchSource searchSource in searchSourceList)
                 {
-                    var result = new Result
+                    string keyword = query.Search;
+                    string title = keyword;
+                    string subtitle = _context.API.GetTranslation("wox_plugin_websearch_search") + " " +
+                                      searchSource.Title;
+                    if (string.IsNullOrEmpty(keyword))
                     {
-                        Title = subtitle,
-                        SubTitle = string.Empty,
-                        IcoPath = searchSource.IconPath
-                    };
-                    return new List<Result> {result};
-                }
-                else
-                {
-                    var results = new List<Result>();
-                    var result = new Result
-                    {
-                        Title = title,
-                        SubTitle = subtitle,
-                        Score = 6,
-                        IcoPath = searchSource.IconPath,
-                        Action = c =>
+                        var result = new Result
                         {
-                            Process.Start(searchSource.Url.Replace("{q}", Uri.EscapeDataString(keyword)));
-                            return true;
-                        }
-                    };
-                    results.Add(result);
-                    UpdateResultsFromSuggestion(results, keyword, subtitle, searchSource, query);
-                    return results;
+                            Title = subtitle,
+                            SubTitle = string.Empty,
+                            IcoPath = searchSource.IconPath
+                        };
+                        return new List<Result> {result};
+                    }
+                    else
+                    {
+                        var results = new List<Result>();
+                        var result = new Result
+                        {
+                            Title = title,
+                            SubTitle = subtitle,
+                            Score = 6,
+                            IcoPath = searchSource.IconPath,
+                            Action = c =>
+                            {
+                                Process.Start(searchSource.Url.Replace("{q}", Uri.EscapeDataString(keyword)));
+                                return true;
+                            }
+                        };
+                        results.Add(result);
+                        UpdateResultsFromSuggestion(results, keyword, subtitle, searchSource, query);
+                        return results;
+                    }
                 }
             }
-            else
-            {
-                return new List<Result>();
-            }
+
+            return new List<Result>();
         }
 
         private void UpdateResultsFromSuggestion(List<Result> results, string keyword, string subtitle,
