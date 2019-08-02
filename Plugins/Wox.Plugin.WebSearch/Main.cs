@@ -23,7 +23,7 @@ namespace Wox.Plugin.WebSearch
         public const string Images = "Images";
         public static string ImagesDirectory;
 
-        private readonly string SystemPluginSearchSourceWildCardSign = "*";
+        private readonly string SearchSourceGlobalPluginWildCardSign = "*";
 
         public void Save()
         {
@@ -38,7 +38,7 @@ namespace Wox.Plugin.WebSearch
             
             var searchSourceList = new List<SearchSource>();
             
-            _settings.SearchSources.Where(o => (o.ActionKeyword == query.ActionKeyword || o.ActionKeyword == SystemPluginSearchSourceWildCardSign) 
+            _settings.SearchSources.Where(o => (o.ActionKeyword == query.ActionKeyword || o.ActionKeyword == SearchSourceGlobalPluginWildCardSign) 
                                                && o.Enabled)
                                     .ToList()
                                     .ForEach(x => searchSourceList.Add(x));
