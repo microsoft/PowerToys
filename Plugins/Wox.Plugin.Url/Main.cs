@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
 using Wox.Infrastructure.Storage;
@@ -79,14 +80,14 @@ namespace Wox.Plugin.Url
                             }
                             try
                             {
-                                if (_settings.BrowserPath.Length == 0)
-                                {
-                                    Process.Start(raw);
-                                }
-                                else
-                                {
-                                    Process.Start(_settings.BrowserPath,"--new-window" + raw);
-                                }
+                                var browserExecutableName = _settings.BrowserPath?.Split(new[] { System.IO.Path.DirectorySeparatorChar }, StringSplitOptions.None).Last();
+
+                                var browser = string.IsNullOrEmpty(browserExecutableName) ? "chrome" : _settings.BrowserPath;
+                                
+                                // Internet Explorer will open url in new browser window, and does not take the --new-window parameter
+                                var browserArguements = browserExecutableName == "iexplore.exe" ? raw : "--new-window " + raw;
+
+                                Process.Start(browser, browserArguements);                                                               
 
                                 return true;
                             }
