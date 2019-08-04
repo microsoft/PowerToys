@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -289,14 +289,20 @@ namespace Wox.Core.Plugin
         public static void RemoveActionKeyword(string id, string oldActionkeyword)
         {
             var plugin = GetPluginForId(id);
-            if (oldActionkeyword == Query.GlobalPluginWildcardSign)
+            if (oldActionkeyword == Query.GlobalPluginWildcardSign
+                && // Plugins may have multiple ActionKeywords that are global, eg. WebSearch
+                plugin.Metadata.ActionKeywords
+                                    .Where(x => x == Query.GlobalPluginWildcardSign)
+                                    .ToList()
+                                    .Count == 1)
             {
                 GlobalPlugins.Remove(plugin);
             }
-            else
-            {
+            
+            if(oldActionkeyword != Query.GlobalPluginWildcardSign)
                 NonGlobalPlugins.Remove(oldActionkeyword);
-            }
+            
+
             plugin.Metadata.ActionKeywords.Remove(oldActionkeyword);
         }
 
