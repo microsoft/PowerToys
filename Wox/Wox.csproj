@@ -462,7 +462,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>PowerShell -ExecutionPolicy Bypass -Command "$(SolutionDir)Scripts\post_build.ps1 $(ConfigurationName) '$(SolutionDir)'"</PostBuildEvent>
+    <PostBuildEvent>PowerShell -NoProfile -ExecutionPolicy Bypass -File $(SolutionDir)Scripts\post_build.ps1 $(ConfigurationName) $(SolutionDir)</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>taskkill /f /fi "IMAGENAME eq Wox.exe"</PreBuildEvent>
