@@ -33,11 +33,12 @@ namespace Wox.Plugin.WebSearch
 
         public List<Result> Query(Query query)
         {
+            var searchSourceList = new List<SearchSource>();
+            var results = new List<Result>();
+
             _updateSource?.Cancel();
             _updateSource = new CancellationTokenSource();
             _updateToken = _updateSource.Token;
-            
-            var searchSourceList = new List<SearchSource>();
             
             _settings.SearchSources.Where(o => (o.ActionKeyword == query.ActionKeyword || o.ActionKeyword == SearchSourceGlobalPluginWildCardSign) 
                                                && o.Enabled)
@@ -60,11 +61,10 @@ namespace Wox.Plugin.WebSearch
                             SubTitle = string.Empty,
                             IcoPath = searchSource.IconPath
                         };
-                        return new List<Result> {result};
+                        results.Add(result);
                     }
                     else
                     {
-                        var results = new List<Result>();
                         var result = new Result
                         {
                             Title = title,
@@ -79,13 +79,12 @@ namespace Wox.Plugin.WebSearch
                             }
                         };
                         results.Add(result);
-                        UpdateResultsFromSuggestion(results, keyword, subtitle, searchSource, query);
-                        return results;
+                        UpdateResultsFromSuggestion(results, keyword, subtitle, searchSource, query);                        
                     }
                 }
             }
 
-            return new List<Result>();
+            return results;
         }
 
         private void UpdateResultsFromSuggestion(List<Result> results, string keyword, string subtitle,
