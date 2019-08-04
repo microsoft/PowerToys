@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
+using Wox.Plugin.WebSearch.Commands;
 
 namespace Wox.Plugin.WebSearch
 {
@@ -72,7 +73,8 @@ namespace Wox.Plugin.WebSearch
                             IcoPath = searchSource.IconPath,
                             Action = c =>
                             {
-                                Process.Start(searchSource.Url.Replace("{q}", Uri.EscapeDataString(keyword)));
+                                searchSource.Url.Replace("{q}", Uri.EscapeDataString(keyword)).NewBrowserWindow("");
+
                                 return true;
                             }
                         };
@@ -123,7 +125,7 @@ namespace Wox.Plugin.WebSearch
                     IcoPath = searchSource.IconPath,
                     Action = c =>
                     {
-                        Process.Start(searchSource.Url.Replace("{q}", Uri.EscapeDataString(o)));
+                        searchSource.Url.Replace("{q}", Uri.EscapeDataString(o)).NewBrowserWindow("");
                         return true;
                     }
                 });
