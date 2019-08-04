@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -106,16 +106,12 @@ namespace Wox.Core.Plugin
             foreach (var plugin in AllPlugins)
             {
                 if (IsGlobalPlugin(plugin.Metadata))
-                {
                     GlobalPlugins.Add(plugin);
-                }
-                else
-                {
-                    foreach (string actionKeyword in plugin.Metadata.ActionKeywords)
-                    {
-                        NonGlobalPlugins[actionKeyword] = plugin;
-                    }
-                }
+
+                // Plugins may have multiple ActionKeywords, eg. WebSearch
+                plugin.Metadata.ActionKeywords.Where(x => x != Query.GlobalPluginWildcardSign)
+                                                .ToList()
+                                                .ForEach(x => NonGlobalPlugins[x] = plugin);
             }
 
         }
