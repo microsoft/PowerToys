@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
-using Wox.Plugin.WebSearch.Commands;
+using Wox.Plugin.SharedCommands;
 
 namespace Wox.Plugin.WebSearch
 {

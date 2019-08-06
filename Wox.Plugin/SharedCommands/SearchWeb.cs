@@ -3,14 +3,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace Wox.Plugin.WebSearch.Commands
+namespace Wox.Plugin.SharedCommands
 {
-    internal static class SearchWeb
+    public static class SearchWeb
     {
         /// <summary> Opens search in a new browser. If no browser path is passed in then Chrome is used. 
         /// Leave browser path blank to use Chrome.
         /// </summary>
-        internal static void NewBrowserWindow(this string url, string browserPath)
+        public static void NewBrowserWindow(this string url, string browserPath)
         {
             var browserExecutableName = browserPath?
                                         .Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.None)
