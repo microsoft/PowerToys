@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
+using Wox.Plugin.SharedCommands;
 
 namespace Wox.Plugin.WebSearch
 {
@@ -23,6 +24,8 @@ namespace Wox.Plugin.WebSearch
         public const string Images = "Images";
         public static string ImagesDirectory;
 
+        private readonly string SearchSourceGlobalPluginWildCardSign = "*";
+
         public void Save()
         {
             _viewModel.Save();
@@ -30,52 +33,58 @@ namespace Wox.Plugin.WebSearch
 
         public List<Result> Query(Query query)
         {
+            var searchSourceList = new List<SearchSource>();
+            var results = new List<Result>();
+
             _updateSource?.Cancel();
             _updateSource = new CancellationTokenSource();
             _updateToken = _updateSource.Token;
+            
+            _settings.SearchSources.Where(o => (o.ActionKeyword == query.ActionKeyword || o.ActionKeyword == SearchSourceGlobalPluginWildCardSign) 
+                                               && o.Enabled)
+                                    .ToList()
+                                    .ForEach(x => searchSourceList.Add(x));
 
-            SearchSource searchSource =
-                _settings.SearchSources.FirstOrDefault(o => o.ActionKeyword == query.ActionKeyword && o.Enabled);
-
-            if (searchSource != null)
+            if (searchSourceList.Any())
             {
-                string keyword = query.Search;
-                string title = keyword;
-                string subtitle = _context.API.GetTranslation("wox_plugin_websearch_search") + " " + searchSource.Title;
-                if (string.IsNullOrEmpty(keyword))
+                foreach (SearchSource searchSource in searchSourceList)
                 {
-                    var result = new Result
+                    string keyword = query.Search;
+                    string title = keyword;
+                    string subtitle = _context.API.GetTranslation("wox_plugin_websearch_search") + " " +
+                                      searchSource.Title;
+                    if (string.IsNullOrEmpty(keyword))
                     {
-                        Title = subtitle,
-                        SubTitle = string.Empty,
-                        IcoPath = searchSource.IconPath
-                    };
-                    return new List<Result> {result};
-                }
-                else
-                {
-                    var results = new List<Result>();
-                    var result = new Result
-                    {
-                        Title = title,
-                        SubTitle = subtitle,
-                        Score = 6,
-                        IcoPath = searchSource.IconPath,
-                        Action = c =>
+                        var result = new Result
                         {
-                            Process.Start(searchSource.Url.Replace("{q}", Uri.EscapeDataString(keyword)));
-                            return true;
-                        }
-                    };
-                    results.Add(result);
-                    UpdateResultsFromSuggestion(results, keyword, subtitle, searchSource, query);
-                    return results;
+                            Title = subtitle,
+                            SubTitle = string.Empty,
+                            IcoPath = searchSource.IconPath
+                        };
+                        results.Add(result);
+                    }
+                    else
+                    {
+                        var result = new Result
+                        {
+                            Title = title,
+                            SubTitle = subtitle,
+                            Score = 6,
+                            IcoPath = searchSource.IconPath,
+                            Action = c =>
+                            {
+                                searchSource.Url.Replace("{q}", Uri.EscapeDataString(keyword)).NewBrowserWindow("");
+
+                                return true;
+                            }
+                        };
+                        results.Add(result);
+                        UpdateResultsFromSuggestion(results, keyword, subtitle, searchSource, query);                        
+                    }
                 }
             }
-            else
-            {
-                return new List<Result>();
-            }
+
+            return results;
         }
 
         private void UpdateResultsFromSuggestion(List<Result> results, string keyword, string subtitle,
@@ -115,7 +124,7 @@ namespace Wox.Plugin.WebSearch
                     IcoPath = searchSource.IconPath,
                     Action = c =>
                     {
-                        Process.Start(searchSource.Url.Replace("{q}", Uri.EscapeDataString(o)));
+                        searchSource.Url.Replace("{q}", Uri.EscapeDataString(o)).NewBrowserWindow("");
                         return true;
                     }
                 });
