@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using Wox.Core.Plugin;
 
@@ -28,27 +28,33 @@ namespace Wox.Plugin.WebSearch
 
         private void OnDeleteSearchSearchClick(object sender, RoutedEventArgs e)
         {
-            var selected = _settings.SelectedSearchSource;
-            var warning = _context.API.GetTranslation("wox_plugin_websearch_delete_warning");
-            var formated = string.Format(warning, selected.Title);
-
-            var result = MessageBox.Show(formated, string.Empty, MessageBoxButton.YesNo);
-            if (result == MessageBoxResult.Yes)
+            if (_settings.SelectedSearchSource != null)
             {
-                var id = _context.CurrentPluginMetadata.ID;
-                PluginManager.RemoveActionKeyword(id, selected.ActionKeyword);
-                _settings.SearchSources.Remove(selected);
+                var selected = _settings.SelectedSearchSource;
+                var warning = _context.API.GetTranslation("wox_plugin_websearch_delete_warning");
+                var formated = string.Format(warning, selected.Title);
+
+                var result = MessageBox.Show(formated, string.Empty, MessageBoxButton.YesNo);
+                if (result == MessageBoxResult.Yes)
+                {
+                    var id = _context.CurrentPluginMetadata.ID;
+                    PluginManager.RemoveActionKeyword(id, selected.ActionKeyword);
+                    _settings.SearchSources.Remove(selected);
+                }
             }
         }
 
         private void OnEditSearchSourceClick(object sender, RoutedEventArgs e)
         {
-            var selected = _settings.SelectedSearchSource;
-            var webSearch = new SearchSourceSettingWindow
+            if (_settings.SelectedSearchSource != null)
+            {
+                var webSearch = new SearchSourceSettingWindow
                 (
-                _settings.SearchSources, _context, selected
+                    _settings.SearchSources, _context, _settings.SelectedSearchSource
                 );
-            webSearch.ShowDialog();
+
+                webSearch.ShowDialog();
+            }
         }
     }
 }
