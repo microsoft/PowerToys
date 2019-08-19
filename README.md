@@ -57,10 +57,12 @@ Build
 
 Install Visual Studio 2015/2017/2019
 
-VS 2015:
+This project requires Windows 10 SDK:
+
+  VS 2015:
   - Tick all Windows 10 sdk options
 
-VS 2017/2019 and later:
+  VS 2017/2019 and later:  
   - Last Windows 10 SDK which [supported](https://github.com/Wox-launcher/Wox/pull/1827#commitcomment-26475392) UwpDesktop is version 10.0.14393.795. It is needed to compile "Programs" Plugin (UWP.cs), you will see the "References" of Plugin.Programs as broken if you use a later SDK version.
   - This SDK cannot be installed via VS 2019 installer.
   - Download and install [Windows 10 SDK version 10.0.14393.795](https://go.microsoft.com/fwlink/p/?LinkId=838916).
