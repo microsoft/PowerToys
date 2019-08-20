@@ -69,7 +69,7 @@ namespace Wox.Plugin.WebSearch
                     };
 
                     results.Add(result);
-                    ResultsUpdated.Invoke(this, new ResultUpdatedEventArgs
+                    ResultsUpdated?.Invoke(this, new ResultUpdatedEventArgs
                     {
                         Results = results,
                         Query = query
