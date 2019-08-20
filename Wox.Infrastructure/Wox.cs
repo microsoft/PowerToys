@@ -9,8 +9,6 @@ namespace Wox.Infrastructure
     {
         public static string DetermineDataDirectory()
         {
-            // use the method of VSCode to enable portable mode
-            // https://code.visualstudio.com/docs/editor/portable
             string portableDataPath = Path.Combine(ProgramDirectory, "UserData");
             if (Directory.Exists(portableDataPath))
             {
