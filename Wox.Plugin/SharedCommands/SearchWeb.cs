@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -21,7 +21,14 @@ namespace Wox.Plugin.SharedCommands
             // Internet Explorer will open url in new browser window, and does not take the --new-window parameter
             var browserArguements = browserExecutableName == "iexplore.exe" ? url : "--new-window " + url;
 
-            Process.Start(browser, browserArguements);
+            try
+            {
+                Process.Start(browser, browserArguements);
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+                Process.Start(url);
+            }
         }
     }
 }
