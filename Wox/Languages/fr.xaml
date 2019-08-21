@@ -97,7 +97,7 @@
     <system:String x:Key="cannotFindSpecifiedPlugin">Impossible de trouver le module spécifié</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">Le nouveau mot-clé d'action doit être spécifié</system:String>
     <system:String x:Key="newActionKeywordsHasBeenAssigned">Le nouveau mot-clé d'action a été assigné à un autre module, veuillez en choisir un autre</system:String>
-    <system:String x:Key="succeed">Ajouté</system:String>
+    <system:String x:Key="success">Ajouté</system:String>
     <system:String x:Key="actionkeyword_tips">Saisissez * si vous ne souhaitez pas utiliser de mot-clé spécifique</system:String>
     
     <!--Custom Query Hotkey Dialog-->

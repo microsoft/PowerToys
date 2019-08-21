@@ -91,7 +91,7 @@
     <system:String x:Key="cannotFindSpecifiedPlugin">Не вдалося знайти вказаний плагін</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">Нова гаряча клавіша не може бути порожньою</system:String>
     <system:String x:Key="newActionKeywordsHasBeenAssigned">Нова гаряча клавіша вже використовується іншим плагіном. Будь ласка, вкажіть нову</system:String>
-    <system:String x:Key="succeed">Збережено</system:String>
+    <system:String x:Key="success">Збережено</system:String>
     <system:String x:Key="actionkeyword_tips">Використовуйте * у разі, якщо ви не хочете ставити конкретну гарячу клавішу</system:String>
 
     <!--Custom Query Hotkey Dialog-->

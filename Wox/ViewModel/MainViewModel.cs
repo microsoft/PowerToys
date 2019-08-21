@@ -440,7 +440,7 @@ namespace Wox.ViewModel
                     Action = _ =>
                     {
                         _topMostRecord.Remove(result);
-                        App.API.ShowMsg("Succeed");
+                        App.API.ShowMsg("Success");
                         return false;
                     }
                 };
@@ -455,7 +455,7 @@ namespace Wox.ViewModel
                     Action = _ =>
                     {
                         _topMostRecord.AddOrUpdate(result);
-                        App.API.ShowMsg("Succeed");
+                        App.API.ShowMsg("Success");
                         return false;
                     }
                 };

@@ -45,7 +45,7 @@ namespace Wox
             {
                 var id = _plugin.Metadata.ID;
                 PluginManager.ReplaceActionKeyword(id, oldActionKeyword, newActionKeyword);
-                MessageBox.Show(_translater.GetTranslation("succeed"));
+                MessageBox.Show(_translater.GetTranslation("success"));
                 Close();
             }
             else

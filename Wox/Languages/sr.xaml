@@ -100,7 +100,7 @@
     <system:String x:Key="cannotFindSpecifiedPlugin">Navedeni plugin nije moguće pronaći</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">Prečica za novu radnju ne može da bude prazna</system:String>
     <system:String x:Key="newActionKeywordsHasBeenAssigned">Prečica za novu radnju je dodeljena drugom plugin-u, molim Vas dodelite drugu prečicu</system:String>
-    <system:String x:Key="succeed">Uspešno</system:String>
+    <system:String x:Key="success">Uspešno</system:String>
     <system:String x:Key="actionkeyword_tips">Koristite * ako ne želite da navedete prečicu za radnju</system:String>
 
     <!--Custom Query Hotkey Dialog-->
