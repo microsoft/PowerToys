@@ -169,13 +169,13 @@ namespace Wox.Plugin.Sys
                 },
                 new Result
                 {
-                    Title = context.API.GetTranslation("wox_plugin_sys_save_command"),
-                    SubTitle = context.API.GetTranslation("wox_plugin_sys_save"),
+                    Title = "Save Settings",
+                    SubTitle = "Save all Wox settings",
                     IcoPath = "Images\\app.png",
                     Action = c =>
                     {
                         context.API.SaveAppAllSettings();
-                        context.API.ShowMsg(string.Format(context.API.GetTranslation("wox_plugin_sys_save_success")));
+                        context.API.ShowMsg(string.Format("Successfully saved all Wox settings"));
                         return true;
                     }
                 },
