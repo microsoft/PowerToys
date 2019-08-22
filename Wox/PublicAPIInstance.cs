@@ -59,13 +59,18 @@ namespace Wox
             // we must manually save
             // UpdateManager.RestartApp() will call Environment.Exit(0)
             // which will cause ungraceful exit
+            SaveAppAllSettings();
+
+            UpdateManager.RestartApp();
+        }
+
+        public void SaveAppAllSettings()
+        {
             _mainVM.Save();
             _settingsVM.Save();
             PluginManager.Save();
             ImageLoader.Save();
             Alphabet.Save();
-
-            UpdateManager.RestartApp();
         }
 
         [Obsolete]

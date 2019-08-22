@@ -169,6 +169,18 @@ namespace Wox.Plugin.Sys
                 },
                 new Result
                 {
+                    Title = context.API.GetTranslation("wox_plugin_sys_save_command"),
+                    SubTitle = context.API.GetTranslation("wox_plugin_sys_save"),
+                    IcoPath = "Images\\app.png",
+                    Action = c =>
+                    {
+                        context.API.SaveAppAllSettings();
+                        context.API.ShowMsg(string.Format(context.API.GetTranslation("wox_plugin_sys_save_success")));
+                        return true;
+                    }
+                },
+                new Result
+                {
                     Title = "Restart Wox",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_restart"),
                     IcoPath = "Images\\app.png",
