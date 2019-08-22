@@ -175,7 +175,7 @@ namespace Wox.Plugin.Sys
                     Action = c =>
                     {
                         context.API.SaveAppAllSettings();
-                        context.API.ShowMsg(string.Format("Successfully saved all Wox settings"));
+                        context.API.ShowMsg("Success","All Wox settings saved");
                         return true;
                     }
                 },
