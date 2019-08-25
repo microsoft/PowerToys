@@ -94,8 +94,11 @@ namespace Wox.Plugin.Program
 
         private void BtnProgramSuffixes_OnClick(object sender, RoutedEventArgs e)
         {
-            ProgramSuffixes p = new ProgramSuffixes(context, _settings);
-            p.ShowDialog();
+            var p = new ProgramSuffixes(context, _settings);
+            if (p.ShowDialog() ?? false)
+            {
+                ReIndexing();
+            }
         }
 
         private void programSourceView_DragEnter(object sender, DragEventArgs e)
