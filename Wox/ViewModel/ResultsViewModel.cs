@@ -148,25 +148,28 @@ namespace Wox.ViewModel
 
         private List<ResultViewModel> NewResults(List<Result> newRawResults, string resultId)
         {
-            var newResults = newRawResults.Select(r => new ResultViewModel(r)).ToList();
             var results = Results.ToList();
+            var newResults = newRawResults.Select(r => new ResultViewModel(r)).ToList();            
             var oldResults = results.Where(r => r.Result.PluginID == resultId).ToList();
 
-            // intersection of A (old results) and B (new newResults)
-            var intersection = oldResults.Intersect(newResults).ToList();
-
+            // Find the same results in A (old results) and B (new newResults)          
+            var sameResults = oldResults
+                                .Where(t1 => newResults.Any(x => x.Result.Equals(t1.Result)))
+                                .Select(t1 => t1)
+                                .ToList();
+            
             // remove result of relative complement of B in A
-            foreach (var result in oldResults.Except(intersection))
+            foreach (var result in oldResults.Except(sameResults))
             {
                 results.Remove(result);
             }
 
-            // update index for result in intersection of A and B
-            foreach (var commonResult in intersection)
+            // update result with B's score and index position
+            foreach (var sameResult in sameResults)
             {
-                int oldIndex = results.IndexOf(commonResult);
+                int oldIndex = results.IndexOf(sameResult);
                 int oldScore = results[oldIndex].Result.Score;
-                var newResult = newResults[newResults.IndexOf(commonResult)];
+                var newResult = newResults[newResults.IndexOf(sameResult)];
                 int newScore = newResult.Result.Score;
                 if (newScore != oldScore)
                 {
@@ -182,7 +185,7 @@ namespace Wox.ViewModel
             }
 
             // insert result in relative complement of A in B
-            foreach (var result in newResults.Except(intersection))
+            foreach (var result in newResults.Except(sameResults))
             {
                 int newIndex = InsertIndexOf(result.Result.Score, results);
                 results.Insert(newIndex, result);
