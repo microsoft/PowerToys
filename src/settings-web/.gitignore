@@ -1,0 +1,31 @@
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+.DS_Store
+
+node_modules
+lib
+lib-commonjs
+lib-esm
+lib-es2015
+build
+coverage
+dist
+temp
+
+*.scss.ts
+
+documentation/lib/core/metadata.js
+documentation/lib/core/MetadataBlog.js
+
+documentation/website/translated_docs
+documentation/website/build/
+documentation/website/yarn.lock
+documentation/website/i18n/*
+
+# Rush files
+common/temp/**
+package-deps.json

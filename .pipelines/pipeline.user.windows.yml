@@ -1,0 +1,43 @@
+environment:
+  host:
+    os: 'windows'
+    flavor: 'server'
+    version: '2016'
+  runtime:
+    provider: 'appcontainer'
+    image: 'cdpxwinrs4test.azurecr.io/global/vse2017u7-external-azsdk-mobile-ext-win1803:latest-nodetools'
+    source_mode: 'link'
+
+signing_options:
+  profile: 'azure'
+
+package_sources:
+  nuget:
+    feeds:
+      'Toolset': 'https://msazure.pkgs.visualstudio.com/_packaging/Toolset/nuget/v3/index.json'
+      'CloudES-CDP': 'https://cloudes.pkgs.visualstudio.com/_packaging/CDP/nuget/v3/index.json'
+      'CloudES-Internal': 'https://cloudes.pkgs.visualstudio.com/_packaging/Internal/nuget/v3/index.json'
+      'MsNugetMirror': 'https://msazure.pkgs.visualstudio.com/_packaging/MsNugetMirror/nuget/v3/index.json'
+      'NugetMirror': 'https://msazure.pkgs.visualstudio.com/_packaging/NugetMirror/nuget/v3/index.json'
+      'CorextMirror': 'https://msazure.pkgs.visualstudio.com/_packaging/CorextMirror/nuget/v3/index.json'
+      'Official': 'https://msazure.pkgs.visualstudio.com/_packaging/Official/nuget/v3/index.json'
+      'Toolset': 'https://msazure.pkgs.visualstudio.com/_packaging/Toolset/nuget/v3/index.json'
+      'AzureCXP': 'https://msazure.pkgs.visualstudio.com/_packaging/AzureCXP/nuget/v3/index.json'
+
+restore:
+  commands:
+    - !!defaultcommand
+      name: 'Restore CSharp'
+      command: '.pipelines\restore.cmd'
+      
+build:
+  commands:
+    - !!buildcommand
+      name: 'Build CSharp'
+      command: '.pipelines\build.cmd'
+      artifacts:
+        - from: '**\bin'
+          to: 'Build_Output'
+          include:
+            - '**/*'
+

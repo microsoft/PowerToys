@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="unhandled_exception_handler.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="lowlevel_keyboard_event.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+    <ClCompile Include="tray_icon.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="powertoy_module.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="trace.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="settings_window.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="auto_start_helper.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="general_settings.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="powertoys_events.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="win_hook_event.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="unhandled_exception_handler.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="lowlevel_keyboard_event.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="tray_icon.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="powertoy_module.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="trace.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="settings_window.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="auto_start_helper.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="general_settings.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="powertoys_events.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="win_hook_event.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{bc27e9c1-8afa-4d62-8179-789f4651c0b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="svgs">
+      <UniqueIdentifier>{1123565f-43ba-4eb8-a6f5-2d5f8f3ae6af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Events">
+      <UniqueIdentifier>{d409b25e-c0f1-4913-bb32-da4a21339c76}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="runner.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="svgs\icon.ico" />
+    <CopyFileToFolders Include="svgs\0.svg">
+      <Filter>svgs</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="svgs\1.svg">
+      <Filter>svgs</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="svgs\2.svg">
+      <Filter>svgs</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="svgs\3.svg">
+      <Filter>svgs</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="svgs\4.svg">
+      <Filter>svgs</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="svgs\5.svg">
+      <Filter>svgs</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="svgs\6.svg">
+      <Filter>svgs</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="svgs\7.svg">
+      <Filter>svgs</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="svgs\8.svg">
+      <Filter>svgs</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="svgs\9.svg">
+      <Filter>svgs</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="svgs\no_active_window.svg">
+      <Filter>svgs</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="svgs\overlay.svg">
+      <Filter>svgs</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="svgs\overlay_portrait.svg">
+      <Filter>svgs</Filter>
+    </CopyFileToFolders>
+  </ItemGroup>
+</Project>
