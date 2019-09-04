@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -31,7 +31,7 @@ namespace Wox.Plugin.Program
             _settingsStorage = new PluginJsonStorage<Settings>();
             _settings = _settingsStorage.Load();
 
-            Stopwatch.Normal("|Wox.Plugin.Program.Main|Preload programs cost", () =>
+            var preloadcost = Stopwatch.Normal("|Wox.Plugin.Program.Main|Preload programs cost", () =>
             {
                 _win32Storage = new BinaryStorage<Win32[]>("Win32");
                 _win32s = _win32Storage.TryLoad(new Win32[] { });
@@ -40,10 +40,48 @@ namespace Wox.Plugin.Program
             });
             Log.Info($"|Wox.Plugin.Program.Main|Number of preload win32 programs <{_win32s.Length}>");
             Log.Info($"|Wox.Plugin.Program.Main|Number of preload uwps <{_uwps.Length}>");
-            Task.Run(() =>
+
+            //########DELETE
+            long win32indexcost = 0;
+            long uwpindexcost = 0;
+            
+            var a = Task.Run(() =>
             {
-                Stopwatch.Normal("|Wox.Plugin.Program.Main|Program index cost", IndexPrograms);
+                if (!_win32s.Any())
+                    win32indexcost = Stopwatch.Normal("|Wox.Plugin.Program.Main|Win32Program index cost", IndexWin32Programs);
             });
+
+            var b = Task.Run(() =>
+            {
+                if (!_uwps.Any())
+                    uwpindexcost = Stopwatch.Normal("|Wox.Plugin.Program.Main|Win32Program index cost", IndexUWPPrograms);
+            });
+
+            Task.WaitAll(a, b);
+
+            //########DELETE
+            /*
+             *  With roaming folder already 
+                Preload programs cost <24ms>
+                Program index cost <3163ms>
+
+                no roaming yet (clean)
+                Preload programs cost <79ms>
+                Program index cost <2900ms>
+             *
+             * 
+             */
+
+            long totalindexcost = win32indexcost + uwpindexcost;
+
+            if (preloadcost > 70 || totalindexcost > 4000)
+            {
+#if DEBUG
+#else
+    throw e
+#endif
+            }
+            //########DELETE
         }
 
         public void Save()
@@ -69,34 +107,34 @@ namespace Wox.Plugin.Program
             _context = context;
         }
 
-        public static void IndexPrograms()
+        public static void IndexWin32Programs()
         {
-            Win32[] w = { };
-            UWP.Application[] u = { };
-            var t1 = Task.Run(() =>
+            lock (IndexLock)
             {
-                w = Win32.All(_settings);
-            });
-            var t2 = Task.Run(() =>
-            {
-                var windows10 = new Version(10, 0);
-                var support = Environment.OSVersion.Version.Major >= windows10.Major;
-                if (support)
-                {
-                    u = UWP.All();
-                }
-                else
-                {
-                    u = new UWP.Application[] { };
-                }
-            });
-            Task.WaitAll(t1, t2);
+                _win32s = Win32.All(_settings);
+            }
+        }
+
+        public static void IndexUWPPrograms()
+        {
+            var windows10 = new Version(10, 0);
+            var support = Environment.OSVersion.Version.Major >= windows10.Major;
 
             lock (IndexLock)
             {
-                _win32s = w;
-                _uwps = u;
+                var allUWPs = support ? UWP.All() : new UWP.Application[] { };
+
+                _uwps = UWP.RetainApplications(allUWPs, _settings.ProgramSources, _settings.EnableProgramSourceOnly);
             }
+        }
+
+        public static void IndexPrograms()
+        {
+            var t1 = Task.Run(() => { IndexWin32Programs(); });
+
+            var t2 = Task.Run(() => { IndexUWPPrograms(); });
+
+            Task.WaitAll(t1, t2);
         }
 
         public Control CreateSettingPanel()

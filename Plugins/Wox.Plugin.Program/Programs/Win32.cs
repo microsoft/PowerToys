@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -262,9 +262,19 @@ namespace Wox.Plugin.Program.Programs
 
         private static ParallelQuery<Win32> UnregisteredPrograms(List<Settings.ProgramSource> sources, string[] suffixes)
         {
-            var paths = sources.Where(s => Directory.Exists(s.Location))
-                               .SelectMany(s => ProgramPaths(s.Location, suffixes))
-                               .ToArray();
+            var list = new List<string>();
+            sources.Where(s => Directory.Exists(s.Location) && s.EnableIndexing)
+                .SelectMany(s => ProgramPaths(s.Location, suffixes))
+                .ToList()
+                .ForEach(x => list.Add(x));            
+
+            sources.Where(x=> File.Exists(x.LocationFile) && x.EnableIndexing)
+                .Select(y => y.LocationFile)
+                .ToList()
+                .ForEach(z => list.Add(z));
+
+            var paths = list.ToArray();
+
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ExeExtension).Select(ExeProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(ExeProgram);
             var programs3 = from p in paths.AsParallel()
@@ -384,18 +394,24 @@ namespace Wox.Plugin.Program.Programs
         public static Win32[] All(Settings settings)
         {
             ParallelQuery<Win32> programs = new List<Win32>().AsParallel();
+            
+            var unregistered = UnregisteredPrograms(settings.ProgramSources, settings.ProgramSuffixes);
+            programs = programs.Concat(unregistered);
+
+            if (settings.EnableProgramSourceOnly)
+                return programs.ToArray();
+            
             if (settings.EnableRegistrySource)
             {
                 var appPaths = AppPathsPrograms(settings.ProgramSuffixes);
                 programs = programs.Concat(appPaths);
             }
+
             if (settings.EnableStartMenuSource)
             {
                 var startMenu = StartMenuPrograms(settings.ProgramSuffixes);
                 programs = programs.Concat(startMenu);
-            }
-            var unregistered = UnregisteredPrograms(settings.ProgramSources, settings.ProgramSuffixes);
-            programs = programs.Concat(unregistered);
+            }            
             //.Select(ScoreFilter);
             return programs.ToArray();
         }

@@ -12,11 +12,15 @@ namespace Wox.Plugin.Program
 
         public bool EnableRegistrySource { get; set; } = true;
 
+        public bool EnableProgramSourceOnly { get; set; } = false;
+
         internal const char SuffixSeperator = ';';
 
         public class ProgramSource
         {
             public string Location { get; set; }
+            public string LocationFile { get; set; }
+            public bool EnableIndexing { get; set; } = true;
         }
     }
 }

@@ -202,6 +202,20 @@ namespace Wox.Plugin.Program.Programs
             }
         }
 
+        public static Application[] RetainApplications(Application[] applications, List<Settings.ProgramSource> applicationsToRetainPaths, bool enableProgramSourceOnly)
+        {            
+            if(enableProgramSourceOnly)
+                return applications
+                        .Where(t1 => applicationsToRetainPaths
+                                        .Any(x => x.LocationFile == t1.Package.Location
+                                                && x.EnableIndexing))
+                        .Select(t1 => t1).ToArray();
+
+            // Do not return if the application is disabled for indexing
+            return applications.Where(t1 => !applicationsToRetainPaths.Any(x => x.LocationFile == t1.Package.Location && !x.EnableIndexing))
+                             .Select(t1 => t1).ToArray();
+        }
+
         public override string ToString()
         {
             return FamilyName;
