@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="53px" height="52px" viewBox="0 0 53 52" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>5</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Devices" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard" transform="translate(-307.000000, -159.000000)">
+            <g id="5" transform="translate(307.000000, 159.000000)">
+                <rect id="Rectangle" fill="#000000" x="7" y="6" width="40" height="40"></rect>
+                <g id="left" transform="translate(0.000000, 14.000000)" fill="#000000">
+                    <rect id="carat" transform="translate(12.000000, 12.000000) rotate(-314.000000) translate(-12.000000, -12.000000) " x="4" y="4" width="16" height="16"></rect>
+                </g>
+                <g id="bottom" transform="translate(15.000000, 28.000000)" fill="#000000">
+                    <rect id="carat" transform="translate(12.000000, 12.000000) rotate(-314.000000) translate(-12.000000, -12.000000) " x="4" y="4" width="16" height="16"></rect>
+                </g>
+                <g id="right" transform="translate(29.000000, 14.000000)" fill="#000000">
+                    <rect id="carat" transform="translate(12.000000, 12.000000) rotate(-314.000000) translate(-12.000000, -12.000000) " x="4" y="4" width="16" height="16"></rect>
+                </g>
+                <g id="top" transform="translate(16.000000, 0.000000)" fill="#000000">
+                    <rect id="carat" transform="translate(11.311985, 12.000000) rotate(-314.000000) translate(-11.311985, -12.000000) " x="3.31198537" y="4" width="16" height="16"></rect>
+                </g>
+                <path d="M24,30.5498047 L24,28.7041016 C24.6699252,29.1142599 25.3831342,29.3193359 26.1396484,29.3193359 C26.7093127,29.3193359 27.1547835,29.1837579 27.4760742,28.9125977 C27.7973649,28.6414374 27.9580078,28.2734398 27.9580078,27.8085938 C27.9580078,26.8378858 27.2721423,26.3525391 25.9003906,26.3525391 C25.4537738,26.3525391 24.9137401,26.3935543 24.2802734,26.4755859 L24.2802734,21 L29.7080078,21 L29.7080078,22.7636719 L26.1259766,22.7636719 L26.1259766,24.7255859 C26.4130874,24.6982421 26.6842435,24.6845703 26.9394531,24.6845703 C27.9466196,24.6845703 28.7350232,24.9488906 29.3046875,25.4775391 C29.8743518,26.0061875 30.1591797,26.7171179 30.1591797,27.6103516 C30.1591797,28.5992888 29.8196649,29.4070607 29.140625,30.0336914 C28.4615851,30.6603221 27.5410214,30.9736328 26.3789062,30.9736328 C25.4355422,30.9736328 24.6425813,30.8323582 24,30.5498047 Z" fill="#FFFFFF" fill-rule="nonzero"></path>
+            </g>
+        </g>
+    </g>
+</svg>

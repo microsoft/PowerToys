@@ -1,0 +1,61 @@
+.body {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+.body .sidebar {
+  order: -1;
+  max-width: 228px;
+  min-width: 228px;
+  flex-basis: 228px;
+  display: flex;
+  flex-direction: column;
+  background-color: #f3f2f1;
+}
+
+.body .sidebar.collapsed {
+  max-width: 48px;
+  min-width: 48px;
+  flex-basis: 48px;
+}
+
+.body .editorzone {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.body .editorzone .editorhead {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+  min-height: 50px;
+  max-height: 50px;
+  border-bottom: 1px solid #f3f2f1;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.body .editorzone .editorhead .editortitle {
+  align-self: center;
+  flex-basis: 0;
+  flex-grow: 1;
+  flex-shrink: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.body .editorzone .editorhead .editorheadbuttons {
+  justify-self: right;
+  justify-content: right;
+  align-self: center;
+}
+
+.body .editorzone .editorbody {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  flex-grow: 1;
+}

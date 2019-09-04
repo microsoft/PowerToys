@@ -1,0 +1,4 @@
+LIBRARY fancyzones.dll
+
+EXPORTS
+    PersistZoneSet PRIVATE

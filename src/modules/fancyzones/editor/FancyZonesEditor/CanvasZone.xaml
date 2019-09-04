@@ -1,0 +1,44 @@
+﻿<UserControl x:Class="FancyZonesEditor.CanvasZone"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FancyZonesEditor"
+             mc:Ignorable="d" 
+            Background="LightGray"
+              Opacity="0.75"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid x:Name="Frame">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="24"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="8"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="16"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="16"/>
+            <ColumnDefinition Width="8"/>
+        </Grid.ColumnDefinitions>
+        <Thumb x:Name="NWResize" Cursor="SizeNWSE" Background="Black" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="NWResize_DragDelta"/>
+        <Thumb x:Name="NEResize" Cursor="SizeNESW" Background="Black" Grid.Row="0" Grid.Column="3" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="NEResize_DragDelta"/>
+        <Thumb x:Name="SWResize" Cursor="SizeNESW" Background="Black" Grid.Row="4" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="SWResize_DragDelta"/>
+        <Thumb x:Name="SEResize" Cursor="SizeNWSE" Background="Black" Grid.Row="4" Grid.Column="3" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="SEResize_DragDelta"/>
+        <Thumb x:Name="NResize" Cursor="SizeNS" Background="Black" Margin="1,0,1,0" Grid.Row="0" Grid.Column="2" DragDelta="NResize_DragDelta"/>
+        <Thumb x:Name="SResize" Cursor="SizeNS" Background="Black" Margin="1,0,1,0" Grid.Row="5" Grid.Column="2" DragDelta="SResize_DragDelta"/>
+        <Thumb x:Name="WResize" Cursor="SizeWE" Background="Black" Margin="0,1,0,1" Grid.Row="2" Grid.Column="0" Grid.RowSpan="2" DragDelta="WResize_DragDelta"/>
+        <Thumb x:Name="EResize" Cursor="SizeWE" Background="Black" Margin="0,1,0,1" Grid.Row="2" Grid.Column="4" Grid.RowSpan="2" DragDelta="EResize_DragDelta"/>
+        <DockPanel Grid.Row="1" Grid.Column="1" Grid.RowSpan="2" Grid.ColumnSpan="3">
+            <Button DockPanel.Dock="Right" Padding="8,0" Click="OnClose">
+                <Image Source="images/ChromeClose.png" Height="24" Width="24" />
+            </Button>
+            <Thumb x:Name="Caption" Cursor="SizeAll" Background="DarkGray" DragDelta="Caption_DragDelta"/>
+        </DockPanel>
+        <Rectangle Fill="LightGray" Grid.Row="3" Grid.Column="1" Grid.RowSpan="2" Grid.ColumnSpan="3"/>
+        <Canvas x:Name="Body" />
+    </Grid>
+</UserControl>

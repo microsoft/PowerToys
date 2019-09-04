@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="53px" height="52px" viewBox="0 0 53 52" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>2</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Devices" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard" transform="translate(-127.000000, -159.000000)">
+            <g id="2" transform="translate(127.000000, 159.000000)">
+                <rect id="Rectangle" fill="#000000" x="7" y="6" width="40" height="40"></rect>
+                <g id="left" transform="translate(0.000000, 14.000000)" fill="#000000">
+                    <rect id="carat" transform="translate(12.000000, 12.000000) rotate(-314.000000) translate(-12.000000, -12.000000) " x="4" y="4" width="16" height="16"></rect>
+                </g>
+                <g id="bottom" transform="translate(15.000000, 28.000000)" fill="#000000">
+                    <rect id="carat" transform="translate(12.000000, 12.000000) rotate(-314.000000) translate(-12.000000, -12.000000) " x="4" y="4" width="16" height="16"></rect>
+                </g>
+                <g id="right" transform="translate(29.000000, 14.000000)" fill="#000000">
+                    <rect id="carat" transform="translate(12.000000, 12.000000) rotate(-314.000000) translate(-12.000000, -12.000000) " x="4" y="4" width="16" height="16"></rect>
+                </g>
+                <g id="top" transform="translate(16.000000, 0.000000)" fill="#000000">
+                    <rect id="carat" transform="translate(11.311985, 12.000000) rotate(-314.000000) translate(-11.311985, -12.000000) " x="3.31198537" y="4" width="16" height="16"></rect>
+                </g>
+                <path d="M26.4746094,29.1347656 L26.4746094,29.1757812 L30.453125,29.1757812 L30.453125,30.9667969 L24,30.9667969 L24,29.2851562 L26.8095703,26.5986328 C27.3746773,26.0563124 27.772297,25.6017271 28.0024414,25.2348633 C28.2325858,24.8679995 28.3476562,24.4817729 28.3476562,24.0761719 C28.3476562,23.1738236 27.8623095,22.7226562 26.8916016,22.7226562 C26.0484984,22.7226562 25.2418658,23.0576138 24.4716797,23.7275391 L24.4716797,21.8271484 C25.3238975,21.2757134 26.2854764,21 27.3564453,21 C28.3590545,21 29.1417615,21.2517878 29.7045898,21.7553711 C30.2674182,22.2589543 30.5488281,22.9391233 30.5488281,23.7958984 C30.5488281,24.9397844 29.8629626,26.1223897 28.4912109,27.34375 L26.4746094,29.1347656 Z" fill="#FFFFFF" fill-rule="nonzero"></path>
+            </g>
+        </g>
+    </g>
+</svg>

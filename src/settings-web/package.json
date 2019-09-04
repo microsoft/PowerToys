@@ -1,0 +1,42 @@
+{
+  "name": "fabricui",
+  "version": "0.0.1",
+  "description": "fabricui Package",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "main": "lib-commonjs/index.js",
+  "module": "lib/index.js",
+  "sideEffects": false,
+  "typings": "lib/index.d.ts",
+  "license": "MIT",
+  "scripts": {
+    "just": "just-scripts",
+    "clean": "rimraf build lib lib-commonjs && just-scripts clean",
+    "build": "rimraf build && just-scripts build --min --production && cp index.html build && react-snap && cp -r build/* ../editor/settings-html",
+    "test": "just-scripts test",
+    "test:update": "just-scripts jest -u",
+    "test:start": "just-scripts start-test",
+    "start": "just-scripts start",
+    "stack:upgrade": "just-scripts upgrade-stack"
+  },
+  "dependencies": {
+    "@svgr/webpack": "^4.3.2",
+    "office-ui-fabric-react": "^7.4.3",
+    "react": "~16.8.0",
+    "react-dom": "~16.8.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.0",
+    "@types/react": "~16.8.0",
+    "@types/react-dom": "~16.8.0",
+    "just-scripts": "^0.18.0",
+    "just-stack-uifabric": ">=0.11.4",
+    "react-snap": "^1.23.0",
+    "rimraf": "^3.0.0"
+  },
+  "just": {
+    "stack": "just-stack-uifabric"
+  }
+}
