@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using Wox.Plugin.Program.Programs;
 
 namespace Wox.Plugin.Program
@@ -18,9 +19,11 @@ namespace Wox.Plugin.Program
 
         public class ProgramSource
         {
+            private string name;
+
             public string Location { get; set; }
-            public string LocationFile { get; set; }
-            public bool EnableIndexing { get; set; } = true;
+            public string Name { get => name ?? new DirectoryInfo(Location).Name; set => name = value; }
+            public bool Enabled { get; set; } = true;
         }
     }
 }

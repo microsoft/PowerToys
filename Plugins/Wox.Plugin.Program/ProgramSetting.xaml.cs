@@ -47,6 +47,8 @@ namespace Wox.Plugin.Program
             {
                 ReIndexing();
             }
+
+            programSourceView.Items.Refresh();
         }
 
         private void btnDeleteProgramSource_OnClick(object sender, RoutedEventArgs e)
@@ -141,6 +143,13 @@ namespace Wox.Plugin.Program
         {
             _settings.EnableRegistrySource = RegistryEnabled.IsChecked ?? false;
             ReIndexing();
+        }
+
+        private void btnLoadAllProgramSource_OnClick(object sender, RoutedEventArgs e)
+        {
+            Main.AddLoadedApplicationsToSettings();
+
+            programSourceView.Items.Refresh();
         }
     }
 }

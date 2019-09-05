@@ -263,15 +263,15 @@ namespace Wox.Plugin.Program.Programs
         private static ParallelQuery<Win32> UnregisteredPrograms(List<Settings.ProgramSource> sources, string[] suffixes)
         {
             var list = new List<string>();
-            sources.Where(s => Directory.Exists(s.Location) && s.EnableIndexing)
+            sources.Where(s => Directory.Exists(s.Location) && s.Enabled)
                 .SelectMany(s => ProgramPaths(s.Location, suffixes))
                 .ToList()
                 .ForEach(x => list.Add(x));            
 
-            sources.Where(x=> File.Exists(x.LocationFile) && x.EnableIndexing)
-                .Select(y => y.LocationFile)
+            sources.Where(s => File.Exists(s.Location) && s.Enabled)
+                .Select(s => s.Location)
                 .ToList()
-                .ForEach(z => list.Add(z));
+                .ForEach(x => list.Add(x));
 
             var paths = list.ToArray();
 

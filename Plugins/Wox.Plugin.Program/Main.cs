@@ -137,6 +137,19 @@ namespace Wox.Plugin.Program
             Task.WaitAll(t1, t2);
         }
 
+        public static void AddLoadedApplicationsToSettings()
+        {
+            _win32s
+                .Where(t1 => !_settings.ProgramSources.Any(x => x.Name == t1.Name))
+                .ToList()
+                .ForEach(t1 => _settings.ProgramSources.Add(new Settings.ProgramSource (){Name = t1.Name, Location = t1.ParentDirectory }));
+
+            _uwps
+                .Where(t1 => !_settings.ProgramSources.Any(x => x.Name == t1.DisplayName))
+                .ToList()
+                .ForEach(t1 => _settings.ProgramSources.Add(new Settings.ProgramSource() { Name = t1.DisplayName, Location = t1.Package.Location }));            
+        }
+
         public Control CreateSettingPanel()
         {
             return new ProgramSetting(_context, _settings);

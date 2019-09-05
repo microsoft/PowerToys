@@ -207,12 +207,12 @@ namespace Wox.Plugin.Program.Programs
             if(enableProgramSourceOnly)
                 return applications
                         .Where(t1 => applicationsToRetainPaths
-                                        .Any(x => x.LocationFile == t1.Package.Location
-                                                && x.EnableIndexing))
+                                        .Any(x => x.Location == t1.Package.Location
+                                                && x.Enabled))
                         .Select(t1 => t1).ToArray();
 
             // Do not return if the application is disabled for indexing
-            return applications.Where(t1 => !applicationsToRetainPaths.Any(x => x.LocationFile == t1.Package.Location && !x.EnableIndexing))
+            return applications.Where(t1 => !applicationsToRetainPaths.Any(x => x.Location == t1.Package.Location && !x.Enabled))
                              .Select(t1 => t1).ToArray();
         }
 
