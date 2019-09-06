@@ -41,5 +41,4 @@ export class ColorPickerSettingsControl extends BaseSettingsControl {
       </Stack>
     );
   }
-
 }

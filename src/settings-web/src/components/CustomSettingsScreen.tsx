@@ -19,12 +19,13 @@ export class CustomSettingsScreen extends React.Component <any, any> {
       powertoy: props.powertoy,
     }
   }
-  shouldComponentUpdate(nextProps:any, nextState:any)
-  {
+
+  shouldComponentUpdate(nextProps:any, nextState:any) {
     // This component and its children manage their state.
     // React only to state changes when forceUpdate is called by the App component.
     return false;
   }
+
   componentWillReceiveProps(props: any) {
     this.setState({ powertoy: props.powertoy })
   }
@@ -99,7 +100,7 @@ export class CustomSettingsScreen extends React.Component <any, any> {
               (power_toys_properties[b].order || 0)
             )
           }).
-          map( (key) => {
+          map((key) => {
             switch(power_toys_properties[key].editor_type) {
               case 'bool_toggle':
                 return <BoolToggleSettingsControl
