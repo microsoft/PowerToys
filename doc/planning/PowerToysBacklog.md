@@ -1,6 +1,6 @@
 # PowerToys Backlog
 
-The list below is the set of utilities we're considering and the rough priority order of the utilities.  If you have feedback on the order of the utilities, please use the issues for each one to provide that feedback.  Note that new features for existing utilities (dock / undock zone layouts for FancyZones) are tracked in teh abcklog for each utility. 
+The list below is the set of utilities we're considering and the rough priority order of the utilities.  If you have feedback on the order of the utilities, please use the issues for each one to provide that feedback.  Note that new features for existing utilities (dock / undock zone layouts for FancyZones) are tracked in the backlog for each utility. 
 
 ## On deck
 
