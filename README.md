@@ -13,7 +13,7 @@ The first preview of these utilities can be installed from [here](https://github
 ## September Update
 The first preview release of the PowerToys utilities and source code is now live!  This release includes two preview quality utilities as well as the tools and docs to make it easy to create new PowerToys utilities.  
 
-1. [FancyZones](/src/modules/fancyzones/) - FancyZones is a window manager that makes it easy to create copmlex window layouts and quickly position windows into those layouts.  The FancyZones backlog can be found [here](https://github.com/Microsoft/PowerToys/tree/master/doc/planning/FancyZonesBacklog.md)
+1. [FancyZones](/src/modules/fancyzones/) - FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.  The FancyZones backlog can be found [here](https://github.com/Microsoft/PowerToys/tree/master/doc/planning/FancyZonesBacklog.md)
 
 ![FancyZones](src/modules/fancyzones/FancyZones.png)
 
@@ -63,7 +63,7 @@ The full backlog of utilities can be found [here](https://github.com/Microsoft/P
 ## Debugging
   The following configuration issue only applies if the user is a member of the Administrators group.
   
-  Some PowerToys modules require to run with the highest permission level if the current user is a member of the Administrators group. The highest permission level is required in order to be able to perform some actions when an elevated application (e.g. Task Manager) is in the foreground or is the target of an action. Without elevated privileges some PowerToys modules will still work but with some limitations:
+  Some PowerToys modules require being run with the highest permission level if the current user is a member of the Administrators group. The highest permission level is required in order to be able to perform some actions when an elevated application (e.g. Task Manager) is in the foreground or is the target of an action. Without elevated privileges some PowerToys modules will still work but with some limitations:
  - the `FancyZones` module will be not be able to move an elevated window to a zone.
  - the `Shortcut Guide` module will not appear if the foreground window belongs to an elevated application.
  
