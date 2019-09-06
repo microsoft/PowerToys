@@ -63,7 +63,7 @@ The full backlog of utilities can be found [here](https://github.com/Microsoft/P
 ## Debugging
   The following configuration issue only applies if the user is a member of the Administrators group.
   
-  Some PowerToys modules require to run with the highest permission level if the current user is a member of the Administrators group. The highest permission level is required to be able to perform some actions when an elevated application (e.g. Task Manager) is in the foreground or is the target of an action. Without elevated privileges some PowerToys modules will still work but with some limitations:
+  Some PowerToys modules require being run with the highest permission level if the current user is a member of the Administrators group. The highest permission level is required to be able to perform some actions when an elevated application (e.g. Task Manager) is in the foreground or is the target of an action. Without elevated privileges some PowerToys modules will still work but with some limitations:
  - the `FancyZones` module will be not be able to move an elevated window to a zone.
  - the `Shortcut Guide` module will not appear if the foreground window belongs to an elevated application.
  

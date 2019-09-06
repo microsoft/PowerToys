@@ -1,6 +1,6 @@
 # PowerToys Backlog
 
-The list below is the set of utilities we're considering and the rough priority order of the utilities.  If you have feedback on the order of the utilities, please use the issues for each one to provide that feedback.  Note that new features for existing utilities (dock / undock zone layouts for FancyZones) are tracked in teh abcklog for each utility. 
+The list below is the set of utilities we're considering and the rough priority order of the utilities.  If you have feedback on the order of the utilities, please use the issues for each one to provide that feedback.  Note that new features for existing utilities (dock / undock zone layouts for FancyZones) are tracked in the backlog for each utility. 
 
 ## On deck
 
@@ -11,7 +11,7 @@ The list below is the set of utilities we're considering and the rough priority 
 
 ## Backlog
 
-HPlease use issues and votes to guide the project to suggest new ideas and help us prioritize the list below.
+Please use issues and votes to guide the project to suggest new ideas and help us prioritize the list below.
 
 1. [Keyboard shortcut manager](https://github.com/microsoft/PowerToys/issues/6)
 2. [Win+R replacement](https://github.com/microsoft/PowerToys/issues/44)

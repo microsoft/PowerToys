@@ -1,7 +1,7 @@
 # PowerToys Source Code
 
 ## Code organization
-The PowerToys are splitted into DLLs for each PowerToy module ([`modules`](/src/modules) folder), and an executable ([`runner`](/src/runner) folder) that loads and manages those DLLs.
+The PowerToys are split into DLLs for each PowerToy module ([`modules`](/src/modules) folder), and an executable ([`runner`](/src/runner) folder) that loads and manages those DLLs.
 
 The settings window is a separate executable, contained in [`editor`](/src/editor) folder. In utilizes a WebView to display a HTML-based settings window (contained in [`settings-web`](/src/settings-web) folder).
 
