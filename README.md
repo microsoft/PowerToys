@@ -13,11 +13,11 @@ The first preview of these utilities can be installed from [here](https://github
 ## September Update
 The first preview release of the PowerToys utilities and source code is now live!  This release includes two preview quality utilities as well as the tools and docs to make it easy to create new PowerToys utilities.  
 
-1. [FancyZones](/src/modules/fancyzones/) - FancyZones is a window manager that makes it easy to create copmlex window layouts and quickly position windows into those layouts.  The FancyZones backlog can be found [here](https://github.com/Microsoft/PowerToys/tree/master/doc/planning/FancyZonesBacklog.md)
+1. [FancyZones](/src/modules/fancyzones/) - FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.  The FancyZones backlog can be found [here](https://github.com/Microsoft/PowerToys/tree/master/doc/planning/FancyZonesBacklog.md)
 
 ![FancyZones](src/modules/fancyzones/FancyZones.png)
 
-FanzyZones Video Tutorial
+FancyZones Video Tutorial
 [![FancyZones Video Tutorial](doc/images/FZTutorial.jpg)](https://www.youtube.com/watch?v=rTtGzZYAXgY)
 
 2. [Windows key shortcut guide](/src/modules/shortcut_guide) - The shortcut guide appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.  The shortcut guide backlog can be found [here](https://github.com/Microsoft/PowerToys/tree/master/doc/planning/ShortcutGuideBacklog.md)
