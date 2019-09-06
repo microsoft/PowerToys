@@ -11,7 +11,7 @@ The list below is the set of utilities we're considering and the rough priority 
 
 ## Backlog
 
-HPlease use issues and votes to guide the project to suggest new ideas and help us prioritize the list below.
+Please use issues and votes to guide the project to suggest new ideas and help us prioritize the list below.
 
 1. [Keyboard shortcut manager](https://github.com/microsoft/PowerToys/issues/6)
 2. [Win+R replacement](https://github.com/microsoft/PowerToys/issues/44)
