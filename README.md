@@ -44,12 +44,12 @@ The full backlog of utilities can be found [here](https://github.com/Microsoft/P
 # Developer Guidance
 
 ## Build Prerequisites
- * Windows 10 1803 (build 10.0.17134.0) or above in order to build and run PowerToys.
+ * Windows 10 1803 (build 10.0.17134.0) or above to build and run PowerToys.
  * Visual Studio 2019 Community edition or higher, with the 'Desktop Development with C++' component and the Windows 10 SDK version 10.0.18362.0 or higher.
  
 ## Building the Code
  * Open `powertoys.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release` or `Debug`, from the `Build` menu choose `Build Solution`.
- * The PowerToys binaries will be located in your repo under `x64\Release`.
+ * The PowerToys binaries will be in your repo under `x64\Release`.
  * If you want to copy the `PowerToys.exe` binary to a different location, you'll also need to copy the `modules` and the `svgs` folders.
 
 ## Prerequisites to Build the Installer
@@ -63,11 +63,11 @@ The full backlog of utilities can be found [here](https://github.com/Microsoft/P
 ## Debugging
   The following configuration issue only applies if the user is a member of the Administrators group.
   
-  Some PowerToys modules require being run with the highest permission level if the current user is a member of the Administrators group. The highest permission level is required in order to be able to perform some actions when an elevated application (e.g. Task Manager) is in the foreground or is the target of an action. Without elevated privileges some PowerToys modules will still work but with some limitations:
+  Some PowerToys modules require being run with the highest permission level if the current user is a member of the Administrators group. The highest permission level is required to be able to perform some actions when an elevated application (e.g. Task Manager) is in the foreground or is the target of an action. Without elevated privileges some PowerToys modules will still work but with some limitations:
  - the `FancyZones` module will be not be able to move an elevated window to a zone.
  - the `Shortcut Guide` module will not appear if the foreground window belongs to an elevated application.
  
- In order to run and debug PowerToys from Visual Studio when the user is a member of the Administrators group, Visual Studio has to be started with elevated privileges. If you want to avoid running Visual Studio with elevated privileges and don't mind the limitations described above, you can do the following: open the `runner` project properties and navigate to the `Linker -> Manifest File` settings, edit the `UAC Execution Level` property and change it from `highestAvailable (/level='highestAvailable')` to `asInvoker (/level='asInvoker')`, save the changes.
+ To run and debug PowerToys from Visual Studio when the user is a member of the Administrators group, Visual Studio has to be started with elevated privileges. If you want to avoid running Visual Studio with elevated privileges and don't mind the limitations described above, you can do the following: open the `runner` project properties and navigate to the `Linker -> Manifest File` settings, edit the `UAC Execution Level` property and change it from `highestAvailable (/level='highestAvailable')` to `asInvoker (/level='asInvoker')`, save the changes.
  
 ## How to create new PowerToys
 
@@ -85,7 +85,7 @@ This is a work in progress as we learn what we'll need to provide people in orde
 - [Code Organization](doc/coding/organization.md)
 
 # Contributing
-This project welcomes contributions and suggestions and we are excited to work with the power user community to build a set of tools for helping you get the most our of Windows.
+This project welcomes contributions and suggestions and we are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
 
 We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](contributing.md). We will be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
 
