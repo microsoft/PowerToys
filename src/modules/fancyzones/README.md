@@ -21,7 +21,7 @@ The backlog for the utility can be found [here](https://github.com/Microsoft/Pow
 | Shortcut      | Action |
 | ----------- | ----------- |
 | Win + ~      | Launches editor       |
-| Win+Ctrl+<Number>   | Cycles through saved layouts with the coresponding number of zones        |
+| Win+Ctrl+\<Number>   | Cycles through saved layouts with the coresponding number of zones        |
 | Win+Left/Right Arrow | Move focused window between zones (only if Override snap hotkeys setting is enabled)  |
 
 ## Settings
