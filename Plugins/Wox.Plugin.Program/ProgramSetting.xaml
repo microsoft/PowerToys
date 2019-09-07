@@ -13,12 +13,14 @@
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch">
-            <StackPanel Orientation="Vertical" Width="310">
+            <StackPanel Orientation="Vertical" Width="137">
                 <CheckBox Name="StartMenuEnabled" Click="StartMenuEnabled_Click" Margin="5" Content="{DynamicResource wox_plugin_program_index_start}" />
                 <CheckBox Name="RegistryEnabled" Click="RegistryEnabled_Click"  Margin="5" Content="{DynamicResource wox_plugin_program_index_registry}" />
             </StackPanel>
-            <Button Height="30" HorizontalAlignment="Right" x:Name="btnProgramSuffixes" Width="130" Click="BtnProgramSuffixes_OnClick" Content="{DynamicResource wox_plugin_program_suffixes}" />
+            <Button Height="30" HorizontalAlignment="Right" Margin="0,10" x:Name="btnProgramSuffixes" Width="100" Click="BtnProgramSuffixes_OnClick" Content="{DynamicResource wox_plugin_program_suffixes}" />
             <Button Height="30" HorizontalAlignment="Right" Margin="10 0 0 0" x:Name="btnReindex" Width="100" Click="btnReindex_Click" Content="{DynamicResource wox_plugin_program_reindex}" />
+            <Button Height="30" HorizontalAlignment="Right" Margin="10 0 0 0" x:Name="btnLoadAllProgramSource" Click="btnLoadAllProgramSource_OnClick" Width="100"  Content="Load All" />
+            <Button Height="30" HorizontalAlignment="Right" Margin="10 0 0 0" x:Name="btnDisableProgramSource" Click="btnDisableProgramSource_OnClick" Width="100" Content="Disable" />
         </StackPanel>
         <ListView x:Name="programSourceView" Grid.Row="1" AllowDrop="True" SelectionMode="Multiple"
             PreviewMouseRightButtonUp="ProgramSourceView_PreviewMouseRightButtonUp" 
@@ -59,10 +61,8 @@
                 <Button x:Name="btnDeleteProgramSource" Click="btnDeleteProgramSource_OnClick" Width="100" Margin="10" Content="{DynamicResource wox_plugin_program_delete}"/>
                 <Button x:Name="btnEditProgramSource" Click="btnEditProgramSource_OnClick" Width="100" Margin="10" Content="{DynamicResource wox_plugin_program_edit}"/>
                 <Button x:Name="btnAddProgramSource" Click="btnAddProgramSource_OnClick" Width="100" Margin="10" Content="{DynamicResource wox_plugin_program_add}"/>
-                <Button x:Name="btnLoadAllProgramSource" Click="btnLoadAllProgramSource_OnClick" Width="100" Margin="10" Content="Load All"/>
             </StackPanel>
         </DockPanel>
-        <Button x:Name="btnDisableProgramSource" Click="btnDisableProgramSource_OnClick" Margin="470,0,0,0" Content="Disable" Grid.Row="1" HorizontalAlignment="Left" Width="100" Height="30" VerticalAlignment="Bottom"/>
     </Grid>
 </UserControl>
 
