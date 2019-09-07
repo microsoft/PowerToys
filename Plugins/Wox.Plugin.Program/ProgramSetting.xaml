@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Wox.Plugin.Program.ProgramSetting"
+<UserControl x:Class="Wox.Plugin.Program.ProgramSetting"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -20,7 +20,8 @@
             <Button Height="30" HorizontalAlignment="Right" x:Name="btnProgramSuffixes" Width="130" Click="BtnProgramSuffixes_OnClick" Content="{DynamicResource wox_plugin_program_suffixes}" />
             <Button Height="30" HorizontalAlignment="Right" Margin="10 0 0 0" x:Name="btnReindex" Width="100" Click="btnReindex_Click" Content="{DynamicResource wox_plugin_program_reindex}" />
         </StackPanel>
-        <ListView x:Name="programSourceView" Grid.Row="1" AllowDrop="True"
+        <ListView x:Name="programSourceView" Grid.Row="1" AllowDrop="True" SelectionMode="Multiple"
+            PreviewMouseRightButtonUp="ProgramSourceView_PreviewMouseRightButtonUp" 
             DragEnter="programSourceView_DragEnter"
             Drop="programSourceView_Drop" >
             <ListView.View>
@@ -29,6 +30,13 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Enabled" Width="50">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Enabled}"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
@@ -54,6 +62,7 @@
                 <Button x:Name="btnLoadAllProgramSource" Click="btnLoadAllProgramSource_OnClick" Width="100" Margin="10" Content="Load All"/>
             </StackPanel>
         </DockPanel>
+        <Button x:Name="btnDisableProgramSource" Click="btnDisableProgramSource_OnClick" Margin="470,0,0,0" Content="Disable" Grid.Row="1" HorizontalAlignment="Left" Width="100" Height="30" VerticalAlignment="Bottom"/>
     </Grid>
 </UserControl>
 

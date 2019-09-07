@@ -150,6 +150,14 @@ namespace Wox.Plugin.Program
                 .ForEach(t1 => _settings.ProgramSources.Add(new Settings.ProgramSource() { Name = t1.DisplayName, Location = t1.Package.Location }));            
         }
 
+        public static void DisableProgramSources(List<Settings.ProgramSource> programSourcesToDisable)
+        {
+            _settings.ProgramSources
+                .Where(t1 => programSourcesToDisable.Any(x => x.Name == t1.Name && x.Location == t1.Location && t1.Enabled))
+                .ToList()
+                .ForEach(t1 => t1.Enabled = false);
+        }
+
         public Control CreateSettingPanel()
         {
             return new ProgramSetting(_context, _settings);

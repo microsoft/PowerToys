@@ -1,7 +1,11 @@
-﻿using System.IO;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Wox.Plugin.Program.Programs;
 
 namespace Wox.Plugin.Program
@@ -150,6 +154,20 @@ namespace Wox.Plugin.Program
             Main.AddLoadedApplicationsToSettings();
 
             programSourceView.Items.Refresh();
+        }
+
+        private void btnDisableProgramSource_OnClick(object sender, RoutedEventArgs e)
+        {
+            Main.DisableProgramSources(programSourceView.SelectedItems.Cast<Settings.ProgramSource>().ToList());
+
+            programSourceView.SelectedItems.Clear();
+
+            programSourceView.Items.Refresh();            
+        }
+
+        private void ProgramSourceView_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            programSourceView.SelectedItems.Clear();
         }
     }
 }
