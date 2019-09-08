@@ -17,14 +17,14 @@ namespace Wox.Plugin.Program
     public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
     {
         private static readonly object IndexLock = new object();
-        private static Win32[] _win32s;
-        private static UWP.Application[] _uwps;
+        internal static Win32[] _win32s { get; set; }
+        internal static UWP.Application[] _uwps { get; set; }
+        internal static Settings _settings { get; set; }
 
         private static PluginInitContext _context;
 
         private static BinaryStorage<Win32[]> _win32Storage;
-        private static BinaryStorage<UWP.Application[]> _uwpStorage;
-        private static Settings _settings;
+        private static BinaryStorage<UWP.Application[]> _uwpStorage;        
         private readonly PluginJsonStorage<Settings> _settingsStorage;
 
         public Main()

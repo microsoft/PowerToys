@@ -24,6 +24,7 @@ namespace Wox.Plugin.Program.Programs
         public string ExecutableName { get; set; }
         public string Description { get; set; }
         public bool Valid { get; set; }
+        public bool Enabled { get; set; }
 
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
@@ -129,7 +130,8 @@ namespace Wox.Plugin.Program.Programs
                 FullPath = path,
                 ParentDirectory = Directory.GetParent(path).FullName,
                 Description = string.Empty,
-                Valid = true
+                Valid = true,
+                Enabled = true
             };
             return p;
         }

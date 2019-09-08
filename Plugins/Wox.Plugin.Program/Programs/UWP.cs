@@ -248,6 +248,8 @@ namespace Wox.Plugin.Program.Programs
             public string UserModelId { get; set; }
             public string BackgroundColor { get; set; }
 
+            public bool Enabled { get; set; }
+
             public string LogoUri { get; set; }
             public string LogoPath { get; set; }
             public UWP Package { get; set; }
@@ -344,6 +346,8 @@ namespace Wox.Plugin.Program.Programs
                 Description = ResourceFromPri(package.FullName, Description);
                 LogoUri = LogoUriFromManifest(manifestApp);
                 LogoPath = LogoPathFromUri(LogoUri);
+
+                Enabled = true;
             }
 
             internal string ResourceFromPri(string packageFullName, string resourceReference)
