@@ -237,7 +237,7 @@ void FancyZones::ToggleEditor() noexcept
         m_terminateEditorEvent.reset(CreateEvent(nullptr, true, false, nullptr));
     }
 
-	const HWND foregroundWindow = GetForegroundWindow();
+    const HWND foregroundWindow = GetForegroundWindow();
     if (const HMONITOR monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTOPRIMARY))
     {
         std::shared_lock readLock(m_lock);
@@ -245,10 +245,10 @@ void FancyZones::ToggleEditor() noexcept
         if (iter != m_zoneWindowMap.end())
         {
             const std::wstring params =
-				iter->second->UniqueId() + L" " +
-				std::to_wstring(iter->second->ActiveZoneSet()->LayoutId()) + L" " +
-				std::to_wstring(reinterpret_cast<UINT_PTR>(foregroundWindow)) + L" " +
-				std::to_wstring(reinterpret_cast<UINT_PTR>(monitor));
+                iter->second->UniqueId() + L" " +
+                std::to_wstring(iter->second->ActiveZoneSet()->LayoutId()) + L" " +
+                std::to_wstring(reinterpret_cast<UINT_PTR>(foregroundWindow)) + L" " +
+                std::to_wstring(reinterpret_cast<UINT_PTR>(monitor));
 
             SHELLEXECUTEINFO sei{ sizeof(sei) };
             sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };

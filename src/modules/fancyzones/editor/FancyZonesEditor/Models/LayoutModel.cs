@@ -186,14 +186,12 @@ namespace FancyZonesEditor.Models
             // Scale all the zones to the DPI and then pack them up to be marshalled.
             int zoneCount = zones.Length;
             var zoneArray = new int[zoneCount * 4];
-            var graphics = System.Drawing.Graphics.FromHwnd(IntPtr.Zero);
-            float dpi = graphics.DpiX / 96;
             for (int i = 0; i < zones.Length; i++)
             {
-                var left = (int)(zones[i].X * dpi);
-                var top = (int)(zones[i].Y * dpi);
-                var right = left + (int)(zones[i].Width * dpi);
-                var bottom = top + (int)(zones[i].Height * dpi);
+                var left = (int)(zones[i].X * Settings.Dpi);
+                var top = (int)(zones[i].Y * Settings.Dpi);
+                var right = left + (int)(zones[i].Width * Settings.Dpi);
+                var bottom = top + (int)(zones[i].Height * Settings.Dpi);
 
                 var index = i * 4;
                 zoneArray[index] = left;
@@ -202,19 +200,8 @@ namespace FancyZonesEditor.Models
                 zoneArray[index+3] = bottom;
             }
 
-            string[] args = Environment.GetCommandLineArgs();
-            if (args.Length > 1)
-            {
-                string uniqueId = args[1];
-                uint monitor = 0;
-                if (args.Length > 3)
-                {
-                    monitor = uint.Parse(args[4]);
-                }
-
-                var persistZoneSet = Marshal.GetDelegateForFunctionPointer<Native.PersistZoneSet>(pfn);
-                persistZoneSet(uniqueId, monitor, _id, zoneCount, zoneArray);
-            }
+            var persistZoneSet = Marshal.GetDelegateForFunctionPointer<Native.PersistZoneSet>(pfn);
+            persistZoneSet(Settings.UniqueKey, Settings.Monitor, _id, zoneCount, zoneArray);
         }
 
         private static readonly string c_registryPath = Settings.RegistryPath + "\\Layouts";

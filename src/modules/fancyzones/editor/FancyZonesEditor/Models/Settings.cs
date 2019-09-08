@@ -23,21 +23,7 @@ namespace FancyZonesEditor
     {
         public Settings()
         {
-            _workArea = System.Windows.SystemParameters.WorkArea;
-            string[] args = Environment.GetCommandLineArgs();
-            if (args.Length > 2)
-            {
-                var foregroundWindow = uint.Parse(args[3]);
-                var screen = System.Windows.Forms.Screen.FromHandle(new IntPtr(foregroundWindow));
-
-                var graphics = System.Drawing.Graphics.FromHwnd(IntPtr.Zero);
-                float dpi = graphics.DpiX / 96;
-                _workArea = new Rect(
-                    screen.WorkingArea.X / dpi,
-                    screen.WorkingArea.Y / dpi,
-                    screen.WorkingArea.Width / dpi,
-                    screen.WorkingArea.Height / dpi);
-            }
+            ParseCommandLineArgs();
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
             _defaultModels = new List<LayoutModel>(5);
@@ -62,9 +48,9 @@ namespace FancyZonesEditor
 
             _blankCustomModel = new CanvasLayoutModel("Create new custom", c_blankCustomModelId, (int)_workArea.Width, (int)_workArea.Height);
 
-            _zoneCount = (int)Registry.GetValue(FullRegistryPath, "ZoneCount", 3);
-            _spacing = (int)Registry.GetValue(FullRegistryPath, "Spacing", 16);
-            _showSpacing = (int)Registry.GetValue(FullRegistryPath, "ShowSpacing", 1) == 1;
+            _zoneCount = (int)Registry.GetValue(_uniqueRegistryPath, "ZoneCount", 3);
+            _spacing = (int)Registry.GetValue(_uniqueRegistryPath, "Spacing", 16);
+            _showSpacing = (int)Registry.GetValue(_uniqueRegistryPath, "ShowSpacing", 1) == 1;
 
             UpdateLayoutModels();
         }
@@ -78,7 +64,7 @@ namespace FancyZonesEditor
                 if (_zoneCount != value)
                 {
                     _zoneCount = value;
-                    Registry.SetValue(FullRegistryPath, "ZoneCount", _zoneCount, RegistryValueKind.DWord);
+                    Registry.SetValue(_uniqueRegistryPath, "ZoneCount", _zoneCount, RegistryValueKind.DWord);
                     UpdateLayoutModels();
                     FirePropertyChanged("ZoneCount");
                 }
@@ -95,7 +81,7 @@ namespace FancyZonesEditor
                 if (_spacing != value)
                 {
                     _spacing = value;
-                    Registry.SetValue(FullRegistryPath, "Spacing", _spacing, RegistryValueKind.DWord);
+                    Registry.SetValue(_uniqueRegistryPath, "Spacing", _spacing, RegistryValueKind.DWord);
                     FirePropertyChanged("Spacing");
                 }
             }
@@ -111,7 +97,7 @@ namespace FancyZonesEditor
                 if (_showSpacing != value)
                 {
                     _showSpacing = value;
-                    Registry.SetValue(FullRegistryPath, "ShowSpacing", _showSpacing, RegistryValueKind.DWord);
+                    Registry.SetValue(_uniqueRegistryPath, "ShowSpacing", _showSpacing, RegistryValueKind.DWord);
                     FirePropertyChanged("ShowSpacing");
                 }
             }
@@ -153,6 +139,25 @@ namespace FancyZonesEditor
             get { return _workArea; }
         }
         private Rect _workArea;
+
+        public static uint Monitor
+        {
+            get { return _monitor; }
+        }
+        private static uint _monitor;
+
+        public static String UniqueKey
+        {
+            get { return _uniqueKey; }
+        }
+        private static String _uniqueKey;
+        private String _uniqueRegistryPath;
+
+        public static float Dpi
+        {
+            get { return _dpi; }
+        }
+        private static float _dpi;
 
         // UpdateLayoutModels
         //  Update the five default layouts based on the new ZoneCount
@@ -252,6 +257,44 @@ namespace FancyZonesEditor
                 _priorityGridModel.CellChildMap = _gridModel.CellChildMap;
             }
         }
+
+        private void ParseCommandLineArgs()
+        {
+            _workArea = System.Windows.SystemParameters.WorkArea;
+            _monitor = 0;
+            _uniqueKey = "";
+            _dpi = 1;
+
+            string[] args = Environment.GetCommandLineArgs();
+            if (args.Length == 5)
+            {
+                // 1 = unique key for per-monitor settings
+                // 2 = layoutid used to generate current layout
+                // 3 = handle to foreground window (used to figure out which monitor to show on)
+                // 4 = handle to monitor (passed back to engine to persist data)
+
+                _uniqueKey = args[1];
+                _uniqueRegistryPath = FullRegistryPath + "\\" + _uniqueKey;
+
+                var foregroundWindow = new IntPtr(uint.Parse(args[3]));
+                var screen = System.Windows.Forms.Screen.FromHandle(foregroundWindow);
+
+                var graphics = System.Drawing.Graphics.FromHwnd(foregroundWindow);
+                _dpi = graphics.DpiX / 96;
+                _workArea = new Rect(
+                    screen.WorkingArea.X / _dpi,
+                    screen.WorkingArea.Y / _dpi,
+                    screen.WorkingArea.Width / _dpi,
+                    screen.WorkingArea.Height / _dpi);
+
+                uint monitor = 0;
+                if (uint.TryParse(args[4], out monitor))
+                {
+                    _monitor = monitor;
+                }
+            }
+        }
+
 
         public IList<LayoutModel> DefaultModels { get { return _defaultModels; } }
         public ObservableCollection<LayoutModel> CustomModels
