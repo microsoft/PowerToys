@@ -23,11 +23,25 @@ namespace FancyZonesEditor
     {
         public Settings()
         {
-            Rect workArea = System.Windows.SystemParameters.WorkArea;
+            _workArea = System.Windows.SystemParameters.WorkArea;
+            string[] args = Environment.GetCommandLineArgs();
+            if (args.Length > 2)
+            {
+                var foregroundWindow = uint.Parse(args[3]);
+                var screen = System.Windows.Forms.Screen.FromHandle(new IntPtr(foregroundWindow));
+
+                var graphics = System.Drawing.Graphics.FromHwnd(IntPtr.Zero);
+                float dpi = graphics.DpiX / 96;
+                _workArea = new Rect(
+                    screen.WorkingArea.X / dpi,
+                    screen.WorkingArea.Y / dpi,
+                    screen.WorkingArea.Width / dpi,
+                    screen.WorkingArea.Height / dpi);
+            }
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
             _defaultModels = new List<LayoutModel>(5);
-            _focusModel = new CanvasLayoutModel("Focus", c_focusModelId, (int)workArea.Width, (int)workArea.Height);
+            _focusModel = new CanvasLayoutModel("Focus", c_focusModelId, (int)_workArea.Width, (int)_workArea.Height);
             _defaultModels.Add(_focusModel);
 
             _columnsModel = new GridLayoutModel("Columns", c_columnsModelId);
@@ -46,7 +60,7 @@ namespace FancyZonesEditor
             _priorityGridModel = new GridLayoutModel("Priority Grid", c_priorityGridModelId);
             _defaultModels.Add(_priorityGridModel);
 
-            _blankCustomModel = new CanvasLayoutModel("Create new custom", c_blankCustomModelId, (int)workArea.Width, (int)workArea.Height);
+            _blankCustomModel = new CanvasLayoutModel("Create new custom", c_blankCustomModelId, (int)_workArea.Width, (int)_workArea.Height);
 
             _zoneCount = (int)Registry.GetValue(FullRegistryPath, "ZoneCount", 3);
             _spacing = (int)Registry.GetValue(FullRegistryPath, "Spacing", 16);
@@ -133,6 +147,12 @@ namespace FancyZonesEditor
             }
         }
         private bool _isCtrlKeyPressed;
+
+        public Rect WorkArea
+        {
+            get { return _workArea; }
+        }
+        private Rect _workArea;
 
         // UpdateLayoutModels
         //  Update the five default layouts based on the new ZoneCount

@@ -155,7 +155,7 @@ namespace FancyZonesEditor.Models
 
             internal delegate int PersistZoneSet(
                 [MarshalAs(UnmanagedType.LPWStr)] string activeKey,
-                [MarshalAs(UnmanagedType.LPWStr)] string key,
+                uint monitor,
                 ushort layoutId,
                 int zoneCount,
                 [MarshalAs(UnmanagedType.LPArray)] int[] zoneArray);
@@ -205,18 +205,15 @@ namespace FancyZonesEditor.Models
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1)
             {
-                // args[1] = registry key value of currently active ZoneSet
-                // args[2] = id of layout to load at startup
-
                 string uniqueId = args[1];
-
-                // TODO: multimon
-                double height = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height;
-                double width = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width;
-                var key = width.ToString() + "_" + height.ToString();
+                uint monitor = 0;
+                if (args.Length > 3)
+                {
+                    monitor = uint.Parse(args[4]);
+                }
 
                 var persistZoneSet = Marshal.GetDelegateForFunctionPointer<Native.PersistZoneSet>(pfn);
-                persistZoneSet(uniqueId, key, _id, zoneCount, zoneArray);
+                persistZoneSet(uniqueId, monitor, _id, zoneCount, zoneArray);
             }
         }
 

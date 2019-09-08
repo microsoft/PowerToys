@@ -41,7 +41,7 @@ namespace FancyZonesEditor
             }
             else if (xDelta > 0)
             {
-                xDelta = Math.Min(xDelta, c_workArea.Width - rect.Width - rect.X);
+                xDelta = Math.Min(xDelta, _settings.WorkArea.Width - rect.Width - rect.X);
             }
 
             if (yDelta < 0)
@@ -50,7 +50,7 @@ namespace FancyZonesEditor
             }
             else if (yDelta > 0)
             {
-                yDelta = Math.Min(yDelta, c_workArea.Height - rect.Height - rect.Y);
+                yDelta = Math.Min(yDelta, _settings.WorkArea.Height - rect.Height - rect.Y);
             }
 
             rect.X += (int) xDelta;
@@ -69,13 +69,13 @@ namespace FancyZonesEditor
             {
                 int newWidth = rect.Width + (int) xDelta;
 
-                if (newWidth < 48)
+                if (newWidth < c_minZoneSize)
                 {
-                    newWidth = 48;
+                    newWidth = c_minZoneSize;
                 }
-                else if (newWidth > (c_workArea.Width - rect.X))
+                else if (newWidth > (_settings.WorkArea.Width - rect.X))
                 {
-                    newWidth = (int) c_workArea.Width - rect.X;
+                    newWidth = (int) _settings.WorkArea.Width - rect.X;
                 }
                 MinWidth = rect.Width = newWidth;
             }
@@ -84,13 +84,13 @@ namespace FancyZonesEditor
             {
                 int newHeight = rect.Height + (int)yDelta;
 
-                if (newHeight < 48)
+                if (newHeight < c_minZoneSize)
                 {
-                    newHeight = 48;
+                    newHeight = c_minZoneSize;
                 }
-                else if (newHeight > (c_workArea.Height - rect.Y))
+                else if (newHeight > (_settings.WorkArea.Height - rect.Y))
                 {
-                    newHeight = (int)c_workArea.Height - rect.Y;
+                    newHeight = (int)_settings.WorkArea.Height - rect.Y;
                 }
                 MinHeight = rect.Height = newHeight;
             }
@@ -98,10 +98,7 @@ namespace FancyZonesEditor
         }
 
         private static int c_zIndex = 0;
-
-        // TODO: multimon
-        // This needs to be the work area of the monitor we get launched on
-        private static Rect c_workArea = System.Windows.SystemParameters.WorkArea;
+        private static int c_minZoneSize = 48;
 
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
@@ -163,5 +160,7 @@ namespace FancyZonesEditor
             ((Panel)Parent).Children.Remove(this);
             Model.RemoveZoneAt(ZoneIndex);
         }
+
+        private Settings _settings = ((App)Application.Current).ZoneSettings;
     }
 }
