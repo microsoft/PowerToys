@@ -9,6 +9,7 @@ using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin.Program.Programs;
+using Wox.Plugin.Program.Views;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox.Plugin.Program
@@ -135,32 +136,11 @@ namespace Wox.Plugin.Program
             var t2 = Task.Run(() => { IndexUWPPrograms(); });
 
             Task.WaitAll(t1, t2);
-        }
-
-        public static void AddLoadedApplicationsToSettings()
-        {
-            _win32s
-                .Where(t1 => !_settings.ProgramSources.Any(x => x.Name == t1.Name))
-                .ToList()
-                .ForEach(t1 => _settings.ProgramSources.Add(new Settings.ProgramSource (){Name = t1.Name, Location = t1.ParentDirectory }));
-
-            _uwps
-                .Where(t1 => !_settings.ProgramSources.Any(x => x.Name == t1.DisplayName))
-                .ToList()
-                .ForEach(t1 => _settings.ProgramSources.Add(new Settings.ProgramSource() { Name = t1.DisplayName, Location = t1.Package.Location }));            
-        }
-
-        public static void DisableProgramSources(List<Settings.ProgramSource> programSourcesToDisable)
-        {
-            _settings.ProgramSources
-                .Where(t1 => programSourcesToDisable.Any(x => x.Name == t1.Name && x.Location == t1.Location && t1.Enabled))
-                .ToList()
-                .ForEach(t1 => t1.Enabled = false);
-        }
+        }        
 
         public Control CreateSettingPanel()
         {
-            return new ProgramSetting(_context, _settings);
+            return new ProgramSetting(_context, _settings, _win32s, _uwps);
         }
 
         public string GetTranslatedPluginTitle()

@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Wox.Plugin.Program.Views.Models;
+using Wox.Plugin.Program.Views.Commands;
 using Wox.Plugin.Program.Programs;
 
-namespace Wox.Plugin.Program
+namespace Wox.Plugin.Program.Views
 {
     /// <summary>
     /// Interaction logic for ProgramSetting.xaml
@@ -17,8 +19,9 @@ namespace Wox.Plugin.Program
     {
         private PluginInitContext context;
         private Settings _settings;
+        internal static List<ProgramSource> ProgramSettingDisplayList { get; set; }
 
-        public ProgramSetting(PluginInitContext context, Settings settings)
+        public ProgramSetting(PluginInitContext context, Settings settings, Win32[] win32s, UWP.Application[] uwps)
         {
             this.context = context;
             InitializeComponent();
@@ -28,7 +31,9 @@ namespace Wox.Plugin.Program
 
         private void Setting_Loaded(object sender, RoutedEventArgs e)
         {
-            programSourceView.ItemsSource = _settings.ProgramSources;
+            ProgramSettingDisplayList = _settings.ProgramSources.LoadProgramSources();
+            programSourceView.ItemsSource = ProgramSettingDisplayList;
+
             StartMenuEnabled.IsChecked = _settings.EnableStartMenuSource;
             RegistryEnabled.IsChecked = _settings.EnableRegistrySource;
         }
@@ -151,14 +156,17 @@ namespace Wox.Plugin.Program
 
         private void btnLoadAllProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
-            Main.AddLoadedApplicationsToSettings();
+            ProgramSettingDisplayList.LoadAllApplications();
 
             programSourceView.Items.Refresh();
         }
 
         private void btnDisableProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
-            Main.DisableProgramSources(programSourceView.SelectedItems.Cast<Settings.ProgramSource>().ToList());
+            ProgramSettingDisplayList
+                .DisableProgramSources(programSourceView
+                                        .SelectedItems.Cast<ProgramSource>()
+                                        .ToList());
 
             programSourceView.SelectedItems.Clear();
 

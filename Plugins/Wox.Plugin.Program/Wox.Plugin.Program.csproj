@@ -71,13 +71,15 @@
     <Compile Include="AddProgramSource.xaml.cs">
       <DependentUpon>AddProgramSource.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Commands\ProgramSettingDisplay.cs" />
     <Compile Include="FileChangeWatcher.cs" />
+    <Compile Include="Views\Models\ProgramSource.cs" />
     <Compile Include="Programs\IProgram.cs" />
     <Compile Include="Programs\UWP.cs" />
     <Compile Include="Programs\Win32.cs" />
     <Compile Include="SuffixesConverter.cs" />
     <Compile Include="Main.cs" />
-    <Compile Include="ProgramSetting.xaml.cs">
+    <Compile Include="Views\ProgramSetting.xaml.cs">
       <DependentUpon>ProgramSetting.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings.cs" />
@@ -130,7 +132,7 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Page Include="ProgramSetting.xaml">
+    <Page Include="Views\ProgramSetting.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
