@@ -27,7 +27,7 @@ steps:
   displayName: 'Build solution **\PowerToys.sln'
   inputs:
     solution: '**\PowerToys.sln'
-    vsVersion: 15.0
+    vsVersion: 16.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
