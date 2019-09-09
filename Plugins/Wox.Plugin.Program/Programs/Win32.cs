@@ -18,6 +18,7 @@ namespace Wox.Plugin.Program.Programs
     public class Win32 : IProgram
     {
         public string Name { get; set; }
+        public string UniqueIdentifier { get; set; }
         public string IcoPath { get; set; }
         public string FullPath { get; set; }
         public string ParentDirectory { get; set; }
@@ -128,6 +129,7 @@ namespace Wox.Plugin.Program.Programs
                 Name = Path.GetFileNameWithoutExtension(path),
                 IcoPath = path,
                 FullPath = path,
+                UniqueIdentifier = path,
                 ParentDirectory = Directory.GetParent(path).FullName,
                 Description = string.Empty,
                 Valid = true,
@@ -264,18 +266,13 @@ namespace Wox.Plugin.Program.Programs
 
         private static ParallelQuery<Win32> UnregisteredPrograms(List<Settings.ProgramSource> sources, string[] suffixes)
         {
-            var list = new List<string>();
+            var listToAdd = new List<string>();
             sources.Where(s => Directory.Exists(s.Location) && s.Enabled)
                 .SelectMany(s => ProgramPaths(s.Location, suffixes))
                 .ToList()
-                .ForEach(x => list.Add(x));            
+                .ForEach(x => listToAdd.Add(x));
 
-            sources.Where(s => File.Exists(s.Location) && s.Enabled)
-                .Select(s => s.Location)
-                .ToList()
-                .ForEach(x => list.Add(x));
-
-            var paths = list.ToArray();
+            var paths = listToAdd.ToArray();
 
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ExeExtension).Select(ExeProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(ExeProgram);
@@ -288,11 +285,18 @@ namespace Wox.Plugin.Program.Programs
 
         private static ParallelQuery<Win32> StartMenuPrograms(string[] suffixes)
         {
+            var disabledProgramsList = Main._settings.ProgramSources.Where(x => !x.Enabled).Select(x => x);
+
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
             var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
             var paths1 = ProgramPaths(directory1, suffixes);
             var paths2 = ProgramPaths(directory2, suffixes);
-            var paths = paths1.Concat(paths2).ToArray();
+
+            var toFilter = paths1.Concat(paths2);
+            toFilter.Where(t1 => !disabledProgramsList.Any(x => !x.Enabled && x.UniqueIdentifier == t1)).Select(t1 => t1);
+
+            var paths = toFilter.ToArray();
+
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p) == ApplicationReferenceExtension).Select(Win32Program);
             var programs = programs1.Concat(programs2).Where(p => p.Valid);
@@ -319,7 +323,12 @@ namespace Wox.Plugin.Program.Programs
                     programs.AddRange(ProgramsFromRegistryKey(root));
                 }
             }
-            var filtered = programs.AsParallel().Where(p => suffixes.Contains(Extension(p.ExecutableName)));
+
+            var disabledProgramsList = Main._settings.ProgramSources.Where(x => !x.Enabled).Select(x => x);
+            var toFilter = programs.AsParallel().Where(p => suffixes.Contains(Extension(p.ExecutableName)));
+
+            var filtered = toFilter.Where(t1 => !disabledProgramsList.Any(x => !x.Enabled && x.UniqueIdentifier == t1.UniqueIdentifier)).Select(t1 => t1);
+
             return filtered;
         }
 
@@ -399,10 +408,6 @@ namespace Wox.Plugin.Program.Programs
             
             var unregistered = UnregisteredPrograms(settings.ProgramSources, settings.ProgramSuffixes);
             programs = programs.Concat(unregistered);
-
-            if (settings.EnableProgramSourceOnly)
-                return programs.ToArray();
-            
             if (settings.EnableRegistrySource)
             {
                 var appPaths = AppPathsPrograms(settings.ProgramSuffixes);

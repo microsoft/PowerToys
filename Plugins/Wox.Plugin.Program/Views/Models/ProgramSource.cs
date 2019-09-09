@@ -13,6 +13,7 @@ namespace Wox.Plugin.Program.Views.Models
 
         public string Location { get; set; }
         public string Name { get => name ?? new DirectoryInfo(Location).Name; set => name = value; }
+        public string UniqueIdentifier { get; set; }
         public bool Enabled { get; set; } = true;
     }
 }

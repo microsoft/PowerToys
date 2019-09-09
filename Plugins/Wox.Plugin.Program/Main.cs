@@ -96,8 +96,14 @@ namespace Wox.Plugin.Program
         {
             lock (IndexLock)
             {
-                var results1 = _win32s.AsParallel().Select(p => p.Result(query.Search, _context.API));
-                var results2 = _uwps.AsParallel().Select(p => p.Result(query.Search, _context.API));
+                var results1 = _win32s.AsParallel()
+                    .Where(p => p.Enabled)
+                    .Select(p => p.Result(query.Search, _context.API));
+
+                var results2 = _uwps.AsParallel()
+                    .Where(p => p.Enabled)
+                    .Select(p => p.Result(query.Search, _context.API));
+
                 var result = results1.Concat(results2).Where(r => r.Score > 0).ToList();
                 return result;
             }
@@ -123,9 +129,9 @@ namespace Wox.Plugin.Program
 
             lock (IndexLock)
             {
-                var allUWPs = support ? UWP.All() : new UWP.Application[] { };
+                _uwps = support ? UWP.All() : new UWP.Application[] { };
 
-                _uwps = UWP.RetainApplications(allUWPs, _settings.ProgramSources, _settings.EnableProgramSourceOnly);
+                //_uwps = UWP.RetainApplications(allUWPs, _settings.ProgramSources, _settings.EnableProgramSourceOnly);
             }
         }
 

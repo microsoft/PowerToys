@@ -168,6 +168,8 @@ namespace Wox.Plugin.Program.Views
                                         .SelectedItems.Cast<ProgramSource>()
                                         .ToList());
 
+            ProgramSettingDisplayList.StoreDisabledInSettings();
+
             programSourceView.SelectedItems.Clear();
 
             programSourceView.Items.Refresh();            

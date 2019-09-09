@@ -17,6 +17,13 @@ namespace Wox.Plugin.Program
 
         internal const char SuffixSeperator = ';';
 
+        /// <summary>
+        /// Contains user added folder location contents as well as all user disabled applications
+        /// </summary>
+        /// <remarks>
+        /// <para>Win32 class applications sets UniqueIdentifier using their full path</para>
+        /// <para>UWP class applications sets UniqueIdentifier using their Application User Model ID</para>
+        /// </remarks>
         public class ProgramSource
         {
             private string name;
@@ -24,6 +31,7 @@ namespace Wox.Plugin.Program
             public string Location { get; set; }
             public string Name { get => name ?? new DirectoryInfo(Location).Name; set => name = value; }
             public bool Enabled { get; set; } = true;
+            public string UniqueIdentifier { get; set; }
         }
     }
 }
