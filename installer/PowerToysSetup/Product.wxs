@@ -25,8 +25,9 @@
 
     <Icon Id="powertoys.ico" SourceFile="$(var.BinX64Dir)\svgs\icon.ico"/>
     <Property Id="ARPPRODUCTICON" Value="powertoys.ico" />
-    <Feature Id="ProductFeature" Title="PowerToys" Level="1">
-      <ComponentGroupRef Id="ProductComponents" />
+    <Feature Id="CoreFeature" Title="PowerToys" AllowAdvertise="no" Absent="disallow" TypicalDefault="install"
+             Description="Contains the Shortcut Guide and Fancy Zones features.">
+      <ComponentGroupRef Id="CoreComponents" />
     </Feature>
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
     <UI>
@@ -169,7 +170,7 @@
         </Directory>
       </Directory>
       <Directory Id="ProgramMenuFolder">
-        <Directory Id ="ApplicationProgramsFolder" Name ="PowerToys"/>
+        <Directory Id="ApplicationProgramsFolder" Name="PowerToys"/>
       </Directory>
       <Directory Id="DesktopFolder" Name="Desktop"/>
     </Directory>
@@ -178,7 +179,18 @@
   <Fragment>
     <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.BinX64Dir)">
       <Component Id="powertoys_exe" Guid="A2C66D91-3485-4D00-B04D-91844E6B345B" Win64="yes">
-        <File Id="PowerToys.exe" KeyPath="yes" Checksum="yes" />
+        <File Id="PowerToys.exe" KeyPath="yes" Checksum="yes">
+          <Shortcut Id="ApplicationStartMenuShortcut"
+                    Name="PowerToys"
+                    Description="PowerToys - Windows system utilities to maximize productivity"
+                    Directory="ApplicationProgramsFolder"
+                    WorkingDirectory="INSTALLFOLDER"
+                    Icon="powertoys.ico"
+                    IconIndex="0"
+                    Advertise="yes" />
+        </File>
+
+        <RemoveFolder Id="DeleteShortcutFolder" Directory="ApplicationProgramsFolder" On="uninstall" />
       </Component>
       <Component Id="settings_exe" Guid="A5A461A9-7097-4CBA-9D39-3DBBB6B7B80C" Win64="yes">
         <File Id="PowerToysSettings.exe" KeyPath="yes" Checksum="yes" />
@@ -227,27 +239,6 @@
       </Component>
     </DirectoryRef>
 
-    <DirectoryRef Id="ApplicationProgramsFolder">
-      <Component Id="ApplicationShortcut" Guid="43184672-485D-4632-A16C-12D5E33B1F11">
-        <Condition>INSTALLSTARTMENUSHORTCUT</Condition>
-        <Shortcut Id="ApplicationStartMenuShortcut"
-                  Name="PowerToys"
-                  Description="PowerToys - Windows system utilities to maximize productivity"
-                  Target="[!PowerToys.exe]"
-                  WorkingDirectory="INSTALLFOLDER"
-                  Icon="powertoys.ico"
-                  IconIndex="0"/>
-        <RemoveFolder Id="RemoveApplicationProgramsFolder" Directory="ApplicationProgramsFolder" On="uninstall"/>
-        <RegistryValue Root="HKCU"
-                       Key="Software\[Manufacturer]\[ProductName]"
-                       Name="startshorcutinstalled"
-                       Type="integer"
-                       Value="1"
-                       KeyPath="yes"/>
-      </Component>
-    </DirectoryRef>
-  </Fragment>
-  <Fragment>
     <DirectoryRef Id="DesktopFolder">
       <Component Id="DesktopShortcut" Guid="87321F2B-CC48-4326-881E-9C62CC260DC8">
         <Condition>INSTALLDESKTOPSHORTCUT</Condition>
@@ -269,13 +260,12 @@
   </Fragment>
 
   <Fragment>
-    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+    <ComponentGroup Id="CoreComponents" Directory="INSTALLFOLDER">
       <ComponentRef Id="powertoys_exe" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="PowerToysSvgs" />
       <ComponentRef Id="Module_ShortcutGuide" />
       <ComponentRef Id="Module_FancyZones" />
-      <ComponentRef Id="ApplicationShortcut" />
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="settings_exe" />
       <ComponentRef Id="settings_html" />
