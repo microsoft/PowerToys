@@ -17,7 +17,6 @@ export class BoolToggleSettingsControl extends BaseSettingsControl {
     this.setState({ property_values: props.setting })
   }
 
-
   public get_value() : any {
     return {value: this.toggleref.checked};
   }
@@ -26,9 +25,9 @@ export class BoolToggleSettingsControl extends BaseSettingsControl {
     return (
       <Toggle
         onChange={
-          (_event,_check) => { 
+          (_event,_check) => {
             this.setState( (prev_state:any) => ({
-                property_values: { 
+                property_values: {
                   ...(prev_state.property_values),
                   value: _check
                 }
@@ -45,5 +44,4 @@ export class BoolToggleSettingsControl extends BaseSettingsControl {
       />
     );
   }
-
 }

@@ -10,4 +10,3 @@ export class BaseSettingsControl extends React.Component <any, any> {
     return null;
   }
 }
-

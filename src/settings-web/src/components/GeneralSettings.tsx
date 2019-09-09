@@ -17,12 +17,13 @@ export class GeneralSettings extends React.Component <any, any> {
       settings: props.settings,
     }
   }
-  shouldComponentUpdate(nextProps:any, nextState:any)
-  {
+
+  shouldComponentUpdate(nextProps:any, nextState:any) {
     // This component and its children manage their state.
     // React only to state changes when forceUpdate is called by the App component.
     return false;
   }
+
   componentWillReceiveProps(props: any) {
     this.setState({ settings: props.settings })
   }

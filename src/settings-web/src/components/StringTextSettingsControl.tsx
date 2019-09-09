@@ -12,7 +12,7 @@ export class StringTextSettingsControl extends BaseSettingsControl {
       property_values: props.setting
     }
   }
-  
+
   componentWillReceiveProps(props: any) {
     // Fully controlled component.
     // Reacting to a property change so that the control is redrawn properly.

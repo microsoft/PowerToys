@@ -47,7 +47,7 @@ export class IntSpinnerSettingsControl extends BaseSettingsControl {
             value=String(this.spinbuttonref.props.max);
           }
           this.setState( (prev_state:any) => ({
-            property_values: { 
+            property_values: {
               ...(prev_state.property_values),
               value: parseInt(value)
             }
@@ -62,7 +62,7 @@ export class IntSpinnerSettingsControl extends BaseSettingsControl {
             value = String(+value + this.spinbuttonref.props.step) ;
           }
           this.setState( (prev_state:any) => ({
-            property_values: { 
+            property_values: {
               ...(prev_state.property_values),
               value: parseInt(value)
             }
@@ -77,7 +77,7 @@ export class IntSpinnerSettingsControl extends BaseSettingsControl {
             value = String(+value - this.spinbuttonref.props.step) ;
           }
           this.setState( (prev_state:any) => ({
-            property_values: { 
+            property_values: {
               ...(prev_state.property_values),
               value: parseInt(value)
             }
@@ -95,5 +95,4 @@ export class IntSpinnerSettingsControl extends BaseSettingsControl {
       />
     );
   }
-
 }
