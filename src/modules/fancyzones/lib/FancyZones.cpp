@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "common/dpi_aware.h"
 
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
@@ -244,11 +245,16 @@ void FancyZones::ToggleEditor() noexcept
         auto iter = m_zoneWindowMap.find(monitor);
         if (iter != m_zoneWindowMap.end())
         {
+            UINT dpi_x = 96;
+            UINT dpi_y = 96;
+            DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
+
             const std::wstring params =
                 iter->second->UniqueId() + L" " +
                 std::to_wstring(iter->second->ActiveZoneSet()->LayoutId()) + L" " +
                 std::to_wstring(reinterpret_cast<UINT_PTR>(foregroundWindow)) + L" " +
-                std::to_wstring(reinterpret_cast<UINT_PTR>(monitor));
+                std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
+                std::to_wstring(static_cast<float>(dpi_x) / 96.0f);
 
             SHELLEXECUTEINFO sei{ sizeof(sei) };
             sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };

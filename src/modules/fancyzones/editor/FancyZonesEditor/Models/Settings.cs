@@ -262,25 +262,26 @@ namespace FancyZonesEditor
         {
             _workArea = System.Windows.SystemParameters.WorkArea;
             _monitor = 0;
+            _uniqueRegistryPath = FullRegistryPath;
             _uniqueKey = "";
             _dpi = 1;
 
             string[] args = Environment.GetCommandLineArgs();
-            if (args.Length == 5)
+            if (args.Length == 6)
             {
                 // 1 = unique key for per-monitor settings
                 // 2 = layoutid used to generate current layout
                 // 3 = handle to foreground window (used to figure out which monitor to show on)
                 // 4 = handle to monitor (passed back to engine to persist data)
+                // 5 = monitor DPI (float)
 
                 _uniqueKey = args[1];
-                _uniqueRegistryPath = FullRegistryPath + "\\" + _uniqueKey;
+                _uniqueRegistryPath += "\\" + _uniqueKey;
 
                 var foregroundWindow = new IntPtr(uint.Parse(args[3]));
                 var screen = System.Windows.Forms.Screen.FromHandle(foregroundWindow);
 
-                var graphics = System.Drawing.Graphics.FromHwnd(foregroundWindow);
-                _dpi = graphics.DpiX / 96;
+                _dpi = float.Parse(args[5]);
                 _workArea = new Rect(
                     screen.WorkingArea.X / _dpi,
                     screen.WorkingArea.Y / _dpi,
