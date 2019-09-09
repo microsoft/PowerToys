@@ -8,6 +8,10 @@ The first preview of these utilities can be installed from [here](https://github
 
 ![logo](doc/images/Logo.jpg)
 
+### Build Status
+
+[![Build Status](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build?definitionId=35096)
+
 # What's Happening
 
 ## September Update
