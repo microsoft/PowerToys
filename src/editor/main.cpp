@@ -112,7 +112,7 @@ void send_message_to_webview(const std::wstring& msg) {
   }
 }
 
-void send_message_to_powertoys(const std::wstring msg) {
+void send_message_to_powertoys(const std::wstring& msg) {
   if (current_settings_ipc != NULL) {
     current_settings_ipc->send(msg);
   } else {
@@ -439,6 +439,6 @@ int start_webview_window(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpC
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-  HRESULT hrInit = CoInitialize(nullptr);
+  CoInitialize(nullptr);
   return start_webview_window(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 }

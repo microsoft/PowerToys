@@ -155,7 +155,7 @@ public:
       }
       */
     }
-    catch (std::exception ex) {
+    catch (std::exception& ex) {
       // Improper JSON.
     }
   }
@@ -201,7 +201,7 @@ public:
       // Otherwise call a custom function to process the settings before saving them to disk:
       // save_settings();
     }
-    catch (std::exception ex) {
+    catch (std::exception& ex) {
       // Improper JSON.
     }
   }
@@ -243,7 +243,7 @@ void $safeprojectname$::init_settings() {
   try {
     // Load and parse the settings file for this PowerToy.
     PowerToysSettings::PowerToyValues settings =
-      PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
+      PowerToysSettings::PowerToyValues::load_from_settings_file($safeprojectname$::get_name());
 
     // Load a bool property.
     /*
@@ -273,7 +273,7 @@ void $safeprojectname$::init_settings() {
     }
     */
   }
-  catch (std::exception ex) {
+  catch (std::exception& ex) {
     // Error while loading from the settings file. Let default values stay as they are.
   }
 }

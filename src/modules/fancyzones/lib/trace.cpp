@@ -62,14 +62,14 @@ void Trace::FancyZones::ToggleZoneViewers(bool visible) noexcept
         TraceLoggingBoolean(visible, "Visible"));
 }
 
-void Trace::FancyZones::OnKeyDown(DWORD vk, bool win, bool control, bool inMoveSize) noexcept
+void Trace::FancyZones::OnKeyDown(DWORD vkCode, bool win, bool control, bool inMoveSize) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
         "FancyZones::Event::OnKeyDown",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(vk, "Hotkey"),
+        TraceLoggingValue(vkCode, "Hotkey"),
         TraceLoggingBoolean(win, "WindowsKey"),
         TraceLoggingBoolean(control, "ControlKey"),
         TraceLoggingBoolean(inMoveSize, "InMoveSize"));

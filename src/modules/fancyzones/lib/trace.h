@@ -29,7 +29,7 @@ public:
             Mouse
         };
 
-        static void KeyUp(WPARAM wparam, bool isEditorMode) noexcept;
+        static void KeyUp(WPARAM wParam, bool isEditorMode) noexcept;
         static void MoveSizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept;
         static void CycleActiveZoneSet(_In_opt_ winrt::com_ptr<IZoneSet> activeSet, InputMode mode) noexcept;
 

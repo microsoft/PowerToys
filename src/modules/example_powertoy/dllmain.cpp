@@ -142,7 +142,7 @@ public:
         MessageBox(NULL, msg.c_str(), L"Custom action call.", MB_OK | MB_TOPMOST);
       }
     }
-    catch (std::exception ex) {
+    catch (std::exception& ex) {
       // Improper JSON.
     }
   }
@@ -180,7 +180,7 @@ public:
       // Otherwise call a custom function to process the settings before saving them to disk:
       // save_settings();
     }
-    catch (std::exception ex) {
+    catch (std::exception& ex) {
       // Improper JSON.
     }
   }
@@ -221,7 +221,7 @@ void ExamplePowertoy::init_settings() {
   try {
     // Load and parse the settings file for this PowerToy.
     PowerToysSettings::PowerToyValues settings =
-      PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
+      PowerToysSettings::PowerToyValues::load_from_settings_file(ExamplePowertoy::get_name());
 
     // Load the bool property.
     if (settings.is_bool_value(L"test_bool_toggle")) {
@@ -243,7 +243,7 @@ void ExamplePowertoy::init_settings() {
       g_settings.test_color_prop = settings.get_string_value(L"test_color_picker");
     }
   }
-  catch (std::exception ex) {
+  catch (std::exception& ex) {
     // Error while loading from the settings file. Let default values stay as they are.
   }
 }
@@ -282,7 +282,7 @@ void ExamplePowertoy::save_settings() {
     // Save the PowerToyValues JSON to the power toy settings file.
     values.save_to_settings_file();
   }
-  catch (std::exception ex) {
+  catch (std::exception& ex) {
     // Couldn't save the settings.
   }
 }

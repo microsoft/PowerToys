@@ -119,7 +119,7 @@ void TargetState::handle_timeout() {
   std::unique_lock lock(mutex);
   auto wait_time = delay - (std::chrono::system_clock::now() - winkey_timestamp);
   if (events.empty())
-    cv.wait_for(lock, delay);
+    cv.wait_for(lock, wait_time);
   if (state == Exiting)
     return;
   while (!events.empty()) {

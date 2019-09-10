@@ -70,7 +70,7 @@ void OverlayWindow::set_config(const wchar_t * config) {
     }
     _values.save_to_settings_file();
   }
-  catch (std::exception ex) {
+  catch (std::exception&) {
     // Improper JSON.
   }
 }
@@ -91,7 +91,6 @@ void OverlayWindow::disable() {
   if (_enabled) {
     winkey_popup->hide();
     target_state->exit();
-    int a = 0;
     delete target_state;
     delete winkey_popup;
     target_state = nullptr;
@@ -156,7 +155,7 @@ void OverlayWindow::destroy() {
 void OverlayWindow::init_settings() {
   try {
     PowerToysSettings::PowerToyValues settings =
-      PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
+      PowerToysSettings::PowerToyValues::load_from_settings_file(OverlayWindow::get_name());
     if (settings.is_int_value(pressTime.name)) {
       pressTime.value = settings.get_int_value(pressTime.name);
     }
@@ -164,7 +163,7 @@ void OverlayWindow::init_settings() {
       overlayOpacity.value = settings.get_int_value(overlayOpacity.name);
     }
   }
-  catch (std::exception ex) {
+  catch (std::exception&) {
     // Error while loading from the settings file. Just let default values stay as they are.
   }
 }

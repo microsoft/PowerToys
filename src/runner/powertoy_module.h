@@ -10,7 +10,7 @@
 class PowertoyModule;
 
 struct PowertoyModuleDeleter {
-  void operator()(PowertoyModuleIface* module) {
+  void operator()(PowertoyModuleIface* module) const {
     if (module) {
       powertoys_events().unregister_receiver(module);
       module->disable();
@@ -21,7 +21,7 @@ struct PowertoyModuleDeleter {
 
 struct PowertoyModuleDLLDeleter {
   using pointer = HMODULE;
-  void operator()(HMODULE  handle) {
+  void operator()(HMODULE  handle) const {
     FreeLibrary(handle);
   }
 };
