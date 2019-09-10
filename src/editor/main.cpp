@@ -239,6 +239,12 @@ void initialize_win32_webview(HWND hwnd, int nCmdShow) {
         std::wstring message_sent = args_script_notify.Value().c_str();
         receive_message_from_webview(message_sent);
       });
+      webview_control.AcceleratorKeyPressed([&](IWebViewControl sender, WebViewControlAcceleratorKeyPressedEventArgs const& args) {
+        if (args.VirtualKey() == winrt::Windows::System::VirtualKey::F4) {
+          // WebView swallows key-events. Detect Alt-F4 one and close the window manually.
+          webview_control.InvokeScriptAsync(hstring(L"exit_settings_app"), {});
+        }
+      });
       resize_web_view();
 #if defined(_DEBUG) && _DEBUG_WITH_LOCALHOST
       // navigates to localhost:8080
