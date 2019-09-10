@@ -9,6 +9,7 @@
 #include <common/two_way_pipe_message_ipc.h>
 #include "tray_icon.h"
 #include "general_settings.h"
+#include "common/windows_colors.h"
 
 #define BUFSIZE 1024
 
@@ -116,6 +117,12 @@ void run_settings_window() {
   PathRemoveFileSpec(executable_path);
   wcscat_s(executable_path, L"\\PowerToysSettings.exe");
   WCHAR executable_args[MAX_PATH * 3];
+
+  std::wstring settings_theme_setting = get_general_settings().at(L"theme").as_string();
+  std::wstring settings_theme;
+  if (settings_theme_setting == L"dark" || (settings_theme_setting == L"system" && WindowsColors::is_dark_mode())) {
+    settings_theme = L" dark"; // Include arg separating space
+  }
   // Generate unique names for the pipes, if getting a UUID is possible
   std::wstring powertoys_pipe_name(L"\\\\.\\pipe\\powertoys_runner_");
   std::wstring settings_pipe_name(L"\\\\.\\pipe\\powertoys_settings_");
@@ -136,6 +143,7 @@ void run_settings_window() {
   // powertoys_pipe - PowerToys pipe server.
   // settings_pipe - Settings pipe server.
   // powertoys_pid - PowerToys process pid.
+  // settings_theme - pass "dark" to start the settings window in dark mode
   wcscpy_s(executable_args, L"\"");
   wcscat_s(executable_args, executable_path);
   wcscat_s(executable_args, L"\"");
@@ -145,6 +153,7 @@ void run_settings_window() {
   wcscat_s(executable_args, settings_pipe_name.c_str());
   wcscat_s(executable_args, L" ");
   wcscat_s(executable_args, std::to_wstring(powertoys_pid).c_str());
+  wcscat_s(executable_args, settings_theme.c_str());
 
   // Run the Settings process with non-elevated privileges
 

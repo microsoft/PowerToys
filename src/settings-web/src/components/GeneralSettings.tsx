@@ -1,11 +1,13 @@
 import React from 'react';
-import { Stack, Text, DefaultButton, Label, Link} from 'office-ui-fabric-react';
-import {BoolToggleSettingsControl} from './BoolToggleSettingsControl'
+import { Stack, Text, PrimaryButton, Label, Link, loadTheme } from 'office-ui-fabric-react';
+import { BoolToggleSettingsControl } from './BoolToggleSettingsControl'
+import { ChoiceGroupSettingsControl } from './ChoiceGroupSettingsControl'
 import { Separator } from 'office-ui-fabric-react/lib/Separator';
 
 export class GeneralSettings extends React.Component <any, any> {
   references: any = {};
   startup_reference: any;
+  theme_reference: any;
   parent_on_change: Function;
   constructor(props: any) {
     super(props);
@@ -36,6 +38,7 @@ export class GeneralSettings extends React.Component <any, any> {
     let result : any = {};
     result[this.state.settings_key]= {
       startup: this.startup_reference.get_value().value,
+      theme: this.theme_reference.get_value().value,
       enabled: enabled
     };
     return result;
@@ -116,19 +119,88 @@ export class GeneralSettings extends React.Component <any, any> {
           setting={{display_name: 'Start at login', value: this.state.settings.general.startup}}
           on_change={this.parent_on_change}
           ref={(input) => {this.startup_reference=input;}}
-          />
+        />
+        <ChoiceGroupSettingsControl
+          setting={{display_name: 'Chose Settigs color',
+                    value: this.state.settings.general.theme,
+                    options: [
+                      { key: 'system', text: 'System default app mode'},
+                      { key: 'light', text: 'Light' },
+                      { key: 'dark', text: 'Dark' }
+                    ]}}
+          on_change={() => {
+            const dark_mode = this.theme_reference.get_value().value === 'dark' ||
+                             (this.theme_reference.get_value().value === 'system' && this.state.settings.general.system_theme === 'dark');
+            if (dark_mode) {
+              loadTheme({
+                palette: {
+                  themePrimary: '#0088e4',
+                  themeLighterAlt: '#000509',
+                  themeLighter: '#001624',
+                  themeLight: '#002944',
+                  themeTertiary: '#005288',
+                  themeSecondary: '#0078c8',
+                  themeDarkAlt: '#1793e6',
+                  themeDark: '#38a3ea',
+                  themeDarker: '#69baef',
+                  neutralLighterAlt: '#0b0b0b',
+                  neutralLighter: '#151515',
+                  neutralLight: '#252525',
+                  neutralQuaternaryAlt: '#2f2f2f',
+                  neutralQuaternary: '#373737',
+                  neutralTertiaryAlt: '#595959',
+                  neutralTertiary: '#eaeaea',
+                  neutralSecondary: '#eeeeee',
+                  neutralPrimaryAlt: '#f1f1f1',
+                  neutralPrimary: '#e0e0e0',
+                  neutralDark: '#f8f8f8',
+                  black: '#fbfbfb',
+                  white: '#000000',
+                }
+              });
+            } else {
+              loadTheme({
+                palette: {
+                  themePrimary: '#0078d4',
+                  themeLighterAlt: '#f3f9fd',
+                  themeLighter: '#d0e7f8',
+                  themeLight: '#a9d3f2',
+                  themeTertiary: '#5ca9e5',
+                  themeSecondary: '#1a86d9',
+                  themeDarkAlt: '#006cbe',
+                  themeDark: '#005ba1',
+                  themeDarker: '#004377',
+                  neutralLighterAlt: '#f8f8f8',
+                  neutralLighter: '#f4f4f4',
+                  neutralLight: '#eaeaea',
+                  neutralQuaternaryAlt: '#dadada',
+                  neutralQuaternary: '#d0d0d0',
+                  neutralTertiaryAlt: '#c8c8c8',
+                  neutralTertiary: '#bab8b7',
+                  neutralSecondary: '#a3a2a0',
+                  neutralPrimaryAlt: '#8d8b8a',
+                  neutralPrimary: '#323130',
+                  neutralDark: '#605e5d',
+                  black: '#494847',
+                  white: '#ffffff',
+                }
+              });
+            }
+            this.parent_on_change();
+          }}
+          ref={(input) => {this.theme_reference=input;}}
+        />
         <Stack>
         <Label>Version 0.11.0</Label>
-          <DefaultButton
+          <PrimaryButton
             styles={{
                 root: {
-                  backgroundColor: "#FFFFFF",
                   alignSelf: "start"
                 }
             }}
             href='https://github.com/microsoft/PowerToys/releases'
             target='_blank'
-          >Check for updates</DefaultButton>
+          >Check for updates</PrimaryButton>
         </Stack>
         {/* An empty span to always give 30px padding in Edge. */}
         <span/>

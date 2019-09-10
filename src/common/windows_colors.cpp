@@ -52,6 +52,10 @@ WindowsColors::Color WindowsColors::get_background_color() {
   return uiSettings.GetColorValue(winrt::Windows::UI::ViewManagement::UIColorType::Background);
 }
 
+bool WindowsColors::is_dark_mode() {
+  return rgb_color(get_background_color()) == 0;
+}
+
 bool WindowsColors::update() {
   auto new_accent_color_menu = rgb_color(get_accent_color());
   auto new_start_color_menu = new_accent_color_menu;
