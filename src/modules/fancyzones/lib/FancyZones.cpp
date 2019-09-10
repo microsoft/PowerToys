@@ -594,19 +594,17 @@ void FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 
 void FancyZones::MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT const& ptScreen, require_write_lock writeLock) noexcept
 {
-    // Only enter move/size if the cursor is in the titlebar.
+    // Only enter move/size if the cursor is inside the window rect by a certain padding.
     // This prevents resize from triggering zones.
     RECT windowRect{};
     ::GetWindowRect(window, &windowRect);
 
-    TITLEBARINFO titlebarInfo{ sizeof(titlebarInfo) };
-    ::GetTitleBarInfo(window, &titlebarInfo);
+    windowRect.top += 6;
+    windowRect.left += 8;
+    windowRect.right -= 8;
+    windowRect.bottom -= 6;
 
-    // Titlebar height is weird and apps can do custom drag areas.
-    // Give it half of the height of the window to make sure.
-    titlebarInfo.rcTitleBar.bottom += ((windowRect.bottom - windowRect.top) / 2);
-
-    if (PtInRect(&titlebarInfo.rcTitleBar, ptScreen))
+    if (PtInRect(&windowRect, ptScreen))
     {
         m_inMoveSize = true;
 
