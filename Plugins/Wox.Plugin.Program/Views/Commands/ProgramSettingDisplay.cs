@@ -13,7 +13,15 @@ namespace Wox.Plugin.Program.Views.Commands
         {
             var list = new List<ProgramSource>();
 
-            programSources.ForEach(x => list.Add(new ProgramSource { Enabled = x.Enabled, Location = x.Location, Name = x.Name }));
+            programSources.ForEach(x => list
+                                            .Add(
+                                                    new ProgramSource {
+                                                                        Enabled = x.Enabled,
+                                                                        Location = x.Location,
+                                                                        Name = x.Name,
+                                                                        UniqueIdentifier = x.UniqueIdentifier
+                                                    }
+                                                ));
 
             return list;
         }
@@ -30,7 +38,8 @@ namespace Wox.Plugin.Program.Views.Commands
                                                                             Location = t1.ParentDirectory,
                                                                             UniqueIdentifier = t1.UniqueIdentifier,
                                                                             Enabled = t1.Enabled
-                                                        }));
+                                                        }
+                                                    ));
 
             Main._uwps
                 .Where(t1 => !ProgramSetting.ProgramSettingDisplayList.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier))
