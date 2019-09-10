@@ -32,7 +32,7 @@ namespace Wox.Plugin.Program
             _settingsStorage = new PluginJsonStorage<Settings>();
             _settings = _settingsStorage.Load();
 
-            var preloadcost = Stopwatch.Normal("|Wox.Plugin.Program.Main|Preload programs cost", () =>
+            Stopwatch.Normal("|Wox.Plugin.Program.Main|Preload programs cost", () =>
             {
                 _win32Storage = new BinaryStorage<Win32[]>("Win32");
                 _win32s = _win32Storage.TryLoad(new Win32[] { });
@@ -41,48 +41,20 @@ namespace Wox.Plugin.Program
             });
             Log.Info($"|Wox.Plugin.Program.Main|Number of preload win32 programs <{_win32s.Length}>");
             Log.Info($"|Wox.Plugin.Program.Main|Number of preload uwps <{_uwps.Length}>");
-
-            //########DELETE
-            long win32indexcost = 0;
-            long uwpindexcost = 0;
-            
+                        
             var a = Task.Run(() =>
             {
                 if (!_win32s.Any())
-                    win32indexcost = Stopwatch.Normal("|Wox.Plugin.Program.Main|Win32Program index cost", IndexWin32Programs);
+                    Stopwatch.Normal("|Wox.Plugin.Program.Main|Win32Program index cost", IndexWin32Programs);
             });
 
             var b = Task.Run(() =>
             {
                 if (!_uwps.Any())
-                    uwpindexcost = Stopwatch.Normal("|Wox.Plugin.Program.Main|Win32Program index cost", IndexUWPPrograms);
+                    Stopwatch.Normal("|Wox.Plugin.Program.Main|Win32Program index cost", IndexUWPPrograms);
             });
 
-            Task.WaitAll(a, b);
-
-            //########DELETE
-            /*
-             *  With roaming folder already 
-                Preload programs cost <24ms>
-                Program index cost <3163ms>
-
-                no roaming yet (clean)
-                Preload programs cost <79ms>
-                Program index cost <2900ms>
-             *
-             * 
-             */
-
-            long totalindexcost = win32indexcost + uwpindexcost;
-
-            if (preloadcost > 70 || totalindexcost > 4000)
-            {
-#if DEBUG
-#else
-    throw e
-#endif
-            }
-            //########DELETE
+            Task.WaitAll(a, b);            
         }
 
         public void Save()
