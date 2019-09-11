@@ -91,7 +91,7 @@
     <system:String x:Key="cannotFindSpecifiedPlugin">找不到指定的外掛</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">新觸發關鍵字不能為空白</system:String>
     <system:String x:Key="newActionKeywordsHasBeenAssigned">新觸發關鍵字已經被指派給另一外掛，請設定其他關鍵字。</system:String>
-    <system:String x:Key="succeed">成功</system:String>
+    <system:String x:Key="success">成功</system:String>
     <system:String x:Key="actionkeyword_tips">如果不想設定觸發關鍵字，可以使用*代替</system:String>
 
     <!--Custom Query Hotkey 對話框-->

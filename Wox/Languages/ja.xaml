@@ -103,7 +103,7 @@
     <system:String x:Key="cannotFindSpecifiedPlugin">プラグインが見つかりません</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">新しいアクションキーボードを空にすることはできません</system:String>
     <system:String x:Key="newActionKeywordsHasBeenAssigned">新しいアクションキーボードは他のプラグインに割り当てられています。他のアクションキーボードを指定してください</system:String>
-    <system:String x:Key="succeed">成功しました</system:String>
+    <system:String x:Key="success">成功しました</system:String>
     <system:String x:Key="actionkeyword_tips">アクションキーボードを指定しない場合、* を使用してください</system:String>
     
     <!--Custom Query Hotkey Dialog-->

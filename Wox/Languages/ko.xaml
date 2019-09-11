@@ -95,7 +95,7 @@
     <system:String x:Key="cannotFindSpecifiedPlugin">플러그인을 찾을 수 없습니다.</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">새 액션 키워드를 입력하세요.</system:String>
     <system:String x:Key="newActionKeywordsHasBeenAssigned">새 액션 키워드가 할당된 플러그인이 이미 있습니다. 다른 액션 키워드를 입력하세요.</system:String>
-    <system:String x:Key="succeed">성공</system:String>
+    <system:String x:Key="success">성공</system:String>
     <system:String x:Key="actionkeyword_tips">액션 키워드를 지정하지 않으려면 *를 사용하세요.</system:String>
 
     <!--Custom Query Hotkey Dialog-->

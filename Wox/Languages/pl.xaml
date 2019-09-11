@@ -91,7 +91,7 @@
     <system:String x:Key="cannotFindSpecifiedPlugin">Nie można odnaleźć podanej wtyczki</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">Nowy wyzwalacz nie może być pusty</system:String>
     <system:String x:Key="newActionKeywordsHasBeenAssigned">Ten wyzwalacz został już przypisany do innej wtyczki, musisz podać inny wyzwalacz.</system:String>
-    <system:String x:Key="succeed">Sukces</system:String>
+    <system:String x:Key="success">Sukces</system:String>
     <system:String x:Key="actionkeyword_tips">Użyj * jeżeli nie chcesz podawać wyzwalacza</system:String>
 
     <!--Custom Query Hotkey Dialog-->
