@@ -8,7 +8,7 @@ struct Settings
     bool shiftDrag = true;
     bool displayChange_moveWindows = false;
     bool virtualDesktopChange_moveWindows = false;
-    bool zoneSetChange_flashZones = true;
+    bool zoneSetChange_flashZones = false;
     bool zoneSetChange_moveWindows = false;
     bool overrideSnapHotkeys = false;
     bool appLastZone_moveWindows = false;
