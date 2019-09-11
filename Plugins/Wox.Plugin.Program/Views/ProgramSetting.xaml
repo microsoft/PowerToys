@@ -22,7 +22,7 @@
             <Button Height="30" HorizontalAlignment="Right" Margin="10 0 0 0" x:Name="btnLoadAllProgramSource" Click="btnLoadAllProgramSource_OnClick" Width="100"  Content="Load All" />
             <Button Height="30" HorizontalAlignment="Right" Margin="10 0 0 0" x:Name="btnDisableProgramSource" Click="btnDisableProgramSource_OnClick" Width="100" Content="Disable" />
         </StackPanel>
-        <ListView x:Name="programSourceView" Grid.Row="1" AllowDrop="True" SelectionMode="Multiple" GridViewColumnHeader.Click="GridViewColumnHeaderClickedHandler"
+        <ListView x:Name="programSourceView" Grid.Row="1" AllowDrop="True" SelectionMode="Extended" GridViewColumnHeader.Click="GridViewColumnHeaderClickedHandler"
             PreviewMouseRightButtonUp="ProgramSourceView_PreviewMouseRightButtonUp" 
             DragEnter="programSourceView_DragEnter"
             Drop="programSourceView_Drop" >
