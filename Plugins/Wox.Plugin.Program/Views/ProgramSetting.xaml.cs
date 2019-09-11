@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,6 +8,8 @@ using System.Windows.Input;
 using Wox.Plugin.Program.Views.Models;
 using Wox.Plugin.Program.Views.Commands;
 using Wox.Plugin.Program.Programs;
+using System.ComponentModel;
+using System.Windows.Data;
 
 namespace Wox.Plugin.Program.Views
 {
@@ -19,6 +20,9 @@ namespace Wox.Plugin.Program.Views
     {
         private PluginInitContext context;
         private Settings _settings;
+        private GridViewColumnHeader _lastHeaderClicked;
+        private ListSortDirection _lastDirection;
+
         internal static List<ProgramSource> ProgramSettingDisplayList { get; set; }
 
         public ProgramSetting(PluginInitContext context, Settings settings, Win32[] win32s, UWP.Application[] uwps)
@@ -178,6 +182,53 @@ namespace Wox.Plugin.Program.Views
         private void ProgramSourceView_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
             programSourceView.SelectedItems.Clear();
+        }
+
+        private void GridViewColumnHeaderClickedHandler(object sender, RoutedEventArgs e)
+        {
+            var headerClicked = e.OriginalSource as GridViewColumnHeader;
+            ListSortDirection direction;
+
+            if (headerClicked != null)
+            {
+                if (headerClicked.Role != GridViewColumnHeaderRole.Padding)
+                {
+                    if (headerClicked != _lastHeaderClicked)
+                    {
+                        direction = ListSortDirection.Ascending;
+                    }
+                    else
+                    {
+                        if (_lastDirection == ListSortDirection.Ascending)
+                        {
+                            direction = ListSortDirection.Descending;
+                        }
+                        else
+                        {
+                            direction = ListSortDirection.Ascending;
+                        }
+                    }
+
+                    var columnBinding = headerClicked.Column.DisplayMemberBinding as Binding;
+                    var sortBy = columnBinding?.Path.Path ?? headerClicked.Column.Header as string;
+
+                    Sort(sortBy, direction);
+                    
+                    _lastHeaderClicked = headerClicked;
+                    _lastDirection = direction;
+                }
+            }
+        }
+
+        private void Sort(string sortBy, ListSortDirection direction)
+        {
+            ICollectionView dataView =
+              CollectionViewSource.GetDefaultView(programSourceView.ItemsSource);
+
+            dataView.SortDescriptions.Clear();
+            SortDescription sd = new SortDescription(sortBy, direction);
+            dataView.SortDescriptions.Add(sd);
+            dataView.Refresh();
         }
     }
 }
