@@ -73,7 +73,7 @@ void start_initial_powertoys() {
     }
     only_enable_some_powertoys = true;
   }
-  catch (std::exception ex) {
+  catch (std::exception&) {
     // Couldn't read the general settings correctly.
     // Load all powertoys.
     only_enable_some_powertoys = false;

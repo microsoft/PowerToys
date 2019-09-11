@@ -2,7 +2,7 @@
 #include "animation.h"
 
 Animation::Animation(double duration, double start, double stop) :
-  start_value(start), end_value(stop), duration(duration), start(std::chrono::high_resolution_clock::now()) { }
+  duration(duration), start_value(start), end_value(stop), start(std::chrono::high_resolution_clock::now()) { }
 
 void Animation::reset() {
   start = std::chrono::high_resolution_clock::now();
@@ -21,7 +21,7 @@ static double ease_out_expo(double t) {
   return 1 - pow(2, -8 * t);
 }
 
-double Animation::apply_animation_function(double t, AnimFunctions apply_function) const {
+double Animation::apply_animation_function(double t, AnimFunctions apply_function) {
   switch (apply_function) {
   case EASE_OUT_EXPO:
     return ease_out_expo(t);

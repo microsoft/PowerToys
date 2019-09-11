@@ -25,7 +25,7 @@ public:
   double value(AnimFunctions apply_function) const;
   bool done() const;
 private:
-  double apply_animation_function(double t, AnimFunctions apply_function) const;
+  static double apply_animation_function(double t, AnimFunctions apply_function);
   std::chrono::high_resolution_clock::time_point start;
   double start_value, end_value, duration;
 };

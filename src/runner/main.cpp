@@ -71,7 +71,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     Trace::EventLaunch();
 
     result = run_message_loop();
-  } catch (std::runtime_error err) {
+  } catch (std::runtime_error& err) {
     std::string err_what = err.what();
     MessageBoxW(NULL, std::wstring(err_what.begin(),err_what.end()).c_str(), L"Error", MB_OK | MB_ICONERROR);
     result = -1;

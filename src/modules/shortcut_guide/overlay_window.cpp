@@ -154,7 +154,7 @@ D2D1_RECT_F D2DOverlaySVG::get_snap_right() const {
 }
 
 
-D2DOverlayWindow::D2DOverlayWindow() : animation(0.3), total_screen({}) {
+D2DOverlayWindow::D2DOverlayWindow() : total_screen({}), animation(0.3) {
   tasklist_thread = std::thread([&] {
     while (running) {
       // Removing <std::mutex> causes C3538 on std::unique_lock lock(mutex); in show(..)
@@ -443,7 +443,6 @@ void render_arrow(D2DSVG& arrow, TasklistButton& button, RECT window, float max_
     // assume button is 25% wider than taller, +10% to make room for each of the arrows that are hidden
     auto render_arrow_width = (int)(button.height * 1.25f * 1.2f);
     auto render_arrow_height = (int)(render_arrow_width * arrow_ratio);
-    auto y_edge = dy == -1 ? button.y : button.y + button.height;
     arrow.resize(button.x + (button.width - render_arrow_width) / 2,
                  dy == -1 ? button.y - render_arrow_height : 0,
                  render_arrow_width, render_arrow_height, 0.95f, max_scale)

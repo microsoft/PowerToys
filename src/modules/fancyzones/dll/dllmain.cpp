@@ -197,7 +197,7 @@ public:
 
     FancyZonesModule()
     {
-        m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), get_name());
+        m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModule::get_name());
     }
 
 private:

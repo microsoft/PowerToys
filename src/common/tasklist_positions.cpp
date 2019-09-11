@@ -79,7 +79,7 @@ bool Tasklist::update_buttons(std::vector<TasklistButton>& buttons) {
         continue; // skip buttons from the same app
       button.keynum = buttons.back().keynum + 1;
       buttons.push_back(std::move(button));
-      if (button.keynum == 10)
+      if (buttons.back().keynum == 10)
         break; // no more than 10 buttons
     }
   }

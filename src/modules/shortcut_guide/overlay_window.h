@@ -49,7 +49,7 @@ public:
 
 private:
   void animate(int vk_code, int offset);
-  bool show_thumbnail(const RECT& rect_and_scale, double alpha);
+  bool show_thumbnail(const RECT& rect, double alpha);
   void hide_thumbnail();
   virtual void init() override;
   virtual void resize() override;
@@ -78,7 +78,7 @@ private:
   HTHUMBNAIL thumbnail;
   HWND active_window = nullptr;
   D2DOverlaySVG landscape, portrait;
-  D2DOverlaySVG* use_overlay;
+  D2DOverlaySVG* use_overlay = nullptr;
   D2DSVG no_active;
   std::vector<D2DSVG> arrows;
   std::chrono::steady_clock::time_point shown_start_time;

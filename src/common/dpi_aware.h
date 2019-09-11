@@ -7,5 +7,5 @@ private:
 
 public:
   static HRESULT GetScreenDPIForWindow(HWND hwnd, UINT & dpi_x, UINT & dpi_y);
-  static void Convert(HMONITOR monitor_handle, int &width, int &high);
+  static void Convert(HMONITOR monitor_handle, int &width, int &height);
 };

@@ -23,7 +23,7 @@ json::value get_power_toys_settings() {
       json::value powertoys_config = json::value::parse(powertoy.get_config());
       result.as_object()[name] = powertoys_config;
     }
-    catch (json::json_exception ex) {
+    catch (json::json_exception&) {
       //Malformed JSON.
     }
   }
