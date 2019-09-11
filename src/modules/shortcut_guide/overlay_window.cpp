@@ -228,10 +228,15 @@ void D2DOverlayWindow::show(HWND active_window) {
   lock.unlock();
   D2DWindow::show(primary_screen.left(), primary_screen.top(), primary_screen.width(), primary_screen.height());
   key_pressed.clear();
-  tasklist_cv_mutex.lock();
-  tasklist_update = true;
-  tasklist_cv_mutex.unlock();
-  tasklist_cv.notify_one();
+  // Check if taskbar is auto-hidden. If so, don't display the number arrows
+  APPBARDATA param = {};
+  param.cbSize = sizeof(APPBARDATA);
+  if ((UINT)SHAppBarMessage(ABM_GETSTATE, &param) != ABS_AUTOHIDE) {
+    tasklist_cv_mutex.lock();
+    tasklist_update = true;
+    tasklist_cv_mutex.unlock();
+    tasklist_cv.notify_one();
+  }
   Trace::EventShow();
 }
 
