@@ -293,9 +293,10 @@ namespace Wox.Plugin.Program.Programs
             var paths2 = ProgramPaths(directory2, suffixes);
 
             var toFilter = paths1.Concat(paths2);
-            toFilter.Where(t1 => !disabledProgramsList.Any(x => !x.Enabled && x.UniqueIdentifier == t1)).Select(t1 => t1);
-
-            var paths = toFilter.ToArray();
+            var paths = toFilter
+                        .Where(t1 => !disabledProgramsList.Any(x => !x.Enabled && x.UniqueIdentifier == t1))
+                        .Select(t1 => t1)
+                        .ToArray();
 
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p) == ApplicationReferenceExtension).Select(Win32Program);
