@@ -29,7 +29,7 @@ const DWORD USERNAME_LEN = UNLEN + 1; // User Name + '\0'
 // Creates a Scheduled Task to run at logon for the current user.
 // The path of the executable to run should be passed as the CustomActionData (Value).
 // Based on the Task Scheduler Logon Trigger Example:
-// https://docs.microsoft.com/en-us/windows/desktop/taskschd/logon-trigger-example--c---/
+// https://docs.microsoft.com/en-us/windows/win32/taskschd/logon-trigger-example--c---/
 UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall) {
   HRESULT hr = S_OK;
   UINT er = ERROR_SUCCESS;
