@@ -1,5 +1,6 @@
 #include "pch.h"
 #include <common/settings_objects.h>
+#include <common/dpi_aware.h>
 #include <interface/powertoy_module_interface.h>
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <interface/win_hook_event_data.h>
@@ -27,29 +28,18 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
     return TRUE;
 }
 
-// TODO: multimon support, need to pass the HMONITOR from the editor to here instead
-// of using MonitorFromPoint
 // This function is exported and called from FancyZonesEditor.exe to save a layout from the editor.
 STDAPI PersistZoneSet(
     PCWSTR activeKey, // Registry key holding ActiveZoneSet
+    PCWSTR resolutionKey, // Registry key to persist ZoneSet to
     HMONITOR monitor,
     WORD layoutId, // LayoutModel Id
     int zoneCount, // Number of zones in zones
     int zones[]) // Array of zones serialized in left/top/right/bottom chunks
 {
     // See if we have already persisted this layout we can update.
-    std::wstringstream stream;
-    MONITORINFOEX mi;
-    mi.cbSize = sizeof(mi);
-    if (GetMonitorInfo(monitor, &mi))
-    {
-        stream << (mi.rcMonitor.right - mi.rcMonitor.left) << "_";
-        stream << (mi.rcMonitor.bottom - mi.rcMonitor.top);
-    }
-
-    std::wstring resolutionKey(stream.str());
     UUID id{GUID_NULL};
-    if (wil::unique_hkey key{ RegistryHelpers::OpenKey(resolutionKey.c_str()) })
+    if (wil::unique_hkey key{ RegistryHelpers::OpenKey(resolutionKey) })
     {
         ZoneSetPersistedData data{};
         DWORD dataSize = sizeof(data);
@@ -84,7 +74,7 @@ STDAPI PersistZoneSet(
                 id,
                 layoutId,
                 reinterpret_cast<HMONITOR>(monitor),
-                resolutionKey.c_str(),
+                resolutionKey,
                 ZoneSetLayout::Custom,
                 0, 0, 0));
 

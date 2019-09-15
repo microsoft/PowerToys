@@ -249,11 +249,23 @@ void FancyZones::ToggleEditor() noexcept
             UINT dpi_y = 96;
             DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
 
+            MONITORINFOEX mi;
+            mi.cbSize = sizeof(mi);
+            GetMonitorInfo(monitor, &mi);
+
+            // Location that the editor should occupy, scaled by DPI
+            std::wstring editorLocation = 
+                std::to_wstring(MulDiv(mi.rcWork.left, 96, dpi_x)) + L"_" +
+                std::to_wstring(MulDiv(mi.rcWork.top, 96, dpi_y)) + L"_" +
+                std::to_wstring(MulDiv(mi.rcWork.right - mi.rcWork.left, 96, dpi_x)) + L"_" +
+                std::to_wstring(MulDiv(mi.rcWork.bottom - mi.rcWork.top, 96, dpi_y));
+
             const std::wstring params =
                 iter->second->UniqueId() + L" " +
                 std::to_wstring(iter->second->ActiveZoneSet()->LayoutId()) + L" " +
-                std::to_wstring(reinterpret_cast<UINT_PTR>(foregroundWindow)) + L" " +
                 std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
+                editorLocation + L" " +
+                iter->second->WorkAreaKey() + L" " +
                 std::to_wstring(static_cast<float>(dpi_x) / 96.0f);
 
             SHELLEXECUTEINFO sei{ sizeof(sei) };

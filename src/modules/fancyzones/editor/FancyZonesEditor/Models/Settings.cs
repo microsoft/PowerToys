@@ -153,6 +153,12 @@ namespace FancyZonesEditor
         private static String _uniqueKey;
         private String _uniqueRegistryPath;
 
+        public static String WorkAreaKey
+        {
+            get { return _workAreaKey; }
+        }
+        private static String _workAreaKey;
+
         public static float Dpi
         {
             get { return _dpi; }
@@ -267,26 +273,27 @@ namespace FancyZonesEditor
             _dpi = 1;
 
             string[] args = Environment.GetCommandLineArgs();
-            if (args.Length == 6)
+            if (args.Length == 7)
             {
                 // 1 = unique key for per-monitor settings
-                // 2 = layoutid used to generate current layout
-                // 3 = handle to foreground window (used to figure out which monitor to show on)
-                // 4 = handle to monitor (passed back to engine to persist data)
-                // 5 = monitor DPI (float)
+                // 2 = layoutid used to generate current layout (used to pick the default layout to show)
+                // 3 = handle to monitor (passed back to engine to persist data)
+                // 4 = X_Y_Width_Height (where EditorOverlay shows up)
+                // 5 = resolution key (passed back to engine to persist data)
+                // 6 = monitor DPI (float)
 
                 _uniqueKey = args[1];
                 _uniqueRegistryPath += "\\" + _uniqueKey;
 
-                var foregroundWindow = new IntPtr(uint.Parse(args[3]));
-                var screen = System.Windows.Forms.Screen.FromHandle(foregroundWindow);
+                var parsedLocation = args[4].Split('_');
+                var x = int.Parse(parsedLocation[0]);
+                var y = int.Parse(parsedLocation[1]);
+                var width = int.Parse(parsedLocation[2]);
+                var height = int.Parse(parsedLocation[3]);
 
-                _dpi = float.Parse(args[5]);
-                _workArea = new Rect(
-                    screen.WorkingArea.X / _dpi,
-                    screen.WorkingArea.Y / _dpi,
-                    screen.WorkingArea.Width / _dpi,
-                    screen.WorkingArea.Height / _dpi);
+                _workAreaKey = args[5];
+                _dpi = float.Parse(args[6]);
+                _workArea = new Rect(x, y, width, height);
 
                 uint monitor = 0;
                 if (uint.TryParse(args[4], out monitor))

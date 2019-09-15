@@ -155,6 +155,7 @@ namespace FancyZonesEditor.Models
 
             internal delegate int PersistZoneSet(
                 [MarshalAs(UnmanagedType.LPWStr)] string activeKey,
+                [MarshalAs(UnmanagedType.LPWStr)] string resolutionKey,
                 uint monitor,
                 ushort layoutId,
                 int zoneCount,
@@ -201,7 +202,7 @@ namespace FancyZonesEditor.Models
             }
 
             var persistZoneSet = Marshal.GetDelegateForFunctionPointer<Native.PersistZoneSet>(pfn);
-            persistZoneSet(Settings.UniqueKey, Settings.Monitor, _id, zoneCount, zoneArray);
+            persistZoneSet(Settings.UniqueKey, Settings.WorkAreaKey, Settings.Monitor, _id, zoneCount, zoneArray);
         }
 
         private static readonly string c_registryPath = Settings.RegistryPath + "\\Layouts";
