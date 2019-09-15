@@ -94,6 +94,7 @@ namespace FancyZonesEditor
 
             MainWindow window = new MainWindow();
             window.Owner = this;
+            window.ShowActivated = true;
             window.Show();
         }
 
