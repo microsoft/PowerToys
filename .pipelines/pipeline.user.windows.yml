@@ -5,7 +5,7 @@ environment:
     version: '2016'
   runtime:
     provider: 'appcontainer'
-    image: 'cdpxwin.azurecr.io/global/vse2017u7/vse2017u7-external-winltsc2016-20190731:latest'
+    image: 'cdpxwin.azurecr.io/user/aibuilder/vs2019:latest'
     source_mode: 'link'
 
 version:
