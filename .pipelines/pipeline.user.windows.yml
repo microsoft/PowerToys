@@ -8,6 +8,11 @@ environment:
     image: 'cdpxwinrs4test.azurecr.io/global/vse2017u7-external-azsdk-mobile-ext-win1803:latest-nodetools'
     source_mode: 'link'
 
+version:
+  name: 'PowerToys'
+  major: 1
+  minor: 0
+
 signing_options:
   profile: 'azure'
 
@@ -29,7 +34,7 @@ restore:
     - !!defaultcommand
       name: 'Restore CSharp'
       command: '.pipelines\restore.cmd'
-      
+
 build:
   commands:
     - !!buildcommand
