@@ -253,10 +253,17 @@ void FancyZones::ToggleEditor() noexcept
             mi.cbSize = sizeof(mi);
             GetMonitorInfo(monitor, &mi);
 
+			// X/Y need to start in unscaled screen coordinates to get to the proper top/left of the monitor
+			// From there, we need to scale the difference between the monitor and workarea rects to get the
+			// appropriate offset where the overlay should appear.
+			// This covers the cases where the taskbar is not at the bottom of the screen.
+			const auto x = mi.rcMonitor.left + MulDiv(mi.rcWork.left - mi.rcMonitor.left, 96, dpi_x);
+			const auto y = mi.rcMonitor.top + MulDiv(mi.rcWork.top - mi.rcMonitor.top, 96, dpi_y);
+
             // Location that the editor should occupy, scaled by DPI
             std::wstring editorLocation = 
-                std::to_wstring(MulDiv(mi.rcWork.left, 96, dpi_x)) + L"_" +
-                std::to_wstring(MulDiv(mi.rcWork.top, 96, dpi_y)) + L"_" +
+                std::to_wstring(x) + L"_" +
+                std::to_wstring(y) + L"_" +
                 std::to_wstring(MulDiv(mi.rcWork.right - mi.rcWork.left, 96, dpi_x)) + L"_" +
                 std::to_wstring(MulDiv(mi.rcWork.bottom - mi.rcWork.top, 96, dpi_y));
 
