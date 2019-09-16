@@ -28,6 +28,7 @@ package_sources:
       'Official': 'https://msazure.pkgs.visualstudio.com/_packaging/Official/nuget/v3/index.json'
       'Toolset': 'https://msazure.pkgs.visualstudio.com/_packaging/Toolset/nuget/v3/index.json'
       'AzureCXP': 'https://msazure.pkgs.visualstudio.com/_packaging/AzureCXP/nuget/v3/index.json'
+      'Nuget': 'https://api.nuget.org/v3/index.json'
 
 restore:
   commands:
