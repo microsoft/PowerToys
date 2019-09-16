@@ -1,3 +1,3 @@
 cd /D "%~dp0"
 
-dotnet restore ..\src\modules\fancyzones\editor\FancyZonesEditor\FancyZonesEditor.csproj || exit /b 1
+nuget restore ../PowerToys.sln || exit /b 1
