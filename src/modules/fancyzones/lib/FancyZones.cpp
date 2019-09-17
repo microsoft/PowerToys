@@ -588,7 +588,7 @@ void FancyZones::UpdateDragState(require_write_lock) noexcept
 
 void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
 {
-    if (const HWND window = GetForegroundWindow())
+    if (const HWND window = get_filtered_active_window())
     {
         if (const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL))
         {
@@ -604,7 +604,7 @@ void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
 
 void FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 {
-    if (const HWND window = GetForegroundWindow())
+    if (const HWND window = get_filtered_active_window())
     {
         if (const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL))
         {
