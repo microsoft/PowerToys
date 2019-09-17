@@ -23,6 +23,7 @@
 #include "ZoneSet.h"
 #include "Zone.h"
 #include "util.h"
+#include "common/common.h"
 #include "RegistryHelpers.h"
 
 #pragma comment(lib, "windowsapp")
