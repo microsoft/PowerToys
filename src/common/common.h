@@ -9,6 +9,9 @@ std::optional<RECT> get_button_pos(HWND hwnd);
 std::optional<RECT> get_window_pos(HWND hwnd);
 // Gets mouse postion.
 std::optional<POINT> get_mouse_pos();
+// Gets active window, filtering out all "non standard" windows like the taskbar, etc.
+HWND get_filtered_active_window();
+
 // Calculate sizes
 int width(const RECT& rect);
 int height(const RECT& rect);

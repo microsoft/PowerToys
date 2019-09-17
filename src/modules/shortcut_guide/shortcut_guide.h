@@ -29,8 +29,6 @@ public:
 private:
   TargetState* target_state;
   D2DOverlayWindow *winkey_popup;
-  HWND desktop, shell;
-  HWND active_window;
   bool _enabled = false;
 
   void init_settings();

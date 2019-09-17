@@ -32,6 +32,34 @@ std::optional<POINT> get_mouse_pos() {
   }
 }
 
+HWND get_filtered_active_window() {
+  static auto desktop = GetDesktopWindow();
+  static auto shell = GetShellWindow();
+  auto active_window = GetForegroundWindow();
+  active_window = GetAncestor(active_window, GA_ROOT);
+  if (active_window == desktop || active_window == shell) {
+    return nullptr;
+  }
+  auto window_styles = GetWindowLong(active_window, GWL_STYLE);
+  if ((window_styles & WS_CHILD) || (window_styles & WS_DISABLED)) {
+    return nullptr;
+  }
+  window_styles = GetWindowLong(active_window, GWL_EXSTYLE);
+  if ((window_styles & WS_EX_TOOLWINDOW) ||(window_styles & WS_EX_NOACTIVATE)) {
+    return nullptr;
+  }
+  char class_name[256] = "";
+  GetClassNameA(active_window, class_name, 256);
+  if (strcmp(class_name, "SysListView32") == 0 ||
+      strcmp(class_name, "WorkerW") == 0 ||
+      strcmp(class_name, "Shell_TrayWnd") == 0 ||
+      strcmp(class_name, "Shell_SecondaryTrayWnd") == 0 ||
+      strcmp(class_name, "Progman") == 0) {
+    return nullptr;
+  }
+  return active_window;
+}
+
 int width(const RECT& rect) {
   return rect.right - rect.left;
 }
