@@ -81,8 +81,6 @@ void OverlayWindow::enable() {
     winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value)/100.0f);
     target_state = new TargetState(pressTime.value);
     winkey_popup->initialize();
-    desktop = GetDesktopWindow();
-    shell = GetShellWindow();
   }
   _enabled = true;
 }
@@ -119,23 +117,7 @@ intptr_t OverlayWindow::signal_event(const wchar_t * name, intptr_t data) {
 }
 
 void OverlayWindow::on_held() {
-  auto active_window = GetForegroundWindow();
-  active_window = GetAncestor(active_window, GA_ROOT);
-  if (active_window == desktop || active_window == shell) {
-    active_window = nullptr;
-  }
-  auto window_styles = active_window ? GetWindowLong(active_window, GWL_STYLE) : 0;
-  if ((window_styles & WS_CHILD) || (window_styles & WS_DISABLED)) {
-    active_window = nullptr;
-  }
-  char class_name[256] = "";
-  GetClassNameA(active_window, class_name, 256);
-  if (strcmp(class_name, "SysListView32") == 0 ||
-    strcmp(class_name, "WorkerW") == 0 ||
-    strcmp(class_name, "Shell_TrayWnd") == 0 ||
-    strcmp(class_name, "Shell_SecondaryTrayWnd") == 0) {
-    active_window = nullptr;
-  }
+  auto active_window = get_filtered_active_window();
   winkey_popup->show(active_window);
 }
 
