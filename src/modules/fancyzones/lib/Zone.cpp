@@ -74,7 +74,13 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
 
     // Map to screen coords
     MapWindowRect(zoneWindow, nullptr, &zoneRect);
-    ::SetWindowPos(window, nullptr, zoneRect.left, zoneRect.top, zoneRect.right - zoneRect.left, zoneRect.bottom - zoneRect.top, SWP_NOZORDER | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+
+    WINDOWPLACEMENT placement;
+    ::GetWindowPlacement(window, &placement);
+    placement.rcNormalPosition = zoneRect;
+    placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
+    placement.showCmd = SW_RESTORE | SW_SHOWNA;
+    ::SetWindowPlacement(window, &placement);
 }
 
 void Zone::StampZone(HWND window, bool stamp) noexcept
