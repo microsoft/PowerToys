@@ -33,7 +33,15 @@ build:
       name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
       artifacts:
-        - from: '**\bin'
+        - from: 'x64/Release'
           to: 'Build_Output'
+          include:
+            - '**/*'
+    - !!buildcommand
+      name: 'Build Power Toys Installer'
+      command: '.pipelines\build-installer.cmd'
+      artifacts:
+        - from: 'installer\PowerToysSetup\x64\Release'
+          to: 'Build_Installer_Output'
           include:
             - '**/*'
