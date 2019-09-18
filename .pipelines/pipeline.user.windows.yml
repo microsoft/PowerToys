@@ -14,7 +14,7 @@ version:
   minor: 0
 
 signing_options:
-  profile: 'azure'
+  profile: 'external_distribution'
 
 package_sources:
   nuget:
@@ -36,7 +36,12 @@ build:
         - from: 'x64/Release'
           to: 'Build_Output'
           include:
-            - '**/*'
+          - 'PowerToys.exe'
+          - 'PowerToysSettings.exe'
+          - 'modules\FancyZonesEditor.exe'
+          - 'modules\fancyzones.dll'
+          - 'modules\shortcut_guide.dll'
+
     - !!buildcommand
       name: 'Build Power Toys Installer'
       command: '.pipelines\build-installer.cmd'
