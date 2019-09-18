@@ -7,3 +7,5 @@ cd ..
 dir
 cd x64
 dir
+cd Release
+dir
