@@ -24,17 +24,16 @@ package_sources:
 restore:
   commands:
     - !!defaultcommand
-      name: 'Restore CSharp'
+      name: 'Restore Power Toys'
       command: '.pipelines\restore.cmd'
 
 build:
   commands:
     - !!buildcommand
-      name: 'Build CSharp'
+      name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
       artifacts:
         - from: '**\bin'
           to: 'Build_Output'
           include:
             - '**/*'
-
