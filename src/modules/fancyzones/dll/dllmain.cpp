@@ -1,6 +1,5 @@
 #include "pch.h"
 #include <common/settings_objects.h>
-#include <common/dpi_aware.h>
 #include <interface/powertoy_module_interface.h>
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <interface/win_hook_event_data.h>
