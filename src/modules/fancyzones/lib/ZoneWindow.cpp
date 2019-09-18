@@ -18,6 +18,7 @@ public:
     IFACEMETHODIMP_(void) CycleActiveZoneSet(DWORD vkCode) noexcept;
     IFACEMETHODIMP_(std::wstring) DeviceId() noexcept { return { m_deviceId.get() }; }
     IFACEMETHODIMP_(std::wstring) UniqueId() noexcept { return { m_uniqueId }; }
+    IFACEMETHODIMP_(std::wstring) WorkAreaKey() noexcept { return { m_workArea }; }
     IFACEMETHODIMP_(void) SaveWindowProcessToZoneIndex(HWND window) noexcept;
     IFACEMETHODIMP_(IZoneSet*) ActiveZoneSet() noexcept { return m_activeZoneSet.get(); }
 

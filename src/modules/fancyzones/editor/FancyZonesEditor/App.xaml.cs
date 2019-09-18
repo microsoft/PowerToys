@@ -20,7 +20,6 @@ namespace FancyZonesEditor
         private ushort _idInitial = 0;
         public App()
         {
-            //init settings
             _settings = new Settings();
         }
 
@@ -64,8 +63,7 @@ namespace FancyZonesEditor
             }
 
             foundModel.IsSelected = true;
-            // TODO: multimon
-            // Pass in the correct args to show on the desired monitor
+
             EditorOverlay overlay = new EditorOverlay();
             overlay.Show();
             overlay.DataContext = foundModel;

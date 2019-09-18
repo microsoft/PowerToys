@@ -27,12 +27,11 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
     return TRUE;
 }
 
-// TODO: multimon support, need to pass the HMONITOR from the editor to here instead
-// of using MonitorFromPoint
 // This function is exported and called from FancyZonesEditor.exe to save a layout from the editor.
 STDAPI PersistZoneSet(
     PCWSTR activeKey, // Registry key holding ActiveZoneSet
-    PCWSTR resolutionKey, // Registry key for screen resolution
+    PCWSTR resolutionKey, // Registry key to persist ZoneSet to
+    HMONITOR monitor,
     WORD layoutId, // LayoutModel Id
     int zoneCount, // Number of zones in zones
     int zones[]) // Array of zones serialized in left/top/right/bottom chunks
@@ -73,7 +72,7 @@ STDAPI PersistZoneSet(
             ZoneSetConfig(
                 id,
                 layoutId,
-                MonitorFromPoint({}, MONITOR_DEFAULTTOPRIMARY),
+                reinterpret_cast<HMONITOR>(monitor),
                 resolutionKey,
                 ZoneSetLayout::Custom,
                 0, 0, 0));

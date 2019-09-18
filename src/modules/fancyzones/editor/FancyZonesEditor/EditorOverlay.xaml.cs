@@ -71,14 +71,10 @@ namespace FancyZonesEditor
             InitializeComponent();
             Current = this;
 
-            // TODO: multimon
-            // Need to set Left and Top to the correct monitor based on the
-            // foreground window passed in the command line arguments
-            Rect workArea = System.Windows.SystemParameters.WorkArea;
-            Left = workArea.Left;
-            Top = workArea.Top;
-            Width = workArea.Width;
-            Height = workArea.Height;
+            Left = _settings.WorkArea.Left;
+            Top = _settings.WorkArea.Top;
+            Width = _settings.WorkArea.Width;
+            Height = _settings.WorkArea.Height;
         }
 
         void onLoad(object sender, RoutedEventArgs e)
@@ -98,6 +94,7 @@ namespace FancyZonesEditor
 
             MainWindow window = new MainWindow();
             window.Owner = this;
+            window.ShowActivated = true;
             window.Show();
         }
 

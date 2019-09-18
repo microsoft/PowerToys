@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "common/dpi_aware.h"
 
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
@@ -237,18 +238,43 @@ void FancyZones::ToggleEditor() noexcept
         m_terminateEditorEvent.reset(CreateEvent(nullptr, true, false, nullptr));
     }
 
-    // TODO: multimon support
-    // Pass in args so that the editor shows up on the correct monitor
-    // This can be an HWND, HMONITOR, or the X/Y/Width/Height of the monitor's work area, (whichever works best).
-    if (const HMONITOR monitor = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY))
+    const HWND foregroundWindow = GetForegroundWindow();
+    if (const HMONITOR monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTOPRIMARY))
     {
         std::shared_lock readLock(m_lock);
         auto iter = m_zoneWindowMap.find(monitor);
         if (iter != m_zoneWindowMap.end())
         {
-            // Pass command line args to the editor to tell it which layout it should pick by default
-            auto activeZoneSet = iter->second->ActiveZoneSet();
-            std::wstring params = iter->second->UniqueId() + L" " + std::to_wstring(activeZoneSet->LayoutId());
+            UINT dpi_x = 96;
+            UINT dpi_y = 96;
+            DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
+
+            MONITORINFOEX mi;
+            mi.cbSize = sizeof(mi);
+            GetMonitorInfo(monitor, &mi);
+
+			// X/Y need to start in unscaled screen coordinates to get to the proper top/left of the monitor
+			// From there, we need to scale the difference between the monitor and workarea rects to get the
+			// appropriate offset where the overlay should appear.
+			// This covers the cases where the taskbar is not at the bottom of the screen.
+			const auto x = mi.rcMonitor.left + MulDiv(mi.rcWork.left - mi.rcMonitor.left, 96, dpi_x);
+			const auto y = mi.rcMonitor.top + MulDiv(mi.rcWork.top - mi.rcMonitor.top, 96, dpi_y);
+
+            // Location that the editor should occupy, scaled by DPI
+            std::wstring editorLocation = 
+                std::to_wstring(x) + L"_" +
+                std::to_wstring(y) + L"_" +
+                std::to_wstring(MulDiv(mi.rcWork.right - mi.rcWork.left, 96, dpi_x)) + L"_" +
+                std::to_wstring(MulDiv(mi.rcWork.bottom - mi.rcWork.top, 96, dpi_y));
+
+            const std::wstring params =
+                iter->second->UniqueId() + L" " +
+                std::to_wstring(iter->second->ActiveZoneSet()->LayoutId()) + L" " +
+                std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
+                editorLocation + L" " +
+                iter->second->WorkAreaKey() + L" " +
+                std::to_wstring(static_cast<float>(dpi_x) / 96.0f);
+
             SHELLEXECUTEINFO sei{ sizeof(sei) };
             sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
             sei.lpFile = L"modules\\FancyZonesEditor.exe";
