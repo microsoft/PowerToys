@@ -168,12 +168,11 @@ IFACEMETHODIMP_(void) FancyZones::WindowCreated(HWND window) noexcept
 {
     if (m_settings->GetSettings().appLastZone_moveWindows)
     {
-        wchar_t processPath[MAX_PATH] = { 0 };
-        DWORD modulePathSize = GetProcessPath(window, processPath, static_cast<DWORD>(MAX_PATH));
-        if (modulePathSize > 0) 
+        auto processPath = GetProcessPath(window);
+        if (!processPath.empty()) 
         {
             INT zoneIndex = -1;
-            LRESULT res = RegistryHelpers::GetAppLastZone(window, processPath, &zoneIndex);
+            LRESULT res = RegistryHelpers::GetAppLastZone(window, processPath.data(), &zoneIndex);
             if ((res == ERROR_SUCCESS) && (zoneIndex != -1))
             {
                 MoveWindowIntoZoneByIndex(window, zoneIndex);
@@ -670,11 +669,10 @@ void FancyZones::MoveSizeEndInternal(HWND window, POINT const& ptScreen, require
     {
         ::RemoveProp(window, ZONE_STAMP);
 
-        wchar_t processPath[MAX_PATH]{};
-        DWORD processPathSize = GetProcessPath(window, processPath, static_cast<DWORD>(MAX_PATH));
-        if (processPathSize > 0)
+        auto processPath = GetProcessPath(window);
+        if (!processPath.empty())
         {
-            RegistryHelpers::SaveAppLastZone(window, processPath, -1);
+            RegistryHelpers::SaveAppLastZone(window, processPath.data(), -1);
         }
     }
 }
