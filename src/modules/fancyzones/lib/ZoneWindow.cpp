@@ -1252,14 +1252,13 @@ int ZoneWindow::GetSwitchButtonIndexFromPoint(POINT ptClient) noexcept
 
 IFACEMETHODIMP_(void) ZoneWindow::SaveWindowProcessToZoneIndex(HWND window) noexcept
 {
-    wchar_t processPath[MAX_PATH] = { 0 };
-    DWORD processPathSize = GetProcessPath(window, processPath, static_cast<DWORD>(MAX_PATH));
-    if (processPathSize > 0)
+    auto processPath = GetProcessPath(window);
+    if (!processPath.empty())
     {
         DWORD zoneIndex = static_cast<DWORD>(m_activeZoneSet->GetZoneIndexFromWindow(window));
         if (zoneIndex != -1)
         {
-            RegistryHelpers::SaveAppLastZone(window, processPath, zoneIndex);
+            RegistryHelpers::SaveAppLastZone(window, processPath.data(), zoneIndex);
         }
     }
 }

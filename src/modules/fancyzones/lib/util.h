@@ -134,19 +134,52 @@ inline void ParseDeviceId(PCWSTR deviceId, PWSTR parsedId, size_t size)
     }
 }
 
-inline DWORD GetProcessPath(HWND window, LPWSTR processPath, DWORD processPathMaxSize) noexcept
+inline std::wstring GetProcessPathByPID(DWORD pid)
 {
+    wil::unique_handle process(OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, TRUE, pid));
+    std::wstring name;
+    if (process && process.get() != INVALID_HANDLE_VALUE)
+    {
+        name.resize(MAX_PATH);
+        DWORD name_length = static_cast<DWORD>(name.length());
+        QueryFullProcessImageNameW(process.get(), 0, (LPWSTR)name.data(), &name_length);
+        name.resize(name_length);
+    }
+    return name;
+}
+
+inline std::wstring GetProcessPath(HWND window) noexcept
+{
+    const static std::wstring app_frame_host = L"ApplicationFrameHost.exe";
     DWORD pid{};
     GetWindowThreadProcessId(window, &pid);
-
-    DWORD numCopiedChars = 0;
-    wil::unique_handle windowProcessHandle(OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, TRUE, pid));
-    if (windowProcessHandle && (windowProcessHandle.get() != INVALID_HANDLE_VALUE))
+    auto name = GetProcessPathByPID(pid);
+    if (name.length() >= app_frame_host.length() &&
+        name.compare(name.length() - app_frame_host.length(), app_frame_host.length(), app_frame_host) == 0)
     {
-        // numCopiedChars first holds the size of processPath[], will then hold amount of characters returned by QueryFullProcessImageNameW
-        // if QueryFullProcessImageNameW fails, numCopiedChars will be zero.
-        numCopiedChars = processPathMaxSize;
-        QueryFullProcessImageNameW(windowProcessHandle.get(), 0, processPath, &numCopiedChars);
+        // It is a UWP app. We will enumarate the windows and look for one created
+        // by something with a different PID
+        DWORD new_pid = pid;
+        EnumChildWindows(window, [](HWND hwnd, LPARAM param) -> BOOL
+        {
+            auto new_pid_ptr = reinterpret_cast<DWORD*>(param);
+            DWORD pid;
+            GetWindowThreadProcessId(hwnd, &pid);
+            if (pid != *new_pid_ptr)
+            {
+                *new_pid_ptr = pid;
+                return FALSE;
+            }
+            else
+            {
+                return TRUE;
+            }
+        }, reinterpret_cast<LPARAM>(&new_pid));
+        // If we have a new pid, get the new name.
+        if (new_pid != pid)
+        {
+            return GetProcessPathByPID(new_pid);
+        }
     }
-    return numCopiedChars;
+    return name;
 }
