@@ -4,9 +4,31 @@ PowerToys is a set of utilities for power users to tune and streamline their Win
 
 Inspired by the [Windows 95 era PowerToys project](https://en.wikipedia.org/wiki/Microsoft_PowerToys), this reboot provides power users with ways to squeeze more efficiency out of the Windows 10 shell and customize it for individual workflows.  A great overview of the Windows 95 PowerToys can be found [here](https://socket3.wordpress.com/2016/10/22/using-windows-95-powertoys/).
 
+![logo](doc/images/Logo.jpg)
+
+## Installation
+
+_(Note: in order to run PowerToys, you'll need to be running at least Windows build 17134 or higher.)_
+
+### Github
+
 The first preview of these utilities can be installed from [here](https://github.com/Microsoft/powertoys/releases).
 
-![logo](doc/images/Logo.jpg)
+### Chocolatey (Unofficial)
+
+Download and upgrade PowerToys from [Chocolatey](https://chocolatey.org).
+
+To install PowerToys, run the following command from the command line or from PowerShell:
+```powershell
+choco install powertoys
+```
+
+To upgrade PowerToys, run the following command from the command line or from PowerShell:
+```powershell
+choco upgrade powertoys
+```
+
+If you have any issues when installing/upgrading the package please go to the [package page](https://chocolatey.org/packages/powertoys) and follow the [Chocolatey triage process](https://chocolatey.org/docs/package-triage-process)
 
 ### Build Status
 
