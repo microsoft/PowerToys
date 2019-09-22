@@ -24,6 +24,10 @@ Features
 Installation
 ------------
 
+To install this fork's [version](https://github.com/jjw24/Wox/releases/tag/v1.3.524%2BJJW24.v1.12.2) of Wox, you can **download** it [here](https://github.com/jjw24/Wox/releases/download/v1.3.524%2BJJW24.v1.12.2/Wox-1.3.524+JJW24.v1.12.2.exe).
+
+To install the upstream version:
+
 Download `Wox-xxx.exe` from [releases](https://github.com/Wox-launcher/Wox/releases). Latest as of now is [`1.3.524`](https://github.com/Wox-launcher/Wox/releases/download/v1.3.524/Wox-1.3.524.exe) ([`1.3.578`](https://github.com/Wox-launcher/Wox/releases/download/v1.3.578/Wox-1.3.578.exe) for preview channel)
 
 Windows may complain about security due to code not being signed. This will be fixed later. 
