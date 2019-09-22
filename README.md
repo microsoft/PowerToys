@@ -1,6 +1,10 @@
 WoX
 ===
 
+![Maintenance](https://img.shields.io/maintenance/yes/2019)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/jjw24/wox)
+![GitHub Release Date](https://img.shields.io/github/release-date/jjw24/wox)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/jjw24/wox/v1.3.524)
 [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e103/branch/master?svg=true)](https://ci.appveyor.com/project/happlebao/wox/branch/master)
 [![Github All Releases](https://img.shields.io/github/downloads/Wox-launcher/Wox/total.svg)](https://github.com/Wox-launcher/Wox/releases)
 [![RamenBless](https://cdn.rawgit.com/LunaGao/BlessYourCodeTag/master/tags/ramen.svg)](https://github.com/LunaGao/BlessYourCodeTag)
