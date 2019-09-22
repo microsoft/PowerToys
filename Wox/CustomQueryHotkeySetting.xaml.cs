@@ -57,7 +57,7 @@ namespace Wox
                     App.API.ChangeQuery(pluginHotkey.ActionKeyword);
                     Application.Current.MainWindow.Visibility = Visibility.Visible;
                 });
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
+                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("success"));
             }
             else
             {
@@ -76,7 +76,7 @@ namespace Wox
                     App.API.ChangeQuery(updateCustomHotkey.ActionKeyword);
                     Application.Current.MainWindow.Visibility = Visibility.Visible;
                 });
-                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("succeed"));
+                MessageBox.Show(InternationalizationManager.Instance.GetTranslation("success"));
             }
 
             Close();

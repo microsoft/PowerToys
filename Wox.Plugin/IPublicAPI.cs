@@ -58,6 +58,11 @@ namespace Wox.Plugin
         void ShowApp();
 
         /// <summary>
+        /// Save all Wox settings
+        /// </summary>
+        void SaveAppAllSettings();
+
+        /// <summary>
         /// Show message box
         /// </summary>
         /// <param name="title">Message title</param>

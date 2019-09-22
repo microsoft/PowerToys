@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Wox.Infrastructure;
+using Wox.Plugin.SharedCommands;
 
 namespace Wox.Plugin.BrowserBookmark
 {
@@ -54,7 +55,7 @@ namespace Wox.Plugin.BrowserBookmark
                 Action = (e) =>
                 {
                     context.API.HideApp();
-                    System.Diagnostics.Process.Start(c.Url);
+                    c.Url.NewBrowserWindow("");
                     return true;
                 }
             }).ToList();

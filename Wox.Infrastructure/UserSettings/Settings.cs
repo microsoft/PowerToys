@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using Newtonsoft.Json;
@@ -21,7 +21,7 @@ namespace Wox.Infrastructure.UserSettings
         public string ResultFontWeight { get; set; }
         public string ResultFontStretch { get; set; }
 
-        public bool AutoUpdates { get; set; } = true;
+        public bool AutoUpdates { get; set; } = false;
 
         public double WindowLeft { get; set; }
         public double WindowTop { get; set; }

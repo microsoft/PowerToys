@@ -100,7 +100,7 @@
     <system:String x:Key="cannotFindSpecifiedPlugin">Não foi possível encontrar o plugin especificado</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">A nova palavra-chave da ação não pode ser vazia</system:String>
     <system:String x:Key="newActionKeywordsHasBeenAssigned">A nova palavra-chave da ação já foi atribuída a outro plugin, por favor tente outra</system:String>
-    <system:String x:Key="succeed">Sucesso</system:String>
+    <system:String x:Key="success">Sucesso</system:String>
     <system:String x:Key="actionkeyword_tips">Use * se não quiser especificar uma palavra-chave de ação</system:String>
 
     <!--Custom Query Hotkey Dialog-->

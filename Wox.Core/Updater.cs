@@ -69,7 +69,7 @@ namespace Wox.Core
                 var newVersionTips = Translater.GetTranslation("newVersionTips");
                 newVersionTips = string.Format(newVersionTips, fr.Version);
                 MessageBox.Show(newVersionTips);
-                Log.Info($"|Updater.UpdateApp|Update succeed:{newVersionTips}");
+                Log.Info($"|Updater.UpdateApp|Update success:{newVersionTips}");
             }
             
             // always dispose UpdateManager
