@@ -77,17 +77,33 @@ IFACEMETHODIMP ZoneSet::RemoveZone(winrt::com_ptr<IZone> zone) noexcept
 
 IFACEMETHODIMP_(winrt::com_ptr<IZone>) ZoneSet::ZoneFromPoint(POINT pt) noexcept
 {
+    winrt::com_ptr<IZone> smallestKnownZone = nullptr;
     for (auto iter = m_zones.begin(); iter != m_zones.end(); iter++)
     {
         if (winrt::com_ptr<IZone> zone = iter->try_as<IZone>())
         {
-            if (PtInRect(&zone->GetZoneRect(), pt))
+            RECT* newZoneRect = &zone->GetZoneRect();
+            if (PtInRect(newZoneRect, pt))
             {
-                return zone;
+                if(smallestKnownZone == nullptr)
+                {
+                    smallestKnownZone = zone;
+                }
+                else
+                {
+                    RECT* r = &smallestKnownZone->GetZoneRect();
+                    int knownZoneArea = (r->right-r->left)*(r->bottom-r->top);
+
+                    int newZoneArea = (newZoneRect->right-newZoneRect->left)*(newZoneRect->bottom-newZoneRect->top);
+
+                    if(newZoneArea<knownZoneArea)
+                        smallestKnownZone = zone;
+                }
             }
         }
     }
-    return nullptr;
+
+    return smallestKnownZone;
 }
 
 IFACEMETHODIMP_(winrt::com_ptr<IZone>) ZoneSet::ZoneFromWindow(HWND window) noexcept
