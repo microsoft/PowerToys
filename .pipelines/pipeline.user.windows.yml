@@ -5,7 +5,7 @@ environment:
     version: '2016'
   runtime:
     provider: 'appcontainer'
-    image: 'cdpxwin.azurecr.io/user/powertoys/vs2019:1.0'
+    image: 'cdpxwin.azurecr.io/user/powertoys/vs2019:3.0'
     source_mode: 'link'
 
 version:
@@ -49,4 +49,4 @@ build:
         - from: 'installer\PowerToysSetup\x64\Release'
           to: 'Build_Installer_Output'
           include:
-            - '**/*'
+            - 'PowerToysSetup.msi'
