@@ -266,6 +266,8 @@ void FancyZonesModule::HandleWinHookEvent(WinHookEvent* data) noexcept
     }
     break;
 
+    case EVENT_OBJECT_UNCLOAKED:
+    case EVENT_OBJECT_SHOW:
     case EVENT_OBJECT_CREATE:
     {
         if (data->idObject == OBJID_WINDOW)
