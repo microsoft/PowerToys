@@ -14,7 +14,8 @@
         Background="White"
         WindowStartupLocation="CenterScreen"
         Loaded="OnLoaded"
-        Closed="OnClosed">
+        Closed="OnClosed"
+        SizeChanged="MetroWindow_SizeChanged">
     <Window.Resources>
         <local:BooleanToBrushConverter x:Key="BooleanToBrushConverter" />
         <local:ModelToVisibilityConverter x:Key="ModelToVisibilityConverter" />
@@ -70,12 +71,12 @@
             <Setter Property="FontSize" Value="14"/>
         </Style>
         <Style x:Key="propertyTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Margin" Value="10, 0" />
             <Setter Property="Width" Value="50"/>
-            <Setter Property="Height" Value="30"/>
+            <Setter Property="Height" Value="20"/>
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontWeight" Value="Regular" />
-            <Setter Property="FontSize" Value="20"/>
-            <Setter Property="Margin" Value="10, 0" />
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
@@ -155,7 +156,7 @@
         </Style>
 
         <ControlTemplate x:Key="tabControlTemplate">
-            <Grid Width="400">
+            <Grid Width="250">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="35"/>
                     <RowDefinition Height="2"/>
@@ -183,7 +184,7 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Name="title" Text="Choose your layout" Style="{StaticResource titleTextStyle}" />
-        <TabControl Grid.Row="1" BorderThickness="0" x:Name="TemplateTab" HorizontalAlignment="Center">
+        <TabControl Grid.Row="1" HorizontalAlignment="Stretch" BorderThickness="0" x:Name="TemplateTab">
             <TabItem Header="Templates" Template="{StaticResource tabControlTemplate}">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -215,7 +216,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
-                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <StackPanel x:Name="Footer" Grid.Row="1" Orientation="Horizontal">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Number of zones" Style="{StaticResource propertyTextStyle}"/>
                             <StackPanel Grid.Row="1" Margin="7, 8" Orientation="Horizontal" HorizontalAlignment="Center">
@@ -224,52 +225,54 @@
                                 <Button x:Name="incrementZoneCountButton" Content="+" Style="{StaticResource spinnerButtonStyle}" Click="IncrementZones_Click"/>
                             </StackPanel>
                         </StackPanel>
-                        <Rectangle Width="1" Fill="LightGray" Margin="20, 10" />
-                        <StackPanel Orientation="Horizontal">
-                            <ToggleButton x:Name="enableSpacingToggleButton" Content="Show space around zones" Margin="4, 0, 10, 0" IsChecked="{Binding ShowSpacing}" Style="{StaticResource propertyToggleButtonStyle}" />
-                            <TextBlock Text="Space around zones"  Style="{StaticResource propertyTextStyle}"/>
-                            <Slider Minimum="0" Maximum="10" Width="100" Height="30" Margin="10, 0" IsEnabled="{Binding ElementName=enableSpacingToggleButton, Path=IsChecked}" Value="{Binding Path=Spacing, Mode=TwoWay}" />
-                            <TextBox Text="{Binding Path=Spacing,Mode=TwoWay}" IsEnabled="{Binding ElementName=enableSpacingToggleButton, Path=IsChecked}" Style="{StaticResource propertyTextBoxStyle}"/>
+                        <Rectangle x:Name="FooterSplitter" Width="1" Fill="LightGray" Margin="20, 10" />
+                        <StackPanel x:Name="SpacingPropertySettings" Orientation="Horizontal">
+                            <ToggleButton x:Name="SpacingToggleButton" Content="Show space around zones" Margin="4, 0, 10, 0" IsChecked="{Binding ShowSpacing}" Style="{StaticResource propertyToggleButtonStyle}" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Space around zones" IsEnabled="{Binding ElementName=SpacingToggleButton, Path=IsChecked}" Style="{StaticResource propertyTextStyle}"/>
+                                <Slider Minimum="0" Maximum="10" Width="100" Height="30" Margin="10, 0" IsEnabled="{Binding ElementName=SpacingToggleButton, Path=IsChecked}" Value="{Binding Path=Spacing, Mode=TwoWay}" />
+                                <TextBox Text="{Binding Path=Spacing,Mode=TwoWay}" IsEnabled="{Binding ElementName=SpacingToggleButton, Path=IsChecked}" Style="{StaticResource propertyTextBoxStyle}"/>
+                            </StackPanel>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
             </TabItem>
             <TabItem Header="Custom" Template="{StaticResource tabControlTemplate}">
-                <ScrollViewer Grid.Row="0">
-                        <ItemsControl x:Name="LayoutPreviewItemsControl" ItemsSource="{Binding CustomModels}" Margin="8,8,0,0">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel HorizontalAlignment="Center" ItemWidth="300" ItemHeight="130" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Margin="8" 
+                <ScrollViewer>
+                    <ItemsControl x:Name="LayoutPreviewItemsControl" ItemsSource="{Binding CustomModels}" Margin="8, 4">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel HorizontalAlignment="Center" ItemWidth="300" ItemHeight="130" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="8" 
                                         BorderBrush="{Binding Path=IsSelected, Converter={StaticResource BooleanToBrushConverter}}" 
                                         Style="{StaticResource templateBackgroundStyle}" 
                                         MouseDown="LayoutItem_Click">
-                                        <DockPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" LastChildFill="True">
-                                            <Grid DockPanel.Dock="Top" Height="30">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="auto"/>
-                                                </Grid.ColumnDefinitions>
+                                    <DockPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" LastChildFill="True">
+                                        <Grid DockPanel.Dock="Top" Height="30">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="auto"/>
+                                            </Grid.ColumnDefinitions>
 
-                                                <TextBlock Grid.Column="0" Margin="0, 10, 0, 0" Text="{Binding Name}" Style="{StaticResource templateTitleTextStyle}" />
-                                                <Button Grid.Column="1" HorizontalAlignment="Right" Margin="0, 4, 4, 0" Visibility="{Binding Converter={StaticResource ModelToVisibilityConverter}}" Click="OnDelete" BorderThickness="0" Background="#f2f2f2">
-                                                    <Image Source="images/Delete.png" />
-                                                </Button>
-                                            </Grid>
+                                            <TextBlock Grid.Column="0" Margin="0, 10, 0, 0" Text="{Binding Name}" Style="{StaticResource templateTitleTextStyle}" />
+                                            <Button Grid.Column="1" HorizontalAlignment="Right" Margin="0, 4, 4, 0" Visibility="{Binding Converter={StaticResource ModelToVisibilityConverter}}" Click="OnDelete" BorderThickness="0" Background="#f2f2f2">
+                                                <Image Source="images/Delete.png" />
+                                            </Button>
+                                        </Grid>
 
-                                            <DockPanel DockPanel.Dock="Top" LastChildFill="True" Width="100" >
-                                                <local:LayoutPreview Margin="8" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
-                                            </DockPanel>
+                                        <DockPanel DockPanel.Dock="Top" LastChildFill="True" Width="100" >
+                                            <local:LayoutPreview Margin="8" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
                                         </DockPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
         <StackPanel Grid.Row="2">

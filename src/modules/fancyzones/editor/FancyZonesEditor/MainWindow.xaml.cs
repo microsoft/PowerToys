@@ -184,6 +184,24 @@ namespace FancyZonesEditor
             }
             model.Delete();
         }
+
+        private void MetroWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            var width = e.NewSize.Width;
+
+            if (width < 850)
+            {
+                Footer.Orientation = Orientation.Vertical;
+                FooterSplitter.Visibility = Visibility.Collapsed;
+                SpacingPropertySettings.Orientation = Orientation.Vertical;
+            }
+            else
+            {
+                Footer.Orientation = Orientation.Horizontal;
+                SpacingPropertySettings.Orientation = Orientation.Horizontal;
+                FooterSplitter.Visibility = Visibility.Visible;
+            }
+        }
     }
 
 
