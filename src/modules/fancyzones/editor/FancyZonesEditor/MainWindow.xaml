@@ -6,10 +6,12 @@
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:local="clr-namespace:FancyZonesEditor"
         mc:Ignorable="d"
-        Title="" Width="810"
-        SizeToContent="Height"
+        Title=""
+        Width="1000"
+        Height="450"
+        MinHeight="450"
+        MinWidth="400"
         Background="White"
-        ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Loaded="OnLoaded"
         Closed="OnClosed">
@@ -17,66 +19,98 @@
         <local:BooleanToBrushConverter x:Key="BooleanToBrushConverter" />
         <local:ModelToVisibilityConverter x:Key="ModelToVisibilityConverter" />
 
-        <Style x:Key="titleText" TargetType="TextBlock">
+        <Style x:Key="titleTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontWeight" Value="Bold" />
             <Setter Property="LineHeight" Value="24" />
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="Margin" Value="16,20,0,0" />
         </Style>
-        <Style x:Key="zoneCount" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="Segoe UI" />
-            <Setter Property="FontWeight" Value="Regular" />
-            <Setter Property="FontSize" Value="24"/>
-            <Setter Property="LineHeight" Value="24" />
-            <Setter Property="Margin" Value="20,0,20,0" />
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-        </Style>
-        <Style x:Key="tabText" TargetType="TextBlock">
+        <Style x:Key="tabTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="#C4C4C4"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="LineHeight" Value="20" />
-            <Setter Property="Margin" Value="24,20,0,0" />
             <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
         </Style>
-        <Style x:Key="settingText" TargetType="TextBlock">
+        <Style x:Key="templateTitleTextStyle" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="Padding" Value="4, 0" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style x:Key="templateBackgroundStyle" TargetType="Border">
+            <Setter Property="Background" Value="#F2F2F2"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style x:Key="propertyTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="Black"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="LineHeight" Value="20" />
-            <Setter Property="Margin" Value="40,10,0,0" />
             <Setter Property="TextAlignment" Value="Left" />
-        </Style>
-        <Style x:Key="settingCheckBoxText" TargetType="CheckBox">
-            <Setter Property="FontFamily" Value="Segoe UI" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="Black"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Margin" Value="5,10,0,0" />
-        </Style>
-        <Style x:Key="templateTitleText" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="Segoe UI" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="Black"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="Margin" Value="4"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
-        <Style x:Key="secondaryButton" TargetType="Button">
+        <Style x:Key="propertyToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Margin" Value="4, 0"/>
+            <Setter Property="Padding" Value="20, 0"/>
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="Black"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="0,5,0,5"/>
+        </Style>
+        <Style x:Key="propertyTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Width" Value="50"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontWeight" Value="Regular" />
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Margin" Value="10, 0" />
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="spinnerButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="50"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontSize" Value="20"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Background" Value="#F2F2F2"/>
-            <Setter Property="Margin" Value="16,0,0,0" />
-            <Setter Property="Width" Value="378"/>
+        </Style>
+        <Style x:Key="zoneCountTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontWeight" Value="Regular" />
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="LineHeight" Value="20" />
+            <Setter Property="Margin" Value="20, 0" />
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="secondaryButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="auto"/>
             <Setter Property="Height" Value="32"/>
+            <Setter Property="Margin" Value="7, 4" />
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="#F2F2F2"/>
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontSize" Value="14"/>
+
+
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -92,17 +126,18 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-        <Style x:Key="primaryButton" TargetType="Button">
+        <Style x:Key="primaryButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="auto"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Margin" Value="3, 4, 7, 4" />
+            <Setter Property="Padding" Value="0,5,0,5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="#0078D7"/>
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="0,5,0,5"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Background" Value="#0078D7"/>
-            <Setter Property="Margin" Value="16,0,16,0" />
-            <Setter Property="Width" Value="377"/>
-            <Setter Property="Height" Value="32"/>
+
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -118,49 +153,18 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-        <Style x:Key="spinnerButton" TargetType="Button">
-            <Setter Property="FontFamily" Value="Segoe UI" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="Black"/>
-            <Setter Property="FontSize" Value="24"/>
-            <Setter Property="Padding" Value="0,0,0,5"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Background" Value="#F2F2F2"/>
-            <Setter Property="Margin" Value="0,0,0,0" />
-        </Style>
-        <Style x:Key="newLayoutButton" TargetType="Button">
-            <Setter Property="Background" Value="#f2f2f2"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="FontFamily" Value="SegoeUI"/>
-            <Setter Property="FontWeight" Value="Light"/>
-            <Setter Property="FontSize" Value="148"/>
-        </Style>
-        <Style x:Key="textBox" TargetType="TextBox">
-            <Setter Property="BorderBrush" Value="#cccccc"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="FontFamily" Value="SegoeUI"/>
-            <Setter Property="FontWeight" Value="Regular"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="16,6,0,0"/>
-            <Setter Property="Padding" Value="5,5,5,5"/>
-        </Style>
-        
-        <Style x:Key="templateBackground" TargetType="Border">
-            <Setter Property="Background" Value="#F2F2F2"/>
-            <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="BorderThickness" Value="2"/>
-        </Style>
 
-        <ControlTemplate x:Key="myTabs">
-            <Grid Width="404">
+        <ControlTemplate x:Key="tabControlTemplate">
+            <Grid Width="400">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="35"/>
                     <RowDefinition Height="2"/>
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" Name="myTabText" Text="{TemplateBinding TabItem.Header}" Style="{StaticResource tabText}"  />
+
+                <TextBlock Grid.Row="0" Name="myTabText" Text="{TemplateBinding TabItem.Header}" Style="{StaticResource tabTextStyle}"  />
                 <Rectangle Grid.Row="1" x:Name="myTabLine" Fill="#F2F2F2" Height="1"/>
             </Grid>
+
             <ControlTemplate.Triggers>
                 <Trigger Property="TabItem.IsSelected" Value="True">
                     <Setter TargetName="myTabText" Property="Foreground" Value="#2A79D7"/>
@@ -170,108 +174,114 @@
             </ControlTemplate.Triggers>
         </ControlTemplate>
     </Window.Resources>
-    
-    <StackPanel>
 
-        <TextBlock Name="dialog_Title" Text="Choose your layout" Style="{StaticResource titleText}"  />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
 
+        <TextBlock Grid.Row="0" Name="title" Text="Choose your layout" Style="{StaticResource titleTextStyle}" />
+        <TabControl Grid.Row="1" BorderThickness="0" x:Name="TemplateTab" HorizontalAlignment="Center">
+            <TabItem Header="Templates" Template="{StaticResource tabControlTemplate}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
 
-        <TabControl BorderThickness="0" x:Name="TemplateTab">
-            <TabItem Header="Templates" Template="{StaticResource myTabs}">
-                <StackPanel>
-                    <StackPanel Margin="0,15,0,8" Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Button x:Name="decrementZones" Width="40" Height="40" Content="-" Style="{StaticResource spinnerButton}" Click="DecrementZones_Click"/>
-                        <TextBlock x:Name="zoneCount" Text="{Binding ZoneCount}" Style="{StaticResource zoneCount}"/>
-                        <Button x:Name="incrementZones" Width="40" Height="40" Content="+" Style="{StaticResource spinnerButton}" Click="IncrementZones_Click"/>
-                    </StackPanel>
-                    <ItemsControl ItemsSource="{Binding DefaultModels}" Margin="8,0,0,0">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal" ItemWidth="262" ItemHeight="262" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Margin="8" 
+                    <ScrollViewer Grid.Row="0">
+                        <ItemsControl ItemsSource="{Binding DefaultModels}" Margin="8, 4">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel HorizontalAlignment="Center" ItemWidth="300" ItemHeight="130" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="8" 
                                         BorderBrush="{Binding Path=IsSelected, Converter={StaticResource BooleanToBrushConverter}}" 
-                                        Style="{StaticResource templateBackground}" 
+                                        Style="{StaticResource templateBackgroundStyle}" 
                                         MouseDown="LayoutItem_Click">
-                                    <DockPanel Margin="0,20,0,0" 
-                                               VerticalAlignment="Stretch" 
-                                               HorizontalAlignment="Stretch" 
-                                               LastChildFill="True">
-                                        <TextBlock Padding="8,0,8,0" 
-                                                   TextTrimming="CharacterEllipsis" 
-                                                   DockPanel.Dock="Top" 
-                                                   Text="{Binding Name}" 
-                                                   Style="{StaticResource templateTitleText}" />
-                                        <local:LayoutPreview Margin="16" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
-                                    </DockPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                    <StackPanel Orientation="Horizontal" Margin="10,4,0,8">
-                        <CheckBox x:Name="spaceAroundSetting" Content="Show space around zones" Style="{StaticResource settingCheckBoxText}" IsChecked="{Binding ShowSpacing}"/>
-                        <TextBlock Text="Space around zones" Style="{StaticResource settingText}"/>
-                        <TextBox x:Name="paddingValue" Text="{Binding Path=Spacing,Mode=TwoWay}" Style="{StaticResource textBox}"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        
-
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,12,0,16">
-                        <Button x:Name="EditTemplateBUtton" Padding="8" Content="Edit selected layout" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
-                        <Button x:Name="ApplyTemplateButton" Padding="8" Content="Apply" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
-                    </StackPanel>
-                </StackPanel>
-            </TabItem>
-            
-            
-            <TabItem Header="Custom" Template="{StaticResource myTabs}">
-                <StackPanel>
-                    <ItemsControl ItemsSource="{Binding CustomModels}" Margin="8,8,0,0">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal" ItemWidth="262" ItemHeight="262" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Margin="8"
-                                        BorderBrush="{Binding Path=IsSelected, Converter={StaticResource BooleanToBrushConverter}}" 
-                                        Style="{StaticResource templateBackground}" 
-                                        MouseDown="LayoutItem_Click">
-                                    <DockPanel Margin="0,20,0,0" 
-                                               VerticalAlignment="Stretch" 
-                                               HorizontalAlignment="Stretch" 
-                                               LastChildFill="True">
-                                        <DockPanel DockPanel.Dock="Top" LastChildFill="True" >
-                                            <Button x:Name="DeleteButton" Visibility="{Binding Converter={StaticResource ModelToVisibilityConverter}}" DockPanel.Dock="Right" MaxHeight="10" Click="OnDelete" Padding="8,4,8,4" Margin="0,0,8,0" BorderThickness="0" Background="#f2f2f2">
-                                                <Image Source="images/Delete.png" />
-                                            </Button>
-                                            <TextBlock DockPanel.Dock="Top" 
-                                                       TextTrimming="CharacterEllipsis" Padding="8,0,8,0"
-                                                       Text="{Binding Name}" 
-                                                       Style="{StaticResource templateTitleText}" />
+                                        <DockPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" LastChildFill="True">
+                                            <TextBlock DockPanel.Dock="Top" Height="30" Margin="0, 10, 0, 0" Text="{Binding Name}" Style="{StaticResource templateTitleTextStyle}" />
+                                            <DockPanel DockPanel.Dock="Top" LastChildFill="True" Width="100" >
+                                                <local:LayoutPreview Margin="8" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+                                            </DockPanel>
                                         </DockPanel>
-                                        <local:LayoutPreview Margin="16" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
-                                    </DockPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                    <StackPanel Orientation="Horizontal" Margin="0,10,0,16">
-                        <Button x:Name="EditCustomButton" Content="Edit selected layout" Padding="8" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
-                        <Button x:Name="ApplyCustomButton" Content="Apply" Padding="8" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Number of zones" Style="{StaticResource propertyTextStyle}"/>
+                            <StackPanel Grid.Row="1" Margin="7, 8" Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button x:Name="decrementZoneCountButton" Content="-" Style="{StaticResource spinnerButtonStyle}" Click="DecrementZones_Click"/>
+                                <TextBlock x:Name="zoneCountTextBlock" Text="{Binding ZoneCount}" Style="{StaticResource zoneCountTextStyle}"/>
+                                <Button x:Name="incrementZoneCountButton" Content="+" Style="{StaticResource spinnerButtonStyle}" Click="IncrementZones_Click"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <Rectangle Width="1" Fill="LightGray" Margin="20, 10" />
+                        <StackPanel Orientation="Horizontal">
+                            <ToggleButton x:Name="enableSpacingToggleButton" Content="Show space around zones" Margin="4, 0, 10, 0" IsChecked="{Binding ShowSpacing}" Style="{StaticResource propertyToggleButtonStyle}" />
+                            <TextBlock Text="Space around zones"  Style="{StaticResource propertyTextStyle}"/>
+                            <Slider Minimum="0" Maximum="10" Width="100" Height="30" Margin="10, 0" IsEnabled="{Binding ElementName=enableSpacingToggleButton, Path=IsChecked}" Value="{Binding Path=Spacing, Mode=TwoWay}" />
+                            <TextBox Text="{Binding Path=Spacing,Mode=TwoWay}" IsEnabled="{Binding ElementName=enableSpacingToggleButton, Path=IsChecked}" Style="{StaticResource propertyTextBoxStyle}"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Custom" Template="{StaticResource tabControlTemplate}">
+                <ScrollViewer Grid.Row="0">
+                        <ItemsControl x:Name="LayoutPreviewItemsControl" ItemsSource="{Binding CustomModels}" Margin="8,8,0,0">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel HorizontalAlignment="Center" ItemWidth="300" ItemHeight="130" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="8" 
+                                        BorderBrush="{Binding Path=IsSelected, Converter={StaticResource BooleanToBrushConverter}}" 
+                                        Style="{StaticResource templateBackgroundStyle}" 
+                                        MouseDown="LayoutItem_Click">
+                                        <DockPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" LastChildFill="True">
+                                            <Grid DockPanel.Dock="Top" Height="30">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Column="0" Margin="0, 10, 0, 0" Text="{Binding Name}" Style="{StaticResource templateTitleTextStyle}" />
+                                                <Button Grid.Column="1" HorizontalAlignment="Right" Margin="0, 4, 4, 0" Visibility="{Binding Converter={StaticResource ModelToVisibilityConverter}}" Click="OnDelete" BorderThickness="0" Background="#f2f2f2">
+                                                    <Image Source="images/Delete.png" />
+                                                </Button>
+                                            </Grid>
+
+                                            <DockPanel DockPanel.Dock="Top" LastChildFill="True" Width="100" >
+                                                <local:LayoutPreview Margin="8" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+                                            </DockPanel>
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
             </TabItem>
         </TabControl>
-        
+        <StackPanel Grid.Row="2">
+            <Grid HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-
-    </StackPanel>
+                <Button Grid.Column="0" Content="Edit selected layout" Style="{StaticResource secondaryButtonStyle}" Click="EditLayout_Click"/>
+                <Button Grid.Column="1" Content="Apply" Style="{StaticResource primaryButtonStyle}" Click="Apply_Click"/>
+            </Grid>
+        </StackPanel>
+    </Grid>
 </Controls:MetroWindow>
