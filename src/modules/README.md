@@ -6,7 +6,7 @@ The source code of the PowerToys modules:
 An example PowerToy, that demonstrates how to create new ones.
 
 #### [`fancyzones`](./fancyzones)
-The FancyZones PowerToy that alows users to create custom zones on the screen, to which the windows will snap when moved. 
+The FancyZones PowerToy that allows users to create custom zones on the screen, to which the windows will snap when moved. 
 
 #### [`FancyZonesEditor`](./FancyZonesEditor)
 Editor for the snap-zones of the FancyZones PowerToy.
