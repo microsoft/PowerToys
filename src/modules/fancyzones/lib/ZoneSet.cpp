@@ -78,6 +78,8 @@ IFACEMETHODIMP ZoneSet::RemoveZone(winrt::com_ptr<IZone> zone) noexcept
 IFACEMETHODIMP_(winrt::com_ptr<IZone>) ZoneSet::ZoneFromPoint(POINT pt) noexcept
 {
     winrt::com_ptr<IZone> smallestKnownZone = nullptr;
+    // To reduce redundant calculations, we will store the last known zones area.
+    int smallestKnownZoneArea = INT32_MAX;
     for (auto iter = m_zones.begin(); iter != m_zones.end(); iter++)
     {
         if (winrt::com_ptr<IZone> zone = iter->try_as<IZone>())
@@ -85,19 +87,22 @@ IFACEMETHODIMP_(winrt::com_ptr<IZone>) ZoneSet::ZoneFromPoint(POINT pt) noexcept
             RECT* newZoneRect = &zone->GetZoneRect();
             if (PtInRect(newZoneRect, pt))
             {
-                if(smallestKnownZone == nullptr)
+                if (smallestKnownZone == nullptr)
                 {
                     smallestKnownZone = zone;
+
+                    RECT* r = &smallestKnownZone->GetZoneRect();
+                    smallestKnownZoneArea = (r->right-r->left)*(r->bottom-r->top);
                 }
                 else
                 {
-                    RECT* r = &smallestKnownZone->GetZoneRect();
-                    int knownZoneArea = (r->right-r->left)*(r->bottom-r->top);
-
                     int newZoneArea = (newZoneRect->right-newZoneRect->left)*(newZoneRect->bottom-newZoneRect->top);
 
-                    if(newZoneArea<knownZoneArea)
+                    if (newZoneArea<smallestKnownZoneArea)
+                    {
                         smallestKnownZone = zone;
+                        newZoneArea = smallestKnownZoneArea;
+                    }
                 }
             }
         }
