@@ -95,6 +95,20 @@ namespace PowerToysSettings {
     m_json.as_object()[L"properties"].as_object()[name] = item;
   }
 
+  void Settings::add_hotkey(const std::wstring& name, UINT description_resource_id, const HotkeyObject& hotkey) {
+    add_hotkey(name, get_resource(description_resource_id), hotkey);
+  }
+
+  void Settings::add_hotkey(const std::wstring& name, const std::wstring& description, const HotkeyObject& hotkey) {
+    web::json::value item = web::json::value::object();
+    item.as_object()[L"display_name"] = web::json::value::string(description);
+    item.as_object()[L"editor_type"] = web::json::value::string(L"hotkey");
+    item.as_object()[L"value"] = hotkey.get_json();
+    item.as_object()[L"order"] = web::json::value::number(++m_curr_priority);
+
+    m_json.as_object()[L"properties"].as_object()[name] = item;
+  }
+
   // add_custom_action overloads.
   void Settings::add_custom_action(const std::wstring& name, UINT description_resource_id, UINT button_text_resource_id, UINT ext_description_resource_id) {
     add_custom_action(name, get_resource(description_resource_id), get_resource(button_text_resource_id), get_resource(ext_description_resource_id));
@@ -188,6 +202,11 @@ namespace PowerToysSettings {
     m_json.as_object()[L"properties"].as_object()[name] = add_property_generic(name, value);
   };
 
+  template  <>
+  void PowerToyValues::add_property(const std::wstring& name, HotkeyObject value) {
+    m_json.as_object()[L"properties"].as_object()[name] = add_property_generic(name, value.get_json());
+  };
+
   bool PowerToyValues::is_bool_value(const std::wstring& property_name) {
     return m_json.is_object() &&
       m_json.has_object_field(L"properties") &&
@@ -209,6 +228,13 @@ namespace PowerToysSettings {
       m_json[L"properties"][property_name].has_string_field(L"value");
   }
 
+  bool PowerToyValues::is_object_value(const std::wstring& property_name) {
+    return m_json.is_object() &&
+      m_json.has_object_field(L"properties") &&
+      m_json[L"properties"].has_object_field(property_name) &&
+      m_json[L"properties"][property_name].has_object_field(L"value");
+  }
+
   bool PowerToyValues::get_bool_value(const std::wstring& property_name) {
     return m_json[L"properties"][property_name][L"value"].as_bool();
   }
@@ -219,6 +245,10 @@ namespace PowerToysSettings {
 
   std::wstring PowerToyValues::get_string_value(const std::wstring& property_name) {
     return m_json[L"properties"][property_name][L"value"].as_string();
+  }
+
+  web::json::value PowerToyValues::get_json(const std::wstring& property_name) {
+    return m_json[L"properties"][property_name][L"value"];
   }
 
   std::wstring PowerToyValues::serialize() {
