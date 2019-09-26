@@ -4,7 +4,7 @@
 #include <ShellScalingApi.h>
 
 HRESULT DPIAware::GetScreenDPIForWindow(HWND hwnd, UINT &dpi_x, UINT &dpi_y) {
-  auto monitor_handle = MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
+  auto monitor_handle = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
   dpi_x = 0;
   dpi_y = 0;
   if (monitor_handle != nullptr) {
@@ -15,15 +15,15 @@ HRESULT DPIAware::GetScreenDPIForWindow(HWND hwnd, UINT &dpi_x, UINT &dpi_y) {
 }
 
 HRESULT DPIAware::GetScreenDPIForPoint(POINT p, UINT& dpi_x, UINT& dpi_y) {
-	auto monitor_handle = MonitorFromPoint(p, MONITOR_DEFAULTTOPRIMARY);
-	dpi_x = 0;
-	dpi_y = 0;
-	if (monitor_handle != nullptr) {
-		return GetDpiForMonitor(monitor_handle, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y);
-	}
-	else {
-		return E_FAIL;
-	}
+  auto monitor_handle = MonitorFromPoint(p, MONITOR_DEFAULTTONEAREST);
+  dpi_x = 0;
+  dpi_y = 0;
+  if (monitor_handle != nullptr) {
+    return GetDpiForMonitor(monitor_handle, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y);
+  }
+  else {
+    return E_FAIL;
+  }
 }
 
 void DPIAware::Convert(HMONITOR monitor_handle, int &width, int &height) {

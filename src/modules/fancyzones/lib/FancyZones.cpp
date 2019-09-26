@@ -238,41 +238,56 @@ void FancyZones::ToggleEditor() noexcept
         m_terminateEditorEvent.reset(CreateEvent(nullptr, true, false, nullptr));
     }
 
-	POINT currentCursorPos;
-	if (!GetCursorPos(&currentCursorPos))
-	{
-		return;
-	}
+    HMONITOR monitor = NULL;
+    UINT dpi_x = 96;
+    UINT dpi_y = 96;
+
+    if (m_settings->GetSettings().use_cursorpos_editor_startupscreen)
+    {
+        POINT currentCursorPos;
+        if (!GetCursorPos(&currentCursorPos))
+        {
+            return;
+        }
+
+        monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
+        DPIAware::GetScreenDPIForPoint(currentCursorPos, dpi_x, dpi_y);
+    }
+    else
+    {
+        const HWND foregroundWindow = GetForegroundWindow();
+        if (!foregroundWindow)
+        {
+            return;
+        }
+
+        monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTOPRIMARY);
+        DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
+    }
 
 
-	const HMONITOR monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
-
-	if (!monitor)
-	{
-		return;
-	}
+    if (!monitor)
+    {
+        return;
+    }
 
     std::shared_lock readLock(m_lock);
     auto iter = m_zoneWindowMap.find(monitor);
-	if (iter == m_zoneWindowMap.end())
-	{
-		return;
-	}
-
-    UINT dpi_x = 96;
-    UINT dpi_y = 96;
-	DPIAware::GetScreenDPIForPoint(currentCursorPos, dpi_x, dpi_y);
+    if (iter == m_zoneWindowMap.end())
+    {
+        return;
+    }
 
     MONITORINFOEX mi;
     mi.cbSize = sizeof(mi);
     GetMonitorInfo(monitor, &mi);
 
-	// X/Y need to start in unscaled screen coordinates to get to the proper top/left of the monitor
-	// From there, we need to scale the difference between the monitor and workarea rects to get the
-	// appropriate offset where the overlay should appear.
-	// This covers the cases where the taskbar is not at the bottom of the screen.
-	const auto x = mi.rcMonitor.left + MulDiv(mi.rcWork.left - mi.rcMonitor.left, 96, dpi_x);
-	const auto y = mi.rcMonitor.top + MulDiv(mi.rcWork.top - mi.rcMonitor.top, 96, dpi_y);
+    // X/Y need to start in unscaled screen coordinates to get to the proper top/left of the monitor
+    // From there, we need to scale the difference between the monitor and workarea rects to get the
+    // appropriate offset where the overlay should appear.
+    // This covers the cases where the taskbar is not at the bottom of the screen.
+    const auto x = mi.rcMonitor.left + MulDiv(mi.rcWork.left - mi.rcMonitor.left, 96, dpi_x);
+    const auto y = mi.rcMonitor.top + MulDiv(mi.rcWork.top - mi.rcMonitor.top, 96, dpi_y);
 
     // Location that the editor should occupy, scaled by DPI
     std::wstring editorLocation = 
