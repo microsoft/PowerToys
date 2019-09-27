@@ -1,236 +1,239 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using FancyZonesEditor.Models;
 using MahApps.Metro.Controls;
 
 namespace FancyZonesEditor
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : MetroWindow
-    {
-        public MainWindow()
-        {
-            InitializeComponent();
-            DataContext = _settings;
-        }
+	/// <summary>
+	/// Interaction logic for MainWindow.xaml
+	/// </summary>
+	public partial class MainWindow : MetroWindow
+	{
+		#region Properties
 
-        private void DecrementZones_Click(object sender, RoutedEventArgs e)
-        {
-            if (_settings.ZoneCount > 1)
-            {
-                _settings.ZoneCount--;
-            }
-        }
+		private static string c_defaultNamePrefix = "Custom Layout ";
+		private bool _editing = false;
+		private Settings _settings = ((App)Application.Current).ZoneSettings;
 
-        private void IncrementZones_Click(object sender, RoutedEventArgs e)
-        {
-            if (_settings.ZoneCount < 40)
-            {
-                _settings.ZoneCount++;
-            }
-        }
+		#endregion
 
-        private Settings _settings = ((App)Application.Current).ZoneSettings;
+		#region Constructors
 
-        private void NewCustomLayoutButton_Click(object sender, RoutedEventArgs e)
-        {
-            WindowLayout window = new WindowLayout();
-            window.Show();
-            this.Close();
-        }
+		public MainWindow()
+		{
+			InitializeComponent();
+			DataContext = _settings;
+		}
 
-        private void LayoutItem_Click(object sender, MouseButtonEventArgs e)
-        {
-            Select(((Border)sender).DataContext as LayoutModel);
-        }
+		#endregion
 
-        private void Select(LayoutModel newSelection)
-        { 
-            LayoutModel currentSelection = EditorOverlay.Current.DataContext as LayoutModel;
+		#region Methods
 
-            if (currentSelection != null)
-            {
-                currentSelection.IsSelected = false;
-            }
+		private void DecrementZoneCountButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (_settings.ZoneCount > 1)
+			{
+				_settings.ZoneCount--;
+			}
+		}
 
-            newSelection.IsSelected = true;
+		private void IncrementZoneCountButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (_settings.ZoneCount < 40)
+			{
+				_settings.ZoneCount++;
+			}
+		}
 
-            EditorOverlay.Current.DataContext = newSelection;
-        }
+		private void NewCustomLayoutButton_Click(object sender, RoutedEventArgs e)
+		{
+			WindowLayout window = new WindowLayout();
 
-        private static string c_defaultNamePrefix = "Custom Layout ";
-        private bool _editing = false;
+			window.Show();
+			this.Close();
+		}
 
-        private void EditLayout_Click(object sender, RoutedEventArgs e)
-        {
-            _editing = true;
-            this.Close();
+		private void LayoutItem_Click(object sender, MouseButtonEventArgs e)
+		{
+			Select(((Border)sender).DataContext as LayoutModel);
+			EditSelectedLayoutButton.IsEnabled = true;
+		}
 
-            EditorOverlay mainEditor = EditorOverlay.Current;
-            LayoutModel model = mainEditor.DataContext as LayoutModel;
-            if (model == null)
-            {
-                mainEditor.Close();
-                return;
-            }
-            model.IsSelected = false;
+		private void EditLayoutButton_Click(object sender, RoutedEventArgs e)
+		{
+			EditorOverlay mainEditor = EditorOverlay.Current;
+			LayoutModel model = mainEditor.DataContext as LayoutModel;
+			EditorWindow window;
 
-            bool isPredefinedLayout = Settings.IsPredefinedLayout(model);
+			if (model == null)
+			{
+				return;
+			}
 
-            if (!_settings.CustomModels.Contains(model) || isPredefinedLayout)
-            {
-                if (isPredefinedLayout)
-                {
-                    // make a copy
-                    model = model.Clone();
-                    mainEditor.DataContext = model;
-                }
+			_editing = true;
+			this.Close();
 
-                int maxCustomIndex = 0;
-                foreach (LayoutModel customModel in _settings.CustomModels)
-                {
-                    string name = customModel.Name;
-                    if (name.StartsWith(c_defaultNamePrefix))
-                    {
-                        int i;
-                        if (Int32.TryParse(name.Substring(c_defaultNamePrefix.Length), out i))
-                        {
-                            if (maxCustomIndex < i)
-                            {
-                                maxCustomIndex = i;
-                            }
-                        }
-                    }
-                }
-                model.Name = c_defaultNamePrefix + (++maxCustomIndex);
-            }
+			bool isPredefinedLayout = Settings.IsPredefinedLayout(model);
+			model.IsSelected = false;
 
-            mainEditor.Edit();
+			if (!_settings.CustomModels.Contains(model) || isPredefinedLayout)
+			{
+				if (isPredefinedLayout)
+				{
+					// make a copy
+					model = model.Clone();
+					mainEditor.DataContext = model;
+				}
 
-            EditorWindow window;
-            if (model is GridLayoutModel)
-            {
-                window = new GridEditorWindow();
-            }
-            else
-            {
-                window = new CanvasEditorWindow();
-            }
-            window.Owner = EditorOverlay.Current;
-            window.DataContext = model;
-            window.Show();
-        }
+				int maxCustomIndex = 0;
+				foreach (LayoutModel customModel in _settings.CustomModels)
+				{
+					string name = customModel.Name;
+					if (name.StartsWith(c_defaultNamePrefix))
+					{
+						int i;
+						if (Int32.TryParse(name.Substring(c_defaultNamePrefix.Length), out i))
+						{
+							if (maxCustomIndex < i)
+							{
+								maxCustomIndex = i;
+							}
+						}
+					}
+				}
 
-        private void Apply_Click(object sender, RoutedEventArgs e)
-        {
-            EditorOverlay mainEditor = EditorOverlay.Current;
-            LayoutModel model = mainEditor.DataContext as LayoutModel;
-            if (model != null)
-            {
-                if (model is GridLayoutModel)
-                {
-                    model.Apply(mainEditor.GetZoneRects());
-                }
-                else
-                {
-                    model.Apply((model as CanvasLayoutModel).Zones.ToArray());
-                }
-            }
+				model.Name = c_defaultNamePrefix + (++maxCustomIndex);
+			}
 
-            this.Close();
-        }
+			mainEditor.Edit();
 
-        private void OnClosed(object sender, EventArgs e)
-        {
-            if (!_editing)
-            {
-                EditorOverlay.Current.Close();
-            }
-        }
+			if (model is GridLayoutModel)
+			{
+				window = new GridEditorWindow();
+			}
+			else
+			{
+				window = new CanvasEditorWindow();
+			}
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            foreach(LayoutModel model in _settings.CustomModels)
-            {
-                if (model.IsSelected)
-                {
-                    TemplateTab.SelectedIndex = 1;
-                    return;
-                }
-            }
-        }
+			window.Owner = EditorOverlay.Current;
+			window.DataContext = model;
 
-        private void OnDelete(object sender, RoutedEventArgs e)
-        {
-            LayoutModel model = ((FrameworkElement)sender).DataContext as LayoutModel;
-            if (model.IsSelected)
-            {
-                OnLoaded(null, null);
-            }
-            model.Delete();
-        }
+			window.Show();
+		}
 
-        private void MetroWindow_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            var width = e.NewSize.Width;
+		private void ApplyButton_Click(object sender, RoutedEventArgs e)
+		{
+			EditorOverlay mainEditor = EditorOverlay.Current;
+			LayoutModel model = mainEditor.DataContext as LayoutModel;
 
-            if (width < 850)
-            {
-                Footer.Orientation = Orientation.Vertical;
-                FooterSplitter.Visibility = Visibility.Collapsed;
-                SpacingPropertySettings.Orientation = Orientation.Vertical;
-            }
-            else
-            {
-                Footer.Orientation = Orientation.Horizontal;
-                SpacingPropertySettings.Orientation = Orientation.Horizontal;
-                FooterSplitter.Visibility = Visibility.Visible;
-            }
-        }
-    }
+			if (model != null)
+			{
+				if (model is GridLayoutModel)
+				{
+					model.Apply(mainEditor.GetZoneRects());
+				}
+				else
+				{
+					model.Apply((model as CanvasLayoutModel).Zones.ToArray());
+				}
+			}
 
+			this.Close();
+		}
 
-    public class BooleanToBrushConverter : IValueConverter
-    {
-        private static Brush c_selectedBrush = new SolidColorBrush(Color.FromRgb(0x00, 0x78, 0xD7));
-        private static Brush c_normalBrush = new SolidColorBrush(Color.FromRgb(0xF2, 0xF2, 0xF2));
+		private void OnClosed(object sender, EventArgs e)
+		{
+			if (!_editing)
+			{
+				EditorOverlay.Current.Close();
+			}
+		}
 
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return ((bool)value) ? c_selectedBrush : c_normalBrush;
-        }
+		private void OnDelete(object sender, RoutedEventArgs e)
+		{
+			LayoutModel model = ((FrameworkElement)sender).DataContext as LayoutModel;
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return value == c_selectedBrush;
-        }
-    }
+			if (model.IsSelected)
+			{
+				SetSelectedItem();
+			}
 
-    public class ModelToVisibilityConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return Settings.IsPredefinedLayout((LayoutModel)value) ? Visibility.Collapsed : Visibility.Visible;
-        }
+			model.Delete();
+		}
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return null;
-        }
-    }
+		private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			var width = e.NewSize.Width;
+
+			if (width < 900)
+			{
+				Footer.Orientation = Orientation.Vertical;
+				FooterSplitter.Visibility = Visibility.Collapsed;
+
+				if (width < 550)
+				{
+					Footer.HorizontalAlignment = HorizontalAlignment.Center;
+					SpacingPropertySettings.Orientation = Orientation.Vertical;
+					SpacingPropertySettings.HorizontalAlignment = HorizontalAlignment.Center;
+				}
+				else
+				{
+					Footer.HorizontalAlignment = HorizontalAlignment.Left;
+					SpacingPropertySettings.Orientation = Orientation.Horizontal;
+					SpacingPropertySettings.HorizontalAlignment = HorizontalAlignment.Left;
+				}
+			}
+			else
+			{
+				SpacingPropertySettings.Orientation = Orientation.Horizontal;
+				SpacingPropertySettings.HorizontalAlignment = HorizontalAlignment.Left;
+				Footer.Orientation = Orientation.Horizontal;
+				Footer.HorizontalAlignment = HorizontalAlignment.Left;
+				FooterSplitter.Visibility = Visibility.Visible;
+			}
+		}
+
+		private void Select(LayoutModel newSelection)
+		{
+			LayoutModel currentSelection = EditorOverlay.Current.DataContext as LayoutModel;
+
+			if (currentSelection != null)
+			{
+				currentSelection.IsSelected = false;
+			}
+
+			newSelection.IsSelected = true;
+			EditorOverlay.Current.DataContext = newSelection;
+		}
+
+		private void InitializedEventHandler(object sender, EventArgs e)
+		{
+			SetSelectedItem();
+		}
+
+		#region Helpers
+
+		private void SetSelectedItem()
+		{
+			foreach (LayoutModel model in _settings.CustomModels)
+			{
+				if (model.IsSelected)
+				{
+					TemplateTab.SelectedItem = model;
+					EditSelectedLayoutButton.IsEnabled = true;
+				}
+			}
+		}
+
+		#endregion
+
+		#endregion
+	}
 }

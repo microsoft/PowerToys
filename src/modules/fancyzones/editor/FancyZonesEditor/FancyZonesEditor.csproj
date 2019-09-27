@@ -65,6 +65,8 @@
     <Compile Include="CanvasEditor.xaml.cs">
       <DependentUpon>CanvasEditor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\BooleanToBrushConverter.cs" />
+    <Compile Include="Converters\ModelToVisibilityConverter.cs" />
     <Compile Include="EditorWindow.cs" />
     <Compile Include="GridEditor.xaml.cs">
       <DependentUpon>GridEditor.xaml</DependentUpon>
