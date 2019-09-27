@@ -238,17 +238,14 @@ void FancyZones::ToggleEditor() noexcept
         m_terminateEditorEvent.reset(CreateEvent(nullptr, true, false, nullptr));
     }
 
-    HMONITOR monitor = NULL;
+    HMONITOR monitor{};
     UINT dpi_x = 96;
     UINT dpi_y = 96;
 
     if (m_settings->GetSettings().use_cursorpos_editor_startupscreen)
     {
-        POINT currentCursorPos;
-        if (!GetCursorPos(&currentCursorPos))
-        {
-            return;
-        }
+        POINT currentCursorPos{};
+        GetCursorPos(&currentCursorPos);
 
         monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
         DPIAware::GetScreenDPIForPoint(currentCursorPos, dpi_x, dpi_y);
@@ -256,11 +253,6 @@ void FancyZones::ToggleEditor() noexcept
     else
     {
         const HWND foregroundWindow = GetForegroundWindow();
-        if (!foregroundWindow)
-        {
-            return;
-        }
-
         monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTOPRIMARY);
         DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
     }
