@@ -41,7 +41,7 @@ Grab FancyZones.exe from the bin directory or \\\\wexfs\users\bretan\proto\super
 * Change wallpaper - use custom wallpaper per-monitor per-desktop
 * Flash zones - flash zones on each monitor
 
-### Miscellanious
+### Miscellaneous
 * Override snap hotkeys - steal hotkeys normally used by shell (win+left/right, win+ctrl+num)
 * Colorful zones - use colored zones in zone viewer
 

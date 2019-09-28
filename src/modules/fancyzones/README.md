@@ -30,7 +30,7 @@ The backlog for the utility can be found [here](https://github.com/Microsoft/Pow
 | Enable zones while dragging with the shift key | Toggles between auto-snap mode with the shift key disabling snapping during a drag and manual snap mode where pressing the shift key during a drag enables snapping |
 | Override Windows Snap hotkeys (win+arrow) to move between zones | Enables or disables Windows Aero Snapping when Fancy Zones is running |
 | Keep windows in their zones when the screen resolution changes | After a screen resolution change, if this setting is enabled, Fancy Zones will resize and reposition windows into the zones they were previously in |
-| Keep windows in their zones when the active FancyZones layout changes | When this option is on, Fancy Zones will resize and position windows into the new zone layout by maintining the previous zone number location of each window |
+| Keep windows in their zones when the active FancyZones layout changes | When this option is on, Fancy Zones will resize and position windows into the new zone layout by maintaining the previous zone number location of each window |
 | Flash zones when the active FancyZones layout changes | Briefly flash the zone layout when the layout changes or a new virtual desktop is activated |
 | Keep windows in their zones when the active virtual desktop changes | If an application is pinned to all virtual desktops, this setting will keep that window in the same zone on all desktops |
 | Zone Highlight Color (Default #0078D7) | the color that a zone becomes when it is the active drop target during a window drag 
