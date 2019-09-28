@@ -237,75 +237,95 @@ void FancyZones::ToggleEditor() noexcept
         m_terminateEditorEvent.reset(CreateEvent(nullptr, true, false, nullptr));
     }
 
-    const HWND foregroundWindow = GetForegroundWindow();
-    if (const HMONITOR monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTOPRIMARY))
+    HMONITOR monitor{};
+    UINT dpi_x = 96;
+    UINT dpi_y = 96;
+
+    if (m_settings->GetSettings().use_cursorpos_editor_startupscreen)
     {
-        std::shared_lock readLock(m_lock);
-        auto iter = m_zoneWindowMap.find(monitor);
-        if (iter != m_zoneWindowMap.end())
-        {
-            UINT dpi_x = 96;
-            UINT dpi_y = 96;
-            DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
+        POINT currentCursorPos{};
+        GetCursorPos(&currentCursorPos);
 
-            MONITORINFOEX mi;
-            mi.cbSize = sizeof(mi);
-            GetMonitorInfo(monitor, &mi);
-
-			// X/Y need to start in unscaled screen coordinates to get to the proper top/left of the monitor
-			// From there, we need to scale the difference between the monitor and workarea rects to get the
-			// appropriate offset where the overlay should appear.
-			// This covers the cases where the taskbar is not at the bottom of the screen.
-			const auto x = mi.rcMonitor.left + MulDiv(mi.rcWork.left - mi.rcMonitor.left, 96, dpi_x);
-			const auto y = mi.rcMonitor.top + MulDiv(mi.rcWork.top - mi.rcMonitor.top, 96, dpi_y);
-
-            // Location that the editor should occupy, scaled by DPI
-            std::wstring editorLocation = 
-                std::to_wstring(x) + L"_" +
-                std::to_wstring(y) + L"_" +
-                std::to_wstring(MulDiv(mi.rcWork.right - mi.rcWork.left, 96, dpi_x)) + L"_" +
-                std::to_wstring(MulDiv(mi.rcWork.bottom - mi.rcWork.top, 96, dpi_y));
-
-            const std::wstring params =
-                iter->second->UniqueId() + L" " +
-                std::to_wstring(iter->second->ActiveZoneSet()->LayoutId()) + L" " +
-                std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
-                editorLocation + L" " +
-                iter->second->WorkAreaKey() + L" " +
-                std::to_wstring(static_cast<float>(dpi_x) / 96.0f);
-
-            SHELLEXECUTEINFO sei{ sizeof(sei) };
-            sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-            sei.lpFile = L"modules\\FancyZonesEditor.exe";
-            sei.lpParameters = params.c_str();
-            sei.nShow = SW_SHOWNORMAL;
-            ShellExecuteEx(&sei);
-
-            // Launch the editor on a background thread
-            // Wait for the editor's process to exit
-            // Post back to the main thread to update
-            std::thread waitForEditorThread([window = m_window, processHandle = sei.hProcess, terminateEditorEvent = m_terminateEditorEvent.get()]()
-            {
-                HANDLE waitEvents[2] = { processHandle, terminateEditorEvent };
-                auto result = WaitForMultipleObjects(2, waitEvents, false, INFINITE);
-                if (result == WAIT_OBJECT_0 + 0)
-                {
-                    // Editor exited
-                    // Update any changes it may have made
-                    PostMessage(window, WM_PRIV_EDITOR, 0, static_cast<LPARAM>(EditorExitKind::Exit));
-                }
-                else if (result == WAIT_OBJECT_0 + 1)
-                {
-                    // User hit Win+~ while editor is already running
-                    // Shut it down
-                    TerminateProcess(processHandle, 2);
-                    PostMessage(window, WM_PRIV_EDITOR, 0, static_cast<LPARAM>(EditorExitKind::Terminate));
-                }
-                CloseHandle(processHandle);
-            });
-            waitForEditorThread.detach();
-        }
+        monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
+        DPIAware::GetScreenDPIForPoint(currentCursorPos, dpi_x, dpi_y);
     }
+    else
+    {
+        const HWND foregroundWindow = GetForegroundWindow();
+        monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTOPRIMARY);
+        DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
+    }
+
+
+    if (!monitor)
+    {
+        return;
+    }
+
+    std::shared_lock readLock(m_lock);
+    auto iter = m_zoneWindowMap.find(monitor);
+    if (iter == m_zoneWindowMap.end())
+    {
+        return;
+    }
+
+    MONITORINFOEX mi;
+    mi.cbSize = sizeof(mi);
+    GetMonitorInfo(monitor, &mi);
+
+    // X/Y need to start in unscaled screen coordinates to get to the proper top/left of the monitor
+    // From there, we need to scale the difference between the monitor and workarea rects to get the
+    // appropriate offset where the overlay should appear.
+    // This covers the cases where the taskbar is not at the bottom of the screen.
+    const auto x = mi.rcMonitor.left + MulDiv(mi.rcWork.left - mi.rcMonitor.left, 96, dpi_x);
+    const auto y = mi.rcMonitor.top + MulDiv(mi.rcWork.top - mi.rcMonitor.top, 96, dpi_y);
+
+    // Location that the editor should occupy, scaled by DPI
+    std::wstring editorLocation = 
+        std::to_wstring(x) + L"_" +
+        std::to_wstring(y) + L"_" +
+        std::to_wstring(MulDiv(mi.rcWork.right - mi.rcWork.left, 96, dpi_x)) + L"_" +
+        std::to_wstring(MulDiv(mi.rcWork.bottom - mi.rcWork.top, 96, dpi_y));
+
+    const std::wstring params =
+        iter->second->UniqueId() + L" " +
+        std::to_wstring(iter->second->ActiveZoneSet()->LayoutId()) + L" " +
+        std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
+        editorLocation + L" " +
+        iter->second->WorkAreaKey() + L" " +
+        std::to_wstring(static_cast<float>(dpi_x) / 96.0f);
+
+    SHELLEXECUTEINFO sei{ sizeof(sei) };
+    sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+    sei.lpFile = L"modules\\FancyZonesEditor.exe";
+    sei.lpParameters = params.c_str();
+    sei.nShow = SW_SHOWNORMAL;
+    ShellExecuteEx(&sei);
+
+    // Launch the editor on a background thread
+    // Wait for the editor's process to exit
+    // Post back to the main thread to update
+    std::thread waitForEditorThread([window = m_window, processHandle = sei.hProcess, terminateEditorEvent = m_terminateEditorEvent.get()]()
+    {
+        HANDLE waitEvents[2] = { processHandle, terminateEditorEvent };
+        auto result = WaitForMultipleObjects(2, waitEvents, false, INFINITE);
+        if (result == WAIT_OBJECT_0 + 0)
+        {
+            // Editor exited
+            // Update any changes it may have made
+            PostMessage(window, WM_PRIV_EDITOR, 0, static_cast<LPARAM>(EditorExitKind::Exit));
+        }
+        else if (result == WAIT_OBJECT_0 + 1)
+        {
+            // User hit Win+~ while editor is already running
+            // Shut it down
+            TerminateProcess(processHandle, 2);
+            PostMessage(window, WM_PRIV_EDITOR, 0, static_cast<LPARAM>(EditorExitKind::Terminate));
+        }
+        CloseHandle(processHandle);
+    });
+
+    waitForEditorThread.detach();
 }
 
 // IZoneWindowHost
