@@ -56,6 +56,12 @@
                     <TextBlock Text="{DynamicResource autoUpdates}" />
                 </CheckBox>
                 <StackPanel Margin="10" Orientation="Horizontal">
+                    <TextBlock Text="Query Search Precision" />
+                    <ComboBox Margin="10 0 0 0" Width="120"
+                              ItemsSource="{Binding QuerySearchPrecisionStrings}" 
+                              SelectedItem="{Binding Settings.QuerySearchPrecision}" />
+                </StackPanel>
+                <StackPanel Margin="10" Orientation="Horizontal">
                     <TextBlock Text="{DynamicResource lastQueryMode}" />
                     <ComboBox Margin="10 0 0 0" Width="120"
                               ItemsSource="{Binding LastQueryModes}" SelectedValue="{Binding Settings.LastQueryMode}"

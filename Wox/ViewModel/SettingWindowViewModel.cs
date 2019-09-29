@@ -70,6 +70,20 @@ namespace Wox.ViewModel
             }
         }
 
+        public List<string> QuerySearchPrecisionStrings
+        {
+            get
+            { 
+                var precisionStrings = new List<string>();
+
+                var enumList = Enum.GetValues(typeof(StringMatcher.SearchPrecisionScore)).Cast<StringMatcher.SearchPrecisionScore>().ToList();
+
+                enumList.ForEach(x => precisionStrings.Add(x.ToString()));
+
+                return precisionStrings;
+            }
+        }
+
         private Internationalization _translater => InternationalizationManager.Instance;
         public List<Language> Languages => _translater.LoadAvailableLanguages();
         public IEnumerable<int> MaxResultsRange => Enumerable.Range(2, 16);
