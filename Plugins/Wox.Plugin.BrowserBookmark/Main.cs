@@ -40,9 +40,8 @@ namespace Wox.Plugin.BrowserBookmark
 
             if (!topResults)
             {
-                // Since we mixed chrome and firefox bookmarks, we should order them again
-                var fuzzyMatcher = FuzzyMatcher.Create(param);
-                returnList = cachedBookmarks.Where(o => MatchProgram(o, fuzzyMatcher)).ToList();
+                // Since we mixed chrome and firefox bookmarks, we should order them again                
+                returnList = cachedBookmarks.Where(o => MatchProgram(o, param)).ToList();
                 returnList = returnList.OrderByDescending(o => o.Score).ToList();
             }
             
@@ -61,11 +60,11 @@ namespace Wox.Plugin.BrowserBookmark
             }).ToList();
         }
 
-        private bool MatchProgram(Bookmark bookmark, FuzzyMatcher matcher)
+        private bool MatchProgram(Bookmark bookmark, string queryString)
         {
-            if ((bookmark.Score = matcher.Evaluate(bookmark.Name).Score) > 0) return true;
-            if ((bookmark.Score = matcher.Evaluate(bookmark.PinyinName).Score) > 0) return true;
-            if ((bookmark.Score = matcher.Evaluate(bookmark.Url).Score / 10) > 0) return true;
+            if ((bookmark.Score = StringMatcher.FuzzySearch(queryString, bookmark.Name, new MatchOption()).Score) > 0) return true;
+            if ((bookmark.Score = StringMatcher.FuzzySearch(queryString, bookmark.PinyinName, new MatchOption).Score) > 0) return true;
+            if ((bookmark.Score = StringMatcher.FuzzySearch(queryString, bookmark.Url, new MatchOption()).Score / 10) > 0) return true;
 
             return false;
         }
