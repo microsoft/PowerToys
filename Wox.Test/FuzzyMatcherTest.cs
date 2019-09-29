@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -24,12 +25,16 @@ namespace Wox.Test
             };
 
         public List<int> GetPrecisionScores()
-            => new List<int>
-            {
-                0, //no precision
-                20, //low
-                50 //regular
-            };
+        {
+            var listToReturn = new List<int>();
+
+            Enum.GetValues(typeof(StringMatcher.SearchPrecisionScore))
+                .Cast<StringMatcher.SearchPrecisionScore>()
+                .ToList()
+                .ForEach(x => listToReturn.Add((int)x));
+
+            return listToReturn;
+        }
 
         [Test]
         public void MatchTest()
@@ -50,7 +55,7 @@ namespace Wox.Test
                 results.Add(new Result
                 {
                     Title = str,
-                    Score = FuzzyMatcher.Create("inst").Evaluate(str).Score
+                    Score = StringMatcher.FuzzySearch("inst", str, new MatchOption()).Score
                 });
             }
 
@@ -67,7 +72,7 @@ namespace Wox.Test
         {
             var compareString = "Can have rum only in my glass";
 
-            var scoreResult = FuzzyMatcher.Create(compareString).Evaluate(searchString).Score;
+            var scoreResult = StringMatcher.FuzzySearch(searchString, compareString, new MatchOption()).Score;
 
             Assert.True(scoreResult == 0);
         }
@@ -75,7 +80,7 @@ namespace Wox.Test
 
         //[TestCase("c", 50)]
         //[TestCase("ch", 50)]
-        //[TestCase("chr", 50)]
+        [TestCase("chr")]
         [TestCase("chrom")]
         [TestCase("chrome")]
         //[TestCase("chrom", 0)]
@@ -91,18 +96,9 @@ namespace Wox.Test
                 results.Add(new Result
                 {
                     Title = str,
-                    Score = FuzzyMatcher.Create(searchTerm).Evaluate(str).Score
+                    Score = StringMatcher.FuzzySearch(searchTerm, str, new MatchOption()).Score
                 });
-            }
-
-            StringMatcher.UserSettingSearchPrecision = "None";
-
-            StringMatcher.FuzzySearch(searchTerm, "blah", new MatchOption()).IsPreciciseMatch();
-
-            StringMatcher.UserSettingSearchPrecision = "Regular";
-
-            StringMatcher.FuzzySearch(searchTerm, "blah", new MatchOption()).IsPreciciseMatch();
-            StringMatcher.FuzzySearch(searchTerm, "blah", new MatchOption()).IsPreciciseMatch();
+            }            
 
             foreach (var precisionScore in GetPrecisionScores())
             {
@@ -123,7 +119,7 @@ namespace Wox.Test
         }
 
         [TestCase("chrome")]
-        public void WhenGivenStringsForCalScoreMethodThenShouldAlwaysReturnSpecificScore(string searchTerm)
+        public void WhenGivenStringsForCalScoreMethodThenShouldReturnCurrentScoring(string searchTerm)
         {
             var searchStrings = new List<string>
             {
@@ -164,6 +160,23 @@ namespace Wox.Test
             Assert.IsTrue(orderedResults[2].Score == 21 && orderedResults[2].Title == searchStrings[2]);
             Assert.IsTrue(orderedResults[3].Score == 107 && orderedResults[3].Title == searchStrings[3]);
             Assert.IsTrue(orderedResults[4].Score == 0 && orderedResults[4].Title == searchStrings[4]);
+        }
+                
+        [TestCase("chr", "Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("chr", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("chr", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Low, true)]
+        [TestCase("chr", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("chr", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Low, true)]
+        public void WhenGivenDesiredPrecisionIsRegularShouldReturnAllResultsEqualGreaterThanRegular(string queryString, string compareString, 
+                                                                                                        int expectedPrecisionScore, bool expectedPrecisionResult)
+        {
+            var expectedPrecisionString = (StringMatcher.SearchPrecisionScore)expectedPrecisionScore;            
+            StringMatcher.UserSettingSearchPrecision = expectedPrecisionString.ToString();
+            var matchResult = StringMatcher.FuzzySearch(queryString, compareString, new MatchOption());
+            var matchScore = matchResult.Score;
+            var matchPrecisionResult = matchResult.IsPreciciseMatch();
+            Debug.WriteLine(matchScore);
+            Assert.IsTrue(matchPrecisionResult == expectedPrecisionResult);
         }
     }
 }
