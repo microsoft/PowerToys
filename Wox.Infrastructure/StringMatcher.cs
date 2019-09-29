@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Text;
 using Wox.Infrastructure.Logger;
@@ -29,11 +29,9 @@ namespace Wox.Infrastructure
             return FuzzySearch(target, source, new MatchOption()).Score > 0;
         }
 
-        public enum SearchPrecisionScore
+        public static MatchResult FuzzySearch(string query, string stringToCompare)
         {
-            Regular = 50,
-            Low = 20,
-            None = 0
+            return FuzzySearch(query, stringToCompare, new MatchOption());
         }
 
         /// <summary>
@@ -107,11 +105,24 @@ namespace Wox.Infrastructure
             return score;
         }
 
+        public enum SearchPrecisionScore
+        {
+            Regular = 50,
+            Low = 20,
+            None = 0
+        }
+
         public static bool IsSearchPrecisionScoreMet(this MatchResult matchResult)
         {            
             var precisionScore = (SearchPrecisionScore)Enum.Parse(typeof(SearchPrecisionScore), 
                                                                             UserSettingSearchPrecision ?? SearchPrecisionScore.Regular.ToString());
             return matchResult.Score >= (int)precisionScore;
+        }
+
+        public static int ScoreAfterSearchPrecisionFilter(this MatchResult matchResult)
+        {
+            return matchResult.IsSearchPrecisionScoreMet() ? matchResult.Score : 0;
+
         }
 
         public static int ScoreForPinyin(string source, string target)
