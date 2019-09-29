@@ -161,21 +161,32 @@ namespace Wox.Test
             Assert.IsTrue(orderedResults[3].Score == 107 && orderedResults[3].Title == searchStrings[3]);
             Assert.IsTrue(orderedResults[4].Score == 0 && orderedResults[4].Title == searchStrings[4]);
         }
-                
+
+        [TestCase("goo", "Google Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, true)]        
         [TestCase("chr", "Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("chr", "Google Chrome", (int)StringMatcher.SearchPrecisionScore.Low, true)]
         [TestCase("chr", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
         [TestCase("chr", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Low, true)]
         [TestCase("chr", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("chr", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Low, true)]
+        [TestCase("chr", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.None, true)]
+        [TestCase("ccs", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Low, true)]
+        [TestCase("cand", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("cand", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
         public void WhenGivenDesiredPrecisionIsRegularShouldReturnAllResultsEqualGreaterThanRegular(string queryString, string compareString, 
                                                                                                         int expectedPrecisionScore, bool expectedPrecisionResult)
         {
             var expectedPrecisionString = (StringMatcher.SearchPrecisionScore)expectedPrecisionScore;            
             StringMatcher.UserSettingSearchPrecision = expectedPrecisionString.ToString();
             var matchResult = StringMatcher.FuzzySearch(queryString, compareString, new MatchOption());
-            var matchScore = matchResult.Score;
-            var matchPrecisionResult = matchResult.IsPreciciseMatch();
-            Debug.WriteLine(matchScore);
+
+            Debug.WriteLine("");
+            Debug.WriteLine("###############################################");
+            Debug.WriteLine($"SearchTerm: {queryString} PrecisionLevelSetAt: {expectedPrecisionString} ({expectedPrecisionScore})");
+            Debug.WriteLine($"SCORE: {matchResult.Score.ToString()}, ComparedString: {compareString}");
+            Debug.WriteLine("###############################################");
+            Debug.WriteLine("");
+
+            var matchPrecisionResult = matchResult.IsPreciciseMatch();            
             Assert.IsTrue(matchPrecisionResult == expectedPrecisionResult);
         }
     }
