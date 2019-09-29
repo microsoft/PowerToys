@@ -62,9 +62,9 @@ namespace Wox.Plugin.BrowserBookmark
 
         private bool MatchProgram(Bookmark bookmark, string queryString)
         {
-            if ((bookmark.Score = StringMatcher.FuzzySearch(queryString, bookmark.Name, new MatchOption()).Score) > 0) return true;
-            if ((bookmark.Score = StringMatcher.FuzzySearch(queryString, bookmark.PinyinName, new MatchOption).Score) > 0) return true;
-            if ((bookmark.Score = StringMatcher.FuzzySearch(queryString, bookmark.Url, new MatchOption()).Score / 10) > 0) return true;
+            if (StringMatcher.FuzzySearch(queryString, bookmark.Name, new MatchOption()).IsSearchPrecisionScoreMet()) return true;
+            if ( StringMatcher.FuzzySearch(queryString, bookmark.PinyinName, new MatchOption()).IsSearchPrecisionScoreMet()) return true;
+            if (StringMatcher.FuzzySearch(queryString, bookmark.Url, new MatchOption()).IsSearchPrecisionScoreMet()) return true;
 
             return false;
         }

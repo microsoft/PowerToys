@@ -107,7 +107,7 @@ namespace Wox.Infrastructure
             return score;
         }
 
-        public static bool IsPreciciseMatch(this MatchResult matchResult)
+        public static bool IsSearchPrecisionScoreMet(this MatchResult matchResult)
         {            
             var precisionScore = (SearchPrecisionScore)Enum.Parse(typeof(SearchPrecisionScore), 
                                                                             UserSettingSearchPrecision ?? SearchPrecisionScore.Regular.ToString());
