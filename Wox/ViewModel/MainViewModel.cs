@@ -305,8 +305,8 @@ namespace Wox.ViewModel
                 {
                     var filtered = results.Where
                     (
-                        r => StringMatcher.IsMatch(r.Title, query) ||
-                             StringMatcher.IsMatch(r.SubTitle, query)
+                        r => StringMatcher.FuzzySearch(query, r.Title).IsSearchPrecisionScoreMet() 
+                            || StringMatcher.FuzzySearch(query, r.SubTitle).IsSearchPrecisionScoreMet()
                     ).ToList();
                     ContextMenu.AddResults(filtered, id);
                 }
@@ -348,8 +348,8 @@ namespace Wox.ViewModel
             {
                 var filtered = results.Where
                 (
-                    r => StringMatcher.IsMatch(r.Title, query) ||
-                         StringMatcher.IsMatch(r.SubTitle, query)
+                    r => StringMatcher.FuzzySearch(query, r.Title).IsSearchPrecisionScoreMet() ||
+                         StringMatcher.FuzzySearch(query, r.SubTitle).IsSearchPrecisionScoreMet()
                 ).ToList();
                 History.AddResults(filtered, id);
             }
