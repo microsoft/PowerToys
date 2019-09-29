@@ -186,7 +186,7 @@ namespace Wox.Test
             Debug.WriteLine("###############################################");
             Debug.WriteLine("");
 
-            var matchPrecisionResult = matchResult.IsPreciciseMatch();            
+            var matchPrecisionResult = matchResult.IsSearchPrecisionScoreMet();            
             Assert.IsTrue(matchPrecisionResult == expectedPrecisionResult);
         }
     }
