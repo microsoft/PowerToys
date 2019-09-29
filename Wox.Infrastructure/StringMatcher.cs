@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Text;
 using Wox.Infrastructure.Logger;
@@ -15,7 +15,7 @@ namespace Wox.Infrastructure
         {
             if (!string.IsNullOrEmpty(source) && !string.IsNullOrEmpty(target))
             {
-                return FuzzySearch(target, source, new MatchOption()).Score;               
+                return FuzzySearch(target, source, new MatchOption()).Score;
             }
             else
             {
