@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -134,6 +134,13 @@ namespace Wox.Plugin.Sys
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_sleep"),
                     IcoPath = "Images\\sleep.png",
                     Action = c => FormsApplication.SetSuspendState(PowerState.Suspend, false, false)
+                },
+                new Result
+                {
+                    Title = "Hibernate",
+                    SubTitle = "Hibernate computer",
+                    IcoPath = "Images\\sleep.png", // Icon change needed
+                    Action = c => FormsApplication.SetSuspendState(PowerState.Hibernate, false, false)
                 },
                 new Result
                 {
