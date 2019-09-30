@@ -76,16 +76,12 @@ namespace Wox.Test
 
             Assert.True(scoreResult == 0);
         }
-
-
-        //[TestCase("c", 50)]
-        //[TestCase("ch", 50)]
+        
         [TestCase("chr")]
         [TestCase("chrom")]
-        [TestCase("chrome")]
-        //[TestCase("chrom", 0)]
-        //[TestCase("cand", 50)]
-        //[TestCase("cpywa", 0)]
+        [TestCase("chrome")]        
+        [TestCase("cand")]
+        [TestCase("cpywa")]
         [TestCase("ccs")]
         public void WhenGivenStringsAndAppliedPrecisionFilteringThenShouldReturnGreaterThanPrecisionScoreResults(string searchTerm)
         {
@@ -162,9 +158,9 @@ namespace Wox.Test
             Assert.IsTrue(orderedResults[4].Score == 0 && orderedResults[4].Title == searchStrings[4]);
         }
 
-        [TestCase("goo", "Google Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, true)]        
-        [TestCase("chr", "Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("goo", "Google Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("chr", "Google Chrome", (int)StringMatcher.SearchPrecisionScore.Low, true)]
+        [TestCase("chr", "Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("chr", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
         [TestCase("chr", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Low, true)]
         [TestCase("chr", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
@@ -172,7 +168,7 @@ namespace Wox.Test
         [TestCase("ccs", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Low, true)]
         [TestCase("cand", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("cand", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        public void WhenGivenDesiredPrecisionIsRegularShouldReturnAllResultsEqualGreaterThanRegular(string queryString, string compareString, 
+        public void WhenGivenDesiredPrecisionThenShouldReturnAllResultsGreaterOrEqual(string queryString, string compareString, 
                                                                                                         int expectedPrecisionScore, bool expectedPrecisionResult)
         {
             var expectedPrecisionString = (StringMatcher.SearchPrecisionScore)expectedPrecisionScore;            
