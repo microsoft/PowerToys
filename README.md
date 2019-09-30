@@ -28,7 +28,7 @@ Features
 Installation
 ------------
 
-To install this fork's [version](https://github.com/jjw24/Wox/releases/tag/v1.3.524%2BJJW24.v1.12.2) of Wox, you can **download** it [here](https://github.com/jjw24/Wox/releases/download/v1.3.524%2BJJW24.v1.12.2/Wox-1.3.524+JJW24.v1.12.2.exe).
+To install this fork's version of Wox, you can **download** it [here](https://github.com/jjw24/Wox/releases/latest).
 
 To install the upstream version:
 
