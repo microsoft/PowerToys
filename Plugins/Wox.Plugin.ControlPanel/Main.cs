@@ -77,7 +77,7 @@ namespace Wox.Plugin.ControlPanel
         private int Score(ControlPanelItem item, string query)
         {
             var scores = new List<int> {0};
-            if (string.IsNullOrEmpty(item.LocalizedString))
+            if (!string.IsNullOrEmpty(item.LocalizedString))
             {
                 var score1 = StringMatcher.FuzzySearch(query, item.LocalizedString).ScoreAfterSearchPrecisionFilter();
                 var score2 = StringMatcher.ScoreForPinyin(item.LocalizedString, query);
