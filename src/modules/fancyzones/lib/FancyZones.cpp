@@ -24,6 +24,7 @@ public:
     IFACEMETHODIMP_(void) WindowCreated(HWND window) noexcept;
     IFACEMETHODIMP_(bool) OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
     IFACEMETHODIMP_(void) ToggleEditor() noexcept;
+    IFACEMETHODIMP_(void) SettingsChanged() noexcept;
 
     // IZoneWindowHost
     IFACEMETHODIMP_(void) ToggleZoneViewers() noexcept;
@@ -117,7 +118,7 @@ IFACEMETHODIMP_(void) FancyZones::Run() noexcept
     m_window = CreateWindowExW(WS_EX_TOOLWINDOW, L"SuperFancyZones", L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, m_hinstance, this);
     if (!m_window) return;
 
-    RegisterHotKey(m_window, 1, MOD_WIN, VK_OEM_3);
+    RegisterHotKey(m_window, 1, m_settings->GetSettings().editorHotkey.get_modifiers(), m_settings->GetSettings().editorHotkey.get_code());
     VirtualDesktopChanged();
 }
 
@@ -326,6 +327,13 @@ void FancyZones::ToggleEditor() noexcept
     });
 
     waitForEditorThread.detach();
+}
+
+void FancyZones::SettingsChanged() noexcept
+{
+    // Update the hotkey
+    UnregisterHotKey(m_window, 1);
+    RegisterHotKey(m_window, 1, m_settings->GetSettings().editorHotkey.get_modifiers(), m_settings->GetSettings().editorHotkey.get_code());
 }
 
 // IZoneWindowHost

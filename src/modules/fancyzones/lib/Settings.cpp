@@ -52,7 +52,7 @@ private:
     } m_configStrings[1] = {
         { L"fancyzones_zoneHighlightColor", &m_settings.zoneHightlightColor, IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR },
     };
-
+    const std::wstring m_editor_hotkey_name = L"fancyzones_editor_hotkey";
 };
 
 IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ int *buffer_size) noexcept
@@ -73,6 +73,7 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
         IDS_SETTING_LAUNCH_EDITOR_BUTTON,
         IDS_SETTING_LAUNCH_EDITOR_DESCRIPTION
     );
+    settings.add_hotkey(m_editor_hotkey_name, IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, m_settings.editorHotkey);
 
     for (auto const& setting : m_configBools)
     {
@@ -91,6 +92,7 @@ IFACEMETHODIMP_(void) FancyZonesSettings::SetConfig(PCWSTR config) noexcept try
 {
     LoadSettings(config, false /*fromFile*/);
     SaveSettings();
+    m_callback->SettingsChanged();
     Trace::SettingsChanged(m_settings);
 }
 CATCH_LOG();
@@ -129,6 +131,11 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept try
             *setting.value = values.get_string_value(setting.name);
         }
     }
+
+    if (values.is_object_value(m_editor_hotkey_name))
+    {
+        m_settings.editorHotkey = PowerToysSettings::HotkeyObject::from_json(values.get_json(m_editor_hotkey_name));
+    }
 }
 CATCH_LOG();
 
@@ -145,6 +152,8 @@ void FancyZonesSettings::SaveSettings() noexcept try
     {
         values.add_property(setting.name, *setting.value);
     }
+
+    values.add_property(m_editor_hotkey_name, m_settings.editorHotkey);
 
     values.save_to_settings_file();
 }

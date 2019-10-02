@@ -5,6 +5,7 @@ import {StringTextSettingsControl} from './StringTextSettingsControl';
 import {IntSpinnerSettingsControl} from './IntSpinnerSettingsControl';
 import {ColorPickerSettingsControl} from './ColorPickerSettingsControl';
 import {CustomActionSettingsControl} from './CustomActionSettingsControl';
+import {HotkeySettingsControl} from './HotkeySettingsControl';
 
 export class CustomSettingsScreen extends React.Component <any, any> {
   references: any;
@@ -138,6 +139,13 @@ export class CustomSettingsScreen extends React.Component <any, any> {
                   key={key}
                   ref={(input) => {this.references[key]=input;}}
                   />;
+              case 'hotkey':
+                return <HotkeySettingsControl
+                  setting = {power_toys_properties[key]}
+                  key={key}
+                  on_change={this.parent_on_change}
+                  ref={(input) => {this.references[key]=input;}}
+                />;
               default:
                 return null;
             }
