@@ -27,20 +27,25 @@ namespace Wox.Plugin.BrowserBookmark
             if (string.IsNullOrEmpty(PlacesPath) || !File.Exists(PlacesPath))
                 return new List<Bookmark>();
 
+            var bookmarList = new List<Bookmark>();
+
             // create the connection string and init the connection
-            string dbPath = string.Format(dbPathFormat, PlacesPath);
-            var dbConnection = new SQLiteConnection(dbPath);
-
-            // Open connection to the database file and execute the query
-            dbConnection.Open();
-            var reader = new SQLiteCommand(queryAllBookmarks, dbConnection).ExecuteReader();
-
-            // return results in List<Bookmark> format
-            return reader.Select(x => new Bookmark()
+            string dbPath = string.Format(dbPathFormat, PlacesPath);            
+            using (var dbConnection = new SQLiteConnection(dbPath))
             {
-                Name = (x["title"] is DBNull) ? string.Empty : x["title"].ToString(),
-                Url = x["url"].ToString()
-            }).ToList();
+                // Open connection to the database file and execute the query
+                dbConnection.Open();
+                var reader = new SQLiteCommand(queryAllBookmarks, dbConnection).ExecuteReader();
+
+                // return results in List<Bookmark> format
+                bookmarList = reader.Select(x => new Bookmark()
+                {
+                    Name = (x["title"] is DBNull) ? string.Empty : x["title"].ToString(),
+                    Url = x["url"].ToString()
+                }).ToList();
+            }
+
+            return bookmarList;
         }
 
         /// <summary>
