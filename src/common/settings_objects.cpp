@@ -109,6 +109,32 @@ namespace PowerToysSettings {
     m_json.as_object()[L"properties"].as_object()[name] = item;
   }
 
+  void Settings::add_choice_group(const std::wstring& name, UINT description_resource_id, const std::wstring& value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids) {
+    std::vector<std::pair<std::wstring, std::wstring>> keys_and_texts;
+    keys_and_texts.reserve(keys_and_text_ids.size());
+    for (const auto& kv : keys_and_text_ids) {
+      keys_and_texts.emplace_back(kv.first, get_resource(kv.second));
+    }
+    add_choice_group(name, get_resource(description_resource_id), value, keys_and_texts);
+  }
+  void Settings::add_choice_group(const std::wstring& name, const std::wstring& description, const std::wstring& value, const std::vector<std::pair<std::wstring, std::wstring>>& keys_and_texts) {
+    web::json::value item = web::json::value::object();
+    item.as_object()[L"display_name"] = web::json::value::string(description);
+    item.as_object()[L"editor_type"] = web::json::value::string(L"choice_group");
+    auto options = web::json::value::array(keys_and_texts.size());
+    for (std::size_t i = 0; i < keys_and_texts.size(); ++i) {
+      auto entry = web::json::value::object();
+      entry.as_object()[L"key"] = web::json::value::string(keys_and_texts[i].first);
+      entry.as_object()[L"text"] = web::json::value::string(keys_and_texts[i].second);
+      options.as_array()[i] = entry;
+    }
+    item.as_object()[L"options"] = options;
+    item.as_object()[L"value"] = web::json::value::string(value);
+    item.as_object()[L"order"] = web::json::value::number(++m_curr_priority);
+
+    m_json.as_object()[L"properties"].as_object()[name] = item;
+  }
+
   // add_custom_action overloads.
   void Settings::add_custom_action(const std::wstring& name, UINT description_resource_id, UINT button_text_resource_id, UINT ext_description_resource_id) {
     add_custom_action(name, get_resource(description_resource_id), get_resource(button_text_resource_id), get_resource(ext_description_resource_id));

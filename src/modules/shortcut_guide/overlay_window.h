@@ -46,7 +46,7 @@ public:
   void animate(int vk_code);
   ~D2DOverlayWindow();
   void apply_overlay_opacity(float opacity);
-
+  void set_theme(const std::wstring& theme);
 private:
   void animate(int vk_code, int offset);
   bool show_thumbnail(const RECT& rect, double alpha);
@@ -83,4 +83,8 @@ private:
   std::vector<D2DSVG> arrows;
   std::chrono::steady_clock::time_point shown_start_time;
   float overlay_opacity = 0.9f;
+  enum {
+    Light, Dark, System
+  } theme_setting = System;
+  bool light_mode = true;
 };
