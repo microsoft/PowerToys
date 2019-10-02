@@ -47,6 +47,13 @@ bool OverlayWindow::get_config(wchar_t* buffer, int *buffer_size) {
     1
   );
 
+  settings.add_choice_group(
+    theme.name,
+    theme.resourceId,
+    theme.value,
+    theme.keys_and_texts
+  );
+
   return settings.serialize_to_buffer(buffer, buffer_size);
 }
 
@@ -68,6 +75,10 @@ void OverlayWindow::set_config(const wchar_t * config) {
         winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
       }
     }
+    if (_values.is_string_value(theme.name)) {
+      theme.value = _values.get_string_value(theme.name);
+      winkey_popup->set_theme(theme.value);
+    }
     _values.save_to_settings_file();
   }
   catch (std::exception&) {
@@ -79,6 +90,7 @@ void OverlayWindow::enable() {
   if (!_enabled) {
     winkey_popup = new D2DOverlayWindow();
     winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value)/100.0f);
+    winkey_popup->set_theme(theme.value);
     target_state = new TargetState(pressTime.value);
     winkey_popup->initialize();
   }
@@ -143,6 +155,9 @@ void OverlayWindow::init_settings() {
     }
     if (settings.is_int_value(overlayOpacity.name)) {
       overlayOpacity.value = settings.get_int_value(overlayOpacity.name);
+    }
+    if (settings.is_string_value(theme.name)) {
+      theme.value = settings.get_string_value(theme.name);
     }
   }
   catch (std::exception&) {
