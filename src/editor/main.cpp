@@ -343,7 +343,7 @@ void register_classes(HINSTANCE hInstance) {
   RegisterClassExW(&wcex);
 }
 
-int init_instance(HINSTANCE hInstance, int nCmdShow) {
+int init_instance(HINSTANCE hInstance, int nShowCmd) {
   g_hinst = hInstance;
 
   RECT desktopRect;
@@ -367,7 +367,7 @@ int init_instance(HINSTANCE hInstance, int nCmdShow) {
     hInstance,
     nullptr);
 
-  initialize_webview(g_main_wnd, nCmdShow);
+  initialize_webview(g_main_wnd, nShowCmd);
   UpdateWindow(g_main_wnd);
 
   return TRUE;
@@ -418,12 +418,12 @@ void read_arguments() {
   LocalFree(argument_list);
 }
 
-int start_webview_window(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+int start_webview_window(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
   // To be unlocked after the Window has finished being created.
   m_window_created_mutex.lock();
   read_arguments();
   register_classes(hInstance);
-  init_instance(hInstance, nCmdShow);
+  init_instance(hInstance, nShowCmd);
   MSG msg;
   // Main message loop:
   while (GetMessage(&msg, nullptr, 0, 0)) {
@@ -434,7 +434,7 @@ int start_webview_window(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpC
   return (int)msg.wParam;
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd) {
   CoInitialize(nullptr);
-  return start_webview_window(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+  return start_webview_window(hInstance, hPrevInstance, lpCmdLine, nShowCmd);
 }
