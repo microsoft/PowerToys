@@ -46,9 +46,6 @@ UINT wm_data_for_webview = 0;
 // - WebView confirms that the Window can close.
 UINT wm_destroy_window = 0;
 
-// Mutex for checking if the window has already been created.
-std::mutex g_window_created;
-
 // Message pipe to send/receive messages to/from the Powertoys runner.
 TwoWayPipeMessageIPC* g_message_pipe = nullptr;
 
@@ -296,7 +293,6 @@ LRESULT CALLBACK wnd_proc_static(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
   case WM_CREATE:
     wm_data_for_webview = RegisterWindowMessageW(L"PTSettingsCopyDataWebView");
     wm_destroy_window = RegisterWindowMessageW(L"PTSettingsParentTerminated");
-    g_window_created.unlock();
     break;
   case WM_DPICHANGED:
     {
@@ -388,11 +384,9 @@ void wait_on_parent_process_thread(DWORD pid) {
     if (WaitForSingleObject(process, INFINITE) == WAIT_OBJECT_0) {
       // If it's possible to detect when the PowerToys process terminates, message the main window.
       CloseHandle(process);
-      {
-        // Send a terminated message only after the window has finished initializing.
-        std::unique_lock lock(g_window_created);
+      if (g_main_wnd) {
+        WINRT_VERIFY(PostMessage(g_main_wnd, wm_destroy_window, 0, 0));
       }
-      WINRT_VERIFY(PostMessage(g_main_wnd, wm_destroy_window, 0, 0));
     } else {
       CloseHandle(process);
     }
@@ -431,7 +425,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
   CoInitialize(nullptr);
 
   g_hinst = hInstance;
-  g_window_created.lock(); // To be unlocked after the main window has finished being created.
   initialize_message_pipe();
   register_classes(hInstance);
   g_main_wnd = create_main_window(hInstance);
