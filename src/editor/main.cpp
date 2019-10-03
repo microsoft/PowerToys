@@ -6,6 +6,7 @@
 #include <ShellScalingApi.h>
 #include "resource.h"
 #include <common/dpi_aware.h>
+#include <common/common.h>
 
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "shcore.lib")
@@ -424,12 +425,21 @@ void initialize_message_pipe() {
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd) {
   CoInitialize(nullptr);
 
+  if (is_process_elevated()) {
+    if (!drop_elevated_privileges()) {
+      MessageBox(NULL, L"Failed to drop admin privileges.\nPlease report the bug to https://github.com/microsoft/PowerToys/issues.", L"PowerToys Settings Error", MB_OK);
+    }
+  }
+
   g_hinst = hInstance;
   initialize_message_pipe();
   register_classes(hInstance);
   g_main_wnd = create_main_window(hInstance);
+  if (g_main_wnd == nullptr) {
+    MessageBox(NULL, L"Failed to create main window.\nPlease report the bug to https://github.com/microsoft/PowerToys/issues.", L"PowerToys Settings Error", MB_OK);
+  }
   initialize_webview();
-  WINRT_VERIFY(ShowWindow(g_main_wnd, nShowCmd));
+  ShowWindow(g_main_wnd, nShowCmd);
 
   // Main message loop.
   MSG msg;

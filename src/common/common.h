@@ -37,3 +37,9 @@ enum WindowState {
   RESTORED
 };
 WindowState get_window_state(HWND hwnd);
+
+// Returns true if the current process is running with elevated privileges
+bool is_process_elevated();
+
+// Drops the elevated privilages if present
+bool drop_elevated_privileges();
