@@ -49,7 +49,8 @@ UINT wm_destroy_window = 0;
 // Mutex for checking if the window has already been created.
 std::mutex g_window_created;
 
-TwoWayPipeMessageIPC* current_settings_ipc = nullptr;
+// Message pipe to send/receive messages to/from the Powertoys runner.
+TwoWayPipeMessageIPC* g_message_pipe = nullptr;
 
 // Set to true if waiting for webview confirmation before closing the Window.
 bool g_waiting_for_close_confirmation = false;
@@ -117,8 +118,8 @@ void send_message_to_webview(const std::wstring& msg) {
 }
 
 void send_message_to_powertoys_runner(const std::wstring& msg) {
-  if (current_settings_ipc != nullptr) {
-    current_settings_ipc->send(msg);
+  if (g_message_pipe != nullptr) {
+    g_message_pipe->send(msg);
   } else {
     // For Debug purposes, in case the webview is being run alone.
 #ifdef _DEBUG
@@ -422,8 +423,8 @@ void read_arguments() {
 
   argument_list = CommandLineToArgvW(GetCommandLineW(), &n_args);
   if (n_args > 3) {
-    current_settings_ipc = new TwoWayPipeMessageIPC(std::wstring(argument_list[2]), std::wstring(argument_list[1]), send_message_to_webview);
-    current_settings_ipc->start(nullptr);
+    g_message_pipe = new TwoWayPipeMessageIPC(std::wstring(argument_list[2]), std::wstring(argument_list[1]), send_message_to_webview);
+    g_message_pipe->start(nullptr);
     quit_when_parent_terminates(std::wstring(argument_list[3]));
   } else {
 #ifndef _DEBUG
