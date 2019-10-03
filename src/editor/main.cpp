@@ -32,9 +32,9 @@ using namespace winrt::Windows::Web::UI;
 using namespace winrt::Windows::Web::UI::Interop;
 using namespace winrt::Windows::System;
 
-winrt::Windows::Web::UI::Interop::WebViewControl webview_control = nullptr;
-winrt::Windows::Web::UI::Interop::WebViewControlProcess webview_process = nullptr;
-winrt::Windows::Web::UI::Interop::WebViewControlProcessOptions webview_process_options = nullptr;
+WebViewControl webview_control = nullptr;
+WebViewControlProcess webview_process = nullptr;
+WebViewControlProcessOptions webview_process_options = nullptr;
 StreamUriResolverFromFile local_uri_resolver;
 
 // Windows message for receiving copied data to send to the webview.
@@ -82,7 +82,7 @@ Rect hwnd_client_rect_to_bounds_rect(_In_ HWND hwnd) {
 
 void resize_web_view() {
   Rect bounds = hwnd_client_rect_to_bounds_rect(main_window_handler);
-  winrt::Windows::Web::UI::Interop::IWebViewControlSite webViewControlSite = (winrt::Windows::Web::UI::Interop::IWebViewControlSite) webview_control;
+  IWebViewControlSite webViewControlSite = (IWebViewControlSite) webview_control;
   webViewControlSite.Bounds(bounds);
 
 }
@@ -206,11 +206,11 @@ void initialize_win32_webview(HWND hwnd, int nCmdShow) {
   
   try {
     if (!webview_process_options) {
-      webview_process_options = winrt::Windows::Web::UI::Interop::WebViewControlProcessOptions();
+      webview_process_options = WebViewControlProcessOptions();
     }
 
     if (!webview_process) {
-      webview_process = winrt::Windows::Web::UI::Interop::WebViewControlProcess(webview_process_options);
+      webview_process = WebViewControlProcess(webview_process_options);
     }
     auto asyncwebview = webview_process.CreateWebViewControlAsync((int64_t)main_window_handler, hwnd_client_rect_to_bounds_rect(main_window_handler));
     asyncwebview.Completed([=](IAsyncOperation<WebViewControl> const& sender, AsyncStatus args) {
