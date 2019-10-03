@@ -31,11 +31,11 @@ using namespace winrt::Windows::Web::UI;
 using namespace winrt::Windows::Web::UI::Interop;
 using namespace winrt::Windows::System;
 
-HINSTANCE g_hinst;
+HINSTANCE g_hinst = nullptr;
 HWND g_main_wnd = nullptr;
-
 WebViewControl g_webview = nullptr;
 WebViewControlProcess g_webview_process = nullptr;
+
 StreamUriResolverFromFile local_uri_resolver;
 
 // Windows message for receiving copied data to send to the webview.
@@ -65,8 +65,8 @@ void NavigateToLocalhostReactServer() {
 
 void NavigateToUri(_In_ LPCWSTR uri_as_string) {
   // initialize the base_path for the html content relative to the executable.
-  GetModuleFileName(nullptr, local_uri_resolver.base_path, MAX_PATH);
-  PathRemoveFileSpec(local_uri_resolver.base_path);
+  WINRT_VERIFY(GetModuleFileName(nullptr, local_uri_resolver.base_path, MAX_PATH));
+  WINRT_VERIFY(PathRemoveFileSpec(local_uri_resolver.base_path));
   wcscat_s(local_uri_resolver.base_path, URI_CONTENT_ID);
   Uri url = g_webview.BuildLocalStreamUri(hstring(URI_CONTENT_ID), hstring(uri_as_string));
   g_webview.NavigateToLocalStreamUri(url, local_uri_resolver);
@@ -74,7 +74,7 @@ void NavigateToUri(_In_ LPCWSTR uri_as_string) {
 
 Rect client_rect_to_bounds_rect(_In_ HWND hwnd) {
   RECT client_rect = { 0 };
-  GetClientRect(hwnd, &client_rect);
+  WINRT_VERIFY(GetClientRect(hwnd, &client_rect));
 
   Rect bounds =
   {
@@ -112,7 +112,7 @@ void send_message_to_webview(const std::wstring& msg) {
     message->dwData = SEND_TO_WEBVIEW_MSG;
     message->cbData = buff_size * sizeof(wchar_t);
     message->lpData = (PVOID)buffer;
-    PostMessage(g_main_wnd, wm_data_for_webview, (WPARAM)g_main_wnd, (LPARAM)message);
+    WINRT_VERIFY(PostMessage(g_main_wnd, wm_data_for_webview, (WPARAM)g_main_wnd, (LPARAM)message));
   }
 }
 
@@ -196,7 +196,7 @@ void receive_message_from_webview(const std::wstring& msg) {
     // It's not a JSON string, check for expected control messages.
     if (msg == L"exit") {
       // WebView confirms the settings application can exit.
-      PostMessage(g_main_wnd, wm_destroy_window, 0, 0);
+      WINRT_VERIFY(PostMessage(g_main_wnd, wm_destroy_window, 0, 0));
     } else if (msg == L"cancel-exit") {
       // WebView canceled the exit request.
       g_waiting_for_close_confirmation = false;
@@ -208,44 +208,56 @@ void initialize_webview(HWND hwnd, int nCmdShow) {
   try {
     if (!g_webview_process) {
       g_webview_process = WebViewControlProcess();
+      WINRT_VERIFY(g_webview_process);
     }
     auto asyncwebview = g_webview_process.CreateWebViewControlAsync((int64_t)g_main_wnd, client_rect_to_bounds_rect(g_main_wnd));
-    asyncwebview.Completed([=](IAsyncOperation<WebViewControl> const& sender, AsyncStatus args) {
-      g_webview = sender.GetResults();
-      
-      // In order to receive window.external.notify() calls in ScriptNotify
-      g_webview.Settings().IsScriptNotifyAllowed(true);
+    asyncwebview.Completed([=](IAsyncOperation<WebViewControl> const& sender, AsyncStatus status) {
+      if (status == AsyncStatus::Completed) {
+        WINRT_VERIFY(sender);
+        g_webview = sender.GetResults();
+        WINRT_VERIFY(g_webview);
 
-      g_webview.Settings().IsJavaScriptEnabled(true);
-      
-      g_webview.NewWindowRequested([=](IWebViewControl sender_requester, WebViewControlNewWindowRequestedEventArgs args ) {
-        // Open the requested link in the default browser registered in the Shell
-        ShellExecute(nullptr, L"open", args.Uri().AbsoluteUri().c_str(), nullptr, nullptr, SW_SHOWNORMAL);
-      });
+        // In order to receive window.external.notify() calls in ScriptNotify
+        g_webview.Settings().IsScriptNotifyAllowed(true);
 
-      g_webview.DOMContentLoaded([=](IWebViewControl sender_loaded, WebViewControlDOMContentLoadedEventArgs const& args_loaded) {
-        // runs when the content has been loaded.
-      });
-      g_webview.ScriptNotify([=](IWebViewControl sender_script_notify, WebViewControlScriptNotifyEventArgs const& args_script_notify) {
-        // content called window.external.notify()
-        std::wstring message_sent = args_script_notify.Value().c_str();
-        receive_message_from_webview(message_sent);
-      });
-      g_webview.AcceleratorKeyPressed([&](IWebViewControl sender, WebViewControlAcceleratorKeyPressedEventArgs const& args) {
-        if (args.VirtualKey() == winrt::Windows::System::VirtualKey::F4) {
-          // WebView swallows key-events. Detect Alt-F4 one and close the window manually.
-          const auto _ = g_webview.InvokeScriptAsync(hstring(L"exit_settings_app"), {});
-        }
-      });
-      resize_web_view();
+        g_webview.Settings().IsJavaScriptEnabled(true);
+
+        g_webview.NewWindowRequested([=](IWebViewControl sender_requester, WebViewControlNewWindowRequestedEventArgs args) {
+          // Open the requested link in the default browser registered in the Shell
+          int res = (int)ShellExecute(nullptr, L"open", args.Uri().AbsoluteUri().c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+          WINRT_VERIFY(res > 32);
+          });
+
+        g_webview.DOMContentLoaded([=](IWebViewControl sender_loaded, WebViewControlDOMContentLoadedEventArgs const& args_loaded) {
+          // runs when the content has been loaded.
+          });
+        g_webview.ScriptNotify([=](IWebViewControl sender_script_notify, WebViewControlScriptNotifyEventArgs const& args_script_notify) {
+          // content called window.external.notify()
+          std::wstring message_sent = args_script_notify.Value().c_str();
+          receive_message_from_webview(message_sent);
+          });
+        g_webview.AcceleratorKeyPressed([&](IWebViewControl sender, WebViewControlAcceleratorKeyPressedEventArgs const& args) {
+          if (args.VirtualKey() == winrt::Windows::System::VirtualKey::F4) {
+            // WebView swallows key-events. Detect Alt-F4 one and close the window manually.
+            const auto _ = g_webview.InvokeScriptAsync(hstring(L"exit_settings_app"), {});
+          }
+          });
+        resize_web_view();
 #if defined(_DEBUG) && _DEBUG_WITH_LOCALHOST
-      // navigates to localhost:8080
-      NavigateToLocalhostReactServer();
+        // Navigates to localhost:8080
+        NavigateToLocalhostReactServer();
 #else
-      // navigates to settings-html/index.html
-      ShowWindow(g_main_wnd, nCmdShow);
-      NavigateToUri(L"index.html");
+        // Navigates to settings-html/index.html.
+        ShowWindow(g_main_wnd, nCmdShow);
+        NavigateToUri(L"index.html");
 #endif
+      } else if (status == AsyncStatus::Error) {
+        // TODO: report the error and quit, or try to use WebView2.
+      } else if (status == AsyncStatus::Started) {
+        // Ignore.
+      } else if (status == AsyncStatus::Canceled) {
+        // Ignore.
+      }
     });
   }
   catch (hresult_error const& e) {
@@ -342,7 +354,7 @@ void register_classes(HINSTANCE hInstance) {
   wcex.lpszClassName = L"PTSettingsClass";
   wcex.hIconSm = nullptr;
 
-  RegisterClassExW(&wcex);
+  WINRT_VERIFY(RegisterClassExW(&wcex));
 }
 
 int init_instance(HINSTANCE hInstance, int nShowCmd) {
@@ -350,7 +362,8 @@ int init_instance(HINSTANCE hInstance, int nShowCmd) {
 
   RECT desktopRect;
   const HWND hDesktop = GetDesktopWindow();
-  GetWindowRect(hDesktop, &desktopRect);
+  WINRT_VERIFY(hDesktop);
+  WINRT_VERIFY(GetWindowRect(hDesktop, &desktopRect));
 
   int wind_width = 1024;
   int wind_height = 700;
@@ -369,8 +382,9 @@ int init_instance(HINSTANCE hInstance, int nShowCmd) {
     hInstance,
     nullptr);
 
+  WINRT_VERIFY(g_main_wnd);
   initialize_webview(g_main_wnd, nShowCmd);
-  UpdateWindow(g_main_wnd);
+  WINRT_VERIFY(UpdateWindow(g_main_wnd));
 
   return TRUE;
 }
@@ -385,7 +399,7 @@ void wait_on_parent_process_thread(DWORD pid) {
         // Send a terminated message only after the window has finished initializing.
         std::unique_lock lock(g_window_created);
       }
-      PostMessage(g_main_wnd, wm_destroy_window, 0, 0);
+      WINRT_VERIFY(PostMessage(g_main_wnd, wm_destroy_window, 0, 0));
     } else {
       CloseHandle(process);
     }
