@@ -205,7 +205,7 @@ void receive_message_from_webview(const std::wstring& msg) {
   }
 }
 
-void initialize_webview(HWND hwnd, int nCmdShow) {
+void initialize_webview() {
   try {
     if (!g_webview_process) {
       g_webview_process = WebViewControlProcess();
@@ -225,7 +225,7 @@ void initialize_webview(HWND hwnd, int nCmdShow) {
 
         g_webview.NewWindowRequested([=](IWebViewControl sender_requester, WebViewControlNewWindowRequestedEventArgs args) {
           // Open the requested link in the default browser registered in the Shell
-          int res = (int)ShellExecute(nullptr, L"open", args.Uri().AbsoluteUri().c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+          int res = static_cast<int>(reinterpret_cast<uintptr_t>(ShellExecute(nullptr, L"open", args.Uri().AbsoluteUri().c_str(), nullptr, nullptr, SW_SHOWNORMAL)));
           WINRT_VERIFY(res > 32);
           });
 
@@ -249,7 +249,7 @@ void initialize_webview(HWND hwnd, int nCmdShow) {
         NavigateToLocalhostReactServer();
 #else
         // Navigates to settings-html/index.html.
-        ShowWindow(g_main_wnd, nCmdShow);
+
         NavigateToUri(L"index.html");
 #endif
       } else if (status == AsyncStatus::Error) {
@@ -343,7 +343,7 @@ void register_classes(HINSTANCE hInstance) {
   WNDCLASSEXW wcex;
   wcex.cbSize = sizeof(WNDCLASSEX);
 
-  wcex.style = CS_HREDRAW | CS_VREDRAW;
+  wcex.style = 0;
   wcex.lpfnWndProc = wnd_proc_static;
   wcex.cbClsExtra = 0;
   wcex.cbWndExtra = 0;
@@ -358,9 +358,7 @@ void register_classes(HINSTANCE hInstance) {
   WINRT_VERIFY(RegisterClassExW(&wcex));
 }
 
-int init_instance(HINSTANCE hInstance, int nShowCmd) {
-  g_hinst = hInstance;
-
+HWND create_main_window(HINSTANCE hInstance) {
   RECT desktopRect;
   const HWND hDesktop = GetDesktopWindow();
   WINRT_VERIFY(hDesktop);
@@ -370,7 +368,7 @@ int init_instance(HINSTANCE hInstance, int nShowCmd) {
   int wind_height = 700;
   DPIAware::Convert(nullptr, wind_width, wind_height);
   
-  g_main_wnd = CreateWindowW(
+  return CreateWindowW(
     L"PTSettingsClass",
     L"PowerToys Settings",
     WS_OVERLAPPEDWINDOW,
@@ -382,12 +380,6 @@ int init_instance(HINSTANCE hInstance, int nShowCmd) {
     nullptr,
     hInstance,
     nullptr);
-
-  WINRT_VERIFY(g_main_wnd);
-  initialize_webview(g_main_wnd, nShowCmd);
-  WINRT_VERIFY(UpdateWindow(g_main_wnd));
-
-  return TRUE;
 }
 
 void wait_on_parent_process_thread(DWORD pid) {
@@ -412,7 +404,7 @@ void quit_when_parent_terminates(std::wstring parent_pid) {
   std::thread(wait_on_parent_process_thread,pid).detach();
 }
 
-void read_arguments() {
+void initialize_message_pipe() {
   // Expected calling arguments:
   // [0] - This executable's path.
   // [1] - PowerToys pipe server.
@@ -435,23 +427,23 @@ void read_arguments() {
   LocalFree(argument_list);
 }
 
-int start_webview_window(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
-  // To be unlocked after the Window has finished being created.
-  g_window_created.lock();
-  read_arguments();
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd) {
+  CoInitialize(nullptr);
+
+  g_hinst = hInstance;
+  g_window_created.lock(); // To be unlocked after the main window has finished being created.
+  initialize_message_pipe();
   register_classes(hInstance);
-  init_instance(hInstance, nShowCmd);
+  g_main_wnd = create_main_window(hInstance);
+  initialize_webview();
+  WINRT_VERIFY(ShowWindow(g_main_wnd, nShowCmd));
+
+  // Main message loop.
   MSG msg;
-  // Main message loop:
   while (GetMessage(&msg, nullptr, 0, 0)) {
     TranslateMessage(&msg);
     DispatchMessage(&msg);
   }
 
   return (int)msg.wParam;
-}
-
-int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd) {
-  CoInitialize(nullptr);
-  return start_webview_window(hInstance, hPrevInstance, lpCmdLine, nShowCmd);
 }
