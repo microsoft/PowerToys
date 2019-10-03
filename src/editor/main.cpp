@@ -49,7 +49,7 @@ UINT wm_destroy_window = 0;
 // mutex for checking if the window has already been created.
 std::mutex m_window_created_mutex;
 
-TwoWayPipeMessageIPC* current_settings_ipc = NULL;
+TwoWayPipeMessageIPC* current_settings_ipc = nullptr;
 
 // Set to true if waiting for webview confirmation before closing the Window.
 bool m_waiting_for_close_confirmation = false;
@@ -65,7 +65,7 @@ const std::wstring uriContentId = L"\\settings-html";
 
 void NavigateToUri(_In_ LPCWSTR uri_as_string) {
   // initialize the base_path for the html content relative to the executable.
-  GetModuleFileName(NULL, local_uri_resolver.base_path, MAX_PATH);
+  GetModuleFileName(nullptr, local_uri_resolver.base_path, MAX_PATH);
   PathRemoveFileSpec(local_uri_resolver.base_path);
   wcscat_s(local_uri_resolver.base_path, uriContentId.c_str());
   Uri url = webview_control.BuildLocalStreamUri(hstring(uriContentId), hstring(uri_as_string));
@@ -97,7 +97,7 @@ void resize_web_view() {
 #define SEND_TO_WEBVIEW_MSG 1
 
 void send_message_to_webview(const std::wstring& msg) {
-  if (g_main_wnd != NULL && wm_data_for_webview != 0) {
+  if (g_main_wnd != nullptr && wm_data_for_webview != 0) {
     // Allocate the COPYDATASTRUCT and message to pass to the Webview.
     // This is needed in order to use PostMessage, since COM calls to
     // webview_control.InvokeScriptAsync can't be made from 
@@ -115,7 +115,7 @@ void send_message_to_webview(const std::wstring& msg) {
 }
 
 void send_message_to_powertoys_runner(const std::wstring& msg) {
-  if (current_settings_ipc != NULL) {
+  if (current_settings_ipc != nullptr) {
     current_settings_ipc->send(msg);
   } else {
     // For Debug purposes, in case the webview is being run alone.
@@ -218,7 +218,7 @@ void initialize_webview(HWND hwnd, int nCmdShow) {
       
       webview_control.NewWindowRequested([=](IWebViewControl sender_requester, WebViewControlNewWindowRequestedEventArgs args ) {
         // Open the requested link in the default browser registered in the Shell
-        ShellExecute(NULL, L"open", args.Uri().AbsoluteUri().c_str(), NULL, NULL, SW_SHOWNORMAL);
+        ShellExecute(nullptr, L"open", args.Uri().AbsoluteUri().c_str(), nullptr, nullptr, SW_SHOWNORMAL);
       });
 
       webview_control.DOMContentLoaded([=](IWebViewControl sender_loaded, WebViewControlDOMContentLoadedEventArgs const& args_loaded) {
@@ -263,7 +263,7 @@ LRESULT CALLBACK wnd_proc_static(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     } else {
       // Allow user to confirm exit in the WebView in case there's possible data loss.
       m_waiting_for_close_confirmation = true;
-      if (webview_control != NULL) {
+      if (webview_control != nullptr) {
         const auto _ = webview_control.InvokeScriptAsync(hstring(L"exit_settings_app"), {});
       } else {
         break;
@@ -288,7 +288,7 @@ LRESULT CALLBACK wnd_proc_static(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
       // Resize the window using the suggested rect
       RECT* const prcNewWindow = (RECT*)lParam;
       SetWindowPos(hWnd,
-        NULL,
+        nullptr,
         prcNewWindow->left,
         prcNewWindow->top,
         prcNewWindow->right - prcNewWindow->left,
@@ -307,7 +307,7 @@ LRESULT CALLBACK wnd_proc_static(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
       PCOPYDATASTRUCT msg = (PCOPYDATASTRUCT)lParam;
       if (msg->dwData == SEND_TO_WEBVIEW_MSG) {
         wchar_t* json_message = (wchar_t*)(msg->lpData);
-        if (webview_control != NULL) {
+        if (webview_control != nullptr) {
           const auto _ = webview_control.InvokeScriptAsync(hstring(L"receive_from_settings_app"), { hstring(json_message) });
         }
         delete[] json_message;
@@ -352,7 +352,7 @@ int init_instance(HINSTANCE hInstance, int nCmdShow) {
 
   int wind_width = 1024;
   int wind_height = 700;
-  DPIAware::Convert(NULL, wind_width, wind_height);
+  DPIAware::Convert(nullptr, wind_width, wind_height);
   
   g_main_wnd = CreateWindowW(
     L"PTSettingsClass",
@@ -375,7 +375,7 @@ int init_instance(HINSTANCE hInstance, int nCmdShow) {
 
 void wait_on_parent_process_thread(DWORD pid) {
   HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pid);
-  if (process != NULL) {
+  if (process != nullptr) {
     if (WaitForSingleObject(process, INFINITE) == WAIT_OBJECT_0) {
       // If it's possible to detect when the PowerToys process terminates, message the main window.
       CloseHandle(process);
@@ -407,11 +407,11 @@ void read_arguments() {
   argument_list = CommandLineToArgvW(GetCommandLineW(), &n_args);
   if (n_args > 3) {
     current_settings_ipc = new TwoWayPipeMessageIPC(std::wstring(argument_list[2]), std::wstring(argument_list[1]), send_message_to_webview);
-    current_settings_ipc->start(NULL);
+    current_settings_ipc->start(nullptr);
     quit_when_parent_terminates(std::wstring(argument_list[3]));
   } else {
 #ifndef _DEBUG
-    MessageBox(NULL, L"This executable isn't supposed to be called as a stand-alone process", L"Error running settings", MB_OK);
+    MessageBox(nullptr, L"This executable isn't supposed to be called as a stand-alone process", L"Error running settings", MB_OK);
     exit(1);
 #endif
   }
