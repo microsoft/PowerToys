@@ -40,6 +40,9 @@ namespace PowerToysSettings {
     void add_choice_group(const std::wstring& name, UINT description_resource_id, const std::wstring& value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
     void add_choice_group(const std::wstring& name, const std::wstring& description, const std::wstring& value, const std::vector<std::pair<std::wstring, std::wstring>>& keys_and_texts);
 
+    void add_dropdown(const std::wstring& name, UINT description_resource_id, const std::wstring& value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
+    void add_dropdown(const std::wstring& name, const std::wstring& description, const std::wstring& value, const std::vector<std::pair<std::wstring, std::wstring>>& keys_and_texts);
+
     void add_custom_action(const std::wstring& name, UINT description_resource_id, UINT button_text_resource_id, UINT ext_description_resource_id);
     void add_custom_action(const std::wstring& name, UINT description_resource_id, UINT button_text_resource_id, const std::wstring& value);
     void add_custom_action(const std::wstring& name, const std::wstring& description, const std::wstring& button_text, const std::wstring& value);

@@ -7,6 +7,7 @@ import {ColorPickerSettingsControl} from './ColorPickerSettingsControl';
 import {CustomActionSettingsControl} from './CustomActionSettingsControl';
 import {HotkeySettingsControl} from './HotkeySettingsControl';
 import {ChoiceGroupSettingsControl} from './ChoiceGroupSettingsControl';
+import {DropdownSettingsControl} from './DropdownSettingsControl';
 
 export class CustomSettingsScreen extends React.Component <any, any> {
   references: any;
@@ -149,6 +150,13 @@ export class CustomSettingsScreen extends React.Component <any, any> {
                 />;
               case 'choice_group':
                 return <ChoiceGroupSettingsControl
+                  setting = {power_toys_properties[key]}
+                  key={key}
+                  on_change={this.parent_on_change}
+                  ref={(input) => {this.references[key]=input;}}
+                />;
+              case 'dropdown':
+                return <DropdownSettingsControl
                   setting = {power_toys_properties[key]}
                   key={key}
                   on_change={this.parent_on_change}
