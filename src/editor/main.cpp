@@ -60,10 +60,16 @@ void NavigateToLocalhostReactServer() {
   webview_control.Navigate(Uri(hstring(L"http://localhost:8080")));
 }
 #endif
-void NavigateToUri(_In_ LPCWSTR uri_as_string) {
-  Uri url = webview_control.BuildLocalStreamUri(hstring(L"settings-html"), hstring(uri_as_string));
-  webview_control.NavigateToLocalStreamUri(url, local_uri_resolver);
 
+const std::wstring uriContentId = L"\\settings-html";
+
+void NavigateToUri(_In_ LPCWSTR uri_as_string) {
+  // initialize the base_path for the html content relative to the executable.
+  GetModuleFileName(NULL, local_uri_resolver.base_path, MAX_PATH);
+  PathRemoveFileSpec(local_uri_resolver.base_path);
+  wcscat_s(local_uri_resolver.base_path, uriContentId.c_str());
+  Uri url = webview_control.BuildLocalStreamUri(hstring(uriContentId), hstring(uri_as_string));
+  webview_control.NavigateToLocalStreamUri(url, local_uri_resolver);
 }
 
 Rect hwnd_client_rect_to_bounds_rect(_In_ HWND hwnd) {
@@ -197,14 +203,6 @@ void receive_message_from_webview(const std::wstring& msg) {
 }
 
 void initialize_win32_webview(HWND hwnd, int nCmdShow) {
-  
-  // initialize the base_path for the html content relative to the executable.
-  WCHAR executable_path[MAX_PATH];
-  GetModuleFileName(NULL, executable_path, MAX_PATH);
-  PathRemoveFileSpec(executable_path);
-  wcscat_s(executable_path, L"\\settings-html");
-  wcscpy_s(local_uri_resolver.base_path, executable_path);
-  
   try {
     if (!webview_process) {
       webview_process = WebViewControlProcess();
