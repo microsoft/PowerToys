@@ -36,7 +36,6 @@ HWND g_main_wnd = nullptr;
 
 WebViewControl webview_control = nullptr;
 WebViewControlProcess webview_process = nullptr;
-WebViewControlProcessOptions webview_process_options = nullptr;
 StreamUriResolverFromFile local_uri_resolver;
 
 // Windows message for receiving copied data to send to the webview.
@@ -207,12 +206,8 @@ void initialize_win32_webview(HWND hwnd, int nCmdShow) {
   wcscpy_s(local_uri_resolver.base_path, executable_path);
   
   try {
-    if (!webview_process_options) {
-      webview_process_options = WebViewControlProcessOptions();
-    }
-
     if (!webview_process) {
-      webview_process = WebViewControlProcess(webview_process_options);
+      webview_process = WebViewControlProcess();
     }
     auto asyncwebview = webview_process.CreateWebViewControlAsync((int64_t)g_main_wnd, hwnd_client_rect_to_bounds_rect(g_main_wnd));
     asyncwebview.Completed([=](IAsyncOperation<WebViewControl> const& sender, AsyncStatus args) {
