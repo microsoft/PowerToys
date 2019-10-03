@@ -100,17 +100,19 @@ void send_message_to_webview(const std::wstring& msg) {
   if (g_main_wnd != nullptr && wm_data_for_webview != 0) {
     // Allocate the COPYDATASTRUCT and message to pass to the Webview.
     // This is needed in order to use PostMessage, since COM calls to
-    // webview_control.InvokeScriptAsync can't be made from 
-    PCOPYDATASTRUCT copy_data_message = new COPYDATASTRUCT();
-    const wchar_t* orig_msg = msg.c_str();
-    DWORD orig_len = (DWORD)wcslen(orig_msg);
-    wchar_t* copy_msg = new wchar_t[orig_len + 1];
-    wcscpy_s(copy_msg, orig_len + 1, orig_msg);
-    copy_data_message->dwData = SEND_TO_WEBVIEW_MSG;
-    copy_data_message->cbData = (orig_len + 1) * sizeof(wchar_t);
-    copy_data_message->lpData = (PVOID)copy_msg;
-    PostMessage(g_main_wnd, wm_data_for_webview, (WPARAM)g_main_wnd, (LPARAM)copy_data_message);
-    // wnd_static_proc will be responsible for freeing these.
+    // webview_control.InvokeScriptAsync can't be made from other threads.
+
+    PCOPYDATASTRUCT message = new COPYDATASTRUCT();
+    DWORD buff_size = (DWORD)(msg.length() + 1);
+
+    // 'wnd_static_proc()' will free the buffer allocated here.
+    wchar_t* buffer = new wchar_t[buff_size];
+
+    wcscpy_s(buffer, buff_size, msg.c_str());
+    message->dwData = SEND_TO_WEBVIEW_MSG;
+    message->cbData = buff_size * sizeof(wchar_t);
+    message->lpData = (PVOID)buffer;
+    PostMessage(g_main_wnd, wm_data_for_webview, (WPARAM)g_main_wnd, (LPARAM)message);
   }
 }
 
