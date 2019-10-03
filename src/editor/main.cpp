@@ -21,8 +21,7 @@
 // > checknetisolation LoopbackExempt -d -n=Microsoft.Win32WebViewHost_cw5n1h2txyewy
 // Source: https://github.com/windows-toolkit/WindowsCommunityToolkit/issues/2226#issuecomment-396360314
 #endif
-HINSTANCE m_hInst;
-HWND main_window_handler = nullptr;
+
 using namespace winrt;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Storage::Streams;
@@ -31,6 +30,9 @@ using namespace winrt::Windows::Web::Http::Headers;
 using namespace winrt::Windows::Web::UI;
 using namespace winrt::Windows::Web::UI::Interop;
 using namespace winrt::Windows::System;
+
+HINSTANCE g_hinst;
+HWND g_main_wnd = nullptr;
 
 WebViewControl webview_control = nullptr;
 WebViewControlProcess webview_process = nullptr;
@@ -81,7 +83,7 @@ Rect hwnd_client_rect_to_bounds_rect(_In_ HWND hwnd) {
 }
 
 void resize_web_view() {
-  Rect bounds = hwnd_client_rect_to_bounds_rect(main_window_handler);
+  Rect bounds = hwnd_client_rect_to_bounds_rect(g_main_wnd);
   IWebViewControlSite webViewControlSite = (IWebViewControlSite) webview_control;
   webViewControlSite.Bounds(bounds);
 
@@ -90,7 +92,7 @@ void resize_web_view() {
 #define SEND_TO_WEBVIEW_MSG 1
 
 void send_message_to_webview(const std::wstring& msg) {
-  if (main_window_handler != NULL && wm_copydata_webview!=0) {
+  if (g_main_wnd != NULL && wm_copydata_webview!=0) {
     // Allocate the COPYDATASTRUCT and message to pass to the Webview.
     // This is needed in order to use PostMessage, since COM calls to
     // webview_control.InvokeScriptAsync can't be made from 
@@ -102,7 +104,7 @@ void send_message_to_webview(const std::wstring& msg) {
     copy_data_message->dwData = SEND_TO_WEBVIEW_MSG;
     copy_data_message->cbData = (orig_len + 1) * sizeof(wchar_t);
     copy_data_message->lpData = (PVOID)copy_msg;
-    PostMessage(main_window_handler, wm_copydata_webview, (WPARAM)main_window_handler, (LPARAM)copy_data_message);
+    PostMessage(g_main_wnd, wm_copydata_webview, (WPARAM)g_main_wnd, (LPARAM)copy_data_message);
     // wnd_static_proc will be responsible for freeing these.
   }
 }
@@ -113,7 +115,7 @@ void send_message_to_powertoys(const std::wstring& msg) {
   } else {
     // For Debug purposes, in case the webview is being run alone.
 #ifdef _DEBUG
-    MessageBox(main_window_handler, msg.c_str(), L"From Webview", MB_OK);
+    MessageBox(g_main_wnd, msg.c_str(), L"From Webview", MB_OK);
     //throw in some sample data
     std::wstring debug_settings_info(LR"json({
             "general": {
@@ -187,7 +189,7 @@ void receive_message_from_webview(const std::wstring& msg) {
     // It's not a JSON, check for expected control messages.
     if (msg == L"exit") {
       // WebView confirms the settings application can exit.
-      PostMessage(main_window_handler, wm_my_destroy_window, 0, 0);
+      PostMessage(g_main_wnd, wm_my_destroy_window, 0, 0);
     } else if (msg == L"cancel-exit") {
       // WebView canceled the exit request.
       m_waiting_for_close_confirmation = false;
@@ -212,7 +214,7 @@ void initialize_win32_webview(HWND hwnd, int nCmdShow) {
     if (!webview_process) {
       webview_process = WebViewControlProcess(webview_process_options);
     }
-    auto asyncwebview = webview_process.CreateWebViewControlAsync((int64_t)main_window_handler, hwnd_client_rect_to_bounds_rect(main_window_handler));
+    auto asyncwebview = webview_process.CreateWebViewControlAsync((int64_t)g_main_wnd, hwnd_client_rect_to_bounds_rect(g_main_wnd));
     asyncwebview.Completed([=](IAsyncOperation<WebViewControl> const& sender, AsyncStatus args) {
       webview_control = sender.GetResults();
       
@@ -246,7 +248,7 @@ void initialize_win32_webview(HWND hwnd, int nCmdShow) {
       NavigateToLocalhostReactServer();
 #else
       // navigates to settings-html/index.html
-      ShowWindow(main_window_handler, nCmdShow);
+      ShowWindow(g_main_wnd, nCmdShow);
       NavigateToUri(L"index.html");
 #endif
     });
@@ -254,7 +256,7 @@ void initialize_win32_webview(HWND hwnd, int nCmdShow) {
   catch (hresult_error const& e) {
     WCHAR message[1024] = L"";
     StringCchPrintf(message, ARRAYSIZE(message), L"failed: %ls", e.message().c_str());
-    MessageBox(main_window_handler, message, L"Error", MB_OK);
+    MessageBox(g_main_wnd, message, L"Error", MB_OK);
   }
 }
 
@@ -349,7 +351,7 @@ void register_classes(HINSTANCE hInstance) {
 }
 
 int init_instance(HINSTANCE hInstance, int nCmdShow) {
-  m_hInst = hInstance;
+  g_hinst = hInstance;
 
   RECT desktopRect;
   const HWND hDesktop = GetDesktopWindow();
@@ -359,7 +361,7 @@ int init_instance(HINSTANCE hInstance, int nCmdShow) {
   int wind_height = 700;
   DPIAware::Convert(NULL, wind_width, wind_height);
   
-  main_window_handler = CreateWindowW(
+  g_main_wnd = CreateWindowW(
     L"PTSettingsClass",
     L"PowerToys Settings",
     WS_OVERLAPPEDWINDOW,
@@ -372,8 +374,8 @@ int init_instance(HINSTANCE hInstance, int nCmdShow) {
     hInstance,
     nullptr);
 
-  initialize_win32_webview(main_window_handler, nCmdShow);
-  UpdateWindow(main_window_handler);
+  initialize_win32_webview(g_main_wnd, nCmdShow);
+  UpdateWindow(g_main_wnd);
 
   return TRUE;
 }
@@ -388,7 +390,7 @@ void wait_on_parent_process_thread(DWORD pid) {
         // Send a terminated message only after the window has finished initializing.
         std::unique_lock lock(m_window_created_mutex);
       }
-      PostMessage(main_window_handler, wm_my_destroy_window, 0, 0);
+      PostMessage(g_main_wnd, wm_my_destroy_window, 0, 0);
     } else {
       CloseHandle(process);
     }
