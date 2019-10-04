@@ -253,7 +253,9 @@ std::wstring get_process_path(DWORD pid) noexcept {
   if (process != INVALID_HANDLE_VALUE) {
     name.resize(MAX_PATH);
     DWORD name_length = static_cast<DWORD>(name.length());
-    QueryFullProcessImageNameW(process, 0, (LPWSTR)name.data(), &name_length);
+    if (QueryFullProcessImageNameW(process, 0, (LPWSTR)name.data(), &name_length) == 0) {
+      name_length = 0;
+    }
     name.resize(name_length);
     CloseHandle(process);
   }
