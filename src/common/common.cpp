@@ -35,10 +35,11 @@ std::optional<POINT> get_mouse_pos() {
 HWND get_filtered_active_window() {
   static auto desktop = GetDesktopWindow();
   static auto shell = GetShellWindow();
+  static HWND searchui = nullptr;
   auto active_window = GetForegroundWindow();
   active_window = GetAncestor(active_window, GA_ROOT);
 
-  if (active_window == desktop || active_window == shell) {
+  if (active_window == desktop || active_window == shell || active_window == searchui) {
     return nullptr;
   }
   
@@ -60,6 +61,16 @@ HWND get_filtered_active_window() {
       strcmp(class_name, "Shell_SecondaryTrayWnd") == 0 ||
       strcmp(class_name, "Progman") == 0) {
     return nullptr;
+  }
+  if (strcmp(class_name, "Windows.UI.Core.CoreWindow") == 0) {
+    const static std::wstring cortana_app = L"SearchUI.exe";
+    auto process_path = get_process_path(active_window);
+    if (process_path.length() >= cortana_app.length() &&
+        process_path.compare(process_path.length() - cortana_app.length(), cortana_app.length(), cortana_app) == 0) {
+      // cache the cortana HWND
+      searchui = active_window;
+      return nullptr;
+    }
   }
   return active_window;
 }
@@ -234,4 +245,46 @@ bool drop_elevated_privileges() {
   CloseHandle(token);
 
   return result;
+}
+
+std::wstring get_process_path(DWORD pid) noexcept {
+  auto process = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, TRUE, pid);
+  std::wstring name;
+  if (process != INVALID_HANDLE_VALUE) {
+    name.resize(MAX_PATH);
+    DWORD name_length = static_cast<DWORD>(name.length());
+    QueryFullProcessImageNameW(process, 0, (LPWSTR)name.data(), &name_length);
+    name.resize(name_length);
+    CloseHandle(process);
+  }
+  return name;
+}
+
+std::wstring get_process_path(HWND window) noexcept {
+  const static std::wstring app_frame_host = L"ApplicationFrameHost.exe";
+  DWORD pid{};
+  GetWindowThreadProcessId(window, &pid);
+  auto name = get_process_path(pid);
+  if (name.length() >= app_frame_host.length() &&
+      name.compare(name.length() - app_frame_host.length(), app_frame_host.length(), app_frame_host) == 0) {
+    // It is a UWP app. We will enumarate the windows and look for one created
+    // by something with a different PID
+    DWORD new_pid = pid;
+    EnumChildWindows(window, [](HWND hwnd, LPARAM param) -> BOOL {
+      auto new_pid_ptr = reinterpret_cast<DWORD*>(param);
+      DWORD pid;
+      GetWindowThreadProcessId(hwnd, &pid);
+      if (pid != *new_pid_ptr) {
+        *new_pid_ptr = pid;
+        return FALSE;
+      } else {
+        return TRUE;
+      }
+    }, reinterpret_cast<LPARAM>(&new_pid));
+    // If we have a new pid, get the new name.
+    if (new_pid != pid) {
+      return get_process_path(new_pid);
+    }
+  }
+  return name;
 }

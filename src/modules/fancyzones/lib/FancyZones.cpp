@@ -169,7 +169,7 @@ IFACEMETHODIMP_(void) FancyZones::WindowCreated(HWND window) noexcept
 {
     if (m_settings->GetSettings().appLastZone_moveWindows)
     {
-        auto processPath = GetProcessPath(window);
+        auto processPath = get_process_path(window);
         if (!processPath.empty()) 
         {
             INT zoneIndex = -1;
@@ -697,7 +697,7 @@ void FancyZones::MoveSizeEndInternal(HWND window, POINT const& ptScreen, require
     {
         ::RemoveProp(window, ZONE_STAMP);
 
-        auto processPath = GetProcessPath(window);
+        auto processPath = get_process_path(window);
         if (!processPath.empty())
         {
             RegistryHelpers::SaveAppLastZone(window, processPath.data(), -1);
