@@ -205,16 +205,13 @@ void receive_message_from_webview(const std::wstring& msg) {
 
 void initialize_webview() {
   try {
-    if (!g_webview_process) {
-      g_webview_process = WebViewControlProcess();
-      WINRT_VERIFY(g_webview_process);
-    }
+    g_webview_process = WebViewControlProcess();
     auto asyncwebview = g_webview_process.CreateWebViewControlAsync((int64_t)g_main_wnd, client_rect_to_bounds_rect(g_main_wnd));
     asyncwebview.Completed([=](IAsyncOperation<WebViewControl> const& sender, AsyncStatus status) {
       if (status == AsyncStatus::Completed) {
-        WINRT_VERIFY(sender);
+        WINRT_VERIFY(sender != nullptr);
         g_webview = sender.GetResults();
-        WINRT_VERIFY(g_webview);
+        WINRT_VERIFY(g_webview != nullptr);
 
         // In order to receive window.external.notify() calls in ScriptNotify
         g_webview.Settings().IsScriptNotifyAllowed(true);
@@ -247,19 +244,18 @@ void initialize_webview() {
         NavigateToLocalhostReactServer();
 #else
         // Navigates to settings-html/index.html.
-
         NavigateToUri(L"index.html");
 #endif
       } else if (status == AsyncStatus::Error) {
-        // TODO: report the error and quit, or try to use WebView2.
+        MessageBox(NULL, L"Failed to create the WebView control.\nPlease report the bug to https://github.com/microsoft/PowerToys/issues", L"PowerToys Settings Error", MB_OK);
+        exit(1);
       } else if (status == AsyncStatus::Started) {
         // Ignore.
       } else if (status == AsyncStatus::Canceled) {
         // Ignore.
       }
-    });
-  }
-  catch (hresult_error const& e) {
+      });
+  } catch (hresult_error const& e) {
     WCHAR message[1024] = L"";
     StringCchPrintf(message, ARRAYSIZE(message), L"failed: %ls", e.message().c_str());
     MessageBox(g_main_wnd, message, L"Error", MB_OK);
@@ -269,7 +265,7 @@ void initialize_webview() {
 LRESULT CALLBACK wnd_proc_static(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
   switch (message) {
   case WM_CLOSE:
-    if(g_waiting_for_close_confirmation) {
+    if (g_waiting_for_close_confirmation) {
       // If another WM_CLOSE is received while waiting for webview confirmation,
       // allow DefWindowProc to be called and destroy the window.
       break;
@@ -296,24 +292,24 @@ LRESULT CALLBACK wnd_proc_static(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     wm_destroy_window = RegisterWindowMessageW(L"PTSettingsParentTerminated");
     break;
   case WM_DPICHANGED:
-    {
-      // Resize the window using the suggested rect
-      RECT* const prcNewWindow = (RECT*)lParam;
-      SetWindowPos(hWnd,
-        nullptr,
-        prcNewWindow->left,
-        prcNewWindow->top,
-        prcNewWindow->right - prcNewWindow->left,
-        prcNewWindow->bottom - prcNewWindow->top,
-        SWP_NOZORDER | SWP_NOACTIVATE);
-    }
-    break;
+  {
+    // Resize the window using the suggested rect
+    RECT* const prcNewWindow = (RECT*)lParam;
+    SetWindowPos(hWnd,
+      nullptr,
+      prcNewWindow->left,
+      prcNewWindow->top,
+      prcNewWindow->right - prcNewWindow->left,
+      prcNewWindow->bottom - prcNewWindow->top,
+      SWP_NOZORDER | SWP_NOACTIVATE);
+  }
+  break;
   case WM_NCCREATE:
-    {
-      // Enable auto-resizing the title bar
-      EnableNonClientDpiScaling(hWnd);
-    }
-    break;
+  {
+    // Enable auto-resizing the title bar
+    EnableNonClientDpiScaling(hWnd);
+  }
+  break;
   default:
     if (message == wm_data_for_webview) {
       PCOPYDATASTRUCT msg = (PCOPYDATASTRUCT)lParam;
@@ -358,13 +354,13 @@ void register_classes(HINSTANCE hInstance) {
 HWND create_main_window(HINSTANCE hInstance) {
   RECT desktopRect;
   const HWND hDesktop = GetDesktopWindow();
-  WINRT_VERIFY(hDesktop);
+  WINRT_VERIFY(hDesktop != nullptr);
   WINRT_VERIFY(GetWindowRect(hDesktop, &desktopRect));
 
   int wind_width = 1024;
   int wind_height = 700;
   DPIAware::Convert(nullptr, wind_width, wind_height);
-  
+
   return CreateWindowW(
     L"PTSettingsClass",
     L"PowerToys Settings",
@@ -396,7 +392,7 @@ void wait_on_parent_process_thread(DWORD pid) {
 
 void quit_when_parent_terminates(std::wstring parent_pid) {
   DWORD pid = std::stol(parent_pid);
-  std::thread(wait_on_parent_process_thread,pid).detach();
+  std::thread(wait_on_parent_process_thread, pid).detach();
 }
 
 void initialize_message_pipe() {
@@ -427,7 +423,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
   if (is_process_elevated()) {
     if (!drop_elevated_privileges()) {
-      MessageBox(NULL, L"Failed to drop admin privileges.\nPlease report the bug to https://github.com/microsoft/PowerToys/issues.", L"PowerToys Settings Error", MB_OK);
+      MessageBox(NULL, L"Failed to drop admin privileges.\nPlease report the bug to https://github.com/microsoft/PowerToys/issues", L"PowerToys Settings Error", MB_OK);
+      exit(1);
     }
   }
 
@@ -436,7 +433,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
   register_classes(hInstance);
   g_main_wnd = create_main_window(hInstance);
   if (g_main_wnd == nullptr) {
-    MessageBox(NULL, L"Failed to create main window.\nPlease report the bug to https://github.com/microsoft/PowerToys/issues.", L"PowerToys Settings Error", MB_OK);
+    MessageBox(NULL, L"Failed to create main window.\nPlease report the bug to https://github.com/microsoft/PowerToys/issues", L"PowerToys Settings Error", MB_OK);
+    exit(1);
   }
   initialize_webview();
   ShowWindow(g_main_wnd, nShowCmd);
