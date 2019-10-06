@@ -73,6 +73,11 @@ namespace Wox
             Alphabet.Save();
         }
 
+        public void ReloadAllPluginData()
+        {
+            PluginManager.ReloadData();
+        }
+
         [Obsolete]
         public void HideApp()
         {
