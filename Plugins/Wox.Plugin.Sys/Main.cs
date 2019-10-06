@@ -211,7 +211,7 @@ namespace Wox.Plugin.Sys
                 new Result
                 {
                     Title = "Reload Plugin Data",
-                    SubTitle = "Reloads plugin's data with new content added after Wox started. Plugins need to have this feature already added.",
+                    SubTitle = "Reloads plugin data with new content added after Wox started. Plugins need to have this feature already added.",
                     IcoPath = "Images\\app.png",
                     Action = c =>
                     {
