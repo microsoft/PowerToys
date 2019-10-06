@@ -68,7 +68,7 @@ namespace Wox.Plugin
         /// Plugin's in memory data with new content
         /// added by user.
         /// </summary>
-        void ReloadPluginData();
+        void ReloadAllPluginData();
 
         /// <summary>
         /// Show message box
