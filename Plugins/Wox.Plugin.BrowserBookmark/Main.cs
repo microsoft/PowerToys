@@ -1,32 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Wox.Infrastructure;
+using Wox.Plugin.BrowserBookmark.Commands;
 using Wox.Plugin.SharedCommands;
 
 namespace Wox.Plugin.BrowserBookmark
 {
-    public class Main : IPlugin
+    public class Main : IPlugin, IReloadable
     {
         private PluginInitContext context;
-
-        // TODO: periodically refresh the Cache?
+        
         private List<Bookmark> cachedBookmarks = new List<Bookmark>(); 
 
         public void Init(PluginInitContext context)
         {
             this.context = context;
 
-            // Cache all bookmarks
-            var chromeBookmarks = new ChromeBookmarks();
-            var mozBookmarks = new FirefoxBookmarks();
-
-            //TODO: Let the user select which browser's bookmarks are displayed
-            // Add Firefox bookmarks
-            cachedBookmarks.AddRange(mozBookmarks.GetBookmarks());
-            // Add Chrome bookmarks
-            cachedBookmarks.AddRange(chromeBookmarks.GetBookmarks());
-
-            cachedBookmarks = cachedBookmarks.Distinct().ToList();
+            cachedBookmarks = Bookmarks.LoadAllBookmarks();
         }
 
         public List<Result> Query(Query query)
@@ -41,7 +30,7 @@ namespace Wox.Plugin.BrowserBookmark
             if (!topResults)
             {
                 // Since we mixed chrome and firefox bookmarks, we should order them again                
-                returnList = cachedBookmarks.Where(o => MatchProgram(o, param)).ToList();
+                returnList = cachedBookmarks.Where(o => Bookmarks.MatchProgram(o, param)).ToList();
                 returnList = returnList.OrderByDescending(o => o.Score).ToList();
             }
             
@@ -60,13 +49,11 @@ namespace Wox.Plugin.BrowserBookmark
             }).ToList();
         }
 
-        private bool MatchProgram(Bookmark bookmark, string queryString)
+        public void ReloadData()
         {
-            if (StringMatcher.FuzzySearch(queryString, bookmark.Name, new MatchOption()).IsSearchPrecisionScoreMet()) return true;
-            if ( StringMatcher.FuzzySearch(queryString, bookmark.PinyinName, new MatchOption()).IsSearchPrecisionScoreMet()) return true;
-            if (StringMatcher.FuzzySearch(queryString, bookmark.Url, new MatchOption()).IsSearchPrecisionScoreMet()) return true;
+            cachedBookmarks.Clear();
 
-            return false;
+            cachedBookmarks = Bookmarks.LoadAllBookmarks();
         }
     }
 }

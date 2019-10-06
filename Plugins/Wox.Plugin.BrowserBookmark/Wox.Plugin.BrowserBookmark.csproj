@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="Bookmark.cs" />
     <Compile Include="ChromeBookmarks.cs" />
+    <Compile Include="Commands\Bookmarks.cs" />
     <Compile Include="FirefoxBookmarks.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
