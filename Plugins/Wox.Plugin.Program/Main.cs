@@ -13,7 +13,7 @@ using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Wox.Plugin.Program
 {
-    public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable
+    public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable, IReloadable
     {
         private static readonly object IndexLock = new object();
         private static Win32[] _win32s;
@@ -144,6 +144,14 @@ namespace Wox.Plugin.Program
                 hide = false;
             }
             return hide;
+        }
+
+        public void ReloadData()
+        {
+            Task.Run(() =>
+            {
+               IndexPrograms();
+            });
         }
     }
 }
