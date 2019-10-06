@@ -5,7 +5,7 @@ using Wox.Plugin.SharedCommands;
 
 namespace Wox.Plugin.BrowserBookmark
 {
-    public class Main : IPlugin
+    public class Main : IPlugin, IReloadable
     {
         private PluginInitContext context;
         
@@ -47,6 +47,13 @@ namespace Wox.Plugin.BrowserBookmark
                     return true;
                 }
             }).ToList();
+        }
+
+        public void ReloadData()
+        {
+            cachedBookmarks.Clear();
+
+            cachedBookmarks = Bookmarks.LoadAllBookmarks();
         }
     }
 }
