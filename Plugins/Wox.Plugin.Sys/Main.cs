@@ -215,7 +215,7 @@ namespace Wox.Plugin.Sys
                     IcoPath = "Images\\app.png",
                     Action = c =>
                     {
-                        context.API.ReloadPluginData();
+                        context.API.ReloadAllPluginData();
                         return true;
                     }
                 }
