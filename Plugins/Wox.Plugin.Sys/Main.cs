@@ -207,6 +207,17 @@ namespace Wox.Plugin.Sys
                         context.API.OpenSettingDialog();
                         return true;
                     }
+                },
+                new Result
+                {
+                    Title = "Reload Plugin Data",
+                    SubTitle = "Reloads plugin's data with new content added after Wox started. Plugins need to have this feature already added.",
+                    IcoPath = "Images\\app.png",
+                    Action = c =>
+                    {
+                        context.API.ReloadPluginData();
+                        return true;
+                    }
                 }
             });
             return results;
