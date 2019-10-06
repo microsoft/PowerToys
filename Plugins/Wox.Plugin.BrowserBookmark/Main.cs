@@ -37,7 +37,7 @@ namespace Wox.Plugin.BrowserBookmark
             return returnList.Select(c => new Result()
             {
                 Title = c.Name,
-                SubTitle = "Bookmark: " + c.Url,
+                SubTitle = c.Url,
                 IcoPath = @"Images\bookmark.png",
                 Score = 5,
                 Action = (e) =>
