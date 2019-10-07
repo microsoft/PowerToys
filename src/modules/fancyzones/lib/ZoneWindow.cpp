@@ -1252,7 +1252,7 @@ int ZoneWindow::GetSwitchButtonIndexFromPoint(POINT ptClient) noexcept
 
 IFACEMETHODIMP_(void) ZoneWindow::SaveWindowProcessToZoneIndex(HWND window) noexcept
 {
-    auto processPath = GetProcessPath(window);
+    auto processPath = get_process_path(window);
     if (!processPath.empty())
     {
         DWORD zoneIndex = static_cast<DWORD>(m_activeZoneSet->GetZoneIndexFromWindow(window));

@@ -111,6 +111,9 @@
     <ClInclude Include="Util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\common.vcxproj">
+      <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\lib\FancyZonesLib.vcxproj">
       <Project>{f9c68edf-ac74-4b77-9af1-005d9c9f6a99}</Project>
     </ProjectReference>
