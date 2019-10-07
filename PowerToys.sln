@@ -26,7 +26,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "interface", "interface", "{
 		src\modules\interface\win_hook_event_data.h = src\modules\interface\win_hook_event_data.h
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "settings", "src\editor\settings.vcxproj", "{07C389E3-6BC8-41CF-923E-307B1265FA2D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "settings", "src\settings\settings.vcxproj", "{07C389E3-6BC8-41CF-923E-307B1265FA2D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fancyzones", "fancyzones", "{D1D6BC88-09AE-4FB4-AD24-5DED46A791DD}"
 EndProject
