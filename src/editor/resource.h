@@ -1,1 +1,0 @@
-#define APPICON 101
