@@ -9,7 +9,7 @@ import {HotkeySettingsControl} from './HotkeySettingsControl';
 import {ChoiceGroupSettingsControl} from './ChoiceGroupSettingsControl';
 import {DropdownSettingsControl} from './DropdownSettingsControl';
 
-export class CustomSettingsScreen extends React.Component <any, any> {
+export class ModuleSettings extends React.Component <any, any> {
   references: any;
   parent_on_change: Function;
 
