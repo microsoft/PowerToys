@@ -9,6 +9,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>PowerToysSetup</OutputName>
     <OutputType>Package</OutputType>
+    <SuppressAclReset>True</SuppressAclReset>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
