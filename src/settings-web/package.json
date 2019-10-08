@@ -14,7 +14,7 @@
   "scripts": {
     "just": "just-scripts",
     "clean": "rimraf build lib lib-commonjs && just-scripts clean",
-    "build": "rimraf build && just-scripts build --min --production && cp index.html build && react-snap && cp -r build/* ../editor/settings-html",
+    "build": "rimraf build && just-scripts build --min --production && cp index.html build && react-snap && cp -r build/* ../settings/settings-html",
     "test": "just-scripts test",
     "test:update": "just-scripts jest -u",
     "test:start": "just-scripts start-test",
