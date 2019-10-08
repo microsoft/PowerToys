@@ -18,7 +18,7 @@ using System.Windows.Shapes;
 namespace FancyZonesEditor
 {
     /// <summary>
-    /// Interaction logic for Window1.xaml
+    /// Interaction logic for EditorOverlay.xaml
     /// </summary>
     public partial class EditorOverlay : Window
     {
