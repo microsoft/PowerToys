@@ -211,7 +211,7 @@ namespace Wox.Plugin.Sys
                         return true;
                     }
                 },
-                 new Result
+                new Result
                 {
                     Title = "Reload Plugin Data",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_reload_plugin_data"),
