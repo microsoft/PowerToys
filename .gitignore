@@ -290,7 +290,7 @@ Output/*
 /Python.Runtime.dll
 Thumbs.db
 RELEASES
-!**/DevTestPackage/Wox-1.2.0.exe
+
 
 *.sublime-*
 *.dgml
