@@ -57,7 +57,7 @@ Defines the main App component, containing the UI layout, navigation menu, dialo
 #### [src/components/GeneralSettings.tsx](./src/components/GeneralSettings.tsx)
 Defines the PowerToys General Settings component, including logic to construct the object sent to PowerToys to change the General settings.
 
-#### [src/components/CustomSettingsScreen.tsx](./src/components/CustomSettingsScreen.tsx)
+#### [src/components/ModuleSettings.tsx](./src/components/ModuleSettings.tsx)
 Defines the component that generates the settings screen for a PowerToy depending on its settings definition.
 
 #### [src/components/BaseSettingsControl.tsx](./src/components/BaseSettingsControl.tsx)
@@ -154,14 +154,14 @@ Each settings property has a `editor_type` field that's used to differentiate be
 ```
 
 A new Settings control component can be added to [`src/components/`](./src/components/).
-To render the new Settings control, its `editor_type` and component instance need to be added to the [`CustomSettingsScreen` component render()](./src/components/CustomSettingsScreen.tsx):
+To render the new Settings control, its `editor_type` and component instance need to be added to the [`ModuleSettings` component render()](./src/components/ModuleSettings.tsx):
 ```tsx
 import React from 'react';
 import {StringTextSettingsControl} from './StringTextSettingsControl';
 
 ...
 
-export class CustomSettingsScreen extends React.Component <any, any> {
+export class ModuleSettings extends React.Component <any, any> {
   references: any;
   parent_on_change: Function;
 ...

@@ -1,7 +1,7 @@
 import React from 'react';
 import {Stack, Text, Nav, DefaultButton, PrimaryButton, ScrollablePane, INavLink, Spinner, SpinnerSize, Dialog, DialogType, DialogFooter} from 'office-ui-fabric-react';
 import {GeneralSettings} from './GeneralSettings';
-import {CustomSettingsScreen} from './CustomSettingsScreen';
+import {ModuleSettings} from './ModuleSettings';
 import '../css/layout.css';
 import {setup_powertoys_icons} from '../setup_icons';
 
@@ -233,7 +233,7 @@ export class App extends React.Component <any, any> {
                     ref={(input:any) => {this.settings_screen_ref = input;}}
                   />
                 } else if( this.state.settings.hasOwnProperty('powertoys') && this.state.selected_menu in this.state.settings.powertoys) {
-                  return <CustomSettingsScreen
+                  return <ModuleSettings
                     key={this.state.selected_menu}
                     settings_key={this.state.selected_menu}
                     powertoy={this.state.settings.powertoys[this.state.selected_menu]}
