@@ -5,7 +5,7 @@ using Wox.Plugin.SharedCommands;
 
 namespace Wox.Plugin.BrowserBookmark
 {
-    public class Main : IPlugin, IReloadable
+    public class Main : IPlugin, IReloadable, IPluginI18n
     {
         private PluginInitContext context;
         
@@ -55,5 +55,16 @@ namespace Wox.Plugin.BrowserBookmark
 
             cachedBookmarks = Bookmarks.LoadAllBookmarks();
         }
+
+        public string GetTranslatedPluginTitle()
+        {
+            return context.API.GetTranslation("wox_plugin_browserbookmark_plugin_name");
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return context.API.GetTranslation("wox_plugin_browserbookmark_plugin_description");
+        }
+
     }
 }

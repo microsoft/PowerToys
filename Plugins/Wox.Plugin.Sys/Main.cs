@@ -85,8 +85,9 @@ namespace Wox.Plugin.Sys
                     IcoPath = "Images\\shutdown.png",
                     Action = c =>
                     {
-                        var reuslt = MessageBox.Show("Are you sure you want to shut the computer down?",
-                                                     "Shutdown Computer?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                        var reuslt = MessageBox.Show(context.API.GetTranslation("wox_plugin_sys_dlgtext_shutdown_computer"),
+                                                     context.API.GetTranslation("wox_plugin_sys_shutdown_computer"),
+                                                     MessageBoxButton.YesNo, MessageBoxImage.Warning);
                         if (reuslt == MessageBoxResult.Yes)
                         {
                             Process.Start("shutdown", "/s /t 0");
@@ -101,8 +102,9 @@ namespace Wox.Plugin.Sys
                     IcoPath = "Images\\restart.png",
                     Action = c =>
                     {
-                        var result = MessageBox.Show("Are you sure you want to restart the computer?",
-                                                     "Restart Computer?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                        var result = MessageBox.Show(context.API.GetTranslation("wox_plugin_sys_dlgtext_restart_computer"),
+                                                     context.API.GetTranslation("wox_plugin_sys_restart_computer"),
+                                                     MessageBoxButton.YesNo, MessageBoxImage.Warning);
                         if (result == MessageBoxResult.Yes)
                         {
                             Process.Start("shutdown", "/r /t 0");
@@ -112,7 +114,7 @@ namespace Wox.Plugin.Sys
                 },
                 new Result
                 {
-                    Title = "Log off",
+                    Title = "Log Off",
                     SubTitle = context.API.GetTranslation("wox_plugin_sys_log_off"),
                     IcoPath = "Images\\logoff.png",
                     Action = c => ExitWindowsEx(EWX_LOGOFF, 0)
@@ -138,7 +140,7 @@ namespace Wox.Plugin.Sys
                 new Result
                 {
                     Title = "Hibernate",
-                    SubTitle = "Hibernate computer",
+                    SubTitle = context.API.GetTranslation("wox_plugin_sys_hibernate"),
                     IcoPath = "Images\\sleep.png", // Icon change needed
                     Action = c => FormsApplication.SetSuspendState(PowerState.Hibernate, false, false)
                 },
@@ -177,12 +179,13 @@ namespace Wox.Plugin.Sys
                 new Result
                 {
                     Title = "Save Settings",
-                    SubTitle = "Save all Wox settings",
+                    SubTitle = context.API.GetTranslation("wox_plugin_sys_save_all_settings"),
                     IcoPath = "Images\\app.png",
                     Action = c =>
                     {
                         context.API.SaveAppAllSettings();
-                        context.API.ShowMsg("Success","All Wox settings saved");
+                        context.API.ShowMsg(context.API.GetTranslation("wox_plugin_sys_dlgtitle_success"),
+                            context.API.GetTranslation("wox_plugin_sys_dlgtext_all_settings_saved"));
                         return true;
                     }
                 },
@@ -208,10 +211,10 @@ namespace Wox.Plugin.Sys
                         return true;
                     }
                 },
-                new Result
+                 new Result
                 {
                     Title = "Reload Plugin Data",
-                    SubTitle = "Reloads plugin data with new content added after Wox started. Plugins need to have this feature already added.",
+                    SubTitle = context.API.GetTranslation("wox_plugin_sys_reload_plugin_data"),
                     IcoPath = "Images\\app.png",
                     Action = c =>
                     {

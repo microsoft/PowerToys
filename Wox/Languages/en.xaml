@@ -33,6 +33,7 @@
     <system:String x:Key="selectPythonDirectory">Select</system:String>
     <system:String x:Key="hideOnStartup">Hide Wox on startup</system:String>
     <system:String x:Key="hideNotifyIcon">Hide tray icon</system:String>
+    <system:String x:Key="querySearchPrecision">Query Search Precision</system:String>
 
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Plugin</system:String>
