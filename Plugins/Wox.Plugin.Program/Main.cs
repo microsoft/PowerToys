@@ -148,10 +148,7 @@ namespace Wox.Plugin.Program
 
         public void ReloadData()
         {
-            Task.Run(() =>
-            {
-               IndexPrograms();
-            });
+            IndexPrograms();
         }
     }
 }

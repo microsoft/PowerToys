@@ -218,7 +218,11 @@ namespace Wox.Plugin.Sys
                     IcoPath = "Images\\app.png",
                     Action = c =>
                     {
+                        // Hide the window first then show msg after done because sometimes the reload could take a while, so not to make user think it's frozen. 
+                        Application.Current.MainWindow.Hide();
                         context.API.ReloadAllPluginData();
+                        context.API.ShowMsg(context.API.GetTranslation("wox_plugin_sys_dlgtitle_success"),
+                            context.API.GetTranslation("wox_plugin_sys_dlgtext_all_applicableplugins_reloaded"));
                         return true;
                     }
                 }
