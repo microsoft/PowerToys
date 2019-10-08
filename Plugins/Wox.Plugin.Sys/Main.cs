@@ -210,6 +210,17 @@ namespace Wox.Plugin.Sys
                         context.API.OpenSettingDialog();
                         return true;
                     }
+                },
+                 new Result
+                {
+                    Title = "Reload Plugin Data",
+                    SubTitle = context.API.GetTranslation("wox_plugin_sys_reload_plugin_data"),
+                    IcoPath = "Images\\app.png",
+                    Action = c =>
+                    {
+                        context.API.ReloadAllPluginData();
+                        return true;
+                    }
                 }
             });
             return results;

@@ -17,6 +17,7 @@
     <system:String x:Key="wox_plugin_sys_emptyrecyclebin">Geri Dönüşüm Kutusunu Boşalt</system:String>
     <system:String x:Key="wox_plugin_sys_hibernate">Bilgisayarı Askıya Al</system:String>
     <system:String x:Key="wox_plugin_sys_save_all_settings">Tüm Wox Ayarlarını Kaydet</system:String>
+    <system:String x:Key="wox_plugin_sys_reload_plugin_data">Eklentilerin verilerini Wox'un açılışından sonra yapılan değişiklikleri için günceller. Eklentilerin bu özelliği zaten eklemiş olması gerekir.</system:String>
 
     <!--Diyaloglar-->
     <system:String x:Key="wox_plugin_sys_dlgtitle_success">Başarılı</system:String>
