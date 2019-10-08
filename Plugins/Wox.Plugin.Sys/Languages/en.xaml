@@ -22,12 +22,9 @@
     <!--Dialogs-->
     <system:String x:Key="wox_plugin_sys_dlgtitle_success">Success</system:String>
     <system:String x:Key="wox_plugin_sys_dlgtext_all_settings_saved">All Wox settings saved</system:String>
+    <system:String x:Key="wox_plugin_sys_dlgtext_all_applicableplugins_reloaded">Reloaded all applicable plugin data</system:String>
     <system:String x:Key="wox_plugin_sys_dlgtext_shutdown_computer">Are you sure you want to shut the computer down?</system:String>
     <system:String x:Key="wox_plugin_sys_dlgtext_restart_computer">Are you sure you want to restart the computer?</system:String>
-
-    <!--Dialogs-->
-    <system:String x:Key="wox_plugin_sys_dlgtitle_success">Success</system:String>
-    <system:String x:Key="wox_plugin_sys_dlgtext_all_applicableplugins_reloaded">Reloaded all applicable plugin data</system:String>
 
     <system:String x:Key="wox_plugin_sys_plugin_name">System Commands</system:String>
     <system:String x:Key="wox_plugin_sys_plugin_description">Provides System related commands. e.g. shutdown, lock, settings etc.</system:String>
