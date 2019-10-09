@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using FancyZonesEditor.Models;
 using System.Windows.Documents;
 using System.Windows;
@@ -292,7 +293,20 @@ namespace FancyZonesEditor
                 var height = int.Parse(parsedLocation[3]);
 
                 _workAreaKey = args[5];
-                _dpi = float.Parse(args[6]);
+
+                // Try invariant culture first, caller likely uses invariant i.e. "C" locale to construct parameters
+                foreach (var cultureInfo in new[] { CultureInfo.InvariantCulture, CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture })
+                {
+                    try
+                    {
+                        _dpi = float.Parse(args[6], cultureInfo);
+                        break;
+                    }
+                    catch (FormatException)
+                    {
+                    }
+                }
+
                 _workArea = new Rect(x, y, width, height);
 
                 uint monitor = 0;
