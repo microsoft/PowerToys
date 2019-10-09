@@ -11,3 +11,4 @@ static_analysis_options:
       - from: 'installer/packages'
         exclude:
         - 'WiX.3.11.1/**/*.dll'
+        - 'Wix.3.11.1/**/*.exe'

@@ -67,5 +67,7 @@ static_analysis_options:
     files_to_scan:
       - from: 'installer/packages'
         exclude:
+        exclude:
         - 'WiX.3.11.1/**/*.dll'
+        - 'Wix.3.11.1/**/*.exe'
         
