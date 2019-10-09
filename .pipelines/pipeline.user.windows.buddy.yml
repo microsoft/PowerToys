@@ -1,0 +1,13 @@
+static_analysis_options:
+  fxcop_options:  
+    disable_tool_scan: false            
+  policheck_options:           
+    fail_on_error: true     
+  moderncop_options:           
+    fail_on_error: true                 
+  binskim_options:
+    disable_tool_scan: false
+    files_to_scan:
+      - from: 'installer/packages'
+        exclude:
+        - '**/mergemod.dll'
