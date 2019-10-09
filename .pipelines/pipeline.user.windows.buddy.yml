@@ -10,5 +10,4 @@ static_analysis_options:
     files_to_scan:
       - from: 'installer/packages'
         exclude:
-        - 'WiX.3.11.1/**/mergemod.dll'
-        - 'WiX.3.11.1/**/mspatchc.dll'
+        - 'WiX.3.11.1/**/*.dll'
