@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\WiX.3.11.1\build\wix.props" Condition="Exists('..\packages\WiX.3.11.1\build\wix.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -49,7 +50,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>inc;telemetry;$(WIX)sdk\$(WixPlatformToolset)\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>inc;telemetry;$(WIX)sdk\$(WixPlatformToolset)\inc;$(SolutionDir)\packages\WiX.3.11.1\tools\sdk\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN64;_DEBUG;_WINDOWS;_USRDLL;CUSTOMACTIONTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -59,7 +60,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>msi.lib;dutil.lib;wcautil.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(WIX)sdk\$(WixPlatformToolset)\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WIX)sdk\$(WixPlatformToolset)\lib\x64;$(SolutionDir)\packages\WiX.3.11.1\tools\sdk\vs2017\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>CustomAction.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -70,7 +71,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>inc;telemetry;$(WIX)sdk\$(WixPlatformToolset)\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>inc;telemetry;$(WIX)sdk\$(WixPlatformToolset)\inc;$(SolutionDir)\packages\WiX.3.11.1\tools\sdk\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;CUSTOMACTIONTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -80,7 +81,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>msi.lib;dutil.lib;wcautil.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(WIX)sdk\$(WixPlatformToolset)\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WIX)sdk\$(WixPlatformToolset)\lib\x64;$(SolutionDir)\packages\WiX.3.11.1\tools\sdk\vs2017\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>CustomAction.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -99,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="CustomAction.def" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -106,11 +108,11 @@
     <ClInclude Include="Telemetry\TraceLoggingDefines.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Import Project="$(WixNativeCATargetsPath)" Condition=" '$(WixNativeCATargetsPath)' != '' " />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.NativeCA.targets" Condition=" '$(WixNativeCATargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.NativeCA.targets') " />
-  <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixNativeCATargetsImported)' != 'true' ">
-    <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
+  <ImportGroup Label="ExtensionTargets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\WiX.3.11.1\build\wix.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WiX.3.11.1\build\wix.props'))" />
   </Target>
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
 </Project>

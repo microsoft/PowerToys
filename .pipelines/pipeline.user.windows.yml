@@ -5,39 +5,60 @@ environment:
     version: '2016'
   runtime:
     provider: 'appcontainer'
-    image: 'cdpxwinrs4test.azurecr.io/global/vse2017u7-external-azsdk-mobile-ext-win1803:latest-nodetools'
-    source_mode: 'link'
+    image: 'cdpxwin.azurecr.io/user/powertoys/vs2019:3.0'
+    source_mode: 'map'
+
+version:
+  name: 'PowerToys'
+  major: 1
+  minor: 0
 
 signing_options:
-  profile: 'azure'
+  profile: 'external_distribution'
 
 package_sources:
   nuget:
     feeds:
-      'Toolset': 'https://msazure.pkgs.visualstudio.com/_packaging/Toolset/nuget/v3/index.json'
-      'CloudES-CDP': 'https://cloudes.pkgs.visualstudio.com/_packaging/CDP/nuget/v3/index.json'
-      'CloudES-Internal': 'https://cloudes.pkgs.visualstudio.com/_packaging/Internal/nuget/v3/index.json'
-      'MsNugetMirror': 'https://msazure.pkgs.visualstudio.com/_packaging/MsNugetMirror/nuget/v3/index.json'
-      'NugetMirror': 'https://msazure.pkgs.visualstudio.com/_packaging/NugetMirror/nuget/v3/index.json'
-      'CorextMirror': 'https://msazure.pkgs.visualstudio.com/_packaging/CorextMirror/nuget/v3/index.json'
-      'Official': 'https://msazure.pkgs.visualstudio.com/_packaging/Official/nuget/v3/index.json'
-      'Toolset': 'https://msazure.pkgs.visualstudio.com/_packaging/Toolset/nuget/v3/index.json'
-      'AzureCXP': 'https://msazure.pkgs.visualstudio.com/_packaging/AzureCXP/nuget/v3/index.json'
+      'Nuget': 'https://api.nuget.org/v3/index.json'
+      'PipelineBuildSupplement': 'https://msazure.pkgs.visualstudio.com/_packaging/PipelineBuildSupplement/nuget/v3/index.json'
 
 restore:
   commands:
     - !!defaultcommand
-      name: 'Restore CSharp'
+      name: 'Restore Power Toys Telemetry'
+      command: '.pipelines\restore-telemetry.cmd'  
+    - !!defaultcommand
+      name: 'Restore Power Toys'
       command: '.pipelines\restore.cmd'
-      
+    - !!defaultcommand
+      name: 'Restore Installer'
+      command: '.pipelines\restore-installer.cmd'
+
+
 build:
   commands:
     - !!buildcommand
-      name: 'Build CSharp'
+      name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
       artifacts:
-        - from: '**\bin'
+        - from: 'x64/Release'
           to: 'Build_Output'
           include:
-            - '**/*'
-
+          - 'PowerToys.exe'
+          - 'PowerToysSettings.exe'
+          - 'modules\FancyZonesEditor.exe'
+          - 'modules\fancyzones.dll'
+          - 'modules\shortcut_guide.dll'
+          signing_options:
+            sign_inline: true  # This does signing a soon as this command completes
+    - !!buildcommand
+      name: 'Build Power Toys Installer'
+      command: '.pipelines\build-installer.cmd'
+      artifacts:
+        - from: 'installer\PowerToysSetup\x64\Release'
+          to: 'Build_Installer_Output'
+          include:
+            - 'PowerToysSetup.msi'
+          signing_options:
+            sign_inline: true  # This does signing a soon as this command completes
+            
