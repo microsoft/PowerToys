@@ -61,4 +61,11 @@ build:
             - 'PowerToysSetup.msi'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
-            
+
+static_analysis_options:                             
+  binskim_options:  
+    files_to_scan:
+      - from: 'installer/packages'
+        exclude:
+        - '**/mergemod.dll'
+        
