@@ -66,6 +66,7 @@
     <Compile Include="Features\IContextMenu.cs" />
     <Compile Include="Features\IExclusiveQuery.cs" />
     <Compile Include="Features\IInstantQuery.cs" />
+    <Compile Include="Interfaces\IReloadable.cs" />
     <Compile Include="IPlugin.cs" />
     <Compile Include="IPublicAPI.cs" />
     <Compile Include="ISettingProvider.cs" />

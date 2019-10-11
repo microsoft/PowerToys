@@ -15,6 +15,10 @@
     <system:String x:Key="wox_plugin_sys_sleep">Put computer to sleep</system:String>
     <system:String x:Key="wox_plugin_sys_emptyrecyclebin">Empty recycle bin</system:String>
 
+    <!--Dialogs-->
+    <system:String x:Key="wox_plugin_sys_dlgtitle_success">Success</system:String>
+    <system:String x:Key="wox_plugin_sys_dlgtext_all_applicableplugins_reloaded">Reloaded all applicable plugin data</system:String>
+
     <system:String x:Key="wox_plugin_sys_plugin_name">System Commands</system:String>
     <system:String x:Key="wox_plugin_sys_plugin_description">Provides System related commands. e.g. shutdown, lock, settings etc.</system:String>
 

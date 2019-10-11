@@ -63,6 +63,14 @@ namespace Wox.Plugin
         void SaveAppAllSettings();
 
         /// <summary>
+        /// Reloads any Plugins that have the 
+        /// IReloadable implemented. It refeshes
+        /// Plugin's in memory data with new content
+        /// added by user.
+        /// </summary>
+        void ReloadAllPluginData();
+
+        /// <summary>
         /// Show message box
         /// </summary>
         /// <param name="title">Message title</param>
