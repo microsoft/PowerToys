@@ -398,12 +398,15 @@ void quit_when_parent_terminates(std::wstring parent_pid) {
   std::thread(wait_on_parent_process_thread, pid).detach();
 }
 
-void initialize_args() {
+// Parse arguments: initialize two-way IPC message pipe and if settings window is to be started
+// in dark mode.
+void parse_args() {
   // Expected calling arguments:
   // [0] - This executable's path.
   // [1] - PowerToys pipe server.
   // [2] - Settings pipe server.
   // [3] - PowerToys process pid.
+  // [4] - optional "dark" parameter if the settings window is to be started in dark mode
   LPWSTR *argument_list;
   int n_args;
 
@@ -435,7 +438,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
   }
 
   g_hinst = hInstance;
-  initialize_args();
+  parse_args();
   register_classes(hInstance);
   g_main_wnd = create_main_window(hInstance);
   if (g_main_wnd == nullptr) {
