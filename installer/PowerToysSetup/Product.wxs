@@ -232,6 +232,17 @@
         <File Source="$(var.BinX64Dir)\modules\MahApps.Metro.dll" />
         <File Source="$(var.BinX64Dir)\modules\Microsoft.Xaml.Behaviors.dll" />
       </Component>
+      <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
+        <File Source="$(var.BinX64Dir)\modules\PowerRenameExt.dll" KeyPath="yes" />
+        <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
+          <RegistryValue Type="string" Value="PowerRename Shell Extension" />
+          <RegistryValue Type="string" Key="InprocServer32" Value="$(var.BinX64Dir)\modules\PowerRenameExt.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
+        </RegistryKey>
+        <RegistryKey Root="HKCR" Key="AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
+            <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
+        </RegistryKey>
+      </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsHtmlInstallFolder" FileSource="$(var.RepoDir)\settings\settings-html\">
       <Component Id="settings_html" Guid="87881A99-E917-4B0D-B1D8-5C6EB9709F96" Win64="yes">
@@ -272,6 +283,7 @@
       <ComponentRef Id="Module_ShortcutGuide" />
       <ComponentRef Id="Module_FancyZones" />
       <ComponentRef Id="DesktopShortcut" />
+      <ComponentRef Id="Module_PowerRename" />
       <ComponentRef Id="settings_exe" />
       <ComponentRef Id="settings_html" />
       <ComponentRef Id="settings_js_bundle" />
