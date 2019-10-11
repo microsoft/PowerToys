@@ -236,7 +236,7 @@
         <File Source="$(var.BinX64Dir)\modules\PowerRenameExt.dll" KeyPath="yes" />
         <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
           <RegistryValue Type="string" Value="PowerRename Shell Extension" />
-          <RegistryValue Type="string" Key="InprocServer32" Value="$(var.BinX64Dir)\modules\PowerRenameExt.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Value="[ModulesInstallFolder]PowerRenameExt.dll" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
         </RegistryKey>
         <RegistryKey Root="HKCR" Key="AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">

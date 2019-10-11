@@ -10,21 +10,22 @@ extern HINSTANCE g_hInst;
 HWND g_hwndParent = 0;
 
 
-const wchar_t powerRenameRegPath[] = L"Softare\\Microsoft\\PowerRename";
+const wchar_t powerRenameRegPath[] = L"Software\\Microsoft\\PowerRename";
 const wchar_t powerRenameRegEnabledName[] = L"Enabled";
 
 bool CPowerRenameMenu::IsEnabled()
 {
     DWORD type = REG_DWORD;
-    DWORD cb = 0;
-    BOOL isEnabled = TRUE;
-    SHGetValue(HKEY_CURRENT_USER, powerRenameRegPath, powerRenameRegEnabledName, &type, &isEnabled, &cb);
-    return !!isEnabled;
+    DWORD dwEnabled = 0;
+    DWORD cb = sizeof(dwEnabled);
+    SHGetValue(HKEY_CURRENT_USER, powerRenameRegPath, powerRenameRegEnabledName, &type, &dwEnabled, &cb);
+    return (dwEnabled == 0) ? false : true;
 }
 
 bool CPowerRenameMenu::SetEnabled(_In_ bool enabled)
 {
-    return SUCCEEDED(HRESULT_FROM_WIN32(SHSetValueW(HKEY_CURRENT_USER, powerRenameRegPath, powerRenameRegEnabledName, REG_DWORD, &enabled, sizeof(enabled))));
+    DWORD dwEnabled = enabled ? 1 : 0;
+    return SUCCEEDED(HRESULT_FROM_WIN32(SHSetValueW(HKEY_CURRENT_USER, powerRenameRegPath, powerRenameRegEnabledName, REG_DWORD, &dwEnabled, sizeof(dwEnabled))));
 }
 
 CPowerRenameMenu::CPowerRenameMenu()
