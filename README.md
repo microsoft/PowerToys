@@ -8,7 +8,7 @@ Inspired by the [Windows 95 era PowerToys project](https://en.wikipedia.org/wiki
 
 ## Installation
 
-_(Note: in order to run PowerToys, you'll need to be running at least Windows build 17134 or higher.)_
+_(Note: in order to run PowerToys, you'll need to be running at least Windows build 17134 or higher.  Also, PowerToys does not currently support Windows ARM machines)_
 
 ### Github
 
@@ -36,8 +36,12 @@ If you have any issues when installing/upgrading the package please go to the [p
 
 # What's Happening
 
-## September Update
-The first preview release of the PowerToys utilities and source code is now live!  This release includes two preview quality utilities as well as the tools and docs to make it easy to create new PowerToys utilities.  
+## October Update
+A big thanks to everyone who has downloaded and started using the first PowerToys preview.  There's been over 150K downlaods so far.  An even bigger thanks to everyone who has provided feedback and suggestions in the issues.  The community engagement has been really awesome to see.  
+
+The team has been hard at working fixing bugs, addressing issues and implementing feature suggestions.  If you've downloaded the code and built the latest on your machine recently you've seen many of these improvements (dark mode!).  We're hoping to have a new official build out shortly with all these improvements and will also be signed by Microsoft.  A new utilitity is also coming soon: Chris Davis is working to integrate his [SmartRename tool](https://github.com/chrdavis/SmartRename) into PowerToys!
+
+![SmartRename](https://github.com/chrdavis/SmartRename/raw/master/Images/SmartRenameDemo.gif)
 
 1. [FancyZones](/src/modules/fancyzones/) - FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.  The FancyZones backlog can be found [here](https://github.com/Microsoft/PowerToys/tree/master/doc/planning/FancyZonesBacklog.md)
 
@@ -54,7 +58,6 @@ Additional utilities in the pipeline are:
 
 * Maximize to new desktop widget - The MTND widget shows a pop-up button when a user hovers over the maximize / restore button on any window.  Clicking it creates a new desktop, sends the app to that desktop and maximizes the app on the new desktop.
 * [Process terminate tool](https://github.com/indierawk2k2/PowerToys-1/blob/master/specs/Terminate%20Spec.md)
-* [Batch file renamer](https://github.com/indierawk2k2/PowerToys-1/blob/master/specs/File%20Classification%20Spec.md)
 * [Animated gif screen recorder](https://github.com/indierawk2k2/PowerToys-1/blob/master/specs/GIF%20Maker%20Spec.md)
 
 # Backlog
