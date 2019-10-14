@@ -34,7 +34,7 @@ web::json::value get_general_settings() {
   result.as_object()[L"enabled"] = enabled;
 
   result.as_object()[L"theme"] = json::value::string(settings_theme);
-  result.as_object()[L"system_theme"] = json::value::string(WindowsColors::is_dark_mode() ? L"dark" : L"ligth");
+  result.as_object()[L"system_theme"] = json::value::string(WindowsColors::is_dark_mode() ? L"dark" : L"light");
   return result;
 }
 

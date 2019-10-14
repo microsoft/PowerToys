@@ -121,7 +121,7 @@ export class GeneralSettings extends React.Component <any, any> {
           ref={(input) => {this.startup_reference=input;}}
         />
         <ChoiceGroupSettingsControl
-          setting={{display_name: 'Chose Settigs color',
+          setting={{display_name: 'Chose Settings color',
                     value: this.state.settings.general.theme,
                     options: [
                       { key: 'system', text: 'System default app mode'},
