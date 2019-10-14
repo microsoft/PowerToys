@@ -4,6 +4,7 @@
 #pragma comment(lib, "dwmapi.lib")
 #include <strsafe.h>
 #include <sddl.h>
+#include "version.h"
 
 std::optional<RECT> get_button_pos(HWND hwnd) {
   RECT button;
@@ -289,4 +290,11 @@ std::wstring get_process_path(HWND window) noexcept {
     }
   }
   return name;
+}
+
+std::wstring get_product_version() {
+  std::wstring version = L"" + std::to_wstring(VERSION_MAJOR) +
+    L"." + std::to_wstring(VERSION_MINOR) +
+    L"." + std::to_wstring(VERSION_REVISION);
+  return version;
 }

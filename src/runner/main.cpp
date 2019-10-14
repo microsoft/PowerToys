@@ -68,7 +68,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
      // Start initial powertoys
     start_initial_powertoys();
 
-    Trace::EventLaunch();
+    Trace::EventLaunch(get_product_version());
 
     result = run_message_loop();
   } catch (std::runtime_error& err) {
