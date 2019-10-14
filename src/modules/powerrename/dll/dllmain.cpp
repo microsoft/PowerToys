@@ -200,7 +200,7 @@ public:
         settings.set_description(L"A Windows Shell Extension for more advanced bulk renaming using search and replace or regular expressions.");
 
         // Link to the GitHub PowerRename sub-page
-        settings.set_overview_link(L"https://github.com/microsoft/PowerToys/tree/master/src/modules/PowerRename");
+        settings.set_overview_link(L"https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename");
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }

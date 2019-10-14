@@ -344,7 +344,7 @@ void CPowerRenameUI::_OnAbout()
     SHELLEXECUTEINFO info = {0};
     info.cbSize = sizeof(SHELLEXECUTEINFO);
     info.lpVerb = L"open";
-    info.lpFile = L"http://www.github.com/chrdavis";
+    info.lpFile = L"https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename";
     info.nShow = SW_SHOWDEFAULT;
 
     ShellExecuteEx(&info);
