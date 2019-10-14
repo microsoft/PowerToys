@@ -16,10 +16,11 @@ void Trace::UnregisterProvider() {
   TraceLoggingUnregister(g_hProvider);
 }
 
-void Trace::EventLaunch() {
+void Trace::EventLaunch(const std::wstring& versionNumber) {
   TraceLoggingWrite(
     g_hProvider,
     "Runner::Event::Launch",
+    TraceLoggingWideString(versionNumber.c_str(), "version"),
     ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
     TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
     TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));

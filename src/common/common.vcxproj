@@ -107,6 +107,7 @@
     <ClInclude Include="Telemetry\ProjectTelemetry.h" />
     <ClInclude Include="Telemetry\TraceLoggingDefines.h" />
     <ClInclude Include="two_way_pipe_message_ipc.h" />
+    <ClInclude Include="version.h" />
     <ClInclude Include="windows_colors.h" />
   </ItemGroup>
   <ItemGroup>

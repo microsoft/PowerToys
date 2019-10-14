@@ -48,3 +48,5 @@ bool drop_elevated_privileges();
 std::wstring get_process_path(DWORD pid) noexcept;
 // Get the executable path or module name for modern apps
 std::wstring get_process_path(HWND hwnd) noexcept;
+
+std::wstring get_product_version();
