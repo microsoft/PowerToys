@@ -17,12 +17,15 @@ namespace Wox.Plugin.Program
     {
         private static readonly object IndexLock = new object();
         private static Win32[] _win32s;
+#if SDK
         private static UWP.Application[] _uwps;
+        private static BinaryStorage<UWP.Application[]> _uwpStorage;
+#endif
 
         private static PluginInitContext _context;
 
         private static BinaryStorage<Win32[]> _win32Storage;
-        private static BinaryStorage<UWP.Application[]> _uwpStorage;
+        
         private static Settings _settings;
         private readonly PluginJsonStorage<Settings> _settingsStorage;
 
@@ -35,11 +38,15 @@ namespace Wox.Plugin.Program
             {
                 _win32Storage = new BinaryStorage<Win32[]>("Win32");
                 _win32s = _win32Storage.TryLoad(new Win32[] { });
+#if SDK
                 _uwpStorage = new BinaryStorage<UWP.Application[]>("UWP");
                 _uwps = _uwpStorage.TryLoad(new UWP.Application[] { });
+#endif
             });
             Log.Info($"|Wox.Plugin.Program.Main|Number of preload win32 programs <{_win32s.Length}>");
+#if SDK
             Log.Info($"|Wox.Plugin.Program.Main|Number of preload uwps <{_uwps.Length}>");
+#endif
             Task.Run(() =>
             {
                 Stopwatch.Normal("|Wox.Plugin.Program.Main|Program index cost", IndexPrograms);
@@ -50,7 +57,9 @@ namespace Wox.Plugin.Program
         {
             _settingsStorage.Save();
             _win32Storage.Save(_win32s);
+#if SDK
             _uwpStorage.Save(_uwps);
+#endif
         }
 
         public List<Result> Query(Query query)
@@ -58,8 +67,14 @@ namespace Wox.Plugin.Program
             lock (IndexLock)
             {
                 var results1 = _win32s.AsParallel().Select(p => p.Result(query.Search, _context.API));
+#if SDK
                 var results2 = _uwps.AsParallel().Select(p => p.Result(query.Search, _context.API));
-                var result = results1.Concat(results2).Where(r => r.Score > 0).ToList();
+#endif
+                var result = results1
+#if SDK
+                    .Concat(results2)
+#endif
+                    .Where(r => r.Score > 0).ToList();
                 return result;
             }
         }
@@ -72,10 +87,13 @@ namespace Wox.Plugin.Program
         public static void IndexPrograms()
         {
             Win32[] w = { };
+#if SDK
             UWP.Application[] u = { };
             var t1 = Task.Run(() =>
             {
-                w = Win32.All(_settings);
+#endif
+            w = Win32.All(_settings);
+#if SDK
             });
             var t2 = Task.Run(() =>
             {
@@ -91,11 +109,13 @@ namespace Wox.Plugin.Program
                 }
             });
             Task.WaitAll(t1, t2);
-
+#endif
             lock (IndexLock)
             {
                 _win32s = w;
+#if SDK
                 _uwps = u;
+#endif
             }
         }
 
