@@ -4,7 +4,14 @@ static_analysis_options:
   policheck_options:           
     fail_on_error: true     
   moderncop_options:           
-    fail_on_error: true                 
+    fail_on_error: true
+    files_to_scan:
+      - from: 'src'          
+        exclude:                           
+        - '**/just.config.js'
+        - '**/webpack.config.js'
+        - '**/webpack.serve.config.js'
+        - '**/dist/bundle.js'               
   binskim_options:
     disable_tool_scan: false
     files_to_scan:
