@@ -270,10 +270,6 @@ IFACEMETHODIMP_(void) ZoneSet::MoveSizeEnd(HWND window, HWND zoneWindow, POINT p
     if (auto zone = ZoneFromPoint(ptClient))
     {
         zone->AddWindowToZone(window, zoneWindow, true);
-
-        POINT pointAdjustedScreen = ptClient;
-        MapWindowPoints(zoneWindow, nullptr, &pointAdjustedScreen, 1);
-        SetCursorPos(pointAdjustedScreen.x, pointAdjustedScreen.y);
     }
 }
 
