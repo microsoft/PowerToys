@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -27,20 +27,25 @@ namespace Wox.Plugin.BrowserBookmark
             if (string.IsNullOrEmpty(PlacesPath) || !File.Exists(PlacesPath))
                 return new List<Bookmark>();
 
+            var bookmarList = new List<Bookmark>();
+
             // create the connection string and init the connection
-            string dbPath = string.Format(dbPathFormat, PlacesPath);
-            var dbConnection = new SQLiteConnection(dbPath);
-
-            // Open connection to the database file and execute the query
-            dbConnection.Open();
-            var reader = new SQLiteCommand(queryAllBookmarks, dbConnection).ExecuteReader();
-
-            // return results in List<Bookmark> format
-            return reader.Select(x => new Bookmark()
+            string dbPath = string.Format(dbPathFormat, PlacesPath);            
+            using (var dbConnection = new SQLiteConnection(dbPath))
             {
-                Name = (x["title"] is DBNull) ? string.Empty : x["title"].ToString(),
-                Url = x["url"].ToString()
-            }).ToList();
+                // Open connection to the database file and execute the query
+                dbConnection.Open();
+                var reader = new SQLiteCommand(queryAllBookmarks, dbConnection).ExecuteReader();
+
+                // return results in List<Bookmark> format
+                bookmarList = reader.Select(x => new Bookmark()
+                {
+                    Name = (x["title"] is DBNull) ? string.Empty : x["title"].ToString(),
+                    Url = x["url"].ToString()
+                }).ToList();
+            }
+
+            return bookmarList;
         }
 
         /// <summary>
@@ -61,17 +66,52 @@ namespace Wox.Plugin.BrowserBookmark
                 using (var sReader = new StreamReader(profileIni)) {
                     ini = sReader.ReadToEnd();
                 }
+
+                /*
+                    Current profiles.ini structure example as of Firefox version 69.0.1
+                    
+                    [Install736426B0AF4A39CB]
+                    Default=Profiles/7789f565.default-release   <== this is the default profile this plugin will get the bookmarks from. When opened Firefox will load the default profile
+                    Locked=1
+
+                    [Profile2]
+                    Name=newblahprofile
+                    IsRelative=0
+                    Path=C:\t6h2yuq8.newblahprofile  <== Note this is a custom location path for the profile user can set, we need to cater for this in code.
+
+                    [Profile1]
+                    Name=default
+                    IsRelative=1
+                    Path=Profiles/cydum7q4.default
+                    Default=1
+
+                    [Profile0]
+                    Name=default-release
+                    IsRelative=1
+                    Path=Profiles/7789f565.default-release
+
+                    [General]
+                    StartWithLastProfile=1
+                    Version=2
+                */
+
                 var lines = ini.Split(new string[] { "\r\n" }, StringSplitOptions.None).ToList();
 
-                var index = lines.IndexOf("Default=1");
-                if (index > 3) {
-                    var relative = lines[index - 2].Split('=')[1];
-                    var profiePath = lines[index - 1].Split('=')[1];
-                    return relative == "0"
-                        ? profiePath + @"\places.sqlite"
-                        : Path.Combine(profileFolderPath, profiePath) + @"\places.sqlite";
-                }
-                return string.Empty;
+                var defaultProfileFolderNameRaw = lines.Where(x => x.Contains("Default=") && x != "Default=1").FirstOrDefault() ?? string.Empty;
+
+                if (string.IsNullOrEmpty(defaultProfileFolderNameRaw))
+                    return string.Empty;
+
+                var defaultProfileFolderName = defaultProfileFolderNameRaw.Split('=').Last();
+
+                var indexOfDefaultProfileAtttributePath = lines.IndexOf("Path="+ defaultProfileFolderName);
+
+                // Seen in the example above, the IsRelative attribute is always above the Path attribute
+                var relativeAttribute = lines[indexOfDefaultProfileAtttributePath - 1];
+
+                return relativeAttribute == "0" // See above, the profile is located in a custom location, path is not relative, so IsRelative=0
+                        ? defaultProfileFolderName + @"\places.sqlite"
+                        : Path.Combine(profileFolderPath, defaultProfileFolderName) + @"\places.sqlite";
             }
         }
     }

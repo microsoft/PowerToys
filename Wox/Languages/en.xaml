@@ -33,6 +33,7 @@
     <system:String x:Key="selectPythonDirectory">Select</system:String>
     <system:String x:Key="hideOnStartup">Hide Wox on startup</system:String>
     <system:String x:Key="hideNotifyIcon">Hide tray icon</system:String>
+    <system:String x:Key="querySearchPrecision">Query Search Precision</system:String>
 
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Plugin</system:String>
@@ -103,7 +104,7 @@
     <system:String x:Key="cannotFindSpecifiedPlugin">Can't find specified plugin</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">New Action Keyword can't be empty</system:String>
     <system:String x:Key="newActionKeywordsHasBeenAssigned">New Action Keywords have been assigned to another plugin, please assign other new action keyword</system:String>
-    <system:String x:Key="succeed">Succeed</system:String>
+    <system:String x:Key="success">Success</system:String>
     <system:String x:Key="actionkeyword_tips">Use * if you don't want to specify an action keyword</system:String>
 
     <!--Custom Query Hotkey Dialog-->

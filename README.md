@@ -1,6 +1,10 @@
 WoX
 ===
 
+![Maintenance](https://img.shields.io/maintenance/yes/2019)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/jjw24/wox)](https://github.com/jjw24/Wox/releases/latest)
+![GitHub Release Date](https://img.shields.io/github/release-date/jjw24/wox)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/jjw24/wox/v1.3.524)
 [![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e103/branch/master?svg=true)](https://ci.appveyor.com/project/happlebao/wox/branch/master)
 [![Github All Releases](https://img.shields.io/github/downloads/Wox-launcher/Wox/total.svg)](https://github.com/Wox-launcher/Wox/releases)
 [![RamenBless](https://cdn.rawgit.com/LunaGao/BlessYourCodeTag/master/tags/ramen.svg)](https://github.com/LunaGao/BlessYourCodeTag)
@@ -23,6 +27,10 @@ Features
 
 Installation
 ------------
+
+To install this fork's version of Wox, you can **download** it [here](https://github.com/jjw24/Wox/releases/latest).
+
+To install the upstream version:
 
 Download `Wox-xxx.exe` from [releases](https://github.com/Wox-launcher/Wox/releases). Latest as of now is [`1.3.524`](https://github.com/Wox-launcher/Wox/releases/download/v1.3.524/Wox-1.3.524.exe) ([`1.3.578`](https://github.com/Wox-launcher/Wox/releases/download/v1.3.578/Wox-1.3.578.exe) for preview channel)
 

@@ -98,7 +98,7 @@
     <system:String x:Key="cannotFindSpecifiedPlugin">找不到指定的插件</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">新触发关键字不能为空</system:String>
     <system:String x:Key="newActionKeywordsHasBeenAssigned">新触发关键字已经被指派给其他插件了，请重新选择一个关键字</system:String>
-    <system:String x:Key="succeed">成功</system:String>
+    <system:String x:Key="success">成功</system:String>
     <system:String x:Key="actionkeyword_tips">如果你不想设置触发关键字，可以使用*代替</system:String>
     
     <!--Custom Query Hotkey 对话框-->

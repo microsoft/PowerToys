@@ -54,6 +54,8 @@ namespace Wox
                 _settingsVM = new SettingWindowViewModel();
                 _settings = _settingsVM.Settings;
 
+                StringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
+
                 PluginManager.LoadPlugins(_settings.PluginSettings);
                 _mainVM = new MainViewModel(_settings);
                 var window = new MainWindow(_settings, _mainVM);

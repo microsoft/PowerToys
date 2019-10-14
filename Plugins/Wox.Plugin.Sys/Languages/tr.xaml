@@ -1,0 +1,32 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <!--Komut Listesi-->
+    <system:String x:Key="wox_plugin_sys_command">Komut</system:String>
+    <system:String x:Key="wox_plugin_sys_desc">Açıklama</system:String>
+
+    <system:String x:Key="wox_plugin_sys_shutdown_computer">Bilgisayarı Kapat</system:String>
+    <system:String x:Key="wox_plugin_sys_restart_computer">Yeniden Başlat</system:String>
+    <system:String x:Key="wox_plugin_sys_log_off">Oturumu Kapat</system:String>
+    <system:String x:Key="wox_plugin_sys_lock">Bilgisayarı Kilitle</system:String>
+    <system:String x:Key="wox_plugin_sys_exit">Wox'u Kapat</system:String>
+    <system:String x:Key="wox_plugin_sys_restart">Wox'u Yeniden Başlat</system:String>
+    <system:String x:Key="wox_plugin_sys_setting">Wox Ayarlarını Aç</system:String>
+    <system:String x:Key="wox_plugin_sys_sleep">Bilgisayarı Uyku Moduna Al</system:String>
+    <system:String x:Key="wox_plugin_sys_emptyrecyclebin">Geri Dönüşüm Kutusunu Boşalt</system:String>
+    <system:String x:Key="wox_plugin_sys_hibernate">Bilgisayarı Askıya Al</system:String>
+    <system:String x:Key="wox_plugin_sys_save_all_settings">Tüm Wox Ayarlarını Kaydet</system:String>
+    <system:String x:Key="wox_plugin_sys_reload_plugin_data">Eklentilerin verilerini Wox'un açılışından sonra yapılan değişiklikleri için günceller. Eklentilerin bu özelliği zaten eklemiş olması gerekir.</system:String>
+
+    <!--Diyaloglar-->
+    <system:String x:Key="wox_plugin_sys_dlgtitle_success">Başarılı</system:String>
+    <system:String x:Key="wox_plugin_sys_dlgtext_all_settings_saved">Tüm Wox ayarları kaydedildi.</system:String>
+    <system:String x:Key="wox_plugin_sys_dlgtext_shutdown_computer">Bilgisayarı kapatmak istediğinize emin misiniz?</system:String>
+    <system:String x:Key="wox_plugin_sys_dlgtext_restart_computer">Bilgisayarı yeniden başlatmak istediğinize emin misiniz?</system:String>
+
+    <!--Eklenti Bilgisi-->
+    <system:String x:Key="wox_plugin_sys_plugin_name">Sistem Komutları</system:String>
+    <system:String x:Key="wox_plugin_sys_plugin_description">Sistem ile ilgili komutlara erişim sağlar. ör. shutdown, lock, settings vb.</system:String>
+
+</ResourceDictionary>

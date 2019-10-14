@@ -83,7 +83,7 @@ namespace Wox.Plugin.WebSearch
 
                 _searchSources.Add(_searchSource);
 
-                var info = _api.GetTranslation("succeed");
+                var info = _api.GetTranslation("success");
                 MessageBox.Show(info);
                 Close();
             }
@@ -106,7 +106,7 @@ namespace Wox.Plugin.WebSearch
                 var index = _searchSources.IndexOf(_oldSearchSource);
                 _searchSources[index] = _searchSource;
 
-                var info = _api.GetTranslation("succeed");
+                var info = _api.GetTranslation("success");
                 MessageBox.Show(info);
                 Close();
             }

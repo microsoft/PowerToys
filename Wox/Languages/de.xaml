@@ -91,7 +91,7 @@
     <system:String x:Key="cannotFindSpecifiedPlugin">Kann das angegebene Plugin nicht finden</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">Neues Aktionsschlüsselwort darf nicht leer sein</system:String>
     <system:String x:Key="newActionKeywordsHasBeenAssigned">Aktionsschlüsselwort ist schon bei einem anderen Plugin in verwendung. Bitte stellen Sie ein anderes Aktionsschlüsselwort ein.</system:String>
-    <system:String x:Key="succeed">Erfolgreich</system:String>
+    <system:String x:Key="success">Erfolgreich</system:String>
     <system:String x:Key="actionkeyword_tips">Benutzen Sie * wenn Sie ein Aktionsschlüsselwort definieren wollen.</system:String>
     
     <!--Custom Query Hotkey Dialog-->

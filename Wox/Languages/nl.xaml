@@ -91,7 +91,7 @@
     <system:String x:Key="cannotFindSpecifiedPlugin">Kan plugin niet vinden</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">Nieuwe actie sneltoets moet ingevuld worden</system:String>
     <system:String x:Key="newActionKeywordsHasBeenAssigned">Nieuwe actie sneltoets is toegewezen aan een andere plugin, wijs een nieuwe actie sneltoets aan</system:String>
-    <system:String x:Key="succeed">Succesvol</system:String>
+    <system:String x:Key="success">Succesvol</system:String>
     <system:String x:Key="actionkeyword_tips">Gebruik * wanneer je geen nieuwe actie sneltoets wilt specificeren</system:String>
 
     <!--Custom Query Hotkey Dialog-->

@@ -77,16 +77,16 @@ namespace Wox.Plugin.ControlPanel
         private int Score(ControlPanelItem item, string query)
         {
             var scores = new List<int> {0};
-            if (string.IsNullOrEmpty(item.LocalizedString))
+            if (!string.IsNullOrEmpty(item.LocalizedString))
             {
-                var score1 = StringMatcher.Score(item.LocalizedString, query);
+                var score1 = StringMatcher.FuzzySearch(query, item.LocalizedString).ScoreAfterSearchPrecisionFilter();
                 var score2 = StringMatcher.ScoreForPinyin(item.LocalizedString, query);
                 scores.Add(score1);
                 scores.Add(score2);
             }
             if (!string.IsNullOrEmpty(item.InfoTip))
             {
-                var score1 = StringMatcher.Score(item.InfoTip, query);
+                var score1 = StringMatcher.FuzzySearch(query, item.InfoTip).ScoreAfterSearchPrecisionFilter();
                 var score2 = StringMatcher.ScoreForPinyin(item.InfoTip, query);
                 scores.Add(score1);
                 scores.Add(score2);

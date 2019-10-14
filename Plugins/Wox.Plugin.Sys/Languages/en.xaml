@@ -2,6 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
 
+    <!--Command List-->
     <system:String x:Key="wox_plugin_sys_command">Command</system:String>
     <system:String x:Key="wox_plugin_sys_desc">Description</system:String>
 
@@ -14,6 +15,16 @@
     <system:String x:Key="wox_plugin_sys_setting">Tweak this app</system:String>
     <system:String x:Key="wox_plugin_sys_sleep">Put computer to sleep</system:String>
     <system:String x:Key="wox_plugin_sys_emptyrecyclebin">Empty recycle bin</system:String>
+    <system:String x:Key="wox_plugin_sys_hibernate">Hibernate computer</system:String>
+    <system:String x:Key="wox_plugin_sys_save_all_settings">Save all Wox settings</system:String>
+    <system:String x:Key="wox_plugin_sys_reload_plugin_data">Reloads plugin data with new content added after Wox started. Plugins need to have this feature already added.</system:String>
+
+    <!--Dialogs-->
+    <system:String x:Key="wox_plugin_sys_dlgtitle_success">Success</system:String>
+    <system:String x:Key="wox_plugin_sys_dlgtext_all_settings_saved">All Wox settings saved</system:String>
+    <system:String x:Key="wox_plugin_sys_dlgtext_all_applicableplugins_reloaded">Reloaded all applicable plugin data</system:String>
+    <system:String x:Key="wox_plugin_sys_dlgtext_shutdown_computer">Are you sure you want to shut the computer down?</system:String>
+    <system:String x:Key="wox_plugin_sys_dlgtext_restart_computer">Are you sure you want to restart the computer?</system:String>
 
     <system:String x:Key="wox_plugin_sys_plugin_name">System Commands</system:String>
     <system:String x:Key="wox_plugin_sys_plugin_description">Provides System related commands. e.g. shutdown, lock, settings etc.</system:String>

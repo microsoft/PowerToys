@@ -1,32 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Wox.Infrastructure;
+using Wox.Plugin.BrowserBookmark.Commands;
 using Wox.Plugin.SharedCommands;
 
 namespace Wox.Plugin.BrowserBookmark
 {
-    public class Main : IPlugin
+    public class Main : IPlugin, IReloadable, IPluginI18n
     {
         private PluginInitContext context;
-
-        // TODO: periodically refresh the Cache?
+        
         private List<Bookmark> cachedBookmarks = new List<Bookmark>(); 
 
         public void Init(PluginInitContext context)
         {
             this.context = context;
 
-            // Cache all bookmarks
-            var chromeBookmarks = new ChromeBookmarks();
-            var mozBookmarks = new FirefoxBookmarks();
-
-            //TODO: Let the user select which browser's bookmarks are displayed
-            // Add Firefox bookmarks
-            cachedBookmarks.AddRange(mozBookmarks.GetBookmarks());
-            // Add Chrome bookmarks
-            cachedBookmarks.AddRange(chromeBookmarks.GetBookmarks());
-
-            cachedBookmarks = cachedBookmarks.Distinct().ToList();
+            cachedBookmarks = Bookmarks.LoadAllBookmarks();
         }
 
         public List<Result> Query(Query query)
@@ -40,16 +29,15 @@ namespace Wox.Plugin.BrowserBookmark
 
             if (!topResults)
             {
-                // Since we mixed chrome and firefox bookmarks, we should order them again
-                var fuzzyMatcher = FuzzyMatcher.Create(param);
-                returnList = cachedBookmarks.Where(o => MatchProgram(o, fuzzyMatcher)).ToList();
+                // Since we mixed chrome and firefox bookmarks, we should order them again                
+                returnList = cachedBookmarks.Where(o => Bookmarks.MatchProgram(o, param)).ToList();
                 returnList = returnList.OrderByDescending(o => o.Score).ToList();
             }
             
             return returnList.Select(c => new Result()
             {
                 Title = c.Name,
-                SubTitle = "Bookmark: " + c.Url,
+                SubTitle = c.Url,
                 IcoPath = @"Images\bookmark.png",
                 Score = 5,
                 Action = (e) =>
@@ -61,13 +49,22 @@ namespace Wox.Plugin.BrowserBookmark
             }).ToList();
         }
 
-        private bool MatchProgram(Bookmark bookmark, FuzzyMatcher matcher)
+        public void ReloadData()
         {
-            if ((bookmark.Score = matcher.Evaluate(bookmark.Name).Score) > 0) return true;
-            if ((bookmark.Score = matcher.Evaluate(bookmark.PinyinName).Score) > 0) return true;
-            if ((bookmark.Score = matcher.Evaluate(bookmark.Url).Score / 10) > 0) return true;
+            cachedBookmarks.Clear();
 
-            return false;
+            cachedBookmarks = Bookmarks.LoadAllBookmarks();
         }
+
+        public string GetTranslatedPluginTitle()
+        {
+            return context.API.GetTranslation("wox_plugin_browserbookmark_plugin_name");
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return context.API.GetTranslation("wox_plugin_browserbookmark_plugin_description");
+        }
+
     }
 }

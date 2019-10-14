@@ -100,7 +100,7 @@
     <system:String x:Key="cannotFindSpecifiedPlugin">Kan ikke finne den angitte utvidelsen</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">Nytt handlingsnøkkelord kan ikke være tomt</system:String>
     <system:String x:Key="newActionKeywordsHasBeenAssigned">De nye handlingsnøkkelordene er tildelt en annen utvidelse, vennligst velg et annet nøkkelord</system:String>
-    <system:String x:Key="succeed">Vellykket</system:String>
+    <system:String x:Key="success">Vellykket</system:String>
     <system:String x:Key="actionkeyword_tips">Bruk * hvis du ikke ønsker å angi et handlingsnøkkelord</system:String>
 
     <!--Custom Query Hotkey Dialog-->

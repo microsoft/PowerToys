@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Wox.Core.Resource;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
@@ -63,6 +61,15 @@ namespace Wox.Core.Plugin
             {
                 var savable = plugin.Plugin as ISavable;
                 savable?.Save();
+            }
+        }
+
+        public static void ReloadData()
+        {
+            foreach(var plugin in AllPlugins)
+            {
+                var reloadablePlugin = plugin.Plugin as IReloadable;
+                reloadablePlugin?.ReloadData();
             }
         }
 

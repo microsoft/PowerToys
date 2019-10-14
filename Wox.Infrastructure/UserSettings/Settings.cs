@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using Newtonsoft.Json;
@@ -21,7 +21,18 @@ namespace Wox.Infrastructure.UserSettings
         public string ResultFontWeight { get; set; }
         public string ResultFontStretch { get; set; }
 
-        public bool AutoUpdates { get; set; } = true;
+        private string _querySearchPrecision { get; set; } = StringMatcher.SearchPrecisionScore.Regular.ToString();
+        public string QuerySearchPrecision
+        {
+            get { return _querySearchPrecision; }
+            set
+            {
+                _querySearchPrecision = value;
+                StringMatcher.UserSettingSearchPrecision = value;
+            }
+        }
+
+        public bool AutoUpdates { get; set; } = false;
 
         public double WindowLeft { get; set; }
         public double WindowTop { get; set; }
@@ -63,7 +74,6 @@ namespace Wox.Infrastructure.UserSettings
 
         [JsonConverter(typeof(StringEnumConverter))]
         public LastQueryMode LastQueryMode { get; set; } = LastQueryMode.Selected;
-
     }
 
     public enum LastQueryMode
