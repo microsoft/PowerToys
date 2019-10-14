@@ -30,6 +30,8 @@ namespace Wox.Plugin.Program
             _settings.ProgramSuffixes = tbSuffixes.Text.Split(Settings.SuffixSeperator);
             string msg = context.API.GetTranslation("wox_plugin_program_update_file_suffixes");
             MessageBox.Show(msg);
+
+            DialogResult = true;
         }
     }
 }
