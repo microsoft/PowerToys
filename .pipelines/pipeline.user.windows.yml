@@ -70,4 +70,12 @@ static_analysis_options:
         exclude:
         - 'WiX.3.11.1/**/*.dll'
         - 'Wix.3.11.1/**/*.exe'
+  moderncop_options:           
+    files_to_scan:
+      - from: 'src'          
+        exclude:                           
+        - '**/just.config.js'
+        - '**/webpack.config.js'
+        - '**/webpack.serve.config.js'
+        - '**/dist/bundle.js' 
         
