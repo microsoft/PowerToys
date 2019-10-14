@@ -16,7 +16,7 @@ void Trace::UnregisterProvider() {
   TraceLoggingUnregister(g_hProvider);
 }
 
-void Trace::EventLaunch(std::wstring versionNumber) {
+void Trace::EventLaunch(const std::wstring& versionNumber) {
   TraceLoggingWrite(
     g_hProvider,
     "Runner::Event::Launch",
