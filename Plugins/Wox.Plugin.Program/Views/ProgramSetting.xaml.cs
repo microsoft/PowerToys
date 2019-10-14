@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -165,18 +165,42 @@ namespace Wox.Plugin.Program.Views
             programSourceView.Items.Refresh();
         }
 
-        private void btnDisableProgramSource_OnClick(object sender, RoutedEventArgs e)
+        private void btnProgramSourceStatus_OnClick(object sender, RoutedEventArgs e)
         {
-            ProgramSettingDisplayList
-                .DisableProgramSources(programSourceView
-                                        .SelectedItems.Cast<ProgramSource>()
-                                        .ToList());
-
-            ProgramSettingDisplayList.StoreDisabledInSettings();
+            if (AggregatedProgramSourceSelectedItemStatus())
+            {
+                DisableProgramSources();
+            }
+            else
+            {
+                EnableProgramSources();
+            }
 
             programSourceView.SelectedItems.Clear();
 
-            programSourceView.Items.Refresh();            
+            programSourceView.Items.Refresh();
+        }
+
+        public void DisableProgramSources()
+        {
+            ProgramSettingDisplayList
+                .SetProgramSourcesStatus(programSourceView
+                                        .SelectedItems.Cast<ProgramSource>()
+                                        .ToList(),
+                                        false);
+
+            ProgramSettingDisplayList.StoreDisabledInSettings();
+        }
+
+        public void EnableProgramSources()
+        {
+            ProgramSettingDisplayList
+                .SetProgramSourcesStatus(programSourceView
+                                        .SelectedItems.Cast<ProgramSource>()
+                                        .ToList(),
+                                        true);
+
+            ProgramSettingDisplayList.RemoveDisabledFromSettings();
         }
 
         private void ProgramSourceView_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
@@ -229,6 +253,27 @@ namespace Wox.Plugin.Program.Views
             SortDescription sd = new SortDescription(sortBy, direction);
             dataView.SortDescriptions.Add(sd);
             dataView.Refresh();
+        }
+
+        private bool AggregatedProgramSourceSelectedItemStatus()
+        {
+            var selectedItems = programSourceView
+                .SelectedItems.Cast<ProgramSource>()
+                .ToList();
+
+            return selectedItems.Where(x => x.Enabled).Count() >= selectedItems.Where(x => !x.Enabled).Count();
+        }
+
+        private void Row_Click(object sender, RoutedEventArgs e)
+        {
+            if (AggregatedProgramSourceSelectedItemStatus())
+            {
+                btnProgramSourceStatus.Content = "Disable";
+            }
+            else
+            {
+                btnProgramSourceStatus.Content = "Enable";
+            }
         }
     }
 }

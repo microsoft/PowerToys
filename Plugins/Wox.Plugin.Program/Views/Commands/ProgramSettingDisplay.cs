@@ -55,22 +55,22 @@ namespace Wox.Plugin.Program.Views.Commands
                                                     );
         }
 
-        internal static void DisableProgramSources(this List<ProgramSource> list, List<ProgramSource> selectedprogramSourcesToDisable)
+        internal static void SetProgramSourcesStatus(this List<ProgramSource> list, List<ProgramSource> selectedProgramSourcesToDisable, bool status)
         {
             ProgramSetting.ProgramSettingDisplayList
-                .Where(t1 => selectedprogramSourcesToDisable.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier && t1.Enabled))
+                .Where(t1 => selectedProgramSourcesToDisable.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier && t1.Enabled != status))
                 .ToList()
-                .ForEach(t1 => t1.Enabled = false);
+                .ForEach(t1 => t1.Enabled = status);
 
             Main._win32s
-                .Where(t1 => selectedprogramSourcesToDisable.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier && t1.Enabled))
+                .Where(t1 => selectedProgramSourcesToDisable.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier && t1.Enabled != status))
                 .ToList()
-                .ForEach(t1 => t1.Enabled = false);
+                .ForEach(t1 => t1.Enabled = status);
 
             Main._uwps
-                .Where(t1 => selectedprogramSourcesToDisable.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier && t1.Enabled))
+                .Where(t1 => selectedProgramSourcesToDisable.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier && t1.Enabled != status))
                 .ToList()
-                .ForEach(t1 => t1.Enabled = false);
+                .ForEach(t1 => t1.Enabled = status);
         }
 
         internal static void StoreDisabledInSettings(this List<ProgramSource> list)
@@ -82,11 +82,11 @@ namespace Wox.Plugin.Program.Views.Commands
 
             ProgramSetting.ProgramSettingDisplayList
                 .Where(t1 => !t1.Enabled
-                                && !Main._settings.ProgramSources.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier && !x.Enabled))
+                                && !Main._settings.DisabledProgramSources.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier))
                 .ToList()
-                .ForEach(x => Main._settings.ProgramSources
+                .ForEach(x => Main._settings.DisabledProgramSources
                                             .Add(
-                                                    new Settings.ProgramSource
+                                                    new Settings.DisabledProgramSource
                                                     {
                                                         Name = x.Name,
                                                         Location = x.Location,
@@ -94,6 +94,19 @@ namespace Wox.Plugin.Program.Views.Commands
                                                         Enabled = false
                                                     }
                                                 ));            
+        }
+
+        internal static void RemoveDisabledFromSettings(this List<ProgramSource> list)
+        {
+            Main._settings.ProgramSources
+               .Where(t1 => ProgramSetting.ProgramSettingDisplayList.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier && x.Enabled))
+               .ToList()
+               .ForEach(t1 => t1.Enabled = true);
+
+            Main._settings.DisabledProgramSources
+                .Where(t1 => ProgramSetting.ProgramSettingDisplayList.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier && x.Enabled))
+                .ToList()
+                .ForEach(x => Main._settings.DisabledProgramSources.Remove(x));
         }
     }
 }
