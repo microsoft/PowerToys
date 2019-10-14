@@ -78,7 +78,7 @@ namespace Wox
                 else
                 {
                     tbMsg.Foreground = new SolidColorBrush(Colors.Green);
-                    tbMsg.Text = InternationalizationManager.Instance.GetTranslation("succeed");
+                    tbMsg.Text = InternationalizationManager.Instance.GetTranslation("success");
                 }
                 tbMsg.Visibility = Visibility.Visible;
                 OnHotkeyChanged();

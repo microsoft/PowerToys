@@ -33,11 +33,11 @@ namespace Wox.Plugin.Program.Programs
 
         private int Score(string query)
         {
-            var score1 = StringMatcher.Score(Name, query);
+            var score1 = StringMatcher.FuzzySearch(query, Name).ScoreAfterSearchPrecisionFilter();
             var score2 = StringMatcher.ScoreForPinyin(Name, query);
-            var score3 = StringMatcher.Score(Description, query);
+            var score3 = StringMatcher.FuzzySearch(query, Description).ScoreAfterSearchPrecisionFilter();
             var score4 = StringMatcher.ScoreForPinyin(Description, query);
-            var score5 = StringMatcher.Score(ExecutableName, query);
+            var score5 = StringMatcher.FuzzySearch(query, ExecutableName).ScoreAfterSearchPrecisionFilter();
             var score = new[] { score1, score2, score3, score4, score5 }.Max();
             return score;
         }

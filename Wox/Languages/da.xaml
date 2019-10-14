@@ -91,7 +91,7 @@
     <system:String x:Key="cannotFindSpecifiedPlugin">Kan ikke finde det valgte plugin</system:String>
     <system:String x:Key="newActionKeywordsCannotBeEmpty">Nyt nøgleord må ikke være tomt</system:String>
     <system:String x:Key="newActionKeywordsHasBeenAssigned">Nyt nøgleord er tilknyttet et andet plugin, tilknyt venligst et andet nyt nøgeleord</system:String>
-    <system:String x:Key="succeed">Fortsæt</system:String>
+    <system:String x:Key="success">Fortsæt</system:String>
     <system:String x:Key="actionkeyword_tips">Brug * hvis du ikke vil angive et nøgleord</system:String>
 
     <!--Custom Query Hotkey Dialog-->

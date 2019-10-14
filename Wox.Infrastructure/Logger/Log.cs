@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using NLog;
@@ -22,8 +22,7 @@ namespace Wox.Infrastructure.Logger
             var configuration = new LoggingConfiguration();
             var target = new FileTarget();
             configuration.AddTarget("file", target);
-            target.FileName = "${specialfolder:folder=ApplicationData}/" + Constant.Wox + "/" + DirectoryName + "/" +
-                              Constant.Version + "/${shortdate}.txt";
+            target.FileName = path.Replace(@"\", "/") + "/${shortdate}.txt";
 #if DEBUG
             var rule = new LoggingRule("*", LogLevel.Debug, target);
 #else

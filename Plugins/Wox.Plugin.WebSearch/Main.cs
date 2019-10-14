@@ -49,10 +49,11 @@ namespace Wox.Plugin.WebSearch
             {
                 foreach (SearchSource searchSource in searchSourceList)
                 {
-                    string keyword = query.Search;
-                    string title = keyword;
-                    string subtitle = _context.API.GetTranslation("wox_plugin_websearch_search") + " " +
-                                      searchSource.Title;
+                    string keyword = string.Empty;
+                    keyword = searchSource.ActionKeyword == SearchSourceGlobalPluginWildCardSign ? query.ToString() : query.Search;
+                    var title = keyword;
+                    string subtitle = _context.API.GetTranslation("wox_plugin_websearch_search") + " " + searchSource.Title;
+
                     if (string.IsNullOrEmpty(keyword))
                     {
                         var result = new Result
@@ -78,7 +79,14 @@ namespace Wox.Plugin.WebSearch
                                 return true;
                             }
                         };
+
                         results.Add(result);
+                        ResultsUpdated?.Invoke(this, new ResultUpdatedEventArgs
+                        {
+                            Results = results,
+                            Query = query
+                        });
+
                         UpdateResultsFromSuggestion(results, keyword, subtitle, searchSource, query);                        
                     }
                 }
