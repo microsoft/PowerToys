@@ -270,6 +270,8 @@ namespace Wox.Plugin.Program.Programs
             sources.Where(s => Directory.Exists(s.Location) && s.Enabled)
                 .SelectMany(s => ProgramPaths(s.Location, suffixes))
                 .ToList()
+                .Where(t1 => !Main._settings.DisabledProgramSources.Any(x => t1 == x.UniqueIdentifier))
+                .ToList()
                 .ForEach(x => listToAdd.Add(x));
 
             var paths = listToAdd.ToArray();
