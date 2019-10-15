@@ -37,7 +37,7 @@ If you have any issues when installing/upgrading the package please go to the [p
 # What's Happening
 
 ## October Update
-A big thanks to everyone who has downloaded and started using the first PowerToys preview.  There's been over 150K downlaods so far.  An even bigger thanks to everyone who has provided feedback and suggestions in the issues.  The community engagement has been really awesome to see.  
+A big thanks to everyone who has downloaded and started using the first PowerToys preview.  There's been over 150K downloads so far.  An even bigger thanks to everyone who has provided feedback and suggestions in the issues.  The community engagement has been really awesome to see.  
 
 The team has been hard at working fixing bugs, addressing issues and implementing feature suggestions.  If you've downloaded the code and built the latest on your machine recently you've seen many of these improvements (dark mode!).  We're hoping to have a new official build out shortly with all these improvements and will also be signed by Microsoft.  A new utilitity is also coming soon: Chris Davis is working to integrate his [SmartRename tool](https://github.com/chrdavis/SmartRename) into PowerToys!
 
