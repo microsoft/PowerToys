@@ -53,6 +53,7 @@ namespace Wox.Plugin.Program
                 var source = new Settings.ProgramSource
                 {
                     Location = Directory.Text,
+                    UniqueIdentifier = Directory.Text
                 };
                 _settings.ProgramSources.Insert(0, source);
             }
