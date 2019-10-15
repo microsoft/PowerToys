@@ -32,7 +32,7 @@ namespace FancyZonesEditor
         public CanvasLayoutModel Model;
         public int ZoneIndex;
 
-        private Point Move(double xDelta, double yDelta)
+        private void Move(double xDelta, double yDelta)
         {
             Int32Rect rect = Model.Zones[ZoneIndex];
             if (xDelta < 0)
@@ -59,7 +59,52 @@ namespace FancyZonesEditor
             Canvas.SetLeft(this, rect.X);
             Canvas.SetTop(this, rect.Y);
             Model.Zones[ZoneIndex] = rect;
-            return new Point(xDelta, yDelta);
+        }
+
+        private void SizeMove(double xDelta, double yDelta)
+        {
+            Int32Rect rect = Model.Zones[ZoneIndex];
+            if (xDelta < 0)
+            {
+                if ((rect.X + xDelta) < _settings.WorkArea.X)
+                {
+                    xDelta = _settings.WorkArea.X - rect.X;
+                }
+            }
+            else if (xDelta > 0)
+            {
+                if ((rect.Width - (int)xDelta) < c_minZoneWidth)
+                {
+                    xDelta = rect.Width - c_minZoneWidth;
+                }
+            }
+
+            if (yDelta < 0)
+            {
+                if ((rect.Y + yDelta) < _settings.WorkArea.Y)
+                {
+                    yDelta = _settings.WorkArea.Y - rect.Y;
+                }
+            }
+            else if (yDelta > 0)
+            {
+                if ((rect.Height - (int)yDelta) < c_minZoneHeight)
+                {
+                    yDelta = rect.Height - c_minZoneHeight;
+                }
+            }
+
+            rect.X += (int)xDelta;
+            rect.Width -= (int)xDelta;
+            MinWidth = rect.Width;
+
+            rect.Y += (int)yDelta;
+            rect.Height -= (int)yDelta;
+            MinHeight = rect.Height;
+
+            Canvas.SetLeft(this, rect.X);
+            Canvas.SetTop(this, rect.Y);
+            Model.Zones[ZoneIndex] = rect;
         }
 
         private void Size(double xDelta, double yDelta)
@@ -69,9 +114,9 @@ namespace FancyZonesEditor
             {
                 int newWidth = rect.Width + (int) xDelta;
 
-                if (newWidth < c_minZoneSize)
+                if (newWidth < c_minZoneWidth)
                 {
-                    newWidth = c_minZoneSize;
+                    newWidth = c_minZoneWidth;
                 }
                 else if (newWidth > (_settings.WorkArea.Width - rect.X))
                 {
@@ -84,9 +129,9 @@ namespace FancyZonesEditor
             {
                 int newHeight = rect.Height + (int)yDelta;
 
-                if (newHeight < c_minZoneSize)
+                if (newHeight < c_minZoneHeight)
                 {
-                    newHeight = c_minZoneSize;
+                    newHeight = c_minZoneHeight;
                 }
                 else if (newHeight > (_settings.WorkArea.Height - rect.Y))
                 {
@@ -98,7 +143,8 @@ namespace FancyZonesEditor
         }
 
         private static int c_zIndex = 0;
-        private static int c_minZoneSize = 48;
+        private static int c_minZoneWidth = 64;
+        private static int c_minZoneHeight = 72;
 
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
@@ -107,20 +153,19 @@ namespace FancyZonesEditor
         }
         private void NWResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
-            Point actualChange = Move(e.HorizontalChange, e.VerticalChange);
-            Size(-actualChange.X, -actualChange.Y);
+            SizeMove(e.HorizontalChange, e.VerticalChange);
         }
 
         private void NEResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
-            Point actualChange = Move(0, e.VerticalChange);
-            Size(e.HorizontalChange, -actualChange.Y);
+            SizeMove(0, e.VerticalChange);
+            Size(e.HorizontalChange, 0);
         }
 
         private void SWResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
-            Point actualChange = Move(e.HorizontalChange, 0);
-            Size(-actualChange.X, e.VerticalChange);
+            SizeMove(e.HorizontalChange, 0);
+            Size(0, e.VerticalChange);
         }
 
         private void SEResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
@@ -130,8 +175,7 @@ namespace FancyZonesEditor
 
         private void NResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
-            Point actualChange = Move(0, e.VerticalChange);
-            Size(0, -actualChange.Y);
+            SizeMove(0, e.VerticalChange);
         }
 
         private void SResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
@@ -141,8 +185,7 @@ namespace FancyZonesEditor
 
         private void WResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
-            Point actualChange = Move(e.HorizontalChange, 0);
-            Size(-actualChange.X, 0);
+            SizeMove(e.HorizontalChange, 0);
         }
 
         private void EResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
