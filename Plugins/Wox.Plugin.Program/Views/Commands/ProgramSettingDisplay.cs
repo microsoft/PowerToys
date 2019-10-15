@@ -14,14 +14,29 @@ namespace Wox.Plugin.Program.Views.Commands
             var list = new List<ProgramSource>();
 
             programSources.ForEach(x => list
-                                            .Add(
-                                                    new ProgramSource {
-                                                                        Enabled = x.Enabled,
-                                                                        Location = x.Location,
-                                                                        Name = x.Name,
-                                                                        UniqueIdentifier = x.UniqueIdentifier
-                                                    }
-                                                ));
+                                        .Add(
+                                                new ProgramSource
+                                                {
+                                                    Enabled = x.Enabled,
+                                                    Location = x.Location,
+                                                    Name = x.Name,
+                                                    UniqueIdentifier = x.UniqueIdentifier
+                                                }
+                                        ));
+
+            // Even though these are disabled, we still want to display them so users can enable later on
+            Main._settings
+                .DisabledProgramSources
+                .ForEach(x => list
+                              .Add(
+                                    new ProgramSource
+                                    {
+                                        Enabled = x.Enabled,
+                                        Location = x.Location,
+                                        Name = x.Name,
+                                        UniqueIdentifier = x.UniqueIdentifier
+                                    }
+                              ));
 
             return list;
         }
@@ -32,27 +47,29 @@ namespace Wox.Plugin.Program.Views.Commands
                 .Where(t1 => !ProgramSetting.ProgramSettingDisplayList.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier))
                 .ToList()
                 .ForEach(t1 => ProgramSetting.ProgramSettingDisplayList
-                                                .Add(
-                                                        new ProgramSource {
-                                                                            Name = t1.Name,
-                                                                            Location = t1.ParentDirectory,
-                                                                            UniqueIdentifier = t1.UniqueIdentifier,
-                                                                            Enabled = t1.Enabled
-                                                        }
-                                                    ));
+                                             .Add(
+                                                    new ProgramSource
+                                                    {
+                                                        Name = t1.Name,
+                                                        Location = t1.ParentDirectory,
+                                                        UniqueIdentifier = t1.UniqueIdentifier,
+                                                        Enabled = t1.Enabled
+                                                    }
+                                             ));
 
             Main._uwps
                 .Where(t1 => !ProgramSetting.ProgramSettingDisplayList.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier))
                 .ToList()
                 .ForEach(t1 => ProgramSetting.ProgramSettingDisplayList
-                                                .Add(
-                                                        new ProgramSource {
-                                                                            Name = t1.DisplayName,
-                                                                            Location = t1.Package.Location,
-                                                                            UniqueIdentifier = t1.UniqueIdentifier,
-                                                                            Enabled = t1.Enabled
-                                                        })
-                                                    );
+                                             .Add(
+                                                     new ProgramSource
+                                                     {
+                                                         Name = t1.DisplayName,
+                                                         Location = t1.Package.Location,
+                                                         UniqueIdentifier = t1.UniqueIdentifier,
+                                                         Enabled = t1.Enabled
+                                                     }
+                                              ));
         }
 
         internal static void SetProgramSourcesStatus(this List<ProgramSource> list, List<ProgramSource> selectedProgramSourcesToDisable, bool status)
