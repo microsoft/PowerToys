@@ -285,7 +285,7 @@ namespace Wox.Plugin.Program.Programs
 
         private static ParallelQuery<Win32> StartMenuPrograms(string[] suffixes)
         {
-            var disabledProgramsList = Main._settings.ProgramSources.Where(x => !x.Enabled).Select(x => x);
+            var disabledProgramsList = Main._settings.DisabledProgramSources;
 
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
             var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
@@ -294,7 +294,7 @@ namespace Wox.Plugin.Program.Programs
 
             var toFilter = paths1.Concat(paths2);
             var paths = toFilter
-                        .Where(t1 => !disabledProgramsList.Any(x => !x.Enabled && x.UniqueIdentifier == t1))
+                        .Where(t1 => !disabledProgramsList.Any(x => x.UniqueIdentifier == t1))
                         .Select(t1 => t1)
                         .ToArray();
 
@@ -325,10 +325,10 @@ namespace Wox.Plugin.Program.Programs
                 }
             }
 
-            var disabledProgramsList = Main._settings.ProgramSources.Where(x => !x.Enabled).Select(x => x);
+            var disabledProgramsList = Main._settings.DisabledProgramSources;
             var toFilter = programs.AsParallel().Where(p => suffixes.Contains(Extension(p.ExecutableName)));
 
-            var filtered = toFilter.Where(t1 => !disabledProgramsList.Any(x => !x.Enabled && x.UniqueIdentifier == t1.UniqueIdentifier)).Select(t1 => t1);
+            var filtered = toFilter.Where(t1 => !disabledProgramsList.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier)).Select(t1 => t1);
 
             return filtered;
         }
