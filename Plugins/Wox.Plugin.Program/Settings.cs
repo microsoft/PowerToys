@@ -33,14 +33,6 @@ namespace Wox.Plugin.Program
             public string UniqueIdentifier { get; set; }
         }
 
-        public class DisabledProgramSource
-        {
-            private string name;
-
-            public string Location { get; set; }
-            public string Name { get => name ?? new DirectoryInfo(Location).Name; set => name = value; }
-            public bool Enabled { get; set; } = true;
-            public string UniqueIdentifier { get; set; }
-        }
+        public class DisabledProgramSource : ProgramSource { }
     }
 }
