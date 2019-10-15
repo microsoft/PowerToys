@@ -294,6 +294,7 @@ IFACEMETHODIMP_(void) ZoneWindow::MoveWindowIntoZoneByDirection(HWND window, DWO
     if (m_activeZoneSet)
     {
         m_activeZoneSet->MoveWindowIntoZoneByDirection(window, m_window.get(), vkCode);
+        SaveWindowProcessToZoneIndex(window);
     }
 }
 
