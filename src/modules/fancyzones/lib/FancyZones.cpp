@@ -167,6 +167,10 @@ IFACEMETHODIMP_(void) FancyZones::VirtualDesktopChanged() noexcept
 // IFancyZonesCallback
 IFACEMETHODIMP_(void) FancyZones::WindowCreated(HWND window) noexcept
 {
+    // Ignore hidden windows
+    if (!IsWindowVisible(window)) {
+        return;
+    }
     if (m_settings->GetSettings().appLastZone_moveWindows)
     {
         auto processPath = get_process_path(window);
