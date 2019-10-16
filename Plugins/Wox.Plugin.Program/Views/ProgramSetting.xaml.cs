@@ -68,8 +68,12 @@ namespace Wox.Plugin.Program.Views
 
         private void DeleteProgramSources(List<ProgramSource> itemsToDelete)
         {
-            itemsToDelete.ForEach(x => _settings.ProgramSources.Remove(x));
+            itemsToDelete.ForEach(t1 => _settings.ProgramSources
+                                                    .Remove(_settings.ProgramSources
+                                                                        .Where(x => x.UniqueIdentifier == t1.UniqueIdentifier)
+                                                                        .FirstOrDefault()));
             itemsToDelete.ForEach(x => ProgramSettingDisplayList.Remove(x));
+
             ReIndexing();
         }
 
