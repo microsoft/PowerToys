@@ -21,7 +21,6 @@
     <system:String x:Key="wox_plugin_program_max_search_depth">Maksymalna głębokość wyszukiwania (-1 to nieograniczona):</system:String>
 
     <system:String x:Key="wox_plugin_program_pls_select_program_source">Musisz wybrać katalog programu</system:String>
-    <system:String x:Key="wox_plugin_program_delete_program_source">Czy jesteś pewien że chcesz usunąć {0}?</system:String>
 
     <system:String x:Key="wox_plugin_program_update">Aktualizuj</system:String>
     <system:String x:Key="wox_plugin_program_only_index_tip">Wox będzie indeksował tylko te pliki z podanymi rozszerzeniami:</system:String>

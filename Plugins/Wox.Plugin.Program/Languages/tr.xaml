@@ -21,7 +21,6 @@
     <system:String x:Key="wox_plugin_program_max_search_depth">Maksimum Arama Derinliği (Limitsiz için -1):</system:String>
 
     <system:String x:Key="wox_plugin_program_pls_select_program_source">İşlem yapmak istediğiniz klasörü seçin.</system:String>
-    <system:String x:Key="wox_plugin_program_delete_program_source">{0} klasörünü silmek istediğinize emin misiniz?</system:String>
 
     <system:String x:Key="wox_plugin_program_update">Güncelle</system:String>
     <system:String x:Key="wox_plugin_program_only_index_tip">Wox yalnızca aşağıdaki uzantılara sahip dosyaları indeksleyecektir:</system:String>

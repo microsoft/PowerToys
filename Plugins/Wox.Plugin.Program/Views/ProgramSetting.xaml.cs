@@ -64,24 +64,12 @@ namespace Wox.Plugin.Program.Views
             programSourceView.Items.Refresh();
         }
 
-        private void btnDeleteProgramSource_OnClick(object sender, RoutedEventArgs e)
+        private void DeleteProgramSources(List<ProgramSource> itemsToDelete)
         {
-            var selectedProgramSource = programSourceView.SelectedItem as Settings.ProgramSource;
-            if (selectedProgramSource != null)
-            {
-                string msg = string.Format(context.API.GetTranslation("wox_plugin_program_delete_program_source"), selectedProgramSource.Location);
-
-                if (MessageBox.Show(msg, string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                {
-                    _settings.ProgramSources.Remove(selectedProgramSource);
-                    ReIndexing();
-                }
-            }
-            else
-            {
-                string msg = context.API.GetTranslation("wox_plugin_program_pls_select_program_source");
-                MessageBox.Show(msg);
-            }
+            itemsToDelete.ForEach(x => _settings.ProgramSources.Remove(x));
+            itemsToDelete.ForEach(x => ProgramSettingDisplayList.Remove(x));
+            ReIndexing();
+            
         }
 
         private void btnEditProgramSource_OnClick(object sender, RoutedEventArgs e)
@@ -171,7 +159,29 @@ namespace Wox.Plugin.Program.Views
                                 .SelectedItems.Cast<ProgramSource>()
                                 .ToList();
 
-            if (IsSelectedRowStatusEnabledMoreOrEqualThanDisabled())
+            if (selectedItems.Count() == 0)
+            {
+                string msg = context.API.GetTranslation("wox_plugin_program_pls_select_program_source");
+                MessageBox.Show(msg);
+                return;
+            }
+
+            if (selectedItems
+                .Where(t1 => !_settings
+                                .ProgramSources
+                                .Any(x => t1.UniqueIdentifier == x.UniqueIdentifier))
+                .Count() == 0)
+            {
+                var msg = string.Format(context.API.GetTranslation("wox_plugin_program_delete_program_source"));
+
+                if (MessageBox.Show(msg, string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.No)
+                {
+                    return;
+                }
+
+                DeleteProgramSources(selectedItems);
+            }
+            else if (IsSelectedRowStatusEnabledMoreOrEqualThanDisabled(selectedItems))
             {
                 ProgramSettingDisplayList.SetProgramSourcesStatus(selectedItems, false);
 
@@ -243,18 +253,28 @@ namespace Wox.Plugin.Program.Views
             dataView.Refresh();
         }
 
-        private bool IsSelectedRowStatusEnabledMoreOrEqualThanDisabled()
+        private bool IsSelectedRowStatusEnabledMoreOrEqualThanDisabled(List<ProgramSource> selectedItems)
+        {
+            return selectedItems.Where(x => x.Enabled).Count() >= selectedItems.Where(x => !x.Enabled).Count();
+        }
+
+        private void Row_OnClick(object sender, RoutedEventArgs e)
         {
             var selectedItems = programSourceView
                 .SelectedItems.Cast<ProgramSource>()
                 .ToList();
 
-            return selectedItems.Where(x => x.Enabled).Count() >= selectedItems.Where(x => !x.Enabled).Count();
-        }
+            if (selectedItems
+                .Where(t1 => !_settings
+                                .ProgramSources
+                                .Any(x => t1.UniqueIdentifier == x.UniqueIdentifier))
+                .Count() == 0)
+            {
+                btnProgramSourceStatus.Content = context.API.GetTranslation("wox_plugin_program_delete");
+                return;
+            }
 
-        private void Row_Click(object sender, RoutedEventArgs e)
-        {
-            if (IsSelectedRowStatusEnabledMoreOrEqualThanDisabled())
+            if (IsSelectedRowStatusEnabledMoreOrEqualThanDisabled(selectedItems))
             {
                 btnProgramSourceStatus.Content = "Disable";
             }

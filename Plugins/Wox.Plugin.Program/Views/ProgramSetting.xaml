@@ -28,7 +28,7 @@
             Drop="programSourceView_Drop" >
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
-                    <EventSetter Event="PreviewMouseUp" Handler="Row_Click"/>
+                    <EventSetter Event="PreviewMouseUp" Handler="Row_OnClick"/>
                 </Style>
             </ListView.ItemContainerStyle>
             <ListView.View>
@@ -63,7 +63,6 @@
                 <TextBlock Margin="10 0 0 0" Height="20" HorizontalAlignment="Center" Text="{DynamicResource wox_plugin_program_indexing}" />
             </StackPanel>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                <Button x:Name="btnDeleteProgramSource" Click="btnDeleteProgramSource_OnClick" Width="100" Margin="10" Content="{DynamicResource wox_plugin_program_delete}"/>
                 <Button x:Name="btnEditProgramSource" Click="btnEditProgramSource_OnClick" Width="100" Margin="10" Content="{DynamicResource wox_plugin_program_edit}"/>
                 <Button x:Name="btnAddProgramSource" Click="btnAddProgramSource_OnClick" Width="100" Margin="10" Content="{DynamicResource wox_plugin_program_add}"/>
             </StackPanel>

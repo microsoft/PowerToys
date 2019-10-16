@@ -21,7 +21,7 @@
     <system:String x:Key="wox_plugin_program_max_search_depth">Maximum Search Depth (-1 is unlimited):</system:String>
 
     <system:String x:Key="wox_plugin_program_pls_select_program_source">Please select a program source</system:String>
-    <system:String x:Key="wox_plugin_program_delete_program_source">Are you sure you want to delete {0}?</system:String>
+    <system:String x:Key="wox_plugin_program_delete_program_source">Are you sure you want to delete the selected program sources?</system:String>
 
     <system:String x:Key="wox_plugin_program_update">Update</system:String>
     <system:String x:Key="wox_plugin_program_only_index_tip">Wox will only index files that end with the following suffixes:</system:String>

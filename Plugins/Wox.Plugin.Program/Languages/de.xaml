@@ -21,7 +21,6 @@
     <system:String x:Key="wox_plugin_program_max_search_depth">Maximale Suchtiefe (-1 ist unlimitiert):</system:String>
 
     <system:String x:Key="wox_plugin_program_pls_select_program_source">Bitte wähle eine Programmquelle</system:String>
-    <system:String x:Key="wox_plugin_program_delete_program_source">Willst du wirklich {0} löschen?</system:String>
 
     <system:String x:Key="wox_plugin_program_update">Aktualisieren</system:String>
     <system:String x:Key="wox_plugin_program_only_index_tip">Wox indexiert nur Datien mit folgenden Endungen:</system:String>
