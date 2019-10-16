@@ -23,6 +23,8 @@ namespace Wox.Plugin.Program.Views
         private GridViewColumnHeader _lastHeaderClicked;
         private ListSortDirection _lastDirection;
 
+        // We do not save all program sources to settings, so using
+        // this as temporary holder for displaying all loaded programs sources. 
         internal static List<ProgramSource> ProgramSettingDisplayList { get; set; }
 
         public ProgramSetting(PluginInitContext context, Settings settings, Win32[] win32s, UWP.Application[] uwps)
@@ -69,7 +71,6 @@ namespace Wox.Plugin.Program.Views
             itemsToDelete.ForEach(x => _settings.ProgramSources.Remove(x));
             itemsToDelete.ForEach(x => ProgramSettingDisplayList.Remove(x));
             ReIndexing();
-            
         }
 
         private void btnEditProgramSource_OnClick(object sender, RoutedEventArgs e)

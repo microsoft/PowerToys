@@ -20,7 +20,6 @@
             <Button Height="30" HorizontalAlignment="Right" Margin="0,10" x:Name="btnProgramSuffixes" Width="100" Click="BtnProgramSuffixes_OnClick" Content="{DynamicResource wox_plugin_program_suffixes}" />
             <Button Height="30" HorizontalAlignment="Right" Margin="10 0 0 0" x:Name="btnReindex" Width="100" Click="btnReindex_Click" Content="{DynamicResource wox_plugin_program_reindex}" />
             <Button Height="30" HorizontalAlignment="Right" Margin="10 0 0 0" x:Name="btnLoadAllProgramSource" Click="btnLoadAllProgramSource_OnClick" Width="100"  Content="All Programs" />
-            <Button Height="30" HorizontalAlignment="Right" Margin="10 0 0 0" x:Name="btnProgramSourceStatus" Click="btnProgramSourceStatus_OnClick" Width="100" Content="Disable" />
         </StackPanel>
         <ListView x:Name="programSourceView" Grid.Row="1" AllowDrop="True" SelectionMode="Extended" GridViewColumnHeader.Click="GridViewColumnHeaderClickedHandler"
             PreviewMouseRightButtonUp="ProgramSourceView_PreviewMouseRightButtonUp"
@@ -63,6 +62,7 @@
                 <TextBlock Margin="10 0 0 0" Height="20" HorizontalAlignment="Center" Text="{DynamicResource wox_plugin_program_indexing}" />
             </StackPanel>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                <Button x:Name="btnProgramSourceStatus" Click="btnProgramSourceStatus_OnClick" Width="100" Margin="10" Content="Disable" />
                 <Button x:Name="btnEditProgramSource" Click="btnEditProgramSource_OnClick" Width="100" Margin="10" Content="{DynamicResource wox_plugin_program_edit}"/>
                 <Button x:Name="btnAddProgramSource" Click="btnAddProgramSource_OnClick" Width="100" Margin="10" Content="{DynamicResource wox_plugin_program_add}"/>
             </StackPanel>
