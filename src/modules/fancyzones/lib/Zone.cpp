@@ -1,6 +1,5 @@
 #include "pch.h"
 
-
 struct Zone : winrt::implements<Zone, IZone>
 {
 public:
@@ -74,6 +73,12 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
 
     // Map to screen coords
     MapWindowRect(zoneWindow, nullptr, &zoneRect);
+
+    MONITORINFO mi{sizeof(mi)};
+    if (GetMonitorInfoW(MonitorFromWindow(zoneWindow, MONITOR_DEFAULTTONEAREST), &mi))
+    {
+        OffsetRect(&zoneRect, mi.rcMonitor.left - mi.rcWork.left, mi.rcMonitor.top - mi.rcWork.top);
+    }
 
     WINDOWPLACEMENT placement;
     ::GetWindowPlacement(window, &placement);
