@@ -116,21 +116,33 @@ namespace Wox.Plugin.Program.Views
 
         private void programSourceView_Drop(object sender, DragEventArgs e)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            var directories = (string[])e.Data.GetData(DataFormats.FileDrop);
 
-            if (files != null && files.Length > 0)
+            var directoriesToAdd = new List<ProgramSource>();
+
+            if (directories != null && directories.Length > 0)
             {
-                foreach (string s in files)
+                foreach (string directory in directories)
                 {
-                    if (Directory.Exists(s))
+                    if (Directory.Exists(directory) && !ProgramSettingDisplayList.Any(x => x.UniqueIdentifier == directory))
                     {
-                        _settings.ProgramSources.Add(new Settings.ProgramSource
+                        var source = new ProgramSource
                         {
-                            Location = s
-                        });
+                            Location = directory,
+                            UniqueIdentifier = directory
+                        };
 
-                        ReIndexing();
+                        directoriesToAdd.Add(source);                        
                     }
+                }
+
+                if (directoriesToAdd.Count() > 0)
+                {
+                    directoriesToAdd.ForEach(x => _settings.ProgramSources.Add(x));
+                    directoriesToAdd.ForEach(x => ProgramSettingDisplayList.Add(x));                   
+
+                    programSourceView.Items.Refresh();
+                    ReIndexing();
                 }
             }
         }
