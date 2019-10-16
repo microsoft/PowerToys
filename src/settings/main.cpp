@@ -53,6 +53,9 @@ TwoWayPipeMessageIPC* g_message_pipe = nullptr;
 // Set to true if waiting for webview confirmation before closing the Window.
 bool g_waiting_for_close_confirmation = false;
 
+// Is the setting window to be started in dark mode
+bool g_start_in_dark_mode = false;
+
 #ifdef _DEBUG
 void NavigateToLocalhostReactServer() {
   // Useful for connecting to instance running in react development server.
@@ -203,7 +206,7 @@ void receive_message_from_webview(const std::wstring& msg) {
   }
 }
 
-void initialize_webview() {
+void initialize_webview(int nShowCmd) {
   try {
     g_webview_process = WebViewControlProcess();
     auto asyncwebview = g_webview_process.CreateWebViewControlAsync((int64_t)g_main_wnd, client_rect_to_bounds_rect(g_main_wnd));
@@ -222,29 +225,29 @@ void initialize_webview() {
           // Open the requested link in the default browser registered in the Shell
           int res = static_cast<int>(reinterpret_cast<uintptr_t>(ShellExecute(nullptr, L"open", args.Uri().AbsoluteUri().c_str(), nullptr, nullptr, SW_SHOWNORMAL)));
           WINRT_VERIFY(res > 32);
-          });
+        });
 
-        g_webview.DOMContentLoaded([=](IWebViewControl sender_loaded, WebViewControlDOMContentLoadedEventArgs const& args_loaded) {
-          // runs when the content has been loaded.
-          });
+        g_webview.ContentLoading([=](IWebViewControl sender, WebViewControlContentLoadingEventArgs const& args) {
+          ShowWindow(g_main_wnd, nShowCmd);
+        });
         g_webview.ScriptNotify([=](IWebViewControl sender_script_notify, WebViewControlScriptNotifyEventArgs const& args_script_notify) {
           // content called window.external.notify()
           std::wstring message_sent = args_script_notify.Value().c_str();
           receive_message_from_webview(message_sent);
-          });
+        });
         g_webview.AcceleratorKeyPressed([&](IWebViewControl sender, WebViewControlAcceleratorKeyPressedEventArgs const& args) {
           if (args.VirtualKey() == winrt::Windows::System::VirtualKey::F4) {
             // WebView swallows key-events. Detect Alt-F4 one and close the window manually.
             const auto _ = g_webview.InvokeScriptAsync(hstring(L"exit_settings_app"), {});
           }
-          });
+        });
         resize_web_view();
 #if defined(_DEBUG) && _DEBUG_WITH_LOCALHOST
         // Navigates to localhost:8080
         NavigateToLocalhostReactServer();
 #else
-        // Navigates to settings-html/index.html.
-        NavigateToUri(L"index.html");
+        // Navigates to settings-html/index.html or index-dark.html
+        NavigateToUri(g_start_in_dark_mode ? L"index-dark.html" : L"index.html");
 #endif
       } else if (status == AsyncStatus::Error) {
         MessageBox(NULL, L"Failed to create the WebView control.\nPlease report the bug to https://github.com/microsoft/PowerToys/issues", L"PowerToys Settings Error", MB_OK);
@@ -254,7 +257,7 @@ void initialize_webview() {
       } else if (status == AsyncStatus::Canceled) {
         // Ignore.
       }
-      });
+    });
   } catch (hresult_error const& e) {
     WCHAR message[1024] = L"";
     StringCchPrintf(message, ARRAYSIZE(message), L"failed: %ls", e.message().c_str());
@@ -343,7 +346,7 @@ void register_classes(HINSTANCE hInstance) {
   wcex.hInstance = hInstance;
   wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(APPICON));
   wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-  wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+  wcex.hbrBackground = g_start_in_dark_mode ? CreateSolidBrush(0) : (HBRUSH)(COLOR_WINDOW + 1);
   wcex.lpszMenuName = nullptr;
   wcex.lpszClassName = L"PTSettingsClass";
   wcex.hIconSm = nullptr;
@@ -395,12 +398,15 @@ void quit_when_parent_terminates(std::wstring parent_pid) {
   std::thread(wait_on_parent_process_thread, pid).detach();
 }
 
-void initialize_message_pipe() {
+// Parse arguments: initialize two-way IPC message pipe and if settings window is to be started
+// in dark mode.
+void parse_args() {
   // Expected calling arguments:
   // [0] - This executable's path.
   // [1] - PowerToys pipe server.
   // [2] - Settings pipe server.
   // [3] - PowerToys process pid.
+  // [4] - optional "dark" parameter if the settings window is to be started in dark mode
   LPWSTR *argument_list;
   int n_args;
 
@@ -414,6 +420,9 @@ void initialize_message_pipe() {
     MessageBox(nullptr, L"This executable isn't supposed to be called as a stand-alone process", L"Error running settings", MB_OK);
     exit(1);
 #endif
+  }
+  if (n_args > 4) {
+    g_start_in_dark_mode = wcscmp(argument_list[4], L"dark") == 0;
   }
   LocalFree(argument_list);
 }
@@ -429,15 +438,14 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
   }
 
   g_hinst = hInstance;
-  initialize_message_pipe();
+  parse_args();
   register_classes(hInstance);
   g_main_wnd = create_main_window(hInstance);
   if (g_main_wnd == nullptr) {
     MessageBox(NULL, L"Failed to create main window.\nPlease report the bug to https://github.com/microsoft/PowerToys/issues", L"PowerToys Settings Error", MB_OK);
     exit(1);
   }
-  initialize_webview();
-  ShowWindow(g_main_wnd, nShowCmd);
+  initialize_webview(nShowCmd);
 
   // Main message loop.
   MSG msg;

@@ -3,11 +3,23 @@
 #include "auto_start_helper.h"
 #include <common/settings_helpers.h>
 #include "powertoy_module.h"
+#include <common/windows_colors.h>
 
 using namespace web;
 
+static std::wstring settings_theme;
+
 web::json::value load_general_settings() {
-  return PTSettingsHelper::load_general_settings();
+  auto loaded = PTSettingsHelper::load_general_settings();
+  if (loaded.has_string_field(L"theme")) {
+    settings_theme = loaded.as_object()[L"theme"].as_string();
+    if (settings_theme != L"dark" && settings_theme != L"light") {
+      settings_theme = L"system";
+    }
+  } else {
+    settings_theme = L"system";
+  }
+  return loaded;
 }
 
 web::json::value get_general_settings() {
@@ -20,6 +32,9 @@ web::json::value get_general_settings() {
     enabled.as_object()[name] = json::value::boolean(powertoy.is_enabled());
   }
   result.as_object()[L"enabled"] = enabled;
+
+  result.as_object()[L"theme"] = json::value::string(settings_theme);
+  result.as_object()[L"system_theme"] = json::value::string(WindowsColors::is_dark_mode() ? L"dark" : L"light");
   return result;
 }
 
@@ -51,6 +66,9 @@ void apply_general_settings(const json::value& general_configs) {
         }
       }
     }
+  }
+  if (general_configs.has_string_field(L"theme")) {
+    settings_theme = general_configs.at(L"theme").as_string();
   }
   json::value save_settings = get_general_settings();
   PTSettingsHelper::save_general_settings(save_settings);

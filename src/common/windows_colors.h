@@ -16,7 +16,7 @@ struct WindowsColors {
   static Color get_accent_dark_1_color();
   static Color get_accent_color();
   static Color get_background_color();
-  
+  static bool is_dark_mode();
   // Update colors - returns true if the values where changed
   bool update();
 
