@@ -204,7 +204,7 @@ private:
     {
         auto style = GetWindowLongPtr(window, GWL_STYLE);
         auto exStyle = GetWindowLongPtr(window, GWL_EXSTYLE);
-        return WI_IsFlagSet(style, WS_MAXIMIZEBOX) && WI_IsFlagClear(style, WS_CHILD) && WI_IsFlagClear(exStyle, WS_EX_TOOLWINDOW);
+        return IsWindowVisible(window) && WI_IsFlagSet(style, WS_MAXIMIZEBOX) && WI_IsFlagClear(style, WS_CHILD) && WI_IsFlagClear(exStyle, WS_EX_TOOLWINDOW);
     }
 
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;
