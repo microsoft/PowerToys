@@ -67,6 +67,7 @@ private:
   D2DText text;
   WindowsColors colors;
   Animation animation;
+  double anim_time;
   RECT window_rect = {};
   Tasklist tasklist;
   std::vector<TasklistButton> tasklist_buttons;
@@ -87,4 +88,5 @@ private:
     Light, Dark, System
   } theme_setting = System;
   bool light_mode = true;
+  bool hiding = false;
 };
