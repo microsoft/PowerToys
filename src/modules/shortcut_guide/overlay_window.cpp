@@ -504,20 +504,20 @@ void D2DOverlayWindow::hide_thumbnail() {
 }
 
 void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc) {
-	if (!winkey_held() || is_start_visible()) {
-		auto current_anim_value = animation.value(Animation::AnimFunctions::LINEAR);
-		if (!hiding) { // when user is done viewing the overlay
-			animation.reset(anim_time * current_anim_value);
-			hiding = true;
-		}
-		else if (current_anim_value == 1.0) { // animation to hide overlay has finished
-			hide();
-			instance->was_hidden();
-			animation.reset(anim_time);
-			hiding = false;
-			return;
-		}
-	}
+  if (!winkey_held() || is_start_visible()) {
+	  auto current_anim_value = animation.value(Animation::AnimFunctions::LINEAR);
+	  if (!hiding) { // when user is done viewing the overlay
+		  animation.reset(anim_time * current_anim_value);
+		  hiding = true;
+	  }
+	  else if (current_anim_value == 1.0) { // animation to hide overlay has finished
+		  hide();
+		  instance->was_hidden();
+		  animation.reset(anim_time);
+		  hiding = false;
+		  return;
+	  }
+  }
   d2d_dc->Clear();
   int x_offset = 0, y_offset = 0, dimention = 0;
   int alpha;
@@ -531,7 +531,6 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc) {
 	  pos_anim_value = 1 - animation.value(Animation::AnimFunctions::EASE_OUT_EXPO);
   }
   SetLayeredWindowAttributes(hwnd, 0, alpha, LWA_ALPHA);
-
 
   if (!tasklist_buttons.empty()) {
     if (tasklist_buttons[0].x <= window_rect.left) { // taskbar on left
