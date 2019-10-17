@@ -22,12 +22,15 @@
     "stack:upgrade": "just-scripts upgrade-stack"
   },
   "reactSnap": {
-    "include": ["/index.html", "/index-dark.html"]
+    "include": [
+      "/index.html",
+      "/index-dark.html"
+    ]
   },
   "dependencies": {
-    "@svgr/webpack": "^4.3.2",
-    "@uifabric/azure-themes": "^7.0.8",
-    "office-ui-fabric-react": "^7.4.3",
+    "@svgr/webpack": "^4.3.3",
+    "@uifabric/azure-themes": "^7.0.9",
+    "office-ui-fabric-react": "^7.51.0",
     "react": "~16.8.0",
     "react-dom": "~16.8.0"
   },
