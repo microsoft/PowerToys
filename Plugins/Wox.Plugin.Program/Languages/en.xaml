@@ -6,7 +6,9 @@
     <system:String x:Key="wox_plugin_program_delete">Delete</system:String>
     <system:String x:Key="wox_plugin_program_edit">Edit</system:String>
     <system:String x:Key="wox_plugin_program_add">Add</system:String>
+    <system:String x:Key="wox_plugin_program_disable">Disable</system:String>
     <system:String x:Key="wox_plugin_program_location">Location</system:String>
+    <system:String x:Key="wox_plugin_program_all_programs">All Programs</system:String>
     <system:String x:Key="wox_plugin_program_suffixes">File Suffixes</system:String>
     <system:String x:Key="wox_plugin_program_reindex">Reindex</system:String>
     <system:String x:Key="wox_plugin_program_indexing">Indexing</system:String>
