@@ -21,6 +21,8 @@ namespace Wox.Plugin.Program
         internal static UWP.Application[] _uwps { get; set; }
         internal static Settings _settings { get; set; }
 
+        private static bool IsStartupIndexProgramsRequired => _settings.LastReindexTime.AddDays(3) < DateTime.Today;
+
         private static PluginInitContext _context;
 
         private static BinaryStorage<Win32[]> _win32Storage;
@@ -44,13 +46,13 @@ namespace Wox.Plugin.Program
                         
             var a = Task.Run(() =>
             {
-                if (!_win32s.Any())
+                if (IsStartupIndexProgramsRequired || !_win32s.Any())
                     Stopwatch.Normal("|Wox.Plugin.Program.Main|Win32Program index cost", IndexWin32Programs);
             });
 
             var b = Task.Run(() =>
             {
-                if (!_uwps.Any())
+                if (IsStartupIndexProgramsRequired || !_uwps.Any())
                     Stopwatch.Normal("|Wox.Plugin.Program.Main|Win32Program index cost", IndexUWPPrograms);
             });
 
@@ -112,6 +114,8 @@ namespace Wox.Plugin.Program
             var t2 = Task.Run(() => { IndexUWPPrograms(); });
 
             Task.WaitAll(t1, t2);
+
+            _settings.LastReindexTime = DateTime.Today;
         }        
 
         public Control CreateSettingPanel()
