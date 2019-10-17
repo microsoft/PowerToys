@@ -6,7 +6,7 @@ namespace Wox.Plugin.Program
 {
     public class Settings
     {
-        public DateTime LastReindexTime { get; set; }
+        public DateTime LastIndexTime { get; set; }
         public List<ProgramSource> ProgramSources { get; set; } = new List<ProgramSource>();
         public List<DisabledProgramSource> DisabledProgramSources { get; set; } = new List<DisabledProgramSource>();
         public string[] ProgramSuffixes { get; set; } = {"bat", "appref-ms", "exe", "lnk"};

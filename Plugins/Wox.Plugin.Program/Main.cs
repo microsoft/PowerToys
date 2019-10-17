@@ -21,7 +21,7 @@ namespace Wox.Plugin.Program
         internal static UWP.Application[] _uwps { get; set; }
         internal static Settings _settings { get; set; }
 
-        private static bool IsStartupIndexProgramsRequired => _settings.LastReindexTime.AddDays(3) < DateTime.Today;
+        private static bool IsStartupIndexProgramsRequired => _settings.LastIndexTime.AddDays(3) < DateTime.Today;
 
         private static PluginInitContext _context;
 
@@ -58,7 +58,7 @@ namespace Wox.Plugin.Program
 
             Task.WaitAll(a, b);
 
-            _settings.LastReindexTime = DateTime.Today;
+            _settings.LastIndexTime = DateTime.Today;
         }
 
         public void Save()
@@ -117,7 +117,7 @@ namespace Wox.Plugin.Program
 
             Task.WaitAll(t1, t2);
 
-            _settings.LastReindexTime = DateTime.Today;
+            _settings.LastIndexTime = DateTime.Today;
         }        
 
         public Control CreateSettingPanel()
