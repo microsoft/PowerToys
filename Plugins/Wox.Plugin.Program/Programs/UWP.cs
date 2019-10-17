@@ -241,6 +241,9 @@ namespace Wox.Plugin.Program.Programs
             public string UserModelId { get; set; }
             public string BackgroundColor { get; set; }
 
+            public string Name => DisplayName;
+            public string Location => Package.Location;
+
             public bool Enabled { get; set; }
 
             public string LogoUri { get; set; }

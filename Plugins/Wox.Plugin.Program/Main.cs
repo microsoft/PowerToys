@@ -102,8 +102,6 @@ namespace Wox.Plugin.Program
             lock (IndexLock)
             {
                 _uwps = support ? UWP.All() : new UWP.Application[] { };
-
-                //_uwps = UWP.RetainApplications(allUWPs, _settings.ProgramSources, _settings.EnableProgramSourceOnly);
             }
         }
 
@@ -133,16 +131,49 @@ namespace Wox.Plugin.Program
 
         public List<Result> LoadContextMenus(Result selectedResult)
         {
+            var menuOptions = new List<Result>();
             var program = selectedResult.ContextData as IProgram;
             if (program != null)
             {
-                var menus = program.ContextMenus(_context.API);
-                return menus;
+                menuOptions = program.ContextMenus(_context.API);                
             }
-            else
-            {
-                return new List<Result>();
-            }
+
+            menuOptions.Add(
+                                new Result
+                                {
+                                    Title = _context.API.GetTranslation("wox_plugin_program_disable_program"),
+                                    Action = c =>
+                                    {
+                                        DisableProgram(program);
+                                        _context.API.ShowMsg(_context.API.GetTranslation("wox_plugin_program_disable_dlgtitle_success"), 
+                                                                _context.API.GetTranslation("wox_plugin_program_disable_dlgtitle_success_message"));
+                                        return false;
+                                    },
+                                    IcoPath = "Images/disable.png"
+                                }
+                           );
+
+            return menuOptions;
+        }
+
+        private void DisableProgram(IProgram ProgramToDelete)
+        {
+            if(_uwps.Any(x => x.UniqueIdentifier == ProgramToDelete.UniqueIdentifier))
+                _uwps.Where(x => x.UniqueIdentifier == ProgramToDelete.UniqueIdentifier).FirstOrDefault().Enabled = false;
+
+            if (_win32s.Any(x => x.UniqueIdentifier == ProgramToDelete.UniqueIdentifier))
+                _win32s.Where(x => x.UniqueIdentifier == ProgramToDelete.UniqueIdentifier).FirstOrDefault().Enabled = false;
+
+            _settings.DisabledProgramSources
+                     .Add(
+                             new Settings.DisabledProgramSource
+                             {
+                                 Name = ProgramToDelete.Name,
+                                 Location = ProgramToDelete.Location,
+                                 UniqueIdentifier = ProgramToDelete.UniqueIdentifier,
+                                 Enabled = false
+                             }
+                         );
         }
 
         public static bool StartProcess(ProcessStartInfo info)

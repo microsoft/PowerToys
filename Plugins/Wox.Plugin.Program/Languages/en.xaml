@@ -31,10 +31,15 @@
 
     <system:String x:Key="wox_plugin_program_run_as_administrator">Run As Administrator</system:String>
     <system:String x:Key="wox_plugin_program_open_containing_folder">Open containing folder</system:String>
+    <system:String x:Key="wox_plugin_program_disable_program">Disable this program from displaying</system:String>
 
     <system:String x:Key="wox_plugin_program_plugin_name">Program</system:String>
     <system:String x:Key="wox_plugin_program_plugin_description">Search programs in Wox</system:String>
 
     <system:String x:Key="wox_plugin_program_invalid_path">Invalid Path</system:String>
+    
+    <!--Dialogs-->
+    <system:String x:Key="wox_plugin_program_disable_dlgtitle_success">Success</system:String>
+    <system:String x:Key="wox_plugin_program_disable_dlgtitle_success_message">Successfully disabled this program from displaying in your query</system:String>
 
 </ResourceDictionary>

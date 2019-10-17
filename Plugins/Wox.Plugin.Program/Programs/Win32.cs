@@ -26,6 +26,7 @@ namespace Wox.Plugin.Program.Programs
         public string Description { get; set; }
         public bool Valid { get; set; }
         public bool Enabled { get; set; }
+        public string Location => ParentDirectory;
 
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
