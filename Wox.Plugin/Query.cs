@@ -11,7 +11,7 @@ namespace Wox.Plugin
         /// <summary>
         /// to allow unit tests for plug ins
         /// </summary>
-        public Query(string rawQuery, string search, string[] terms, string actionKeyword = null)
+        public Query(string rawQuery, string search, string[] terms, string actionKeyword = "")
         {
             Search = search;
             RawQuery = rawQuery;
