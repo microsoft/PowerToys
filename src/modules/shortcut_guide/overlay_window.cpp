@@ -240,7 +240,6 @@ void D2DOverlayWindow::show(HWND active_window) {
     tasklist_cv_mutex.unlock();
     tasklist_cv.notify_one();
   }
-  Trace::EventShow();
 }
 
 void D2DOverlayWindow::animate(int vk_code) {

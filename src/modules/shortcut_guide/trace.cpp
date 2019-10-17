@@ -16,15 +16,6 @@ void Trace::UnregisterProvider() noexcept {
   TraceLoggingUnregister(g_hProvider);
 }
 
-void Trace::EventShow() noexcept {
-  TraceLoggingWrite(
-    g_hProvider,
-    "ShortcutGuide::Event::ShowGuide",
-    ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-    TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-    TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
-}
-
 void Trace::EventHide(const __int64 duration_ms, std::vector<int> &key_pressed) noexcept {
   std::string vk_codes;
   std::vector<int>::iterator it;
@@ -38,9 +29,9 @@ void Trace::EventHide(const __int64 duration_ms, std::vector<int> &key_pressed) 
   TraceLoggingWrite(
     g_hProvider,
     "ShortcutGuide::Event::HideGuide",
-    TraceLoggingInt64(duration_ms, "Duration in ms"),
-    TraceLoggingInt64(key_pressed.size(), "# of key pressed"),
-    TraceLoggingString(vk_codes.c_str(), "list of key pressed"),
+    TraceLoggingInt64(duration_ms, "DurationInMs"),
+    TraceLoggingInt64(key_pressed.size(), "NumberOfKeysPressed"),
+    TraceLoggingString(vk_codes.c_str(), "ListOfKeysPressed"),
     ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
     TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
     TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));

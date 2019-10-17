@@ -82,13 +82,13 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         "FancyZones::Event::SettingsChanged",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingBoolean(settings.shiftDrag, "Shift drag"),
-        TraceLoggingBoolean(settings.displayChange_moveWindows, "Move Windows On Display Change"),
-        TraceLoggingBoolean(settings.virtualDesktopChange_moveWindows, "Move Windows On Virtual Desktop Change"),
-        TraceLoggingBoolean(settings.zoneSetChange_flashZones, "Flash zones On Zone Set Change"),
-        TraceLoggingBoolean(settings.zoneSetChange_moveWindows, "Move Windows On Zone Set Change"),
-        TraceLoggingBoolean(settings.overrideSnapHotkeys, "Override snap hot keys"),
-        TraceLoggingWideString(settings.zoneHightlightColor.c_str(), "Zone highlight color"));
+        TraceLoggingBoolean(settings.shiftDrag, "ShiftDrag"),
+        TraceLoggingBoolean(settings.displayChange_moveWindows, "MoveWindowsOnDisplayChange"),
+        TraceLoggingBoolean(settings.virtualDesktopChange_moveWindows, "MoveWindowsOnVirtualDesktopChange"),
+        TraceLoggingBoolean(settings.zoneSetChange_flashZones, "FlashZonesOnZoneSetChange"),
+        TraceLoggingBoolean(settings.zoneSetChange_moveWindows, "MoveWindowsOnZoneSetChange"),
+        TraceLoggingBoolean(settings.overrideSnapHotkeys, "OverrideSnapHotKeys"),
+        TraceLoggingWideString(settings.zoneHightlightColor.c_str(), "ZoneHighlightColor"));
 }
 
 void Trace::VirtualDesktopChanged() noexcept
@@ -107,8 +107,8 @@ void Trace::ZoneWindow::KeyUp(WPARAM wParam, bool isEditorMode) noexcept
         "FancyZones::Event::ZoneWindowKeyUp",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(wParam, "Keyboard value"),
-        TraceLoggingBoolean(isEditorMode, "Editor Mode"));
+        TraceLoggingValue(wParam, "KeyboardValue"),
+        TraceLoggingBoolean(isEditorMode, "EditorMode"));
 }
 
 void Trace::ZoneWindow::MoveSizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept
@@ -119,7 +119,7 @@ void Trace::ZoneWindow::MoveSizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet)
         "FancyZones::Event::MoveSizeEnd",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), "Active Set"),
+        TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), "ActiveSet"),
         TraceLoggingValue(zoneInfo.NumberOfZones, "NumberOfZones"),
         TraceLoggingValue(zoneInfo.NumberOfWindows, "NumberOfWindows"),
         TraceLoggingValue(static_cast<int>(zoneInfo.Layout), "LayoutKind"));
@@ -133,7 +133,7 @@ void Trace::ZoneWindow::CycleActiveZoneSet(_In_opt_ winrt::com_ptr<IZoneSet> act
         "FancyZones::Event::CycleActiveZoneSet",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), "Active Set"),
+        TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), "ActiveSet"),
         TraceLoggingValue(zoneInfo.NumberOfZones, "NumberOfZones"),
         TraceLoggingValue(zoneInfo.NumberOfWindows, "NumberOfWindows"),
         TraceLoggingValue(static_cast<int>(zoneInfo.Layout), "LayoutKind"),
@@ -156,7 +156,7 @@ void Trace::ZoneWindow::EditorModeActivity::Stop(_In_opt_ winrt::com_ptr<IZoneSe
         m_activity.value(),
         "FancyZones::Activity::EditorMode",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), "Active Set"),
+        TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), "ActiveSet"),
         TraceLoggingValue(zoneInfo.NumberOfZones, "NumberOfZones"),
         TraceLoggingValue(zoneInfo.NumberOfWindows, "NumberOfWindows"),
         TraceLoggingValue(static_cast<int>(zoneInfo.Layout), "LayoutKind"));
