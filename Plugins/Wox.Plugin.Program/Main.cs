@@ -56,7 +56,9 @@ namespace Wox.Plugin.Program
                     Stopwatch.Normal("|Wox.Plugin.Program.Main|Win32Program index cost", IndexUWPPrograms);
             });
 
-            Task.WaitAll(a, b);            
+            Task.WaitAll(a, b);
+
+            _settings.LastReindexTime = DateTime.Today;
         }
 
         public void Save()
