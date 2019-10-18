@@ -14,7 +14,7 @@ bool TargetState::signal_event(unsigned vk_code, bool key_down) {
   bool supress = false;
   if (!key_down && (vk_code == VK_LWIN || vk_code == VK_RWIN) &&
     state == Shown &&
-    std::chrono::system_clock::now() - singnal_timestamp > std::chrono::seconds(1) &&
+    std::chrono::system_clock::now() - singnal_timestamp > std::chrono::milliseconds(300) &&
     !key_was_pressed) {
     supress = true;
   }
