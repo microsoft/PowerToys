@@ -58,16 +58,16 @@ IFACEMETHODIMP CPowerRenameManager::UnAdvise(_In_ DWORD cookie)
     HRESULT hr = E_FAIL;
     CSRWExclusiveAutoLock lock(&m_lockEvents);
 
-    for (std::vector<SMART_RENAME_MGR_EVENT>::iterator it = m_PowerRenameManagerEvents.begin(); it != m_PowerRenameManagerEvents.end(); ++it)
+    for (auto it : m_PowerRenameManagerEvents)
     {
-        if (it->cookie == cookie)
+        if (it.cookie == cookie)
         {
             hr = S_OK;
-            it->cookie = 0;
-            if (it->pEvents)
+            it.cookie = 0;
+            if (it.pEvents)
             {
-                it->pEvents->Release();
-                it->pEvents = nullptr;
+                it.pEvents->Release();
+                it.pEvents = nullptr;
             }
             break;
         }
@@ -178,9 +178,9 @@ IFACEMETHODIMP CPowerRenameManager::GetSelectedItemCount(_Out_ UINT* count)
     *count = 0;
     CSRWSharedAutoLock lock(&m_lockItems);
 
-    for (std::map<int, IPowerRenameItem*>::iterator it = m_smartRenameItems.begin(); it != m_smartRenameItems.end(); ++it)
+    for (auto it : m_smartRenameItems)
     {
-        IPowerRenameItem* pItem = it->second;
+        IPowerRenameItem* pItem = it.second;
         bool selected = false;
         if (SUCCEEDED(pItem->get_selected(&selected)) && selected)
         {
@@ -196,9 +196,9 @@ IFACEMETHODIMP CPowerRenameManager::GetRenameItemCount(_Out_ UINT* count)
     *count = 0;
     CSRWSharedAutoLock lock(&m_lockItems);
 
-    for (std::map<int, IPowerRenameItem*>::iterator it = m_smartRenameItems.begin(); it != m_smartRenameItems.end(); ++it)
+    for (auto it : m_smartRenameItems)
     {
-        IPowerRenameItem* pItem = it->second;
+        IPowerRenameItem* pItem = it.second;
         bool shouldRename = false;
         if (SUCCEEDED(pItem->ShouldRenameItem(m_flags, &shouldRename)) && shouldRename)
         {
@@ -845,11 +845,11 @@ void CPowerRenameManager::_OnItemAdded(_In_ IPowerRenameItem* renameItem)
 {
     CSRWSharedAutoLock lock(&m_lockEvents);
 
-    for (std::vector<SMART_RENAME_MGR_EVENT>::iterator it = m_PowerRenameManagerEvents.begin(); it != m_PowerRenameManagerEvents.end(); ++it)
+    for (auto it : m_PowerRenameManagerEvents)
     {
-        if (it->pEvents)
+        if (it.pEvents)
         {
-            it->pEvents->OnItemAdded(renameItem);
+            it.pEvents->OnItemAdded(renameItem);
         }
     }
 }
@@ -858,11 +858,11 @@ void CPowerRenameManager::_OnUpdate(_In_ IPowerRenameItem* renameItem)
 {
     CSRWSharedAutoLock lock(&m_lockEvents);
 
-    for (std::vector<SMART_RENAME_MGR_EVENT>::iterator it = m_PowerRenameManagerEvents.begin(); it != m_PowerRenameManagerEvents.end(); ++it)
+    for (auto it : m_PowerRenameManagerEvents)
     {
-        if (it->pEvents)
+        if (it.pEvents)
         {
-            it->pEvents->OnUpdate(renameItem);
+            it.pEvents->OnUpdate(renameItem);
         }
     }
 }
@@ -871,11 +871,11 @@ void CPowerRenameManager::_OnError(_In_ IPowerRenameItem* renameItem)
 {
     CSRWSharedAutoLock lock(&m_lockEvents);
 
-    for (std::vector<SMART_RENAME_MGR_EVENT>::iterator it = m_PowerRenameManagerEvents.begin(); it != m_PowerRenameManagerEvents.end(); ++it)
+    for (auto it : m_PowerRenameManagerEvents)
     {
-        if (it->pEvents)
+        if (it.pEvents)
         {
-            it->pEvents->OnError(renameItem);
+            it.pEvents->OnError(renameItem);
         }
     }
 }
@@ -884,11 +884,11 @@ void CPowerRenameManager::_OnRegExStarted(_In_ DWORD threadId)
 {
     CSRWSharedAutoLock lock(&m_lockEvents);
 
-    for (std::vector<SMART_RENAME_MGR_EVENT>::iterator it = m_PowerRenameManagerEvents.begin(); it != m_PowerRenameManagerEvents.end(); ++it)
+    for (auto it : m_PowerRenameManagerEvents)
     {
-        if (it->pEvents)
+        if (it.pEvents)
         {
-            it->pEvents->OnRegExStarted(threadId);
+            it.pEvents->OnRegExStarted(threadId);
         }
     }
 }
@@ -897,11 +897,11 @@ void CPowerRenameManager::_OnRegExCanceled(_In_ DWORD threadId)
 {
     CSRWSharedAutoLock lock(&m_lockEvents);
 
-    for (std::vector<SMART_RENAME_MGR_EVENT>::iterator it = m_PowerRenameManagerEvents.begin(); it != m_PowerRenameManagerEvents.end(); ++it)
+    for (auto it : m_PowerRenameManagerEvents)
     {
-        if (it->pEvents)
+        if (it.pEvents)
         {
-            it->pEvents->OnRegExCanceled(threadId);
+            it.pEvents->OnRegExCanceled(threadId);
         }
     }
 }
@@ -910,11 +910,11 @@ void CPowerRenameManager::_OnRegExCompleted(_In_ DWORD threadId)
 {
     CSRWSharedAutoLock lock(&m_lockEvents);
 
-    for (std::vector<SMART_RENAME_MGR_EVENT>::iterator it = m_PowerRenameManagerEvents.begin(); it != m_PowerRenameManagerEvents.end(); ++it)
+    for (auto it : m_PowerRenameManagerEvents)
     {
-        if (it->pEvents)
+        if (it.pEvents)
         {
-            it->pEvents->OnRegExCompleted(threadId);
+            it.pEvents->OnRegExCompleted(threadId);
         }
     }
 }
@@ -923,11 +923,11 @@ void CPowerRenameManager::_OnRenameStarted()
 {
     CSRWSharedAutoLock lock(&m_lockEvents);
 
-    for (std::vector<SMART_RENAME_MGR_EVENT>::iterator it = m_PowerRenameManagerEvents.begin(); it != m_PowerRenameManagerEvents.end(); ++it)
+    for (auto it : m_PowerRenameManagerEvents)
     {
-        if (it->pEvents)
+        if (it.pEvents)
         {
-            it->pEvents->OnRenameStarted();
+            it.pEvents->OnRenameStarted();
         }
     }
 }
@@ -936,11 +936,11 @@ void CPowerRenameManager::_OnRenameCompleted()
 {
     CSRWSharedAutoLock lock(&m_lockEvents);
 
-    for (std::vector<SMART_RENAME_MGR_EVENT>::iterator it = m_PowerRenameManagerEvents.begin(); it != m_PowerRenameManagerEvents.end(); ++it)
+    for (auto it : m_PowerRenameManagerEvents)
     {
-        if (it->pEvents)
+        if (it.pEvents)
         {
-            it->pEvents->OnRenameCompleted();
+            it.pEvents->OnRenameCompleted();
         }
     }
 }
@@ -950,13 +950,13 @@ void CPowerRenameManager::_ClearEventHandlers()
     CSRWExclusiveAutoLock lock(&m_lockEvents);
 
     // Cleanup event handlers
-    for (std::vector<SMART_RENAME_MGR_EVENT>::iterator it = m_PowerRenameManagerEvents.begin(); it != m_PowerRenameManagerEvents.end(); ++it)
+    for (auto it : m_PowerRenameManagerEvents)
     {
-        it->cookie = 0;
-        if (it->pEvents)
+        it.cookie = 0;
+        if (it.pEvents)
         {
-            it->pEvents->Release();
-            it->pEvents = nullptr;
+            it.pEvents->Release();
+            it.pEvents = nullptr;
         }
     }
 
@@ -968,9 +968,9 @@ void CPowerRenameManager::_ClearPowerRenameItems()
     CSRWExclusiveAutoLock lock(&m_lockItems);
 
     // Cleanup smart rename items
-    for (std::map<int, IPowerRenameItem*>::iterator it = m_smartRenameItems.begin(); it != m_smartRenameItems.end(); ++it)
+    for (auto it : m_smartRenameItems)
     {
-        IPowerRenameItem* pItem = it->second;
+        IPowerRenameItem* pItem = it.second;
         pItem->Release();
     }
 

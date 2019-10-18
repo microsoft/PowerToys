@@ -53,16 +53,16 @@ IFACEMETHODIMP CPowerRenameRegEx::UnAdvise(_In_ DWORD cookie)
     HRESULT hr = E_FAIL;
     CSRWExclusiveAutoLock lock(&m_lockEvents);
 
-    for (std::vector<SMART_RENAME_REGEX_EVENT>::iterator it = m_smartRenameRegExEvents.begin(); it != m_smartRenameRegExEvents.end(); ++it)
+    for (auto it : m_smartRenameRegExEvents)
     {
-        if (it->cookie == cookie)
+        if (it.cookie == cookie)
         {
             hr = S_OK;
-            it->cookie = 0;
-            if (it->pEvents)
+            it.cookie = 0;
+            if (it.pEvents)
             {
-                it->pEvents->Release();
-                it->pEvents = nullptr;
+                it.pEvents->Release();
+                it.pEvents = nullptr;
             }
             break;
         }
@@ -265,11 +265,11 @@ void CPowerRenameRegEx::_OnSearchTermChanged()
 {
     CSRWSharedAutoLock lock(&m_lockEvents);
 
-    for (std::vector<SMART_RENAME_REGEX_EVENT>::iterator it = m_smartRenameRegExEvents.begin(); it != m_smartRenameRegExEvents.end(); ++it)
+    for (auto it : m_smartRenameRegExEvents)
     {
-        if (it->pEvents)
+        if (it.pEvents)
         {
-            it->pEvents->OnSearchTermChanged(m_searchTerm);
+            it.pEvents->OnSearchTermChanged(m_searchTerm);
         }
     }
 }
@@ -278,11 +278,11 @@ void CPowerRenameRegEx::_OnReplaceTermChanged()
 {
     CSRWSharedAutoLock lock(&m_lockEvents);
 
-    for (std::vector<SMART_RENAME_REGEX_EVENT>::iterator it = m_smartRenameRegExEvents.begin(); it != m_smartRenameRegExEvents.end(); ++it)
+    for (auto it : m_smartRenameRegExEvents)
     {
-        if (it->pEvents)
+        if (it.pEvents)
         {
-            it->pEvents->OnReplaceTermChanged(m_replaceTerm);
+            it.pEvents->OnReplaceTermChanged(m_replaceTerm);
         }
     }
 }
@@ -291,11 +291,11 @@ void CPowerRenameRegEx::_OnFlagsChanged()
 {
     CSRWSharedAutoLock lock(&m_lockEvents);
 
-    for (std::vector<SMART_RENAME_REGEX_EVENT>::iterator it = m_smartRenameRegExEvents.begin(); it != m_smartRenameRegExEvents.end(); ++it)
+    for (auto it : m_smartRenameRegExEvents)
     {
-        if (it->pEvents)
+        if (it.pEvents)
         {
-            it->pEvents->OnFlagsChanged(m_flags);
+            it.pEvents->OnFlagsChanged(m_flags);
         }
     }
 }
