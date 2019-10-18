@@ -13,11 +13,12 @@ struct KeyEvent {
 
 class TargetState {
 public:
-  TargetState(int ms_delay);
+  TargetState(int ms_delay, int ms_start_suppress_delay);
   bool signal_event(unsigned vk_code, bool key_down);
   void was_hiden();
   void exit();
   void set_delay(int ms_delay);
+  void set_start_suppress_delay(int ms_delay);
 private:
   KeyEvent next();
   void handle_hidden();
@@ -27,7 +28,7 @@ private:
   std::mutex mutex;
   std::condition_variable cv;
   std::chrono::system_clock::time_point winkey_timestamp, singnal_timestamp;
-  std::chrono::milliseconds delay;
+  std::chrono::milliseconds delay, start_suppress_delay;
   std::deque<KeyEvent> events;
   enum { Hidden, Timeout, Shown, Exiting } state = Hidden;
   bool key_was_pressed = false;

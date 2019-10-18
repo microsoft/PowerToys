@@ -39,6 +39,12 @@ private:
     int resourceId = IDS_SETTING_DESCRIPTION_PRESS_TIME;
   } pressTime;
 
+  struct StartSuppressDelay {
+    PCWSTR name = L"start_suppress_delay";
+    int value = 1000; // ms
+    int resourceId = IDS_SETTING_DESCRIPTION_START_SUPPRESS_DELAY;
+  } startSuppressDelay;
+
   struct OverlayOpacity {
     PCWSTR name = L"overlay_opacity";
     int value = 90; // percent

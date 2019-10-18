@@ -39,6 +39,15 @@ bool OverlayWindow::get_config(wchar_t* buffer, int *buffer_size) {
   );
 
   settings.add_int_spinner(
+    startSuppressDelay.name,
+    startSuppressDelay.resourceId,
+    startSuppressDelay.value,
+    0,
+    10000,
+    100
+  );
+
+  settings.add_int_spinner(
     overlayOpacity.name,
     overlayOpacity.resourceId,
     overlayOpacity.value,
@@ -68,6 +77,13 @@ void OverlayWindow::set_config(const wchar_t * config) {
         target_state->set_delay(press_delay_time);
       }
     }
+    if (_values.is_int_value(startSuppressDelay.name)) {
+      int start_suppress_delay = _values.get_int_value(startSuppressDelay.name);
+      startSuppressDelay.value = start_suppress_delay;
+      if (target_state) {
+        target_state->set_start_suppress_delay(start_suppress_delay);
+      }
+    }
     if (_values.is_int_value(overlayOpacity.name)) {
       int overlay_opacity = _values.get_int_value(overlayOpacity.name);
       overlayOpacity.value = overlay_opacity;
@@ -91,7 +107,7 @@ void OverlayWindow::enable() {
     winkey_popup = new D2DOverlayWindow();
     winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value)/100.0f);
     winkey_popup->set_theme(theme.value);
-    target_state = new TargetState(pressTime.value);
+    target_state = new TargetState(pressTime.value, startSuppressDelay.value);
     winkey_popup->initialize();
   }
   _enabled = true;
@@ -152,6 +168,9 @@ void OverlayWindow::init_settings() {
       PowerToysSettings::PowerToyValues::load_from_settings_file(OverlayWindow::get_name());
     if (settings.is_int_value(pressTime.name)) {
       pressTime.value = settings.get_int_value(pressTime.name);
+    }
+    if (settings.is_int_value(startSuppressDelay.name)) {
+      startSuppressDelay.value = settings.get_int_value(startSuppressDelay.name);
     }
     if (settings.is_int_value(overlayOpacity.name)) {
       overlayOpacity.value = settings.get_int_value(overlayOpacity.name);
