@@ -21,7 +21,6 @@
     <system:String x:Key="wox_plugin_program_max_search_depth">最大搜尋深度（-1是無限的）：</system:String>
 
     <system:String x:Key="wox_plugin_program_pls_select_program_source">請先選擇一項</system:String>
-    <system:String x:Key="wox_plugin_program_delete_program_source">你確定要刪除{0}嗎？</system:String>
 
     <system:String x:Key="wox_plugin_program_update">更新</system:String>
     <system:String x:Key="wox_plugin_program_only_index_tip">Wox 僅索引下列副檔名的檔案：</system:String>

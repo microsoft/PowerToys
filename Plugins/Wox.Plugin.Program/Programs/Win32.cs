@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -18,12 +18,15 @@ namespace Wox.Plugin.Program.Programs
     public class Win32 : IProgram
     {
         public string Name { get; set; }
+        public string UniqueIdentifier { get; set; }
         public string IcoPath { get; set; }
         public string FullPath { get; set; }
         public string ParentDirectory { get; set; }
         public string ExecutableName { get; set; }
         public string Description { get; set; }
         public bool Valid { get; set; }
+        public bool Enabled { get; set; }
+        public string Location => ParentDirectory;
 
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
@@ -127,9 +130,11 @@ namespace Wox.Plugin.Program.Programs
                 Name = Path.GetFileNameWithoutExtension(path),
                 IcoPath = path,
                 FullPath = path,
+                UniqueIdentifier = path,
                 ParentDirectory = Directory.GetParent(path).FullName,
                 Description = string.Empty,
-                Valid = true
+                Valid = true,
+                Enabled = true
             };
             return p;
         }
@@ -262,9 +267,16 @@ namespace Wox.Plugin.Program.Programs
 
         private static ParallelQuery<Win32> UnregisteredPrograms(List<Settings.ProgramSource> sources, string[] suffixes)
         {
-            var paths = sources.Where(s => Directory.Exists(s.Location))
-                               .SelectMany(s => ProgramPaths(s.Location, suffixes))
-                               .ToArray();
+            var listToAdd = new List<string>();
+            sources.Where(s => Directory.Exists(s.Location) && s.Enabled)
+                .SelectMany(s => ProgramPaths(s.Location, suffixes))
+                .ToList()
+                .Where(t1 => !Main._settings.DisabledProgramSources.Any(x => t1 == x.UniqueIdentifier))
+                .ToList()
+                .ForEach(x => listToAdd.Add(x));
+
+            var paths = listToAdd.ToArray();
+
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ExeExtension).Select(ExeProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(ExeProgram);
             var programs3 = from p in paths.AsParallel()
@@ -276,11 +288,19 @@ namespace Wox.Plugin.Program.Programs
 
         private static ParallelQuery<Win32> StartMenuPrograms(string[] suffixes)
         {
+            var disabledProgramsList = Main._settings.DisabledProgramSources;
+
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
             var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
             var paths1 = ProgramPaths(directory1, suffixes);
             var paths2 = ProgramPaths(directory2, suffixes);
-            var paths = paths1.Concat(paths2).ToArray();
+
+            var toFilter = paths1.Concat(paths2);
+            var paths = toFilter
+                        .Where(t1 => !disabledProgramsList.Any(x => x.UniqueIdentifier == t1))
+                        .Select(t1 => t1)
+                        .ToArray();
+
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p) == ApplicationReferenceExtension).Select(Win32Program);
             var programs = programs1.Concat(programs2).Where(p => p.Valid);
@@ -307,7 +327,12 @@ namespace Wox.Plugin.Program.Programs
                     programs.AddRange(ProgramsFromRegistryKey(root));
                 }
             }
-            var filtered = programs.AsParallel().Where(p => suffixes.Contains(Extension(p.ExecutableName)));
+
+            var disabledProgramsList = Main._settings.DisabledProgramSources;
+            var toFilter = programs.AsParallel().Where(p => suffixes.Contains(Extension(p.ExecutableName)));
+
+            var filtered = toFilter.Where(t1 => !disabledProgramsList.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier)).Select(t1 => t1);
+
             return filtered;
         }
 
@@ -384,18 +409,20 @@ namespace Wox.Plugin.Program.Programs
         public static Win32[] All(Settings settings)
         {
             ParallelQuery<Win32> programs = new List<Win32>().AsParallel();
+            
+            var unregistered = UnregisteredPrograms(settings.ProgramSources, settings.ProgramSuffixes);
+            programs = programs.Concat(unregistered);
             if (settings.EnableRegistrySource)
             {
                 var appPaths = AppPathsPrograms(settings.ProgramSuffixes);
                 programs = programs.Concat(appPaths);
             }
+
             if (settings.EnableStartMenuSource)
             {
                 var startMenu = StartMenuPrograms(settings.ProgramSuffixes);
                 programs = programs.Concat(startMenu);
-            }
-            var unregistered = UnregisteredPrograms(settings.ProgramSources, settings.ProgramSuffixes);
-            programs = programs.Concat(unregistered);
+            }            
             //.Select(ScoreFilter);
             return programs.ToArray();
         }
