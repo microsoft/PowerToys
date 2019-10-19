@@ -155,8 +155,7 @@ D2D1_RECT_F D2DOverlaySVG::get_snap_right() const {
 
 
 
-D2DOverlayWindow::D2DOverlayWindow() : total_screen({}), anim_time(0.3) {
-  animation = Animation(anim_time);
+D2DOverlayWindow::D2DOverlayWindow() : total_screen({}), animation(animation_time) {
   tasklist_thread = std::thread([&] {
     while (running) {
       // Removing <std::mutex> causes C3538 on std::unique_lock lock(mutex); in show(..)
@@ -178,6 +177,11 @@ D2DOverlayWindow::D2DOverlayWindow() : total_screen({}), anim_time(0.3) {
 }
 
 void D2DOverlayWindow::show(HWND active_window) {
+  if (hiding) {
+    hiding = false;
+    auto current_anim_time = animation.value(Animation::AnimFunctions::LINEAR);
+    animation.reset(animation_time * current_anim_time, current_anim_time, 1.0);
+  }
   std::unique_lock lock(mutex);
   tasklist_buttons.clear();
   this->active_window = active_window;
@@ -503,35 +507,26 @@ void D2DOverlayWindow::hide_thumbnail() {
   DwmUpdateThumbnailProperties(thumbnail, &thumb_properties);
 }
 
-void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc) {
+void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)  {
+  auto current_anim_value = animation.value(Animation::AnimFunctions::LINEAR);
   if (!winkey_held() || is_start_visible()) {
-	  auto current_anim_value = animation.value(Animation::AnimFunctions::LINEAR);
-	  if (!hiding) { // when user is done viewing the overlay
-		  animation.reset(anim_time * current_anim_value);
-		  hiding = true;
-	  }
-	  else if (current_anim_value == 1.0) { // animation to hide overlay has finished
-		  hide();
-		  instance->was_hidden();
-		  animation.reset(anim_time);
-		  hiding = false;
-		  return;
-	  }
+    if (hiding) {
+      if (animation.done()) {
+        hide();
+        instance->was_hidden();
+        animation.reset(animation_time, 0.0, 1.0);
+        hiding = false;
+        return;
+      }
+    } else {
+      animation.reset(animation_time / 2.0, current_anim_value, 0.0);
+      hiding = true;
+    }
   }
   d2d_dc->Clear();
   int x_offset = 0, y_offset = 0, dimention = 0;
-  int alpha;
-  double pos_anim_value;
-  auto current_anim_value = (float)animation.value(Animation::AnimFunctions::LINEAR);
-  if (hiding) {
-	  alpha = 255 * (1.0 - current_anim_value);
-	  pos_anim_value = animation.value(Animation::AnimFunctions::EASE_OUT_EXPO);
-  } else {
-	  alpha = 255 * current_anim_value;
-	  pos_anim_value = 1 - animation.value(Animation::AnimFunctions::EASE_OUT_EXPO);
-  }
-  SetLayeredWindowAttributes(hwnd, 0, alpha, LWA_ALPHA);
-
+  SetLayeredWindowAttributes(hwnd, 0, (BYTE)(255.0 * current_anim_value), LWA_ALPHA);
+  double pos_anim_value = 1 - animation.value(Animation::AnimFunctions::EASE_OUT_EXPO);
   if (!tasklist_buttons.empty()) {
     if (tasklist_buttons[0].x <= window_rect.left) { // taskbar on left
       x_offset = (int)(-pos_anim_value * use_overlay->width() * use_overlay->get_scale());
@@ -605,7 +600,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc) {
     }
     // If the animation is done show the thumbnail
     //   we cannot animate the thumbnail, the animation lags behind
-    minature_shown = show_thumbnail(thumbnail_pos, 1.0f);
+    minature_shown = show_thumbnail(thumbnail_pos, current_anim_value);
   } else {
     hide_thumbnail();
   }
@@ -614,7 +609,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc) {
   }
   // render the monitors
   if (render_monitors) {
-    brushColor = D2D1::ColorF(colors.desktop_fill_color, 1.0f);
+    brushColor = D2D1::ColorF(colors.desktop_fill_color, minature_shown ? current_anim_value : current_anim_value * 0.3f );
     brush = nullptr;
     winrt::check_hresult(d2d_dc->CreateSolidColorBrush(brushColor, brush.put()));
     for (auto& monitor : monitors) {

@@ -66,8 +66,8 @@ private:
   int monitor_dx = 0, monitor_dy = 0;
   D2DText text;
   WindowsColors colors;
+  double animation_time = 0.3;
   Animation animation;
-  double anim_time;
   RECT window_rect = {};
   Tasklist tasklist;
   std::vector<TasklistButton> tasklist_buttons;
