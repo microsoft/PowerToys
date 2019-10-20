@@ -1,4 +1,4 @@
-﻿#if SDK
+﻿#if !IGNORE_UWP
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

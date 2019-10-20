@@ -17,7 +17,7 @@ namespace Wox.Plugin.Program
     {
         private static readonly object IndexLock = new object();
         private static Win32[] _win32s;
-#if SDK
+#if !IGNORE_UWP
         private static UWP.Application[] _uwps;
         private static BinaryStorage<UWP.Application[]> _uwpStorage;
 #endif
@@ -38,13 +38,13 @@ namespace Wox.Plugin.Program
             {
                 _win32Storage = new BinaryStorage<Win32[]>("Win32");
                 _win32s = _win32Storage.TryLoad(new Win32[] { });
-#if SDK
+#if !IGNORE_UWP
                 _uwpStorage = new BinaryStorage<UWP.Application[]>("UWP");
                 _uwps = _uwpStorage.TryLoad(new UWP.Application[] { });
 #endif
             });
             Log.Info($"|Wox.Plugin.Program.Main|Number of preload win32 programs <{_win32s.Length}>");
-#if SDK
+#if !IGNORE_UWP
             Log.Info($"|Wox.Plugin.Program.Main|Number of preload uwps <{_uwps.Length}>");
 #endif
             Task.Run(() =>
@@ -57,7 +57,7 @@ namespace Wox.Plugin.Program
         {
             _settingsStorage.Save();
             _win32Storage.Save(_win32s);
-#if SDK
+#if !IGNORE_UWP
             _uwpStorage.Save(_uwps);
 #endif
         }
@@ -67,11 +67,11 @@ namespace Wox.Plugin.Program
             lock (IndexLock)
             {
                 var results1 = _win32s.AsParallel().Select(p => p.Result(query.Search, _context.API));
-#if SDK
+#if !IGNORE_UWP
                 var results2 = _uwps.AsParallel().Select(p => p.Result(query.Search, _context.API));
 #endif
                 var result = results1
-#if SDK
+#if !IGNORE_UWP
                     .Concat(results2)
 #endif
                     .Where(r => r.Score > 0).ToList();
@@ -87,13 +87,13 @@ namespace Wox.Plugin.Program
         public static void IndexPrograms()
         {
             Win32[] w = { };
-#if SDK
+#if !IGNORE_UWP
             UWP.Application[] u = { };
             var t1 = Task.Run(() =>
             {
 #endif
             w = Win32.All(_settings);
-#if SDK
+#if !IGNORE_UWP
             });
             var t2 = Task.Run(() =>
             {
@@ -113,7 +113,7 @@ namespace Wox.Plugin.Program
             lock (IndexLock)
             {
                 _win32s = w;
-#if SDK
+#if !IGNORE_UWP
                 _uwps = u;
 #endif
             }
