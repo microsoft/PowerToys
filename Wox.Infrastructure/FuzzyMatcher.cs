@@ -16,7 +16,7 @@ namespace Wox.Infrastructure
 
         public static FuzzyMatcher Create(string query)
         {
-            return new FuzzyMatcher(query, StringMatcher.EmptyMatchOption);
+            return new FuzzyMatcher(query, StringMatcher.DefaultMatchOption);
         }
 
         public static FuzzyMatcher Create(string query, MatchOption opt)

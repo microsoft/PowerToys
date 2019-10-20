@@ -8,7 +8,7 @@ namespace Wox.Infrastructure
 {
     public static class StringMatcher
     {
-        public static MatchOption EmptyMatchOption = new MatchOption();
+        public static MatchOption DefaultMatchOption = new MatchOption();
 
         public static string UserSettingSearchPrecision { get; set; }
 
@@ -17,7 +17,7 @@ namespace Wox.Infrastructure
         {
             if (!string.IsNullOrEmpty(source) && !string.IsNullOrEmpty(target))
             {
-                return FuzzySearch(target, source, EmptyMatchOption).Score;
+                return FuzzySearch(target, source, DefaultMatchOption).Score;
             }
             else
             {
@@ -28,12 +28,12 @@ namespace Wox.Infrastructure
         [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
         public static bool IsMatch(string source, string target)
         {
-            return FuzzySearch(target, source, EmptyMatchOption).Score > 0;
+            return FuzzySearch(target, source, DefaultMatchOption).Score > 0;
         }
 
         public static MatchResult FuzzySearch(string query, string stringToCompare)
         {
-            return FuzzySearch(query, stringToCompare, EmptyMatchOption);
+            return FuzzySearch(query, stringToCompare, DefaultMatchOption);
         }
 
         /// <summary>
