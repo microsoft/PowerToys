@@ -14,6 +14,7 @@
     <system:String x:Key="wox_plugin_program_index_registry">Registry'i İndeksle</system:String>
     <system:String x:Key="wox_plugin_program_suffixes_header">Uzantılar</system:String>
     <system:String x:Key="wox_plugin_program_max_depth_header">Derinlik</system:String>
+    <system:String x:Key="wox_plugin_program_use_pinyin">Should Use Pinyin (waiting for translation)</system:String>
 
     <system:String x:Key="wox_plugin_program_directory">Dizin:</system:String>
     <system:String x:Key="wox_plugin_program_browse">Gözat</system:String>

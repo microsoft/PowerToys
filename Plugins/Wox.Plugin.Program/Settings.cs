@@ -12,6 +12,8 @@ namespace Wox.Plugin.Program
 
         public bool EnableRegistrySource { get; set; } = true;
 
+        public bool ShouldUsePinYin { get; set; } = true;
+
         internal const char SuffixSeperator = ';';
 
         public class ProgramSource

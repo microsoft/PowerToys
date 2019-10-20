@@ -239,23 +239,23 @@ namespace Wox.Plugin.Program.Programs
             public string LogoPath { get; set; }
             public UWP Package { get; set; }
 
-            private int Score(string query)
+            private int Score(string query, bool shouldUsePinYin)
             {
                 var score1 = StringMatcher.FuzzySearch(query, DisplayName).ScoreAfterSearchPrecisionFilter();
-                var score2 = StringMatcher.ScoreForPinyin(DisplayName, query);
+                var score2 = shouldUsePinYin ? StringMatcher.ScoreForPinyin(DisplayName, query) : 0;
                 var score3 = StringMatcher.FuzzySearch(query, Description).ScoreAfterSearchPrecisionFilter();
-                var score4 = StringMatcher.ScoreForPinyin(Description, query);
+                var score4 = shouldUsePinYin ? StringMatcher.ScoreForPinyin(Description, query) : 0;
                 var score = new[] { score1, score2, score3, score4 }.Max();
                 return score;
             }
 
-            public Result Result(string query, IPublicAPI api)
+            public Result Result(string query, IPublicAPI api, Settings settings)
             {
                 var result = new Result
                 {
                     SubTitle = Package.Location,
                     Icon = Logo,
-                    Score = Score(query),
+                    Score = Score(query, settings.ShouldUsePinYin),
                     ContextData = this,
                     Action = e =>
                     {

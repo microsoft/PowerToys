@@ -14,6 +14,8 @@
     <system:String x:Key="wox_plugin_program_index_registry">Index Registry</system:String>
     <system:String x:Key="wox_plugin_program_suffixes_header">Suffixes</system:String>
     <system:String x:Key="wox_plugin_program_max_depth_header">Max Depth</system:String>
+    <system:String x:Key="wox_plugin_program_use_pinyin">Should Use Pinyin</system:String>
+
 
     <system:String x:Key="wox_plugin_program_directory">Directory:</system:String>
     <system:String x:Key="wox_plugin_program_browse">Browse</system:String>

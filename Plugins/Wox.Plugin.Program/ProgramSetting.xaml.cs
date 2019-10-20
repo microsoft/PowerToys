@@ -11,15 +11,17 @@ namespace Wox.Plugin.Program
     /// </summary>
     public partial class ProgramSetting : UserControl
     {
-        private PluginInitContext context;
-        private Settings _settings;
+        private readonly PluginInitContext context;
+        private readonly Settings _settings;
+        private readonly Main _main;
 
-        public ProgramSetting(PluginInitContext context, Settings settings)
+        public ProgramSetting(PluginInitContext context, Settings settings, Main main)
         {
             this.context = context;
             InitializeComponent();
             Loaded += Setting_Loaded;
             _settings = settings;
+            _main = main;
         }
 
         private void Setting_Loaded(object sender, RoutedEventArgs e)
@@ -27,6 +29,7 @@ namespace Wox.Plugin.Program
             programSourceView.ItemsSource = _settings.ProgramSources;
             StartMenuEnabled.IsChecked = _settings.EnableStartMenuSource;
             RegistryEnabled.IsChecked = _settings.EnableRegistrySource;
+            ShouldUsePinYin.IsChecked = _settings.ShouldUsePinYin;
         }
 
         private void ReIndexing()
@@ -35,7 +38,7 @@ namespace Wox.Plugin.Program
             Task.Run(() =>
             {
                 Dispatcher.Invoke(() => { indexingPanel.Visibility = Visibility.Visible; });
-                Main.IndexPrograms();
+                _main.IndexPrograms();
                 Dispatcher.Invoke(() => { indexingPanel.Visibility = Visibility.Hidden; });
             });
         }
@@ -144,6 +147,11 @@ namespace Wox.Plugin.Program
         {
             _settings.EnableRegistrySource = RegistryEnabled.IsChecked ?? false;
             ReIndexing();
+        }
+
+        private void ShouldUsePinYin_Click(object sender, RoutedEventArgs e)
+        {
+            _settings.ShouldUsePinYin = ShouldUsePinYin.IsChecked ?? false;
         }
     }
 }
