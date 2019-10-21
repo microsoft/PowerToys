@@ -198,6 +198,7 @@ public:
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(L"A Windows Shell Extension for more advanced bulk renaming using search and replace or regular expressions.");
+        settings.set_icon_key(L"pt-power-rename");
 
         // Link to the GitHub PowerRename sub-page
         settings.set_overview_link(L"https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename");
