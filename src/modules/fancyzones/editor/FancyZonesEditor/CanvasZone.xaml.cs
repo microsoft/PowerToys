@@ -66,9 +66,9 @@ namespace FancyZonesEditor
             Int32Rect rect = Model.Zones[ZoneIndex];
             if (xDelta < 0)
             {
-                if ((rect.X + xDelta) < _settings.WorkArea.X)
+                if ((rect.X + xDelta) < 0)
                 {
-                    xDelta = _settings.WorkArea.X - rect.X;
+                    xDelta = -rect.X;
                 }
             }
             else if (xDelta > 0)
@@ -81,9 +81,9 @@ namespace FancyZonesEditor
 
             if (yDelta < 0)
             {
-                if ((rect.Y + yDelta) < _settings.WorkArea.Y)
+                if ((rect.Y + yDelta) < 0)
                 {
-                    yDelta = _settings.WorkArea.Y - rect.Y;
+                    yDelta = -rect.Y;
                 }
             }
             else if (yDelta > 0)
