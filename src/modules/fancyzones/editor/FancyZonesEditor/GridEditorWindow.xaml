@@ -10,7 +10,7 @@
         Width="528"
         SizeToContent="Height"            
         Background="White"
-        ResizeMode="NoResize"
+        ResizeMode="CanMinimize"
         WindowStartupLocation="CenterScreen"
         Closed="OnClosed">
 
