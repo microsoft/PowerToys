@@ -27,6 +27,24 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
             DataContext = _settings;
+            if (_settings.WorkArea.Height < 900)
+            {
+                this.SizeToContent = SizeToContent.WidthAndHeight;
+                this.WrapPanelItemSize = 180;
+            }
+        }
+
+        private int _WrapPanelItemSize = 262;
+        public int WrapPanelItemSize {
+            get
+            {
+                return _WrapPanelItemSize;
+            }
+
+            set
+            {
+                _WrapPanelItemSize = value;
+            }
         }
 
         private void DecrementZones_Click(object sender, RoutedEventArgs e)
