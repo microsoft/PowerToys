@@ -88,6 +88,7 @@ void OverlayWindow::set_config(const wchar_t * config) {
 
 void OverlayWindow::enable() {
   if (!_enabled) {
+    Trace::EnableShortcutGuide(true);
     winkey_popup = new D2DOverlayWindow();
     winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value)/100.0f);
     winkey_popup->set_theme(theme.value);
@@ -97,8 +98,11 @@ void OverlayWindow::enable() {
   _enabled = true;
 }
 
-void OverlayWindow::disable() {
+void OverlayWindow::disable(bool trace_event) {
   if (_enabled) {
+    if (trace_event) {
+      Trace::EnableShortcutGuide(false);
+    }
     winkey_popup->hide();
     target_state->exit();
     delete target_state;
@@ -107,6 +111,10 @@ void OverlayWindow::disable() {
     winkey_popup = nullptr;
   }
   _enabled = false;
+}
+
+void OverlayWindow::disable() {
+  this->disable(true);
 }
 
 bool OverlayWindow::is_enabled() {
@@ -142,6 +150,7 @@ void OverlayWindow::was_hidden() {
 }
 
 void OverlayWindow::destroy() {
+  this->disable(false);
   delete this;
   instance = nullptr;
 }

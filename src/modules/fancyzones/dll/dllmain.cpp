@@ -154,12 +154,7 @@ public:
     // Disable the powertoy
     virtual void disable()
     {
-        if (m_app)
-        {
-            Trace::FancyZones::EnableFancyZones(false);
-            m_app->Destroy();
-            m_app = nullptr;
-        }
+        Disable(true);
     }
 
     // Returns if the powertoy is enabled
@@ -190,7 +185,7 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
-        disable();
+        Disable(false);
         delete this;
     }
 
@@ -205,6 +200,18 @@ private:
         auto style = GetWindowLongPtr(window, GWL_STYLE);
         auto exStyle = GetWindowLongPtr(window, GWL_EXSTYLE);
         return WI_IsFlagSet(style, WS_MAXIMIZEBOX) && WI_IsFlagClear(style, WS_CHILD) && WI_IsFlagClear(exStyle, WS_EX_TOOLWINDOW);
+    }
+
+    void Disable(bool const traceEvent)
+    {
+        if (m_app) {
+            if (traceEvent) 
+            {
+                Trace::FancyZones::EnableFancyZones(false);
+            }
+            m_app->Destroy();
+            m_app = nullptr;
+        }
     }
 
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;

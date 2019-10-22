@@ -26,12 +26,14 @@ public:
   void was_hidden();
 
   virtual void destroy() override;
+
 private:
   TargetState* target_state;
   D2DOverlayWindow *winkey_popup;
   bool _enabled = false;
 
   void init_settings();
+  void disable(bool trace_event);
 
   struct PressTime {
     PCWSTR name = L"press_time";

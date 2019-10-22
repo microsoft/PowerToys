@@ -24,7 +24,6 @@
     - signal_event() to send an event the PowerToy registered to.
 
   When terminating, the runner will:
-    - call disable(),
     - call destroy() which should free all the memory and delete the PowerToy object,
     - unload the DLL.
  */
