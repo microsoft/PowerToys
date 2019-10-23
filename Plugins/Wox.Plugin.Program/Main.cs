@@ -162,21 +162,24 @@ namespace Wox.Plugin.Program
             return menuOptions;
         }
 
-        private void DisableProgram(IProgram ProgramToDelete)
+        private void DisableProgram(IProgram programToDelete)
         {
-            if(_uwps.Any(x => x.UniqueIdentifier == ProgramToDelete.UniqueIdentifier))
-                _uwps.Where(x => x.UniqueIdentifier == ProgramToDelete.UniqueIdentifier).FirstOrDefault().Enabled = false;
+            if (_settings.DisabledProgramSources.Any(x => x.UniqueIdentifier == programToDelete.UniqueIdentifier))
+                return;
 
-            if (_win32s.Any(x => x.UniqueIdentifier == ProgramToDelete.UniqueIdentifier))
-                _win32s.Where(x => x.UniqueIdentifier == ProgramToDelete.UniqueIdentifier).FirstOrDefault().Enabled = false;
+            if (_uwps.Any(x => x.UniqueIdentifier == programToDelete.UniqueIdentifier))
+                _uwps.Where(x => x.UniqueIdentifier == programToDelete.UniqueIdentifier).FirstOrDefault().Enabled = false;
+
+            if (_win32s.Any(x => x.UniqueIdentifier == programToDelete.UniqueIdentifier))
+                _win32s.Where(x => x.UniqueIdentifier == programToDelete.UniqueIdentifier).FirstOrDefault().Enabled = false;
 
             _settings.DisabledProgramSources
                      .Add(
                              new Settings.DisabledProgramSource
                              {
-                                 Name = ProgramToDelete.Name,
-                                 Location = ProgramToDelete.Location,
-                                 UniqueIdentifier = ProgramToDelete.UniqueIdentifier,
+                                 Name = programToDelete.Name,
+                                 Location = programToDelete.Location,
+                                 UniqueIdentifier = programToDelete.UniqueIdentifier,
                                  Enabled = false
                              }
                          );
