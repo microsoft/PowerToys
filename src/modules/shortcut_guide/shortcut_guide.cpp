@@ -80,6 +80,7 @@ void OverlayWindow::set_config(const wchar_t * config) {
       winkey_popup->set_theme(theme.value);
     }
     _values.save_to_settings_file();
+    Trace::SettingsChanged(pressTime.value, overlayOpacity.value, theme.value);
   }
   catch (std::exception&) {
     // Improper JSON.

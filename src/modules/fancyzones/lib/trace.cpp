@@ -46,7 +46,7 @@ void Trace::FancyZones::EnableFancyZones(bool enabled) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones::Event::EnableFancyZones",
+        "FancyZones_EnableFancyZones",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(enabled, "Enabled"));
@@ -56,7 +56,7 @@ void Trace::FancyZones::ToggleZoneViewers(bool visible) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones::Event::ToggleZoneViewers",
+        "FancyZones_ToggleZoneViewers",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(visible, "Visible"));
@@ -66,7 +66,7 @@ void Trace::FancyZones::OnKeyDown(DWORD vkCode, bool win, bool control, bool inM
 {
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones::Event::OnKeyDown",
+        "FancyZones_OnKeyDown",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingValue(vkCode, "Hotkey"),
@@ -79,7 +79,7 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones::Event::SettingsChanged",
+        "FancyZones_SettingsChanged",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(settings.shiftDrag, "ShiftDrag"),
@@ -95,7 +95,7 @@ void Trace::VirtualDesktopChanged() noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones::Event::VirtualDesktopChanged",
+        "FancyZones_VirtualDesktopChanged",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
@@ -104,7 +104,7 @@ void Trace::ZoneWindow::KeyUp(WPARAM wParam, bool isEditorMode) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones::Event::ZoneWindowKeyUp",
+        "FancyZones_ZoneWindowKeyUp",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingValue(wParam, "KeyboardValue"),
@@ -116,7 +116,7 @@ void Trace::ZoneWindow::MoveSizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet)
     auto const zoneInfo = GetZoneSetInfo(activeSet);
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones::Event::MoveSizeEnd",
+        "FancyZones_MoveSizeEnd",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), "ActiveSet"),
@@ -130,7 +130,7 @@ void Trace::ZoneWindow::CycleActiveZoneSet(_In_opt_ winrt::com_ptr<IZoneSet> act
     auto const zoneInfo = GetZoneSetInfo(activeSet);
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones::Event::CycleActiveZoneSet",
+        "FancyZones_CycleActiveZoneSet",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), "ActiveSet"),
@@ -145,7 +145,7 @@ void Trace::ZoneWindow::EditorModeActivity::Start() noexcept
     m_activity = TraceLoggingActivity<g_hProvider, PROJECT_KEYWORD_MEASURE>();
     TraceLoggingWriteStart(
         m_activity.value(),
-        "FancyZones::Activity::EditorMode",
+        "FancyZones_Activity_EditorMode",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance));
 }
 
@@ -154,7 +154,7 @@ void Trace::ZoneWindow::EditorModeActivity::Stop(_In_opt_ winrt::com_ptr<IZoneSe
     auto const zoneInfo = GetZoneSetInfo(activeSet);
     TraceLoggingWriteStop(
         m_activity.value(),
-        "FancyZones::Activity::EditorMode",
+        "FancyZones_Activity_EditorMode",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), "ActiveSet"),
         TraceLoggingValue(zoneInfo.NumberOfZones, "NumberOfZones"),

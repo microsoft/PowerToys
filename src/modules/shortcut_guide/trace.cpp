@@ -16,7 +16,7 @@ void Trace::UnregisterProvider() noexcept {
   TraceLoggingUnregister(g_hProvider);
 }
 
-void Trace::EventHide(const __int64 duration_ms, std::vector<int> &key_pressed) noexcept {
+void Trace::HideGuide(const __int64 duration_ms, std::vector<int> &key_pressed) noexcept {
   std::string vk_codes;
   std::vector<int>::iterator it;
   for (it = key_pressed.begin(); it != key_pressed.end(); ) {
@@ -28,7 +28,7 @@ void Trace::EventHide(const __int64 duration_ms, std::vector<int> &key_pressed) 
 
   TraceLoggingWrite(
     g_hProvider,
-    "ShortcutGuide::Event::HideGuide",
+    "ShortcutGuide_HideGuide",
     TraceLoggingInt64(duration_ms, "DurationInMs"),
     TraceLoggingInt64(key_pressed.size(), "NumberOfKeysPressed"),
     TraceLoggingString(vk_codes.c_str(), "ListOfKeysPressed"),
@@ -37,11 +37,23 @@ void Trace::EventHide(const __int64 duration_ms, std::vector<int> &key_pressed) 
     TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
-void Trace::EnableShortcutGuide(bool enabled) noexcept {
+void Trace::EnableShortcutGuide(const bool enabled) noexcept {
   TraceLoggingWrite(
     g_hProvider,
-    "ShortcutGuide::Event::EnableGuide",
+    "ShortcutGuide_EnableGuide",
     TraceLoggingBoolean(enabled, "Enabled"),
+    ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+    TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
+    TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+void Trace::SettingsChanged(const int press_delay_time, const int overlay_opacity, const std::wstring& theme) noexcept {
+  TraceLoggingWrite(
+    g_hProvider,
+    "ShortcutGuide_SettingsChanged",
+    TraceLoggingInt32(press_delay_time, "PressDelayTime"),
+    TraceLoggingInt32(overlay_opacity, "OverlayOpacity"),
+    TraceLoggingWideString(theme.c_str(), "Theme"),
     ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
     TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
     TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
