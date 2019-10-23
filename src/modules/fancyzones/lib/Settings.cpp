@@ -92,7 +92,10 @@ IFACEMETHODIMP_(void) FancyZonesSettings::SetConfig(PCWSTR config) noexcept try
 {
     LoadSettings(config, false /*fromFile*/);
     SaveSettings();
-    m_callback->SettingsChanged();
+    if (m_callback)
+    {
+        m_callback->SettingsChanged();
+    }
     Trace::SettingsChanged(m_settings);
 }
 CATCH_LOG();
@@ -103,7 +106,7 @@ IFACEMETHODIMP_(void) FancyZonesSettings::CallCustomAction(PCWSTR action) noexce
     PowerToysSettings::CustomActionObject action_object =
         PowerToysSettings::CustomActionObject::from_json_string(action);
 
-    if (action_object.get_name() == L"ToggledFZEditor")
+    if (m_callback && action_object.get_name() == L"ToggledFZEditor")
     {
         m_callback->ToggleEditor();
     }
