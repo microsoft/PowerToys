@@ -78,17 +78,15 @@ namespace FancyZonesEditor
 
         private void EditLayout_Click(object sender, RoutedEventArgs e)
         {
-            _editing = true;
-            this.Close();
-
             EditorOverlay mainEditor = EditorOverlay.Current;
             LayoutModel model = mainEditor.DataContext as LayoutModel;
             if (model == null)
             {
-                mainEditor.Close();
                 return;
             }
             model.IsSelected = false;
+            _editing = true;
+            this.Close();
 
             bool isPredefinedLayout = Settings.IsPredefinedLayout(model);
 
@@ -150,9 +148,8 @@ namespace FancyZonesEditor
                 {
                     model.Apply((model as CanvasLayoutModel).Zones.ToArray());
                 }
+                this.Close();
             }
-
-            this.Close();
         }
 
         private void OnClosed(object sender, EventArgs e)
@@ -163,13 +160,18 @@ namespace FancyZonesEditor
             }
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
+        private void InitializedEventHandler(object sender, EventArgs e)
         {
-            foreach(LayoutModel model in _settings.CustomModels)
+            SetSelectedItem();
+        }
+
+        private void SetSelectedItem()
+        {
+            foreach (LayoutModel model in _settings.CustomModels)
             {
                 if (model.IsSelected)
                 {
-                    TemplateTab.SelectedIndex = 1;
+                    TemplateTab.SelectedItem = model;
                     return;
                 }
             }
@@ -180,7 +182,7 @@ namespace FancyZonesEditor
             LayoutModel model = ((FrameworkElement)sender).DataContext as LayoutModel;
             if (model.IsSelected)
             {
-                OnLoaded(null, null);
+                SetSelectedItem();
             }
             model.Delete();
         }

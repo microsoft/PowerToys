@@ -11,7 +11,7 @@
         Background="White"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
-        Loaded="OnLoaded"
+        Initialized="InitializedEventHandler"
         Closed="OnClosed">
     <Window.Resources>
         <local:BooleanToBrushConverter x:Key="BooleanToBrushConverter" />
@@ -222,7 +222,7 @@
 
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,12,0,16">
-                        <Button x:Name="EditTemplateBUtton" Padding="8" Content="Edit selected layout" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
+                        <Button x:Name="EditTemplateButton" Padding="8" Content="Edit selected layout" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
                         <Button x:Name="ApplyTemplateButton" Padding="8" Content="Apply" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
                     </StackPanel>
                 </StackPanel>
