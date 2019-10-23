@@ -29,7 +29,7 @@ namespace Wox.Infrastructure.UserSettings
                         ID = metadata.ID,
                         Name = metadata.Name,
                         ActionKeywords = metadata.ActionKeywords,
-                        Disabled = false
+                        Disabled = metadata.Disabled
                     };
                 }
             }
