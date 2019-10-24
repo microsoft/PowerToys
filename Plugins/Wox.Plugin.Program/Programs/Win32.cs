@@ -275,7 +275,7 @@ namespace Wox.Plugin.Program.Programs
                 .ToList()
                 .ForEach(x => listToAdd.Add(x));
 
-            var paths = listToAdd.ToArray();
+            var paths = listToAdd.Distinct().ToArray();
 
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ExeExtension).Select(ExeProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(ExeProgram);
