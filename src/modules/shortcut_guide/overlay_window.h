@@ -49,7 +49,7 @@ public:
   void set_theme(const std::wstring& theme);
 private:
   void animate(int vk_code, int offset);
-  bool show_thumbnail(const RECT& rect, double alpha);
+  bool show_thumbnail(const RECT& rect);
   void hide_thumbnail();
   virtual void init() override;
   virtual void resize() override;
@@ -66,6 +66,7 @@ private:
   int monitor_dx = 0, monitor_dy = 0;
   D2DText text;
   WindowsColors colors;
+  double animation_time = 0.3;
   Animation animation;
   RECT window_rect = {};
   Tasklist tasklist;
@@ -87,4 +88,5 @@ private:
     Light, Dark, System
   } theme_setting = System;
   bool light_mode = true;
+  bool hiding = false;
 };
