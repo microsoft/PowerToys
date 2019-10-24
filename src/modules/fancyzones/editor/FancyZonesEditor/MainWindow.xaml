@@ -11,7 +11,7 @@
         Width="810"
         SizeToContent="Height"
         Background="White"
-        ResizeMode="CanMinimize"
+        ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Loaded="OnLoaded"
         Closed="OnClosed">
