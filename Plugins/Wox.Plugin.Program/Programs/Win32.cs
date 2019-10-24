@@ -307,7 +307,6 @@ namespace Wox.Plugin.Program.Programs
             return programs;
         }
 
-
         private static ParallelQuery<Win32> AppPathsPrograms(string[] suffixes)
         {
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
