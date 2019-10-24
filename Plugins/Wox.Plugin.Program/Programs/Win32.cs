@@ -338,73 +338,48 @@ namespace Wox.Plugin.Program.Programs
 
         private static IEnumerable<Win32> ProgramsFromRegistryKey(RegistryKey root)
         {
-            var programs = root.GetSubKeyNames()
-                               .Select(subkey => ProgramFromRegistrySubkey(root, subkey))
-                               .Where(p => !string.IsNullOrEmpty(p.Name));
-            return programs;
+            return root
+                    .GetSubKeyNames()
+                    .Select(x => GetProgramRegistryPath(root, x))
+                    .Distinct()
+                    .Select(x => ProgramFromRegistrySubkey(x));
         }
 
-        private static Win32 ProgramFromRegistrySubkey(RegistryKey root, string subkey)
+        private static string GetProgramRegistryPath(RegistryKey root, string subkey)
         {
+            var path = string.Empty;
+
             using (var key = root.OpenSubKey(subkey))
             {
-                if (key != null)
-                {
-                    var defaultValue = string.Empty;
-                    var path = key.GetValue(defaultValue) as string;
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        // fix path like this: ""\"C:\\folder\\executable.exe\""
-                        path = path.Trim('"', ' ');
-                        path = Environment.ExpandEnvironmentVariables(path);
+                if (key == null)
+                    return string.Empty;
 
-                        if (File.Exists(path))
-                        {
-                            var entry = Win32Program(path);
-                            entry.ExecutableName = subkey;
-                            return entry;
-                        }
-                        else
-                        {
-                            return new Win32();
-                        }
-                    }
-                    else
-                    {
-                        return new Win32();
-                    }
-                }
-                else
-                {
-                    return new Win32();
-                }
+                var defaultValue = string.Empty;
+                path = key.GetValue(defaultValue) as string;
             }
+
+            if (string.IsNullOrEmpty(path))
+                return string.Empty;
+
+            // fix path like this: ""\"C:\\folder\\executable.exe\""
+            return path = path.Trim('"', ' ');
         }
 
-        //private static Win32 ScoreFilter(Win32 p)
-        //{
-        //    var start = new[] { "启动", "start" };
-        //    var doc = new[] { "帮助", "help", "文档", "documentation" };
-        //    var uninstall = new[] { "卸载", "uninstall" };
+        private static Win32 ProgramFromRegistrySubkey(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return new Win32();
 
-        //    var contained = start.Any(s => p.Name.ToLower().Contains(s));
-        //    if (contained)
-        //    {
-        //        p.Score += 10;
-        //    }
-        //    contained = doc.Any(d => p.Name.ToLower().Contains(d));
-        //    if (contained)
-        //    {
-        //        p.Score -= 10;
-        //    }
-        //    contained = uninstall.Any(u => p.Name.ToLower().Contains(u));
-        //    if (contained)
-        //    {
-        //        p.Score -= 20;
-        //    }
+            path = Environment.ExpandEnvironmentVariables(path);
 
-        //    return p;
-        //}
+            if (!File.Exists(path))
+                return new Win32();
+
+            var entry = Win32Program(path);
+            entry.ExecutableName = Path.GetFileName(path);
+
+            return entry;
+        }
 
         public static Win32[] All(Settings settings)
         {
