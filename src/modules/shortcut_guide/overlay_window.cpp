@@ -484,7 +484,7 @@ void render_arrow(D2DSVG& arrow, TasklistButton& button, RECT window, float max_
   }
 }
 
-bool D2DOverlayWindow::show_thumbnail(const RECT& rect, double alpha) {
+bool D2DOverlayWindow::show_thumbnail(const RECT& rect) {
   if (!thumbnail) {
     return false;
   }
@@ -492,7 +492,7 @@ bool D2DOverlayWindow::show_thumbnail(const RECT& rect, double alpha) {
   thumb_properties.dwFlags = DWM_TNP_SOURCECLIENTAREAONLY | DWM_TNP_VISIBLE | DWM_TNP_RECTDESTINATION | DWM_TNP_OPACITY;
   thumb_properties.fSourceClientAreaOnly = FALSE;
   thumb_properties.fVisible = TRUE;
-  thumb_properties.opacity = (BYTE)(255*alpha);
+  thumb_properties.opacity = 255;
   thumb_properties.rcDestination = rect;
   if (DwmUpdateThumbnailProperties(thumbnail, &thumb_properties) != S_OK) {
     return false;
@@ -600,7 +600,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)  {
     }
     // If the animation is done show the thumbnail
     //   we cannot animate the thumbnail, the animation lags behind
-    minature_shown = show_thumbnail(thumbnail_pos, current_anim_value);
+    minature_shown = show_thumbnail(thumbnail_pos);
   } else {
     hide_thumbnail();
   }

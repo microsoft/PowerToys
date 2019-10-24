@@ -49,7 +49,7 @@ public:
   void set_theme(const std::wstring& theme);
 private:
   void animate(int vk_code, int offset);
-  bool show_thumbnail(const RECT& rect, double alpha);
+  bool show_thumbnail(const RECT& rect);
   void hide_thumbnail();
   virtual void init() override;
   virtual void resize() override;
