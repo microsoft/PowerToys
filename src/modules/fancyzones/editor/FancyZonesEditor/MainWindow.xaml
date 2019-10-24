@@ -1,4 +1,5 @@
 ﻿<Controls:MetroWindow x:Class="FancyZonesEditor.MainWindow"
+        x:Name="MainWindow1"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,7 +7,8 @@
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:local="clr-namespace:FancyZonesEditor"
         mc:Ignorable="d"
-        Title="" Width="810"
+        Title=""
+        Width="810"
         SizeToContent="Height"
         Background="White"
         ResizeMode="NoResize"
@@ -174,8 +176,7 @@
     <StackPanel>
 
         <TextBlock Name="dialog_Title" Text="Choose your layout" Style="{StaticResource titleText}"  />
-
-
+        
         <TabControl BorderThickness="0" x:Name="TemplateTab">
             <TabItem Header="Templates" Template="{StaticResource myTabs}">
                 <StackPanel>
@@ -187,13 +188,13 @@
                     <ItemsControl ItemsSource="{Binding DefaultModels}" Margin="8,0,0,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal" ItemWidth="262" ItemHeight="262" />
+                                <WrapPanel Orientation="Horizontal" ItemWidth="{Binding ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Path=WrapPanelItemSize}" ItemHeight="{Binding ElementName=WrapPanel1, Path=ItemWidth}" x:Name="WrapPanel1" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Margin="8" 
-                                        BorderBrush="{Binding Path=IsSelected, Converter={StaticResource BooleanToBrushConverter}}" 
+                                        BorderBrush="{Binding Path=IsSelected, Converter={StaticResource BooleanToBrushConverter}}"
                                         Style="{StaticResource templateBackground}" 
                                         MouseDown="LayoutItem_Click">
                                     <DockPanel Margin="0,20,0,0" 
@@ -234,7 +235,7 @@
                     <ItemsControl ItemsSource="{Binding CustomModels}" Margin="8,8,0,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal" ItemWidth="262" ItemHeight="262" />
+                                <WrapPanel Orientation="Horizontal" ItemWidth="{Binding ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Path=WrapPanelItemSize}" ItemHeight="{Binding ElementName=WrapPanel2, Path=ItemWidth}" x:Name="WrapPanel2" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
