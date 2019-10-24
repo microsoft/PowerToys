@@ -317,14 +317,14 @@ namespace Wox.Plugin.Program.Programs
             {
                 if (root != null)
                 {
-                    programs.AddRange(ProgramsFromRegistryKey(root));
+                    programs.AddRange(GetProgramsFromRegistry(root));
                 }
             }
             using (var root = Registry.CurrentUser.OpenSubKey(appPaths))
             {
                 if (root != null)
                 {
-                    programs.AddRange(ProgramsFromRegistryKey(root));
+                    programs.AddRange(GetProgramsFromRegistry(root));
                 }
             }
 
@@ -336,16 +336,16 @@ namespace Wox.Plugin.Program.Programs
             return filtered;
         }
 
-        private static IEnumerable<Win32> ProgramsFromRegistryKey(RegistryKey root)
+        private static IEnumerable<Win32> GetProgramsFromRegistry(RegistryKey root)
         {
             return root
                     .GetSubKeyNames()
-                    .Select(x => GetProgramRegistryPath(root, x))
+                    .Select(x => GetProgramPathFromRegistrySubKeys(root, x))
                     .Distinct()
-                    .Select(x => ProgramFromRegistrySubkey(x));
+                    .Select(x => GetProgramFromPath(x));
         }
 
-        private static string GetProgramRegistryPath(RegistryKey root, string subkey)
+        private static string GetProgramPathFromRegistrySubKeys(RegistryKey root, string subkey)
         {
             var path = string.Empty;
 
@@ -365,7 +365,7 @@ namespace Wox.Plugin.Program.Programs
             return path = path.Trim('"', ' ');
         }
 
-        private static Win32 ProgramFromRegistrySubkey(string path)
+        private static Win32 GetProgramFromPath(string path)
         {
             if (string.IsNullOrEmpty(path))
                 return new Win32();
