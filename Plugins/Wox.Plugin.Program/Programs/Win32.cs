@@ -383,7 +383,7 @@ namespace Wox.Plugin.Program.Programs
 
         public static Win32[] All(Settings settings)
         {
-            ParallelQuery<Win32> programs = new List<Win32>().AsParallel();
+            var programs = new List<Win32>().AsParallel();
             
             var unregistered = UnregisteredPrograms(settings.ProgramSources, settings.ProgramSuffixes);
             programs = programs.Concat(unregistered);
@@ -397,8 +397,8 @@ namespace Wox.Plugin.Program.Programs
             {
                 var startMenu = StartMenuPrograms(settings.ProgramSuffixes);
                 programs = programs.Concat(startMenu);
-            }            
-            //.Select(ScoreFilter);
+            }
+
             return programs.ToArray();
         }
     }
