@@ -299,6 +299,7 @@ namespace Wox.Plugin.Program.Programs
             var paths = toFilter
                         .Where(t1 => !disabledProgramsList.Any(x => x.UniqueIdentifier == t1))
                         .Select(t1 => t1)
+                        .Distinct()
                         .ToArray();
 
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
