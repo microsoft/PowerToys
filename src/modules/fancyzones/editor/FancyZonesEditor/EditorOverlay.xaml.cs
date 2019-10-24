@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
@@ -71,8 +72,14 @@ namespace FancyZonesEditor
             InitializeComponent();
             Current = this;
 
-            Left = _settings.WorkArea.Left;
-            Top = _settings.WorkArea.Top;
+            Matrix matrix;
+            using (var src = new HwndSource(new HwndSourceParameters()))
+            {
+                matrix = src.CompositionTarget.TransformFromDevice;
+            }
+
+            Left = matrix.M11 * _settings.WorkArea.Left;
+            Top = matrix.M22 * _settings.WorkArea.Top;
             Width = _settings.WorkArea.Width;
             Height = _settings.WorkArea.Height;
         }
