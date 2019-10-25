@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,7 +9,7 @@ using System.Text;
 using Microsoft.Win32;
 using Shell;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Logger;
+using Wox.Plugin.Program.Logger;
 
 namespace Wox.Plugin.Program.Programs
 {
@@ -125,18 +124,28 @@ namespace Wox.Plugin.Program.Programs
 
         private static Win32 Win32Program(string path)
         {
-            var p = new Win32
+            try
             {
-                Name = Path.GetFileNameWithoutExtension(path),
-                IcoPath = path,
-                FullPath = path,
-                UniqueIdentifier = path,
-                ParentDirectory = Directory.GetParent(path).FullName,
-                Description = string.Empty,
-                Valid = true,
-                Enabled = true
-            };
-            return p;
+                var p = new Win32
+                {
+                    Name = Path.GetFileNameWithoutExtension(path),
+                    IcoPath = path,
+                    FullPath = path,
+                    UniqueIdentifier = path,
+                    ParentDirectory = Directory.GetParent(path).FullName,
+                    Description = string.Empty,
+                    Valid = true,
+                    Enabled = true
+                };
+                return p;
+            }
+            catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
+            {
+                ProgramLogger.LogException($"|Win32|Win32Program|{path}" +
+                                            $"|Permission denied when trying to load the program from {path}", e);
+
+                return new Win32() { Valid = false, Enabled = false };
+            }
         }
 
         private static Win32 LnkProgram(string path)
@@ -184,27 +193,43 @@ namespace Wox.Plugin.Program.Programs
             catch (COMException e)
             {
                 // C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\MiracastView.lnk always cause exception
-                Log.Exception($"|Win32.LnkProgram|COMException when parsing shortcut <{path}> with HResult <{e.HResult}>", e);
+                ProgramLogger.LogException($"|Win32|LnkProgram|{path}"+
+                                                "|Error caused likely due to trying to get the description of the program", e);
+
                 program.Valid = false;
                 return program;
             }
+#if !DEBUG //Only do a catch all in production. This is so make developer aware of any unhandled exception and add the exception handling in.
             catch (Exception e)
             {
-                Log.Exception($"|Win32.LnkProgram|Exception when parsing shortcut <{path}>", e);
+                ProgramLogger.LogException($"|Win32|LnkProgram|{path}" +
+                                                "|An unexpected error occurred in the calling method LnkProgram", e);
+
                 program.Valid = false;
                 return program;
             }
+#endif
         }
 
         private static Win32 ExeProgram(string path)
         {
-            var program = Win32Program(path);
-            var info = FileVersionInfo.GetVersionInfo(path);
-            if (!string.IsNullOrEmpty(info.FileDescription))
+            try
             {
-                program.Description = info.FileDescription;
+                var program = Win32Program(path);
+                var info = FileVersionInfo.GetVersionInfo(path);
+                if (!string.IsNullOrEmpty(info.FileDescription))
+                {
+                    program.Description = info.FileDescription;
+                }
+                return program;
             }
-            return program;
+            catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
+            {
+                ProgramLogger.LogException($"|Win32|ExeProgram|{path}" +
+                                            $"|Permission denied when trying to load the program from {path}", e);
+
+                return new Win32() { Valid = false, Enabled = false };
+            }
         }
 
         private static IEnumerable<string> ProgramPaths(string directory, string[] suffixes)
@@ -227,14 +252,15 @@ namespace Wox.Plugin.Program.Programs
                         }
                         catch (DirectoryNotFoundException e)
                         {
-                            Log.Exception($"|Program.Win32.ProgramPaths|skip directory(<{currentDirectory}>)", e);
-                            continue;
+                            ProgramLogger.LogException($"|Win32|ProgramPaths|{currentDirectory}" +
+                                                "|The directory trying to load the program from does not exist", e);
                         }
                     }
                 }
                 catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
                 {
-                    Log.Exception($"|Program.Win32.ProgramPaths|Don't have permission on <{currentDirectory}>", e);
+                    ProgramLogger.LogException($"|Win32|ProgramPaths|{currentDirectory}" +
+                                                $"|Permission denied when trying to load programs from {currentDirectory}", e);
                 }
 
                 try
@@ -246,7 +272,8 @@ namespace Wox.Plugin.Program.Programs
                 }
                 catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
                 {
-                    Log.Exception($"|Program.Win32.ProgramPaths|Don't have permission on <{currentDirectory}>", e);
+                    ProgramLogger.LogException($"|Win32|ProgramPaths|{currentDirectory}" +
+                                                $"|Permission denied when trying to load programs from {currentDirectory}", e);
                 }
             } while (folderQueue.Any());
             return files;
@@ -348,21 +375,30 @@ namespace Wox.Plugin.Program.Programs
         private static string GetProgramPathFromRegistrySubKeys(RegistryKey root, string subkey)
         {
             var path = string.Empty;
-
-            using (var key = root.OpenSubKey(subkey))
+            try
             {
-                if (key == null)
+                using (var key = root.OpenSubKey(subkey))
+                {
+                    if (key == null)
+                        return string.Empty;
+
+                    var defaultValue = string.Empty;
+                    path = key.GetValue(defaultValue) as string;
+                }
+
+                if (string.IsNullOrEmpty(path))
                     return string.Empty;
 
-                var defaultValue = string.Empty;
-                path = key.GetValue(defaultValue) as string;
+                // fix path like this: ""\"C:\\folder\\executable.exe\""
+                return path = path.Trim('"', ' ');
             }
+            catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
+            {
+                ProgramLogger.LogException($"|Win32|GetProgramPathFromRegistrySubKeys|{path}" +
+                                            $"|Permission denied when trying to load the program from {path}", e);
 
-            if (string.IsNullOrEmpty(path))
                 return string.Empty;
-
-            // fix path like this: ""\"C:\\folder\\executable.exe\""
-            return path = path.Trim('"', ' ');
+            }
         }
 
         private static Win32 GetProgramFromPath(string path)
@@ -383,23 +419,41 @@ namespace Wox.Plugin.Program.Programs
 
         public static Win32[] All(Settings settings)
         {
-            var programs = new List<Win32>().AsParallel();
-            
-            var unregistered = UnregisteredPrograms(settings.ProgramSources, settings.ProgramSuffixes);
-            programs = programs.Concat(unregistered);
-            if (settings.EnableRegistrySource)
+            try
             {
-                var appPaths = AppPathsPrograms(settings.ProgramSuffixes);
-                programs = programs.Concat(appPaths);
-            }
+                var programs = new List<Win32>().AsParallel();
 
-            if (settings.EnableStartMenuSource)
+                var unregistered = UnregisteredPrograms(settings.ProgramSources, settings.ProgramSuffixes);
+                programs = programs.Concat(unregistered);
+                if (settings.EnableRegistrySource)
+                {
+                    var appPaths = AppPathsPrograms(settings.ProgramSuffixes);
+                    programs = programs.Concat(appPaths);
+                }
+
+                if (settings.EnableStartMenuSource)
+                {
+                    var startMenu = StartMenuPrograms(settings.ProgramSuffixes);
+                    programs = programs.Concat(startMenu);
+                }
+
+                return programs.ToArray();
+            }
+#if DEBUG //This is to make developer aware of any unhandled exception and add in handling.
+            catch (Exception e)
             {
-                var startMenu = StartMenuPrograms(settings.ProgramSuffixes);
-                programs = programs.Concat(startMenu);
+                throw e;
             }
+#endif
 
-            return programs.ToArray();
+#if !DEBUG //Only do a catch all in production.
+            catch (Exception e)
+            {
+                ProgramLogger.LogException("|Win32|All|Not available|An unexpected error occurred", e);
+
+                return new Win32[0];
+            }
+#endif
         }
     }
 }

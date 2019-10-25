@@ -49,6 +49,9 @@
       <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NLog.4.2.0\lib\net45\NLog.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="ShObjIdlTlb">
@@ -71,6 +74,7 @@
     <Compile Include="AddProgramSource.xaml.cs">
       <DependentUpon>AddProgramSource.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Logger\ProgramLogger.cs" />
     <Compile Include="Views\Commands\ProgramSettingDisplay.cs" />
     <Compile Include="FileChangeWatcher.cs" />
     <Compile Include="Views\Models\ProgramSource.cs" />
