@@ -8,5 +8,6 @@
     "Language":"csharp",
     "Website":"https://github.com/Wox-launcher/Wox",
     "ExecuteFileName":"HelloWorldCSharp.dll",
-    "IcoPath":"app.png"
+    "IcoPath":"app.png",
+    "Disabled": true
 }
