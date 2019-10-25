@@ -10,9 +10,6 @@
 
 General project organization:
 
-#### The [`build`](/build) folder
-Contains the Azure pipeline CI build scripts.
-
 #### The [`deps`](/deps) folder
 Contains other projects that PowerToys uses as dependencies.
 
