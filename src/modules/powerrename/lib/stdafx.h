@@ -17,4 +17,6 @@
 #include <shobjidl.h>
 #include <shellapi.h>
 
+#include <ProjectTelemetry.h>
+
 #include "PowerRenameInterfaces.h"

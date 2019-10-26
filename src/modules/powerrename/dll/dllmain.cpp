@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "PowerRenameExt.h"
 #include <interface/powertoy_module_interface.h>
+#include <trace.h>
 #include <common/settings_objects.h>
 
 DWORD g_dwModuleRefCount = 0;
@@ -96,9 +97,11 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, void*)
     {
     case DLL_PROCESS_ATTACH:
         g_hInst = hInstance;
+        Trace::RegisterProvider();
         break;
 
     case DLL_PROCESS_DETACH:
+        Trace::RegisterProvider();
         break;
     }
     return TRUE;
@@ -233,11 +236,13 @@ public:
     void init_settings()
     {
         m_enabled = CPowerRenameMenu::IsEnabled();
+        Trace::EnablePowerRename(m_enabled);
     }
 
     void save_settings()
     {
         CPowerRenameMenu::SetEnabled(m_enabled);
+        Trace::EnablePowerRename(m_enabled);
     }
 
     PowerRenameModule()
