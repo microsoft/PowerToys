@@ -442,6 +442,8 @@ void CPowerRenameManager::_LogOperationTelemetry()
                 {
                     it->second++;
                 }
+
+                CoTaskMemFree(originalName);
             }
         }
     }
