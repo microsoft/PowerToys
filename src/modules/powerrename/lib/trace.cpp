@@ -22,7 +22,7 @@ void Trace::Invoked() noexcept
 {
   TraceLoggingWrite(
         g_hProvider,
-        "PowerRename::Event::Invoked",
+        "PowerRename_Invoked",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
@@ -31,7 +31,7 @@ void Trace::InvokedRet(_In_ HRESULT hr) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "PowerRename::Event::InvokedRet",
+        "PowerRename_InvokedRet",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingHResult(hr),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -41,7 +41,7 @@ void Trace::EnablePowerRename(_In_ bool enabled) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "PowerRename::Event::EnablePowerRename",
+        "PowerRename_EnablePowerRename",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(enabled, "Enabled"));
@@ -51,7 +51,7 @@ void Trace::UIShownRet(_In_ HRESULT hr) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "PowerRename::Event::UIShownRet",
+        "PowerRename_UIShownRet",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingHResult(hr),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -61,7 +61,7 @@ void Trace::RenameOperation(_In_ UINT totalItemCount, _In_ UINT selectedItemCoun
 {
     TraceLoggingWrite(
         g_hProvider,
-        "PowerRename::Event::RenameOperation",
+        "PowerRename_RenameOperation",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingUInt32(totalItemCount, "TotalItemCount"),
