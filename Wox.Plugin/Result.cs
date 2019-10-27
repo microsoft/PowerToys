@@ -110,6 +110,6 @@ namespace Wox.Plugin
         /// <summary>
         /// Plugin ID that generate this result
         /// </summary>
-        public string PluginID { get; set; }
+        public string PluginID { get; internal set; }
     }
 }

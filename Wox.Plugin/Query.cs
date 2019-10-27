@@ -6,6 +6,19 @@ namespace Wox.Plugin
 {
     public class Query
     {
+        internal Query() { }
+
+        /// <summary>
+        /// to allow unit tests for plug ins
+        /// </summary>
+        public Query(string rawQuery, string search, string[] terms, string actionKeyword = "")
+        {
+            Search = search;
+            RawQuery = rawQuery;
+            Terms = terms;
+            ActionKeyword = actionKeyword;
+        }
+
         /// <summary>
         /// Raw query, this includes action keyword if it has
         /// We didn't recommend use this property directly. You should always use Search property.

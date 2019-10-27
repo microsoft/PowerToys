@@ -8,6 +8,8 @@ namespace Wox.Infrastructure
 {
     public static class StringMatcher
     {
+        public static MatchOption DefaultMatchOption = new MatchOption();
+
         public static string UserSettingSearchPrecision { get; set; }
 
         [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
@@ -15,7 +17,7 @@ namespace Wox.Infrastructure
         {
             if (!string.IsNullOrEmpty(source) && !string.IsNullOrEmpty(target))
             {
-                return FuzzySearch(target, source, new MatchOption()).Score;
+                return FuzzySearch(target, source, DefaultMatchOption).Score;
             }
             else
             {
@@ -26,12 +28,12 @@ namespace Wox.Infrastructure
         [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
         public static bool IsMatch(string source, string target)
         {
-            return FuzzySearch(target, source, new MatchOption()).Score > 0;
+            return FuzzySearch(target, source, DefaultMatchOption).Score > 0;
         }
 
         public static MatchResult FuzzySearch(string query, string stringToCompare)
         {
-            return FuzzySearch(query, stringToCompare, new MatchOption());
+            return FuzzySearch(query, stringToCompare, DefaultMatchOption);
         }
 
         /// <summary>
@@ -41,7 +43,7 @@ namespace Wox.Infrastructure
         {
             if (string.IsNullOrEmpty(stringToCompare) || string.IsNullOrEmpty(query)) return new MatchResult { Success = false };
 
-            query.Trim();
+            query = query.Trim();
 
             var len = stringToCompare.Length;
             var compareString = opt.IgnoreCase ? stringToCompare.ToLower() : stringToCompare;
@@ -98,9 +100,9 @@ namespace Wox.Infrastructure
             var score = 100 * (query.Length + 1) / ((1 + firstIndex) + (matchLen + 1));
             //a match with less characters assigning more weights
             if (stringToCompare.Length - query.Length < 5)
-                score = score + 20;
+                score += 20;
             else if (stringToCompare.Length - query.Length < 10)
-                score = score + 10;
+                score += 10;
 
             return score;
         }
@@ -139,10 +141,10 @@ namespace Wox.Infrastructure
                 {
                     var combination = Alphabet.PinyinComination(source);                    
                     var pinyinScore = combination
-                        .Select(pinyin => FuzzySearch(target, string.Join("", pinyin), new MatchOption()).Score)
+                        .Select(pinyin => FuzzySearch(target, string.Join("", pinyin)).Score)
                         .Max();
                     var acronymScore = combination.Select(Alphabet.Acronym)                        
-                        .Select(pinyin => FuzzySearch(target, pinyin, new MatchOption()).Score)
+                        .Select(pinyin => FuzzySearch(target, pinyin).Score)
                         .Max();
                     var score = Math.Max(pinyinScore, acronymScore);
                     return score;
@@ -163,8 +165,9 @@ namespace Wox.Infrastructure
     {
         public bool Success { get; set; }
         public int Score { get; set; }
+        
         /// <summary>
-        /// hightlight string
+        /// highlight string
         /// </summary>
         public string Value { get; set; }
     }
