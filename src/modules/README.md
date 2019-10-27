@@ -14,5 +14,8 @@ Editor for the snap-zones of the FancyZones PowerToy.
 #### [`interface`](./interface)
 Definition of the interface used by the [`runner`](/src/runner) to manage the PowerToys. All PowerToys must implement this interface.
 
+#### [`powerrename`](./powerrename)
+PowerRename is a Windows Shell Context Menu Extension for advanced bulk renaming using simple search and replace or more powerful regular expression matching.
+
 #### [`shortcut_guide`](./shorcut_guide)
 The Windows Shortcut Guide, displayed when the WinKey is held for some time.
