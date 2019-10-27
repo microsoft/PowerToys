@@ -1,6 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Forms;
-using Wox.Plugin.Program.Programs;
+using Wox.Plugin.Program.Views.Models;
+using Wox.Plugin.Program.Views;
+using System.Linq;
 
 namespace Wox.Plugin.Program
 {
@@ -50,11 +52,17 @@ namespace Wox.Plugin.Program
             }
             if (_editing == null)
             {
-                var source = new Settings.ProgramSource
+                if (!ProgramSetting.ProgramSettingDisplayList.Any(x => x.UniqueIdentifier == Directory.Text))
                 {
-                    Location = Directory.Text,
-                };
-                _settings.ProgramSources.Add(source);
+                    var source = new ProgramSource
+                    {
+                        Location = Directory.Text,
+                        UniqueIdentifier = Directory.Text
+                    };
+
+                    _settings.ProgramSources.Insert(0, source);
+                    ProgramSetting.ProgramSettingDisplayList.Add(source);
+                }
             }
             else
             {

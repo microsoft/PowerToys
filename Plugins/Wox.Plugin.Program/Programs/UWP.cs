@@ -160,7 +160,13 @@ namespace Wox.Plugin.Program.Programs
                     }
                     return u.Apps;
                 }).ToArray();
-                return applications;
+
+                var updatedListWithoutDisabledApps = applications
+                                                        .Where(t1 => !Main._settings.DisabledProgramSources
+                                                                        .Any(x => x.UniqueIdentifier == t1.UniqueIdentifier))
+                                                        .Select(x => x);
+
+                return updatedListWithoutDisabledApps.ToArray();
             }
             else
             {
@@ -229,10 +235,16 @@ namespace Wox.Plugin.Program.Programs
         public class Application : IProgram
         {
             public string AppListEntry { get; set; }
+            public string UniqueIdentifier { get; set; }
             public string DisplayName { get; set; }
             public string Description { get; set; }
             public string UserModelId { get; set; }
             public string BackgroundColor { get; set; }
+
+            public string Name => DisplayName;
+            public string Location => Package.Location;
+
+            public bool Enabled { get; set; }
 
             public string LogoUri { get; set; }
             public string LogoPath { get; set; }
@@ -321,6 +333,7 @@ namespace Wox.Plugin.Program.Programs
             public Application(IAppxManifestApplication manifestApp, UWP package)
             {
                 UserModelId = manifestApp.GetAppUserModelId();
+                UniqueIdentifier = manifestApp.GetAppUserModelId();
                 DisplayName = manifestApp.GetStringValue("DisplayName");
                 Description = manifestApp.GetStringValue("Description");
                 BackgroundColor = manifestApp.GetStringValue("BackgroundColor");
@@ -330,6 +343,8 @@ namespace Wox.Plugin.Program.Programs
                 Description = ResourceFromPri(package.FullName, Description);
                 LogoUri = LogoUriFromManifest(manifestApp);
                 LogoPath = LogoPathFromUri(LogoUri);
+
+                Enabled = true;
             }
 
             internal string ResourceFromPri(string packageFullName, string resourceReference)

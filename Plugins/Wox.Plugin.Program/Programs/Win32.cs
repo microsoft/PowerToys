@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -18,12 +18,15 @@ namespace Wox.Plugin.Program.Programs
     public class Win32 : IProgram
     {
         public string Name { get; set; }
+        public string UniqueIdentifier { get; set; }
         public string IcoPath { get; set; }
         public string FullPath { get; set; }
         public string ParentDirectory { get; set; }
         public string ExecutableName { get; set; }
         public string Description { get; set; }
         public bool Valid { get; set; }
+        public bool Enabled { get; set; }
+        public string Location => ParentDirectory;
 
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
@@ -127,9 +130,11 @@ namespace Wox.Plugin.Program.Programs
                 Name = Path.GetFileNameWithoutExtension(path),
                 IcoPath = path,
                 FullPath = path,
+                UniqueIdentifier = path,
                 ParentDirectory = Directory.GetParent(path).FullName,
                 Description = string.Empty,
-                Valid = true
+                Valid = true,
+                Enabled = true
             };
             return p;
         }
@@ -262,9 +267,16 @@ namespace Wox.Plugin.Program.Programs
 
         private static ParallelQuery<Win32> UnregisteredPrograms(List<Settings.ProgramSource> sources, string[] suffixes)
         {
-            var paths = sources.Where(s => Directory.Exists(s.Location))
-                               .SelectMany(s => ProgramPaths(s.Location, suffixes))
-                               .ToArray();
+            var listToAdd = new List<string>();
+            sources.Where(s => Directory.Exists(s.Location) && s.Enabled)
+                .SelectMany(s => ProgramPaths(s.Location, suffixes))
+                .ToList()
+                .Where(t1 => !Main._settings.DisabledProgramSources.Any(x => t1 == x.UniqueIdentifier))
+                .ToList()
+                .ForEach(x => listToAdd.Add(x));
+
+            var paths = listToAdd.Distinct().ToArray();
+
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ExeExtension).Select(ExeProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(ExeProgram);
             var programs3 = from p in paths.AsParallel()
@@ -276,17 +288,25 @@ namespace Wox.Plugin.Program.Programs
 
         private static ParallelQuery<Win32> StartMenuPrograms(string[] suffixes)
         {
+            var disabledProgramsList = Main._settings.DisabledProgramSources;
+
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
             var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
             var paths1 = ProgramPaths(directory1, suffixes);
             var paths2 = ProgramPaths(directory2, suffixes);
-            var paths = paths1.Concat(paths2).ToArray();
+
+            var toFilter = paths1.Concat(paths2);
+            var paths = toFilter
+                        .Where(t1 => !disabledProgramsList.Any(x => x.UniqueIdentifier == t1))
+                        .Select(t1 => t1)
+                        .Distinct()
+                        .ToArray();
+
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p) == ApplicationReferenceExtension).Select(Win32Program);
             var programs = programs1.Concat(programs2).Where(p => p.Valid);
             return programs;
         }
-
 
         private static ParallelQuery<Win32> AppPathsPrograms(string[] suffixes)
         {
@@ -297,106 +317,88 @@ namespace Wox.Plugin.Program.Programs
             {
                 if (root != null)
                 {
-                    programs.AddRange(ProgramsFromRegistryKey(root));
+                    programs.AddRange(GetProgramsFromRegistry(root));
                 }
             }
             using (var root = Registry.CurrentUser.OpenSubKey(appPaths))
             {
                 if (root != null)
                 {
-                    programs.AddRange(ProgramsFromRegistryKey(root));
+                    programs.AddRange(GetProgramsFromRegistry(root));
                 }
             }
-            var filtered = programs.AsParallel().Where(p => suffixes.Contains(Extension(p.ExecutableName)));
+
+            var disabledProgramsList = Main._settings.DisabledProgramSources;
+            var toFilter = programs.AsParallel().Where(p => suffixes.Contains(Extension(p.ExecutableName)));
+
+            var filtered = toFilter.Where(t1 => !disabledProgramsList.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier)).Select(t1 => t1);
+
             return filtered;
         }
 
-        private static IEnumerable<Win32> ProgramsFromRegistryKey(RegistryKey root)
+        private static IEnumerable<Win32> GetProgramsFromRegistry(RegistryKey root)
         {
-            var programs = root.GetSubKeyNames()
-                               .Select(subkey => ProgramFromRegistrySubkey(root, subkey))
-                               .Where(p => !string.IsNullOrEmpty(p.Name));
-            return programs;
+            return root
+                    .GetSubKeyNames()
+                    .Select(x => GetProgramPathFromRegistrySubKeys(root, x))
+                    .Distinct()
+                    .Select(x => GetProgramFromPath(x));
         }
 
-        private static Win32 ProgramFromRegistrySubkey(RegistryKey root, string subkey)
+        private static string GetProgramPathFromRegistrySubKeys(RegistryKey root, string subkey)
         {
+            var path = string.Empty;
+
             using (var key = root.OpenSubKey(subkey))
             {
-                if (key != null)
-                {
-                    var defaultValue = string.Empty;
-                    var path = key.GetValue(defaultValue) as string;
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        // fix path like this: ""\"C:\\folder\\executable.exe\""
-                        path = path.Trim('"', ' ');
-                        path = Environment.ExpandEnvironmentVariables(path);
+                if (key == null)
+                    return string.Empty;
 
-                        if (File.Exists(path))
-                        {
-                            var entry = Win32Program(path);
-                            entry.ExecutableName = subkey;
-                            return entry;
-                        }
-                        else
-                        {
-                            return new Win32();
-                        }
-                    }
-                    else
-                    {
-                        return new Win32();
-                    }
-                }
-                else
-                {
-                    return new Win32();
-                }
+                var defaultValue = string.Empty;
+                path = key.GetValue(defaultValue) as string;
             }
+
+            if (string.IsNullOrEmpty(path))
+                return string.Empty;
+
+            // fix path like this: ""\"C:\\folder\\executable.exe\""
+            return path = path.Trim('"', ' ');
         }
 
-        //private static Win32 ScoreFilter(Win32 p)
-        //{
-        //    var start = new[] { "启动", "start" };
-        //    var doc = new[] { "帮助", "help", "文档", "documentation" };
-        //    var uninstall = new[] { "卸载", "uninstall" };
+        private static Win32 GetProgramFromPath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return new Win32();
 
-        //    var contained = start.Any(s => p.Name.ToLower().Contains(s));
-        //    if (contained)
-        //    {
-        //        p.Score += 10;
-        //    }
-        //    contained = doc.Any(d => p.Name.ToLower().Contains(d));
-        //    if (contained)
-        //    {
-        //        p.Score -= 10;
-        //    }
-        //    contained = uninstall.Any(u => p.Name.ToLower().Contains(u));
-        //    if (contained)
-        //    {
-        //        p.Score -= 20;
-        //    }
+            path = Environment.ExpandEnvironmentVariables(path);
 
-        //    return p;
-        //}
+            if (!File.Exists(path))
+                return new Win32();
+
+            var entry = Win32Program(path);
+            entry.ExecutableName = Path.GetFileName(path);
+
+            return entry;
+        }
 
         public static Win32[] All(Settings settings)
         {
-            ParallelQuery<Win32> programs = new List<Win32>().AsParallel();
+            var programs = new List<Win32>().AsParallel();
+            
+            var unregistered = UnregisteredPrograms(settings.ProgramSources, settings.ProgramSuffixes);
+            programs = programs.Concat(unregistered);
             if (settings.EnableRegistrySource)
             {
                 var appPaths = AppPathsPrograms(settings.ProgramSuffixes);
                 programs = programs.Concat(appPaths);
             }
+
             if (settings.EnableStartMenuSource)
             {
                 var startMenu = StartMenuPrograms(settings.ProgramSuffixes);
                 programs = programs.Concat(startMenu);
             }
-            var unregistered = UnregisteredPrograms(settings.ProgramSources, settings.ProgramSuffixes);
-            programs = programs.Concat(unregistered);
-            //.Select(ScoreFilter);
+
             return programs.ToArray();
         }
     }
