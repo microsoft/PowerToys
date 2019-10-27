@@ -55,7 +55,7 @@ namespace Wox.Test
                 results.Add(new Result
                 {
                     Title = str,
-                    Score = StringMatcher.FuzzySearch("inst", str, new MatchOption()).Score
+                    Score = StringMatcher.FuzzySearch("inst", str).Score
                 });
             }
 
@@ -72,7 +72,7 @@ namespace Wox.Test
         {
             var compareString = "Can have rum only in my glass";
 
-            var scoreResult = StringMatcher.FuzzySearch(searchString, compareString, new MatchOption()).Score;
+            var scoreResult = StringMatcher.FuzzySearch(searchString, compareString).Score;
 
             Assert.True(scoreResult == 0);
         }
@@ -92,7 +92,7 @@ namespace Wox.Test
                 results.Add(new Result
                 {
                     Title = str,
-                    Score = StringMatcher.FuzzySearch(searchTerm, str, new MatchOption()).Score
+                    Score = StringMatcher.FuzzySearch(searchTerm, str).Score
                 });
             }            
 
@@ -135,7 +135,7 @@ namespace Wox.Test
                 results.Add(new Result
                 {
                     Title = str,
-                    Score = StringMatcher.FuzzySearch(searchTerm, str, new MatchOption()).Score
+                    Score = StringMatcher.FuzzySearch(searchTerm, str).Score
                 });
             }
 
@@ -173,7 +173,7 @@ namespace Wox.Test
         {
             var expectedPrecisionString = (StringMatcher.SearchPrecisionScore)expectedPrecisionScore;            
             StringMatcher.UserSettingSearchPrecision = expectedPrecisionString.ToString();
-            var matchResult = StringMatcher.FuzzySearch(queryString, compareString, new MatchOption());
+            var matchResult = StringMatcher.FuzzySearch(queryString, compareString);
 
             Debug.WriteLine("");
             Debug.WriteLine("###############################################");
