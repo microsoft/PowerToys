@@ -7,7 +7,7 @@
 
 using namespace web;
 
-static std::wstring settings_theme;
+static std::wstring settings_theme = L"system";
 
 web::json::value load_general_settings() {
   auto loaded = PTSettingsHelper::load_general_settings();
