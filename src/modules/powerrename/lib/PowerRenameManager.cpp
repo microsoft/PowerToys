@@ -5,6 +5,8 @@
 #include <shlobj.h>
 #include "helpers.h"
 #include <filesystem>
+#include "trace.h"
+
 namespace fs = std::filesystem;
 
 extern HINSTANCE g_hInst;
@@ -407,6 +409,57 @@ LRESULT CPowerRenameManager::_WndProc(_In_ HWND hwnd, _In_ UINT msg, _In_ WPARAM
     return lRes;
 }
 
+void CPowerRenameManager::_LogOperationTelemetry()
+{
+    UINT renameItemCount = 0;
+    UINT selectedItemCount = 0;
+    UINT totalItemCount = 0;
+    DWORD flags = 0;
+
+    GetItemCount(&totalItemCount);
+    GetSelectedItemCount(&selectedItemCount);
+    GetRenameItemCount(&renameItemCount);
+    get_flags(&flags);
+
+
+    // Enumerate extensions used into a map
+    std::map<std::wstring, int> extensionsMap;
+    for (UINT i = 0; i < totalItemCount; i++)
+    {
+        CComPtr<IPowerRenameItem> spItem;
+        if (SUCCEEDED(GetItemByIndex(i, &spItem)))
+        {
+            PWSTR originalName;
+            if (SUCCEEDED(spItem->get_originalName(&originalName)))
+            {
+                std::wstring extension = fs::path(originalName).extension().wstring();
+                std::map<std::wstring, int>::iterator it = extensionsMap.find(extension);
+                if (it == extensionsMap.end())
+                {
+                    extensionsMap.insert({ extension, 1 });
+                }
+                else
+                {
+                    it->second++;
+                }
+
+                CoTaskMemFree(originalName);
+            }
+        }
+    }
+
+    std::wstring extensionList = L"";
+    for (auto elem : extensionsMap)
+    {
+        extensionList.append(elem.first);
+        extensionList.append(L":");
+        extensionList.append(std::to_wstring(elem.second));
+        extensionList.append(L",");
+    }
+
+    Trace::RenameOperation(totalItemCount, selectedItemCount, renameItemCount, flags, extensionList.c_str());
+}
+
 HRESULT CPowerRenameManager::_PerformFileOperation()
 {
     // Do we have items to rename?
@@ -415,6 +468,8 @@ HRESULT CPowerRenameManager::_PerformFileOperation()
     {
         return E_FAIL;
     }
+
+    _LogOperationTelemetry();
 
     // Wait for existing regex thread to finish
     _WaitForRegExWorkerThread();

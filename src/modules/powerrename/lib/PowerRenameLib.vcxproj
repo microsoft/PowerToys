@@ -98,6 +98,7 @@
       <SDLCheck>true</SDLCheck>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>..\;..\..\..\common;..\..\..\common\telemetry;..\..\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -132,6 +133,7 @@
       <SDLCheck>true</SDLCheck>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>..\;..\..\..\common;..\..\..\common\telemetry;..\..\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -148,6 +150,7 @@
     <ClInclude Include="srwlock.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="trace.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Helpers.cpp" />
@@ -160,6 +163,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

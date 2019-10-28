@@ -115,6 +115,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>..\;..\..\..\common;..\..\..\common\telemetry;..\..\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -155,6 +156,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>..\;..\..\..\common;..\..\..\common\telemetry;..\..\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

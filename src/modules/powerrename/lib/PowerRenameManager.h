@@ -82,6 +82,8 @@ protected:
     static LRESULT CALLBACK s_msgWndProc(_In_ HWND hwnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);
     LRESULT _WndProc(_In_ HWND hwnd, _In_ UINT msg, _In_ WPARAM wParam, _In_ LPARAM lParam);
 
+    void _LogOperationTelemetry();
+
     HANDLE m_regExWorkerThreadHandle = nullptr;
     HANDLE m_startRegExWorkerEvent = nullptr;
     HANDLE m_cancelRegExWorkerEvent = nullptr;

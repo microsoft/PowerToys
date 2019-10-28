@@ -3,6 +3,7 @@
 #include <PowerRenameUI.h>
 #include <PowerRenameItem.h>
 #include <PowerRenameManager.h>
+#include <trace.h>
 #include "resource.h"
 
 extern HINSTANCE g_hInst;
@@ -88,23 +89,24 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
 
 HRESULT CPowerRenameMenu::InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pici)
 {
-    // Check if we have disabled ourselves
-    if (!IsEnabled())
-        return E_FAIL;
-
     HRESULT hr = E_FAIL;
 
-    if ((IS_INTRESOURCE(pici->lpVerb)) &&
+    if (IsEnabled() &
+        (IS_INTRESOURCE(pici->lpVerb)) &&
         (LOWORD(pici->lpVerb) == 0))
     {
+        Trace::Invoked();
         IStream* pstrm = nullptr;
-        if (SUCCEEDED(CoMarshalInterThreadInterfaceInStream(__uuidof(m_spdo), m_spdo, &pstrm)))
+        hr = CoMarshalInterThreadInterfaceInStream(__uuidof(m_spdo), m_spdo, &pstrm);
+        if (SUCCEEDED(hr))
         {
             if (!SHCreateThread(s_PowerRenameUIThreadProc, pstrm, CTF_COINIT | CTF_PROCESS_REF, nullptr))
             {
                 pstrm->Release(); // if we failed to create the thread, then we must release the stream
+                hr = E_FAIL;
             }
         }
+        Trace::InvokedRet(hr);
     }
 
     return hr;
@@ -114,22 +116,27 @@ DWORD WINAPI CPowerRenameMenu::s_PowerRenameUIThreadProc(_In_ void* pData)
 {
     IStream* pstrm = static_cast<IStream*>(pData);
     CComPtr<IDataObject> spdo;
-    if (SUCCEEDED(CoGetInterfaceAndReleaseStream(pstrm, IID_PPV_ARGS(&spdo))))
+    HRESULT hr = CoGetInterfaceAndReleaseStream(pstrm, IID_PPV_ARGS(&spdo));
+    if (SUCCEEDED(hr))
     {
         // Create the smart rename manager
         CComPtr<IPowerRenameManager> spsrm;
-        if (SUCCEEDED(CPowerRenameManager::s_CreateInstance(&spsrm)))
+        hr = CPowerRenameManager::s_CreateInstance(&spsrm);
+        if (SUCCEEDED(hr))
         {
             // Create the factory for our items
             CComPtr<IPowerRenameItemFactory> spsrif;
-            if (SUCCEEDED(CPowerRenameItem::s_CreateInstance(nullptr, IID_PPV_ARGS(&spsrif))))
+            hr = CPowerRenameItem::s_CreateInstance(nullptr, IID_PPV_ARGS(&spsrif));
+            if (SUCCEEDED(hr))
             {
                 // Pass the factory to the manager
-                if (SUCCEEDED(spsrm->put_smartRenameItemFactory(spsrif)))
+                hr = spsrm->put_smartRenameItemFactory(spsrif);
+                if (SUCCEEDED(hr))
                 {
                     // Create the smart rename UI instance and pass the smart rename manager
                     CComPtr<IPowerRenameUI> spsrui;
-                    if (SUCCEEDED(CPowerRenameUI::s_CreateInstance(spsrm, spdo, false, &spsrui)))
+                    hr = CPowerRenameUI::s_CreateInstance(spsrm, spdo, false, &spsrui);
+                    if (SUCCEEDED(hr))
                     {
                         // Call blocks until we are done
                         spsrui->Show();
@@ -142,6 +149,8 @@ DWORD WINAPI CPowerRenameMenu::s_PowerRenameUIThreadProc(_In_ void* pData)
             spsrm->Shutdown();
         }
     }
+
+    Trace::UIShownRet(hr);
 
     return 0;
 }
