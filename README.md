@@ -75,7 +75,7 @@ A big thanks to everyone who has downloaded and started using the first PowerToy
 
 The team has been hard at working fixing bugs, addressing issues and implementing feature suggestions.  If you've downloaded the code and built the latest on your machine recently you've seen many of these improvements (dark mode!).  We're hoping to have a new official build out shortly with all these improvements and will also be signed by Microsoft.  A new utility is also coming soon: Chris Davis is working to integrate his [SmartRename tool](https://github.com/chrdavis/SmartRename) into PowerToys!
 
-![SmartRename](https://github.com/chrdavis/SmartRename/raw/master/Images/SmartRenameDemo.gif)
+![SmartRename](https://github.com/microsoft/PowerToys/raw/master/src/modules/powerrename/images/PowerRenameDemo.gif)
 
 ## Developer Guidance
 
