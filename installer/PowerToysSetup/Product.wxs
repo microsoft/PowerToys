@@ -248,6 +248,9 @@
       <Component Id="settings_html" Guid="87881A99-E917-4B0D-B1D8-5C6EB9709F96" Win64="yes">
         <File Source="$(var.RepoDir)\src\settings\settings-html\index.html" KeyPath="yes" />
       </Component>
+      <Component Id="settings_dark_html" Guid="855866C7-2F13-4B08-B5C1-B507354C2760" Win64="yes">
+        <File Source="$(var.RepoDir)\src\settings\settings-html\index-dark.html" KeyPath="yes" />
+      </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsHtmlDistInstallFolder" FileSource="$(var.RepoDir)\settings\settings-html\dist\">
       <Component Id="settings_js_bundle" Guid="9EF539C1-2F50-421E-B074-C58ED3A9785C" Win64="yes">
@@ -286,6 +289,7 @@
       <ComponentRef Id="Module_PowerRename" />
       <ComponentRef Id="settings_exe" />
       <ComponentRef Id="settings_html" />
+      <ComponentRef Id="settings_dark_html" />
       <ComponentRef Id="settings_js_bundle" />
     </ComponentGroup>
   </Fragment>
