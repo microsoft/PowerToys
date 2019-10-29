@@ -69,11 +69,7 @@ The full backlog of utilities can be found [here](https://github.com/Microsoft/P
 
 ### October Update
 
-**Update** - We've shipped 0.12!  
-
-A big thanks to everyone who has downloaded and started using the first PowerToys preview.  There's been over 150K downloads so far.  An even bigger thanks to everyone who has provided feedback and suggestions in the issues.  The community engagement has been really awesome to see.  
-
-The team has been hard at working fixing bugs, addressing issues and implementing feature suggestions.  If you've downloaded the code and built the latest on your machine recently you've seen many of these improvements (dark mode!).  We're hoping to have a new official build out shortly with all these improvements and will also be signed by Microsoft.  A new utility is also coming soon: Chris Davis is working to integrate his [SmartRename tool](https://github.com/chrdavis/SmartRename) into PowerToys!
+**Update** - We've shipped 0.12!  This release includes bug fixes, addresses issues and implements many feature suggestions.  This build and installer is also signed by Microsoft.  Last, but not least, this release includes a new utility: Chris Davis has integrated  [SmartRename tool](https://github.com/chrdavis/SmartRename) into PowerToys!
 
 ![SmartRename](https://github.com/microsoft/PowerToys/raw/master/src/modules/powerrename/images/PowerRenameDemo.gif)
 
