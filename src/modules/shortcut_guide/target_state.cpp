@@ -23,14 +23,14 @@ bool TargetState::signal_event(unsigned vk_code, bool key_down) {
   cv.notify_one();
   if (supress) {
     // Send a fake key-stroke to prevent the start menu from appearing.
-    // We use 0x07 VK code, which is undefined. It still prevents the
+    // We use 0xCF VK code, which is reserved. It still prevents the
     // start menu from appearing, but should not interfere with any
     // keyboard shortcuts.
     INPUT input[3] = { {},{},{} };
     input[0].type = INPUT_KEYBOARD;
-    input[0].ki.wVk = 0x07;
+    input[0].ki.wVk = 0xCF;
     input[1].type = INPUT_KEYBOARD;
-    input[1].ki.wVk = 0x07;
+    input[1].ki.wVk = 0xCF;
     input[1].ki.dwFlags = KEYEVENTF_KEYUP;
     input[2].type = INPUT_KEYBOARD;
     input[2].ki.wVk = VK_LWIN;
