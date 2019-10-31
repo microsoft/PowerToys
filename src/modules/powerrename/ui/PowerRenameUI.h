@@ -45,7 +45,7 @@ public:
     IFACEMETHODIMP_(ULONG) Release();
 
     // IPowerRenameUI
-    IFACEMETHODIMP Show();
+    IFACEMETHODIMP Show(_In_opt_ HWND hwndParent);
     IFACEMETHODIMP Close();
     IFACEMETHODIMP Update();
     IFACEMETHODIMP get_hwnd(_Out_ HWND* hwnd);

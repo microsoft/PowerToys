@@ -8,8 +8,11 @@
 
 extern HINSTANCE g_hInst;
 
-HWND g_hwndParent = 0;
-
+struct InvokeStruct
+{
+    HWND hwndParent;
+    IStream* pstrm;
+};
 
 const wchar_t powerRenameRegPath[] = L"Software\\Microsoft\\PowerRename";
 const wchar_t powerRenameRegEnabledName[] = L"Enabled";
@@ -73,15 +76,12 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
         return E_FAIL;
 
     HRESULT hr = E_UNEXPECTED;
-    if (m_spdo)
+    if (m_spdo && !(uFlags & (CMF_DEFAULTONLY | CMF_VERBSONLY | CMF_OPTIMIZEFORINVOKE)))
     {
-        if ((uFlags & ~CMF_OPTIMIZEFORINVOKE) && (uFlags & ~(CMF_DEFAULTONLY | CMF_VERBSONLY)))
-        {
-            wchar_t menuName[64] = { 0 };
-            LoadString(g_hInst, IDS_POWERRENAME, menuName, ARRAYSIZE(menuName));
-            InsertMenu(hMenu, index, MF_STRING | MF_BYPOSITION, uIDFirst++, menuName);
-            hr = MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1);
-        }
+        wchar_t menuName[64] = { 0 };
+        LoadString(g_hInst, IDS_POWERRENAME, menuName, ARRAYSIZE(menuName));
+        InsertMenu(hMenu, index, MF_STRING | MF_BYPOSITION, uIDFirst++, menuName);
+        hr = MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1);
     }
 
     return hr;
@@ -96,14 +96,24 @@ HRESULT CPowerRenameMenu::InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pici)
         (LOWORD(pici->lpVerb) == 0))
     {
         Trace::Invoked();
-        IStream* pstrm = nullptr;
-        hr = CoMarshalInterThreadInterfaceInStream(__uuidof(m_spdo), m_spdo, &pstrm);
+        InvokeStruct* pInvokeData = new InvokeStruct;
+        hr = pInvokeData ? S_OK : E_OUTOFMEMORY;
         if (SUCCEEDED(hr))
         {
-            if (!SHCreateThread(s_PowerRenameUIThreadProc, pstrm, CTF_COINIT | CTF_PROCESS_REF, nullptr))
+            pInvokeData->hwndParent = pici->hwnd;
+            hr = CoMarshalInterThreadInterfaceInStream(__uuidof(m_spdo), m_spdo, &(pInvokeData->pstrm));
+            if (SUCCEEDED(hr))
             {
-                pstrm->Release(); // if we failed to create the thread, then we must release the stream
-                hr = E_FAIL;
+                hr = SHCreateThread(s_PowerRenameUIThreadProc, pInvokeData, CTF_COINIT | CTF_PROCESS_REF, nullptr) ? S_OK : E_FAIL;
+                if (FAILED(hr))
+                {
+                    pInvokeData->pstrm->Release(); // if we failed to create the thread, then we must release the stream
+                }
+            }
+
+            if (FAILED(hr))
+            {
+                delete pInvokeData;
             }
         }
         Trace::InvokedRet(hr);
@@ -114,9 +124,9 @@ HRESULT CPowerRenameMenu::InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pici)
 
 DWORD WINAPI CPowerRenameMenu::s_PowerRenameUIThreadProc(_In_ void* pData)
 {
-    IStream* pstrm = static_cast<IStream*>(pData);
+    InvokeStruct* pInvokeData = static_cast<InvokeStruct*>(pData);
     CComPtr<IDataObject> spdo;
-    HRESULT hr = CoGetInterfaceAndReleaseStream(pstrm, IID_PPV_ARGS(&spdo));
+    HRESULT hr = CoGetInterfaceAndReleaseStream(pInvokeData->pstrm, IID_PPV_ARGS(&spdo));
     if (SUCCEEDED(hr))
     {
         // Create the smart rename manager
@@ -139,7 +149,7 @@ DWORD WINAPI CPowerRenameMenu::s_PowerRenameUIThreadProc(_In_ void* pData)
                     if (SUCCEEDED(hr))
                     {
                         // Call blocks until we are done
-                        spsrui->Show();
+                        spsrui->Show(pInvokeData->hwndParent);
                         spsrui->Close();
                     }
                 }
@@ -149,6 +159,8 @@ DWORD WINAPI CPowerRenameMenu::s_PowerRenameUIThreadProc(_In_ void* pData)
             spsrm->Shutdown();
         }
     }
+
+    delete pInvokeData;
 
     Trace::UIShownRet(hr);
 
