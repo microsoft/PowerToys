@@ -47,7 +47,7 @@ int APIENTRY wWinMain(
                     if (SUCCEEDED(CPowerRenameUI::s_CreateInstance(spsrm, nullptr, true, &spsrui)))
                     {
                         // Call blocks until we are done
-                        spsrui->Show();
+                        spsrui->Show(NULL);
                         spsrui->Close();
 
                         // Need to call shutdown to break circular dependencies

@@ -89,9 +89,9 @@ HRESULT CPowerRenameUI::s_CreateInstance(_In_ IPowerRenameManager* psrm, _In_opt
 }
 
 // IPowerRenameUI
-IFACEMETHODIMP CPowerRenameUI::Show()
+IFACEMETHODIMP CPowerRenameUI::Show(_In_opt_ HWND hwndParent)
 {
-    return _DoModal(NULL);
+    return _DoModal(hwndParent);
 }
 
 IFACEMETHODIMP CPowerRenameUI::Close()

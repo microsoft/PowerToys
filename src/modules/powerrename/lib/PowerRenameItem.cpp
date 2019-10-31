@@ -203,7 +203,7 @@ HRESULT CPowerRenameItem::_Init(_In_ IShellItem* psi)
     HRESULT hr = psi->GetDisplayName(SIGDN_FILESYSPATH, &m_path);
     if (SUCCEEDED(hr))
     {
-        hr = psi->GetDisplayName(SIGDN_NORMALDISPLAY, &m_originalName);
+        hr = SHStrDup(PathFindFileName(m_path), &m_originalName);
         if (SUCCEEDED(hr))
         {
             // Check if we are a folder now so we can check this attribute quickly later

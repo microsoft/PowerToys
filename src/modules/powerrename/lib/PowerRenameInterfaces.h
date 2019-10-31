@@ -102,7 +102,7 @@ public:
 interface __declspec(uuid("E6679DEB-460D-42C1-A7A8-E25897061C99")) IPowerRenameUI : public IUnknown
 {
 public:
-    IFACEMETHOD(Show)() = 0;
+    IFACEMETHOD(Show)(_In_opt_ HWND hwndParent) = 0;
     IFACEMETHOD(Close)() = 0;
     IFACEMETHOD(Update)() = 0;
 };
