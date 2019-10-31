@@ -7,7 +7,7 @@
   <Product Id="*"
        Name="PowerToys"
        Language="1033"
-       Version="0.12.0"
+       Version="0.13.0"
        Manufacturer="Microsoft"
        UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
 
@@ -17,7 +17,7 @@
 
     <Upgrade Id="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
       <UpgradeVersion
-         Minimum="0.11.0" Maximum="0.12.0"
+         Minimum="0.11.0" Maximum="0.13.0"
          Property="PREVIOUSVERSIONSINSTALLED"
          IncludeMinimum="yes" IncludeMaximum="yes" />
     </Upgrade>

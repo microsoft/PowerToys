@@ -191,7 +191,7 @@ export class GeneralSettings extends React.Component <any, any> {
           ref={(input) => {this.theme_reference=input;}}
         />
         <Stack>
-        <Label>Version 0.12.0</Label>
+        <Label>Version 0.13.0</Label>
           <PrimaryButton
             styles={{
                 root: {
