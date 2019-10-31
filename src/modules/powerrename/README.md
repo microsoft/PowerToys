@@ -75,6 +75,7 @@ Matching and variable examples:
 | ---------- | ------------- |--------------------------------------------|
 | (.\*).png  | foo\_$1.png   | Prepends "foo\_" to the existing file name |
 | (.\*).png  | $1\_foo.png   | Appends "\_foo" to the existing file name  |
+| (.\*)      | $1.txt        | Appends ".txt" extension to existing file name |
 
 
 ### External Help
