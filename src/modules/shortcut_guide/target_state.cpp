@@ -11,6 +11,12 @@ bool TargetState::signal_event(unsigned vk_code, bool key_down) {
   if (!events.empty() && events.back().key_down == key_down && events.back().vk_code == vk_code) {
     return false;
   }
+  // Hide the overlay when WinKey + Shift + S is pressed. 0x53 is the VK code of the S key
+  if (key_down && state == Shown && vk_code == 0x53 && (GetKeyState(VK_LSHIFT) || GetKeyState(VK_RSHIFT))) {
+    // We cannot use normal hide() here, there is stuff that needs deinitialization.
+    // It can be safely done when the user releases the WinKey.
+    instance->quick_hide();
+  }
   bool supress = false;
   if (!key_down && (vk_code == VK_LWIN || vk_code == VK_RWIN) &&
     state == Shown &&
