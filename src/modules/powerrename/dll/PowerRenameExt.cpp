@@ -100,6 +100,7 @@ HRESULT CPowerRenameMenu::InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pici)
         hr = pInvokeData ? S_OK : E_OUTOFMEMORY;
         if (SUCCEEDED(hr))
         {
+            pInvokeData->hwndParent = pici->hwnd;
             hr = CoMarshalInterThreadInterfaceInStream(__uuidof(m_spdo), m_spdo, &(pInvokeData->pstrm));
             if (SUCCEEDED(hr))
             {
