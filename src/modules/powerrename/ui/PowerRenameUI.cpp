@@ -668,6 +668,8 @@ void CPowerRenameUI::_MoveControl(_In_ DWORD id, _In_ DWORD repositionFlags, _In
     }
 
     SetWindowPos(hwnd, NULL, x, y, cx, cy, flags);
+
+    RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
 }
 
 void CPowerRenameUI::_OnSearchReplaceChanged()
