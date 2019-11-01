@@ -3,7 +3,6 @@
 
 class CPowerRenameListView
 {
-
 public:
     CPowerRenameListView() = default;
     ~CPowerRenameListView() = default;
@@ -90,13 +89,14 @@ private:
         return pDlg ? pDlg->_DlgProc(uMsg, wParam, lParam) : FALSE;
     }
 
-    INT_PTR _DlgProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-    void _OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam);
-    BOOL _OnNotify(_In_ WPARAM wParam, _In_ LPARAM lParam);
-
     HRESULT _Initialize(_In_ IPowerRenameManager* psrm, _In_opt_ IDataObject* pdo, _In_ bool enableDragDrop);
     void _Cleanup();
 
+    INT_PTR _DlgProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    void _OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam);
+    BOOL _OnNotify(_In_ WPARAM wParam, _In_ LPARAM lParam);
+    void _OnSize(_In_ WPARAM wParam);
+    void _OnGetMinMaxInfo(_In_ LPARAM lParam);
     void _OnInitDlg();
     void _OnRename();
     void _OnAbout();
@@ -104,6 +104,7 @@ private:
     void _OnDestroyDlg();
     void _OnClear();
     void _OnSearchReplaceChanged();
+    void _MoveControl(_In_ DWORD id, _In_ DWORD repositionFlags, _In_ int xDelta, _In_ int yDelta);
 
     HRESULT _ReadSettings();
     HRESULT _WriteSettings();
@@ -126,6 +127,10 @@ private:
     DWORD m_currentRegExId = 0;
     UINT m_selectedCount = 0;
     UINT m_renamingCount = 0;
+    int m_initialWidth = 0;
+    int m_initialHeight = 0;
+    int m_lastWidth = 0;
+    int m_lastHeight = 0;
     CComPtr<IPowerRenameManager> m_spsrm;
     CComPtr<IDataObject> m_spdo;
     CComPtr<IDropTargetHelper> m_spdth;
