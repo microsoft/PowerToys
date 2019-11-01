@@ -32,15 +32,47 @@ struct FlagCheckboxMap
 FlagCheckboxMap g_flagCheckboxMap[] =
 {
     { UseRegularExpressions, IDC_CHECK_USEREGEX },
-    { ExcludeSubfolders, IDC_CHECK_EXCLUDESUBFOLDERS },
-    { EnumerateItems, IDC_CHECK_ENUMITEMS },
-    { ExcludeFiles, IDC_CHECK_EXCLUDEFILES },
-    { CaseSensitive, IDC_CHECK_CASESENSITIVE },
-    { MatchAllOccurences, IDC_CHECK_MATCHALLOCCRENCES },
-    { ExcludeFolders, IDC_CHECK_EXCLUDEFOLDERS },
-    { NameOnly, IDC_CHECK_NAMEONLY },
-    { ExtensionOnly, IDC_CHECK_EXTENSIONONLY }
+    { ExcludeSubfolders,     IDC_CHECK_EXCLUDESUBFOLDERS },
+    { EnumerateItems,        IDC_CHECK_ENUMITEMS },
+    { ExcludeFiles,          IDC_CHECK_EXCLUDEFILES },
+    { CaseSensitive,         IDC_CHECK_CASESENSITIVE },
+    { MatchAllOccurences,    IDC_CHECK_MATCHALLOCCURENCES },
+    { ExcludeFolders,        IDC_CHECK_EXCLUDEFOLDERS },
+    { NameOnly,              IDC_CHECK_NAMEONLY },
+    { ExtensionOnly,         IDC_CHECK_EXTENSIONONLY }
 };
+
+struct RepositionMap
+{
+    DWORD id;
+    DWORD flags;
+};
+
+enum
+{
+    Reposition_None = 0,
+    Reposition_X = 0x1,
+    Reposition_Y = 0x2,
+    Reposition_Width = 0x4,
+    Reposition_Height = 0x8
+};
+
+RepositionMap g_repositionMap[] =
+{
+    { IDC_SEARCHREPLACEGROUP,       Reposition_Width },
+    { IDC_OPTIONSGROUP,             Reposition_Width },
+    { IDC_PREVIEWGROUP,             Reposition_Width | Reposition_Height },
+    { IDC_EDIT_SEARCHFOR,           Reposition_Width },
+    { IDC_EDIT_REPLACEWITH,         Reposition_Width },
+    { IDC_LIST_PREVIEW,             Reposition_Width | Reposition_Height },
+    { IDC_STATUS_MESSAGE,           Reposition_Y },
+    { ID_RENAME,                    Reposition_X | Reposition_Y },
+    { ID_ABOUT,                     Reposition_X | Reposition_Y },
+    { IDCANCEL,                     Reposition_X | Reposition_Y }
+};
+
+inline int RECT_WIDTH(RECT& r) { return r.right - r.left; }
+inline int RECT_HEIGHT(RECT& r) { return r.bottom - r.top; }
 
 // IUnknown
 IFACEMETHODIMP CPowerRenameUI::QueryInterface(__in REFIID riid, __deref_out void** ppv)
@@ -379,6 +411,14 @@ INT_PTR CPowerRenameUI::_DlgProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         bRet = _OnNotify(wParam, lParam);
         break;
 
+    case WM_SIZE:
+        _OnSize(wParam);
+        break;
+
+    case WM_GETMINMAXINFO:
+        _OnGetMinMaxInfo(lParam);
+        break;
+
     case WM_CLOSE:
         _OnCloseDlg();
         break;
@@ -429,6 +469,13 @@ void CPowerRenameUI::_OnInitDlg()
         RegisterDragDrop(m_hwnd, this);
     }
 
+    RECT rc = { 0 };
+    GetWindowRect(m_hwnd, &rc);
+    m_initialWidth = RECT_WIDTH(rc);
+    m_initialHeight = RECT_HEIGHT(rc);
+    m_lastWidth = m_initialWidth;
+    m_lastHeight = m_initialHeight;
+
     // Disable rename button by default.  It will be enabled in _UpdateCounts if
     // there are tiems to be renamed
     EnableWindow(GetDlgItem(m_hwnd, ID_RENAME), FALSE);
@@ -469,7 +516,7 @@ void CPowerRenameUI::_OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam)
     case IDC_CHECK_EXCLUDEFILES:
     case IDC_CHECK_EXCLUDEFOLDERS:
     case IDC_CHECK_EXCLUDESUBFOLDERS:
-    case IDC_CHECK_MATCHALLOCCRENCES:
+    case IDC_CHECK_MATCHALLOCCURENCES:
     case IDC_CHECK_USEREGEX:
     case IDC_CHECK_EXTENSIONONLY:
     case IDC_CHECK_NAMEONLY:
@@ -541,6 +588,88 @@ BOOL CPowerRenameUI::_OnNotify(_In_ WPARAM wParam, _In_ LPARAM lParam)
     }
 
     return ret;
+}
+
+void CPowerRenameUI::_OnGetMinMaxInfo(_In_ LPARAM lParam)
+{
+    if (m_initialWidth)
+    {
+        // Prevent resizing the dialog less than the original size
+        MINMAXINFO* pMinMaxInfo = reinterpret_cast<MINMAXINFO*>(lParam);
+        pMinMaxInfo->ptMinTrackSize.x = m_initialWidth;
+        pMinMaxInfo->ptMinTrackSize.y = m_initialHeight;
+    }
+}
+
+void CPowerRenameUI::_OnSize(_In_ WPARAM wParam)
+{
+    if ((wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED) && m_initialWidth)
+    {
+        // Calculate window size change delta
+        RECT rc = { 0 };
+        GetWindowRect(m_hwnd, &rc);
+
+        const int xDelta = RECT_WIDTH(rc) - m_lastWidth;
+        m_lastWidth += xDelta;
+        const int yDelta = RECT_HEIGHT(rc) - m_lastHeight;
+        m_lastHeight += yDelta;
+
+        for (UINT u = 0; u < ARRAYSIZE(g_repositionMap); u++)
+        {
+            _MoveControl(g_repositionMap[u].id, g_repositionMap[u].flags, xDelta, yDelta);
+        }
+    }
+}
+
+void CPowerRenameUI::_MoveControl(_In_ DWORD id, _In_ DWORD repositionFlags, _In_ int xDelta, _In_ int yDelta)
+{
+    HWND hwnd = GetDlgItem(m_hwnd, id);
+
+    UINT flags = SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE;
+    if (!((repositionFlags & Reposition_X) || (repositionFlags & Reposition_Y)))
+    {
+        flags |= SWP_NOMOVE;
+    }
+
+    if (!((repositionFlags & Reposition_Width) || (repositionFlags & Reposition_Height)))
+    {
+        flags |= SWP_NOSIZE;
+    }
+
+    RECT rcWindow = { 0 };
+    GetWindowRect(hwnd, &rcWindow);
+
+    int cx = RECT_WIDTH(rcWindow);
+    int cy = RECT_HEIGHT(rcWindow);
+
+    MapWindowPoints(HWND_DESKTOP, GetParent(hwnd), (LPPOINT)&rcWindow, 2);
+
+    int x = rcWindow.left;
+    int y = rcWindow.top;
+
+    if (repositionFlags & Reposition_X)
+    {
+        x += xDelta;
+    }
+
+    if (repositionFlags & Reposition_Y)
+    {
+        y += yDelta;
+    }
+
+    if (repositionFlags & Reposition_Width)
+    {
+        cx += xDelta;
+    }
+
+    if (repositionFlags & Reposition_Height)
+    {
+        cy += yDelta;
+    }
+
+    SetWindowPos(hwnd, NULL, x, y, cx, cy, flags);
+
+    RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
 }
 
 void CPowerRenameUI::_OnSearchReplaceChanged()
