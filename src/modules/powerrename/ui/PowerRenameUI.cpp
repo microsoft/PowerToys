@@ -123,7 +123,7 @@ HRESULT CPowerRenameUI::s_CreateInstance(_In_ IPowerRenameManager* psrm, _In_opt
 // IPowerRenameUI
 IFACEMETHODIMP CPowerRenameUI::Show(_In_opt_ HWND hwndParent)
 {
-    return _DoModal(hwndParent);
+    return _DoModeless(hwndParent);
 }
 
 IFACEMETHODIMP CPowerRenameUI::Close()
@@ -354,12 +354,25 @@ void CPowerRenameUI::_OnCloseDlg()
 {
     // Persist the current settings
     _WriteSettings();
-    EndDialog(m_hwnd, 1);
+
+    if (m_modeless)
+    {
+        DestroyWindow(m_hwnd);
+    }
+    else
+    {
+        EndDialog(m_hwnd, 1);
+    }
 }
 
 void CPowerRenameUI::_OnDestroyDlg()
 {
     _Cleanup();
+
+    if (m_modeless)
+    {
+        PostQuitMessage(0);
+    }
 }
 
 void CPowerRenameUI::_OnRename()
@@ -384,9 +397,37 @@ void CPowerRenameUI::_OnAbout()
 
 HRESULT CPowerRenameUI::_DoModal(__in_opt HWND hwnd)
 {
+    m_modeless = false;
     HRESULT hr = S_OK;
     INT_PTR ret = DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_MAIN), hwnd, s_DlgProc, (LPARAM)this);
     if (ret < 0)
+    {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+    }
+    return hr;
+}
+
+HRESULT CPowerRenameUI::_DoModeless(__in_opt HWND hwnd)
+{
+    m_modeless = true;
+    HRESULT hr = S_OK;
+    if (NULL != CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MAIN), hwnd, s_DlgProc, (LPARAM)this))
+    {
+        ShowWindow(m_hwnd, SW_SHOWNORMAL);
+        MSG msg;
+        while (GetMessage(&msg, NULL, 0, 0))
+        {
+            if (!IsDialogMessage(m_hwnd, &msg))
+            {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+        }
+
+        DestroyWindow(m_hwnd);
+        m_hwnd = NULL;
+    }
+    else
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
     }
@@ -618,6 +659,8 @@ void CPowerRenameUI::_OnSize(_In_ WPARAM wParam)
         {
             _MoveControl(g_repositionMap[u].id, g_repositionMap[u].flags, xDelta, yDelta);
         }
+
+        m_listview.OnSize();
     }
 }
 
@@ -784,7 +827,7 @@ void CPowerRenameListView::Init(_In_ HWND hwndLV)
         SetWindowLongPtr(m_hwndLV, GWL_STYLE, dwLVStyle);
 
         // Set the extended view styles
-        ListView_SetExtendedListViewStyle(m_hwndLV, LVS_EX_CHECKBOXES | LVS_EX_DOUBLEBUFFER);
+        ListView_SetExtendedListViewStyle(m_hwndLV, LVS_EX_CHECKBOXES | LVS_EX_DOUBLEBUFFER | LVS_EX_AUTOSIZECOLUMNS);
 
         // Get the system image lists.  Our list view is setup to not destroy
         // these since the image list belongs to the entire explorer process
@@ -964,6 +1007,14 @@ void CPowerRenameListView::GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout
             subItemText = nullptr;
         }
     }
+}
+
+void CPowerRenameListView::OnSize()
+{
+    RECT rc = { 0 };
+    GetClientRect(m_hwndLV, &rc);
+    ListView_SetColumnWidth(m_hwndLV, 0, RECT_WIDTH(rc) / 2);
+    ListView_SetColumnWidth(m_hwndLV, 1, RECT_WIDTH(rc) / 2);
 }
 
 void CPowerRenameListView::RedrawItems(_In_ int first, _In_ int last)

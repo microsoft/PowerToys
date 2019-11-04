@@ -16,6 +16,7 @@ public:
     void OnKeyDown(_In_ IPowerRenameManager* psrm, _In_ LV_KEYDOWN* lvKeyDown);
     void OnClickList(_In_ IPowerRenameManager* psrm, NM_LISTVIEW* pnmListView);
     void GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout_ LV_DISPINFO* plvdi);
+    void OnSize();
     HWND GetHWND() { return m_hwndLV; }
 
 private:
@@ -76,6 +77,7 @@ private:
     }
 
     HRESULT _DoModal(__in_opt HWND hwnd);
+    HRESULT _DoModeless(__in_opt HWND hwnd);
 
     static INT_PTR CALLBACK s_DlgProc(HWND hdlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
@@ -120,6 +122,7 @@ private:
     bool m_initialized = false;
     bool m_enableDragDrop = false;
     bool m_disableCountUpdate = false;
+    bool m_modeless = true;
     HWND m_hwnd = nullptr;
     HWND m_hwndLV = nullptr;
     HICON m_iconMain = nullptr;
