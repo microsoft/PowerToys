@@ -1,4 +1,6 @@
 #include "pch.h"
+#include <common/dpi_aware.h>
+
 #include <ShellScalingApi.h>
 
 struct ZoneWindow : public winrt::implements<ZoneWindow, IZoneWindow>
@@ -1284,7 +1286,7 @@ UINT ZoneWindow::GetDpiForMonitor() noexcept
         }
     }
 
-    return (dpi == 0) ? 96 : dpi;
+    return (dpi == 0) ? DPIAware::DEFAULT_DPI : dpi;
 }
 #pragma endregion
 

@@ -239,8 +239,8 @@ void FancyZones::ToggleEditor() noexcept
     }
 
     HMONITOR monitor{};
-    UINT dpi_x = 96;
-    UINT dpi_y = 96;
+    UINT dpi_x = DPIAware::DEFAULT_DPI;
+    UINT dpi_y = DPIAware::DEFAULT_DPI;
 
     if (m_settings->GetSettings().use_cursorpos_editor_startupscreen)
     {
@@ -278,15 +278,17 @@ void FancyZones::ToggleEditor() noexcept
     // From there, we need to scale the difference between the monitor and workarea rects to get the
     // appropriate offset where the overlay should appear.
     // This covers the cases where the taskbar is not at the bottom of the screen.
-    const auto x = mi.rcMonitor.left + MulDiv(mi.rcWork.left - mi.rcMonitor.left, 96, dpi_x);
-    const auto y = mi.rcMonitor.top + MulDiv(mi.rcWork.top - mi.rcMonitor.top, 96, dpi_y);
+    const auto taskbar_x_offset = MulDiv(mi.rcWork.left - mi.rcMonitor.left, DPIAware::DEFAULT_DPI, dpi_x);
+    const auto taskbar_y_offset = MulDiv(mi.rcWork.top - mi.rcMonitor.top, DPIAware::DEFAULT_DPI, dpi_y);
+    const auto x = mi.rcMonitor.left + taskbar_x_offset;
+    const auto y = mi.rcMonitor.top + taskbar_y_offset;
 
     // Location that the editor should occupy, scaled by DPI
-    std::wstring editorLocation = 
+    const std::wstring editorLocation = 
         std::to_wstring(x) + L"_" +
         std::to_wstring(y) + L"_" +
-        std::to_wstring(MulDiv(mi.rcWork.right - mi.rcWork.left, 96, dpi_x)) + L"_" +
-        std::to_wstring(MulDiv(mi.rcWork.bottom - mi.rcWork.top, 96, dpi_y));
+        std::to_wstring(MulDiv(mi.rcWork.right - mi.rcWork.left, DPIAware::DEFAULT_DPI, dpi_x)) + L"_" +
+        std::to_wstring(MulDiv(mi.rcWork.bottom - mi.rcWork.top, DPIAware::DEFAULT_DPI, dpi_y));
 
     const std::wstring params =
         iter->second->UniqueId() + L" " +
@@ -294,7 +296,7 @@ void FancyZones::ToggleEditor() noexcept
         std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
         editorLocation + L" " +
         iter->second->WorkAreaKey() + L" " +
-        std::to_wstring(static_cast<float>(dpi_x) / 96.0f);
+        std::to_wstring(static_cast<float>(dpi_x) / DPIAware::DEFAULT_DPI);
 
     SHELLEXECUTEINFO sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
