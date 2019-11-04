@@ -220,6 +220,7 @@ private:
     void MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     void MoveSizeUpdate(POINT const& ptScreen) noexcept;
 
+    HANDLE m_moved_window = nullptr;
     winrt::com_ptr<IFancyZones> m_app;
     winrt::com_ptr<IFancyZonesSettings> m_settings;
 };
@@ -298,6 +299,7 @@ void FancyZonesModule::MoveSizeStart(HWND window, POINT const& ptScreen) noexcep
     {
         if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
         {
+            m_moved_window = window;
             m_app.as<IFancyZonesCallback>()->MoveSizeStart(window, monitor, ptScreen);
         }
     }
@@ -305,8 +307,9 @@ void FancyZonesModule::MoveSizeStart(HWND window, POINT const& ptScreen) noexcep
 
 void FancyZonesModule::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
 {
-    if (IsInterestingWindow(window))
+    if (IsInterestingWindow(window) || (window != nullptr && window == m_moved_window))
     {
+        m_moved_window = nullptr;
         m_app.as<IFancyZonesCallback>()->MoveSizeEnd(window, ptScreen);
     }
 }
