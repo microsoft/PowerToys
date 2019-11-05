@@ -11,7 +11,7 @@ public:
         LoadSettings(name, true /*fromFile*/);
     }
 
-    IFACEMETHODIMP_(void) SetCallback(IFancyZonesCallback* callback) { m_callback.attach(callback); }
+    IFACEMETHODIMP_(void) SetCallback(IFancyZonesCallback* callback) { m_callback = callback; }
     IFACEMETHODIMP_(bool) GetConfig(_Out_ PWSTR buffer, _Out_ int *buffer_sizeg) noexcept;
     IFACEMETHODIMP_(void) SetConfig(PCWSTR config) noexcept;
     IFACEMETHODIMP_(void) CallCustomAction(PCWSTR action) noexcept;
@@ -21,7 +21,7 @@ private:
     void LoadSettings(PCWSTR config, bool fromFile) noexcept;
     void SaveSettings() noexcept;
 
-    winrt::com_ptr<IFancyZonesCallback> m_callback;
+    IFancyZonesCallback* m_callback{};
     const HINSTANCE m_hinstance;
     PCWSTR m_name{};
 
