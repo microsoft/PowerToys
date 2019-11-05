@@ -8,6 +8,8 @@
 #include "trace.h"
 #include "general_settings.h"
 
+#include <common/dpi_aware.h>
+
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
 #endif
@@ -31,6 +33,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     // The app is already running
     return 0;
   }
+
+  DPIAware::EnableDPIAwarenessForThisThread();
   
   #if _DEBUG && _WIN64
   //Global error handlers to diagnose errors.

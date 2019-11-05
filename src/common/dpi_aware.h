@@ -7,4 +7,5 @@ struct DPIAware {
   static HRESULT GetScreenDPIForWindow(HWND hwnd, UINT & dpi_x, UINT & dpi_y);
   static HRESULT GetScreenDPIForPoint(POINT p, UINT& dpi_x, UINT& dpi_y);
   static void Convert(HMONITOR monitor_handle, int &width, int &height);
+  static void EnableDPIAwarenessForThisThread();
 };

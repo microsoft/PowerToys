@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "common/dpi_aware.h"
+#include "common/on_thread_executor.h"
 
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
@@ -88,6 +89,8 @@ private:
     GUID m_currentVirtualDesktopId{};
     wil::unique_handle m_terminateEditorEvent;
 
+    OnThreadExecutor m_dpi_unaware_executor;
+
     static UINT WM_PRIV_VDCHANGED;
     static UINT WM_PRIV_EDITOR;
 
@@ -120,6 +123,11 @@ IFACEMETHODIMP_(void) FancyZones::Run() noexcept
 
     RegisterHotKey(m_window, 1, m_settings->GetSettings().editorHotkey.get_modifiers(), m_settings->GetSettings().editorHotkey.get_code());
     VirtualDesktopChanged();
+
+    m_dpi_unaware_executor.submit(OnThreadExecutor::task_t{[]{
+      SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
+      SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
+    }}).wait();
 }
 
 // IFancyZones
@@ -239,22 +247,22 @@ void FancyZones::ToggleEditor() noexcept
     }
 
     HMONITOR monitor{};
+    HWND foregroundWindow{};
+
     UINT dpi_x = DPIAware::DEFAULT_DPI;
     UINT dpi_y = DPIAware::DEFAULT_DPI;
 
-    if (m_settings->GetSettings().use_cursorpos_editor_startupscreen)
+    const bool use_cursorpos_editor_startupscreen = m_settings->GetSettings().use_cursorpos_editor_startupscreen;
+    POINT currentCursorPos{};
+    if (use_cursorpos_editor_startupscreen)
     {
-        POINT currentCursorPos{};
         GetCursorPos(&currentCursorPos);
-
         monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
-        DPIAware::GetScreenDPIForPoint(currentCursorPos, dpi_x, dpi_y);
     }
     else
     {
-        const HWND foregroundWindow = GetForegroundWindow();
+        foregroundWindow = GetForegroundWindow();
         monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTOPRIMARY);
-        DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
     }
 
 
@@ -272,7 +280,16 @@ void FancyZones::ToggleEditor() noexcept
 
     MONITORINFOEX mi;
     mi.cbSize = sizeof(mi);
-    GetMonitorInfo(monitor, &mi);
+
+    m_dpi_unaware_executor.submit(OnThreadExecutor::task_t{[&]{
+      if(use_cursorpos_editor_startupscreen)
+        DPIAware::GetScreenDPIForPoint(currentCursorPos, dpi_x, dpi_y);
+      else
+        DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
+
+      GetMonitorInfo(monitor, &mi);
+    }}).wait();
+
 
     // X/Y need to start in unscaled screen coordinates to get to the proper top/left of the monitor
     // From there, we need to scale the difference between the monitor and workarea rects to get the
@@ -282,13 +299,14 @@ void FancyZones::ToggleEditor() noexcept
     const auto taskbar_y_offset = MulDiv(mi.rcWork.top - mi.rcMonitor.top, DPIAware::DEFAULT_DPI, dpi_y);
     const auto x = mi.rcMonitor.left + taskbar_x_offset;
     const auto y = mi.rcMonitor.top + taskbar_y_offset;
-
+    const auto width = MulDiv(mi.rcWork.right - mi.rcWork.left, DPIAware::DEFAULT_DPI, dpi_x);
+    const auto height = MulDiv(mi.rcWork.bottom - mi.rcWork.top, DPIAware::DEFAULT_DPI, dpi_y);
     // Location that the editor should occupy, scaled by DPI
     const std::wstring editorLocation = 
         std::to_wstring(x) + L"_" +
         std::to_wstring(y) + L"_" +
-        std::to_wstring(MulDiv(mi.rcWork.right - mi.rcWork.left, DPIAware::DEFAULT_DPI, dpi_x)) + L"_" +
-        std::to_wstring(MulDiv(mi.rcWork.bottom - mi.rcWork.top, DPIAware::DEFAULT_DPI, dpi_y));
+        std::to_wstring(width) + L"_" +
+        std::to_wstring(height);
 
     const std::wstring params =
         iter->second->UniqueId() + L" " +
