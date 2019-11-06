@@ -163,9 +163,9 @@ namespace Wox.Plugin.Program.Programs
                     }
 #endif
 #if DEBUG //make developer aware and implement handling
-                    catch(Exception)
+                    catch(Exception e)
                     {
-                        throw;
+                        throw e;
                     }
 #endif
                     return u.Apps;
