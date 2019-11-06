@@ -89,7 +89,7 @@ private:
     GUID m_currentVirtualDesktopId{};
     wil::unique_handle m_terminateEditorEvent;
 
-    OnThreadExecutor m_dpi_unaware_executor;
+    OnThreadExecutor m_dpiUnawareThread;
 
     static UINT WM_PRIV_VDCHANGED;
     static UINT WM_PRIV_EDITOR;
@@ -124,9 +124,9 @@ IFACEMETHODIMP_(void) FancyZones::Run() noexcept
     RegisterHotKey(m_window, 1, m_settings->GetSettings().editorHotkey.get_modifiers(), m_settings->GetSettings().editorHotkey.get_code());
     VirtualDesktopChanged();
 
-    m_dpi_unaware_executor.submit(OnThreadExecutor::task_t{[]{
-      SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
-      SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
+    m_dpiUnawareThread.submit(OnThreadExecutor::task_t{[]{
+        SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
+        SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
     }}).wait();
 }
 
@@ -281,11 +281,15 @@ void FancyZones::ToggleEditor() noexcept
     MONITORINFOEX mi;
     mi.cbSize = sizeof(mi);
 
-    m_dpi_unaware_executor.submit(OnThreadExecutor::task_t{[&]{
-      if(use_cursorpos_editor_startupscreen)
-        DPIAware::GetScreenDPIForPoint(currentCursorPos, dpi_x, dpi_y);
-      else
-        DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
+    m_dpiUnawareThread.submit(OnThreadExecutor::task_t{[&]{
+        if(use_cursorpos_editor_startupscreen)
+        {
+            DPIAware::GetScreenDPIForPoint(currentCursorPos, dpi_x, dpi_y);
+        }
+        else
+        {
+            DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
+        }
 
       GetMonitorInfo(monitor, &mi);
     }}).wait();

@@ -34,7 +34,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     return 0;
   }
 
-  DPIAware::EnableDPIAwarenessForThisThread();
+  DPIAware::EnableDPIAwarenessForThisProcess();
   
   #if _DEBUG && _WIN64
   //Global error handlers to diagnose errors.
