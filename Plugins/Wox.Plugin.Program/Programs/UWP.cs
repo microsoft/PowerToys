@@ -157,7 +157,7 @@ namespace Wox.Plugin.Program.Programs
 #if !DEBUG
                     catch (Exception e)
                     {
-                        ProgramLogger.LogException("|UWP|All|An unexpected error occured and "
+                        ProgramLogger.LogException($"|UWP|All|{p.InstalledLocation}|An unexpected error occured and "
                                                         + $"unable to convert Package to UWP for {p.Id.FullName}", e);
                         return new Application[] { };
                     }
