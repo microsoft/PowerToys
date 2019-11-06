@@ -817,33 +817,36 @@ void ZoneWindow::DrawActiveZoneSet(wil::unique_hdc& hdc, RECT const& clientRect)
         ColorSetting const colorFlash      { 200, RGB(81, 92, 107),   200, RGB(104, 118, 138), -2 };
 
         auto zones = m_activeZoneSet->GetZones();
-        size_t colorIndex = zones.size() - 1;
+        const size_t maxColorIndex = min(size(zones) - 1, size(colors) - 1);
+        size_t colorIndex = maxColorIndex;
         for (auto iter = zones.rbegin(); iter != zones.rend(); iter++)
         {
-            if (winrt::com_ptr<IZone> zone = iter->try_as<IZone>())
+            winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
+            if (!zone)
             {
-                if (zone != m_highlightZone)
-                {
-                    if (m_flashMode)
-                    {
-                        DrawZone(hdc, colorFlash, zone);
-                    }
-                    else if (m_drawHints)
-                    {
-                        DrawZone(hdc, colorHints, zone);
-                    }
-                    else if (m_editorMode)
-                    {
-                        DrawZone(hdc, colorEditorMode, zone);
-                    }
-                    else
-                    {
-                        colorViewer.fill = colors[colorIndex];
-                        DrawZone(hdc, colorViewer, zone);
-                    }
-                }
-                colorIndex--;
+                continue;
             }
+            if (zone != m_highlightZone)
+            {
+                if (m_flashMode)
+                {
+                    DrawZone(hdc, colorFlash, zone);
+                }
+                else if (m_drawHints)
+                {
+                    DrawZone(hdc, colorHints, zone);
+                }
+                else if (m_editorMode)
+                {
+                    DrawZone(hdc, colorEditorMode, zone);
+                }
+                else
+                {
+                    colorViewer.fill = colors[colorIndex];
+                    DrawZone(hdc, colorViewer, zone);
+                }
+            }
+            colorIndex = colorIndex != 0 ? colorIndex - 1 : maxColorIndex;
         }
 
         if (m_highlightZone)
