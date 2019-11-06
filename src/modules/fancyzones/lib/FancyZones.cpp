@@ -282,30 +282,26 @@ void FancyZones::ToggleEditor() noexcept
     mi.cbSize = sizeof(mi);
 
     m_dpiUnawareThread.submit(OnThreadExecutor::task_t{[&]{
-        if(use_cursorpos_editor_startupscreen)
-        {
-            DPIAware::GetScreenDPIForPoint(currentCursorPos, dpi_x, dpi_y);
-        }
-        else
-        {
-            DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
-        }
-
-      GetMonitorInfo(monitor, &mi);
+        GetMonitorInfo(monitor, &mi);
     }}).wait();
 
+    if(use_cursorpos_editor_startupscreen)
+    {
+        DPIAware::GetScreenDPIForPoint(currentCursorPos, dpi_x, dpi_y);
+    }
+    else
+    {
+        DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
+    }
 
-    // X/Y need to start in unscaled screen coordinates to get to the proper top/left of the monitor
-    // From there, we need to scale the difference between the monitor and workarea rects to get the
-    // appropriate offset where the overlay should appear.
-    // This covers the cases where the taskbar is not at the bottom of the screen.
     const auto taskbar_x_offset = MulDiv(mi.rcWork.left - mi.rcMonitor.left, DPIAware::DEFAULT_DPI, dpi_x);
     const auto taskbar_y_offset = MulDiv(mi.rcWork.top - mi.rcMonitor.top, DPIAware::DEFAULT_DPI, dpi_y);
+    
+    // Do not scale window params by the dpi, that will be done in the editor - see LayoutModel.Apply
     const auto x = mi.rcMonitor.left + taskbar_x_offset;
     const auto y = mi.rcMonitor.top + taskbar_y_offset;
-    const auto width = MulDiv(mi.rcWork.right - mi.rcWork.left, DPIAware::DEFAULT_DPI, dpi_x);
-    const auto height = MulDiv(mi.rcWork.bottom - mi.rcWork.top, DPIAware::DEFAULT_DPI, dpi_y);
-    // Location that the editor should occupy, scaled by DPI
+    const auto width = mi.rcWork.right - mi.rcWork.left;
+    const auto height = mi.rcWork.bottom - mi.rcWork.top;
     const std::wstring editorLocation = 
         std::to_wstring(x) + L"_" +
         std::to_wstring(y) + L"_" +
@@ -676,34 +672,40 @@ void FancyZones::MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT cons
     RECT windowRect{};
     ::GetWindowRect(window, &windowRect);
 
-    windowRect.top += 6;
-    windowRect.left += 8;
-    windowRect.right -= 8;
-    windowRect.bottom -= 6;
+    const auto padding_x = 8;
+    const auto padding_y = 6;
+    windowRect.top += padding_y;
+    windowRect.left += padding_x;
+    windowRect.right -= padding_x;
+    windowRect.bottom -= padding_y;
 
-    if (PtInRect(&windowRect, ptScreen))
+    if (PtInRect(&windowRect, ptScreen) == FALSE)
     {
-        m_inMoveSize = true;
+        return;
+    }
 
-        auto iter = m_zoneWindowMap.find(monitor);
-        if (iter != m_zoneWindowMap.end())
-        {
-            m_windowMoveSize = window;
+    m_inMoveSize = true;
 
-            // This updates m_dragEnabled depending on if the shift key is being held down.
-            UpdateDragState(writeLock);
+    auto iter = m_zoneWindowMap.find(monitor);
+    if (iter == end(m_zoneWindowMap))
+    {
+        return;
+    }
 
-            if (m_dragEnabled)
-            {
-                m_zoneWindowMoveSize = iter->second;
-                m_zoneWindowMoveSize->MoveSizeEnter(window, m_dragEnabled);
-            }
-            else if (m_zoneWindowMoveSize)
-            {
-                m_zoneWindowMoveSize->MoveSizeCancel();
-                m_zoneWindowMoveSize = nullptr;
-            }
-        }
+    m_windowMoveSize = window;
+
+    // This updates m_dragEnabled depending on if the shift key is being held down.
+    UpdateDragState(writeLock);
+
+    if (m_dragEnabled)
+    {
+        m_zoneWindowMoveSize = iter->second;
+        m_zoneWindowMoveSize->MoveSizeEnter(window, m_dragEnabled);
+    }
+    else if (m_zoneWindowMoveSize)
+    {
+        m_zoneWindowMoveSize->MoveSizeCancel();
+        m_zoneWindowMoveSize = nullptr;
     }
 }
 

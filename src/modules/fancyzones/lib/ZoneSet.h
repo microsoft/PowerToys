@@ -34,13 +34,15 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
 #define VERSION_PERSISTEDDATA 0x0000F00D
 struct ZoneSetPersistedData
 {
+    static constexpr inline size_t MAX_ZONES = 40;
+
     DWORD Version{VERSION_PERSISTEDDATA};
     WORD LayoutId{};
     DWORD ZoneCount{};
     ZoneSetLayout Layout{};
     DWORD PaddingInner{};
     DWORD PaddingOuter{};
-    RECT Zones[40]{};
+    RECT Zones[MAX_ZONES]{};
 };
 
 struct ZoneSetConfig

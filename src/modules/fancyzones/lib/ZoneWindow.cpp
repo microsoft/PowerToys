@@ -118,78 +118,79 @@ ZoneWindow::ZoneWindow(
 
     MONITORINFO mi{};
     mi.cbSize = sizeof(mi);
-    if (GetMonitorInfoW(m_monitor, &mi))
+    if (!GetMonitorInfoW(m_monitor, &mi))
     {
-        const UINT dpi = GetDpiForMonitor();
-        const Rect monitorRect(mi.rcMonitor);
-        const Rect workAreaRect(mi.rcWork, dpi);
+        return;
+    }
+    const UINT dpi = GetDpiForMonitor();
+    const Rect monitorRect(mi.rcMonitor);
+    const Rect workAreaRect(mi.rcWork, dpi);
 
-        StringCchPrintf(m_workArea, ARRAYSIZE(m_workArea), L"%d_%d", monitorRect.width(), monitorRect.height());
+    StringCchPrintf(m_workArea, ARRAYSIZE(m_workArea), L"%d_%d", monitorRect.width(), monitorRect.height());
 
-        InitializeId(deviceId, virtualDesktopId);
-        LoadSettings();
-        InitializeZoneSets();
+    InitializeId(deviceId, virtualDesktopId);
+    LoadSettings();
+    InitializeZoneSets();
 
-        WNDCLASSEXW wcex{};
-        wcex.cbSize = sizeof(WNDCLASSEX);
-        wcex.lpfnWndProc = s_WndProc;
-        wcex.hInstance = hinstance;
-        wcex.lpszClassName = L"SuperFancyZones_ZoneWindow";
-        wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-        RegisterClassExW(&wcex);
+    WNDCLASSEXW wcex{};
+    wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.lpfnWndProc = s_WndProc;
+    wcex.hInstance = hinstance;
+    wcex.lpszClassName = L"SuperFancyZones_ZoneWindow";
+    wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+    RegisterClassExW(&wcex);
 
-        m_window = wil::unique_hwnd {
-            CreateWindowExW(WS_EX_TOOLWINDOW, L"SuperFancyZones_ZoneWindow", L"", WS_POPUP,
+    m_window = wil::unique_hwnd {
+        CreateWindowExW(WS_EX_TOOLWINDOW, L"SuperFancyZones_ZoneWindow", L"", WS_POPUP,
                 workAreaRect.left(), workAreaRect.top(), workAreaRect.width(), workAreaRect.height(),
                 nullptr, nullptr, hinstance, this)
-        };
+    };
 
-        if (m_window)
+    if (m_window)
+    {
+        MakeWindowTransparent(m_window.get());
+        UpdateGrid(0, 0);
+        if (flashZones)
         {
-            MakeWindowTransparent(m_window.get());
-            UpdateGrid(0, 0);
-            if (flashZones)
-            {
-                FlashZones();
-            }
+            FlashZones();
         }
     }
 }
 
 IFACEMETHODIMP ZoneWindow::ShowZoneWindow(bool activate, bool fadeIn) noexcept
 {
-    if (m_window)
+    if (!m_window)
     {
-        m_flashMode = false;
-
-        UINT flags = SWP_NOSIZE | SWP_NOMOVE;
-        if (!activate)
-        {
-            WI_SetFlag(flags, SWP_NOACTIVATE);
-        }
-
-        if (!fadeIn)
-        {
-            WI_SetFlag(flags, SWP_SHOWWINDOW);
-        }
-
-        HWND windowInsertAfter = m_windowMoveSize;
-        if (windowInsertAfter == nullptr)
-        {
-            windowInsertAfter = HWND_TOPMOST;
-        }
-
-        SetWindowPos(m_window.get(), windowInsertAfter, 0, 0, 0, 0, flags);
-
-        if (fadeIn)
-        {
-            AnimateWindow(m_window.get(), m_showAnimationDuration, AW_BLEND);
-            InvalidateRect(m_window.get(), nullptr, true);
-        }
-
-        return S_OK;
+        return E_FAIL;
     }
-    return E_FAIL;
+
+    m_flashMode = false;
+
+    UINT flags = SWP_NOSIZE | SWP_NOMOVE;
+    if (!activate)
+    {
+        WI_SetFlag(flags, SWP_NOACTIVATE);
+    }
+
+    if (!fadeIn)
+    {
+        WI_SetFlag(flags, SWP_SHOWWINDOW);
+    }
+
+    HWND windowInsertAfter = m_windowMoveSize;
+    if (windowInsertAfter == nullptr)
+    {
+        windowInsertAfter = HWND_TOPMOST;
+    }
+
+    SetWindowPos(m_window.get(), windowInsertAfter, 0, 0, 0, 0, flags);
+
+    if (fadeIn)
+    {
+        AnimateWindow(m_window.get(), m_showAnimationDuration, AW_BLEND);
+        InvalidateRect(m_window.get(), nullptr, true);
+    }
+    return S_OK;
 }
 
 IFACEMETHODIMP ZoneWindow::HideZoneWindow() noexcept
@@ -358,54 +359,56 @@ void ZoneWindow::InitializeZoneSets() noexcept
 
 void ZoneWindow::LoadZoneSetsFromRegistry() noexcept
 {
-    if (wil::unique_hkey key{ RegistryHelpers::OpenKey(m_workArea) })
+    wil::unique_hkey key{RegistryHelpers::OpenKey(m_workArea)};
+    if (!key)
     {
-        ZoneSetPersistedData data{};
-        DWORD dataSize = sizeof(data);
-        wchar_t value[256]{};
-        DWORD valueLength = ARRAYSIZE(value);
-        DWORD i = 0;
-        while (RegEnumValueW(key.get(), i++, value, &valueLength, nullptr, nullptr, reinterpret_cast<BYTE*>(&data), &dataSize) == ERROR_SUCCESS)
+        return;
+    }
+    ZoneSetPersistedData data{};
+    DWORD dataSize = sizeof(data);
+    wchar_t value[256]{};
+    DWORD valueLength = ARRAYSIZE(value);
+    DWORD i = 0;
+    while (RegEnumValueW(key.get(), i++, value, &valueLength, nullptr, nullptr, reinterpret_cast<BYTE*>(&data), &dataSize) == ERROR_SUCCESS)
+    {
+        if (data.Version == VERSION_PERSISTEDDATA)
         {
-            if (data.Version == VERSION_PERSISTEDDATA)
+            GUID zoneSetId;
+            if (SUCCEEDED_LOG(CLSIDFromString(value, &zoneSetId)))
             {
-                GUID zoneSetId;
-                if (SUCCEEDED_LOG(CLSIDFromString(value, &zoneSetId)))
+                auto zoneSet = MakeZoneSet(ZoneSetConfig(
+                    zoneSetId,
+                    data.LayoutId,
+                    m_monitor,
+                    m_workArea,
+                    data.Layout,
+                    0,
+                    static_cast<int>(data.PaddingInner),
+                    static_cast<int>(data.PaddingOuter)));
+
+                if (zoneSet)
                 {
-                    auto zoneSet = MakeZoneSet(ZoneSetConfig(
-                        zoneSetId,
-                        data.LayoutId,
-                        m_monitor,
-                        m_workArea,
-                        data.Layout,
-                        0,
-                        static_cast<int>(data.PaddingInner),
-                        static_cast<int>(data.PaddingOuter)));
-
-                    if (zoneSet)
+                    for (UINT j = 0; j < data.ZoneCount; j++)
                     {
-                        for (UINT j = 0; j < data.ZoneCount; j++)
-                        {
-                            zoneSet->AddZone(MakeZone(data.Zones[j]), false);
-                        }
-
-                        m_zoneSets.emplace_back(zoneSet);
-
-                        if (zoneSetId == m_activeZoneSetId)
-                        {
-                            UpdateActiveZoneSet(zoneSet.get());
-                        }
+                        zoneSet->AddZone(MakeZone(data.Zones[j]), false);
                     }
+
+                    if (zoneSetId == m_activeZoneSetId)
+                    {
+                        UpdateActiveZoneSet(zoneSet.get());
+                    }
+
+                    m_zoneSets.emplace_back(std::move(zoneSet));
                 }
             }
-            else
-            {
-                // Migrate from older settings format
-            }
-
-            valueLength = ARRAYSIZE(value);
-            dataSize = sizeof(data);
         }
+        else
+        {
+            // Migrate from older settings format
+        }
+
+        valueLength = ARRAYSIZE(value);
+        dataSize = sizeof(data);
     }
 }
 
@@ -718,37 +721,38 @@ void ZoneWindow::DrawZone(wil::unique_hdc& hdc, ColorSetting const& colorSetting
     }
     FillRectARGB(hdc, &zoneRect, colorSetting.fillAlpha, colorSetting.fill, false);
 
-    if (!m_flashMode)
+    if (m_flashMode)
     {
-        COLORREF const colorFill = RGB(255, 255, 255);
-
-        size_t const index = zone->Id();
-        int const padding = 5;
-        int const size = 10;
-        POINT offset = { zoneRect.left + padding, zoneRect.top + padding };
-        if (!IsOccluded(offset, index))
-        {
-            DrawIndex(hdc, offset, index, padding, size, false, false, colorFill); // top left
-            return;
-        }
-
-        offset.x = zoneRect.right - ((padding + size) * 3);
-        if (!IsOccluded(offset, index))
-        {
-            DrawIndex(hdc, offset, index, padding, size, true, false, colorFill); // top right
-            return;
-        }
-
-        offset.y = zoneRect.bottom - ((padding + size) * 3);
-        if (!IsOccluded(offset, index))
-        {
-            DrawIndex(hdc, offset, index, padding, size, true, true, colorFill); // bottom right
-            return;
-        }
-
-        offset.x = zoneRect.left + padding;
-        DrawIndex(hdc, offset, index, padding, size, false, true, colorFill); // bottom left
+        return;
     }
+    COLORREF const colorFill = RGB(255, 255, 255);
+
+    size_t const index = zone->Id();
+    int const padding = 5;
+    int const size = 10;
+    POINT offset = { zoneRect.left + padding, zoneRect.top + padding };
+    if (!IsOccluded(offset, index))
+    {
+        DrawIndex(hdc, offset, index, padding, size, false, false, colorFill); // top left
+        return;
+    }
+
+    offset.x = zoneRect.right - ((padding + size) * 3);
+    if (!IsOccluded(offset, index))
+    {
+        DrawIndex(hdc, offset, index, padding, size, true, false, colorFill); // top right
+        return;
+    }
+
+    offset.y = zoneRect.bottom - ((padding + size) * 3);
+    if (!IsOccluded(offset, index))
+    {
+        DrawIndex(hdc, offset, index, padding, size, true, true, colorFill); // bottom right
+        return;
+    }
+
+    offset.x = zoneRect.left + padding;
+    DrawIndex(hdc, offset, index, padding, size, false, true, colorFill); // bottom left
 }
 
 void ZoneWindow::DrawIndex(wil::unique_hdc& hdc, POINT offset, size_t index, int padding, int size, bool flipX, bool flipY, COLORREF colorFill)
@@ -932,7 +936,7 @@ void ZoneWindow::OnPaint(wil::unique_hdc& hdc) noexcept
     RECT clientRect;
     GetClientRect(m_window.get(), &clientRect);
 
-    wil::unique_hdc hdcMem;;
+    wil::unique_hdc hdcMem;
     HPAINTBUFFER bufferedPaint = BeginBufferedPaint(hdc.get(), &clientRect, BPBF_TOPDOWNDIB, nullptr, &hdcMem);
     if (bufferedPaint)
     {
