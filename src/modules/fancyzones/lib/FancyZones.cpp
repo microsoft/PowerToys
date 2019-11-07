@@ -7,8 +7,8 @@ struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZone
 public:
     FancyZones(HINSTANCE hinstance, IFancyZonesSettings* settings) noexcept
         : m_hinstance(hinstance)
+        , m_settings(settings)
     {
-        m_settings.attach(settings);
         m_settings->SetCallback(this);
     }
 
@@ -85,7 +85,7 @@ private:
     bool m_dragEnabled{}; // True if we should be showing zone hints while dragging
     std::map<HMONITOR, winrt::com_ptr<IZoneWindow>> m_zoneWindowMap; // Map of monitor to ZoneWindow (one per monitor)
     winrt::com_ptr<IZoneWindow> m_zoneWindowMoveSize; // "Active" ZoneWindow, where the move/size is happening. Will update as drag moves between monitors.
-    winrt::com_ptr<IFancyZonesSettings> m_settings;
+    IFancyZonesSettings* m_settings{};
     GUID m_currentVirtualDesktopId{};
     wil::unique_handle m_terminateEditorEvent;
 
@@ -134,7 +134,7 @@ IFACEMETHODIMP_(void) FancyZones::Run() noexcept
 IFACEMETHODIMP_(void) FancyZones::Destroy() noexcept
 {
     std::unique_lock writeLock(m_lock);
-
+    m_zoneWindowMap.clear();
     BufferedPaintUnInit();
     if (m_window)
     {
