@@ -159,15 +159,15 @@ namespace Wox.Plugin.Program.Programs
 #if !DEBUG
                     catch (Exception e)
                     {
-                        ProgramLogger.LogException("|UWP|All|An unexpected error occured and "
+                        ProgramLogger.LogException($"|UWP|All|{p.InstalledLocation}|An unexpected error occured and "
                                                         + $"unable to convert Package to UWP for {p.Id.FullName}", e);
                         return new Application[] { };
                     }
 #endif
 #if DEBUG //make developer aware and implement handling
-                    catch(Exception)
+                    catch(Exception e)
                     {
-                        throw;
+                        throw e;
                     }
 #endif
                     return u.Apps;
@@ -207,7 +207,7 @@ namespace Wox.Plugin.Program.Programs
                     }
                     catch (Exception e)
                     {
-                        ProgramLogger.LogException("|UWP|CurrentUserPackages|An unexpected error occured and "
+                        ProgramLogger.LogException("|UWP|CurrentUserPackages|Not available|An unexpected error occured and "
                                                    + $"unable to verify if package is valid", e);
                         return false;
                     }

@@ -41,7 +41,8 @@ namespace Wox.Plugin.Program.Logger
         }
 
         /// <summary>
-        /// Please follow exception format: |class name|calling method name|loading program path|user friendly message that explains the error
+        /// Please follow exception format, there are four parts to an error message that need to be specified:
+        /// |class name|calling method name|loading program path|user friendly message that explains the error
         /// => Example: |Win32|LnkProgram|c:\..\chrome.exe|Permission denied on directory, but Wox should continue
         /// </summary>
         [MethodImpl(MethodImplOptions.Synchronized)]
