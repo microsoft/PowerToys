@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -86,6 +86,8 @@ namespace Wox.Plugin.Program.Programs
                 var e = Marshal.GetExceptionForHR((int)hResult);
                 ProgramLogger.LogException($"|UWP|InitializeAppInfo|{path}" +
                                                 "|Error caused while trying to get the details of the UWP program", e);
+
+                Apps = new List<Application>().ToArray();
             }
         }
 
