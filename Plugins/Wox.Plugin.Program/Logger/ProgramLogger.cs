@@ -111,7 +111,8 @@ namespace Wox.Plugin.Program.Logger
         private static bool IsKnownUWPProgramError(Exception e, string callingMethodName)
         {
             if (((e.HResult == -2147024774 || e.HResult == -2147009769) && callingMethodName == "ResourceFromPri")
-                || (e.HResult == -2147024894 && callingMethodName == "LogoPathFromUri"))
+                || (e.HResult == -2147024894 && (callingMethodName == "LogoPathFromUri" || callingMethodName == "ImageFromPath"))
+                || (e.HResult == -2147024864 && callingMethodName == "InitializeAppInfo"))
                 return true;
 
             if (callingMethodName == "XmlNamespaces")

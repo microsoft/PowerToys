@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -86,6 +86,8 @@ namespace Wox.Plugin.Program.Programs
                 var e = Marshal.GetExceptionForHR((int)hResult);
                 ProgramLogger.LogException($"|UWP|InitializeAppInfo|{path}" +
                                                 "|Error caused while trying to get the details of the UWP program", e);
+
+                Apps = new List<Application>().ToArray();
             }
         }
 
@@ -196,11 +198,20 @@ namespace Wox.Plugin.Program.Programs
                 ps = ps.Where(p =>
                 {
                     bool valid;
+                    try
+                    {
+                        var f = p.IsFramework;
+                        var d = p.IsDevelopmentMode;
+                        var path = p.InstalledLocation.Path;
+                        valid = !f && !d && !string.IsNullOrEmpty(path);
+                    }
+                    catch (Exception e)
+                    {
+                        ProgramLogger.LogException("|UWP|CurrentUserPackages|An unexpected error occured and "
+                                                   + $"unable to verify if package is valid", e);
+                        return false;
+                    }
                     
-                    var f = p.IsFramework;
-                    var d = p.IsDevelopmentMode;
-                    var path = p.InstalledLocation.Path;
-                    valid = !f && !d && !string.IsNullOrEmpty(path);
                     
                     return valid;
                 });
