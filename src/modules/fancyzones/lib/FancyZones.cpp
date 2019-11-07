@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "common/dpi_aware.h"
+#include "common/on_thread_executor.h"
 
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
@@ -88,6 +89,8 @@ private:
     GUID m_currentVirtualDesktopId{};
     wil::unique_handle m_terminateEditorEvent;
 
+    OnThreadExecutor m_dpiUnawareThread;
+
     static UINT WM_PRIV_VDCHANGED;
     static UINT WM_PRIV_EDITOR;
 
@@ -120,6 +123,11 @@ IFACEMETHODIMP_(void) FancyZones::Run() noexcept
 
     RegisterHotKey(m_window, 1, m_settings->GetSettings().editorHotkey.get_modifiers(), m_settings->GetSettings().editorHotkey.get_code());
     VirtualDesktopChanged();
+
+    m_dpiUnawareThread.submit(OnThreadExecutor::task_t{[]{
+        SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
+        SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
+    }}).wait();
 }
 
 // IFancyZones
@@ -239,22 +247,22 @@ void FancyZones::ToggleEditor() noexcept
     }
 
     HMONITOR monitor{};
-    UINT dpi_x = 96;
-    UINT dpi_y = 96;
+    HWND foregroundWindow{};
 
-    if (m_settings->GetSettings().use_cursorpos_editor_startupscreen)
+    UINT dpi_x = DPIAware::DEFAULT_DPI;
+    UINT dpi_y = DPIAware::DEFAULT_DPI;
+
+    const bool use_cursorpos_editor_startupscreen = m_settings->GetSettings().use_cursorpos_editor_startupscreen;
+    POINT currentCursorPos{};
+    if (use_cursorpos_editor_startupscreen)
     {
-        POINT currentCursorPos{};
         GetCursorPos(&currentCursorPos);
-
         monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
-        DPIAware::GetScreenDPIForPoint(currentCursorPos, dpi_x, dpi_y);
     }
     else
     {
-        const HWND foregroundWindow = GetForegroundWindow();
+        foregroundWindow = GetForegroundWindow();
         monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTOPRIMARY);
-        DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
     }
 
 
@@ -272,21 +280,33 @@ void FancyZones::ToggleEditor() noexcept
 
     MONITORINFOEX mi;
     mi.cbSize = sizeof(mi);
-    GetMonitorInfo(monitor, &mi);
 
-    // X/Y need to start in unscaled screen coordinates to get to the proper top/left of the monitor
-    // From there, we need to scale the difference between the monitor and workarea rects to get the
-    // appropriate offset where the overlay should appear.
-    // This covers the cases where the taskbar is not at the bottom of the screen.
-    const auto x = mi.rcMonitor.left + MulDiv(mi.rcWork.left - mi.rcMonitor.left, 96, dpi_x);
-    const auto y = mi.rcMonitor.top + MulDiv(mi.rcWork.top - mi.rcMonitor.top, 96, dpi_y);
+    m_dpiUnawareThread.submit(OnThreadExecutor::task_t{[&]{
+        GetMonitorInfo(monitor, &mi);
+    }}).wait();
 
-    // Location that the editor should occupy, scaled by DPI
-    std::wstring editorLocation = 
+    if(use_cursorpos_editor_startupscreen)
+    {
+        DPIAware::GetScreenDPIForPoint(currentCursorPos, dpi_x, dpi_y);
+    }
+    else
+    {
+        DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
+    }
+
+    const auto taskbar_x_offset = MulDiv(mi.rcWork.left - mi.rcMonitor.left, DPIAware::DEFAULT_DPI, dpi_x);
+    const auto taskbar_y_offset = MulDiv(mi.rcWork.top - mi.rcMonitor.top, DPIAware::DEFAULT_DPI, dpi_y);
+    
+    // Do not scale window params by the dpi, that will be done in the editor - see LayoutModel.Apply
+    const auto x = mi.rcMonitor.left + taskbar_x_offset;
+    const auto y = mi.rcMonitor.top + taskbar_y_offset;
+    const auto width = mi.rcWork.right - mi.rcWork.left;
+    const auto height = mi.rcWork.bottom - mi.rcWork.top;
+    const std::wstring editorLocation = 
         std::to_wstring(x) + L"_" +
         std::to_wstring(y) + L"_" +
-        std::to_wstring(MulDiv(mi.rcWork.right - mi.rcWork.left, 96, dpi_x)) + L"_" +
-        std::to_wstring(MulDiv(mi.rcWork.bottom - mi.rcWork.top, 96, dpi_y));
+        std::to_wstring(width) + L"_" +
+        std::to_wstring(height);
 
     const std::wstring params =
         iter->second->UniqueId() + L" " +
@@ -294,7 +314,7 @@ void FancyZones::ToggleEditor() noexcept
         std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
         editorLocation + L" " +
         iter->second->WorkAreaKey() + L" " +
-        std::to_wstring(static_cast<float>(dpi_x) / 96.0f);
+        std::to_wstring(static_cast<float>(dpi_x) / DPIAware::DEFAULT_DPI);
 
     SHELLEXECUTEINFO sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -652,34 +672,40 @@ void FancyZones::MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT cons
     RECT windowRect{};
     ::GetWindowRect(window, &windowRect);
 
-    windowRect.top += 6;
-    windowRect.left += 8;
-    windowRect.right -= 8;
-    windowRect.bottom -= 6;
+    const auto padding_x = 8;
+    const auto padding_y = 6;
+    windowRect.top += padding_y;
+    windowRect.left += padding_x;
+    windowRect.right -= padding_x;
+    windowRect.bottom -= padding_y;
 
-    if (PtInRect(&windowRect, ptScreen))
+    if (PtInRect(&windowRect, ptScreen) == FALSE)
     {
-        m_inMoveSize = true;
+        return;
+    }
 
-        auto iter = m_zoneWindowMap.find(monitor);
-        if (iter != m_zoneWindowMap.end())
-        {
-            m_windowMoveSize = window;
+    m_inMoveSize = true;
 
-            // This updates m_dragEnabled depending on if the shift key is being held down.
-            UpdateDragState(writeLock);
+    auto iter = m_zoneWindowMap.find(monitor);
+    if (iter == end(m_zoneWindowMap))
+    {
+        return;
+    }
 
-            if (m_dragEnabled)
-            {
-                m_zoneWindowMoveSize = iter->second;
-                m_zoneWindowMoveSize->MoveSizeEnter(window, m_dragEnabled);
-            }
-            else if (m_zoneWindowMoveSize)
-            {
-                m_zoneWindowMoveSize->MoveSizeCancel();
-                m_zoneWindowMoveSize = nullptr;
-            }
-        }
+    m_windowMoveSize = window;
+
+    // This updates m_dragEnabled depending on if the shift key is being held down.
+    UpdateDragState(writeLock);
+
+    if (m_dragEnabled)
+    {
+        m_zoneWindowMoveSize = iter->second;
+        m_zoneWindowMoveSize->MoveSizeEnter(window, m_dragEnabled);
+    }
+    else if (m_zoneWindowMoveSize)
+    {
+        m_zoneWindowMoveSize->MoveSizeCancel();
+        m_zoneWindowMoveSize = nullptr;
     }
 }
 
