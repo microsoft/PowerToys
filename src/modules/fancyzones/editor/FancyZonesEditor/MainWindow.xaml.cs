@@ -23,6 +23,9 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class MainWindow : MetroWindow
     {
+        // TODO: share the constants b/w C# Editor and FancyZoneLib
+        public static int MAX_ZONES = 40;
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -57,7 +60,7 @@ namespace FancyZonesEditor
 
         private void IncrementZones_Click(object sender, RoutedEventArgs e)
         {
-            if (_settings.ZoneCount < 40)
+            if (_settings.ZoneCount < MAX_ZONES)
             {
                 _settings.ZoneCount++;
             }
