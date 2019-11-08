@@ -1,5 +1,6 @@
 #pragma once
 #include "powertoys_events.h"
+#include "system_menu_helper.h"
 #include <interface/powertoy_module_interface.h>
 #include <string>
 #include <memory>
@@ -12,6 +13,7 @@ class PowertoyModule;
 struct PowertoyModuleDeleter {
   void operator()(PowertoyModuleIface* module) const {
     if (module) {
+      powertoys_events().unregister_system_menu_action(module);
       powertoys_events().unregister_receiver(module);
       module->destroy();
     }
@@ -37,6 +39,9 @@ public:
       for (; *want_signals; ++want_signals) {
         powertoys_events().register_receiver(*want_signals, module);
       }
+    }
+    if (SystemMenuHelperInstace().HasCustomConfig(module)) {
+      powertoys_events().register_system_menu_action(module);
     }
   }
 

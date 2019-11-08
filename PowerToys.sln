@@ -23,6 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "interface", "interface", "{
 	ProjectSection(SolutionItems) = preProject
 		src\modules\interface\lowlevel_keyboard_event_data.h = src\modules\interface\lowlevel_keyboard_event_data.h
 		src\modules\interface\powertoy_module_interface.h = src\modules\interface\powertoy_module_interface.h
+		src\modules\interface\powertoy_system_menu.h = src\modules\interface\powertoy_system_menu.h
 		src\modules\interface\win_hook_event_data.h = src\modules\interface\win_hook_event_data.h
 	EndProjectSection
 EndProject
