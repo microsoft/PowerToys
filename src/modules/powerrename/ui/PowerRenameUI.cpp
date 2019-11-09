@@ -216,7 +216,7 @@ IFACEMETHODIMP CPowerRenameUI::OnRenameCompleted()
     EnableWindow(m_hwnd, TRUE);
 
     // Close the window
-    _OnCloseDlg();
+    PostMessage(m_hwnd, WM_CLOSE, (WPARAM)0, (LPARAM)0);
     return S_OK;
 }
 
