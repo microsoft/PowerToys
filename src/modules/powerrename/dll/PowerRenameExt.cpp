@@ -91,7 +91,7 @@ HRESULT CPowerRenameMenu::InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pici)
 {
     HRESULT hr = E_FAIL;
 
-    if (IsEnabled() &
+    if (IsEnabled() &&
         (IS_INTRESOURCE(pici->lpVerb)) &&
         (LOWORD(pici->lpVerb) == 0))
     {
