@@ -42,14 +42,12 @@ void PowertoysEvents::unregister_receiver(PowertoyModuleIface* module) {
   }
 }
 
-void PowertoysEvents::register_system_menu_action(PowertoyModuleIface* module)
-{
+void PowertoysEvents::register_system_menu_action(PowertoyModuleIface* module) {
   std::unique_lock lock(mutex);
   systemMenuUsers.insert(module);
 }
 
-void PowertoysEvents::unregister_system_menu_action(PowertoyModuleIface* module)
-{
+void PowertoysEvents::unregister_system_menu_action(PowertoyModuleIface* module) {
   std::unique_lock lock(mutex);
   auto it = systemMenuUsers.find(module);
   if (it != systemMenuUsers.end()) {
@@ -58,22 +56,19 @@ void PowertoysEvents::unregister_system_menu_action(PowertoyModuleIface* module)
   }
 }
 
-void PowertoysEvents::handle_system_menu_action(const WinHookEvent& data)
-{
+void PowertoysEvents::handle_system_menu_action(const WinHookEvent& data) {
   if (data.event == EVENT_SYSTEM_MENUSTART) {
     for (auto& module : systemMenuUsers) {
       SystemMenuHelperInstace().Customize(module, data.hwnd);
     }
   }
-  else if (data.event == EVENT_OBJECT_INVOKED)
-  {
+  else if (data.event == EVENT_OBJECT_INVOKED) {
     if (PowertoyModuleIface* module{ SystemMenuHelperInstace().ModuleFromItemId(data.idChild) }) {
-      std::wstring name = SystemMenuHelperInstace().ItemNameFromItemId(data.idChild);
-
+      std::wstring itemName = SystemMenuHelperInstace().ItemNameFromItemId(data.idChild);
       // Process event on specified system menu item by responsible module.
-      module->signal_system_menu_action(name.c_str());
+      module->signal_system_menu_action(itemName.c_str());
       // Process event on specified system menu item by system menu helper (check/uncheck if needed).
-      SystemMenuHelperInstace().RegisterAction(module, GetForegroundWindow(), name.c_str());
+      SystemMenuHelperInstace().ProcessSelectedItem(module, GetForegroundWindow(), itemName.c_str());
     }
   }
 }

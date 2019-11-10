@@ -9,9 +9,9 @@ public:
   void register_receiver(const std::wstring& event, PowertoyModuleIface* module);
   void unregister_receiver(PowertoyModuleIface* module);
 
-  void register_system_menu_action  (PowertoyModuleIface* module);
+  void register_system_menu_action(PowertoyModuleIface* module);
   void unregister_system_menu_action(PowertoyModuleIface* module);
-  void handle_system_menu_action    (const WinHookEvent& data);
+  void handle_system_menu_action(const WinHookEvent& data);
 
   intptr_t signal_event(const std::wstring& event, intptr_t data);
 private:

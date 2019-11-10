@@ -183,7 +183,7 @@ public:
     }
 
     virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override { }
-    virtual void signal_system_menu_action  (const wchar_t* name) override { }
+    virtual void signal_system_menu_action(const wchar_t* name) override { }
 
     // Destroy the powertoy and free memory
     virtual void destroy() override

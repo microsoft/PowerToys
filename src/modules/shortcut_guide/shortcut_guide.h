@@ -22,7 +22,7 @@ public:
   virtual intptr_t signal_event(const wchar_t* name, intptr_t data)  override;
 
   virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override { }
-  virtual void signal_system_menu_action  (const wchar_t* name) override { }
+  virtual void signal_system_menu_action(const wchar_t* name) override { }
 
   void on_held();
   void on_held_press(DWORD vkCode);
