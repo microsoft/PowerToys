@@ -28,6 +28,8 @@ Features
 Installation
 ------------
 
+View new features released from this fork since Wox v1.3.524: [new releases](https://github.com/jjw24/Wox/releases)
+
 To install this fork's version of Wox, you can **download** it [here](https://github.com/jjw24/Wox/releases/latest).
 
 To install the upstream version:

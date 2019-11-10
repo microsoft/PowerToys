@@ -219,5 +219,7 @@ namespace Wox.Plugin.WebSearch
                 }
             }
         }
+
+        public bool OpenInNewBrowser { get; set; } = true;
     }
 }
