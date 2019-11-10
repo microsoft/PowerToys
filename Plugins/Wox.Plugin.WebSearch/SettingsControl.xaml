@@ -21,7 +21,7 @@
                       Content="{DynamicResource wox_plugin_websearch_enable_suggestion}" />
             <ComboBox ItemsSource="{Binding Settings.Suggestions}"
                       SelectedItem="{Binding Settings.SelectedSuggestion}"
-                      IsEnabled="{Binding ElementName=EnableSuggestion, Path=IsChecked}" Margin="10" />
+                      IsEnabled="{Binding ElementName=EnableSuggestion, Path=IsChecked}" Margin="10,3,10,10" />
             <!-- Not sure why binding IsEnabled directly to Settings.EnableWebSaerchSuggestion is not working -->
             <Label Content="Open search in:" Margin="40 3 0 8"/>
             <RadioButton Name="NewWindowBrowser" GroupName="OpenSearchBehaviour" Content="New window" Click="OnNewBrowserWindowClick" Margin="10" />
