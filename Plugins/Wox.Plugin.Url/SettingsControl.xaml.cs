@@ -31,6 +31,8 @@ namespace Wox.Plugin.Url
             _settings = settings;
             _woxAPI = woxAPI;
             browserPathBox.Text = _settings.BrowserPath;
+            NewWindowBrowser.IsChecked = _settings.OpenInNewBrowserWindow;
+            NewTabInBrowser.IsChecked = !_settings.OpenInNewBrowserWindow;
         }
 
         private void OnApplyBTClick(object sender, RoutedEventArgs e)
@@ -48,6 +50,16 @@ namespace Wox.Plugin.Url
             {
                 browserPathBox.Text = fileBrowserDialog.FileName;
             }
+        }
+
+        private void OnNewBrowserWindowClick(object sender, RoutedEventArgs e)
+        {
+            _settings.OpenInNewBrowserWindow = true;
+        }
+
+        private void OnNewTabClick(object sender, RoutedEventArgs e)
+        {
+            _settings.OpenInNewBrowserWindow = false;
         }
     }
 }
