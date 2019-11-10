@@ -28,7 +28,7 @@ private:
   bool AddItem(PowertoyModuleIface* module, HWND window, const std::wstring& name, const bool enable);
   bool AddSeparator(PowertoyModuleIface* module, HWND window);
 
-  // Store processed windows to avoid handling it multiple times.
+  // Store processed modules per window to avoid handling it multiple times.
   std::unordered_map<HWND, std::vector<PowertoyModuleIface*>> ProcessedModules{};
 
   // Keep mappings form item id to the module who created it and item name for faster processing later.

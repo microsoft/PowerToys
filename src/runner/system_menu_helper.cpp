@@ -69,8 +69,7 @@ void SystemMenuHelper::Reset(PowertoyModuleIface* module) {
   }
 }
 
-bool SystemMenuHelper::HasCustomConfig(PowertoyModuleIface* module)
-{
+bool SystemMenuHelper::HasCustomConfig(PowertoyModuleIface* module) {
   return (Configurations.find(module) != Configurations.end());
 }
 
