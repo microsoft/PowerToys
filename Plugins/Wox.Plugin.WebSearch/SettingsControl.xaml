@@ -23,6 +23,9 @@
                       SelectedItem="{Binding Settings.SelectedSuggestion}"
                       IsEnabled="{Binding ElementName=EnableSuggestion, Path=IsChecked}" Margin="10" />
             <!-- Not sure why binding IsEnabled directly to Settings.EnableWebSaerchSuggestion is not working -->
+            <Label Content="Open search in:" Margin="40 3 0 8"/>
+            <RadioButton Name="NewWindowBrowser" GroupName="OpenSearchBehaviour" Content="New window" Click="OnNewBrowserWindowClick" Margin="10" />
+            <RadioButton Name="NewTabInBrowser" GroupName="OpenSearchBehaviour" Content="New tab" Click="OnNewTabClick" Margin="10" />
         </StackPanel>
         <ListView ItemsSource="{Binding Settings.SearchSources}"
                   SelectedItem="{Binding Settings.SelectedSearchSource}"
