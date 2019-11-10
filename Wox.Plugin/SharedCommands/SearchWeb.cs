@@ -37,21 +37,18 @@ namespace Wox.Plugin.SharedCommands
         /// </summary>
         public static void NewTabInBrowser(this string url, string browserPath)
         {
-            var browserExecutableName = browserPath?
-                                        .Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.None)
-                                        .Last();
-
-            var selectedBrowserPath = string.IsNullOrEmpty(browserExecutableName) ? "" : browserPath;
-
-            OpenWebSearch(selectedBrowserPath, "", url);
-        }
-
-        private static void OpenWebSearch(string chosenBrowser, string browserArguements, string url)
-        {
             try
             {
-                Process.Start(chosenBrowser, browserArguements + url);
+                if (!string.IsNullOrEmpty(browserPath))
+                {
+                    Process.Start(browserPath, url);
+                }
+                else
+                {
+                    Process.Start(url);
+                }
             }
+            // This error may be thrown for Process.Start(browserPath, url)
             catch (System.ComponentModel.Win32Exception)
             {
                 Process.Start(url);
