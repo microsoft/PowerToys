@@ -17,12 +17,12 @@ namespace Wox.Plugin.SharedCommands
                                         .Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.None)
                                         .Last();
 
-            var browser = string.IsNullOrEmpty(browserExecutableName) ? "chrome" : browserPath;
+            var selectedBrowserPath = string.IsNullOrEmpty(browserExecutableName) ? "chrome" : browserPath;
 
             // Internet Explorer will open url in new browser window, and does not take the --new-window parameter
             var browserArguements = browserExecutableName == "iexplore.exe" ? "" : "--new-window ";
 
-            OpenWebSearch(browser, browserArguements, url);
+            OpenWebSearch(selectedBrowserPath, browserArguements, url);
         }
 
         /// <summary> 
@@ -34,9 +34,9 @@ namespace Wox.Plugin.SharedCommands
                                         .Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.None)
                                         .Last();
 
-            var browser = string.IsNullOrEmpty(browserExecutableName) ? "" : browserPath;
+            var selectedBrowserPath = string.IsNullOrEmpty(browserExecutableName) ? "" : browserPath;
 
-            OpenWebSearch(browser, "", url);
+            OpenWebSearch(selectedBrowserPath, "", url);
         }
 
         private static void OpenWebSearch(string chosenBrowser, string browserArguements, string url)
