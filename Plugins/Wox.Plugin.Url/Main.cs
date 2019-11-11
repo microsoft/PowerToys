@@ -79,7 +79,14 @@ namespace Wox.Plugin.Url
                             }
                             try
                             {
-                                raw.NewBrowserWindow(_settings.BrowserPath);
+                                if (_settings.OpenInNewBrowserWindow)
+                                {
+                                    raw.NewBrowserWindow(_settings.BrowserPath);
+                                }
+                                else
+                                {
+                                    raw.NewTabInBrowser(_settings.BrowserPath);
+                                }
                                 
                                 return true;
                             }
