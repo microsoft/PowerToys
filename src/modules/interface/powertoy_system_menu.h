@@ -16,7 +16,7 @@ public:
    * parameters include item name (and hotkey), item status at creation (enabled/disabled)
    * and whether check box will appear next to item name when action is taken.
    */
-  virtual void SetConfiguration(PowertoyModuleIface* module, std::vector<ItemInfo>& config) = 0;
+  virtual void SetConfiguration(PowertoyModuleIface* module, const std::vector<ItemInfo>& config) = 0;
   /* Process action on specific system menu item. */
   virtual void ProcessSelectedItem(PowertoyModuleIface* module, HWND window, const wchar_t* itemName) = 0;
 };

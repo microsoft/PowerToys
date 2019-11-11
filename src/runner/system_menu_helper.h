@@ -13,7 +13,7 @@ class PowertoyModuleIface;
 class SystemMenuHelper : public PowertoySystemMenuIface {
 public:
   // PowertoySystemMenuIface
-  virtual void SetConfiguration(PowertoyModuleIface* module, std::vector<ItemInfo>& config) override;
+  virtual void SetConfiguration(PowertoyModuleIface* module, const std::vector<ItemInfo>& config) override;
   virtual void ProcessSelectedItem(PowertoyModuleIface* module, HWND window, const wchar_t* itemName) override;
 
   bool Customize(PowertoyModuleIface* module, HWND window);

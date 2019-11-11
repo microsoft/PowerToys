@@ -7,8 +7,8 @@ namespace {
   constexpr int KSeparatorPos = 1;
   constexpr int KNewItemPos = 2;
 
-  int GenerateItemId() {
-    static int generator = 0xDEADBEEF;
+  unsigned int GenerateItemId() {
+    static unsigned int generator = 0x70777479;
     return ++generator;
   }
 }
@@ -18,7 +18,7 @@ SystemMenuHelper& SystemMenuHelperInstace() {
   return instance;
 }
 
-void SystemMenuHelper::SetConfiguration(PowertoyModuleIface* module, std::vector<ItemInfo>& config) {
+void SystemMenuHelper::SetConfiguration(PowertoyModuleIface* module, const std::vector<ItemInfo>& config) {
   Reset(module);
   Configurations[module] = config;
   for (auto& [window, modules] : ProcessedModules) {
@@ -28,10 +28,10 @@ void SystemMenuHelper::SetConfiguration(PowertoyModuleIface* module, std::vector
 }
 
 void SystemMenuHelper::ProcessSelectedItem(PowertoyModuleIface* module, HWND window, const wchar_t* itemName) {
-  for (auto& item : Configurations[module]) {
-    if (!wcscmp(itemName, item.name.c_str()) && item.checkBox) {
+  for (const auto& item : Configurations[module]) {
+    if (itemName == item.name && item.checkBox) {
       // Handle check/uncheck action only if specified by module configuration.
-      for (auto& [id, data] : IdMappings) {
+      for (const auto& [id, data] : IdMappings) {
         if (data.second == itemName) {
           HMENU systemMenu = GetSystemMenu(window, false);
           int state = (GetMenuState(systemMenu, id, MF_BYCOMMAND) == MF_CHECKED) ? MF_UNCHECKED : MF_CHECKED;
@@ -45,7 +45,8 @@ void SystemMenuHelper::ProcessSelectedItem(PowertoyModuleIface* module, HWND win
 }
 
 bool SystemMenuHelper::Customize(PowertoyModuleIface* module, HWND window) {
-  for (const auto& m : ProcessedModules[window]) {
+  auto& modules = ProcessedModules[window];
+  for (const auto& m : modules) {
     if (module == m) {
       return false;
     }
@@ -54,23 +55,24 @@ bool SystemMenuHelper::Customize(PowertoyModuleIface* module, HWND window) {
   for (const auto& info : Configurations[module]) {
     AddItem(module, window, info.name, info.enable);
   }
-  ProcessedModules[window].push_back(module);
+  modules.push_back(module);
   return true;
 }
 
 void SystemMenuHelper::Reset(PowertoyModuleIface* module) {
   for (auto& [window, modules] : ProcessedModules) {
-    for (auto& [id, data] : IdMappings) {
-      HMENU sysMenu{ nullptr };
-      if (data.first == module && (sysMenu = GetSystemMenu(window, false))) {
-        DeleteMenu(GetSystemMenu(window, false), id, MF_BYCOMMAND);
+    if (HMENU systemMenu{ GetSystemMenu(window, false) }) {
+      for (auto& [id, data] : IdMappings) {
+        if (data.first == module) {
+          DeleteMenu(systemMenu, id, MF_BYCOMMAND);
+        }
       }
     }
   }
 }
 
 bool SystemMenuHelper::HasCustomConfig(PowertoyModuleIface* module) {
-  return (Configurations.find(module) != Configurations.end());
+  return Configurations.find(module) != Configurations.end();
 }
 
 bool SystemMenuHelper::AddItem(PowertoyModuleIface* module, HWND window, const std::wstring& name, const bool enable) {

@@ -44,21 +44,21 @@ void PowertoysEvents::unregister_receiver(PowertoyModuleIface* module) {
 
 void PowertoysEvents::register_system_menu_action(PowertoyModuleIface* module) {
   std::unique_lock lock(mutex);
-  systemMenuReceivers.insert(module);
+  system_menu_receivers.insert(module);
 }
 
 void PowertoysEvents::unregister_system_menu_action(PowertoyModuleIface* module) {
   std::unique_lock lock(mutex);
-  auto it = systemMenuReceivers.find(module);
-  if (it != systemMenuReceivers.end()) {
+  auto it = system_menu_receivers.find(module);
+  if (it != system_menu_receivers.end()) {
     SystemMenuHelperInstace().Reset(module);
-    systemMenuReceivers.erase(it);
+    system_menu_receivers.erase(it);
   }
 }
 
 void PowertoysEvents::handle_system_menu_action(const WinHookEvent& data) {
   if (data.event == EVENT_SYSTEM_MENUSTART) {
-    for (auto& module : systemMenuReceivers) {
+    for (auto& module : system_menu_receivers) {
       SystemMenuHelperInstace().Customize(module, data.hwnd);
     }
   }
