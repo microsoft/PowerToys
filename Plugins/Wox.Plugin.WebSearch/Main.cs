@@ -74,7 +74,14 @@ namespace Wox.Plugin.WebSearch
                             IcoPath = searchSource.IconPath,
                             Action = c =>
                             {
-                                searchSource.Url.Replace("{q}", Uri.EscapeDataString(keyword)).NewBrowserWindow("");
+                                if (_settings.OpenInNewBrowser)
+                                {
+                                    searchSource.Url.Replace("{q}", Uri.EscapeDataString(keyword)).NewBrowserWindow("");
+                                }
+                                else
+                                {
+                                    searchSource.Url.Replace("{q}", Uri.EscapeDataString(keyword)).NewTabInBrowser("");
+                                }
 
                                 return true;
                             }
@@ -132,7 +139,15 @@ namespace Wox.Plugin.WebSearch
                     IcoPath = searchSource.IconPath,
                     Action = c =>
                     {
-                        searchSource.Url.Replace("{q}", Uri.EscapeDataString(o)).NewBrowserWindow("");
+                        if (_settings.OpenInNewBrowser)
+                        {
+                            searchSource.Url.Replace("{q}", Uri.EscapeDataString(o)).NewBrowserWindow("");
+                        }
+                        else
+                        {
+                            searchSource.Url.Replace("{q}", Uri.EscapeDataString(o)).NewTabInBrowser("");
+                        }
+
                         return true;
                     }
                 });

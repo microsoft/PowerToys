@@ -18,6 +18,8 @@ namespace Wox.Plugin.WebSearch
             _context = context;
             _settings = viewModel.Settings;
             DataContext = viewModel;
+            NewWindowBrowser.IsChecked = _settings.OpenInNewBrowser;
+            NewTabInBrowser.IsChecked = !_settings.OpenInNewBrowser;
         }
 
         private void OnAddSearchSearchClick(object sender, RoutedEventArgs e)
@@ -55,6 +57,16 @@ namespace Wox.Plugin.WebSearch
 
                 webSearch.ShowDialog();
             }
+        }
+
+        private void OnNewBrowserWindowClick(object sender, RoutedEventArgs e)
+        {
+            _settings.OpenInNewBrowser = true;
+        }
+
+        private void OnNewTabClick(object sender, RoutedEventArgs e)
+        {
+            _settings.OpenInNewBrowser = false;
         }
     }
 }
