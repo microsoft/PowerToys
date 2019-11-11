@@ -1,21 +1,31 @@
 # Overview
 
-PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.  
+<img align="right" width="200" src="./doc/images/Logo.jpg">
 
-Inspired by the [Windows 95 era PowerToys project](https://en.wikipedia.org/wiki/Microsoft_PowerToys), this reboot provides power users with ways to squeeze more efficiency out of the Windows 10 shell and customize it for individual workflows.  A great overview of the Windows 95 PowerToys can be found [here](https://socket3.wordpress.com/2016/10/22/using-windows-95-powertoys/).
+PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. Inspired by the [Windows 95 era PowerToys project](https://en.wikipedia.org/wiki/Microsoft_PowerToys), this reboot provides power users with ways to squeeze more efficiency out of the Windows 10 shell and customize it for individual workflows.  A great overview of the Windows 95 PowerToys can be found [here](https://socket3.wordpress.com/2016/10/22/using-windows-95-powertoys/).
 
-![logo](doc/images/Logo.jpg)
+## Build Status
+
+[![Build Status](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build?definitionId=35096)
 
 ## Installation
 
-_(Note: in order to run PowerToys, you'll need to be running at least Windows build 17134 or higher.  Also, PowerToys does not currently support Windows ARM machines)_
+_**Note:** in order to run PowerToys, you'll need to be running at least Windows build 17134 or higher._
 
 The latest release of PowerToys can be downloaded currently a few different ways.  Our current recommended way is via GitHub.
+
+| x64 | x86 | ARM |
+|:---:|:---:|:---:|
+| Supported | [Issue #620](https://github.com/microsoft/PowerToys/issues/602)  | [Issue #490](https://github.com/microsoft/PowerToys/issues/490)|
 
 ### GitHub
 
 The preview of these utilities can be installed from the [PowerToys GitHub releases page](https://github.com/Microsoft/powertoys/releases). Click on `Assets` to show the files available in the release and then click on `PowerToysSetup.msi` to download the PowerToys installer. <br />
 PDB symbols for the release are available in a separate zip file `PDB symbols.zip`.
+
+### Windows Store
+
+On backlog, [Issue #413](https://github.com/microsoft/PowerToys/issues/413) 
 
 ### Chocolatey (Unofficial)
 
@@ -34,10 +44,6 @@ choco upgrade powertoys
 ```
 
 If you have any issues when installing/upgrading the package please go to the [package page](https://chocolatey.org/packages/powertoys) and follow the [Chocolatey triage process](https://chocolatey.org/docs/package-triage-process)
-
-## Build Status
-
-[![Build Status](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build?definitionId=35096)
 
 ## PowerToy Utilities
 
