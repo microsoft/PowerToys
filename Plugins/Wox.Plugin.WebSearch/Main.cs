@@ -76,11 +76,11 @@ namespace Wox.Plugin.WebSearch
                             {
                                 if (_settings.OpenInNewBrowser)
                                 {
-                                    searchSource.Url.Replace("{q}", Uri.EscapeDataString(keyword)).NewBrowserWindow("");
+                                    searchSource.Url.Replace("{q}", Uri.EscapeDataString(keyword)).NewBrowserWindow(_settings.BrowserPath);
                                 }
                                 else
                                 {
-                                    searchSource.Url.Replace("{q}", Uri.EscapeDataString(keyword)).NewTabInBrowser("");
+                                    searchSource.Url.Replace("{q}", Uri.EscapeDataString(keyword)).NewTabInBrowser(_settings.BrowserPath);
                                 }
 
                                 return true;
@@ -141,11 +141,11 @@ namespace Wox.Plugin.WebSearch
                     {
                         if (_settings.OpenInNewBrowser)
                         {
-                            searchSource.Url.Replace("{q}", Uri.EscapeDataString(o)).NewBrowserWindow("");
+                            searchSource.Url.Replace("{q}", Uri.EscapeDataString(o)).NewBrowserWindow(_settings.BrowserPath);
                         }
                         else
                         {
-                            searchSource.Url.Replace("{q}", Uri.EscapeDataString(o)).NewTabInBrowser("");
+                            searchSource.Url.Replace("{q}", Uri.EscapeDataString(o)).NewTabInBrowser(_settings.BrowserPath);
                         }
 
                         return true;
