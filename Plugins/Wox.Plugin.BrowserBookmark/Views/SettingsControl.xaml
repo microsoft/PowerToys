@@ -6,22 +6,20 @@
              mc:Ignorable="d"
              Background="White"
              d:DesignHeight="300" d:DesignWidth="500">
-    <Grid Margin="10">
+    <Grid Margin="10,10,10,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
             <RowDefinition />
-            <RowDefinition Height="40" />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" Grid.Row="0">
             <Label Content="Open bookmark in:" Margin="40 3 0 8"/>
             <RadioButton Name="NewWindowBrowser" GroupName="OpenSearchBehaviour" Content="New window" Click="OnNewBrowserWindowClick" Margin="10" />
             <RadioButton Name="NewTabInBrowser" GroupName="OpenSearchBehaviour" Content="New tab" Click="OnNewTabClick" Margin="10" />
         </StackPanel>
-        <StackPanel VerticalAlignment="Center" Margin="0,50,0,44" Grid.Row="1">
-            <Label Content="Set browser from path:" Height="28" Margin="0,0,155,0" HorizontalAlignment="Right" Width="290"/>
-            <TextBox x:Name="browserPathBox" HorizontalAlignment="Left" Height="34" Margin="35,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="311" RenderTransformOrigin="0.502,-1.668"/>
-            <Button x:Name="setButton" HorizontalAlignment="Left" Margin="272,5,0,0" Width="73" Height="25" FontSize="10" Click="OnApplyBTClick" Content="Apply" />
-            <Button x:Name="viewButton" HorizontalAlignment="Left" Margin="180,-25,0,0" Width="73" Height="25" Click="OnChooseClick" FontSize="10" Content="Choose" />
+        <StackPanel VerticalAlignment="Top" Grid.Row="1" Height="106" Margin="41,13,0,0">
+            <Label Content="Set browser from path:" Height="28" Margin="0,0,155,0" HorizontalAlignment="Left" Width="290"/>
+            <TextBox x:Name="browserPathBox" HorizontalAlignment="Left" Height="28" Margin="5,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="311" RenderTransformOrigin="0.502,-1.668"/>
+            <Button x:Name="viewButton" HorizontalAlignment="Left" Margin="340,-28,-1,0" Width="100" Height="28" Click="OnChooseClick" FontSize="10" Content="Choose" />
         </StackPanel>
     </Grid>
 </UserControl>

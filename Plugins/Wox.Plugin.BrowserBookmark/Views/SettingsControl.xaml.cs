@@ -30,11 +30,6 @@ namespace Wox.Plugin.BrowserBookmark.Views
             _settings.OpenInNewBrowserWindow = false;
         }
 
-        private void OnApplyBTClick(object sender, RoutedEventArgs e)
-        {
-            _settings.BrowserPath = browserPathBox.Text;
-        }
-
         private void OnChooseClick(object sender, RoutedEventArgs e)
         {
             var fileBrowserDialog = new OpenFileDialog();
@@ -44,6 +39,7 @@ namespace Wox.Plugin.BrowserBookmark.Views
             if (fileBrowserDialog.ShowDialog() == true)
             {
                 browserPathBox.Text = fileBrowserDialog.FileName;
+                _settings.BrowserPath = fileBrowserDialog.FileName;
             }
         }
     }
