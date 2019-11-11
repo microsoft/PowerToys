@@ -1,5 +1,6 @@
 #pragma once
 #include <PowerRenameInterfaces.h>
+#include <shldisp.h>
 
 class CPowerRenameListView
 {
@@ -92,6 +93,7 @@ private:
     }
 
     HRESULT _Initialize(_In_ IPowerRenameManager* psrm, _In_opt_ IDataObject* pdo, _In_ bool enableDragDrop);
+    HRESULT _InitAutoComplete();
     void _Cleanup();
 
     INT_PTR _DlgProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -104,7 +106,6 @@ private:
     void _OnAbout();
     void _OnCloseDlg();
     void _OnDestroyDlg();
-    void _OnClear();
     void _OnSearchReplaceChanged();
     void _MoveControl(_In_ DWORD id, _In_ DWORD repositionFlags, _In_ int xDelta, _In_ int yDelta);
 
@@ -137,5 +138,9 @@ private:
     CComPtr<IPowerRenameManager> m_spsrm;
     CComPtr<IDataObject> m_spdo;
     CComPtr<IDropTargetHelper> m_spdth;
+    CComPtr<IAutoComplete2> m_spSearchAC;
+    CComPtr<IUnknown> m_spSearchACL;
+    CComPtr<IAutoComplete2> m_spReplaceAC;
+    CComPtr<IUnknown> m_spReplaceACL;
     CPowerRenameListView m_listview;
 };

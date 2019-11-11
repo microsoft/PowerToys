@@ -79,7 +79,7 @@ namespace PowerRenameManagerTests
 
             // TODO: Setup match and replace parameters
             CComPtr<IPowerRenameRegEx> renRegEx;
-            Assert::IsTrue(mgr->get_smartRenameRegEx(&renRegEx) == S_OK);
+            Assert::IsTrue(mgr->get_renameRegEx(&renRegEx) == S_OK);
             renRegEx->put_flags(flags);
             renRegEx->put_searchTerm(searchTerm.c_str());
             renRegEx->put_replaceTerm(replaceTerm.c_str());
@@ -125,7 +125,7 @@ namespace PowerRenameManagerTests
             Assert::IsTrue(mgr->Shutdown() == S_OK);
         }
 
-        TEST_METHOD(VerifySmartManagerEvents)
+        TEST_METHOD(VerifyRenameManagerEvents)
         {
             CComPtr<IPowerRenameManager> mgr;
             Assert::IsTrue(CPowerRenameManager::s_CreateInstance(&mgr) == S_OK);

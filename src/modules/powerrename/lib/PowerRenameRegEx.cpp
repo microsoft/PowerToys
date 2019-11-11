@@ -37,11 +37,11 @@ IFACEMETHODIMP CPowerRenameRegEx::Advise(_In_ IPowerRenameRegExEvents* regExEven
 {
     CSRWExclusiveAutoLock lock(&m_lockEvents);
     m_cookie++;
-    SMART_RENAME_REGEX_EVENT srre;
+    RENAME_REGEX_EVENT srre;
     srre.cookie = m_cookie;
     srre.pEvents = regExEvents;
     regExEvents->AddRef();
-    m_smartRenameRegExEvents.push_back(srre);
+    m_renameRegExEvents.push_back(srre);
 
     *cookie = m_cookie;
 
@@ -53,7 +53,7 @@ IFACEMETHODIMP CPowerRenameRegEx::UnAdvise(_In_ DWORD cookie)
     HRESULT hr = E_FAIL;
     CSRWExclusiveAutoLock lock(&m_lockEvents);
 
-    for (auto it : m_smartRenameRegExEvents)
+    for (auto it : m_renameRegExEvents)
     {
         if (it.cookie == cookie)
         {
@@ -265,7 +265,7 @@ void CPowerRenameRegEx::_OnSearchTermChanged()
 {
     CSRWSharedAutoLock lock(&m_lockEvents);
 
-    for (auto it : m_smartRenameRegExEvents)
+    for (auto it : m_renameRegExEvents)
     {
         if (it.pEvents)
         {
@@ -278,7 +278,7 @@ void CPowerRenameRegEx::_OnReplaceTermChanged()
 {
     CSRWSharedAutoLock lock(&m_lockEvents);
 
-    for (auto it : m_smartRenameRegExEvents)
+    for (auto it : m_renameRegExEvents)
     {
         if (it.pEvents)
         {
@@ -291,7 +291,7 @@ void CPowerRenameRegEx::_OnFlagsChanged()
 {
     CSRWSharedAutoLock lock(&m_lockEvents);
 
-    for (auto it : m_smartRenameRegExEvents)
+    for (auto it : m_renameRegExEvents)
     {
         if (it.pEvents)
         {

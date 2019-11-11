@@ -29,10 +29,10 @@ public:
     IFACEMETHODIMP GetRenameItemCount(_Out_ UINT* count);
     IFACEMETHODIMP get_flags(_Out_ DWORD* flags);
     IFACEMETHODIMP put_flags(_In_ DWORD flags);
-    IFACEMETHODIMP get_smartRenameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx);
-    IFACEMETHODIMP put_smartRenameRegEx(_In_ IPowerRenameRegEx* pRegEx);
-    IFACEMETHODIMP get_smartRenameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory);
-    IFACEMETHODIMP put_smartRenameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory);
+    IFACEMETHODIMP get_renameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx);
+    IFACEMETHODIMP put_renameRegEx(_In_ IPowerRenameRegEx* pRegEx);
+    IFACEMETHODIMP get_renameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory);
+    IFACEMETHODIMP put_renameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory);
 
     // IPowerRenameRegExEvents
     IFACEMETHODIMP OnSearchTermChanged(_In_ PCWSTR searchTerm);
@@ -99,7 +99,7 @@ protected:
     DWORD m_cookie = 0;
     DWORD m_regExAdviseCookie = 0;
 
-    struct SMART_RENAME_MGR_EVENT
+    struct RENAME_MGR_EVENT
     {
         IPowerRenameManagerEvents* pEvents;
         DWORD cookie;
@@ -108,8 +108,8 @@ protected:
     CComPtr<IPowerRenameItemFactory> m_spItemFactory;
     CComPtr<IPowerRenameRegEx> m_spRegEx;
 
-    _Guarded_by_(m_lockEvents) std::vector<SMART_RENAME_MGR_EVENT> m_PowerRenameManagerEvents;
-    _Guarded_by_(m_lockItems) std::map<int, IPowerRenameItem*> m_smartRenameItems;
+    _Guarded_by_(m_lockEvents) std::vector<RENAME_MGR_EVENT> m_PowerRenameManagerEvents;
+    _Guarded_by_(m_lockItems) std::map<int, IPowerRenameItem*> m_renameItems;
 
     // Parent HWND used by IFileOperation
     HWND m_hwndParent = nullptr;

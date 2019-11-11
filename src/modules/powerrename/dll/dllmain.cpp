@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "PowerRenameExt.h"
 #include <interface/powertoy_module_interface.h>
+#include <settings.h>
 #include <trace.h>
 #include <common/settings_objects.h>
 
@@ -9,10 +10,10 @@ HINSTANCE g_hInst = 0;
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-class CSmartRenameClassFactory : public IClassFactory
+class CPowerRenameClassFactory : public IClassFactory
 {
 public:
-    CSmartRenameClassFactory(_In_ REFCLSID clsid) :
+    CPowerRenameClassFactory(_In_ REFCLSID clsid) :
         m_refCount(1),
         m_clsid(clsid)
     {
@@ -24,7 +25,7 @@ public:
     {
         static const QITAB qit[] =
         {
-            QITABENT(CSmartRenameClassFactory, IClassFactory),
+            QITABENT(CPowerRenameClassFactory, IClassFactory),
             { 0 }
         };
         return QISearch(this, qit, riid, ppv);
@@ -82,7 +83,7 @@ public:
     }
 
 private:
-    ~CSmartRenameClassFactory()
+    ~CPowerRenameClassFactory()
     {
         DllRelease();
     }
@@ -122,7 +123,7 @@ STDAPI DllGetClassObject(_In_ REFCLSID clsid, _In_ REFIID riid, _Outptr_ void **
 {
     *ppv = NULL;
     HRESULT hr = E_OUTOFMEMORY;
-    CSmartRenameClassFactory *pClassFactory = new CSmartRenameClassFactory(clsid);
+    CPowerRenameClassFactory *pClassFactory = new CPowerRenameClassFactory(clsid);
     if (pClassFactory)
     {
         hr = pClassFactory->QueryInterface(riid, ppv);
@@ -235,13 +236,13 @@ public:
 
     void init_settings()
     {
-        m_enabled = CPowerRenameMenu::IsEnabled();
+        m_enabled = CSettings::GetEnabled();
         Trace::EnablePowerRename(m_enabled);
     }
 
     void save_settings()
     {
-        CPowerRenameMenu::SetEnabled(m_enabled);
+        CSettings::SetEnabled(m_enabled);
         Trace::EnablePowerRename(m_enabled);
     }
 

@@ -46,13 +46,13 @@ protected:
 
     DWORD m_cookie = 0;
 
-    struct SMART_RENAME_REGEX_EVENT
+    struct RENAME_REGEX_EVENT
     {
         IPowerRenameRegExEvents* pEvents;
         DWORD cookie;
     };
 
-    _Guarded_by_(m_lockEvents) std::vector<SMART_RENAME_REGEX_EVENT> m_smartRenameRegExEvents;
+    _Guarded_by_(m_lockEvents) std::vector<RENAME_REGEX_EVENT> m_renameRegExEvents;
 
     long m_refCount = 0;
 };

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by SmartRenameTest.rc
+// Used by PowerRenameTest.rc
 //
 #define IDD_POWERRENAMETEST_DIALOG      402
 #define IDR_MAINFRAME                   428

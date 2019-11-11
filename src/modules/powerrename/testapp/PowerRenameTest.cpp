@@ -31,7 +31,7 @@ int APIENTRY wWinMain(
     HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     if (SUCCEEDED(hr))
     {
-        // Create the smart rename manager
+        // Create the rename manager
         CComPtr<IPowerRenameManager> spsrm;
         if (SUCCEEDED(CPowerRenameManager::s_CreateInstance(&spsrm)))
         {
@@ -40,9 +40,9 @@ int APIENTRY wWinMain(
             if (SUCCEEDED(CPowerRenameItem::s_CreateInstance(nullptr, IID_PPV_ARGS(&spsrif))))
             {
                 // Pass the factory to the manager
-                if (SUCCEEDED(spsrm->put_smartRenameItemFactory(spsrif)))
+                if (SUCCEEDED(spsrm->put_renameItemFactory(spsrif)))
                 {
-                    // Create the smart rename UI instance and pass the manager
+                    // Create the rename UI instance and pass the manager
                     CComPtr<IPowerRenameUI> spsrui;
                     if (SUCCEEDED(CPowerRenameUI::s_CreateInstance(spsrm, nullptr, true, &spsrui)))
                     {

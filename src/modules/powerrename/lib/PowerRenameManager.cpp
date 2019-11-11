@@ -44,7 +44,7 @@ IFACEMETHODIMP CPowerRenameManager::Advise(_In_ IPowerRenameManagerEvents* renam
 {
     CSRWExclusiveAutoLock lock(&m_lockEvents);
     m_cookie++;
-    SMART_RENAME_MGR_EVENT srme;
+    RENAME_MGR_EVENT srme;
     srme.cookie = m_cookie;
     srme.pEvents = renameOpEvents;
     renameOpEvents->AddRef();
@@ -117,9 +117,9 @@ IFACEMETHODIMP CPowerRenameManager::AddItem(_In_ IPowerRenameItem* pItem)
         int id = 0;
         pItem->get_id(&id);
         // Verify the item isn't already added
-        if (m_smartRenameItems.find(id) == m_smartRenameItems.end())
+        if (m_renameItems.find(id) == m_renameItems.end())
         {
-            m_smartRenameItems[id] = pItem;
+            m_renameItems[id] = pItem;
             pItem->AddRef();
             hr = S_OK;
         }
@@ -138,9 +138,9 @@ IFACEMETHODIMP CPowerRenameManager::GetItemByIndex(_In_ UINT index, _COM_Outptr_
     *ppItem = nullptr;
     CSRWSharedAutoLock lock(&m_lockItems);
     HRESULT hr = E_FAIL;
-    if (index < m_smartRenameItems.size())
+    if (index < m_renameItems.size())
     {
-        std::map<int, IPowerRenameItem*>::iterator it = m_smartRenameItems.begin();
+        std::map<int, IPowerRenameItem*>::iterator it = m_renameItems.begin();
         std::advance(it, index);
         *ppItem = it->second;
         (*ppItem)->AddRef();
@@ -157,10 +157,10 @@ IFACEMETHODIMP CPowerRenameManager::GetItemById(_In_ int id, _COM_Outptr_ IPower
     CSRWSharedAutoLock lock(&m_lockItems);
     HRESULT hr = E_FAIL;
     std::map<int, IPowerRenameItem*>::iterator it;
-    it = m_smartRenameItems.find(id);
-    if (it !=  m_smartRenameItems.end())
+    it = m_renameItems.find(id);
+    if (it !=  m_renameItems.end())
     {
-        *ppItem = m_smartRenameItems[id];
+        *ppItem = m_renameItems[id];
         (*ppItem)->AddRef();
         hr = S_OK;
     }
@@ -171,7 +171,7 @@ IFACEMETHODIMP CPowerRenameManager::GetItemById(_In_ int id, _COM_Outptr_ IPower
 IFACEMETHODIMP CPowerRenameManager::GetItemCount(_Out_ UINT* count)
 {
     CSRWSharedAutoLock lock(&m_lockItems);
-    *count = static_cast<UINT>(m_smartRenameItems.size());
+    *count = static_cast<UINT>(m_renameItems.size());
     return S_OK;
 }
 
@@ -180,7 +180,7 @@ IFACEMETHODIMP CPowerRenameManager::GetSelectedItemCount(_Out_ UINT* count)
     *count = 0;
     CSRWSharedAutoLock lock(&m_lockItems);
 
-    for (auto it : m_smartRenameItems)
+    for (auto it : m_renameItems)
     {
         IPowerRenameItem* pItem = it.second;
         bool selected = false;
@@ -198,7 +198,7 @@ IFACEMETHODIMP CPowerRenameManager::GetRenameItemCount(_Out_ UINT* count)
     *count = 0;
     CSRWSharedAutoLock lock(&m_lockItems);
 
-    for (auto it : m_smartRenameItems)
+    for (auto it : m_renameItems)
     {
         IPowerRenameItem* pItem = it.second;
         bool shouldRename = false;
@@ -229,7 +229,7 @@ IFACEMETHODIMP CPowerRenameManager::put_flags(_In_ DWORD flags)
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameManager::get_smartRenameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx)
+IFACEMETHODIMP CPowerRenameManager::get_renameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx)
 {
     *ppRegEx = nullptr;
     HRESULT hr = _EnsureRegEx();
@@ -241,14 +241,14 @@ IFACEMETHODIMP CPowerRenameManager::get_smartRenameRegEx(_COM_Outptr_ IPowerRena
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameManager::put_smartRenameRegEx(_In_ IPowerRenameRegEx* pRegEx)
+IFACEMETHODIMP CPowerRenameManager::put_renameRegEx(_In_ IPowerRenameRegEx* pRegEx)
 {
     _ClearRegEx();
     m_spRegEx = pRegEx;
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameManager::get_smartRenameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory)
+IFACEMETHODIMP CPowerRenameManager::get_renameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory)
 {
     *ppItemFactory = nullptr;
     HRESULT hr = E_FAIL;
@@ -261,7 +261,7 @@ IFACEMETHODIMP CPowerRenameManager::get_smartRenameItemFactory(_COM_Outptr_ IPow
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameManager::put_smartRenameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory)
+IFACEMETHODIMP CPowerRenameManager::put_renameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory)
 {
     m_spItemFactory = pItemFactory;
     return S_OK;
@@ -281,7 +281,7 @@ IFACEMETHODIMP CPowerRenameManager::OnReplaceTermChanged(_In_ PCWSTR /*replaceTe
 
 IFACEMETHODIMP CPowerRenameManager::OnFlagsChanged(_In_ DWORD flags)
 {
-    // Flags were updated in the smart rename regex.  Update our preview.
+    // Flags were updated in the rename regex.  Update our preview.
     m_flags = flags;
     _PerformRegExRename();
     return S_OK;
@@ -330,7 +330,7 @@ HRESULT CPowerRenameManager::_Init()
 // Custom messages for worker threads
 enum
 {
-    SRM_REGEX_ITEM_UPDATED = (WM_APP + 1),  // Single smart rename item processed by regex worker thread
+    SRM_REGEX_ITEM_UPDATED = (WM_APP + 1),  // Single rename item processed by regex worker thread
     SRM_REGEX_STARTED,                      // RegEx operation was started
     SRM_REGEX_CANCELED,                     // Regex operation was canceled
     SRM_REGEX_COMPLETE,                     // Regex worker thread completed
@@ -546,7 +546,7 @@ DWORD WINAPI CPowerRenameManager::s_fileOpWorkerThread(_In_ void* pv)
             if (WaitForSingleObject(pwtd->startEvent, INFINITE) == WAIT_OBJECT_0)
             {
                 CComPtr<IPowerRenameRegEx> spRenameRegEx;
-                if (SUCCEEDED(pwtd->spsrm->get_smartRenameRegEx(&spRenameRegEx)))
+                if (SUCCEEDED(pwtd->spsrm->get_renameRegEx(&spRenameRegEx)))
                 {
                     // Create IFileOperation interface
                     CComPtr<IFileOperation> spFileOp;
@@ -557,24 +557,45 @@ DWORD WINAPI CPowerRenameManager::s_fileOpWorkerThread(_In_ void* pv)
 
                         UINT itemCount = 0;
                         pwtd->spsrm->GetItemCount(&itemCount);
-                        // Add each rename operation
-                        for (UINT u = 0; u <= itemCount; u++)
+
+                        // We add the items to the operation in depth-first order.  This allows child items to be
+                        // renamed before parent items.
+
+                        // Creating a vector of vectors of items of the same depth
+                        std::vector<std::vector<UINT>> matrix(itemCount);
+
+                        for (UINT u = 0; u < itemCount; u++)
                         {
                             CComPtr<IPowerRenameItem> spItem;
                             if (SUCCEEDED(pwtd->spsrm->GetItemByIndex(u, &spItem)))
                             {
-                                bool shouldRename = false;
-                                if (SUCCEEDED(spItem->ShouldRenameItem(flags, &shouldRename)) && shouldRename)
+                                UINT depth = 0;
+                                spItem->get_depth(&depth);
+                                matrix[depth].push_back(u);
+                            }
+                        }
+
+                        // From the greatest depth first, add all items of that depth to the operation
+                        for (LONG v = itemCount - 1; v >= 0; v--)
+                        {
+                            for (auto it : matrix[v])
+                            {
+                                CComPtr<IPowerRenameItem> spItem;
+                                if (SUCCEEDED(pwtd->spsrm->GetItemByIndex(it, &spItem)))
                                 {
-                                    PWSTR newName = nullptr;
-                                    if (SUCCEEDED(spItem->get_newName(&newName)))
+                                    bool shouldRename = false;
+                                    if (SUCCEEDED(spItem->ShouldRenameItem(flags, &shouldRename)) && shouldRename)
                                     {
-                                        CComPtr<IShellItem> spShellItem;
-                                        if (SUCCEEDED(spItem->get_shellItem(&spShellItem)))
+                                        PWSTR newName = nullptr;
+                                        if (SUCCEEDED(spItem->get_newName(&newName)))
                                         {
-                                            spFileOp->RenameItem(spShellItem, newName, nullptr);
+                                            CComPtr<IShellItem> spShellItem;
+                                            if (SUCCEEDED(spItem->get_shellItem(&spShellItem)))
+                                            {
+                                                spFileOp->RenameItem(spShellItem, newName, nullptr);
+                                            }
+                                            CoTaskMemFree(newName);
                                         }
-                                        CoTaskMemFree(newName);
                                     }
                                 }
                             }
@@ -674,7 +695,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
             if (WaitForSingleObject(pwtd->startEvent, INFINITE) == WAIT_OBJECT_0)
             {
                 CComPtr<IPowerRenameRegEx> spRenameRegEx;
-                if (SUCCEEDED(pwtd->spsrm->get_smartRenameRegEx(&spRenameRegEx)))
+                if (SUCCEEDED(pwtd->spsrm->get_renameRegEx(&spRenameRegEx)))
                 {
                     DWORD flags = 0;
                     spRenameRegEx->get_flags(&flags);
@@ -1022,14 +1043,14 @@ void CPowerRenameManager::_ClearPowerRenameItems()
 {
     CSRWExclusiveAutoLock lock(&m_lockItems);
 
-    // Cleanup smart rename items
-    for (auto it : m_smartRenameItems)
+    // Cleanup rename items
+    for (auto it : m_renameItems)
     {
         IPowerRenameItem* pItem = it.second;
         pItem->Release();
     }
 
-    m_smartRenameItems.clear();
+    m_renameItems.clear();
 }
 
 void CPowerRenameManager::_Cleanup()
