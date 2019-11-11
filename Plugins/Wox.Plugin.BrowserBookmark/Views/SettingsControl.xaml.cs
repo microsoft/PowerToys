@@ -16,6 +16,7 @@ namespace Wox.Plugin.BrowserBookmark.Views
         {
             InitializeComponent();
             _settings = settings;
+            browserPathBox.Text = _settings.BrowserPath;
             NewWindowBrowser.IsChecked = _settings.OpenInNewBrowserWindow;
             NewTabInBrowser.IsChecked = !_settings.OpenInNewBrowserWindow;
         }        

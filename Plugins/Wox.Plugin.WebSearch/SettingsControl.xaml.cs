@@ -19,6 +19,7 @@ namespace Wox.Plugin.WebSearch
             _context = context;
             _settings = viewModel.Settings;
             DataContext = viewModel;
+            browserPathBox.Text = _settings.BrowserPath;
             NewWindowBrowser.IsChecked = _settings.OpenInNewBrowser;
             NewTabInBrowser.IsChecked = !_settings.OpenInNewBrowser;
         }
