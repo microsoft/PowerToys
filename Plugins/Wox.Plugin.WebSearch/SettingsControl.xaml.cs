@@ -1,3 +1,4 @@
+using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
 using Wox.Core.Plugin;
@@ -18,6 +19,7 @@ namespace Wox.Plugin.WebSearch
             _context = context;
             _settings = viewModel.Settings;
             DataContext = viewModel;
+            browserPathBox.Text = _settings.BrowserPath;
             NewWindowBrowser.IsChecked = _settings.OpenInNewBrowser;
             NewTabInBrowser.IsChecked = !_settings.OpenInNewBrowser;
         }
@@ -67,6 +69,19 @@ namespace Wox.Plugin.WebSearch
         private void OnNewTabClick(object sender, RoutedEventArgs e)
         {
             _settings.OpenInNewBrowser = false;
+        }
+
+        private void OnChooseClick(object sender, RoutedEventArgs e)
+        {
+            var fileBrowserDialog = new OpenFileDialog();
+            fileBrowserDialog.Filter = "Application(*.exe)|*.exe|All files|*.*";
+            fileBrowserDialog.CheckFileExists = true;
+            fileBrowserDialog.CheckPathExists = true;
+            if (fileBrowserDialog.ShowDialog() == true)
+            {
+                browserPathBox.Text = fileBrowserDialog.FileName;
+                _settings.BrowserPath = fileBrowserDialog.FileName;
+            }
         }
     }
 }

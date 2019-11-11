@@ -57,11 +57,11 @@ namespace Wox.Plugin.BrowserBookmark
                 {
                     if (_settings.OpenInNewBrowserWindow)
                     {
-                        c.Url.NewBrowserWindow("");
+                        c.Url.NewBrowserWindow(_settings.BrowserPath);
                     }
                     else
                     {
-                        c.Url.NewTabInBrowser("");
+                        c.Url.NewTabInBrowser(_settings.BrowserPath);
                     }
 
                     return true;

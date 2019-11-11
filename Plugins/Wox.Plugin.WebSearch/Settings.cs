@@ -220,6 +220,8 @@ namespace Wox.Plugin.WebSearch
             }
         }
 
+        public string BrowserPath { get; set; }
+
         public bool OpenInNewBrowser { get; set; } = true;
     }
 }
