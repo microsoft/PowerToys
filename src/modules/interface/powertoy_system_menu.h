@@ -4,8 +4,7 @@
 
 class PowertoyModuleIface;
 
-class PowertoySystemMenuIface
-{
+class PowertoySystemMenuIface {
 public:
   struct ItemInfo {
     std::wstring name{};
@@ -18,6 +17,6 @@ public:
    * and whether check box will appear next to item name when action is taken.
    */
   virtual void SetConfiguration(PowertoyModuleIface* module, std::vector<ItemInfo>& config) = 0;
-  // Process action on specific system menu item.
+  /* Process action on specific system menu item. */
   virtual void ProcessSelectedItem(PowertoyModuleIface* module, HWND window, const wchar_t* itemName) = 0;
 };

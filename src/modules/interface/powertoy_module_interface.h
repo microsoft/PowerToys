@@ -32,7 +32,7 @@ class PowertoySystemMenuIface;
 
 class PowertoyModuleIface {
 public:
-  // Returns the name of the PowerToy, this will be cached by the runner.
+  /* Returns the name of the PowerToy, this will be cached by the runner. */
   virtual const wchar_t* get_name() = 0;
   /* Returns a null-terminated table of the names of the events the PowerToy wants to 
      subscribe to. Available events:
@@ -49,15 +49,15 @@ public:
    * Returns true if successful.
    */
   virtual bool get_config(wchar_t* buffer, int *buffer_size) = 0;
-  // Sets the configuration values.
+  /* Sets the configuration values. */
   virtual void set_config(const wchar_t* config) = 0;
-  // Call custom action from settings screen.
+  /* Call custom action from settings screen. */
   virtual void call_custom_action(const wchar_t* action) {};
-  // Enables the PowerToy.
+  /* Enables the PowerToy. */
   virtual void enable() = 0;
-  // Disables the PowerToy, should free as much memory as possible.
+  /* Disables the PowerToy, should free as much memory as possible. */
   virtual void disable() = 0;
-  // Should return if the PowerToys is enabled or disabled.
+  /* Should return if the PowerToys is enabled or disabled. */
   virtual bool is_enabled() = 0;
   /* Handle event. Only the events the PowerToy subscribed to will be signaled.
      The data argument and return value meaning are event-specific:
@@ -66,12 +66,12 @@ public:
   */
   virtual intptr_t signal_event(const wchar_t* name, intptr_t data) = 0;
 
-  // Register helper class to handle system menu items related actions.
+  /* Register helper class to handle system menu items related actions. */
   virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) = 0;
-  // Handle action on system menu item.
+  /* Handle action on system menu item. */
   virtual void signal_system_menu_action(const wchar_t* name) = 0;
 
-  // Destroy the PowerToy and free all memory.
+  /* Destroy the PowerToy and free all memory. */
   virtual void destroy() = 0;
 };
 

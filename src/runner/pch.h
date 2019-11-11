@@ -24,4 +24,3 @@
 #include <string>
 #include <common/common.h>
 #include <ProjectTelemetry.h>
-#include <cpprest/json.h>

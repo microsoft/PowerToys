@@ -17,7 +17,7 @@ public:
 private:
   std::shared_mutex mutex;
   std::unordered_map<std::wstring, std::vector<PowertoyModuleIface*>> receivers;
-  std::unordered_set<PowertoyModuleIface*> systemMenuUsers;
+  std::unordered_set<PowertoyModuleIface*> systemMenuReceivers;
 };
 
 PowertoysEvents& powertoys_events();
