@@ -3,7 +3,6 @@
 
 class CPowerRenameListView
 {
-
 public:
     CPowerRenameListView() = default;
     ~CPowerRenameListView() = default;
@@ -17,6 +16,7 @@ public:
     void OnKeyDown(_In_ IPowerRenameManager* psrm, _In_ LV_KEYDOWN* lvKeyDown);
     void OnClickList(_In_ IPowerRenameManager* psrm, NM_LISTVIEW* pnmListView);
     void GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout_ LV_DISPINFO* plvdi);
+    void OnSize();
     HWND GetHWND() { return m_hwndLV; }
 
 private:
@@ -45,7 +45,7 @@ public:
     IFACEMETHODIMP_(ULONG) Release();
 
     // IPowerRenameUI
-    IFACEMETHODIMP Show();
+    IFACEMETHODIMP Show(_In_opt_ HWND hwndParent);
     IFACEMETHODIMP Close();
     IFACEMETHODIMP Update();
     IFACEMETHODIMP get_hwnd(_Out_ HWND* hwnd);
@@ -77,6 +77,7 @@ private:
     }
 
     HRESULT _DoModal(__in_opt HWND hwnd);
+    HRESULT _DoModeless(__in_opt HWND hwnd);
 
     static INT_PTR CALLBACK s_DlgProc(HWND hdlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
@@ -90,13 +91,14 @@ private:
         return pDlg ? pDlg->_DlgProc(uMsg, wParam, lParam) : FALSE;
     }
 
-    INT_PTR _DlgProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-    void _OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam);
-    BOOL _OnNotify(_In_ WPARAM wParam, _In_ LPARAM lParam);
-
     HRESULT _Initialize(_In_ IPowerRenameManager* psrm, _In_opt_ IDataObject* pdo, _In_ bool enableDragDrop);
     void _Cleanup();
 
+    INT_PTR _DlgProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    void _OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam);
+    BOOL _OnNotify(_In_ WPARAM wParam, _In_ LPARAM lParam);
+    void _OnSize(_In_ WPARAM wParam);
+    void _OnGetMinMaxInfo(_In_ LPARAM lParam);
     void _OnInitDlg();
     void _OnRename();
     void _OnAbout();
@@ -104,6 +106,7 @@ private:
     void _OnDestroyDlg();
     void _OnClear();
     void _OnSearchReplaceChanged();
+    void _MoveControl(_In_ DWORD id, _In_ DWORD repositionFlags, _In_ int xDelta, _In_ int yDelta);
 
     HRESULT _ReadSettings();
     HRESULT _WriteSettings();
@@ -119,6 +122,7 @@ private:
     bool m_initialized = false;
     bool m_enableDragDrop = false;
     bool m_disableCountUpdate = false;
+    bool m_modeless = true;
     HWND m_hwnd = nullptr;
     HWND m_hwndLV = nullptr;
     HICON m_iconMain = nullptr;
@@ -126,6 +130,10 @@ private:
     DWORD m_currentRegExId = 0;
     UINT m_selectedCount = 0;
     UINT m_renamingCount = 0;
+    int m_initialWidth = 0;
+    int m_initialHeight = 0;
+    int m_lastWidth = 0;
+    int m_lastHeight = 0;
     CComPtr<IPowerRenameManager> m_spsrm;
     CComPtr<IDataObject> m_spdo;
     CComPtr<IDropTargetHelper> m_spdth;

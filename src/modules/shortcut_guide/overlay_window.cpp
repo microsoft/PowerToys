@@ -385,6 +385,16 @@ void D2DOverlayWindow::set_theme(const std::wstring& theme) {
   }
 }
 
+/* Hide the window but do not call on_hide(). Use this to quickly hide the window when needed.
+   Note, that a proper hide should be made after this before showing the window again.
+*/
+void D2DOverlayWindow::quick_hide() {
+  ShowWindow(hwnd, SW_HIDE);
+  if (thumbnail) {
+    DwmUnregisterThumbnail(thumbnail);
+  }
+}
+
 float D2DOverlayWindow::get_overlay_opacity() {
   return overlay_opacity;
 }

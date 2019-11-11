@@ -101,7 +101,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, void*)
         break;
 
     case DLL_PROCESS_DETACH:
-        Trace::RegisterProvider();
+        Trace::UnregisterProvider();
         break;
     }
     return TRUE;
