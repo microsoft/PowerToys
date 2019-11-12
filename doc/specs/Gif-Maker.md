@@ -10,7 +10,7 @@
 
 ### 1.1. Elevator Pitch / Narrative
 
- David loves using GIFs to add creativity ti his typical responses to messages.  His friend Amanda emails him and asks what he would like to eat for lunch today.  David recently watched a burrito video, so he uses the GIF maker to screen record a brief moment from the video in order to tell Amanda that its "Burrito Day."
+ David loves using GIFs to add creativity to his typical responses to messages.  His friend Amanda emails him and asks what he would like to eat for lunch today.  David recently watched a burrito video, so he uses the GIF maker to screen record a brief moment from the video in order to tell Amanda that it's "Burrito Day."
 
 ### 1.2. Customers
 
