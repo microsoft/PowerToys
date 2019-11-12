@@ -25,6 +25,6 @@ private:
 
   std::mutex _task_mutex;
   std::condition_variable _task_cv;
-  std::atomic_bool _active;
+  std::atomic_bool _shutdown_request;
   std::queue<std::packaged_task<void()>> _task_queue;
 };

@@ -9,6 +9,8 @@ static std::mutex mutex;
 static std::deque<WinHookEvent> hook_events;
 static std::condition_variable dispatch_cv;
 
+void intercept_system_menu_action(intptr_t);
+
 static void CALLBACK win_hook_event_proc(HWINEVENTHOOK winEventHook,
                                          DWORD event,
                                          HWND window,
@@ -39,7 +41,9 @@ static void dispatch_thread_proc() {
       auto event = hook_events.front();
       hook_events.pop_front();
       lock.unlock();
-      powertoys_events().signal_event(win_hook_event, reinterpret_cast<intptr_t>(&event));
+      intptr_t data = reinterpret_cast<intptr_t>(&event);
+      intercept_system_menu_action(data);
+      powertoys_events().signal_event(win_hook_event, data);
       lock.lock();
     }
   }
@@ -70,3 +74,9 @@ void stop_win_hook_event() {
   hook_events.shrink_to_fit();
 }
 
+void intercept_system_menu_action(intptr_t data) {
+  WinHookEvent* evt = reinterpret_cast<WinHookEvent*>(data);
+  if (evt->event == EVENT_SYSTEM_MENUSTART || evt->event == EVENT_OBJECT_INVOKED) {
+    powertoys_events().handle_system_menu_action(*evt);
+  }
+}
