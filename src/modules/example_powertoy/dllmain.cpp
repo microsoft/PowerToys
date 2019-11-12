@@ -214,6 +214,9 @@ public:
     }
     return 0;
   }
+
+  virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override { }
+  virtual void signal_system_menu_action(const wchar_t* name) override { }
 };
 
 // Load the settings file.
