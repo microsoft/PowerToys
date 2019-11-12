@@ -53,16 +53,16 @@ IFACEMETHODIMP CPowerRenameRegEx::UnAdvise(_In_ DWORD cookie)
     HRESULT hr = E_FAIL;
     CSRWExclusiveAutoLock lock(&m_lockEvents);
 
-    for (auto it : m_renameRegExEvents)
+    for (std::vector<RENAME_REGEX_EVENT>::iterator it = m_renameRegExEvents.begin(); it != m_renameRegExEvents.end(); ++it)
     {
-        if (it.cookie == cookie)
+        if (it->cookie == cookie)
         {
             hr = S_OK;
-            it.cookie = 0;
-            if (it.pEvents)
+            it->cookie = 0;
+            if (it->pEvents)
             {
-                it.pEvents->Release();
-                it.pEvents = nullptr;
+                it->pEvents->Release();
+                it->pEvents = nullptr;
             }
             break;
         }

@@ -194,7 +194,7 @@ public:
 
     // IEnumString
     IFACEMETHODIMP Next(__in ULONG celt, __out_ecount_part(celt, *pceltFetched) LPOLESTR* rgelt, __out_opt ULONG* pceltFetched);
-    IFACEMETHODIMP Skip(__in ULONG celt) { return E_NOTIMPL; }
+    IFACEMETHODIMP Skip(__in ULONG) { return E_NOTIMPL; }
     IFACEMETHODIMP Reset();
     IFACEMETHODIMP Clone(__deref_out IEnumString** ppenum) { *ppenum = nullptr;  return E_NOTIMPL; }
 
@@ -380,8 +380,6 @@ IFACEMETHODIMP CRenameMRU::AddMRUString(_In_ PCWSTR entry)
 
 HRESULT CRenameMRU::_CreateMRUList(_In_ MRUINFO* pmi)
 {
-    HRESULT hr = E_FAIL;
-
     if (m_mruHandle != NULL)
     {
         _FreeMRUList();

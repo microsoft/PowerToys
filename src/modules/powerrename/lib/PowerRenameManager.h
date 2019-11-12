@@ -108,7 +108,7 @@ protected:
     CComPtr<IPowerRenameItemFactory> m_spItemFactory;
     CComPtr<IPowerRenameRegEx> m_spRegEx;
 
-    _Guarded_by_(m_lockEvents) std::vector<RENAME_MGR_EVENT> m_PowerRenameManagerEvents;
+    _Guarded_by_(m_lockEvents) std::vector<RENAME_MGR_EVENT> m_powerRenameManagerEvents;
     _Guarded_by_(m_lockItems) std::map<int, IPowerRenameItem*> m_renameItems;
 
     // Parent HWND used by IFileOperation

@@ -207,6 +207,39 @@ public:
         // Link to the GitHub PowerRename sub-page
         settings.set_overview_link(L"https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename");
 
+        settings.add_bool_toogle(
+            L"bool_persist_input",
+            L"Restore search, replace and flags values on launch from previous run.",
+            CSettings::GetPersistState()
+        );
+
+        settings.add_bool_toogle(
+            L"bool_mru_enabled",
+            L"Enable autocomplete and autosuggest of recently used inputs for search and replace values.",
+            CSettings::GetMRUEnabled()
+        );
+
+        settings.add_int_spinner(
+            L"int_max_mru_size",
+            L"Maximum number of items to show in recently used list for autocomplete dropdown.",
+            CSettings::GetMaxMRUSize(),
+            0,
+            20,
+            1
+        );
+
+        settings.add_bool_toogle(
+          L"bool_show_icon_on_menu", 
+          L"Show icon on context menu.",
+          CSettings::GetShowIconOnMenu()
+        );
+
+        settings.add_bool_toogle(
+            L"bool_show_extended_menu",
+            L"Only show the PowerRename menu item on the extended context menu (SHIFT + Right-click).",
+            CSettings::GetExtendedContextMenuOnly()
+        );
+
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
@@ -214,6 +247,22 @@ public:
     // This is called when the user hits Save on the settings page.
     virtual void set_config(PCWSTR config) override
     {
+        try {
+            // Parse the input JSON string.
+            PowerToysSettings::PowerToyValues values =
+                PowerToysSettings::PowerToyValues::from_json_string(config);
+
+            CSettings::SetPersistState(values.get_bool_value(L"bool_persist_input"));
+            CSettings::SetMRUEnabled(values.get_bool_value(L"bool_mru_enabled"));
+            CSettings::SetMaxMRUSize(values.get_int_value(L"int_max_mru_size"));
+            CSettings::SetShowIconOnMenu(values.get_bool_value(L"bool_show_icon_on_menu"));
+            CSettings::SetExtendedContextMenuOnly(values.get_int_value(L"bool_show_extended_menu"));
+
+            values.save_to_settings_file();
+        }
+        catch (std::exception & ex) {
+            // Improper JSON.
+        }
     }
 
     // Signal from the Settings editor to call a custom action.

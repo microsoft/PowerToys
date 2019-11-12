@@ -357,6 +357,8 @@ void CPowerRenameUI::_Cleanup()
     {
         RevokeDragDrop(m_hwnd);
     }
+
+    m_hwnd = NULL;
 }
 
 void CPowerRenameUI::_EnumerateItems(_In_ IDataObject* pdtobj)
@@ -447,13 +449,16 @@ HRESULT CPowerRenameUI::_WriteSettings()
 
 void CPowerRenameUI::_OnCloseDlg()
 {
-    if (m_modeless)
+    if (m_hwnd != NULL)
     {
-        DestroyWindow(m_hwnd);
-    }
-    else
-    {
-        EndDialog(m_hwnd, 1);
+        if (m_modeless)
+        {
+            DestroyWindow(m_hwnd);
+        }
+        else
+        {
+            EndDialog(m_hwnd, 1);
+        }
     }
 }
 
