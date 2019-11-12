@@ -144,6 +144,35 @@ namespace PowerToysSettings {
     UINT get_modifiers() {
       return get_modifiers_repeat() | MOD_NOREPEAT;
     }
+    std::wstring to_string() {
+      std::wstring result = L"";
+      if (win_pressed()) {
+        result += L"Win";
+      }
+      if (ctrl_pressed()) {
+        if (!result.empty()) {
+          result += L" + ";
+        }
+        result += L"Ctrl";
+      }
+      if (alt_pressed()) {
+        if (!result.empty()) {
+          result += L" + ";
+        }
+        result += L"Alt";
+      }
+      if (shift_pressed()) {
+        if (!result.empty()) {
+          result += L" + ";
+        }
+        result += L"Shift";
+      }
+      if (!result.empty()) {
+        result += L" + ";
+      }
+      result += get_key();
+      return result;
+    }
   protected:
     HotkeyObject(web::json::value hotkey_json) : m_json(hotkey_json) {};
     web::json::value m_json;

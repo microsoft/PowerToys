@@ -67,8 +67,6 @@ void PowertoysEvents::handle_system_menu_action(const WinHookEvent& data) {
       std::wstring itemName = SystemMenuHelperInstace().ItemNameFromItemId(data.idChild);
       // Process event on specified system menu item by responsible module.
       module->signal_system_menu_action(itemName.c_str());
-      // Process event on specified system menu item by system menu helper (check/uncheck if needed).
-      SystemMenuHelperInstace().ProcessSelectedItem(module, GetForegroundWindow(), itemName.c_str());
     }
   }
 }

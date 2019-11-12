@@ -78,6 +78,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUnitTests", "src
 		{B25AC7A5-FB9F-4789-B392-D5C85E948670} = {B25AC7A5-FB9F-4789-B392-D5C85E948670}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "always_on_top", "src\modules\always_on_top\always_on_top.vcxproj", "{EDD2478C-69F3-4772-A7DE-54145D759F60}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -146,6 +148,10 @@ Global
 		{2151F984-E006-4A9F-92EF-C6DDE3DC8413}.Debug|x64.Build.0 = Debug|x64
 		{2151F984-E006-4A9F-92EF-C6DDE3DC8413}.Release|x64.ActiveCfg = Release|x64
 		{2151F984-E006-4A9F-92EF-C6DDE3DC8413}.Release|x64.Build.0 = Release|x64
+		{EDD2478C-69F3-4772-A7DE-54145D759F60}.Debug|x64.ActiveCfg = Debug|x64
+		{EDD2478C-69F3-4772-A7DE-54145D759F60}.Debug|x64.Build.0 = Debug|x64
+		{EDD2478C-69F3-4772-A7DE-54145D759F60}.Release|x64.ActiveCfg = Release|x64
+		{EDD2478C-69F3-4772-A7DE-54145D759F60}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -168,6 +174,7 @@ Global
 		{0E072714-D127-460B-AFAD-B4C40B412798} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
 		{A3935CF4-46C5-4A88-84D3-6B12E16E6BA2} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
 		{2151F984-E006-4A9F-92EF-C6DDE3DC8413} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
+		{EDD2478C-69F3-4772-A7DE-54145D759F60} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

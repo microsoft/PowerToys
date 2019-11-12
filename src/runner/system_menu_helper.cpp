@@ -34,9 +34,12 @@ void SystemMenuHelper::ProcessSelectedItem(PowertoyModuleIface* module, HWND win
       for (const auto& [id, data] : IdMappings) {
         if (data.second == itemName) {
           HMENU systemMenu = GetSystemMenu(window, false);
-          int state = (GetMenuState(systemMenu, id, MF_BYCOMMAND) == MF_CHECKED) ? MF_UNCHECKED : MF_CHECKED;
-          CheckMenuItem(systemMenu, id, MF_BYCOMMAND | state);
-          break;
+          int state = -1;
+          if (systemMenu && ((state = GetMenuState(systemMenu, id, MF_BYCOMMAND)) != -1)) {
+            state = (state == MF_CHECKED) ? MF_UNCHECKED : MF_CHECKED;
+            CheckMenuItem(systemMenu, id, MF_BYCOMMAND | state);
+            break;
+          }
         }
       }
       break;

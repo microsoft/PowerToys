@@ -1,5 +1,6 @@
 #pragma once
 #include <optional>
+#include <string>
 #include <Windows.h>
 
 // Returns RECT with positions of the minmize/maximize buttons of the given window.
