@@ -257,10 +257,8 @@ public:
             CSettings::SetMaxMRUSize(values.get_int_value(L"int_max_mru_size"));
             CSettings::SetShowIconOnMenu(values.get_bool_value(L"bool_show_icon_on_menu"));
             CSettings::SetExtendedContextMenuOnly(values.get_bool_value(L"bool_show_extended_menu"));
-
-            values.save_to_settings_file();
         }
-        catch (std::exception & ex) {
+        catch (std::exception) {
             // Improper JSON.
         }
     }
