@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "PowerRenameExt.h"
 #include <interface/powertoy_module_interface.h>
+#include <settings.h>
 #include <trace.h>
 #include <common/settings_objects.h>
 
@@ -9,10 +10,10 @@ HINSTANCE g_hInst = 0;
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-class CSmartRenameClassFactory : public IClassFactory
+class CPowerRenameClassFactory : public IClassFactory
 {
 public:
-    CSmartRenameClassFactory(_In_ REFCLSID clsid) :
+    CPowerRenameClassFactory(_In_ REFCLSID clsid) :
         m_refCount(1),
         m_clsid(clsid)
     {
@@ -24,7 +25,7 @@ public:
     {
         static const QITAB qit[] =
         {
-            QITABENT(CSmartRenameClassFactory, IClassFactory),
+            QITABENT(CPowerRenameClassFactory, IClassFactory),
             { 0 }
         };
         return QISearch(this, qit, riid, ppv);
@@ -82,7 +83,7 @@ public:
     }
 
 private:
-    ~CSmartRenameClassFactory()
+    ~CPowerRenameClassFactory()
     {
         DllRelease();
     }
@@ -122,7 +123,7 @@ STDAPI DllGetClassObject(_In_ REFCLSID clsid, _In_ REFIID riid, _Outptr_ void **
 {
     *ppv = NULL;
     HRESULT hr = E_OUTOFMEMORY;
-    CSmartRenameClassFactory *pClassFactory = new CSmartRenameClassFactory(clsid);
+    CPowerRenameClassFactory *pClassFactory = new CPowerRenameClassFactory(clsid);
     if (pClassFactory)
     {
         hr = pClassFactory->QueryInterface(riid, ppv);
@@ -206,6 +207,39 @@ public:
         // Link to the GitHub PowerRename sub-page
         settings.set_overview_link(L"https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename");
 
+        settings.add_bool_toogle(
+            L"bool_persist_input",
+            L"Restore search, replace and flags values on launch from previous run.",
+            CSettings::GetPersistState()
+        );
+
+        settings.add_bool_toogle(
+            L"bool_mru_enabled",
+            L"Enable autocomplete and autosuggest of recently used inputs for search and replace values.",
+            CSettings::GetMRUEnabled()
+        );
+
+        settings.add_int_spinner(
+            L"int_max_mru_size",
+            L"Maximum number of items to show in recently used list for autocomplete dropdown.",
+            CSettings::GetMaxMRUSize(),
+            0,
+            20,
+            1
+        );
+
+        settings.add_bool_toogle(
+          L"bool_show_icon_on_menu", 
+          L"Show icon on context menu.",
+          CSettings::GetShowIconOnMenu()
+        );
+
+        settings.add_bool_toogle(
+            L"bool_show_extended_menu",
+            L"Only show the PowerRename menu item on the extended context menu (SHIFT + Right-click).",
+            CSettings::GetExtendedContextMenuOnly()
+        );
+
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
@@ -213,6 +247,20 @@ public:
     // This is called when the user hits Save on the settings page.
     virtual void set_config(PCWSTR config) override
     {
+        try {
+            // Parse the input JSON string.
+            PowerToysSettings::PowerToyValues values =
+                PowerToysSettings::PowerToyValues::from_json_string(config);
+
+            CSettings::SetPersistState(values.get_bool_value(L"bool_persist_input"));
+            CSettings::SetMRUEnabled(values.get_bool_value(L"bool_mru_enabled"));
+            CSettings::SetMaxMRUSize(values.get_int_value(L"int_max_mru_size"));
+            CSettings::SetShowIconOnMenu(values.get_bool_value(L"bool_show_icon_on_menu"));
+            CSettings::SetExtendedContextMenuOnly(values.get_bool_value(L"bool_show_extended_menu"));
+        }
+        catch (std::exception) {
+            // Improper JSON.
+        }
     }
 
     // Signal from the Settings editor to call a custom action.
@@ -238,13 +286,13 @@ public:
 
     void init_settings()
     {
-        m_enabled = CPowerRenameMenu::IsEnabled();
+        m_enabled = CSettings::GetEnabled();
         Trace::EnablePowerRename(m_enabled);
     }
 
     void save_settings()
     {
-        CPowerRenameMenu::SetEnabled(m_enabled);
+        CSettings::SetEnabled(m_enabled);
         Trace::EnablePowerRename(m_enabled);
     }
 

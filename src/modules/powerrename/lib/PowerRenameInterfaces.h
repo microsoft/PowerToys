@@ -93,10 +93,10 @@ public:
     IFACEMETHOD(GetRenameItemCount)(_Out_ UINT* count) = 0;
     IFACEMETHOD(get_flags)(_Out_ DWORD* flags) = 0;
     IFACEMETHOD(put_flags)(_In_ DWORD flags) = 0;
-    IFACEMETHOD(get_smartRenameRegEx)(_COM_Outptr_ IPowerRenameRegEx** ppRegEx) = 0;
-    IFACEMETHOD(put_smartRenameRegEx)(_In_ IPowerRenameRegEx* pRegEx) = 0;
-    IFACEMETHOD(get_smartRenameItemFactory)(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory) = 0;
-    IFACEMETHOD(put_smartRenameItemFactory)(_In_ IPowerRenameItemFactory* pItemFactory) = 0;
+    IFACEMETHOD(get_renameRegEx)(_COM_Outptr_ IPowerRenameRegEx** ppRegEx) = 0;
+    IFACEMETHOD(put_renameRegEx)(_In_ IPowerRenameRegEx* pRegEx) = 0;
+    IFACEMETHOD(get_renameItemFactory)(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory) = 0;
+    IFACEMETHOD(put_renameItemFactory)(_In_ IPowerRenameItemFactory* pItemFactory) = 0;
 };
 
 interface __declspec(uuid("E6679DEB-460D-42C1-A7A8-E25897061C99")) IPowerRenameUI : public IUnknown
@@ -105,5 +105,11 @@ public:
     IFACEMETHOD(Show)(_In_opt_ HWND hwndParent) = 0;
     IFACEMETHOD(Close)() = 0;
     IFACEMETHOD(Update)() = 0;
+};
+
+interface __declspec(uuid("04AAFABE-B76E-4E13-993A-B5941F52B139")) IPowerRenameMRU : public IUnknown
+{
+public:
+    IFACEMETHOD(AddMRUString)(_In_ PCWSTR entry) = 0;
 };
 
