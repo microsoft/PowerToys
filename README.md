@@ -16,7 +16,7 @@ The latest release of PowerToys can be downloaded currently a few different ways
 
 | x64 | x86 | ARM |
 |:---:|:---:|:---:|
-| Supported | [Issue #620](https://github.com/microsoft/PowerToys/issues/602)  | [Issue #490](https://github.com/microsoft/PowerToys/issues/490)|
+| Supported | [Issue #602](https://github.com/microsoft/PowerToys/issues/602)  | [Issue #490](https://github.com/microsoft/PowerToys/issues/490)|
 
 ### GitHub
 
