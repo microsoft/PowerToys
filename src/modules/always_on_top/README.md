@@ -1,11 +1,14 @@
 ### Always On Top
 
-This service provides simple window management, where user can specify certain
-window and force it to be always on top. This can be achieved either by opening window
-system menu (right mouse click on window title bar) and selecting `Always On Top` option,
-or through hotkey, which can be configured in general settings for `Always On Top` module.
+With Always On Top you can make a window stay on top of all other windows. This can
+be achieved either by opening the window system menu (right mouse click on the window
+title bar) and selecting `Always On Top` menu item, or through a hotkey, which can be
+configured in the general settings for the `Always On Top` module.
 
-Example of customized system menu with `Always On Top` menu item. Currently configured hotkey
+To turn off the Always On Top status for a window, you can do it through the title
+bar context menu command or using the hotkey (regardless which method you used to turn it on).
+
+Example of customized system menu with `Always On Top` menu item. The currently configured hotkey
 is displayed on the right.
 
 ![Always On Top](AlwaysOnTop.png)

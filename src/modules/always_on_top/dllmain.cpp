@@ -23,19 +23,17 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
   return TRUE;
 }
 
-const static wchar_t* MODULE_NAME = L"AlwaysOnTop";
-const static wchar_t* MODULE_DESC = L"";
+const static wchar_t* MODULE_NAME = L"Always On Top";
+const static wchar_t* MODULE_DESC = L"Adds a command to the title bar context menu to set a window on top of all others.";
 const static wchar_t* HOTKEY_NAME = L"AlwaysOnTop_HotKey";
+const static wchar_t* HOTKEY_WINDOW_CLASS_NAME = L"HotkeyHandleWindowClass";
+const static wchar_t* OVERVIEW_LINK = L"https://github.com/microsoft/PowerToys/blob/master/src/modules/always_on_top/README.md";
 
 struct AllwaysOnTopSettings {
   // Default hotkey WIN + ALT + T
   PowerToysSettings::HotkeyObject editorHotkey =
     PowerToysSettings::HotkeyObject::from_settings(true, false, true, false, 0x54, L"T"); // ASCII code for T 0x54
 };
-
-namespace {
-  const std::wstring KMenuItemName = L"Always on top";
-}
 
 class AlwaysOnTop : public PowertoyModuleIface {
 private:
@@ -44,12 +42,13 @@ private:
   HWND                     hotKeyHandleWindow{ nullptr };
   HWND                     currentlyOnTop{ nullptr };
   AllwaysOnTopSettings     settings;
-  std::wstring             itemName{ KMenuItemName };
+  std::wstring             itemName{ MODULE_NAME };
   PowertoySystemMenuIface* systemMenuHelper{ nullptr };
 
   void ProcessCommand(HWND window);
   bool SetWindowOnTop(HWND window);
   void ResetCurrentOnTop();
+  void CleanUp();
 
   void LoadSettings(PCWSTR config, bool fromFile);
   void SaveSettings();
@@ -71,11 +70,7 @@ public:
 
   virtual void destroy() override
   {
-    ResetCurrentOnTop();
-    if (hotKeyHandleWindow) {
-      DestroyWindow(hotKeyHandleWindow);
-      hotKeyHandleWindow = nullptr;
-    }
+    CleanUp();
     delete this;
   }
 
@@ -95,7 +90,9 @@ public:
     HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
     PowerToysSettings::Settings common(hinstance, get_name());
+    common.set_description(MODULE_DESC);
     common.add_hotkey(HOTKEY_NAME, IDS_SETTING_ALWAYS_ON_TOP_HOTKEY, settings.editorHotkey);
+    common.set_overview_link(OVERVIEW_LINK);
 
     return common.serialize_to_buffer(buffer, buffer_size);
   }
@@ -131,10 +128,10 @@ public:
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.lpfnWndProc = WndProc_Helper;
     wcex.hInstance = hinstance;
-    wcex.lpszClassName = L"HotkeyHandleWindow";
+    wcex.lpszClassName = HOTKEY_WINDOW_CLASS_NAME;
     RegisterClassExW(&wcex);
 
-    hotKeyHandleWindow = CreateWindowExW(WS_EX_TOOLWINDOW, L"HotkeyHandleWindow", L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, hinstance, this);
+    hotKeyHandleWindow = CreateWindowExW(WS_EX_TOOLWINDOW, HOTKEY_WINDOW_CLASS_NAME, L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, hinstance, this);
     if (!hotKeyHandleWindow) {
       return;
     }
@@ -146,7 +143,7 @@ public:
 
   virtual void disable()
   {
-    ResetCurrentOnTop();
+    CleanUp();
     enabled = false;
   }
 
@@ -202,6 +199,16 @@ void AlwaysOnTop::ResetCurrentOnTop()
   currentlyOnTop = nullptr;
 }
 
+void AlwaysOnTop::CleanUp()
+{
+  ResetCurrentOnTop();
+  if (hotKeyHandleWindow) {
+    DestroyWindow(hotKeyHandleWindow);
+    hotKeyHandleWindow = nullptr;
+  }
+  UnregisterClass(HOTKEY_WINDOW_CLASS_NAME, reinterpret_cast<HINSTANCE>(&__ImageBase));
+}
+
 void AlwaysOnTop::LoadSettings(PCWSTR config, bool fromFile)
 {
   try {
@@ -212,7 +219,7 @@ void AlwaysOnTop::LoadSettings(PCWSTR config, bool fromFile)
     if (values.is_object_value(HOTKEY_NAME))
     {
       settings.editorHotkey = PowerToysSettings::HotkeyObject::from_json(values.get_json(HOTKEY_NAME));
-      itemName = KMenuItemName + L"\t" + settings.editorHotkey.to_string();
+      itemName = std::wstring(MODULE_NAME) + L"\t" + settings.editorHotkey.to_string();
     }
   }
   catch (std::exception&) {}
