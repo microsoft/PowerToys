@@ -106,13 +106,13 @@ public:
       PowerToysSettings::PowerToyValues::from_json_string(config);
     if (values.is_object_value(HOTKEY_NAME)) {
       settings.editorHotkey = PowerToysSettings::HotkeyObject::from_json(values.get_json(HOTKEY_NAME));
+
+      // Hotkey updated. Register new hotkey and trigger system menu update.
+      UnregisterHotKey(hotKeyHandleWindow, 1);
+      RegisterHotKey(hotKeyHandleWindow, 1, settings.editorHotkey.get_modifiers(), settings.editorHotkey.get_code());
+
+      systemMenuHelper->SetConfiguration(this, CustomItems());
     }
-
-    UnregisterHotKey(hotKeyHandleWindow, 1);
-    RegisterHotKey(hotKeyHandleWindow, 1, settings.editorHotkey.get_modifiers(), settings.editorHotkey.get_code());
-
-    // Update hotkey.
-    systemMenuHelper->SetConfiguration(this, CustomItems());
   }
 
   virtual void call_custom_action(const wchar_t* action) override

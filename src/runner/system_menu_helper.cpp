@@ -71,6 +71,7 @@ void SystemMenuHelper::Reset(PowertoyModuleIface* module) {
         }
       }
     }
+    modules.erase(std::remove(std::begin(modules), std::end(modules), module), std::end(modules));
   }
 }
 

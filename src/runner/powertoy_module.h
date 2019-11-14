@@ -40,9 +40,6 @@ public:
         powertoys_events().register_receiver(*want_signals, module);
       }
     }
-    if (SystemMenuHelperInstace().HasCustomConfig(module)) {
-      powertoys_events().register_system_menu_action(module);
-    }
   }
 
   const std::wstring& get_name() const {
@@ -78,10 +75,14 @@ public:
   }
   
   void enable() {
+    if (SystemMenuHelperInstace().HasCustomConfig(module.get())) {
+      powertoys_events().register_system_menu_action(module.get());
+    }
     module->enable();
   }
   
   void disable() {
+    powertoys_events().unregister_system_menu_action(module.get());
     module->disable();
   }
 
