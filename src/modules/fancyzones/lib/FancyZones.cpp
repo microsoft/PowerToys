@@ -2,12 +2,16 @@
 #include "common/dpi_aware.h"
 #include "common/on_thread_executor.h"
 
+#include "common/wmi_query.h"
+#include "WmiHelpers.h"
+
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
 public:
     FancyZones(HINSTANCE hinstance, IFancyZonesSettings* settings) noexcept
         : m_hinstance(hinstance)
         , m_settings(settings)
+        , m_wmiConnection(wmi_connection::initialize())
     {
         m_settings->SetCallback(this);
     }
@@ -90,6 +94,8 @@ private:
     wil::unique_handle m_terminateEditorEvent;
 
     OnThreadExecutor m_dpiUnawareThread;
+
+    wmi_connection m_wmiConnection;
 
     static UINT WM_PRIV_VDCHANGED;
     static UINT WM_PRIV_EDITOR;
@@ -590,15 +596,38 @@ void FancyZones::UpdateZoneWindows() noexcept
 
             if (validMonitor)
             {
-                if (!deviceId)
+                auto strongThis = reinterpret_cast<FancyZones*>(data);
+                
+                std::wstring wmiHWID;
+                if (deviceId)
+                {
+                  wchar_t parsedId[256]{};
+                  ParseDeviceId(deviceId, parsedId, 256);
+                  WmiMonitorID displayWmiInfo;
+                  std::wstring query{L"WmiMonitorID where InstanceName like \"%"};
+                  std::wstring_view instanceNameSearchKey{parsedId};
+                  instanceNameSearchKey = instanceNameSearchKey.substr(instanceNameSearchKey.find(L'#') + 1);
+                  (query += instanceNameSearchKey) += L"%\"";
+                  try
+                  {
+                    strongThis->m_wmiConnection.select_all(query.c_str(), [&](std::wstring_view xml_obj){
+                        displayWmiInfo = parse_monitorID_from_dtd(xml_obj);
+                    });
+                    wmiHWID = displayWmiInfo._friendly_name + L"_" + displayWmiInfo._serial_number_id;
+                  }
+                  catch(...)
+                  {
+                    // WMI query failed => using a backup deviceID instead(warn: could be identical for 2 devices
+                    // of the same model
+                  }
+                }
+                else
                 {
                     deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
                         L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
                         L"\\\\?\\DISPLAY#LOCALDISPLAY#";
                 }
-
-                auto strongThis = reinterpret_cast<FancyZones*>(data);
-                strongThis->AddZoneWindow(monitor, deviceId);
+                strongThis->AddZoneWindow(monitor, wmiHWID.empty() ? deviceId : wmiHWID.c_str());
             }
         }
         return TRUE;

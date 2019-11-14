@@ -37,7 +37,7 @@ private:
         int thickness{};
     };
 
-    void InitializeId(PCWSTR deviceId, PCWSTR virtualDesktopId) noexcept;
+    void InitializeId(PCWSTR hardwareDeviceID, PCWSTR virtualDesktopId) noexcept;
     void LoadSettings() noexcept;
     void InitializeZoneSets() noexcept;
     void LoadZoneSetsFromRegistry() noexcept;
@@ -316,20 +316,17 @@ IFACEMETHODIMP_(void) ZoneWindow::CycleActiveZoneSet(DWORD wparam) noexcept
 }
 
 #pragma region private
-void ZoneWindow::InitializeId(PCWSTR deviceId, PCWSTR virtualDesktopId) noexcept
+void ZoneWindow::InitializeId(PCWSTR hardwareDeviceID, PCWSTR virtualDesktopId) noexcept
 {
-    SHStrDup(deviceId, &m_deviceId);
+    SHStrDup(hardwareDeviceID, &m_deviceId);
 
     MONITORINFOEXW mi;
     mi.cbSize = sizeof(mi);
     if (GetMonitorInfo(m_monitor, &mi))
     {
-        wchar_t parsedId[256]{};
-        ParseDeviceId(m_deviceId.get(), parsedId, 256);
-
         Rect const monitorRect(mi.rcMonitor);
         StringCchPrintf(m_uniqueId, ARRAYSIZE(m_uniqueId), L"%s_%d_%d_%s",
-            parsedId, monitorRect.width(), monitorRect.height(), virtualDesktopId);
+          hardwareDeviceID, monitorRect.width(), monitorRect.height(), virtualDesktopId);
     }
 }
 

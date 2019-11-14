@@ -67,6 +67,9 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>wbemuuid.lib;comsuppw.lib;</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -89,6 +92,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>wbemuuid.lib;comsuppw.lib;</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="animation.h" />
@@ -108,8 +114,10 @@
     <ClInclude Include="Telemetry\ProjectTelemetry.h" />
     <ClInclude Include="Telemetry\TraceLoggingDefines.h" />
     <ClInclude Include="two_way_pipe_message_ipc.h" />
+    <ClInclude Include="utils\traits.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="windows_colors.h" />
+    <ClInclude Include="wmi_query.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="animation.cpp" />
@@ -129,6 +137,7 @@
     <ClCompile Include="tasklist_positions.cpp" />
     <ClCompile Include="common.cpp" />
     <ClCompile Include="windows_colors.cpp" />
+    <ClCompile Include="wmi_query.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\deps\cpprestsdk\cpprestsdk.vcxproj">
