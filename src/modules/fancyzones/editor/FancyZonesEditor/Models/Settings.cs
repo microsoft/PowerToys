@@ -22,6 +22,21 @@ namespace FancyZonesEditor
     //
     public class Settings : INotifyPropertyChanged
     {
+        public bool IsCustomLayoutActive
+        {
+            get
+            {
+                foreach(LayoutModel model in CustomModels)
+                {
+                    if(model.IsSelected)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+        
         public Settings()
         {
             ParseCommandLineArgs();

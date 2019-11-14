@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -38,7 +38,8 @@ namespace FancyZonesEditor
         }
 
         private int _WrapPanelItemSize = 262;
-        public int WrapPanelItemSize {
+        public int WrapPanelItemSize
+        {
             get
             {
                 return _WrapPanelItemSize;
@@ -236,6 +237,25 @@ namespace FancyZonesEditor
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             return null;
+        }
+    }
+    public class BooleanToIntConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if(value is bool)
+            {
+                return (bool)value == true ? 1 : 0;
+            }
+            return 0;
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if(value is int)
+            {
+                return (int)value == 1;
+            }
+            return false;
         }
     }
 }
