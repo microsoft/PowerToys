@@ -37,7 +37,7 @@ private:
 
     void ShowZoneWindow() noexcept;
     void HideZoneWindow() noexcept;
-    void InitializeId(PCWSTR deviceId, PCWSTR virtualDesktopId) noexcept;
+    void InitializeId(PCWSTR hardwareDeviceID, PCWSTR virtualDesktopId) noexcept;
     void LoadSettings() noexcept;
     void InitializeZoneSets(MONITORINFO const& mi) noexcept;
     void LoadZoneSetsFromRegistry() noexcept;
@@ -231,14 +231,14 @@ IFACEMETHODIMP_(void) ZoneWindow::CycleActiveZoneSet(DWORD wparam) noexcept
 
 IFACEMETHODIMP_(void) ZoneWindow::SaveWindowProcessToZoneIndex(HWND window) noexcept
 {
-    auto processPath = get_process_path(window);
-    if (!processPath.empty())
-    {
-        DWORD zoneIndex = static_cast<DWORD>(m_activeZoneSet->GetZoneIndexFromWindow(window));
-        if (zoneIndex != -1)
-        {
-            RegistryHelpers::SaveAppLastZone(window, processPath.data(), zoneIndex);
-        }
+    auto processPath = get_process_path(window);
+    if (!processPath.empty())
+    {
+        DWORD zoneIndex = static_cast<DWORD>(m_activeZoneSet->GetZoneIndexFromWindow(window));
+        if (zoneIndex != -1)
+        {
+            RegistryHelpers::SaveAppLastZone(window, processPath.data(), zoneIndex);
+        }
     }
 }
 
@@ -276,20 +276,17 @@ void ZoneWindow::HideZoneWindow() noexcept
     }
 }
 
-void ZoneWindow::InitializeId(PCWSTR deviceId, PCWSTR virtualDesktopId) noexcept
+void ZoneWindow::InitializeId(PCWSTR hardwareDeviceID, PCWSTR virtualDesktopId) noexcept
 {
-    SHStrDup(deviceId, &m_deviceId);
+    SHStrDup(hardwareDeviceID, &m_deviceId);
 
     MONITORINFOEXW mi;
     mi.cbSize = sizeof(mi);
     if (GetMonitorInfo(m_monitor, &mi))
     {
-        wchar_t parsedId[256]{};
-        ParseDeviceId(m_deviceId.get(), parsedId, 256);
-
         Rect const monitorRect(mi.rcMonitor);
         StringCchPrintf(m_uniqueId, ARRAYSIZE(m_uniqueId), L"%s_%d_%d_%s",
-            parsedId, monitorRect.width(), monitorRect.height(), virtualDesktopId);
+          hardwareDeviceID, monitorRect.width(), monitorRect.height(), virtualDesktopId);
     }
 }
 

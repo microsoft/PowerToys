@@ -70,7 +70,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalDependencies>gdiplus.lib;dwmapi.lib;shlwapi.lib;uxtheme.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gdiplus.lib;dwmapi.lib;shlwapi.lib;uxtheme.lib;shcore.lib;wbemuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>fancyzones.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -95,7 +95,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalDependencies>gdiplus.lib;dwmapi.lib;shlwapi.lib;uxtheme.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gdiplus.lib;dwmapi.lib;shlwapi.lib;uxtheme.lib;shcore.lib;wbemuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>fancyzones.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
