@@ -243,7 +243,7 @@ namespace FancyZonesEditor
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            if(value is bool)
+            if (value is bool)
             {
                 return (bool)value == true ? 1 : 0;
             }
@@ -251,7 +251,7 @@ namespace FancyZonesEditor
         }
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            if(value is int)
+            if (value is int)
             {
                 return (int)value == 1;
             }

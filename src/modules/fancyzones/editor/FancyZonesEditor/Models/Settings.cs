@@ -26,9 +26,9 @@ namespace FancyZonesEditor
         {
             get
             {
-                foreach(LayoutModel model in CustomModels)
+                foreach (LayoutModel model in CustomModels)
                 {
-                    if(model.IsSelected)
+                    if (model.IsSelected)
                     {
                         return true;
                     }
