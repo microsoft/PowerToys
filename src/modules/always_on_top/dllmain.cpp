@@ -29,7 +29,7 @@ const static wchar_t* HOTKEY_NAME = L"AlwaysOnTop_HotKey";
 const static wchar_t* HOTKEY_WINDOW_CLASS_NAME = L"HotkeyHandleWindowClass";
 const static wchar_t* OVERVIEW_LINK = L"https://github.com/microsoft/PowerToys/blob/master/src/modules/always_on_top/README.md";
 
-struct AllwaysOnTopSettings {
+struct AlwaysOnTopSettings {
   // Default hotkey WIN + ALT + T
   PowerToysSettings::HotkeyObject editorHotkey =
     PowerToysSettings::HotkeyObject::from_settings(true, false, true, false, 0x54, L"T"); // ASCII code for T 0x54
@@ -41,7 +41,7 @@ private:
   bool                     enabled{ false };
   HWND                     hotKeyHandleWindow{ nullptr };
   HWND                     currentlyOnTop{ nullptr };
-  AllwaysOnTopSettings     settings;
+  AlwaysOnTopSettings      moduleSettings;
   std::wstring             itemName{ MODULE_NAME };
   PowertoySystemMenuIface* systemMenuHelper{ nullptr };
 
@@ -89,12 +89,12 @@ public:
   {
     HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
-    PowerToysSettings::Settings common(hinstance, get_name());
-    common.set_description(MODULE_DESC);
-    common.add_hotkey(HOTKEY_NAME, IDS_SETTING_ALWAYS_ON_TOP_HOTKEY, settings.editorHotkey);
-    common.set_overview_link(OVERVIEW_LINK);
+    PowerToysSettings::Settings settings(hinstance, get_name());
+    settings.set_description(MODULE_DESC);
+    settings.add_hotkey(HOTKEY_NAME, IDS_SETTING_ALWAYS_ON_TOP_HOTKEY, moduleSettings.editorHotkey);
+    settings.set_overview_link(OVERVIEW_LINK);
 
-    return common.serialize_to_buffer(buffer, buffer_size);
+    return settings.serialize_to_buffer(buffer, buffer_size);
   }
 
   virtual void set_config(const wchar_t* config) override
@@ -105,11 +105,11 @@ public:
     PowerToysSettings::PowerToyValues values =
       PowerToysSettings::PowerToyValues::from_json_string(config);
     if (values.is_object_value(HOTKEY_NAME)) {
-      settings.editorHotkey = PowerToysSettings::HotkeyObject::from_json(values.get_json(HOTKEY_NAME));
+      moduleSettings.editorHotkey = PowerToysSettings::HotkeyObject::from_json(values.get_json(HOTKEY_NAME));
 
       // Hotkey updated. Register new hotkey and trigger system menu update.
       UnregisterHotKey(hotKeyHandleWindow, 1);
-      RegisterHotKey(hotKeyHandleWindow, 1, settings.editorHotkey.get_modifiers(), settings.editorHotkey.get_code());
+      RegisterHotKey(hotKeyHandleWindow, 1, moduleSettings.editorHotkey.get_modifiers(), moduleSettings.editorHotkey.get_code());
 
       systemMenuHelper->SetConfiguration(this, CustomItems());
     }
@@ -136,7 +136,7 @@ public:
       return;
     }
 
-    RegisterHotKey(hotKeyHandleWindow, 1, settings.editorHotkey.get_modifiers(), settings.editorHotkey.get_code());
+    RegisterHotKey(hotKeyHandleWindow, 1, moduleSettings.editorHotkey.get_modifiers(), moduleSettings.editorHotkey.get_code());
 
     enabled = true;
   }
@@ -218,8 +218,8 @@ void AlwaysOnTop::LoadSettings(PCWSTR config, bool fromFile)
 
     if (values.is_object_value(HOTKEY_NAME))
     {
-      settings.editorHotkey = PowerToysSettings::HotkeyObject::from_json(values.get_json(HOTKEY_NAME));
-      itemName = std::wstring(MODULE_NAME) + L"\t" + settings.editorHotkey.to_string();
+      moduleSettings.editorHotkey = PowerToysSettings::HotkeyObject::from_json(values.get_json(HOTKEY_NAME));
+      itemName = std::wstring(MODULE_NAME) + L"\t" + moduleSettings.editorHotkey.to_string();
     }
   }
   catch (std::exception&) {}
@@ -228,7 +228,7 @@ void AlwaysOnTop::LoadSettings(PCWSTR config, bool fromFile)
 void AlwaysOnTop::SaveSettings()
 {
   PowerToysSettings::PowerToyValues values(get_name());
-  values.add_property(HOTKEY_NAME, settings.editorHotkey);
+  values.add_property(HOTKEY_NAME, moduleSettings.editorHotkey);
   try {
     values.save_to_settings_file();
   }

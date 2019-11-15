@@ -5,11 +5,28 @@
 
 namespace {
   constexpr int KSeparatorPos = 1;
-  constexpr int KNewItemPos = 2;
+  constexpr int KNewItemPos = 1;
 
   unsigned int GenerateItemId() {
     static unsigned int generator = 0x70777479;
     return ++generator;
+  }
+  int CustomItemsPosition(HWND window) {
+    // First separator is placed after Maximize item. Place custom
+    // items after that position.
+    if (HMENU systemMenu{ GetSystemMenu(window, false) }) {
+      MENUITEMINFO mii;
+      mii.cbSize = sizeof(MENUITEMINFO);
+      mii.fMask = MIIM_FTYPE;
+      for (int i = 0; i < GetMenuItemCount(systemMenu); ++i) {
+        if (GetMenuItemInfo(systemMenu, i, true, &mii)) {
+          if (mii.fType == MFT_SEPARATOR) {
+            return i;
+          }
+        }
+      }
+    }
+    return -1;
   }
 }
 
@@ -48,15 +65,17 @@ void SystemMenuHelper::ProcessSelectedItem(PowertoyModuleIface* module, HWND win
 }
 
 bool SystemMenuHelper::Customize(PowertoyModuleIface* module, HWND window) {
+  ReEnableCustomItems(window);
   auto& modules = ProcessedModules[window];
   for (const auto& m : modules) {
     if (module == m) {
       return false;
     }
   }
-  AddSeparator(module, window);
+  int position = CustomItemsPosition(window);
+  AddSeparator(module, window, position + KSeparatorPos);
   for (const auto& info : Configurations[module]) {
-    AddItem(module, window, info.name, info.enable);
+    AddItem(module, window, position + KNewItemPos, info.name, info.enable);
   }
   modules.push_back(module);
   return true;
@@ -79,7 +98,7 @@ bool SystemMenuHelper::HasCustomConfig(PowertoyModuleIface* module) {
   return Configurations.find(module) != Configurations.end();
 }
 
-bool SystemMenuHelper::AddItem(PowertoyModuleIface* module, HWND window, const std::wstring& name, const bool enable) {
+bool SystemMenuHelper::AddItem(PowertoyModuleIface* module, HWND window, int position, const std::wstring& name, const bool enable) {
   if (HMENU systemMenu{ GetSystemMenu(window, false) }) {
     MENUITEMINFO item;
     item.cbSize = sizeof(item);
@@ -87,9 +106,9 @@ bool SystemMenuHelper::AddItem(PowertoyModuleIface* module, HWND window, const s
     item.fState = MF_UNCHECKED | MF_DISABLED; // Item is disabled by default.
     item.wID = GenerateItemId();
     item.dwTypeData = const_cast<WCHAR*>(name.c_str());
-    item.cch = name.size() + 1;
+    item.cch = (UINT)(name.size() + 1);
 
-    if (InsertMenuItem(systemMenu, GetMenuItemCount(systemMenu) - KNewItemPos, true, &item)) {
+    if (InsertMenuItem(systemMenu, position, true, &item)) {
       IdMappings[item.wID] = { module, name };
       if (enable) {
         EnableMenuItem(systemMenu, item.wID, MF_BYCOMMAND | MF_ENABLED);
@@ -100,7 +119,7 @@ bool SystemMenuHelper::AddItem(PowertoyModuleIface* module, HWND window, const s
   return false;
 }
 
-bool SystemMenuHelper::AddSeparator(PowertoyModuleIface* module, HWND window) {
+bool SystemMenuHelper::AddSeparator(PowertoyModuleIface* module, HWND window, int position) {
   if (HMENU systemMenu{ GetSystemMenu(window, false) }) {
     MENUITEMINFO separator;
     separator.cbSize = sizeof(separator);
@@ -108,12 +127,26 @@ bool SystemMenuHelper::AddSeparator(PowertoyModuleIface* module, HWND window) {
     separator.fType = MFT_SEPARATOR;
     separator.wID = GenerateItemId();
 
-    if (InsertMenuItem(systemMenu, GetMenuItemCount(systemMenu) - KSeparatorPos, true, &separator)) {
+    if (InsertMenuItem(systemMenu, position, true, &separator)) {
       IdMappings[separator.wID] = { module, L"sepparator_dummy_name" };
       return true;
     }
   }
   return false;
+}
+
+void SystemMenuHelper::ReEnableCustomItems(HWND window)
+{
+  // Some apps disables newly added menu items (e.g. Telegram, Hangouts),
+  // so re-enable custom menus every time system meny is opened.
+  for (const auto& [id, info] : IdMappings) {
+    for (const auto& config : Configurations[info.first]) {
+      // Enable only if specified by configuration.
+      if (config.name == info.second && config.enable) {
+        EnableMenuItem(GetSystemMenu(window, false), id, MF_BYCOMMAND | MF_ENABLED);
+      }
+    }
+  }
 }
 
 PowertoyModuleIface* SystemMenuHelper::ModuleFromItemId(const int& id) {

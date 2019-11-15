@@ -25,8 +25,10 @@ public:
   const std::wstring ItemNameFromItemId(const int& id);
 
 private:
-  bool AddItem(PowertoyModuleIface* module, HWND window, const std::wstring& name, const bool enable);
-  bool AddSeparator(PowertoyModuleIface* module, HWND window);
+  bool AddItem(PowertoyModuleIface* module, HWND window, int position, const std::wstring& name, const bool enable);
+  bool AddSeparator(PowertoyModuleIface* module, HWND window, int position);
+
+  void ReEnableCustomItems(HWND window);
 
   // Store processed modules per window to avoid handling it multiple times.
   std::unordered_map<HWND, std::vector<PowertoyModuleIface*>> ProcessedModules{};
