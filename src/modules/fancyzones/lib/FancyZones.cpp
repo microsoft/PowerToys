@@ -525,60 +525,66 @@ void FancyZones::UpdateZoneWindows() noexcept
     {
         MONITORINFOEX mi;
         mi.cbSize = sizeof(mi);
-        if (GetMonitorInfo(monitor, &mi))
+        if (GetMonitorInfo(monitor, &mi) == FALSE)
         {
-            DISPLAY_DEVICE displayDevice = { sizeof(displayDevice) };
-            PCWSTR deviceId = nullptr;
+          return TRUE;
+        }
+        DISPLAY_DEVICE displayDevice = { sizeof(displayDevice) };
+        PCWSTR deviceId = nullptr;
 
-            bool validMonitor = true;
-            if (EnumDisplayDevices(mi.szDevice, 0, &displayDevice, 1))
+        bool validMonitor = true;
+        if (EnumDisplayDevices(mi.szDevice, 0, &displayDevice, 1))
+        {
+            if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER))
             {
-                if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER))
-                {
-                    validMonitor = FALSE;
-                }
-                else if (displayDevice.DeviceID[0] != L'\0')
-                {
-                    deviceId = displayDevice.DeviceID;
-                }
+                validMonitor = FALSE;
             }
-
-            if (validMonitor)
+            else if (displayDevice.DeviceID[0] != L'\0')
             {
-                auto strongThis = reinterpret_cast<FancyZones*>(data);
-                
-                std::wstring wmiHWID;
-                if (deviceId)
-                {
-                  wchar_t parsedId[256]{};
-                  ParseDeviceId(deviceId, parsedId, 256);
-                  WmiMonitorID displayWmiInfo;
-                  std::wstring query{L"WmiMonitorID where InstanceName like \"%"};
-                  std::wstring_view instanceNameSearchKey{parsedId};
-                  instanceNameSearchKey = instanceNameSearchKey.substr(instanceNameSearchKey.find(L'#') + 1);
-                  (query += instanceNameSearchKey) += L"%\"";
-                  try
-                  {
-                    strongThis->m_wmiConnection.select_all(query.c_str(), [&](std::wstring_view xml_obj){
-                        displayWmiInfo = parse_monitorID_from_dtd(xml_obj);
-                    });
-                    wmiHWID = displayWmiInfo._friendly_name + L"_" + displayWmiInfo._serial_number_id;
-                  }
-                  catch(...)
-                  {
-                    // WMI query failed => using a backup deviceID instead(warn: could be identical for 2 devices
-                    // of the same model
-                  }
-                }
-                else
-                {
-                    deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
-                        L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
-                        L"\\\\?\\DISPLAY#LOCALDISPLAY#";
-                }
-                strongThis->AddZoneWindow(monitor, wmiHWID.empty() ? deviceId : wmiHWID.c_str());
+                deviceId = displayDevice.DeviceID;
             }
         }
+
+        if (!validMonitor)
+        {
+          return TRUE;
+        }
+        auto strongThis = reinterpret_cast<FancyZones*>(data);
+                
+        std::wstring wmiHWID;
+        wchar_t parsedId[256]{};
+
+        if (deviceId)
+        {
+            ParseDeviceId(deviceId, parsedId, 256);
+            WmiMonitorID displayWmiInfo;
+            std::wstring query{L"WmiMonitorID where InstanceName like \"%"};
+            std::wstring_view instanceNameSearchKey{parsedId};
+            instanceNameSearchKey = instanceNameSearchKey.substr(instanceNameSearchKey.find(L'#') + 1);
+            (query += instanceNameSearchKey) += L"%\"";
+            try
+            {
+              strongThis->m_wmiConnection.select_all(query.c_str(), [&](std::wstring_view xml_obj){
+                  displayWmiInfo = parse_monitorID_from_dtd(xml_obj);
+              });
+              if (!displayWmiInfo._serial_number_id.empty())
+              {
+                  wmiHWID = displayWmiInfo._friendly_name + L"_" + displayWmiInfo._serial_number_id;
+              }
+            }
+          catch(...)
+          {
+            // WMI query failed => using a backup deviceID instead(warn: could be identical for 2 devices
+            // of the same model
+          }
+        }
+        else
+        {
+            deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
+                L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
+                L"\\\\?\\DISPLAY#LOCALDISPLAY#";
+        }
+        strongThis->AddZoneWindow(monitor, wmiHWID.empty() ? parsedId : wmiHWID.c_str());
         return TRUE;
     };
 
