@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 #include <interface/powertoy_system_menu.h>
 #include <windows.h>
 #include <string>
@@ -25,8 +23,8 @@ public:
   const std::wstring ItemNameFromItemId(const int& id);
 
 private:
-  bool AddItem(PowertoyModuleIface* module, HWND window, int position, const std::wstring& name, const bool enable);
-  bool AddSeparator(PowertoyModuleIface* module, HWND window, int position);
+  bool AddItem(PowertoyModuleIface* module, HWND window, const std::wstring& name, const bool enable);
+  bool AddSeparator(PowertoyModuleIface* module, HWND window);
 
   void ReEnableCustomItems(HWND window);
 

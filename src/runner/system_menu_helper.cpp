@@ -4,29 +4,9 @@
 #include <interface/powertoy_module_interface.h>
 
 namespace {
-  constexpr int KSeparatorPos = 1;
-  constexpr int KNewItemPos = 1;
-
   unsigned int GenerateItemId() {
     static unsigned int generator = 0x70777479;
     return ++generator;
-  }
-  int CustomItemsPosition(HWND window) {
-    // First separator is placed after Maximize item. Place custom
-    // items after that position.
-    if (HMENU systemMenu{ GetSystemMenu(window, false) }) {
-      MENUITEMINFO mii;
-      mii.cbSize = sizeof(MENUITEMINFO);
-      mii.fMask = MIIM_FTYPE;
-      for (int i = 0; i < GetMenuItemCount(systemMenu); ++i) {
-        if (GetMenuItemInfo(systemMenu, i, true, &mii)) {
-          if (mii.fType == MFT_SEPARATOR) {
-            return i;
-          }
-        }
-      }
-    }
-    return -1;
   }
 }
 
@@ -72,10 +52,9 @@ bool SystemMenuHelper::Customize(PowertoyModuleIface* module, HWND window) {
       return false;
     }
   }
-  int position = CustomItemsPosition(window);
-  AddSeparator(module, window, position + KSeparatorPos);
+  AddSeparator(module, window);
   for (const auto& info : Configurations[module]) {
-    AddItem(module, window, position + KNewItemPos, info.name, info.enable);
+    AddItem(module, window, info.name, info.enable);
   }
   modules.push_back(module);
   return true;
@@ -98,20 +77,14 @@ bool SystemMenuHelper::HasCustomConfig(PowertoyModuleIface* module) {
   return Configurations.find(module) != Configurations.end();
 }
 
-bool SystemMenuHelper::AddItem(PowertoyModuleIface* module, HWND window, int position, const std::wstring& name, const bool enable) {
+bool SystemMenuHelper::AddItem(PowertoyModuleIface* module, HWND window, const std::wstring& name, const bool enable) {
   if (HMENU systemMenu{ GetSystemMenu(window, false) }) {
-    MENUITEMINFO item;
-    item.cbSize = sizeof(item);
-    item.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE;
-    item.fState = MF_UNCHECKED | MF_DISABLED; // Item is disabled by default.
-    item.wID = GenerateItemId();
-    item.dwTypeData = const_cast<WCHAR*>(name.c_str());
-    item.cch = (UINT)(name.size() + 1);
 
-    if (InsertMenuItem(systemMenu, position, true, &item)) {
-      IdMappings[item.wID] = { module, name };
+    unsigned int id = GenerateItemId();
+    if (AppendMenu(systemMenu, MF_STRING | MF_DISABLED | MF_UNCHECKED, id, const_cast<WCHAR*>(name.c_str()))) {
+      IdMappings[id] = { module, name };
       if (enable) {
-        EnableMenuItem(systemMenu, item.wID, MF_BYCOMMAND | MF_ENABLED);
+        EnableMenuItem(systemMenu, id, MF_BYCOMMAND | MF_ENABLED);
       }
       return true;
     }
@@ -119,16 +92,12 @@ bool SystemMenuHelper::AddItem(PowertoyModuleIface* module, HWND window, int pos
   return false;
 }
 
-bool SystemMenuHelper::AddSeparator(PowertoyModuleIface* module, HWND window, int position) {
+bool SystemMenuHelper::AddSeparator(PowertoyModuleIface* module, HWND window) {
   if (HMENU systemMenu{ GetSystemMenu(window, false) }) {
-    MENUITEMINFO separator;
-    separator.cbSize = sizeof(separator);
-    separator.fMask = MIIM_ID | MIIM_FTYPE;
-    separator.fType = MFT_SEPARATOR;
-    separator.wID = GenerateItemId();
+    unsigned int id = GenerateItemId();
 
-    if (InsertMenuItem(systemMenu, position, true, &separator)) {
-      IdMappings[separator.wID] = { module, L"sepparator_dummy_name" };
+    if (AppendMenu(systemMenu, MF_SEPARATOR, id, L"separator_dummy_name")) {
+      IdMappings[id] = { module, L"separator_dummy_name" };
       return true;
     }
   }
