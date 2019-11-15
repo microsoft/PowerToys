@@ -117,6 +117,12 @@ namespace Wox.Infrastructure
                 return false;
             }
 
+            if (word.Length > 40)
+            {
+                Log.Debug($"|Wox.Infrastructure.StringMatcher.ScoreForPinyin|skip too long string: {word}");
+                return false;
+            }
+
             var chinese = word.Select(PinyinHelper.toHanyuPinyinStringArray)
                               .Any(p => p != null);
             return chinese;
