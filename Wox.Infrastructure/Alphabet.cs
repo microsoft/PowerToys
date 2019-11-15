@@ -6,6 +6,7 @@ using hyjiacan.util.p4n;
 using hyjiacan.util.p4n.format;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
+using Wox.Infrastructure.UserSettings;
 
 namespace Wox.Infrastructure
 {
@@ -14,9 +15,11 @@ namespace Wox.Infrastructure
         private static readonly HanyuPinyinOutputFormat Format = new HanyuPinyinOutputFormat();
         private static ConcurrentDictionary<string, string[][]> PinyinCache;
         private static BinaryStorage<ConcurrentDictionary<string, string[][]>> _pinyinStorage;
+        private static Settings _settings;
 
-        public static void Initialize()
+        public static void Initialize(Settings settings)
         {
+            _settings = settings;
             Format.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
 
             Stopwatch.Normal("|Wox.Infrastructure.Alphabet.Initialize|Preload pinyin cache", () =>
@@ -34,12 +37,20 @@ namespace Wox.Infrastructure
             _pinyinStorage.Save(PinyinCache);
         }
 
+        private static string[] EmptyStringArray = new string[0];
+        private static string[][] Empty2DStringArray = new string[0][];
+
         /// <summary>
         /// replace chinese character with pinyin, non chinese character won't be modified
         /// <param name="word"> should be word or sentence, instead of single character. e.g. 微软 </param>
         /// </summary>
         public static string[] Pinyin(string word)
         {
+            if (!_settings.ShouldUsePinyin)
+            {
+                return EmptyStringArray;
+            }
+
             var pinyin = word.Select(c =>
             {
                 var pinyins = PinyinHelper.toHanyuPinyinStringArray(c);
@@ -57,7 +68,7 @@ namespace Wox.Infrastructure
         /// </summmary>
         public static string[][] PinyinComination(string characters)
         {
-            if (!string.IsNullOrEmpty(characters))
+            if (_settings.ShouldUsePinyin && !string.IsNullOrEmpty(characters))
             {
                 if (!PinyinCache.ContainsKey(characters))
                 {
@@ -89,7 +100,7 @@ namespace Wox.Infrastructure
             }
             else
             {
-                return new string[][] { };
+                return Empty2DStringArray;
             }
         }
 
@@ -101,6 +112,11 @@ namespace Wox.Infrastructure
 
         public static bool ContainsChinese(string word)
         {
+            if (!_settings.ShouldUsePinyin)
+            {
+                return false;
+            }
+
             var chinese = word.Select(PinyinHelper.toHanyuPinyinStringArray)
                               .Any(p => p != null);
             return chinese;
@@ -108,6 +124,11 @@ namespace Wox.Infrastructure
 
         private static string[] Combination(string[] array1, string[] array2)
         {
+            if (!_settings.ShouldUsePinyin)
+            {
+                return EmptyStringArray;
+            }
+
             var combination = (
                 from a1 in array1
                 from a2 in array2

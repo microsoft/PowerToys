@@ -21,6 +21,11 @@ namespace Wox.Infrastructure.UserSettings
         public string ResultFontWeight { get; set; }
         public string ResultFontStretch { get; set; }
 
+        /// <summary>
+        /// when false Alphabet static service will always return empty results
+        /// </summary>
+        public bool ShouldUsePinyin { get; set; } = true;
+
         private string _querySearchPrecision { get; set; } = StringMatcher.SearchPrecisionScore.Regular.ToString();
         public string QuerySearchPrecision
         {

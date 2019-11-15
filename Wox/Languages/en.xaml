@@ -34,6 +34,7 @@
     <system:String x:Key="hideOnStartup">Hide Wox on startup</system:String>
     <system:String x:Key="hideNotifyIcon">Hide tray icon</system:String>
     <system:String x:Key="querySearchPrecision">Query Search Precision</system:String>
+    <system:String x:Key="ShouldUsePinyin">Should Use Pinyin</system:String>
 
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Plugin</system:String>
