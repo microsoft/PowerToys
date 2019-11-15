@@ -1,4 +1,4 @@
-﻿<Controls:MetroWindow x:Class="FancyZonesEditor.MainWindow"
+<Controls:MetroWindow x:Class="FancyZonesEditor.MainWindow"
         x:Name="MainWindow1"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -18,6 +18,7 @@
     <Window.Resources>
         <local:BooleanToBrushConverter x:Key="BooleanToBrushConverter" />
         <local:ModelToVisibilityConverter x:Key="ModelToVisibilityConverter" />
+        <local:BooleanToIntConverter x:Key="BooleanToIntConverter" />
 
         <Style x:Key="titleText" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI" />
@@ -176,8 +177,8 @@
     <StackPanel>
 
         <TextBlock Name="dialog_Title" Text="Choose your layout" Style="{StaticResource titleText}"  />
-        
-        <TabControl BorderThickness="0" x:Name="TemplateTab">
+
+        <TabControl BorderThickness="0" x:Name="TemplateTab" SelectedIndex="{Binding IsCustomLayoutActive, Mode=OneWay, Converter={StaticResource BooleanToIntConverter}}">
             <TabItem Header="Templates" Template="{StaticResource myTabs}">
                 <StackPanel>
                     <StackPanel Margin="0,15,0,8" Orientation="Horizontal" HorizontalAlignment="Center">
