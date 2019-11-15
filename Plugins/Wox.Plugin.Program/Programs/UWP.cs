@@ -205,7 +205,7 @@ namespace Wox.Plugin.Program.Programs
                     }
                     catch (Exception e)
                     {
-                        ProgramLogger.LogException("|UWP|CurrentUserPackages|An unexpected error occured and "
+                        ProgramLogger.LogException("UWP" ,"CurrentUserPackages", $"id","An unexpected error occured and "
                                                    + $"unable to verify if package is valid", e);
                         return false;
                     }

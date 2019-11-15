@@ -40,21 +40,11 @@ namespace Wox.Plugin.Program.Logger
             LogManager.Configuration = configuration;
         }
 
-        /// <summary>
-        /// Please follow exception format: |class name|calling method name|loading program path|user friendly message that explains the error
-        /// => Example: |Win32|LnkProgram|c:\..\chrome.exe|Permission denied on directory, but Wox should continue
-        /// </summary>
         [MethodImpl(MethodImplOptions.Synchronized)]
-        internal static void LogException(string message, Exception e)
+        internal static void LogException(string classname, string callingMethodName, string loadingProgramPath,
+            string interpretationMessage, Exception e)
         {
-            //Index 0 is always empty.
-            var parts = message.Split('|');
-            var classname = parts[1];
-            var callingMethodName = parts[2];
-            var loadingProgramPath = parts[3];
-            var interpretationMessage = parts[4];
-
-            Debug.WriteLine($"ERROR{message}");
+            Debug.WriteLine($"ERROR{classname}|{callingMethodName}|{loadingProgramPath}|{interpretationMessage}");
 
             var logger = LogManager.GetLogger("");
 
@@ -78,22 +68,45 @@ namespace Wox.Plugin.Program.Logger
                 calledMethod = string.IsNullOrEmpty(calledMethod) ? "Not available" : calledMethod;
 
                 logger.Error($"\nException full name: {e.GetType().FullName}"
-                                + $"\nError status: {errorStatus}"
-                                + $"\nClass name: {classname}"
-                                + $"\nCalling method: {callingMethodName}"
-                                + $"\nProgram path: {loadingProgramPath}"
-                                + $"\nInnerException number: {innerExceptionNumber}"
-                                + $"\nException message: {e.Message}"
-                                + $"\nException error type: HResult {e.HResult}"
-                                + $"\nException thrown in called method: {calledMethod}"
-                                + $"\nPossible interpretation of the error: {interpretationMessage}"
-                                + $"\nPossible resolution: {possibleResolution}");
+                             + $"\nError status: {errorStatus}"
+                             + $"\nClass name: {classname}"
+                             + $"\nCalling method: {callingMethodName}"
+                             + $"\nProgram path: {loadingProgramPath}"
+                             + $"\nInnerException number: {innerExceptionNumber}"
+                             + $"\nException message: {e.Message}"
+                             + $"\nException error type: HResult {e.HResult}"
+                             + $"\nException thrown in called method: {calledMethod}"
+                             + $"\nPossible interpretation of the error: {interpretationMessage}"
+                             + $"\nPossible resolution: {possibleResolution}");
 
                 innerExceptionNumber++;
                 e = e.InnerException;
             } while (e != null);
 
             logger.Error("------------- END Wox.Plugin.Program exception -------------");
+        }
+
+        /// <summary>
+        /// Please follow exception format: |class name|calling method name|loading program path|user friendly message that explains the error
+        /// => Example: |Win32|LnkProgram|c:\..\chrome.exe|Permission denied on directory, but Wox should continue
+        /// </summary>
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        internal static void LogException(string message, Exception e)
+        {
+            //Index 0 is always empty.
+            var parts = message.Split('|');
+            if (parts.Length < 4)
+            {
+                var logger = LogManager.GetLogger("");
+                logger.Error(e, $"fail to log exception in program logger, parts length is too small: {parts.Length}, message: {message}");
+            }
+
+            var classname = parts[1];
+            var callingMethodName = parts[2];
+            var loadingProgramPath = parts[3];
+            var interpretationMessage = parts[4];
+
+            LogException(classname, callingMethodName, loadingProgramPath, interpretationMessage, e);
         }
 
         private static bool IsKnownWinProgramError(Exception e, string callingMethodName)
