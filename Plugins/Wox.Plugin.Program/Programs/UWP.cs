@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -86,6 +86,8 @@ namespace Wox.Plugin.Program.Programs
                 var e = Marshal.GetExceptionForHR((int)hResult);
                 ProgramLogger.LogException($"|UWP|InitializeAppInfo|{path}" +
                                                 "|Error caused while trying to get the details of the UWP program", e);
+
+                Apps = new List<Application>().ToArray();
             }
         }
 
@@ -157,15 +159,15 @@ namespace Wox.Plugin.Program.Programs
 #if !DEBUG
                     catch (Exception e)
                     {
-                        ProgramLogger.LogException("|UWP|All|An unexpected error occured and "
+                        ProgramLogger.LogException($"|UWP|All|{p.InstalledLocation}|An unexpected error occured and "
                                                         + $"unable to convert Package to UWP for {p.Id.FullName}", e);
                         return new Application[] { };
                     }
 #endif
 #if DEBUG //make developer aware and implement handling
-                    catch(Exception)
+                    catch(Exception e)
                     {
-                        throw;
+                        throw e;
                     }
 #endif
                     return u.Apps;

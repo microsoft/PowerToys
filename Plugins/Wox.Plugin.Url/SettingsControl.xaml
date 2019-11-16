@@ -3,23 +3,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Wox.Plugin.Url"
-             mc:Ignorable="d" Height="300" Width="500">
-    <Grid>
+             mc:Ignorable="d" d:DesignHeight="300" d:DesignWidth="500">
+    <Grid Margin="10,10,10,0">
         <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition Height="0*"/>
+            <RowDefinition Height="40" />
+            <RowDefinition />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="0*"/>
-            <ColumnDefinition Width="0*"/>
-            <ColumnDefinition Width="0*"/>
-        </Grid.ColumnDefinitions>
-        <Label HorizontalAlignment="Left" Margin="99,22,0,0" VerticalAlignment="Top" Height="43" Width="318" FontSize="20" Content="{DynamicResource wox_plugin_url_plugin_set_tip}"/>
-        <TextBox x:Name="browserPathBox" HorizontalAlignment="Left" Height="34" Margin="35,90,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="311"/>
-        <Button x:Name="setButton" HorizontalAlignment="Left" Margin="356,247,0,0" VerticalAlignment="Top" Width="110" Height="33" FontSize="20" Click="OnApplyBTClick" Content="{DynamicResource wox_plugin_url_plugin_apply}"/>
-        <Button x:Name="viewButton" HorizontalAlignment="Left" Margin="369,90,0,0" VerticalAlignment="Top" Width="86" Height="34" Click="OnChooseClick" FontSize="20" Content="{DynamicResource wox_plugin_url_plugin_choose}"/>
-
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <Label Content="Open search in:" Margin="40 3 0 8" />
+            <RadioButton x:Name="NewWindowBrowser" GroupName="OpenSearchBehaviour" Content="New window" Click="OnNewBrowserWindowClick" Margin="10" />
+            <RadioButton x:Name="NewTabInBrowser" GroupName="OpenSearchBehaviour" Content="New tab" Click="OnNewTabClick" Margin="10" />
+        </StackPanel>
+        <StackPanel VerticalAlignment="Top" Grid.Row="1" Height="106" Margin="41,13,0,0">
+            <Label Content="{DynamicResource wox_plugin_url_plugin_set_tip}" Height="28" Margin="0,0,155,0" HorizontalAlignment="Left" Width="290" />
+            <TextBox x:Name="browserPathBox" HorizontalAlignment="Left" Height="34" Margin="5,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="311" RenderTransformOrigin="0.502,-1.668" />
+            <Button x:Name="viewButton" HorizontalAlignment="Left" Margin="340,-33,-1,0" Width="100" Height="28" Click="OnChooseClick" FontSize="10" Content="{DynamicResource wox_plugin_url_plugin_choose}" />
+        </StackPanel>
     </Grid>
 </UserControl>

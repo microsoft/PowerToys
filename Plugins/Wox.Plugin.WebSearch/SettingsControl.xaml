@@ -11,6 +11,7 @@
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
+            <RowDefinition Height="48" />
             <RowDefinition />
             <RowDefinition Height="40" />
         </Grid.RowDefinitions>
@@ -21,12 +22,20 @@
                       Content="{DynamicResource wox_plugin_websearch_enable_suggestion}" />
             <ComboBox ItemsSource="{Binding Settings.Suggestions}"
                       SelectedItem="{Binding Settings.SelectedSuggestion}"
-                      IsEnabled="{Binding ElementName=EnableSuggestion, Path=IsChecked}" Margin="10" />
+                      IsEnabled="{Binding ElementName=EnableSuggestion, Path=IsChecked}" Margin="10,3,10,10" />
             <!-- Not sure why binding IsEnabled directly to Settings.EnableWebSaerchSuggestion is not working -->
+            <Label Content="Open search in:" Margin="40 3 0 8"/>
+            <RadioButton Name="NewWindowBrowser" GroupName="OpenSearchBehaviour" Content="New window" Click="OnNewBrowserWindowClick" Margin="10" />
+            <RadioButton Name="NewTabInBrowser" GroupName="OpenSearchBehaviour" Content="New tab" Click="OnNewTabClick" Margin="10" />
+        </StackPanel>
+        <StackPanel Grid.Row="1" HorizontalAlignment="Left" Margin="0,3,0,17" Width="480">
+            <Label Content="Set browser from path:" Height="28" Margin="0,0,350,0" HorizontalAlignment="Left" Width="130"/>
+            <TextBox x:Name="browserPathBox" HorizontalAlignment="Left" Height="21" Margin="138,-25,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="214" RenderTransformOrigin="0.502,-1.668"/>
+            <Button x:Name="viewButton" HorizontalAlignment="Left" Margin="381,-30,0,0" Width="58" Height="25" Click="OnChooseClick" FontSize="10" Content="Choose" />
         </StackPanel>
         <ListView ItemsSource="{Binding Settings.SearchSources}"
                   SelectedItem="{Binding Settings.SelectedSearchSource}"
-                  Grid.Row="1">
+                  Grid.Row="2">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="{DynamicResource wox_plugin_websearch_action_keyword}">
@@ -46,7 +55,7 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <StackPanel Grid.Row="2" HorizontalAlignment="Right" Orientation="Horizontal">
+        <StackPanel Grid.Row="3" HorizontalAlignment="Right" Orientation="Horizontal">
             <Button Click="OnDeleteSearchSearchClick" Width="100" Margin="10"
                     Content="{DynamicResource wox_plugin_websearch_delete}" />
             <Button Click="OnEditSearchSourceClick" Width="100" Margin="10"

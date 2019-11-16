@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
@@ -22,7 +23,8 @@ namespace Wox.ViewModel
         {
             get
             {
-                if (string.IsNullOrEmpty(Result.IcoPath))
+                var imagePath = Result.IcoPath;
+                if (string.IsNullOrEmpty(imagePath) && Result.Icon != null)
                 {
                     try
                     {
@@ -31,13 +33,12 @@ namespace Wox.ViewModel
                     catch (Exception e)
                     {
                         Log.Exception($"|ResultViewModel.Image|IcoPath is empty and exception when calling Icon() for result <{Result.Title}> of plugin <{Result.PluginDirectory}>", e);
-                        return ImageLoader.Load(Result.IcoPath);
+                        imagePath = Constant.ErrorIcon;
                     }
                 }
-                else
-                {
-                    return ImageLoader.Load(Result.IcoPath);
-                }
+                
+                // will get here either when icoPath has value\icon delegate is null\when had exception in delegate
+                return ImageLoader.Load(imagePath);
             }
         }
 
