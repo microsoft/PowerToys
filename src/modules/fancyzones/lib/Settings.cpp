@@ -32,7 +32,8 @@ private:
         PCWSTR name;
         bool* value;
         int resourceId;
-    } m_configBools[10] = {
+    } m_configBools[11] = {
+		{ L"fancyzones_enableOnInteract", &m_settings.enableOnInteract, IDS_SETTING_DESCRIPTION_ENABLEONINTERACT},
         { L"fancyzones_shiftDrag", &m_settings.shiftDrag, IDS_SETTING_DESCRIPTION_SHIFTDRAG },
 		{ L"fancyzones_mouseDrag", &m_settings.mouseDrag, IDS_SETTING_DESCRIPTION_MOUSEDRAG },
         { L"fancyzones_overrideSnapHotkeys", &m_settings.overrideSnapHotkeys, IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS },

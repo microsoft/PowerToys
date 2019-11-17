@@ -82,6 +82,7 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         "FancyZones_SettingsChanged",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+		TraceLoggingBoolean(settings.enableOnInteract, "EnableOnInteract"),
         TraceLoggingBoolean(settings.shiftDrag, "ShiftDrag"),
 		TraceLoggingBoolean(settings.mouseDrag, "MouseDrag"),
         TraceLoggingBoolean(settings.displayChange_moveWindows, "MoveWindowsOnDisplayChange"),

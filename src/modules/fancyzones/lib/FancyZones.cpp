@@ -630,15 +630,19 @@ void FancyZones::MoveWindowsOnDisplayChange() noexcept
 void FancyZones::UpdateDragState(require_write_lock) noexcept
 {
     const bool shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
-	bool enable = shift;
-	if (m_settings->GetSettings().mouseDrag) {
-		const bool mouseR = GetAsyncKeyState(VK_RBUTTON) & 0x8000;
-		const bool mouseM = GetAsyncKeyState(VK_RBUTTON) & 0x8000;
-		const bool mouseX1 = GetAsyncKeyState(VK_XBUTTON1) & 0x8000;
-		const bool mouseX2 = GetAsyncKeyState(VK_XBUTTON2) & 0x8000;
-		enable = enable | mouseR | mouseM | mouseX1 | mouseX2;
-	}
-    m_dragEnabled = m_settings->GetSettings().shiftDrag ? enable : !enable;
+	const bool mouseR = GetAsyncKeyState(VK_RBUTTON) & 0x8000;
+	const bool mouseM = GetAsyncKeyState(VK_RBUTTON) & 0x8000;
+	const bool mouseX1 = GetAsyncKeyState(VK_XBUTTON1) & 0x8000;
+	const bool mouseX2 = GetAsyncKeyState(VK_XBUTTON2) & 0x8000;
+	const bool mouse =  mouseR | mouseM | mouseX1 | mouseX2;
+	bool enable = false;
+	if (m_settings->GetSettings().mouseDrag)
+		enable = enable | mouse;
+	if (m_settings->GetSettings().shiftDrag)
+		enable = enable | shift;
+	if (m_settings->GetSettings().enableOnInteract)
+		enable = !enable;
+    m_dragEnabled = enable;
 }
 
 void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
