@@ -131,12 +131,6 @@ namespace Wox.Infrastructure
         {
             if (!string.IsNullOrEmpty(source) && !string.IsNullOrEmpty(target))
             {
-                if(source.Length > 40)
-                {
-                    Log.Debug($"|Wox.Infrastructure.StringMatcher.ScoreForPinyin|skip too long string: {source}");
-                    return 0;
-                }
-                
                 if (Alphabet.ContainsChinese(source))
                 {
                     var combination = Alphabet.PinyinComination(source);                    

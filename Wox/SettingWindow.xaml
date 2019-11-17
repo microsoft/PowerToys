@@ -55,6 +55,9 @@
                           Checked="OnAutoStartupChecked" Unchecked="OnAutoStartupUncheck">
                     <TextBlock Text="{DynamicResource autoUpdates}" />
                 </CheckBox>
+                <CheckBox Margin="10" IsChecked="{Binding Settings.ShouldUsePinyin}">
+                    <TextBlock Text="{DynamicResource ShouldUsePinyin}" />
+                </CheckBox>
                 <StackPanel Margin="10" Orientation="Horizontal">
                     <TextBlock Text="{DynamicResource querySearchPrecision}" />
                     <ComboBox Margin="10 0 0 0" Width="120"
