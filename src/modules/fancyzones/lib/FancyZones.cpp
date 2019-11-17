@@ -630,7 +630,15 @@ void FancyZones::MoveWindowsOnDisplayChange() noexcept
 void FancyZones::UpdateDragState(require_write_lock) noexcept
 {
     const bool shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
-    m_dragEnabled = m_settings->GetSettings().shiftDrag ? shift : !shift;
+	bool enable = shift;
+	if (m_settings->GetSettings().mouseDrag) {
+		const bool mouseR = GetAsyncKeyState(VK_RBUTTON) & 0x8000;
+		const bool mouseM = GetAsyncKeyState(VK_RBUTTON) & 0x8000;
+		const bool mouseX1 = GetAsyncKeyState(VK_XBUTTON1) & 0x8000;
+		const bool mouseX2 = GetAsyncKeyState(VK_XBUTTON2) & 0x8000;
+		enable = enable | mouseR | mouseM | mouseX1 | mouseX2;
+	}
+    m_dragEnabled = m_settings->GetSettings().shiftDrag ? enable : !enable;
 }
 
 void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
