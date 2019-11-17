@@ -111,9 +111,9 @@ namespace Wox.Plugin.Program
 
         public static void IndexPrograms()
         {
-            var t1 = Task.Run(IndexWin32Programs);
+            var t1 = Task.Run(()=>IndexWin32Programs());
 
-            var t2 = Task.Run(IndexUWPPrograms);
+            var t2 = Task.Run(()=>IndexUWPPrograms());
 
             Task.WaitAll(t1, t2);
 
