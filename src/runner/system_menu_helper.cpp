@@ -25,6 +25,7 @@ void SystemMenuHelper::SetConfiguration(PowertoyModuleIface* module, const std::
 }
 
 void SystemMenuHelper::ProcessSelectedItem(PowertoyModuleIface* module, HWND window, const wchar_t* itemName) {
+  bool processed{ false };
   for (const auto& item : Configurations[module]) {
     if (itemName == item.name && item.checkBox) {
       // Handle check/uncheck action only if specified by module configuration.
@@ -35,12 +36,16 @@ void SystemMenuHelper::ProcessSelectedItem(PowertoyModuleIface* module, HWND win
           if (systemMenu && ((state = GetMenuState(systemMenu, id, MF_BYCOMMAND)) != -1)) {
             state = (state == MF_CHECKED) ? MF_UNCHECKED : MF_CHECKED;
             CheckMenuItem(systemMenu, id, MF_BYCOMMAND | state);
+            processed = true;
             break;
           }
         }
       }
       break;
     }
+  }
+  if (!processed) {
+    PendingActions[std::wstring(itemName)] = window;
   }
 }
 
@@ -86,6 +91,7 @@ bool SystemMenuHelper::AddItem(PowertoyModuleIface* module, HWND window, const s
       if (enable) {
         EnableMenuItem(systemMenu, id, MF_BYCOMMAND | MF_ENABLED);
       }
+      ProcessPendingActions(window, name, id);
       return true;
     }
   }
@@ -114,6 +120,24 @@ void SystemMenuHelper::ReEnableCustomItems(HWND window)
       if (config.name == info.second && config.enable) {
         EnableMenuItem(GetSystemMenu(window, false), id, MF_BYCOMMAND | MF_ENABLED);
       }
+    }
+  }
+}
+
+void SystemMenuHelper::ProcessPendingActions(HWND window, const std::wstring& name, const int& id)
+{
+  for (auto it = begin(PendingActions); it != end(PendingActions);) {
+    if (it->first == name && it->second == window) {
+      HMENU systemMenu = GetSystemMenu(window, false);
+      int state = -1;
+      if (systemMenu && ((state = GetMenuState(systemMenu, id, MF_BYCOMMAND)) != -1)) {
+        state = (state == MF_CHECKED) ? MF_UNCHECKED : MF_CHECKED;
+        CheckMenuItem(systemMenu, id, MF_BYCOMMAND | state);
+      }
+      it = PendingActions.erase(it);
+    }
+    else {
+      ++it;
     }
   }
 }
