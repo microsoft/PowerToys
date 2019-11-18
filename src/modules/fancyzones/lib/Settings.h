@@ -13,7 +13,6 @@ struct Settings
     bool zoneSetChange_moveWindows = false;
     bool overrideSnapHotkeys = false;
     bool appLastZone_moveWindows = false;
-    bool use_standalone_editor = true;
     bool use_cursorpos_editor_startupscreen = true;
     std::wstring zoneHightlightColor = L"#0078D7";
     PowerToysSettings::HotkeyObject editorHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_OEM_3, L"~");
