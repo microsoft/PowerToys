@@ -1,5 +1,6 @@
 #include "pch.h"
 #include <common/settings_objects.h>
+#include <common/common.h>
 #include <interface/powertoy_module_interface.h>
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <interface/win_hook_event_data.h>
@@ -198,11 +199,25 @@ public:
     }
 
 private:
-    static bool IsInterestingWindow(HWND window)
+    bool IsInterestingWindow(HWND window)
     {
-        auto style = GetWindowLongPtr(window, GWL_STYLE);
-        auto exStyle = GetWindowLongPtr(window, GWL_EXSTYLE);
-        return IsWindowVisible(window) && WI_IsFlagSet(style, WS_MAXIMIZEBOX) && WI_IsFlagClear(style, WS_CHILD) && WI_IsFlagClear(exStyle, WS_EX_TOOLWINDOW);
+        auto windowAndPath = get_filtered_base_window_and_path(window);
+        if (windowAndPath.hwnd == nullptr)
+        {
+            return false;
+        }
+        CharUpperBuffW(windowAndPath.process_path.data(), (DWORD)windowAndPath.process_path.length());
+        if (m_settings)
+        {
+            for (const auto& excluded : m_settings->GetSettings().excludedAppsArray)
+            {
+                if (windowAndPath.process_path.find(excluded) != std::wstring::npos)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     void Disable(bool const traceEvent)

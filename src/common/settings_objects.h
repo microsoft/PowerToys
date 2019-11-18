@@ -31,6 +31,9 @@ namespace PowerToysSettings {
     void add_string(const std::wstring& name, UINT description_resource_id, const std::wstring& value);
     void add_string(const std::wstring& name, const std::wstring& description, const std::wstring& value);
 
+    void add_multiline_string(const std::wstring& name, UINT description_resource_id, const std::wstring& value);
+    void add_multiline_string(const std::wstring& name, const std::wstring& description, const std::wstring& value);
+
     void add_color_picker(const std::wstring& name, UINT description_resource_id, const std::wstring& value);
     void add_color_picker(const std::wstring& name, const std::wstring& description, const std::wstring& value);
 

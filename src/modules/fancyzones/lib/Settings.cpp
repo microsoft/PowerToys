@@ -44,15 +44,9 @@ private:
         { L"use_cursorpos_editor_startupscreen", &m_settings.use_cursorpos_editor_startupscreen, IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN },
     };
 
-    struct
-    {
-        PCWSTR name;
-        std::wstring* value;
-        int resourceId;
-    } m_configStrings[1] = {
-        { L"fancyzones_zoneHighlightColor", &m_settings.zoneHightlightColor, IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR },
-    };
-    const std::wstring m_editor_hotkey_name = L"fancyzones_editor_hotkey";
+    const std::wstring m_zoneHiglightName = L"fancyzones_zoneHighlightColor";
+    const std::wstring m_editorHotkeyName = L"fancyzones_editor_hotkey";
+    const std::wstring m_excludedAppsName = L"fancyzones_excluded_apps";
 };
 
 IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ int *buffer_size) noexcept
@@ -73,17 +67,15 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
         IDS_SETTING_LAUNCH_EDITOR_BUTTON,
         IDS_SETTING_LAUNCH_EDITOR_DESCRIPTION
     );
-    settings.add_hotkey(m_editor_hotkey_name, IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, m_settings.editorHotkey);
+    settings.add_hotkey(m_editorHotkeyName, IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, m_settings.editorHotkey);
 
     for (auto const& setting : m_configBools)
     {
         settings.add_bool_toogle(setting.name, setting.resourceId, *setting.value);
     }
 
-    for (auto const& setting : m_configStrings)
-    {
-        settings.add_color_picker(setting.name, setting.resourceId, *setting.value);
-    }
+    settings.add_color_picker(m_zoneHiglightName, IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, m_settings.zoneHightlightColor);
+    settings.add_multiline_string(m_excludedAppsName, IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, m_settings.excludedApps);
 
     return settings.serialize_to_buffer(buffer, buffer_size);
 }
@@ -127,17 +119,37 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept try
         }
     }
 
-    for (auto const& setting : m_configStrings)
+    if (values.is_string_value(m_zoneHiglightName))
     {
-        if (values.is_string_value(setting.name))
-        {
-            *setting.value = values.get_string_value(setting.name);
-        }
+        m_settings.zoneHightlightColor = values.get_string_value(m_zoneHiglightName);
     }
 
-    if (values.is_object_value(m_editor_hotkey_name))
+    if (values.is_object_value(m_editorHotkeyName))
     {
-        m_settings.editorHotkey = PowerToysSettings::HotkeyObject::from_json(values.get_json(m_editor_hotkey_name));
+        m_settings.editorHotkey = PowerToysSettings::HotkeyObject::from_json(values.get_json(m_editorHotkeyName));
+    }
+
+    if (values.is_string_value(m_excludedAppsName))
+    {
+        m_settings.excludedApps = values.get_string_value(m_excludedAppsName);
+        m_settings.excludedAppsArray.clear();
+        auto excludedUppercase = m_settings.excludedApps;
+        CharUpperBuffW(excludedUppercase.data(), (DWORD)excludedUppercase.length());
+        std::wstring_view view(excludedUppercase);
+        while (view.starts_with('\n') || view.starts_with('\r'))
+        {
+            view.remove_prefix(1);
+        }
+        while (!view.empty())
+        {
+            auto pos = (std::min)(view.find_first_of(L"\r\n"), view.length());
+            m_settings.excludedAppsArray.emplace_back(view.substr(0, pos));
+            view.remove_prefix(pos);
+            while (view.starts_with('\n') || view.starts_with('\r'))
+            {
+                view.remove_prefix(1);
+            }
+        }
     }
 }
 CATCH_LOG();
@@ -151,12 +163,9 @@ void FancyZonesSettings::SaveSettings() noexcept try
         values.add_property(setting.name, *setting.value);
     }
 
-    for (auto const& setting : m_configStrings)
-    {
-        values.add_property(setting.name, *setting.value);
-    }
-
-    values.add_property(m_editor_hotkey_name, m_settings.editorHotkey);
+    values.add_property(m_zoneHiglightName, m_settings.zoneHightlightColor);
+    values.add_property(m_editorHotkeyName, m_settings.editorHotkey);
+    values.add_property(m_excludedAppsName, m_settings.excludedApps);
 
     values.save_to_settings_file();
 }
