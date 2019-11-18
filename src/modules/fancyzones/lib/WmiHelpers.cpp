@@ -35,6 +35,23 @@ WmiMonitorID parse_monitorID_from_dtd(std::wstring_view xml)
   
   WmiMonitorID result;
 
+  for(const auto & node : xml_doc.GetElementsByTagName(L"PROPERTY"))
+  {
+    for(const auto & attr : node.Attributes())
+    {
+      if(attr.NodeName() != L"NAME")
+      {
+        continue;
+      }
+      const auto property_name = attr.InnerText();
+
+      if(property_name == L"InstanceName")
+      {
+        result._instance_name = node.FirstChild().InnerText();
+      }
+    }
+  }
+
   for(const auto & node : xml_doc.GetElementsByTagName(L"PROPERTY.ARRAY"))
   {
     for(const auto & attr : node.Attributes())
