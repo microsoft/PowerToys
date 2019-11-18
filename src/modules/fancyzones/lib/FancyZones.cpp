@@ -5,6 +5,9 @@
 #include "common/wmi_query.h"
 #include "WmiHelpers.h"
 
+#include <cinttypes>
+#include <unordered_set>
+
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
 public:
@@ -572,78 +575,138 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
 
 void FancyZones::UpdateZoneWindows() noexcept
 {
-    auto callback = [](HMONITOR monitor, HDC, RECT *, LPARAM data) -> BOOL
     {
+      std::unique_lock writeLock(m_lock);
+      m_zoneWindowMap.clear();
+    }
+
+    struct device
+    {
+      std::wstring _deviceID;
+      HMONITOR _handle;
+
+      std::optional<std::wstring_view> get_generated_part_of_id() const
+      {
+          if (const auto sharpPos = _deviceID.find(L'#'); sharpPos != std::wstring::npos)
+          {
+            return std::wstring_view{_deviceID.data() + sharpPos + 1, size(_deviceID) - sharpPos - 1};
+          }
+          return std::nullopt;
+      }
+    };
+    auto callback = [](HMONITOR monitor, HDC, RECT *, LPARAM captured_ptr) -> BOOL
+    {
+        const auto doContinueEnumeration = TRUE;
         MONITORINFOEX mi;
         mi.cbSize = sizeof(mi);
         if (GetMonitorInfo(monitor, &mi) == FALSE)
         {
-          return TRUE;
+          return doContinueEnumeration;
         }
         DISPLAY_DEVICE displayDevice = { sizeof(displayDevice) };
-        PCWSTR deviceId = nullptr;
 
-        bool validMonitor = true;
         if (EnumDisplayDevices(mi.szDevice, 0, &displayDevice, 1))
         {
             if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER))
             {
-                validMonitor = FALSE;
-            }
-            else if (displayDevice.DeviceID[0] != L'\0')
-            {
-                deviceId = displayDevice.DeviceID;
+                return doContinueEnumeration;
             }
         }
-
-        if (!validMonitor)
+        auto devices = reinterpret_cast<std::vector<device> *>(captured_ptr);
+        device newDevice{{}, monitor};
+        if (displayDevice.DeviceID[0] != L'\0')
         {
-          return TRUE;
+            std::array<wchar_t, 256> parsedId{};
+            ParseDeviceId(displayDevice.DeviceID, parsedId.data(), size(parsedId));
+            newDevice._deviceID = parsedId.data();
         }
-        auto strongThis = reinterpret_cast<FancyZones*>(data);
-                
-        std::wstring wmiHWID;
-        wchar_t parsedId[256]{};
-
-        if (deviceId)
-        {
-            ParseDeviceId(deviceId, parsedId, 256);
-            WmiMonitorID displayWmiInfo;
-            std::wstring query{L"WmiMonitorID where InstanceName like \"%"};
-            std::wstring_view instanceNameSearchKey{parsedId};
-            instanceNameSearchKey = instanceNameSearchKey.substr(instanceNameSearchKey.find(L'#') + 1);
-            (query += instanceNameSearchKey) += L"%\"";
-            try
-            {
-              strongThis->m_wmiConnection.select_all(query.c_str(), [&](std::wstring_view xml_obj){
-                  displayWmiInfo = parse_monitorID_from_dtd(xml_obj);
-              });
-              if (!displayWmiInfo._serial_number_id.empty())
-              {
-                  wmiHWID = displayWmiInfo._friendly_name + L"_" + displayWmiInfo._serial_number_id;
-              }
-            }
-          catch(...)
-          {
-            // WMI query failed => using a backup deviceID instead(warn: could be identical for 2 devices
-            // of the same model
-          }
-        }
-        else
-        {
-            deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
-                L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
-                L"\\\\?\\DISPLAY#LOCALDISPLAY#";
-        }
-        strongThis->AddZoneWindow(monitor, wmiHWID.empty() ? parsedId : wmiHWID.c_str());
-        return TRUE;
+        devices->emplace_back(std::move(newDevice));
+        return doContinueEnumeration;
     };
-
+    std::vector<device> devices;
+    EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(&devices));
+    std::vector<WmiMonitorID> monitor_infos;
+    try
     {
-        std::unique_lock writeLock(m_lock);
-        m_zoneWindowMap.clear();
+        m_wmiConnection.select_all(L"WmiMonitorID", [&](std::wstring_view xml_obj) {
+          monitor_infos.emplace_back(parse_monitorID_from_dtd(xml_obj));
+        });
     }
-    EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(this));
+    catch(...) {}
+
+    if(GetSystemMetrics(SM_REMOTESESSION))
+    {
+        // When running in a remote session, devices have "Default_Monitor#<transient_part>" DeviceIDS.
+        // Since a remote session can have multiple devices, we can't just assign them a single "REMOTE" ID.
+        // We'll assign them unique numeric IDs instead.
+        for (size_t i = 0; i < size(devices); ++i)
+        {
+            wchar_t remoteDeviceID[32];
+            swprintf_s(remoteDeviceID, L"REMOTE%zu", i);
+            AddZoneWindow(devices[i]._handle, remoteDeviceID);
+        }
+        return;
+    }
+    // If EnumDisplayMonitors returned a duplicate data, it's an API bug and we should workaround it
+    const bool enumDisplayMonitorsDublicateData = [&]{
+        std::unordered_set<std::wstring_view> discoveredDeviceIDs;
+        for (const auto & dev : devices)
+        {
+            const auto generatedPartOfID = dev.get_generated_part_of_id();
+            if (!generatedPartOfID.has_value())
+            {
+                continue;
+            }
+            const auto [_, hasUniqueID] = discoveredDeviceIDs.emplace(*generatedPartOfID);
+            if (!hasUniqueID)
+            {
+                return true;
+            }
+        }
+        return false;
+    }();
+
+
+    for (size_t i = 0; i < size(devices); ++i)
+    {
+        const auto & dev = devices[i];
+        const auto generatedPartOfID = dev.get_generated_part_of_id();
+        // In case DeviceID doesn't contain valid data or we can't rely on it, since EnumDisplayMonitors
+        // returned a duplicate results, we try using WMI data or fallback to UNKNOWN + numeric ID.
+        if (!generatedPartOfID.has_value() || enumDisplayMonitorsDublicateData)
+        {
+            const bool hasWmiData = i < size(monitor_infos);
+            if (hasWmiData)
+            {
+                AddZoneWindow(dev._handle, monitor_infos[i].hardware_id().c_str());
+            }
+            else
+            {
+                // no WMI data - likely we're running inside a VM
+                wchar_t localDeviceID[32];
+                swprintf_s(localDeviceID, L"UNKNOWN%zu", i);
+                AddZoneWindow(dev._handle, localDeviceID);
+            }
+            continue;
+        }
+        // The happy path is to associate generated parts of DeviceIDs with a WMIMonitorID.InstanceName
+        // And use WMI IDs instead. We can't get WMI data if we're running inside a VM, but at this point we've
+        // avoided API bugs so can somewhat rely on DeviceID.
+        bool associatedWithWMI = false;
+        for (const auto & wmi_info : monitor_infos)
+        {
+            associatedWithWMI = wmi_info._instance_name.find(*generatedPartOfID) != std::wstring::npos;
+            if (associatedWithWMI)
+            {
+                AddZoneWindow(dev._handle, wmi_info.hardware_id().c_str());
+                break;
+            }
+        }
+        if (!associatedWithWMI)
+        {
+            AddZoneWindow(dev._handle, generatedPartOfID->data());
+        }
+    }
 }
 
 void FancyZones::MoveWindowsOnDisplayChange() noexcept
