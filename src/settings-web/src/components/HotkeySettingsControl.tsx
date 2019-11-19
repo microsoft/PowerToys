@@ -50,8 +50,7 @@ export class HotkeySettingsControl extends BaseSettingsControl {
     // Renders a UI Fabric TextField.
     return (
       <TextField
-        styles= {{
-        root: {
+        styles={{ fieldGroup: {
           width: '350px',
           alignSelf: 'start'
         }}}
