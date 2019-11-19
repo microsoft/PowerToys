@@ -57,16 +57,23 @@ void PowertoysEvents::unregister_system_menu_action(PowertoyModuleIface* module)
 }
 
 void PowertoysEvents::handle_system_menu_action(const WinHookEvent& data) {
-  if (data.event == EVENT_SYSTEM_MENUSTART) {
-    for (auto& module : system_menu_receivers) {
-      SystemMenuHelperInstace().Customize(module, data.hwnd);
+  switch (data.event) {
+    case EVENT_OBJECT_CREATE:
+    case EVENT_SYSTEM_MENUSTART:
+    {
+      for (auto& module : system_menu_receivers) {
+        SystemMenuHelperInstace().Customize(module, data.hwnd);
+      }
+      break;
     }
-  }
-  else if (data.event == EVENT_OBJECT_INVOKED) {
-    if (PowertoyModuleIface* module{ SystemMenuHelperInstace().ModuleFromItemId(data.idChild) }) {
-      std::wstring itemName = SystemMenuHelperInstace().ItemNameFromItemId(data.idChild);
-      // Process event on specified system menu item by responsible module.
-      module->signal_system_menu_action(itemName.c_str());
+    case EVENT_OBJECT_INVOKED:
+    {
+      if (PowertoyModuleIface* module{ SystemMenuHelperInstace().ModuleFromItemId(data.idChild) }) {
+        std::wstring itemName = SystemMenuHelperInstace().ItemNameFromItemId(data.idChild);
+        // Process event on specified system menu item by responsible module.
+        module->signal_system_menu_action(itemName.c_str());
+      }
+      break;
     }
   }
 }
