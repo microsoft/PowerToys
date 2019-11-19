@@ -5,6 +5,7 @@
 #include <winrt/Windows.Data.Xml.Dom.h>
 #include <xmllite.h>
 
+// Dtd provides some utf16 strings as a <VALUE>-wrapped arrays of char codes. This function parses it to a wstring
 std::wstring parse_utf16_value_array(const winrt::Windows::Data::Xml::Dom::IXmlNode & value_array_node)
 {
   std::wstring result;
@@ -24,6 +25,7 @@ std::wstring parse_utf16_value_array(const winrt::Windows::Data::Xml::Dom::IXmlN
   return result;
 }
 
+// Parse dtd object representation returned from WMI into C++-friendly struct
 WmiMonitorID parse_monitorID_from_dtd(std::wstring_view xml)
 {
   winrt::Windows::Data::Xml::Dom::XmlDocument xml_doc;

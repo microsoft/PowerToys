@@ -105,7 +105,7 @@ void wmi_connection::select_all(const wchar_t * statement, std::function<void(st
   while(!FAILED(enum_class_obj->Next(WBEM_INFINITE, 1, &class_obj, &got_next)) && got_next)
   {
     auto obj_text_src = wil::CoCreateInstance<WbemObjectTextSrc, IWbemObjectTextSrc>(CLSCTX_INPROC_SERVER);
-    _bstr_t obj_text;
+    bstr_t obj_text;
     if(FAILED(obj_text_src->GetText(0,
       class_obj.get(),
       WMI_OBJ_TEXT_CIM_DTD_2_0,

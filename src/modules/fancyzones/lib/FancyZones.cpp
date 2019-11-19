@@ -533,17 +533,16 @@ void FancyZones::UpdateZoneWindows() noexcept
     {
       std::wstring _deviceID;
       HMONITOR _handle;
-
-      std::optional<std::wstring_view> get_generated_part_of_id() const
-      {
-          if (const auto sharpPos = _deviceID.find(L'#'); sharpPos != std::wstring::npos)
-          {
-            return std::wstring_view{_deviceID.data() + sharpPos + 1, size(_deviceID) - sharpPos - 1};
-          }
-          return std::nullopt;
-      }
     };
-    auto callback = [](HMONITOR monitor, HDC, RECT *, LPARAM captured_ptr) -> BOOL
+
+    struct localScopeCapture
+    {
+      std::unordered_set<std::wstring_view> discoveredDeviceIDs;
+      std::vector<device> devices;
+      bool duplicateDeviceIdFound = false;
+    } localScope;
+
+    auto enumDisplayMonitorsCallback = [](HMONITOR monitor, HDC, RECT *, LPARAM captured_ptr) -> BOOL
     {
         const auto doContinueEnumeration = TRUE;
         MONITORINFOEX mi;
@@ -561,100 +560,78 @@ void FancyZones::UpdateZoneWindows() noexcept
                 return doContinueEnumeration;
             }
         }
-        auto devices = reinterpret_cast<std::vector<device> *>(captured_ptr);
-        device newDevice{{}, monitor};
-        if (displayDevice.DeviceID[0] != L'\0')
+        if (displayDevice.DeviceID[0] == L'\0')
         {
-            std::array<wchar_t, 256> parsedId{};
-            ParseDeviceId(displayDevice.DeviceID, parsedId.data(), size(parsedId));
-            newDevice._deviceID = parsedId.data();
+            return doContinueEnumeration;
         }
-        devices->emplace_back(std::move(newDevice));
+
+        const auto capturedScope = reinterpret_cast<localScopeCapture *>(captured_ptr);
+        auto & newDevice = capturedScope->devices.emplace_back(device{L"FallbackDevice", monitor});
+
+        std::array<wchar_t, 256> parsedId{};
+        if (!ParseDeviceId(displayDevice.DeviceID, parsedId.data(), size(parsedId)))
+        {
+            return doContinueEnumeration;
+        }
+        // Get a generated part of the id, e.g. "5&25664547&0&UID4355" from "VSCBD34#5&25664547&0&UID4355"
+        std::wstring_view parsedIdView{parsedId.data(), wcslen(parsedId.data())};
+        newDevice._deviceID = parsedIdView;
+        if (const auto sharpPos = parsedIdView.find(L'#'); sharpPos != std::wstring::npos)
+        {
+            // Check if EnumDisplayMonitors returned a duplicate data, it's an API bug and we should workaround it
+            const auto generatedPartOfID = parsedIdView.substr(sharpPos + 1, size(parsedIdView) - sharpPos - 1);
+            const auto [_, hasUniqueID] = capturedScope->discoveredDeviceIDs.emplace(generatedPartOfID);
+            capturedScope->duplicateDeviceIdFound = !hasUniqueID || capturedScope->duplicateDeviceIdFound;
+        }
         return doContinueEnumeration;
     };
-    std::vector<device> devices;
-    EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(&devices));
-    std::vector<WmiMonitorID> monitor_infos;
+    EnumDisplayMonitors(nullptr, nullptr, enumDisplayMonitorsCallback, reinterpret_cast<LPARAM>(&localScope));
+    std::vector<WmiMonitorID> wmiMonitorInfo;
     try
     {
         m_wmiConnection.select_all(L"WmiMonitorID", [&](std::wstring_view xml_obj) {
-          monitor_infos.emplace_back(parse_monitorID_from_dtd(xml_obj));
+          wmiMonitorInfo.emplace_back(parse_monitorID_from_dtd(xml_obj));
         });
     }
     catch(...) {}
 
-    if(GetSystemMetrics(SM_REMOTESESSION))
+    if (GetSystemMetrics(SM_REMOTESESSION))
     {
         // When running in a remote session, devices have "Default_Monitor#<transient_part>" DeviceIDS.
         // Since a remote session can have multiple devices, we can't just assign them a single "REMOTE" ID.
         // We'll assign them unique numeric IDs instead.
-        for (size_t i = 0; i < size(devices); ++i)
+        for (size_t i = 0; i < size(localScope.devices); ++i)
         {
             wchar_t remoteDeviceID[32];
             swprintf_s(remoteDeviceID, L"REMOTE%zu", i);
-            AddZoneWindow(devices[i]._handle, remoteDeviceID);
+            AddZoneWindow(localScope.devices[i]._handle, remoteDeviceID);
         }
         return;
     }
-    // If EnumDisplayMonitors returned a duplicate data, it's an API bug and we should workaround it
-    const bool enumDisplayMonitorsDublicateData = [&]{
-        std::unordered_set<std::wstring_view> discoveredDeviceIDs;
-        for (const auto & dev : devices)
-        {
-            const auto generatedPartOfID = dev.get_generated_part_of_id();
-            if (!generatedPartOfID.has_value())
-            {
-                continue;
-            }
-            const auto [_, hasUniqueID] = discoveredDeviceIDs.emplace(*generatedPartOfID);
-            if (!hasUniqueID)
-            {
-                return true;
-            }
-        }
-        return false;
-    }();
-
-
-    for (size_t i = 0; i < size(devices); ++i)
+    
+    // Check if there's WMI data, if no, we're most likely running inside a VM
+    const bool hasWmiData = size(localScope.devices) == size(wmiMonitorInfo);
+    if (!hasWmiData)
     {
-        const auto & dev = devices[i];
-        const auto generatedPartOfID = dev.get_generated_part_of_id();
-        // In case DeviceID doesn't contain valid data or we can't rely on it, since EnumDisplayMonitors
-        // returned a duplicate results, we try using WMI data or fallback to UNKNOWN + numeric ID.
-        if (!generatedPartOfID.has_value() || enumDisplayMonitorsDublicateData)
+        // TODO: add more robust VM detection logic
+        for (const auto & dev : localScope.devices)
         {
-            const bool hasWmiData = i < size(monitor_infos);
-            if (hasWmiData)
-            {
-                AddZoneWindow(dev._handle, monitor_infos[i].hardware_id().c_str());
-            }
-            else
-            {
-                // no WMI data - likely we're running inside a VM
-                wchar_t localDeviceID[32];
-                swprintf_s(localDeviceID, L"UNKNOWN%zu", i);
-                AddZoneWindow(dev._handle, localDeviceID);
-            }
-            continue;
+            AddZoneWindow(dev._handle, dev._deviceID.c_str());
         }
-        // The happy path is to associate generated parts of DeviceIDs with a WMIMonitorID.InstanceName
-        // And use WMI IDs instead. We can't get WMI data if we're running inside a VM, but at this point we've
-        // avoided API bugs so can somewhat rely on DeviceID.
-        bool associatedWithWMI = false;
-        for (const auto & wmi_info : monitor_infos)
+        return;
+    }
+    // If EnumDisplayMonitors returned duplicate results, use WMI data
+    if (localScope.duplicateDeviceIdFound)
+    {
+        for (size_t i = 0; i < size(localScope.devices); ++i)
         {
-            associatedWithWMI = wmi_info._instance_name.find(*generatedPartOfID) != std::wstring::npos;
-            if (associatedWithWMI)
-            {
-                AddZoneWindow(dev._handle, wmi_info.hardware_id().c_str());
-                break;
-            }
+            AddZoneWindow(localScope.devices[i]._handle, wmiMonitorInfo[i].hardware_id().c_str());
         }
-        if (!associatedWithWMI)
-        {
-            AddZoneWindow(dev._handle, generatedPartOfID->data());
-        }
+        return;
+    }
+    for (const auto & dev : localScope.devices)
+    {
+        AddZoneWindow(dev._handle, dev._deviceID.c_str());
     }
 }
 
