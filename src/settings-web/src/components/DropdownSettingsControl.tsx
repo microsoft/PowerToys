@@ -30,11 +30,10 @@ export class DropdownSettingsControl extends BaseSettingsControl {
   public render(): JSX.Element {
     return (
       <Dropdown
-        styles={{
-          root:{
-            width: '350px',
-            alignSelf: 'start'
-          }}}
+        styles={{ dropdown: { 
+          width: '350px',
+          alignSelf: 'start'
+        } }}
         defaultSelectedKey={this.state.property_values.value}
         options={this.state.property_values.options}
         label={this.state.property_values.display_name}
