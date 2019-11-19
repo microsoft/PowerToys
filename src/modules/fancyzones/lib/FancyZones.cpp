@@ -576,11 +576,10 @@ void FancyZones::UpdateZoneWindows() noexcept
         // Get a generated part of the id, e.g. "5&25664547&0&UID4355" from "VSCBD34#5&25664547&0&UID4355"
         std::wstring_view parsedIdView{parsedId.data(), wcslen(parsedId.data())};
         newDevice._deviceID = parsedIdView;
-        if (const auto sharpPos = parsedIdView.find(L'#'); sharpPos != std::wstring::npos)
+        if (parsedIdView.find(L'#') != std::wstring::npos)
         {
             // Check if EnumDisplayMonitors returned a duplicate data, it's an API bug and we should workaround it
-            const auto generatedPartOfID = parsedIdView.substr(sharpPos + 1, size(parsedIdView) - sharpPos - 1);
-            const auto [_, hasUniqueID] = capturedScope->discoveredDeviceIDs.emplace(generatedPartOfID);
+            const auto [_, hasUniqueID] = capturedScope->discoveredDeviceIDs.emplace(parsedIdView);
             capturedScope->duplicateDeviceIdFound = !hasUniqueID || capturedScope->duplicateDeviceIdFound;
         }
         return TRUE;
