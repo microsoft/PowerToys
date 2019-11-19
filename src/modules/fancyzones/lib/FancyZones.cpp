@@ -544,12 +544,12 @@ void FancyZones::UpdateZoneWindows() noexcept
 
     auto enumDisplayMonitorsCallback = [](HMONITOR monitor, HDC, RECT *, LPARAM captured_ptr) -> BOOL
     {
-        const auto doContinueEnumeration = TRUE;
         MONITORINFOEX mi;
         mi.cbSize = sizeof(mi);
         if (GetMonitorInfo(monitor, &mi) == FALSE)
         {
-          return doContinueEnumeration;
+            // We should always return TRUE to continue enumeration
+            return TRUE;
         }
         DISPLAY_DEVICE displayDevice = { sizeof(displayDevice) };
 
@@ -557,12 +557,12 @@ void FancyZones::UpdateZoneWindows() noexcept
         {
             if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER))
             {
-                return doContinueEnumeration;
+                return TRUE;
             }
         }
         if (displayDevice.DeviceID[0] == L'\0')
         {
-            return doContinueEnumeration;
+            return TRUE;
         }
 
         const auto capturedScope = reinterpret_cast<localScopeCapture *>(captured_ptr);
@@ -571,7 +571,7 @@ void FancyZones::UpdateZoneWindows() noexcept
         std::array<wchar_t, 256> parsedId{};
         if (!ParseDeviceId(displayDevice.DeviceID, parsedId.data(), size(parsedId)))
         {
-            return doContinueEnumeration;
+            return TRUE;
         }
         // Get a generated part of the id, e.g. "5&25664547&0&UID4355" from "VSCBD34#5&25664547&0&UID4355"
         std::wstring_view parsedIdView{parsedId.data(), wcslen(parsedId.data())};
@@ -583,7 +583,7 @@ void FancyZones::UpdateZoneWindows() noexcept
             const auto [_, hasUniqueID] = capturedScope->discoveredDeviceIDs.emplace(generatedPartOfID);
             capturedScope->duplicateDeviceIdFound = !hasUniqueID || capturedScope->duplicateDeviceIdFound;
         }
-        return doContinueEnumeration;
+        return TRUE;
     };
     EnumDisplayMonitors(nullptr, nullptr, enumDisplayMonitorsCallback, reinterpret_cast<LPARAM>(&localScope));
     std::vector<WmiMonitorID> wmiMonitorInfo;
