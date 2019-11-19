@@ -25,28 +25,31 @@ void SystemMenuHelper::SetConfiguration(PowertoyModuleIface* module, const std::
 }
 
 void SystemMenuHelper::ProcessSelectedItem(PowertoyModuleIface* module, HWND window, const wchar_t* itemName) {
-  bool processed{ false };
   for (const auto& item : Configurations[module]) {
     if (itemName == item.name && item.checkBox) {
       // Handle check/uncheck action only if specified by module configuration.
       for (const auto& [id, data] : IdMappings) {
         if (data.second == itemName) {
-          HMENU systemMenu = GetSystemMenu(window, false);
-          int state = -1;
-          if (systemMenu && ((state = GetMenuState(systemMenu, id, MF_BYCOMMAND)) != -1)) {
-            state = (state == MF_CHECKED) ? MF_UNCHECKED : MF_CHECKED;
-            CheckMenuItem(systemMenu, id, MF_BYCOMMAND | state);
-            processed = true;
-            break;
+          if (ToggleItemState(window, id)) {
+            return;
           }
         }
       }
-      break;
+      return;
     }
   }
-  if (!processed) {
-    PendingActions[std::wstring(itemName)] = window;
+  for (auto it = begin(PendingActions); it != end(PendingActions)) {
+    if (it->first == itemName && it->second == window) {
+      // This item already exists in PendingActions. Remove it, since it will end
+      // up in original state, after two successive actions.
+      it = PendingActions.erase(it);
+      return;
+    }
+    else {
+      ++it;
+    }
   }
+  PendingActions[std::wstring(itemName)] = window;
 }
 
 bool SystemMenuHelper::Customize(PowertoyModuleIface* module, HWND window) {
@@ -128,18 +131,25 @@ void SystemMenuHelper::ProcessPendingActions(HWND window, const std::wstring& na
 {
   for (auto it = begin(PendingActions); it != end(PendingActions);) {
     if (it->first == name && it->second == window) {
-      HMENU systemMenu = GetSystemMenu(window, false);
-      int state = -1;
-      if (systemMenu && ((state = GetMenuState(systemMenu, id, MF_BYCOMMAND)) != -1)) {
-        state = (state == MF_CHECKED) ? MF_UNCHECKED : MF_CHECKED;
-        CheckMenuItem(systemMenu, id, MF_BYCOMMAND | state);
-      }
+      ToggleItemState(window, id);
       it = PendingActions.erase(it);
     }
     else {
       ++it;
     }
   }
+}
+
+bool SystemMenuHelper::ToggleItemState(HWND window, const int& id)
+{
+  HMENU systemMenu = GetSystemMenu(window, false);
+  int state = -1;
+  if (systemMenu && ((state = GetMenuState(systemMenu, id, MF_BYCOMMAND)) != -1)) {
+    state = (state == MF_CHECKED) ? MF_UNCHECKED : MF_CHECKED;
+    CheckMenuItem(systemMenu, id, MF_BYCOMMAND | state);
+    return true;
+  }
+  return false;
 }
 
 PowertoyModuleIface* SystemMenuHelper::ModuleFromItemId(const int& id) {

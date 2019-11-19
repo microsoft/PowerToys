@@ -27,8 +27,8 @@ private:
   bool AddSeparator(PowertoyModuleIface* module, HWND window);
 
   void ReEnableCustomItems(HWND window);
-
   void ProcessPendingActions(HWND window, const std::wstring& name, const int& id);
+  bool ToggleItemState(HWND window, const int& id);
 
   // Store processed modules per window to avoid handling it multiple times.
   std::unordered_map<HWND, std::vector<PowertoyModuleIface*>> ProcessedModules{};

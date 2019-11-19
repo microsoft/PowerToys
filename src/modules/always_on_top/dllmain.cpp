@@ -30,9 +30,9 @@ const static wchar_t* HOTKEY_WINDOW_CLASS_NAME = L"HotkeyHandleWindowClass";
 const static wchar_t* OVERVIEW_LINK = L"https://github.com/microsoft/PowerToys/blob/master/src/modules/always_on_top/README.md";
 
 struct AlwaysOnTopSettings {
-  // Default hotkey WIN + ALT + T
+  // Default hotkey CTRL + ALT + T
   PowerToysSettings::HotkeyObject editorHotkey =
-    PowerToysSettings::HotkeyObject::from_settings(true, false, true, false, 0x54, L"T"); // ASCII code for T 0x54
+    PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, 0x54, L"T"); // ASCII code for T 0x54
 };
 
 class AlwaysOnTop : public PowertoyModuleIface {
