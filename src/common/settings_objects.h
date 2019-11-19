@@ -120,19 +120,21 @@ namespace PowerToysSettings {
       web::json::value parsed_json = web::json::value::parse(json);
       return HotkeyObject(parsed_json);
     }
-    static HotkeyObject from_settings(bool win_pressed, bool ctrl_pressed, bool alt_pressed, bool shift_pressed, UINT vk_code, const std::wstring& key) {
+    static HotkeyObject from_settings(bool win_pressed, bool ctrl_pressed, bool alt_pressed, bool shift_pressed, UINT vk_code) {
       web::json::value json = web::json::value::object();
       json.as_object()[L"win"] = web::json::value::boolean(win_pressed);
       json.as_object()[L"ctrl"] = web::json::value::boolean(ctrl_pressed);
       json.as_object()[L"alt"] = web::json::value::boolean(alt_pressed);
       json.as_object()[L"shift"] = web::json::value::boolean(shift_pressed);
       json.as_object()[L"code"] = web::json::value::number(vk_code);
-      json.as_object()[L"key"] = web::json::value::string(key);
+      json.as_object()[L"key"] = web::json::value::string(key_from_code(vk_code));
       return HotkeyObject(json);
     }
     const web::json::value& get_json() const { return m_json; }
 
-    std::wstring get_key() { return m_json[L"key"].as_string(); }
+    std::wstring get_key() {
+      return key_from_code(get_code());
+    }
     UINT get_code() { return m_json[L"code"].as_integer(); }
     bool win_pressed() { return m_json[L"win"].as_bool(); }
     bool ctrl_pressed() { return m_json[L"ctrl"].as_bool(); }
@@ -148,6 +150,22 @@ namespace PowerToysSettings {
       return get_modifiers_repeat() | MOD_NOREPEAT;
     }
   protected:
+    static std::wstring key_from_code(UINT key_code) {
+      auto scan_code = MapVirtualKeyW(key_code, MAPVK_VK_TO_VSC);
+      auto layout = GetKeyboardLayout(0);
+      std::array<BYTE, 256> key_states{}; // zero-initialize, no key pressed
+      std::array<wchar_t, 256> output;
+      auto output_bytes = ToUnicodeEx(key_code, scan_code, key_states.data(), output.data(), (int)output.size() - 1, 0, layout);
+      if (output_bytes == 0) {
+        return L"(unknown)";
+      } else {
+        if (output_bytes == -1) {
+          output_bytes = 1;
+        }
+        output[output_bytes] = 0;
+        return output.data();
+      }
+    }
     HotkeyObject(web::json::value hotkey_json) : m_json(hotkey_json) {};
     web::json::value m_json;
   };
