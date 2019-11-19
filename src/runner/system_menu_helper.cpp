@@ -38,7 +38,7 @@ void SystemMenuHelper::ProcessSelectedItem(PowertoyModuleIface* module, HWND win
       return;
     }
   }
-  for (auto it = begin(PendingActions); it != end(PendingActions)) {
+  for (auto it = begin(PendingActions); it != end(PendingActions);) {
     if (it->first == itemName && it->second == window) {
       // This item already exists in PendingActions. Remove it, since it will end
       // up in original state, after two successive actions.
