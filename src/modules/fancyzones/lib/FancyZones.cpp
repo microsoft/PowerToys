@@ -584,14 +584,6 @@ void FancyZones::UpdateZoneWindows() noexcept
         return TRUE;
     };
     EnumDisplayMonitors(nullptr, nullptr, enumDisplayMonitorsCallback, reinterpret_cast<LPARAM>(&localScope));
-    std::vector<WmiMonitorID> wmiMonitorInfo;
-    try
-    {
-        m_wmiConnection.select_all(L"WmiMonitorID", [&](std::wstring_view xml_obj) {
-          wmiMonitorInfo.emplace_back(parse_monitorID_from_dtd(xml_obj));
-        });
-    }
-    catch(...) {}
 
     if (GetSystemMetrics(SM_REMOTESESSION))
     {
@@ -606,6 +598,14 @@ void FancyZones::UpdateZoneWindows() noexcept
         }
         return;
     }
+    std::vector<WmiMonitorID> wmiMonitorInfo;
+    m_wmiConnection.select_all(L"WmiMonitorID", [&](std::wstring_view xml_obj) {
+        auto maybeParsed = parse_monitorID_from_dtd(xml_obj);
+        if (maybeParsed.has_value())
+        {
+            wmiMonitorInfo.emplace_back(std::move(*maybeParsed));
+        }
+    });
     
     // Check if there's WMI data, if no, we're most likely running inside a VM
     // TODO: add more robust VM detection logic

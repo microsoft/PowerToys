@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string_view>
+#include <optional>
 
 struct WmiMonitorID
 {
@@ -14,4 +15,4 @@ struct WmiMonitorID
   }
 };
 
-WmiMonitorID parse_monitorID_from_dtd(std::wstring_view xml);
+std::optional<WmiMonitorID> parse_monitorID_from_dtd(std::wstring_view xml);
