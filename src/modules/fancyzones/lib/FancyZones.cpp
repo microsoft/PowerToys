@@ -573,7 +573,6 @@ void FancyZones::UpdateZoneWindows() noexcept
         {
             return TRUE;
         }
-        // Get a generated part of the id, e.g. "5&25664547&0&UID4355" from "VSCBD34#5&25664547&0&UID4355"
         std::wstring_view parsedIdView{parsedId.data(), wcslen(parsedId.data())};
         newDevice._deviceID = parsedIdView;
         if (parsedIdView.find(L'#') != std::wstring::npos)
@@ -609,10 +608,10 @@ void FancyZones::UpdateZoneWindows() noexcept
     }
     
     // Check if there's WMI data, if no, we're most likely running inside a VM
-    const bool hasWmiData = size(localScope.devices) == size(wmiMonitorInfo);
+    // TODO: add more robust VM detection logic
+    const bool hasWmiData = size(wmiMonitorInfo) >= size(localScope.devices);
     if (!hasWmiData)
     {
-        // TODO: add more robust VM detection logic
         for (const auto & dev : localScope.devices)
         {
             AddZoneWindow(dev._handle, dev._deviceID.c_str());
@@ -628,6 +627,7 @@ void FancyZones::UpdateZoneWindows() noexcept
         }
         return;
     }
+    // Default case: a bare metal machine and EnumDisplayMonitors() returned valid data
     for (const auto & dev : localScope.devices)
     {
         AddZoneWindow(dev._handle, dev._deviceID.c_str());
