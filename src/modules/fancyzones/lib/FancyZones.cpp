@@ -593,7 +593,7 @@ void FancyZones::UpdateZoneWindows() noexcept
         for (size_t i = 0; i < size(localScope.devices); ++i)
         {
             wchar_t remoteDeviceID[32];
-            swprintf_s(remoteDeviceID, L"REMOTE%zu", i);
+            swprintf_s(remoteDeviceID, L"REMOTE_%zu", i);
             AddZoneWindow(localScope.devices[i]._handle, remoteDeviceID);
         }
         return;
