@@ -160,7 +160,12 @@ export class App extends React.Component <any, any> {
                   },
                   'i.ms-Button-icon' : {
                     color: theme.palette.neutralPrimary,
-                    fontWeight: 'normal'
+                    fontWeight: 'normal',
+                    paddingLeft: '5px',
+                    paddingRight: '5px'
+                  },
+                  '.ms-Button-icon > svg' : {
+                    paddingTop: '2px'
                   },
                   '&:hover i.ms-Button-icon' : {
                     color: theme.palette.neutralPrimary,
