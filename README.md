@@ -77,7 +77,7 @@ The full backlog of utilities can be found [here](https://github.com/Microsoft/P
 
 ### December Update
 
-We're planning to ship 0.14 before December with a handful of key bug fixes from the community.  After that 0.15 will bring .msix installer support and deployment and automatic updates from the Windows Store and 0.16 will add support for ARM64 processors.
+We're planning to ship 0.14 before December with a handful of key bug fixes from the community.  After that 0.15 will bring .msix installer support and deployment and automatic updates from the Windows Store and 0.16 will add support for X86 and ARM64 processors (including the Surface Pro X).
 
 ## Developer Guidance
 
