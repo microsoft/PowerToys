@@ -166,7 +166,11 @@ namespace PowerToysSettings {
         return output.data();
       }
     }
-    HotkeyObject(web::json::value hotkey_json) : m_json(hotkey_json) {};
+    HotkeyObject(web::json::value hotkey_json) : m_json(hotkey_json) {
+      if (m_json.has_number_field(L"code")) {
+        m_json.as_object()[L"key"] = web::json::value::string(key_from_code(get_code()));
+      }
+    };
     web::json::value m_json;
   };
 
