@@ -101,6 +101,7 @@ void OverlayWindow::enable() {
 
 void OverlayWindow::disable(bool trace_event) {
   if (_enabled) {
+    _enabled = false;
     if (trace_event) {
       Trace::EnableShortcutGuide(false);
     }
@@ -111,7 +112,6 @@ void OverlayWindow::disable(bool trace_event) {
     target_state = nullptr;
     winkey_popup = nullptr;
   }
-  _enabled = false;
 }
 
 void OverlayWindow::disable() {
