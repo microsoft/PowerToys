@@ -127,14 +127,11 @@ namespace PowerToysSettings {
       json.as_object()[L"alt"] = web::json::value::boolean(alt_pressed);
       json.as_object()[L"shift"] = web::json::value::boolean(shift_pressed);
       json.as_object()[L"code"] = web::json::value::number(vk_code);
-      json.as_object()[L"key"] = web::json::value::string(key_from_code(vk_code));
       return HotkeyObject(json);
     }
     const web::json::value& get_json() const { return m_json; }
 
-    std::wstring get_key() {
-      return key_from_code(get_code());
-    }
+    std::wstring get_key() { return m_json[L"key"].as_string(); }
     UINT get_code() { return m_json[L"code"].as_integer(); }
     bool win_pressed() { return m_json[L"win"].as_bool(); }
     bool ctrl_pressed() { return m_json[L"ctrl"].as_bool(); }
@@ -150,25 +147,49 @@ namespace PowerToysSettings {
       return get_modifiers_repeat() | MOD_NOREPEAT;
     }
   protected:
-    static std::wstring key_from_code(UINT key_code) {
+    static std::wstring key_from_code(UINT modifiers, UINT key_code) {
       auto scan_code = MapVirtualKeyW(key_code, MAPVK_VK_TO_VSC);
       auto layout = GetKeyboardLayout(0);
-      std::array<BYTE, 256> key_states{}; // zero-initialize, no key pressed
+      std::array<BYTE, 256> key_states{}; // zero-initialize
+      // Set propper key presses
+      if (modifiers & MOD_WIN) {
+        key_states[VK_LWIN] = 0x80;
+      }
+      if (modifiers & MOD_CONTROL) {
+        key_states[VK_CONTROL] = 0x80;
+      }
+      if (modifiers & MOD_ALT) {
+        key_states[VK_MENU] = 0x80;
+      }
+      if (modifiers & MOD_SHIFT) {
+        key_states[VK_SHIFT] = 0x80;
+      }
+      if (key_code < key_states.size()) {
+        key_states[key_code] = 0x80;
+      }
       std::array<wchar_t, 256> output;
       auto output_bytes = ToUnicodeEx(key_code, scan_code, key_states.data(), output.data(), (int)output.size() - 1, 0, layout);
-      if (output_bytes == 0) {
-        return L"(unknown)";
-      } else {
-        if (output_bytes == -1) {
-          output_bytes = 1;
-        }
+      if (output_bytes > 0) {
         output[output_bytes] = 0;
         return output.data();
       }
+      // Second method:
+      output_bytes = GetKeyNameTextW(scan_code << 16, output.data(), static_cast<int>(output.size()));
+      if (output_bytes > 0) {
+        output[output_bytes] = 0;
+        return output.data();
+      }
+      return {};
     }
     HotkeyObject(web::json::value hotkey_json) : m_json(hotkey_json) {
       if (m_json.has_number_field(L"code")) {
-        m_json.as_object()[L"key"] = web::json::value::string(key_from_code(get_code()));
+        auto key = key_from_code(get_modifiers(), get_code());
+        if (!key.empty()) {
+          m_json.as_object()[L"key"] = web::json::value::string(key);
+        }
+      }
+      if (!m_json.has_string_field(L"key") || get_key().empty()) {
+        m_json.as_object()[L"key"] = web::json::value::string(L"(Key " + std::to_wstring(get_code()) + L")");
       }
     };
     web::json::value m_json;
