@@ -127,6 +127,7 @@ namespace PowerToysSettings {
       json.as_object()[L"alt"] = web::json::value::boolean(alt_pressed);
       json.as_object()[L"shift"] = web::json::value::boolean(shift_pressed);
       json.as_object()[L"code"] = web::json::value::number(vk_code);
+      json.as_object()[L"key"] = web::json::value::string(key_from_code(vk_code));
       return HotkeyObject(json);
     }
     const web::json::value& get_json() const { return m_json; }
@@ -147,51 +148,37 @@ namespace PowerToysSettings {
       return get_modifiers_repeat() | MOD_NOREPEAT;
     }
   protected:
-    static std::wstring key_from_code(UINT modifiers, UINT key_code) {
-      auto scan_code = MapVirtualKeyW(key_code, MAPVK_VK_TO_VSC);
+    static std::wstring key_from_code(UINT key_code) {
       auto layout = GetKeyboardLayout(0);
-      std::array<BYTE, 256> key_states{}; // zero-initialize
-      // Set propper key presses
-      if (modifiers & MOD_WIN) {
-        key_states[VK_LWIN] = 0x80;
+      auto scan_code = MapVirtualKeyExW(key_code, MAPVK_VK_TO_VSC_EX, layout);
+      // Determinate if vk is an extended key. Unfortunatly MAPVK_VK_TO_VSC_EX
+      // does not return correct values.
+      static std::vector<UINT> extended_keys = {
+        VK_APPS, VK_CANCEL, VK_SNAPSHOT, VK_DIVIDE, VK_NUMLOCK, VK_LWIN, VK_RWIN, VK_RMENU,
+        VK_RCONTROL, VK_RSHIFT, VK_RETURN, VK_INSERT, VK_DELETE, VK_PRIOR, VK_NEXT,
+        VK_HOME, VK_END, VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, 
+      };
+      if (find(begin(extended_keys), end(extended_keys), key_code) != end(extended_keys)) {
+        scan_code |= 0x100;
       }
-      if (modifiers & MOD_CONTROL) {
-        key_states[VK_CONTROL] = 0x80;
-      }
-      if (modifiers & MOD_ALT) {
-        key_states[VK_MENU] = 0x80;
-      }
-      if (modifiers & MOD_SHIFT) {
-        key_states[VK_SHIFT] = 0x80;
-      }
-      if (key_code < key_states.size()) {
-        key_states[key_code] = 0x80;
-      }
+      std::array<BYTE, 256> key_states{}; // Zero-initialize
       std::array<wchar_t, 256> output;
       auto output_bytes = ToUnicodeEx(key_code, scan_code, key_states.data(), output.data(), (int)output.size() - 1, 0, layout);
+      if (output_bytes <= 0) {
+        // If ToUnicodeEx fails (e.g. for F1-F12 keys) use GetKeyNameTextW
+        output_bytes = GetKeyNameTextW(scan_code << 16, output.data(), static_cast<int>(output.size()));
+      }
       if (output_bytes > 0) {
         output[output_bytes] = 0;
-        return output.data();
-      }
-      // Second method:
-      output_bytes = GetKeyNameTextW(scan_code << 16, output.data(), static_cast<int>(output.size()));
-      if (output_bytes > 0) {
-        output[output_bytes] = 0;
-        return output.data();
-      }
-      return {};
-    }
-    HotkeyObject(web::json::value hotkey_json) : m_json(hotkey_json) {
-      if (m_json.has_number_field(L"code")) {
-        auto key = key_from_code(get_modifiers(), get_code());
-        if (!key.empty()) {
-          m_json.as_object()[L"key"] = web::json::value::string(key);
+        if (output_bytes == 1 && output[0] >= 'a' && output[0] <= 'z') {
+          // Make Latin letters keys capital, as it looks better
+          output[0] = toupper(output[0]);
         }
+        return output.data();
       }
-      if (!m_json.has_string_field(L"key") || get_key().empty()) {
-        m_json.as_object()[L"key"] = web::json::value::string(L"(Key " + std::to_wstring(get_code()) + L")");
-      }
-    };
+      return L"(Key " + std::to_wstring(key_code) + L")";
+    }
+    HotkeyObject(web::json::value hotkey_json) : m_json(hotkey_json) { };
     web::json::value m_json;
   };
 
