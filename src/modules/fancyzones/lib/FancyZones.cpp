@@ -28,7 +28,6 @@ public:
     IFACEMETHODIMP_(void) SettingsChanged() noexcept;
 
     // IZoneWindowHost
-    IFACEMETHODIMP_(void) ToggleZoneViewers() noexcept;
     IFACEMETHODIMP_(void) MoveWindowsOnActiveZoneSetChange() noexcept;
     IFACEMETHODIMP_(COLORREF) GetZoneHighlightColor() noexcept
     {
@@ -43,7 +42,6 @@ public:
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void OnDisplayChange(DisplayChangeType changeType) noexcept;
-    void ShowZoneEditorForMonitor(HMONITOR monitor) noexcept;
     void AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept;
     void MoveWindowIntoZoneByIndex(HWND window, int index) noexcept;
 
@@ -80,20 +78,20 @@ private:
     mutable std::shared_mutex m_lock;
     HWND m_window{};
     HWND m_windowMoveSize{}; // The window that is being moved/sized
-    bool m_editorsVisible{}; // Are we showing the zone editors?
     bool m_inMoveSize{};  // Whether or not a move/size operation is currently active
     bool m_dragEnabled{}; // True if we should be showing zone hints while dragging
     std::map<HMONITOR, winrt::com_ptr<IZoneWindow>> m_zoneWindowMap; // Map of monitor to ZoneWindow (one per monitor)
     winrt::com_ptr<IZoneWindow> m_zoneWindowMoveSize; // "Active" ZoneWindow, where the move/size is happening. Will update as drag moves between monitors.
     IFancyZonesSettings* m_settings{};
-    GUID m_currentVirtualDesktopId{};
-    wil::unique_handle m_terminateEditorEvent;
+    GUID m_currentVirtualDesktopId{}; // UUID of the current virtual desktop. Is GUID_NULL until first VD switch per session.
+    wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
 
     OnThreadExecutor m_dpiUnawareThread;
 
-    static UINT WM_PRIV_VDCHANGED;
-    static UINT WM_PRIV_EDITOR;
+    static UINT WM_PRIV_VDCHANGED; // Message to get back on to the UI thread when virtual desktop changes
+    static UINT WM_PRIV_EDITOR; // Message to get back on to the UI thread when the editor exits
 
+    // Did we terminate the editor or was it closed cleanly?
     enum class EditorExitKind : byte
     {
         Exit,
@@ -122,6 +120,7 @@ IFACEMETHODIMP_(void) FancyZones::Run() noexcept
     if (!m_window) return;
 
     RegisterHotKey(m_window, 1, m_settings->GetSettings().editorHotkey.get_modifiers(), m_settings->GetSettings().editorHotkey.get_code());
+
     VirtualDesktopChanged();
 
     m_dpiUnawareThread.submit(OnThreadExecutor::task_t{[]{
@@ -198,31 +197,32 @@ IFACEMETHODIMP_(bool) FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     bool const win = GetAsyncKeyState(VK_LWIN) & 0x8000;
     if (win && !shift)
     {
-        if (!m_settings->GetSettings().overrideSnapHotkeys)
-        {
-            return false;
-        }
-
         bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
         if (ctrl)
         {
             if ((info->vkCode >= '0') && (info->vkCode <= '9'))
             {
-                Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /* inMoveSize */);
+                // Win+Ctrl+Number will cycle through ZoneSets
+                Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
                 CycleActiveZoneSet(info->vkCode);
                 return true;
             }
         }
         else if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT))
         {
-            Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /* inMoveSize */);
-            OnSnapHotkey(info->vkCode);
-            return true;
+            if (m_settings->GetSettings().overrideSnapHotkeys)
+            {
+                // Win+Left, Win+Right will cycle through Zones in the active ZoneSet
+                Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
+                OnSnapHotkey(info->vkCode);
+                return true;
+            }
         }
     }
     else if (m_inMoveSize && (info->vkCode >= '0') && (info->vkCode <= '9'))
     {
-        Trace::FancyZones::OnKeyDown(info->vkCode, win, false /* control */, true/* inMoveSize */);
+        // This allows you to cycle through ZoneSets while dragging a window
+        Trace::FancyZones::OnKeyDown(info->vkCode, win, false /*control*/, true /*inMoveSize*/);
         CycleActiveZoneSet(info->vkCode);
         return true;
     }
@@ -357,38 +357,6 @@ void FancyZones::SettingsChanged() noexcept
 }
 
 // IZoneWindowHost
-IFACEMETHODIMP_(void) FancyZones::ToggleZoneViewers() noexcept
-{
-    bool alreadyVisible{};
-
-    {
-        std::unique_lock writeLock(m_lock);
-        alreadyVisible = m_editorsVisible;
-        m_editorsVisible = !alreadyVisible;
-    }
-    Trace::FancyZones::ToggleZoneViewers(!alreadyVisible);
-
-    if (!alreadyVisible)
-    {
-        auto callback = [](HMONITOR monitor, HDC, RECT *, LPARAM data) -> BOOL
-        {
-            auto strongThis = reinterpret_cast<FancyZones*>(data);
-            strongThis->ShowZoneEditorForMonitor(monitor);
-            return TRUE;
-        };
-        EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(this));
-    }
-    else
-    {
-        std::shared_lock readLock(m_lock);
-        for (auto iter : m_zoneWindowMap)
-        {
-            iter.second->HideZoneWindow();
-        }
-    }
-}
-
-// IZoneWindowHost
 IFACEMETHODIMP_(void) FancyZones::MoveWindowsOnActiveZoneSetChange() noexcept
 {
     if (m_settings->GetSettings().zoneSetChange_moveWindows)
@@ -405,14 +373,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     {
         if (wparam == 1)
         {
-            if (m_settings->GetSettings().use_standalone_editor)
-            {
-                ToggleEditor();
-            }
-            else
-            {
-                ToggleZoneViewers();
-            }
+            ToggleEditor();
         }
     }
     break;
@@ -505,18 +466,6 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         {
             MoveWindowsOnDisplayChange();
         }
-    }
-}
-
-void FancyZones::ShowZoneEditorForMonitor(HMONITOR monitor) noexcept
-{
-    std::shared_lock readLock(m_lock);
-
-    auto iter = m_zoneWindowMap.find(monitor);
-    if (iter != m_zoneWindowMap.end())
-    {
-        bool const activate = MonitorFromPoint(POINT(), MONITOR_DEFAULTTOPRIMARY) == monitor;
-        iter->second->ShowZoneWindow(activate, false /*fadeIn*/);
     }
 }
 

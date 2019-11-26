@@ -16,7 +16,7 @@ The latest release of PowerToys can be downloaded currently a few different ways
 
 | x64 | x86 | ARM |
 |:---:|:---:|:---:|
-| Supported | [Issue #620](https://github.com/microsoft/PowerToys/issues/602)  | [Issue #490](https://github.com/microsoft/PowerToys/issues/490)|
+| Supported | [Issue #602](https://github.com/microsoft/PowerToys/issues/602)  | [Issue #490](https://github.com/microsoft/PowerToys/issues/490)|
 
 ### GitHub
 
@@ -61,11 +61,13 @@ If you have any issues when installing/upgrading the package please go to the [p
 
 Chris Davis contributed his [SmartRename tool](https://github.com/chrdavis/SmartRename) into PowerToys!
 
+![SmartRename](https://github.com/microsoft/PowerToys/raw/master/src/modules/powerrename/images/PowerRenameDemo.gif)
+
 ### Additional utilities in the pipeline are
 
 * Maximize to new desktop widget - The MTND widget shows a pop-up button when a user hovers over the maximize / restore button on any window.  Clicking it creates a new desktop, sends the app to that desktop and maximizes the app on the new desktop.
 * [Process terminate tool](doc/specs/Terminate%20Spec.md)
-* [Animated gif screen recorder](doc/specs/Gif%20Maker.md)
+* [Animated gif screen recorder](doc/specs/Gif-Maker.md)
 
 ### Backlog
 
@@ -73,11 +75,9 @@ The full backlog of utilities can be found [here](https://github.com/Microsoft/P
 
 ## What's Happening
 
-### October Update
+### December Update
 
-**Update** - We've shipped 0.12!  This release includes bug fixes, addresses issues and implements many feature suggestions.  This build and installer is also signed by Microsoft.  Last, but not least, this release includes a new utility: Chris Davis has integrated  [SmartRename tool](https://github.com/chrdavis/SmartRename) into PowerToys!
-
-![SmartRename](https://github.com/microsoft/PowerToys/raw/master/src/modules/powerrename/images/PowerRenameDemo.gif)
+We're planning to ship 0.14 before December with a handful of key bug fixes from the community.  After that 0.15 will bring .msix installer support and deployment and automatic updates from the Windows Store and 0.16 will add support for X86 and ARM64 processors (including the Surface Pro X).
 
 ## Developer Guidance
 

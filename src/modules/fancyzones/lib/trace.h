@@ -13,7 +13,6 @@ public:
     {
     public:
         static void EnableFancyZones(bool enabled) noexcept;
-        static void ToggleZoneViewers(bool visible) noexcept;
         static void OnKeyDown(DWORD vkCode, bool win, bool control, bool inMoveSize) noexcept;
     };
 
@@ -29,17 +28,8 @@ public:
             Mouse
         };
 
-        static void KeyUp(WPARAM wParam, bool isEditorMode) noexcept;
+        static void KeyUp(WPARAM wparam) noexcept;
         static void MoveSizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept;
         static void CycleActiveZoneSet(_In_opt_ winrt::com_ptr<IZoneSet> activeSet, InputMode mode) noexcept;
-
-        class EditorModeActivity
-        {
-        public:
-            void Start() noexcept;
-            void Stop(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept;
-        private:
-            std::optional<TraceLoggingActivity<g_hProvider, PROJECT_KEYWORD_MEASURE>> m_activity{};
-        };
     };
 };

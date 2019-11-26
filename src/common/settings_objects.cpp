@@ -80,6 +80,22 @@ namespace PowerToysSettings {
     m_json.as_object()[L"properties"].as_object()[name] = item;
   }
 
+  // add_multiline_string overloads.
+  void Settings::add_multiline_string(const std::wstring& name, UINT description_resource_id, const std::wstring& value) {
+    add_multiline_string(name, get_resource(description_resource_id), value);
+  }
+
+  void Settings::add_multiline_string(const std::wstring& name, const std::wstring& description, const std::wstring& value) {
+    web::json::value item = web::json::value::object();
+    item.as_object()[L"display_name"] = web::json::value::string(description);
+    item.as_object()[L"editor_type"] = web::json::value::string(L"string_text");
+    item.as_object()[L"value"] = web::json::value::string(value);
+    item.as_object()[L"order"] = web::json::value::number(++m_curr_priority);
+    item.as_object()[L"multiline"] = web::json::value::boolean(true);
+
+    m_json.as_object()[L"properties"].as_object()[name] = item;
+  }
+
   // add_color_picker overloads.
   void Settings::add_color_picker(const std::wstring& name, UINT description_resource_id, const std::wstring& value) {
     add_color_picker(name, get_resource(description_resource_id), value);
