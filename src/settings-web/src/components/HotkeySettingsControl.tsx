@@ -78,21 +78,7 @@ export class HotkeySettingsControl extends BaseSettingsControl {
               new_value.key = '~';
             }
             if (!new_value.key || new_value.key === 'Unidentified') {
-              switch (new_value.code) {
-                case 192: new_value.key = _event.shiftKey ? '~' : '`'; break;
-                case 189: new_value.key = _event.shiftKey ? '_' : '-'; break;
-                case 187: new_value.key = _event.shiftKey ? '+' : '='; break;
-                case 219: new_value.key = _event.shiftKey ? '{' : '['; break;
-                case 221: new_value.key = _event.shiftKey ? '}' : ']'; break;
-                case 220: new_value.key = _event.shiftKey ? '|' : '\\'; break;
-                case 186: new_value.key = _event.shiftKey ? ':' : ';'; break;
-                case 222: new_value.key = _event.shiftKey ? '"' : '\''; break;
-                case 188: new_value.key = _event.shiftKey ? '<' : ','; break;
-                case 190: new_value.key = _event.shiftKey ? '>' : '.'; break;
-                case 191: new_value.key = _event.shiftKey ? '?' : '/'; break;
-                default:
-                  new_value.key = `(Key ${new_value.code})`;
-              }
+              new_value.key = `(Key ${new_value.code})`;
             }
             if (new_value.key.length === 1) {
               new_value.key = new_value.key.toLocaleUpperCase();
