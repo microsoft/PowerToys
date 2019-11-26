@@ -7,7 +7,7 @@
 
 using namespace web;
 
-static std::wstring settings_theme;
+static std::wstring settings_theme = L"system";
 
 web::json::value load_general_settings() {
   auto loaded = PTSettingsHelper::load_general_settings();
@@ -35,6 +35,7 @@ web::json::value get_general_settings() {
 
   result.as_object()[L"theme"] = json::value::string(settings_theme);
   result.as_object()[L"system_theme"] = json::value::string(WindowsColors::is_dark_mode() ? L"dark" : L"light");
+  result.as_object()[L"powertoys_version"] = json::value::string(get_product_version());
   return result;
 }
 

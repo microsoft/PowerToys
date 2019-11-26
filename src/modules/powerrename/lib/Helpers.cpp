@@ -25,6 +25,71 @@ HRESULT GetIconIndexFromPath(_In_ PCWSTR path, _Out_ int* index)
     return hr;
 }
 
+HBITMAP CreateBitmapFromIcon(_In_ HICON hIcon, _In_opt_ UINT width, _In_opt_ UINT height)
+{
+    HBITMAP hBitmapResult = NULL;
+
+    // Create compatible DC
+    HDC hDC = CreateCompatibleDC(NULL);
+    if (hDC != NULL)
+    {
+        // Get bitmap rectangle size
+        RECT rc = { 0 };
+        rc.left = 0;
+        rc.right = (width != 0) ? width : GetSystemMetrics(SM_CXSMICON);
+        rc.top = 0;
+        rc.bottom = (height != 0) ? height : GetSystemMetrics(SM_CYSMICON);
+
+        // Create bitmap compatible with DC
+        BITMAPINFO BitmapInfo;
+        ZeroMemory(&BitmapInfo, sizeof(BITMAPINFO));
+
+        BitmapInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+        BitmapInfo.bmiHeader.biWidth = rc.right;
+        BitmapInfo.bmiHeader.biHeight = rc.bottom;
+        BitmapInfo.bmiHeader.biPlanes = 1;
+        BitmapInfo.bmiHeader.biBitCount = 32;
+        BitmapInfo.bmiHeader.biCompression = BI_RGB;
+
+        HDC hDCBitmap = GetDC(NULL);
+
+        HBITMAP hBitmap = CreateDIBSection(hDCBitmap, &BitmapInfo, DIB_RGB_COLORS, NULL, NULL, 0);
+
+        ReleaseDC(NULL, hDCBitmap);
+
+        if (hBitmap != NULL)
+        {
+            // Select bitmap into DC
+            HBITMAP hBitmapOld = (HBITMAP)SelectObject(hDC, hBitmap);
+            if (hBitmapOld != NULL)
+            {
+                // Draw icon into DC
+                if (DrawIconEx(hDC, 0, 0, hIcon, rc.right, rc.bottom, 0, NULL, DI_NORMAL))
+                {
+                    // Restore original bitmap in DC
+                    hBitmapResult = (HBITMAP)SelectObject(hDC, hBitmapOld);
+                    hBitmapOld = NULL;
+                    hBitmap = NULL;
+                }
+
+                if (hBitmapOld != NULL)
+                {
+                    SelectObject(hDC, hBitmapOld);
+                }
+            }
+
+            if (hBitmap != NULL)
+            {
+                DeleteObject(hBitmap);
+            }
+        }
+
+        DeleteDC(hDC);
+    }
+
+    return hBitmapResult;
+}
+
 HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* psrm, _In_ int depth = 0)
 {
     HRESULT hr = E_INVALIDARG;
@@ -40,7 +105,7 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
         while ((S_OK == pesi->Next(1, &spsi, &celtFetched)) && (SUCCEEDED(hr)))
         {
             CComPtr<IPowerRenameItemFactory> spsrif;
-            hr = psrm->get_smartRenameItemFactory(&spsrif);
+            hr = psrm->get_renameItemFactory(&spsrif);
             if (SUCCEEDED(hr))
             {
                 CComPtr<IPowerRenameItem> spNewItem;

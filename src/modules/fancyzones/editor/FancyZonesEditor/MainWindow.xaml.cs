@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -23,10 +23,32 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class MainWindow : MetroWindow
     {
+        // TODO: share the constants b/w C# Editor and FancyZoneLib
+        public static int MAX_ZONES = 40;
+        
         public MainWindow()
         {
             InitializeComponent();
             DataContext = _settings;
+            if (_settings.WorkArea.Height < 900)
+            {
+                this.SizeToContent = SizeToContent.WidthAndHeight;
+                this.WrapPanelItemSize = 180;
+            }
+        }
+
+        private int _WrapPanelItemSize = 262;
+        public int WrapPanelItemSize
+        {
+            get
+            {
+                return _WrapPanelItemSize;
+            }
+
+            set
+            {
+                _WrapPanelItemSize = value;
+            }
         }
 
         private void DecrementZones_Click(object sender, RoutedEventArgs e)
@@ -39,7 +61,7 @@ namespace FancyZonesEditor
 
         private void IncrementZones_Click(object sender, RoutedEventArgs e)
         {
-            if (_settings.ZoneCount < 40)
+            if (_settings.ZoneCount < MAX_ZONES)
             {
                 _settings.ZoneCount++;
             }
@@ -215,6 +237,25 @@ namespace FancyZonesEditor
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             return null;
+        }
+    }
+    public class BooleanToIntConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value is bool)
+            {
+                return (bool)value == true ? 1 : 0;
+            }
+            return 0;
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value is int)
+            {
+                return (int)value == 1;
+            }
+            return false;
         }
     }
 }

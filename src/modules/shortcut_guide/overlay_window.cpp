@@ -356,7 +356,7 @@ void D2DOverlayWindow::on_hide() {
   std::chrono::steady_clock::time_point shown_end_time = std::chrono::steady_clock::now();
   // Trace the event only if the overaly window was visible.
   if (shown_start_time.time_since_epoch().count() > 0) {
-    Trace::EventHide(std::chrono::duration_cast<std::chrono::milliseconds>(shown_end_time - shown_start_time).count(), key_pressed);
+    Trace::HideGuide(std::chrono::duration_cast<std::chrono::milliseconds>(shown_end_time - shown_start_time).count(), key_pressed);
     shown_start_time = {};
   }
   key_pressed.clear();
@@ -387,6 +387,16 @@ void D2DOverlayWindow::set_theme(const std::wstring& theme) {
     theme_setting = Dark;
   } else {
     theme_setting = System;
+  }
+}
+
+/* Hide the window but do not call on_hide(). Use this to quickly hide the window when needed.
+   Note, that a proper hide should be made after this before showing the window again.
+*/
+void D2DOverlayWindow::quick_hide() {
+  ShowWindow(hwnd, SW_HIDE);
+  if (thumbnail) {
+    DwmUnregisterThumbnail(thumbnail);
   }
 }
 

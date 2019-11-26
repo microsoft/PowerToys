@@ -367,7 +367,7 @@ UINT __stdcall TelemetryLogInstallSuccessCA(MSIHANDLE hInstall) {
 
   TraceLoggingWrite(
     g_hProvider,
-    "Install::Success",
+    "Install_Success",
     ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
     TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
     TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -386,7 +386,7 @@ UINT __stdcall TelemetryLogInstallCancelCA(MSIHANDLE hInstall) {
 
   TraceLoggingWrite(
     g_hProvider,
-    "Install::Cancel",
+    "Install_Cancel",
     ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
     TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
     TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -405,7 +405,7 @@ UINT __stdcall TelemetryLogInstallFailCA(MSIHANDLE hInstall) {
 
   TraceLoggingWrite(
     g_hProvider,
-    "Install::Fail",
+    "Install_Fail",
     ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
     TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
     TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -424,7 +424,7 @@ UINT __stdcall TelemetryLogUninstallSuccessCA(MSIHANDLE hInstall) {
 
   TraceLoggingWrite(
     g_hProvider,
-    "Uninstall::Success",
+    "UnInstall_Success",
     ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
     TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
     TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -443,7 +443,7 @@ UINT __stdcall TelemetryLogUninstallCancelCA(MSIHANDLE hInstall) {
 
   TraceLoggingWrite(
     g_hProvider,
-    "Uninstall::Cancel",
+    "UnInstall_Cancel",
     ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
     TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
     TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -462,7 +462,7 @@ UINT __stdcall TelemetryLogUninstallFailCA(MSIHANDLE hInstall) {
 
   TraceLoggingWrite(
     g_hProvider,
-    "Uninstall::Fail",
+    "UnInstall_Fail",
     ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
     TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
     TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -481,7 +481,7 @@ UINT __stdcall TelemetryLogRepairCancelCA(MSIHANDLE hInstall) {
 
   TraceLoggingWrite(
     g_hProvider,
-    "Repair::Cancel",
+    "Repair_Cancel",
     ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
     TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
     TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -500,7 +500,7 @@ UINT __stdcall TelemetryLogRepairFailCA(MSIHANDLE hInstall) {
 
   TraceLoggingWrite(
     g_hProvider,
-    "Repair::Fail",
+    "Repair_Fail",
     ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
     TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
     TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));

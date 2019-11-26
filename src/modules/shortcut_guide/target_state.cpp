@@ -11,6 +11,12 @@ bool TargetState::signal_event(unsigned vk_code, bool key_down) {
   if (!events.empty() && events.back().key_down == key_down && events.back().vk_code == vk_code) {
     return false;
   }
+  // Hide the overlay when WinKey + Shift + S is pressed. 0x53 is the VK code of the S key
+  if (key_down && state == Shown && vk_code == 0x53 && (GetKeyState(VK_LSHIFT) || GetKeyState(VK_RSHIFT))) {
+    // We cannot use normal hide() here, there is stuff that needs deinitialization.
+    // It can be safely done when the user releases the WinKey.
+    instance->quick_hide();
+  }
   bool supress = false;
   if (!key_down && (vk_code == VK_LWIN || vk_code == VK_RWIN) &&
     state == Shown &&
@@ -23,14 +29,14 @@ bool TargetState::signal_event(unsigned vk_code, bool key_down) {
   cv.notify_one();
   if (supress) {
     // Send a fake key-stroke to prevent the start menu from appearing.
-    // We use 0x07 VK code, which is undefined. It still prevents the
+    // We use 0xCF VK code, which is reserved. It still prevents the
     // start menu from appearing, but should not interfere with any
     // keyboard shortcuts.
     INPUT input[3] = { {},{},{} };
     input[0].type = INPUT_KEYBOARD;
-    input[0].ki.wVk = 0x07;
+    input[0].ki.wVk = 0xCF;
     input[1].type = INPUT_KEYBOARD;
-    input[1].ki.wVk = 0x07;
+    input[1].ki.wVk = 0xCF;
     input[1].ki.dwFlags = KEYEVENTF_KEYUP;
     input[2].type = INPUT_KEYBOARD;
     input[2].ki.wVk = VK_LWIN;

@@ -1,4 +1,5 @@
 #define IDS_POWERRENAME                 801
+#define IDI_RENAME                      132
 
 // Next default values for new objects
 // 

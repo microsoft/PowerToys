@@ -3,30 +3,18 @@
 #include <PowerRenameUI.h>
 #include <PowerRenameItem.h>
 #include <PowerRenameManager.h>
+#include <trace.h>
+#include <Helpers.h>
+#include <Settings.h>
 #include "resource.h"
 
 extern HINSTANCE g_hInst;
 
-HWND g_hwndParent = 0;
-
-
-const wchar_t powerRenameRegPath[] = L"Software\\Microsoft\\PowerRename";
-const wchar_t powerRenameRegEnabledName[] = L"Enabled";
-
-bool CPowerRenameMenu::IsEnabled()
+struct InvokeStruct
 {
-    DWORD type = REG_DWORD;
-    DWORD dwEnabled = 0;
-    DWORD cb = sizeof(dwEnabled);
-    SHGetValue(HKEY_CURRENT_USER, powerRenameRegPath, powerRenameRegEnabledName, &type, &dwEnabled, &cb);
-    return (dwEnabled == 0) ? false : true;
-}
-
-bool CPowerRenameMenu::SetEnabled(_In_ bool enabled)
-{
-    DWORD dwEnabled = enabled ? 1 : 0;
-    return SUCCEEDED(HRESULT_FROM_WIN32(SHSetValueW(HKEY_CURRENT_USER, powerRenameRegPath, powerRenameRegEnabledName, REG_DWORD, &dwEnabled, sizeof(dwEnabled))));
-}
+    HWND hwndParent;
+    IStream* pstrm;
+};
 
 CPowerRenameMenu::CPowerRenameMenu()
 {
@@ -36,6 +24,7 @@ CPowerRenameMenu::CPowerRenameMenu()
 CPowerRenameMenu::~CPowerRenameMenu()
 {
     m_spdo = nullptr;
+    DeleteObject(m_hbmpIcon);
     DllRelease();
 }
 
@@ -56,7 +45,7 @@ HRESULT CPowerRenameMenu::s_CreateInstance(_In_opt_ IUnknown*, _In_ REFIID riid,
 HRESULT CPowerRenameMenu::Initialize(_In_opt_ PCIDLIST_ABSOLUTE, _In_ IDataObject *pdtobj, HKEY)
 {
     // Check if we have disabled ourselves
-    if (!IsEnabled())
+    if (!CSettings::GetEnabled())
         return E_FAIL;
 
     // Cache the data object to be used later
@@ -68,17 +57,48 @@ HRESULT CPowerRenameMenu::Initialize(_In_opt_ PCIDLIST_ABSOLUTE, _In_ IDataObjec
 HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirst, UINT, UINT uFlags)
 {
     // Check if we have disabled ourselves
-    if (!IsEnabled())
+    if (!CSettings::GetEnabled())
+        return E_FAIL;
+
+    // Check if we should only be on the extended context menu
+    if (CSettings::GetExtendedContextMenuOnly() && (!(uFlags & CMF_EXTENDEDVERBS)))
         return E_FAIL;
 
     HRESULT hr = E_UNEXPECTED;
-    if (m_spdo)
+    if (m_spdo && !(uFlags & (CMF_DEFAULTONLY | CMF_VERBSONLY | CMF_OPTIMIZEFORINVOKE)))
     {
-        if ((uFlags & ~CMF_OPTIMIZEFORINVOKE) && (uFlags & ~(CMF_DEFAULTONLY | CMF_VERBSONLY)))
+        wchar_t menuName[64] = { 0 };
+        LoadString(g_hInst, IDS_POWERRENAME, menuName, ARRAYSIZE(menuName));
+
+        MENUITEMINFO mii;
+        mii.cbSize = sizeof(MENUITEMINFO);
+        mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_STATE;
+        mii.wID = uIDFirst++;
+        mii.fType = MFT_STRING;
+        mii.dwTypeData = (PWSTR)menuName;
+        mii.fState = MFS_ENABLED;
+
+        if (CSettings::GetShowIconOnMenu())
         {
-            wchar_t menuName[64] = { 0 };
-            LoadString(g_hInst, IDS_POWERRENAME, menuName, ARRAYSIZE(menuName));
-            InsertMenu(hMenu, index, MF_STRING | MF_BYPOSITION, uIDFirst++, menuName);
+            HICON hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_RENAME), IMAGE_ICON, 16, 16, 0);
+            if (hIcon)
+            {
+                mii.fMask |= MIIM_BITMAP;
+                if (m_hbmpIcon == NULL)
+                {
+                    m_hbmpIcon = CreateBitmapFromIcon(hIcon);
+                }
+                mii.hbmpItem = m_hbmpIcon;
+                DestroyIcon(hIcon);
+            }
+        }
+
+        if (!InsertMenuItem(hMenu, index, TRUE, &mii))
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+        }
+        else
+        {
             hr = MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1);
         }
     }
@@ -88,23 +108,34 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
 
 HRESULT CPowerRenameMenu::InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pici)
 {
-    // Check if we have disabled ourselves
-    if (!IsEnabled())
-        return E_FAIL;
-
     HRESULT hr = E_FAIL;
 
-    if ((IS_INTRESOURCE(pici->lpVerb)) &&
+    if (CSettings::GetEnabled() &&
+        (IS_INTRESOURCE(pici->lpVerb)) &&
         (LOWORD(pici->lpVerb) == 0))
     {
-        IStream* pstrm = nullptr;
-        if (SUCCEEDED(CoMarshalInterThreadInterfaceInStream(__uuidof(m_spdo), m_spdo, &pstrm)))
+        Trace::Invoked();
+        InvokeStruct* pInvokeData = new InvokeStruct;
+        hr = pInvokeData ? S_OK : E_OUTOFMEMORY;
+        if (SUCCEEDED(hr))
         {
-            if (!SHCreateThread(s_PowerRenameUIThreadProc, pstrm, CTF_COINIT | CTF_PROCESS_REF, nullptr))
+            pInvokeData->hwndParent = pici->hwnd;
+            hr = CoMarshalInterThreadInterfaceInStream(__uuidof(m_spdo), m_spdo, &(pInvokeData->pstrm));
+            if (SUCCEEDED(hr))
             {
-                pstrm->Release(); // if we failed to create the thread, then we must release the stream
+                hr = SHCreateThread(s_PowerRenameUIThreadProc, pInvokeData, CTF_COINIT | CTF_PROCESS_REF, nullptr) ? S_OK : E_FAIL;
+                if (FAILED(hr))
+                {
+                    pInvokeData->pstrm->Release(); // if we failed to create the thread, then we must release the stream
+                }
+            }
+
+            if (FAILED(hr))
+            {
+                delete pInvokeData;
             }
         }
+        Trace::InvokedRet(hr);
     }
 
     return hr;
@@ -112,27 +143,32 @@ HRESULT CPowerRenameMenu::InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pici)
 
 DWORD WINAPI CPowerRenameMenu::s_PowerRenameUIThreadProc(_In_ void* pData)
 {
-    IStream* pstrm = static_cast<IStream*>(pData);
+    InvokeStruct* pInvokeData = static_cast<InvokeStruct*>(pData);
     CComPtr<IDataObject> spdo;
-    if (SUCCEEDED(CoGetInterfaceAndReleaseStream(pstrm, IID_PPV_ARGS(&spdo))))
+    HRESULT hr = CoGetInterfaceAndReleaseStream(pInvokeData->pstrm, IID_PPV_ARGS(&spdo));
+    if (SUCCEEDED(hr))
     {
-        // Create the smart rename manager
+        // Create the rename manager
         CComPtr<IPowerRenameManager> spsrm;
-        if (SUCCEEDED(CPowerRenameManager::s_CreateInstance(&spsrm)))
+        hr = CPowerRenameManager::s_CreateInstance(&spsrm);
+        if (SUCCEEDED(hr))
         {
             // Create the factory for our items
             CComPtr<IPowerRenameItemFactory> spsrif;
-            if (SUCCEEDED(CPowerRenameItem::s_CreateInstance(nullptr, IID_PPV_ARGS(&spsrif))))
+            hr = CPowerRenameItem::s_CreateInstance(nullptr, IID_PPV_ARGS(&spsrif));
+            if (SUCCEEDED(hr))
             {
                 // Pass the factory to the manager
-                if (SUCCEEDED(spsrm->put_smartRenameItemFactory(spsrif)))
+                hr = spsrm->put_renameItemFactory(spsrif);
+                if (SUCCEEDED(hr))
                 {
-                    // Create the smart rename UI instance and pass the smart rename manager
+                    // Create the rename UI instance and pass the rename manager
                     CComPtr<IPowerRenameUI> spsrui;
-                    if (SUCCEEDED(CPowerRenameUI::s_CreateInstance(spsrm, spdo, false, &spsrui)))
+                    hr = CPowerRenameUI::s_CreateInstance(spsrm, spdo, false, &spsrui);
+                    if (SUCCEEDED(hr))
                     {
                         // Call blocks until we are done
-                        spsrui->Show();
+                        spsrui->Show(pInvokeData->hwndParent);
                         spsrui->Close();
                     }
                 }
@@ -142,6 +178,10 @@ DWORD WINAPI CPowerRenameMenu::s_PowerRenameUIThreadProc(_In_ void* pData)
             spsrm->Shutdown();
         }
     }
+
+    delete pInvokeData;
+
+    Trace::UIShownRet(hr);
 
     return 0;
 }

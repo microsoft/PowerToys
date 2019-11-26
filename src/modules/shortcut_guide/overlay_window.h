@@ -47,6 +47,7 @@ public:
   ~D2DOverlayWindow();
   void apply_overlay_opacity(float opacity);
   void set_theme(const std::wstring& theme);
+  void quick_hide();
 private:
   void animate(int vk_code, int offset);
   bool show_thumbnail(const RECT& rect);

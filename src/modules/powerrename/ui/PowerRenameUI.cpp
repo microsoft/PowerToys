@@ -4,6 +4,7 @@
 #include <commctrl.h>
 #include <Shlobj.h>
 #include <helpers.h>
+#include <settings.h>
 #include <windowsx.h>
 
 extern HINSTANCE g_hInst;
@@ -32,15 +33,49 @@ struct FlagCheckboxMap
 FlagCheckboxMap g_flagCheckboxMap[] =
 {
     { UseRegularExpressions, IDC_CHECK_USEREGEX },
-    { ExcludeSubfolders, IDC_CHECK_EXCLUDESUBFOLDERS },
-    { EnumerateItems, IDC_CHECK_ENUMITEMS },
-    { ExcludeFiles, IDC_CHECK_EXCLUDEFILES },
-    { CaseSensitive, IDC_CHECK_CASESENSITIVE },
-    { MatchAllOccurences, IDC_CHECK_MATCHALLOCCRENCES },
-    { ExcludeFolders, IDC_CHECK_EXCLUDEFOLDERS },
-    { NameOnly, IDC_CHECK_NAMEONLY },
-    { ExtensionOnly, IDC_CHECK_EXTENSIONONLY }
+    { ExcludeSubfolders,     IDC_CHECK_EXCLUDESUBFOLDERS },
+    { EnumerateItems,        IDC_CHECK_ENUMITEMS },
+    { ExcludeFiles,          IDC_CHECK_EXCLUDEFILES },
+    { CaseSensitive,         IDC_CHECK_CASESENSITIVE },
+    { MatchAllOccurences,    IDC_CHECK_MATCHALLOCCURENCES },
+    { ExcludeFolders,        IDC_CHECK_EXCLUDEFOLDERS },
+    { NameOnly,              IDC_CHECK_NAMEONLY },
+    { ExtensionOnly,         IDC_CHECK_EXTENSIONONLY }
 };
+
+struct RepositionMap
+{
+    DWORD id;
+    DWORD flags;
+};
+
+enum
+{
+    Reposition_None = 0,
+    Reposition_X = 0x1,
+    Reposition_Y = 0x2,
+    Reposition_Width = 0x4,
+    Reposition_Height = 0x8
+};
+
+RepositionMap g_repositionMap[] =
+{
+    { IDC_SEARCHREPLACEGROUP,       Reposition_Width },
+    { IDC_OPTIONSGROUP,             Reposition_Width },
+    { IDC_PREVIEWGROUP,             Reposition_Width | Reposition_Height },
+    { IDC_EDIT_SEARCHFOR,           Reposition_Width },
+    { IDC_EDIT_REPLACEWITH,         Reposition_Width },
+    { IDC_LIST_PREVIEW,             Reposition_Width | Reposition_Height },
+    { IDC_STATUS_MESSAGE,           Reposition_Y },
+    { ID_RENAME,                    Reposition_X | Reposition_Y },
+    { ID_ABOUT,                     Reposition_X | Reposition_Y },
+    { IDCANCEL,                     Reposition_X | Reposition_Y }
+};
+
+inline int RECT_WIDTH(RECT& r) { return r.right - r.left; }
+inline int RECT_HEIGHT(RECT& r) { return r.bottom - r.top; }
+
+#define MAX_INPUT_STRING_LEN 1024
 
 // IUnknown
 IFACEMETHODIMP CPowerRenameUI::QueryInterface(__in REFIID riid, __deref_out void** ppv)
@@ -89,9 +124,9 @@ HRESULT CPowerRenameUI::s_CreateInstance(_In_ IPowerRenameManager* psrm, _In_opt
 }
 
 // IPowerRenameUI
-IFACEMETHODIMP CPowerRenameUI::Show()
+IFACEMETHODIMP CPowerRenameUI::Show(_In_opt_ HWND hwndParent)
 {
-    return _DoModal(NULL);
+    return _DoModeless(hwndParent);
 }
 
 IFACEMETHODIMP CPowerRenameUI::Close()
@@ -184,7 +219,7 @@ IFACEMETHODIMP CPowerRenameUI::OnRenameCompleted()
     EnableWindow(m_hwnd, TRUE);
 
     // Close the window
-    _OnCloseDlg();
+    PostMessage(m_hwnd, WM_CLOSE, (WPARAM)0, (LPARAM)0);
     return S_OK;
 }
 
@@ -229,8 +264,6 @@ IFACEMETHODIMP CPowerRenameUI::Drop(_In_ IDataObject* pdtobj, DWORD, POINTL pt, 
         m_spdth->Drop(pdtobj, &ptT, *pdwEffect);
     }
 
-    _OnClear();
-
     EnableWindow(GetDlgItem(m_hwnd, ID_RENAME), TRUE);
     EnableWindow(m_hwndLV, TRUE);
 
@@ -245,7 +278,7 @@ IFACEMETHODIMP CPowerRenameUI::Drop(_In_ IDataObject* pdtobj, DWORD, POINTL pt, 
 
 HRESULT CPowerRenameUI::_Initialize(_In_ IPowerRenameManager* psrm, _In_opt_ IDataObject* pdo, _In_ bool enableDragDrop)
 {
-    // Cache the smart rename manager
+    // Cache the rename manager
     m_spsrm = psrm;
 
     // Cache the data object for enumeration later
@@ -256,13 +289,53 @@ HRESULT CPowerRenameUI::_Initialize(_In_ IPowerRenameManager* psrm, _In_opt_ IDa
     HRESULT hr = CoCreateInstance(CLSID_DragDropHelper, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&m_spdth));
     if (SUCCEEDED(hr))
     {
-        // Subscribe to smart rename manager events
+        // Subscribe to rename manager events
         hr = m_spsrm->Advise(this, &m_cookie);
     }
 
     if (FAILED(hr))
     {
         _Cleanup();
+    }
+
+    return hr;
+}
+
+HRESULT CPowerRenameUI::_InitAutoComplete()
+{
+    HRESULT hr = S_OK;
+    if (CSettings::GetMRUEnabled())
+    {
+        hr = CoCreateInstance(CLSID_AutoComplete, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&m_spSearchAC));
+        if (SUCCEEDED(hr))
+        {
+            hr = CRenameMRUSearch_CreateInstance(&m_spSearchACL);
+            if (SUCCEEDED(hr))
+            {
+                hr = m_spSearchAC->Init(GetDlgItem(m_hwnd, IDC_EDIT_SEARCHFOR), m_spSearchACL, nullptr, nullptr);
+                if (SUCCEEDED(hr))
+                {
+                    hr = m_spSearchAC->SetOptions(ACO_AUTOSUGGEST | ACO_AUTOAPPEND | ACO_UPDOWNKEYDROPSLIST);
+                }
+            }
+        }
+
+        if (SUCCEEDED(hr))
+        {
+            hr = CoCreateInstance(CLSID_AutoComplete, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&m_spReplaceAC));
+            if (SUCCEEDED(hr))
+            {
+                hr = CRenameMRUReplace_CreateInstance(&m_spReplaceACL);
+                if (SUCCEEDED(hr))
+                {
+                    hr = m_spReplaceAC->Init(GetDlgItem(m_hwnd, IDC_EDIT_REPLACEWITH), m_spReplaceACL, nullptr, nullptr);
+                    if (SUCCEEDED(hr))
+                    {
+                        hr = m_spReplaceAC->SetOptions(ACO_AUTOSUGGEST | ACO_AUTOAPPEND | ACO_UPDOWNKEYDROPSLIST);
+                    }
+                }
+            }
+        }
     }
 
     return hr;
@@ -284,6 +357,8 @@ void CPowerRenameUI::_Cleanup()
     {
         RevokeDragDrop(m_hwnd);
     }
+
+    m_hwnd = NULL;
 }
 
 void CPowerRenameUI::_EnumerateItems(_In_ IDataObject* pdtobj)
@@ -303,31 +378,98 @@ void CPowerRenameUI::_EnumerateItems(_In_ IDataObject* pdtobj)
     }
 }
 
-// TODO: persist settings made in the UI
 HRESULT CPowerRenameUI::_ReadSettings()
 {
+    // Check if we should read flags from settings
+    // or the defaults from the manager.
+    DWORD flags = 0;
+    if (CSettings::GetPersistState())
+    {
+        flags = CSettings::GetFlags();
+        m_spsrm->put_flags(flags);
+
+        wchar_t buffer[MAX_INPUT_STRING_LEN];
+        buffer[0] = L'\0';
+        CSettings::GetSearchText(buffer, ARRAYSIZE(buffer));
+        SetDlgItemText(m_hwnd, IDC_EDIT_SEARCHFOR, buffer);
+
+        buffer[0] = L'\0';
+        CSettings::GetReplaceText(buffer, ARRAYSIZE(buffer));
+        SetDlgItemText(m_hwnd, IDC_EDIT_REPLACEWITH, buffer);
+    }
+    else
+    {
+        m_spsrm->get_flags(&flags);
+    }
+
+    _SetCheckboxesFromFlags(flags);
+
     return S_OK;
 }
 
 HRESULT CPowerRenameUI::_WriteSettings()
 {
-    return S_OK;
-}
+    // Check if we should store our settings
+    if (CSettings::GetPersistState())
+    {
+        DWORD flags = 0;
+        m_spsrm->get_flags(&flags);
+        CSettings::SetFlags(flags);
 
-void CPowerRenameUI::_OnClear()
-{
+        wchar_t buffer[MAX_INPUT_STRING_LEN];
+        buffer[0] = L'\0';
+        GetDlgItemText(m_hwnd, IDC_EDIT_SEARCHFOR, buffer, ARRAYSIZE(buffer));
+        CSettings::SetSearchText(buffer);
+
+        if (CSettings::GetMRUEnabled() && m_spSearchACL)
+        {
+            CComPtr<IPowerRenameMRU> spSearchMRU;
+            if (SUCCEEDED(m_spSearchACL->QueryInterface(IID_PPV_ARGS(&spSearchMRU))))
+            {
+                spSearchMRU->AddMRUString(buffer);
+            }
+        }
+
+        buffer[0] = L'\0';
+        GetDlgItemText(m_hwnd, IDC_EDIT_REPLACEWITH, buffer, ARRAYSIZE(buffer));
+        CSettings::SetReplaceText(buffer);
+
+        if (CSettings::GetMRUEnabled() && m_spReplaceACL)
+        {
+            CComPtr<IPowerRenameMRU> spReplaceMRU;
+            if (SUCCEEDED(m_spReplaceACL->QueryInterface(IID_PPV_ARGS(&spReplaceMRU))))
+            {
+                spReplaceMRU->AddMRUString(buffer);
+            }
+        }
+    }
+
+    return S_OK;
 }
 
 void CPowerRenameUI::_OnCloseDlg()
 {
-    // Persist the current settings
-    _WriteSettings();
-    EndDialog(m_hwnd, 1);
+    if (m_hwnd != NULL)
+    {
+        if (m_modeless)
+        {
+            DestroyWindow(m_hwnd);
+        }
+        else
+        {
+            EndDialog(m_hwnd, 1);
+        }
+    }
 }
 
 void CPowerRenameUI::_OnDestroyDlg()
 {
     _Cleanup();
+
+    if (m_modeless)
+    {
+        PostQuitMessage(0);
+    }
 }
 
 void CPowerRenameUI::_OnRename()
@@ -336,6 +478,11 @@ void CPowerRenameUI::_OnRename()
     {
         m_spsrm->Rename(m_hwnd);
     }
+
+    // Persist the current settings.  We only do this when
+    // a rename is actually performed.  Not when the user
+    // closes/cancels the dialog.
+    _WriteSettings();
 }
 
 void CPowerRenameUI::_OnAbout()
@@ -352,9 +499,37 @@ void CPowerRenameUI::_OnAbout()
 
 HRESULT CPowerRenameUI::_DoModal(__in_opt HWND hwnd)
 {
+    m_modeless = false;
     HRESULT hr = S_OK;
     INT_PTR ret = DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_MAIN), hwnd, s_DlgProc, (LPARAM)this);
     if (ret < 0)
+    {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+    }
+    return hr;
+}
+
+HRESULT CPowerRenameUI::_DoModeless(__in_opt HWND hwnd)
+{
+    m_modeless = true;
+    HRESULT hr = S_OK;
+    if (NULL != CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MAIN), hwnd, s_DlgProc, (LPARAM)this))
+    {
+        ShowWindow(m_hwnd, SW_SHOWNORMAL);
+        MSG msg;
+        while (GetMessage(&msg, NULL, 0, 0))
+        {
+            if (!IsDialogMessage(m_hwnd, &msg))
+            {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+        }
+
+        DestroyWindow(m_hwnd);
+        m_hwnd = NULL;
+    }
+    else
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
     }
@@ -377,6 +552,14 @@ INT_PTR CPowerRenameUI::_DlgProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_NOTIFY:
         bRet = _OnNotify(wParam, lParam);
+        break;
+
+    case WM_SIZE:
+        _OnSize(wParam);
+        break;
+
+    case WM_GETMINMAXINFO:
+        _OnGetMinMaxInfo(lParam);
         break;
 
     case WM_CLOSE:
@@ -405,8 +588,26 @@ void CPowerRenameUI::_OnInitDlg()
     // Initialize checkboxes from flags
     if (m_spsrm)
     {
+        // Check if we should read flags from settings
+        // or the defaults from the manager.
         DWORD flags = 0;
-        m_spsrm->get_flags(&flags);
+        if (CSettings::GetPersistState())
+        {
+            flags = CSettings::GetFlags();
+            wchar_t buffer[MAX_INPUT_STRING_LEN];
+            buffer[0] = L'\0';
+            CSettings::GetSearchText(buffer, ARRAYSIZE(buffer));
+            SetDlgItemText(m_hwnd, IDC_EDIT_SEARCHFOR, buffer);
+
+            buffer[0] = L'\0';
+            CSettings::GetReplaceText(buffer, ARRAYSIZE(buffer));
+            SetDlgItemText(m_hwnd, IDC_EDIT_REPLACEWITH, buffer);
+        }
+        else
+        {
+            m_spsrm->get_flags(&flags);
+        }
+
         _SetCheckboxesFromFlags(flags);
     }
 
@@ -428,6 +629,15 @@ void CPowerRenameUI::_OnInitDlg()
     {
         RegisterDragDrop(m_hwnd, this);
     }
+
+    RECT rc = { 0 };
+    GetWindowRect(m_hwnd, &rc);
+    m_initialWidth = RECT_WIDTH(rc);
+    m_initialHeight = RECT_HEIGHT(rc);
+    m_lastWidth = m_initialWidth;
+    m_lastHeight = m_initialHeight;
+
+    _InitAutoComplete();
 
     // Disable rename button by default.  It will be enabled in _UpdateCounts if
     // there are tiems to be renamed
@@ -469,7 +679,7 @@ void CPowerRenameUI::_OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam)
     case IDC_CHECK_EXCLUDEFILES:
     case IDC_CHECK_EXCLUDEFOLDERS:
     case IDC_CHECK_EXCLUDESUBFOLDERS:
-    case IDC_CHECK_MATCHALLOCCRENCES:
+    case IDC_CHECK_MATCHALLOCCURENCES:
     case IDC_CHECK_USEREGEX:
     case IDC_CHECK_EXTENSIONONLY:
     case IDC_CHECK_NAMEONLY:
@@ -543,13 +753,98 @@ BOOL CPowerRenameUI::_OnNotify(_In_ WPARAM wParam, _In_ LPARAM lParam)
     return ret;
 }
 
+void CPowerRenameUI::_OnGetMinMaxInfo(_In_ LPARAM lParam)
+{
+    if (m_initialWidth)
+    {
+        // Prevent resizing the dialog less than the original size
+        MINMAXINFO* pMinMaxInfo = reinterpret_cast<MINMAXINFO*>(lParam);
+        pMinMaxInfo->ptMinTrackSize.x = m_initialWidth;
+        pMinMaxInfo->ptMinTrackSize.y = m_initialHeight;
+    }
+}
+
+void CPowerRenameUI::_OnSize(_In_ WPARAM wParam)
+{
+    if ((wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED) && m_initialWidth)
+    {
+        // Calculate window size change delta
+        RECT rc = { 0 };
+        GetWindowRect(m_hwnd, &rc);
+
+        const int xDelta = RECT_WIDTH(rc) - m_lastWidth;
+        m_lastWidth += xDelta;
+        const int yDelta = RECT_HEIGHT(rc) - m_lastHeight;
+        m_lastHeight += yDelta;
+
+        for (UINT u = 0; u < ARRAYSIZE(g_repositionMap); u++)
+        {
+            _MoveControl(g_repositionMap[u].id, g_repositionMap[u].flags, xDelta, yDelta);
+        }
+
+        m_listview.OnSize();
+    }
+}
+
+void CPowerRenameUI::_MoveControl(_In_ DWORD id, _In_ DWORD repositionFlags, _In_ int xDelta, _In_ int yDelta)
+{
+    HWND hwnd = GetDlgItem(m_hwnd, id);
+
+    UINT flags = SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE;
+    if (!((repositionFlags & Reposition_X) || (repositionFlags & Reposition_Y)))
+    {
+        flags |= SWP_NOMOVE;
+    }
+
+    if (!((repositionFlags & Reposition_Width) || (repositionFlags & Reposition_Height)))
+    {
+        flags |= SWP_NOSIZE;
+    }
+
+    RECT rcWindow = { 0 };
+    GetWindowRect(hwnd, &rcWindow);
+
+    int cx = RECT_WIDTH(rcWindow);
+    int cy = RECT_HEIGHT(rcWindow);
+
+    MapWindowPoints(HWND_DESKTOP, GetParent(hwnd), (LPPOINT)&rcWindow, 2);
+
+    int x = rcWindow.left;
+    int y = rcWindow.top;
+
+    if (repositionFlags & Reposition_X)
+    {
+        x += xDelta;
+    }
+
+    if (repositionFlags & Reposition_Y)
+    {
+        y += yDelta;
+    }
+
+    if (repositionFlags & Reposition_Width)
+    {
+        cx += xDelta;
+    }
+
+    if (repositionFlags & Reposition_Height)
+    {
+        cy += yDelta;
+    }
+
+    SetWindowPos(hwnd, NULL, x, y, cx, cy, flags);
+
+    RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
+}
+
 void CPowerRenameUI::_OnSearchReplaceChanged()
 {
     // Pass updated search and replace terms to the IPowerRenameRegEx handler
     CComPtr<IPowerRenameRegEx> spRegEx;
-    if (m_spsrm && SUCCEEDED(m_spsrm->get_smartRenameRegEx(&spRegEx)))
+    if (m_spsrm && SUCCEEDED(m_spsrm->get_renameRegEx(&spRegEx)))
     {
-        wchar_t buffer[MAX_PATH] = { 0 };
+        wchar_t buffer[MAX_INPUT_STRING_LEN];
+        buffer[0] = L'\0';
         GetDlgItemText(m_hwnd, IDC_EDIT_SEARCHFOR, buffer, ARRAYSIZE(buffer));
         spRegEx->put_searchTerm(buffer);
 
@@ -655,7 +950,7 @@ void CPowerRenameListView::Init(_In_ HWND hwndLV)
         SetWindowLongPtr(m_hwndLV, GWL_STYLE, dwLVStyle);
 
         // Set the extended view styles
-        ListView_SetExtendedListViewStyle(m_hwndLV, LVS_EX_CHECKBOXES | LVS_EX_DOUBLEBUFFER);
+        ListView_SetExtendedListViewStyle(m_hwndLV, LVS_EX_CHECKBOXES | LVS_EX_DOUBLEBUFFER | LVS_EX_AUTOSIZECOLUMNS);
 
         // Get the system image lists.  Our list view is setup to not destroy
         // these since the image list belongs to the entire explorer process
@@ -837,6 +1132,14 @@ void CPowerRenameListView::GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout
     }
 }
 
+void CPowerRenameListView::OnSize()
+{
+    RECT rc = { 0 };
+    GetClientRect(m_hwndLV, &rc);
+    ListView_SetColumnWidth(m_hwndLV, 0, RECT_WIDTH(rc) / 2);
+    ListView_SetColumnWidth(m_hwndLV, 1, RECT_WIDTH(rc) / 2);
+}
+
 void CPowerRenameListView::RedrawItems(_In_ int first, _In_ int last)
 {
     ListView_RedrawItems(m_hwndLV, first, last);
@@ -908,14 +1211,15 @@ void CPowerRenameListView::_UpdateHeaderCheckState(_In_ bool check)
     HWND hwndHeader = ListView_GetHeader(m_hwndLV);
     if (hwndHeader)
     {
-        wchar_t szBuff[MAX_PATH] = { 0 };
+        wchar_t buffer[MAX_PATH] = { 0 };
+        buffer[0] = L'\0';
 
         // Retrieve the existing header first so we
         // don't trash the text already there
         HDITEM hdi = { 0 };
         hdi.mask = HDI_FORMAT | HDI_TEXT;
-        hdi.pszText = szBuff;
-        hdi.cchTextMax = ARRAYSIZE(szBuff);
+        hdi.pszText = buffer;
+        hdi.cchTextMax = ARRAYSIZE(buffer);
 
         Header_GetItem(hwndHeader, 0, &hdi);
 

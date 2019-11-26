@@ -22,6 +22,21 @@ namespace FancyZonesEditor
     //
     public class Settings : INotifyPropertyChanged
     {
+        public bool IsCustomLayoutActive
+        {
+            get
+            {
+                foreach (LayoutModel model in CustomModels)
+                {
+                    if (model.IsSelected)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+        
         public Settings()
         {
             ParseCommandLineArgs();
@@ -279,7 +294,7 @@ namespace FancyZonesEditor
                 // 1 = unique key for per-monitor settings
                 // 2 = layoutid used to generate current layout (used to pick the default layout to show)
                 // 3 = handle to monitor (passed back to engine to persist data)
-                // 4 = X_Y_Width_Height (where EditorOverlay shows up)
+                // 4 = X_Y_Width_Height in a dpi-scaled-but-unaware coords (where EditorOverlay shows up)
                 // 5 = resolution key (passed back to engine to persist data)
                 // 6 = monitor DPI (float)
 

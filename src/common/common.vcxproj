@@ -97,7 +97,9 @@
     <ClInclude Include="d2d_text.h" />
     <ClInclude Include="d2d_window.h" />
     <ClInclude Include="dpi_aware.h" />
+    <ClInclude Include="hwnd_data_cache.h" />
     <ClInclude Include="monitors.h" />
+    <ClInclude Include="on_thread_executor.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="settings_helpers.h" />
     <ClInclude Include="settings_objects.h" />
@@ -116,7 +118,9 @@
     <ClCompile Include="d2d_text.cpp" />
     <ClCompile Include="d2d_window.cpp" />
     <ClCompile Include="dpi_aware.cpp" />
+    <ClCompile Include="hwnd_data_cache.cpp" />
     <ClCompile Include="monitors.cpp" />
+    <ClCompile Include="on_thread_executor.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

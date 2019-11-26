@@ -18,7 +18,16 @@ namespace {
   }
 }
 
+// Prevent system-wide input lagging while paused in the debugger
+//#define DISABLE_LOWLEVEL_KBHOOK_WHEN_DEBUGGED
+
 void start_lowlevel_keyboard_hook() {
+#if defined(_DEBUG) && defined(DISABLE_LOWLEVEL_KBHOOK_WHEN_DEBUGGED)
+  if(IsDebuggerPresent()) {
+    return;
+  }
+#endif
+
   if (!hook_handle) {
     hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, hook_proc, GetModuleHandle(NULL), NULL);
     hook_handle_copy = hook_handle;

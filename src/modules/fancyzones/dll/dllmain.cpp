@@ -1,5 +1,6 @@
 #include "pch.h"
 #include <common/settings_objects.h>
+#include <common/common.h>
 #include <interface/powertoy_module_interface.h>
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <interface/win_hook_event_data.h>
@@ -72,10 +73,8 @@ STDAPI PersistZoneSet(
             ZoneSetConfig(
                 id,
                 layoutId,
-                reinterpret_cast<HMONITOR>(monitor),
-                resolutionKey,
-                ZoneSetLayout::Custom,
-                0, 0, 0));
+                MonitorFromPoint({}, MONITOR_DEFAULTTOPRIMARY),
+                resolutionKey));
 
         for (int i = 0; i < zoneCount; i++)
         {
@@ -84,7 +83,7 @@ STDAPI PersistZoneSet(
             const int top = zones[baseIndex+1];
             const int right = zones[baseIndex+2];
             const int bottom = zones[baseIndex+3];
-            zoneSet->AddZone(MakeZone({ left, top, right, bottom }), false);
+            zoneSet->AddZone(MakeZone({ left, top, right, bottom }));
         }
         zoneSet->Save();
 
@@ -182,6 +181,9 @@ public:
         return 0;
     }
 
+    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override { }
+    virtual void signal_system_menu_action(const wchar_t* name) override { }
+
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
@@ -195,11 +197,25 @@ public:
     }
 
 private:
-    static bool IsInterestingWindow(HWND window)
+    bool IsInterestingWindow(HWND window)
     {
-        auto style = GetWindowLongPtr(window, GWL_STYLE);
-        auto exStyle = GetWindowLongPtr(window, GWL_EXSTYLE);
-        return IsWindowVisible(window) && WI_IsFlagSet(style, WS_MAXIMIZEBOX) && WI_IsFlagClear(style, WS_CHILD) && WI_IsFlagClear(exStyle, WS_EX_TOOLWINDOW);
+        auto windowAndPath = get_filtered_base_window_and_path(window);
+        if (windowAndPath.hwnd == nullptr)
+        {
+            return false;
+        }
+        CharUpperBuffW(windowAndPath.process_path.data(), (DWORD)windowAndPath.process_path.length());
+        if (m_settings)
+        {
+            for (const auto& excluded : m_settings->GetSettings().excludedAppsArray)
+            {
+                if (windowAndPath.process_path.find(excluded) != std::wstring::npos)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     void Disable(bool const traceEvent)
@@ -220,6 +236,7 @@ private:
     void MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     void MoveSizeUpdate(POINT const& ptScreen) noexcept;
 
+    HANDLE m_movedWindow = nullptr;
     winrt::com_ptr<IFancyZones> m_app;
     winrt::com_ptr<IFancyZonesSettings> m_settings;
 };
@@ -298,6 +315,7 @@ void FancyZonesModule::MoveSizeStart(HWND window, POINT const& ptScreen) noexcep
     {
         if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
         {
+            m_movedWindow = window;
             m_app.as<IFancyZonesCallback>()->MoveSizeStart(window, monitor, ptScreen);
         }
     }
@@ -305,8 +323,9 @@ void FancyZonesModule::MoveSizeStart(HWND window, POINT const& ptScreen) noexcep
 
 void FancyZonesModule::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
 {
-    if (IsInterestingWindow(window))
+    if (IsInterestingWindow(window) || (window != nullptr && window == m_movedWindow))
     {
+        m_movedWindow = nullptr;
         m_app.as<IFancyZonesCallback>()->MoveSizeEnd(window, ptScreen);
     }
 }

@@ -115,6 +115,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>..\;..\..\..\common;..\..\..\common\telemetry;..\..\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -155,6 +156,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>..\;..\..\..\common;..\..\..\common\telemetry;..\..\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -162,6 +164,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(OutDir)PowerRenameLib.lib;$(OutDir)PowerRenameUI.lib;Pathcch.lib;comctl32.lib;$(OutDir)..\..\src\modules\powerrename\UI\$(Platform)\$(Configuration)\PowerRenameUI.res;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>gdi32.dll;advapi32.dll;shell32.dll;ole32.dll;shlwapi.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
