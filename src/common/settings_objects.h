@@ -178,7 +178,11 @@ namespace PowerToysSettings {
       }
       return L"(Key " + std::to_wstring(key_code) + L")";
     }
-    HotkeyObject(web::json::value hotkey_json) : m_json(hotkey_json) { };
+    HotkeyObject(web::json::value hotkey_json) : m_json(hotkey_json) {
+      if (get_key() == L"~" && get_modifiers_repeat() == MOD_WIN) {
+        m_json.as_object()[L"key"] = web::json::value::string(key_from_code(get_code()));
+      }
+    };
     web::json::value m_json;
   };
 
