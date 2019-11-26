@@ -554,6 +554,10 @@ INT_PTR CPowerRenameUI::_DlgProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         bRet = _OnNotify(wParam, lParam);
         break;
 
+    case WM_THEMECHANGED:
+        _OnSize(SIZE_RESTORED);
+        break;
+
     case WM_SIZE:
         _OnSize(wParam);
         break;
