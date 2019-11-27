@@ -224,7 +224,7 @@ IFACEMETHODIMP_(bool) FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         // This allows you to cycle through ZoneSets while dragging a window
         Trace::FancyZones::OnKeyDown(info->vkCode, win, false /*control*/, true /*inMoveSize*/);
         CycleActiveZoneSet(info->vkCode);
-        return true;
+        return false;
     }
     return false;
 }
