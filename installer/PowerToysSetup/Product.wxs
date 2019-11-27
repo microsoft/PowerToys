@@ -62,6 +62,10 @@
     <Property Id="WixShellExecTarget" Value="[#PowerToys.exe]" />
     <CustomAction Id="LaunchApplication" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
 
+    <Property Id ="EXISTINGPOWERRENAMEEXTPATH">
+      <RegistrySearch Id="ExistingExtPath" Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}\InprocServer32" Type="raw"/>
+    </Property>
+
     <InstallExecuteSequence>
       <Custom Action="SetRegisterPowerToysSchTaskParam" Before="RegisterPowerToysSchTask" />
       <Custom Action="RegisterPowerToysSchTask" After="InstallFiles">
@@ -156,6 +160,10 @@
 
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
+    <!-- Restart explorer.exe if we detect existing powerrenameext.dll installation -->
+    <util:CloseApplication Target="explorer.exe" RebootPrompt="no" TerminateProcess="0">
+      EXISTINGPOWERRENAMEEXTPATH
+    </util:CloseApplication>
     <util:CloseApplication CloseMessage="yes" Target="PowerToys.exe" ElevatedCloseMessage="yes" RebootPrompt="no" TerminateProcess="0" />
   </Product>
 
