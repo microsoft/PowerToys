@@ -7,23 +7,22 @@
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 namespace {
-HWND tray_icon_hwnd = NULL;
+  HWND tray_icon_hwnd = NULL;
 
-// Message code that Windows will use for tray icon notifications.
-UINT wm_icon_notify = 0;
+  // Message code that Windows will use for tray icon notifications.
+  UINT wm_icon_notify = 0;
 
-// Contains the Windows Message for taskbar creation.
-UINT wm_taskbar_restart = 0;
-UINT wm_run_on_main_ui_thread = 0;
+  // Contains the Windows Message for taskbar creation.
+  UINT wm_taskbar_restart = 0;
+  UINT wm_run_on_main_ui_thread = 0;
 
-NOTIFYICONDATAW tray_icon_data;
-bool tray_icon_created = false;
+  NOTIFYICONDATAW tray_icon_data;
+  bool tray_icon_created = false;
 
-bool about_box_shown = false;
+  bool about_box_shown = false;
 
-HMENU h_menu = nullptr;
-HMENU h_sub_menu = nullptr;
-
+  HMENU h_menu = nullptr;
+  HMENU h_sub_menu = nullptr;
 }
 
 // Struct to fill with callback and the data. The window_proc is responsible for cleaning it.
