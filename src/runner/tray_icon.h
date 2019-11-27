@@ -1,6 +1,8 @@
 #pragma once
 // Start the Tray Icon
 void start_tray_icon();
+// Stop the Tray Icon
+void stop_tray_icon();
 // Open the Settings Window
 void open_settings_window();
 // Callback type to be called by the tray icon loop

@@ -1,5 +1,6 @@
 #pragma once
 #include <optional>
+#include <string>
 #include <Windows.h>
 #include <string>
 
@@ -50,6 +51,12 @@ bool is_process_elevated();
 
 // Drops the elevated privilages if present
 bool drop_elevated_privileges();
+
+// Run command as elevated user, returns true if succeeded
+bool run_elevated(const std::wstring& file, const std::wstring& params);
+
+// Run command as non-elevated user, returns true if succeeded
+bool run_non_elevated(const std::wstring& file, const std::wstring& params);
 
 // Get the executable path or module name for modern apps
 std::wstring get_process_path(DWORD pid) noexcept;

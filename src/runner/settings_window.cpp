@@ -10,6 +10,8 @@
 #include "tray_icon.h"
 #include "general_settings.h"
 #include "common/windows_colors.h"
+#include "common/common.h"
+#include "restart_elevated.h"
 
 #include <common/json.h>
 
@@ -48,10 +50,23 @@ void dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
     for (const auto& powertoy_element : powertoys_configs)
     {
         const std::wstring name{ powertoy_element.Key().c_str() };
-        if (modules().find(name) != modules().end())
+        if (name == L"general")
+        {
+            if (is_process_elevated())
+            {
+                schedule_restart_as_non_elevated();
+                PostQuitMessage(0);
+            }
+            else
+            {
+                schedule_restart_as_elevated();
+                PostQuitMessage(0);
+            }
+        }
+        else if (modules().find(name) != modules().end())
         {
             const auto element = powertoy_element.Value().Stringify();
-            modules().at(name).call_custom_action(element.c_str());
+           modules().at(name).call_custom_action(element.c_str());
         }
     }
 }

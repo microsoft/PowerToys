@@ -3,16 +3,21 @@ import { Stack, Text, PrimaryButton, Label, Link, loadTheme } from 'office-ui-fa
 import { BoolToggleSettingsControl } from './BoolToggleSettingsControl'
 import { ChoiceGroupSettingsControl } from './ChoiceGroupSettingsControl'
 import { Separator } from 'office-ui-fabric-react/lib/Separator';
+import { CustomActionSettingsControl } from './CustomActionSettingsControl';
 
 export class GeneralSettings extends React.Component <any, any> {
   references: any = {};
   startup_reference: any;
+  elevated_reference: any;
+  restart_reference: any;
   theme_reference: any;
   parent_on_change: Function;
   constructor(props: any) {
     super(props);
     this.references={};
     this.startup_reference=null;
+    this.elevated_reference=null;
+    this.restart_reference=null;
     this.parent_on_change = props.on_change;
     this.state = {
       settings_key: props.settings_key,
@@ -38,6 +43,7 @@ export class GeneralSettings extends React.Component <any, any> {
     let result : any = {};
     result[this.state.settings_key]= {
       startup: this.startup_reference.get_value().value,
+      run_elevated: this.elevated_reference.get_value().value,
       theme: this.theme_reference.get_value().value,
       enabled: enabled
     };
@@ -119,6 +125,34 @@ export class GeneralSettings extends React.Component <any, any> {
           setting={{display_name: 'Start at login', value: this.state.settings.general.startup}}
           on_change={this.parent_on_change}
           ref={(input) => {this.startup_reference=input;}}
+        />
+        <BoolToggleSettingsControl
+          setting={{display_name: 'Run PowerToys with elevated privileges', value: this.state.settings.general.run_elevated}}
+          on_change={this.parent_on_change}
+          ref={(input) => {this.elevated_reference=input;}}
+        />
+        <CustomActionSettingsControl
+          setting={{
+            display_name: '',
+            value: this.state.settings.general.is_elevated ? 
+                   'PowerToys are currently running with elevated privileges.' :
+                   'PowerToys are currently running without elevated privileges.',
+            button_text: this.state.settings.general.is_elevated ? 
+                          'Restart without elevated privileges' :
+                          'Restart with elevated privileges'
+          }}
+          action_name={'restart_elevation'}
+          action_callback={(action_name: any, value:any) => {
+            (window as any).output_from_webview(JSON.stringify({
+              action: {
+                general: {
+                  action_name,
+                  value
+                }
+              }
+            }));
+          }}
+          ref={(input) => {this.restart_reference=input;}}
         />
         <ChoiceGroupSettingsControl
           setting={{display_name: 'Chose Settings color',
