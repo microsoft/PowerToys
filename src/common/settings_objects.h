@@ -31,6 +31,9 @@ namespace PowerToysSettings {
     void add_string(const std::wstring& name, UINT description_resource_id, const std::wstring& value);
     void add_string(const std::wstring& name, const std::wstring& description, const std::wstring& value);
 
+    void add_multiline_string(const std::wstring& name, UINT description_resource_id, const std::wstring& value);
+    void add_multiline_string(const std::wstring& name, const std::wstring& description, const std::wstring& value);
+
     void add_color_picker(const std::wstring& name, UINT description_resource_id, const std::wstring& value);
     void add_color_picker(const std::wstring& name, const std::wstring& description, const std::wstring& value);
 
@@ -117,14 +120,14 @@ namespace PowerToysSettings {
       web::json::value parsed_json = web::json::value::parse(json);
       return HotkeyObject(parsed_json);
     }
-    static HotkeyObject from_settings(bool win_pressed, bool ctrl_pressed, bool alt_pressed, bool shift_pressed, UINT vk_code, const std::wstring& key) {
+    static HotkeyObject from_settings(bool win_pressed, bool ctrl_pressed, bool alt_pressed, bool shift_pressed, UINT vk_code) {
       web::json::value json = web::json::value::object();
       json.as_object()[L"win"] = web::json::value::boolean(win_pressed);
       json.as_object()[L"ctrl"] = web::json::value::boolean(ctrl_pressed);
       json.as_object()[L"alt"] = web::json::value::boolean(alt_pressed);
       json.as_object()[L"shift"] = web::json::value::boolean(shift_pressed);
       json.as_object()[L"code"] = web::json::value::number(vk_code);
-      json.as_object()[L"key"] = web::json::value::string(key);
+      json.as_object()[L"key"] = web::json::value::string(key_from_code(vk_code));
       return HotkeyObject(json);
     }
     const web::json::value& get_json() const { return m_json; }
@@ -145,7 +148,41 @@ namespace PowerToysSettings {
       return get_modifiers_repeat() | MOD_NOREPEAT;
     }
   protected:
-    HotkeyObject(web::json::value hotkey_json) : m_json(hotkey_json) {};
+    static std::wstring key_from_code(UINT key_code) {
+      auto layout = GetKeyboardLayout(0);
+      auto scan_code = MapVirtualKeyExW(key_code, MAPVK_VK_TO_VSC_EX, layout);
+      // Determinate if vk is an extended key. Unfortunatly MAPVK_VK_TO_VSC_EX
+      // does not return correct values.
+      static std::vector<UINT> extended_keys = {
+        VK_APPS, VK_CANCEL, VK_SNAPSHOT, VK_DIVIDE, VK_NUMLOCK, VK_LWIN, VK_RWIN, VK_RMENU,
+        VK_RCONTROL, VK_RSHIFT, VK_RETURN, VK_INSERT, VK_DELETE, VK_PRIOR, VK_NEXT,
+        VK_HOME, VK_END, VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, 
+      };
+      if (find(begin(extended_keys), end(extended_keys), key_code) != end(extended_keys)) {
+        scan_code |= 0x100;
+      }
+      std::array<BYTE, 256> key_states{}; // Zero-initialize
+      std::array<wchar_t, 256> output;
+      auto output_bytes = ToUnicodeEx(key_code, scan_code, key_states.data(), output.data(), (int)output.size() - 1, 0, layout);
+      if (output_bytes <= 0) {
+        // If ToUnicodeEx fails (e.g. for F1-F12 keys) use GetKeyNameTextW
+        output_bytes = GetKeyNameTextW(scan_code << 16, output.data(), static_cast<int>(output.size()));
+      }
+      if (output_bytes > 0) {
+        output[output_bytes] = 0;
+        if (output_bytes == 1 && output[0] >= 'a' && output[0] <= 'z') {
+          // Make Latin letters keys capital, as it looks better
+          output[0] = toupper(output[0]);
+        }
+        return output.data();
+      }
+      return L"(Key " + std::to_wstring(key_code) + L")";
+    }
+    HotkeyObject(web::json::value hotkey_json) : m_json(hotkey_json) {
+      if (get_key() == L"~" && get_modifiers_repeat() == MOD_WIN) {
+        m_json.as_object()[L"key"] = web::json::value::string(key_from_code(get_code()));
+      }
+    };
     web::json::value m_json;
   };
 

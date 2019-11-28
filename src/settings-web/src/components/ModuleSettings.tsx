@@ -62,6 +62,7 @@ export class ModuleSettings extends React.Component <any, any> {
       <Stack tokens={{childrenGap:20}}>
         <Stack>
           <Text variant='large'>{this.state.powertoy.description}</Text>
+          { this.state.powertoy.hasOwnProperty('overview_link') || this.state.powertoy.hasOwnProperty('video_link') ? <br/> : null }
           {
             this.state.powertoy.hasOwnProperty('overview_link')
             ?

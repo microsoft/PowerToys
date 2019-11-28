@@ -3,8 +3,6 @@
 
 interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow : public IUnknown
 {
-    IFACEMETHOD(ShowZoneWindow)(bool activate, bool fadeIn) = 0;
-    IFACEMETHOD(HideZoneWindow)() = 0;
     IFACEMETHOD(MoveSizeEnter)(HWND window, bool dragEnabled) = 0;
     IFACEMETHOD(MoveSizeUpdate)(POINT const& ptScreen, bool dragEnabled) = 0;
     IFACEMETHOD(MoveSizeEnd)(HWND window, POINT const& ptScreen) = 0;
