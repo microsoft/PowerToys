@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Text;
 using Wox.Infrastructure.Logger;
@@ -95,14 +95,20 @@ namespace Wox.Infrastructure
 
         private static int CalScore(string query, string stringToCompare, int firstIndex, int matchLen)
         {
-            //a match found near the beginning of a string is scored more than a match found near the end
-            //a match is scored more if the characters in the patterns are closer to each other, while the score is lower if they are more spread out
+            // A match found near the beginning of a string is scored more than a match found near the end
+            // A match is scored more if the characters in the patterns are closer to each other, 
+            // while the score is lower if they are more spread out
             var score = 100 * (query.Length + 1) / ((1 + firstIndex) + (matchLen + 1));
-            //a match with less characters assigning more weights
+
+            // A match with less characters assigning more weights
             if (stringToCompare.Length - query.Length < 5)
+            {
                 score += 20;
+            }
             else if (stringToCompare.Length - query.Length < 10)
+            {
                 score += 10;
+            }
 
             return score;
         }
