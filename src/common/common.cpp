@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "common.h"
+#include "hwnd_data_cache.h"
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
 #include <strsafe.h>
@@ -33,47 +34,12 @@ std::optional<POINT> get_mouse_pos() {
   }
 }
 
-HWND get_filtered_active_window() {
-  static auto desktop = GetDesktopWindow();
-  static auto shell = GetShellWindow();
-  static HWND searchui = nullptr;
-  auto active_window = GetForegroundWindow();
-  active_window = GetAncestor(active_window, GA_ROOT);
+WindowAndProcPath get_filtered_base_window_and_path(HWND window) {
+  return hwnd_cache.get_window_and_path(window);
+}
 
-  if (active_window == desktop || active_window == shell || active_window == searchui) {
-    return nullptr;
-  }
-  
-  auto window_styles = GetWindowLong(active_window, GWL_STYLE);
-  if ((window_styles & WS_CHILD) || (window_styles & WS_DISABLED)) {
-    return nullptr;
-  }
-  
-  window_styles = GetWindowLong(active_window, GWL_EXSTYLE);
-  if ((window_styles & WS_EX_TOOLWINDOW) ||(window_styles & WS_EX_NOACTIVATE)) {
-    return nullptr;
-  }
-  
-  char class_name[256] = "";
-  GetClassNameA(active_window, class_name, 256);
-  if (strcmp(class_name, "SysListView32") == 0 ||
-      strcmp(class_name, "WorkerW") == 0 ||
-      strcmp(class_name, "Shell_TrayWnd") == 0 ||
-      strcmp(class_name, "Shell_SecondaryTrayWnd") == 0 ||
-      strcmp(class_name, "Progman") == 0) {
-    return nullptr;
-  }
-  if (strcmp(class_name, "Windows.UI.Core.CoreWindow") == 0) {
-    const static std::wstring cortana_app = L"SearchUI.exe";
-    auto process_path = get_process_path(active_window);
-    if (process_path.length() >= cortana_app.length() &&
-        process_path.compare(process_path.length() - cortana_app.length(), cortana_app.length(), cortana_app) == 0) {
-      // cache the cortana HWND
-      searchui = active_window;
-      return nullptr;
-    }
-  }
-  return active_window;
+HWND get_filtered_active_window() {
+  return hwnd_cache.get_window(GetForegroundWindow());
 }
 
 int width(const RECT& rect) {
