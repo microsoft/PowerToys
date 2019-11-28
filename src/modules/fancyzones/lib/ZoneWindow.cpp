@@ -3,7 +3,7 @@
 
 #include <ShellScalingApi.h>
 
-bool IsFullscreen(HWND window);
+bool IsFullscreen(const MONITORINFO& monitor, HWND window);
 
 struct ZoneWindow : public winrt::implements<ZoneWindow, IZoneWindow>
 {
@@ -123,7 +123,7 @@ ZoneWindow::ZoneWindow(
     if (m_window)
     {
         MakeWindowTransparent(m_window.get());
-        if (flashZones && !IsFullscreen(GetForegroundWindow()))
+        if (flashZones && !IsFullscreen(mi, GetForegroundWindow()))
         {
             FlashZones();
         }
@@ -766,19 +766,16 @@ winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hins
 }
 
 
-bool IsFullscreen(HWND window)
+bool IsFullscreen(const MONITORINFO& monitor, HWND window)
 {
-  MONITORINFO monitorInfo;
-  monitorInfo.cbSize = sizeof(MONITORINFO);
   RECT windowRect;
 
-  if (GetMonitorInfo(MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY), &monitorInfo) &&
-    GetWindowRect(window, &windowRect)) {
+  if (GetWindowRect(window, &windowRect)) {
 
-    return windowRect.left == monitorInfo.rcMonitor.left &&
-      windowRect.top == monitorInfo.rcMonitor.top &&
-      windowRect.right == monitorInfo.rcMonitor.right &&
-      windowRect.bottom == monitorInfo.rcMonitor.bottom;
+    return windowRect.left == monitor.rcMonitor.left &&
+      windowRect.top == monitor.rcMonitor.top &&
+      windowRect.right == monitor.rcMonitor.right &&
+      windowRect.bottom == monitor.rcMonitor.bottom;
   }
   return false;
 }
