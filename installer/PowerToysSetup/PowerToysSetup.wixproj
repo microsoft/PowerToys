@@ -73,4 +73,9 @@
 	<Target Name="AfterBuild">
 	</Target>
 	-->
+  <Target Name="BeforeBuild">
+    <Exec WorkingDirectory="$(SolutionDir)..\src\modules\fancyzones\editor\FancyZonesEditor\" 
+          Command="dotnet publish --nologo -v q -r win-x64 -c Release --no-self-contained -o $(SolutionDir)..\x64\Release\modules"/>
+  </Target>
+
 </Project>

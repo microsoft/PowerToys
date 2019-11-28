@@ -235,13 +235,12 @@
         <File Source="$(var.BinX64Dir)\modules\shortcut_guide.dll" KeyPath="yes" />
       </Component>
       <Component Id="Module_FancyZones" Guid="C6B5272E-6ED4-4B80-B0E7-2FF0355D8CF4" Win64="yes">
-        <File Source="$(var.BinX64Dir)\modules\fancyzones.dll" KeyPath="yes" />
-        <File Source="$(var.BinX64Dir)\modules\FancyZonesEditor.exe" >
-          <netfx:NativeImage Id="FancyZonesEditor.exe" Platform="64bit" Priority="0" />
-        </File>
-        <File Source="$(var.BinX64Dir)\modules\ControlzEx.dll" />
-        <File Source="$(var.BinX64Dir)\modules\MahApps.Metro.dll" />
-        <File Source="$(var.BinX64Dir)\modules\Microsoft.Xaml.Behaviors.dll" />
+        <File Source="$(var.BinX64Dir)modules\fancyzones.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\FancyZonesEditor.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZonesEditor.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\ControlzEx.dll" />
+        <File Source="$(var.BinX64Dir)modules\MahApps.Metro.dll" />
+        <File Source="$(var.BinX64Dir)modules\Microsoft.Xaml.Behaviors.dll" />
       </Component>
       <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
         <File Source="$(var.BinX64Dir)\modules\PowerRenameExt.dll" KeyPath="yes" />
