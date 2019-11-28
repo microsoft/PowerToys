@@ -630,18 +630,33 @@ void FancyZones::MoveWindowsOnDisplayChange() noexcept
 void FancyZones::UpdateDragState(require_write_lock) noexcept
 {
     const bool shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
-	const bool mouseR = GetAsyncKeyState(VK_RBUTTON) & 0x8000;
-	const bool mouseM = GetAsyncKeyState(VK_RBUTTON) & 0x8000;
-	const bool mouseX1 = GetAsyncKeyState(VK_XBUTTON1) & 0x8000;
-	const bool mouseX2 = GetAsyncKeyState(VK_XBUTTON2) & 0x8000;
-	const bool mouse =  mouseR | mouseM | mouseX1 | mouseX2;
-	bool enable = false;
-	if (m_settings->GetSettings().mouseDrag)
-		enable = enable | mouse;
-	if (m_settings->GetSettings().shiftDrag)
-		enable = enable | shift;
-	if (m_settings->GetSettings().enableOnInteract)
-		enable = !enable;
+    const bool mouseL = GetAsyncKeyState(VK_LBUTTON) & 0x8000;
+    const bool mouseR = GetAsyncKeyState(VK_RBUTTON) & 0x8000;
+    const bool mouseM = GetAsyncKeyState(VK_MBUTTON) & 0x8000;
+    const bool mouseX1 = GetAsyncKeyState(VK_XBUTTON1) & 0x8000;
+    const bool mouseX2 = GetAsyncKeyState(VK_XBUTTON2) & 0x8000;
+
+    // Note, Middle, X1 and X2 can also be used in addition to R/L
+    bool mouse =  mouseM | mouseX1 | mouseX2;
+    // If the user has swapped their Right and Left Buttons, use the "Right" equivalent
+    if (GetSystemMetrics(SM_SWAPBUTTON))
+    {
+        mouse |= mouseL;
+    }
+    else
+    {
+        mouse |= mouseR;
+    }
+
+    bool enable = false;
+    if (m_settings->GetSettings().shiftDrag)
+    {
+        enable = (shift | mouse);
+    }
+    else
+    {
+        enable = !(shift | mouse);
+    }
     m_dragEnabled = enable;
 }
 

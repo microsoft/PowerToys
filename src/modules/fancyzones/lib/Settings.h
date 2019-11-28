@@ -6,9 +6,7 @@
 struct Settings
 {
     // The values specified here are the defaults.
-	bool enableOnInteract = false;
     bool shiftDrag = true;
-	bool mouseDrag = true;
     bool displayChange_moveWindows = false;
     bool virtualDesktopChange_moveWindows = false;
     bool zoneSetChange_flashZones = false;
