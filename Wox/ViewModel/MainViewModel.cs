@@ -415,7 +415,6 @@ namespace Wox.ViewModel
                             var config = _settings.PluginSettings.Plugins[plugin.Metadata.ID];
                             if (!config.Disabled)
                             {
-
                                 var results = PluginManager.QueryForPlugin(plugin, query);
                                 UpdateResultView(results, plugin.Metadata, query);
                             }
