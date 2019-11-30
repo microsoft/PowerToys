@@ -123,6 +123,16 @@ ZoneWindow::ZoneWindow(
         MakeWindowTransparent(m_window.get());
         if (flashZones)
         {
+            // Don't flash if the foreground window is in full screen mode
+            RECT windowRect;
+            if (GetWindowRect(GetForegroundWindow(), &windowRect) &&
+                windowRect.left == mi.rcMonitor.left &&
+                windowRect.top == mi.rcMonitor.top &&
+                windowRect.right == mi.rcMonitor.right &&
+                windowRect.bottom == mi.rcMonitor.bottom)
+            {
+                return;
+            }
             FlashZones();
         }
     }
