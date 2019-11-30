@@ -3,8 +3,6 @@
 
 #include <ShellScalingApi.h>
 
-bool IsFullscreen(const MONITORINFO& monitor, HWND window);
-
 struct ZoneWindow : public winrt::implements<ZoneWindow, IZoneWindow>
 {
 public:
@@ -123,8 +121,18 @@ ZoneWindow::ZoneWindow(
     if (m_window)
     {
         MakeWindowTransparent(m_window.get());
-        if (flashZones && !IsFullscreen(mi, GetForegroundWindow()))
+        if (flashZones)
         {
+            // Don't flash if the foreground window is in full screen mode
+            RECT windowRect;
+            if (GetWindowRect(GetForegroundWindow(), &windowRect) &&
+                windowRect.left == mi.rcMonitor.left &&
+                windowRect.top == mi.rcMonitor.top &&
+                windowRect.right == mi.rcMonitor.right &&
+                windowRect.bottom == mi.rcMonitor.bottom)
+            {
+                return;
+            }
             FlashZones();
         }
     }
@@ -763,19 +771,4 @@ winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hins
     PCWSTR deviceId, PCWSTR virtualDesktopId, bool flashZones) noexcept
 {
     return winrt::make_self<ZoneWindow>(host, hinstance, monitor, deviceId, virtualDesktopId, flashZones);
-}
-
-
-bool IsFullscreen(const MONITORINFO& monitor, HWND window)
-{
-  RECT windowRect;
-
-  if (GetWindowRect(window, &windowRect)) {
-
-    return windowRect.left == monitor.rcMonitor.left &&
-      windowRect.top == monitor.rcMonitor.top &&
-      windowRect.right == monitor.rcMonitor.right &&
-      windowRect.bottom == monitor.rcMonitor.bottom;
-  }
-  return false;
 }
