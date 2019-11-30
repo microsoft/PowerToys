@@ -462,7 +462,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     }
     else if (changeType == DisplayChangeType::Editor)
     {
-        if (m_settings->GetSettings().zoneSetChange_moveWindows)
+        if (!m_settings->GetSettings().zoneSetChange_moveWindows)
         {
             MoveWindowsOnDisplayChange();
         }
