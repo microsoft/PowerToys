@@ -21,6 +21,7 @@ public:
     IFACEMETHODIMP_(std::wstring) WorkAreaKey() noexcept { return { m_workArea }; }
     IFACEMETHODIMP_(void) SaveWindowProcessToZoneIndex(HWND window) noexcept;
     IFACEMETHODIMP_(IZoneSet*) ActiveZoneSet() noexcept { return m_activeZoneSet.get(); }
+    IFACEMETHODIMP_(void) UpdateActiveZoneSet(GUID id) noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
@@ -238,6 +239,16 @@ IFACEMETHODIMP_(void) ZoneWindow::SaveWindowProcessToZoneIndex(HWND window) noex
         if (zoneIndex != -1)
         {
             RegistryHelpers::SaveAppLastZone(window, processPath.data(), zoneIndex);
+        }
+    }
+}
+
+IFACEMETHODIMP_(void) ZoneWindow::UpdateActiveZoneSet(GUID id) noexcept
+{
+    for (const auto& zoneSet : m_zoneSets) {
+        if (id == zoneSet->Id()) {
+            UpdateActiveZoneSet(zoneSet.get());
+            break;
         }
     }
 }
