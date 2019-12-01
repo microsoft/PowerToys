@@ -6,7 +6,7 @@
 STRINGTABLE
 BEGIN
     IDS_SETTING_DESCRIPTION "Create window layouts to help make multi-tasking easy"
-    IDS_SETTING_DESCRIPTION_SHIFTDRAG "On: Hold Shift key to enable zones while dragging"
+    IDS_SETTING_DESCRIPTION_SHIFTDRAG "On: Hold Shift key (or right mouse button) to enable zones while dragging"
     IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS "Override Windows Snap hotkeys (win+arrow) to move windows between zones"
     IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS "Keep windows in their zones when the screen resolution changes"
     IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS "Keep windows in their zones when the active FancyZones layout changes"  
