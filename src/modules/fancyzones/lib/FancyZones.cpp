@@ -39,9 +39,16 @@ public:
         const auto nB = (tmp & 0xFF);
         return RGB(nR, nG, nB);
     }
+    IFACEMETHODIMP_(GUID) GetCurrentMonitorZoneSetId(HMONITOR monitor) noexcept
+    {
+        if (auto it = m_zoneWindowMap.find(monitor); it != m_zoneWindowMap.end()) {
+            return it->second->ActiveZoneSet()->Id();
+        }
+        return GUID_NULL;
+    }
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
-    void OnDisplayChange(HWND window, DisplayChangeType changeType) noexcept;
+    void OnDisplayChange(DisplayChangeType changeType) noexcept;
     void AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept;
     void MoveWindowIntoZoneByIndex(HWND window, int index) noexcept;
 
@@ -382,14 +389,14 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     {
         if (wparam == SPI_SETWORKAREA)
         {
-            OnDisplayChange(window, DisplayChangeType::WorkArea);
+            OnDisplayChange(DisplayChangeType::WorkArea);
         }
     }
     break;
 
     case WM_DISPLAYCHANGE:
     {
-        OnDisplayChange(window, DisplayChangeType::DisplayChange);
+        OnDisplayChange(DisplayChangeType::DisplayChange);
     }
     break;
 
@@ -397,14 +404,14 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     {
         if (message == WM_PRIV_VDCHANGED)
         {
-            OnDisplayChange(window, DisplayChangeType::VirtualDesktop);
+            OnDisplayChange(DisplayChangeType::VirtualDesktop);
         }
         else if (message == WM_PRIV_EDITOR)
         {
             if (lparam == static_cast<LPARAM>(EditorExitKind::Exit))
             {
                 // Don't reload settings if we terminated the editor
-                OnDisplayChange(window, DisplayChangeType::Editor);
+                OnDisplayChange(DisplayChangeType::Editor);
             }
 
             {
@@ -423,11 +430,8 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     return 0;
 }
 
-void FancyZones::OnDisplayChange(HWND window, DisplayChangeType changeType) noexcept
+void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 {
-    HMONITOR monitor{ MonitorFromWindow(window, MONITOR_DEFAULTTONULL) };
-    GUID activeZoneSetId{};
-
     if (changeType == DisplayChangeType::VirtualDesktop)
     {
         // Explorer persists this value to the registry on a per session basis but only after
@@ -445,20 +449,9 @@ void FancyZones::OnDisplayChange(HWND window, DisplayChangeType changeType) noex
             // TODO: Use the previous "Desktop 1" fallback
             // Need to maintain a map of desktop name to virtual desktop uuid
         }
-
-        // Save active zone set id, so it can be used on other virtual desktops of the same monitor.
-        if (auto it = m_zoneWindowMap.find(monitor); it != m_zoneWindowMap.end()) {
-            activeZoneSetId = it->second->ActiveZoneSet()->Id();
-        }
     }
 
     UpdateZoneWindows();
-
-    if (changeType == DisplayChangeType::VirtualDesktop) {
-        if (auto it = m_zoneWindowMap.find(monitor); it != m_zoneWindowMap.end()) {
-            it->second->UpdateActiveZoneSet(activeZoneSetId);
-        }
-    }
 
     if ((changeType == DisplayChangeType::WorkArea) || (changeType == DisplayChangeType::DisplayChange))
     {
@@ -567,10 +560,6 @@ void FancyZones::UpdateZoneWindows() noexcept
         return TRUE;
     };
 
-    {
-        std::unique_lock writeLock(m_lock);
-        m_zoneWindowMap.clear();
-    }
     EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(this));
 }
 

@@ -21,7 +21,6 @@ public:
     IFACEMETHODIMP_(std::wstring) WorkAreaKey() noexcept { return { m_workArea }; }
     IFACEMETHODIMP_(void) SaveWindowProcessToZoneIndex(HWND window) noexcept;
     IFACEMETHODIMP_(IZoneSet*) ActiveZoneSet() noexcept { return m_activeZoneSet.get(); }
-    IFACEMETHODIMP_(void) UpdateActiveZoneSet(GUID id) noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
@@ -243,16 +242,6 @@ IFACEMETHODIMP_(void) ZoneWindow::SaveWindowProcessToZoneIndex(HWND window) noex
     }
 }
 
-IFACEMETHODIMP_(void) ZoneWindow::UpdateActiveZoneSet(GUID id) noexcept
-{
-    for (const auto& zoneSet : m_zoneSets) {
-        if (id == zoneSet->Id()) {
-            UpdateActiveZoneSet(zoneSet.get());
-            break;
-        }
-    }
-}
-
 #pragma region private
 void ZoneWindow::ShowZoneWindow() noexcept
 {
@@ -323,7 +312,17 @@ void ZoneWindow::InitializeZoneSets(MONITORINFO const& mi) noexcept
 
     if (!m_activeZoneSet)
     {
-        ChooseDefaultActiveZoneSet();
+        if (GUID id{ m_host->GetCurrentMonitorZoneSetId(m_monitor) }; id != GUID_NULL) {
+            for (const auto& zoneSet : m_zoneSets) {
+                if (id == zoneSet->Id()) {
+                    UpdateActiveZoneSet(zoneSet.get());
+                    break;
+                }
+            }
+        }
+        else {
+            ChooseDefaultActiveZoneSet();
+        }
     }
 }
 
