@@ -82,18 +82,18 @@ void OverlayWindow::set_config(const wchar_t * config) {
     _values.save_to_settings_file();
     Trace::SettingsChanged(pressTime.value, overlayOpacity.value, theme.value);
   }
-  catch (std::exception&) {
-    // Improper JSON.
+  catch (...) {
+    // Improper JSON. TODO: handle the error.
   }
 }
 
 void OverlayWindow::enable() {
   if (!_enabled) {
     Trace::EnableShortcutGuide(true);
-    winkey_popup = new D2DOverlayWindow();
+    winkey_popup = std::make_unique<D2DOverlayWindow>();
     winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value)/100.0f);
     winkey_popup->set_theme(theme.value);
-    target_state = new TargetState(pressTime.value);
+    target_state = std::make_unique<TargetState>(pressTime.value);
     winkey_popup->initialize();
   }
   _enabled = true;
@@ -107,10 +107,8 @@ void OverlayWindow::disable(bool trace_event) {
     }
     winkey_popup->hide();
     target_state->exit();
-    delete target_state;
-    delete winkey_popup;
-    target_state = nullptr;
-    winkey_popup = nullptr;
+    target_state.reset();
+    winkey_popup.reset();
   }
 }
 
