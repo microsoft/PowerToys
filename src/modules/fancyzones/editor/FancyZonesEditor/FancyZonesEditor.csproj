@@ -15,7 +15,7 @@
     
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutDir></OutDir>
+    <OutDir>$(ProjectDir)..\..\..\..\..\x64\$(Configuration)\modules\</OutDir>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -35,17 +35,6 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>..\..\..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-
-  <!-- $(ProjectDir) is empty if we set it directly in OutDir, see https://github.com/dotnet/sdk/issues/677
-       As a workaround, this Target sets the OutDir via CreateProperty, since $(ProjectDir) exists in Exec context. -->
-  <Target Name="OutDirSetter" AfterTargets="PreBuildEvent">
-    <Exec EchoOff="true" ConsoleToMsBuild="true" Command="echo $(ProjectDir)">
-      <Output TaskParameter="ConsoleOutput" PropertyName="SavedProjectDir" />
-    </Exec>
-    <CreateProperty Value="$(SavedProjectDir)..\..\..\..\..\x64\$(Configuration)\modules\">
-      <Output TaskParameter="Value" PropertyName="OutDir" />
-    </CreateProperty>
-  </Target>
 
   <ItemGroup>
     <PackageReference Include="MahApps.Metro" Version="2.0.0-alpha0605" />
