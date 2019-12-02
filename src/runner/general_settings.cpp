@@ -10,6 +10,9 @@ static std::wstring settings_theme = L"system";
 json::JsonObject load_general_settings() {
   auto loaded = PTSettingsHelper::load_general_settings();
   settings_theme = loaded.GetNamedString(L"theme", L"system");
+  if (settings_theme != L"dark" && settings_theme != L"light") { 
+    settings_theme = L"system";
+  }
   return loaded;
 }
 
