@@ -120,7 +120,7 @@ PowertoyModuleIface* SystemMenuHelper::ModuleFromItemId(const int& id) {
   return nullptr;
 }
 
-const std::wstring SystemMenuHelper::ItemNameFromItemId(const int& id) {
+std::wstring SystemMenuHelper::ItemNameFromItemId(const int& id) {
   auto itemIt = IdMappings.find(id);
   if (itemIt != IdMappings.end()) {
     return itemIt->second.second;

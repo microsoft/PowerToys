@@ -132,19 +132,19 @@ namespace PowerToysSettings {
     }
     const web::json::value& get_json() const { return m_json; }
 
-    std::wstring get_key() { return m_json[L"key"].as_string(); }
-    UINT get_code() { return m_json[L"code"].as_integer(); }
-    bool win_pressed() { return m_json[L"win"].as_bool(); }
-    bool ctrl_pressed() { return m_json[L"ctrl"].as_bool(); }
-    bool alt_pressed() { return m_json[L"alt"].as_bool(); }
-    bool shift_pressed() { return m_json[L"shift"].as_bool(); }
-    UINT get_modifiers_repeat()  {
+    std::wstring get_key() const { return m_json.at(L"key").as_string(); }
+    UINT get_code() const { return m_json.at(L"code").as_integer(); }
+    bool win_pressed() const { return m_json.at(L"win").as_bool(); }
+    bool ctrl_pressed() const { return m_json.at(L"ctrl").as_bool(); }
+    bool alt_pressed() const { return m_json.at(L"alt").as_bool(); }
+    bool shift_pressed() const { return m_json.at(L"shift").as_bool(); }
+    UINT get_modifiers_repeat() const  {
       return (win_pressed()   ? MOD_WIN : 0) |
              (ctrl_pressed()  ? MOD_CONTROL : 0) |
              (alt_pressed()   ? MOD_ALT : 0) |
              (shift_pressed() ? MOD_SHIFT : 0);
     }
-    UINT get_modifiers() {
+    UINT get_modifiers() const {
       return get_modifiers_repeat() | MOD_NOREPEAT;
     }
   protected:

@@ -15,14 +15,13 @@
 
 using namespace web;
 
-TwoWayPipeMessageIPC* current_settings_ipc = NULL;
+TwoWayPipeMessageIPC* current_settings_ipc = nullptr;
 
 json::value get_power_toys_settings() {
   json::value result = json::value::object();
   for (auto&[name, powertoy] : modules()) {
     try {
-      json::value powertoys_config = json::value::parse(powertoy.get_config());
-      result.as_object()[name] = powertoys_config;
+      result.as_object()[name] = powertoy.json_config();
     }
     catch (json::json_exception&) {
       //Malformed JSON.
@@ -43,14 +42,14 @@ void dispatch_json_action_to_module(const json::value& powertoys_configs) {
     std::wstringstream ws;
     ws << powertoy_element.second;
     if (modules().find(powertoy_element.first) != modules().end()) {
-      modules().at(powertoy_element.first).call_custom_action(ws.str());
+      modules().at(powertoy_element.first)->call_custom_action(ws.str().c_str());
     }
   }
 }
 
 void send_json_config_to_module(const std::wstring& module_key, const std::wstring& settings) {
   if (modules().find(module_key) != modules().end()) {
-    modules().at(module_key).set_config(settings);
+    modules().at(module_key)->set_config(settings.c_str());
   }
 }
 
@@ -108,13 +107,13 @@ DWORD g_settings_process_id = 0;
 void run_settings_window() {
   STARTUPINFO startup_info = { sizeof(startup_info) };
   PROCESS_INFORMATION process_info = { 0 };
-  HANDLE process = NULL;
-  HANDLE hToken = NULL;
+  HANDLE process = nullptr;
+  HANDLE hToken = nullptr;
   STARTUPINFOEX siex = { 0 };
-  PPROC_THREAD_ATTRIBUTE_LIST pptal = NULL;
+  PPROC_THREAD_ATTRIBUTE_LIST pptal = nullptr;
   WCHAR executable_path[MAX_PATH];
-  GetModuleFileName(NULL, executable_path, MAX_PATH);
-  PathRemoveFileSpec(executable_path);
+  GetModuleFileNameW(nullptr, executable_path, MAX_PATH);
+  PathRemoveFileSpecW(executable_path);
   wcscat_s(executable_path, L"\\PowerToysSettings.exe");
   WCHAR executable_args[MAX_PATH * 3];
 
@@ -131,11 +130,11 @@ void run_settings_window() {
   UuidCreate(&temp_uuid);
   wchar_t* uuid_chars;
   UuidToString(&temp_uuid, (RPC_WSTR*)&uuid_chars);
-  if (uuid_chars != NULL) {
+  if (uuid_chars != nullptr) {
     powertoys_pipe_name += std::wstring(uuid_chars);
     settings_pipe_name += std::wstring(uuid_chars);
     RpcStringFree((RPC_WSTR*)&uuid_chars);
-    uuid_chars = NULL;
+    uuid_chars = nullptr;
   }
   DWORD powertoys_pid = GetCurrentProcessId();
   // Arguments for calling the settings executable:
@@ -238,7 +237,7 @@ LExit:
   if (current_settings_ipc) {
     current_settings_ipc->end();
     delete current_settings_ipc;
-    current_settings_ipc = NULL;
+    current_settings_ipc = nullptr;
   }
 
   if (hToken) {

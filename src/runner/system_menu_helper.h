@@ -22,7 +22,7 @@ public:
   bool HasCustomConfig(PowertoyModuleIface* module);
 
   PowertoyModuleIface* ModuleFromItemId(const int& id);
-  const std::wstring ItemNameFromItemId(const int& id);
+  std::wstring ItemNameFromItemId(const int& id);
 
 private:
   bool AddItem(PowertoyModuleIface* module, HWND window, const std::wstring& name, const bool enable);

@@ -207,7 +207,7 @@ private:
         CharUpperBuffW(windowAndPath.process_path.data(), (DWORD)windowAndPath.process_path.length());
         if (m_settings)
         {
-            for (const auto& excluded : m_settings->GetSettings().excludedAppsArray)
+            for (const auto& excluded : m_settings->GetSettings()->excludedAppsArray)
             {
                 if (windowAndPath.process_path.find(excluded) != std::wstring::npos)
                 {

@@ -15,7 +15,7 @@ public:
     IFACEMETHODIMP_(bool) GetConfig(_Out_ PWSTR buffer, _Out_ int *buffer_sizeg) noexcept;
     IFACEMETHODIMP_(void) SetConfig(PCWSTR config) noexcept;
     IFACEMETHODIMP_(void) CallCustomAction(PCWSTR action) noexcept;
-    IFACEMETHODIMP_(Settings) GetSettings() noexcept { return m_settings; }
+    IFACEMETHODIMP_(const Settings*) GetSettings() const noexcept { return &m_settings; }
 
 private:
     void LoadSettings(PCWSTR config, bool fromFile) noexcept;

@@ -107,7 +107,7 @@ void send_message_to_webview(const std::wstring& msg) {
     PCOPYDATASTRUCT message = new COPYDATASTRUCT();
     DWORD buff_size = (DWORD)(msg.length() + 1);
 
-    // 'wnd_static_proc()' will free the buffer allocated here.
+    // 'wnd_proc_static()' will free the buffer allocated here.
     wchar_t* buffer = new wchar_t[buff_size];
 
     wcscpy_s(buffer, buff_size, msg.c_str());

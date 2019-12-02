@@ -29,7 +29,7 @@ web::json::value get_general_settings() {
 
   json::value enabled = json::value::object();
   for (auto&[name, powertoy] : modules()) {
-    enabled.as_object()[name] = json::value::boolean(powertoy.is_enabled());
+    enabled.as_object()[name] = json::value::boolean(powertoy->is_enabled());
   }
   result.as_object()[L"enabled"] = enabled;
 
@@ -56,13 +56,13 @@ void apply_general_settings(const json::value& general_configs) {
   if (contains_enabled) {
     for (auto enabled_element : general_configs.at(L"enabled").as_object()) {
       if (enabled_element.second.is_boolean() && modules().find(enabled_element.first) != modules().end()) {
-        bool module_inst_enabled = modules().at(enabled_element.first).is_enabled();
+        bool module_inst_enabled = modules().at(enabled_element.first)->is_enabled();
         bool target_enabled = enabled_element.second.as_bool();
         if (module_inst_enabled != target_enabled) {
           if (target_enabled) {
-            modules().at(enabled_element.first).enable();
+            modules().at(enabled_element.first)->enable();
           } else {
-            modules().at(enabled_element.first).disable();
+            modules().at(enabled_element.first)->disable();
           }
         }
       }
@@ -100,11 +100,11 @@ void start_initial_powertoys() {
 
   for (auto&[name, powertoy] : modules()) {
     if (only_enable_some_powertoys) {
-      if (powertoys_to_enable.find(name)!=powertoys_to_enable.end()) {
-        powertoy.enable();
+      if (powertoys_to_enable.find(name) != powertoys_to_enable.end()) {
+        powertoy->enable();
       }
     } else {
-      powertoy.enable();
+      powertoy->enable();
     }
   }
 }

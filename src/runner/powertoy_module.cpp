@@ -23,3 +23,27 @@ PowertoyModule load_powertoy(const std::wstring& filename) {
   module->register_system_menu_helper(&SystemMenuHelperInstace());
   return PowertoyModule(module, handle);
 }
+
+PowertoyModule::PowertoyModule(PowertoyModuleIface * module, HMODULE  handle) : handle(handle), module(module) {
+  if (!module) {
+    throw std::runtime_error("Module not initialized");
+  }
+  auto want_signals = module->get_events();
+  if (want_signals) {
+    for(; *want_signals; ++want_signals) {
+      powertoys_events().register_receiver(*want_signals, module);
+    }
+  }
+  if (SystemMenuHelperInstace().HasCustomConfig(module)) {
+    powertoys_events().register_system_menu_action(module);
+  }
+}
+
+web::json::value PowertoyModule::json_config() const {
+  int size = 0;
+  module->get_config(nullptr, &size);
+  std::wstring result;
+  result.resize(size - 1);
+  module->get_config(result.data(), &size);
+  return web::json::value::parse(result);
+}
