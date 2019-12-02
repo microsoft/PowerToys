@@ -47,6 +47,7 @@ build:
           - 'PowerToys.exe'
           - 'PowerToysSettings.exe'
           - 'modules\FancyZonesEditor.exe'
+          - 'modules\FancyZonesEditor.dll'
           - 'modules\fancyzones.dll'
           - 'modules\shortcut_guide.dll'
           signing_options:
