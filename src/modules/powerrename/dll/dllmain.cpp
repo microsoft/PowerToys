@@ -252,11 +252,11 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config);
 
-            CSettings::SetPersistState(values.get_bool_value(L"bool_persist_input"));
-            CSettings::SetMRUEnabled(values.get_bool_value(L"bool_mru_enabled"));
-            CSettings::SetMaxMRUSize(values.get_int_value(L"int_max_mru_size"));
-            CSettings::SetShowIconOnMenu(values.get_bool_value(L"bool_show_icon_on_menu"));
-            CSettings::SetExtendedContextMenuOnly(values.get_bool_value(L"bool_show_extended_menu"));
+            CSettings::SetPersistState(values.get_bool_value(L"bool_persist_input").value());
+            CSettings::SetMRUEnabled(values.get_bool_value(L"bool_mru_enabled").value());
+            CSettings::SetMaxMRUSize(values.get_int_value(L"int_max_mru_size").value());
+            CSettings::SetShowIconOnMenu(values.get_bool_value(L"bool_show_icon_on_menu").value());
+            CSettings::SetExtendedContextMenuOnly(values.get_bool_value(L"bool_show_extended_menu").value());
         }
         catch (std::exception) {
             // Improper JSON.

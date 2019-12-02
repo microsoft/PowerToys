@@ -23,3 +23,12 @@ PowertoyModule load_powertoy(const std::wstring& filename) {
   module->register_system_menu_helper(&SystemMenuHelperInstace());
   return PowertoyModule(module, handle);
 }
+
+json::JsonObject PowertoyModule::json_config() const {
+  int size = 0;
+  module->get_config(nullptr, &size);
+  std::wstring result;
+  result.resize(size - 1);
+  module->get_config(result.data(), &size);
+  return json::JsonObject::Parse(result);
+}

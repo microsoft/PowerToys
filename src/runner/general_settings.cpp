@@ -5,45 +5,35 @@
 #include "powertoy_module.h"
 #include <common/windows_colors.h>
 
-using namespace web;
-
 static std::wstring settings_theme = L"system";
 
-web::json::value load_general_settings() {
+json::JsonObject load_general_settings() {
   auto loaded = PTSettingsHelper::load_general_settings();
-  if (loaded.has_string_field(L"theme")) {
-    settings_theme = loaded.as_object()[L"theme"].as_string();
-    if (settings_theme != L"dark" && settings_theme != L"light") {
-      settings_theme = L"system";
-    }
-  } else {
-    settings_theme = L"system";
-  }
+  settings_theme = loaded.GetNamedString(L"theme", L"system");
   return loaded;
 }
 
-web::json::value get_general_settings() {
-  json::value result = json::value::object();
-  bool startup = is_auto_start_task_active_for_this_user();
-  result.as_object()[L"startup"] = json::value::boolean(startup);
+json::JsonObject get_general_settings() {
+  json::JsonObject result;
+  const bool startup = is_auto_start_task_active_for_this_user();
+  result.SetNamedValue(L"startup", json::value(startup));
 
-  json::value enabled = json::value::object();
+  json::JsonObject enabled;
   for (auto&[name, powertoy] : modules()) {
-    enabled.as_object()[name] = json::value::boolean(powertoy.is_enabled());
+    enabled.SetNamedValue(name, json::value(powertoy.is_enabled()));
   }
-  result.as_object()[L"enabled"] = enabled;
+  result.SetNamedValue(L"enabled", std::move(enabled));
 
-  result.as_object()[L"theme"] = json::value::string(settings_theme);
-  result.as_object()[L"system_theme"] = json::value::string(WindowsColors::is_dark_mode() ? L"dark" : L"light");
-  result.as_object()[L"powertoys_version"] = json::value::string(get_product_version());
+  result.SetNamedValue(L"theme", json::value(settings_theme));
+  result.SetNamedValue(L"system_theme", json::value(WindowsColors::is_dark_mode() ? L"dark" : L"light"));
+  result.SetNamedValue(L"powertoys_version", json::value(get_product_version()));
   return result;
 }
 
-void apply_general_settings(const json::value& general_configs) {
-  bool contains_startup = general_configs.has_boolean_field(L"startup");
-  if (contains_startup) {
-    bool startup = general_configs.at(L"startup").as_bool();
-    bool current_startup = is_auto_start_task_active_for_this_user();
+void apply_general_settings(const json::JsonObject& general_configs) {
+  if (json::has(general_configs, L"startup", json::JsonValueType::Boolean)) {
+    const bool startup = general_configs.GetNamedBoolean(L"startup");
+    const bool current_startup = is_auto_start_task_active_for_this_user();
     if (current_startup != startup) {
       if (startup) {
         enable_auto_start_task_for_this_user();
@@ -52,26 +42,33 @@ void apply_general_settings(const json::value& general_configs) {
       }
     }
   }
-  bool contains_enabled = general_configs.has_object_field(L"enabled");
-  if (contains_enabled) {
-    for (auto enabled_element : general_configs.at(L"enabled").as_object()) {
-      if (enabled_element.second.is_boolean() && modules().find(enabled_element.first) != modules().end()) {
-        bool module_inst_enabled = modules().at(enabled_element.first).is_enabled();
-        bool target_enabled = enabled_element.second.as_bool();
-        if (module_inst_enabled != target_enabled) {
-          if (target_enabled) {
-            modules().at(enabled_element.first).enable();
-          } else {
-            modules().at(enabled_element.first).disable();
-          }
-        }
+  if (json::has(general_configs, L"enabled")) {
+    for (const auto& enabled_element : general_configs.GetNamedObject(L"enabled")) {
+      const auto value = enabled_element.Value();
+      if (value.ValueType() != json::JsonValueType::Boolean) {
+        continue;
+      }
+      const std::wstring name{enabled_element.Key().c_str()};
+      const bool found = modules().find(name) != modules().end();
+      if (!found) {
+        continue;
+      }
+      const bool module_inst_enabled = modules().at(name).is_enabled();
+      const bool target_enabled = value.GetBoolean();
+      if (module_inst_enabled == target_enabled) {
+        continue;
+      }
+      if (target_enabled) {
+        modules().at(name).enable();
+      } else {
+        modules().at(name).disable();
       }
     }
   }
-  if (general_configs.has_string_field(L"theme")) {
-    settings_theme = general_configs.at(L"theme").as_string();
+  if (json::has(general_configs, L"theme", json::JsonValueType::String)) {
+    settings_theme = general_configs.GetNamedString(L"theme");
   }
-  json::value save_settings = get_general_settings();
+  json::JsonObject save_settings = get_general_settings();
   PTSettingsHelper::save_general_settings(save_settings);
 }
 
@@ -80,21 +77,22 @@ void start_initial_powertoys() {
 
   std::unordered_set<std::wstring> powertoys_to_enable;
 
-  json::value general_settings;
+  json::JsonObject general_settings;
   try {
     general_settings = load_general_settings();
-    json::value enabled = general_settings[L"enabled"];
-    for (auto enabled_element : enabled.as_object()) {
-      if (enabled_element.second.as_bool()) {
+    json::JsonObject enabled = general_settings.GetNamedObject(L"enabled");
+    for (const auto & enabled_element : enabled) {
+      if (enabled_element.Value().GetBoolean()) {
         // Enable this powertoy.
-        powertoys_to_enable.emplace(enabled_element.first);
+        powertoys_to_enable.emplace(enabled_element.Key());
       }
     }
     only_enable_some_powertoys = true;
   }
-  catch (std::exception&) {
+  catch (...) {
     // Couldn't read the general settings correctly.
     // Load all powertoys.
+    // TODO: notify user about invalid json config
     only_enable_some_powertoys = false;
   }
 
