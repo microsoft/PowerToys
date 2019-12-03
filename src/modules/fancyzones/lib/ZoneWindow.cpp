@@ -41,7 +41,6 @@ private:
     void LoadSettings() noexcept;
     void InitializeZoneSets(MONITORINFO const& mi) noexcept;
     void LoadZoneSetsFromRegistry() noexcept;
-    void AddDefaultZoneSet(MONITORINFO const& mi) noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
     void DrawBackdrop(wil::unique_hdc& hdc, RECT const& clientRect) noexcept;
@@ -304,25 +303,9 @@ void ZoneWindow::InitializeZoneSets(MONITORINFO const& mi) noexcept
 {
     LoadZoneSetsFromRegistry();
 
-    if (m_zoneSets.empty())
-    {
-        // Add a "maximize" zone as the only default layout.
-        AddDefaultZoneSet(mi);
-    }
-
     if (!m_activeZoneSet)
     {
-        if (GUID id{ m_host->GetCurrentMonitorZoneSetId(m_monitor) }; id != GUID_NULL) {
-            for (const auto& zoneSet : m_zoneSets) {
-                if (id == zoneSet->Id()) {
-                    UpdateActiveZoneSet(zoneSet.get());
-                    break;
-                }
-            }
-        }
-        else {
-            ChooseDefaultActiveZoneSet();
-        }
+        ChooseDefaultActiveZoneSet();
     }
 }
 
@@ -375,20 +358,6 @@ void ZoneWindow::LoadZoneSetsFromRegistry() noexcept
 
         valueLength = ARRAYSIZE(value);
         dataSize = sizeof(data);
-    }
-}
-
-void ZoneWindow::AddDefaultZoneSet(MONITORINFO const& mi) noexcept
-{
-    GUID zoneSetId;
-    if (SUCCEEDED_LOG(CoCreateGuid(&zoneSetId)))
-    {
-        if (auto zoneSet = MakeZoneSet(ZoneSetConfig(zoneSetId, 0, m_monitor, m_workArea)))
-        {
-            zoneSet->AddZone(MakeZone(mi.rcWork));
-
-            m_zoneSets.emplace_back(zoneSet);
-        }
     }
 }
 
@@ -644,10 +613,15 @@ winrt::com_ptr<IZone> ZoneWindow::ZoneFromPoint(POINT pt) noexcept
 
 void ZoneWindow::ChooseDefaultActiveZoneSet() noexcept
 {
-    if (!m_activeZoneSet)
-    {
-        auto zoneSet = m_zoneSets.at(0);
-        UpdateActiveZoneSet(zoneSet.get());
+    // Default zone set can be empty (no fancyzones layout), or it can be layout from virtual
+    // desktop from which this virtual desktop is created.
+    if (GUID id{ m_host->GetCurrentMonitorZoneSetId(m_monitor) }; id != GUID_NULL) {
+        for (const auto& zoneSet : m_zoneSets) {
+            if (id == zoneSet->Id()) {
+                UpdateActiveZoneSet(zoneSet.get());
+                return;
+            }
+        }
     }
 }
 

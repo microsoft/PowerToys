@@ -36,7 +36,7 @@ namespace FancyZonesEditor
                 return false;
             }
         }
-        
+
         public Settings()
         {
             ParseCommandLineArgs();
@@ -64,9 +64,9 @@ namespace FancyZonesEditor
 
             _blankCustomModel = new CanvasLayoutModel("Create new custom", c_blankCustomModelId, (int)_workArea.Width, (int)_workArea.Height);
 
-            _zoneCount = (int)Registry.GetValue(_uniqueRegistryPath, "ZoneCount", 3);
-            _spacing = (int)Registry.GetValue(_uniqueRegistryPath, "Spacing", 16);
-            _showSpacing = (int)Registry.GetValue(_uniqueRegistryPath, "ShowSpacing", 1) == 1;
+            _zoneCount = ReadRegistryInt("ZoneCount", 3);
+            _spacing = ReadRegistryInt("Spacing", 16);
+            _showSpacing = ReadRegistryInt("ShowSpacing", 1) == 1;
 
             UpdateLayoutModels();
         }
@@ -180,6 +180,12 @@ namespace FancyZonesEditor
             get { return _dpi; }
         }
         private static float _dpi;
+
+        private int ReadRegistryInt(string valueName, int defaultValue)
+        {
+            object obj = Registry.GetValue(_uniqueRegistryPath, valueName, defaultValue);
+            return (obj != null) ? (int)obj : defaultValue;
+        }
 
         // UpdateLayoutModels
         //  Update the five default layouts based on the new ZoneCount

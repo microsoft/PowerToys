@@ -41,8 +41,9 @@ public:
     }
     IFACEMETHODIMP_(GUID) GetCurrentMonitorZoneSetId(HMONITOR monitor) noexcept
     {
-        if (auto it = m_zoneWindowMap.find(monitor); it != m_zoneWindowMap.end()) {
-            return it->second->ActiveZoneSet()->Id();
+        if (auto it = m_zoneWindowMap.find(monitor); it != m_zoneWindowMap.end() && it->second->ActiveZoneSet()) {
+            const auto activeZoneSet = it->second->ActiveZoneSet();
+            return activeZoneSet ? activeZoneSet->Id() : GUID_NULL;
         }
         return GUID_NULL;
     }
@@ -315,9 +316,12 @@ void FancyZones::ToggleEditor() noexcept
         std::to_wstring(width) + L"_" +
         std::to_wstring(height);
 
+    const auto activeZoneSet = iter->second->ActiveZoneSet();
+    const std::wstring layoutID = activeZoneSet ? std::to_wstring(activeZoneSet->LayoutId()) : L"0";
+
     const std::wstring params =
         iter->second->UniqueId() + L" " +
-        std::to_wstring(iter->second->ActiveZoneSet()->LayoutId()) + L" " +
+        layoutID + L" " +
         std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
         editorLocation + L" " +
         iter->second->WorkAreaKey() + L" " +
