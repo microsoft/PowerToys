@@ -67,23 +67,28 @@ void dispatch_received_json(const std::wstring &json_to_parse) {
     const auto name = base_element.Key();
     const auto value = base_element.Value();
 
-    if (name == L"action") {
-      dispatch_json_action_to_module(value.GetObjectW());
-      continue;
-    }
-
     if (name == L"general") {
       apply_general_settings(value.GetObjectW());
+      if (current_settings_ipc != nullptr) {
+        const std::wstring settings_string{get_all_settings().Stringify().c_str()};
+        current_settings_ipc->send(settings_string);
+      }
     }  
     else if (name == L"powertoys") {
       dispatch_json_config_to_modules(value.GetObjectW());
+      if (current_settings_ipc != nullptr) {
+        const std::wstring settings_string{get_all_settings().Stringify().c_str()};
+        current_settings_ipc->send(settings_string);
+      }
     } 
-    else if (name != L"refresh") {
-      continue;
+    else if (name == L"refresh") {
+      if (current_settings_ipc != nullptr) {
+        const std::wstring settings_string{get_all_settings().Stringify().c_str()};
+        current_settings_ipc->send(settings_string);
+      }
     }
-    if (current_settings_ipc != nullptr) {
-      const std::wstring settings_string{get_all_settings().Stringify().c_str()};
-      current_settings_ipc->send(settings_string);
+    else if (name == L"action") {
+      dispatch_json_action_to_module(value.GetObjectW());
     }
   }
   return;
