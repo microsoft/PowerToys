@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Timers;
@@ -53,7 +53,7 @@ namespace Wox
                 _settingsVM = new SettingWindowViewModel();
                 _settings = _settingsVM.Settings;
 
-                Alphabet.Initialize(_settings);
+                Alphabet.Initialize(_settings.ShouldUsePinyin);
 
                 StringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
