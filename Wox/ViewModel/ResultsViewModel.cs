@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Documents;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
@@ -193,8 +195,37 @@ namespace Wox.ViewModel
 
             return results;
         }
+        #endregion
 
+        #region FormattedText Dependency Property
+        public static readonly DependencyProperty FormattedTextProperty = DependencyProperty.RegisterAttached(
+            "FormattedText",
+            typeof(Inline),
+            typeof(ResultsViewModel),
+            new PropertyMetadata(null, FormattedTextPropertyChanged));
 
+        public static void SetFormattedText(DependencyObject textBlock, IList<int> value)
+        {
+            textBlock.SetValue(FormattedTextProperty, value);
+        }
+
+        public static Inline GetFormattedText(DependencyObject textBlock)
+        {
+            return (Inline)textBlock.GetValue(FormattedTextProperty);
+        }
+
+        private static void FormattedTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var textBlock = d as TextBlock;
+            if (textBlock == null) return;
+
+            var inline = (Inline)e.NewValue;
+
+            textBlock.Inlines.Clear();
+            if (inline == null) return;
+
+            textBlock.Inlines.Add(inline);
+        }
         #endregion
 
         public class ResultCollection : ObservableCollection<ResultViewModel>
