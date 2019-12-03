@@ -419,6 +419,11 @@ namespace Wox.ViewModel
                                 UpdateResultView(results, plugin.Metadata, query);
                             }
                         });
+
+                        // this should happen once after all queries are done so progress bar should continue
+                        // until the end of all querying
+                        _queryHasReturn = true;
+                        ProgressBarVisibility = Visibility.Hidden;
                     }, _updateToken);
                 }
             }
@@ -627,9 +632,6 @@ namespace Wox.ViewModel
         /// </summary>
         public void UpdateResultView(List<Result> list, PluginMetadata metadata, Query originQuery)
         {
-            _queryHasReturn = true;
-            ProgressBarVisibility = Visibility.Hidden;
-
             foreach (var result in list)
             {
                 if (_topMostRecord.IsTopMost(result))
