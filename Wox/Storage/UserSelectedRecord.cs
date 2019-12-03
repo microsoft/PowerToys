@@ -12,21 +12,23 @@ namespace Wox.Storage
 
         public void Add(Result result)
         {
-            if (records.ContainsKey(result.ToString()))
+            var key = result.ToString();
+            if (records.TryGetValue(key, out int value))
             {
-                records[result.ToString()] += 1;
+                records[key] = value + 1;
             }
             else
             {
-                records.Add(result.ToString(), 1);
+                records.Add(key, 1);
+
             }
         }
 
         public int GetSelectedCount(Result result)
         {
-            if (records.ContainsKey(result.ToString()))
+            if (records.TryGetValue(result.ToString(), out int value))
             {
-                return records[result.ToString()];
+                return value;
             }
             return 0;
         }
