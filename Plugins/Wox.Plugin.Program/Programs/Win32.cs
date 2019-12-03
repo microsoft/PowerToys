@@ -69,8 +69,9 @@ namespace Wox.Plugin.Program.Programs
             }
             else if (!string.IsNullOrEmpty(Description))
             {
-                result.Title = $"{Name}: {Description}";
-                result.TitleHighlightData = StringMatcher.FuzzySearch(query, Description).MatchData;
+                var title = $"{Name}: {Description}";
+                result.Title = title;
+                result.TitleHighlightData = StringMatcher.FuzzySearch(query, title).MatchData;
             }
             else
             {
