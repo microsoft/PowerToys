@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 using Wox.Infrastructure;
+using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
 namespace Wox.Test
@@ -48,6 +49,8 @@ namespace Wox.Test
                 "aac"
             };
 
+            Alphabet.Initialize(false);
+            StringMatcher.UserSettingSearchPrecision = StringMatcher.SearchPrecisionScore.Low.ToString();
 
             var results = new List<Result>();
             foreach (var str in sources)
@@ -130,6 +133,9 @@ namespace Wox.Test
 
             var results = new List<Result>();
 
+            Alphabet.Initialize(false);
+            StringMatcher.UserSettingSearchPrecision = StringMatcher.SearchPrecisionScore.None.ToString();
+
             foreach (var str in searchStrings)
             {
                 results.Add(new Result
@@ -168,8 +174,11 @@ namespace Wox.Test
         [TestCase("ccs", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Low, true)]
         [TestCase("cand", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("cand", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        public void WhenGivenDesiredPrecisionThenShouldReturnAllResultsGreaterOrEqual(string queryString, string compareString, 
-                                                                                                        int expectedPrecisionScore, bool expectedPrecisionResult)
+        public void WhenGivenDesiredPrecisionThenShouldReturnAllResultsGreaterOrEqual(
+            string queryString, 
+            string compareString, 
+            int expectedPrecisionScore, 
+            bool expectedPrecisionResult)
         {
             var expectedPrecisionString = (StringMatcher.SearchPrecisionScore)expectedPrecisionScore;            
             StringMatcher.UserSettingSearchPrecision = expectedPrecisionString.ToString();
