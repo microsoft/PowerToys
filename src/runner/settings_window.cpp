@@ -73,21 +73,18 @@ void dispatch_received_json(const std::wstring &json_to_parse) {
         const std::wstring settings_string{get_all_settings().Stringify().c_str()};
         current_settings_ipc->send(settings_string);
       }
-    }  
-    else if (name == L"powertoys") {
+    } else if (name == L"powertoys") {
       dispatch_json_config_to_modules(value.GetObjectW());
       if (current_settings_ipc != nullptr) {
         const std::wstring settings_string{get_all_settings().Stringify().c_str()};
         current_settings_ipc->send(settings_string);
       }
-    } 
-    else if (name == L"refresh") {
+    } else if (name == L"refresh") {
       if (current_settings_ipc != nullptr) {
         const std::wstring settings_string{get_all_settings().Stringify().c_str()};
         current_settings_ipc->send(settings_string);
       }
-    }
-    else if (name == L"action") {
+    } else if (name == L"action") {
       dispatch_json_action_to_module(value.GetObjectW());
     }
   }
