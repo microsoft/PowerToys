@@ -56,12 +56,21 @@ namespace Wox.Plugin.Sys
             var results = new List<Result>();
             foreach (var c in commands)
             {
-                var titleScore = StringMatcher.FuzzySearch(query.Search, c.Title).ScoreAfterSearchPrecisionFilter();
-                var subTitleScore = StringMatcher.FuzzySearch(query.Search, c.SubTitle).ScoreAfterSearchPrecisionFilter();
-                var score = Math.Max(titleScore, subTitleScore);
+                var titleMatch = StringMatcher.FuzzySearch(query.Search, c.Title);
+                var subTitleMatch = StringMatcher.FuzzySearch(query.Search, c.SubTitle);
+
+                var score = Math.Max(titleMatch.Score, subTitleMatch.Score);
                 if (score > 0)
                 {
                     c.Score = score;
+                    if (score == titleMatch.Score)
+                    {
+                        c.TitleHighlightData = titleMatch.MatchData;
+                    }
+                    else 
+                    {
+                        c.SubTitleHighlightData = subTitleMatch.MatchData;
+                    }
                     results.Add(c);
                 }
             }

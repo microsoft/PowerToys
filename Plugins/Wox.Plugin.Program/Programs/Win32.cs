@@ -33,12 +33,10 @@ namespace Wox.Plugin.Program.Programs
 
         private int Score(string query)
         {
-            var score1 = StringMatcher.FuzzySearch(query, Name).ScoreAfterSearchPrecisionFilter();
-            var score2 = StringMatcher.ScoreForPinyin(Name, query);
-            var score3 = StringMatcher.FuzzySearch(query, Description).ScoreAfterSearchPrecisionFilter();
-            var score4 = StringMatcher.ScoreForPinyin(Description, query);
-            var score5 = StringMatcher.FuzzySearch(query, ExecutableName).ScoreAfterSearchPrecisionFilter();
-            var score = new[] { score1, score2, score3, score4, score5 }.Max();
+            var nameMatch = StringMatcher.FuzzySearch(query, Name);
+            var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
+            var executableNameMatch = StringMatcher.FuzzySearch(query, ExecutableName);
+            var score = new[] { nameMatch.Score, descriptionMatch.Score, executableNameMatch.Score }.Max();
             return score;
         }
 
@@ -67,14 +65,17 @@ namespace Wox.Plugin.Program.Programs
                 Description.Substring(0, Name.Length) == Name)
             {
                 result.Title = Description;
+                result.TitleHighlightData = StringMatcher.FuzzySearch(query, Description).MatchData;
             }
             else if (!string.IsNullOrEmpty(Description))
             {
                 result.Title = $"{Name}: {Description}";
+                result.TitleHighlightData = StringMatcher.FuzzySearch(query, Description).MatchData;
             }
             else
             {
                 result.Title = Name;
+                result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
             }
 
             return result;
