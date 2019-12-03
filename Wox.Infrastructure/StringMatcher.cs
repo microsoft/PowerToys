@@ -1,10 +1,12 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
+using static Wox.Infrastructure.StringMatcher;
 
-namespace Wox.Infrastructure
+namespace Wox.Infrastructure 
 {
     public static class StringMatcher
     {
@@ -54,6 +56,9 @@ namespace Wox.Infrastructure
             var firstMatchIndex = -1;
             var lastMatchIndex = 0;
             char ch;
+
+            var indexList = new List<int>();
+
             for (var idx = 0; idx < len; idx++)
             {
                 ch = stringToCompare[idx];
@@ -63,6 +68,7 @@ namespace Wox.Infrastructure
                         firstMatchIndex = idx;
                     lastMatchIndex = idx + 1;
 
+                    indexList.Add(idx);
                     sb.Append(opt.Prefix + ch + opt.Suffix);
                     patternIdx += 1;
                 }
@@ -82,18 +88,25 @@ namespace Wox.Infrastructure
             // return rendered string if we have a match for every char
             if (patternIdx == pattern.Length)
             {
-                return new MatchResult
+                var score = CalculateSearchScore(query, stringToCompare, firstMatchIndex, lastMatchIndex - firstMatchIndex);
+                var pinyinScore = ScoreForPinyin(stringToCompare, query);
+
+                var result = new MatchResult
                 {
                     Success = true,
-                    Value = sb.ToString(),
-                    Score = CalScore(query, stringToCompare, firstMatchIndex, lastMatchIndex - firstMatchIndex)
+                    MatchData = indexList,
+                    Score = Math.Max(score, pinyinScore)
                 };
+
+                return result.Score > 0 ? 
+                    result : 
+                    new MatchResult { Success = false };
             }
 
             return new MatchResult { Success = false };
         }
 
-        private static int CalScore(string query, string stringToCompare, int firstIndex, int matchLen)
+        private static int CalculateSearchScore(string query, string stringToCompare, int firstIndex, int matchLen)
         {
             // A match found near the beginning of a string is scored more than a match found near the end
             // A match is scored more if the characters in the patterns are closer to each other, 
@@ -164,7 +177,7 @@ namespace Wox.Infrastructure
                 _score = ApplySearchPrecisionFilter(value);
             }
         }
-        
+
         /// <summary>
         /// Matched data to highlight.
         /// </summary>
