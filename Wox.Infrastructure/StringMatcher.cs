@@ -120,19 +120,6 @@ namespace Wox.Infrastructure
             None = 0
         }
 
-        public static bool IsSearchPrecisionScoreMet(this MatchResult matchResult)
-        {            
-            var precisionScore = (SearchPrecisionScore)Enum.Parse(typeof(SearchPrecisionScore), 
-                                                                            UserSettingSearchPrecision ?? SearchPrecisionScore.Regular.ToString());
-            return matchResult.Score >= (int)precisionScore;
-        }
-
-        public static int ScoreAfterSearchPrecisionFilter(this MatchResult matchResult)
-        {
-            return matchResult.IsSearchPrecisionScoreMet() ? matchResult.Score : 0;
-
-        }
-
         public static int ScoreForPinyin(string source, string target)
         {
             if (!string.IsNullOrEmpty(source) && !string.IsNullOrEmpty(target))
@@ -164,12 +151,42 @@ namespace Wox.Infrastructure
     public class MatchResult
     {
         public bool Success { get; set; }
-        public int Score { get; set; }
+
+        private int _score;
+        public int Score
+        {
+            get
+            {
+                return _score;
+            }
+            set
+            {
+                _score = ApplySearchPrecisionFilter(value);
+            }
+        }
         
         /// <summary>
-        /// highlight string
+        /// Matched data to highlight.
         /// </summary>
-        public string Value { get; set; }
+        public List<int> MatchData { get; set; }
+
+        public bool IsSearchPrecisionScoreMet()
+        {
+            return IsSearchPrecisionScoreMet(Score);
+        }
+
+        private bool IsSearchPrecisionScoreMet(int score)
+        {
+            var precisionScore = (SearchPrecisionScore)Enum.Parse(
+               typeof(SearchPrecisionScore),
+               UserSettingSearchPrecision ?? SearchPrecisionScore.Regular.ToString());
+            return score >= (int)precisionScore;
+        }
+
+        private int ApplySearchPrecisionFilter(int score)
+        {
+            return IsSearchPrecisionScoreMet(score) ? score : 0;
+        }
     }
 
     public class MatchOption
