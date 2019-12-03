@@ -215,7 +215,9 @@ private:
                 }
             }
         }
-        return true;
+        // Don't zone child windows and tool window
+        return (GetWindowLongPtr(window, GWL_STYLE) & WS_CHILD) == 0 &&
+               (GetWindowLongPtr(window, GWL_EXSTYLE) & WS_EX_TOOLWINDOW) == 0;
     }
 
     void Disable(bool const traceEvent)
