@@ -199,11 +199,25 @@ public:
 private:
     bool IsInterestingWindow(HWND window)
     {
+        auto style = GetWindowLongPtr(window, GWL_STYLE);
+        auto exStyle = GetWindowLongPtr(window, GWL_EXSTYLE);
+        // Ignore:
+        if (GetAncestor(window, GA_ROOT) != window || // windows that are not top-level
+            GetWindow(window, GW_OWNER) != nullptr || // windows that have an owner - like Save As dialogs
+            (style & WS_CHILD) != 0 || // windows that are child elements of other windows - like buttons
+            (style & WS_DISABLED) != 0 || // windows that are disabled
+            (exStyle & WS_EX_TOOLWINDOW) != 0 || // toolbar windows
+            !IsWindowVisible(window)) // invisible windows
+        {
+            return false;
+        }
+        // Filter some windows like the Start menu or Cortana
         auto windowAndPath = get_filtered_base_window_and_path(window);
         if (windowAndPath.hwnd == nullptr)
         {
             return false;
         }
+        // Filter out user specified apps
         CharUpperBuffW(windowAndPath.process_path.data(), (DWORD)windowAndPath.process_path.length());
         if (m_settings)
         {
@@ -215,9 +229,7 @@ private:
                 }
             }
         }
-        // Don't zone child windows and tool window
-        return (GetWindowLongPtr(window, GWL_STYLE) & WS_CHILD) == 0 &&
-               (GetWindowLongPtr(window, GWL_EXSTYLE) & WS_EX_TOOLWINDOW) == 0;
+        return true;
     }
 
     void Disable(bool const traceEvent)
