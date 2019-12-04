@@ -42,8 +42,7 @@ public:
     IFACEMETHODIMP_(GUID) GetCurrentMonitorZoneSetId(HMONITOR monitor) noexcept
     {
         if (auto it = m_zoneWindowMap.find(monitor); it != m_zoneWindowMap.end() && it->second->ActiveZoneSet()) {
-            const auto activeZoneSet = it->second->ActiveZoneSet();
-            return activeZoneSet ? activeZoneSet->Id() : GUID_NULL;
+            return it->second->ActiveZoneSet()->Id();
         }
         return GUID_NULL;
     }
