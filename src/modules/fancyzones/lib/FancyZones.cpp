@@ -597,16 +597,14 @@ void FancyZones::UpdateDragState(require_write_lock) noexcept
         mouse |= mouseR;
     }
 
-    bool enable = false;
     if (m_settings->GetSettings().shiftDrag)
     {
-        enable = (shift | mouse);
+        m_dragEnabled = (shift | mouse);
     }
     else
     {
-        enable = !(shift | mouse);
+        m_dragEnabled = !(shift | mouse);
     }
-    m_dragEnabled = enable;
 }
 
 void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
