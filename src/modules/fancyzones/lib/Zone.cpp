@@ -99,11 +99,35 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
         }
     }
 
-    WINDOWPLACEMENT placement;
+    WINDOWPLACEMENT placement{};
     ::GetWindowPlacement(window, &placement);
     placement.rcNormalPosition = zoneRect;
     placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
-    placement.showCmd = SW_RESTORE | SW_SHOWNA;
+    // .shwoCmd will have either SW_SHOWNORMAL, SW_SHOWMINIMIZED or SW_SHOWMAXIMIZED
+    // depending on the window state. Keeping those values would make hidden windows
+    // visible again, so we will clear those flags, and set appropriate ones
+    // ourselves.
+    placement.showCmd &= (~SW_SHOWNORMAL);
+    // For SHOWMAXIMIZED we will also set SW_RESTORE - this makes the windows have
+    // a restore button instead of a maximize one.
+    if ((placement.showCmd & SW_SHOWMAXIMIZED) == SW_SHOWMAXIMIZED)
+    {
+        placement.showCmd &= ~SW_SHOWMAXIMIZED;
+        placement.showCmd |= SW_RESTORE;
+    }
+    // Make sure to keep hidden windows hidden and visible ones visible.
+    if (IsWindowVisible(window))
+    {
+        // Don't restore minimized windows
+        if ((placement.showCmd & SW_SHOWMINIMIZED) == 0)
+        {
+            placement.showCmd |= SW_SHOWNOACTIVATE;
+        }        
+    }
+    else
+    {
+        placement.showCmd |= SW_HIDE;
+    }
     ::SetWindowPlacement(window, &placement);
 }
 
