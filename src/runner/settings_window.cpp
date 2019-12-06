@@ -4,89 +4,88 @@
 #include <sstream>
 #include <accctrl.h>
 #include <aclapi.h>
-#include <cpprest/json.h>
+
 #include "powertoy_module.h"
 #include <common/two_way_pipe_message_ipc.h>
 #include "tray_icon.h"
 #include "general_settings.h"
 #include "common/windows_colors.h"
 
-#define BUFSIZE 1024
+#include <common/json.h>
 
-using namespace web;
+#define BUFSIZE 1024
 
 TwoWayPipeMessageIPC* current_settings_ipc = NULL;
 
-json::value get_power_toys_settings() {
-  json::value result = json::value::object();
-  for (auto&[name, powertoy] : modules()) {
+json::JsonObject get_power_toys_settings() {
+  json::JsonObject result;
+  for (const auto&[name, powertoy] : modules()) {
     try {
-      json::value powertoys_config = json::value::parse(powertoy.get_config());
-      result.as_object()[name] = powertoys_config;
+      result.SetNamedValue(name, powertoy.json_config());
     }
-    catch (json::json_exception&) {
-      //Malformed JSON.
+    catch (...) {
+      // TODO: handle malformed JSON.
     }
   }
   return result;
 }
 
-json::value get_all_settings() {
-  json::value result = json::value::object();
-  result.as_object()[L"general"] = get_general_settings();
-  result.as_object()[L"powertoys"] = get_power_toys_settings();
+json::JsonObject get_all_settings() {
+  json::JsonObject result;
+
+  result.SetNamedValue(L"general", get_general_settings());
+  result.SetNamedValue(L"powertoys", get_power_toys_settings());
   return result;
 }
 
-void dispatch_json_action_to_module(const json::value& powertoys_configs) {
-  for (auto powertoy_element : powertoys_configs.as_object()) {
-    std::wstringstream ws;
-    ws << powertoy_element.second;
-    if (modules().find(powertoy_element.first) != modules().end()) {
-      modules().at(powertoy_element.first).call_custom_action(ws.str());
+void dispatch_json_action_to_module(const json::JsonObject& powertoys_configs) {
+  for (const auto& powertoy_element : powertoys_configs) {
+    const std::wstring name{powertoy_element.Key().c_str()};
+    if (modules().find(name) != modules().end()) {
+      const auto element = powertoy_element.Value().Stringify();
+      modules().at(name).call_custom_action(element.c_str());
     }
   }
 }
 
 void send_json_config_to_module(const std::wstring& module_key, const std::wstring& settings) {
   if (modules().find(module_key) != modules().end()) {
-    modules().at(module_key).set_config(settings);
+    modules().at(module_key).set_config(settings.c_str());
   }
 }
 
-void dispatch_json_config_to_modules(const json::value& powertoys_configs) {
-  for (auto powertoy_element : powertoys_configs.as_object()) {
-    std::wstringstream ws;
-    ws << powertoy_element.second;
-    send_json_config_to_module(powertoy_element.first, ws.str());
+void dispatch_json_config_to_modules(const json::JsonObject& powertoys_configs) {
+  for (const auto& powertoy_element : powertoys_configs) {
+    const auto element = powertoy_element.Value().Stringify();
+    send_json_config_to_module(powertoy_element.Key().c_str(), element.c_str());
   }
 };
 
 void dispatch_received_json(const std::wstring &json_to_parse) {
-  json::value j = json::value::parse(json_to_parse);
-  for(auto base_element : j.as_object()) {
-    if (base_element.first == L"general") {
-      apply_general_settings(base_element.second);
-      std::wstringstream ws;
-      ws << get_all_settings();
-      if (current_settings_ipc != NULL) {
-        current_settings_ipc->send(ws.str());
+  const json::JsonObject j = json::JsonObject::Parse(json_to_parse);
+  for(const auto & base_element : j) {
+    const auto name = base_element.Key();
+    const auto value = base_element.Value();
+
+    if (name == L"general") {
+      apply_general_settings(value.GetObjectW());
+      if (current_settings_ipc != nullptr) {
+        const std::wstring settings_string{get_all_settings().Stringify().c_str()};
+        current_settings_ipc->send(settings_string);
       }
-    } else if (base_element.first == L"powertoys") {
-      dispatch_json_config_to_modules(base_element.second);
-      std::wstringstream ws;
-      ws << get_all_settings();
-      if (current_settings_ipc != NULL) {
-        current_settings_ipc->send(ws.str());
+    } else if (name == L"powertoys") {
+      dispatch_json_config_to_modules(value.GetObjectW());
+      if (current_settings_ipc != nullptr) {
+        const std::wstring settings_string{get_all_settings().Stringify().c_str()};
+        current_settings_ipc->send(settings_string);
       }
-    } else if (base_element.first == L"refresh") {
-      std::wstringstream ws;
-      ws << get_all_settings();
-      if (current_settings_ipc != NULL) {
-        current_settings_ipc->send(ws.str());
+    } else if (name == L"refresh") {
+      if (current_settings_ipc != nullptr) {
+        const std::wstring settings_string{get_all_settings().Stringify().c_str()};
+        current_settings_ipc->send(settings_string);
       }
-    } else if (base_element.first == L"action") {
-      dispatch_json_action_to_module(base_element.second);
+    } else if (name == L"action") {
+      dispatch_json_action_to_module(value.GetObjectW());
     }
   }
   return;
@@ -118,7 +117,7 @@ void run_settings_window() {
   wcscat_s(executable_path, L"\\PowerToysSettings.exe");
   WCHAR executable_args[MAX_PATH * 3];
 
-  std::wstring settings_theme_setting = get_general_settings().at(L"theme").as_string();
+  const std::wstring settings_theme_setting{get_general_settings().GetNamedString(L"theme").c_str()};
   std::wstring settings_theme;
   if (settings_theme_setting == L"dark" || (settings_theme_setting == L"system" && WindowsColors::is_dark_mode())) {
     settings_theme = L" dark"; // Include arg separating space

@@ -9,6 +9,7 @@
 #include <functional>
 
 class PowertoyModule;
+#include <common/json.h>
 
 struct PowertoyModuleDeleter {
   void operator()(PowertoyModuleIface* module) const {
@@ -48,6 +49,8 @@ public:
   const std::wstring& get_name() const {
     return name;
   }
+
+  json::JsonObject json_config() const;
   
   const std::wstring get_config() const {
     std::wstring result;

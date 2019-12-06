@@ -10,9 +10,6 @@
 
 General project organization:
 
-#### The [`deps`](/deps) folder
-Contains other projects that PowerToys uses as dependencies.
-
 #### The [`doc`](/doc) folder
 Documentation for the project, including a [coding guide](/doc/coding) and [design docs](/doc/specs).
 

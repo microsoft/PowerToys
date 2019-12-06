@@ -32,8 +32,8 @@ public:
   virtual void destroy() override;
 
 private:
-  TargetState* target_state;
-  D2DOverlayWindow *winkey_popup;
+  std::unique_ptr<TargetState> target_state;
+  std::unique_ptr<D2DOverlayWindow> winkey_popup;
   bool _enabled = false;
 
   void init_settings();

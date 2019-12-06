@@ -61,39 +61,37 @@ void OverlayWindow::set_config(const wchar_t * config) {
   try {
     PowerToysSettings::PowerToyValues _values =
       PowerToysSettings::PowerToyValues::from_json_string(config);
-    if (_values.is_int_value(pressTime.name)) {
-      int press_delay_time = _values.get_int_value(pressTime.name);
-      pressTime.value = press_delay_time;
+    if (const auto press_delay_time = _values.get_int_value(pressTime.name)) {
+      pressTime.value = *press_delay_time;
       if (target_state) {
-        target_state->set_delay(press_delay_time);
+        target_state->set_delay(*press_delay_time);
       }
     }
-    if (_values.is_int_value(overlayOpacity.name)) {
-      int overlay_opacity = _values.get_int_value(overlayOpacity.name);
-      overlayOpacity.value = overlay_opacity;
+    if (const auto overlay_opacity = _values.get_int_value(overlayOpacity.name)) {
+      overlayOpacity.value = *overlay_opacity;
       if (winkey_popup) {
         winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
       }
     }
-    if (_values.is_string_value(theme.name)) {
-      theme.value = _values.get_string_value(theme.name);
+    if (auto val = _values.get_string_value(theme.name)) {
+      theme.value = std::move(*val);
       winkey_popup->set_theme(theme.value);
     }
     _values.save_to_settings_file();
     Trace::SettingsChanged(pressTime.value, overlayOpacity.value, theme.value);
   }
-  catch (std::exception&) {
-    // Improper JSON.
+  catch (...) {
+    // Improper JSON. TODO: handle the error.
   }
 }
 
 void OverlayWindow::enable() {
   if (!_enabled) {
     Trace::EnableShortcutGuide(true);
-    winkey_popup = new D2DOverlayWindow();
+    winkey_popup = std::make_unique<D2DOverlayWindow>();
     winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value)/100.0f);
     winkey_popup->set_theme(theme.value);
-    target_state = new TargetState(pressTime.value);
+    target_state = std::make_unique<TargetState>(pressTime.value);
     winkey_popup->initialize();
   }
   _enabled = true;
@@ -107,10 +105,8 @@ void OverlayWindow::disable(bool trace_event) {
     }
     winkey_popup->hide();
     target_state->exit();
-    delete target_state;
-    delete winkey_popup;
-    target_state = nullptr;
-    winkey_popup = nullptr;
+    target_state.reset();
+    winkey_popup.reset();
   }
 }
 
@@ -164,14 +160,14 @@ void OverlayWindow::init_settings() {
   try {
     PowerToysSettings::PowerToyValues settings =
       PowerToysSettings::PowerToyValues::load_from_settings_file(OverlayWindow::get_name());
-    if (settings.is_int_value(pressTime.name)) {
-      pressTime.value = settings.get_int_value(pressTime.name);
+    if (const auto val = settings.get_int_value(pressTime.name)) {
+      pressTime.value = *val;
     }
-    if (settings.is_int_value(overlayOpacity.name)) {
-      overlayOpacity.value = settings.get_int_value(overlayOpacity.name);
+    if (const auto val = settings.get_int_value(overlayOpacity.name)) {
+      overlayOpacity.value = *val;
     }
-    if (settings.is_string_value(theme.name)) {
-      theme.value = settings.get_string_value(theme.name);
+    if (auto val = settings.get_string_value(theme.name)) {
+      theme.value = std::move(*val);
     }
   }
   catch (std::exception&) {
