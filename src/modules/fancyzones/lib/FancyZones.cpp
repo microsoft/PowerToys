@@ -86,7 +86,7 @@ private:
     void MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
     void MoveSizeEndInternal(HWND window, POINT const& ptScreen, require_write_lock) noexcept;
     void MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
-    void HandleVirtualDesktopUpdates(HANDLE event) noexcept;
+    void HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) noexcept;
 
     const HINSTANCE m_hinstance{};
 
@@ -103,6 +103,7 @@ private:
     GUID m_currentVirtualDesktopId{}; // UUID of the current virtual desktop. Is GUID_NULL until first VD switch per session.
     std::unordered_map<GUID, bool> m_virtualDesktopIds;
     wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
+    wil::unique_handle m_fancyZonesDestroyedEvent;
 
     OnThreadExecutor m_dpiUnawareThread;
     OnThreadExecutor m_virtualDesktopTrackerThread;
@@ -151,10 +152,9 @@ IFACEMETHODIMP_(void) FancyZones::Run() noexcept
         return;
     }
     
-    if (HANDLE event{ CreateEvent(NULL, FALSE, FALSE, NULL) }; event != NULL) {
-        m_virtualDesktopTrackerThread.submit(
-            OnThreadExecutor::task_t{ std::bind(&FancyZones::HandleVirtualDesktopUpdates, this, event) });
-    }
+    m_fancyZonesDestroyedEvent.reset(CreateEvent(NULL, FALSE, FALSE, NULL));
+    m_virtualDesktopTrackerThread.submit(
+        OnThreadExecutor::task_t{ std::bind(&FancyZones::HandleVirtualDesktopUpdates, this, m_fancyZonesDestroyedEvent.get()) });
 }
 
 // IFancyZones
@@ -167,6 +167,9 @@ IFACEMETHODIMP_(void) FancyZones::Destroy() noexcept
     {
         DestroyWindow(m_window);
         m_window = nullptr;
+    }
+    if (m_fancyZonesDestroyedEvent) {
+        SetEvent(m_fancyZonesDestroyedEvent.get());
     }
     RegCloseKey(m_virtualDesktopsRegKey);
 }
@@ -755,18 +758,20 @@ void FancyZones::MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen,
     }
 }
 
-void FancyZones::HandleVirtualDesktopUpdates(HANDLE event) noexcept
+void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) noexcept
 {
+    HANDLE regKeyEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    HANDLE events[2] = { regKeyEvent, fancyZonesDestroyedEvent };
     while (1) {
-        if (RegNotifyChangeKeyValue(HKEY_CURRENT_USER, TRUE, REG_NOTIFY_CHANGE_LAST_SET, event, TRUE) != ERROR_SUCCESS) {
+        if (RegNotifyChangeKeyValue(HKEY_CURRENT_USER, TRUE, REG_NOTIFY_CHANGE_LAST_SET, regKeyEvent, TRUE) != ERROR_SUCCESS) {
             return;
         }
-        if (WaitForSingleObject(event, INFINITE) == WAIT_FAILED) {
-           return;
+        if (DWORD result{ WaitForMultipleObjects(2, events, FALSE, INFINITE) }; result != (WAIT_OBJECT_0 + 0)) {
+            // if fancyZonesDestroyedEvent is signalized or WaitForMultipleObjects failed, terminate thread execution
+            return;
         }
         DWORD bufferCapacity;
         const WCHAR* key = L"VirtualDesktopIDs";
-        const int guidSize = sizeof(GUID);
         // request regkey binary buffer capacity only
         if (RegQueryValueExW(m_virtualDesktopsRegKey, key, 0, nullptr, NULL, &bufferCapacity) != ERROR_SUCCESS) {
             return;
@@ -777,6 +782,7 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE event) noexcept
             free(buffer);
             return;
         }
+        const int guidSize = sizeof(GUID);
         std::unordered_map<GUID, bool> temp;
         for (int i = 0; i < bufferCapacity; i += guidSize) {
             GUID guid;
