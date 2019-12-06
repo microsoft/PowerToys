@@ -39,6 +39,13 @@ public:
         const auto nB = (tmp & 0xFF);
         return RGB(nR, nG, nB);
     }
+    IFACEMETHODIMP_(GUID) GetCurrentMonitorZoneSetId(HMONITOR monitor) noexcept
+    {
+        if (auto it = m_zoneWindowMap.find(monitor); it != m_zoneWindowMap.end() && it->second->ActiveZoneSet()) {
+            return it->second->ActiveZoneSet()->Id();
+        }
+        return GUID_NULL;
+    }
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void OnDisplayChange(DisplayChangeType changeType) noexcept;
@@ -308,9 +315,12 @@ void FancyZones::ToggleEditor() noexcept
         std::to_wstring(width) + L"_" +
         std::to_wstring(height);
 
+    const auto activeZoneSet = iter->second->ActiveZoneSet();
+    const std::wstring layoutID = activeZoneSet ? std::to_wstring(activeZoneSet->LayoutId()) : L"0";
+
     const std::wstring params =
         iter->second->UniqueId() + L" " +
-        std::to_wstring(iter->second->ActiveZoneSet()->LayoutId()) + L" " +
+        layoutID + L" " +
         std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
         editorLocation + L" " +
         iter->second->WorkAreaKey() + L" " +
@@ -553,10 +563,6 @@ void FancyZones::UpdateZoneWindows() noexcept
         return TRUE;
     };
 
-    {
-        std::unique_lock writeLock(m_lock);
-        m_zoneWindowMap.clear();
-    }
     EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(this));
 }
 
