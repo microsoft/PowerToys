@@ -756,10 +756,12 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE event) noexcept
         DWORD bufferCapacity;
         const WCHAR* key = L"VirtualDesktopIDs";
         const int guidSize = sizeof(GUID);
+        // request regkey binary buffer capacity only
         if (RegQueryValueExW(m_virtualDesktopsRegKey, key, 0, nullptr, NULL, &bufferCapacity) != ERROR_SUCCESS) {
             return;
         }
         BYTE* buffer = (BYTE*)malloc(bufferCapacity);
+        // request regkey binary content
         if (RegQueryValueExW(m_virtualDesktopsRegKey, key, 0, nullptr, buffer, &bufferCapacity) != ERROR_SUCCESS) {
             free(buffer);
             return;
@@ -775,13 +777,14 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE event) noexcept
         free(buffer);
         for (auto it = begin(m_virtualDesktopIds); it != end(m_virtualDesktopIds);) {
             if (auto iter = temp.find(it->first); iter == temp.end()) {
-                it = m_virtualDesktopIds.erase(it);
+                it = m_virtualDesktopIds.erase(it); // virtual desktop closed, remove it from map
             }
             else {
-                temp.erase(it->first);
+                temp.erase(it->first); // virtual desktop already in map, skip it
                 ++it;
             }
         }
+        // register new virtual desktops, if any
         m_virtualDesktopIds.insert(begin(temp), end(temp));
     }
 }
