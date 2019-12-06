@@ -2,7 +2,19 @@
 #include "common/dpi_aware.h"
 #include "common/on_thread_executor.h"
 
-#include <unordered_set>
+#include <functional>
+
+namespace std
+{
+    template<> struct hash<GUID>
+    {
+        size_t operator()(const GUID& Value) const
+        {
+            RPC_STATUS status = RPC_S_OK;
+            return ::UuidHash(&const_cast<GUID&>(Value), &status);
+        }
+    };
+}
 
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
@@ -89,7 +101,7 @@ private:
     winrt::com_ptr<IZoneWindow> m_zoneWindowMoveSize; // "Active" ZoneWindow, where the move/size is happening. Will update as drag moves between monitors.
     IFancyZonesSettings* m_settings{};
     GUID m_currentVirtualDesktopId{}; // UUID of the current virtual desktop. Is GUID_NULL until first VD switch per session.
-    std::unordered_map<std::wstring, bool> m_virtualDesktopIds;
+    std::unordered_map<GUID, bool> m_virtualDesktopIds;
     wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
 
     OnThreadExecutor m_dpiUnawareThread;
@@ -492,15 +504,14 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
     wil::unique_cotaskmem_string virtualDesktopId;
     if (SUCCEEDED_LOG(StringFromCLSID(m_currentVirtualDesktopId, &virtualDesktopId)))
     {
-        const std::wstring id{ virtualDesktopId.get() };
-        const bool newVirtualDesktop = m_virtualDesktopIds[id];
+        const bool newVirtualDesktop = m_virtualDesktopIds[m_currentVirtualDesktopId];
         const bool flash = m_settings->GetSettings().zoneSetChange_flashZones && newVirtualDesktop;
 
         if (auto zoneWindow = MakeZoneWindow(this, m_hinstance, monitor, deviceId, virtualDesktopId.get(), flash))
         {
             m_zoneWindowMap[monitor] = std::move(zoneWindow);
         }
-        m_virtualDesktopIds[id] = false;
+        m_virtualDesktopIds[m_currentVirtualDesktopId] = false;
     }
 }
 
@@ -766,13 +777,11 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE event) noexcept
             free(buffer);
             return;
         }
-        std::unordered_map<std::wstring, bool> temp;
+        std::unordered_map<GUID, bool> temp;
         for (int i = 0; i < bufferCapacity; i += guidSize) {
             GUID guid;
             memcpy(&guid, buffer + i, guidSize);
-            if (wil::unique_cotaskmem_string virtualDesktopId; SUCCEEDED_LOG(StringFromCLSID(guid, &virtualDesktopId))) {
-                temp[std::wstring(virtualDesktopId.get())] = true;
-            }
+            temp[guid] = true;
         }
         free(buffer);
         for (auto it = begin(m_virtualDesktopIds); it != end(m_virtualDesktopIds);) {
