@@ -766,7 +766,7 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) no
         if (RegNotifyChangeKeyValue(HKEY_CURRENT_USER, TRUE, REG_NOTIFY_CHANGE_LAST_SET, regKeyEvent, TRUE) != ERROR_SUCCESS) {
             return;
         }
-        if (DWORD result{ WaitForMultipleObjects(2, events, FALSE, INFINITE) }; result != (WAIT_OBJECT_0 + 0)) {
+        if (WaitForMultipleObjects(2, events, FALSE, INFINITE) != (WAIT_OBJECT_0 + 0)) {
             // if fancyZonesDestroyedEvent is signalized or WaitForMultipleObjects failed, terminate thread execution
             return;
         }
