@@ -74,8 +74,11 @@ private:
     void MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
     void MoveSizeEndInternal(HWND window, POINT const& ptScreen, require_write_lock) noexcept;
     void MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
+    void HandleVirtualDesktopUpdates(HANDLE event) noexcept;
 
     const HINSTANCE m_hinstance{};
+
+    HKEY m_virtualDesktopsRegKey;
 
     mutable std::shared_mutex m_lock;
     HWND m_window{};
@@ -86,10 +89,11 @@ private:
     winrt::com_ptr<IZoneWindow> m_zoneWindowMoveSize; // "Active" ZoneWindow, where the move/size is happening. Will update as drag moves between monitors.
     IFancyZonesSettings* m_settings{};
     GUID m_currentVirtualDesktopId{}; // UUID of the current virtual desktop. Is GUID_NULL until first VD switch per session.
-    std::unordered_set<std::wstring> m_virtualDesktopIds;
+    std::unordered_map<std::wstring, bool> m_virtualDesktopIds;
     wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
 
     OnThreadExecutor m_dpiUnawareThread;
+    OnThreadExecutor m_virtualDesktopTrackerThread;
 
     static UINT WM_PRIV_VDCHANGED; // Message to get back on to the UI thread when virtual desktop changes
     static UINT WM_PRIV_EDITOR; // Message to get back on to the UI thread when the editor exits
@@ -130,6 +134,15 @@ IFACEMETHODIMP_(void) FancyZones::Run() noexcept
         SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
         SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
     }}).wait();
+
+    if (RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops", 0, KEY_ALL_ACCESS, &m_virtualDesktopsRegKey) != ERROR_SUCCESS) {
+        return;
+    }
+    
+    if (HANDLE event{ CreateEvent(NULL, FALSE, FALSE, NULL) }; event != NULL) {
+        m_virtualDesktopTrackerThread.submit(
+            OnThreadExecutor::task_t{ std::bind(&FancyZones::HandleVirtualDesktopUpdates, this, event) });
+    }
 }
 
 // IFancyZones
@@ -143,6 +156,7 @@ IFACEMETHODIMP_(void) FancyZones::Destroy() noexcept
         DestroyWindow(m_window);
         m_window = nullptr;
     }
+    RegCloseKey(m_virtualDesktopsRegKey);
 }
 
 // IFancyZonesCallback
@@ -478,12 +492,15 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
     wil::unique_cotaskmem_string virtualDesktopId;
     if (SUCCEEDED_LOG(StringFromCLSID(m_currentVirtualDesktopId, &virtualDesktopId)))
     {
-        const bool flash = m_settings->GetSettings().zoneSetChange_flashZones &&
-            m_virtualDesktopIds.insert(std::wstring(virtualDesktopId.get())).second;
+        const std::wstring id{ virtualDesktopId.get() };
+        const bool newVirtualDesktop = m_virtualDesktopIds[id];
+        const bool flash = m_settings->GetSettings().zoneSetChange_flashZones && newVirtualDesktop;
+
         if (auto zoneWindow = MakeZoneWindow(this, m_hinstance, monitor, deviceId, virtualDesktopId.get(), flash))
         {
             m_zoneWindowMap[monitor] = std::move(zoneWindow);
         }
+        m_virtualDesktopIds[id] = false;
     }
 }
 
@@ -724,6 +741,48 @@ void FancyZones::MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen,
             MoveSizeStartInternal(m_windowMoveSize, monitor, ptScreen, writeLock);
             MoveSizeUpdateInternal(monitor, ptScreen, writeLock);
         }
+    }
+}
+
+void FancyZones::HandleVirtualDesktopUpdates(HANDLE event) noexcept
+{
+    while (1) {
+        if (RegNotifyChangeKeyValue(HKEY_CURRENT_USER, TRUE, REG_NOTIFY_CHANGE_LAST_SET, event, TRUE) != ERROR_SUCCESS) {
+            return;
+        }
+        if (WaitForSingleObject(event, INFINITE) == WAIT_FAILED) {
+           return;
+        }
+        DWORD bufferCapacity;
+        const WCHAR* key = L"VirtualDesktopIDs";
+        const int guidSize = sizeof(GUID);
+        if (RegQueryValueExW(m_virtualDesktopsRegKey, key, 0, nullptr, NULL, &bufferCapacity) != ERROR_SUCCESS) {
+            return;
+        }
+        BYTE* buffer = (BYTE*)malloc(bufferCapacity);
+        if (RegQueryValueExW(m_virtualDesktopsRegKey, key, 0, nullptr, buffer, &bufferCapacity) != ERROR_SUCCESS) {
+            free(buffer);
+            return;
+        }
+        std::unordered_map<std::wstring, bool> temp;
+        for (int i = 0; i < bufferCapacity; i += guidSize) {
+            GUID guid;
+            memcpy(&guid, buffer + i, guidSize);
+            if (wil::unique_cotaskmem_string virtualDesktopId; SUCCEEDED_LOG(StringFromCLSID(guid, &virtualDesktopId))) {
+                temp[std::wstring(virtualDesktopId.get())] = true;
+            }
+        }
+        free(buffer);
+        for (auto it = begin(m_virtualDesktopIds); it != end(m_virtualDesktopIds);) {
+            if (auto iter = temp.find(it->first); iter == temp.end()) {
+                it = m_virtualDesktopIds.erase(it);
+            }
+            else {
+                temp.erase(it->first);
+                ++it;
+            }
+        }
+        m_virtualDesktopIds.insert(begin(temp), end(temp));
     }
 }
 
