@@ -579,7 +579,32 @@ void FancyZones::MoveWindowsOnDisplayChange() noexcept
 void FancyZones::UpdateDragState(require_write_lock) noexcept
 {
     const bool shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
-    m_dragEnabled = m_settings->GetSettings().shiftDrag ? shift : !shift;
+    const bool mouseL = GetAsyncKeyState(VK_LBUTTON) & 0x8000;
+    const bool mouseR = GetAsyncKeyState(VK_RBUTTON) & 0x8000;
+    const bool mouseM = GetAsyncKeyState(VK_MBUTTON) & 0x8000;
+    const bool mouseX1 = GetAsyncKeyState(VK_XBUTTON1) & 0x8000;
+    const bool mouseX2 = GetAsyncKeyState(VK_XBUTTON2) & 0x8000;
+
+    // Note, Middle, X1 and X2 can also be used in addition to R/L
+    bool mouse =  mouseM | mouseX1 | mouseX2;
+    // If the user has swapped their Right and Left Buttons, use the "Right" equivalent
+    if (GetSystemMetrics(SM_SWAPBUTTON))
+    {
+        mouse |= mouseL;
+    }
+    else
+    {
+        mouse |= mouseR;
+    }
+
+    if (m_settings->GetSettings().shiftDrag)
+    {
+        m_dragEnabled = (shift | mouse);
+    }
+    else
+    {
+        m_dragEnabled = !(shift | mouse);
+    }
 }
 
 void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
