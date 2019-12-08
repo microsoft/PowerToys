@@ -58,7 +58,7 @@ namespace Wox.Plugin.Folder
             return results;
         }
 
-        private Result CreateFolderResult(string title, string path)
+        private Result CreateFolderResult(string title, string path, string queryActionKeyword)
         {
             return new Result
             {
@@ -82,7 +82,7 @@ namespace Wox.Plugin.Folder
                     }
 
                     string changeTo = path.EndsWith("\\") ? path : path + "\\";
-                    _context.API.ChangeQuery(changeTo);
+                    _context.API.ChangeQuery(queryActionKeyword + " " + changeTo);
                     return false;
                 }
             };
@@ -93,7 +93,7 @@ namespace Wox.Plugin.Folder
             string search = query.Search.ToLower();
             var userFolderLinks = _settings.FolderLinks.Where(
                 x => x.Nickname.StartsWith(search, StringComparison.OrdinalIgnoreCase));
-            var results = userFolderLinks.Select(item => CreateFolderResult(item.Nickname, item.Path))
+            var results = userFolderLinks.Select(item => CreateFolderResult(item.Nickname, item.Path, query.ActionKeyword))
                     .ToList();
             return results;
         }
@@ -166,7 +166,7 @@ namespace Wox.Plugin.Folder
 
                 var result =
                     fileSystemInfo is DirectoryInfo
-                        ? CreateFolderResult(fileSystemInfo.Name, fileSystemInfo.FullName)
+                        ? CreateFolderResult(fileSystemInfo.Name, fileSystemInfo.FullName, query.ActionKeyword)
                         : CreateFileResult(fileSystemInfo.FullName);
                 results.Add(result);
             }
