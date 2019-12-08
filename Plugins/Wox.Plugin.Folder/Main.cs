@@ -220,7 +220,7 @@ namespace Wox.Plugin.Folder
             {
                 Title = firstResult,
                 IcoPath = search,
-                Score = 10000,
+                Score = 500,
                 Action = c =>
                 {
                     Process.Start(search);
