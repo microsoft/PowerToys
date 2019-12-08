@@ -44,7 +44,7 @@ namespace Wox.Plugin.Folder
             var results = GetUserFolderResults(query);
 
             string search = query.Search.ToLower();
-            if (_driverNames != null && !_driverNames.Any(search.StartsWith))
+            if (!IsDriveOrSharedFolder(search))
                 return results;
 
             results.AddRange(QueryInternal_Directory_Exists(query));
@@ -56,6 +56,26 @@ namespace Wox.Plugin.Folder
             }
 
             return results;
+        }
+
+        private static bool IsDriveOrSharedFolder(string search)
+        {
+            if (search.StartsWith(@"\\"))
+            {
+                return true;
+            }
+
+            if (_driverNames != null && _driverNames.Any(search.StartsWith))
+            {
+                return true;
+            }
+
+            if (_driverNames == null && search.Length > 2 && char.IsLetter(search[0]) && search[1] == ':')
+            {
+                return true; // we don't know so let's give it the possibility
+            }
+
+            return false;
         }
 
         private Result CreateFolderResult(string title, string path)
