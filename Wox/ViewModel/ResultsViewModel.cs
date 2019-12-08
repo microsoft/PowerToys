@@ -107,6 +107,11 @@ namespace Wox.ViewModel
             SelectedIndex = NewIndex(SelectedIndex - MaxResults);
         }
 
+        public void SelectFirstResult()
+        {
+            SelectedIndex = NewIndex(0);
+        }
+
         public void Clear()
         {
             Results.Clear();

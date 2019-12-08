@@ -126,6 +126,8 @@ namespace Wox.ViewModel
                 SelectedResults.SelectPrevPage();
             });
 
+            SelectFirstResultCommand = new RelayCommand(_ => SelectedResults.SelectFirstResult());
+
             StartHelpCommand = new RelayCommand(_ =>
             {
                 Process.Start("http://doc.wox.one/");
@@ -268,6 +270,7 @@ namespace Wox.ViewModel
         public ICommand SelectPrevItemCommand { get; set; }
         public ICommand SelectNextPageCommand { get; set; }
         public ICommand SelectPrevPageCommand { get; set; }
+        public ICommand SelectFirstResultCommand { get; set; }
         public ICommand StartHelpCommand { get; set; }
         public ICommand LoadContextMenuCommand { get; set; }
         public ICommand LoadHistoryCommand { get; set; }
