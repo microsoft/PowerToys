@@ -82,7 +82,7 @@ namespace Wox.Plugin.Folder
                     }
 
                     string changeTo = path.EndsWith("\\") ? path : path + "\\";
-                    _context.API.ChangeQuery(queryActionKeyword + " " + changeTo);
+                    _context.API.ChangeQuery(string.IsNullOrEmpty(queryActionKeyword)? changeTo : queryActionKeyword + " " + changeTo);
                     return false;
                 }
             };
