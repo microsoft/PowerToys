@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -82,7 +82,7 @@ namespace Wox.Plugin.Folder
                     }
 
                     string changeTo = path.EndsWith("\\") ? path : path + "\\";
-                    _context.API.ChangeQuery(queryActionKeyword + " " + changeTo);
+                    _context.API.ChangeQuery(string.IsNullOrEmpty(queryActionKeyword)? changeTo : queryActionKeyword + " " + changeTo);
                     return false;
                 }
             };
@@ -157,18 +157,32 @@ namespace Wox.Plugin.Folder
                 incompleteName = incompleteName.Substring(1);
             }
 
-            // search folder and add results
-            var fileSystemInfos = directoryInfo.GetFileSystemInfos(incompleteName, searchOption);
-
-            foreach (var fileSystemInfo in fileSystemInfos)
+            try
             {
-                if ((fileSystemInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
+                // search folder and add results
+                var fileSystemInfos = directoryInfo.GetFileSystemInfos(incompleteName, searchOption);
 
-                var result =
-                    fileSystemInfo is DirectoryInfo
-                        ? CreateFolderResult(fileSystemInfo.Name, fileSystemInfo.FullName, query.ActionKeyword)
-                        : CreateFileResult(fileSystemInfo.FullName);
-                results.Add(result);
+                foreach (var fileSystemInfo in fileSystemInfos)
+                {
+                    if ((fileSystemInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
+
+                    var result =
+                        fileSystemInfo is DirectoryInfo
+                            ? CreateFolderResult(fileSystemInfo.Name, fileSystemInfo.FullName, query.ActionKeyword)
+                            : CreateFileResult(fileSystemInfo.FullName);
+                    results.Add(result);
+                }
+            }
+            catch(Exception e)
+            {
+                if (e is UnauthorizedAccessException || e is ArgumentException)
+                {
+                    results.Add(new Result { Title = e.Message, Score = 501 });
+
+                    return results;
+                }
+
+                throw;
             }
 
             return results;
@@ -206,7 +220,7 @@ namespace Wox.Plugin.Folder
             {
                 Title = firstResult,
                 IcoPath = search,
-                Score = 10000,
+                Score = 500,
                 Action = c =>
                 {
                     Process.Start(search);
