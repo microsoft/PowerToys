@@ -97,7 +97,7 @@ namespace Wox.Plugin.Program.Programs
                     Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
                     Action = _ =>
                     {
-                        return Main.StartProcess(ShellCommand.SetCMDRunAsAdministrator(FullPath, ParentDirectory));
+                        return Main.StartProcess(ShellCommand.SetProcessStartInfo(FullPath, ParentDirectory));
                     },
                     IcoPath = "Images/cmd.png"
                 },

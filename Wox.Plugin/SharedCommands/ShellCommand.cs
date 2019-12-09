@@ -9,13 +9,14 @@ namespace Wox.Plugin.SharedCommands
 {
     public static class ShellCommand
     {
-        public static ProcessStartInfo SetCMDRunAsAdministrator(this string fullPath, string parentDirectory)
+        public static ProcessStartInfo SetProcessStartInfo(this string fileName, string workingDirectory="", string arguments = "", string verb = "")
         {
             var info = new ProcessStartInfo
             {
-                FileName = fullPath,
-                WorkingDirectory = parentDirectory,
-                Verb = "runas"
+                FileName = fileName,
+                WorkingDirectory = workingDirectory,
+                Arguments = arguments,
+                Verb = verb
             };
 
             return info;
