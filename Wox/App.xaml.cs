@@ -53,7 +53,7 @@ namespace Wox
                 _settingsVM = new SettingWindowViewModel();
                 _settings = _settingsVM.Settings;
 
-                Alphabet.Initialize(_settings.ShouldUsePinyin);
+                Alphabet.Initialize(_settings);
 
                 StringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 

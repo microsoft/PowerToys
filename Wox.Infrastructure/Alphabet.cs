@@ -15,15 +15,12 @@ namespace Wox.Infrastructure
         private static readonly HanyuPinyinOutputFormat Format = new HanyuPinyinOutputFormat();
         private static ConcurrentDictionary<string, string[][]> PinyinCache;
         private static BinaryStorage<ConcurrentDictionary<string, string[][]>> _pinyinStorage;
-        private static bool _shouldUsePinyin = true;
+        private static Settings _settings;
          
-        public static void Initialize(bool shouldUsePinyin = true)
+        public static void Initialize(Settings settings)
         {
-            _shouldUsePinyin = shouldUsePinyin;
-            if (_shouldUsePinyin)
-            {
-                InitializePinyinHelpers();
-            }
+            _settings = settings;
+            InitializePinyinHelpers();
         }
 
         private static void InitializePinyinHelpers()
@@ -43,7 +40,7 @@ namespace Wox.Infrastructure
 
         public static void Save()
         {
-            if (!_shouldUsePinyin)
+            if (!_settings.ShouldUsePinyin)
             {
                 return; 
             }
@@ -59,7 +56,7 @@ namespace Wox.Infrastructure
         /// </summary>
         public static string[] Pinyin(string word)
         {
-            if (!_shouldUsePinyin)
+            if (!_settings.ShouldUsePinyin)
             {
                 return EmptyStringArray;
             }
@@ -81,7 +78,7 @@ namespace Wox.Infrastructure
         /// </summmary>
         public static string[][] PinyinComination(string characters)
         {
-            if (!_shouldUsePinyin || string.IsNullOrEmpty(characters))
+            if (!_settings.ShouldUsePinyin || string.IsNullOrEmpty(characters))
             {
                 return Empty2DStringArray;
             }
@@ -122,7 +119,7 @@ namespace Wox.Infrastructure
 
         public static bool ContainsChinese(string word)
         {
-            if (!_shouldUsePinyin)
+            if (!_settings.ShouldUsePinyin)
             {
                 return false;
             }
@@ -140,7 +137,7 @@ namespace Wox.Infrastructure
 
         private static string[] Combination(string[] array1, string[] array2)
         {
-            if (!_shouldUsePinyin)
+            if (!_settings.ShouldUsePinyin)
             {
                 return EmptyStringArray;
             }
