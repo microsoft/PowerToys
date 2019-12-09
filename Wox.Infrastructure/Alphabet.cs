@@ -149,7 +149,5 @@ namespace Wox.Infrastructure
             ).ToArray();
             return combination;
         }
-
-
     }
 }
