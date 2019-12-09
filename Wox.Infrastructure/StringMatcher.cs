@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +13,7 @@ namespace Wox.Infrastructure
         public static MatchOption DefaultMatchOption = new MatchOption();
 
         public static string UserSettingSearchPrecision { get; set; }
+        public static bool ShouldUsePinyin { get; set; }
 
         [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
         public static int Score(string source, string target)
@@ -135,6 +136,11 @@ namespace Wox.Infrastructure
 
         public static int ScoreForPinyin(string source, string target)
         {
+            if (!ShouldUsePinyin)
+            {
+                return 0;
+            }
+
             if (!string.IsNullOrEmpty(source) && !string.IsNullOrEmpty(target))
             {
                 if (Alphabet.ContainsChinese(source))
