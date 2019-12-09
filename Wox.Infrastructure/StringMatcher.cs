@@ -96,7 +96,7 @@ namespace Wox.Infrastructure
                 {
                     Success = true,
                     MatchData = indexList,
-                    Score = Math.Max(score, pinyinScore)
+                    RawScore = Math.Max(score, pinyinScore)
                 };
 
                 return result.Score > 0 ? 
@@ -171,16 +171,22 @@ namespace Wox.Infrastructure
     {
         public bool Success { get; set; }
 
-        private int _score;
-        public int Score
+        /// <summary>
+        /// The final score of the match result with all search precision filters applied.
+        /// </summary>
+        public int Score { get; private set; }
+
+        /// <summary>
+        /// The raw calculated search score without any search precision filtering applied.
+        /// </summary>
+        private int _rawScore;
+        public int RawScore
         {
-            get
-            {
-                return _score;
-            }
+            get { return _rawScore; }
             set
             {
-                _score = ApplySearchPrecisionFilter(value);
+                _rawScore = value;
+                Score = ApplySearchPrecisionFilter(_rawScore);
             }
         }
 
