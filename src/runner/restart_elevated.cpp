@@ -23,13 +23,14 @@ bool is_restart_scheduled() {
 
 bool restart_if_scheduled() {
   // Make sure we have enough room, even for the long (\\?\) paths
-  std::array<wchar_t, 0xFFFF> exe_path;
-  GetModuleFileNameW(nullptr, exe_path.data(), exe_path.size());
+  constexpr DWORD exe_path_size = 0xFFFF;
+  auto exe_path = std::make_unique<wchar_t[]>(exe_path_size);
+  GetModuleFileNameW(nullptr, exe_path.get(), exe_path_size);
   switch (state) {
   case RestartAsElevated:
-    return run_elevated(exe_path.data(), {});
+    return run_elevated(exe_path.get(), {});
   case RestartAsNonElevated:
-    return run_non_elevated(exe_path.data(), L"--dont-elevate");
+    return run_non_elevated(exe_path.get(), L"--dont-elevate");
   default:
     return false;
   }
