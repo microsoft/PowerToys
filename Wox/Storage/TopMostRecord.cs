@@ -1,47 +1,50 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Wox.Infrastructure.Storage;
+using Newtonsoft.Json;
 using Wox.Plugin;
 
 namespace Wox.Storage
 {
+    // todo this class is not thread safe.... but used from multiple threads.
     public class TopMostRecord
     {
-        public Dictionary<string, Record> records = new Dictionary<string, Record>();
+        [JsonProperty]
+        private Dictionary<string, Record> records = new Dictionary<string, Record>();
 
         internal bool IsTopMost(Result result)
         {
+            if (records.Count == 0)
+            {
+                return false;
+            }
+
+            // since this dictionary should be very small (or empty) going over it should be pretty fast. 
             return records.Any(o => o.Value.Title == result.Title
-                && o.Value.SubTitle == result.SubTitle
-                && o.Value.PluginID == result.PluginID
-                && o.Key == result.OriginQuery.RawQuery);
+                                     && o.Value.SubTitle == result.SubTitle
+                                     && o.Value.PluginID == result.PluginID
+                                     && o.Key == result.OriginQuery.RawQuery);
         }
 
         internal void Remove(Result result)
         {
-            if (records.ContainsKey(result.OriginQuery.RawQuery))
-            {
-                records.Remove(result.OriginQuery.RawQuery);
-            }
+            records.Remove(result.OriginQuery.RawQuery);
         }
 
         internal void AddOrUpdate(Result result)
         {
-            if (records.ContainsKey(result.OriginQuery.RawQuery))
+            var record = new Record
             {
-                records[result.OriginQuery.RawQuery].Title = result.Title;
-                records[result.OriginQuery.RawQuery].SubTitle = result.SubTitle;
-                records[result.OriginQuery.RawQuery].PluginID = result.PluginID;
-            }
-            else
-            {
-                records.Add(result.OriginQuery.RawQuery, new Record
-                {
-                    PluginID = result.PluginID,
-                    Title = result.Title,
-                    SubTitle = result.SubTitle
-                });
-            }
+                PluginID = result.PluginID,
+                Title = result.Title,
+                SubTitle = result.SubTitle
+            };
+            records[result.OriginQuery.RawQuery] = record;
+
+        }
+
+        public void Load(Dictionary<string, Record> dictionary)
+        {
+            records = dictionary;
         }
     }
 
