@@ -5,7 +5,6 @@
 #include "powertoy_module.h"
 #include <common/windows_colors.h>
 
-static bool settings_loaded = false;
 static std::wstring settings_theme = L"system";
 static bool run_as_elevated = false;
 
@@ -16,14 +15,10 @@ json::JsonObject load_general_settings() {
     settings_theme = L"system";
   }
   run_as_elevated = loaded.GetNamedBoolean(L"run_elevated", false);
-  settings_loaded = true;
   return loaded;
 }
 
 json::JsonObject get_general_settings() {
-  if (!settings_loaded) {
-    load_general_settings();
-  }
   json::JsonObject result;
   const bool startup = is_auto_start_task_active_for_this_user();
   result.SetNamedValue(L"startup", json::value(startup));
@@ -78,9 +73,7 @@ void apply_general_settings(const json::JsonObject& general_configs) {
       }
     }
   }
-  if (json::has(general_configs, L"run_elevated", json::JsonValueType::Boolean)) {
-    run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated");
-  }
+  run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
   if (json::has(general_configs, L"theme", json::JsonValueType::String)) {
     settings_theme = general_configs.GetNamedString(L"theme");
   }

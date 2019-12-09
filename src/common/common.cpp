@@ -268,7 +268,7 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params) {
   SIZE_T size = 0;
 
   InitializeProcThreadAttributeList(nullptr, 1, 0, &size);
-  std::unique_ptr<char> pproc_buffer{ new char[size] };
+  auto pproc_buffer = std::make_unique<char[]>(size);
   auto pptal = reinterpret_cast<PPROC_THREAD_ATTRIBUTE_LIST>(pproc_buffer.get());
   
   if (!InitializeProcThreadAttributeList(pptal, 1, 0, &size)) {

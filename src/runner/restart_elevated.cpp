@@ -22,6 +22,7 @@ bool is_restart_scheduled() {
 }
 
 bool restart_if_scheduled() {
+  // Make sure we have enough room, even for the long (\\?\) paths
   std::array<wchar_t, 0xFFFF> exe_path;
   GetModuleFileNameW(nullptr, exe_path.data(), exe_path.size());
   switch (state) {

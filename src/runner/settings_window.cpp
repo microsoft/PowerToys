@@ -50,6 +50,8 @@ void dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
     for (const auto& powertoy_element : powertoys_configs)
     {
         const std::wstring name{ powertoy_element.Key().c_str() };
+        // Currently, there is only one custom action in the general settings screen,
+        // so it has to be the "restart as (non-)elevated" button.
         if (name == L"general")
         {
             if (is_process_elevated())

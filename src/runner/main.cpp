@@ -88,10 +88,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     powertoys_events();
     modules();
 
-    auto general_settings = get_general_settings();
+    auto general_settings = load_general_settings();
     int rvalue = 0;
     if (is_process_elevated() ||
-        general_settings.GetNamedBoolean(L"run_elevated") == false ||
+        general_settings.GetNamedBoolean(L"run_elevated", false) == false ||
         strcmp(lpCmdLine, "--dont-elevate") == 0) {
       result = runner();
     }
