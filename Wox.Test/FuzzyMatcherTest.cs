@@ -12,7 +12,7 @@ namespace Wox.Test
     [TestFixture]
     public class FuzzyMatcherTest
     {
-        public List<string> GetSearchStrings() 
+        public List<string> GetSearchStrings()
             => new List<string>
             {
                 "Chrome",
@@ -49,16 +49,13 @@ namespace Wox.Test
                 "aac"
             };
 
-            Alphabet.Initialize(false);
-            StringMatcher.UserSettingSearchPrecision = StringMatcher.SearchPrecisionScore.Low.ToString();
-
             var results = new List<Result>();
             foreach (var str in sources)
             {
                 results.Add(new Result
                 {
                     Title = str,
-                    Score = StringMatcher.FuzzySearch("inst", str).Score
+                    Score = StringMatcher.FuzzySearch("inst", str).RawScore
                 });
             }
 
@@ -75,7 +72,7 @@ namespace Wox.Test
         {
             var compareString = "Can have rum only in my glass";
 
-            var scoreResult = StringMatcher.FuzzySearch(searchString, compareString).Score;
+            var scoreResult = StringMatcher.FuzzySearch(searchString, compareString).RawScore;
 
             Assert.True(scoreResult == 0);
         }
@@ -132,16 +129,12 @@ namespace Wox.Test
             .ToList();
 
             var results = new List<Result>();
-
-            Alphabet.Initialize(false);
-            StringMatcher.UserSettingSearchPrecision = StringMatcher.SearchPrecisionScore.None.ToString();
-
             foreach (var str in searchStrings)
             {
                 results.Add(new Result
                 {
                     Title = str,
-                    Score = StringMatcher.FuzzySearch(searchTerm, str).Score
+                    Score = StringMatcher.FuzzySearch(searchTerm, str).RawScore
                 });
             }
 
