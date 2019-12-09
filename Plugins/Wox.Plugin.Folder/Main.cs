@@ -118,7 +118,7 @@ namespace Wox.Plugin.Folder
 
         private List<Result> QueryInternal_Directory_Exists(Query query)
         {
-            var search = query.Search.ToLower();
+            var search = query.Search;
             var results = new List<Result>();
             var hasSpecial = search.IndexOfAny(_specialSearchChars) >= 0;
             string incompleteName = "";
@@ -213,12 +213,17 @@ namespace Wox.Plugin.Folder
 
         private static Result CreateOpenCurrentFolderResult(string incompleteName, string search)
         {
-            string firstResult = "Open current directory";
+            var firstResult = "Open current directory";
             if (incompleteName.Length > 0)
                 firstResult = "Open " + search;
+
+            var folderName = search.TrimEnd('\\').Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.None).Last();
+
             return new Result
             {
                 Title = firstResult,
+                SubTitle = $"Use > to search files and subfolders within {folderName}, " +
+                                $"* to search for file extensions in {folderName} or both >* to combine the search",
                 IcoPath = search,
                 Score = 500,
                 Action = c =>
