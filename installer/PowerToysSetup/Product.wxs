@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+     xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" >
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
@@ -235,7 +236,9 @@
       </Component>
       <Component Id="Module_FancyZones" Guid="C6B5272E-6ED4-4B80-B0E7-2FF0355D8CF4" Win64="yes">
         <File Source="$(var.BinX64Dir)\modules\fancyzones.dll" KeyPath="yes" />
-        <File Source="$(var.BinX64Dir)\modules\FancyZonesEditor.exe" />
+        <File Source="$(var.BinX64Dir)\modules\FancyZonesEditor.exe" >
+          <netfx:NativeImage Id="FancyZonesEditor.exe" Platform="64bit" Priority="0" />
+        </File>
         <File Source="$(var.BinX64Dir)\modules\ControlzEx.dll" />
         <File Source="$(var.BinX64Dir)\modules\MahApps.Metro.dll" />
         <File Source="$(var.BinX64Dir)\modules\Microsoft.Xaml.Behaviors.dll" />
