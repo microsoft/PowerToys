@@ -2,7 +2,6 @@
 #include "common/dpi_aware.h"
 #include "common/on_thread_executor.h"
 
-#include <unordered_set>
 #include <functional>
 
 namespace std
@@ -15,53 +14,6 @@ namespace std
             return ::UuidHash(&const_cast<GUID&>(Value), &status);
         }
     };
-}
-
-namespace
-{
-    std::mutex gLock;
-
-    std::unordered_set<GUID> gVirtualDesktopIDs;
-
-    void VirtualDesktopTracker(HANDLE fancyZonesDestroyedEvent) noexcept
-    {
-        HKEY virtualDesktopsRegKey{ nullptr };
-        if (RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops", 0, KEY_ALL_ACCESS, &virtualDesktopsRegKey) != ERROR_SUCCESS) {
-            return;
-        }
-        HANDLE regKeyEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-        HANDLE events[2] = { regKeyEvent, fancyZonesDestroyedEvent };
-        while (1) {
-            if (RegNotifyChangeKeyValue(HKEY_CURRENT_USER, TRUE, REG_NOTIFY_CHANGE_LAST_SET, regKeyEvent, TRUE) != ERROR_SUCCESS) {
-                return;
-            }
-            if (WaitForMultipleObjects(2, events, FALSE, INFINITE) != (WAIT_OBJECT_0 + 0)) {
-                // if fancyZonesDestroyedEvent is signalized or WaitForMultipleObjects failed, terminate thread execution
-                return;
-            }
-            DWORD bufferCapacity;
-            const WCHAR* key = L"VirtualDesktopIDs";
-            // request regkey binary buffer capacity only
-            if (RegQueryValueExW(virtualDesktopsRegKey, key, 0, nullptr, nullptr, &bufferCapacity) != ERROR_SUCCESS) {
-                return;
-            }
-            std::unique_ptr<BYTE[]> buffer = std::make_unique<BYTE[]>(bufferCapacity);
-            // request regkey binary content
-            if (RegQueryValueExW(virtualDesktopsRegKey, key, 0, nullptr, buffer.get(), &bufferCapacity) != ERROR_SUCCESS) {
-                return;
-            }
-            const int guidSize = sizeof(GUID);
-
-            gLock.lock();
-            gVirtualDesktopIDs.clear();
-            for (int i = 0; i < bufferCapacity; i += guidSize) {
-                GUID* guid = reinterpret_cast<GUID*>(buffer.get() + i);
-                gVirtualDesktopIDs.insert(*guid);
-            }
-            gLock.unlock();
-        }
-        RegCloseKey(virtualDesktopsRegKey);
-    }
 }
 
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
@@ -134,9 +86,11 @@ private:
     void MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
     void MoveSizeEndInternal(HWND window, POINT const& ptScreen, require_write_lock) noexcept;
     void MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
-    void UpdateVirtualDesktopIDs() noexcept;
+    void HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) noexcept;
 
     const HINSTANCE m_hinstance{};
+
+    HKEY m_virtualDesktopsRegKey;
 
     mutable std::shared_mutex m_lock;
     HWND m_window{};
@@ -149,7 +103,7 @@ private:
     GUID m_currentVirtualDesktopId{}; // UUID of the current virtual desktop. Is GUID_NULL until first VD switch per session.
     std::unordered_map<GUID, bool> m_virtualDesktopIds;
     wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
-    wil::unique_handle m_terminateVirtualDesktopTrackerEvent;
+    wil::unique_handle m_fancyZonesDestroyedEvent;
 
     OnThreadExecutor m_dpiUnawareThread;
     OnThreadExecutor m_virtualDesktopTrackerThread;
@@ -194,9 +148,13 @@ IFACEMETHODIMP_(void) FancyZones::Run() noexcept
         SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
     }}).wait();
 
-    m_terminateVirtualDesktopTrackerEvent.reset(CreateEvent(nullptr, FALSE, FALSE, nullptr));
+    if (RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops", 0, KEY_ALL_ACCESS, &m_virtualDesktopsRegKey) != ERROR_SUCCESS) {
+        return;
+    }
+    
+    m_fancyZonesDestroyedEvent.reset(CreateEvent(NULL, FALSE, FALSE, NULL));
     m_virtualDesktopTrackerThread.submit(
-        OnThreadExecutor::task_t{ std::bind(VirtualDesktopTracker, m_terminateVirtualDesktopTrackerEvent.get()) });
+        OnThreadExecutor::task_t{ std::bind(&FancyZones::HandleVirtualDesktopUpdates, this, m_fancyZonesDestroyedEvent.get()) });
 }
 
 // IFancyZones
@@ -210,9 +168,10 @@ IFACEMETHODIMP_(void) FancyZones::Destroy() noexcept
         DestroyWindow(m_window);
         m_window = nullptr;
     }
-    if (m_terminateVirtualDesktopTrackerEvent) {
-        SetEvent(m_terminateVirtualDesktopTrackerEvent.get());
+    if (m_fancyZonesDestroyedEvent) {
+        SetEvent(m_fancyZonesDestroyedEvent.get());
     }
+    RegCloseKey(m_virtualDesktopsRegKey);
 }
 
 // IFancyZonesCallback
@@ -544,16 +503,11 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 
 void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
 {
-    UpdateVirtualDesktopIDs();
     std::unique_lock writeLock(m_lock);
     wil::unique_cotaskmem_string virtualDesktopId;
     if (SUCCEEDED_LOG(StringFromCLSID(m_currentVirtualDesktopId, &virtualDesktopId)))
     {
-        bool newVirtualDesktop{ true };
-        if (auto it = m_virtualDesktopIds.find(m_currentVirtualDesktopId); it != end(m_virtualDesktopIds)) {
-            newVirtualDesktop = it->second;
-        }
-
+        const bool newVirtualDesktop = m_virtualDesktopIds[m_currentVirtualDesktopId];
         const bool flash = m_settings->GetSettings().zoneSetChange_flashZones && newVirtualDesktop;
 
         if (auto zoneWindow = MakeZoneWindow(this, m_hinstance, monitor, deviceId, virtualDesktopId.get(), flash))
@@ -804,23 +758,49 @@ void FancyZones::MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen,
     }
 }
 
-void FancyZones::UpdateVirtualDesktopIDs() noexcept
+void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) noexcept
 {
-    gLock.lock();
-    std::unordered_set<GUID> temp(gVirtualDesktopIDs);
-    gLock.unlock();
-    for (auto it = begin(m_virtualDesktopIds); it != end(m_virtualDesktopIds);) {
-        if (auto iter = temp.find(it->first); iter == end(temp)) {
-            it = m_virtualDesktopIds.erase(it); // virtual desktop closed, remove it from map
+    HANDLE regKeyEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    HANDLE events[2] = { regKeyEvent, fancyZonesDestroyedEvent };
+    while (1) {
+        if (RegNotifyChangeKeyValue(HKEY_CURRENT_USER, TRUE, REG_NOTIFY_CHANGE_LAST_SET, regKeyEvent, TRUE) != ERROR_SUCCESS) {
+            return;
         }
-        else {
-            temp.erase(iter); // virtual desktop already in map, skip it
-            ++it;
+        if (WaitForMultipleObjects(2, events, FALSE, INFINITE) != (WAIT_OBJECT_0 + 0)) {
+            // if fancyZonesDestroyedEvent is signalized or WaitForMultipleObjects failed, terminate thread execution
+            return;
         }
-    }
-    // register new virtual desktops, if any
-    for (const auto& guid : temp) {
-        m_virtualDesktopIds[guid] = true;
+        DWORD bufferCapacity;
+        const WCHAR* key = L"VirtualDesktopIDs";
+        // request regkey binary buffer capacity only
+        if (RegQueryValueExW(m_virtualDesktopsRegKey, key, 0, nullptr, NULL, &bufferCapacity) != ERROR_SUCCESS) {
+            return;
+        }
+        BYTE* buffer = (BYTE*)malloc(bufferCapacity);
+        // request regkey binary content
+        if (RegQueryValueExW(m_virtualDesktopsRegKey, key, 0, nullptr, buffer, &bufferCapacity) != ERROR_SUCCESS) {
+            free(buffer);
+            return;
+        }
+        const int guidSize = sizeof(GUID);
+        std::unordered_map<GUID, bool> temp;
+        for (int i = 0; i < bufferCapacity; i += guidSize) {
+            GUID guid;
+            memcpy(&guid, buffer + i, guidSize);
+            temp[guid] = true;
+        }
+        free(buffer);
+        for (auto it = begin(m_virtualDesktopIds); it != end(m_virtualDesktopIds);) {
+            if (auto iter = temp.find(it->first); iter == temp.end()) {
+                it = m_virtualDesktopIds.erase(it); // virtual desktop closed, remove it from map
+            }
+            else {
+                temp.erase(it->first); // virtual desktop already in map, skip it
+                ++it;
+            }
+        }
+        // register new virtual desktops, if any
+        m_virtualDesktopIds.insert(begin(temp), end(temp));
     }
 }
 
