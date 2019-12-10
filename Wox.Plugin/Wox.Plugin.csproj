@@ -78,6 +78,7 @@
     <Compile Include="Result.cs" />
     <Compile Include="ActionContext.cs" />
     <Compile Include="SharedCommands\SearchWeb.cs" />
+    <Compile Include="SharedCommands\ShellCommand.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
