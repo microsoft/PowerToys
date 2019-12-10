@@ -76,7 +76,7 @@ public:
     }
 
     // Return JSON with the configuration options.
-    virtual bool get_config(wchar_t* buffer, int* buffer_size) override
+    virtual bool get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_size) override
     {
         HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
@@ -154,7 +154,7 @@ public:
                 MessageBox(NULL, msg.c_str(), L"Custom action call.", MB_OK | MB_TOPMOST);
             }
         }
-        catch (std::exception& ex)
+        catch (std::exception& )
         {
             // Improper JSON.
         }
@@ -170,27 +170,31 @@ public:
                 PowerToysSettings::PowerToyValues::from_json_string(config);
 
             // Update the bool property.
-            if (values.is_bool_value(L"test_bool_toggle"))
+            auto testBoolProp = values.get_bool_value(L"test_bool_toggle");
+            if (testBoolProp)
             {
-                g_settings.test_bool_prop = values.get_bool_value(L"test_bool_toggle");
+                g_settings.test_bool_prop = testBoolProp.value();
             }
 
             // Update the int property.
-            if (values.is_int_value(L"test_int_spinner"))
+            auto testIntSpinner = values.get_int_value(L"test_int_spinner");
+            if (testIntSpinner)
             {
-                g_settings.test_int_prop = values.get_int_value(L"test_int_spinner");
+                g_settings.test_int_prop = testIntSpinner.value();
             }
 
             // Update the string property.
-            if (values.is_string_value(L"test_string_text"))
+			auto testStringText = values.get_string_value(L"test_int_spinner");
+            if (testStringText)
             {
-                g_settings.test_string_prop = values.get_string_value(L"test_string_text");
+                g_settings.test_string_prop = testStringText.value();
             }
 
             // Update the color property.
-            if (values.is_string_value(L"test_color_picker"))
+			auto testColorPicker = values.get_string_value(L"test_color_picker");
+            if (testColorPicker)
             {
-                g_settings.test_color_prop = values.get_string_value(L"test_color_picker");
+                g_settings.test_color_prop = testColorPicker.value();
             }
 
             // If you don't need to do any custom processing of the settings, proceed
@@ -199,7 +203,7 @@ public:
             // Otherwise call a custom function to process the settings before saving them to disk:
             // save_settings();
         }
-        catch (std::exception& ex)
+        catch (std::exception&)
         {
             // Improper JSON.
         }
@@ -256,30 +260,34 @@ void ExamplePowertoy::init_settings()
             PowerToysSettings::PowerToyValues::load_from_settings_file(ExamplePowertoy::get_name());
 
         // Load the bool property.
-        if (settings.is_bool_value(L"test_bool_toggle"))
+        auto testBoolToggle = settings.get_bool_value(L"test_bool_toggle");
+        if (testBoolToggle)
         {
-            g_settings.test_bool_prop = settings.get_bool_value(L"test_bool_toggle");
+            g_settings.test_bool_prop = testBoolToggle.value();
         }
 
         // Load the int property.
-        if (settings.is_int_value(L"test_int_spinner"))
+        auto testIntSpinner = settings.get_int_value(L"test_int_spinner");
+        if (testIntSpinner)
         {
-            g_settings.test_int_prop = settings.get_int_value(L"test_int_spinner");
+            g_settings.test_int_prop = testIntSpinner.value();
         }
 
         // Load the string property.
-        if (settings.is_string_value(L"test_string_text"))
+        auto testStringText = settings.get_string_value(L"test_string_text");
+        if (testStringText)
         {
-            g_settings.test_string_prop = settings.get_string_value(L"test_string_text");
+            g_settings.test_string_prop = testStringText.value();
         }
 
         // Load the color property.
-        if (settings.is_string_value(L"test_color_picker"))
+        auto testColorPicker = settings.get_string_value(L"test_color_picker");
+        if (testColorPicker)
         {
-            g_settings.test_color_prop = settings.get_string_value(L"test_color_picker");
+            g_settings.test_color_prop = testColorPicker.value();
         }
     }
-    catch (std::exception& ex)
+    catch (std::exception&)
     {
         // Error while loading from the settings file. Let default values stay as they are.
     }
@@ -321,7 +329,7 @@ void ExamplePowertoy::save_settings()
         // Save the PowerToyValues JSON to the power toy settings file.
         values.save_to_settings_file();
     }
-    catch (std::exception& ex)
+    catch (std::exception&)
     {
         // Couldn't save the settings.
     }

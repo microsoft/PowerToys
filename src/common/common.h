@@ -1,6 +1,7 @@
 #pragma once
 #include <optional>
 #include <Windows.h>
+#include <string>
 
 // Returns RECT with positions of the minmize/maximize buttons of the given window.
 // Does not always work, since some apps draw custom toolbars.
