@@ -275,26 +275,60 @@ TEST_METHOD(VerifyMatchAllWildcardUseRegEx)
     }
 }
 
-TEST_METHOD(VerifyReplaceFirstWildcardUseRegEx)
+void VerifyReplaceFirstWildcard(SearchReplaceExpected sreTable[], int tableSize, DWORD flags)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = UseRegularExpressions;
     Assert::IsTrue(renameRegEx->put_flags(flags) == S_OK);
 
-    SearchReplaceExpected sreTable[] = {
-        { L".*", L"Foo", L"AAAAAA", L"FooAAAA" },
-    };
-
-    for (int i = 0; i < ARRAYSIZE(sreTable); i++)
+    for (int i = 0; i < tableSize; i++)
     {
         PWSTR result = nullptr;
         Assert::IsTrue(renameRegEx->put_searchTerm(sreTable[i].search) == S_OK);
         Assert::IsTrue(renameRegEx->put_replaceTerm(sreTable[i].replace) == S_OK);
         Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
-        Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
+        Assert::AreEqual(sreTable[i].expected, result);
         CoTaskMemFree(result);
     }
+}
+
+TEST_METHOD(VerifyReplaceFirstWildCardUseRegex)
+{
+    SearchReplaceExpected sreTable[] = {
+        //search, replace, test, result
+        { L".*", L"Foo", L"AAAAAA", L"Foo" },
+    };
+    VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), UseRegularExpressions);
+}
+
+TEST_METHOD(VerifyReplaceFirstWildCardUseRegexMatchAllOccurances)
+{
+    SearchReplaceExpected sreTable[] = {
+        //search, replace, test, result
+        { L".*", L"Foo", L"AAAAAA", L"Foo" },
+    };
+    VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), UseRegularExpressions | MatchAllOccurences);
+}
+
+TEST_METHOD(VerifyReplaceFirstWildCardMatchAllOccurances)
+{
+    SearchReplaceExpected sreTable[] = {
+        //search, replace, test, result
+        { L".*", L"Foo", L"AAAAAA", L"AAAAAA" },
+        { L".*", L"Foo", L".*", L"Foo" },
+        { L".*", L"Foo", L".*Bar.*", L"FooBarFoo" },
+    };
+    VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), MatchAllOccurences);
+}
+
+TEST_METHOD(VerifyReplaceFirstWildNoFlags)
+{
+    SearchReplaceExpected sreTable[] = {
+        //search, replace, test, result
+        { L".*", L"Foo", L"AAAAAA", L"AAAAAA" },
+        { L".*", L"Foo", L".*", L"Foo" },
+    };
+    VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), 0);
 }
 
 TEST_METHOD(VerifyEventsFire)
