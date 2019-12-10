@@ -2,14 +2,16 @@
 #include <vector>
 #include "srwlock.h"
 
-class CMockPowerRenameRegExEvents:
+class CMockPowerRenameRegExEvents :
     public IPowerRenameRegExEvents
 {
 public:
     // IUnknown
-    IFACEMETHODIMP  QueryInterface(_In_ REFIID iid, _Outptr_ void** resultInterface);
-    IFACEMETHODIMP_(ULONG) AddRef();
-    IFACEMETHODIMP_(ULONG) Release();
+    IFACEMETHODIMP QueryInterface(_In_ REFIID iid, _Outptr_ void** resultInterface);
+    IFACEMETHODIMP_(ULONG)
+    AddRef();
+    IFACEMETHODIMP_(ULONG)
+    Release();
 
     // IPowerRenameRegExEvents
     IFACEMETHODIMP OnSearchTermChanged(_In_ PCWSTR searchTerm);
