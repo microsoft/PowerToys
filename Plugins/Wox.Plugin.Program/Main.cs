@@ -191,12 +191,12 @@ namespace Wox.Plugin.Program
                          );
         }
 
-        public static bool StartProcess(ProcessStartInfo info)
+        public static bool StartProcess(Func<ProcessStartInfo, Process> runProcess, ProcessStartInfo info)
         {
             bool hide;
             try
             {
-                Process.Start(info);
+                runProcess(info);
                 hide = true;
             }
             catch (Exception)

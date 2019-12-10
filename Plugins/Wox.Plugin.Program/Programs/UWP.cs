@@ -320,7 +320,7 @@ namespace Wox.Plugin.Program.Programs
                         Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
                         Action = _ =>
                         {
-                            var hide = Main.StartProcess(new ProcessStartInfo(Package.Location));
+                            var hide = Main.StartProcess(Process.Start, new ProcessStartInfo(Package.Location));
                             return hide;
                         },
                         IcoPath = "Images/folder.png"

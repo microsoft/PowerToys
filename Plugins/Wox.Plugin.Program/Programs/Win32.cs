@@ -6,10 +6,12 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Win32;
 using Shell;
 using Wox.Infrastructure;
 using Wox.Plugin.Program.Logger;
+using Wox.Plugin.SharedCommands;
 
 namespace Wox.Plugin.Program.Programs
 {
@@ -64,7 +66,7 @@ namespace Wox.Plugin.Program.Programs
                         FileName = FullPath,
                         WorkingDirectory = ParentDirectory
                     };
-                    var hide = Main.StartProcess(info);
+                    var hide = Main.StartProcess(Process.Start, info);
                     return hide;
                 }
             };
@@ -93,6 +95,19 @@ namespace Wox.Plugin.Program.Programs
             {
                 new Result
                 {
+                    Title = api.GetTranslation("wox_plugin_program_run_as_different_user"),
+                    Action = _ =>
+                    {
+                        var info = FullPath.SetProcessStartInfo(ParentDirectory);
+
+                        Task.Run(() => Main.StartProcess(ShellCommand.RunAsDifferentUser, info));
+
+                        return true;
+                    },
+                    IcoPath = "Images/user.png"
+                },
+                new Result
+                {
                     Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
                     Action = _ =>
                     {
@@ -102,7 +117,7 @@ namespace Wox.Plugin.Program.Programs
                             WorkingDirectory = ParentDirectory,
                             Verb = "runas"
                         };
-                        var hide = Main.StartProcess(info);
+                        var hide = Main.StartProcess(Process.Start, info);
                         return hide;
                     },
                     IcoPath = "Images/cmd.png"
@@ -112,7 +127,7 @@ namespace Wox.Plugin.Program.Programs
                     Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
                     Action = _ =>
                     {
-                        var hide = Main.StartProcess(new ProcessStartInfo(ParentDirectory));
+                        var hide = Main.StartProcess(Process.Start, new ProcessStartInfo(ParentDirectory));
                         return hide;
                     },
                     IcoPath = "Images/folder.png"
