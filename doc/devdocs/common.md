@@ -1,6 +1,3 @@
-# Introduction
-The common lib, as the name suggests, contains code shared by multiple PowerToys components and modules.
-
 # Classes and structures
 
 #### class Animation: [header](./animation.h) [source](./animation.cpp)

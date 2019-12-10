@@ -1,10 +1,3 @@
-# Web project for the Settings UI
-
-## Introduction
-
-This project generates the web UI shown in the [PowerToys Settings](/src/editor).
-It's a `ReactJS` project created using [UI Fabric](https://developer.microsoft.com/en-us/fabric#/).
-
 ## Build Commands
 
 Here are the commands to build and test this project:

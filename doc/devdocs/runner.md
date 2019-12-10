@@ -1,18 +1,3 @@
-# PowerToys Runner
-
-# Introduction
-
-The PowerToys Runner contains the project for the PowerToys.exe executable.
-It's responsible for:
-- Loading the individual PowerToys modules.
-- Passing registered events to the PowerToys.
-- Showing a system tray icon to manage the PowerToys.
-- Bridging between the PowerToys modules and the Settings editor.
-
-![Image of the tray icon](/doc/images/runner/tray.png)
-
-# Code organization
-
 #### [`main.cpp`](./main.cpp)
 Contains the executable starting point, initialization code and the list of known PowerToys.
 
