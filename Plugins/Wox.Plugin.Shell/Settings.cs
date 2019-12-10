@@ -7,7 +7,7 @@ namespace Wox.Plugin.Shell
         public Shell Shell { get; set; } = Shell.Cmd;
         public bool ReplaceWinR { get; set; } = true;
         public bool LeaveShellOpen { get; set; }
-        internal bool RunAsAdministrator { get; set; } = true;
+        public bool RunAsAdministrator { get; set; } = true;
 
         public Dictionary<string, int> Count = new Dictionary<string, int>();
 
