@@ -165,9 +165,9 @@ namespace Wox.Plugin.Program.Programs
                     }
 #endif
 #if DEBUG //make developer aware and implement handling
-                    catch(Exception e)
+                    catch
                     {
-                        throw e;
+                        throw;
                     }
 #endif
                     return u.Apps;
@@ -207,7 +207,7 @@ namespace Wox.Plugin.Program.Programs
                     }
                     catch (Exception e)
                     {
-                        ProgramLogger.LogException("|UWP|CurrentUserPackages|Not available|An unexpected error occured and "
+                        ProgramLogger.LogException("UWP" ,"CurrentUserPackages", $"id","An unexpected error occured and "
                                                    + $"unable to verify if package is valid", e);
                         return false;
                     }
@@ -230,8 +230,7 @@ namespace Wox.Plugin.Program.Programs
 
         public override bool Equals(object obj)
         {
-            var uwp = obj as UWP;
-            if (uwp != null)
+            if (obj is UWP uwp)
             {
                 return FamilyName.Equals(uwp.FamilyName);
             }

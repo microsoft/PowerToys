@@ -49,10 +49,11 @@ namespace Wox
                 RegisterDispatcherUnhandledException();
 
                 ImageLoader.Initialize();
-                Alphabet.Initialize();
 
                 _settingsVM = new SettingWindowViewModel();
                 _settings = _settingsVM.Settings;
+
+                Alphabet.Initialize(_settings);
 
                 StringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
