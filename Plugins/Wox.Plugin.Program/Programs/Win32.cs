@@ -10,7 +10,6 @@ using Microsoft.Win32;
 using Shell;
 using Wox.Infrastructure;
 using Wox.Plugin.Program.Logger;
-using Wox.Plugin.SharedCommands;
 
 namespace Wox.Plugin.Program.Programs
 {
@@ -97,7 +96,14 @@ namespace Wox.Plugin.Program.Programs
                     Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
                     Action = _ =>
                     {
-                        return Main.StartProcess(ShellCommand.SetProcessStartInfo(FullPath, ParentDirectory));
+                        var info = new ProcessStartInfo
+                        {
+                            FileName = FullPath,
+                            WorkingDirectory = ParentDirectory,
+                            Verb = "runas"
+                        };
+                        var hide = Main.StartProcess(info);
+                        return hide;
                     },
                     IcoPath = "Images/cmd.png"
                 },
