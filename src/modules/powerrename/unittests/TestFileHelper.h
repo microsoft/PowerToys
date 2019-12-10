@@ -4,7 +4,6 @@
 #include <string>
 #include <windows.h>
 
-
 class CTestFileHelper
 {
 public:
