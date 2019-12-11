@@ -292,6 +292,8 @@ The data argument and return value meaning are event-specific:
   * ll_keyboard: see [`lowlevel_keyboard_event_data.h`](./lowlevel_keyboard_event_data.h).
   * win_hook_event: see [`win_hook_event_data.h`](./win_hook_event_data.h)
 
+Please note that some of the events are currently being signalled from a separate thread.
+
 Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.cpp):
 
 ```cpp
