@@ -266,3 +266,36 @@ std::wstring get_product_version() {
 
   return version;
 }
+
+std::wstring get_module_filename(HMODULE mod)
+{
+    wchar_t buffer[MAX_PATH + 1];
+    DWORD actual_length = GetModuleFileNameW(mod, buffer, MAX_PATH);
+    if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+    {
+        const DWORD long_path_length = 0xFFFF; // should be always enough
+        std::wstring long_filename(long_path_length, L'\0');
+        actual_length = GetModuleFileNameW(mod, long_filename.data(), long_path_length);
+        return long_filename.substr(0, actual_length);
+    }
+    return { buffer, actual_length };
+}
+
+std::wstring get_module_folderpath(HMODULE mod)
+{
+    wchar_t buffer[MAX_PATH + 1];
+    DWORD actual_length = GetModuleFileNameW(mod, buffer, MAX_PATH);
+    if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+    {
+        const DWORD long_path_length = 0xFFFF; // should be always enough
+        std::wstring long_filename(long_path_length, L'\0');
+        actual_length = GetModuleFileNameW(mod, long_filename.data(), long_path_length);
+        PathRemoveFileSpecW(long_filename.data());
+        long_filename.resize(std::wcslen(long_filename.data()));
+        long_filename.shrink_to_fit();
+        return long_filename;
+    }
+
+    PathRemoveFileSpecW(buffer);
+    return { buffer, (UINT)lstrlenW(buffer) };
+}
