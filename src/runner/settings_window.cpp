@@ -128,87 +128,37 @@ void receive_json_send_to_main_thread(const std::wstring& msg)
     dispatch_run_on_main_ui_thread(dispatch_received_json_callback, copy);
 }
 
-DWORD g_settings_process_id = 0;
 
-void run_settings_window()
+// Try to run the Settings process with non-elevated privileges.
+BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, PROCESS_INFORMATION* process_info)
 {
-    STARTUPINFO startup_info = { sizeof(startup_info) };
-    PROCESS_INFORMATION process_info = { 0 };
-    HANDLE process = NULL;
-    HANDLE hToken = NULL;
-    STARTUPINFOEX siex = { 0 };
-    PPROC_THREAD_ATTRIBUTE_LIST pptal = NULL;
-    WCHAR executable_path[MAX_PATH];
-    GetModuleFileName(NULL, executable_path, MAX_PATH);
-    PathRemoveFileSpec(executable_path);
-    wcscat_s(executable_path, L"\\PowerToysSettings.exe");
-    WCHAR executable_args[MAX_PATH * 3];
-
-    const std::wstring settings_theme_setting{ get_general_settings().GetNamedString(L"theme").c_str() };
-    std::wstring settings_theme;
-    if (settings_theme_setting == L"dark" || (settings_theme_setting == L"system" && WindowsColors::is_dark_mode()))
-    {
-        settings_theme = L" dark"; // Include arg separating space
-    }
-    // Generate unique names for the pipes, if getting a UUID is possible
-    std::wstring powertoys_pipe_name(L"\\\\.\\pipe\\powertoys_runner_");
-    std::wstring settings_pipe_name(L"\\\\.\\pipe\\powertoys_settings_");
-    SIZE_T size = 0;
-    UUID temp_uuid;
-    UuidCreate(&temp_uuid);
-    wchar_t* uuid_chars;
-    UuidToString(&temp_uuid, (RPC_WSTR*)&uuid_chars);
-    if (uuid_chars != NULL)
-    {
-        powertoys_pipe_name += std::wstring(uuid_chars);
-        settings_pipe_name += std::wstring(uuid_chars);
-        RpcStringFree((RPC_WSTR*)&uuid_chars);
-        uuid_chars = NULL;
-    }
-    DWORD powertoys_pid = GetCurrentProcessId();
-    // Arguments for calling the settings executable:
-    // C:\powertoys_path\PowerToysSettings.exe powertoys_pipe settings_pipe powertoys_pid
-    // powertoys_pipe - PowerToys pipe server.
-    // settings_pipe - Settings pipe server.
-    // powertoys_pid - PowerToys process pid.
-    // settings_theme - pass "dark" to start the settings window in dark mode
-    wcscpy_s(executable_args, L"\"");
-    wcscat_s(executable_args, executable_path);
-    wcscat_s(executable_args, L"\"");
-    wcscat_s(executable_args, L" ");
-    wcscat_s(executable_args, powertoys_pipe_name.c_str());
-    wcscat_s(executable_args, L" ");
-    wcscat_s(executable_args, settings_pipe_name.c_str());
-    wcscat_s(executable_args, L" ");
-    wcscat_s(executable_args, std::to_wstring(powertoys_pid).c_str());
-    wcscat_s(executable_args, settings_theme.c_str());
-
-    // Run the Settings process with non-elevated privileges
-
     HWND hwnd = GetShellWindow();
     if (!hwnd)
     {
-        goto LExit;
+        return false;
     }
+
     DWORD pid;
     GetWindowThreadProcessId(hwnd, &pid);
 
-    process = OpenProcess(PROCESS_CREATE_PROCESS, FALSE, pid);
+    winrt::handle process{ OpenProcess(PROCESS_CREATE_PROCESS, FALSE, pid) };
     if (!process)
     {
-        goto LExit;
+        return false;
     }
 
+    SIZE_T size = 0;
     InitializeProcThreadAttributeList(nullptr, 1, 0, &size);
-    pptal = (PPROC_THREAD_ATTRIBUTE_LIST) new char[size];
+    auto pproc_buffer = std::unique_ptr<char[]>{new (std::nothrow)char[size]};
+    auto pptal = reinterpret_cast<PPROC_THREAD_ATTRIBUTE_LIST>(pproc_buffer.get());
     if (!pptal)
     {
-        goto LExit;
+        return false;
     }
 
     if (!InitializeProcThreadAttributeList(pptal, 1, 0, &size))
     {
-        goto LExit;
+        return false;
     }
 
     if (!UpdateProcThreadAttribute(pptal,
@@ -219,30 +169,116 @@ void run_settings_window()
                                    nullptr,
                                    nullptr))
     {
-        goto LExit;
+        return false;
     }
 
+    STARTUPINFOEX siex = { 0 };
     siex.lpAttributeList = pptal;
     siex.StartupInfo.cb = sizeof(siex);
 
-    if (!CreateProcessW(executable_path,
-                        executable_args,
-                        nullptr,
-                        nullptr,
-                        FALSE,
-                        EXTENDED_STARTUPINFO_PRESENT,
-                        nullptr,
-                        nullptr,
-                        &siex.StartupInfo,
-                        &process_info))
+    BOOL process_created = CreateProcessW(executable_path,
+                                          executable_args,
+                                          nullptr,
+                                          nullptr,
+                                          FALSE,
+                                          EXTENDED_STARTUPINFO_PRESENT,
+                                          nullptr,
+                                          nullptr,
+                                          &siex.StartupInfo,
+                                          process_info);
+
+    return process_created;
+}
+
+DWORD g_settings_process_id = 0;
+
+void run_settings_window()
+{
+    PROCESS_INFORMATION process_info = { 0 };
+    HANDLE hToken = nullptr;
+
+    // Arguments for calling the settings executable:
+    // "C:\powertoys_path\PowerToysSettings.exe" powertoys_pipe settings_pipe powertoys_pid settings_theme
+    // powertoys_pipe: PowerToys pipe server.
+    // settings_pipe : Settings pipe server.
+    // powertoys_pid : PowerToys process pid.
+    // settings_theme: pass "dark" to start the settings window in dark mode
+
+    // Arg 1: executable path.
+    std::wstring executable_path = get_module_folderpath();
+    executable_path.append(L"\\PowerToysSettings.exe");
+
+    // Arg 2: pipe server. Generate unique names for the pipes, if getting a UUID is possible.
+    std::wstring powertoys_pipe_name(L"\\\\.\\pipe\\powertoys_runner_");
+    std::wstring settings_pipe_name(L"\\\\.\\pipe\\powertoys_settings_");
+    UUID temp_uuid;
+    UuidCreate(&temp_uuid);
+    wchar_t* uuid_chars;
+    UuidToString(&temp_uuid, (RPC_WSTR*)&uuid_chars);
+    if (uuid_chars != nullptr)
     {
-        goto LExit;
+        powertoys_pipe_name += std::wstring(uuid_chars);
+        settings_pipe_name += std::wstring(uuid_chars);
+        RpcStringFree((RPC_WSTR*)&uuid_chars);
+        uuid_chars = nullptr;
+    }
+
+    // Arg 3: process pid.
+    DWORD powertoys_pid = GetCurrentProcessId();
+
+    // Arg 4: settings theme.
+    const std::wstring settings_theme_setting{ get_general_settings().GetNamedString(L"theme").c_str() };
+    std::wstring settings_theme;
+    if (settings_theme_setting == L"dark" || (settings_theme_setting == L"system" && WindowsColors::is_dark_mode()))
+    {
+        settings_theme = L"dark";
+    }
+
+    std::wstring executable_args = L"\"";
+    executable_args.append(executable_path);
+    executable_args.append(L"\" ");
+    executable_args.append(powertoys_pipe_name);
+    executable_args.append(L" ");
+    executable_args.append(settings_pipe_name);
+    executable_args.append(L" ");
+    executable_args.append(std::to_wstring(powertoys_pid));
+    executable_args.append(L" ");
+    executable_args.append(settings_theme);
+
+    BOOL process_created = false;
+
+    if (is_process_elevated())
+    {
+        process_created = run_settings_non_elevated(executable_path.c_str(), executable_args.data(), &process_info);
+    }
+
+    if (FALSE == process_created)
+    {
+        // The runner is not elevated or we failed to create the process using the
+        // attribute list from Windows Explorer (this happens when PowerToys is executed
+        // as Administrator from a non-Administrator user or an error occur trying).
+        // In the second case the Settings process will run elevated.
+        STARTUPINFO startup_info = { sizeof(startup_info) };
+        if (!CreateProcessW(executable_path.c_str(),
+                            executable_args.data(),
+                            nullptr,
+                            nullptr,
+                            FALSE,
+                            0,
+                            nullptr,
+                            nullptr,
+                            &startup_info,
+                            &process_info))
+        {
+            goto LExit;
+        }
     }
 
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
     {
         goto LExit;
     }
+
     current_settings_ipc = new TwoWayPipeMessageIPC(powertoys_pipe_name, settings_pipe_name, receive_json_send_to_main_thread);
     current_settings_ipc->start(hToken);
     g_settings_process_id = process_info.dwProcessId;
@@ -265,21 +301,11 @@ LExit:
         CloseHandle(process_info.hThread);
     }
 
-    if (pptal)
-    {
-        delete[](char*) pptal;
-    }
-
-    if (process)
-    {
-        CloseHandle(process);
-    }
-
     if (current_settings_ipc)
     {
         current_settings_ipc->end();
         delete current_settings_ipc;
-        current_settings_ipc = NULL;
+        current_settings_ipc = nullptr;
     }
 
     if (hToken)

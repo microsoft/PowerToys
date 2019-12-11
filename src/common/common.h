@@ -57,3 +57,6 @@ std::wstring get_process_path(DWORD pid) noexcept;
 std::wstring get_process_path(HWND hwnd) noexcept;
 
 std::wstring get_product_version();
+
+std::wstring get_module_filename(HMODULE mod = nullptr);
+std::wstring get_module_folderpath(HMODULE mod = nullptr);
