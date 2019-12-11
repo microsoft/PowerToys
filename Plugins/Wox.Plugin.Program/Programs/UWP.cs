@@ -300,8 +300,9 @@ namespace Wox.Plugin.Program.Programs
                 }
                 else if (!string.IsNullOrEmpty(Description))
                 {
-                    result.Title = $"{DisplayName}: {Description}";
-                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, DisplayName).MatchData;
+                    var title = $"{DisplayName}: {Description}";
+                    result.Title = title;
+                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, title).MatchData;
                 }
                 else
                 {
