@@ -17,7 +17,7 @@ npm run build
 
 ## Updating the icons
 
-Icons inside [`src/icons/`](./src/icons/) were generated from the [Office UI Fabric Icons subset generation tool.](https://uifabricicons.azurewebsites.net/)
+Icons inside [`src/icons/`](/src/settings-web/src/icons/) were generated from the [Office UI Fabric Icons subset generation tool.](https://uifabricicons.azurewebsites.net/)
 
 In case the subset needs to be changed, additional steps are needed to include the icon font in the built `dist/bundle.js`:
 - Copy the inline font data taken from [`src/icons/css/fabric-icons-inline.css`](src/icons/css/fabric-icons-inline.css) and place it in the `fontFace` `src` value in [`src/icons/src/fabric-icons.ts`](src/icons/src/fabric-icons.ts).
@@ -30,44 +30,44 @@ SVG icons, including the icons for each PowerToy listed in the Settings, are con
 
 The project structure is based on the [`UI Fabric` scaffold](https://developer.microsoft.com/en-us/fabric#/get-started/web#option-1-quick-start) obtained by initializing it with `npm init uifabric`.
 
-#### [index.html](./index.html)
+#### [index.html](/src/settings-web/index.html)
 The HTML entry-point of the project.
 Loads the `ReactJS` distribution script.
 Defines JavaScript functions to receive and send messages to the [PowerToys Settings](/src/editor) window.
 
-#### [src/index.tsx](./src/index.tsx)
+#### [src/index.tsx](/src/settings-web/src/index.tsx)
 Main `ReactJS` entrypoint, initializing the `ReactDOM`.
 
-#### [src/setup_icons.tsx](./src/setup_icons.tsx)
+#### [src/setup_icons.tsx](/src/settings-web/src/setup_icons.tsx)
 Defines the `setup_powertoys_icons` function that registers the icons to be used in the components.
 
-#### [src/components/](./src/components/)
+#### [src/components/](/src/settings-web/src/components/)
 Contains the `ReactJS` components, including the Settings controls for each type of setting.
 
-#### [src/components/App.tsx](./src/components/App.tsx)
+#### [src/components/App.tsx](/src/settings-web/src/components/App.tsx)
 Defines the main App component, containing the UI layout, navigation menu, dialogs and main load/save logic.
 
-#### [src/components/GeneralSettings.tsx](./src/components/GeneralSettings.tsx)
+#### [src/components/GeneralSettings.tsx](/src/settings-web/src/components/GeneralSettings.tsx)
 Defines the PowerToys General Settings component, including logic to construct the object sent to PowerToys to change the General settings.
 
-#### [src/components/ModuleSettings.tsx](./src/components/ModuleSettings.tsx)
+#### [src/components/ModuleSettings.tsx](/src/settings-web/src/components/ModuleSettings.tsx)
 Defines the component that generates the settings screen for a PowerToy depending on its settings definition.
 
-#### [src/components/BaseSettingsControl.tsx](./src/components/BaseSettingsControl.tsx)
+#### [src/components/BaseSettingsControl.tsx](/src/settings-web/src/components/BaseSettingsControl.tsx)
 Defines the base class for a Settings control.
 
-#### [src/css/layout.css](./src/css/layout.css)
+#### [src/css/layout.css](/src/settings-web/src/css/layout.css)
 General layout styles.
 
-#### [src/icons/](./src/icons/)
+#### [src/icons/](/src/settings-web/src/icons/)
 Icons generated from the [Office UI Fabric Icons subset generation tool.](https://uifabricicons.azurewebsites.net/)
 
-#### [src/svg/](./src/svg/)
+#### [src/svg/](/src/settings-web/src/svg/)
 SVG icon assets.
 
 ## Creating a new settings control
 
-The [`BaseSettingsControl` class](./src/components/BaseSettingsControl.tsx) can be extended to create a new Settings control type.
+The [`BaseSettingsControl` class](/src/settings-web/src/components/BaseSettingsControl.tsx) can be extended to create a new Settings control type.
 
 ```tsx
 export class BaseSettingsControl extends React.Component <any, any> {
@@ -85,7 +85,7 @@ export class BaseSettingsControl extends React.Component <any, any> {
 A settings control overrides the `get_value` function to return the value to be used for the Setting the control is representing.
 It will use the `parent_on_change` property to signal that the user made some changes to the settings.
 
-Here's the [`StringTextSettingsControl`](./src/components/StringTextSettingsControl.tsx) component to serve as an example:
+Here's the [`StringTextSettingsControl`](/src/settings-web/src/components/StringTextSettingsControl.tsx) component to serve as an example:
 
 ```tsx
 export class StringTextSettingsControl extends BaseSettingsControl {
@@ -146,8 +146,8 @@ Each settings property has a `editor_type` field that's used to differentiate be
 }
 ```
 
-A new Settings control component can be added to [`src/components/`](./src/components/).
-To render the new Settings control, its `editor_type` and component instance need to be added to the [`ModuleSettings` component render()](./src/components/ModuleSettings.tsx):
+A new Settings control component can be added to [`src/components/`](/src/settings-web/src/components/).
+To render the new Settings control, its `editor_type` and component instance need to be added to the [`ModuleSettings` component render()](/src/settings-web/src/components/ModuleSettings.tsx):
 ```tsx
 import React from 'react';
 import {StringTextSettingsControl} from './StringTextSettingsControl';
