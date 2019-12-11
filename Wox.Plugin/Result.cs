@@ -120,7 +120,7 @@ namespace Wox.Plugin
         public object ContextData { get; set; }
 
         /// <summary>
-        /// Plugin ID that generate this result
+        /// Plugin ID that generated this result
         /// </summary>
         public string PluginID { get; internal set; }
     }

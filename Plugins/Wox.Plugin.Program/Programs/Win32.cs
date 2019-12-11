@@ -43,11 +43,17 @@ namespace Wox.Plugin.Program.Programs
 
         public Result Result(string query, IPublicAPI api)
         {
+            var score = Score(query);
+            if (score <= 0)
+            { // no need to create result if this is zero
+                return null;
+            }
+
             var result = new Result
             {
                 SubTitle = FullPath,
                 IcoPath = IcoPath,
-                Score = Score(query),
+                Score = score,
                 ContextData = this,
                 Action = e =>
                 {
@@ -195,7 +201,7 @@ namespace Wox.Plugin.Program.Programs
             catch (COMException e)
             {
                 // C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\MiracastView.lnk always cause exception
-                ProgramLogger.LogException($"|Win32|LnkProgram|{path}"+
+                ProgramLogger.LogException($"|Win32|LnkProgram|{path}" +
                                                 "|Error caused likely due to trying to get the description of the program", e);
 
                 program.Valid = false;

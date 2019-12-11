@@ -273,11 +273,17 @@ namespace Wox.Plugin.Program.Programs
 
             public Result Result(string query, IPublicAPI api)
             {
+                var score = Score(query);
+                if (score <= 0)
+                { // no need to create result if score is 0
+                    return null;
+                }
+
                 var result = new Result
                 {
                     SubTitle = Package.Location,
                     Icon = Logo,
-                    Score = Score(query),
+                    Score = score,
                     ContextData = this,
                     Action = e =>
                     {

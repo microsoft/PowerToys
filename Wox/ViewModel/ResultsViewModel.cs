@@ -109,6 +109,11 @@ namespace Wox.ViewModel
             SelectedIndex = NewIndex(SelectedIndex - MaxResults);
         }
 
+        public void SelectFirstResult()
+        {
+            SelectedIndex = NewIndex(0);
+        }
+
         public void Clear()
         {
             Results.Clear();
@@ -157,7 +162,6 @@ namespace Wox.ViewModel
             // Find the same results in A (old results) and B (new newResults)          
             var sameResults = oldResults
                                 .Where(t1 => newResults.Any(x => x.Result.Equals(t1.Result)))
-                                .Select(t1 => t1)
                                 .ToList();
             
             // remove result of relative complement of B in A

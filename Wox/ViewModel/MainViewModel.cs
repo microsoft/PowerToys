@@ -126,6 +126,8 @@ namespace Wox.ViewModel
                 SelectedResults.SelectPrevPage();
             });
 
+            SelectFirstResultCommand = new RelayCommand(_ => SelectedResults.SelectFirstResult());
+
             StartHelpCommand = new RelayCommand(_ =>
             {
                 Process.Start("http://doc.wox.one/");
@@ -268,6 +270,7 @@ namespace Wox.ViewModel
         public ICommand SelectPrevItemCommand { get; set; }
         public ICommand SelectNextPageCommand { get; set; }
         public ICommand SelectPrevPageCommand { get; set; }
+        public ICommand SelectFirstResultCommand { get; set; }
         public ICommand StartHelpCommand { get; set; }
         public ICommand LoadContextMenuCommand { get; set; }
         public ICommand LoadHistoryCommand { get; set; }
@@ -415,11 +418,15 @@ namespace Wox.ViewModel
                             var config = _settings.PluginSettings.Plugins[plugin.Metadata.ID];
                             if (!config.Disabled)
                             {
-
                                 var results = PluginManager.QueryForPlugin(plugin, query);
                                 UpdateResultView(results, plugin.Metadata, query);
                             }
                         });
+
+                        // this should happen once after all queries are done so progress bar should continue
+                        // until the end of all querying
+                        _queryHasReturn = true;
+                        ProgressBarVisibility = Visibility.Hidden;
                     }, _updateToken);
                 }
             }
@@ -628,9 +635,6 @@ namespace Wox.ViewModel
         /// </summary>
         public void UpdateResultView(List<Result> list, PluginMetadata metadata, Query originQuery)
         {
-            _queryHasReturn = true;
-            ProgressBarVisibility = Visibility.Hidden;
-
             foreach (var result in list)
             {
                 if (_topMostRecord.IsTopMost(result))
