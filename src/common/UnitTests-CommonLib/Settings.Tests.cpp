@@ -617,4 +617,156 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(std::wstring(L"action value"), obj.get_value());
         }
     };
+
+    TEST_CLASS(HotkeyObjectUnitTests)
+    {
+    private:
+        json::JsonObject m_defaultHotkeyJson = json::JsonObject::Parse(L"{\"key\":\"(Key 0)\", \"code\": 123, \"win\": true, \"ctrl\": true, \"alt\": true, \"shift\": true}");
+        json::JsonObject m_defaultHotkeyJsonAlternative = json::JsonObject::Parse(L"{\"key\":\"(Key 0)\", \"code\": 123, \"win\": false, \"ctrl\": false, \"alt\": false, \"shift\": false}");
+
+    public:
+        TEST_METHOD(GetKeyFromJson)
+        {
+            HotkeyObject object = HotkeyObject::from_json(m_defaultHotkeyJson);
+            Assert::AreEqual(std::wstring(L"(Key 0)"), object.get_key());
+        }
+
+        TEST_METHOD(GetKeyFromJsonString)
+        {
+            HotkeyObject object = HotkeyObject::from_json_string(m_defaultHotkeyJson.Stringify());
+            Assert::AreEqual(std::wstring(L"(Key 0)"), object.get_key());
+        }
+
+        TEST_METHOD(GetKeyFromSettings) 
+        {
+            HotkeyObject object = HotkeyObject::from_settings(true, true, true, true, 0);
+            Assert::AreEqual(std::wstring(L"(Key 0)"), object.get_key());
+        }
+
+        TEST_METHOD(GetCodeFromJson)
+        {
+            HotkeyObject object = HotkeyObject::from_json(m_defaultHotkeyJson);
+            Assert::AreEqual(UINT(123), object.get_code());
+        }
+
+        TEST_METHOD(GetCodeFromJsonString)
+        {
+            HotkeyObject object = HotkeyObject::from_json_string(m_defaultHotkeyJson.Stringify());
+            Assert::AreEqual(UINT(123), object.get_code());
+        }
+
+        TEST_METHOD(GetCodeFromSettings)
+        {
+            HotkeyObject object = HotkeyObject::from_settings(true, true, true, true, 123);
+            Assert::AreEqual(UINT(123), object.get_code());
+        }
+
+        TEST_METHOD(GetWinPressedFromJson)
+        {
+            HotkeyObject object = HotkeyObject::from_json(m_defaultHotkeyJson);
+            Assert::AreEqual(true, object.win_pressed());
+
+            HotkeyObject objectNegativeValues = HotkeyObject::from_json(m_defaultHotkeyJsonAlternative);
+            Assert::AreEqual(false, objectNegativeValues.win_pressed());
+        }
+
+        TEST_METHOD(GetWinPressedFromJsonString)
+        {
+            HotkeyObject object = HotkeyObject::from_json_string(m_defaultHotkeyJson.Stringify());
+            Assert::AreEqual(true, object.win_pressed());
+
+            HotkeyObject objectNegativeValues = HotkeyObject::from_json_string(m_defaultHotkeyJsonAlternative.Stringify());
+            Assert::AreEqual(false, objectNegativeValues.win_pressed());
+        }
+
+        TEST_METHOD(GetWinPressedFromSettings)
+        {
+            HotkeyObject object = HotkeyObject::from_settings(true, true, true, true, 123);
+            Assert::AreEqual(true, object.win_pressed());
+
+            HotkeyObject objectNegativeValues = HotkeyObject::from_settings(false, true, true, true, 123);
+            Assert::AreEqual(false, objectNegativeValues.win_pressed());
+        }
+
+        TEST_METHOD(GetCtrlPressedFromJson)
+        {
+            HotkeyObject object = HotkeyObject::from_json(m_defaultHotkeyJson);
+            Assert::AreEqual(true, object.ctrl_pressed());
+
+            HotkeyObject objectNegativeValues = HotkeyObject::from_json(m_defaultHotkeyJsonAlternative);
+            Assert::AreEqual(false, objectNegativeValues.ctrl_pressed());
+        }
+
+        TEST_METHOD(GetCtrlPressedFromJsonString)
+        {
+            HotkeyObject object = HotkeyObject::from_json_string(m_defaultHotkeyJson.Stringify());
+            Assert::AreEqual(true, object.ctrl_pressed());
+
+            HotkeyObject objectNegativeValues = HotkeyObject::from_json_string(m_defaultHotkeyJsonAlternative.Stringify());
+            Assert::AreEqual(false, objectNegativeValues.ctrl_pressed());
+        }
+
+        TEST_METHOD(GetCtrlPressedFromSettings)
+        {
+            HotkeyObject object = HotkeyObject::from_settings(true, true, true, true, 123);
+            Assert::AreEqual(true, object.ctrl_pressed());
+
+            HotkeyObject objectNegativeValues = HotkeyObject::from_settings(true, false, true, true, 123);
+            Assert::AreEqual(false, objectNegativeValues.ctrl_pressed());
+        }
+
+        TEST_METHOD(GetAltPressedFromJson)
+        {
+            HotkeyObject object = HotkeyObject::from_json(m_defaultHotkeyJson);
+            Assert::AreEqual(true, object.alt_pressed());
+
+            HotkeyObject objectNegativeValues = HotkeyObject::from_json(m_defaultHotkeyJsonAlternative);
+            Assert::AreEqual(false, objectNegativeValues.alt_pressed());
+        }
+
+        TEST_METHOD(GetAltPressedFromJsonString)
+        {
+            HotkeyObject object = HotkeyObject::from_json_string(m_defaultHotkeyJson.Stringify());
+            Assert::AreEqual(true, object.alt_pressed());
+
+            HotkeyObject objectNegativeValues = HotkeyObject::from_json_string(m_defaultHotkeyJsonAlternative.Stringify());
+            Assert::AreEqual(false, objectNegativeValues.alt_pressed());
+        }
+
+        TEST_METHOD(GetAltPressedFromSettings)
+        {
+            HotkeyObject object = HotkeyObject::from_settings(true, true, true, true, 123);
+            Assert::AreEqual(true, object.alt_pressed());
+
+            HotkeyObject objectNegativeValues = HotkeyObject::from_settings(true, true, false, true, 123);
+            Assert::AreEqual(false, objectNegativeValues.alt_pressed());
+        }
+
+        TEST_METHOD(GetShiftPressedFromJson)
+        {
+            HotkeyObject object = HotkeyObject::from_json(m_defaultHotkeyJson);
+            Assert::AreEqual(true, object.shift_pressed());
+
+            HotkeyObject objectNegativeValues = HotkeyObject::from_json(m_defaultHotkeyJsonAlternative);
+            Assert::AreEqual(false, objectNegativeValues.shift_pressed());
+        }
+
+        TEST_METHOD(GetShiftPressedFromJsonString)
+        {
+            HotkeyObject object = HotkeyObject::from_json_string(m_defaultHotkeyJson.Stringify());
+            Assert::AreEqual(true, object.shift_pressed());
+
+            HotkeyObject objectNegativeValues = HotkeyObject::from_json_string(m_defaultHotkeyJsonAlternative.Stringify());
+            Assert::AreEqual(false, objectNegativeValues.shift_pressed());
+        }
+
+        TEST_METHOD(GetShiftPressedFromSettings)
+        {
+            HotkeyObject object = HotkeyObject::from_settings(true, true, true, true, 123);
+            Assert::AreEqual(true, object.shift_pressed());
+
+            HotkeyObject objectNegativeValues = HotkeyObject::from_settings(true, true, true, false, 123);
+            Assert::AreEqual(false, objectNegativeValues.shift_pressed());
+        }
+    };
 }
