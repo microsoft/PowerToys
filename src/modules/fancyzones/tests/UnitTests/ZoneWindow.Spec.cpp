@@ -7,12 +7,15 @@ namespace FancyZonesUnitTests
 {
     struct MockZoneWindowHost : public winrt::implements<MockZoneWindowHost, IZoneWindowHost>
     {
-        IFACEMETHODIMP_(void) MoveWindowsOnActiveZoneSetChange() noexcept {};
-        IFACEMETHODIMP_(COLORREF) GetZoneHighlightColor() noexcept
+        IFACEMETHODIMP_(void)
+        MoveWindowsOnActiveZoneSetChange() noexcept {};
+        IFACEMETHODIMP_(COLORREF)
+        GetZoneHighlightColor() noexcept
         {
             return RGB(0xFF, 0xFF, 0xFF);
         }
-        IFACEMETHODIMP_(GUID) GetCurrentMonitorZoneSetId(HMONITOR monitor) noexcept
+        IFACEMETHODIMP_(GUID)
+        GetCurrentMonitorZoneSetId(HMONITOR monitor) noexcept
         {
             return m_guid;
         }
@@ -31,7 +34,7 @@ namespace FancyZonesUnitTests
 TEST_METHOD(TestDeviceId)
 {
     // Window initialization requires a valid HMONITOR - just use the primary for now.
-	HMONITOR pimaryMonitor = MonitorFromWindow(HWND(), MONITOR_DEFAULTTOPRIMARY);
+    HMONITOR pimaryMonitor = MonitorFromWindow(HWND(), MONITOR_DEFAULTTOPRIMARY);
     MockZoneWindowHost host;
     std::wstring expectedDeviceId = L"SomeRandomValue";
     winrt::com_ptr<IZoneWindow> zoneWindow = MakeZoneWindow(dynamic_cast<IZoneWindowHost*>(&host), Mocks::Instance(), pimaryMonitor, expectedDeviceId.c_str(), L"MyVirtualDesktopId", false);
@@ -54,7 +57,7 @@ TEST_METHOD(TestUniqueId)
     std::wstringstream ss;
     ss << L"DELA026#5&10a58c63&0&UID16777488_" << monitorRect.width() << "_" << monitorRect.height() << "_MyVirtualDesktopId";
 
-	MockZoneWindowHost host;
+    MockZoneWindowHost host;
     winrt::com_ptr<IZoneWindow> zoneWindow = MakeZoneWindow(dynamic_cast<IZoneWindowHost*>(&host), Mocks::Instance(), pimaryMonitor, deviceId.c_str(), L"MyVirtualDesktopId", false);
     Assert::AreEqual(zoneWindow->UniqueId().compare(ss.str()), 0);
 }
