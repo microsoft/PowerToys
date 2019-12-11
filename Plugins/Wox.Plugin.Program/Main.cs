@@ -78,8 +78,8 @@ namespace Wox.Plugin.Program
             }
 
             var results1 = win32.AsParallel()
-                    .Where(p => p.Enabled)
-                    .Select(p => p.Result(query.Search, _context.API));
+                .Where(p => p.Enabled)
+                .Select(p => p.Result(query.Search, _context.API));
 
             var results2 = uwps.AsParallel()
                 .Where(p => p.Enabled)

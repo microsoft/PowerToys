@@ -99,9 +99,7 @@ namespace Wox.Infrastructure
                     RawScore = Math.Max(score, pinyinScore)
                 };
 
-                return result.Score > 0 ? 
-                    result : 
-                    new MatchResult { Success = false };
+                return result;
             }
 
             return new MatchResult { Success = false };
