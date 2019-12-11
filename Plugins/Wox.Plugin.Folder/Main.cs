@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 
 namespace Wox.Plugin.Folder
@@ -58,13 +59,14 @@ namespace Wox.Plugin.Folder
             return results;
         }
 
-        private Result CreateFolderResult(string title, string path, string queryActionKeyword)
+        private Result CreateFolderResult(string title, string path, Query query)
         {
             return new Result
             {
                 Title = title,
                 IcoPath = path,
                 SubTitle = "Ctrl + Enter to open the directory",
+                TitleHighlightData = StringMatcher.FuzzySearch(query.Search, title).MatchData,
                 Action = c =>
                 {
                     if (c.SpecialKeyState.CtrlPressed)
@@ -82,7 +84,9 @@ namespace Wox.Plugin.Folder
                     }
 
                     string changeTo = path.EndsWith("\\") ? path : path + "\\";
-                    _context.API.ChangeQuery(string.IsNullOrEmpty(queryActionKeyword)? changeTo : queryActionKeyword + " " + changeTo);
+                    _context.API.ChangeQuery(string.IsNullOrEmpty(query.ActionKeyword) ?
+                        changeTo :
+                        query.ActionKeyword + " " + changeTo);
                     return false;
                 }
             };
@@ -93,8 +97,8 @@ namespace Wox.Plugin.Folder
             string search = query.Search.ToLower();
             var userFolderLinks = _settings.FolderLinks.Where(
                 x => x.Nickname.StartsWith(search, StringComparison.OrdinalIgnoreCase));
-            var results = userFolderLinks.Select(item => CreateFolderResult(item.Nickname, item.Path, query.ActionKeyword))
-                    .ToList();
+            var results = userFolderLinks.Select(item =>
+                CreateFolderResult(item.Nickname, item.Path, query)).ToList();
             return results;
         }
 
@@ -132,34 +136,41 @@ namespace Wox.Plugin.Folder
                     incompleteName = search.Substring(index + 1).ToLower();
                     search = search.Substring(0, index + 1);
                     if (!Directory.Exists(search))
+                    {
                         return results;
+                    }
                 }
                 else
+                {
                     return results;
+                }
             }
             else
-            { // folder exist, add \ at the end of doesn't exist
+            {
+                // folder exist, add \ at the end of doesn't exist
                 if (!search.EndsWith("\\"))
+                {
                     search += "\\";
+                }
             }
 
             results.Add(CreateOpenCurrentFolderResult(incompleteName, search));
 
-            
-            var directoryInfo = new DirectoryInfo(search);
-
-            var searchOption= SearchOption.TopDirectoryOnly;
+            var searchOption = SearchOption.TopDirectoryOnly;
             incompleteName += "*";
 
-            if (incompleteName.StartsWith(">")) // give the ability to search all folder when starting with >
+            // give the ability to search all folder when starting with >
+            if (incompleteName.StartsWith(">"))
             {
                 searchOption = SearchOption.AllDirectories;
                 incompleteName = incompleteName.Substring(1);
             }
 
+            string searchNickname = new FolderLink { Path = query.Search }.Nickname;
             try
             {
                 // search folder and add results
+                var directoryInfo = new DirectoryInfo(search);
                 var fileSystemInfos = directoryInfo.GetFileSystemInfos(incompleteName, searchOption);
 
                 foreach (var fileSystemInfo in fileSystemInfos)
@@ -168,12 +179,12 @@ namespace Wox.Plugin.Folder
 
                     var result =
                         fileSystemInfo is DirectoryInfo
-                            ? CreateFolderResult(fileSystemInfo.Name, fileSystemInfo.FullName, query.ActionKeyword)
-                            : CreateFileResult(fileSystemInfo.FullName);
+                            ? CreateFolderResult(fileSystemInfo.Name, fileSystemInfo.FullName, query)
+                            : CreateFileResult(fileSystemInfo.FullName, query);
                     results.Add(result);
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 if (e is UnauthorizedAccessException || e is ArgumentException)
                 {
@@ -188,12 +199,13 @@ namespace Wox.Plugin.Folder
             return results;
         }
 
-        private static Result CreateFileResult(string filePath)
+        private static Result CreateFileResult(string filePath, Query query)
         {
             var result = new Result
             {
                 Title = Path.GetFileName(filePath),
                 IcoPath = filePath,
+                TitleHighlightData = StringMatcher.FuzzySearch(query.Search, Path.GetFileName(filePath)).MatchData,
                 Action = c =>
                 {
                     try

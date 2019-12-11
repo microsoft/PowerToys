@@ -35,7 +35,6 @@ namespace Wox.Plugin.Program.Programs
 
         public UWP(Package package)
         {
-
             Location = package.InstalledLocation.Path;
             Name = package.Id.Name;
             FullName = package.Id.FullName;
@@ -266,11 +265,9 @@ namespace Wox.Plugin.Program.Programs
 
             private int Score(string query)
             {
-                var score1 = StringMatcher.FuzzySearch(query, DisplayName).ScoreAfterSearchPrecisionFilter();
-                var score2 = StringMatcher.ScoreForPinyin(DisplayName, query);
-                var score3 = StringMatcher.FuzzySearch(query, Description).ScoreAfterSearchPrecisionFilter();
-                var score4 = StringMatcher.ScoreForPinyin(Description, query);
-                var score = new[] { score1, score2, score3, score4 }.Max();
+                var displayNameMatch = StringMatcher.FuzzySearch(query, DisplayName);
+                var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
+                var score = new[] { displayNameMatch.Score, descriptionMatch.Score }.Max();
                 return score;
             }
 
@@ -299,14 +296,18 @@ namespace Wox.Plugin.Program.Programs
                     Description.Substring(0, DisplayName.Length) == DisplayName)
                 {
                     result.Title = Description;
+                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, Description).MatchData;
                 }
                 else if (!string.IsNullOrEmpty(Description))
                 {
-                    result.Title = $"{DisplayName}: {Description}";
+                    var title = $"{DisplayName}: {Description}";
+                    result.Title = title;
+                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, title).MatchData;
                 }
                 else
                 {
                     result.Title = DisplayName;
+                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, DisplayName).MatchData;
                 }
                 return result;
             }

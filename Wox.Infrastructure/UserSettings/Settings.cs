@@ -24,7 +24,17 @@ namespace Wox.Infrastructure.UserSettings
         /// <summary>
         /// when false Alphabet static service will always return empty results
         /// </summary>
-        public bool ShouldUsePinyin { get; set; } = true;
+        private bool _shouldUsePinyin = true;
+        public bool ShouldUsePinyin 
+        {
+            get { return _shouldUsePinyin;  }
+            set 
+            {
+                _shouldUsePinyin = value;
+                StringMatcher.ShouldUsePinyin = value;
+            }
+        }
+
 
         private string _querySearchPrecision { get; set; } = StringMatcher.SearchPrecisionScore.Regular.ToString();
         public string QuerySearchPrecision
