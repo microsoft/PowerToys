@@ -599,4 +599,22 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
     };
+
+    TEST_CLASS(CustomActionObjectUnitTests)
+    {
+    public:
+        TEST_METHOD(CustomActionObjectName)
+        {
+            const std::wstring json = L"{\"action_name\": \"action name\", \"value\": \"action value\"}";
+            CustomActionObject obj = CustomActionObject::from_json_string(json);
+            Assert::AreEqual(std::wstring(L"action name"), obj.get_name());
+        }
+
+        TEST_METHOD(CustomActionObjectValue)
+        {
+            const std::wstring json = L"{\"action_name\": \"action name\", \"value\": \"action value\"}";
+            CustomActionObject obj = CustomActionObject::from_json_string(json);
+            Assert::AreEqual(std::wstring(L"action value"), obj.get_value());
+        }
+    };
 }
