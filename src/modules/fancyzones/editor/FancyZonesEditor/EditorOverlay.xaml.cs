@@ -95,7 +95,12 @@ namespace FancyZonesEditor
             MainWindow window = new MainWindow();
             window.Owner = this;
             window.ShowActivated = true;
+            window.Topmost = true;
             window.Show();
+
+            // window is set to topmost to make sure it shows on top of PowerToys settings page
+            // we can reset topmost flag now
+            window.Topmost = false;
         }
 
         // These event handlers are used to track the current state of the Shift and Ctrl keys on the keyboard
