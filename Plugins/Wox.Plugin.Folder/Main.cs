@@ -9,13 +9,14 @@ using Wox.Infrastructure.Storage;
 
 namespace Wox.Plugin.Folder
 {
-    public class Main : IPlugin, ISettingProvider, IPluginI18n, ISavable
+    public class Main : IPlugin, ISettingProvider, IPluginI18n, ISavable, IContextMenu
     {
         private static List<string> _driverNames;
         private PluginInitContext _context;
 
         private readonly Settings _settings;
         private readonly PluginJsonStorage<Settings> _storage;
+        private readonly IContextMenu _contextMenuLoader = new ContextMenuLoader();
 
         public Main()
         {
@@ -104,7 +105,8 @@ namespace Wox.Plugin.Folder
                     string changeTo = path.EndsWith("\\") ? path : path + "\\";
                     _context.API.ChangeQuery(string.IsNullOrEmpty(queryActionKeyword)? changeTo : queryActionKeyword + " " + changeTo);
                     return false;
-                }
+                },
+                ContextData = new SearchResult { Type = ResultType.Folder, FullPath = path }
             };
         }
 
@@ -226,7 +228,8 @@ namespace Wox.Plugin.Folder
                     }
 
                     return true;
-                }
+                },
+                ContextData = new SearchResult { Type = ResultType.File, FullPath = filePath}
             };
             return result;
         }
@@ -262,6 +265,11 @@ namespace Wox.Plugin.Folder
         public string GetTranslatedPluginDescription()
         {
             return _context.API.GetTranslation("wox_plugin_folder_plugin_description");
+        }
+
+        public List<Result> LoadContextMenus(Result selectedResult)
+        {
+            return _contextMenuLoader.LoadContextMenus(selectedResult);
         }
     }
 }
