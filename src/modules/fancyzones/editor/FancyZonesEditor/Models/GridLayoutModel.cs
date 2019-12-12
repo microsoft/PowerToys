@@ -192,12 +192,14 @@ namespace FancyZonesEditor.Models
             byte[] data = new byte[7 + (Rows * 2) + (Columns * 2) + (Rows * Columns)];
 
             int i = 0;
+
             // Common persisted values between all layout types
             data[i++] = (byte)(c_latestVersion / 256);
             data[i++] = (byte)(c_latestVersion % 256);
             data[i++] = 0; // LayoutModelType: 0 == GridLayoutModel
             data[i++] = (byte)(Id / 256);
             data[i++] = (byte)(Id % 256);
+
             // End common
 
             data[i++] = (byte)Rows;

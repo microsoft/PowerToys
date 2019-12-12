@@ -271,6 +271,7 @@ namespace FancyZonesEditor
                         if (_colInfo[foundCol + i].End == offset)
                         {
                             foundExistingSplit = true;
+
                             // use existing division
                         }
                     }
@@ -364,6 +365,7 @@ namespace FancyZonesEditor
                         if (_rowInfo[foundRow + i].End == offset)
                         {
                             foundExistingSplit = true;
+
                             // use existing division
                         }
                     }

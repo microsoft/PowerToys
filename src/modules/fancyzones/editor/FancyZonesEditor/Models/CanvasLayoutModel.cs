@@ -139,6 +139,7 @@ namespace FancyZonesEditor.Models
             data[i++] = 1; // LayoutModelType: 1 == CanvasLayoutModel
             data[i++] = (byte)(Id / 256);
             data[i++] = (byte)(Id % 256);
+
             // End common
 
             data[i++] = (byte)(_referenceWidth / 256);
