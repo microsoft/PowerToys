@@ -89,8 +89,7 @@ namespace FancyZonesEditor
             }
             else
             {
-                var canvasModel = _model as CanvasLayoutModel;
-                if (canvasModel != null)
+                if (_model is CanvasLayoutModel canvasModel)
                 {
                     RenderCanvasPreview(canvasModel);
                 }
@@ -102,16 +101,20 @@ namespace FancyZonesEditor
             Body.RowDefinitions.Clear();
             foreach (int percent in grid.RowPercents)
             {
-                RowDefinition def = new RowDefinition();
-                def.Height = new GridLength(percent, GridUnitType.Star);
+                RowDefinition def = new RowDefinition
+                {
+                    Height = new GridLength(percent, GridUnitType.Star),
+                };
                 Body.RowDefinitions.Add(def);
             }
 
             Body.ColumnDefinitions.Clear();
             foreach (int percent in grid.ColumnPercents)
             {
-                ColumnDefinition def = new ColumnDefinition();
-                def.Width = new GridLength(percent, GridUnitType.Star);
+                ColumnDefinition def = new ColumnDefinition
+                {
+                    Width = new GridLength(percent, GridUnitType.Star),
+                };
                 Body.ColumnDefinitions.Add(def);
             }
 
@@ -167,8 +170,10 @@ namespace FancyZonesEditor
             Body.RowDefinitions.Clear();
             Body.ColumnDefinitions.Clear();
 
-            Viewbox viewbox = new Viewbox();
-            viewbox.Stretch = Stretch.Uniform;
+            Viewbox viewbox = new Viewbox
+            {
+                Stretch = Stretch.Uniform,
+            };
             Body.Children.Add(viewbox);
             Canvas frame = new Canvas();
             viewbox.Child = frame;

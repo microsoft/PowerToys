@@ -43,14 +43,18 @@ namespace FancyZonesEditor
             _focusModel = new CanvasLayoutModel("Focus", _focusModelId, (int)_workArea.Width, (int)_workArea.Height);
             DefaultModels.Add(_focusModel);
 
-            _columnsModel = new GridLayoutModel("Columns", _columnsModelId);
-            _columnsModel.Rows = 1;
-            _columnsModel.RowPercents = new int[1] { _multiplier };
+            _columnsModel = new GridLayoutModel("Columns", _columnsModelId)
+            {
+                Rows = 1,
+                RowPercents = new int[1] { _multiplier },
+            };
             DefaultModels.Add(_columnsModel);
 
-            _rowsModel = new GridLayoutModel("Rows", _rowsModelId);
-            _rowsModel.Columns = 1;
-            _rowsModel.ColumnPercents = new int[1] { _multiplier };
+            _rowsModel = new GridLayoutModel("Rows", _rowsModelId)
+            {
+                Columns = 1,
+                ColumnPercents = new int[1] { _multiplier },
+            };
             DefaultModels.Add(_rowsModel);
 
             _gridModel = new GridLayoutModel("Grid", _gridModelId);
@@ -199,8 +203,6 @@ namespace FancyZonesEditor
         //  Update the five default layouts based on the new ZoneCount
         private void UpdateLayoutModels()
         {
-            int previousZoneCount = _focusModel.Zones.Count;
-
             // Update the "Focus" Default Layout
             _focusModel.Zones.Clear();
 
@@ -231,15 +233,13 @@ namespace FancyZonesEditor
 
             // Update the "Grid" Default Layout
             int rows = 1;
-            int cols = 1;
-            int mergeCount = 0;
             while (ZoneCount / rows >= rows)
             {
                 rows++;
             }
 
             rows--;
-            cols = ZoneCount / rows;
+            int cols = ZoneCount / rows;
             if (ZoneCount % rows == 0)
             {
                 // even grid
@@ -247,7 +247,6 @@ namespace FancyZonesEditor
             else
             {
                 cols++;
-                mergeCount = rows - (ZoneCount % rows);
             }
 
             _gridModel.Rows = rows;

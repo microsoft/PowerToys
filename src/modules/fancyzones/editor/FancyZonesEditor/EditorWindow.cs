@@ -14,8 +14,7 @@ namespace FancyZonesEditor
         protected void OnSaveApplyTemplate(object sender, RoutedEventArgs e)
         {
             EditorOverlay mainEditor = EditorOverlay.Current;
-            var model = mainEditor.DataContext as LayoutModel;
-            if (model != null)
+            if (mainEditor.DataContext is LayoutModel model)
             {
                 model.Persist(mainEditor.GetZoneRects());
             }

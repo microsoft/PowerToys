@@ -13,18 +13,20 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class CanvasEditor : UserControl
     {
+        private CanvasLayoutModel _model;
+
         public CanvasEditor()
         {
             InitializeComponent();
-            Loaded += CanvasEditor_Loaded;
+            Loaded += OnLoaded;
         }
 
-        private void CanvasEditor_Loaded(object sender, RoutedEventArgs e)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
             CanvasLayoutModel model = (CanvasLayoutModel)DataContext;
             if (model != null)
             {
-                Model = model;
+                _model = model;
                 UpdateZoneRects();
 
                 model.PropertyChanged += OnModelChanged;
@@ -43,17 +45,19 @@ namespace FancyZonesEditor
         {
             UIElementCollection previewChildren = Preview.Children;
             int previewChildrenCount = previewChildren.Count;
-            while (previewChildrenCount < Model.Zones.Count)
+            while (previewChildrenCount < _model.Zones.Count)
             {
-                CanvasZone zone = new CanvasZone();
-                zone.Model = Model;
+                CanvasZone zone = new CanvasZone
+                {
+                    Model = _model,
+                };
                 Preview.Children.Add(zone);
                 previewChildrenCount++;
             }
 
             for (int i = 0; i < previewChildrenCount; i++)
             {
-                Int32Rect rect = Model.Zones[i];
+                Int32Rect rect = _model.Zones[i];
                 CanvasZone zone = previewChildren[i] as CanvasZone;
 
                 zone.ZoneIndex = i;
@@ -63,7 +67,5 @@ namespace FancyZonesEditor
                 zone.MinWidth = rect.Width;
             }
         }
-
-        public CanvasLayoutModel Model;
     }
 }

@@ -43,7 +43,7 @@ namespace FancyZonesEditor
             int i = 0;
             foreach (FrameworkElement child in previewPanel.Children)
             {
-                Point topLeft = child.TransformToAncestor(previewPanel).Transform(default(Point));
+                Point topLeft = child.TransformToAncestor(previewPanel).Transform(default);
 
                 var right = topLeft.X + child.ActualWidth;
                 var bottom = topLeft.Y + child.ActualHeight;
@@ -78,15 +78,19 @@ namespace FancyZonesEditor
             DataContext = null;
 
             _editor = null;
-            _layoutPreview = new LayoutPreview();
-            _layoutPreview.IsActualSize = true;
-            _layoutPreview.Opacity = 0.5;
+            _layoutPreview = new LayoutPreview
+            {
+                IsActualSize = true,
+                Opacity = 0.5,
+            };
             Content = _layoutPreview;
 
-            MainWindow window = new MainWindow();
-            window.Owner = this;
-            window.ShowActivated = true;
-            window.Topmost = true;
+            MainWindow window = new MainWindow
+            {
+                Owner = this,
+                ShowActivated = true,
+                Topmost = true,
+            };
             window.Show();
 
             // window is set to topmost to make sure it shows on top of PowerToys settings page

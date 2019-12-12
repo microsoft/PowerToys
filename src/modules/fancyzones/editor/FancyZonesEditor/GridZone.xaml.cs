@@ -258,26 +258,17 @@ namespace FancyZonesEditor
 
         private void DoMergeDrag(MouseEventArgs e)
         {
-            if (MergeDrag != null)
-            {
-                MergeDrag(this, e);
-            }
+            MergeDrag?.Invoke(this, e);
         }
 
         private void DoMergeComplete(MouseButtonEventArgs e)
         {
-            if (MergeComplete != null)
-            {
-                MergeComplete(this, e);
-            }
+            MergeComplete?.Invoke(this, e);
         }
 
         private void DoSplit(Orientation orientation, double offset)
         {
-            if (Split != null)
-            {
-                Split(this, new SplitEventArgs(orientation, offset));
-            }
+            Split?.Invoke(this, new SplitEventArgs(orientation, offset));
         }
 
         private void FullSplit_Click(object sender, RoutedEventArgs e)
@@ -287,10 +278,7 @@ namespace FancyZonesEditor
 
         private void DoFullSplit()
         {
-            if (FullSplit != null)
-            {
-                FullSplit(this, new SplitEventArgs());
-            }
+            FullSplit?.Invoke(this, new SplitEventArgs());
         }
     }
 }

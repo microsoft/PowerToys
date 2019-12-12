@@ -466,10 +466,12 @@ namespace FancyZonesEditor
 
         private void AddDragHandle(Orientation orientation, int index)
         {
-            GridResizer resizer = new GridResizer();
-            resizer.Orientation = orientation;
-            resizer.Index = index;
-            resizer.Model = Model;
+            GridResizer resizer = new GridResizer
+            {
+                Orientation = orientation,
+                Index = index,
+                Model = Model
+            };
             resizer.DragDelta += Resizer_DragDelta;
             if (orientation == Orientation.Vertical)
             {
@@ -537,8 +539,6 @@ namespace FancyZonesEditor
 
         private void OnGridDimensionsChanged()
         {
-            GridLayoutModel model = Model;
-
             Size actualSize = new Size(ActualWidth, ActualHeight);
             if (actualSize.Width > 0)
             {

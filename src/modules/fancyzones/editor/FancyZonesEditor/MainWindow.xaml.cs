@@ -6,9 +6,7 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
 using FancyZonesEditor.Models;
 using MahApps.Metro.Controls;
 
@@ -20,10 +18,9 @@ namespace FancyZonesEditor
     public partial class MainWindow : MetroWindow
     {
         // TODO: share the constants b/w C# Editor and FancyZoneLib
-        public static int MAX_ZONES = 40;
+        public const int MaxZones = 40;
         private static string _defaultNamePrefix = "Custom Layout ";
         private bool _editing = false;
-        private int _wrapPanelItemSize = 262;
 
         public MainWindow()
         {
@@ -36,18 +33,7 @@ namespace FancyZonesEditor
             }
         }
 
-        public int WrapPanelItemSize
-        {
-            get
-            {
-                return _wrapPanelItemSize;
-            }
-
-            set
-            {
-                _wrapPanelItemSize = value;
-            }
-        }
+        public int WrapPanelItemSize { get; set; } = 262;
 
         private void DecrementZones_Click(object sender, RoutedEventArgs e)
         {
@@ -59,7 +45,7 @@ namespace FancyZonesEditor
 
         private void IncrementZones_Click(object sender, RoutedEventArgs e)
         {
-            if (_settings.ZoneCount < MAX_ZONES)
+            if (_settings.ZoneCount < MaxZones)
             {
                 _settings.ZoneCount++;
             }
@@ -119,8 +105,7 @@ namespace FancyZonesEditor
                     string name = customModel.Name;
                     if (name.StartsWith(_defaultNamePrefix))
                     {
-                        int i;
-                        if (int.TryParse(name.Substring(_defaultNamePrefix.Length), out i))
+                        if (int.TryParse(name.Substring(_defaultNamePrefix.Length), out int i))
                         {
                             if (maxCustomIndex < i)
                             {
