@@ -19,6 +19,7 @@ namespace FancyZonesEditor
             {
                 model.Persist(mainEditor.GetZoneRects());
             }
+
             _choosing = true;
             this.Close();
             EditorOverlay.Current.Close();

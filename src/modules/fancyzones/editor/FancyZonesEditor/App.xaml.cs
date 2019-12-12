@@ -27,7 +27,7 @@ namespace FancyZonesEditor
         {
             if (e.Args.Length > 1)
             {
-                UInt16.TryParse(e.Args[1], out _idInitial);
+                ushort.TryParse(e.Args[1], out _idInitial);
             }
 
             LayoutModel foundModel = null;
@@ -57,6 +57,7 @@ namespace FancyZonesEditor
                     }
                 }
             }
+
             if (foundModel == null)
             {
                 foundModel = _settings.DefaultModels[0];

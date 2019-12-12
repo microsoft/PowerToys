@@ -26,10 +26,14 @@ namespace FancyZonesEditor.Models
             _id = id;
         }
 
-        //   Name - the display name for this layout model - is also used as the key in the registry
+        // Name - the display name for this layout model - is also used as the key in the registry
         public string Name
         {
-            get { return _name; }
+            get
+            {
+                return _name;
+            }
+
             set
             {
                 if (_name != value)
@@ -39,6 +43,7 @@ namespace FancyZonesEditor.Models
                 }
             }
         }
+
         private string _name;
 
         // Id - the unique ID for this layout model - is used to connect fancy zones' ZonesSets with the editor's Layouts
@@ -51,16 +56,22 @@ namespace FancyZonesEditor.Models
                 {
                     _id = ++s_maxId;
                 }
+
                 return _id;
             }
         }
+
         private ushort _id = 0;
 
         // IsSelected (not-persisted) - tracks whether or not this LayoutModel is selected in the picker
         // TODO: once we switch to a picker per monitor, we need to move this state to the view
         public bool IsSelected
         {
-            get { return _isSelected; }
+            get
+            {
+                return _isSelected;
+            }
+
             set
             {
                 if (_isSelected != value)
@@ -111,7 +122,7 @@ namespace FancyZonesEditor.Models
                     LayoutModel model = null;
                     byte[] data = (byte[])Registry.GetValue(_fullRegistryPath, name, null);
 
-                    ushort version = (ushort)(data[0] * 256 + data[1]);
+                    ushort version = (ushort)((data[0] * 256) + data[1]);
                     byte type = data[2];
                     ushort id = (ushort)((data[3] * 256) + data[4]);
 
@@ -127,6 +138,7 @@ namespace FancyZonesEditor.Models
                         {
                             s_maxId = id;
                         }
+
                         s_customModels.Add(model);
                     }
                 }
@@ -134,12 +146,14 @@ namespace FancyZonesEditor.Models
 
             return s_customModels;
         }
+
         private static ObservableCollection<LayoutModel> s_customModels = null;
 
         private static ushort s_maxId = 0;
 
         // Callbacks that the base LayoutModel makes to derived types
         protected abstract byte[] GetPersistData();
+
         public abstract LayoutModel Clone();
 
         // PInvokes to handshake with fancyzones backend

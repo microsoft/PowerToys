@@ -79,6 +79,7 @@ namespace FancyZonesEditor
                 {
                     isVertical = !isVertical;
                 }
+
                 return isVertical;
             }
         }
@@ -117,6 +118,7 @@ namespace FancyZonesEditor
                 {
                     pos = bodyHeight - SplitterThickness;
                 }
+
                 Canvas.SetLeft(_splitter, 0);
                 Canvas.SetTop(_splitter, pos);
                 _splitter.MinWidth = Body.ActualWidth;
@@ -200,6 +202,7 @@ namespace FancyZonesEditor
                     }
                 }
             }
+
             base.OnMouseMove(e);
         }
 
@@ -229,6 +232,7 @@ namespace FancyZonesEditor
                     }
                 }
             }
+
             _mouseDownPos = new Point(-1, -1);
             base.OnMouseUp(e);
         }
@@ -237,7 +241,6 @@ namespace FancyZonesEditor
         public event SplitEventHandler FullSplit;
         public event MouseEventHandler MergeDrag;
         public event MouseButtonEventHandler MergeComplete;
-
 
         private Rectangle _splitter;
         private bool _switchOrientation = false;

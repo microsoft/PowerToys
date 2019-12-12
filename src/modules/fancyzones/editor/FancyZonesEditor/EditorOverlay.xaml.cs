@@ -134,6 +134,7 @@ namespace FancyZonesEditor
             {
                 _editor = new CanvasEditor();
             }
+
             Content = _editor;
         }
 

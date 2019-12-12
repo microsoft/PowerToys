@@ -37,6 +37,7 @@ namespace FancyZonesEditor
                 {
                     _rowInfo[row] = new RowColInfo(model.RowPercents[row]);
                 }
+
                 _colInfo = new RowColInfo[cols];
                 for (int col = 0; col < cols; col++)
                 {
@@ -51,6 +52,7 @@ namespace FancyZonesEditor
                         maxIndex = Math.Max(maxIndex, model.CellChildMap[row, col]);
                     }
                 }
+
                 for (int i = 0; i <= maxIndex; i++)
                 {
                     AddZone();
@@ -63,6 +65,7 @@ namespace FancyZonesEditor
                 Model = new GridLayoutModel();
                 DataContext = Model;
             }
+
             Model.PropertyChanged += OnGridDimensionsChanged;
             AddDragHandles();
         }
@@ -118,6 +121,7 @@ namespace FancyZonesEditor
                                 }
                             }
                         }
+
                         OnGridDimensionsChanged();
                         return;
                     }
@@ -128,7 +132,6 @@ namespace FancyZonesEditor
         private void ExtendRangeToHaveEvenCellEdges()
         {
             // extend each edge of the [(_startCol, _startRow) - (_endCol, _endRow)] range based on merged cells until you have 4 straight edges with no "straddling cells"
-
             GridLayoutModel model = Model;
 
             while (_startRow > 0)
@@ -143,6 +146,7 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if (!dirty)
                 {
                     break;
@@ -161,6 +165,7 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if (!dirty)
                 {
                     break;
@@ -179,6 +184,7 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if (!dirty)
                 {
                     break;
@@ -197,6 +203,7 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if (!dirty)
                 {
                     break;
@@ -260,6 +267,7 @@ namespace FancyZonesEditor
                                 model.CellChildMap[walkRow++, foundCol + i] = newChildIndex;
                             }
                         }
+
                         if (_colInfo[foundCol + i].End == offset)
                         {
                             foundExistingSplit = true;
@@ -277,6 +285,7 @@ namespace FancyZonesEditor
                     {
                         foundCol++;
                     }
+
                     offset -= _colInfo[foundCol].Start;
                 }
 
@@ -300,11 +309,13 @@ namespace FancyZonesEditor
                             newCellChildMap[row, col] = model.CellChildMap[row, sourceCol];
                         }
                     }
+
                     if (col != foundCol)
                     {
                         sourceCol++;
                     }
                 }
+
                 model.CellChildMap = newCellChildMap;
 
                 sourceCol = 0;
@@ -325,6 +336,7 @@ namespace FancyZonesEditor
                         newColInfo[col] = _colInfo[sourceCol++];
                     }
                 }
+
                 _colInfo = newColInfo;
                 model.ColumnPercents = newColPercents;
 
@@ -332,7 +344,6 @@ namespace FancyZonesEditor
             }
             else // Horizontal
             {
-
                 if (splitee.HorizontalSnapPoints != null)
                 {
                     offset += Canvas.GetTop(splitee);
@@ -349,6 +360,7 @@ namespace FancyZonesEditor
                                 model.CellChildMap[foundRow + i, walkCol] = newChildIndex;
                             }
                         }
+
                         if (_rowInfo[foundRow + i].End == offset)
                         {
                             foundExistingSplit = true;
@@ -366,6 +378,7 @@ namespace FancyZonesEditor
                     {
                         foundRow++;
                     }
+
                     offset -= _rowInfo[foundRow].Start;
 
                 }
@@ -390,11 +403,13 @@ namespace FancyZonesEditor
                             newCellChildMap[row, col] = model.CellChildMap[sourceRow, col];
                         }
                     }
+
                     if (row != foundRow)
                     {
                         sourceRow++;
                     }
                 }
+
                 model.CellChildMap = newCellChildMap;
 
                 sourceRow = 0;
@@ -415,6 +430,7 @@ namespace FancyZonesEditor
                         newRowInfo[row] = _rowInfo[sourceRow++];
                     }
                 }
+
                 _rowInfo = newRowInfo;
                 model.RowPercents = newRowPercents;
 
@@ -455,8 +471,9 @@ namespace FancyZonesEditor
             resizer.DragDelta += Resizer_DragDelta;
             if (orientation == Orientation.Vertical)
             {
-                index += (Model.Rows - 1);
+                index += Model.Rows - 1;
             }
+
             AdornerLayer.Children.Insert(index, resizer);
         }
 
@@ -510,10 +527,12 @@ namespace FancyZonesEditor
                 OnGridDimensionsChanged();
             }
         }
+
         private static void OnGridDimensionsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((GridEditor)d).OnGridDimensionsChanged();
         }
+
         private void OnGridDimensionsChanged()
         {
             GridLayoutModel model = Model;
@@ -557,8 +576,6 @@ namespace FancyZonesEditor
                 left += cellWidth + spacing;
             }
 
-
-
             for (int row = 0; row < rows; row++)
             {
                 for (int col = 0; col < cols; col++)
@@ -579,6 +596,7 @@ namespace FancyZonesEditor
                         {
                             maxRow++;
                         }
+
                         zone.HorizontalSnapPoints = null;
                         if (maxRow > row)
                         {
@@ -650,7 +668,7 @@ namespace FancyZonesEditor
             {
                 GridResizer resizer = (GridResizer)adornerChildren[childIndex++];
                 int startRow = -1;
-                int endRow = rows - 1;;
+                int endRow = rows - 1;
                 for (int row = 0; row < rows; row++)
                 {
                     if ((startRow == -1) && (model.CellChildMap[row, col] != model.CellChildMap[row, col + 1]))
@@ -663,6 +681,7 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if (startRow != -1)
                 {
                     Canvas.SetLeft(resizer, _colInfo[col].End + (spacing / 2) - 24); // hard coding this as (resizer.ActualWidth / 2) will still evaluate to 0 here ... a layout hasn't yet happened
@@ -801,6 +820,7 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if ((_startRow >= 0) && (_endRow == -1))
                 {
                     _endRow = rows - 1;
@@ -821,6 +841,7 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if ((_startCol >= 0) && (_endCol == -1))
                 {
                     _endCol = cols - 1;
@@ -869,6 +890,7 @@ namespace FancyZonesEditor
                     }
                 }
             }
+
             OnGridDimensionsChanged();
             ClearSelection();
         }
@@ -904,5 +926,4 @@ namespace FancyZonesEditor
         private const int c_multiplier = 10000;
 
     }
-
 }

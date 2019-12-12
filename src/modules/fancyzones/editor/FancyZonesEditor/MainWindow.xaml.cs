@@ -101,6 +101,7 @@ namespace FancyZonesEditor
             {
                 return;
             }
+
             model.IsSelected = false;
             _editing = true;
             this.Close();
@@ -132,6 +133,7 @@ namespace FancyZonesEditor
                         }
                     }
                 }
+
                 model.Name = _defaultNamePrefix + (++maxCustomIndex);
             }
 
@@ -146,6 +148,7 @@ namespace FancyZonesEditor
             {
                 window = new CanvasEditorWindow();
             }
+
             window.Owner = EditorOverlay.Current;
             window.DataContext = model;
             window.Show();
@@ -165,6 +168,7 @@ namespace FancyZonesEditor
                 {
                     model.Apply((model as CanvasLayoutModel).Zones.ToArray());
                 }
+
                 this.Close();
             }
         }
@@ -201,6 +205,7 @@ namespace FancyZonesEditor
             {
                 SetSelectedItem();
             }
+
             model.Delete();
         }
     }
@@ -234,6 +239,7 @@ namespace FancyZonesEditor
             return null;
         }
     }
+
     public class BooleanToIntConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -242,14 +248,17 @@ namespace FancyZonesEditor
             {
                 return (bool)value == true ? 1 : 0;
             }
+
             return 0;
         }
+
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             if (value is int)
             {
                 return (int)value == 1;
             }
+
             return false;
         }
     }

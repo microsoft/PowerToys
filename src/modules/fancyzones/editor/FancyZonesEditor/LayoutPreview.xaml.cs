@@ -53,6 +53,7 @@ namespace FancyZonesEditor
                 {
                     Body.Margin = new Thickness(0);
                 }
+
                 if (_model is GridLayoutModel)
                 {
                     RenderPreview();
@@ -135,6 +136,7 @@ namespace FancyZonesEditor
                             span++;
                             walk++;
                         }
+
                         Grid.SetRowSpan(rect, span);
 
                         span = 1;
@@ -144,6 +146,7 @@ namespace FancyZonesEditor
                             span++;
                             walk++;
                         }
+
                         Grid.SetColumnSpan(rect, span);
 
                         rect.Margin = margin;

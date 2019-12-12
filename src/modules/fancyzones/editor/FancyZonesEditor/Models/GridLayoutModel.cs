@@ -20,10 +20,15 @@ namespace FancyZonesEditor.Models
                 Reload(data);
             }
         }
+
         // Rows - number of rows in the Grid
         public int Rows
         {
-            get { return _rows; }
+            get
+            {
+                return _rows;
+            }
+
             set
             {
                 if (_rows != value)
@@ -33,12 +38,17 @@ namespace FancyZonesEditor.Models
                 }
             }
         }
+
         private int _rows = 1;
 
         // Columns - number of columns in the Grid
         public int Columns
         {
-            get { return _cols; }
+            get
+            {
+                return _cols;
+            }
+
             set
             {
                 if (_cols != value)
@@ -48,6 +58,7 @@ namespace FancyZonesEditor.Models
                 }
             }
         }
+
         private int _cols = 1;
 
         // CellChildMap - represents which "children" belong in which grid cells;
@@ -116,6 +127,7 @@ namespace FancyZonesEditor.Models
                     cellChildMap[row, col] = CellChildMap[row, col];
                 }
             }
+
             layout.CellChildMap = cellChildMap;
 
             int[] rowPercents = new int[rows];
@@ -123,6 +135,7 @@ namespace FancyZonesEditor.Models
             {
                 rowPercents[row] = RowPercents[row];
             }
+
             layout.RowPercents = rowPercents;
 
             int[] colPercents = new int[cols];
@@ -130,6 +143,7 @@ namespace FancyZonesEditor.Models
             {
                 colPercents[col] = ColumnPercents[col];
             }
+
             layout.ColumnPercents = colPercents;
 
             return layout;
@@ -169,6 +183,7 @@ namespace FancyZonesEditor.Models
                             index = mapping.Count;
                             mapping.Add(source);
                         }
+
                         cellChildMap[row, col] = index;
                     }
                 }

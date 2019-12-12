@@ -15,10 +15,10 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
         }
+
         void onLoad(object sender, RoutedEventArgs e)
         {
             //WindowEditor window = new WindowEditor(); window.Show();
-
         }
     }
 }

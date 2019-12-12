@@ -13,7 +13,7 @@ namespace FancyZonesEditor.Models
     {
         public CanvasLayoutModel(ushort version, string name, ushort id, byte[] data) : base(name, id)
         {
-            if (version == c_latestVersion)
+            if (version == _latestVersion)
             {
                 Load(data);
             }
@@ -45,12 +45,17 @@ namespace FancyZonesEditor.Models
                 }
             }
         }
+
         private int _referenceWidth;
 
         // ReferenceHeight - the reference height for the layout rect that all Zones are relative to
         public int ReferenceHeight
         {
-            get { return _referenceHeight; }
+            get
+            {
+                return _referenceHeight;
+            }
+
             set
             {
                 if (_referenceHeight != value)
@@ -60,6 +65,7 @@ namespace FancyZonesEditor.Models
                 }
             }
         }
+
         private int _referenceHeight;
 
         // Zones - the list of all zones in this layout, described as independent rectangles
@@ -128,8 +134,8 @@ namespace FancyZonesEditor.Models
             int i = 0;
 
             // Common persisted values between all layout types
-            data[i++] = (byte)(c_latestVersion / 256);
-            data[i++] = (byte)(c_latestVersion % 256);
+            data[i++] = (byte)(_latestVersion / 256);
+            data[i++] = (byte)(_latestVersion % 256);
             data[i++] = 1; // LayoutModelType: 1 == CanvasLayoutModel
             data[i++] = (byte)(Id / 256);
             data[i++] = (byte)(Id % 256);
@@ -155,9 +161,10 @@ namespace FancyZonesEditor.Models
                 data[i++] = (byte)(rect.Height / 256);
                 data[i++] = (byte)(rect.Height % 256);
             }
+
             return data;
         }
 
-        private static ushort c_latestVersion = 0;
+        private static ushort _latestVersion = 0;
     }
 }

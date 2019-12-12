@@ -115,6 +115,7 @@ namespace FancyZonesEditor
                 {
                     newWidth = (int)_settings.WorkArea.Width - rect.X;
                 }
+
                 MinWidth = rect.Width = newWidth;
             }
 
@@ -130,8 +131,10 @@ namespace FancyZonesEditor
                 {
                     newHeight = (int)_settings.WorkArea.Height - rect.Y;
                 }
+
                 MinHeight = rect.Height = newHeight;
             }
+
             Model.Zones[ZoneIndex] = rect;
         }
 
@@ -144,6 +147,7 @@ namespace FancyZonesEditor
             Canvas.SetZIndex(this, c_zIndex++);
             base.OnPreviewMouseDown(e);
         }
+
         private void NWResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
             SizeMove(e.HorizontalChange, e.VerticalChange);

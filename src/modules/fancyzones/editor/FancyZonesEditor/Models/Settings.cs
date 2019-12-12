@@ -29,6 +29,7 @@ namespace FancyZonesEditor
                         return true;
                     }
                 }
+
                 return false;
             }
         }
@@ -70,7 +71,11 @@ namespace FancyZonesEditor
         // ZoneCount - number of zones selected in the picker window
         public int ZoneCount
         {
-            get { return _zoneCount; }
+            get
+            {
+                return _zoneCount;
+            }
+
             set
             {
                 if (_zoneCount != value)
@@ -82,12 +87,17 @@ namespace FancyZonesEditor
                 }
             }
         }
+
         private int _zoneCount;
 
         // Spacing - how much space in between zones of the grid do you want
         public int Spacing
         {
-            get { return _spacing; }
+            get
+            {
+                return _spacing;
+            }
+
             set
             {
                 if (_spacing != value)
@@ -98,12 +108,17 @@ namespace FancyZonesEditor
                 }
             }
         }
+
         private int _spacing;
 
         // ShowSpacing - is the Spacing value used or ignored?
         public bool ShowSpacing
         {
-            get { return _showSpacing; }
+            get
+            {
+                return _showSpacing;
+            }
+
             set
             {
                 if (_showSpacing != value)
@@ -114,12 +129,17 @@ namespace FancyZonesEditor
                 }
             }
         }
+
         private bool _showSpacing;
 
         // IsShiftKeyPressed - is the shift key currently being held down
         public bool IsShiftKeyPressed
         {
-            get { return _isShiftKeyPressed; }
+            get
+            {
+                return _isShiftKeyPressed;
+            }
+
             set
             {
                 if (_isShiftKeyPressed != value)
@@ -129,12 +149,17 @@ namespace FancyZonesEditor
                 }
             }
         }
+
         private bool _isShiftKeyPressed;
 
         // IsCtrlKeyPressed - is the ctrl key currently being held down
         public bool IsCtrlKeyPressed
         {
-            get { return _isCtrlKeyPressed; }
+            get
+            {
+                return _isCtrlKeyPressed;
+            }
+
             set
             {
                 if (_isCtrlKeyPressed != value)
@@ -144,38 +169,25 @@ namespace FancyZonesEditor
                 }
             }
         }
+
         private bool _isCtrlKeyPressed;
 
         public Rect WorkArea
         {
             get { return _workArea; }
         }
+
         private Rect _workArea;
 
-        public static uint Monitor
-        {
-            get { return _monitor; }
-        }
-        private static uint _monitor;
+        public static uint Monitor { get; private set; }
 
-        public static String UniqueKey
-        {
-            get { return _uniqueKey; }
-        }
-        private static String _uniqueKey;
-        private String _uniqueRegistryPath;
+        public static string UniqueKey { get; private set; }
 
-        public static String WorkAreaKey
-        {
-            get { return _workAreaKey; }
-        }
-        private static String _workAreaKey;
+        private string _uniqueRegistryPath;
 
-        public static float Dpi
-        {
-            get { return _dpi; }
-        }
-        private static float _dpi;
+        public static string WorkAreaKey { get; private set; }
+
+        public static float Dpi { get; private set; }
 
         private int ReadRegistryInt(string valueName, int defaultValue)
         {
@@ -225,6 +237,7 @@ namespace FancyZonesEditor
             {
                 rows++;
             }
+
             rows--;
             cols = ZoneCount / rows;
             if (ZoneCount % rows == 0)
@@ -236,6 +249,7 @@ namespace FancyZonesEditor
                 cols++;
                 mergeCount = rows - (ZoneCount % rows);
             }
+
             _gridModel.Rows = rows;
             _gridModel.Columns = cols;
             _gridModel.RowPercents = new int[rows];
@@ -285,10 +299,10 @@ namespace FancyZonesEditor
         private void ParseCommandLineArgs()
         {
             _workArea = System.Windows.SystemParameters.WorkArea;
-            _monitor = 0;
+            Monitor = 0;
             _uniqueRegistryPath = FullRegistryPath;
-            _uniqueKey = "";
-            _dpi = 1;
+            UniqueKey = "";
+            Dpi = 1;
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length == 7)
@@ -300,8 +314,8 @@ namespace FancyZonesEditor
                 // 5 = resolution key (passed back to engine to persist data)
                 // 6 = monitor DPI (float)
 
-                _uniqueKey = args[1];
-                _uniqueRegistryPath += "\\" + _uniqueKey;
+                UniqueKey = args[1];
+                _uniqueRegistryPath += "\\" + UniqueKey;
 
                 var parsedLocation = args[4].Split('_');
                 var x = int.Parse(parsedLocation[0]);
@@ -309,14 +323,14 @@ namespace FancyZonesEditor
                 var width = int.Parse(parsedLocation[2]);
                 var height = int.Parse(parsedLocation[3]);
 
-                _workAreaKey = args[5];
+                WorkAreaKey = args[5];
 
                 // Try invariant culture first, caller likely uses invariant i.e. "C" locale to construct parameters
                 foreach (var cultureInfo in new[] { CultureInfo.InvariantCulture, CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture })
                 {
                     try
                     {
-                        _dpi = float.Parse(args[6], cultureInfo);
+                        Dpi = float.Parse(args[6], cultureInfo);
                         break;
                     }
                     catch (FormatException)
@@ -329,13 +343,14 @@ namespace FancyZonesEditor
                 uint monitor = 0;
                 if (uint.TryParse(args[4], out monitor))
                 {
-                    _monitor = monitor;
+                    Monitor = monitor;
                 }
             }
         }
 
 
         public IList<LayoutModel> DefaultModels { get { return _defaultModels; } }
+
         public ObservableCollection<LayoutModel> CustomModels
         {
             get
@@ -345,9 +360,11 @@ namespace FancyZonesEditor
                     _customModels = LayoutModel.LoadCustomModels();
                     _customModels.Insert(0, _blankCustomModel);
                 }
+
                 return _customModels;
             }
         }
+
         private ObservableCollection<LayoutModel> _customModels;
 
         public static readonly string RegistryPath = "SOFTWARE\\SuperFancyZones";
