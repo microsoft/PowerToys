@@ -23,7 +23,7 @@ namespace FancyZonesEditor
         public static int MAX_ZONES = 40;
         private static string _defaultNamePrefix = "Custom Layout ";
         private bool _editing = false;
-        private int _WrapPanelItemSize = 262;
+        private int _wrapPanelItemSize = 262;
 
         public MainWindow()
         {
@@ -31,8 +31,8 @@ namespace FancyZonesEditor
             DataContext = _settings;
             if (_settings.WorkArea.Height < 900)
             {
-                this.SizeToContent = SizeToContent.WidthAndHeight;
-                this.WrapPanelItemSize = 180;
+                SizeToContent = SizeToContent.WidthAndHeight;
+                WrapPanelItemSize = 180;
             }
         }
 
@@ -40,12 +40,12 @@ namespace FancyZonesEditor
         {
             get
             {
-                return _WrapPanelItemSize;
+                return _wrapPanelItemSize;
             }
 
             set
             {
-                _WrapPanelItemSize = value;
+                _wrapPanelItemSize = value;
             }
         }
 
@@ -71,7 +71,7 @@ namespace FancyZonesEditor
         {
             WindowLayout window = new WindowLayout();
             window.Show();
-            this.Close();
+            Close();
         }
 
         private void LayoutItem_Click(object sender, MouseButtonEventArgs e)
@@ -81,30 +81,26 @@ namespace FancyZonesEditor
 
         private void Select(LayoutModel newSelection)
         {
-            LayoutModel currentSelection = EditorOverlay.Current.DataContext as LayoutModel;
-
-            if (currentSelection != null)
+            if (EditorOverlay.Current.DataContext is LayoutModel currentSelection)
             {
                 currentSelection.IsSelected = false;
             }
 
             newSelection.IsSelected = true;
-
             EditorOverlay.Current.DataContext = newSelection;
         }
 
         private void EditLayout_Click(object sender, RoutedEventArgs e)
         {
             EditorOverlay mainEditor = EditorOverlay.Current;
-            LayoutModel model = mainEditor.DataContext as LayoutModel;
-            if (model == null)
+            if (!(mainEditor.DataContext is LayoutModel model))
             {
                 return;
             }
 
             model.IsSelected = false;
             _editing = true;
-            this.Close();
+            Close();
 
             bool isPredefinedLayout = Settings.IsPredefinedLayout(model);
 
@@ -124,7 +120,7 @@ namespace FancyZonesEditor
                     if (name.StartsWith(_defaultNamePrefix))
                     {
                         int i;
-                        if (Int32.TryParse(name.Substring(_defaultNamePrefix.Length), out i))
+                        if (int.TryParse(name.Substring(_defaultNamePrefix.Length), out i))
                         {
                             if (maxCustomIndex < i)
                             {
@@ -157,8 +153,7 @@ namespace FancyZonesEditor
         private void Apply_Click(object sender, RoutedEventArgs e)
         {
             EditorOverlay mainEditor = EditorOverlay.Current;
-            LayoutModel model = mainEditor.DataContext as LayoutModel;
-            if (model != null)
+            if (mainEditor.DataContext is LayoutModel model)
             {
                 if (model is GridLayoutModel)
                 {
@@ -169,7 +164,7 @@ namespace FancyZonesEditor
                     model.Apply((model as CanvasLayoutModel).Zones.ToArray());
                 }
 
-                this.Close();
+                Close();
             }
         }
 

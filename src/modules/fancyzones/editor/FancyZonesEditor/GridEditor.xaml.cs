@@ -343,8 +343,9 @@ namespace FancyZonesEditor
 
                 model.Columns++;
             }
-            else // Horizontal
+            else
             {
+                // Horizontal
                 if (splitee.HorizontalSnapPoints != null)
                 {
                     offset += Canvas.GetTop(splitee);
@@ -553,7 +554,7 @@ namespace FancyZonesEditor
                 return;
             }
 
-            Settings settings = ((App)(Application.Current)).ZoneSettings;
+            Settings settings = ((App)Application.Current).ZoneSettings;
             int spacing = settings.Spacing;
             int gutter = settings.Spacing;
 
@@ -566,14 +567,14 @@ namespace FancyZonesEditor
             double top = gutter;
             for (int row = 0; row < rows; row++)
             {
-                double cellHeight = _rowInfo[row].SetExtent(top, totalHeight);
+                double cellHeight = _rowInfo[row].Recalculate(top, totalHeight);
                 top += cellHeight + spacing;
             }
 
             double left = gutter;
             for (int col = 0; col < cols; col++)
             {
-                double cellWidth = _colInfo[col].SetExtent(left, totalWidth);
+                double cellWidth = _colInfo[col].Recalculate(left, totalWidth);
                 left += cellWidth + spacing;
             }
 
@@ -861,7 +862,7 @@ namespace FancyZonesEditor
                 e.Handled = true;
             }
 
-            base.OnPreviewMouseMove(e);
+            OnPreviewMouseMove(e);
         }
 
         private void ClearSelection()

@@ -14,6 +14,9 @@ namespace FancyZonesEditor.Models
     //  Manages common properties and base persistence
     public abstract class LayoutModel : INotifyPropertyChanged
     {
+        private static readonly string _registryPath = Settings.RegistryPath + "\\Layouts";
+        private static readonly string _fullRegistryPath = Settings.FullRegistryPath + "\\Layouts";
+
         protected LayoutModel()
         {
         }
@@ -24,7 +27,7 @@ namespace FancyZonesEditor.Models
             Name = name;
         }
 
-        protected LayoutModel(string name, ushort id) 
+        protected LayoutModel(string name, ushort id)
             : this(name)
         {
             _id = id;
@@ -58,7 +61,7 @@ namespace FancyZonesEditor.Models
             {
                 if (_id == 0)
                 {
-                    _id = ++s_maxId;
+                    _id = ++_maxId;
                 }
 
                 return _id;
@@ -106,17 +109,17 @@ namespace FancyZonesEditor.Models
                 key.DeleteValue(Name);
             }
 
-            int i = s_customModels.IndexOf(this);
+            int i = _customModels.IndexOf(this);
             if (i != -1)
             {
-                s_customModels.RemoveAt(i);
+                _customModels.RemoveAt(i);
             }
         }
 
         // Loads all the Layouts persisted under the Layouts key in the registry
         public static ObservableCollection<LayoutModel> LoadCustomModels()
         {
-            s_customModels = new ObservableCollection<LayoutModel>();
+            _customModels = new ObservableCollection<LayoutModel>();
 
             RegistryKey key = Registry.CurrentUser.OpenSubKey(_registryPath);
             if (key != null)
@@ -138,45 +141,27 @@ namespace FancyZonesEditor.Models
 
                     if (model != null)
                     {
-                        if (s_maxId < id)
+                        if (_maxId < id)
                         {
-                            s_maxId = id;
+                            _maxId = id;
                         }
 
-                        s_customModels.Add(model);
+                        _customModels.Add(model);
                     }
                 }
             }
 
-            return s_customModels;
+            return _customModels;
         }
 
-        private static ObservableCollection<LayoutModel> s_customModels = null;
+        private static ObservableCollection<LayoutModel> _customModels = null;
 
-        private static ushort s_maxId = 0;
+        private static ushort _maxId = 0;
 
         // Callbacks that the base LayoutModel makes to derived types
         protected abstract byte[] GetPersistData();
 
         public abstract LayoutModel Clone();
-
-        // PInvokes to handshake with fancyzones backend
-        internal static class Native
-        {
-            [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
-            public static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)]string lpFileName);
-
-            [DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
-            public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
-
-            internal delegate int PersistZoneSet(
-                [MarshalAs(UnmanagedType.LPWStr)] string activeKey,
-                [MarshalAs(UnmanagedType.LPWStr)] string resolutionKey,
-                uint monitor,
-                ushort layoutId,
-                int zoneCount,
-                [MarshalAs(UnmanagedType.LPArray)] int[] zoneArray);
-        }
 
         public void Persist(System.Windows.Int32Rect[] zones)
         {
@@ -220,8 +205,5 @@ namespace FancyZonesEditor.Models
             var persistZoneSet = Marshal.GetDelegateForFunctionPointer<Native.PersistZoneSet>(pfn);
             persistZoneSet(Settings.UniqueKey, Settings.WorkAreaKey, Settings.Monitor, _id, zoneCount, zoneArray);
         }
-
-        private static readonly string _registryPath = Settings.RegistryPath + "\\Layouts";
-        private static readonly string _fullRegistryPath = Settings.FullRegistryPath + "\\Layouts";
     }
 }

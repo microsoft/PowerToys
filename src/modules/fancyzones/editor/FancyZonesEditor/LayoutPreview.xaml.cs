@@ -83,14 +83,13 @@ namespace FancyZonesEditor
 
             Body.Children.Clear();
 
-            GridLayoutModel gridModel = _model as GridLayoutModel;
-            if (gridModel != null)
+            if (_model is GridLayoutModel gridModel)
             {
                 RenderGridPreview(gridModel);
             }
             else
             {
-                CanvasLayoutModel canvasModel = _model as CanvasLayoutModel;
+                var canvasModel = _model as CanvasLayoutModel;
                 if (canvasModel != null)
                 {
                     RenderCanvasPreview(canvasModel);
@@ -126,7 +125,7 @@ namespace FancyZonesEditor
             {
                 for (int col = 0; col < grid.Columns; col++)
                 {
-                    int childIndex = grid.CellChildMap[row,col];
+                    int childIndex = grid.CellChildMap[row, col];
                     if (!visited.Contains(childIndex))
                     {
                         visited.Add(childIndex);
@@ -135,7 +134,7 @@ namespace FancyZonesEditor
                         Grid.SetColumn(rect, col);
                         int span = 1;
                         int walk = row + 1;
-                        while ((walk < grid.Rows) && grid.CellChildMap[walk,col] == childIndex)
+                        while ((walk < grid.Rows) && grid.CellChildMap[walk, col] == childIndex)
                         {
                             span++;
                             walk++;

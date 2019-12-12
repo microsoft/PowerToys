@@ -90,6 +90,7 @@
       <DependentUpon>EditorOverlay.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\ModelToVisibilityConverter.xaml.cs" />
+    <Compile Include="Native.cs" />
     <Compile Include="RowColInfo.cs" />
     <Compile Include="GridEditorWindow.xaml.cs">
       <DependentUpon>GridEditorWindow.xaml</DependentUpon>

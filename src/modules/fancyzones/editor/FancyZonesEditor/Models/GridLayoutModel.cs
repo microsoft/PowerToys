@@ -10,29 +10,7 @@ namespace FancyZonesEditor.Models
     //  Grid-styled Layout Model, which specifies rows, columns, percentage sizes, and row/column spans
     public class GridLayoutModel : LayoutModel
     {
-        public GridLayoutModel()
-            : base()
-        {
-        }
-
-        public GridLayoutModel(string name)
-            : base(name)
-        {
-        }
-
-        public GridLayoutModel(string name, ushort id)
-            : base(name, id)
-        {
-        }
-
-        public GridLayoutModel(ushort version, string name, ushort id, byte[] data)
-            : base(name, id)
-        {
-            if (version == c_latestVersion)
-            {
-                Reload(data);
-            }
-        }
+        private static ushort _latestVersion = 0;
 
         // Rows - number of rows in the Grid
         public int Rows
@@ -89,6 +67,30 @@ namespace FancyZonesEditor.Models
         //  making them candidates for re-use when it's needed to add another child
         //  TODO: do I need FreeZones on the data model?  - I think I do
         public IList<int> FreeZones { get; } = new List<int>();
+
+        public GridLayoutModel()
+            : base()
+        {
+        }
+
+        public GridLayoutModel(string name)
+            : base(name)
+        {
+        }
+
+        public GridLayoutModel(string name, ushort id)
+            : base(name, id)
+        {
+        }
+
+        public GridLayoutModel(ushort version, string name, ushort id, byte[] data)
+            : base(name, id)
+        {
+            if (version == _latestVersion)
+            {
+                Reload(data);
+            }
+        }
 
         public void Reload(byte[] data)
         {
@@ -207,8 +209,8 @@ namespace FancyZonesEditor.Models
             int i = 0;
 
             // Common persisted values between all layout types
-            data[i++] = (byte)(c_latestVersion / 256);
-            data[i++] = (byte)(c_latestVersion % 256);
+            data[i++] = (byte)(_latestVersion / 256);
+            data[i++] = (byte)(_latestVersion % 256);
             data[i++] = 0; // LayoutModelType: 0 == GridLayoutModel
             data[i++] = (byte)(Id / 256);
             data[i++] = (byte)(Id % 256);
@@ -241,7 +243,5 @@ namespace FancyZonesEditor.Models
 
             return data;
         }
-
-        private static ushort c_latestVersion = 0;
     }
 }

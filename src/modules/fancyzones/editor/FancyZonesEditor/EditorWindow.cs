@@ -14,14 +14,14 @@ namespace FancyZonesEditor
         protected void OnSaveApplyTemplate(object sender, RoutedEventArgs e)
         {
             EditorOverlay mainEditor = EditorOverlay.Current;
-            LayoutModel model = mainEditor.DataContext as LayoutModel;
+            var model = mainEditor.DataContext as LayoutModel;
             if (model != null)
             {
                 model.Persist(mainEditor.GetZoneRects());
             }
 
             _choosing = true;
-            this.Close();
+            Close();
             EditorOverlay.Current.Close();
         }
 
@@ -36,7 +36,7 @@ namespace FancyZonesEditor
         protected void OnCancel(object sender, RoutedEventArgs e)
         {
             _choosing = true;
-            this.Close();
+            Close();
             EditorOverlay.Current.ShowLayoutPicker();
         }
 

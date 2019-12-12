@@ -19,7 +19,7 @@ namespace FancyZonesEditor
         public CanvasZone()
         {
             InitializeComponent();
-            Canvas.SetZIndex(this, c_zIndex++);
+            Panel.SetZIndex(this, _zIndex++);
         }
 
         public CanvasLayoutModel Model;
@@ -66,9 +66,9 @@ namespace FancyZonesEditor
             }
             else if (xDelta > 0)
             {
-                if ((rect.Width - (int)xDelta) < c_minZoneWidth)
+                if ((rect.Width - (int)xDelta) < _minZoneWidth)
                 {
-                    xDelta = rect.Width - c_minZoneWidth;
+                    xDelta = rect.Width - _minZoneWidth;
                 }
             }
 
@@ -81,9 +81,9 @@ namespace FancyZonesEditor
             }
             else if (yDelta > 0)
             {
-                if ((rect.Height - (int)yDelta) < c_minZoneHeight)
+                if ((rect.Height - (int)yDelta) < _minZoneHeight)
                 {
-                    yDelta = rect.Height - c_minZoneHeight;
+                    yDelta = rect.Height - _minZoneHeight;
                 }
             }
 
@@ -107,9 +107,9 @@ namespace FancyZonesEditor
             {
                 int newWidth = rect.Width + (int)xDelta;
 
-                if (newWidth < c_minZoneWidth)
+                if (newWidth < _minZoneWidth)
                 {
-                    newWidth = c_minZoneWidth;
+                    newWidth = _minZoneWidth;
                 }
                 else if (newWidth > (_settings.WorkArea.Width - rect.X))
                 {
@@ -123,9 +123,9 @@ namespace FancyZonesEditor
             {
                 int newHeight = rect.Height + (int)yDelta;
 
-                if (newHeight < c_minZoneHeight)
+                if (newHeight < _minZoneHeight)
                 {
-                    newHeight = c_minZoneHeight;
+                    newHeight = _minZoneHeight;
                 }
                 else if (newHeight > (_settings.WorkArea.Height - rect.Y))
                 {
@@ -138,13 +138,13 @@ namespace FancyZonesEditor
             Model.Zones[ZoneIndex] = rect;
         }
 
-        private static int c_zIndex = 0;
-        private static int c_minZoneWidth = 64;
-        private static int c_minZoneHeight = 72;
+        private static int _zIndex = 0;
+        private static int _minZoneWidth = 64;
+        private static int _minZoneHeight = 72;
 
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
-            Canvas.SetZIndex(this, c_zIndex++);
+            Panel.SetZIndex(this, _zIndex++);
             base.OnPreviewMouseDown(e);
         }
 

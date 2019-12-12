@@ -107,18 +107,18 @@ namespace FancyZonesEditor.Models
             // Initialize this CanvasLayoutModel based on the given persistence data
             // Skip version (2 bytes), id (2 bytes), and type (1 bytes)
             int i = 5;
-            _referenceWidth = data[i++] * 256 + data[i++];
-            _referenceHeight = data[i++] * 256 + data[i++];
+            _referenceWidth = (data[i++] * 256) + data[i++];
+            _referenceHeight = (data[i++] * 256) + data[i++];
 
             int count = data[i++];
 
             while (count-- > 0)
             {
                 Zones.Add(new Int32Rect(
-                    data[i++] * 256 + data[i++],
-                    data[i++] * 256 + data[i++],
-                    data[i++] * 256 + data[i++],
-                    data[i++] * 256 + data[i++]));
+                    (data[i++] * 256) + data[i++],
+                    (data[i++] * 256) + data[i++],
+                    (data[i++] * 256) + data[i++],
+                    (data[i++] * 256) + data[i++]));
             }
         }
 
@@ -127,11 +127,13 @@ namespace FancyZonesEditor.Models
         //  Clones the data from this CanvasLayoutModel to a new CanvasLayoutModel
         public override LayoutModel Clone()
         {
-            CanvasLayoutModel layout = new CanvasLayoutModel(Name);
-            layout.ReferenceHeight = ReferenceHeight;
-            layout.ReferenceWidth = ReferenceWidth;
+            CanvasLayoutModel layout = new CanvasLayoutModel(Name)
+            {
+                ReferenceHeight = ReferenceHeight,
+                ReferenceWidth = ReferenceWidth,
+            };
 
-            foreach(Int32Rect zone in Zones)
+            foreach (Int32Rect zone in Zones)
             {
                 layout.Zones.Add(zone);
             }

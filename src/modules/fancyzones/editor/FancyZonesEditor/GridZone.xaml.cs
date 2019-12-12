@@ -19,6 +19,25 @@ namespace FancyZonesEditor
     {
         public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register("IsSelected", typeof(bool), typeof(GridZone), new PropertyMetadata(false, OnSelectionChanged));
 
+        public event SplitEventHandler Split;
+
+        public event SplitEventHandler FullSplit;
+
+        public event MouseEventHandler MergeDrag;
+
+        public event MouseButtonEventHandler MergeComplete;
+
+        public double[] VerticalSnapPoints { get; set; }
+
+        public double[] HorizontalSnapPoints { get; set; }
+
+        private Rectangle _splitter;
+        private bool _switchOrientation = false;
+        private Point _lastPos = new Point(-1, -1);
+        private Point _mouseDownPos = new Point(-1, -1);
+        private bool _inMergeDrag = false;
+        private Orientation _splitOrientation;
+
         private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((GridZone)d).OnSelectionChanged();
@@ -35,15 +54,14 @@ namespace FancyZonesEditor
             set { SetValue(IsSelectedProperty, value); }
         }
 
-        public double[] VerticalSnapPoints;
-        public double[] HorizontalSnapPoints;
-
         public GridZone()
         {
             InitializeComponent();
             OnSelectionChanged();
-            _splitter = new Rectangle();
-            _splitter.Fill = Brushes.DarkGray;
+            _splitter = new Rectangle
+            {
+                Fill = Brushes.DarkGray,
+            };
             Body.Children.Add(_splitter);
 
             ((App)Application.Current).ZoneSettings.PropertyChanged += ZoneSettings_PropertyChanged;
@@ -169,8 +187,9 @@ namespace FancyZonesEditor
                         }
                     }
                 }
-                else // horizontal split
+                else
                 {
+                    // horizontal split
                     if (HorizontalSnapPoints != null)
                     {
                         int thickness = SplitterThickness;
@@ -236,21 +255,6 @@ namespace FancyZonesEditor
             _mouseDownPos = new Point(-1, -1);
             base.OnMouseUp(e);
         }
-
-        public event SplitEventHandler Split;
-
-        public event SplitEventHandler FullSplit;
-
-        public event MouseEventHandler MergeDrag;
-        
-        public event MouseButtonEventHandler MergeComplete;
-
-        private Rectangle _splitter;
-        private bool _switchOrientation = false;
-        private Point _lastPos = new Point(-1,-1);
-        private Point _mouseDownPos = new Point(-1,-1);
-        private bool _inMergeDrag = false;
-        private Orientation _splitOrientation;
 
         private void DoMergeDrag(MouseEventArgs e)
         {

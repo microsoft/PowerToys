@@ -39,25 +39,25 @@ namespace FancyZonesEditor
             ParseCommandLineArgs();
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
-            _defaultModels = new List<LayoutModel>(5);
+            DefaultModels = new List<LayoutModel>(5);
             _focusModel = new CanvasLayoutModel("Focus", _focusModelId, (int)_workArea.Width, (int)_workArea.Height);
-            _defaultModels.Add(_focusModel);
+            DefaultModels.Add(_focusModel);
 
             _columnsModel = new GridLayoutModel("Columns", _columnsModelId);
             _columnsModel.Rows = 1;
-            _columnsModel.RowPercents = new int[1] { c_multiplier };
-            _defaultModels.Add(_columnsModel);
+            _columnsModel.RowPercents = new int[1] { _multiplier };
+            DefaultModels.Add(_columnsModel);
 
             _rowsModel = new GridLayoutModel("Rows", _rowsModelId);
             _rowsModel.Columns = 1;
-            _rowsModel.ColumnPercents = new int[1] { c_multiplier };
-            _defaultModels.Add(_rowsModel);
+            _rowsModel.ColumnPercents = new int[1] { _multiplier };
+            DefaultModels.Add(_rowsModel);
 
             _gridModel = new GridLayoutModel("Grid", _gridModelId);
-            _defaultModels.Add(_gridModel);
+            DefaultModels.Add(_gridModel);
 
             _priorityGridModel = new GridLayoutModel("Priority Grid", _priorityGridModelId);
-            _defaultModels.Add(_priorityGridModel);
+            DefaultModels.Add(_priorityGridModel);
 
             _blankCustomModel = new CanvasLayoutModel("Create new custom", _blankCustomModelId, (int)_workArea.Width, (int)_workArea.Height);
 
@@ -226,7 +226,7 @@ namespace FancyZonesEditor
             {
                 _rowsModel.CellChildMap[i, 0] = i;
                 _columnsModel.CellChildMap[0, i] = i;
-                _rowsModel.RowPercents[i] = c_multiplier / ZoneCount; // _columnsModel is sharing the same array
+                _rowsModel.RowPercents[i] = _multiplier / ZoneCount; // _columnsModel is sharing the same array
             }
 
             // Update the "Grid" Default Layout
@@ -258,12 +258,12 @@ namespace FancyZonesEditor
 
             for (int row = 0; row < rows; row++)
             {
-                _gridModel.RowPercents[row] = c_multiplier / rows;
+                _gridModel.RowPercents[row] = _multiplier / rows;
             }
 
             for (int col = 0; col < cols; col++)
             {
-                _gridModel.ColumnPercents[col] = c_multiplier / cols;
+                _gridModel.ColumnPercents[col] = _multiplier / cols;
             }
 
             int index = 0;
@@ -297,10 +297,10 @@ namespace FancyZonesEditor
 
         private void ParseCommandLineArgs()
         {
-            _workArea = System.Windows.SystemParameters.WorkArea;
+            _workArea = SystemParameters.WorkArea;
             Monitor = 0;
             _uniqueRegistryPath = FullRegistryPath;
-            UniqueKey = "";
+            UniqueKey = string.Empty;
             Dpi = 1;
 
             string[] args = Environment.GetCommandLineArgs();
@@ -345,10 +345,7 @@ namespace FancyZonesEditor
             }
         }
 
-        public IList<LayoutModel> DefaultModels
-        {
-            get { return _defaultModels; }
-        }
+        public IList<LayoutModel> DefaultModels { get; }
 
         public ObservableCollection<LayoutModel> CustomModels
         {
@@ -383,8 +380,6 @@ namespace FancyZonesEditor
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        // storage for Default Layout Models
-        private IList<LayoutModel> _defaultModels;
         private CanvasLayoutModel _focusModel;
         private GridLayoutModel _rowsModel;
         private GridLayoutModel _columnsModel;
@@ -416,6 +411,6 @@ namespace FancyZonesEditor
             new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 5, 6, 7, 8, 9, 10 },
         };
 
-        private const int c_multiplier = 10000;
+        private const int _multiplier = 10000;
     }
 }
