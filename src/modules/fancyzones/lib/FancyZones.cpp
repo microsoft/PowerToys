@@ -819,7 +819,7 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) no
         const int guidSize = sizeof(GUID);
         std::unordered_map<GUID, bool> temp;
         temp.reserve(bufferCapacity / guidSize);
-        for (int i = 0; i < bufferCapacity; i += guidSize) {
+        for (size_t i = 0; i < bufferCapacity; i += guidSize) {
             GUID *guid = reinterpret_cast<GUID*>(buffer.get() + i);
             temp[*guid] = true;
         }
