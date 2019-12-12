@@ -91,6 +91,7 @@
     <Compile Include="GridEditorWindow.xaml.cs">
       <DependentUpon>GridEditorWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SplitEventArgs.cs" />
     <Compile Include="WindowLayout.xaml.cs">
       <DependentUpon>WindowLayout.xaml</DependentUpon>
     </Compile>

@@ -10,10 +10,23 @@ namespace FancyZonesEditor.Models
     //  Grid-styled Layout Model, which specifies rows, columns, percentage sizes, and row/column spans
     public class GridLayoutModel : LayoutModel
     {
-        public GridLayoutModel() : base() { }
-        public GridLayoutModel(string name) : base(name) { }
-        public GridLayoutModel(string name, ushort id) : base(name, id) { }
-        public GridLayoutModel(ushort version, string name, ushort id, byte[] data) : base(name, id)
+        public GridLayoutModel()
+            : base()
+        {
+        }
+
+        public GridLayoutModel(string name)
+            : base(name)
+        {
+        }
+
+        public GridLayoutModel(string name, ushort id)
+            : base(name, id)
+        {
+        }
+
+        public GridLayoutModel(ushort version, string name, ushort id, byte[] data)
+            : base(name, id)
         {
             if (version == c_latestVersion)
             {

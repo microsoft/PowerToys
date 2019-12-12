@@ -14,14 +14,18 @@ namespace FancyZonesEditor.Models
     //  Manages common properties and base persistence
     public abstract class LayoutModel : INotifyPropertyChanged
     {
-        protected LayoutModel() { }
+        protected LayoutModel()
+        {
+        }
 
-        protected LayoutModel(string name) : this()
+        protected LayoutModel(string name)
+            : this()
         {
             Name = name;
         }
 
-        protected LayoutModel(string name, ushort id) : this(name)
+        protected LayoutModel(string name, ushort id) 
+            : this(name)
         {
             _id = id;
         }

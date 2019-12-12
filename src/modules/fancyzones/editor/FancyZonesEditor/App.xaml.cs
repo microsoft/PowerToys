@@ -13,14 +13,13 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class App : Application
     {
-        public Settings ZoneSettings { get { return _settings; } }
+        public Settings ZoneSettings { get; }
 
-        private Settings _settings;
         private ushort _idInitial = 0;
 
         public App()
         {
-            _settings = new Settings();
+            ZoneSettings = new Settings();
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
@@ -34,7 +33,7 @@ namespace FancyZonesEditor
 
             if (_idInitial != 0)
             {
-                foreach (LayoutModel model in _settings.DefaultModels)
+                foreach (LayoutModel model in ZoneSettings.DefaultModels)
                 {
                     if (model.Id == _idInitial)
                     {
@@ -46,7 +45,7 @@ namespace FancyZonesEditor
 
                 if (foundModel == null)
                 {
-                    foreach (LayoutModel model in _settings.CustomModels)
+                    foreach (LayoutModel model in ZoneSettings.CustomModels)
                     {
                         if (model.Id == _idInitial)
                         {
@@ -60,7 +59,7 @@ namespace FancyZonesEditor
 
             if (foundModel == null)
             {
-                foundModel = _settings.DefaultModels[0];
+                foundModel = ZoneSettings.DefaultModels[0];
             }
 
             foundModel.IsSelected = true;

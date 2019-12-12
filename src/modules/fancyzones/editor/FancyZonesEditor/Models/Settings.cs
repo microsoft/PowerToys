@@ -340,8 +340,7 @@ namespace FancyZonesEditor
 
                 _workArea = new Rect(x, y, width, height);
 
-                uint monitor = 0;
-                if (uint.TryParse(args[4], out monitor))
+                if (uint.TryParse(args[4], out uint monitor))
                 {
                     Monitor = monitor;
                 }
@@ -349,7 +348,10 @@ namespace FancyZonesEditor
         }
 
 
-        public IList<LayoutModel> DefaultModels { get { return _defaultModels; } }
+        public IList<LayoutModel> DefaultModels
+        {
+            get { return _defaultModels; }
+        }
 
         public ObservableCollection<LayoutModel> CustomModels
         {

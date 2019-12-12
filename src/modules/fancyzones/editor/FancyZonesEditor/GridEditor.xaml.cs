@@ -85,7 +85,10 @@ namespace FancyZonesEditor
             set { SetValue(ModelProperty, value); }
         }
 
-        public Panel PreviewPanel { get { return Preview; } }
+        public Panel PreviewPanel
+        {
+            get { return Preview; }
+        }
 
         private void OnFullSplit(object o, SplitEventArgs e)
         {

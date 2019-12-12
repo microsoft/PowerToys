@@ -61,7 +61,10 @@ namespace FancyZonesEditor
             }
         }
 
-        public Panel PreviewPanel {  get { return Body; } }
+        public Panel PreviewPanel
+        {
+            get { return Body; }
+        }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {

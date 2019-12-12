@@ -84,7 +84,10 @@ namespace FancyZonesEditor
             }
         }
 
-        private int SplitterThickness {  get { return Math.Max(((App)Application.Current).ZoneSettings.Spacing, 5); } }
+        private int SplitterThickness
+        {
+            get { return Math.Max(((App)Application.Current).ZoneSettings.Spacing, 5); }
+        }
 
         private void UpdateSplitter()
         {
@@ -238,8 +241,11 @@ namespace FancyZonesEditor
         }
 
         public event SplitEventHandler Split;
+
         public event SplitEventHandler FullSplit;
+
         public event MouseEventHandler MergeDrag;
+        
         public event MouseButtonEventHandler MergeComplete;
 
         private Rectangle _splitter;
@@ -286,22 +292,4 @@ namespace FancyZonesEditor
             }
         }
     }
-
-    public class SplitEventArgs : EventArgs
-    {
-        public SplitEventArgs() { }
-        public SplitEventArgs(Orientation orientation, double offset)
-        {
-            _orientation = orientation;
-            _offset = offset;
-        }
-
-        public Orientation Orientation { get { return _orientation; } }
-        public double Offset { get { return _offset;  } }
-
-        private Orientation _orientation;
-        private double _offset;
-    }
-
-    public delegate void SplitEventHandler(object sender, SplitEventArgs args);
 }
