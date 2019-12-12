@@ -540,8 +540,9 @@ namespace FancyZonesEditor
             }
 
             Settings settings = ((App)(Application.Current)).ZoneSettings;
-            int spacing = settings.Spacing;
-            int gutter = settings.Spacing;
+
+            int spacing, gutter;
+            spacing = gutter = (settings.ShowSpacing) ? settings.Spacing : 0;
 
             int cols = model.Columns;
             int rows = model.Rows;
