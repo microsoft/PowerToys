@@ -10,7 +10,7 @@ namespace FancyZonesEditor.Models
     //  Grid-styled Layout Model, which specifies rows, columns, percentage sizes, and row/column spans
     public class GridLayoutModel : LayoutModel
     {
-        private static ushort _latestVersion = 0;
+        private static readonly ushort _latestVersion = 0;
 
         // Rows - number of rows in the Grid
         public int Rows

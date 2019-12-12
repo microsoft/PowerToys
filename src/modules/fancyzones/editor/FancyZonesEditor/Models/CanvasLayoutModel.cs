@@ -11,6 +11,8 @@ namespace FancyZonesEditor.Models
     //  Free form Layout Model, which specifies independent zone rects
     public class CanvasLayoutModel : LayoutModel
     {
+        private static readonly ushort _latestVersion = 0;
+
         public CanvasLayoutModel(ushort version, string name, ushort id, byte[] data)
             : base(name, id)
         {
@@ -180,7 +182,5 @@ namespace FancyZonesEditor.Models
 
             return data;
         }
-
-        private static ushort _latestVersion = 0;
     }
 }

@@ -15,6 +15,13 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class GridResizer : Thumb
     {
+        private static readonly RotateTransform _rotateTransform = new RotateTransform(90, 24, 24);
+
+        public int Index;
+        public LayoutModel Model;
+
+        private Orientation _orientation;
+
         public GridResizer()
         {
             InitializeComponent();
@@ -44,12 +51,5 @@ namespace FancyZonesEditor
                 }
             }
         }
-
-        private static RotateTransform _rotateTransform = new RotateTransform(90, 24, 24);
-
-        public int Index;
-        public LayoutModel Model;
-
-        private Orientation _orientation;
     }
 }

@@ -18,6 +18,8 @@ namespace FancyZonesEditor
     {
         public static readonly DependencyProperty IsActualSizeProperty = DependencyProperty.Register("IsActualSize", typeof(bool), typeof(LayoutPreview), new PropertyMetadata(false));
 
+        private LayoutModel _model;
+
         public LayoutPreview()
         {
             InitializeComponent();
@@ -192,7 +194,5 @@ namespace FancyZonesEditor
                 frame.Children.Add(rect);
             }
         }
-
-        private LayoutModel _model;
     }
 }

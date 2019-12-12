@@ -18,6 +18,39 @@ namespace FancyZonesEditor
     //  Other UIs in the editor will subscribe to change events on the properties to stay up to date as these properties change
     public class Settings : INotifyPropertyChanged
     {
+        private readonly CanvasLayoutModel _blankCustomModel;
+        private readonly CanvasLayoutModel _focusModel;
+        private readonly GridLayoutModel _rowsModel;
+        private readonly GridLayoutModel _columnsModel;
+        private readonly GridLayoutModel _gridModel;
+        private readonly GridLayoutModel _priorityGridModel;
+
+        private static readonly ushort _focusModelId = 0xFFFF;
+        private static readonly ushort _rowsModelId = 0xFFFE;
+        private static readonly ushort _columnsModelId = 0xFFFD;
+        private static readonly ushort _gridModelId = 0xFFFC;
+        private static readonly ushort _priorityGridModelId = 0xFFFB;
+        private static readonly ushort _blankCustomModelId = 0xFFFA;
+        private static readonly ushort _lastPrefinedId = _blankCustomModelId;
+
+        // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
+        private static readonly byte[][] _priorityData = new byte[][]
+        {
+            new byte[] { 0, 0, 0, 0, 0, 1, 1, 39, 16, 39, 16, 0 },
+            new byte[] { 0, 0, 0, 0, 0, 1, 2, 39, 16, 26, 11, 13, 5, 0, 1 },
+            new byte[] { 0, 0, 0, 0, 0, 1, 3, 39, 16, 9, 196, 19, 136, 9, 196, 0, 1, 2 },
+            new byte[] { 0, 0, 0, 0, 0, 2, 3, 19, 136, 19, 136, 9, 196, 19, 136, 9, 196, 0, 1, 2, 0, 1, 3 },
+            new byte[] { 0, 0, 0, 0, 0, 2, 3, 19, 136, 19, 136, 9, 196, 19, 136, 9, 196, 0, 1, 2, 3, 1, 4 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 3, 13, 5, 13, 6, 13, 5, 9, 196, 19, 136, 9, 196, 0, 1, 2, 0, 1, 3, 4, 1, 5 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 3, 13, 5, 13, 6, 13, 5, 9, 196, 19, 136, 9, 196, 0, 1, 2, 3, 1, 4, 5, 1, 6 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 2, 5, 6, 1, 2, 7 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 2, 5, 6, 1, 7, 8 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 5, 6, 7, 1, 8, 9 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 5, 6, 7, 8, 9, 10 },
+        };
+
+        private const int _multiplier = 10000;
+
         public bool IsCustomLayoutActive
         {
             get
@@ -378,38 +411,5 @@ namespace FancyZonesEditor
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
-        private CanvasLayoutModel _focusModel;
-        private GridLayoutModel _rowsModel;
-        private GridLayoutModel _columnsModel;
-        private GridLayoutModel _gridModel;
-        private GridLayoutModel _priorityGridModel;
-        private CanvasLayoutModel _blankCustomModel;
-
-        private static readonly ushort _focusModelId = 0xFFFF;
-        private static readonly ushort _rowsModelId = 0xFFFE;
-        private static readonly ushort _columnsModelId = 0xFFFD;
-        private static readonly ushort _gridModelId = 0xFFFC;
-        private static readonly ushort _priorityGridModelId = 0xFFFB;
-        private static readonly ushort _blankCustomModelId = 0xFFFA;
-        private static readonly ushort _lastPrefinedId = _blankCustomModelId;
-
-        // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
-        private static byte[][] _priorityData = new byte[][]
-        {
-            new byte[] { 0, 0, 0, 0, 0, 1, 1, 39, 16, 39, 16, 0 },
-            new byte[] { 0, 0, 0, 0, 0, 1, 2, 39, 16, 26, 11, 13, 5, 0, 1 },
-            new byte[] { 0, 0, 0, 0, 0, 1, 3, 39, 16, 9, 196, 19, 136, 9, 196, 0, 1, 2 },
-            new byte[] { 0, 0, 0, 0, 0, 2, 3, 19, 136, 19, 136, 9, 196, 19, 136, 9, 196, 0, 1, 2, 0, 1, 3 },
-            new byte[] { 0, 0, 0, 0, 0, 2, 3, 19, 136, 19, 136, 9, 196, 19, 136, 9, 196, 0, 1, 2, 3, 1, 4 },
-            new byte[] { 0, 0, 0, 0, 0, 3, 3, 13, 5, 13, 6, 13, 5, 9, 196, 19, 136, 9, 196, 0, 1, 2, 0, 1, 3, 4, 1, 5 },
-            new byte[] { 0, 0, 0, 0, 0, 3, 3, 13, 5, 13, 6, 13, 5, 9, 196, 19, 136, 9, 196, 0, 1, 2, 3, 1, 4, 5, 1, 6 },
-            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 2, 5, 6, 1, 2, 7 },
-            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 2, 5, 6, 1, 7, 8 },
-            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 5, 6, 7, 1, 8, 9 },
-            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 5, 6, 7, 8, 9, 10 },
-        };
-
-        private const int _multiplier = 10000;
     }
 }

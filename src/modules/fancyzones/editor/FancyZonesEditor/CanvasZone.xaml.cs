@@ -16,14 +16,21 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class CanvasZone : UserControl
     {
+        public CanvasLayoutModel Model { get; set; }
+
+        public int ZoneIndex { get; set; }
+
+        private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
+
+        private static readonly int _minZoneWidth = 64;
+        private static readonly int _minZoneHeight = 72;
+        private static int _zIndex = 0;
+
         public CanvasZone()
         {
             InitializeComponent();
             Panel.SetZIndex(this, _zIndex++);
         }
-
-        public CanvasLayoutModel Model;
-        public int ZoneIndex;
 
         private void Move(double xDelta, double yDelta)
         {
@@ -138,10 +145,6 @@ namespace FancyZonesEditor
             Model.Zones[ZoneIndex] = rect;
         }
 
-        private static int _zIndex = 0;
-        private static int _minZoneWidth = 64;
-        private static int _minZoneHeight = 72;
-
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
             Panel.SetZIndex(this, _zIndex++);
@@ -200,7 +203,5 @@ namespace FancyZonesEditor
             ((Panel)Parent).Children.Remove(this);
             Model.RemoveZoneAt(ZoneIndex);
         }
-
-        private Settings _settings = ((App)Application.Current).ZoneSettings;
     }
 }

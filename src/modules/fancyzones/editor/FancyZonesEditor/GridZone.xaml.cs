@@ -31,7 +31,7 @@ namespace FancyZonesEditor
 
         public double[] HorizontalSnapPoints { get; set; }
 
-        private Rectangle _splitter;
+        private readonly Rectangle _splitter;
         private bool _switchOrientation = false;
         private Point _lastPos = new Point(-1, -1);
         private Point _mouseDownPos = new Point(-1, -1);

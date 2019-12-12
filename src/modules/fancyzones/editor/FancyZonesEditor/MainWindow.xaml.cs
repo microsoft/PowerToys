@@ -19,8 +19,11 @@ namespace FancyZonesEditor
     {
         // TODO: share the constants b/w C# Editor and FancyZoneLib
         public const int MaxZones = 40;
-        private static string _defaultNamePrefix = "Custom Layout ";
+        private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
+        private static readonly string _defaultNamePrefix = "Custom Layout ";
         private bool _editing = false;
+
+        public int WrapPanelItemSize { get; set; } = 262;
 
         public MainWindow()
         {
@@ -33,7 +36,7 @@ namespace FancyZonesEditor
             }
         }
 
-        public int WrapPanelItemSize { get; set; } = 262;
+
 
         private void DecrementZones_Click(object sender, RoutedEventArgs e)
         {
@@ -50,8 +53,6 @@ namespace FancyZonesEditor
                 _settings.ZoneCount++;
             }
         }
-
-        private Settings _settings = ((App)Application.Current).ZoneSettings;
 
         private void NewCustomLayoutButton_Click(object sender, RoutedEventArgs e)
         {

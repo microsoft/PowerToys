@@ -10,8 +10,8 @@ namespace FancyZonesEditor.Converters
 {
     public class BooleanToBrushConverter : IValueConverter
     {
-        private static Brush _selectedBrush = new SolidColorBrush(Color.FromRgb(0x00, 0x78, 0xD7));
-        private static Brush _normalBrush = new SolidColorBrush(Color.FromRgb(0xF2, 0xF2, 0xF2));
+        private static readonly Brush _selectedBrush = new SolidColorBrush(Color.FromRgb(0x00, 0x78, 0xD7));
+        private static readonly Brush _normalBrush = new SolidColorBrush(Color.FromRgb(0xF2, 0xF2, 0xF2));
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
