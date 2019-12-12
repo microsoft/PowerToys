@@ -372,7 +372,7 @@ namespace Wox.ViewModel
             {
                 _updateSource?.Cancel();
                 _updateSource = new CancellationTokenSource();
-                _updateToken = _updateSource.Token;
+                var updateToken = _updateSource.Token;
 
                 ProgressBarVisibility = Visibility.Hidden;
                 _queryHasReturn = false;
@@ -402,18 +402,19 @@ namespace Wox.ViewModel
                     }
 
                     _lastQuery = query;
-                    Task.Delay(200, _updateToken).ContinueWith(_ =>
+                    Task.Delay(200, updateToken).ContinueWith(_ =>
                     {
                         if (query.RawQuery == _lastQuery.RawQuery && !_queryHasReturn)
                         {
                             ProgressBarVisibility = Visibility.Visible;
                         }
-                    }, _updateToken);
+                    }, updateToken);
 
                     var plugins = PluginManager.ValidPluginsForQuery(query);
                     Task.Run(() =>
                     {
-                        Parallel.ForEach(plugins, plugin =>
+                        var parallelOptions = new ParallelOptions {CancellationToken = updateToken}; // so looping will stop once it was cancelled
+                        Parallel.ForEach(plugins, parallelOptions, plugin =>
                         {
                             var config = _settings.PluginSettings.Plugins[plugin.Metadata.ID];
                             if (!config.Disabled)
@@ -421,13 +422,13 @@ namespace Wox.ViewModel
                                 var results = PluginManager.QueryForPlugin(plugin, query);
                                 UpdateResultView(results, plugin.Metadata, query);
                             }
-                        });
+                        });// TODO add cancel code.
 
                         // this should happen once after all queries are done so progress bar should continue
                         // until the end of all querying
                         _queryHasReturn = true;
                         ProgressBarVisibility = Visibility.Hidden;
-                    }, _updateToken);
+                    }, updateToken);
                 }
             }
             else
