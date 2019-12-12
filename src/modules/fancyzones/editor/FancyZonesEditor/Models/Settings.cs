@@ -276,7 +276,6 @@ namespace FancyZonesEditor
                     {
                         index--;
                     }
-
                 }
             }
 
@@ -313,7 +312,6 @@ namespace FancyZonesEditor
                 // 4 = X_Y_Width_Height in a dpi-scaled-but-unaware coords (where EditorOverlay shows up)
                 // 5 = resolution key (passed back to engine to persist data)
                 // 6 = monitor DPI (float)
-
                 UniqueKey = args[1];
                 _uniqueRegistryPath += "\\" + UniqueKey;
 
@@ -346,7 +344,6 @@ namespace FancyZonesEditor
                 }
             }
         }
-
 
         public IList<LayoutModel> DefaultModels
         {

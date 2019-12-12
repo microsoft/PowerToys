@@ -214,7 +214,6 @@ namespace FancyZonesEditor.Models
             data[i++] = (byte)(Id % 256);
 
             // End common
-
             data[i++] = (byte)Rows;
             data[i++] = (byte)Columns;
 

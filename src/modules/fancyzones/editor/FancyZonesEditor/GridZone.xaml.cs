@@ -35,11 +35,8 @@ namespace FancyZonesEditor
             set { SetValue(IsSelectedProperty, value); }
         }
 
-
         public double[] VerticalSnapPoints;
         public double[] HorizontalSnapPoints;
-
-
 
         public GridZone()
         {

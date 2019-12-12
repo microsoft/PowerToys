@@ -6,6 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:local="clr-namespace:FancyZonesEditor"
+        xmlns:Converters="clr-namespace:FancyZonesEditor.Converters"
         mc:Ignorable="d"
         Title=""
         Width="810"
@@ -16,9 +17,9 @@
         Initialized="InitializedEventHandler"
         Closed="OnClosed">
     <Window.Resources>
-        <local:BooleanToBrushConverter x:Key="BooleanToBrushConverter" />
-        <local:ModelToVisibilityConverter x:Key="ModelToVisibilityConverter" />
-        <local:BooleanToIntConverter x:Key="BooleanToIntConverter" />
+        <Converters:BooleanToBrushConverter x:Key="BooleanToBrushConverter" />
+        <Converters:ModelToVisibilityConverter x:Key="ModelToVisibilityConverter" />
+        <Converters:BooleanToIntConverter x:Key="BooleanToIntConverter" />
 
         <Style x:Key="titleText" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI" />

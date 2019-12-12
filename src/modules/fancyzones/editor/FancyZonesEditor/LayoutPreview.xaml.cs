@@ -17,6 +17,7 @@ namespace FancyZonesEditor
     public partial class LayoutPreview : UserControl
     {
         public static readonly DependencyProperty IsActualSizeProperty = DependencyProperty.Register("IsActualSize", typeof(bool), typeof(LayoutPreview), new PropertyMetadata(false));
+
         public LayoutPreview()
         {
             InitializeComponent();

@@ -212,7 +212,6 @@ namespace FancyZonesEditor
                     break;
                 }
             }
-
         }
 
         private void OnSplit(object o, SplitEventArgs e)
@@ -246,11 +245,9 @@ namespace FancyZonesEditor
                 }
             }
 
-
             int newChildIndex = AddZone();
 
             double offset = e.Offset;
-
 
             if (e.Orientation == Orientation.Vertical)
             {
@@ -385,7 +382,6 @@ namespace FancyZonesEditor
                     }
 
                     offset -= _rowInfo[foundRow].Start;
-
                 }
 
                 AddDragHandle(Orientation.Horizontal, rows - 1);
@@ -919,7 +915,6 @@ namespace FancyZonesEditor
             return returnSize;
         }
 
-        Point _mouseDownPos = new Point(-1, -1);
         private RowColInfo[] _rowInfo;
         private RowColInfo[] _colInfo;
 
@@ -927,8 +922,5 @@ namespace FancyZonesEditor
         private int _endRow = -1;
         private int _startCol = -1;
         private int _endCol = -1;
-
-        private const int c_multiplier = 10000;
-
     }
 }

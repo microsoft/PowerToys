@@ -26,6 +26,7 @@ namespace FancyZonesEditor
             {
                 return _orientation;
             }
+
             set
             {
                 _orientation = value;

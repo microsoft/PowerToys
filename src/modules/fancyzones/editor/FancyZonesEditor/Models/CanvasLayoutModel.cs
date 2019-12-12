@@ -155,7 +155,6 @@ namespace FancyZonesEditor.Models
             data[i++] = (byte)(Id % 256);
 
             // End common
-
             data[i++] = (byte)(_referenceWidth / 256);
             data[i++] = (byte)(_referenceWidth % 256);
             data[i++] = (byte)(_referenceHeight / 256);

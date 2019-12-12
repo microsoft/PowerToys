@@ -66,6 +66,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converters\BooleanToBrushConverter.xaml.cs" />
+    <Compile Include="Converters\BooleanToIntConverter.xaml.cs" />
     <Compile Include="CanvasEditor.xaml.cs">
       <DependentUpon>CanvasEditor.xaml</DependentUpon>
     </Compile>
@@ -87,6 +89,7 @@
     <Compile Include="EditorOverlay.xaml.cs">
       <DependentUpon>EditorOverlay.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\ModelToVisibilityConverter.xaml.cs" />
     <Compile Include="RowColInfo.cs" />
     <Compile Include="GridEditorWindow.xaml.cs">
       <DependentUpon>GridEditorWindow.xaml</DependentUpon>
