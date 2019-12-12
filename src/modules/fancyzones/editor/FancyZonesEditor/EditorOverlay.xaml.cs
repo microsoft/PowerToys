@@ -70,7 +70,7 @@ namespace FancyZonesEditor
             Height = _settings.WorkArea.Height;
         }
 
-        void onLoad(object sender, RoutedEventArgs e)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
             ShowLayoutPicker();
         }

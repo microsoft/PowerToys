@@ -7,7 +7,7 @@ using System.Windows;
 namespace FancyZonesEditor
 {
     /// <summary>
-    /// Interaction logic for Window1.xaml
+    /// Interaction logic for WindowLayout.xaml
     /// </summary>
     public partial class WindowLayout : Window
     {
@@ -16,9 +16,9 @@ namespace FancyZonesEditor
             InitializeComponent();
         }
 
-        void onLoad(object sender, RoutedEventArgs e)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            //WindowEditor window = new WindowEditor(); window.Show();
+            // WindowEditor window = new WindowEditor(); window.Show();
         }
     }
 }

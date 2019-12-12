@@ -40,26 +40,26 @@ namespace FancyZonesEditor
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
             _defaultModels = new List<LayoutModel>(5);
-            _focusModel = new CanvasLayoutModel("Focus", c_focusModelId, (int)_workArea.Width, (int)_workArea.Height);
+            _focusModel = new CanvasLayoutModel("Focus", _focusModelId, (int)_workArea.Width, (int)_workArea.Height);
             _defaultModels.Add(_focusModel);
 
-            _columnsModel = new GridLayoutModel("Columns", c_columnsModelId);
+            _columnsModel = new GridLayoutModel("Columns", _columnsModelId);
             _columnsModel.Rows = 1;
             _columnsModel.RowPercents = new int[1] { c_multiplier };
             _defaultModels.Add(_columnsModel);
 
-            _rowsModel = new GridLayoutModel("Rows", c_rowsModelId);
+            _rowsModel = new GridLayoutModel("Rows", _rowsModelId);
             _rowsModel.Columns = 1;
             _rowsModel.ColumnPercents = new int[1] { c_multiplier };
             _defaultModels.Add(_rowsModel);
 
-            _gridModel = new GridLayoutModel("Grid", c_gridModelId);
+            _gridModel = new GridLayoutModel("Grid", _gridModelId);
             _defaultModels.Add(_gridModel);
 
-            _priorityGridModel = new GridLayoutModel("Priority Grid", c_priorityGridModelId);
+            _priorityGridModel = new GridLayoutModel("Priority Grid", _priorityGridModelId);
             _defaultModels.Add(_priorityGridModel);
 
-            _blankCustomModel = new CanvasLayoutModel("Create new custom", c_blankCustomModelId, (int)_workArea.Width, (int)_workArea.Height);
+            _blankCustomModel = new CanvasLayoutModel("Create new custom", _blankCustomModelId, (int)_workArea.Width, (int)_workArea.Height);
 
             _zoneCount = ReadRegistryInt("ZoneCount", 3);
             _spacing = ReadRegistryInt("Spacing", 16);
@@ -371,7 +371,7 @@ namespace FancyZonesEditor
 
         public static bool IsPredefinedLayout(LayoutModel model)
         {
-            return (model.Id >= c_lastPrefinedId);
+            return model.Id >= _lastPrefinedId;
         }
 
         // implementation of INotifyProeprtyChanged
@@ -380,8 +380,7 @@ namespace FancyZonesEditor
         // FirePropertyChanged -- wrapper that calls INPC.PropertyChanged
         protected virtual void FirePropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         // storage for Default Layout Models
@@ -393,13 +392,13 @@ namespace FancyZonesEditor
         private GridLayoutModel _priorityGridModel;
         private CanvasLayoutModel _blankCustomModel;
 
-        private static readonly ushort c_focusModelId = 0xFFFF;
-        private static readonly ushort c_rowsModelId = 0xFFFE;
-        private static readonly ushort c_columnsModelId = 0xFFFD;
-        private static readonly ushort c_gridModelId = 0xFFFC;
-        private static readonly ushort c_priorityGridModelId = 0xFFFB;
-        private static readonly ushort c_blankCustomModelId = 0xFFFA;
-        private static readonly ushort c_lastPrefinedId = c_blankCustomModelId;
+        private static readonly ushort _focusModelId = 0xFFFF;
+        private static readonly ushort _rowsModelId = 0xFFFE;
+        private static readonly ushort _columnsModelId = 0xFFFD;
+        private static readonly ushort _gridModelId = 0xFFFC;
+        private static readonly ushort _priorityGridModelId = 0xFFFB;
+        private static readonly ushort _blankCustomModelId = 0xFFFA;
+        private static readonly ushort _lastPrefinedId = _blankCustomModelId;
 
         // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
         private static byte[][] _priorityData = new byte[][]
