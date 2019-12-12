@@ -1,26 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
 {
     /// <summary>
-    /// Once you've "Committ"ed the starter grid, then the Zones within the grid come to life for you to be able to further subdivide them 
+    /// Once you've "Committ"ed the starter grid, then the Zones within the grid come to life for you to be able to further subdivide them
     /// using splitters
     /// </summary>
-
     public partial class CanvasZone : UserControl
     {
         public CanvasZone()
@@ -53,8 +46,8 @@ namespace FancyZonesEditor
                 yDelta = Math.Min(yDelta, _settings.WorkArea.Height - rect.Height - rect.Y);
             }
 
-            rect.X += (int) xDelta;
-            rect.Y += (int) yDelta;
+            rect.X += (int)xDelta;
+            rect.Y += (int)yDelta;
 
             Canvas.SetLeft(this, rect.X);
             Canvas.SetTop(this, rect.Y);
@@ -112,7 +105,7 @@ namespace FancyZonesEditor
             Int32Rect rect = Model.Zones[ZoneIndex];
             if (xDelta != 0)
             {
-                int newWidth = rect.Width + (int) xDelta;
+                int newWidth = rect.Width + (int)xDelta;
 
                 if (newWidth < c_minZoneWidth)
                 {
@@ -120,7 +113,7 @@ namespace FancyZonesEditor
                 }
                 else if (newWidth > (_settings.WorkArea.Width - rect.X))
                 {
-                    newWidth = (int) _settings.WorkArea.Width - rect.X;
+                    newWidth = (int)_settings.WorkArea.Width - rect.X;
                 }
                 MinWidth = rect.Width = newWidth;
             }

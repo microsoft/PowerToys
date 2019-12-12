@@ -1,19 +1,13 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using FancyZonesEditor.Models;
-
 
 namespace FancyZonesEditor
 {
@@ -639,9 +633,11 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if (startCol != -1)
                 {
-                    Canvas.SetTop(resizer, _rowInfo[row].End + (spacing / 2) - 24); // hard coding this as (resizer.ActualHeight / 2) will still evaluate to 0 here ... a layout hasn't yet happened 
+                    // hard coding this as (resizer.ActualHeight / 2) will still evaluate to 0 here ... a layout hasn't yet happened
+                    Canvas.SetTop(resizer, _rowInfo[row].End + (spacing / 2) - 24);
                     Canvas.SetLeft(resizer, (_colInfo[endCol].End + _colInfo[startCol].Start) / 2);
                 }
                 else
@@ -842,6 +838,7 @@ namespace FancyZonesEditor
 
                 e.Handled = true;
             }
+
             base.OnPreviewMouseMove(e);
         }
 
@@ -849,7 +846,7 @@ namespace FancyZonesEditor
         {
             foreach (UIElement zone in Preview.Children)
             {
-                ((GridZone) zone).IsSelected = false;
+                ((GridZone)zone).IsSelected = false;
             }
         }
 

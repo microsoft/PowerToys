@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -45,18 +38,17 @@ namespace FancyZonesEditor
                 }
                 else
                 {
-                    body.RenderTransform = c_rotateTransform;
+                    body.RenderTransform = _rotateTransform;
                     body.Cursor = Cursors.SizeNS;
                 }
             }
         }
 
-        private static RotateTransform c_rotateTransform = new RotateTransform(90, 24, 24);
-    
+        private static RotateTransform _rotateTransform = new RotateTransform(90, 24, 24);
+
         public int Index;
         public LayoutModel Model;
 
         private Orientation _orientation;
-        
     }
 }

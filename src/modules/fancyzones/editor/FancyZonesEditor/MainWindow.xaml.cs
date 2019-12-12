@@ -1,18 +1,14 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using FancyZonesEditor.Models;
 using MahApps.Metro.Controls;
 
@@ -25,7 +21,10 @@ namespace FancyZonesEditor
     {
         // TODO: share the constants b/w C# Editor and FancyZoneLib
         public static int MAX_ZONES = 40;
-        
+        private static string _defaultNamePrefix = "Custom Layout ";
+        private bool _editing = false;
+        private int _WrapPanelItemSize = 262;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -37,7 +36,6 @@ namespace FancyZonesEditor
             }
         }
 
-        private int _WrapPanelItemSize = 262;
         public int WrapPanelItemSize
         {
             get
@@ -82,7 +80,7 @@ namespace FancyZonesEditor
         }
 
         private void Select(LayoutModel newSelection)
-        { 
+        {
             LayoutModel currentSelection = EditorOverlay.Current.DataContext as LayoutModel;
 
             if (currentSelection != null)
@@ -94,9 +92,6 @@ namespace FancyZonesEditor
 
             EditorOverlay.Current.DataContext = newSelection;
         }
-
-        private static string c_defaultNamePrefix = "Custom Layout ";
-        private bool _editing = false;
 
         private void EditLayout_Click(object sender, RoutedEventArgs e)
         {
@@ -125,10 +120,10 @@ namespace FancyZonesEditor
                 foreach (LayoutModel customModel in _settings.CustomModels)
                 {
                     string name = customModel.Name;
-                    if (name.StartsWith(c_defaultNamePrefix))
+                    if (name.StartsWith(_defaultNamePrefix))
                     {
                         int i;
-                        if (Int32.TryParse(name.Substring(c_defaultNamePrefix.Length), out i))
+                        if (Int32.TryParse(name.Substring(_defaultNamePrefix.Length), out i))
                         {
                             if (maxCustomIndex < i)
                             {
@@ -137,7 +132,7 @@ namespace FancyZonesEditor
                         }
                     }
                 }
-                model.Name = c_defaultNamePrefix + (++maxCustomIndex);
+                model.Name = _defaultNamePrefix + (++maxCustomIndex);
             }
 
             mainEditor.Edit();

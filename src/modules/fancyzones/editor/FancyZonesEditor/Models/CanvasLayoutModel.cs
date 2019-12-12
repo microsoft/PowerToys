@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Converters;
-using System.Windows.Documents;
 
 namespace FancyZonesEditor.Models
 {
-    // CanvasLayoutModel 
+    // CanvasLayoutModel
     //  Free form Layout Model, which specifies independent zone rects
     public class CanvasLayoutModel : LayoutModel
     {
@@ -30,7 +27,9 @@ namespace FancyZonesEditor.Models
         }
 
         public CanvasLayoutModel(string name, ushort id) : base(name, id) { }
+
         public CanvasLayoutModel(string name) : base(name) { }
+
         public CanvasLayoutModel() : base() { }
 
         // ReferenceWidth - the reference width for the layout rect that all Zones are relative to

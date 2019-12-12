@@ -1,25 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace FancyZonesEditor
 {
     /// <summary>
-    /// Once you've "Committ"ed the starter grid, then the Zones within the grid come to life for you to be able to further subdivide them 
+    /// Once you've "Committ"ed the starter grid, then the Zones within the grid come to life for you to be able to further subdivide them
     /// using splitters
     /// </summary>
-
     public partial class GridZone : UserControl
     {
         public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register("IsSelected", typeof(bool), typeof(GridZone), new PropertyMetadata(false, OnSelectionChanged));
@@ -28,6 +23,7 @@ namespace FancyZonesEditor
         {
             ((GridZone)d).OnSelectionChanged();
         }
+
         private void OnSelectionChanged()
         {
             Background = IsSelected ? Brushes.SteelBlue : Brushes.LightGray;
@@ -53,7 +49,7 @@ namespace FancyZonesEditor
             _splitter.Fill = Brushes.DarkGray;
             Body.Children.Add(_splitter);
 
-            ((App) Application.Current).ZoneSettings.PropertyChanged += ZoneSettings_PropertyChanged;
+            ((App)Application.Current).ZoneSettings.PropertyChanged += ZoneSettings_PropertyChanged;
         }
 
         private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -67,7 +63,8 @@ namespace FancyZonesEditor
                 }
             }
         }
-        protected override Size ArrangeOverride(Size size)  
+
+        protected override Size ArrangeOverride(Size size)
         {
             _splitOrientation = (size.Width > size.Height) ? Orientation.Vertical : Orientation.Horizontal;
             return base.ArrangeOverride(size);
@@ -89,43 +86,41 @@ namespace FancyZonesEditor
         private int SplitterThickness {  get { return Math.Max(((App)Application.Current).ZoneSettings.Spacing, 5); } }
 
         private void UpdateSplitter()
-        { 
-            int thickness = SplitterThickness;
-
+        {
             if (IsVerticalSplit)
             {
                 double bodyWidth = Body.ActualWidth;
-                double pos = _lastPos.X - thickness/2;
+                double pos = _lastPos.X - (SplitterThickness / 2);
                 if (pos < 0)
                 {
                     pos = 0;
                 }
-                else if (pos > (bodyWidth - thickness))
+                else if (pos > (bodyWidth - SplitterThickness))
                 {
-                    pos = bodyWidth - thickness;
+                    pos = bodyWidth - SplitterThickness;
                 }
 
                 Canvas.SetLeft(_splitter, pos);
                 Canvas.SetTop(_splitter, 0);
-                _splitter.MinWidth = thickness;
+                _splitter.MinWidth = SplitterThickness;
                 _splitter.MinHeight = Body.ActualHeight;
             }
             else
             {
                 double bodyHeight = Body.ActualHeight;
-                double pos = _lastPos.Y - thickness / 2;
+                double pos = _lastPos.Y - (SplitterThickness / 2);
                 if (pos < 0)
                 {
                     pos = 0;
                 }
-                else if (pos > (bodyHeight - thickness))
+                else if (pos > (bodyHeight - SplitterThickness))
                 {
-                    pos = bodyHeight - thickness;
+                    pos = bodyHeight - SplitterThickness;
                 }
                 Canvas.SetLeft(_splitter, 0);
                 Canvas.SetTop(_splitter, pos);
                 _splitter.MinWidth = Body.ActualWidth;
-                _splitter.MinHeight = thickness;
+                _splitter.MinHeight = SplitterThickness;
             }
         }
 

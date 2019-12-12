@@ -1,25 +1,21 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.ComponentModel;
-using System.Collections;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
-using FancyZonesEditor.Models;
-using System.Windows.Documents;
 using System.Windows;
-using System.Windows.Controls;
+using FancyZonesEditor.Models;
 using Microsoft.Win32;
 
 namespace FancyZonesEditor
 {
-    //
     // Settings
     //  These are the configuration settings used by the rest of the editor
     //  Other UIs in the editor will subscribe to change events on the properties to stay up to date as these properties change
-    //
     public class Settings : INotifyPropertyChanged
     {
         public bool IsCustomLayoutActive
@@ -271,9 +267,9 @@ namespace FancyZonesEditor
             }
 
             // Update the "Priority Grid" Default Layout
-            if (ZoneCount <= s_priorityData.Length)
+            if (ZoneCount <= _priorityData.Length)
             {
-                _priorityGridModel.Reload(s_priorityData[ZoneCount - 1]);
+                _priorityGridModel.Reload(_priorityData[ZoneCount - 1]);
             }
             else
             {
@@ -374,8 +370,8 @@ namespace FancyZonesEditor
 
         // storage for Default Layout Models
         private IList<LayoutModel> _defaultModels;
-        private CanvasLayoutModel _focusModel; 
-        private GridLayoutModel _rowsModel;   
+        private CanvasLayoutModel _focusModel;
+        private GridLayoutModel _rowsModel;
         private GridLayoutModel _columnsModel;
         private GridLayoutModel _gridModel;
         private GridLayoutModel _priorityGridModel;
@@ -390,7 +386,7 @@ namespace FancyZonesEditor
         private static readonly ushort c_lastPrefinedId = c_blankCustomModelId;
 
         // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
-        private static byte[][] s_priorityData = new byte[][]
+        private static byte[][] _priorityData = new byte[][]
         {
             new byte[] { 0, 0, 0, 0, 0, 1, 1, 39, 16, 39, 16, 0 },
             new byte[] { 0, 0, 0, 0, 0, 1, 2, 39, 16, 26, 11, 13, 5, 0, 1 },
@@ -402,7 +398,7 @@ namespace FancyZonesEditor
             new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 2, 5, 6, 1, 2, 7 },
             new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 2, 5, 6, 1, 7, 8 },
             new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 5, 6, 7, 1, 8, 9 },
-            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 5, 6, 7, 8, 9, 10 }
+            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 5, 6, 7, 8, 9, 10 },
         };
 
         private const int c_multiplier = 10000;

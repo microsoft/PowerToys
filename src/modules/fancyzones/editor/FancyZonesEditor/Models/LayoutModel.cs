@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Win32;
 
 namespace FancyZonesEditor.Models
@@ -59,7 +57,7 @@ namespace FancyZonesEditor.Models
         private ushort _id = 0;
 
         // IsSelected (not-persisted) - tracks whether or not this LayoutModel is selected in the picker
-        // TODO: once we switch to a picker per monitor, we need to move this state to the view  
+        // TODO: once we switch to a picker per monitor, we need to move this state to the view
         public bool IsSelected
         {
             get { return _isSelected; }
@@ -72,6 +70,7 @@ namespace FancyZonesEditor.Models
                 }
             }
         }
+
         private bool _isSelected;
 
         // implementation of INotifyProeprtyChanged
@@ -80,14 +79,13 @@ namespace FancyZonesEditor.Models
         // FirePropertyChanged -- wrapper that calls INPC.PropertyChanged
         protected virtual void FirePropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         // Removes this Layout from the registry and the loaded CustomModels list
         public void Delete()
         {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(c_registryPath, true);
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(_registryPath, true);
             if (key != null)
             {
                 key.DeleteValue(Name);
@@ -105,17 +103,17 @@ namespace FancyZonesEditor.Models
         {
             s_customModels = new ObservableCollection<LayoutModel>();
 
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(c_registryPath);
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(_registryPath);
             if (key != null)
             {
                 foreach (string name in key.GetValueNames())
                 {
                     LayoutModel model = null;
-                    byte[] data = (byte[])Registry.GetValue(c_fullRegistryPath, name, null);
+                    byte[] data = (byte[])Registry.GetValue(_fullRegistryPath, name, null);
 
-                    ushort version = (ushort) (data[0]*256 + data[1]);
+                    ushort version = (ushort)(data[0] * 256 + data[1]);
                     byte type = data[2];
-                    ushort id = (ushort) (data[3]*256 + data[4]);
+                    ushort id = (ushort)((data[3] * 256) + data[4]);
 
                     switch (type)
                     {
@@ -143,7 +141,7 @@ namespace FancyZonesEditor.Models
         // Callbacks that the base LayoutModel makes to derived types
         protected abstract byte[] GetPersistData();
         public abstract LayoutModel Clone();
-        
+
         // PInvokes to handshake with fancyzones backend
         internal static class Native
         {
@@ -165,12 +163,12 @@ namespace FancyZonesEditor.Models
         public void Persist(System.Windows.Int32Rect[] zones)
         {
             // Persist the editor data
-            Registry.SetValue(c_fullRegistryPath, Name, GetPersistData(), Microsoft.Win32.RegistryValueKind.Binary);
+            Registry.SetValue(_fullRegistryPath, Name, GetPersistData(), Microsoft.Win32.RegistryValueKind.Binary);
             Apply(zones);
         }
 
         public void Apply(System.Windows.Int32Rect[] zones)
-        { 
+        {
             // Persist the zone data back into FZ
             var module = Native.LoadLibrary("fancyzones.dll");
             if (module == IntPtr.Zero)
@@ -196,16 +194,16 @@ namespace FancyZonesEditor.Models
 
                 var index = i * 4;
                 zoneArray[index] = left;
-                zoneArray[index+1] = top;
-                zoneArray[index+2] = right;
-                zoneArray[index+3] = bottom;
+                zoneArray[index + 1] = top;
+                zoneArray[index + 2] = right;
+                zoneArray[index + 3] = bottom;
             }
 
             var persistZoneSet = Marshal.GetDelegateForFunctionPointer<Native.PersistZoneSet>(pfn);
             persistZoneSet(Settings.UniqueKey, Settings.WorkAreaKey, Settings.Monitor, _id, zoneCount, zoneArray);
         }
 
-        private static readonly string c_registryPath = Settings.RegistryPath + "\\Layouts";
-        private static readonly string c_fullRegistryPath = Settings.FullRegistryPath + "\\Layouts";
+        private static readonly string _registryPath = Settings.RegistryPath + "\\Layouts";
+        private static readonly string _fullRegistryPath = Settings.FullRegistryPath + "\\Layouts";
     }
 }

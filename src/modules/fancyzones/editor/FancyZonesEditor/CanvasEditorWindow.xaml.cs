@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using MahApps.Metro.Controls;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -24,16 +15,16 @@ namespace FancyZonesEditor
         public CanvasEditorWindow()
         {
             InitializeComponent();
-            Model = EditorOverlay.Current.DataContext as CanvasLayoutModel;
+            _model = EditorOverlay.Current.DataContext as CanvasLayoutModel;
         }
 
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
-            Model.AddZone(new Int32Rect(_offset, _offset, (int) (Model.ReferenceWidth * 0.6), (int) (Model.ReferenceHeight * 0.6)));
+            _model.AddZone(new Int32Rect(_offset, _offset, (int)(_model.ReferenceWidth * 0.6), (int)(_model.ReferenceHeight * 0.6)));
             _offset += 100;
         }
 
         private int _offset = 100;
-        private CanvasLayoutModel Model;
+        private CanvasLayoutModel _model;
     }
 }

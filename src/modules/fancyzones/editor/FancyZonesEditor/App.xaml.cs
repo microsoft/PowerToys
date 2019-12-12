@@ -1,10 +1,8 @@
-﻿using FancyZonesEditor;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using FancyZonesEditor.Models;
 
@@ -16,8 +14,10 @@ namespace FancyZonesEditor
     public partial class App : Application
     {
         public Settings ZoneSettings { get { return _settings; } }
+
         private Settings _settings;
         private ushort _idInitial = 0;
+
         public App()
         {
             _settings = new Settings();
