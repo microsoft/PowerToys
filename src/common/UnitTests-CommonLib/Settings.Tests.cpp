@@ -768,5 +768,59 @@ namespace UnitTestsCommonLib
             HotkeyObject objectNegativeValues = HotkeyObject::from_settings(true, true, true, false, 123);
             Assert::AreEqual(false, objectNegativeValues.shift_pressed());
         }
+
+        TEST_METHOD(GetModifiersRepeat)
+        {
+            std::map<UINT, HotkeyObject> expectedMap = {
+                std::make_pair(0x0000, HotkeyObject::from_settings(false, false, false, false, 0)),
+                std::make_pair(0x0001, HotkeyObject::from_settings(false, false, true, false, 0)),
+                std::make_pair(0x0002, HotkeyObject::from_settings(false, true, false, false, 0)),
+                std::make_pair(0x0003, HotkeyObject::from_settings(false, true, true, false, 0)),
+                std::make_pair(0x0004, HotkeyObject::from_settings(false, false, false, true, 0)),
+                std::make_pair(0x0005, HotkeyObject::from_settings(false, false, true, true, 0)),
+                std::make_pair(0x0006, HotkeyObject::from_settings(false, true, false, true, 0)),
+                std::make_pair(0x0007, HotkeyObject::from_settings(false, true, true, true, 0)),
+                std::make_pair(0x0008, HotkeyObject::from_settings(true, false, false, false, 0)),
+                std::make_pair(0x0009, HotkeyObject::from_settings(true, false, true, false, 0)),
+                std::make_pair(0x000A, HotkeyObject::from_settings(true, true, false, false, 0)),
+                std::make_pair(0x000B, HotkeyObject::from_settings(true, true, true, false, 0)),
+                std::make_pair(0x000C, HotkeyObject::from_settings(true, false, false, true, 0)),
+                std::make_pair(0x000D, HotkeyObject::from_settings(true, false, true, true, 0)),
+                std::make_pair(0x000E, HotkeyObject::from_settings(true, true, false, true, 0)),
+                std::make_pair(0x000F, HotkeyObject::from_settings(true, true, true, true, 0))
+            };
+
+            for (const auto& iter : expectedMap)
+            {
+                Assert::AreEqual(iter.first, iter.second.get_modifiers_repeat());
+            }
+        }
+
+        TEST_METHOD(GetModifiers)
+        {
+            std::map<UINT, HotkeyObject> expectedMap = {
+                std::make_pair(0x4000, HotkeyObject::from_settings(false, false, false, false, 0)),
+                std::make_pair(0x4001, HotkeyObject::from_settings(false, false, true, false, 0)),
+                std::make_pair(0x4002, HotkeyObject::from_settings(false, true, false, false, 0)),
+                std::make_pair(0x4003, HotkeyObject::from_settings(false, true, true, false, 0)),
+                std::make_pair(0x4004, HotkeyObject::from_settings(false, false, false, true, 0)),
+                std::make_pair(0x4005, HotkeyObject::from_settings(false, false, true, true, 0)),
+                std::make_pair(0x4006, HotkeyObject::from_settings(false, true, false, true, 0)),
+                std::make_pair(0x4007, HotkeyObject::from_settings(false, true, true, true, 0)),
+                std::make_pair(0x4008, HotkeyObject::from_settings(true, false, false, false, 0)),
+                std::make_pair(0x4009, HotkeyObject::from_settings(true, false, true, false, 0)),
+                std::make_pair(0x400A, HotkeyObject::from_settings(true, true, false, false, 0)),
+                std::make_pair(0x400B, HotkeyObject::from_settings(true, true, true, false, 0)),
+                std::make_pair(0x400C, HotkeyObject::from_settings(true, false, false, true, 0)),
+                std::make_pair(0x400D, HotkeyObject::from_settings(true, false, true, true, 0)),
+                std::make_pair(0x400E, HotkeyObject::from_settings(true, true, false, true, 0)),
+                std::make_pair(0x400F, HotkeyObject::from_settings(true, true, true, true, 0))
+            };
+
+            for (const auto& iter : expectedMap)
+            {
+                Assert::AreEqual(iter.first, iter.second.get_modifiers());
+            }
+        }
     };
 }
