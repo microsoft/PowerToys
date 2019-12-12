@@ -27,6 +27,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <CodeAnalysisRuleSet>..\..\..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <PlatformTarget>x64</PlatformTarget>
@@ -36,6 +38,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>..\..\..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -66,6 +70,7 @@
       <DependentUpon>CanvasEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="EditorWindow.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="GridEditor.xaml.cs">
       <DependentUpon>GridEditor.xaml</DependentUpon>
     </Compile>
@@ -175,11 +180,19 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <AdditionalFiles Include="..\..\..\..\codeAnalysis\StyleCop.json">
+      <Link>StyleCop.json</Link>
+    </AdditionalFiles>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MahApps.Metro">
       <Version>2.0.0-alpha0455</Version>
+    </PackageReference>
+    <PackageReference Include="StyleCop.Analyzers">
+      <Version>1.1.118</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
