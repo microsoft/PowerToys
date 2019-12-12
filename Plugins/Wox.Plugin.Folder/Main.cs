@@ -165,8 +165,7 @@ namespace Wox.Plugin.Folder
                 searchOption = SearchOption.AllDirectories;
                 incompleteName = incompleteName.Substring(1);
             }
-
-            string searchNickname = new FolderLink { Path = query.Search }.Nickname;
+            
             try
             {
                 // search folder and add results
