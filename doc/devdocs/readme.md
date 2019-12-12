@@ -53,6 +53,7 @@ While developing, it's possible to connect the WebView to the development server
 This project generates the web UI shown in the [PowerToys Settings](/src/editor).
 It's a `ReactJS` project created using [UI Fabric](https://developer.microsoft.com/en-us/fabric#/).
 
+## Current modules
 ### [`FancyZones`](/doc/devdocs/modules/fancyzones.md)
 The FancyZones PowerToy that allows users to create custom zones on the screen, to which the windows will snap when moved.
 
