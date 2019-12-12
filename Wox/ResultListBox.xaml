@@ -4,6 +4,7 @@
          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
          xmlns:vm="clr-namespace:Wox.ViewModel"
+         xmlns:converter="clr-namespace:Wox.Converters"
          mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100"
          d:DataContext="{d:DesignInstance vm:ResultsViewModel}"
          MaxHeight="{Binding MaxHeight}"
@@ -30,6 +31,9 @@
                 <Button.Content>
                     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5"
                           Cursor="Hand" UseLayoutRounding="False">
+                        <Grid.Resources>
+                            <converter:HighlightTextConverter x:Key="HighlightTextConverter"/>
+                        </Grid.Resources>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="32" />
                             <ColumnDefinition />
@@ -44,9 +48,23 @@
                             </Grid.RowDefinitions>
                             <TextBlock Style="{DynamicResource ItemTitleStyle}" DockPanel.Dock="Left"
                                        VerticalAlignment="Center" ToolTip="{Binding Result.Title}" x:Name="Title"
-                                       Text="{Binding Result.Title}" />
+                                       Text="{Binding Result.Title}">
+                                <vm:ResultsViewModel.FormattedText>
+                                    <MultiBinding Converter="{StaticResource HighlightTextConverter}">
+                                        <Binding Path="Result.Title" />
+                                        <Binding Path="Result.TitleHighlightData" />
+                                    </MultiBinding>
+                                </vm:ResultsViewModel.FormattedText>
+                            </TextBlock>
                             <TextBlock Style="{DynamicResource ItemSubTitleStyle}" ToolTip="{Binding Result.SubTitle}"
-                                       Grid.Row="1" x:Name="SubTitle" Text="{Binding Result.SubTitle}" />
+                                       Grid.Row="1" x:Name="SubTitle" Text="{Binding Result.SubTitle}">
+                                <vm:ResultsViewModel.FormattedText>
+                                    <MultiBinding Converter="{StaticResource HighlightTextConverter}">
+                                        <Binding Path="Result.SubTitle" />
+                                        <Binding Path="Result.SubTitleHighlightData" />
+                                    </MultiBinding>
+                                </vm:ResultsViewModel.FormattedText>
+                            </TextBlock>
                         </Grid>
                     </Grid>
                 </Button.Content>

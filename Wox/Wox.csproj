@@ -158,6 +158,7 @@
     <Compile Include="..\SolutionAssemblyInfo.cs">
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Converters\HighlightTextConverter.cs" />
     <Compile Include="Helper\SingletonWindowOpener.cs" />
     <Compile Include="PublicAPIInstance.cs" />
     <Compile Include="ReportWindow.xaml.cs" />
