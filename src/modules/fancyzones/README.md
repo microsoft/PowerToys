@@ -1,4 +1,4 @@
-# Fancy Zones
+# Overview
 Fancy Zones is a window manager that is designed to make it easy to arrange and snap windows into efficient layouts for your workflow and also to restore these layouts quickly.  Fancy Zones allows the user to define a set of window locations for a desktop that are drag targets for windows.  When the user drags a window into a zone, the windows is resized and repositioned to fill that zone.  
 
 ![Fancy Zones](FancyZones.png)
@@ -17,14 +17,14 @@ The subtractive table layout model starts with a table layout and allows zones t
 
 The backlog for the utility can be found [here](https://github.com/Microsoft/PowerToys/tree/master/doc/planning/FancyZonesBacklog.md) and the source code is [here](https://github.com/Microsoft/PowerToys/tree/master/src/modules/fancyzones).
 
-## Shortcut Keys
+# Shortcut Keys
 | Shortcut      | Action |
 | ----------- | ----------- |
 | Win + `      | Launches editor (this shortcut is editable in the settings dialog)       |
 | Win+Ctrl+\<Number>   | Cycles through saved layouts with the corresponding number of zones        |
 | Win+Left/Right Arrow | Move focused window between zones (only if Override snap hotkeys setting is enabled, in that case only the `Win+Left Arrow` and `Win+Right Arrow` are overriden, while the `Win+Up Arrow` and `Win+Down Arrow` keep working as usual)  |
 
-## Settings
+# Settings
 | Setting | Description |
 | --------- | ------------- |
 | Configure the zone editor hotkey | To change the default hotkey, click on the textbox (it's not necessary to select or delete the text) and then press on the keyboard the desired key combination |

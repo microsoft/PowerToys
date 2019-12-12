@@ -1,11 +1,4 @@
-# PowerToys Interface
-
-The PowerToys interface that each PowerToy must implement.
-See [`the example PowerToy`](/src/modules/example_powertoy) for a PowerToys module example that uses this interface.
-
-## Interface definition
-
-This is the interface definition:
+# Interface definition
 
 ```cpp
 class PowertoyModuleIface {
@@ -27,7 +20,7 @@ public:
 typedef PowertoyModuleIface* (__cdecl *powertoy_create_func)();
 ```
 
-### Runtime logic
+# Runtime logic
 
 The PowerToys runner will, for each PowerToy DLL:
   - load the DLL,
@@ -54,11 +47,11 @@ When terminating, the runner will:
   - unload the DLL.
 
 
-### Method definition
+## Method definition
 
 This section contains a more detailed description of each of the interface methods.
 
-#### powertoy_create_func
+### powertoy_create_func
 
 ```cpp
 typedef PowertoyModuleIface* (__cdecl *powertoy_create_func)()
@@ -86,7 +79,7 @@ ExamplePowertoy::ExamplePowertoy() {
 }
 ```
 
-#### get_name
+### get_name
 
 ```cpp
 virtual const wchar_t* get_name()
@@ -101,7 +94,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-#### get_events
+### get_events
 
 ```cpp
 virtual const wchar_t** get_events()
@@ -124,7 +117,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-#### get_config
+### get_config
 
 ```
 virtual bool get_config(wchar_t* buffer, int *buffer_size)
@@ -174,7 +167,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-#### set_config
+### set_config
 
 ```cpp
 virtual void set_config(const wchar_t* config)
@@ -207,7 +200,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-#### call_custom_action
+### call_custom_action
 
 ```cpp
   virtual void call_custom_action(const wchar_t* action)
@@ -241,7 +234,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-#### enable
+### enable
 
 ```cpp
   virtual void enable()
@@ -257,7 +250,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-#### disable
+### disable
 
 ```cpp
   virtual void disable()
@@ -273,7 +266,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-#### is_enabled
+### is_enabled
 
 ```cpp
   virtual bool is_enabled() = 0;
@@ -288,7 +281,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
     return m_enabled;
   }
 ```
-#### signal_event
+### signal_event
 
 ```cpp
   virtual intptr_t signal_event(const wchar_t* name, intptr_t data) = 0;
@@ -298,6 +291,8 @@ Handle event. Only the events the PowerToy subscribed to will be signaled.
 The data argument and return value meaning are event-specific:
   * ll_keyboard: see [`lowlevel_keyboard_event_data.h`](./lowlevel_keyboard_event_data.h).
   * win_hook_event: see [`win_hook_event_data.h`](./win_hook_event_data.h)
+
+Please note that some of the events are currently being signalled from a separate thread.
 
 Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.cpp):
 
@@ -317,7 +312,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-### register_system_menu_helper
+## register_system_menu_helper
 
 ```cpp
   virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) = 0;
@@ -327,7 +322,7 @@ Register helper class to handle all system menu items related actions. Creation,
 and all other actions taken on system menu item will be handled by provided class.
 Module will be informed when action is taken on any item created on request of the module.
 
-### signal_system_menu_action
+## signal_system_menu_action
 
 ```cpp
   virtual void signal_system_menu_action(const wchar_t* name) = 0;
@@ -336,7 +331,7 @@ Module will be informed when action is taken on any item created on request of t
 Runner invokes this API when action is taken on item created on request from the module.
 Item name is passed as an argument, so that module can distinguish between different menu items.
 
-#### destroy
+### destroy
 
 ```cpp
   virtual void destroy()
@@ -351,7 +346,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-### Powertoys system menu helper interface
+## Powertoys system menu helper interface
 
 Interface for helper class responsible for handling all system menu related actions.
 ```cpp
@@ -367,7 +362,7 @@ public:
 };
 ```
 
-### ItemInfo
+## ItemInfo
 
 ```cpp
   struct ItemInfo {
@@ -380,7 +375,7 @@ public:
 Structure containing all relevant information for system menu item: name (and hotkey if available), item
 status at creation (enabled/disabled) and whether check box will appear next to item name when action is taken.
 
-### SetConfiguration
+## SetConfiguration
 
 ```cpp
   virtual void SetConfiguration(PowertoyModuleIface* module, const std::vector<ItemInfo>& config) = 0;
@@ -388,7 +383,7 @@ status at creation (enabled/disabled) and whether check box will appear next to 
 
 Module should use this interface to inform system menu helper class which custom system menu items to create.
 
-### ProcessSelectedItem
+## ProcessSelectedItem
 
 ```cpp
   virtual void ProcessSelectedItem(PowertoyModuleIface* module, HWND window, const wchar_t* itemName) = 0;
@@ -396,17 +391,17 @@ Module should use this interface to inform system menu helper class which custom
 
 Process action taken on specific system menu item.
 
-## Code organization
+# Code organization
 
-#### [`powertoy_module_interface.h`](./powertoy_module_interface.h)
+### [`powertoy_module_interface.h`](/src/modules/example_powertoy/powertoy_module_interface.h)
 Contains the PowerToys interface definition.
 
-### [`powertoy_system_menu.h`](./powertoy_system_module.h)
+### [`powertoy_system_menu.h`](/src/modules/example_powertoy/powertoy_system_module.h)
 Contains the PowerToys system menu helper interface definition.
 
-#### [`lowlevel_keyboard_event_data.h`](./lowlevel_keyboard_event_data.h)
+### [`lowlevel_keyboard_event_data.h`](/src/modules/example_powertoy/lowlevel_keyboard_event_data.h)
 Contains the `LowlevelKeyboardEvent` structure that's passed to `signal_event` for `ll_keyboard` events.
 
-#### [`win_hook_event_data.h`](./win_hook_event_data.h)
+### [`win_hook_event_data.h`](/src/modules/example_powertoy/win_hook_event_data.h)
 Contains the `WinHookEvent` structure that's passed to `signal_event` for `win_hook_event` events.
 
