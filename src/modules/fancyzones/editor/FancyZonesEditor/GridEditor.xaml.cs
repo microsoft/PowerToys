@@ -470,9 +470,10 @@ namespace FancyZonesEditor
             {
                 Orientation = orientation,
                 Index = index,
-                Model = Model
+                Model = Model,
             };
             resizer.DragDelta += Resizer_DragDelta;
+
             if (orientation == Orientation.Vertical)
             {
                 index += Model.Rows - 1;
@@ -491,6 +492,7 @@ namespace FancyZonesEditor
             }
 
             freeZones.Add(index);
+
             GridZone zone = (GridZone)Preview.Children[index];
             zone.Visibility = Visibility.Hidden;
             zone.MinHeight = 0;

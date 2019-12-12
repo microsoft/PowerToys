@@ -36,8 +36,6 @@ namespace FancyZonesEditor
             }
         }
 
-
-
         private void DecrementZones_Click(object sender, RoutedEventArgs e)
         {
             if (_settings.ZoneCount > 1)
