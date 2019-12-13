@@ -78,8 +78,8 @@ namespace Wox.Plugin.Program
             }
 
             var results1 = win32.AsParallel()
-                    .Where(p => p.Enabled)
-                    .Select(p => p.Result(query.Search, _context.API));
+                .Where(p => p.Enabled)
+                .Select(p => p.Result(query.Search, _context.API));
 
             var results2 = uwps.AsParallel()
                 .Where(p => p.Enabled)
@@ -191,12 +191,12 @@ namespace Wox.Plugin.Program
                          );
         }
 
-        public static bool StartProcess(ProcessStartInfo info)
+        public static bool StartProcess(Func<ProcessStartInfo, Process> runProcess, ProcessStartInfo info)
         {
             bool hide;
             try
             {
-                Process.Start(info);
+                runProcess(info);
                 hide = true;
             }
             catch (Exception)

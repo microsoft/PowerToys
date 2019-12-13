@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Newtonsoft.Json;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Logger;
 
@@ -142,6 +143,8 @@ namespace Wox.Plugin.PluginManagement
                     Title = r.name,
                     SubTitle = r.description,
                     IcoPath = "Images\\plugin.png",
+                    TitleHighlightData = StringMatcher.FuzzySearch(query.SecondSearch, r.name).MatchData,
+                    SubTitleHighlightData = StringMatcher.FuzzySearch(query.SecondSearch, r.description).MatchData,
                     Action = c =>
                     {
                         MessageBoxResult result = MessageBox.Show("Are you sure you wish to install the \'" + r.name + "\' plugin",
@@ -191,6 +194,8 @@ namespace Wox.Plugin.PluginManagement
                     Title = plugin.Name,
                     SubTitle = plugin.Description,
                     IcoPath = plugin.IcoPath,
+                    TitleHighlightData = StringMatcher.FuzzySearch(query.SecondSearch, plugin.Name).MatchData,
+                    SubTitleHighlightData = StringMatcher.FuzzySearch(query.SecondSearch, plugin.Description).MatchData,
                     Action = e =>
                     {
                         UnInstallPlugin(plugin);

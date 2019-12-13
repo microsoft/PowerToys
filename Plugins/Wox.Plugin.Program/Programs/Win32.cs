@@ -6,10 +6,12 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Win32;
 using Shell;
 using Wox.Infrastructure;
 using Wox.Plugin.Program.Logger;
+using Wox.Plugin.SharedCommands;
 
 namespace Wox.Plugin.Program.Programs
 {
@@ -33,12 +35,10 @@ namespace Wox.Plugin.Program.Programs
 
         private int Score(string query)
         {
-            var score1 = StringMatcher.FuzzySearch(query, Name).ScoreAfterSearchPrecisionFilter();
-            var score2 = StringMatcher.ScoreForPinyin(Name, query);
-            var score3 = StringMatcher.FuzzySearch(query, Description).ScoreAfterSearchPrecisionFilter();
-            var score4 = StringMatcher.ScoreForPinyin(Description, query);
-            var score5 = StringMatcher.FuzzySearch(query, ExecutableName).ScoreAfterSearchPrecisionFilter();
-            var score = new[] { score1, score2, score3, score4, score5 }.Max();
+            var nameMatch = StringMatcher.FuzzySearch(query, Name);
+            var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
+            var executableNameMatch = StringMatcher.FuzzySearch(query, ExecutableName);
+            var score = new[] { nameMatch.Score, descriptionMatch.Score, executableNameMatch.Score }.Max();
             return score;
         }
 
@@ -64,7 +64,7 @@ namespace Wox.Plugin.Program.Programs
                         FileName = FullPath,
                         WorkingDirectory = ParentDirectory
                     };
-                    var hide = Main.StartProcess(info);
+                    var hide = Main.StartProcess(Process.Start, info);
                     return hide;
                 }
             };
@@ -73,14 +73,18 @@ namespace Wox.Plugin.Program.Programs
                 Description.Substring(0, Name.Length) == Name)
             {
                 result.Title = Description;
+                result.TitleHighlightData = StringMatcher.FuzzySearch(query, Description).MatchData;
             }
             else if (!string.IsNullOrEmpty(Description))
             {
-                result.Title = $"{Name}: {Description}";
+                var title = $"{Name}: {Description}";
+                result.Title = title;
+                result.TitleHighlightData = StringMatcher.FuzzySearch(query, title).MatchData;
             }
             else
             {
                 result.Title = Name;
+                result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
             }
 
             return result;
@@ -93,6 +97,19 @@ namespace Wox.Plugin.Program.Programs
             {
                 new Result
                 {
+                    Title = api.GetTranslation("wox_plugin_program_run_as_different_user"),
+                    Action = _ =>
+                    {
+                        var info = FullPath.SetProcessStartInfo(ParentDirectory);
+
+                        Task.Run(() => Main.StartProcess(ShellCommand.RunAsDifferentUser, info));
+
+                        return true;
+                    },
+                    IcoPath = "Images/user.png"
+                },
+                new Result
+                {
                     Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
                     Action = _ =>
                     {
@@ -102,7 +119,7 @@ namespace Wox.Plugin.Program.Programs
                             WorkingDirectory = ParentDirectory,
                             Verb = "runas"
                         };
-                        var hide = Main.StartProcess(info);
+                        var hide = Main.StartProcess(Process.Start, info);
                         return hide;
                     },
                     IcoPath = "Images/cmd.png"
@@ -112,7 +129,7 @@ namespace Wox.Plugin.Program.Programs
                     Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
                     Action = _ =>
                     {
-                        var hide = Main.StartProcess(new ProcessStartInfo(ParentDirectory));
+                        var hide = Main.StartProcess(Process.Start, new ProcessStartInfo(ParentDirectory));
                         return hide;
                     },
                     IcoPath = "Images/folder.png"

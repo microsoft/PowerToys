@@ -27,7 +27,6 @@ namespace Wox.Plugin.ControlPanel
                 Directory.CreateDirectory(iconFolder);
             }
 
-
             foreach (ControlPanelItem item in controlPanelItems)
             {
                 if (!File.Exists(iconFolder + item.GUID + fileType) && item.Icon != null)
@@ -43,7 +42,10 @@ namespace Wox.Plugin.ControlPanel
 
             foreach (var item in controlPanelItems)
             {
-                item.Score = Score(item, query.Search);
+                var titleMatch = StringMatcher.FuzzySearch(query.Search, item.LocalizedString);
+                var subTitleMatch = StringMatcher.FuzzySearch(query.Search, item.InfoTip);
+                
+                item.Score = Math.Max(titleMatch.Score, subTitleMatch.Score);
                 if (item.Score > 0)
                 {
                     var result = new Result
@@ -66,32 +68,22 @@ namespace Wox.Plugin.ControlPanel
                             return true;
                         }
                     };
+
+                    if (item.Score == titleMatch.Score)
+                    {
+                        result.TitleHighlightData = titleMatch.MatchData;
+                    }
+                    else
+                    {
+                        result.SubTitleHighlightData = subTitleMatch.MatchData;
+                    }
+
                     results.Add(result);
                 }
             }
 
             List<Result> panelItems = results.OrderByDescending(o => o.Score).Take(5).ToList();
             return panelItems;
-        }
-
-        private int Score(ControlPanelItem item, string query)
-        {
-            var scores = new List<int> {0};
-            if (!string.IsNullOrEmpty(item.LocalizedString))
-            {
-                var score1 = StringMatcher.FuzzySearch(query, item.LocalizedString).ScoreAfterSearchPrecisionFilter();
-                var score2 = StringMatcher.ScoreForPinyin(item.LocalizedString, query);
-                scores.Add(score1);
-                scores.Add(score2);
-            }
-            if (!string.IsNullOrEmpty(item.InfoTip))
-            {
-                var score1 = StringMatcher.FuzzySearch(query, item.InfoTip).ScoreAfterSearchPrecisionFilter();
-                var score2 = StringMatcher.ScoreForPinyin(item.InfoTip, query);
-                scores.Add(score1);
-                scores.Add(score2);
-            }
-            return scores.Max();
         }
 
         public string GetTranslatedPluginTitle()
