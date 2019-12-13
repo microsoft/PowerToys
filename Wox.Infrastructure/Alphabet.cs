@@ -16,16 +16,22 @@ namespace Wox.Infrastructure
         private static ConcurrentDictionary<string, string[][]> PinyinCache;
         private static BinaryStorage<ConcurrentDictionary<string, string[][]>> _pinyinStorage;
         private static Settings _settings;
-
+         
         public static void Initialize(Settings settings)
         {
             _settings = settings;
+            InitializePinyinHelpers();
+        }
+
+        private static void InitializePinyinHelpers()
+        {
             Format.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
 
             Stopwatch.Normal("|Wox.Infrastructure.Alphabet.Initialize|Preload pinyin cache", () =>
             {
                 _pinyinStorage = new BinaryStorage<ConcurrentDictionary<string, string[][]>>("Pinyin");
                 PinyinCache = _pinyinStorage.TryLoad(new ConcurrentDictionary<string, string[][]>());
+
                 // force pinyin library static constructor initialize
                 PinyinHelper.toHanyuPinyinStringArray('T', Format);
             });
@@ -34,6 +40,10 @@ namespace Wox.Infrastructure
 
         public static void Save()
         {
+            if (!_settings.ShouldUsePinyin)
+            {
+                return; 
+            }
             _pinyinStorage.Save(PinyinCache);
         }
 
@@ -68,39 +78,36 @@ namespace Wox.Infrastructure
         /// </summmary>
         public static string[][] PinyinComination(string characters)
         {
-            if (_settings.ShouldUsePinyin && !string.IsNullOrEmpty(characters))
+            if (!_settings.ShouldUsePinyin || string.IsNullOrEmpty(characters))
             {
-                if (!PinyinCache.ContainsKey(characters))
-                {
+                return Empty2DStringArray;
+            }
 
-                    var allPinyins = new List<string[]>();
-                    foreach (var c in characters)
+            if (!PinyinCache.ContainsKey(characters))
+            {
+                var allPinyins = new List<string[]>();
+                foreach (var c in characters)
+                {
+                    var pinyins = PinyinHelper.toHanyuPinyinStringArray(c, Format);
+                    if (pinyins != null)
                     {
-                        var pinyins = PinyinHelper.toHanyuPinyinStringArray(c, Format);
-                        if (pinyins != null)
-                        {
-                            var r = pinyins.Distinct().ToArray();
-                            allPinyins.Add(r);
-                        }
-                        else
-                        {
-                            var r = new[] { c.ToString() };
-                            allPinyins.Add(r);
-                        }
+                        var r = pinyins.Distinct().ToArray();
+                        allPinyins.Add(r);
                     }
+                    else
+                    {
+                        var r = new[] { c.ToString() };
+                        allPinyins.Add(r);
+                    }
+                }
 
-                    var combination = allPinyins.Aggregate(Combination).Select(c => c.Split(';')).ToArray();
-                    PinyinCache[characters] = combination;
-                    return combination;
-                }
-                else
-                {
-                    return PinyinCache[characters];
-                }
+                var combination = allPinyins.Aggregate(Combination).Select(c => c.Split(';')).ToArray();
+                PinyinCache[characters] = combination;
+                return combination;
             }
             else
             {
-                return Empty2DStringArray;
+                return PinyinCache[characters];
             }
         }
 
@@ -142,7 +149,5 @@ namespace Wox.Infrastructure
             ).ToArray();
             return combination;
         }
-
-
     }
 }

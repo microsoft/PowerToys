@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Timers;
@@ -56,6 +56,7 @@ namespace Wox
                 Alphabet.Initialize(_settings);
 
                 StringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
+                StringMatcher.ShouldUsePinyin = _settings.ShouldUsePinyin;
 
                 PluginManager.LoadPlugins(_settings.PluginSettings);
                 _mainVM = new MainViewModel(_settings);

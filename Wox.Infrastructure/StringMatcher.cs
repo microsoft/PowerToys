@@ -1,16 +1,19 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
+using static Wox.Infrastructure.StringMatcher;
 
-namespace Wox.Infrastructure
+namespace Wox.Infrastructure 
 {
     public static class StringMatcher
     {
         public static MatchOption DefaultMatchOption = new MatchOption();
 
         public static string UserSettingSearchPrecision { get; set; }
+        public static bool ShouldUsePinyin { get; set; }
 
         [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
         public static int Score(string source, string target)
@@ -54,6 +57,9 @@ namespace Wox.Infrastructure
             var firstMatchIndex = -1;
             var lastMatchIndex = 0;
             char ch;
+
+            var indexList = new List<int>();
+
             for (var idx = 0; idx < len; idx++)
             {
                 ch = stringToCompare[idx];
@@ -63,6 +69,7 @@ namespace Wox.Infrastructure
                         firstMatchIndex = idx;
                     lastMatchIndex = idx + 1;
 
+                    indexList.Add(idx);
                     sb.Append(opt.Prefix + ch + opt.Suffix);
                     patternIdx += 1;
                 }
@@ -82,27 +89,38 @@ namespace Wox.Infrastructure
             // return rendered string if we have a match for every char
             if (patternIdx == pattern.Length)
             {
-                return new MatchResult
+                var score = CalculateSearchScore(query, stringToCompare, firstMatchIndex, lastMatchIndex - firstMatchIndex);
+                var pinyinScore = ScoreForPinyin(stringToCompare, query);
+
+                var result = new MatchResult
                 {
                     Success = true,
-                    Value = sb.ToString(),
-                    Score = CalScore(query, stringToCompare, firstMatchIndex, lastMatchIndex - firstMatchIndex)
+                    MatchData = indexList,
+                    RawScore = Math.Max(score, pinyinScore)
                 };
+
+                return result;
             }
 
             return new MatchResult { Success = false };
         }
 
-        private static int CalScore(string query, string stringToCompare, int firstIndex, int matchLen)
+        private static int CalculateSearchScore(string query, string stringToCompare, int firstIndex, int matchLen)
         {
-            //a match found near the beginning of a string is scored more than a match found near the end
-            //a match is scored more if the characters in the patterns are closer to each other, while the score is lower if they are more spread out
+            // A match found near the beginning of a string is scored more than a match found near the end
+            // A match is scored more if the characters in the patterns are closer to each other, 
+            // while the score is lower if they are more spread out
             var score = 100 * (query.Length + 1) / ((1 + firstIndex) + (matchLen + 1));
-            //a match with less characters assigning more weights
+
+            // A match with less characters assigning more weights
             if (stringToCompare.Length - query.Length < 5)
+            {
                 score += 20;
+            }
             else if (stringToCompare.Length - query.Length < 10)
+            {
                 score += 10;
+            }
 
             return score;
         }
@@ -114,21 +132,13 @@ namespace Wox.Infrastructure
             None = 0
         }
 
-        public static bool IsSearchPrecisionScoreMet(this MatchResult matchResult)
-        {            
-            var precisionScore = (SearchPrecisionScore)Enum.Parse(typeof(SearchPrecisionScore), 
-                                                                            UserSettingSearchPrecision ?? SearchPrecisionScore.Regular.ToString());
-            return matchResult.Score >= (int)precisionScore;
-        }
-
-        public static int ScoreAfterSearchPrecisionFilter(this MatchResult matchResult)
-        {
-            return matchResult.IsSearchPrecisionScoreMet() ? matchResult.Score : 0;
-
-        }
-
         public static int ScoreForPinyin(string source, string target)
         {
+            if (!ShouldUsePinyin)
+            {
+                return 0;
+            }
+
             if (!string.IsNullOrEmpty(source) && !string.IsNullOrEmpty(target))
             {
                 if (Alphabet.ContainsChinese(source))
@@ -158,12 +168,48 @@ namespace Wox.Infrastructure
     public class MatchResult
     {
         public bool Success { get; set; }
-        public int Score { get; set; }
-        
+
         /// <summary>
-        /// highlight string
+        /// The final score of the match result with all search precision filters applied.
         /// </summary>
-        public string Value { get; set; }
+        public int Score { get; private set; }
+
+        /// <summary>
+        /// The raw calculated search score without any search precision filtering applied.
+        /// </summary>
+        private int _rawScore;
+        public int RawScore
+        {
+            get { return _rawScore; }
+            set
+            {
+                _rawScore = value;
+                Score = ApplySearchPrecisionFilter(_rawScore);
+            }
+        }
+
+        /// <summary>
+        /// Matched data to highlight.
+        /// </summary>
+        public List<int> MatchData { get; set; }
+
+        public bool IsSearchPrecisionScoreMet()
+        {
+            return IsSearchPrecisionScoreMet(Score);
+        }
+
+        private bool IsSearchPrecisionScoreMet(int score)
+        {
+            var precisionScore = (SearchPrecisionScore)Enum.Parse(
+               typeof(SearchPrecisionScore),
+               UserSettingSearchPrecision ?? SearchPrecisionScore.Regular.ToString());
+            return score >= (int)precisionScore;
+        }
+
+        private int ApplySearchPrecisionFilter(int score)
+        {
+            return IsSearchPrecisionScoreMet(score) ? score : 0;
+        }
     }
 
     public class MatchOption
