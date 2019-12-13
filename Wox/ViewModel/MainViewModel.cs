@@ -397,15 +397,23 @@ namespace Wox.ViewModel
                     {
                         // so looping will stop once it was cancelled
                         var parallelOptions = new ParallelOptions { CancellationToken = currentCancellationToken };
-                        Parallel.ForEach(plugins, parallelOptions, plugin =>
+                        try
                         {
-                            var config = _settings.PluginSettings.Plugins[plugin.Metadata.ID];
-                            if (!config.Disabled)
+                            Parallel.ForEach(plugins, parallelOptions, plugin =>
                             {
-                                var results = PluginManager.QueryForPlugin(plugin, query);
-                                UpdateResultView(results, plugin.Metadata, query);
-                            }
-                        });
+                                var config = _settings.PluginSettings.Plugins[plugin.Metadata.ID];
+                                if (!config.Disabled)
+                                {
+                                    var results = PluginManager.QueryForPlugin(plugin, query);
+                                    UpdateResultView(results, plugin.Metadata, query);
+                                }
+                            });
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            // nothing to do here
+                        }
+                        
 
                         // this should happen once after all queries are done so progress bar should continue
                         // until the end of all querying
