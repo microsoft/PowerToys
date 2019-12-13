@@ -27,21 +27,13 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 // The PowerToy name that will be shown in the settings.
 const static wchar_t* MODULE_NAME = L"NewToy";
 // Add a description that will we shown in the module settings page.
-const static wchar_t* MODULE_DESC = L"<no description>";
+const static wchar_t* MODULE_DESC = L"This powertoy is used to demonstrate keyboard hooks.";
 
 // These are the properties shown in the Settings page.
 struct ModuleSettings {
-  // Add the PowerToy module properties with default values.
-  // Currently available types:
-  // - int
-  // - bool
-  // - string
-
   bool bool_prop = true;
   int int_prop = 10;
   std::wstring string_prop = L"The quick brown fox jumps over the lazy dog";
-  //std::wstring color_prop = L"#1212FF";
-
 } g_settings;
 
 // Implement the PowerToy Module Interface and all the required methods.
@@ -93,12 +85,6 @@ public:
     PowerToysSettings::Settings settings(hinstance, get_name());
     settings.set_description(MODULE_DESC);
 
-    // Show an overview link in the Settings page
-    //settings.set_overview_link(L"https://");
-
-    // Show a video link in the Settings page.
-    //settings.set_video_link(L"https://");
-
     // A bool property with a toggle editor.
     settings.add_bool_toogle(
       L"bool_toggle_1", // property name.
@@ -122,23 +108,6 @@ public:
       L"This is what a String property looks like", // description or resource id of the localized string.
       g_settings.string_prop // property value.
     );
-
-    // A string property with a color picker editor.
-    /*settings.add_color_picker(
-      L"color_picker_1", // property name.
-      L"This is what a ColorPicker property looks like", // description or resource id of the localized string.
-      g_settings.color_prop // property value.
-    );*/
-
-    // A custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-    // method should be overriden as well.
-    /*settings.add_custom_action(
-      L"custom_action_id", // action name.
-      L"This is what a CustomAction property looks like", // label above the field.
-      L"Call a custom action", // button text.
-      L"Press the button to call a custom action." // display values / extended info.
-    );*/
-
     return settings.serialize_to_buffer(buffer, buffer_size);
   }
 
@@ -150,12 +119,6 @@ public:
       // Parse the action values, including name.
       PowerToysSettings::CustomActionObject action_object =
         PowerToysSettings::CustomActionObject::from_json_string(action);
-
-      /*
-      if (action_object.get_name() == L"custom_action_id") {
-        // Execute your custom action
-      }
-      */
     }
     catch (std::exception ex) {
       // Improper JSON.
@@ -175,34 +138,24 @@ public:
       {
           g_settings.bool_prop = boolProp.value();
       }
-      
 
       // Update an int property.
-      /*
-      if (values.is_int_value(L"int_spinner_1")) {
-        g_settings.int_prop = values.get_int_value(L"int_spinner_1");
-      }*/
-      
+      auto intProp = values.get_int_value(L"int_spinner_1");
+      if (intProp)
+      {
+          g_settings.int_prop = intProp.value();
+      }      
 
       // Update a string property.
-      /*
-      if (values.is_string_value(L"string_text_1")) {
-        g_settings.string_prop = values.get_string_value(L"string_text_1");
-      }
-      */
-
-      // Update a color property.
-      /*
-      if (values.is_string_value(L"color_picker_1")) {
-        g_settings.color_prop = values.get_string_value(L"color_picker_1");
-      }
-      */
+      auto stringProp = values.get_string_value(L"string_text_1");
+      if (stringProp)
+      {
+          g_settings.string_prop = stringProp.value();
+      }      
 
       // If you don't need to do any custom processing of the settings, proceed
       // to persists the values calling:
       values.save_to_settings_file();
-      // Otherwise call a custom function to process the settings before saving them to disk:
-      // save_settings();
     }
     catch (std::exception ex) {
       // Improper JSON.
@@ -219,12 +172,12 @@ public:
               m_app->Run();
           }
       }
-    m_enabled = true;
+      m_enabled = true;
   }
 
   // Disable the powertoy
   virtual void disable() {
-    m_enabled = false;
+      m_enabled = false;
       if (m_app)
       {
           m_app->Destroy();
@@ -261,7 +214,6 @@ public:
   winrt::com_ptr<INewToy> m_app;
 };
 
-
 //intptr_t NewToy::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 //{
 //    if (data->wParam == WM_KEYDOWN)
@@ -271,7 +223,6 @@ public:
 //    return 0;
 //}
 
-
 // Load the settings file.
 void NewToy::init_settings() {
   try {
@@ -280,78 +231,29 @@ void NewToy::init_settings() {
       PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
 
     // Load a bool property.
-    /*
-    if (settings.is_bool_value(L"bool_toggle_1")) {
-      g_settings.bool_prop = settings.get_bool_value(L"bool_toggle_1");
+    auto boolProp = settings.get_bool_value(L"bool_toggle_1");
+    if (boolProp) {
+      g_settings.bool_prop = boolProp.value();
     }
-    */
 
     // Load an int property.
-    /*
-    if (settings.is_int_value(L"int_spinner_1")) {
-      g_settings.int_prop = settings.get_int_value(L"int_spinner_1");
-    }
-    */
+    auto intProp = settings.get_int_value(L"int_spinner_1");
+    if (intProp)
+    {
+        g_settings.int_prop = intProp.value();
+    }      
 
     // Load a string property.
-    /*
-    if (settings.is_string_value(L"string_text_1")) {
-      g_settings.string_prop = settings.get_string_value(L"string_text_1");
-    }
-    */
-
-    // Load a color property.
-    /*
-    if (settings.is_string_value(L"color_picker_1")) {
-      g_settings.color_prop = settings.get_string_value(L"color_picker_1");
-    }
-    */
+    auto stringProp = settings.get_string_value(L"string_text_1");
+    if (stringProp)
+    {
+        g_settings.string_prop = stringProp.value();
+    }   
   }
   catch (std::exception ex) {
     // Error while loading from the settings file. Let default values stay as they are.
   }
 }
-
-// This method of saving the module settings is only required if you need to do any
-// custom processing of the settings before saving them to disk.
-/*
-void NewToy::save_settings() {
-  try {
-    // Create a PowerToyValues object for this PowerToy
-    PowerToysSettings::PowerToyValues values(get_name());
-
-    // Save a bool property.
-    //values.add_property(
-    //  L"bool_toggle_1", // property name
-    //  g_settings.bool_prop // property value
-    //);
-
-    // Save an int property.
-    //values.add_property(
-    //  L"int_spinner_1", // property name
-    //  g_settings.int_prop // property value
-    //);
-
-    // Save a string property.
-    //values.add_property(
-    //  L"string_text_1", // property name
-    //  g_settings.string_prop // property value
-    );
-
-    // Save a color property.
-    //values.add_property(
-    //  L"color_picker_1", // property name
-    //  g_settings.color_prop // property value
-    //);
-
-    // Save the PowerToyValues JSON to the power toy settings file.
-    values.save_to_settings_file();
-  }
-  catch (std::exception ex) {
-    // Couldn't save the settings.
-  }
-}
-*/
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create() {
   return new NewToy();

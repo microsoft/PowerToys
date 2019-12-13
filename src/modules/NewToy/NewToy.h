@@ -2,14 +2,11 @@
 #include "pch.h"
 #include "common/dpi_aware.h"
 #include "common/on_thread_executor.h"
-#include <WinUser.h>
 
 interface __declspec(uuid("{50D3F0F5-736E-4186-BDF4-3D6BEE150C3B}")) INewToy : public IUnknown
 {
-    IFACEMETHOD_(void, Run)
-    () = 0;
-    IFACEMETHOD_(void, Destroy)
-    () = 0;
+    IFACEMETHOD_(void, Run)() = 0;
+    IFACEMETHOD_(void, Destroy)() = 0;
 };
 
 //interface __declspec(uuid("{2CB37E8F-87E6-4AEC-B4B2-E0FDC873343C}")) INewToyCallback : public IUnknown
@@ -35,24 +32,16 @@ interface __declspec(uuid("{50D3F0F5-736E-4186-BDF4-3D6BEE150C3B}")) INewToy : p
 //};
 
 
-struct NewToyC : public winrt::implements<NewToyC, INewToy>
+struct NewToyCOM : public winrt::implements<NewToyCOM, INewToy>
 {
 public:
-    NewToyC(HINSTANCE hinstance) noexcept :
-        m_hinstance(hinstance)
-    {
-    }
+    NewToyCOM(HINSTANCE hinstance) noexcept : m_hinstance(hinstance) {}
 
-    // INewToy
-    IFACEMETHODIMP_(void)
-    Run() noexcept;
-    IFACEMETHODIMP_(void)
-    Destroy() noexcept;
+    // INewToy methods
+    IFACEMETHODIMP_(void) Run() noexcept;
+    IFACEMETHODIMP_(void) Destroy() noexcept;
 
-    
-    //IFACEMETHODIMP_(bool)
-    //OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
-
+    //IFACEMETHODIMP_(bool) OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
 protected:
     static LRESULT CALLBACK s_WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
 
@@ -99,20 +88,19 @@ private:
         Exit,
         Terminate
     };
-    IFACEMETHODIMP_(void)
-    VirtualDesktopChanged() noexcept;
+
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
 };
 
-
-UINT NewToyC::WM_PRIV_VDCHANGED = RegisterWindowMessage(L"{128c2cb0-6bdf-493e-abbe-f8705e04aa95}");
-UINT NewToyC::WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d9c-0404642fc7b6}");
+//UINT NewToyCOM::WM_PRIV_VDCHANGED = RegisterWindowMessage(L"{128c2cb0-6bdf-493e-abbe-f8705e04aa95}");
+//UINT NewToyCOM::WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d9c-0404642fc7b6}");
 
 // IFancyZones
-IFACEMETHODIMP_(void) NewToyC::Run() noexcept
+IFACEMETHODIMP_(void) NewToyCOM::Run() noexcept
 {
     std::unique_lock writeLock(m_lock);
 
+    // Registers the window class
     WNDCLASSEXW wcex{};
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.lpfnWndProc = s_WndProc;
@@ -120,9 +108,9 @@ IFACEMETHODIMP_(void) NewToyC::Run() noexcept
     wcex.lpszClassName = L"SuperNewToy";
     RegisterClassExW(&wcex);
 
-    //BufferedPaintInit();
-
+    // Creates the window
     m_window = CreateWindowExW(0, L"SuperNewToy", L"New Toy", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, nullptr, nullptr, m_hinstance, this);
+    // If window creation fails, return
     if (!m_window)
         return;
 
@@ -131,23 +119,15 @@ IFACEMETHODIMP_(void) NewToyC::Run() noexcept
     RegisterHotKey(m_window, 1, MOD_WIN | MOD_NOREPEAT, VK_OEM_2);
     
     m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [] {
-                          SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
-                          SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
-                      } })
-        .wait();
+        SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
+        SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
+    } }).wait();
 }
-IFACEMETHODIMP_(void)
-NewToyC::VirtualDesktopChanged() noexcept
+
+IFACEMETHODIMP_(void) NewToyCOM::Destroy() noexcept
 {
-    // VirtualDesktopChanged is called from another thread but results in new windows being created.
-    // Jump over to the UI thread to handle it.
-    PostMessage(m_window, WM_PRIV_VDCHANGED, 0, 0);
-}
-// INewToy
-IFACEMETHODIMP_(void) NewToyC::Destroy() noexcept
-{
+    // Locks the window
     std::unique_lock writeLock(m_lock);
-    //BufferedPaintUnInit();
     if (m_window)
     {
         DestroyWindow(m_window);
@@ -155,54 +135,45 @@ IFACEMETHODIMP_(void) NewToyC::Destroy() noexcept
     }
 }
 
-LRESULT CALLBACK NewToyC::s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
+LRESULT CALLBACK NewToyCOM::s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
-    auto thisRef = reinterpret_cast<NewToyC*>(GetWindowLongPtr(window, GWLP_USERDATA));
+    auto thisRef = reinterpret_cast<NewToyCOM*>(GetWindowLongPtr(window, GWLP_USERDATA));
     if (!thisRef && (message == WM_CREATE))
     {
         const auto createStruct = reinterpret_cast<LPCREATESTRUCT>(lparam);
-        thisRef = reinterpret_cast<NewToyC*>(createStruct->lpCreateParams);
+        thisRef = reinterpret_cast<NewToyCOM*>(createStruct->lpCreateParams);
         SetWindowLongPtr(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(thisRef));
     }
-
-    return thisRef ? thisRef->WndProc(window, message, wparam, lparam) :
-                     DefWindowProc(window, message, wparam, lparam);
+    return thisRef ? thisRef->WndProc(window, message, wparam, lparam) : DefWindowProc(window, message, wparam, lparam);
 }
 
-LRESULT NewToyC::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
+LRESULT NewToyCOM::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
     switch (message)
     {
-    case WM_DESTROY: {
-        ShowWindow(window, SW_HIDE);
-        return 0;
-    }
-    case WM_CLOSE: {
-        // Don't destroy
-        ShowWindow(window, SW_HIDE);
-        return 0;
-    }
-
-    case WM_HOTKEY: {
-        if (wparam == 1)
-        {
-            ShowWindow(window, SW_SHOWMAXIMIZED);
+        case WM_CLOSE: {
+            // Don't destroy - hide instead
+            ShowWindow(window, SW_HIDE);
             return 0;
         }
-    }
-    break;
-
-    default:
-    {
+        break;
+        case WM_HOTKEY: {
+            if (wparam == 1)
+            {
+                ShowWindow(window, SW_SHOW);
+                return 0;
+            }
+        }
+        break;
+        default: {
             return DefWindowProc(window, message, wparam, lparam);
-    }
-    break;
+        }
+        break;
     }
     return 0;
 }
 
-
 winrt::com_ptr<INewToy> MakeNewToy(HINSTANCE hinstance) noexcept
 {
-    return winrt::make_self<NewToyC>(hinstance);
+    return winrt::make_self<NewToyCOM>(hinstance);
 }
