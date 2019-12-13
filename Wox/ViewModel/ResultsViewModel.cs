@@ -156,14 +156,14 @@ namespace Wox.ViewModel
         private List<ResultViewModel> NewResults(List<Result> newRawResults, string resultId)
         {
             var results = Results.ToList();
-            var newResults = newRawResults.Select(r => new ResultViewModel(r)).ToList();            
+            var newResults = newRawResults.Select(r => new ResultViewModel(r)).ToList();
             var oldResults = results.Where(r => r.Result.PluginID == resultId).ToList();
 
             // Find the same results in A (old results) and B (new newResults)          
             var sameResults = oldResults
                                 .Where(t1 => newResults.Any(x => x.Result.Equals(t1.Result)))
                                 .ToList();
-            
+
             // remove result of relative complement of B in A
             foreach (var result in oldResults.Except(sameResults))
             {
@@ -248,6 +248,10 @@ namespace Wox.ViewModel
                 }
             }
 
+            /// <summary>
+            /// Update the results collection with new results, try to keep identical results
+            /// </summary>
+            /// <param name="newItems"></param>
             public void Update(List<ResultViewModel> newItems)
             {
                 int newCount = newItems.Count;
@@ -259,7 +263,7 @@ namespace Wox.ViewModel
                     ResultViewModel oldResult = this[i];
                     ResultViewModel newResult = newItems[i];
                     if (!oldResult.Equals(newResult))
-                    {
+                    { // result is not the same update it in the current index
                         this[i] = newResult;
                     }
                     else if (oldResult.Result.Score != newResult.Result.Score)

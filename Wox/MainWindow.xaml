@@ -56,7 +56,7 @@
     <Border Style="{DynamicResource WindowBorderStyle}" MouseDown="OnMouseDown" >
         <StackPanel Orientation="Vertical">
             <TextBox Style="{DynamicResource QueryBoxStyle}"
-                     Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     Text="{Binding QueryText, Mode=TwoWay, Delay=100, UpdateSourceTrigger=PropertyChanged}"
                      PreviewDragOver="OnPreviewDragOver"
                      TextChanged="OnTextChanged"
                      AllowDrop="True"
