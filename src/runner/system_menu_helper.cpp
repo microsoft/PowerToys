@@ -83,7 +83,7 @@ bool SystemMenuHelper::AddItem(PowertoyModuleIface* module, HWND window, const s
     item.fState = MF_UNCHECKED | MF_DISABLED; // Item is disabled by default.
     item.wID = GenerateItemId();
     item.dwTypeData = const_cast<WCHAR*>(name.c_str());
-    item.cch = name.size() + 1;
+    item.cch = (UINT)name.size() + 1;
 
     if (InsertMenuItem(systemMenu, GetMenuItemCount(systemMenu) - KNewItemPos, true, &item)) {
       IdMappings[item.wID] = { module, name };
