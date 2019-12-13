@@ -58,7 +58,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     std::unordered_set<std::wstring> known_dlls = {
       L"shortcut_guide.dll",
       L"fancyzones.dll",
-      L"PowerRenameExt.dll"
+      L"PowerRenameExt.dll",
+      L"NewToy.dll"
     };
     for (auto& file : std::filesystem::directory_iterator(L"modules/")) {
       if (file.path().extension() != L".dll")
