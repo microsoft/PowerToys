@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using Wox.Infrastructure.Logger;
 
 namespace Wox.Plugin.Folder
 {
@@ -19,51 +21,55 @@ namespace Wox.Plugin.Folder
             var contextMenus = new List<Result>();
             if (selectedResult.ContextData is SearchResult record)
             {
-                string editorPath = "notepad.exe"; // TODO add the ability to create a custom editor
+                if (record.Type == ResultType.File)
+                {
+                    contextMenus.Add(CreateOpenWithEditorResult(record));
+                    contextMenus.Add(CreateOpenContainingFolderResult(record));
+                }
 
-                var name = "Open With Editor: " + Path.GetFileNameWithoutExtension(editorPath);
+                var icoPath = (record.Type == ResultType.File) ? Main.FileImagePath : Main.FolderImagePath;
+                var fileOrFolder = (record.Type == ResultType.File) ? "file" : "folder";
                 contextMenus.Add(new Result
                 {
-                    Title = name,
-                    Action = _ =>
+                    Title = "Copy Path",
+                    SubTitle = $"Copy the path of {fileOrFolder} into the clipboard",
+                    Action = (context) =>
                     {
                         try
                         {
-                            Process.Start(editorPath, record.FullPath);
+                            Clipboard.SetText(record.FullPath);
+                            return true;
                         }
-                        catch
+                        catch (Exception e)
                         {
-                            // TODO: update this
-                            _context.API.ShowMsg(
-                                string.Format(_context.API.GetTranslation("wox_plugin_everything_canot_start"),
-                                    record.FullPath), string.Empty, string.Empty);
+                            var message = "Fail to set text in clipboard";
+                            LogException(message, e);
+                            _context.API.ShowMsg(message);
                             return false;
                         }
-
-                        return true;
-                    },
-                    IcoPath = editorPath
-                });
-
-                var icoPath = (record.Type == ResultType.File) ? "Images\\file.png" : "Images\\folder.png";
-                contextMenus.Add(new Result
-                {
-                    Title = _context.API.GetTranslation("wox_plugin_everything_copy_path"),
-                    Action = (context) =>
-                    {
-                        Clipboard.SetText(record.FullPath);
-                        return true;
                     },
                     IcoPath = icoPath
                 });
 
                 contextMenus.Add(new Result
                 {
-                    Title = _context.API.GetTranslation("wox_plugin_everything_copy"),
+                    Title = "Copy",
+                    SubTitle = $"Copy the {fileOrFolder} to the clipboard",
                     Action = (context) =>
                     {
-                        Clipboard.SetFileDropList(new System.Collections.Specialized.StringCollection { record.FullPath });
-                        return true;
+                        try
+                        {
+                            Clipboard.SetFileDropList(new System.Collections.Specialized.StringCollection { record.FullPath });
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            var message = $"Fail to set {fileOrFolder} in clipboard";
+                            LogException(message, e);
+                            _context.API.ShowMsg(message);
+                            return false;
+                        }
+                        
                     },
                     IcoPath = icoPath
                 });
@@ -71,19 +77,21 @@ namespace Wox.Plugin.Folder
                 if (record.Type == ResultType.File || record.Type == ResultType.Folder)
                     contextMenus.Add(new Result
                     {
-                        Title = _context.API.GetTranslation("wox_plugin_everything_delete"),
+                        Title = "Delete",
                         Action = (context) =>
                         {
                             try
                             {
                                 if (record.Type == ResultType.File)
-                                    System.IO.File.Delete(record.FullPath);
+                                    File.Delete(record.FullPath);
                                 else
-                                    System.IO.Directory.Delete(record.FullPath);
+                                    Directory.Delete(record.FullPath);
                             }
-                            catch
+                            catch(Exception e)
                             {
-                                _context.API.ShowMsg(string.Format(_context.API.GetTranslation("wox_plugin_everything_canot_delete"), record.FullPath), string.Empty, string.Empty);
+                                var message = $"Fail to delete {fileOrFolder} at {record.FullPath}";
+                                LogException(message, e);
+                                _context.API.ShowMsg(message);
                                 return false;
                             }
 
@@ -95,6 +103,64 @@ namespace Wox.Plugin.Folder
             }
 
             return contextMenus;
+        }
+
+        private Result CreateOpenContainingFolderResult(SearchResult record)
+        {
+            return new Result
+            {
+                Title = "Open containing folder",
+                Action = _ =>
+                {
+                    try
+                    {
+                        Process.Start("explorer.exe", $" /select,\"{record.FullPath}\"");
+                    }
+                    catch(Exception e)
+                    {
+                        var message = $"Fail to open file at {record.FullPath}";
+                        LogException(message, e);
+                        _context.API.ShowMsg(message);
+                        return false;
+                    }
+
+                    return true;
+                },
+                IcoPath = Main.FolderImagePath
+            };
+        }
+
+
+        private Result CreateOpenWithEditorResult(SearchResult record)
+        {
+            string editorPath = "notepad.exe"; // TODO add the ability to create a custom editor
+
+            var name = "Open With Editor: " + Path.GetFileNameWithoutExtension(editorPath);
+            return new Result
+            {
+                Title = name,
+                Action = _ =>
+                {
+                    try
+                    {
+                        Process.Start(editorPath, record.FullPath);
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        var message = $"Fail to editor for file at {record.FullPath}";
+                        LogException(message, e);
+                        _context.API.ShowMsg(message);
+                        return false;
+                    }
+                },
+                IcoPath = editorPath
+            };
+        }
+
+        public void LogException(string message, Exception e)
+        {
+            Log.Exception($"|Wox.Plugin.Folder.ContextMenu|{message}", e);
         }
     }
 

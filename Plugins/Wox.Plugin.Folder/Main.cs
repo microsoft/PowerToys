@@ -12,12 +12,16 @@ namespace Wox.Plugin.Folder
 {
     public class Main : IPlugin, ISettingProvider, IPluginI18n, ISavable, IContextMenu
     {
+        public const string FolderImagePath = "Images\\folder.png";
+        public const string FileImagePath = "Images\\file.png";
+
+
         private static List<string> _driverNames;
         private PluginInitContext _context;
 
         private readonly Settings _settings;
         private readonly PluginJsonStorage<Settings> _storage;
-        private readonly IContextMenu _contextMenuLoader = new ContextMenuLoader();
+        private IContextMenu _contextMenuLoader;
 
         public Main()
         {
@@ -38,6 +42,7 @@ namespace Wox.Plugin.Folder
         public void Init(PluginInitContext context)
         {
             _context = context;
+            _contextMenuLoader = new ContextMenuLoader(context);
             InitialDriverList();
         }
 
