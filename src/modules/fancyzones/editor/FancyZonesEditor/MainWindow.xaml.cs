@@ -29,10 +29,21 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
             DataContext = _settings;
+
+            KeyUp += MainWindow_KeyUp;
+
             if (_settings.WorkArea.Height < 900)
             {
                 SizeToContent = SizeToContent.WidthAndHeight;
                 WrapPanelItemSize = 180;
+            }
+        }
+
+        private void MainWindow_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                OnClosing(sender, null);
             }
         }
 
@@ -152,7 +163,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private void OnClosed(object sender, EventArgs e)
+        private void OnClosing(object sender, EventArgs e)
         {
             if (!_editing)
             {
@@ -160,7 +171,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private void InitializedEventHandler(object sender, EventArgs e)
+        private void OnInitialized(object sender, EventArgs e)
         {
             SetSelectedItem();
         }

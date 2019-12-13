@@ -14,8 +14,8 @@
         Background="White"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
-        Initialized="InitializedEventHandler"
-        Closed="OnClosed">
+        Initialized="OnInitialized"
+        Closing="OnClosing">
     <Window.Resources>
         <Converters:BooleanToBrushConverter x:Key="BooleanToBrushConverter" />
         <Converters:ModelToVisibilityConverter x:Key="ModelToVisibilityConverter" />
