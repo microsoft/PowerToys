@@ -1,19 +1,11 @@
-﻿using FancyZonesEditor.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Security.RightsManagement;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
 {
@@ -22,21 +14,25 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class EditorOverlay : Window
     {
+        public static EditorOverlay Current { get; set; }
+
+        private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
+        private LayoutPreview _layoutPreview;
+        private UserControl _editor;
+
         public Int32Rect[] GetZoneRects()
         {
             // TODO: the ideal here is that the ArrangeRects logic is entirely inside the model, so we don't have to walk the UIElement children to get the rect info
-            Panel previewPanel = null;
-
+            Panel previewPanel;
             if (_editor != null)
             {
-                GridEditor gridEditor = _editor as GridEditor;
-                if (gridEditor != null)
+                if (_editor is GridEditor gridEditor)
                 {
                     previewPanel = gridEditor.PreviewPanel;
                 }
                 else
                 {
-                    //CanvasEditor
+                    // CanvasEditor
                     previewPanel = ((CanvasEditor)_editor).Preview;
                 }
             }
@@ -51,7 +47,7 @@ namespace FancyZonesEditor
             int i = 0;
             foreach (FrameworkElement child in previewPanel.Children)
             {
-                Point topLeft = child.TransformToAncestor(previewPanel).Transform(new Point());
+                Point topLeft = child.TransformToAncestor(previewPanel).Transform(default);
 
                 var right = topLeft.X + child.ActualWidth;
                 var bottom = topLeft.Y + child.ActualHeight;
@@ -65,7 +61,6 @@ namespace FancyZonesEditor
             return zones;
         }
 
-        public static EditorOverlay Current;
         public EditorOverlay()
         {
             InitializeComponent();
@@ -77,7 +72,7 @@ namespace FancyZonesEditor
             Height = _settings.WorkArea.Height;
         }
 
-        void onLoad(object sender, RoutedEventArgs e)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
             ShowLayoutPicker();
         }
@@ -87,15 +82,19 @@ namespace FancyZonesEditor
             DataContext = null;
 
             _editor = null;
-            _layoutPreview = new LayoutPreview();
-            _layoutPreview.IsActualSize = true;
-            _layoutPreview.Opacity = 0.5;
+            _layoutPreview = new LayoutPreview
+            {
+                IsActualSize = true,
+                Opacity = 0.5,
+            };
             Content = _layoutPreview;
 
-            MainWindow window = new MainWindow();
-            window.Owner = this;
-            window.ShowActivated = true;
-            window.Topmost = true;
+            MainWindow window = new MainWindow
+            {
+                Owner = this,
+                ShowActivated = true,
+                Topmost = true,
+            };
             window.Show();
 
             // window is set to topmost to make sure it shows on top of PowerToys settings page
@@ -130,11 +129,8 @@ namespace FancyZonesEditor
             {
                 _editor = new CanvasEditor();
             }
+
             Content = _editor;
         }
-
-        private Settings _settings = ((App)Application.Current).ZoneSettings;
-        private LayoutPreview _layoutPreview;
-        private UserControl _editor;
     }
 }
