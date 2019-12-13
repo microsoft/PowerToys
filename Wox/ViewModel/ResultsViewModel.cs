@@ -248,10 +248,6 @@ namespace Wox.ViewModel
                 }
             }
 
-            /// <summary>
-            /// Update the results collection with new results, try to keep identical results
-            /// </summary>
-            /// <param name="newItems"></param>
             public void Update(List<ResultViewModel> newItems)
             {
                 int newCount = newItems.Count;
@@ -263,7 +259,7 @@ namespace Wox.ViewModel
                     ResultViewModel oldResult = this[i];
                     ResultViewModel newResult = newItems[i];
                     if (!oldResult.Equals(newResult))
-                    { // result is not the same update it in the current index
+                    {
                         this[i] = newResult;
                     }
                     else if (oldResult.Result.Score != newResult.Result.Score)
