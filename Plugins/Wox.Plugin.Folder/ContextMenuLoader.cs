@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using Wox.Infrastructure.Logger;
+using Wox.Infrastructure.Image;
 using Wox.Plugin.SharedCommands;
 
 namespace Wox.Plugin.Folder
@@ -33,8 +34,8 @@ namespace Wox.Plugin.Folder
                 var fileOrFolder = (record.Type == ResultType.File) ? "file" : "folder";
                 contextMenus.Add(new Result
                 {
-                    Title = "Copy Path",
-                    SubTitle = $"Copy the path of {fileOrFolder} into the clipboard",
+                    Title = "Copy path",
+                    SubTitle = $"Copy the current {fileOrFolder} path to clipboard",
                     Action = (context) =>
                     {
                         try
@@ -50,13 +51,13 @@ namespace Wox.Plugin.Folder
                             return false;
                         }
                     },
-                    IcoPath = icoPath
+                    IcoPath = Main.CopyImagePath
                 });
 
                 contextMenus.Add(new Result
                 {
-                    Title = "Copy",
-                    SubTitle = $"Copy the {fileOrFolder} to the clipboard",
+                    Title = $"Copy {fileOrFolder}",
+                    SubTitle = $"Copy the {fileOrFolder} to clipboard",
                     Action = (context) =>
                     {
                         try
@@ -79,7 +80,8 @@ namespace Wox.Plugin.Folder
                 if (record.Type == ResultType.File || record.Type == ResultType.Folder)
                     contextMenus.Add(new Result
                     {
-                        Title = "Delete",
+                        Title = $"Delete {fileOrFolder}",
+                        SubTitle = $"Delete the selected {fileOrFolder}",
                         Action = (context) =>
                         {
                             try
@@ -99,7 +101,7 @@ namespace Wox.Plugin.Folder
 
                             return true;
                         },
-                        IcoPath = icoPath
+                        IcoPath = Main.DeleteFileFolderImagePath
                     });
 
                 if (record.Type == ResultType.File && CanRunAsDifferentUser(record.FullPath))
