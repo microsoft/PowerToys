@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using Wox.Infrastructure.Logger;
+using Wox.Plugin.SharedCommands;
 
 namespace Wox.Plugin.Folder
 {
@@ -100,6 +102,27 @@ namespace Wox.Plugin.Folder
                         IcoPath = icoPath
                     });
 
+                if (record.Type == ResultType.File && CanRunAsDifferentUser(record.FullPath))
+                    contextMenus.Add(new Result
+                    {
+                        Title = "Run as different user",
+                        Action = (context) =>
+                        {
+                            try
+                            {
+                                Task.Run(()=> ShellCommand.RunAsDifferentUser(record.FullPath.SetProcessStartInfo()));
+                            }
+                            catch (FileNotFoundException e)
+                            {
+                                var name = "Plugin: Folder";
+                                var message = $"File not found: {e.Message}";
+                                _context.API.ShowMsg(name, message);
+                            }
+
+                            return true;
+                        },
+                        IcoPath = "Images/user.png"
+                    });
             }
 
             return contextMenus;
@@ -161,6 +184,20 @@ namespace Wox.Plugin.Folder
         public void LogException(string message, Exception e)
         {
             Log.Exception($"|Wox.Plugin.Folder.ContextMenu|{message}", e);
+        }
+
+        private bool CanRunAsDifferentUser(string path)
+        {
+            switch(Path.GetExtension(path))
+            {
+                case ".exe":
+                case ".bat":
+                    return true;
+
+                default:
+                    return false;
+
+            }
         }
     }
 
