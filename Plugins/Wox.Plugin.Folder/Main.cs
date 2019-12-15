@@ -10,13 +10,18 @@ using Wox.Infrastructure.Storage;
 
 namespace Wox.Plugin.Folder
 {
-    public class Main : IPlugin, ISettingProvider, IPluginI18n, ISavable
+    public class Main : IPlugin, ISettingProvider, IPluginI18n, ISavable, IContextMenu
     {
+        public const string FolderImagePath = "Images\\folder.png";
+        public const string FileImagePath = "Images\\file.png";
+
+
         private static List<string> _driverNames;
         private PluginInitContext _context;
 
         private readonly Settings _settings;
         private readonly PluginJsonStorage<Settings> _storage;
+        private IContextMenu _contextMenuLoader;
 
         public Main()
         {
@@ -37,6 +42,7 @@ namespace Wox.Plugin.Folder
         public void Init(PluginInitContext context)
         {
             _context = context;
+            _contextMenuLoader = new ContextMenuLoader(context);
             InitialDriverList();
         }
 
@@ -45,7 +51,7 @@ namespace Wox.Plugin.Folder
             var results = GetUserFolderResults(query);
 
             string search = query.Search.ToLower();
-            if (_driverNames != null && !_driverNames.Any(search.StartsWith))
+            if (!IsDriveOrSharedFolder(search))
                 return results;
 
             results.AddRange(QueryInternal_Directory_Exists(query));
@@ -57,6 +63,26 @@ namespace Wox.Plugin.Folder
             }
 
             return results;
+        }
+
+        private static bool IsDriveOrSharedFolder(string search)
+        {
+            if (search.StartsWith(@"\\"))
+            { // share folder
+                return true;
+            }
+
+            if (_driverNames != null && _driverNames.Any(search.StartsWith))
+            { // normal drive letter
+                return true;
+            }
+
+            if (_driverNames == null && search.Length > 2 && char.IsLetter(search[0]) && search[1] == ':')
+            { // when we don't have the drive letters we can try...
+                return true; // we don't know so let's give it the possibility
+            }
+
+            return false;
         }
 
         private Result CreateFolderResult(string title, string path, Query query)
@@ -88,7 +114,8 @@ namespace Wox.Plugin.Folder
                         changeTo :
                         query.ActionKeyword + " " + changeTo);
                     return false;
-                }
+                },
+                ContextData = new SearchResult { Type = ResultType.Folder, FullPath = path }
             };
         }
 
@@ -217,7 +244,8 @@ namespace Wox.Plugin.Folder
                     }
 
                     return true;
-                }
+                },
+                ContextData = new SearchResult { Type = ResultType.File, FullPath = filePath}
             };
             return result;
         }
@@ -253,6 +281,11 @@ namespace Wox.Plugin.Folder
         public string GetTranslatedPluginDescription()
         {
             return _context.API.GetTranslation("wox_plugin_folder_plugin_description");
+        }
+
+        public List<Result> LoadContextMenus(Result selectedResult)
+        {
+            return _contextMenuLoader.LoadContextMenus(selectedResult);
         }
     }
 }
