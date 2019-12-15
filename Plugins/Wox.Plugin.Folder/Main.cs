@@ -14,7 +14,8 @@ namespace Wox.Plugin.Folder
     {
         public const string FolderImagePath = "Images\\folder.png";
         public const string FileImagePath = "Images\\file.png";
-
+        public const string DeleteFileFolderImagePath = "Images\\deletefilefolder.png";
+        public const string CopyImagePath = "Images\\copy.png";
 
         private static List<string> _driverNames;
         private PluginInitContext _context;
