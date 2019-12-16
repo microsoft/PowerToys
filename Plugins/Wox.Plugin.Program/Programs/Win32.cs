@@ -64,8 +64,10 @@ namespace Wox.Plugin.Program.Programs
                         FileName = FullPath,
                         WorkingDirectory = ParentDirectory
                     };
-                    var hide = Main.StartProcess(Process.Start, info);
-                    return hide;
+
+                    Main.StartProcess(Process.Start, info);
+
+                    return true;
                 }
             };
 
@@ -129,8 +131,9 @@ namespace Wox.Plugin.Program.Programs
                     Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
                     Action = _ =>
                     {
-                        var hide = Main.StartProcess(Process.Start, new ProcessStartInfo(ParentDirectory));
-                        return hide;
+                        Main.StartProcess(Process.Start, new ProcessStartInfo(ParentDirectory));
+
+                        return true;
                     },
                     IcoPath = "Images/folder.png"
                 }

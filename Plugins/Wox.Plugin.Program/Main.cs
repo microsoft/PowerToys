@@ -191,22 +191,19 @@ namespace Wox.Plugin.Program
                          );
         }
 
-        public static bool StartProcess(Func<ProcessStartInfo, Process> runProcess, ProcessStartInfo info)
+        public static void StartProcess(Func<ProcessStartInfo, Process> runProcess, ProcessStartInfo info)
         {
             bool hide;
             try
             {
                 runProcess(info);
-                hide = true;
             }
             catch (Exception)
             {
                 var name = "Plugin: Program";
-                var message = $"Can't start: {info.FileName}";
+                var message = $"Unable to start: {info.FileName}";
                 _context.API.ShowMsg(name, message, string.Empty);
-                hide = false;
             }
-            return hide;
         }
 
         public void ReloadData()
