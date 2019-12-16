@@ -1,11 +1,22 @@
 #pragma once
 #include "windef.h"
 
-struct DPIAware {
-  static constexpr int DEFAULT_DPI = 96;
+namespace DPIAware {
+  constexpr inline int DEFAULT_DPI = 96;
 
-  static HRESULT GetScreenDPIForWindow(HWND hwnd, UINT & dpi_x, UINT & dpi_y);
-  static HRESULT GetScreenDPIForPoint(POINT p, UINT& dpi_x, UINT& dpi_y);
-  static void Convert(HMONITOR monitor_handle, int &width, int &height);
-  static void EnableDPIAwarenessForThisProcess();
+  HRESULT GetScreenDPIForWindow(HWND hwnd, UINT & dpi_x, UINT & dpi_y);
+  HRESULT GetScreenDPIForPoint(POINT p, UINT& dpi_x, UINT& dpi_y);
+  void Convert(HMONITOR monitor_handle, int &width, int &height);
+  void EnableDPIAwarenessForThisProcess();
+  
+  enum class AWARENESS_LEVEL
+  {
+      UNAWARE,
+      SYSTEM_AWARE,
+      PER_MONITOR_AWARE,
+      PER_MONITOR_AWARE_V2,
+      UNAWARE_GDISCALED
+  };
+  AWARENESS_LEVEL GetAwarenessLevel(DPI_AWARENESS_CONTEXT system_returned_value);
 };
+

@@ -3,7 +3,9 @@
 #include "monitors.h"
 #include <ShellScalingApi.h>
 
-HRESULT DPIAware::GetScreenDPIForWindow(HWND hwnd, UINT &dpi_x, UINT &dpi_y) {
+namespace DPIAware
+{
+    HRESULT GetScreenDPIForWindow(HWND hwnd, UINT &dpi_x, UINT &dpi_y) {
   auto monitor_handle = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
   dpi_x = 0;
   dpi_y = 0;
@@ -14,7 +16,7 @@ HRESULT DPIAware::GetScreenDPIForWindow(HWND hwnd, UINT &dpi_x, UINT &dpi_y) {
   }
 }
 
-HRESULT DPIAware::GetScreenDPIForPoint(POINT p, UINT& dpi_x, UINT& dpi_y) {
+HRESULT GetScreenDPIForPoint(POINT p, UINT& dpi_x, UINT& dpi_y) {
   auto monitor_handle = MonitorFromPoint(p, MONITOR_DEFAULTTONEAREST);
   dpi_x = 0;
   dpi_y = 0;
@@ -26,7 +28,7 @@ HRESULT DPIAware::GetScreenDPIForPoint(POINT p, UINT& dpi_x, UINT& dpi_y) {
   }
 }
 
-void DPIAware::Convert(HMONITOR monitor_handle, int &width, int &height) {
+void Convert(HMONITOR monitor_handle, int &width, int &height) {
   if (monitor_handle == NULL) {
     const POINT ptZero = { 0, 0 };
     monitor_handle = MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY);
@@ -39,6 +41,24 @@ void DPIAware::Convert(HMONITOR monitor_handle, int &width, int &height) {
   }
 }
 
-void DPIAware::EnableDPIAwarenessForThisProcess() {
+void EnableDPIAwarenessForThisProcess() {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+}
+
+AWARENESS_LEVEL GetAwarenessLevel(DPI_AWARENESS_CONTEXT system_returned_value)
+{
+    const std::array levels{ DPI_AWARENESS_CONTEXT_UNAWARE,
+                             DPI_AWARENESS_CONTEXT_SYSTEM_AWARE,
+                             DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE,
+                             DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2,
+                             DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED };
+    for(size_t i = 0; i < size(levels); ++i)
+    {
+      if(AreDpiAwarenessContextsEqual(levels[i], system_returned_value))
+        {
+          return static_cast<AWARENESS_LEVEL>(i);
+        }
+    }
+    return AWARENESS_LEVEL::UNAWARE;
+}
 }
