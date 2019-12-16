@@ -348,6 +348,16 @@ std::wstring get_product_version() {
   return version;
 }
 
+std::wstring get_resource_string(UINT resource_id, HINSTANCE instance, const wchar_t* fallback) {
+  wchar_t* text_ptr;
+  auto length = LoadStringW(instance, resource_id, reinterpret_cast<wchar_t*>(&text_ptr), 0);
+  if (length == 0) {
+    return fallback;
+  } else {
+    return { text_ptr, static_cast<std::size_t>(length) };
+  }
+}
+
 std::wstring get_module_filename(HMODULE mod)
 {
     wchar_t buffer[MAX_PATH + 1];

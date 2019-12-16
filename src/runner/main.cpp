@@ -8,12 +8,16 @@
 #include "trace.h"
 #include "general_settings.h"
 #include "restart_elevated.h"
+#include "resource.h"
 
 #include <common/dpi_aware.h>
 
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
 #endif
+
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+
 
 void chdir_current_executable() {
   // Change current directory to the path of the executable.
@@ -102,18 +106,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   }
   catch (std::runtime_error & err) {
     std::string err_what = err.what();
-    MessageBoxW(NULL, std::wstring(err_what.begin(), err_what.end()).c_str(), L"Error", MB_OK | MB_ICONERROR);
+    MessageBoxW(NULL, std::wstring(err_what.begin(), err_what.end()).c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
     result = -1;
   }
   ReleaseMutex(runner_mutex);
   CloseHandle(runner_mutex);
   if (is_restart_scheduled()) {
     if (restart_if_scheduled() == false) {
-      MessageBoxW(NULL, 
-                  is_process_elevated() ?
-                  L"Could not restart PowerToys as a non-elevated process!" :
-                  L"Could not restart PowerToys as an elevated process!",
-                  L"Error", MB_OK | MB_ICONERROR);
+      auto text = is_process_elevated() ? GET_RESOURCE_STRING(IDS_COULDNOT_RESTART_NONELEVATED) : 
+                                          GET_RESOURCE_STRING(IDS_COULDNOT_RESTART_ELEVATED);
+      MessageBoxW(NULL, text.c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
       result = -1;
     }
   }
