@@ -24,23 +24,3 @@ These configurations can be edited from the PowerToys Settings screen:
 
 # Backlog
 The backlog for the utility can be found [here](https://github.com/Microsoft/PowerToys/tree/master/doc/planning/ShortcutGuideBacklog.md) and the source code is [here](https://github.com/Microsoft/PowerToys/tree/master/src/modules/shortcut_guide).
-
-# Code organization
-
-#### [`dllmain.cpp`](./dllmain.cpp)
-Contains DLL boilerplate code.
-
-#### [`shortcut_guide.cpp`](./shortcut_guide.cpp)
-Contains the module interface code. It initializes the settings values and the keyboard event listener.
-
-#### [`overlay_window.cpp`](./overlay_window.cpp)
-Contains the code for loading the SVGs, creating and rendering of the overlay window.
-
-#### [`keyboard_state.cpp`](./keyboard_state.cpp)
-Contains helper methods for checking the current state of the keyboard.
-
-#### [`target_state.cpp`](./target_state.cpp)
-State machine that handles the keyboard events. It’s responsible for deciding when to show the overlay, when to suppress the Start menu (if the overlay is displayed long enough), etc.
-
-#### [`trace.cpp`](./trace.cpp)
-Contains code for telemetry.

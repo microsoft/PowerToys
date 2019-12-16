@@ -1,18 +1,13 @@
-﻿using FancyZonesEditor.Models;
-using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
+using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
 {
@@ -22,6 +17,9 @@ namespace FancyZonesEditor
     public partial class LayoutPreview : UserControl
     {
         public static readonly DependencyProperty IsActualSizeProperty = DependencyProperty.Register("IsActualSize", typeof(bool), typeof(LayoutPreview), new PropertyMetadata(false));
+
+        private LayoutModel _model;
+
         public LayoutPreview()
         {
             InitializeComponent();
@@ -58,6 +56,7 @@ namespace FancyZonesEditor
                 {
                     Body.Margin = new Thickness(0);
                 }
+
                 if (_model is GridLayoutModel)
                 {
                     RenderPreview();
@@ -65,7 +64,10 @@ namespace FancyZonesEditor
             }
         }
 
-        public Panel PreviewPanel {  get { return Body; } }
+        public Panel PreviewPanel
+        {
+            get { return Body; }
+        }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
@@ -75,7 +77,7 @@ namespace FancyZonesEditor
         }
 
         private void RenderPreview()
-        { 
+        {
             if (_model == null)
             {
                 return;
@@ -83,15 +85,13 @@ namespace FancyZonesEditor
 
             Body.Children.Clear();
 
-            GridLayoutModel gridModel = _model as GridLayoutModel;
-            if (gridModel != null)
+            if (_model is GridLayoutModel gridModel)
             {
                 RenderGridPreview(gridModel);
             }
             else
             {
-                CanvasLayoutModel canvasModel = _model as CanvasLayoutModel;
-                if (canvasModel != null)
+                if (_model is CanvasLayoutModel canvasModel)
                 {
                     RenderCanvasPreview(canvasModel);
                 }
@@ -103,20 +103,24 @@ namespace FancyZonesEditor
             Body.RowDefinitions.Clear();
             foreach (int percent in grid.RowPercents)
             {
-                RowDefinition def = new RowDefinition();
-                def.Height = new GridLength(percent, GridUnitType.Star);
+                RowDefinition def = new RowDefinition
+                {
+                    Height = new GridLength(percent, GridUnitType.Star),
+                };
                 Body.RowDefinitions.Add(def);
             }
 
             Body.ColumnDefinitions.Clear();
             foreach (int percent in grid.ColumnPercents)
             {
-                ColumnDefinition def = new ColumnDefinition();
-                def.Width = new GridLength(percent, GridUnitType.Star);
+                ColumnDefinition def = new ColumnDefinition
+                {
+                    Width = new GridLength(percent, GridUnitType.Star),
+                };
                 Body.ColumnDefinitions.Add(def);
             }
 
-            Settings settings = ((App) Application.Current).ZoneSettings;
+            Settings settings = ((App)Application.Current).ZoneSettings;
             int divisor = IsActualSize ? 2 : 20;
             Thickness margin = new Thickness(settings.ShowSpacing ? settings.Spacing / divisor : 0);
 
@@ -126,7 +130,7 @@ namespace FancyZonesEditor
             {
                 for (int col = 0; col < grid.Columns; col++)
                 {
-                    int childIndex = grid.CellChildMap[row,col];
+                    int childIndex = grid.CellChildMap[row, col];
                     if (!visited.Contains(childIndex))
                     {
                         visited.Add(childIndex);
@@ -135,11 +139,12 @@ namespace FancyZonesEditor
                         Grid.SetColumn(rect, col);
                         int span = 1;
                         int walk = row + 1;
-                        while ((walk < grid.Rows) && grid.CellChildMap[walk,col] == childIndex)
+                        while ((walk < grid.Rows) && grid.CellChildMap[walk, col] == childIndex)
                         {
                             span++;
                             walk++;
                         }
+
                         Grid.SetRowSpan(rect, span);
 
                         span = 1;
@@ -149,6 +154,7 @@ namespace FancyZonesEditor
                             span++;
                             walk++;
                         }
+
                         Grid.SetColumnSpan(rect, span);
 
                         rect.Margin = margin;
@@ -166,8 +172,10 @@ namespace FancyZonesEditor
             Body.RowDefinitions.Clear();
             Body.ColumnDefinitions.Clear();
 
-            Viewbox viewbox = new Viewbox();
-            viewbox.Stretch = Stretch.Uniform;
+            Viewbox viewbox = new Viewbox
+            {
+                Stretch = Stretch.Uniform,
+            };
             Body.Children.Add(viewbox);
             Canvas frame = new Canvas();
             viewbox.Child = frame;
@@ -186,7 +194,5 @@ namespace FancyZonesEditor
                 frame.Children.Add(rect);
             }
         }
-
-        private LayoutModel _model;
     }
 }

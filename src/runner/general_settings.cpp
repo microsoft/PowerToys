@@ -6,6 +6,7 @@
 #include <common/windows_colors.h>
 
 static std::wstring settings_theme = L"system";
+static bool run_as_elevated = false;
 
 json::JsonObject load_general_settings() {
   auto loaded = PTSettingsHelper::load_general_settings();
@@ -13,6 +14,7 @@ json::JsonObject load_general_settings() {
   if (settings_theme != L"dark" && settings_theme != L"light") { 
     settings_theme = L"system";
   }
+  run_as_elevated = loaded.GetNamedBoolean(L"run_elevated", false);
   return loaded;
 }
 
@@ -27,6 +29,9 @@ json::JsonObject get_general_settings() {
   }
   result.SetNamedValue(L"enabled", std::move(enabled));
 
+  bool is_elevated = is_process_elevated();
+  result.SetNamedValue(L"is_elevated", json::value(is_elevated));
+  result.SetNamedValue(L"run_elevated", json::value(run_as_elevated));
   result.SetNamedValue(L"theme", json::value(settings_theme));
   result.SetNamedValue(L"system_theme", json::value(WindowsColors::is_dark_mode() ? L"dark" : L"light"));
   result.SetNamedValue(L"powertoys_version", json::value(get_product_version()));
@@ -68,6 +73,7 @@ void apply_general_settings(const json::JsonObject& general_configs) {
       }
     }
   }
+  run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
   if (json::has(general_configs, L"theme", json::JsonValueType::String)) {
     settings_theme = general_configs.GetNamedString(L"theme");
   }

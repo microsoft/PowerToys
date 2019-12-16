@@ -54,7 +54,10 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
     }
     break;
   case WM_DESTROY:
-    Shell_NotifyIcon(NIM_DELETE, &tray_icon_data);
+    if (tray_icon_created) {
+      Shell_NotifyIcon(NIM_DELETE, &tray_icon_data);
+      tray_icon_created = false;
+    }
     PostQuitMessage(0);
     break;
   case WM_CLOSE:
@@ -169,5 +172,11 @@ void start_tray_icon() {
     tray_icon_data.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 
     tray_icon_created = Shell_NotifyIcon(NIM_ADD, &tray_icon_data) == TRUE;
+  }
+}
+
+void stop_tray_icon() {
+  if (tray_icon_created) {
+    SendMessage(tray_icon_hwnd, WM_CLOSE, 0, 0);
   }
 }

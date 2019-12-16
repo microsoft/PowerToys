@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:FancyZonesEditor"
         mc:Ignorable="d"
         Title="Window1" Height="450" Width="800"
         WindowState="Maximized"
@@ -12,7 +11,7 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
-        Loaded="onLoad"
+        Loaded="OnLoaded"
         >
 
 

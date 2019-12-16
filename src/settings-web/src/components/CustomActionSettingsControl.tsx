@@ -29,7 +29,11 @@ export class CustomActionSettingsControl extends BaseSettingsControl {
   public render(): JSX.Element {
     return (
       <Stack>
-        <Label>{this.state.property_values.display_name}</Label>
+        {
+          this.state.property_values.display_name ?
+          <Label>{this.state.property_values.display_name}</Label>
+          : null
+        }
         {
           this.state.property_values.value ?
             <Text styles ={{

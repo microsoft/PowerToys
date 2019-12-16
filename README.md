@@ -126,8 +126,8 @@ Please review these brief docs below relating to our coding standards etc.
 
 This is a work in progress as we learn what we'll need to provide people in order to be effective contributors to our project.
 
-* [Coding Style](doc/coding/style.md)
-* [Code Organization](doc/coding/organization.md)
+* [Coding Style](doc/devdocs/style.md)
+* [Code Organization](doc/devdocs/readme.md)
 
 ## Contributing
 

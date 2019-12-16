@@ -7,12 +7,17 @@
 #include "lowlevel_keyboard_event.h"
 #include "trace.h"
 #include "general_settings.h"
+#include "restart_elevated.h"
+#include "resource.h"
 
 #include <common/dpi_aware.h>
 
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
 #endif
+
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+
 
 void chdir_current_executable() {
   // Change current directory to the path of the executable.
@@ -24,16 +29,7 @@ void chdir_current_executable() {
   }
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-  WCHAR username[UNLEN + 1];
-  DWORD username_length = UNLEN + 1;
-  GetUserNameW(username, &username_length);
-  auto runner_mutex = CreateMutexW(NULL, TRUE, (std::wstring(L"Local\\PowerToyRunMutex") + username).c_str());
-  if (runner_mutex == NULL || GetLastError() == ERROR_ALREADY_EXISTS) {
-    // The app is already running
-    return 0;
-  }
-
+int runner() {
   DPIAware::EnableDPIAwarenessForThisProcess();
   
   #if _DEBUG && _WIN64
@@ -46,12 +42,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   start_tray_icon();
   int result;
   try {
-
-    // Singletons initialization order needs to be preserved, first events and
-    // then modules to guarantee the reverse destruction order.
-    powertoys_events();
-    modules();
-
     chdir_current_executable();
     // Load Powertyos DLLS
     // For now only load known DLLs
@@ -77,11 +67,59 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     Trace::EventLaunch(get_product_version());
 
     result = run_message_loop();
-  } catch (std::runtime_error& err) {
+  } catch (std::runtime_error & err) {
     std::string err_what = err.what();
-    MessageBoxW(NULL, std::wstring(err_what.begin(),err_what.end()).c_str(), L"Error", MB_OK | MB_ICONERROR);
+    MessageBoxW(NULL, std::wstring(err_what.begin(), err_what.end()).c_str(), L"Error", MB_OK | MB_ICONERROR);
     result = -1;
   }
   Trace::UnregisterProvider();
+  return result;
+}
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+  WCHAR username[UNLEN + 1];
+  DWORD username_length = UNLEN + 1;
+  GetUserNameW(username, &username_length);
+  auto runner_mutex = CreateMutexW(NULL, TRUE, (std::wstring(L"Local\\PowerToyRunMutex") + username).c_str());
+  if (runner_mutex == NULL || GetLastError() == ERROR_ALREADY_EXISTS) {
+    // The app is already running
+    return 0;
+  }
+  int result = 0;
+  try {
+    // Singletons initialization order needs to be preserved, first events and
+    // then modules to guarantee the reverse destruction order.
+    SystemMenuHelperInstace();
+    powertoys_events();
+    modules();
+
+    auto general_settings = load_general_settings();
+    int rvalue = 0;
+    if (is_process_elevated() ||
+        general_settings.GetNamedBoolean(L"run_elevated", false) == false ||
+        strcmp(lpCmdLine, "--dont-elevate") == 0) {
+      result = runner();
+    }
+    else {
+      schedule_restart_as_elevated();
+      result = 0;
+    }
+  }
+  catch (std::runtime_error & err) {
+    std::string err_what = err.what();
+    MessageBoxW(NULL, std::wstring(err_what.begin(), err_what.end()).c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
+    result = -1;
+  }
+  ReleaseMutex(runner_mutex);
+  CloseHandle(runner_mutex);
+  if (is_restart_scheduled()) {
+    if (restart_if_scheduled() == false) {
+      auto text = is_process_elevated() ? GET_RESOURCE_STRING(IDS_COULDNOT_RESTART_NONELEVATED) : 
+                                          GET_RESOURCE_STRING(IDS_COULDNOT_RESTART_ELEVATED);
+      MessageBoxW(NULL, text.c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
+      result = -1;
+    }
+  }
+  stop_tray_icon();
   return result;
 }
