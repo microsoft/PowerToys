@@ -4,6 +4,7 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="trace.cpp" />
+    <ClCompile Include="NewToy.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
