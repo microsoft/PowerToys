@@ -1,5 +1,6 @@
 #pragma once
 #include "FancyZones.h"
+#include "lib/ZoneSet.h"
 
 interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow : public IUnknown
 {

@@ -2,7 +2,14 @@
 #include "common/dpi_aware.h"
 #include "common/on_thread_executor.h"
 
+#include "FancyZones.h"
+#include "lib/Settings.h"
+#include "lib/ZoneWindow.h"
+#include "lib/RegistryHelpers.h"
+#include "trace.h"
+
 #include <functional>
+#include <common/common.h>
 
 namespace std
 {

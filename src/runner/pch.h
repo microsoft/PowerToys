@@ -22,5 +22,4 @@
 #include <tuple>
 #include <unordered_set>
 #include <string>
-#include <common/common.h>
 #include <ProjectTelemetry.h>

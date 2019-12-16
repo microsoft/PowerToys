@@ -6,6 +6,7 @@
 #include "keyboard_state.h"
 #include "shortcut_guide.h"
 #include "trace.h"
+#include <common/common.h>
 
 D2DOverlaySVG& D2DOverlaySVG::load(const std::wstring& filename, ID2D1DeviceContext5* d2d_dc)
 {

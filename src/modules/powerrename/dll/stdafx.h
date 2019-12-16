@@ -11,7 +11,6 @@
 #include <atlbase.h>
 #include <Shobjidl.h>
 #include <Shlobj.h>
-#include "common/common.h"
 
 void DllAddRef();
 void DllRelease();

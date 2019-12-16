@@ -3,6 +3,7 @@
 #include "settings_window.h"
 #include "tray_icon.h"
 #include <Windows.h>
+#include <common/common.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 

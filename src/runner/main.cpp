@@ -10,6 +10,7 @@
 #include "restart_elevated.h"
 #include "resource.h"
 
+#include <common/common.h>
 #include <common/dpi_aware.h>
 
 #if _DEBUG && _WIN64

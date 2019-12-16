@@ -4,6 +4,8 @@
 #include <string>
 #include <Windows.h>
 
+#include "common.h"
+
 class HWNDDataCache {
 public:
   WindowAndProcPath get_window_and_path(HWND hwnd);

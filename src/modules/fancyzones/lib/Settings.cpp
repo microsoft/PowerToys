@@ -1,5 +1,8 @@
 #include "pch.h"
 #include <common/settings_objects.h>
+#include "lib/Settings.h"
+#include "lib/FancyZones.h"
+#include "trace.h"
 
 struct FancyZonesSettings : winrt::implements<FancyZonesSettings, IFancyZonesSettings>
 {

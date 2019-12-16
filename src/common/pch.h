@@ -23,4 +23,3 @@
 #include <string>
 #include <vector>
 
-#include "common.h"

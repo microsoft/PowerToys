@@ -2,6 +2,7 @@
 #include <vector>
 #include "srwlock.h"
 
+#include "PowerRenameInterfaces.h"
 class CMockPowerRenameRegExEvents :
     public IPowerRenameRegExEvents
 {
