@@ -127,7 +127,7 @@ export class GeneralSettings extends React.Component <any, any> {
           ref={(input) => {this.startup_reference=input;}}
         />
         <BoolToggleSettingsControl
-          setting={{display_name: 'Run PowerToys with elevated privileges', value: this.state.settings.general.run_elevated}}
+          setting={{display_name: 'By default, run PowerToys with elevated privileges', value: this.state.settings.general.run_elevated}}
           on_change={this.parent_on_change}
           ref={(input) => {this.elevated_reference=input;}}
         />
@@ -135,8 +135,8 @@ export class GeneralSettings extends React.Component <any, any> {
           setting={{
             display_name: '',
             value: this.state.settings.general.is_elevated ? 
-                   'PowerToys are currently running with elevated privileges.' :
-                   'PowerToys are currently running without elevated privileges.',
+                   'PowerToys is currently running with elevated privileges. You can restart it to run non-elevated only for this session, without changing the default setting.' :
+                   'PowerToys is currently running without elevated privileges. You can restart it to run elevated only for this session, without changing the default setting.',
             button_text: this.state.settings.general.is_elevated ? 
                           'Restart without elevated privileges' :
                           'Restart with elevated privileges'
