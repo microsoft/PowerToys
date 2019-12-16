@@ -121,8 +121,10 @@ namespace Wox.Plugin.Program.Programs
                             WorkingDirectory = ParentDirectory,
                             Verb = "runas"
                         };
-                        var hide = Main.StartProcess(Process.Start, info);
-                        return hide;
+
+                        Task.Run(() => Main.StartProcess(Process.Start, info));
+
+                        return true;
                     },
                     IcoPath = "Images/cmd.png"
                 },
