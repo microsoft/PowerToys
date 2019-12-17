@@ -10,7 +10,7 @@ namespace DPIAware
     void Convert(HMONITOR monitor_handle, int& width, int& height);
     void EnableDPIAwarenessForThisProcess();
 
-    enum AWARENESS_LEVEL
+    enum AwarnessLevel
     {
         UNAWARE,
         SYSTEM_AWARE,
@@ -18,5 +18,5 @@ namespace DPIAware
         PER_MONITOR_AWARE_V2,
         UNAWARE_GDISCALED
     };
-    AWARENESS_LEVEL GetAwarenessLevel(DPI_AWARENESS_CONTEXT system_returned_value);
+    AwarnessLevel GetAwarenessLevel(DPI_AWARENESS_CONTEXT system_returned_value);
 };

@@ -56,7 +56,7 @@ namespace DPIAware
         SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     }
 
-    AWARENESS_LEVEL GetAwarenessLevel(DPI_AWARENESS_CONTEXT system_returned_value)
+    AwarnessLevel GetAwarenessLevel(DPI_AWARENESS_CONTEXT system_returned_value)
     {
         const std::array levels{ DPI_AWARENESS_CONTEXT_UNAWARE,
                                  DPI_AWARENESS_CONTEXT_SYSTEM_AWARE,
@@ -67,9 +67,9 @@ namespace DPIAware
         {
             if (AreDpiAwarenessContextsEqual(levels[i], system_returned_value))
             {
-                return static_cast<AWARENESS_LEVEL>(i);
+                return static_cast<AwarnessLevel>(i);
             }
         }
-        return AWARENESS_LEVEL::UNAWARE;
+        return AwarnessLevel::UNAWARE;
     }
 }
