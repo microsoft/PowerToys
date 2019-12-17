@@ -1,19 +1,30 @@
 # Settings
 
+While the module interface passes the settings and values thorough a JSON string, **use our helper functions**. In future we might move to a different implementation. All current modules use:
+  * `load_module_settings` to load the settings from the disk.
+  * `PowerToySettings::Settings` class to define module properties and the settings screen.
+  * `PowerToySettings::PowerToyValues` class to parse the JSON passed by the runner.
+  * `save_module_settings` to store the settings on the disk.
+
+Most functions provide two overloads - one that accepts UINT with a resource ID and one that accepts strings. **Put all strings in the resource file and use the resource ID overload.**
+
+
+The following documents internal workings of the settings system.
+
 ## Overview
 
 PowerToys runner provides a generic way for modules to define their settings.
 
-Each module on startup is responsible for loading its own settings and initializing accordingly. When the user wants to edit settings, the runner will call [`get_config()`](/src/modules/interface#get_config) module method. The module must provide a JSON which includes the module name, description but also what settings options are provided. 
+Each module on startup is responsible for loading its own settings and initializing accordingly. When the user wants to edit settings, the runner will call [`get_config()`](modules/interface.md#get_config) module method. The module must provide a JSON which includes the module name, description but also what settings options are provided. 
 
 When settings from all modules are collected, a separate [settings editor app](/src/settings) is spawned. The editor wraps [an React app](/src/settings-web) and handles the communication with the runner.
 
-When loaded, the React app receives the JSON passed by the runner. When user saves the settings, the editor passes the new settings values as JSON string to the runner. Runner in turn will call [`set_config()`](/src/modules/interface#set_config) for all modules with appropriate JSON. When user initiates a custom action (like the Zone Editor in FancyZones), the runner will call [`call_custom_action()`](/src/modules/interface#call_custom_action) providing the action name in a JSON.
+When loaded, the React app receives the JSON passed by the runner. When user saves the settings, the editor passes the new settings values as JSON string to the runner. Runner in turn will call [`set_config()`](modules/interface.md#set_config) for all modules with appropriate JSON. When user initiates a custom action (like the Zone Editor in FancyZones), the runner will call [`call_custom_action()`](modules/interface.md#call_custom_action) providing the action name in a JSON.
 
 There are C++ helper functions in [/src/common/settings_objects.h](/src/common/settings_objects.h) and [/src/common/settings_helpers.h](/src/common/settings_helpers.h). Those include classes for creating the settings options JSON and ones for parsing the incoming settings JSON.
 
 ### Module settings
-The value returned by the [`get_config()`](/src/modules/interface#get_config) call should provide a JSON object with following fields:
+The value returned by the [`get_config()`](modules/interface.md#get_config) call should provide a JSON object with following fields:
   * `name` - The name of the PowerToy. Used on the nav panel on the left.
   * `version` - The settings version. Needs to be set to `"1.0"`.
   * `description` - Description of the PowerToy module.
@@ -159,7 +170,7 @@ will load and parse the settings. You can also use
 ```c++
 PowerToyValues PowerToyValues::from_json_string(std::wstring_view json);
 ```
-to parse JSON string - for example when implementing [`set_config()`](/src/modules/interface#set_config). The returned `PowerToyValues` object has helper methods that return `std::optional` with values, for example:
+to parse JSON string - for example when implementing [`set_config()`](modules/interface.md#set_config). The returned `PowerToyValues` object has helper methods that return `std::optional` with values, for example:
 ```c++
 auto settings = PowerToyValues::load_from_settings_file(L"some_powertoy");
 std::optional<std::wstring> str_prop = settings.get_string_value(L"some_string_property");
@@ -444,7 +455,7 @@ and this generated JSON (`114` is the value of `VK_F5`):
 
 The hotkey value is returned as JSON, with the same format as `from_json` method uses. You can use `HotkeyObject` class to parse this JSON, since it offers some helper methods. A typical example of registering a hotkey:
 ```c++
-std::optional<json::JsonObject> value = settings.get_json_value(L"hotkey_name");
+std::optional<json::JsonObject> value = settings.get_json(L"hotkey_name");
 if (value) {
     auto hotkey = PowerToysSettings::HotkeyObject::from_json(*value);
     RegisterHotKey(hwnd, 1, hotkey.get_modifiers(), hotkey.get_code());
