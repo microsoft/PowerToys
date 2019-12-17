@@ -47,11 +47,11 @@ When terminating, the runner will:
   - unload the DLL.
 
 
-## Method definition
+# Method definition
 
 This section contains a more detailed description of each of the interface methods.
 
-### powertoy_create_func
+## powertoy_create_func
 
 ```cpp
 typedef PowertoyModuleIface* (__cdecl *powertoy_create_func)()
@@ -79,7 +79,7 @@ ExamplePowertoy::ExamplePowertoy() {
 }
 ```
 
-### get_name
+## get_name
 
 ```cpp
 virtual const wchar_t* get_name()
@@ -94,7 +94,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-### get_events
+## get_events
 
 ```cpp
 virtual const wchar_t** get_events()
@@ -117,7 +117,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-### get_config
+## get_config
 
 ```
 virtual bool get_config(wchar_t* buffer, int *buffer_size)
@@ -167,7 +167,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-### set_config
+## set_config
 
 ```cpp
 virtual void set_config(const wchar_t* config)
@@ -200,7 +200,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-### call_custom_action
+## call_custom_action
 
 ```cpp
   virtual void call_custom_action(const wchar_t* action)
@@ -234,7 +234,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-### enable
+## enable
 
 ```cpp
   virtual void enable()
@@ -250,7 +250,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-### disable
+## disable
 
 ```cpp
   virtual void disable()
@@ -266,7 +266,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
   }
 ```
 
-### is_enabled
+## is_enabled
 
 ```cpp
   virtual bool is_enabled() = 0;
@@ -281,7 +281,7 @@ Sample code from [`the example PowerToy`](/src/modules/example_powertoy/dllmain.
     return m_enabled;
   }
 ```
-### signal_event
+## signal_event
 
 ```cpp
   virtual intptr_t signal_event(const wchar_t* name, intptr_t data) = 0;
@@ -331,7 +331,7 @@ Module will be informed when action is taken on any item created on request of t
 Runner invokes this API when action is taken on item created on request from the module.
 Item name is passed as an argument, so that module can distinguish between different menu items.
 
-### destroy
+## destroy
 
 ```cpp
   virtual void destroy()
