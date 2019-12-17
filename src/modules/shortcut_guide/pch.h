@@ -1,5 +1,4 @@
 #pragma once
-#include "resource.h"
 #include <winrt/base.h>
 #include <Windows.h>
 #include <dxgi1_3.h>
@@ -23,5 +22,4 @@
 #include <tuple>
 #include <unordered_set>
 #include <string>
-#include <common/common.h>
 #include <ProjectTelemetry.h>

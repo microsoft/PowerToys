@@ -2,6 +2,8 @@
 #include "shortcut_guide.h"
 #include "target_state.h"
 #include "trace.h"
+
+#include <common/common.h>
 #include <common/settings_objects.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;

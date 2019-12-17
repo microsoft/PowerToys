@@ -3,6 +3,8 @@
 #include <interface/lowlevel_keyboard_event_data.h>
 #include "overlay_window.h"
 
+#include "resource.h"
+
 // We support only one instance of the overlay
 extern class OverlayWindow* instance;
 

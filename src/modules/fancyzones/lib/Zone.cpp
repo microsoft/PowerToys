@@ -1,5 +1,8 @@
 #include "pch.h"
 
+#include "Zone.h"
+#include "Settings.h"
+
 struct Zone : winrt::implements<Zone, IZone>
 {
 public:

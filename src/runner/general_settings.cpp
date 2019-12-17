@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "general_settings.h"
 #include "auto_start_helper.h"
+
+#include <common/common.h>
 #include <common/settings_helpers.h>
 #include "powertoy_module.h"
 #include <common/windows_colors.h>

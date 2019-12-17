@@ -1,5 +1,12 @@
 #include "pch.h"
+
+#include <common/common.h>
 #include <common/dpi_aware.h>
+
+#include "ZoneWindow.h"
+#include "trace.h"
+#include "util.h"
+#include "RegistryHelpers.h"
 
 #include <ShellScalingApi.h>
 

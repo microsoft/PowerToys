@@ -1,6 +1,9 @@
 #include "pch.h"
-#include "lib\ZoneSet.h"
 
+#include <lib/util.h>
+#include <lib/ZoneSet.h>
+#include <lib/ZoneWindow.h>
+#include "Util.h"
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace FancyZonesUnitTests

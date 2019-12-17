@@ -1,5 +1,8 @@
 #pragma once
 
+#include <common.h>
+#include <lib/PowerRenameInterfaces.h>
+
 HRESULT EnumerateDataObject(_In_ IDataObject* pdo, _In_ IPowerRenameManager* psrm);
 HRESULT GetIconIndexFromPath(_In_ PCWSTR path, _Out_ int* index);
 HBITMAP CreateBitmapFromIcon(_In_ HICON hIcon, _In_opt_ UINT width = 0, _In_opt_ UINT height = 0);
