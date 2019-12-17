@@ -78,10 +78,13 @@ void ExamplePowertoy::set_config(const wchar_t* config)
 ## Detailed reference
 For a detailed reference of how the settings are implemented in the runner and in the settings editor, consult [this detailed guide](settings-reference.md).
 
-## Available settings elements
+# Available settings elements
 
-### Bool toggle
-![Bool Toggle](../images/settings/bool_toggle.png)
+## Bool toggle
+<table><tr><td align="center">
+<img src="../images/settings/bool_toggle.png" width="80%">
+</td></tr></table>
+
 ```c++
 settings.add_bool_toogle(name, description, value) 
 ```
@@ -95,8 +98,11 @@ The toggle value is stored as bool:
 std::optional<bool> bool_value = settings.get_bool_value(L"bool_name");
 ```
 
-### Int Spinner
-![Int Spinner](../images/settings/int_spinner.png)
+## Int Spinner
+<table><tr><td align="center">
+<img src="../images/settings/int_spinner.png" width="80%">
+</td></tr></table>
+
 ```c++
 settings.add_int_spinner(name, description, value, min, max, step)
 ```
@@ -112,8 +118,11 @@ The spinner value is stored as int:
 std::optional<int> int_value = settings.get_int_value(L"int_spinner_name");
 ```
 
-### String
-![String](../images/settings/string.png)
+## String
+<table><tr><td align="center">
+<img src="../images/settings/string.png" width="80%">
+</td></tr></table>
+
 ```c++
 settings.add_string(name, description, value)
 ```
@@ -127,8 +136,11 @@ The input value is stored as `std::wstring`:
 std::optional<std::wstring> string_value = settings.get_string_value(L"string_name");
 ```
 
-### Multiline string
-![Multiline](../images/settings/multiline.png)
+## Multiline string
+<table><tr><td align="center">
+<img src="../images/settings/multiline.png" width="80%">
+</td></tr></table>
+
 ```c++
 settings.add_multiline_string(name, description, value)
 ```
@@ -142,8 +154,11 @@ The input value is stored as string:
 std::optional<std::wstring> value = settings.get_string_value(L"multiline_name");
 ```
 
-### Color picker
-![Color Picker](../images/settings/color_picker.png)
+## Color picker
+<table><tr><td align="center">
+<img src="../images/settings/color_picker.png" width="80%">
+</td></tr></table>
+
 ```c++
 settings.add_color_picker(name, description, value)
 ```
@@ -158,8 +173,11 @@ The color picker value is stored as `std::wstring` as `#RRGGBB`:
 std::optional<std::wstring> value = settings.get_string_value(L"colorpicker_name");
 ```
 
-### Hotkey
-![Hotkey](../images/settings/hotkey.png)
+## Hotkey
+<table><tr><td align="center">
+<img src="../images/settings/hotkey.png" width="80%">
+</td></tr></table>
+
 ```c++
 settings.add_hotkey(name, description, hotkey)
 ```
@@ -188,8 +206,11 @@ if (value) {
 }
 ```
 
-### Choice group
-![Choice group](../images/settings/choice_group.png)
+## Choice group
+<table><tr><td align="center">
+<img src="../images/settings/choice_group.png" width="80%">
+</td></tr></table>
+
 ```c++
 add_choice_group(name, description, value, vector<pair<wstring, UINT>> keys_and_texts)
 ```
@@ -205,10 +226,16 @@ The chosen button value is stored as a string with the key of the button selecte
 std::optional<std::wstring> value = settings.get_string_value(L"choice_group_name");
 ```
 
-### Dropdown
-![Dropdown 1](../images/settings/dropdown_1.png)
+## Dropdown
+<table>
+<tr><td align="center">
+<img src="../images/settings/dropdown_1.png" width="80%">
+</td></tr>
+<tr><td align="center">
+<img src="../images/settings/dropdown_2.png" width="80%">
+</td></tr>
+</table>
 
-![Dropdown 2](../images/settings/dropdown_2.png)
 ```c++
 add_dropdown(name, description, value, vector<pair<wstring, UINT>> keys_and_texts)
 ```
@@ -223,8 +250,11 @@ The chosen value is stored as a string with the key of the option selected by th
 ```c++
 std::optional<std::wstring> value = settings.get_string_value(L"dropdown_name");
 ```
-### Custom action
-![Custom action](../images/settings/custom_action.png)
+## Custom action
+<table><tr><td align="center">
+<img src="../images/settings/custom_action.png" width="80%">
+</td></tr></table>
+
 ```c++
 add_custom_action(name, description, button_text, ext_description)
 ```
@@ -245,13 +275,13 @@ void ExamplePowertoy::call_custom_action(const wchar_t* action) override
 }
 ```
 
-## File organization
+# File organization
 
-#### [main.cpp](/src/settings/main.cpp)
+### [main.cpp](/src/settings/main.cpp)
 Contains the main executable code, initializing and managing the Window containing the WebView and communication with the main PowerToys executable.
 
-#### [StreamURIResolverFromFile.cpp](/src/settings/StreamURIResolverFromFile.cpp)
+### [StreamURIResolverFromFile.cpp](/src/settings/StreamURIResolverFromFile.cpp)
 Defines a class implementing `IUriToStreamResolver`. Allows the WebView to navigate to filesystem files in this Win32 project.
 
-#### [settings-html/](/src/settings/settings-html/)
+### [settings-html/](/src/settings/settings-html/)
 Contains the assets file from building the [Web project for the Settings UI](/src/settings./settings-web). It will be loaded by the WebView.
