@@ -1,10 +1,19 @@
-# Code Organization
+# Dev Documentation
 
 ## Rules
 
 - **Follow the pattern of what you already see in the code**
 - Try to package new ideas/components into libraries that have nicely defined interfaces
 - Package new ideas into classes or refactor existing ideas into a class as you extend
+
+## Github Workflow
+
+- Follow the PR template, in particular make sure there is open issue for the new PR
+- When the PR is approved, let the owner of the PR merge it
+- Use the `Squash and merge` option to merge a PR, if you don't want to squash it because there are logically different commits, use `Rebase and merge`
+- We don't close issues automatically when referenced in a PR, so after the OR is merged:
+  - mark the issue(s) fixed by the PR with the `resolved` label
+  - don't close the issue if it's a bug in the current release since users tend to not search for closed issues, we will close the resolved issues when a new released is published
 
 ## Code Overview
 
