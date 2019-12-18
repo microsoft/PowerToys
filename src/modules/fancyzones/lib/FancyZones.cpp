@@ -496,6 +496,15 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 
     UpdateZoneWindows();
 
+    // This method is also called when FancyZones start. We will return
+    // here early, so to not zone windows on startup.
+    static bool skipFirstRun = true;
+    if (skipFirstRun)
+    {
+        skipFirstRun = false;
+        return;
+    }
+
     if ((changeType == DisplayChangeType::WorkArea) || (changeType == DisplayChangeType::DisplayChange))
     {
         if (m_settings->GetSettings().displayChange_moveWindows)
