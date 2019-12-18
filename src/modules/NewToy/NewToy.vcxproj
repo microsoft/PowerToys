@@ -95,6 +95,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Settings.h" />
     <ClInclude Include="NewToy.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />

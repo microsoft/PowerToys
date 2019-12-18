@@ -1,7 +1,5 @@
 #pragma once
-#include "pch.h"
-#include "common/dpi_aware.h"
-#include "common/on_thread_executor.h"
+#include "Settings.h"
 
 interface __declspec(uuid("{50D3F0F5-736E-4186-BDF4-3D6BEE150C3A}")) INewToy : public IUnknown
 {
@@ -11,13 +9,15 @@ interface __declspec(uuid("{50D3F0F5-736E-4186-BDF4-3D6BEE150C3A}")) INewToy : p
     () = 0;
     IFACEMETHOD_(bool, OnKeyDown)
     (PKBDLLHOOKSTRUCT info) = 0;
+    IFACEMETHOD_(void, HotkeyChanged)
+    () = 0;
 };
 
 struct NewToyCOM : public winrt::implements<NewToyCOM, INewToy>
 {
 public:
-    NewToyCOM(HINSTANCE hinstance) noexcept :
-        m_hinstance(hinstance) {}
+    NewToyCOM(HINSTANCE hinstance, ModuleSettings* settings) noexcept :
+        m_hinstance(hinstance), m_settings(settings) {}
     // INewToy methods
     IFACEMETHODIMP_(void)
     Run() noexcept;
@@ -25,6 +25,8 @@ public:
     Destroy() noexcept;
     IFACEMETHODIMP_(bool)
     OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
+    IFACEMETHODIMP_(void)
+    HotkeyChanged() noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
@@ -32,10 +34,13 @@ protected:
 private:
 
     const HINSTANCE m_hinstance{};
+    ModuleSettings* m_settings;
     mutable std::shared_mutex m_lock;
     HWND m_window{};
-    OnThreadExecutor m_dpiUnawareThread;
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
+    bool isWindowShown = false;
+    LPCWSTR titleText = L"Boring Toy";
+    LPCWSTR windowText = L"Hello World, check out this boring power toy!";
 };
 
-winrt::com_ptr<INewToy> MakeNewToy(HINSTANCE hinstance) noexcept;
+winrt::com_ptr<INewToy> MakeNewToy(HINSTANCE hinstance, ModuleSettings* settings) noexcept;

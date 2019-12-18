@@ -11,6 +11,7 @@
     <ClInclude Include="trace.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="NewToy.h" />
+    <ClInclude Include="Settings.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="NewToy.rc" />

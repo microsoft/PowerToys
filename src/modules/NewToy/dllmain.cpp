@@ -6,6 +6,7 @@
 #include "trace.h"
 #include "NewToy.h"
 #include <common/common.h>
+#include "Settings.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -32,12 +33,7 @@ const static wchar_t* MODULE_NAME = L"NewToy";
 const static wchar_t* MODULE_DESC = L"This powertoy is used to demonstrate keyboard hooks.";
 
 // These are the properties shown in the Settings page.
-struct ModuleSettings
-{
-    bool bool_prop = true;
-    int int_prop = 10;
-    std::wstring string_prop = L"The quick brown fox jumps over the lazy dog";
-} g_settings;
+
 
 // Implement the PowerToy Module Interface and all the required methods.
 class NewToy : public PowertoyModuleIface
@@ -45,9 +41,10 @@ class NewToy : public PowertoyModuleIface
 private:
     // The PowerToy state.
     bool m_enabled = false;
-
     // Load initial settings from the persisted values.
     void init_settings();
+    const std::wstring m_hotkeyName = L"newtoy_hotkey";
+    ModuleSettings* g_settings;
 
 public:
     // Constructor
@@ -94,18 +91,21 @@ public:
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(MODULE_DESC);
 
+        // Hotkey property
+        settings.add_hotkey(m_hotkeyName, L"New Toy Hotkey", g_settings->newToyHotkey);
+        
         // A bool property with a toggle editor.
         settings.add_bool_toogle(
             L"bool_toggle_1", // property name.
             L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
-            g_settings.bool_prop // property value.
+            g_settings->bool_prop // property value.
         );
 
         // An integer property with a spinner editor.
         settings.add_int_spinner(
             L"int_spinner_1", // property name
             L"This is what a IntSpinner property looks like", // description or resource id of the localized string.
-            g_settings.int_prop, // property value.
+            g_settings->int_prop, // property value.
             0, // min value.
             100, // max value.
             10 // incremental step.
@@ -115,7 +115,7 @@ public:
         settings.add_string(
             L"string_text_1", // property name.
             L"This is what a String property looks like", // description or resource id of the localized string.
-            g_settings.string_prop // property value.
+            g_settings->string_prop // property value.
         );
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
@@ -145,31 +145,42 @@ public:
             // Parse the input JSON string.
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config);
+            if (!g_settings) 
+            {
+                g_settings = new ModuleSettings();
+            }
+            // Update Hotkey property
+            auto hotkeyProp = values.get_json(m_hotkeyName);
+            if (hotkeyProp)
+            {
+                g_settings->newToyHotkey = PowerToysSettings::HotkeyObject::from_json(*hotkeyProp);
+            }
 
             // Update the bool property.
             auto boolProp = values.get_bool_value(L"bool_toggle_1");
             if (boolProp)
             {
-                g_settings.bool_prop = boolProp.value();
+                g_settings->bool_prop = boolProp.value();
             }
 
             // Update an int property.
             auto intProp = values.get_int_value(L"int_spinner_1");
             if (intProp)
             {
-                g_settings.int_prop = intProp.value();
+                g_settings->int_prop = intProp.value();
             }
 
             // Update a string property.
             auto stringProp = values.get_string_value(L"string_text_1");
             if (stringProp)
             {
-                g_settings.string_prop = stringProp.value();
+                g_settings->string_prop = stringProp.value();
             }
 
             // If you don't need to do any custom processing of the settings, proceed
             // to persists the values calling:
             values.save_to_settings_file();
+            m_app->HotkeyChanged();
         }
         catch (std::exception ex)
         {
@@ -182,7 +193,7 @@ public:
     {
         if (!m_app)
         {
-            m_app = MakeNewToy(reinterpret_cast<HINSTANCE>(&__ImageBase));
+            m_app = MakeNewToy(reinterpret_cast<HINSTANCE>(&__ImageBase), g_settings);
             if (m_app)
             {
                 m_app->Run();
@@ -229,6 +240,7 @@ public:
             }
         }
         return 0;
+
     }
 
     virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
@@ -253,29 +265,37 @@ void NewToy::init_settings()
 {
     try
     {
+        g_settings = new ModuleSettings();
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
             PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
+
+        // Load a Hotkey property
+        auto hotkeyProp = settings.get_json(m_hotkeyName);
+        if (hotkeyProp)
+        {
+            g_settings->newToyHotkey = PowerToysSettings::HotkeyObject::from_json(*hotkeyProp);
+        }
 
         // Load a bool property.
         auto boolProp = settings.get_bool_value(L"bool_toggle_1");
         if (boolProp)
         {
-            g_settings.bool_prop = boolProp.value();
+            g_settings->bool_prop = boolProp.value();
         }
 
         // Load an int property.
         auto intProp = settings.get_int_value(L"int_spinner_1");
         if (intProp)
         {
-            g_settings.int_prop = intProp.value();
+            g_settings->int_prop = intProp.value();
         }
 
         // Load a string property.
         auto stringProp = settings.get_string_value(L"string_text_1");
         if (stringProp)
         {
-            g_settings.string_prop = stringProp.value();
+            g_settings->string_prop = stringProp.value();
         }
     }
     catch (std::exception ex)
