@@ -112,6 +112,7 @@
     <ClInclude Include="two_way_pipe_message_ipc.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="windows_colors.h" />
+    <ClInclude Include="winstore.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="animation.cpp" />
@@ -133,6 +134,7 @@
     <ClCompile Include="tasklist_positions.cpp" />
     <ClCompile Include="common.cpp" />
     <ClCompile Include="windows_colors.cpp" />
+    <ClCompile Include="winstore.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
