@@ -22,13 +22,8 @@ NewToyCOM::Run() noexcept
 
     // Win + /
     // Note: Cannot overwrite existing Windows shortcuts
-    RegisterHotKey(m_window, 1, m_settings->newToyHotkey.get_modifiers(), m_settings->newToyHotkey.get_code());
-    RegisterHotKey(m_window, 2, MOD_WIN | MOD_NOREPEAT, VK_OEM_2);
-    //m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [] {
-    //                      SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
-    //                      SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
-    //                  } })
-    //    .wait();
+    RegisterHotKey(m_window, 1, m_settings->newToyShowHotkey.get_modifiers(), m_settings->newToyShowHotkey.get_code());
+    RegisterHotKey(m_window, 2, m_settings->newToyEditHotkey.get_modifiers(), m_settings->newToyEditHotkey.get_code());
 }
 
 IFACEMETHODIMP_(void)
@@ -133,7 +128,14 @@ NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     {
         if (m_window)
         {
-            ShowWindow(m_window, SW_SHOW);
+            // Show the window if it is hidden
+            if (!isWindowShown)
+                ShowWindow(m_window, SW_SHOW);
+            // Hide the window if it is shown
+            else
+                ShowWindow(m_window, SW_HIDE);
+            // Toggle the state of isWindowShown
+            isWindowShown = !isWindowShown;
             // Return true to swallow the keyboard event
             return true;
         }
@@ -146,7 +148,9 @@ NewToyCOM::HotkeyChanged() noexcept
 {
     // Update the hotkey
     UnregisterHotKey(m_window, 1);
-    RegisterHotKey(m_window, 1, m_settings->newToyHotkey.get_modifiers(), m_settings->newToyHotkey.get_code());
+    RegisterHotKey(m_window, 1, m_settings->newToyShowHotkey.get_modifiers(), m_settings->newToyShowHotkey.get_code());
+    UnregisterHotKey(m_window, 2);
+    RegisterHotKey(m_window, 2, m_settings->newToyEditHotkey.get_modifiers(), m_settings->newToyEditHotkey.get_code());
 }
 
 winrt::com_ptr<INewToy> MakeNewToy(HINSTANCE hinstance, ModuleSettings* settings) noexcept

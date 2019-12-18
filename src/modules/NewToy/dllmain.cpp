@@ -43,7 +43,8 @@ private:
     bool m_enabled = false;
     // Load initial settings from the persisted values.
     void init_settings();
-    const std::wstring m_hotkeyName = L"newtoy_hotkey";
+    const std::wstring m_showHotkeyName = L"newtoy_show_hotkey";
+    const std::wstring m_editHotkeyName = L"newtoy_edit_hotkey";
     ModuleSettings* g_settings;
 
 public:
@@ -91,9 +92,12 @@ public:
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(MODULE_DESC);
 
-        // Hotkey property
-        settings.add_hotkey(m_hotkeyName, L"New Toy Hotkey", g_settings->newToyHotkey);
+        // Show Hotkey property
+        settings.add_hotkey(m_showHotkeyName, L"New Toy Show Hotkey", g_settings->newToyShowHotkey);
         
+        // Edit Hotkey property
+        settings.add_hotkey(m_editHotkeyName, L"New Toy Edit Hotkey", g_settings->newToyEditHotkey);
+
         // A bool property with a toggle editor.
         settings.add_bool_toogle(
             L"bool_toggle_1", // property name.
@@ -149,11 +153,19 @@ public:
             {
                 g_settings = new ModuleSettings();
             }
-            // Update Hotkey property
-            auto hotkeyProp = values.get_json(m_hotkeyName);
-            if (hotkeyProp)
+
+            // Update Show Hotkey property
+            auto showHotkeyProp = values.get_json(m_showHotkeyName);
+            if (showHotkeyProp)
             {
-                g_settings->newToyHotkey = PowerToysSettings::HotkeyObject::from_json(*hotkeyProp);
+                g_settings->newToyShowHotkey = PowerToysSettings::HotkeyObject::from_json(*showHotkeyProp);
+            }
+
+            // Update Edit Hotkey property
+            auto editHotkeyProp = values.get_json(m_editHotkeyName);
+            if (editHotkeyProp)
+            {
+                g_settings->newToyEditHotkey = PowerToysSettings::HotkeyObject::from_json(*editHotkeyProp);
             }
 
             // Update the bool property.
@@ -270,12 +282,20 @@ void NewToy::init_settings()
         PowerToysSettings::PowerToyValues settings =
             PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
 
-        // Load a Hotkey property
-        auto hotkeyProp = settings.get_json(m_hotkeyName);
-        if (hotkeyProp)
+        // Load Show Hotkey property
+        auto showHotkeyProp = settings.get_json(m_showHotkeyName);
+        if (showHotkeyProp)
         {
-            g_settings->newToyHotkey = PowerToysSettings::HotkeyObject::from_json(*hotkeyProp);
+            g_settings->newToyShowHotkey = PowerToysSettings::HotkeyObject::from_json(*showHotkeyProp);
         }
+
+        // Load Edit Hotkey property
+        auto editHotkeyProp = settings.get_json(m_editHotkeyName);
+        if (editHotkeyProp)
+        {
+            g_settings->newToyEditHotkey = PowerToysSettings::HotkeyObject::from_json(*editHotkeyProp);
+        }
+
 
         // Load a bool property.
         auto boolProp = settings.get_bool_value(L"bool_toggle_1");
