@@ -117,10 +117,13 @@ public:
 
         // A string property with a textbox editor.
         settings.add_string(
-            L"string_text_1", // property name.
-            L"This is what a String property looks like", // description or resource id of the localized string.
-            g_settings->string_prop // property value.
+            L"newToyLLHotkey", // property name.
+            L"New Toy LL Hotkey (Type out the shortcut with keys separated by +)", // description or resource id of the localized string.
+            g_settings->newToyLLHotkey // property value.
         );
+
+        //DEBUG
+        auto hotkey=g_settings->hotkeyFromString();
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
@@ -151,6 +154,7 @@ public:
                 PowerToysSettings::PowerToyValues::from_json_string(config);
             if (!g_settings) 
             {
+                g_settings = new ModuleSettings();
                 g_settings = new ModuleSettings();
             }
 
@@ -183,10 +187,10 @@ public:
             }
 
             // Update a string property.
-            auto stringProp = values.get_string_value(L"string_text_1");
-            if (stringProp)
+            auto llHotkeyProp = values.get_string_value(L"newToyLLHotkey");
+            if (llHotkeyProp)
             {
-                g_settings->string_prop = stringProp.value();
+                g_settings->newToyLLHotkey = llHotkeyProp.value();
             }
 
             // If you don't need to do any custom processing of the settings, proceed
@@ -312,10 +316,10 @@ void NewToy::init_settings()
         }
 
         // Load a string property.
-        auto stringProp = settings.get_string_value(L"string_text_1");
-        if (stringProp)
+        auto llHotkeyProp = settings.get_string_value(L"newToyLLHotkey");
+        if (llHotkeyProp)
         {
-            g_settings->string_prop = stringProp.value();
+            g_settings->newToyLLHotkey = llHotkeyProp.value();
         }
     }
     catch (std::exception ex)

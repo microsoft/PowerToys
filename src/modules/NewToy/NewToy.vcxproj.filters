@@ -5,6 +5,7 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="NewToy.cpp" />
+    <ClCompile Include="Settings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
