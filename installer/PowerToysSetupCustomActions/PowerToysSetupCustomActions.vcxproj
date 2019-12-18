@@ -90,6 +90,10 @@
       <TargetMachine>MachineX64</TargetMachine>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
+    <CustomBuildStep Label="BuildMSIX">
+      <Command>cd $(SolutionDir)MSIX &amp;&amp; makeappx build /overwrite /f PackagingLayout.xml /id x64 /op bin\ &amp;&amp; signtool sign /a /fd SHA256 /f PowerToysTestKey.pfx /p 12345 bin\x64.msix</Command>
+      <Outputs>$(SolutionDir)MSIX\bin\x64.msix</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CustomAction.cpp" />
