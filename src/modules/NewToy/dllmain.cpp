@@ -311,10 +311,10 @@ public:
 intptr_t NewToy::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
     // WM_KEYDOWN only captures key-presses when Alt is not held. WM_SYSKEYDOWN captures key-presses when Alt is held
-    if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
-    {
-        return m_app.as<INewToy>()->OnKeyDown(data->lParam) ? 1 : 0;
-    }
+    /*if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+    {*/
+        return m_app.as<INewToy>()->OnKeyDown(data->lParam, data->wParam) ? 1 : 0;
+    //}
     return 0;
 }
 

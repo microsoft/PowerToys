@@ -8,7 +8,7 @@ interface __declspec(uuid("{50D3F0F5-736E-4186-BDF4-3D6BEE150C3A}")) INewToy : p
     IFACEMETHOD_(void, Destroy)
     () = 0;
     IFACEMETHOD_(bool, OnKeyDown)
-    (PKBDLLHOOKSTRUCT info) = 0;
+    (PKBDLLHOOKSTRUCT info, WPARAM keystate) = 0;
     IFACEMETHOD_(void, HotkeyChanged)
     () = 0;
 };
@@ -24,7 +24,7 @@ public:
     IFACEMETHODIMP_(void)
     Destroy() noexcept;
     IFACEMETHODIMP_(bool)
-    OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
+    OnKeyDown(PKBDLLHOOKSTRUCT info, WPARAM keystate) noexcept;
     IFACEMETHODIMP_(void)
     HotkeyChanged() noexcept;
 

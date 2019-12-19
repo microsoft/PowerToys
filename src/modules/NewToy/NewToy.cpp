@@ -109,176 +109,179 @@ LRESULT NewToyCOM::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpar
     return 0;
 }
 
-void createKeyEvent(WORD key_code, bool isRelease, INPUT& key_event)
+void createKeyEvent(WORD key_code, bool isRelease, INPUT& key_event, DWORD time = 0)
 {
     key_event.type = INPUT_KEYBOARD;
     key_event.ki.wVk = key_code;
     key_event.ki.dwFlags = (isRelease ? KEYEVENTF_KEYUP : 0);
-    key_event.ki.time = 0;
+    key_event.ki.time = time;
     key_event.ki.dwExtraInfo = 0;
 }
 
 IFACEMETHODIMP_(bool)
-NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
+NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info, WPARAM keystate) noexcept
 {
     bool const win = GetAsyncKeyState(VK_LWIN) & 0x8000;
     bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
     bool const alt = GetAsyncKeyState(VK_MENU) & 0x8000;
     bool const shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
 
-    // If toggled, swap two macros
-    if (m_settings->swapMacro)
+    if (keystate == WM_KEYDOWN || keystate == WM_SYSKEYDOWN)
     {
-        if (win == m_settings->macro_first_object.win_pressed())
+        // If toggled, swap two macros
+        if (m_settings->swapMacro)
         {
-            if (ctrl == m_settings->macro_first_object.ctrl_pressed())
+            if (win == m_settings->macro_first_object.win_pressed())
             {
-                if (alt == m_settings->macro_first_object.alt_pressed())
+                if (ctrl == m_settings->macro_first_object.ctrl_pressed())
                 {
-                    if (shift == m_settings->macro_first_object.shift_pressed())
+                    if (alt == m_settings->macro_first_object.alt_pressed())
                     {
-                        if (info->vkCode == m_settings->macro_first_object.get_code())
+                        if (shift == m_settings->macro_first_object.shift_pressed())
                         {
-                            if (isSwapTriggered)
+                            if (info->vkCode == m_settings->macro_first_object.get_code())
                             {
-                                isSwapTriggered = false;
-                            }
-                            else
-                            {
-                                // Assuming 1 key and modifiers only
-                                int key_count = 1 + int(m_settings->macro_second_object.win_pressed()) + int(m_settings->macro_second_object.ctrl_pressed()) + int(m_settings->macro_second_object.alt_pressed()) + int(m_settings->macro_second_object.shift_pressed());
-                                LPINPUT keyEventList = new INPUT[2 * key_count]();
-                                memset(keyEventList, 0, sizeof(keyEventList));
-                                int i = 0;
-                                if (m_settings->macro_second_object.win_pressed())
+                                if (isSwapTriggered)
                                 {
-                                    createKeyEvent(VK_LWIN, false, keyEventList[i]);
-                                    ++i;
+                                    isSwapTriggered = false;
                                 }
-                                if (m_settings->macro_second_object.ctrl_pressed())
+                                else
                                 {
-                                    createKeyEvent(VK_CONTROL, false, keyEventList[i]);
+                                    // Assuming 1 key and modifiers only
+                                    int key_count = 1 + int(m_settings->macro_second_object.win_pressed()) + int(m_settings->macro_second_object.ctrl_pressed()) + int(m_settings->macro_second_object.alt_pressed()) + int(m_settings->macro_second_object.shift_pressed());
+                                    LPINPUT keyEventList = new INPUT[2 * size_t(key_count)]();
+                                    memset(keyEventList, 0, sizeof(keyEventList));
+                                    int i = 0;
+                                    if (m_settings->macro_second_object.win_pressed())
+                                    {
+                                        createKeyEvent(VK_LWIN, false, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    if (m_settings->macro_second_object.ctrl_pressed())
+                                    {
+                                        createKeyEvent(VK_CONTROL, false, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    if (m_settings->macro_second_object.alt_pressed())
+                                    {
+                                        createKeyEvent(VK_MENU, false, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    if (m_settings->macro_second_object.shift_pressed())
+                                    {
+                                        createKeyEvent(VK_SHIFT, false, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    createKeyEvent(m_settings->macro_second_object.get_code(), false, keyEventList[i]);
                                     ++i;
-                                }
-                                if (m_settings->macro_second_object.alt_pressed())
-                                {
-                                    createKeyEvent(VK_MENU, false, keyEventList[i]);
+                                    createKeyEvent(m_settings->macro_second_object.get_code(), true, keyEventList[i]);
                                     ++i;
-                                }
-                                if (m_settings->macro_second_object.shift_pressed())
-                                {
-                                    createKeyEvent(VK_SHIFT, false, keyEventList[i]);
-                                    ++i;
-                                }
-                                createKeyEvent(m_settings->macro_second_object.get_code(), false, keyEventList[i]);
-                                ++i;
-                                createKeyEvent(m_settings->macro_second_object.get_code(), true, keyEventList[i]);
-                                ++i;
-                                if (m_settings->macro_second_object.shift_pressed())
-                                {
-                                    createKeyEvent(VK_SHIFT, true, keyEventList[i]);
-                                    ++i;
-                                }
-                                if (m_settings->macro_second_object.alt_pressed())
-                                {
-                                    createKeyEvent(VK_MENU, true, keyEventList[i]);
-                                    ++i;
-                                }
-                                if (m_settings->macro_second_object.ctrl_pressed())
-                                {
-                                    createKeyEvent(VK_CONTROL, true, keyEventList[i]);
-                                    ++i;
-                                }
-                                if (m_settings->macro_second_object.win_pressed())
-                                {
-                                    createKeyEvent(VK_LWIN, true, keyEventList[i]);
-                                    ++i;
-                                }
-                                isSwapTriggered = true;
-                                UINT res = SendInput(2 * key_count, keyEventList, sizeof(INPUT));
+                                    if (m_settings->macro_second_object.shift_pressed())
+                                    {
+                                        createKeyEvent(VK_SHIFT, true, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    if (m_settings->macro_second_object.alt_pressed())
+                                    {
+                                        createKeyEvent(VK_MENU, true, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    if (m_settings->macro_second_object.ctrl_pressed())
+                                    {
+                                        createKeyEvent(VK_CONTROL, true, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    if (m_settings->macro_second_object.win_pressed())
+                                    {
+                                        createKeyEvent(VK_LWIN, true, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    isSwapTriggered = true;
+                                    UINT res = SendInput(2 * key_count, keyEventList, sizeof(INPUT));
 
-                                // deallocation
-                                delete[] keyEventList;
-                                keyEventList = nullptr;
-                                return true;
+                                    // deallocation
+                                    delete[] keyEventList;
+                                    keyEventList = nullptr;
+                                    return true;
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        if (win == m_settings->macro_second_object.win_pressed())
-        {
-            if (ctrl == m_settings->macro_second_object.ctrl_pressed())
+            if (win == m_settings->macro_second_object.win_pressed())
             {
-                if (alt == m_settings->macro_second_object.alt_pressed())
+                if (ctrl == m_settings->macro_second_object.ctrl_pressed())
                 {
-                    if (shift == m_settings->macro_second_object.shift_pressed())
+                    if (alt == m_settings->macro_second_object.alt_pressed())
                     {
-                        if (info->vkCode == m_settings->macro_second_object.get_code())
+                        if (shift == m_settings->macro_second_object.shift_pressed())
                         {
-                            if (isSwapTriggered)
+                            if (info->vkCode == m_settings->macro_second_object.get_code())
                             {
-                                isSwapTriggered = false;
-                            }
-                            else
-                            {
-                                // Assuming 1 key and modifiers only
-                                int key_count = 1 + int(m_settings->macro_first_object.win_pressed()) + int(m_settings->macro_first_object.ctrl_pressed()) + int(m_settings->macro_first_object.alt_pressed()) + int(m_settings->macro_first_object.shift_pressed());
-                                LPINPUT keyEventList = new INPUT[2 * key_count]();
-                                memset(keyEventList, 0, sizeof(keyEventList));
-                                int i = 0;
-                                if (m_settings->macro_first_object.win_pressed())
+                                if (isSwapTriggered)
                                 {
-                                    createKeyEvent(VK_LWIN, false, keyEventList[i]);
-                                    ++i;
+                                    isSwapTriggered = false;
                                 }
-                                if (m_settings->macro_first_object.ctrl_pressed())
+                                else
                                 {
-                                    createKeyEvent(VK_CONTROL, false, keyEventList[i]);
+                                    // Assuming 1 key and modifiers only
+                                    int key_count = 1 + int(m_settings->macro_first_object.win_pressed()) + int(m_settings->macro_first_object.ctrl_pressed()) + int(m_settings->macro_first_object.alt_pressed()) + int(m_settings->macro_first_object.shift_pressed());
+                                    LPINPUT keyEventList = new INPUT[2 * size_t(key_count)]();
+                                    memset(keyEventList, 0, sizeof(keyEventList));
+                                    int i = 0;
+                                    if (m_settings->macro_first_object.win_pressed())
+                                    {
+                                        createKeyEvent(VK_LWIN, false, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    if (m_settings->macro_first_object.ctrl_pressed())
+                                    {
+                                        createKeyEvent(VK_CONTROL, false, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    if (m_settings->macro_first_object.alt_pressed())
+                                    {
+                                        createKeyEvent(VK_MENU, false, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    if (m_settings->macro_first_object.shift_pressed())
+                                    {
+                                        createKeyEvent(VK_SHIFT, false, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    createKeyEvent(m_settings->macro_first_object.get_code(), false, keyEventList[i]);
                                     ++i;
-                                }
-                                if (m_settings->macro_first_object.alt_pressed())
-                                {
-                                    createKeyEvent(VK_MENU, false, keyEventList[i]);
+                                    createKeyEvent(m_settings->macro_first_object.get_code(), true, keyEventList[i]);
                                     ++i;
-                                }
-                                if (m_settings->macro_first_object.shift_pressed())
-                                {
-                                    createKeyEvent(VK_SHIFT, false, keyEventList[i]);
-                                    ++i;
-                                }
-                                createKeyEvent(m_settings->macro_first_object.get_code(), false, keyEventList[i]);
-                                ++i;
-                                createKeyEvent(m_settings->macro_first_object.get_code(), true, keyEventList[i]);
-                                ++i;
-                                if (m_settings->macro_first_object.shift_pressed())
-                                {
-                                    createKeyEvent(VK_SHIFT, true, keyEventList[i]);
-                                    ++i;
-                                }
-                                if (m_settings->macro_first_object.alt_pressed())
-                                {
-                                    createKeyEvent(VK_MENU, true, keyEventList[i]);
-                                    ++i;
-                                }
-                                if (m_settings->macro_first_object.ctrl_pressed())
-                                {
-                                    createKeyEvent(VK_CONTROL, true, keyEventList[i]);
-                                    ++i;
-                                }
-                                if (m_settings->macro_first_object.win_pressed())
-                                {
-                                    createKeyEvent(VK_LWIN, true, keyEventList[i]);
-                                    ++i;
-                                }
-                                isSwapTriggered = true;
-                                UINT res = SendInput(2 * key_count, keyEventList, sizeof(INPUT));
+                                    if (m_settings->macro_first_object.shift_pressed())
+                                    {
+                                        createKeyEvent(VK_SHIFT, true, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    if (m_settings->macro_first_object.alt_pressed())
+                                    {
+                                        createKeyEvent(VK_MENU, true, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    if (m_settings->macro_first_object.ctrl_pressed())
+                                    {
+                                        createKeyEvent(VK_CONTROL, true, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    if (m_settings->macro_first_object.win_pressed())
+                                    {
+                                        createKeyEvent(VK_LWIN, true, keyEventList[i]);
+                                        ++i;
+                                    }
+                                    isSwapTriggered = true;
+                                    UINT res = SendInput(2 * key_count, keyEventList, sizeof(INPUT));
 
-                                // deallocation
-                                delete[] keyEventList;
-                                keyEventList = nullptr;
-                                return true;
+                                    // deallocation
+                                    delete[] keyEventList;
+                                    keyEventList = nullptr;
+                                    return true;
+                                }
                             }
                         }
                     }
@@ -287,30 +290,33 @@ NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         }
     }
 
-    // Note: Win+L cannot be overriden. Requires WinLock to be disabled.
-    // Trigger on Win+Z
-    if (win == m_settings->newToyLLHotkeyObject.win_pressed())
+    if (keystate == WM_KEYDOWN || keystate == WM_SYSKEYDOWN)
     {
-        if (ctrl == m_settings->newToyLLHotkeyObject.ctrl_pressed())
+        // Note: Win+L cannot be overriden. Requires WinLock to be disabled.
+        // Trigger on Win+Z
+        if (win == m_settings->newToyLLHotkeyObject.win_pressed())
         {
-            if (alt == m_settings->newToyLLHotkeyObject.alt_pressed())
+            if (ctrl == m_settings->newToyLLHotkeyObject.ctrl_pressed())
             {
-                if (shift == m_settings->newToyLLHotkeyObject.shift_pressed())
+                if (alt == m_settings->newToyLLHotkeyObject.alt_pressed())
                 {
-                    if (info->vkCode == m_settings->newToyLLHotkeyObject.get_code())
+                    if (shift == m_settings->newToyLLHotkeyObject.shift_pressed())
                     {
-                        if (m_window)
+                        if (info->vkCode == m_settings->newToyLLHotkeyObject.get_code())
                         {
-                            // Show the window if it is hidden
-                            if (!isWindowShown)
-                                ShowWindow(m_window, SW_SHOW);
-                            // Hide the window if it is shown
-                            else
-                                ShowWindow(m_window, SW_HIDE);
-                            // Toggle the state of isWindowShown
-                            isWindowShown = !isWindowShown;
-                            // Return true to swallow the keyboard event
-                            return true;
+                            if (m_window)
+                            {
+                                // Show the window if it is hidden
+                                if (!isWindowShown)
+                                    ShowWindow(m_window, SW_SHOW);
+                                // Hide the window if it is shown
+                                else
+                                    ShowWindow(m_window, SW_HIDE);
+                                // Toggle the state of isWindowShown
+                                isWindowShown = !isWindowShown;
+                                // Return true to swallow the keyboard event
+                                return true;
+                            }
                         }
                     }
                 }
@@ -324,13 +330,20 @@ NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         if (win && info->vkCode == 'R')
         {
             // allocation
-            LPINPUT keyEventList = new INPUT[4]();
+            LPINPUT keyEventList = new INPUT[2]();
             memset(keyEventList, 0, sizeof(keyEventList));
-            createKeyEvent(VK_LWIN, false, keyEventList[0]);
-            createKeyEvent('S', false, keyEventList[1]);
-            createKeyEvent('S', true, keyEventList[2]);
-            createKeyEvent(VK_LWIN, true, keyEventList[3]);
-            UINT res = SendInput(4, keyEventList, sizeof(INPUT));
+            if (keystate == WM_KEYDOWN || keystate == WM_SYSKEYDOWN)
+            {
+                createKeyEvent(VK_LWIN, false, keyEventList[0]);
+                createKeyEvent('S', false, keyEventList[1]);
+            }
+            else if (keystate == WM_KEYUP || keystate == WM_SYSKEYUP)
+            {
+                createKeyEvent('S', true, keyEventList[0]);
+                createKeyEvent(VK_LWIN, true, keyEventList[1]);
+            }
+           
+            UINT res = SendInput(2, keyEventList, sizeof(INPUT));
 
             // deallocation
             delete[] keyEventList;
