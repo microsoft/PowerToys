@@ -41,6 +41,7 @@ private:
     bool isWindowShown = false;
     LPCWSTR titleText = L"Boring Toy";
     LPCWSTR windowText = L"Hello World, check out this boring power toy!";
+    bool isSwapTriggered = false;
 };
 
 winrt::com_ptr<INewToy> MakeNewToy(HINSTANCE hinstance, ModuleSettings* settings) noexcept;

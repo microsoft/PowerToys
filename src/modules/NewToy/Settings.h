@@ -9,6 +9,11 @@ struct ModuleSettings
     bool swapWRS = false;
     int int_prop = 10;
     std::wstring newToyLLHotkey = L"Win + Alt + Z";
-    PowerToysSettings::HotkeyObject hotkeyFromString();
-    PowerToysSettings::HotkeyObject newToyLLHotkeyObject = hotkeyFromString();
+    PowerToysSettings::HotkeyObject hotkeyFromString(std::wstring);
+    PowerToysSettings::HotkeyObject newToyLLHotkeyObject = hotkeyFromString(newToyLLHotkey);
+    bool swapMacro = false;
+    std::wstring macro_first = L"Win + A";
+    std::wstring macro_second = L"Win + F";
+    PowerToysSettings::HotkeyObject macro_first_object = hotkeyFromString(macro_first);
+    PowerToysSettings::HotkeyObject macro_second_object = hotkeyFromString(macro_second);
 };

@@ -12,7 +12,7 @@ std::vector<std::wstring> split(const std::wstring input, const std::wstring& re
     return { first, last };
 }
 
-PowerToysSettings::HotkeyObject ModuleSettings::hotkeyFromString()
+PowerToysSettings::HotkeyObject ModuleSettings::hotkeyFromString(std::wstring hotkeyStr)
 {
     // Assumptions: >=2 keys. Separate by +. Not containing +. Last key is the main key i.e. Alt+A is allowed but not A+Alt.Space to be entered as Space. Case insensitive. Assume only 1 non-modifier key
     bool win_pressed = false;
@@ -23,7 +23,7 @@ PowerToysSettings::HotkeyObject ModuleSettings::hotkeyFromString()
     std::vector<std::wstring> keyList;
     auto layout = GetKeyboardLayout(0);
     // Split based on plus sign
-    keyList = split(newToyLLHotkey, L"\\+");
+    keyList = split(hotkeyStr, L"\\+");
     // Remove spaces
     for_each(begin(keyList), end(keyList), [](std::wstring& str) {
         str.erase(std::remove_if(str.begin(), str.end(), [](auto x) { return std::isspace(x); }), str.end());
@@ -40,6 +40,10 @@ PowerToysSettings::HotkeyObject ModuleSettings::hotkeyFromString()
             shift_pressed = true;
         else if (str == L"") // +
             key_code = VK_OEM_PLUS;
+        else if (str == L"Space")
+            key_code = VK_SPACE;
+        else if (str == L"Tab")
+            key_code = VK_TAB;
         // TODO: Arrow keys, Fn keys, Ins, Home, PgU/D, Del, End, Numpad
         else
         {

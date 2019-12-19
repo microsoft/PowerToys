@@ -122,6 +122,25 @@ public:
             g_settings->newToyLLHotkey // property value.
         );
 
+        // A bool property with a toggle editor.
+        settings.add_bool_toogle(
+            L"bool_toggle_swap_macro", // property name.
+            L"Toggle to swap the two macros below", // description or resource id of the localized string.
+            g_settings->swapMacro // property value.
+        );
+
+        settings.add_string(
+            L"macro_first", // property name.
+            L"First macro to be swapped (Type out the shortcut with keys separated by +)", // description or resource id of the localized string.
+            g_settings->macro_first // property value.
+        );
+
+        settings.add_string(
+            L"macro_second", // property name.
+            L"Second macro to be swapped (Type out the shortcut with keys separated by +)", // description or resource id of the localized string.
+            g_settings->macro_second // property value.
+        );
+
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
@@ -191,11 +210,34 @@ public:
                 g_settings->newToyLLHotkey = llHotkeyProp.value();
             }
 
+            // Update the bool property.
+            auto boolProp1 = values.get_bool_value(L"bool_toggle_swap_macro");
+            if (boolProp1)
+            {
+                g_settings->swapMacro = boolProp1.value();
+            }
+
+            // Update a string property.
+            auto stringProp1 = values.get_string_value(L"macro_first");
+            if (stringProp1)
+            {
+                g_settings->macro_first = stringProp1.value();
+            }
+
+            // Update a string property.
+            auto stringProp2 = values.get_string_value(L"macro_second");
+            if (stringProp2)
+            {
+                g_settings->macro_second = stringProp2.value();
+            }
+
             // If you don't need to do any custom processing of the settings, proceed
             // to persists the values calling:
             values.save_to_settings_file();
             m_app->HotkeyChanged();
-            g_settings->newToyLLHotkeyObject = g_settings->hotkeyFromString();
+            g_settings->newToyLLHotkeyObject = g_settings->hotkeyFromString(g_settings->newToyLLHotkey);
+            g_settings->macro_first_object = g_settings->hotkeyFromString(g_settings->macro_first);
+            g_settings->macro_second_object = g_settings->hotkeyFromString(g_settings->macro_second);
         }
         catch (std::exception ex)
         {
@@ -320,8 +362,32 @@ void NewToy::init_settings()
         if (llHotkeyProp)
         {
             g_settings->newToyLLHotkey = llHotkeyProp.value();
-            g_settings->newToyLLHotkeyObject = g_settings->hotkeyFromString();
+            g_settings->newToyLLHotkeyObject = g_settings->hotkeyFromString(g_settings->newToyLLHotkey);
         }
+
+         // Load a bool property.
+        auto boolProp1 = settings.get_bool_value(L"bool_toggle_swap_macro");
+        if (boolProp1)
+        {
+            g_settings->swapMacro = boolProp1.value();
+        }
+
+        // Load a string property.
+        auto stringProp1 = settings.get_string_value(L"macro_first");
+        if (stringProp1)
+        {
+            g_settings->macro_first = stringProp1.value();
+            g_settings->macro_first_object = g_settings->hotkeyFromString(g_settings->macro_first);
+        }
+
+        // Load a string property.
+        auto stringProp2 = settings.get_string_value(L"macro_second");
+        if (stringProp2)
+        {
+            g_settings->macro_second = stringProp2.value();
+            g_settings->macro_second_object = g_settings->hotkeyFromString(g_settings->macro_second);
+        }
+
     }
     catch (std::exception ex)
     {
