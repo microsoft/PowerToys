@@ -61,6 +61,12 @@ IFACEMETHODIMP_(void) Zone::RemoveWindowFromZone(HWND window, bool restoreSize) 
 
 void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
 {
+    // Skip invisible windows
+    if (!IsWindowVisible(window))
+    {
+        return;
+    }
+  
     // Take care of 1px border
     RECT zoneRect = m_zoneRect;
 
