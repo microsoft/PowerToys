@@ -112,32 +112,38 @@ LRESULT NewToyCOM::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpar
 IFACEMETHODIMP_(bool)
 NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
 {
-    //int milli_seconds = 1000 * 2;
-
-    //// Storing start time
-    //clock_t start_time = clock();
-
-    //// looping till required time is not acheived
-    //while (clock() < start_time + milli_seconds)
-    //    ;
     bool const win = GetAsyncKeyState(VK_LWIN) & 0x8000;
-
-    // Note Win+L cannot be overriden. Requires WinLock to be disabled.
+    bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
+    bool const alt = GetAsyncKeyState(VK_MENU) & 0x8000;
+    bool const shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
+    // Note: Win+L cannot be overriden. Requires WinLock to be disabled.
     // Trigger on Win+Z
-    if (win && (info->vkCode == 0x5A))
+    if (win == m_settings->newToyLLHotkeyObject.win_pressed())
     {
-        if (m_window)
+        if (ctrl == m_settings->newToyLLHotkeyObject.ctrl_pressed())
         {
-            // Show the window if it is hidden
-            if (!isWindowShown)
-                ShowWindow(m_window, SW_SHOW);
-            // Hide the window if it is shown
-            else
-                ShowWindow(m_window, SW_HIDE);
-            // Toggle the state of isWindowShown
-            isWindowShown = !isWindowShown;
-            // Return true to swallow the keyboard event
-            return true;
+            if (alt == m_settings->newToyLLHotkeyObject.alt_pressed())
+            {
+                if (shift == m_settings->newToyLLHotkeyObject.shift_pressed())
+                {
+                    if (info->vkCode == m_settings->newToyLLHotkeyObject.get_code())
+                    {
+                        if (m_window)
+                        {
+                            // Show the window if it is hidden
+                            if (!isWindowShown)
+                                ShowWindow(m_window, SW_SHOW);
+                            // Hide the window if it is shown
+                            else
+                                ShowWindow(m_window, SW_HIDE);
+                            // Toggle the state of isWindowShown
+                            isWindowShown = !isWindowShown;
+                            // Return true to swallow the keyboard event
+                            return true;
+                        }
+                    }
+                }
+            }
         }
     }
     return false;

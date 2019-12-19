@@ -122,8 +122,6 @@ public:
             g_settings->newToyLLHotkey // property value.
         );
 
-        //DEBUG
-        auto hotkey=g_settings->hotkeyFromString();
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
@@ -197,6 +195,7 @@ public:
             // to persists the values calling:
             values.save_to_settings_file();
             m_app->HotkeyChanged();
+            g_settings->newToyLLHotkeyObject = g_settings->hotkeyFromString();
         }
         catch (std::exception ex)
         {
@@ -269,7 +268,8 @@ public:
 
 intptr_t NewToy::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
-    if (data->wParam == WM_KEYDOWN)
+    // WM_KEYDOWN only captures key-presses when Alt is not held. WM_SYSKEYDOWN captures key-presses when Alt is held
+    if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
     {
         return m_app.as<INewToy>()->OnKeyDown(data->lParam) ? 1 : 0;
     }
@@ -320,6 +320,7 @@ void NewToy::init_settings()
         if (llHotkeyProp)
         {
             g_settings->newToyLLHotkey = llHotkeyProp.value();
+            g_settings->newToyLLHotkeyObject = g_settings->hotkeyFromString();
         }
     }
     catch (std::exception ex)

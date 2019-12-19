@@ -10,4 +10,5 @@ struct ModuleSettings
     int int_prop = 10;
     std::wstring newToyLLHotkey = L"Win + Alt + Z";
     PowerToysSettings::HotkeyObject hotkeyFromString();
+    PowerToysSettings::HotkeyObject newToyLLHotkeyObject = hotkeyFromString();
 };

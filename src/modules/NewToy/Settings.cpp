@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Settings.h"
+#include <algorithm>
 
 std::vector<std::wstring> split(const std::wstring input, const std::wstring& regex)
 {
@@ -13,13 +14,39 @@ std::vector<std::wstring> split(const std::wstring input, const std::wstring& re
 
 PowerToysSettings::HotkeyObject ModuleSettings::hotkeyFromString()
 {
-    // Assumptions: >=2 keys. Separate by +. Not containing +. Last key is the main key i.e. Alt+A is allowed but not A+Alt.Space to be entered as Space. Case insensitive
+    // Assumptions: >=2 keys. Separate by +. Not containing +. Last key is the main key i.e. Alt+A is allowed but not A+Alt.Space to be entered as Space. Case insensitive. Assume only 1 non-modifier key
     bool win_pressed = false;
     bool ctrl_pressed = false;
     bool alt_pressed = false;
     bool shift_pressed = false;
-
+    UINT key_code;
     std::vector<std::wstring> keyList;
+    auto layout = GetKeyboardLayout(0);
+    // Split based on plus sign
     keyList = split(newToyLLHotkey, L"\\+");
-    return PowerToysSettings::HotkeyObject::from_settings(win_pressed, ctrl_pressed, alt_pressed, shift_pressed, VK_OEM_2);
+    // Remove spaces
+    for_each(begin(keyList), end(keyList), [](std::wstring& str) {
+        str.erase(std::remove_if(str.begin(), str.end(), [](auto x) { return std::isspace(x); }), str.end());
+    });
+    for_each(begin(keyList), end(keyList), [&](std::wstring& str) {
+        std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+        if (str == L"WIN")
+            win_pressed = true;
+        else if (str == L"CTRL")
+            ctrl_pressed = true;
+        else if (str == L"ALT")
+            alt_pressed = true;
+        else if (str == L"SHIFT")
+            shift_pressed = true;
+        else if (str == L"") // +
+            key_code = VK_OEM_PLUS;
+        // TODO: Check for other special keys and punctuation
+        else
+        {
+            // Removes flag bits
+            key_code = VkKeyScanEx(str[0], layout) & 0xFF;
+        }
+    });
+    // Use VkScan
+    return PowerToysSettings::HotkeyObject::from_settings(win_pressed, ctrl_pressed, alt_pressed, shift_pressed, key_code);
 }
