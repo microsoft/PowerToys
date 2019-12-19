@@ -109,6 +109,15 @@ LRESULT NewToyCOM::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpar
     return 0;
 }
 
+void createKeyEvent(WORD key_code, bool isRelease, INPUT& key_event)
+{
+    key_event.type = INPUT_KEYBOARD;
+    key_event.ki.wVk = key_code;
+    key_event.ki.dwFlags = (isRelease ? KEYEVENTF_KEYUP : 0);
+    key_event.ki.time = 0;
+    key_event.ki.dwExtraInfo = 0;
+}
+
 IFACEMETHODIMP_(bool)
 NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
 {
@@ -116,6 +125,7 @@ NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
     bool const alt = GetAsyncKeyState(VK_MENU) & 0x8000;
     bool const shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
+
     // Note: Win+L cannot be overriden. Requires WinLock to be disabled.
     // Trigger on Win+Z
     if (win == m_settings->newToyLLHotkeyObject.win_pressed())
@@ -146,6 +156,28 @@ NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
             }
         }
     }
+
+    // If toggled, replace Win+R with Win+S
+    if (m_settings->swapWRS)
+    {
+        if (win && info->vkCode == 'R')
+        {
+            // allocation
+            LPINPUT keyEventList = new INPUT[4]();
+            memset(keyEventList, 0, sizeof(keyEventList));
+            createKeyEvent(VK_LWIN, false, keyEventList[0]);
+            createKeyEvent('S', false, keyEventList[1]);
+            createKeyEvent('S', true, keyEventList[2]);
+            createKeyEvent(VK_LWIN, true, keyEventList[3]);
+            UINT res = SendInput(4, keyEventList, sizeof(INPUT));
+
+            // deallocation
+            delete[] keyEventList;
+            keyEventList = nullptr;
+            return true;
+        }
+    }
+
     return false;
 }
 

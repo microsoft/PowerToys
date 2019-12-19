@@ -100,9 +100,9 @@ public:
 
         // A bool property with a toggle editor.
         settings.add_bool_toogle(
-            L"bool_toggle_1", // property name.
-            L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
-            g_settings->bool_prop // property value.
+            L"bool_toggle_WRS", // property name.
+            L"Toggle to override Win+R with Win Search", // description or resource id of the localized string.
+            g_settings->swapWRS // property value.
         );
 
         // An integer property with a spinner editor.
@@ -171,10 +171,10 @@ public:
             }
 
             // Update the bool property.
-            auto boolProp = values.get_bool_value(L"bool_toggle_1");
+            auto boolProp = values.get_bool_value(L"bool_toggle_WRS");
             if (boolProp)
             {
-                g_settings->bool_prop = boolProp.value();
+                g_settings->swapWRS = boolProp.value();
             }
 
             // Update an int property.
@@ -302,10 +302,10 @@ void NewToy::init_settings()
 
 
         // Load a bool property.
-        auto boolProp = settings.get_bool_value(L"bool_toggle_1");
+        auto boolProp = settings.get_bool_value(L"bool_toggle_WRS");
         if (boolProp)
         {
-            g_settings->bool_prop = boolProp.value();
+            g_settings->swapWRS = boolProp.value();
         }
 
         // Load an int property.

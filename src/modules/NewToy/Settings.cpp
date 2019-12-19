@@ -40,7 +40,7 @@ PowerToysSettings::HotkeyObject ModuleSettings::hotkeyFromString()
             shift_pressed = true;
         else if (str == L"") // +
             key_code = VK_OEM_PLUS;
-        // TODO: Check for other special keys and punctuation
+        // TODO: Arrow keys, Fn keys, Ins, Home, PgU/D, Del, End, Numpad
         else
         {
             // Removes flag bits
