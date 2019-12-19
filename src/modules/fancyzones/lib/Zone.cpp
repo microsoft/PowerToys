@@ -105,11 +105,15 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
         }
     }
 
-    WINDOWPLACEMENT placement;
+    WINDOWPLACEMENT placement{};
     ::GetWindowPlacement(window, &placement);
     placement.rcNormalPosition = zoneRect;
     placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
-    placement.showCmd = SW_RESTORE | SW_SHOWNA;
+    // Do not restore minimized windows. We change their placement though so they restore to the correct zone.
+    if ((placement.showCmd & SW_SHOWMINIMIZED) == 0)
+    {
+        placement.showCmd = SW_RESTORE | SW_SHOWNA;
+    }
     ::SetWindowPlacement(window, &placement);
 }
 
