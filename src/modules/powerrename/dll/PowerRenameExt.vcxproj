@@ -164,6 +164,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CLSID.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="PowerRenameExt.h" />
     <ClInclude Include="stdafx.h" />

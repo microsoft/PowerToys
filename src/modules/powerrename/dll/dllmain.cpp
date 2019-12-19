@@ -5,7 +5,9 @@
 #include <trace.h>
 #include <common/settings_objects.h>
 
-DWORD g_dwModuleRefCount = 0;
+#include <atomic>
+
+std::atomic<DWORD> g_dwModuleRefCount = 0;
 HINSTANCE g_hInst = 0;
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -17,7 +19,7 @@ public:
         m_refCount(1),
         m_clsid(clsid)
     {
-        DllAddRef();
+        ModuleAddRef();
     }
 
     // IUnknown methods
@@ -33,12 +35,12 @@ public:
 
     IFACEMETHODIMP_(ULONG) AddRef()
     {
-        return InterlockedIncrement(&m_refCount);
+        return ++m_refCount;
     }
 
     IFACEMETHODIMP_(ULONG) Release()
     {
-        LONG refCount = InterlockedDecrement(&m_refCount);
+        LONG refCount = --m_refCount;
         if (refCount == 0)
         {
             delete this;
@@ -73,11 +75,11 @@ public:
     {
         if (bLock)
         {
-            DllAddRef();
+            ModuleAddRef();
         }
         else
         {
-            DllRelease();
+            ModuleRelease();
         }
         return S_OK;
     }
@@ -85,10 +87,10 @@ public:
 private:
     ~CPowerRenameClassFactory()
     {
-        DllRelease();
+        ModuleRelease();
     }
 
-    long m_refCount;
+    std::atomic<long> m_refCount;
     CLSID m_clsid;
 };
 
@@ -142,12 +144,12 @@ STDAPI DllUnregisterServer()
     return S_OK;
 }
 
-void DllAddRef()
+void ModuleAddRef()
 {
     g_dwModuleRefCount++;
 }
 
-void DllRelease()
+void ModuleRelease()
 {
     g_dwModuleRefCount--;
 }
