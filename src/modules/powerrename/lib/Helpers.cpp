@@ -140,11 +140,20 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
     return hr;
 }
 
-// Iterate through the data object and add paths to the rotation manager
-HRESULT EnumerateDataObject(_In_ IDataObject* pdo, _In_ IPowerRenameManager* psrm)
+// Iterate through the data source and add paths to the rotation manager
+HRESULT EnumerateDataObject(_In_ IUnknown * dataSource, _In_ IPowerRenameManager* psrm)
 {
     CComPtr<IShellItemArray> spsia;
-    HRESULT hr = SHCreateShellItemArrayFromDataObject(pdo, IID_PPV_ARGS(&spsia));
+    IDataObject* dataObj{};
+    HRESULT hr;
+    if (SUCCEEDED(dataSource->QueryInterface(IID_IDataObject, reinterpret_cast<void**>(&dataObj))))
+    {
+        hr = SHCreateShellItemArrayFromDataObject(dataObj, IID_PPV_ARGS(&spsia));
+    }
+    else 
+    {
+        hr = dataSource->QueryInterface(IID_IShellItemArray, reinterpret_cast<void**>(&spsia));
+    }
     if (SUCCEEDED(hr))
     {
         CComPtr<IEnumShellItems> spesi;

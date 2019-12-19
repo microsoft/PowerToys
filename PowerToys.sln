@@ -81,6 +81,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{BE
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModuleTemplate", "tools\project_template\ModuleTemplate\ModuleTemplate.vcxproj", "{64A80062-4D8B-4229-8A38-DFA1D7497749}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUWPUI", "src\modules\powerrename\UWPui\PowerRenameUWPUI.vcxproj", "{0485F45C-EA7A-4BB5-804B-3E8D14699387}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0E072714-D127-460B-AFAD-B4C40B412798} = {0E072714-D127-460B-AFAD-B4C40B412798}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -151,6 +156,10 @@ Global
 		{64A80062-4D8B-4229-8A38-DFA1D7497749}.Debug|x64.Build.0 = Debug|x64
 		{64A80062-4D8B-4229-8A38-DFA1D7497749}.Release|x64.ActiveCfg = Release|x64
 		{64A80062-4D8B-4229-8A38-DFA1D7497749}.Release|x64.Build.0 = Release|x64
+		{0485F45C-EA7A-4BB5-804B-3E8D14699387}.Debug|x64.ActiveCfg = Debug|x64
+		{0485F45C-EA7A-4BB5-804B-3E8D14699387}.Debug|x64.Build.0 = Debug|x64
+		{0485F45C-EA7A-4BB5-804B-3E8D14699387}.Release|x64.ActiveCfg = Release|x64
+		{0485F45C-EA7A-4BB5-804B-3E8D14699387}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -173,6 +182,7 @@ Global
 		{A3935CF4-46C5-4A88-84D3-6B12E16E6BA2} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
 		{2151F984-E006-4A9F-92EF-C6DDE3DC8413} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
 		{64A80062-4D8B-4229-8A38-DFA1D7497749} = {BEEAB7F2-FFF6-45AB-9CDB-B04CC0734B88}
+		{0485F45C-EA7A-4BB5-804B-3E8D14699387} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

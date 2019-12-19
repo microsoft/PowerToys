@@ -105,7 +105,7 @@ IFACEMETHODIMP_(ULONG) CPowerRenameUI::Release()
     return refCount;
 }
 
-HRESULT CPowerRenameUI::s_CreateInstance(_In_ IPowerRenameManager* psrm, _In_opt_ IDataObject* pdo, _In_ bool enableDragDrop, _Outptr_ IPowerRenameUI** ppsrui)
+HRESULT CPowerRenameUI::s_CreateInstance(_In_ IPowerRenameManager* psrm, _In_opt_ IUnknown* dataSource, _In_ bool enableDragDrop, _Outptr_ IPowerRenameUI** ppsrui)
 {
     *ppsrui = nullptr;
     CPowerRenameUI *prui = new CPowerRenameUI();
@@ -113,7 +113,7 @@ HRESULT CPowerRenameUI::s_CreateInstance(_In_ IPowerRenameManager* psrm, _In_opt
     if (SUCCEEDED(hr))
     {
         // Pass the IPowerRenameManager to the IPowerRenameUI so it can subscribe to events
-        hr = prui->_Initialize(psrm, pdo, enableDragDrop);
+        hr = prui->_Initialize(psrm, dataSource, enableDragDrop);
         if (SUCCEEDED(hr))
         {
             hr = prui->QueryInterface(IID_PPV_ARGS(ppsrui));
@@ -276,13 +276,13 @@ IFACEMETHODIMP CPowerRenameUI::Drop(_In_ IDataObject* pdtobj, DWORD, POINTL pt, 
     return S_OK;
 }
 
-HRESULT CPowerRenameUI::_Initialize(_In_ IPowerRenameManager* psrm, _In_opt_ IDataObject* pdo, _In_ bool enableDragDrop)
+HRESULT CPowerRenameUI::_Initialize(_In_ IPowerRenameManager* psrm, _In_opt_ IUnknown* dataSource, _In_ bool enableDragDrop)
 {
     // Cache the rename manager
     m_spsrm = psrm;
 
-    // Cache the data object for enumeration later
-    m_spdo = pdo;
+    // Cache the data source for enumeration later
+    m_dataSource = dataSource;
 
     m_enableDragDrop = enableDragDrop;
 
@@ -350,7 +350,7 @@ void CPowerRenameUI::_Cleanup()
         m_spsrm = nullptr;
     }
 
-    m_spdo = nullptr;
+    m_dataSource = nullptr;
     m_spdth = nullptr;
 
     if (m_enableDragDrop)
@@ -361,7 +361,7 @@ void CPowerRenameUI::_Cleanup()
     m_hwnd = NULL;
 }
 
-void CPowerRenameUI::_EnumerateItems(_In_ IDataObject* pdtobj)
+void CPowerRenameUI::_EnumerateItems(_In_ IUnknown* pdtobj)
 {
     // Enumerate the data object and popuplate the manager
     if (m_spsrm)
@@ -615,10 +615,10 @@ void CPowerRenameUI::_OnInitDlg()
         _SetCheckboxesFromFlags(flags);
     }
 
-    if (m_spdo)
+    if (m_dataSource)
     {
         // Populate the manager from the data object
-        _EnumerateItems(m_spdo);
+        _EnumerateItems(m_dataSource);
     }
 
     // Load the main icon
