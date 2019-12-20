@@ -126,32 +126,32 @@ NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info, WPARAM keystate) noexcept
     bool const alt = GetAsyncKeyState(VK_MENU) & 0x8000;
     bool const shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
 
-    if (keystate == WM_KEYDOWN || keystate == WM_SYSKEYDOWN)
+    // If toggled, swap two macros
+    if (m_settings->swapMacro)
     {
-        // If toggled, swap two macros
-        if (m_settings->swapMacro)
+        if (win == m_settings->macro_first_object.win_pressed())
         {
-            if (win == m_settings->macro_first_object.win_pressed())
+            if (ctrl == m_settings->macro_first_object.ctrl_pressed())
             {
-                if (ctrl == m_settings->macro_first_object.ctrl_pressed())
+                if (alt == m_settings->macro_first_object.alt_pressed())
                 {
-                    if (alt == m_settings->macro_first_object.alt_pressed())
+                    if (shift == m_settings->macro_first_object.shift_pressed())
                     {
-                        if (shift == m_settings->macro_first_object.shift_pressed())
+                        if (info->vkCode == m_settings->macro_first_object.get_code())
                         {
-                            if (info->vkCode == m_settings->macro_first_object.get_code())
+                            if (isSwapTriggered && (keystate == WM_KEYDOWN || keystate == WM_SYSKEYDOWN))
                             {
-                                if (isSwapTriggered)
+                                isSwapTriggered = false;
+                            }
+                            else
+                            {
+                                // Assuming 1 key and modifiers only
+                                int key_count = 1 + int(m_settings->macro_second_object.win_pressed()) + int(m_settings->macro_second_object.ctrl_pressed()) + int(m_settings->macro_second_object.alt_pressed()) + int(m_settings->macro_second_object.shift_pressed());
+                                LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+                                memset(keyEventList, 0, sizeof(keyEventList));
+                                int i = 0;
+                                if (keystate == WM_KEYDOWN || keystate == WM_SYSKEYDOWN)
                                 {
-                                    isSwapTriggered = false;
-                                }
-                                else
-                                {
-                                    // Assuming 1 key and modifiers only
-                                    int key_count = 1 + int(m_settings->macro_second_object.win_pressed()) + int(m_settings->macro_second_object.ctrl_pressed()) + int(m_settings->macro_second_object.alt_pressed()) + int(m_settings->macro_second_object.shift_pressed());
-                                    LPINPUT keyEventList = new INPUT[2 * size_t(key_count)]();
-                                    memset(keyEventList, 0, sizeof(keyEventList));
-                                    int i = 0;
                                     if (m_settings->macro_second_object.win_pressed())
                                     {
                                         createKeyEvent(VK_LWIN, false, keyEventList[i]);
@@ -174,6 +174,10 @@ NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info, WPARAM keystate) noexcept
                                     }
                                     createKeyEvent(m_settings->macro_second_object.get_code(), false, keyEventList[i]);
                                     ++i;
+                                    isSwapTriggered = true;
+                                }
+                                if (keystate == WM_KEYUP || keystate == WM_SYSKEYUP)
+                                {
                                     createKeyEvent(m_settings->macro_second_object.get_code(), true, keyEventList[i]);
                                     ++i;
                                     if (m_settings->macro_second_object.shift_pressed())
@@ -196,40 +200,42 @@ NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info, WPARAM keystate) noexcept
                                         createKeyEvent(VK_LWIN, true, keyEventList[i]);
                                         ++i;
                                     }
-                                    isSwapTriggered = true;
-                                    UINT res = SendInput(2 * key_count, keyEventList, sizeof(INPUT));
-
-                                    // deallocation
-                                    delete[] keyEventList;
-                                    keyEventList = nullptr;
-                                    return true;
                                 }
+                                UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+
+                                // deallocation
+                                delete[] keyEventList;
+                                keyEventList = nullptr;
+                                return true;
                             }
                         }
                     }
                 }
             }
-            if (win == m_settings->macro_second_object.win_pressed())
+        }
+        if (win == m_settings->macro_second_object.win_pressed())
+        {
+            if (ctrl == m_settings->macro_second_object.ctrl_pressed())
             {
-                if (ctrl == m_settings->macro_second_object.ctrl_pressed())
+                if (alt == m_settings->macro_second_object.alt_pressed())
                 {
-                    if (alt == m_settings->macro_second_object.alt_pressed())
+                    if (shift == m_settings->macro_second_object.shift_pressed())
                     {
-                        if (shift == m_settings->macro_second_object.shift_pressed())
+                        if (info->vkCode == m_settings->macro_second_object.get_code())
                         {
-                            if (info->vkCode == m_settings->macro_second_object.get_code())
+                            if (isSwapTriggered && (keystate == WM_KEYDOWN || keystate == WM_SYSKEYDOWN))
                             {
-                                if (isSwapTriggered)
+                                isSwapTriggered = false;
+                            }
+                            else
+                            {
+                                // Assuming 1 key and modifiers only
+                                int key_count = 1 + int(m_settings->macro_first_object.win_pressed()) + int(m_settings->macro_first_object.ctrl_pressed()) + int(m_settings->macro_first_object.alt_pressed()) + int(m_settings->macro_first_object.shift_pressed());
+                                LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+                                memset(keyEventList, 0, sizeof(keyEventList));
+                                int i = 0;
+                                if (keystate == WM_KEYDOWN || keystate == WM_SYSKEYDOWN)
                                 {
-                                    isSwapTriggered = false;
-                                }
-                                else
-                                {
-                                    // Assuming 1 key and modifiers only
-                                    int key_count = 1 + int(m_settings->macro_first_object.win_pressed()) + int(m_settings->macro_first_object.ctrl_pressed()) + int(m_settings->macro_first_object.alt_pressed()) + int(m_settings->macro_first_object.shift_pressed());
-                                    LPINPUT keyEventList = new INPUT[2 * size_t(key_count)]();
-                                    memset(keyEventList, 0, sizeof(keyEventList));
-                                    int i = 0;
                                     if (m_settings->macro_first_object.win_pressed())
                                     {
                                         createKeyEvent(VK_LWIN, false, keyEventList[i]);
@@ -252,6 +258,10 @@ NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info, WPARAM keystate) noexcept
                                     }
                                     createKeyEvent(m_settings->macro_first_object.get_code(), false, keyEventList[i]);
                                     ++i;
+                                    isSwapTriggered = true;
+                                }
+                                if (keystate == WM_KEYUP || keystate == WM_SYSKEYUP)
+                                {
                                     createKeyEvent(m_settings->macro_first_object.get_code(), true, keyEventList[i]);
                                     ++i;
                                     if (m_settings->macro_first_object.shift_pressed())
@@ -274,14 +284,14 @@ NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info, WPARAM keystate) noexcept
                                         createKeyEvent(VK_LWIN, true, keyEventList[i]);
                                         ++i;
                                     }
-                                    isSwapTriggered = true;
-                                    UINT res = SendInput(2 * key_count, keyEventList, sizeof(INPUT));
-
-                                    // deallocation
-                                    delete[] keyEventList;
-                                    keyEventList = nullptr;
-                                    return true;
                                 }
+
+                                UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+
+                                // deallocation
+                                delete[] keyEventList;
+                                keyEventList = nullptr;
+                                return true;
                             }
                         }
                     }
@@ -327,6 +337,24 @@ NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info, WPARAM keystate) noexcept
     // If toggled, replace Win+R with Win+S
     if (m_settings->swapWRS)
     {
+        bool keyR = GetAsyncKeyState('R') & 0x8000;
+        if (info->vkCode == VK_LWIN && keystate == WM_KEYUP && keyR)
+        {
+            if (winSflag)
+            {
+                
+                LPINPUT keyEventList = new INPUT[1]();
+                memset(keyEventList, 0, sizeof(keyEventList));
+                createKeyEvent('S', true, keyEventList[0]);
+                UINT res = SendInput(1, keyEventList, sizeof(INPUT));
+
+                // deallocation
+                delete[] keyEventList;
+                keyEventList = nullptr;
+                winSflag = false;
+                return true;
+            }
+        }
         if (win && info->vkCode == 'R')
         {
             // allocation
@@ -336,13 +364,15 @@ NewToyCOM::OnKeyDown(PKBDLLHOOKSTRUCT info, WPARAM keystate) noexcept
             {
                 createKeyEvent(VK_LWIN, false, keyEventList[0]);
                 createKeyEvent('S', false, keyEventList[1]);
+                winSflag = true;
             }
             else if (keystate == WM_KEYUP || keystate == WM_SYSKEYUP)
             {
                 createKeyEvent('S', true, keyEventList[0]);
-                createKeyEvent(VK_LWIN, true, keyEventList[1]);
+                //createKeyEvent(VK_LWIN, true, keyEventList[1]);
+                winSflag = false;
             }
-           
+
             UINT res = SendInput(2, keyEventList, sizeof(INPUT));
 
             // deallocation
