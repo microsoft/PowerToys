@@ -1,7 +1,7 @@
 <PackagingLayout xmlns="http://schemas.microsoft.com/appx/makeappx/2017">
   <PackageFamily ID="PowerToys" FlatBundle="true" ManifestPath="appxmanifest.xml" ResourceManager="false">
     
-    <Package ID="x64" ProcessorArchitecture="x64">
+    <Package ID="PowerToys-x64" ProcessorArchitecture="x64">
       <Files>
         <File DestinationPath="License.rtf" SourcePath="..\..\License.rtf"/>
 
