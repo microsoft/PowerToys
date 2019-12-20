@@ -12,8 +12,7 @@ public:
     // IUnknown
     IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _COM_Outptr_ void** ppv)
     {
-        static const QITAB qit[] =
-        {
+        static const QITAB qit[] = {
             QITABENT(CPowerRenameMenu, IShellExtInit),
             QITABENT(CPowerRenameMenu, IContextMenu),
             QITABENT(CPowerRenameMenu, IExplorerCommand),
@@ -22,12 +21,14 @@ public:
         return QISearch(this, qit, riid, ppv);
     }
 
-    IFACEMETHODIMP_(ULONG) AddRef()
+    IFACEMETHODIMP_(ULONG)
+    AddRef()
     {
         return ++m_refCount;
     }
 
-    IFACEMETHODIMP_(ULONG) Release()
+    IFACEMETHODIMP_(ULONG)
+    Release()
     {
         LONG refCount = --m_refCount;
         if (refCount == 0)
@@ -58,7 +59,6 @@ public:
     virtual HRESULT __stdcall GetFlags(EXPCMDFLAGS* pFlags) override;
     virtual HRESULT __stdcall EnumSubCommands(IEnumExplorerCommand** ppEnum) override;
 
-
     static HRESULT s_CreateInstance(_In_opt_ IUnknown* punkOuter, _In_ REFIID riid, _Outptr_ void** ppv);
     static DWORD WINAPI s_PowerRenameUIThreadProc(_In_ void* pData);
 
@@ -72,4 +72,3 @@ private:
     HBITMAP m_hbmpIcon = nullptr;
     CComPtr<IDataObject> m_spdo;
 };
-

@@ -9,9 +9,7 @@
 
 extern HINSTANCE g_hInst;
 
-
-int g_rgnMatchModeResIDs[] =
-{
+int g_rgnMatchModeResIDs[] = {
     IDS_ENTIREITEMNAME,
     IDS_NAMEONLY,
     IDS_EXTENSIONONLY
@@ -30,17 +28,16 @@ struct FlagCheckboxMap
     DWORD id;
 };
 
-FlagCheckboxMap g_flagCheckboxMap[] =
-{
+FlagCheckboxMap g_flagCheckboxMap[] = {
     { UseRegularExpressions, IDC_CHECK_USEREGEX },
-    { ExcludeSubfolders,     IDC_CHECK_EXCLUDESUBFOLDERS },
-    { EnumerateItems,        IDC_CHECK_ENUMITEMS },
-    { ExcludeFiles,          IDC_CHECK_EXCLUDEFILES },
-    { CaseSensitive,         IDC_CHECK_CASESENSITIVE },
-    { MatchAllOccurences,    IDC_CHECK_MATCHALLOCCURENCES },
-    { ExcludeFolders,        IDC_CHECK_EXCLUDEFOLDERS },
-    { NameOnly,              IDC_CHECK_NAMEONLY },
-    { ExtensionOnly,         IDC_CHECK_EXTENSIONONLY }
+    { ExcludeSubfolders, IDC_CHECK_EXCLUDESUBFOLDERS },
+    { EnumerateItems, IDC_CHECK_ENUMITEMS },
+    { ExcludeFiles, IDC_CHECK_EXCLUDEFILES },
+    { CaseSensitive, IDC_CHECK_CASESENSITIVE },
+    { MatchAllOccurences, IDC_CHECK_MATCHALLOCCURENCES },
+    { ExcludeFolders, IDC_CHECK_EXCLUDEFOLDERS },
+    { NameOnly, IDC_CHECK_NAMEONLY },
+    { ExtensionOnly, IDC_CHECK_EXTENSIONONLY }
 };
 
 struct RepositionMap
@@ -58,30 +55,34 @@ enum
     Reposition_Height = 0x8
 };
 
-RepositionMap g_repositionMap[] =
-{
-    { IDC_SEARCHREPLACEGROUP,       Reposition_Width },
-    { IDC_OPTIONSGROUP,             Reposition_Width },
-    { IDC_PREVIEWGROUP,             Reposition_Width | Reposition_Height },
-    { IDC_EDIT_SEARCHFOR,           Reposition_Width },
-    { IDC_EDIT_REPLACEWITH,         Reposition_Width },
-    { IDC_LIST_PREVIEW,             Reposition_Width | Reposition_Height },
-    { IDC_STATUS_MESSAGE,           Reposition_Y },
-    { ID_RENAME,                    Reposition_X | Reposition_Y },
-    { ID_ABOUT,                     Reposition_X | Reposition_Y },
-    { IDCANCEL,                     Reposition_X | Reposition_Y }
+RepositionMap g_repositionMap[] = {
+    { IDC_SEARCHREPLACEGROUP, Reposition_Width },
+    { IDC_OPTIONSGROUP, Reposition_Width },
+    { IDC_PREVIEWGROUP, Reposition_Width | Reposition_Height },
+    { IDC_EDIT_SEARCHFOR, Reposition_Width },
+    { IDC_EDIT_REPLACEWITH, Reposition_Width },
+    { IDC_LIST_PREVIEW, Reposition_Width | Reposition_Height },
+    { IDC_STATUS_MESSAGE, Reposition_Y },
+    { ID_RENAME, Reposition_X | Reposition_Y },
+    { ID_ABOUT, Reposition_X | Reposition_Y },
+    { IDCANCEL, Reposition_X | Reposition_Y }
 };
 
-inline int RECT_WIDTH(RECT& r) { return r.right - r.left; }
-inline int RECT_HEIGHT(RECT& r) { return r.bottom - r.top; }
+inline int RECT_WIDTH(RECT& r)
+{
+    return r.right - r.left;
+}
+inline int RECT_HEIGHT(RECT& r)
+{
+    return r.bottom - r.top;
+}
 
 #define MAX_INPUT_STRING_LEN 1024
 
 // IUnknown
 IFACEMETHODIMP CPowerRenameUI::QueryInterface(__in REFIID riid, __deref_out void** ppv)
 {
-    static const QITAB qit[] =
-    {
+    static const QITAB qit[] = {
         QITABENT(CPowerRenameUI, IPowerRenameUI),
         QITABENT(CPowerRenameUI, IPowerRenameManagerEvents),
         QITABENT(CPowerRenameUI, IDropTarget),
@@ -90,12 +91,14 @@ IFACEMETHODIMP CPowerRenameUI::QueryInterface(__in REFIID riid, __deref_out void
     return QISearch(this, qit, riid, ppv);
 }
 
-IFACEMETHODIMP_(ULONG) CPowerRenameUI::AddRef()
+IFACEMETHODIMP_(ULONG)
+CPowerRenameUI::AddRef()
 {
     return InterlockedIncrement(&m_refCount);
 }
 
-IFACEMETHODIMP_(ULONG) CPowerRenameUI::Release()
+IFACEMETHODIMP_(ULONG)
+CPowerRenameUI::Release()
 {
     long refCount = InterlockedDecrement(&m_refCount);
     if (refCount == 0)
@@ -108,7 +111,7 @@ IFACEMETHODIMP_(ULONG) CPowerRenameUI::Release()
 HRESULT CPowerRenameUI::s_CreateInstance(_In_ IPowerRenameManager* psrm, _In_opt_ IUnknown* dataSource, _In_ bool enableDragDrop, _Outptr_ IPowerRenameUI** ppsrui)
 {
     *ppsrui = nullptr;
-    CPowerRenameUI *prui = new CPowerRenameUI();
+    CPowerRenameUI* prui = new CPowerRenameUI();
     HRESULT hr = prui ? S_OK : E_OUTOFMEMORY;
     if (SUCCEEDED(hr))
     {
@@ -488,7 +491,7 @@ void CPowerRenameUI::_OnRename()
 void CPowerRenameUI::_OnAbout()
 {
     // Launch github page
-    SHELLEXECUTEINFO info = {0};
+    SHELLEXECUTEINFO info = { 0 };
     info.cbSize = sizeof(SHELLEXECUTEINFO);
     info.lpVerb = L"open";
     info.lpFile = L"https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename";
@@ -538,7 +541,7 @@ HRESULT CPowerRenameUI::_DoModeless(__in_opt HWND hwnd)
 
 INT_PTR CPowerRenameUI::_DlgProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    INT_PTR bRet = TRUE;   // default for all handled cases in switch below
+    INT_PTR bRet = TRUE; // default for all handled cases in switch below
 
     switch (uMsg)
     {
@@ -699,8 +702,8 @@ void CPowerRenameUI::_OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam)
 BOOL CPowerRenameUI::_OnNotify(_In_ WPARAM wParam, _In_ LPARAM lParam)
 {
     bool ret = FALSE;
-    LPNMHDR          pnmdr = (LPNMHDR)lParam;
-    LPNMLISTVIEW     pnmlv = (LPNMLISTVIEW)pnmdr;
+    LPNMHDR pnmdr = (LPNMHDR)lParam;
+    LPNMLISTVIEW pnmlv = (LPNMLISTVIEW)pnmdr;
     NMLVEMPTYMARKUP* pnmMarkup = NULL;
 
     if (pnmdr)
@@ -742,15 +745,14 @@ BOOL CPowerRenameUI::_OnNotify(_In_ WPARAM wParam, _In_ LPARAM lParam)
             }
             break;
 
-        case NM_CLICK:
+        case NM_CLICK: {
+            if (m_spsrm)
             {
-                if (m_spsrm)
-                {
-                    m_listview.OnClickList(m_spsrm, (NM_LISTVIEW*)pnmdr);
-                    _UpdateCounts();
-                }
-                break;
+                m_listview.OnClickList(m_spsrm, (NM_LISTVIEW*)pnmdr);
+                _UpdateCounts();
             }
+            break;
+        }
         }
     }
 
@@ -1058,8 +1060,8 @@ void CPowerRenameListView::UpdateItemCheckState(_In_ IPowerRenameManager* psrm, 
     }
 }
 
-#define COL_ORIGINAL_NAME   0
-#define COL_NEW_NAME        1
+#define COL_ORIGINAL_NAME 0
+#define COL_NEW_NAME 1
 
 void CPowerRenameListView::GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout_ LV_DISPINFO* plvdi)
 {
@@ -1234,5 +1236,3 @@ void CPowerRenameListView::_UpdateHeaderCheckState(_In_ bool check)
         Header_SetItem(hwndHeader, 0, &hdi);
     }
 }
-
-

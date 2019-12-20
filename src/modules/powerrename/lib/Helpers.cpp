@@ -141,7 +141,7 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
 }
 
 // Iterate through the data source and add paths to the rotation manager
-HRESULT EnumerateDataObject(_In_ IUnknown * dataSource, _In_ IPowerRenameManager* psrm)
+HRESULT EnumerateDataObject(_In_ IUnknown* dataSource, _In_ IPowerRenameManager* psrm)
 {
     CComPtr<IShellItemArray> spsia;
     IDataObject* dataObj{};
@@ -150,7 +150,7 @@ HRESULT EnumerateDataObject(_In_ IUnknown * dataSource, _In_ IPowerRenameManager
     {
         hr = SHCreateShellItemArrayFromDataObject(dataObj, IID_PPV_ARGS(&spsia));
     }
-    else 
+    else
     {
         hr = dataSource->QueryInterface(IID_IShellItemArray, reinterpret_cast<void**>(&spsia));
     }
@@ -181,9 +181,7 @@ HWND CreateMsgWindow(_In_ HINSTANCE hInst, _In_ WNDPROC pfnWndProc, _In_ void* p
     RegisterClass(&wc);
 
     HWND hwnd = CreateWindowEx(
-        0, wndClassName, nullptr, 0,
-        0, 0, 0, 0, HWND_MESSAGE,
-        0, hInst, nullptr);
+        0, wndClassName, nullptr, 0, 0, 0, 0, 0, HWND_MESSAGE, 0, hInst, nullptr);
     if (hwnd)
     {
         SetWindowLongPtr(hwnd, 0, (LONG_PTR)p);
@@ -196,9 +194,7 @@ HWND CreateMsgWindow(_In_ HINSTANCE hInst, _In_ WNDPROC pfnWndProc, _In_ void* p
     return hwnd;
 }
 
-BOOL GetEnumeratedFileName(__out_ecount(cchMax) PWSTR pszUniqueName, UINT cchMax,
-    __in PCWSTR pszTemplate, __in_opt PCWSTR pszDir, unsigned long ulMinLong,
-    __inout unsigned long* pulNumUsed)
+BOOL GetEnumeratedFileName(__out_ecount(cchMax) PWSTR pszUniqueName, UINT cchMax, __in PCWSTR pszTemplate, __in_opt PCWSTR pszDir, unsigned long ulMinLong, __inout unsigned long* pulNumUsed)
 {
     PWSTR pszName = nullptr;
     HRESULT hr = S_OK;

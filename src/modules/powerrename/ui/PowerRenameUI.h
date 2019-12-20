@@ -46,8 +46,10 @@ public:
 
     // IUnknown
     IFACEMETHODIMP QueryInterface(__in REFIID riid, __deref_out void** ppv);
-    IFACEMETHODIMP_(ULONG) AddRef();
-    IFACEMETHODIMP_(ULONG) Release();
+    IFACEMETHODIMP_(ULONG)
+    AddRef();
+    IFACEMETHODIMP_(ULONG)
+    Release();
 
     // IPowerRenameUI
     IFACEMETHODIMP Show(_In_opt_ HWND hwndParent);
