@@ -28,11 +28,11 @@ CPowerRenameMenu::~CPowerRenameMenu()
     ModuleRelease();
 }
 
-HRESULT CPowerRenameMenu::s_CreateInstance(_In_opt_ IUnknown*, _In_ REFIID riid, _Outptr_ void **ppv)
+HRESULT CPowerRenameMenu::s_CreateInstance(_In_opt_ IUnknown*, _In_ REFIID riid, _Outptr_ void** ppv)
 {
     *ppv = nullptr;
     HRESULT hr = E_OUTOFMEMORY;
-    CPowerRenameMenu *pprm = new CPowerRenameMenu();
+    CPowerRenameMenu* pprm = new CPowerRenameMenu();
     if (pprm)
     {
         hr = pprm->QueryInterface(riid, ppv);
@@ -42,7 +42,7 @@ HRESULT CPowerRenameMenu::s_CreateInstance(_In_opt_ IUnknown*, _In_ REFIID riid,
 }
 
 // IShellExtInit
-HRESULT CPowerRenameMenu::Initialize(_In_opt_ PCIDLIST_ABSOLUTE, _In_ IDataObject *pdtobj, HKEY)
+HRESULT CPowerRenameMenu::Initialize(_In_opt_ PCIDLIST_ABSOLUTE, _In_ IDataObject* pdtobj, HKEY)
 {
     // Check if we have disabled ourselves
     if (!CSettings::GetEnabled())
@@ -115,7 +115,7 @@ HRESULT CPowerRenameMenu::InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pici)
         (LOWORD(pici->lpVerb) == 0))
     {
         Trace::Invoked();
-        InvokeStruct* pInvokeData = new(std::nothrow) InvokeStruct;
+        InvokeStruct* pInvokeData = new (std::nothrow) InvokeStruct;
         hr = pInvokeData ? S_OK : E_OUTOFMEMORY;
         if (SUCCEEDED(hr))
         {
@@ -202,8 +202,8 @@ HRESULT __stdcall CPowerRenameMenu::GetIcon(IShellItemArray* /*psiItemArray*/, L
 {
     if (!CSettings::GetShowIconOnMenu())
     {
-      *ppszIcon = nullptr;
-      return E_NOTIMPL;
+        *ppszIcon = nullptr;
+        return E_NOTIMPL;
     }
 
     std::wstring iconResourcePath = get_module_filename();
@@ -240,7 +240,7 @@ HRESULT __stdcall CPowerRenameMenu::Invoke(IShellItemArray* psiItemArray, IBindC
     MessageBoxW(nullptr, buffer, L"PID", MB_OK);
 #endif
     Trace::Invoked();
-    InvokeStruct* pInvokeData = new(std::nothrow) InvokeStruct;
+    InvokeStruct* pInvokeData = new (std::nothrow) InvokeStruct;
     HRESULT hr = pInvokeData ? S_OK : E_OUTOFMEMORY;
     if (SUCCEEDED(hr))
     {

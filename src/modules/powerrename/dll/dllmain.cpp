@@ -25,20 +25,21 @@ public:
     // IUnknown methods
     IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _COM_Outptr_ void** ppv)
     {
-        static const QITAB qit[] =
-        {
+        static const QITAB qit[] = {
             QITABENT(CPowerRenameClassFactory, IClassFactory),
             { 0 }
         };
         return QISearch(this, qit, riid, ppv);
     }
 
-    IFACEMETHODIMP_(ULONG) AddRef()
+    IFACEMETHODIMP_(ULONG)
+    AddRef()
     {
         return ++m_refCount;
     }
 
-    IFACEMETHODIMP_(ULONG) Release()
+    IFACEMETHODIMP_(ULONG)
+    Release()
     {
         LONG refCount = --m_refCount;
         if (refCount == 0)
@@ -121,11 +122,11 @@ STDAPI DllCanUnloadNow(void)
 //
 // DLL export for creating COM objects
 //
-STDAPI DllGetClassObject(_In_ REFCLSID clsid, _In_ REFIID riid, _Outptr_ void **ppv)
+STDAPI DllGetClassObject(_In_ REFCLSID clsid, _In_ REFIID riid, _Outptr_ void** ppv)
 {
     *ppv = NULL;
     HRESULT hr = E_OUTOFMEMORY;
-    CPowerRenameClassFactory *pClassFactory = new CPowerRenameClassFactory(clsid);
+    CPowerRenameClassFactory* pClassFactory = new CPowerRenameClassFactory(clsid);
     if (pClassFactory)
     {
         hr = pClassFactory->QueryInterface(riid, ppv);
@@ -153,7 +154,6 @@ void ModuleRelease()
 {
     g_dwModuleRefCount--;
 }
-
 
 class PowerRenameModule : public PowertoyModuleIface
 {
@@ -212,14 +212,12 @@ public:
         settings.add_bool_toogle(
             L"bool_persist_input",
             L"Restore search, replace and flags values on launch from previous run.",
-            CSettings::GetPersistState()
-        );
+            CSettings::GetPersistState());
 
         settings.add_bool_toogle(
             L"bool_mru_enabled",
             L"Enable autocomplete and autosuggest of recently used inputs for search and replace values.",
-            CSettings::GetMRUEnabled()
-        );
+            CSettings::GetMRUEnabled());
 
         settings.add_int_spinner(
             L"int_max_mru_size",
@@ -227,20 +225,17 @@ public:
             CSettings::GetMaxMRUSize(),
             0,
             20,
-            1
-        );
+            1);
 
         settings.add_bool_toogle(
-          L"bool_show_icon_on_menu", 
-          L"Show icon on context menu.",
-          CSettings::GetShowIconOnMenu()
-        );
+            L"bool_show_icon_on_menu",
+            L"Show icon on context menu.",
+            CSettings::GetShowIconOnMenu());
 
         settings.add_bool_toogle(
             L"bool_show_extended_menu",
             L"Only show the PowerRename menu item on the extended context menu (SHIFT + Right-click).",
-            CSettings::GetExtendedContextMenuOnly()
-        );
+            CSettings::GetExtendedContextMenuOnly());
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
@@ -249,7 +244,8 @@ public:
     // This is called when the user hits Save on the settings page.
     virtual void set_config(PCWSTR config) override
     {
-        try {
+        try
+        {
             // Parse the input JSON string.
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config);
@@ -260,7 +256,8 @@ public:
             CSettings::SetShowIconOnMenu(values.get_bool_value(L"bool_show_icon_on_menu").value());
             CSettings::SetExtendedContextMenuOnly(values.get_bool_value(L"bool_show_extended_menu").value());
         }
-        catch (std::exception) {
+        catch (std::exception)
+        {
             // Improper JSON.
         }
     }
@@ -277,8 +274,8 @@ public:
         return 0;
     }
 
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override { }
-    virtual void signal_system_menu_action(const wchar_t* name) override { }
+    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
+    virtual void signal_system_menu_action(const wchar_t* name) override {}
 
     // Destroy the powertoy and free memory
     virtual void destroy() override
@@ -303,7 +300,6 @@ public:
         init_settings();
     }
 };
-
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {

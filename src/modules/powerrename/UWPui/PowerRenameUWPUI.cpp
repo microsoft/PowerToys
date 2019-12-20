@@ -16,7 +16,7 @@ void ModuleAddRef()
 
 void ModuleRelease()
 {
-    if(--g_dwModuleRefCount == 0)
+    if (--g_dwModuleRefCount == 0)
     {
         PostThreadMessage(main_thread_id, WM_QUIT, 0, 0);
     }
@@ -81,16 +81,16 @@ public:
     {
         return S_OK;
     }
-private:
 
+private:
     std::atomic<long> _refCount;
     CLSID _clsid;
 };
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE ,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+                      _In_opt_ HINSTANCE,
+                      _In_ LPWSTR lpCmdLine,
+                      _In_ int nCmdShow)
 {
     main_thread_id = GetCurrentThreadId();
     winrt::init_apartment();
@@ -101,7 +101,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         return 1;
     }
-    
+
     // Run msg loop for the local COM server
     run_message_loop();
 
