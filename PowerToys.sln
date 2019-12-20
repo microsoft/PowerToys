@@ -79,7 +79,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUnitTests", "src
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{BEEAB7F2-FFF6-45AB-9CDB-B04CC0734B88}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModuleTemplate", "tools\project_template\ModuleTemplate\ModuleTemplate.vcxproj", "{64A80062-4D8B-4229-8A38-DFA1D7497749}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModuleTemplateCompileTest", "tools\project_template\ModuleTemplate\ModuleTemplateCompileTest.vcxproj", "{64A80062-4D8B-4229-8A38-DFA1D7497749}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
