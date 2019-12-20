@@ -46,38 +46,39 @@ IFACEMETHODIMP ZoneSet::AddZone(winrt::com_ptr<IZone> zone) noexcept
 
 IFACEMETHODIMP_(winrt::com_ptr<IZone>) ZoneSet::ZoneFromPoint(POINT pt) noexcept
 {
-    winrt::com_ptr<IZone> smallestKnownZone = nullptr;
-    // To reduce redundant calculations, we will store the last known zones area.
-    int smallestKnownZoneArea = INT32_MAX;
+    winrt::com_ptr<IZone> selectedZone = nullptr;
+    int distanceToSelectedZoneTop = 0; 
+
     for (auto iter = m_zones.begin(); iter != m_zones.end(); iter++)
     {
         if (winrt::com_ptr<IZone> zone = iter->try_as<IZone>())
         {
-            RECT* newZoneRect = &zone->GetZoneRect();
-            if (PtInRect(newZoneRect, pt))
+            RECT* zoneRect = &zone->GetZoneRect();
+            if (PtInRect(zoneRect, pt))
             {
-                if (smallestKnownZone == nullptr)
+                if (selectedZone == nullptr)
                 {
-                    smallestKnownZone = zone;
-
-                    RECT* r = &smallestKnownZone->GetZoneRect();
-                    smallestKnownZoneArea = (r->right-r->left)*(r->bottom-r->top);
+                    // This is the first zone we've found containing this point
+                    selectedZone = zone;
+                    RECT* r = &selectedZone->GetZoneRect();
+                    distanceToSelectedZoneTop = (pt.y - r->top);
                 }
                 else
                 {
-                    int newZoneArea = (newZoneRect->right-newZoneRect->left)*(newZoneRect->bottom-newZoneRect->top);
-
-                    if (newZoneArea<smallestKnownZoneArea)
+                    // We found another possible zone, so need to determine if we should change the target zone to this one
+                    // Use closest distance to zone's top border to decide which zone is selected
+                    int distanceToNewZoneTop = (pt.y - zoneRect->top);
+                    if (distanceToNewZoneTop < distanceToSelectedZoneTop)
                     {
-                        smallestKnownZone = zone;
-                        newZoneArea = smallestKnownZoneArea;
+                        distanceToSelectedZoneTop = distanceToNewZoneTop;
+                        selectedZone = zone;
                     }
                 }
             }
         }
     }
 
-    return smallestKnownZone;
+    return selectedZone;
 }
 
 IFACEMETHODIMP_(void) ZoneSet::Save() noexcept
