@@ -582,6 +582,7 @@ void ZoneWindow::DrawActiveZoneSet(wil::unique_hdc& hdc, RECT const& clientRect)
         if (m_highlightZone)
         {
             colorHighlight.fill = m_host->GetZoneHighlightColor();
+            colorHighlight.fillAlpha = m_host->GetZoneHighlightOpacity();
             colorHighlight.border = RGB(
                 max(0, GetRValue(colorHighlight.fill) - 25),
                 max(0, GetGValue(colorHighlight.fill) - 25),
