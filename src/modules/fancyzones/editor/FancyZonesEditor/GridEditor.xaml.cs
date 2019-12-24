@@ -609,7 +609,7 @@ namespace FancyZonesEditor
                             int pointsIndex = 0;
                             for (int walk = row; walk < maxRow; walk++)
                             {
-                                zone.HorizontalSnapPoints[pointsIndex++] = _rowInfo[walk].End + spacing / 2 - top;
+                                zone.HorizontalSnapPoints[pointsIndex++] = _rowInfo[walk].End + (spacing / 2) - top;
                             }
                         }
 
@@ -626,7 +626,7 @@ namespace FancyZonesEditor
                             int pointsIndex = 0;
                             for (int walk = col; walk < maxCol; walk++)
                             {
-                                zone.VerticalSnapPoints[pointsIndex++] = _colInfo[walk].End + spacing / 2 - left;
+                                zone.VerticalSnapPoints[pointsIndex++] = _colInfo[walk].End + (spacing / 2) - left;
                             }
                         }
 
