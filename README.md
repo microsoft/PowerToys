@@ -49,6 +49,8 @@ Usage
 -----
 
 - Launch: <kbd>Alt</kbd>+<kbd>Space</kbd>
+- Context Menu: <kbd>Ctrl</kbd>+<kbd>O</kbd>
+- Cancel/Return: <kbd>Esc</kbd>
 - Install/Uninstall plugin: type `wpm install/uninstall`
 - Reset: delete `%APPDATA%\Wox`
 - Log: `%APPDATA%\Wox\Logs`
