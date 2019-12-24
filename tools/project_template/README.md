@@ -5,6 +5,9 @@
 - Put the `ModuleTemplate.zip` file inside the `%USERPROFILE%\Documents\Visual Studio 2019\Templates\ProjectTemplates\` folder, which is the default *User project templates location*. You can change that location via `Tools > Options > Projects and Solutions`.
 - The template will be available in Visual Studio, when adding a new project, under the `Visual C++` tab.
 
+## Contributing
+If you'd like to work on a PowerToy template, make required modifications to `\tools\project_template\ModuleTemplate.vcxproj` and then use the dedicated solution `PowerToyTemplate.sln` to export it as a template. Note that `ModuleTemplate.vcxproj` is actually a project template, therefore uncompilable, so we also have a dedicated `ModuleTemplateCompileTest.vcxproj` project referenced from the `PowerToys.sln` to help keeping the template sources up to date and verify it compiles correctly.
+
 ## Create a new PowerToy Module
 
 - Add the new PowerToy project to the `src\modules\` folder for all the relative paths to work.
