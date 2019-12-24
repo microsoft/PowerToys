@@ -172,13 +172,13 @@ namespace Wox.Core.Plugin
 
         public static List<Result> QueryForPlugin(PluginPair pair, Query query)
         {
-            var results = new List<Result>();
             try
             {
+                List<Result> results = null;
                 var metadata = pair.Metadata;
                 var milliseconds = Stopwatch.Debug($"|PluginManager.QueryForPlugin|Cost for {metadata.Name}", () =>
                 {
-                    results = pair.Plugin.Query(query) ?? results;
+                    results = pair.Plugin.Query(query) ?? new List<Result>();
                     UpdatePluginMetadata(results, metadata, query);
                 });
                 metadata.QueryCount += 1;

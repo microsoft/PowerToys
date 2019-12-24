@@ -4,6 +4,8 @@
 
     <system:String x:Key="wox_plugin_cmd_relace_winr">Replace Win+R</system:String>
     <system:String x:Key="wox_plugin_cmd_leave_cmd_open">Do not close Command Prompt after command execution</system:String>
+    <system:String x:Key="wox_plugin_cmd_always_run_as_administrator">Always run as administrator</system:String>
+    <system:String x:Key="wox_plugin_cmd_run_as_different_user">Run as different user</system:String>
     <system:String x:Key="wox_plugin_cmd_plugin_name">Shell</system:String>
     <system:String x:Key="wox_plugin_cmd_plugin_description">Allows to execute system commands from Wox. Commands should start with ></system:String>
     <system:String x:Key="wox_plugin_cmd_cmd_has_been_executed_times">this command has been executed {0} times</system:String>

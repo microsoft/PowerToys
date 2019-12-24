@@ -35,7 +35,6 @@ namespace Wox.Plugin.Program.Programs
 
         public UWP(Package package)
         {
-
             Location = package.InstalledLocation.Path;
             Name = package.Id.Name;
             FullName = package.Id.FullName;
@@ -266,21 +265,25 @@ namespace Wox.Plugin.Program.Programs
 
             private int Score(string query)
             {
-                var score1 = StringMatcher.FuzzySearch(query, DisplayName).ScoreAfterSearchPrecisionFilter();
-                var score2 = StringMatcher.ScoreForPinyin(DisplayName, query);
-                var score3 = StringMatcher.FuzzySearch(query, Description).ScoreAfterSearchPrecisionFilter();
-                var score4 = StringMatcher.ScoreForPinyin(Description, query);
-                var score = new[] { score1, score2, score3, score4 }.Max();
+                var displayNameMatch = StringMatcher.FuzzySearch(query, DisplayName);
+                var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
+                var score = new[] { displayNameMatch.Score, descriptionMatch.Score }.Max();
                 return score;
             }
 
             public Result Result(string query, IPublicAPI api)
             {
+                var score = Score(query);
+                if (score <= 0)
+                { // no need to create result if score is 0
+                    return null;
+                }
+
                 var result = new Result
                 {
                     SubTitle = Package.Location,
                     Icon = Logo,
-                    Score = Score(query),
+                    Score = score,
                     ContextData = this,
                     Action = e =>
                     {
@@ -293,14 +296,18 @@ namespace Wox.Plugin.Program.Programs
                     Description.Substring(0, DisplayName.Length) == DisplayName)
                 {
                     result.Title = Description;
+                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, Description).MatchData;
                 }
                 else if (!string.IsNullOrEmpty(Description))
                 {
-                    result.Title = $"{DisplayName}: {Description}";
+                    var title = $"{DisplayName}: {Description}";
+                    result.Title = title;
+                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, title).MatchData;
                 }
                 else
                 {
                     result.Title = DisplayName;
+                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, DisplayName).MatchData;
                 }
                 return result;
             }
@@ -312,11 +319,14 @@ namespace Wox.Plugin.Program.Programs
                     new Result
                     {
                         Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
+
                         Action = _ =>
                         {
-                            var hide = Main.StartProcess(new ProcessStartInfo(Package.Location));
-                            return hide;
+                            Main.StartProcess(Process.Start, new ProcessStartInfo(Package.Location));
+
+                            return true;
                         },
+
                         IcoPath = "Images/folder.png"
                     }
                 };

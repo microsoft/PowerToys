@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 using Wox.Infrastructure;
+using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
 namespace Wox.Test
@@ -11,7 +12,7 @@ namespace Wox.Test
     [TestFixture]
     public class FuzzyMatcherTest
     {
-        public List<string> GetSearchStrings() 
+        public List<string> GetSearchStrings()
             => new List<string>
             {
                 "Chrome",
@@ -48,14 +49,13 @@ namespace Wox.Test
                 "aac"
             };
 
-
             var results = new List<Result>();
             foreach (var str in sources)
             {
                 results.Add(new Result
                 {
                     Title = str,
-                    Score = StringMatcher.FuzzySearch("inst", str).Score
+                    Score = StringMatcher.FuzzySearch("inst", str).RawScore
                 });
             }
 
@@ -72,7 +72,7 @@ namespace Wox.Test
         {
             var compareString = "Can have rum only in my glass";
 
-            var scoreResult = StringMatcher.FuzzySearch(searchString, compareString).Score;
+            var scoreResult = StringMatcher.FuzzySearch(searchString, compareString).RawScore;
 
             Assert.True(scoreResult == 0);
         }
@@ -129,13 +129,12 @@ namespace Wox.Test
             .ToList();
 
             var results = new List<Result>();
-
             foreach (var str in searchStrings)
             {
                 results.Add(new Result
                 {
                     Title = str,
-                    Score = StringMatcher.FuzzySearch(searchTerm, str).Score
+                    Score = StringMatcher.FuzzySearch(searchTerm, str).RawScore
                 });
             }
 
@@ -168,8 +167,11 @@ namespace Wox.Test
         [TestCase("ccs", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Low, true)]
         [TestCase("cand", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("cand", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        public void WhenGivenDesiredPrecisionThenShouldReturnAllResultsGreaterOrEqual(string queryString, string compareString, 
-                                                                                                        int expectedPrecisionScore, bool expectedPrecisionResult)
+        public void WhenGivenDesiredPrecisionThenShouldReturnAllResultsGreaterOrEqual(
+            string queryString, 
+            string compareString, 
+            int expectedPrecisionScore, 
+            bool expectedPrecisionResult)
         {
             var expectedPrecisionString = (StringMatcher.SearchPrecisionScore)expectedPrecisionScore;            
             StringMatcher.UserSettingSearchPrecision = expectedPrecisionString.ToString();

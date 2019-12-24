@@ -43,6 +43,16 @@ namespace Wox.Plugin
         public int Score { get; set; }
 
         /// <summary>
+        /// A list of indexes for the characters to be highlighted in Title
+        /// </summary>
+        public IList<int> TitleHighlightData { get; set; }
+
+        /// <summary>
+        /// A list of indexes for the characters to be highlighted in SubTitle
+        /// </summary>
+        public IList<int> SubTitleHighlightData { get; set; }
+
+        /// <summary>
         /// Only resulsts that originQuery match with curren query will be displayed in the panel
         /// </summary>
         internal Query OriginQuery { get; set; }
@@ -69,7 +79,9 @@ namespace Wox.Plugin
 
             var equality = string.Equals(r?.Title, Title) &&
                            string.Equals(r?.SubTitle, SubTitle) &&
-                           string.Equals(r?.IcoPath, IcoPath);
+                           string.Equals(r?.IcoPath, IcoPath) &&
+                           TitleHighlightData == r.TitleHighlightData &&
+                           SubTitleHighlightData == r.SubTitleHighlightData;
 
             return equality;
         }
@@ -108,7 +120,7 @@ namespace Wox.Plugin
         public object ContextData { get; set; }
 
         /// <summary>
-        /// Plugin ID that generate this result
+        /// Plugin ID that generated this result
         /// </summary>
         public string PluginID { get; internal set; }
     }

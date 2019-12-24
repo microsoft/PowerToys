@@ -17,6 +17,7 @@ namespace Wox.Plugin.Shell
         {
             ReplaceWinR.IsChecked = _settings.ReplaceWinR;
             LeaveShellOpen.IsChecked = _settings.LeaveShellOpen;
+            AlwaysRunAsAdministrator.IsChecked = _settings.RunAsAdministrator;
             LeaveShellOpen.IsEnabled = _settings.Shell != Shell.RunCommand;
 
             LeaveShellOpen.Checked += (o, e) =>
@@ -27,6 +28,16 @@ namespace Wox.Plugin.Shell
             LeaveShellOpen.Unchecked += (o, e) =>
             {
                 _settings.LeaveShellOpen = false;
+            };
+
+            AlwaysRunAsAdministrator.Checked += (o, e) =>
+            {
+                _settings.RunAsAdministrator = true;
+            };
+
+            AlwaysRunAsAdministrator.Unchecked += (o, e) =>
+            {
+                _settings.RunAsAdministrator = false;
             };
 
             ReplaceWinR.Checked += (o, e) =>

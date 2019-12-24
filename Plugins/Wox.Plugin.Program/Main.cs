@@ -24,7 +24,7 @@ namespace Wox.Plugin.Program
         private static PluginInitContext _context;
 
         private static BinaryStorage<Win32[]> _win32Storage;
-        private static BinaryStorage<UWP.Application[]> _uwpStorage;        
+        private static BinaryStorage<UWP.Application[]> _uwpStorage;
         private readonly PluginJsonStorage<Settings> _settingsStorage;
 
         public Main()
@@ -41,7 +41,7 @@ namespace Wox.Plugin.Program
             });
             Log.Info($"|Wox.Plugin.Program.Main|Number of preload win32 programs <{_win32s.Length}>");
             Log.Info($"|Wox.Plugin.Program.Main|Number of preload uwps <{_uwps.Length}>");
-                        
+
             var a = Task.Run(() =>
             {
                 if (IsStartupIndexProgramsRequired || !_win32s.Any())
@@ -68,19 +68,25 @@ namespace Wox.Plugin.Program
 
         public List<Result> Query(Query query)
         {
+            Win32[] win32;
+            UWP.Application[] uwps;
+
             lock (IndexLock)
-            {
-                var results1 = _win32s.AsParallel()
-                    .Where(p => p.Enabled)
-                    .Select(p => p.Result(query.Search, _context.API));
-
-                var results2 = _uwps.AsParallel()
-                    .Where(p => p.Enabled)
-                    .Select(p => p.Result(query.Search, _context.API));
-
-                var result = results1.Concat(results2).Where(r => r.Score > 0).ToList();
-                return result;
+            { // just take the reference inside the lock to eliminate query time issues.
+                win32 = _win32s;
+                uwps = _uwps;
             }
+
+            var results1 = win32.AsParallel()
+                .Where(p => p.Enabled)
+                .Select(p => p.Result(query.Search, _context.API));
+
+            var results2 = uwps.AsParallel()
+                .Where(p => p.Enabled)
+                .Select(p => p.Result(query.Search, _context.API));
+
+            var result = results1.Concat(results2).Where(r => r != null && r.Score > 0).ToList();
+            return result;
         }
 
         public void Init(PluginInitContext context)
@@ -111,14 +117,14 @@ namespace Wox.Plugin.Program
 
         public static void IndexPrograms()
         {
-            var t1 = Task.Run(()=>IndexWin32Programs());
+            var t1 = Task.Run(() => IndexWin32Programs());
 
-            var t2 = Task.Run(()=>IndexUWPPrograms());
+            var t2 = Task.Run(() => IndexUWPPrograms());
 
             Task.WaitAll(t1, t2);
 
             _settings.LastIndexTime = DateTime.Today;
-        }        
+        }
 
         public Control CreateSettingPanel()
         {
@@ -141,7 +147,7 @@ namespace Wox.Plugin.Program
             var program = selectedResult.ContextData as IProgram;
             if (program != null)
             {
-                menuOptions = program.ContextMenus(_context.API);                
+                menuOptions = program.ContextMenus(_context.API);
             }
 
             menuOptions.Add(
@@ -151,7 +157,7 @@ namespace Wox.Plugin.Program
                                     Action = c =>
                                     {
                                         DisableProgram(program);
-                                        _context.API.ShowMsg(_context.API.GetTranslation("wox_plugin_program_disable_dlgtitle_success"), 
+                                        _context.API.ShowMsg(_context.API.GetTranslation("wox_plugin_program_disable_dlgtitle_success"),
                                                                 _context.API.GetTranslation("wox_plugin_program_disable_dlgtitle_success_message"));
                                         return false;
                                     },
@@ -185,22 +191,19 @@ namespace Wox.Plugin.Program
                          );
         }
 
-        public static bool StartProcess(ProcessStartInfo info)
+        public static void StartProcess(Func<ProcessStartInfo, Process> runProcess, ProcessStartInfo info)
         {
             bool hide;
             try
             {
-                Process.Start(info);
-                hide = true;
+                runProcess(info);
             }
             catch (Exception)
             {
                 var name = "Plugin: Program";
-                var message = $"Can't start: {info.FileName}";
+                var message = $"Unable to start: {info.FileName}";
                 _context.API.ShowMsg(name, message, string.Empty);
-                hide = false;
             }
-            return hide;
         }
 
         public void ReloadData()

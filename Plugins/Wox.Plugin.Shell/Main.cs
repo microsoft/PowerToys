@@ -1,14 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using WindowsInput;
 using WindowsInput.Native;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
+using Wox.Plugin.SharedCommands;
 using Application = System.Windows.Application;
 using Control = System.Windows.Controls.Control;
 using Keys = System.Windows.Forms.Keys;
@@ -83,7 +86,7 @@ namespace Wox.Plugin.Shell
                             IcoPath = Image,
                             Action = c =>
                             {
-                                Execute(m);
+                                Execute(Process.Start, PrepareProcessStartInfo(m));
                                 return true;
                             }
                         }));
@@ -116,7 +119,7 @@ namespace Wox.Plugin.Shell
                         IcoPath = Image,
                         Action = c =>
                         {
-                            Execute(m.Key);
+                            Execute(Process.Start, PrepareProcessStartInfo(m.Key));
                             return true;
                         }
                     };
@@ -135,7 +138,7 @@ namespace Wox.Plugin.Shell
                 IcoPath = Image,
                 Action = c =>
                 {
-                    Execute(cmd);
+                    Execute(Process.Start, PrepareProcessStartInfo(cmd));
                     return true;
                 }
             };
@@ -153,27 +156,26 @@ namespace Wox.Plugin.Shell
                     IcoPath = Image,
                     Action = c =>
                     {
-                        Execute(m.Key);
+                        Execute(Process.Start, PrepareProcessStartInfo(m.Key));
                         return true;
                     }
                 }).Take(5);
             return history.ToList();
         }
 
-        private void Execute(string command, bool runAsAdministrator = false)
+        private ProcessStartInfo PrepareProcessStartInfo(string command, bool runAsAdministrator = false)
         {
             command = command.Trim();
             command = Environment.ExpandEnvironmentVariables(command);
+            var workingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            var runAsAdministratorArg = !runAsAdministrator && !_settings.RunAsAdministrator ? "" : "runas";
 
             ProcessStartInfo info;
             if (_settings.Shell == Shell.Cmd)
             {
                 var arguments = _settings.LeaveShellOpen ? $"/k \"{command}\"" : $"/c \"{command}\" & pause";
-                info = new ProcessStartInfo
-                {
-                    FileName = "cmd.exe",
-                    Arguments = arguments,
-                };
+                
+                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, arguments, runAsAdministratorArg);
             }
             else if (_settings.Shell == Shell.Powershell)
             {
@@ -186,11 +188,8 @@ namespace Wox.Plugin.Shell
                 {
                     arguments = $"\"{command} ; Read-Host -Prompt \\\"Press Enter to continue\\\"\"";
                 }
-                info = new ProcessStartInfo
-                {
-                    FileName = "powershell.exe",
-                    Arguments = arguments
-                };
+
+                info = ShellCommand.SetProcessStartInfo("powershell.exe", workingDirectory, arguments, runAsAdministratorArg);
             }
             else if (_settings.Shell == Shell.RunCommand)
             {
@@ -200,41 +199,48 @@ namespace Wox.Plugin.Shell
                     var filename = parts[0];
                     if (ExistInPath(filename))
                     {
-                        var arguemtns = parts[1];
-                        info = new ProcessStartInfo
-                        {
-                            FileName = filename,
-                            Arguments = arguemtns
-                        };
+                        var arguments = parts[1];
+                        info = ShellCommand.SetProcessStartInfo(filename, workingDirectory, arguments, runAsAdministratorArg);
                     }
                     else
                     {
-                        info = new ProcessStartInfo(command);
+                        info = ShellCommand.SetProcessStartInfo(command, verb: runAsAdministratorArg);
                     }
                 }
                 else
                 {
-                    info = new ProcessStartInfo(command);
+                    info = ShellCommand.SetProcessStartInfo(command, verb: runAsAdministratorArg);
                 }
             }
             else
             {
-                return;
+                throw new NotImplementedException();
             }
 
-
             info.UseShellExecute = true;
-            info.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            info.Verb = runAsAdministrator ? "runas" : "";
 
+            _settings.AddCmdHistory(command);
+
+            return info;
+        }
+
+        private void Execute(Func<ProcessStartInfo, Process> startProcess,ProcessStartInfo info)
+        {
             try
             {
-                Process.Start(info);
-                _settings.AddCmdHistory(command);
+                startProcess(info);                
             }
             catch (FileNotFoundException e)
             {
-                MessageBox.Show($"Command not found: {e.Message}");
+                var name = "Plugin: Shell";
+                var message = $"Command not found: {e.Message}";
+                _context.API.ShowMsg(name, message);
+            }
+            catch(Win32Exception e)
+            {
+                var name = "Plugin: Shell";
+                var message = $"Error running the command: {e.Message}";
+                _context.API.ShowMsg(name, message);
             }
         }
 
@@ -316,19 +322,31 @@ namespace Wox.Plugin.Shell
 
         public List<Result> LoadContextMenus(Result selectedResult)
         {
-            return new List<Result>
+            var resultlist = new List<Result>
             {
-                        new Result
-                        {
-                            Title = _context.API.GetTranslation("wox_plugin_cmd_run_as_administrator"),
-                            Action = c =>
-                            {
-                                Execute(selectedResult.Title, true);
-                                return true;
-                            },
-                            IcoPath = Image
-                        }
-                     };
+                new Result
+                {
+                    Title = _context.API.GetTranslation("wox_plugin_cmd_run_as_different_user"),
+                    Action = c =>
+                    {
+                        Task.Run(() =>Execute(ShellCommand.RunAsDifferentUser, PrepareProcessStartInfo(selectedResult.Title)));
+                        return true;
+                    },
+                    IcoPath = "Images/user.png"
+                },
+                new Result
+                {
+                    Title = _context.API.GetTranslation("wox_plugin_cmd_run_as_administrator"),
+                    Action = c =>
+                    {
+                        Execute(Process.Start, PrepareProcessStartInfo(selectedResult.Title, true));
+                        return true;
+                    },
+                    IcoPath = Image
+                }
+            };
+
+            return resultlist;
         }
     }
 }
