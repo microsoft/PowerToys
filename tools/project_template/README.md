@@ -6,7 +6,7 @@
 - The template will be available in Visual Studio, when adding a new project, under the `Visual C++` tab.
 
 ## Contributing
-If you'd like to work on a PowerToy template, make required modifications to `\tools\project_template\ModuleTemplate.vcxproj` and then use a dedicated solution `PowerToyTemplate.sln` to export it as a template. Note that `ModuleTemplate.vcxproj` is actually a project templae, therefore uncompilable, so we also have a dedicated `ModuleTemplateCompileTest.vcxproj` project referenced from the `PowerToys.sln` to help keeping the template sources up to date.
+If you'd like to work on a PowerToy template, make required modifications to `\tools\project_template\ModuleTemplate.vcxproj` and then use the dedicated solution `PowerToyTemplate.sln` to export it as a template. Note that `ModuleTemplate.vcxproj` is actually a project template, therefore uncompilable, so we also have a dedicated `ModuleTemplateCompileTest.vcxproj` project referenced from the `PowerToys.sln` to help keeping the template sources up to date and verify it compiles correctly.
 
 ## Create a new PowerToy Module
 
