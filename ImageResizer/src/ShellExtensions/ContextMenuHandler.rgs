@@ -1,0 +1,35 @@
+HKCR
+{
+	NoRemove CLSID
+	{
+		ForceRemove {51B4D7E5-7568-4234-B4BB-47FB3C016A69} = s 'ContextMenuHandler Class'
+		{
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			TypeLib = s '{09082E28-A5CA-47A7-8571-A2236C411E91}'
+			Version = s '3.1'
+		}
+	}
+	NoRemove Directory
+	{
+		NoRemove ShellEx
+		{
+			NoRemove DragDropHandlers
+			{
+				ForceRemove 'Image Resizer' = s '{51B4D7E5-7568-4234-B4BB-47FB3C016A69}'
+			}
+		}
+	}
+	NoRemove *
+	{
+		NoRemove ShellEx
+		{
+			NoRemove ContextMenuHandlers
+			{
+				ForceRemove 'Image Resizer' = s '{51B4D7E5-7568-4234-B4BB-47FB3C016A69}'
+			}
+		}
+	}
+}
