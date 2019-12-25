@@ -137,27 +137,52 @@ namespace FancyZonesEditor
                         Rectangle rect = new Rectangle();
                         Grid.SetRow(rect, row);
                         Grid.SetColumn(rect, col);
-                        int span = 1;
+                        int rowSpan = 1;
                         int walk = row + 1;
                         while ((walk < grid.Rows) && grid.CellChildMap[walk, col] == childIndex)
                         {
-                            span++;
+                            rowSpan++;
                             walk++;
                         }
 
-                        Grid.SetRowSpan(rect, span);
+                        Grid.SetRowSpan(rect, rowSpan);
 
-                        span = 1;
+                        int columnSpan = 1;
                         walk = col + 1;
                         while ((walk < grid.Columns) && grid.CellChildMap[row, walk] == childIndex)
                         {
-                            span++;
+                            columnSpan++;
                             walk++;
                         }
 
-                        Grid.SetColumnSpan(rect, span);
+                        Grid.SetColumnSpan(rect, columnSpan);
 
-                        rect.Margin = margin;
+                        Thickness m = margin;
+                        if (IsActualSize)
+                        {
+                            // if we are handling zones leanning on the edges of the screen we need to increase margin by 2
+                            if (col == 0)
+                            {
+                                m.Left *= divisor;
+                            }
+
+                            if (row == 0)
+                            {
+                                m.Top *= divisor;
+                            }
+
+                            if ((col == grid.Columns - 1) || (col + columnSpan == grid.Columns))
+                            {
+                                m.Right *= divisor;
+                            }
+
+                            if ((row == grid.Rows - 1) || (row + rowSpan == grid.Rows))
+                            {
+                                m.Bottom *= divisor;
+                            }
+                        }
+
+                        rect.Margin = m;
                         rect.StrokeThickness = 1;
                         rect.Stroke = Brushes.DarkGray;
                         rect.Fill = Brushes.LightGray;
