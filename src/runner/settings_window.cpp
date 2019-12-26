@@ -68,7 +68,7 @@ void dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
         else if (modules().find(name) != modules().end())
         {
             const auto element = powertoy_element.Value().Stringify();
-           modules().at(name).call_custom_action(element.c_str());
+            modules().at(name).call_custom_action(element.c_str());
         }
     }
 }
@@ -145,7 +145,6 @@ void receive_json_send_to_main_thread(const std::wstring& msg)
     dispatch_run_on_main_ui_thread(dispatch_received_json_callback, copy);
 }
 
-
 // Try to run the Settings process with non-elevated privileges.
 BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, PROCESS_INFORMATION* process_info)
 {
@@ -166,7 +165,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 
     SIZE_T size = 0;
     InitializeProcThreadAttributeList(nullptr, 1, 0, &size);
-    auto pproc_buffer = std::unique_ptr<char[]>{new (std::nothrow)char[size]};
+    auto pproc_buffer = std::unique_ptr<char[]>{ new (std::nothrow) char[size] };
     auto pptal = reinterpret_cast<PPROC_THREAD_ATTRIBUTE_LIST>(pproc_buffer.get());
     if (!pptal)
     {
