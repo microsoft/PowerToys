@@ -47,7 +47,7 @@ IFACEMETHODIMP ZoneSet::AddZone(winrt::com_ptr<IZone> zone) noexcept
 IFACEMETHODIMP_(winrt::com_ptr<IZone>) ZoneSet::ZoneFromPoint(POINT pt) noexcept
 {
     winrt::com_ptr<IZone> selectedZone = nullptr;
-    int distanceToSelectedZoneTop = 0; 
+    int distanceToSelectedZoneLeftCorner = 0; 
 
     for (auto iter = m_zones.begin(); iter != m_zones.end(); iter++)
     {
@@ -61,16 +61,16 @@ IFACEMETHODIMP_(winrt::com_ptr<IZone>) ZoneSet::ZoneFromPoint(POINT pt) noexcept
                     // This is the first zone we've found containing this point
                     selectedZone = zone;
                     RECT* r = &selectedZone->GetZoneRect();
-                    distanceToSelectedZoneTop = (pt.y - r->top);
+                    distanceToSelectedZoneLeftCorner = sqrt(pow(pt.y - r->top, 2) + pow(pt.x - r->left, 2));
                 }
                 else
                 {
                     // We found another possible zone, so need to determine if we should change the target zone to this one
-                    // Use closest distance to zone's top border to decide which zone is selected
-                    int distanceToNewZoneTop = (pt.y - zoneRect->top);
-                    if (distanceToNewZoneTop < distanceToSelectedZoneTop)
+                    // Use closest distance to zone's top left corner to decide which zone is selected
+                    int distanceToNewZoneLeftCorner = sqrt(pow(pt.y - zoneRect->top, 2) + pow(pt.x - zoneRect->left, 2));
+                    if (distanceToNewZoneLeftCorner < distanceToSelectedZoneLeftCorner)
                     {
-                        distanceToSelectedZoneTop = distanceToNewZoneTop;
+                        distanceToSelectedZoneLeftCorner = distanceToNewZoneLeftCorner;
                         selectedZone = zone;
                     }
                 }
