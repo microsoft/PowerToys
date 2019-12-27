@@ -127,7 +127,7 @@ export class GeneralSettings extends React.Component <any, any> {
           ref={(input) => {this.startup_reference=input;}}
         />
         <BoolToggleSettingsControl
-          setting={{display_name: 'Run PowerToys with elevated privileges', value: this.state.settings.general.run_elevated}}
+          setting={{display_name: 'Run PowerToys as administrator', value: this.state.settings.general.run_elevated}}
           on_change={this.parent_on_change}
           ref={(input) => {this.elevated_reference=input;}}
         />
