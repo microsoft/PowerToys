@@ -122,12 +122,12 @@ export class GeneralSettings extends React.Component <any, any> {
         <Separator />
         <Text variant='xLarge'>General</Text>
         <BoolToggleSettingsControl
-          setting={{display_name: 'Start at login', value: this.state.settings.general.startup}}
+          setting={{display_name: 'Run at Startup', value: this.state.settings.general.startup}}
           on_change={this.parent_on_change}
           ref={(input) => {this.startup_reference=input;}}
         />
         <BoolToggleSettingsControl
-          setting={{display_name: 'Run PowerToys as administrator', value: this.state.settings.general.run_elevated}}
+          setting={{display_name: 'Always run as administrator', value: this.state.settings.general.run_elevated}}
           on_change={this.parent_on_change}
           ref={(input) => {this.elevated_reference=input;}}
         />
@@ -135,11 +135,11 @@ export class GeneralSettings extends React.Component <any, any> {
           setting={{
             display_name: '',
             value: this.state.settings.general.is_elevated ? 
-                   'PowerToys is currently running with elevated privileges. You can restart it to run non-elevated only for this session, without changing the default setting.' :
-                   'PowerToys is currently running without elevated privileges. You can restart it to run elevated only for this session, without changing the default setting.',
+                   'Running as administrator. Do you wish to run as user instead?' :
+                   'Running as user. Do you wish to run as administrator instead?',
             button_text: this.state.settings.general.is_elevated ? 
-                          'Restart without elevated privileges' :
-                          'Restart with elevated privileges'
+                          'Restart as user' :
+                          'Restart as administrator'
           }}
           action_name={'restart_elevation'}
           action_callback={(action_name: any, value:any) => {
