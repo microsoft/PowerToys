@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
+  <Product Id="*"
+           Language="1033"
+           Manufacturer="Brice Lambson"
+           Name="Image Resizer for Windows"
+           UpgradeCode="71eab0d8-4d33-480f-ada4-3bfbbb23e794"
+           Version="3.1.3.0">
+    <Package Compressed="yes"
+             InstallScope="perMachine"
+             InstallerVersion="150" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate />
+    <PropertyRef Id="NETFRAMEWORK40CLIENT" />
+    <Condition Message="This application requires .NET Framework 4 Client Profile. Please install the .NET Framework then run this installer again.">
+      <![CDATA[Installed OR NETFRAMEWORK40CLIENT]]>
+    </Condition>
+    <Feature Id="ProductFeature">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentGroupRef Id="ResourcesComponents"/>
+    </Feature>
+  </Product>
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="Image Resizer for Windows" />
+      </Directory>
+    </Directory>
+  </Fragment>
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="ImageResizerComponent">
+        <File Id="ImageResizer" Source="$(var.ImageResizer.TargetPath)">
+          <netfx:NativeImage Id="ImageResizer" Platform="all" Priority="0" />
+        </File>
+        <RegistryValue Root="HKLM" Key="Software\BriceLambson\ImageResizer" Value="[#ImageResizer]" Type="string" />
+      </Component>
+      <Component Id="ShellExtensionsComponent">
+        <File Id="ShellExtensions" Source="$(var.ShellExtensions.TargetPath)" />
+        <RegistryKey Root="HKCR" Key="CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
+          <RegistryValue Value="[#ShellExtensions]" Type="string" />
+          <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
+        </RegistryKey>
+        <RegistryValue Root="HKCR"
+                       Key="Directory\ShellEx\DragDropHandlers\Image Resizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="*\ShellEx\ContextMenuHandlers\Image Resizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+      </Component>
+      <Component Id="MvvmLightComponent">
+        <File Source="$(var.ImageResizer.TargetDir)GalaSoft.MvvmLight.dll" />
+      </Component>
+      <Component Id="InteractivityComponent">
+        <File Source="$(var.ImageResizer.TargetDir)System.Windows.Interactivity.dll">
+          <!-- NB: Needed since it's only referenced in XAML. -->
+          <netfx:NativeImage Id="Interactivity" Platform="all" Priority="0"/>
+        </File>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

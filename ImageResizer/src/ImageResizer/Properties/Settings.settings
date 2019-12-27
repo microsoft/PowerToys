@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ImageResizer.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="SelectedSizeIndex" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="ShrinkOnly" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Replace" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="IgnoreOrientation" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="JpegQualityLevel" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">90</Value>
+    </Setting>
+    <Setting Name="PngInterlaceOption" Type="System.Windows.Media.Imaging.PngInterlaceOption" Scope="User">
+      <Value Profile="(Default)">Default</Value>
+    </Setting>
+    <Setting Name="TiffCompressOption" Type="System.Windows.Media.Imaging.TiffCompressOption" Scope="User">
+      <Value Profile="(Default)">Default</Value>
+    </Setting>
+    <Setting Name="FileName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">%1 (%2)</Value>
+    </Setting>
+    <Setting Name="Sizes" Type="System.Collections.ObjectModel.ObservableCollection&lt;ImageResizer.Models.ResizeSize&gt;" Scope="User">
+      <Value Profile="(Default)">
+          &lt;ArrayOfResizeSize xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+            &lt;ResizeSize&gt;
+              &lt;Name&gt;$small$&lt;/Name&gt;
+              &lt;Fit&gt;Fit&lt;/Fit&gt;
+              &lt;Width&gt;854&lt;/Width&gt;
+              &lt;Height&gt;480&lt;/Height&gt;
+              &lt;Unit&gt;Pixel&lt;/Unit&gt;
+            &lt;/ResizeSize&gt;
+            &lt;ResizeSize&gt;
+              &lt;Name&gt;$medium$&lt;/Name&gt;
+              &lt;Fit&gt;Fit&lt;/Fit&gt;
+              &lt;Width&gt;1366&lt;/Width&gt;
+              &lt;Height&gt;768&lt;/Height&gt;
+              &lt;Unit&gt;Pixel&lt;/Unit&gt;
+            &lt;/ResizeSize&gt;
+            &lt;ResizeSize&gt;
+              &lt;Name&gt;$large$&lt;/Name&gt;
+              &lt;Fit&gt;Fit&lt;/Fit&gt;
+              &lt;Width&gt;1920&lt;/Width&gt;
+              &lt;Height&gt;1080&lt;/Height&gt;
+              &lt;Unit&gt;Pixel&lt;/Unit&gt;
+            &lt;/ResizeSize&gt;
+            &lt;ResizeSize&gt;
+              &lt;Name&gt;$phone$&lt;/Name&gt;
+              &lt;Fit&gt;Fit&lt;/Fit&gt;
+              &lt;Width&gt;320&lt;/Width&gt;
+              &lt;Height&gt;569&lt;/Height&gt;
+              &lt;Unit&gt;Pixel&lt;/Unit&gt;
+            &lt;/ResizeSize&gt;
+          &lt;/ArrayOfResizeSize&gt;
+        </Value>
+    </Setting>
+    <Setting Name="KeepDateModified" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="FallbackEncoder" Type="System.Guid" Scope="User">
+      <Value Profile="(Default)">19e4a5aa-5662-4fc5-a0c0-1758028e1057</Value>
+    </Setting>
+    <Setting Name="CustomSize" Type="ImageResizer.Models.CustomSize" Scope="User">
+      <Value Profile="(Default)">
+          &lt;CustomSize xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+            &lt;Name&gt;Custom&lt;/Name&gt;
+            &lt;Fit&gt;Fit&lt;/Fit&gt;
+            &lt;Width&gt;1024&lt;/Width&gt;
+            &lt;Height&gt;640&lt;/Height&gt;
+            &lt;Unit&gt;Pixel&lt;/Unit&gt;
+          &lt;/CustomSize&gt;
+        </Value>
+    </Setting>
+    <Setting Name="UpgradeRequired" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
