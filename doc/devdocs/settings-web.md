@@ -15,6 +15,8 @@ npm run start
 npm run build
 ```
 
+**Note:** you will need to rebuild the settings project to pick up the changes
+
 ## Updating the icons
 
 Icons inside [`src/icons/`](/src/settings-web/src/icons/) were generated from the [Office UI Fabric Icons subset generation tool.](https://uifabricicons.azurewebsites.net/)
