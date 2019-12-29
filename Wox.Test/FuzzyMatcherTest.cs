@@ -12,17 +12,25 @@ namespace Wox.Test
     [TestFixture]
     public class FuzzyMatcherTest
     {
+        private const string Chrome = "Chrome";
+        private const string CandyCrushSagaFromKing = "Candy Crush Saga from King";
+        private const string HelpCureHopeRaiseOnMindEntityChrome = "Help cure hope raise on mind entity Chrome";
+        private const string UninstallOrChangeProgramsOnYourComputer = "Uninstall or change programs on your computer";
+        private const string LastIsChrome = "Last is chrome";
+        private const string OneOneOneOne = "1111";
+        private const string MicrosoftSqlServerManagementStudio = "Microsoft SQL Server Management Studio";
+
         public List<string> GetSearchStrings()
             => new List<string>
             {
-                "Chrome",
+                Chrome,
                 "Choose which programs you want Windows to use for activities like web browsing, editing photos, sending e-mail, and playing music.",
-                "Help cure hope raise on mind entity Chrome ",
-                "Candy Crush Saga from King",
-                "Uninstall or change programs on your computer",
+                HelpCureHopeRaiseOnMindEntityChrome,
+                CandyCrushSagaFromKing,
+                UninstallOrChangeProgramsOnYourComputer,
                 "Add, change, and manage fonts on your computer",
-                "Last is chrome",
-                "1111"
+                LastIsChrome,
+                OneOneOneOne
             };
 
         public List<int> GetPrecisionScores()
@@ -76,17 +84,17 @@ namespace Wox.Test
 
             Assert.True(scoreResult == 0);
         }
-        
+
         [TestCase("chr")]
         [TestCase("chrom")]
-        [TestCase("chrome")]        
+        [TestCase("chrome")]
         [TestCase("cand")]
         [TestCase("cpywa")]
         [TestCase("ccs")]
         public void WhenGivenStringsAndAppliedPrecisionFilteringThenShouldReturnGreaterThanPrecisionScoreResults(string searchTerm)
         {
             var results = new List<Result>();
-            
+
             foreach (var str in GetSearchStrings())
             {
                 results.Add(new Result
@@ -94,7 +102,7 @@ namespace Wox.Test
                     Title = str,
                     Score = StringMatcher.FuzzySearch(searchTerm, str).Score
                 });
-            }            
+            }
 
             foreach (var precisionScore in GetPrecisionScores())
             {
@@ -114,20 +122,23 @@ namespace Wox.Test
             }
         }
 
-        [TestCase("chrome")]
-        public void WhenGivenStringsForCalScoreMethodThenShouldReturnCurrentScoring(string searchTerm)
+        [TestCase]
+        public void WhenGivenStringsForCalScoreMethodThenShouldReturnCurrentScoring()
         {
+            // Arrange
+            string searchTerm = "chrome"; // since this looks for specific results it will always be one case
             var searchStrings = new List<string>
             {
-                "Chrome",//SCORE: 107
-                "Last is chrome",//SCORE: 53
-                "Help cure hope raise on mind entity Chrome",//SCORE: 21
-                "Uninstall or change programs on your computer", //SCORE: 15
-                "Candy Crush Saga from King"//SCORE: 0
+                Chrome,//SCORE: 107
+                LastIsChrome,//SCORE: 53
+                HelpCureHopeRaiseOnMindEntityChrome,//SCORE: 21
+                UninstallOrChangeProgramsOnYourComputer, //SCORE: 15
+                CandyCrushSagaFromKing//SCORE: 0
             }
             .OrderByDescending(x => x)
             .ToList();
 
+            // Act
             var results = new List<Result>();
             foreach (var str in searchStrings)
             {
@@ -138,23 +149,23 @@ namespace Wox.Test
                 });
             }
 
-            var orderedResults = results.OrderByDescending(x => x.Title).ToList();
+            // Assert
+            VerifyResult(147, Chrome);
+            VerifyResult(93, LastIsChrome);
+            VerifyResult(41, HelpCureHopeRaiseOnMindEntityChrome);
+            VerifyResult(35, UninstallOrChangeProgramsOnYourComputer);
+            VerifyResult(0, CandyCrushSagaFromKing);
 
-            Debug.WriteLine("");
-            Debug.WriteLine("###############################################");
-            Debug.WriteLine("SEARCHTERM: " + searchTerm);
-            foreach (var item in orderedResults)
+            void VerifyResult(int expectedScore, string expectedTitle)
             {
-                Debug.WriteLine("SCORE: " + item.Score.ToString() + ", FoundString: " + item.Title);
+                var result = results.FirstOrDefault(x => x.Title == expectedTitle);
+                if (result == null)
+                {
+                    Assert.Fail($"Fail to find result: {expectedTitle} in result list");
+                }
+
+                Assert.AreEqual(expectedScore, result.Score, $"Expected score for {expectedTitle}: {expectedScore}, Actual: {result.Score}");
             }
-            Debug.WriteLine("###############################################");
-            Debug.WriteLine("");
-                       
-            Assert.IsTrue(orderedResults[0].Score == 15 && orderedResults[0].Title == searchStrings[0]);
-            Assert.IsTrue(orderedResults[1].Score == 53 && orderedResults[1].Title == searchStrings[1]);
-            Assert.IsTrue(orderedResults[2].Score == 21 && orderedResults[2].Title == searchStrings[2]);
-            Assert.IsTrue(orderedResults[3].Score == 107 && orderedResults[3].Title == searchStrings[3]);
-            Assert.IsTrue(orderedResults[4].Score == 0 && orderedResults[4].Title == searchStrings[4]);
         }
 
         [TestCase("goo", "Google Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
@@ -168,24 +179,58 @@ namespace Wox.Test
         [TestCase("cand", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("cand", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
         public void WhenGivenDesiredPrecisionThenShouldReturnAllResultsGreaterOrEqual(
-            string queryString, 
-            string compareString, 
-            int expectedPrecisionScore, 
+            string queryString,
+            string compareString,
+            int expectedPrecisionScore,
             bool expectedPrecisionResult)
         {
-            var expectedPrecisionString = (StringMatcher.SearchPrecisionScore)expectedPrecisionScore;            
-            StringMatcher.UserSettingSearchPrecision = expectedPrecisionString.ToString();
+            // Arrange
+            var expectedPrecisionString = (StringMatcher.SearchPrecisionScore)expectedPrecisionScore;
+            StringMatcher.UserSettingSearchPrecision = expectedPrecisionScore; // this is why static state is evil...
+
+            // Act
             var matchResult = StringMatcher.FuzzySearch(queryString, compareString);
 
-            Debug.WriteLine("");
-            Debug.WriteLine("###############################################");
-            Debug.WriteLine($"SearchTerm: {queryString} PrecisionLevelSetAt: {expectedPrecisionString} ({expectedPrecisionScore})");
-            Debug.WriteLine($"SCORE: {matchResult.Score.ToString()}, ComparedString: {compareString}");
-            Debug.WriteLine("###############################################");
-            Debug.WriteLine("");
+            // Assert
+            Assert.AreEqual(expectedPrecisionResult, matchResult.IsSearchPrecisionScoreMet(),
+                $"Query:{queryString}{Environment.NewLine} " +
+                $"Compare:{compareString}{Environment.NewLine}" +
+                $"Raw Score: {matchResult.RawScore}{Environment.NewLine}" +
+                $"Precision Level: {expectedPrecisionString}={expectedPrecisionScore}");
+        }
 
-            var matchPrecisionResult = matchResult.IsSearchPrecisionScoreMet();            
-            Assert.IsTrue(matchPrecisionResult == expectedPrecisionResult);
+        [TestCase("exce", "OverLeaf-Latex: An online LaTeX editor", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("term", "Windows Terminal (Preview)", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sql s managa", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("sql' s manag", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("sql s manag", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sql manag", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sql", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sql serv", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("mic", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("chr", "Shutdown", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("chr", "Change settings for text-to-speech and for speech recognition (if installed).", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("a test", "This is a test", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("test", "This is a test", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
+        public void WhenGivenQueryShouldReturnResultsContainingAllQuerySubstrings(
+            string queryString,
+            string compareString,
+            int expectedPrecisionScore,
+            bool expectedPrecisionResult)
+        {
+            // Arrange
+            var expectedPrecisionString = (StringMatcher.SearchPrecisionScore)expectedPrecisionScore;
+            StringMatcher.UserSettingSearchPrecision = expectedPrecisionScore; // this is why static state is evil...
+
+            // Act
+            var matchResult = StringMatcher.FuzzySearch(queryString, compareString);
+
+            // Assert
+            Assert.AreEqual(expectedPrecisionResult, matchResult.IsSearchPrecisionScoreMet(),
+                $"Query:{queryString}{Environment.NewLine} " +
+                $"Compare:{compareString}{Environment.NewLine}" +
+                $"Raw Score: {matchResult.RawScore}{Environment.NewLine}" +
+                $"Precision Level: {expectedPrecisionString}={expectedPrecisionScore}");
         }
     }
 }

@@ -6,13 +6,14 @@ using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
 using static Wox.Infrastructure.StringMatcher;
 
-namespace Wox.Infrastructure 
+namespace Wox.Infrastructure
 {
     public static class StringMatcher
     {
         public static MatchOption DefaultMatchOption = new MatchOption();
 
-        public static string UserSettingSearchPrecision { get; set; }
+        public static int UserSettingSearchPrecision { get; set; }
+
         public static bool ShouldUsePinyin { get; set; }
 
         [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
@@ -45,51 +46,106 @@ namespace Wox.Infrastructure
         public static MatchResult FuzzySearch(string query, string stringToCompare, MatchOption opt)
         {
             if (string.IsNullOrEmpty(stringToCompare) || string.IsNullOrEmpty(query)) return new MatchResult { Success = false };
-
+            
             query = query.Trim();
 
-            var len = stringToCompare.Length;
-            var compareString = opt.IgnoreCase ? stringToCompare.ToLower() : stringToCompare;
-            var pattern = opt.IgnoreCase ? query.ToLower() : query;
+            var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToLower() : stringToCompare;
 
-            var sb = new StringBuilder(stringToCompare.Length + (query.Length * (opt.Prefix.Length + opt.Suffix.Length)));
-            var patternIdx = 0;
+            var queryWithoutCase = opt.IgnoreCase ? query.ToLower() : query;
+
+            int currentQueryToCompareIndex = 0;
+            var queryToCompareSeparated = queryWithoutCase.Split(' ');
+            var currentQueryToCompare = queryToCompareSeparated[currentQueryToCompareIndex];
+
+            var patternIndex = 0;
             var firstMatchIndex = -1;
+            var firstMatchIndexInWord = -1;
             var lastMatchIndex = 0;
-            char ch;
+            bool allMatched = false;
+            bool isFullWordMatched = false;
+            bool allWordsFullyMatched = true;
 
             var indexList = new List<int>();
 
-            for (var idx = 0; idx < len; idx++)
+            for (var index = 0; index < fullStringToCompareWithoutCase.Length; index++)
             {
-                ch = stringToCompare[idx];
-                if (compareString[idx] == pattern[patternIdx])
+                var ch = stringToCompare[index];
+                if (fullStringToCompareWithoutCase[index] == currentQueryToCompare[patternIndex])
                 {
                     if (firstMatchIndex < 0)
-                        firstMatchIndex = idx;
-                    lastMatchIndex = idx + 1;
+                    { // first matched char will become the start of the compared string
+                        firstMatchIndex = index;
+                    }
 
-                    indexList.Add(idx);
-                    sb.Append(opt.Prefix + ch + opt.Suffix);
-                    patternIdx += 1;
+                    if (patternIndex == 0)
+                    { // first letter of current word
+                        isFullWordMatched = true;
+                        firstMatchIndexInWord = index;
+                    }
+                    else if (!isFullWordMatched)
+                    { // we want to verify that there is not a better match if this is not a full word
+                        // in order to do so we need to verify all previous chars are part of the pattern
+                        int startIndexToVerify = index - patternIndex;
+                        bool allMatch = true;
+                        for (int indexToCheck = 0; indexToCheck < patternIndex; indexToCheck++)
+                        {   
+                            if (fullStringToCompareWithoutCase[startIndexToVerify + indexToCheck] !=
+                                currentQueryToCompare[indexToCheck])
+                            {
+                                allMatch = false;
+                            }
+                        }
+
+                        if (allMatch)
+                        { // update to this as a full word
+                            isFullWordMatched = true;
+                            if (currentQueryToCompareIndex == 0)
+                            { // first word so we need to update start index
+                                firstMatchIndex = startIndexToVerify;
+                            }
+
+                            indexList.RemoveAll(x => x >= firstMatchIndexInWord);
+                            for (int indexToCheck = 0; indexToCheck < patternIndex; indexToCheck++)
+                            { // update the index list
+                                indexList.Add(startIndexToVerify + indexToCheck);
+                            }
+                        }
+                    }
+
+                    lastMatchIndex = index + 1;
+                    indexList.Add(index);
+
+                    // increase the pattern matched index and check if everything was matched
+                    if (++patternIndex == currentQueryToCompare.Length)
+                    {
+                        if (++currentQueryToCompareIndex >= queryToCompareSeparated.Length)
+                        { // moved over all the words
+                            allMatched = true;
+                            break;
+                        }
+
+                        // otherwise move to the next word
+                        currentQueryToCompare = queryToCompareSeparated[currentQueryToCompareIndex];
+                        patternIndex = 0;
+                        if (!isFullWordMatched)
+                        { // if any of the words was not fully matched all are not fully matched
+                            allWordsFullyMatched = false;
+                        }
+                    }
                 }
                 else
                 {
-                    sb.Append(ch);
-                }
-
-                // match success, append remain char
-                if (patternIdx == pattern.Length && (idx + 1) != compareString.Length)
-                {
-                    sb.Append(stringToCompare.Substring(idx + 1));
-                    break;
+                    isFullWordMatched = false;
                 }
             }
 
-            // return rendered string if we have a match for every char
-            if (patternIdx == pattern.Length)
+
+            // return rendered string if we have a match for every char or all substring without whitespaces matched
+            if (allMatched)
             {
-                var score = CalculateSearchScore(query, stringToCompare, firstMatchIndex, lastMatchIndex - firstMatchIndex);
+                // check if all query string was contained in string to compare
+                bool containedFully = lastMatchIndex - firstMatchIndex == queryWithoutCase.Length;
+                var score = CalculateSearchScore(query, stringToCompare, firstMatchIndex, lastMatchIndex - firstMatchIndex, containedFully, allWordsFullyMatched);
                 var pinyinScore = ScoreForPinyin(stringToCompare, query);
 
                 var result = new MatchResult
@@ -105,7 +161,8 @@ namespace Wox.Infrastructure
             return new MatchResult { Success = false };
         }
 
-        private static int CalculateSearchScore(string query, string stringToCompare, int firstIndex, int matchLen)
+        private static int CalculateSearchScore(string query, string stringToCompare, int firstIndex, int matchLen,
+            bool isFullyContained, bool allWordsFullyMatched)
         {
             // A match found near the beginning of a string is scored more than a match found near the end
             // A match is scored more if the characters in the patterns are closer to each other, 
@@ -120,6 +177,16 @@ namespace Wox.Infrastructure
             else if (stringToCompare.Length - query.Length < 10)
             {
                 score += 10;
+            }
+
+            if (isFullyContained)
+            {
+                score += 20; // honestly I'm not sure what would be a good number here or should it factor the size of the pattern
+            }
+
+            if (allWordsFullyMatched)
+            {
+                score += 20;
             }
 
             return score;
@@ -143,11 +210,11 @@ namespace Wox.Infrastructure
             {
                 if (Alphabet.ContainsChinese(source))
                 {
-                    var combination = Alphabet.PinyinComination(source);                    
+                    var combination = Alphabet.PinyinComination(source);
                     var pinyinScore = combination
                         .Select(pinyin => FuzzySearch(target, string.Join("", pinyin)).Score)
                         .Max();
-                    var acronymScore = combination.Select(Alphabet.Acronym)                        
+                    var acronymScore = combination.Select(Alphabet.Acronym)
                         .Select(pinyin => FuzzySearch(target, pinyin).Score)
                         .Max();
                     var score = Math.Max(pinyinScore, acronymScore);
@@ -162,7 +229,7 @@ namespace Wox.Infrastructure
             {
                 return 0;
             }
-        }        
+        }
     }
 
     public class MatchResult
@@ -178,6 +245,7 @@ namespace Wox.Infrastructure
         /// The raw calculated search score without any search precision filtering applied.
         /// </summary>
         private int _rawScore;
+
         public int RawScore
         {
             get { return _rawScore; }
@@ -200,10 +268,7 @@ namespace Wox.Infrastructure
 
         private bool IsSearchPrecisionScoreMet(int score)
         {
-            var precisionScore = (SearchPrecisionScore)Enum.Parse(
-               typeof(SearchPrecisionScore),
-               UserSettingSearchPrecision ?? SearchPrecisionScore.Regular.ToString());
-            return score >= (int)precisionScore;
+            return score >= UserSettingSearchPrecision;
         }
 
         private int ApplySearchPrecisionFilter(int score)
@@ -214,22 +279,18 @@ namespace Wox.Infrastructure
 
     public class MatchOption
     {
-        public MatchOption()
-        {
-            Prefix = "";
-            Suffix = "";
-            IgnoreCase = true;
-        }
-
         /// <summary>
         /// prefix of match char, use for hightlight
         /// </summary>
-        public string Prefix { get; set; }
+        [Obsolete("this is never used")]
+        public string Prefix { get; set; } = "";
+
         /// <summary>
         /// suffix of match char, use for hightlight
         /// </summary>
-        public string Suffix { get; set; }
+        [Obsolete("this is never used")]
+        public string Suffix { get; set; } = "";
 
-        public bool IgnoreCase { get; set; }
+        public bool IgnoreCase { get; set; } = true;
     }
 }
