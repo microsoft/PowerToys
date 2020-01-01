@@ -191,6 +191,13 @@ namespace Wox.Test
             // Act
             var matchResult = StringMatcher.FuzzySearch(queryString, compareString);
 
+            Debug.WriteLine("");
+            Debug.WriteLine("###############################################");
+            Debug.WriteLine($"QueryString: {queryString}     CompareString: {compareString}");
+            Debug.WriteLine($"RAW SCORE: {matchResult.RawScore.ToString()}, PrecisionLevelSetAt: {expectedPrecisionString} ({expectedPrecisionScore})");
+            Debug.WriteLine("###############################################");
+            Debug.WriteLine("");
+
             // Assert
             Assert.AreEqual(expectedPrecisionResult, matchResult.IsSearchPrecisionScoreMet(),
                 $"Query:{queryString}{Environment.NewLine} " +
@@ -224,6 +231,13 @@ namespace Wox.Test
 
             // Act
             var matchResult = StringMatcher.FuzzySearch(queryString, compareString);
+
+            Debug.WriteLine("");
+            Debug.WriteLine("###############################################");
+            Debug.WriteLine($"QueryString: {queryString}     CompareString: {compareString}");
+            Debug.WriteLine($"RAW SCORE: {matchResult.RawScore.ToString()}, PrecisionLevelSetAt: {expectedPrecisionString} ({expectedPrecisionScore})");
+            Debug.WriteLine("###############################################");
+            Debug.WriteLine("");
 
             // Assert
             Assert.AreEqual(expectedPrecisionResult, matchResult.IsSearchPrecisionScoreMet(),
