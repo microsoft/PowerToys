@@ -52,12 +52,12 @@ namespace Wox.Infrastructure
             var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToLower() : stringToCompare;
 
             var queryWithoutCase = opt.IgnoreCase ? query.ToLower() : query;
+            
+            var separatedqueryStrings = queryWithoutCase.Split(' ');
+            int currentSeparatedQueryStringIndex = 0;
+            var currentSeparatedQueryString = separatedqueryStrings[currentSeparatedQueryStringIndex];
 
-            int currentQueryToCompareIndex = 0;
-            var queryToCompareSeparated = queryWithoutCase.Split(' ');
-            var currentQueryToCompare = queryToCompareSeparated[currentQueryToCompareIndex];
-
-            var patternIndex = 0;
+            var queryIndex = 0;
             var firstMatchIndex = -1;
             var firstMatchIndexInWord = -1;
             var lastMatchIndex = 0;
@@ -70,14 +70,14 @@ namespace Wox.Infrastructure
             for (var index = 0; index < fullStringToCompareWithoutCase.Length; index++)
             {
                 var ch = stringToCompare[index];
-                if (fullStringToCompareWithoutCase[index] == currentQueryToCompare[patternIndex])
+                if (fullStringToCompareWithoutCase[index] == currentSeparatedQueryString[queryIndex])
                 {
                     if (firstMatchIndex < 0)
                     { // first matched char will become the start of the compared string
                         firstMatchIndex = index;
                     }
 
-                    if (patternIndex == 0)
+                    if (queryIndex == 0)
                     { // first letter of current word
                         isFullWordMatched = true;
                         firstMatchIndexInWord = index;
@@ -85,12 +85,12 @@ namespace Wox.Infrastructure
                     else if (!isFullWordMatched)
                     { // we want to verify that there is not a better match if this is not a full word
                         // in order to do so we need to verify all previous chars are part of the pattern
-                        int startIndexToVerify = index - patternIndex;
+                        int startIndexToVerify = index - queryIndex;
                         bool allMatch = true;
-                        for (int indexToCheck = 0; indexToCheck < patternIndex; indexToCheck++)
+                        for (int indexToCheck = 0; indexToCheck < queryIndex; indexToCheck++)
                         {   
                             if (fullStringToCompareWithoutCase[startIndexToVerify + indexToCheck] !=
-                                currentQueryToCompare[indexToCheck])
+                                currentSeparatedQueryString[indexToCheck])
                             {
                                 allMatch = false;
                             }
@@ -99,13 +99,13 @@ namespace Wox.Infrastructure
                         if (allMatch)
                         { // update to this as a full word
                             isFullWordMatched = true;
-                            if (currentQueryToCompareIndex == 0)
+                            if (currentSeparatedQueryStringIndex == 0)
                             { // first word so we need to update start index
                                 firstMatchIndex = startIndexToVerify;
                             }
 
                             indexList.RemoveAll(x => x >= firstMatchIndexInWord);
-                            for (int indexToCheck = 0; indexToCheck < patternIndex; indexToCheck++)
+                            for (int indexToCheck = 0; indexToCheck < queryIndex; indexToCheck++)
                             { // update the index list
                                 indexList.Add(startIndexToVerify + indexToCheck);
                             }
@@ -115,18 +115,22 @@ namespace Wox.Infrastructure
                     lastMatchIndex = index + 1;
                     indexList.Add(index);
 
+                    queryIndex++;
+
                     // increase the pattern matched index and check if everything was matched
-                    if (++patternIndex == currentQueryToCompare.Length)
+                    if (queryIndex == currentSeparatedQueryString.Length)
                     {
-                        if (++currentQueryToCompareIndex >= queryToCompareSeparated.Length)
+                        currentSeparatedQueryStringIndex++;
+
+                        if (currentSeparatedQueryStringIndex >= separatedqueryStrings.Length)
                         { // moved over all the words
                             allMatched = true;
                             break;
                         }
 
                         // otherwise move to the next word
-                        currentQueryToCompare = queryToCompareSeparated[currentQueryToCompareIndex];
-                        patternIndex = 0;
+                        currentSeparatedQueryString = separatedqueryStrings[currentSeparatedQueryStringIndex];
+                        queryIndex = 0;
                         if (!isFullWordMatched)
                         { // if any of the words was not fully matched all are not fully matched
                             allWordsFullyMatched = false;
