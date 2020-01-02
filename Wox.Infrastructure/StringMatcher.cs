@@ -52,100 +52,90 @@ namespace Wox.Infrastructure
             var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToLower() : stringToCompare;
 
             var queryWithoutCase = opt.IgnoreCase ? query.ToLower() : query;
-            
-            var separatedqueryStrings = queryWithoutCase.Split(' ');
-            int currentSeparatedQueryStringIndex = 0;
-            var currentSeparatedQueryString = separatedqueryStrings[currentSeparatedQueryStringIndex];
+                        
+            var querySubstrings = queryWithoutCase.Split(' ');
+            int currentQuerySubstringIndex = 0;
+            var currentQuerySubstring = querySubstrings[currentQuerySubstringIndex];
+            var currentQuerySubstringCharacterIndex = 0;
 
-            var queryIndex = 0;
             var firstMatchIndex = -1;
             var firstMatchIndexInWord = -1;
             var lastMatchIndex = 0;
-            bool allMatched = false;
-            bool isFullWordMatched = false;
+            bool allQuerySubstringsMatched = false;
+            bool matchFoundInPreviousLoop = false;
             bool allWordsFullyMatched = true;
 
             var indexList = new List<int>();
 
-            for (var index = 0; index < fullStringToCompareWithoutCase.Length; index++)
+            for (var compareStringIndex = 0; compareStringIndex < fullStringToCompareWithoutCase.Length; compareStringIndex++)
             {
-                var ch = stringToCompare[index];
-                if (fullStringToCompareWithoutCase[index] == currentSeparatedQueryString[queryIndex])
+                if (fullStringToCompareWithoutCase[compareStringIndex] == currentQuerySubstring[currentQuerySubstringCharacterIndex])
                 {
                     if (firstMatchIndex < 0)
-                    { // first matched char will become the start of the compared string
-                        firstMatchIndex = index;
-                    }
-
-                    if (queryIndex == 0)
-                    { // first letter of current word
-                        isFullWordMatched = true;
-                        firstMatchIndexInWord = index;
-                    }
-                    else if (!isFullWordMatched)
-                    { // we want to verify that there is not a better match if this is not a full word
-                        // in order to do so we need to verify all previous chars are part of the pattern
-                        int startIndexToVerify = index - queryIndex;
-                        bool allMatch = true;
-                        for (int indexToCheck = 0; indexToCheck < queryIndex; indexToCheck++)
-                        {   
-                            if (fullStringToCompareWithoutCase[startIndexToVerify + indexToCheck] !=
-                                currentSeparatedQueryString[indexToCheck])
-                            {
-                                allMatch = false;
-                            }
-                        }
-
-                        if (allMatch)
-                        { // update to this as a full word
-                            isFullWordMatched = true;
-                            if (currentSeparatedQueryStringIndex == 0)
-                            { // first word so we need to update start index
-                                firstMatchIndex = startIndexToVerify;
-                            }
-
-                            indexList.RemoveAll(x => x >= firstMatchIndexInWord);
-                            for (int indexToCheck = 0; indexToCheck < queryIndex; indexToCheck++)
-                            { // update the index list
-                                indexList.Add(startIndexToVerify + indexToCheck);
-                            }
-                        }
-                    }
-
-                    lastMatchIndex = index + 1;
-                    indexList.Add(index);
-
-                    queryIndex++;
-
-                    // increase the pattern matched index and check if everything was matched
-                    if (queryIndex == currentSeparatedQueryString.Length)
                     {
-                        currentSeparatedQueryStringIndex++;
+                        // first matched char will become the start of the compared string
+                        firstMatchIndex = compareStringIndex;
+                    }
 
-                        if (currentSeparatedQueryStringIndex >= separatedqueryStrings.Length)
-                        { // moved over all the words
-                            allMatched = true;
+                    if (currentQuerySubstringCharacterIndex == 0)
+                    {
+                        // first letter of current word
+                        matchFoundInPreviousLoop = true;
+                        firstMatchIndexInWord = compareStringIndex;
+                    }
+                    else if (!matchFoundInPreviousLoop)
+                    {
+                        // we want to verify that there is not a better match if this is not a full word
+                        // in order to do so we need to verify all previous chars are part of the pattern
+                        var startIndexToVerify = compareStringIndex - currentQuerySubstringCharacterIndex;
+
+                        if (AllPreviousCharsMatched(startIndexToVerify, currentQuerySubstringCharacterIndex, fullStringToCompareWithoutCase, currentQuerySubstring))
+                        {
+                            matchFoundInPreviousLoop = true;
+
+                            // if it's the begining character of the first query substring that is matched then we need to update start index
+                            firstMatchIndex = currentQuerySubstringIndex == 0 ? startIndexToVerify : firstMatchIndex;
+
+                            indexList = GetUpdatedIndexList(startIndexToVerify, currentQuerySubstringCharacterIndex, firstMatchIndexInWord, indexList);
+                        }
+                    }
+
+                    lastMatchIndex = compareStringIndex + 1;
+                    indexList.Add(compareStringIndex);
+
+                    currentQuerySubstringCharacterIndex++;
+
+                    // if finished looping through every character in the substring
+                    if (currentQuerySubstringCharacterIndex == currentQuerySubstring.Length)
+                    {
+                        currentQuerySubstringIndex++;
+
+                        // if all query substrings are matched
+                        if (currentQuerySubstringIndex >= querySubstrings.Length)
+                        {
+                            allQuerySubstringsMatched = true;
                             break;
                         }
 
-                        // otherwise move to the next word
-                        currentSeparatedQueryString = separatedqueryStrings[currentSeparatedQueryStringIndex];
-                        queryIndex = 0;
-                        if (!isFullWordMatched)
-                        { // if any of the words was not fully matched all are not fully matched
+                        // otherwise move to the next query substring
+                        currentQuerySubstring = querySubstrings[currentQuerySubstringIndex];
+                        currentQuerySubstringCharacterIndex = 0;
+
+                        if (!matchFoundInPreviousLoop)
+                        {
+                            // if any of the words was not fully matched all are not fully matched
                             allWordsFullyMatched = false;
                         }
                     }
                 }
                 else
                 {
-                    isFullWordMatched = false;
+                    matchFoundInPreviousLoop = false;
                 }
             }
-
-
+            
             // return rendered string if we have a match for every char or all substring without whitespaces matched
-            if (allMatched)
+            if (allQuerySubstringsMatched)
             {
                 // check if all query string was contained in string to compare
                 bool containedFully = lastMatchIndex - firstMatchIndex == queryWithoutCase.Length;
