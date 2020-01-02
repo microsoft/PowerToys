@@ -155,6 +155,38 @@ namespace Wox.Infrastructure
             return new MatchResult { Success = false };
         }
 
+        private static bool AllPreviousCharsMatched(int startIndexToVerify, int currentQuerySubstringCharacterIndex, 
+                                                        string fullStringToCompareWithoutCase, string currentQuerySubstring)
+        {
+            var allMatch = true;
+            for (int indexToCheck = 0; indexToCheck < currentQuerySubstringCharacterIndex; indexToCheck++)
+            {
+                if (fullStringToCompareWithoutCase[startIndexToVerify + indexToCheck] !=
+                    currentQuerySubstring[indexToCheck])
+                {
+                    allMatch = false;
+                }
+            }
+
+            return allMatch;
+        }
+        
+        private static List<int> GetUpdatedIndexList(int startIndexToVerify, int currentQuerySubstringCharacterIndex, int firstMatchIndexInWord, List<int> indexList)
+        {
+            var updatedList = new List<int>();
+
+            indexList.RemoveAll(x => x >= firstMatchIndexInWord);
+
+            updatedList.AddRange(indexList);
+
+            for (int indexToCheck = 0; indexToCheck < currentQuerySubstringCharacterIndex; indexToCheck++)
+            {
+                updatedList.Add(startIndexToVerify + indexToCheck);
+            }
+
+            return updatedList;
+        }
+
         private static int CalculateSearchScore(string query, string stringToCompare, int firstIndex, int matchLen,
             bool isFullyContained, bool allWordsFullyMatched)
         {
