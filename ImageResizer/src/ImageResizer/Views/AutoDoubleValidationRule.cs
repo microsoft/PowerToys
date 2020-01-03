@@ -7,7 +7,7 @@ using System.Windows.Controls;
 
 namespace ImageResizer.Views
 {
-    class AutoDoubleValidationRule : ValidationRule
+    internal class AutoDoubleValidationRule : ValidationRule
     {
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
         {

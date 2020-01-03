@@ -16,7 +16,7 @@ namespace ImageResizer.ViewModels
 {
     public class AdvancedViewModel : ViewModelBase
     {
-        static readonly IDictionary<Guid, string> _encoderMap;
+        private static readonly IDictionary<Guid, string> _encoderMap;
 
         static AdvancedViewModel()
         {

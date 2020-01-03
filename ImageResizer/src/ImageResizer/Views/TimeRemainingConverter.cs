@@ -11,7 +11,7 @@ using ImageResizer.Properties;
 namespace ImageResizer.Views
 {
     [ValueConversion(typeof(TimeSpan), typeof(string))]
-    class TimeRemainingConverter : IValueConverter
+    internal class TimeRemainingConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

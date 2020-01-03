@@ -13,9 +13,9 @@ namespace ImageResizer.ViewModels
 {
     public class InputViewModel : ViewModelBase
     {
-        readonly ResizeBatch _batch;
-        readonly MainViewModel _mainViewModel;
-        readonly IMainView _mainView;
+        private readonly ResizeBatch _batch;
+        private readonly MainViewModel _mainViewModel;
+        private readonly IMainView _mainView;
 
         public InputViewModel(
             Settings settings,

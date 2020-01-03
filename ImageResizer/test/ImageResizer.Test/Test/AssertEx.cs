@@ -1,6 +1,6 @@
-﻿// <copyright file="AssertEx.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
+﻿// Copyright (c) Brice Lambson
+// The Brice Lambson licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ using Xunit;
 
 namespace ImageResizer.Test
 {
-    static class AssertEx
+    internal static class AssertEx
     {
         public static void All<T>(IEnumerable<T> collection, Action<T> action)
         {

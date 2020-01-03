@@ -54,6 +54,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="..\..\codeAnalysis\GlobalSuppressions.cs">
+      <Link>GlobalSuppressions.cs</Link>
+    </Compile>
     <Compile Include="Extensions\BitmapEncoderExtensions.cs" />
     <Compile Include="Extensions\ICollectionExtensions.cs" />
     <Compile Include="Extensions\TimeSpanExtensions.cs" />
@@ -181,7 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MvvmLightLibs">
-      <Version>5.4.1</Version>
+      <Version>5.4.1.1</Version>
     </PackageReference>
     <PackageReference Include="StyleCop.Analyzers">
       <Version>1.1.118</Version>

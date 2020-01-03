@@ -14,11 +14,11 @@ using Microsoft.VisualBasic.FileIO;
 
 namespace ImageResizer.Models
 {
-    class ResizeOperation
+    internal class ResizeOperation
     {
-        readonly string _file;
-        readonly string _destinationDirectory;
-        readonly Settings _settings;
+        private readonly string _file;
+        private readonly string _destinationDirectory;
+        private readonly Settings _settings;
 
         public ResizeOperation(string file, string destinationDirectory, Settings settings)
         {
@@ -85,7 +85,7 @@ namespace ImageResizer.Models
             }
         }
 
-        void ConfigureEncoder(BitmapEncoder encoder)
+        private void ConfigureEncoder(BitmapEncoder encoder)
         {
             switch (encoder)
             {
@@ -103,7 +103,7 @@ namespace ImageResizer.Models
             }
         }
 
-        BitmapSource Transform(BitmapSource source)
+        private BitmapSource Transform(BitmapSource source)
         {
             var originalWidth = source.PixelWidth;
             var originalHeight = source.PixelHeight;
@@ -153,7 +153,7 @@ namespace ImageResizer.Models
             return scaledBitmap;
         }
 
-        string GetDestinationPath(BitmapEncoder encoder)
+        private string GetDestinationPath(BitmapEncoder encoder)
         {
             var directory = _destinationDirectory ?? Path.GetDirectoryName(_file);
             var originalFileName = Path.GetFileNameWithoutExtension(_file);
@@ -181,7 +181,7 @@ namespace ImageResizer.Models
             return path;
         }
 
-        string GetBackupPath()
+        private string GetBackupPath()
         {
             var directory = Path.GetDirectoryName(_file);
             var fileName = Path.GetFileNameWithoutExtension(_file);

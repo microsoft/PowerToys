@@ -11,14 +11,14 @@ namespace ImageResizer.Models
 {
     public class ResizeSize : ObservableObject
     {
-        static readonly IDictionary<string, string> _tokens;
+        private static readonly IDictionary<string, string> _tokens;
 
-        string _name;
-        ResizeFit _fit = ResizeFit.Fit;
-        double _width;
-        double _height;
-        bool _showHeight = true;
-        ResizeUnit _unit = ResizeUnit.Pixel;
+        private string _name;
+        private ResizeFit _fit = ResizeFit.Fit;
+        private double _width;
+        private double _height;
+        private bool _showHeight = true;
+        private ResizeUnit _unit = ResizeUnit.Pixel;
 
         static ResizeSize()
             => _tokens = new Dictionary<string, string>
@@ -85,18 +85,18 @@ namespace ImageResizer.Models
                 originalHeight,
                 dpi);
 
-        static string ReplaceTokens(string text)
+        private static string ReplaceTokens(string text)
             => (text != null && _tokens.TryGetValue(text, out var result))
                 ? result
                 : text;
 
-        void UpdateShowHeight()
+        private void UpdateShowHeight()
             => Set(
                 nameof(ShowHeight),
                 ref _showHeight,
                 Fit == ResizeFit.Stretch || Unit != ResizeUnit.Percent);
 
-        double ConvertToPixels(double value, ResizeUnit unit, int originalValue, double dpi)
+        private double ConvertToPixels(double value, ResizeUnit unit, int originalValue, double dpi)
         {
             if (value == 0)
             {

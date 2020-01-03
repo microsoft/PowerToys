@@ -1,6 +1,6 @@
-﻿// <copyright file="ResizeBatchTests.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
+﻿// Copyright (c) Brice Lambson
+// The Brice Lambson licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
 using System;
 using System.Collections.Concurrent;
@@ -17,7 +17,7 @@ namespace ImageResizer.Models
 {
     public class ResizeBatchTests
     {
-        static readonly string EOL = Environment.NewLine;
+        private static readonly string EOL = Environment.NewLine;
 
         [Fact]
         public void FromCommandLine_works()
@@ -97,7 +97,7 @@ namespace ImageResizer.Models
             Assert.True(calls.Any(c => c.i == 2 && c.count == 2));
         }
 
-        static ResizeBatch CreateBatch(Action<string> executeAction)
+        private static ResizeBatch CreateBatch(Action<string> executeAction)
         {
             var mock = new Mock<ResizeBatch> { CallBase = true };
             mock.Protected().Setup("Execute", ItExpr.IsAny<string>()).Callback(executeAction);

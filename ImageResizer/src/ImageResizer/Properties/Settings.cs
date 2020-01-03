@@ -13,7 +13,7 @@ namespace ImageResizer.Properties
 {
     partial class Settings : IDataErrorInfo
     {
-        string _fileNameFormat;
+        private string _fileNameFormat;
 
         public Settings()
             => AllSizes = new AllSizesCollection(this);
@@ -76,10 +76,10 @@ namespace ImageResizer.Properties
             }
         }
 
-        class AllSizesCollection : IEnumerable<ResizeSize>, INotifyCollectionChanged, INotifyPropertyChanged
+        private class AllSizesCollection : IEnumerable<ResizeSize>, INotifyCollectionChanged, INotifyPropertyChanged
         {
-            ObservableCollection<ResizeSize> _sizes;
-            CustomSize _customSize;
+            private ObservableCollection<ResizeSize> _sizes;
+            private CustomSize _customSize;
 
             public AllSizesCollection(Settings settings)
             {
@@ -134,23 +134,23 @@ namespace ImageResizer.Properties
             public IEnumerator<ResizeSize> GetEnumerator()
                 => new AllSizesEnumerator(this);
 
-            void HandleCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+            private void HandleCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
                 => OnCollectionChanged(e);
 
-            void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
+            private void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
                 => PropertyChanged?.Invoke(this, e);
 
-            void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+            private void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
                 => CollectionChanged?.Invoke(this, e);
 
             IEnumerator IEnumerable.GetEnumerator()
                 => GetEnumerator();
 
-            class AllSizesEnumerator : IEnumerator<ResizeSize>
+            private class AllSizesEnumerator : IEnumerator<ResizeSize>
             {
-                readonly AllSizesCollection _list;
+                private readonly AllSizesCollection _list;
 
-                int _index = -1;
+                private int _index = -1;
 
                 public AllSizesEnumerator(AllSizesCollection list)
                     => _list = list;

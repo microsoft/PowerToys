@@ -17,14 +17,14 @@ namespace ImageResizer.ViewModels
 {
     public class ProgressViewModel : ViewModelBase
     {
-        readonly MainViewModel _mainViewModel;
-        readonly ResizeBatch _batch;
-        readonly IMainView _mainView;
-        readonly Stopwatch _stopwatch = new Stopwatch();
-        readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly MainViewModel _mainViewModel;
+        private readonly ResizeBatch _batch;
+        private readonly IMainView _mainView;
+        private readonly Stopwatch _stopwatch = new Stopwatch();
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
-        double _progress;
-        TimeSpan _timeRemaining;
+        private double _progress;
+        private TimeSpan _timeRemaining;
 
         public ProgressViewModel(
             ResizeBatch batch,

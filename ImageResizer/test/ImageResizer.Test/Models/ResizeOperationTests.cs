@@ -1,6 +1,6 @@
-﻿// <copyright file="ResizeOperationTests.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
+﻿// Copyright (c) Brice Lambson
+// The Brice Lambson licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
 using System;
 using System.Collections.ObjectModel;
@@ -15,7 +15,7 @@ namespace ImageResizer.Models
 {
     public class ResizeOperationTests : IDisposable
     {
-        readonly TestDirectory _directory = new TestDirectory();
+        private readonly TestDirectory _directory = new TestDirectory();
 
         [Fact]
         public void Execute_copies_frame_metadata()
@@ -430,7 +430,7 @@ namespace ImageResizer.Models
         public void Dispose()
             => _directory.Dispose();
 
-        Settings Settings(Action<Settings> action = null)
+        private Settings Settings(Action<Settings> action = null)
         {
             var settings = new Settings
             {

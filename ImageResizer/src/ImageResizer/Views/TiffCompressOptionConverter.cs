@@ -11,7 +11,7 @@ using ImageResizer.Properties;
 namespace ImageResizer.Views
 {
     [ValueConversion(typeof(TiffCompressOption), typeof(string))]
-    class TiffCompressOptionConverter : IValueConverter
+    internal class TiffCompressOptionConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             => Resources.ResourceManager.GetString(

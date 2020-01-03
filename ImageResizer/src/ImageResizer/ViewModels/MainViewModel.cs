@@ -14,11 +14,11 @@ namespace ImageResizer.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {
-        readonly Settings _settings;
-        readonly ResizeBatch _batch;
+        private readonly Settings _settings;
+        private readonly ResizeBatch _batch;
 
-        object _currentPage;
-        double _progress;
+        private object _currentPage;
+        private double _progress;
 
         public MainViewModel(ResizeBatch batch, Settings settings)
         {
