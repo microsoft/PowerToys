@@ -27,7 +27,9 @@ namespace Wox.Infrastructure.Image
                     // enc2.Frames.Add(BitmapFrame.Create(tt));
                     
                     var enc = new JpegBitmapEncoder();
-                    enc.Frames.Add(BitmapFrame.Create(image));
+                    var bitmapFrame = BitmapFrame.Create(image);
+                    bitmapFrame.Freeze();
+                    enc.Frames.Add(bitmapFrame);
                     enc.Save(outStream);
                     var byteArray = outStream.GetBuffer();
                     using (var sha1 = new SHA1CryptoServiceProvider())
