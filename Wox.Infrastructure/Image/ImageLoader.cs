@@ -100,7 +100,9 @@ namespace Wox.Infrastructure.Image
 
                 if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new ImageResult(new BitmapImage(new Uri(path)), ImageType.Data);
+                    var imageSource = new BitmapImage(new Uri(path));
+                    imageSource.Freeze();
+                    return new ImageResult(imageSource, ImageType.Data);
                 }
 
                 if (!Path.IsPathRooted(path))
@@ -181,7 +183,7 @@ namespace Wox.Infrastructure.Image
             { // we need to get image hash
                 string hash = EnableImageHash ? _hashGenerator.GetHashFromImage(img) : null;
                 if (hash != null)
-                { 
+                {
                     if (GuidToKey.TryGetValue(hash, out string key))
                     { // image already exists
                         img = ImageCache[key];
@@ -195,7 +197,7 @@ namespace Wox.Infrastructure.Image
                 // update cache
                 ImageCache[path] = img;
             }
-            
+
 
             return img;
         }
