@@ -77,7 +77,7 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
         settings.add_bool_toogle(setting.name, setting.resourceId, *setting.value);
     }
 
-    settings.add_int_spinner(m_zoneHighlightOpacity, IDS_SETTINGS_HIGHLIGHT_OPACITY, m_settings.zoneHighlightOpacity, 1, 255, 1);
+    settings.add_int_spinner(m_zoneHighlightOpacity, IDS_SETTINGS_HIGHLIGHT_OPACITY, m_settings.zoneHighlightOpacity, 0, 100, 1);
     settings.add_color_picker(m_zoneHiglightName, IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, m_settings.zoneHightlightColor);
     settings.add_multiline_string(m_excludedAppsName, IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, m_settings.excludedApps);
 

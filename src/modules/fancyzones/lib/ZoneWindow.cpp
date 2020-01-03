@@ -546,8 +546,8 @@ void ZoneWindow::DrawActiveZoneSet(wil::unique_hdc& hdc, RECT const& clientRect)
 
         //                                 { fillAlpha, fill, borderAlpha, border, thickness }
         ColorSetting const colorHints      { 225, RGB(81, 92, 107),   255, RGB(104, 118, 138), -2 };
-        ColorSetting       colorViewer     { m_host->GetZoneHighlightOpacity(), 0, 255, RGB(40, 50, 60),    -2 };
-        ColorSetting       colorHighlight  { m_host->GetZoneHighlightOpacity(), 0, 255, 0, -2 };
+        ColorSetting       colorViewer     { OpacitySettingToAlpha(m_host->GetZoneHighlightOpacity()), 0, 255, RGB(40, 50, 60),    -2 };
+        ColorSetting       colorHighlight  { OpacitySettingToAlpha(m_host->GetZoneHighlightOpacity()), 0, 255, 0, -2 };
         ColorSetting const colorFlash      { 200, RGB(81, 92, 107),   200, RGB(104, 118, 138), -2 };
 
         auto zones = m_activeZoneSet->GetZones();
