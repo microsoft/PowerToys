@@ -6,7 +6,7 @@ using System;
 
 namespace ImageResizer.Utilities
 {
-    internal static class MathHelpers
+    static class MathHelpers
     {
         public static int Clamp(int value, int min, int max)
             => Math.Min(Math.Max(value, min), max);

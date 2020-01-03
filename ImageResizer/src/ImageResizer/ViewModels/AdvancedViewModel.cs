@@ -16,7 +16,7 @@ namespace ImageResizer.ViewModels
 {
     public class AdvancedViewModel : ViewModelBase
     {
-        private static readonly IDictionary<Guid, string> _encoderMap;
+        static readonly IDictionary<Guid, string> _encoderMap;
 
         static AdvancedViewModel()
         {
@@ -58,7 +58,6 @@ namespace ImageResizer.ViewModels
             => _encoderMap.Keys;
 
         public ICommand RemoveSizeCommand { get; }
-
         public ICommand AddSizeCommand { get; }
 
         public void RemoveSize(ResizeSize size)

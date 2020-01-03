@@ -14,11 +14,11 @@ namespace ImageResizer.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {
-        private readonly Settings _settings;
-        private readonly ResizeBatch _batch;
+        readonly Settings _settings;
+        readonly ResizeBatch _batch;
 
-        private object _currentPage;
-        private double _progress;
+        object _currentPage;
+        double _progress;
 
         public MainViewModel(ResizeBatch batch, Settings settings)
         {
@@ -44,9 +44,7 @@ namespace ImageResizer.ViewModels
         public void Load(IMainView view)
         {
             if (_batch.Files.Count == 0)
-            {
                 _batch.Files.AddRange(view.OpenPictureFiles());
-            }
 
             if (_settings.UpgradeRequired)
             {

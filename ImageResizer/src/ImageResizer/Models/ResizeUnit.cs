@@ -9,6 +9,6 @@ namespace ImageResizer.Models
         Centimeter,
         Inch,
         Percent,
-        Pixel,
+        Pixel
     }
 }

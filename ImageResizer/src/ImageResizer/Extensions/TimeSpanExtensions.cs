@@ -4,7 +4,7 @@
 
 namespace System
 {
-    internal static class TimeSpanExtensions
+    static class TimeSpanExtensions
     {
         public static TimeSpan Multiply(this TimeSpan timeSpan, double scalar)
             => new TimeSpan((long)(timeSpan.Ticks * scalar));

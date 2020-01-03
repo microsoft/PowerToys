@@ -17,10 +17,10 @@ namespace ImageResizer.Views
             InitializeComponent();
         }
 
-        private void HandleAcceptClick(object sender, RoutedEventArgs e)
+        void HandleAcceptClick(object sender, RoutedEventArgs e)
             => DialogResult = true;
 
-        private void HandleRequestNavigate(object sender, RequestNavigateEventArgs e)
+        void HandleRequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             Process.Start(e.Uri.ToString());
             e.Handled = true;

@@ -38,9 +38,7 @@ namespace ImageResizer.Views
             var targetValue = Resources.ResourceManager.GetString(builder.ToString());
 
             if (toLower)
-            {
                 targetValue = targetValue.ToLower();
-            }
 
             return targetValue;
         }

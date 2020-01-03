@@ -14,11 +14,11 @@ using Microsoft.VisualBasic.FileIO;
 
 namespace ImageResizer.Models
 {
-    internal class ResizeOperation
+    class ResizeOperation
     {
-        private readonly string _file;
-        private readonly string _destinationDirectory;
-        private readonly Settings _settings;
+        readonly string _file;
+        readonly string _destinationDirectory;
+        readonly Settings _settings;
 
         public ResizeOperation(string file, string destinationDirectory, Settings settings)
         {
@@ -39,9 +39,7 @@ namespace ImageResizer.Models
 
                 var encoder = BitmapEncoder.Create(decoder.CodecInfo.ContainerFormat);
                 if (!encoder.CanEncode())
-                {
                     encoder = BitmapEncoder.Create(_settings.FallbackEncoder);
-                }
 
                 ConfigureEncoder(encoder);
 
@@ -57,9 +55,7 @@ namespace ImageResizer.Models
                 }
 
                 if (decoder.Palette != null)
-                {
                     encoder.Palette = decoder.Palette;
-                }
 
                 foreach (var originalFrame in decoder.Frames)
                 {
@@ -75,15 +71,11 @@ namespace ImageResizer.Models
                 path = GetDestinationPath(encoder);
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
                 using (var outputStream = File.Open(path, FileMode.CreateNew, FileAccess.Write))
-                {
                     encoder.Save(outputStream);
-                }
             }
 
             if (_settings.KeepDateModified)
-            {
                 File.SetLastWriteTimeUtc(path, File.GetLastWriteTimeUtc(_file));
-            }
 
             if (_settings.Replace)
             {
@@ -93,7 +85,7 @@ namespace ImageResizer.Models
             }
         }
 
-        private void ConfigureEncoder(BitmapEncoder encoder)
+        void ConfigureEncoder(BitmapEncoder encoder)
         {
             switch (encoder)
             {
@@ -111,7 +103,7 @@ namespace ImageResizer.Models
             }
         }
 
-        private BitmapSource Transform(BitmapSource source)
+        BitmapSource Transform(BitmapSource source)
         {
             var originalWidth = source.PixelWidth;
             var originalHeight = source.PixelHeight;
@@ -145,9 +137,7 @@ namespace ImageResizer.Models
             if (_settings.ShrinkOnly
                 && _settings.SelectedSize.Unit != ResizeUnit.Percent
                 && (scaleX >= 1 || scaleY >= 1))
-            {
                 return source;
-            }
 
             var scaledBitmap = new TransformedBitmap(source, new ScaleTransform(scaleX, scaleY));
             if (_settings.SelectedSize.Fit == ResizeFit.Fill
@@ -163,7 +153,7 @@ namespace ImageResizer.Models
             return scaledBitmap;
         }
 
-        private string GetDestinationPath(BitmapEncoder encoder)
+        string GetDestinationPath(BitmapEncoder encoder)
         {
             var directory = _destinationDirectory ?? Path.GetDirectoryName(_file);
             var originalFileName = Path.GetFileNameWithoutExtension(_file);
@@ -186,14 +176,12 @@ namespace ImageResizer.Models
             var path = Path.Combine(directory, fileName + extension);
             var uniquifier = 1;
             while (File.Exists(path))
-            {
                 path = Path.Combine(directory, fileName + " (" + uniquifier++ + ")" + extension);
-            }
 
             return path;
         }
 
-        private string GetBackupPath()
+        string GetBackupPath()
         {
             var directory = Path.GetDirectoryName(_file);
             var fileName = Path.GetFileNameWithoutExtension(_file);
@@ -202,9 +190,7 @@ namespace ImageResizer.Models
             var path = Path.Combine(directory, fileName + ".bak" + extension);
             var uniquifier = 1;
             while (File.Exists(path))
-            {
                 path = Path.Combine(directory, fileName + " (" + uniquifier++ + ")" + ".bak" + extension);
-            }
 
             return path;
         }

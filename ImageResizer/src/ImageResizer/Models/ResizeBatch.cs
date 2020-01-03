@@ -15,7 +15,6 @@ namespace ImageResizer.Models
     public class ResizeBatch
     {
         public string DestinationDirectory { get; set; }
-
         public ICollection<string> Files { get; } = new List<string>();
 
         public static ResizeBatch FromCommandLine(TextReader standardInput, string[] args)
@@ -25,9 +24,7 @@ namespace ImageResizer.Models
             // NB: We read these from stdin since there are limits on the number of args you can have
             string file;
             while ((file = standardInput.ReadLine()) != null)
-            {
                 batch.Files.Add(file);
-            }
 
             for (var i = 0; i < args.Length; i++)
             {
@@ -58,7 +55,7 @@ namespace ImageResizer.Models
                 new ParallelOptions
                 {
                     CancellationToken = cancellationToken,
-                    MaxDegreeOfParallelism = Environment.ProcessorCount,
+                    MaxDegreeOfParallelism = Environment.ProcessorCount
                 },
                 (file, state, i) =>
                 {

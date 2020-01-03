@@ -11,7 +11,7 @@ using ImageResizer.Properties;
 namespace ImageResizer.Views
 {
     [ValueConversion(typeof(ResizeUnit), typeof(string))]
-    internal class ResizeUnitConverter : IValueConverter
+    class ResizeUnitConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

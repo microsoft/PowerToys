@@ -10,7 +10,7 @@ using ImageResizer.Properties;
 namespace ImageResizer.Views
 {
     [ValueConversion(typeof(double), typeof(string))]
-    internal class AutoDoubleConverter : IValueConverter
+    class AutoDoubleConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

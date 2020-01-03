@@ -13,7 +13,7 @@ namespace ImageResizer.ViewModels
 {
     public class ResultsViewModel : ViewModelBase
     {
-        private readonly IMainView _mainView;
+        readonly IMainView _mainView;
 
         public ResultsViewModel(IMainView mainView, IEnumerable<ResizeError> errors)
         {
@@ -23,7 +23,6 @@ namespace ImageResizer.ViewModels
         }
 
         public IEnumerable<ResizeError> Errors { get; }
-
         public ICommand CloseCommand { get; }
 
         public void Close() => _mainView.Close();

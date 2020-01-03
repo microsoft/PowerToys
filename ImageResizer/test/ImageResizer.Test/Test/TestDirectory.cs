@@ -1,6 +1,6 @@
-﻿// Copyright (c) Brice Lambson
-// The Brice Lambson licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
+﻿// <copyright file="TestDirectory.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace ImageResizer
 {
     public class TestDirectory : IDisposable
     {
-        private readonly string _path;
+        readonly string _path;
 
         public TestDirectory()
         {
@@ -25,7 +25,7 @@ namespace ImageResizer
             Directory.CreateDirectory(_path);
         }
 
-        private IEnumerable<string> Files
+        IEnumerable<string> Files
             => Directory.EnumerateFiles(_path);
 
         public IEnumerable<string> FileNames

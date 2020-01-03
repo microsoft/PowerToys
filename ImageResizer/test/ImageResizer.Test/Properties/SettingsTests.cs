@@ -1,6 +1,6 @@
-﻿// Copyright (c) Brice Lambson
-// The Brice Lambson licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
+﻿// <copyright file="SettingsTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -20,7 +20,7 @@ namespace ImageResizer.Properties
             var settings = new Settings
             {
                 Sizes = new ObservableCollection<ResizeSize>(),
-                CustomSize = new CustomSize(),
+                CustomSize = new CustomSize()
             };
             var ncc = (INotifyCollectionChanged)settings.AllSizes;
 
@@ -38,7 +38,7 @@ namespace ImageResizer.Properties
             var settings = new Settings
             {
                 Sizes = new ObservableCollection<ResizeSize>(),
-                CustomSize = new CustomSize(),
+                CustomSize = new CustomSize()
             };
 
             Assert.PropertyChanged(
@@ -53,7 +53,7 @@ namespace ImageResizer.Properties
             var settings = new Settings
             {
                 Sizes = new ObservableCollection<ResizeSize> { new ResizeSize() },
-                CustomSize = new CustomSize(),
+                CustomSize = new CustomSize()
             };
 
             Assert.Contains(settings.Sizes[0], settings.AllSizes);
@@ -65,7 +65,7 @@ namespace ImageResizer.Properties
             var settings = new Settings
             {
                 Sizes = new ObservableCollection<ResizeSize>(),
-                CustomSize = new CustomSize(),
+                CustomSize = new CustomSize()
             };
 
             Assert.Contains(settings.CustomSize, settings.AllSizes);
@@ -78,7 +78,7 @@ namespace ImageResizer.Properties
             var settings = new Settings
             {
                 Sizes = new ObservableCollection<ResizeSize>(),
-                CustomSize = originalCustomSize,
+                CustomSize = originalCustomSize
             };
             var ncc = (INotifyCollectionChanged)settings.AllSizes;
 
@@ -116,7 +116,7 @@ namespace ImageResizer.Properties
             {
                 SelectedSizeIndex = index,
                 Sizes = new ObservableCollection<ResizeSize>(),
-                CustomSize = new CustomSize(),
+                CustomSize = new CustomSize()
             };
 
             var result = settings.SelectedSize;
@@ -132,8 +132,8 @@ namespace ImageResizer.Properties
                 SelectedSizeIndex = 0,
                 Sizes = new ObservableCollection<ResizeSize>
                 {
-                    new ResizeSize(),
-                },
+                    new ResizeSize()
+                }
             };
 
             var result = settings.SelectedSize;

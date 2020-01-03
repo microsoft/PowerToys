@@ -8,6 +8,6 @@ namespace ImageResizer.Models
     {
         Fill,
         Fit,
-        Stretch,
+        Stretch
     }
 }

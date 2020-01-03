@@ -11,14 +11,14 @@ namespace ImageResizer.Models
 {
     public class ResizeSize : ObservableObject
     {
-        private static readonly IDictionary<string, string> _tokens;
+        static readonly IDictionary<string, string> _tokens;
 
-        private string _name;
-        private ResizeFit _fit = ResizeFit.Fit;
-        private double _width;
-        private double _height;
-        private bool _showHeight = true;
-        private ResizeUnit _unit = ResizeUnit.Pixel;
+        string _name;
+        ResizeFit _fit = ResizeFit.Fit;
+        double _width;
+        double _height;
+        bool _showHeight = true;
+        ResizeUnit _unit = ResizeUnit.Pixel;
 
         static ResizeSize()
             => _tokens = new Dictionary<string, string>
@@ -26,7 +26,7 @@ namespace ImageResizer.Models
                 ["$small$"] = Resources.Small,
                 ["$medium$"] = Resources.Medium,
                 ["$large$"] = Resources.Large,
-                ["$phone$"] = Resources.Phone,
+                ["$phone$"] = Resources.Phone
             };
 
         public virtual string Name
@@ -41,9 +41,7 @@ namespace ImageResizer.Models
             set
             {
                 if (Set(nameof(Fit), ref _fit, value))
-                {
                     UpdateShowHeight();
-                }
             }
         }
 
@@ -71,9 +69,7 @@ namespace ImageResizer.Models
             set
             {
                 if (Set(nameof(Unit), ref _unit, value))
-                {
                     UpdateShowHeight();
-                }
             }
         }
 
@@ -89,25 +85,23 @@ namespace ImageResizer.Models
                 originalHeight,
                 dpi);
 
-        private static string ReplaceTokens(string text)
+        static string ReplaceTokens(string text)
             => (text != null && _tokens.TryGetValue(text, out var result))
                 ? result
                 : text;
 
-        private void UpdateShowHeight()
+        void UpdateShowHeight()
             => Set(
                 nameof(ShowHeight),
                 ref _showHeight,
                 Fit == ResizeFit.Stretch || Unit != ResizeUnit.Percent);
 
-        private double ConvertToPixels(double value, ResizeUnit unit, int originalValue, double dpi)
+        double ConvertToPixels(double value, ResizeUnit unit, int originalValue, double dpi)
         {
             if (value == 0)
             {
                 if (Fit == ResizeFit.Fit)
-                {
                     return double.PositiveInfinity;
-                }
 
                 Debug.Assert(Fit == ResizeFit.Fill || Fit == ResizeFit.Stretch, "Unexpected ResizeFit value: " + Fit);
 

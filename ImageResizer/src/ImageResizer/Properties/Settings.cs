@@ -13,7 +13,7 @@ namespace ImageResizer.Properties
 {
     partial class Settings : IDataErrorInfo
     {
-        private string _fileNameFormat;
+        string _fileNameFormat;
 
         public Settings()
             => AllSizes = new AllSizesCollection(this);
@@ -41,9 +41,7 @@ namespace ImageResizer.Properties
             {
                 var index = Sizes.IndexOf(value);
                 if (index == -1)
-                {
                     index = Sizes.Count;
-                }
 
                 SelectedSizeIndex = index;
             }
@@ -55,15 +53,12 @@ namespace ImageResizer.Properties
         public override object this[string propertyName]
         {
             get { return base[propertyName]; }
-
             set
             {
                 base[propertyName] = value;
 
                 if (propertyName == nameof(FileName))
-                {
                     _fileNameFormat = null;
-                }
             }
         }
 
@@ -72,23 +67,19 @@ namespace ImageResizer.Properties
             get
             {
                 if (columnName != nameof(JpegQualityLevel))
-                {
                     return string.Empty;
-                }
 
                 if (JpegQualityLevel < 1 || JpegQualityLevel > 100)
-                {
                     return string.Format(Resources.ValueMustBeBetween, 1, 100);
-                }
 
                 return string.Empty;
             }
         }
 
-        private class AllSizesCollection : IEnumerable<ResizeSize>, INotifyCollectionChanged, INotifyPropertyChanged
+        class AllSizesCollection : IEnumerable<ResizeSize>, INotifyCollectionChanged, INotifyPropertyChanged
         {
-            private ObservableCollection<ResizeSize> _sizes;
-            private CustomSize _customSize;
+            ObservableCollection<ResizeSize> _sizes;
+            CustomSize _customSize;
 
             public AllSizesCollection(Settings settings)
             {
@@ -130,7 +121,6 @@ namespace ImageResizer.Properties
             }
 
             public event NotifyCollectionChangedEventHandler CollectionChanged;
-
             public event PropertyChangedEventHandler PropertyChanged;
 
             public int Count
@@ -144,23 +134,23 @@ namespace ImageResizer.Properties
             public IEnumerator<ResizeSize> GetEnumerator()
                 => new AllSizesEnumerator(this);
 
-            private void HandleCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+            void HandleCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
                 => OnCollectionChanged(e);
 
-            private void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
+            void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
                 => PropertyChanged?.Invoke(this, e);
 
-            private void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+            void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
                 => CollectionChanged?.Invoke(this, e);
 
             IEnumerator IEnumerable.GetEnumerator()
                 => GetEnumerator();
 
-            private class AllSizesEnumerator : IEnumerator<ResizeSize>
+            class AllSizesEnumerator : IEnumerator<ResizeSize>
             {
-                private readonly AllSizesCollection _list;
+                readonly AllSizesCollection _list;
 
-                private int _index = -1;
+                int _index = -1;
 
                 public AllSizesEnumerator(AllSizesCollection list)
                     => _list = list;

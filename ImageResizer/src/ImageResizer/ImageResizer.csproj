@@ -169,9 +169,6 @@
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\codeAnalysis\StyleCop.json" />
-    <Compile Include="..\..\codeAnalysis\GlobalSuppressions.cs">
-      <Link>GlobalSuppressions.cs</Link>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -184,7 +181,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MvvmLightLibs">
-      <Version>5.4.1.1</Version>
+      <Version>5.4.1</Version>
     </PackageReference>
     <PackageReference Include="StyleCop.Analyzers">
       <Version>1.1.118</Version>
