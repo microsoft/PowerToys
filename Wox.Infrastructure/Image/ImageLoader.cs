@@ -46,7 +46,7 @@ namespace Wox.Infrastructure.Image
             {
                 Stopwatch.Normal("|ImageLoader.Initialize|Preload images cost", () =>
                 {
-                    ImageCache.Usage.AsParallel().Where(i => !ImageCache.ContainsKey(i.Key)).ForAll(x =>
+                    ImageCache.Usage.AsParallel().ForAll(x =>
                     {
                         Load(x.Key);
                     });
