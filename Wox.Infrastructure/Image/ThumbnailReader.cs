@@ -110,7 +110,6 @@ namespace Wox.Infrastructure.Image
 
             try
             {
-
                 return Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
             }
             finally

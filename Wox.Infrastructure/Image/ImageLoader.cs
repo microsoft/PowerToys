@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -14,6 +15,8 @@ namespace Wox.Infrastructure.Image
     {
         private static readonly ImageCache ImageCache = new ImageCache();
         private static BinaryStorage<ConcurrentDictionary<string, int>> _storage;
+        private static readonly ConcurrentDictionary<string, string> GuidToKey = new ConcurrentDictionary<string, string>();
+        private static IImageHashGenerator _hashGenerator;
 
 
         private static readonly string[] ImageExtensions =
@@ -30,7 +33,8 @@ namespace Wox.Infrastructure.Image
 
         public static void Initialize()
         {
-            _storage = new BinaryStorage<ConcurrentDictionary<string, int>> ("Image");
+            _storage = new BinaryStorage<ConcurrentDictionary<string, int>>("Image");
+            _hashGenerator = new ImageHashGenerator();
             ImageCache.Usage = _storage.TryLoad(new ConcurrentDictionary<string, int>());
 
             foreach (var icon in new[] { Constant.DefaultIcon, Constant.ErrorIcon })
@@ -43,16 +47,12 @@ namespace Wox.Infrastructure.Image
             {
                 Stopwatch.Normal("|ImageLoader.Initialize|Preload images cost", () =>
                 {
-                    ImageCache.Usage.AsParallel().Where(i => !ImageCache.ContainsKey(i.Key)).ForAll(i =>
+                    ImageCache.Usage.AsParallel().Where(i => !ImageCache.ContainsKey(i.Key)).ForAll(x =>
                     {
-                        var img = Load(i.Key);
-                        if (img != null)
-                        {
-                            ImageCache[i.Key] = img;
-                        }
+                        Load(x.Key);
                     });
                 });
-                Log.Info($"|ImageLoader.Initialize|Number of preload images is <{ImageCache.Usage.Count}>");
+                Log.Info($"|ImageLoader.Initialize|Number of preload images is <{ImageCache.Usage.Count}>, Images Number: {ImageCache.CacheSize()}, Unique Items {ImageCache.UniqueImagesInCache()}");
             });
         }
 
@@ -61,31 +61,54 @@ namespace Wox.Infrastructure.Image
             ImageCache.Cleanup();
             _storage.Save(ImageCache.Usage);
         }
-        
-        public static ImageSource Load(string path, bool loadFullImage = false)
+
+        private class ImageResult
+        {
+            public ImageResult(ImageSource imageSource, ImageType imageType)
+            {
+                ImageSource = imageSource;
+                ImageType = imageType;
+            }
+
+            public ImageType ImageType { get; }
+            public ImageSource ImageSource { get; }
+        }
+
+        private enum ImageType
+        {
+            File,
+            Folder,
+            Data,
+            ImageFile,
+            Error,
+            Cache
+        }
+
+        private static ImageResult LoadInternal(string path, bool loadFullImage = false)
         {
             ImageSource image;
+            ImageType type = ImageType.Error;
             try
             {
                 if (string.IsNullOrEmpty(path))
                 {
-                    return ImageCache[Constant.ErrorIcon];
+                    return new ImageResult(ImageCache[Constant.ErrorIcon], ImageType.Error);
                 }
                 if (ImageCache.ContainsKey(path))
                 {
-                    return ImageCache[path];
+                    return new ImageResult(ImageCache[path], ImageType.Cache);
                 }
-                
+
                 if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new BitmapImage(new Uri(path));
+                    return new ImageResult(new BitmapImage(new Uri(path)), ImageType.Data);
                 }
 
                 if (!Path.IsPathRooted(path))
                 {
                     path = Path.Combine(Constant.ProgramDirectory, "Images", Path.GetFileName(path));
                 }
-               
+
                 if (Directory.Exists(path))
                 {
                     /* Directories can also have thumbnails instead of shell icons.
@@ -94,14 +117,17 @@ namespace Wox.Infrastructure.Image
                      * Wox responsibility. 
                      * - Solution: just load the icon
                      */
+                    type = ImageType.Folder;
                     image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize,
                         Constant.ThumbnailSize, ThumbnailOptions.IconOnly);
+
                 }
                 else if (File.Exists(path))
                 {
                     var extension = Path.GetExtension(path).ToLower();
                     if (ImageExtensions.Contains(extension))
                     {
+                        type = ImageType.ImageFile;
                         if (loadFullImage)
                         {
                             image = LoadFullImage(path);
@@ -119,6 +145,7 @@ namespace Wox.Infrastructure.Image
                     }
                     else
                     {
+                        type = ImageType.File;
                         image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize,
                             Constant.ThumbnailSize, ThumbnailOptions.None);
                     }
@@ -128,17 +155,51 @@ namespace Wox.Infrastructure.Image
                     image = ImageCache[Constant.ErrorIcon];
                     path = Constant.ErrorIcon;
                 }
-                ImageCache[path] = image;
-                image.Freeze();
+
+                if (type != ImageType.Error)
+                {
+                    image.Freeze();
+                }
             }
             catch (System.Exception e)
             {
                 Log.Exception($"|ImageLoader.Load|Failed to get thumbnail for {path}", e);
-
+                type = ImageType.Error;
                 image = ImageCache[Constant.ErrorIcon];
                 ImageCache[path] = image;
             }
-            return image;
+            return new ImageResult(image, type);
+        }
+
+        private static bool EnableImageHash = true;
+
+        public static ImageSource Load(string path, bool loadFullImage = false)
+        {
+            // return LoadInternal(path, loadFullImage).ImageSource;
+            var imageResult = LoadInternal(path, loadFullImage);
+
+            var img = imageResult.ImageSource;
+            if (imageResult.ImageType != ImageType.Error && imageResult.ImageType != ImageType.Cache)
+            { // we need to get image hash
+                string hash = EnableImageHash ? _hashGenerator.GetHashFromImage(img) : null;
+                if (hash != null)
+                { 
+                    if (GuidToKey.TryGetValue(hash, out string key))
+                    { // image already exists
+                        img = ImageCache[key];
+                    }
+                    else
+                    { // new guid
+                        GuidToKey[hash] = path;
+                    }
+                }
+
+                // update cache
+                ImageCache[path] = img;
+            }
+            
+
+            return img;
         }
 
         private static BitmapImage LoadFullImage(string path)
