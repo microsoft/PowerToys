@@ -28,11 +28,13 @@ namespace ImageResizer.Views
                     "|*.bmp;*.dib;*.exif;*.gif;*.jfif;*.jpe;*.jpeg;*.jpg;*.jxr;*.png;*.rle;*.tif;*.tiff;*.wdp|" +
                     AppResources.AllFilesFilter + "|*.*",
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
-                Multiselect = true
+                Multiselect = true,
             };
 
             if (openFileDialog.ShowDialog() != true)
+            {
                 return Enumerable.Empty<string>();
+            }
 
             return openFileDialog.FileNames;
         }

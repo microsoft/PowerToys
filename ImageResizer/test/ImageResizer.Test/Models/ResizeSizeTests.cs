@@ -1,6 +1,6 @@
-﻿// <copyright file="ResizeSizeTests.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
+﻿// Copyright (c) Brice Lambson
+// The Brice Lambson licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -35,7 +35,7 @@ namespace ImageResizer.Models
                 ("$small$", Resources.Small),
                 ("$medium$", Resources.Medium),
                 ("$large$", Resources.Large),
-                ("$phone$", Resources.Phone)
+                ("$phone$", Resources.Phone),
             };
             foreach (var (name, expected) in args)
             {
@@ -95,7 +95,7 @@ namespace ImageResizer.Models
             var size = new ResizeSize
             {
                 Width = 0,
-                Height = 42
+                Height = 42,
             };
 
             Assert.True(size.HasAuto);
@@ -107,7 +107,7 @@ namespace ImageResizer.Models
             var size = new ResizeSize
             {
                 Width = 42,
-                Height = 0
+                Height = 0,
             };
 
             Assert.True(size.HasAuto);
@@ -119,7 +119,7 @@ namespace ImageResizer.Models
             var size = new ResizeSize
             {
                 Width = 42,
-                Height = 42
+                Height = 42,
             };
 
             Assert.False(size.HasAuto);
@@ -145,7 +145,7 @@ namespace ImageResizer.Models
             var size = new ResizeSize
             {
                 Width = 1,
-                Unit = ResizeUnit.Inch
+                Unit = ResizeUnit.Inch,
             };
 
             var result = size.GetPixelWidth(100, 96);
@@ -159,7 +159,7 @@ namespace ImageResizer.Models
             var size = new ResizeSize
             {
                 Height = 1,
-                Unit = ResizeUnit.Inch
+                Unit = ResizeUnit.Inch,
             };
 
             var result = size.GetPixelHeight(100, 96);
@@ -191,7 +191,7 @@ namespace ImageResizer.Models
             var size = new ResizeSize
             {
                 Width = 0,
-                Fit = ResizeFit.Fit
+                Fit = ResizeFit.Fit,
             };
 
             var result = size.GetPixelWidth(100, 96);
@@ -205,7 +205,7 @@ namespace ImageResizer.Models
             var size = new ResizeSize
             {
                 Width = 0,
-                Fit = ResizeFit.Fill
+                Fit = ResizeFit.Fill,
             };
 
             var result = size.GetPixelWidth(100, 96);
@@ -219,7 +219,7 @@ namespace ImageResizer.Models
             var size = new ResizeSize
             {
                 Width = 0.5,
-                Unit = ResizeUnit.Inch
+                Unit = ResizeUnit.Inch,
             };
 
             var result = size.GetPixelWidth(100, 96);
@@ -233,7 +233,7 @@ namespace ImageResizer.Models
             var size = new ResizeSize
             {
                 Width = 1,
-                Unit = ResizeUnit.Centimeter
+                Unit = ResizeUnit.Centimeter,
             };
 
             var result = size.GetPixelWidth(100, 96);
@@ -247,7 +247,7 @@ namespace ImageResizer.Models
             var size = new ResizeSize
             {
                 Width = 50,
-                Unit = ResizeUnit.Percent
+                Unit = ResizeUnit.Percent,
             };
 
             var result = size.GetPixelWidth(200, 96);
@@ -261,7 +261,7 @@ namespace ImageResizer.Models
             var size = new ResizeSize
             {
                 Width = 50,
-                Unit = ResizeUnit.Pixel
+                Unit = ResizeUnit.Pixel,
             };
 
             var result = size.GetPixelWidth(100, 96);

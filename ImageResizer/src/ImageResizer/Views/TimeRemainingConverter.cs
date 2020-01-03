@@ -11,7 +11,7 @@ using ImageResizer.Properties;
 namespace ImageResizer.Views
 {
     [ValueConversion(typeof(TimeSpan), typeof(string))]
-    class TimeRemainingConverter : IValueConverter
+    internal class TimeRemainingConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -23,10 +23,12 @@ namespace ImageResizer.Views
             {
                 builder.Append(timeRemaining.Hours == 1 ? "Hour" : "Hours");
             }
+
             if (timeRemaining.Hours != 0 || timeRemaining.Minutes > 0)
             {
                 builder.Append(timeRemaining.Minutes == 1 ? "Minute" : "Minutes");
             }
+
             if (timeRemaining.Hours == 0)
             {
                 builder.Append(timeRemaining.Seconds == 1 ? "Second" : "Seconds");

@@ -4,13 +4,13 @@
 
 namespace System.Windows.Media.Imaging
 {
-    static class BitmapEncoderExtensions
+    internal static class BitmapEncoderExtensions
     {
         public static bool CanEncode(this BitmapEncoder encoder)
         {
             try
             {
-                var  = encoder.CodecInfo;
+                var test = encoder.CodecInfo;
             }
             catch (NotSupportedException)
             {
