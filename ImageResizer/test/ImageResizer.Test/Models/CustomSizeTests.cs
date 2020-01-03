@@ -1,4 +1,8 @@
-﻿using ImageResizer.Properties;
+﻿// <copyright file="CustomSizeTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+using ImageResizer.Properties;
 using Xunit;
 
 namespace ImageResizer.Models

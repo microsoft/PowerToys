@@ -1,4 +1,8 @@
-﻿using System;
+﻿// <copyright file="ResizeOperationTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows.Media;
