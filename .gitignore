@@ -328,3 +328,7 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+
+# Temp build files
+src/settings/settings-html/200.html
+src/settings/settings-html/404.html
