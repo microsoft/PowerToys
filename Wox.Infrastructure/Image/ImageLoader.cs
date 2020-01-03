@@ -174,7 +174,6 @@ namespace Wox.Infrastructure.Image
 
         public static ImageSource Load(string path, bool loadFullImage = false)
         {
-            // return LoadInternal(path, loadFullImage).ImageSource;
             var imageResult = LoadInternal(path, loadFullImage);
 
             var img = imageResult.ImageSource;
