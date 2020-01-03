@@ -44,7 +44,9 @@ namespace ImageResizer.ViewModels
         public void Load(IMainView view)
         {
             if (_batch.Files.Count == 0)
+            {
                 _batch.Files.AddRange(view.OpenPictureFiles());
+            }
 
             if (_settings.UpgradeRequired)
             {

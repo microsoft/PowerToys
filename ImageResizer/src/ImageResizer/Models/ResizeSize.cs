@@ -26,7 +26,7 @@ namespace ImageResizer.Models
                 ["$small$"] = Resources.Small,
                 ["$medium$"] = Resources.Medium,
                 ["$large$"] = Resources.Large,
-                ["$phone$"] = Resources.Phone
+                ["$phone$"] = Resources.Phone,
             };
 
         public virtual string Name
@@ -41,7 +41,9 @@ namespace ImageResizer.Models
             set
             {
                 if (Set(nameof(Fit), ref _fit, value))
+                {
                     UpdateShowHeight();
+                }
             }
         }
 
@@ -69,7 +71,9 @@ namespace ImageResizer.Models
             set
             {
                 if (Set(nameof(Unit), ref _unit, value))
+                {
                     UpdateShowHeight();
+                }
             }
         }
 
@@ -101,7 +105,9 @@ namespace ImageResizer.Models
             if (value == 0)
             {
                 if (Fit == ResizeFit.Fit)
+                {
                     return double.PositiveInfinity;
+                }
 
                 Debug.Assert(Fit == ResizeFit.Fill || Fit == ResizeFit.Stretch, "Unexpected ResizeFit value: " + Fit);
 

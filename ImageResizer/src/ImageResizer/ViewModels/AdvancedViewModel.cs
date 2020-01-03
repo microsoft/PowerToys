@@ -58,6 +58,7 @@ namespace ImageResizer.ViewModels
             => _encoderMap.Keys;
 
         public ICommand RemoveSizeCommand { get; }
+
         public ICommand AddSizeCommand { get; }
 
         public void RemoveSize(ResizeSize size)

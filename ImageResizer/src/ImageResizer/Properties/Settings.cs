@@ -11,7 +11,7 @@ using ImageResizer.Models;
 
 namespace ImageResizer.Properties
 {
-    partial class Settings : IDataErrorInfo
+    public partial class Settings : IDataErrorInfo
     {
         private string _fileNameFormat;
 
@@ -41,7 +41,9 @@ namespace ImageResizer.Properties
             {
                 var index = Sizes.IndexOf(value);
                 if (index == -1)
+                {
                     index = Sizes.Count;
+                }
 
                 SelectedSizeIndex = index;
             }
@@ -52,13 +54,18 @@ namespace ImageResizer.Properties
 
         public override object this[string propertyName]
         {
-            get { return base[propertyName]; }
+            get
+            {
+                return base[propertyName];
+            }
+
             set
             {
                 base[propertyName] = value;
-
                 if (propertyName == nameof(FileName))
+                {
                     _fileNameFormat = null;
+                }
             }
         }
 
@@ -67,10 +74,14 @@ namespace ImageResizer.Properties
             get
             {
                 if (columnName != nameof(JpegQualityLevel))
+                {
                     return string.Empty;
+                }
 
                 if (JpegQualityLevel < 1 || JpegQualityLevel > 100)
+                {
                     return string.Format(Resources.ValueMustBeBetween, 1, 100);
+                }
 
                 return string.Empty;
             }
@@ -121,6 +132,7 @@ namespace ImageResizer.Properties
             }
 
             public event NotifyCollectionChangedEventHandler CollectionChanged;
+
             public event PropertyChangedEventHandler PropertyChanged;
 
             public int Count

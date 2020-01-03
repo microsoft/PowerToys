@@ -23,6 +23,7 @@ namespace ImageResizer.ViewModels
         }
 
         public IEnumerable<ResizeError> Errors { get; }
+
         public ICommand CloseCommand { get; }
 
         public void Close() => _mainView.Close();

@@ -52,6 +52,7 @@ namespace ImageResizer.ViewModels
         }
 
         public ICommand StartCommand { get; }
+
         public ICommand StopCommand { get; }
 
         public void Start()

@@ -38,7 +38,9 @@ namespace ImageResizer.ViewModels
         public Settings Settings { get; }
 
         public ICommand ResizeCommand { get; }
+
         public ICommand CancelCommand { get; }
+
         public ICommand ShowAdvancedCommand { get; }
 
         public void Resize()

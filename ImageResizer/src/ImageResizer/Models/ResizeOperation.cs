@@ -39,7 +39,9 @@ namespace ImageResizer.Models
 
                 var encoder = BitmapEncoder.Create(decoder.CodecInfo.ContainerFormat);
                 if (!encoder.CanEncode())
+                {
                     encoder = BitmapEncoder.Create(_settings.FallbackEncoder);
+                }
 
                 ConfigureEncoder(encoder);
 
@@ -55,7 +57,9 @@ namespace ImageResizer.Models
                 }
 
                 if (decoder.Palette != null)
+                {
                     encoder.Palette = decoder.Palette;
+                }
 
                 foreach (var originalFrame in decoder.Frames)
                 {
@@ -63,19 +67,22 @@ namespace ImageResizer.Models
                         BitmapFrame.Create(
                             Transform(originalFrame),
                             thumbnail: null,
-                            // TODO: Add an option to strip any metadata that doesn't affect rendering (issue #3)
-                            (BitmapMetadata)originalFrame.Metadata,
+                            (BitmapMetadata)originalFrame.Metadata, // TODO: Add an option to strip any metadata that doesn't affect rendering (issue #3)
                             colorContexts: null));
                 }
 
                 path = GetDestinationPath(encoder);
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
                 using (var outputStream = File.Open(path, FileMode.CreateNew, FileAccess.Write))
+                {
                     encoder.Save(outputStream);
+                }
             }
 
             if (_settings.KeepDateModified)
+            {
                 File.SetLastWriteTimeUtc(path, File.GetLastWriteTimeUtc(_file));
+            }
 
             if (_settings.Replace)
             {
@@ -137,7 +144,9 @@ namespace ImageResizer.Models
             if (_settings.ShrinkOnly
                 && _settings.SelectedSize.Unit != ResizeUnit.Percent
                 && (scaleX >= 1 || scaleY >= 1))
+            {
                 return source;
+            }
 
             var scaledBitmap = new TransformedBitmap(source, new ScaleTransform(scaleX, scaleY));
             if (_settings.SelectedSize.Fit == ResizeFit.Fill
@@ -176,7 +185,9 @@ namespace ImageResizer.Models
             var path = Path.Combine(directory, fileName + extension);
             var uniquifier = 1;
             while (File.Exists(path))
+            {
                 path = Path.Combine(directory, fileName + " (" + uniquifier++ + ")" + extension);
+            }
 
             return path;
         }
@@ -190,7 +201,9 @@ namespace ImageResizer.Models
             var path = Path.Combine(directory, fileName + ".bak" + extension);
             var uniquifier = 1;
             while (File.Exists(path))
+            {
                 path = Path.Combine(directory, fileName + " (" + uniquifier++ + ")" + ".bak" + extension);
+            }
 
             return path;
         }

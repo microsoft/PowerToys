@@ -80,6 +80,7 @@ namespace ImageResizer.Test
             }
 
             public object Sender { get; }
+
             public TArgs Arguments { get; }
         }
     }

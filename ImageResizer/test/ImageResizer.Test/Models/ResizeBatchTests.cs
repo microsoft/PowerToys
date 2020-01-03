@@ -28,7 +28,7 @@ namespace ImageResizer.Models
             var args = new[]
             {
                 "/d", "OutputDir",
-                "Image3.jpg"
+                "Image3.jpg",
             };
 
             var result = ResizeBatch.FromCommandLine(

@@ -441,9 +441,9 @@ namespace ImageResizer.Models
                         Name = "Test",
                         Width = 96,
                         Height = 96
-                    }
+                    },
                 },
-                SelectedSizeIndex = 0
+                SelectedSizeIndex = 0,
             };
             action?.Invoke(settings);
 
