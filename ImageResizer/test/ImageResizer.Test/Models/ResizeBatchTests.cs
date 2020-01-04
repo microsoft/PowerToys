@@ -93,8 +93,8 @@ namespace ImageResizer.Models
                 (i, count) => calls.Add((i, count)));
 
             Assert.Equal(2, calls.Count);
-            Assert.True(calls.Any(c => c.i == 1 && c.count == 2));
-            Assert.True(calls.Any(c => c.i == 2 && c.count == 2));
+            Assert.Contains(calls, c => c.i == 1 && c.count == 2);
+            Assert.Contains(calls, c => c.i == 2 && c.count == 2);
         }
 
         private static ResizeBatch CreateBatch(Action<string> executeAction)
