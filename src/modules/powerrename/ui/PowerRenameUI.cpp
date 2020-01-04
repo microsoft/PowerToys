@@ -126,7 +126,10 @@ HRESULT CPowerRenameUI::s_CreateInstance(_In_ IPowerRenameManager* psrm, _In_opt
 // IPowerRenameUI
 IFACEMETHODIMP CPowerRenameUI::Show(_In_opt_ HWND hwndParent)
 {
-    return _DoModeless(hwndParent);
+    DPI_AWARENESS_CONTEXT previousDpi = SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    HRESULT hr = _DoModeless(hwndParent);
+    SetThreadDpiAwarenessContext(previousDpi);
+    return hr;
 }
 
 IFACEMETHODIMP CPowerRenameUI::Close()
@@ -554,12 +557,14 @@ INT_PTR CPowerRenameUI::_DlgProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         bRet = _OnNotify(wParam, lParam);
         break;
 
-    case WM_THEMECHANGED:
-        _OnSize(SIZE_RESTORED);
+    case WM_DPICHANGED:
+        _OnDpiChanged(wParam, lParam);
+        bRet = 0;
         break;
 
     case WM_SIZE:
-        _OnSize(wParam);
+        _OnSize(wParam, lParam);
+        bRet = 0;
         break;
 
     case WM_GETMINMAXINFO:
@@ -584,6 +589,8 @@ void CPowerRenameUI::_OnInitDlg()
 {
     // Initialize from stored settings
     _ReadSettings();
+
+    m_lastDpi = GetDpiForWindow(m_hwnd);
 
     m_hwndLV = GetDlgItem(m_hwnd, IDC_LIST_PREVIEW);
 
@@ -768,25 +775,70 @@ void CPowerRenameUI::_OnGetMinMaxInfo(_In_ LPARAM lParam)
     }
 }
 
-void CPowerRenameUI::_OnSize(_In_ WPARAM wParam)
+void CPowerRenameUI::_OnDpiChanged(_In_ WPARAM wParam, _In_ LPARAM lParam)
+{
+    RECT* prcNew = (RECT*)lParam;
+    UINT newDpi = GetDpiForWindow(m_hwnd);
+    if (newDpi != m_lastDpi)
+    {
+        m_initialWidth = MulDiv(m_initialWidth, newDpi, m_lastDpi);
+        m_initialHeight = MulDiv(m_initialHeight, newDpi, m_lastDpi);
+        m_lastDpi = newDpi;
+    }
+
+    m_lastWidth = RECT_WIDTH(*prcNew);
+    m_lastHeight = RECT_HEIGHT(*prcNew);
+
+    SetWindowPos(m_hwnd,
+        NULL,
+        prcNew->left,
+        prcNew->top,
+        prcNew->right - prcNew->left,
+        prcNew->bottom - prcNew->top,
+        SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
+void CPowerRenameUI::_OnSize(_In_ WPARAM wParam, _In_ LPARAM lParam)
 {
     if ((wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED) && m_initialWidth)
     {
-        // Calculate window size change delta
         RECT rc = { 0 };
         GetWindowRect(m_hwnd, &rc);
+        _AdjustLayout(&rc);
+    }
+}
 
-        const int xDelta = RECT_WIDTH(rc) - m_lastWidth;
+void CPowerRenameUI::_AdjustLayout(RECT* prc)
+{
+    // Calculate window size change delta
+    
+    UINT newDpi = GetDpiForWindow(m_hwnd);
+    if (newDpi != m_lastDpi)
+    {
+        m_initialWidth = MulDiv(m_initialWidth, newDpi, m_lastDpi);
+        m_initialHeight = MulDiv(m_initialHeight, newDpi, m_lastDpi);
+        m_lastDpi = newDpi;
+
+        m_lastWidth = RECT_WIDTH(*prc);
+        m_lastHeight = RECT_HEIGHT(*prc);
+    }
+
+
+    {
+        const int xDelta = RECT_WIDTH(*prc) - m_lastWidth;
         m_lastWidth += xDelta;
-        const int yDelta = RECT_HEIGHT(rc) - m_lastHeight;
+        const int yDelta = RECT_HEIGHT(*prc) - m_lastHeight;
         m_lastHeight += yDelta;
 
-        for (UINT u = 0; u < ARRAYSIZE(g_repositionMap); u++)
+        if (xDelta != 0 || yDelta != 0)
         {
-            _MoveControl(g_repositionMap[u].id, g_repositionMap[u].flags, xDelta, yDelta);
-        }
+            for (UINT u = 0; u < ARRAYSIZE(g_repositionMap); u++)
+            {
+                _MoveControl(g_repositionMap[u].id, g_repositionMap[u].flags, xDelta, yDelta);
+            }
 
-        m_listview.OnSize();
+            m_listview.OnSize();
+        }
     }
 }
 
