@@ -18,9 +18,10 @@ HWND HWNDDataCache::get_window(HWND hwnd) {
 WindowAndProcPath* HWNDDataCache::get_internal(HWND hwnd) {
   auto root = GetAncestor(hwnd, GA_ROOT);
   // Filter the fast and easy cases
-  if (is_invalid_hwnd(root) ||
-    is_invalid_class(root) ||
-    is_invalid_style(root)) {
+  if (!IsWindowVisible(root) ||
+      is_invalid_hwnd(root) ||
+      is_invalid_class(root) ||
+      is_invalid_style(root)) {
     return nullptr;
   }
   // Get the HWND process path from the cache

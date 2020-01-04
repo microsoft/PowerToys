@@ -1,27 +1,56 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.ComponentModel;
-using System.Collections;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
-using FancyZonesEditor.Models;
-using System.Windows.Documents;
 using System.Windows;
-using System.Windows.Controls;
+using FancyZonesEditor.Models;
 using Microsoft.Win32;
 
 namespace FancyZonesEditor
 {
-    //
     // Settings
     //  These are the configuration settings used by the rest of the editor
     //  Other UIs in the editor will subscribe to change events on the properties to stay up to date as these properties change
-    //
     public class Settings : INotifyPropertyChanged
     {
+        private readonly CanvasLayoutModel _blankCustomModel;
+        private readonly CanvasLayoutModel _focusModel;
+        private readonly GridLayoutModel _rowsModel;
+        private readonly GridLayoutModel _columnsModel;
+        private readonly GridLayoutModel _gridModel;
+        private readonly GridLayoutModel _priorityGridModel;
+
+        private static readonly ushort _focusModelId = 0xFFFF;
+        private static readonly ushort _rowsModelId = 0xFFFE;
+        private static readonly ushort _columnsModelId = 0xFFFD;
+        private static readonly ushort _gridModelId = 0xFFFC;
+        private static readonly ushort _priorityGridModelId = 0xFFFB;
+        private static readonly ushort _blankCustomModelId = 0xFFFA;
+        private static readonly ushort _lastPrefinedId = _blankCustomModelId;
+
+        // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
+        private static readonly byte[][] _priorityData = new byte[][]
+        {
+            new byte[] { 0, 0, 0, 0, 0, 1, 1, 39, 16, 39, 16, 0 },
+            new byte[] { 0, 0, 0, 0, 0, 1, 2, 39, 16, 26, 11, 13, 5, 0, 1 },
+            new byte[] { 0, 0, 0, 0, 0, 1, 3, 39, 16, 9, 196, 19, 136, 9, 196, 0, 1, 2 },
+            new byte[] { 0, 0, 0, 0, 0, 2, 3, 19, 136, 19, 136, 9, 196, 19, 136, 9, 196, 0, 1, 2, 0, 1, 3 },
+            new byte[] { 0, 0, 0, 0, 0, 2, 3, 19, 136, 19, 136, 9, 196, 19, 136, 9, 196, 0, 1, 2, 3, 1, 4 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 3, 13, 5, 13, 6, 13, 5, 9, 196, 19, 136, 9, 196, 0, 1, 2, 0, 1, 3, 4, 1, 5 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 3, 13, 5, 13, 6, 13, 5, 9, 196, 19, 136, 9, 196, 0, 1, 2, 3, 1, 4, 5, 1, 6 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 2, 5, 6, 1, 2, 7 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 2, 5, 6, 1, 7, 8 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 5, 6, 7, 1, 8, 9 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 5, 6, 7, 8, 9, 10 },
+        };
+
+        private const int _multiplier = 10000;
+
         public bool IsCustomLayoutActive
         {
             get
@@ -33,40 +62,45 @@ namespace FancyZonesEditor
                         return true;
                     }
                 }
+
                 return false;
             }
         }
-        
+
         public Settings()
         {
             ParseCommandLineArgs();
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
-            _defaultModels = new List<LayoutModel>(5);
-            _focusModel = new CanvasLayoutModel("Focus", c_focusModelId, (int)_workArea.Width, (int)_workArea.Height);
-            _defaultModels.Add(_focusModel);
+            DefaultModels = new List<LayoutModel>(5);
+            _focusModel = new CanvasLayoutModel("Focus", _focusModelId, (int)_workArea.Width, (int)_workArea.Height);
+            DefaultModels.Add(_focusModel);
 
-            _columnsModel = new GridLayoutModel("Columns", c_columnsModelId);
-            _columnsModel.Rows = 1;
-            _columnsModel.RowPercents = new int[1] { c_multiplier };
-            _defaultModels.Add(_columnsModel);
+            _columnsModel = new GridLayoutModel("Columns", _columnsModelId)
+            {
+                Rows = 1,
+                RowPercents = new int[1] { _multiplier },
+            };
+            DefaultModels.Add(_columnsModel);
 
-            _rowsModel = new GridLayoutModel("Rows", c_rowsModelId);
-            _rowsModel.Columns = 1;
-            _rowsModel.ColumnPercents = new int[1] { c_multiplier };
-            _defaultModels.Add(_rowsModel);
+            _rowsModel = new GridLayoutModel("Rows", _rowsModelId)
+            {
+                Columns = 1,
+                ColumnPercents = new int[1] { _multiplier },
+            };
+            DefaultModels.Add(_rowsModel);
 
-            _gridModel = new GridLayoutModel("Grid", c_gridModelId);
-            _defaultModels.Add(_gridModel);
+            _gridModel = new GridLayoutModel("Grid", _gridModelId);
+            DefaultModels.Add(_gridModel);
 
-            _priorityGridModel = new GridLayoutModel("Priority Grid", c_priorityGridModelId);
-            _defaultModels.Add(_priorityGridModel);
+            _priorityGridModel = new GridLayoutModel("Priority Grid", _priorityGridModelId);
+            DefaultModels.Add(_priorityGridModel);
 
-            _blankCustomModel = new CanvasLayoutModel("Create new custom", c_blankCustomModelId, (int)_workArea.Width, (int)_workArea.Height);
+            _blankCustomModel = new CanvasLayoutModel("Create new custom", _blankCustomModelId, (int)_workArea.Width, (int)_workArea.Height);
 
-            _zoneCount = (int)Registry.GetValue(_uniqueRegistryPath, "ZoneCount", 3);
-            _spacing = (int)Registry.GetValue(_uniqueRegistryPath, "Spacing", 16);
-            _showSpacing = (int)Registry.GetValue(_uniqueRegistryPath, "ShowSpacing", 1) == 1;
+            _zoneCount = ReadRegistryInt("ZoneCount", 3);
+            _spacing = ReadRegistryInt("Spacing", 16);
+            _showSpacing = ReadRegistryInt("ShowSpacing", 1) == 1;
 
             UpdateLayoutModels();
         }
@@ -74,7 +108,11 @@ namespace FancyZonesEditor
         // ZoneCount - number of zones selected in the picker window
         public int ZoneCount
         {
-            get { return _zoneCount; }
+            get
+            {
+                return _zoneCount;
+            }
+
             set
             {
                 if (_zoneCount != value)
@@ -86,12 +124,17 @@ namespace FancyZonesEditor
                 }
             }
         }
+
         private int _zoneCount;
 
         // Spacing - how much space in between zones of the grid do you want
         public int Spacing
         {
-            get { return _spacing; }
+            get
+            {
+                return _spacing;
+            }
+
             set
             {
                 if (_spacing != value)
@@ -102,12 +145,17 @@ namespace FancyZonesEditor
                 }
             }
         }
+
         private int _spacing;
 
         // ShowSpacing - is the Spacing value used or ignored?
         public bool ShowSpacing
         {
-            get { return _showSpacing; }
+            get
+            {
+                return _showSpacing;
+            }
+
             set
             {
                 if (_showSpacing != value)
@@ -118,12 +166,17 @@ namespace FancyZonesEditor
                 }
             }
         }
+
         private bool _showSpacing;
 
         // IsShiftKeyPressed - is the shift key currently being held down
         public bool IsShiftKeyPressed
         {
-            get { return _isShiftKeyPressed; }
+            get
+            {
+                return _isShiftKeyPressed;
+            }
+
             set
             {
                 if (_isShiftKeyPressed != value)
@@ -133,12 +186,17 @@ namespace FancyZonesEditor
                 }
             }
         }
+
         private bool _isShiftKeyPressed;
 
         // IsCtrlKeyPressed - is the ctrl key currently being held down
         public bool IsCtrlKeyPressed
         {
-            get { return _isCtrlKeyPressed; }
+            get
+            {
+                return _isCtrlKeyPressed;
+            }
+
             set
             {
                 if (_isCtrlKeyPressed != value)
@@ -148,45 +206,36 @@ namespace FancyZonesEditor
                 }
             }
         }
+
         private bool _isCtrlKeyPressed;
 
         public Rect WorkArea
         {
             get { return _workArea; }
         }
+
         private Rect _workArea;
 
-        public static uint Monitor
-        {
-            get { return _monitor; }
-        }
-        private static uint _monitor;
+        public static uint Monitor { get; private set; }
 
-        public static String UniqueKey
-        {
-            get { return _uniqueKey; }
-        }
-        private static String _uniqueKey;
-        private String _uniqueRegistryPath;
+        public static string UniqueKey { get; private set; }
 
-        public static String WorkAreaKey
-        {
-            get { return _workAreaKey; }
-        }
-        private static String _workAreaKey;
+        private string _uniqueRegistryPath;
 
-        public static float Dpi
+        public static string WorkAreaKey { get; private set; }
+
+        public static float Dpi { get; private set; }
+
+        private int ReadRegistryInt(string valueName, int defaultValue)
         {
-            get { return _dpi; }
+            object obj = Registry.GetValue(_uniqueRegistryPath, valueName, defaultValue);
+            return (obj != null) ? (int)obj : defaultValue;
         }
-        private static float _dpi;
 
         // UpdateLayoutModels
         //  Update the five default layouts based on the new ZoneCount
         private void UpdateLayoutModels()
         {
-            int previousZoneCount = _focusModel.Zones.Count;
-
             // Update the "Focus" Default Layout
             _focusModel.Zones.Clear();
 
@@ -212,19 +261,18 @@ namespace FancyZonesEditor
             {
                 _rowsModel.CellChildMap[i, 0] = i;
                 _columnsModel.CellChildMap[0, i] = i;
-                _rowsModel.RowPercents[i] = c_multiplier / ZoneCount; // _columnsModel is sharing the same array
+                _rowsModel.RowPercents[i] = _multiplier / ZoneCount; // _columnsModel is sharing the same array
             }
 
             // Update the "Grid" Default Layout
             int rows = 1;
-            int cols = 1;
-            int mergeCount = 0;
             while (ZoneCount / rows >= rows)
             {
                 rows++;
             }
+
             rows--;
-            cols = ZoneCount / rows;
+            int cols = ZoneCount / rows;
             if (ZoneCount % rows == 0)
             {
                 // even grid
@@ -232,8 +280,8 @@ namespace FancyZonesEditor
             else
             {
                 cols++;
-                mergeCount = rows - (ZoneCount % rows);
             }
+
             _gridModel.Rows = rows;
             _gridModel.Columns = cols;
             _gridModel.RowPercents = new int[rows];
@@ -242,12 +290,12 @@ namespace FancyZonesEditor
 
             for (int row = 0; row < rows; row++)
             {
-                _gridModel.RowPercents[row] = c_multiplier / rows;
+                _gridModel.RowPercents[row] = _multiplier / rows;
             }
 
             for (int col = 0; col < cols; col++)
             {
-                _gridModel.ColumnPercents[col] = c_multiplier / cols;
+                _gridModel.ColumnPercents[col] = _multiplier / cols;
             }
 
             int index = 0;
@@ -260,14 +308,13 @@ namespace FancyZonesEditor
                     {
                         index--;
                     }
-
                 }
             }
 
             // Update the "Priority Grid" Default Layout
-            if (ZoneCount <= s_priorityData.Length)
+            if (ZoneCount <= _priorityData.Length)
             {
-                _priorityGridModel.Reload(s_priorityData[ZoneCount - 1]);
+                _priorityGridModel.Reload(_priorityData[ZoneCount - 1]);
             }
             else
             {
@@ -282,11 +329,11 @@ namespace FancyZonesEditor
 
         private void ParseCommandLineArgs()
         {
-            _workArea = System.Windows.SystemParameters.WorkArea;
-            _monitor = 0;
+            _workArea = SystemParameters.WorkArea;
+            Monitor = 0;
             _uniqueRegistryPath = FullRegistryPath;
-            _uniqueKey = "";
-            _dpi = 1;
+            UniqueKey = string.Empty;
+            Dpi = 1;
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length == 7)
@@ -297,9 +344,8 @@ namespace FancyZonesEditor
                 // 4 = X_Y_Width_Height in a dpi-scaled-but-unaware coords (where EditorOverlay shows up)
                 // 5 = resolution key (passed back to engine to persist data)
                 // 6 = monitor DPI (float)
-
-                _uniqueKey = args[1];
-                _uniqueRegistryPath += "\\" + _uniqueKey;
+                UniqueKey = args[1];
+                _uniqueRegistryPath += "\\" + UniqueKey;
 
                 var parsedLocation = args[4].Split('_');
                 var x = int.Parse(parsedLocation[0]);
@@ -307,14 +353,14 @@ namespace FancyZonesEditor
                 var width = int.Parse(parsedLocation[2]);
                 var height = int.Parse(parsedLocation[3]);
 
-                _workAreaKey = args[5];
+                WorkAreaKey = args[5];
 
                 // Try invariant culture first, caller likely uses invariant i.e. "C" locale to construct parameters
                 foreach (var cultureInfo in new[] { CultureInfo.InvariantCulture, CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture })
                 {
                     try
                     {
-                        _dpi = float.Parse(args[6], cultureInfo);
+                        Dpi = float.Parse(args[6], cultureInfo);
                         break;
                     }
                     catch (FormatException)
@@ -324,16 +370,15 @@ namespace FancyZonesEditor
 
                 _workArea = new Rect(x, y, width, height);
 
-                uint monitor = 0;
-                if (uint.TryParse(args[4], out monitor))
+                if (uint.TryParse(args[4], out uint monitor))
                 {
-                    _monitor = monitor;
+                    Monitor = monitor;
                 }
             }
         }
 
+        public IList<LayoutModel> DefaultModels { get; }
 
-        public IList<LayoutModel> DefaultModels { get { return _defaultModels; } }
         public ObservableCollection<LayoutModel> CustomModels
         {
             get
@@ -343,9 +388,11 @@ namespace FancyZonesEditor
                     _customModels = LayoutModel.LoadCustomModels();
                     _customModels.Insert(0, _blankCustomModel);
                 }
+
                 return _customModels;
             }
         }
+
         private ObservableCollection<LayoutModel> _customModels;
 
         public static readonly string RegistryPath = "SOFTWARE\\SuperFancyZones";
@@ -353,7 +400,7 @@ namespace FancyZonesEditor
 
         public static bool IsPredefinedLayout(LayoutModel model)
         {
-            return (model.Id >= c_lastPrefinedId);
+            return model.Id >= _lastPrefinedId;
         }
 
         // implementation of INotifyProeprtyChanged
@@ -362,43 +409,7 @@ namespace FancyZonesEditor
         // FirePropertyChanged -- wrapper that calls INPC.PropertyChanged
         protected virtual void FirePropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
-        // storage for Default Layout Models
-        private IList<LayoutModel> _defaultModels;
-        private CanvasLayoutModel _focusModel; 
-        private GridLayoutModel _rowsModel;   
-        private GridLayoutModel _columnsModel;
-        private GridLayoutModel _gridModel;
-        private GridLayoutModel _priorityGridModel;
-        private CanvasLayoutModel _blankCustomModel;
-
-        private static readonly ushort c_focusModelId = 0xFFFF;
-        private static readonly ushort c_rowsModelId = 0xFFFE;
-        private static readonly ushort c_columnsModelId = 0xFFFD;
-        private static readonly ushort c_gridModelId = 0xFFFC;
-        private static readonly ushort c_priorityGridModelId = 0xFFFB;
-        private static readonly ushort c_blankCustomModelId = 0xFFFA;
-        private static readonly ushort c_lastPrefinedId = c_blankCustomModelId;
-
-        // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
-        private static byte[][] s_priorityData = new byte[][]
-        {
-            new byte[] { 0, 0, 0, 0, 0, 1, 1, 39, 16, 39, 16, 0 },
-            new byte[] { 0, 0, 0, 0, 0, 1, 2, 39, 16, 26, 11, 13, 5, 0, 1 },
-            new byte[] { 0, 0, 0, 0, 0, 1, 3, 39, 16, 9, 196, 19, 136, 9, 196, 0, 1, 2 },
-            new byte[] { 0, 0, 0, 0, 0, 2, 3, 19, 136, 19, 136, 9, 196, 19, 136, 9, 196, 0, 1, 2, 0, 1, 3 },
-            new byte[] { 0, 0, 0, 0, 0, 2, 3, 19, 136, 19, 136, 9, 196, 19, 136, 9, 196, 0, 1, 2, 3, 1, 4 },
-            new byte[] { 0, 0, 0, 0, 0, 3, 3, 13, 5, 13, 6, 13, 5, 9, 196, 19, 136, 9, 196, 0, 1, 2, 0, 1, 3, 4, 1, 5 },
-            new byte[] { 0, 0, 0, 0, 0, 3, 3, 13, 5, 13, 6, 13, 5, 9, 196, 19, 136, 9, 196, 0, 1, 2, 3, 1, 4, 5, 1, 6 },
-            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 2, 5, 6, 1, 2, 7 },
-            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 2, 5, 6, 1, 7, 8 },
-            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 5, 6, 7, 1, 8, 9 },
-            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 5, 6, 7, 8, 9, 10 }
-        };
-
-        private const int c_multiplier = 10000;
     }
 }

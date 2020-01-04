@@ -1,4 +1,6 @@
 #include "pch.h"
+
+#include "common.h"
 #include "monitors.h"
 
 bool operator==(const ScreenSize& lhs, const ScreenSize& rhs) {

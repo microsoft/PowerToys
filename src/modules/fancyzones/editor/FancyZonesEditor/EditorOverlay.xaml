@@ -11,5 +11,4 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
-        Loaded="onLoad"/>
-
+        Loaded="OnLoaded"/>

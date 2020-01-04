@@ -36,6 +36,9 @@
     <ClCompile Include="system_menu_helper.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="restart_elevated.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -71,6 +74,9 @@
       <Filter>Events</Filter>
     </ClInclude>
     <ClInclude Include="system_menu_helper.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="restart_elevated.h">
       <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>

@@ -27,6 +27,9 @@
     <ClInclude Include="PowerRenameExt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CLSID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PowerRenameExt.rc">

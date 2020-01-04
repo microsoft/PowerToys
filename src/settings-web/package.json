@@ -14,7 +14,7 @@
   "scripts": {
     "just": "just-scripts",
     "clean": "rimraf build lib lib-commonjs && just-scripts clean",
-    "build": "rimraf build && just-scripts build --min --production && cp *.html build && react-snap && cp -r build/* ../settings/settings-html",
+    "build": "rimraf build && just-scripts build --min --production && copy *.html build && react-snap && xcopy build\\* ..\\settings\\settings-html /sy",
     "test": "just-scripts test",
     "test:update": "just-scripts jest -u",
     "test:start": "just-scripts start-test",
@@ -29,8 +29,8 @@
   },
   "dependencies": {
     "@svgr/webpack": "^4.3.3",
-    "@uifabric/azure-themes": "^7.0.9",
-    "office-ui-fabric-react": "^7.51.0",
+    "@uifabric/azure-themes": "^7.0.10",
+    "office-ui-fabric-react": "^7.76.2",
     "react": "~16.8.0",
     "react-dom": "~16.8.0"
   },

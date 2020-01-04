@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+     xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" >
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
   <Product Id="*"
        Name="PowerToys"
        Language="1033"
-       Version="0.14.0"
+       Version="0.14.2"
        Manufacturer="Microsoft"
        UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
 
@@ -17,7 +18,7 @@
 
     <Upgrade Id="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
       <UpgradeVersion
-         Minimum="0.11.0" Maximum="0.13.0"
+         Minimum="0.11.0" Maximum="0.14.1"
          Property="PREVIOUSVERSIONSINSTALLED"
          IncludeMinimum="yes" IncludeMaximum="yes" />
     </Upgrade>
@@ -61,6 +62,10 @@
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch PowerToys" />
     <Property Id="WixShellExecTarget" Value="[#PowerToys.exe]" />
     <CustomAction Id="LaunchApplication" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
+
+    <Property Id ="EXISTINGPOWERRENAMEEXTPATH">
+      <RegistrySearch Id="ExistingExtPath" Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}\InprocServer32" Type="raw"/>
+    </Property>
 
     <InstallExecuteSequence>
       <Custom Action="SetRegisterPowerToysSchTaskParam" Before="RegisterPowerToysSchTask" />
@@ -156,6 +161,10 @@
 
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
+    <!-- Restart explorer.exe if we detect existing powerrenameext.dll installation -->
+    <util:CloseApplication Target="explorer.exe" RebootPrompt="no" TerminateProcess="0">
+      EXISTINGPOWERRENAMEEXTPATH
+    </util:CloseApplication>
     <util:CloseApplication CloseMessage="yes" Target="PowerToys.exe" ElevatedCloseMessage="yes" RebootPrompt="no" TerminateProcess="0" />
   </Product>
 
@@ -227,7 +236,9 @@
       </Component>
       <Component Id="Module_FancyZones" Guid="C6B5272E-6ED4-4B80-B0E7-2FF0355D8CF4" Win64="yes">
         <File Source="$(var.BinX64Dir)\modules\fancyzones.dll" KeyPath="yes" />
-        <File Source="$(var.BinX64Dir)\modules\FancyZonesEditor.exe" />
+        <File Source="$(var.BinX64Dir)\modules\FancyZonesEditor.exe" >
+          <netfx:NativeImage Id="FancyZonesEditor.exe" Platform="64bit" Priority="0" />
+        </File>
         <File Source="$(var.BinX64Dir)\modules\ControlzEx.dll" />
         <File Source="$(var.BinX64Dir)\modules\MahApps.Metro.dll" />
         <File Source="$(var.BinX64Dir)\modules\Microsoft.Xaml.Behaviors.dll" />

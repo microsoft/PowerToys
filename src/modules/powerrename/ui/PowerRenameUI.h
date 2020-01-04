@@ -2,6 +2,9 @@
 #include <PowerRenameInterfaces.h>
 #include <shldisp.h>
 
+void ModuleAddRef();
+void ModuleRelease();
+
 class CPowerRenameListView
 {
 public:
@@ -38,12 +41,15 @@ public:
         m_refCount(1)
     {
         (void)OleInitialize(nullptr);
+        ModuleAddRef();
     }
 
     // IUnknown
     IFACEMETHODIMP QueryInterface(__in REFIID riid, __deref_out void** ppv);
-    IFACEMETHODIMP_(ULONG) AddRef();
-    IFACEMETHODIMP_(ULONG) Release();
+    IFACEMETHODIMP_(ULONG)
+    AddRef();
+    IFACEMETHODIMP_(ULONG)
+    Release();
 
     // IPowerRenameUI
     IFACEMETHODIMP Show(_In_opt_ HWND hwndParent);
@@ -68,13 +74,14 @@ public:
     IFACEMETHODIMP DragLeave();
     IFACEMETHODIMP Drop(_In_ IDataObject* pdtobj, DWORD grfKeyState, POINTL pt, _Inout_ DWORD* pdwEffect);
 
-    static HRESULT s_CreateInstance(_In_ IPowerRenameManager* psrm, _In_opt_ IDataObject* pdo, _In_ bool enableDragDrop, _Outptr_ IPowerRenameUI** ppsrui);
+    static HRESULT s_CreateInstance(_In_ IPowerRenameManager* psrm, _In_opt_ IUnknown* dataSource, _In_ bool enableDragDrop, _Outptr_ IPowerRenameUI** ppsrui);
 
 private:
     ~CPowerRenameUI()
     {
         DeleteObject(m_iconMain);
         OleUninitialize();
+        ModuleRelease();
     }
 
     HRESULT _DoModal(__in_opt HWND hwnd);
@@ -92,7 +99,7 @@ private:
         return pDlg ? pDlg->_DlgProc(uMsg, wParam, lParam) : FALSE;
     }
 
-    HRESULT _Initialize(_In_ IPowerRenameManager* psrm, _In_opt_ IDataObject* pdo, _In_ bool enableDragDrop);
+    HRESULT _Initialize(_In_ IPowerRenameManager* psrm, _In_opt_ IUnknown* dataSource, _In_ bool enableDragDrop);
     HRESULT _InitAutoComplete();
     void _Cleanup();
 
@@ -118,7 +125,7 @@ private:
     void _SetCheckboxesFromFlags(_In_ DWORD flags);
     void _ValidateFlagCheckbox(_In_ DWORD checkBoxId);
 
-    void _EnumerateItems(_In_ IDataObject* pdtobj);
+    void _EnumerateItems(_In_ IUnknown* pdtobj);
     void _UpdateCounts();
 
     long m_refCount = 0;
@@ -139,7 +146,7 @@ private:
     int m_lastHeight = 0;
     UINT m_lastDpi = 0;
     CComPtr<IPowerRenameManager> m_spsrm;
-    CComPtr<IDataObject> m_spdo;
+    CComPtr<IUnknown> m_dataSource;
     CComPtr<IDropTargetHelper> m_spdth;
     CComPtr<IAutoComplete2> m_spSearchAC;
     CComPtr<IUnknown> m_spSearchACL;

@@ -1,6 +1,6 @@
 #pragma once
-#include <string>
-#include <cpprest/json.h>
+
+#include "json.h"
 
 namespace PowerToysSettings {
 
@@ -10,45 +10,45 @@ namespace PowerToysSettings {
   public:
     Settings(
       const HINSTANCE hinstance, // Module handle of the PowerToy DLL 'IMAGE_DOS_HEADER __ImageBase'
-      const std::wstring& powertoy_name
+      std::wstring_view powertoy_name
     );
 
     // Add additional general information to the PowerToy settings.
     void set_description(UINT resource_id);
-    void set_description(const std::wstring& description);
+    void set_description(std::wstring_view description);
 
-    void set_icon_key(const std::wstring& icon_key);
-    void set_overview_link(const std::wstring& overview_link);
-    void set_video_link(const std::wstring& video_link);
+    void set_icon_key(std::wstring_view icon_key);
+    void set_overview_link(std::wstring_view overview_link);
+    void set_video_link(std::wstring_view video_link);
 
     // Add properties to the PowerToy settings.
-    void add_bool_toogle(const std::wstring& name, UINT description_resource_id, bool value);
-    void add_bool_toogle(const std::wstring& name, const std::wstring& description, bool value);
+    void add_bool_toogle(std::wstring_view name, UINT description_resource_id, bool value);
+    void add_bool_toogle(std::wstring_view name, std::wstring_view description, bool value);
 
-    void add_int_spinner(const std::wstring& name, UINT description_resource_id, int value, int min, int max, int step);
-    void add_int_spinner(const std::wstring& name, const std::wstring& description, int value, int min, int max, int step);
+    void add_int_spinner(std::wstring_view name, UINT description_resource_id, int value, int min, int max, int step);
+    void add_int_spinner(std::wstring_view name, std::wstring_view description, int value, int min, int max, int step);
 
-    void add_string(const std::wstring& name, UINT description_resource_id, const std::wstring& value);
-    void add_string(const std::wstring& name, const std::wstring& description, const std::wstring& value);
+    void add_string(std::wstring_view name, UINT description_resource_id, std::wstring_view value);
+    void add_string(std::wstring_view name, std::wstring_view description, std::wstring_view value);
 
-    void add_multiline_string(const std::wstring& name, UINT description_resource_id, const std::wstring& value);
-    void add_multiline_string(const std::wstring& name, const std::wstring& description, const std::wstring& value);
+    void add_multiline_string(std::wstring_view name, UINT description_resource_id, std::wstring_view value);
+    void add_multiline_string(std::wstring_view name, std::wstring_view description, std::wstring_view value);
 
-    void add_color_picker(const std::wstring& name, UINT description_resource_id, const std::wstring& value);
-    void add_color_picker(const std::wstring& name, const std::wstring& description, const std::wstring& value);
+    void add_color_picker(std::wstring_view name, UINT description_resource_id, std::wstring_view value);
+    void add_color_picker(std::wstring_view name, std::wstring_view description, std::wstring_view value);
 
-    void add_hotkey(const std::wstring& name, UINT description_resource_id, const HotkeyObject& hotkey);
-    void add_hotkey(const std::wstring& name, const std::wstring& description, const HotkeyObject& hotkey);
+    void add_hotkey(std::wstring_view name, UINT description_resource_id, const HotkeyObject& hotkey);
+    void add_hotkey(std::wstring_view name, std::wstring_view description, const HotkeyObject& hotkey);
 
-    void add_choice_group(const std::wstring& name, UINT description_resource_id, const std::wstring& value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
-    void add_choice_group(const std::wstring& name, const std::wstring& description, const std::wstring& value, const std::vector<std::pair<std::wstring, std::wstring>>& keys_and_texts);
+    void add_choice_group(std::wstring_view name, UINT description_resource_id, std::wstring_view value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
+    void add_choice_group(std::wstring_view name, std::wstring_view description, std::wstring_view value, const std::vector<std::pair<std::wstring, std::wstring>>& keys_and_texts);
 
-    void add_dropdown(const std::wstring& name, UINT description_resource_id, const std::wstring& value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
-    void add_dropdown(const std::wstring& name, const std::wstring& description, const std::wstring& value, const std::vector<std::pair<std::wstring, std::wstring>>& keys_and_texts);
+    void add_dropdown(std::wstring_view name, UINT description_resource_id, std::wstring_view value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
+    void add_dropdown(std::wstring_view name, std::wstring_view description, std::wstring_view value, const std::vector<std::pair<std::wstring, std::wstring>>& keys_and_texts);
 
-    void add_custom_action(const std::wstring& name, UINT description_resource_id, UINT button_text_resource_id, UINT ext_description_resource_id);
-    void add_custom_action(const std::wstring& name, UINT description_resource_id, UINT button_text_resource_id, const std::wstring& value);
-    void add_custom_action(const std::wstring& name, const std::wstring& description, const std::wstring& button_text, const std::wstring& value);
+    void add_custom_action(std::wstring_view name, UINT description_resource_id, UINT button_text_resource_id, UINT ext_description_resource_id);
+    void add_custom_action(std::wstring_view name, UINT description_resource_id, UINT button_text_resource_id, std::wstring_view value);
+    void add_custom_action(std::wstring_view name, std::wstring_view description, std::wstring_view button_text, std::wstring_view value);
 
 
     // Serialize the internal json to a string.
@@ -57,7 +57,7 @@ namespace PowerToysSettings {
     bool serialize_to_buffer(wchar_t* buffer, int* buffer_size);
 
   private:
-    web::json::value m_json;
+    json::JsonObject m_json;
     int m_curr_priority = 0; // For keeping order when adding elements.
     HINSTANCE m_instance;
 
@@ -66,24 +66,22 @@ namespace PowerToysSettings {
 
   class PowerToyValues {
   public:
-    PowerToyValues(const std::wstring& powertoy_name);
-    static PowerToyValues from_json_string(const std::wstring& json);
-    static PowerToyValues load_from_settings_file(const std::wstring& powertoy_name);
+    PowerToyValues(std::wstring_view powertoy_name);
+    static PowerToyValues from_json_string(std::wstring_view json);
+    static PowerToyValues load_from_settings_file(std::wstring_view powertoy_name);
 
     template <typename T>
-    void add_property(const std::wstring& name, T value);
+    inline void add_property(std::wstring_view name, T value) 
+    {
+      json::JsonObject prop_value;
+      prop_value.SetNamedValue(L"value", json::value(value));
+      m_json.GetNamedObject(L"properties").SetNamedValue(name, prop_value);
+    }
 
-    // Check property value type
-    bool is_bool_value(const std::wstring& property_name);
-    bool is_int_value(const std::wstring& property_name);
-    bool is_string_value(const std::wstring& property_name);
-    bool is_object_value(const std::wstring& property_name);
-
-    // Get property value
-    bool get_bool_value(const std::wstring& property_name);
-    int get_int_value(const std::wstring& property_name);
-    std::wstring get_string_value(const std::wstring& property_name);
-    web::json::value get_json(const std::wstring& property_name);
+    std::optional<bool> get_bool_value(std::wstring_view property_name);
+    std::optional<int> get_int_value(std::wstring_view property_name);
+    std::optional<std::wstring> get_string_value(std::wstring_view property_name);
+    std::optional<json::JsonObject> get_json(std::wstring_view property_name);
 
     std::wstring serialize();
     void save_to_settings_file();
@@ -91,60 +89,58 @@ namespace PowerToysSettings {
   private:
     const std::wstring m_version = L"1.0";
     void set_version();
-    web::json::value m_json;
+    json::JsonObject m_json;
     std::wstring _name;
     PowerToyValues() {}
   };
 
   class CustomActionObject {
   public:
-    static CustomActionObject from_json_string(const std::wstring& json) {
-      web::json::value parsed_json = web::json::value::parse(json);
-      return CustomActionObject(parsed_json);
+    static CustomActionObject from_json_string(std::wstring_view json) {
+      return CustomActionObject(json::JsonValue::Parse(json).GetObjectW());
     }
 
-    std::wstring get_name() { return m_json[L"action_name"].as_string(); }
-    std::wstring get_value() { return m_json[L"value"].as_string(); }
+    std::wstring get_name() { return m_json.GetNamedString(L"action_name").c_str(); }
+    std::wstring get_value() { return m_json.GetNamedString(L"value").c_str(); }
 
   protected:
-    CustomActionObject(web::json::value action_json) : m_json(action_json) {};
-    web::json::value m_json;
+    CustomActionObject(json::JsonObject action_json) : m_json(std::move(action_json)) {};
+    json::JsonObject m_json;
   };
   
   class HotkeyObject {
   public:
-    static HotkeyObject from_json(web::json::value json) {
-      return HotkeyObject(json);
+    static HotkeyObject from_json(json::JsonObject json) {
+      return HotkeyObject(std::move(json));
     }
-    static HotkeyObject from_json_string(const std::wstring& json) {
-      web::json::value parsed_json = web::json::value::parse(json);
-      return HotkeyObject(parsed_json);
+    static HotkeyObject from_json_string(std::wstring_view json) {
+      return HotkeyObject(json::JsonValue::Parse(json).GetObjectW());
     }
     static HotkeyObject from_settings(bool win_pressed, bool ctrl_pressed, bool alt_pressed, bool shift_pressed, UINT vk_code) {
-      web::json::value json = web::json::value::object();
-      json.as_object()[L"win"] = web::json::value::boolean(win_pressed);
-      json.as_object()[L"ctrl"] = web::json::value::boolean(ctrl_pressed);
-      json.as_object()[L"alt"] = web::json::value::boolean(alt_pressed);
-      json.as_object()[L"shift"] = web::json::value::boolean(shift_pressed);
-      json.as_object()[L"code"] = web::json::value::number(vk_code);
-      json.as_object()[L"key"] = web::json::value::string(key_from_code(vk_code));
-      return HotkeyObject(json);
+      json::JsonObject json;
+      json.SetNamedValue(L"win", json::value(win_pressed));
+      json.SetNamedValue(L"ctrl", json::value(ctrl_pressed));
+      json.SetNamedValue(L"alt", json::value(alt_pressed));
+      json.SetNamedValue(L"shift", json::value(shift_pressed));
+      json.SetNamedValue(L"code", json::value(vk_code));
+      json.SetNamedValue(L"key", json::value(key_from_code(vk_code)));
+      return std::move(json);
     }
-    const web::json::value& get_json() const { return m_json; }
+    const json::JsonObject& get_json() const { return m_json; }
 
-    std::wstring get_key() { return m_json[L"key"].as_string(); }
-    UINT get_code() { return m_json[L"code"].as_integer(); }
-    bool win_pressed() { return m_json[L"win"].as_bool(); }
-    bool ctrl_pressed() { return m_json[L"ctrl"].as_bool(); }
-    bool alt_pressed() { return m_json[L"alt"].as_bool(); }
-    bool shift_pressed() { return m_json[L"shift"].as_bool(); }
-    UINT get_modifiers_repeat()  {
+    std::wstring get_key() const { return m_json.GetNamedString(L"key").c_str(); }
+    UINT get_code() const { return static_cast<UINT>(m_json.GetNamedNumber(L"code")); }
+    bool win_pressed() const { return m_json.GetNamedBoolean(L"win"); }
+    bool ctrl_pressed() const { return m_json.GetNamedBoolean(L"ctrl"); }
+    bool alt_pressed() const { return m_json.GetNamedBoolean(L"alt"); }
+    bool shift_pressed() const { return m_json.GetNamedBoolean(L"shift"); }
+    UINT get_modifiers_repeat() const  {
       return (win_pressed()   ? MOD_WIN : 0) |
              (ctrl_pressed()  ? MOD_CONTROL : 0) |
              (alt_pressed()   ? MOD_ALT : 0) |
              (shift_pressed() ? MOD_SHIFT : 0);
     }
-    UINT get_modifiers() {
+    UINT get_modifiers() const {
       return get_modifiers_repeat() | MOD_NOREPEAT;
     }
   protected:
@@ -178,12 +174,12 @@ namespace PowerToysSettings {
       }
       return L"(Key " + std::to_wstring(key_code) + L")";
     }
-    HotkeyObject(web::json::value hotkey_json) : m_json(hotkey_json) {
+    HotkeyObject(json::JsonObject hotkey_json) : m_json(std::move(hotkey_json)) {
       if (get_key() == L"~" && get_modifiers_repeat() == MOD_WIN) {
-        m_json.as_object()[L"key"] = web::json::value::string(key_from_code(get_code()));
+        m_json.SetNamedValue(L"key", json::value(key_from_code(get_code())));
       }
     };
-    web::json::value m_json;
+    json::JsonObject m_json;
   };
 
 }

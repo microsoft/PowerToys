@@ -4,20 +4,21 @@
 // IUnknown
 IFACEMETHODIMP CMockPowerRenameManagerEvents::QueryInterface(__in REFIID riid, __deref_out void** ppv)
 {
-    static const QITAB qit[] =
-    {
+    static const QITAB qit[] = {
         QITABENT(CMockPowerRenameManagerEvents, IPowerRenameManagerEvents),
         { 0 },
     };
     return QISearch(this, qit, riid, ppv);
 }
 
-IFACEMETHODIMP_(ULONG) CMockPowerRenameManagerEvents::AddRef()
+IFACEMETHODIMP_(ULONG)
+CMockPowerRenameManagerEvents::AddRef()
 {
     return InterlockedIncrement(&m_refCount);
 }
 
-IFACEMETHODIMP_(ULONG) CMockPowerRenameManagerEvents::Release()
+IFACEMETHODIMP_(ULONG)
+CMockPowerRenameManagerEvents::Release()
 {
     long refCount = InterlockedDecrement(&m_refCount);
     if (refCount == 0)
@@ -89,4 +90,3 @@ HRESULT CMockPowerRenameManagerEvents::s_CreateInstance(_In_ IPowerRenameManager
 
     return hr;
 }
-

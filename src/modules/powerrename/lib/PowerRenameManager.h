@@ -3,6 +3,9 @@
 #include <map>
 #include "srwlock.h"
 
+#include <lib/PowerRenameManager.h>
+#include <lib/PowerRenameInterfaces.h>
+
 class CPowerRenameManager :
     public IPowerRenameManager,
     public IPowerRenameRegExEvents

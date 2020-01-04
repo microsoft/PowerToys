@@ -1,5 +1,8 @@
 #include "pch.h"
 #include <common/settings_objects.h>
+#include "lib/Settings.h"
+#include "lib/FancyZones.h"
+#include "trace.h"
 
 struct FancyZonesSettings : winrt::implements<FancyZonesSettings, IFancyZonesSettings>
 {
@@ -112,25 +115,25 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept try
 
     for (auto const& setting : m_configBools)
     {
-        if (values.is_bool_value(setting.name))
+        if (const auto val = values.get_bool_value(setting.name))
         {
-            *setting.value = values.get_bool_value(setting.name);
+            *setting.value = *val;
         }
     }
 
-    if (values.is_string_value(m_zoneHiglightName))
+    if (auto val = values.get_string_value(m_zoneHiglightName))
     {
-        m_settings.zoneHightlightColor = values.get_string_value(m_zoneHiglightName);
+        m_settings.zoneHightlightColor = std::move(*val);
     }
 
-    if (values.is_object_value(m_editorHotkeyName))
+    if (const auto val = values.get_json(m_editorHotkeyName))
     {
-        m_settings.editorHotkey = PowerToysSettings::HotkeyObject::from_json(values.get_json(m_editorHotkeyName));
+        m_settings.editorHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
     }
 
-    if (values.is_string_value(m_excludedAppsName))
+    if (auto val = values.get_string_value(m_excludedAppsName))
     {
-        m_settings.excludedApps = values.get_string_value(m_excludedAppsName);
+        m_settings.excludedApps = std::move(*val);
         m_settings.excludedAppsArray.clear();
         auto excludedUppercase = m_settings.excludedApps;
         CharUpperBuffW(excludedUppercase.data(), (DWORD)excludedUppercase.length());
@@ -163,7 +166,7 @@ void FancyZonesSettings::SaveSettings() noexcept try
     }
 
     values.add_property(m_zoneHiglightName, m_settings.zoneHightlightColor);
-    values.add_property(m_editorHotkeyName, m_settings.editorHotkey);
+    values.add_property(m_editorHotkeyName, m_settings.editorHotkey.get_json());
     values.add_property(m_excludedAppsName, m_settings.excludedApps);
 
     values.save_to_settings_file();
