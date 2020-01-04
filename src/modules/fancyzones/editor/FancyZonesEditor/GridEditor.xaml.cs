@@ -1,19 +1,13 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using FancyZonesEditor.Models;
-
 
 namespace FancyZonesEditor
 {
@@ -43,6 +37,7 @@ namespace FancyZonesEditor
                 {
                     _rowInfo[row] = new RowColInfo(model.RowPercents[row]);
                 }
+
                 _colInfo = new RowColInfo[cols];
                 for (int col = 0; col < cols; col++)
                 {
@@ -57,6 +52,7 @@ namespace FancyZonesEditor
                         maxIndex = Math.Max(maxIndex, model.CellChildMap[row, col]);
                     }
                 }
+
                 for (int i = 0; i <= maxIndex; i++)
                 {
                     AddZone();
@@ -69,6 +65,7 @@ namespace FancyZonesEditor
                 Model = new GridLayoutModel();
                 DataContext = Model;
             }
+
             Model.PropertyChanged += OnGridDimensionsChanged;
             AddDragHandles();
         }
@@ -88,7 +85,10 @@ namespace FancyZonesEditor
             set { SetValue(ModelProperty, value); }
         }
 
-        public Panel PreviewPanel { get { return Preview; } }
+        public Panel PreviewPanel
+        {
+            get { return Preview; }
+        }
 
         private void OnFullSplit(object o, SplitEventArgs e)
         {
@@ -124,6 +124,7 @@ namespace FancyZonesEditor
                                 }
                             }
                         }
+
                         OnGridDimensionsChanged();
                         return;
                     }
@@ -134,7 +135,6 @@ namespace FancyZonesEditor
         private void ExtendRangeToHaveEvenCellEdges()
         {
             // extend each edge of the [(_startCol, _startRow) - (_endCol, _endRow)] range based on merged cells until you have 4 straight edges with no "straddling cells"
-
             GridLayoutModel model = Model;
 
             while (_startRow > 0)
@@ -149,6 +149,7 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if (!dirty)
                 {
                     break;
@@ -167,6 +168,7 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if (!dirty)
                 {
                     break;
@@ -185,6 +187,7 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if (!dirty)
                 {
                     break;
@@ -203,12 +206,12 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if (!dirty)
                 {
                     break;
                 }
             }
-
         }
 
         private void OnSplit(object o, SplitEventArgs e)
@@ -242,11 +245,9 @@ namespace FancyZonesEditor
                 }
             }
 
-
             int newChildIndex = AddZone();
 
             double offset = e.Offset;
-
 
             if (e.Orientation == Orientation.Vertical)
             {
@@ -266,9 +267,11 @@ namespace FancyZonesEditor
                                 model.CellChildMap[walkRow++, foundCol + i] = newChildIndex;
                             }
                         }
+
                         if (_colInfo[foundCol + i].End == offset)
                         {
                             foundExistingSplit = true;
+
                             // use existing division
                         }
                     }
@@ -283,6 +286,7 @@ namespace FancyZonesEditor
                     {
                         foundCol++;
                     }
+
                     offset -= _colInfo[foundCol].Start;
                 }
 
@@ -306,11 +310,13 @@ namespace FancyZonesEditor
                             newCellChildMap[row, col] = model.CellChildMap[row, sourceCol];
                         }
                     }
+
                     if (col != foundCol)
                     {
                         sourceCol++;
                     }
                 }
+
                 model.CellChildMap = newCellChildMap;
 
                 sourceCol = 0;
@@ -331,14 +337,15 @@ namespace FancyZonesEditor
                         newColInfo[col] = _colInfo[sourceCol++];
                     }
                 }
+
                 _colInfo = newColInfo;
                 model.ColumnPercents = newColPercents;
 
                 model.Columns++;
             }
-            else // Horizontal
+            else
             {
-
+                // Horizontal
                 if (splitee.HorizontalSnapPoints != null)
                 {
                     offset += Canvas.GetTop(splitee);
@@ -355,9 +362,11 @@ namespace FancyZonesEditor
                                 model.CellChildMap[foundRow + i, walkCol] = newChildIndex;
                             }
                         }
+
                         if (_rowInfo[foundRow + i].End == offset)
                         {
                             foundExistingSplit = true;
+
                             // use existing division
                         }
                     }
@@ -372,8 +381,8 @@ namespace FancyZonesEditor
                     {
                         foundRow++;
                     }
-                    offset -= _rowInfo[foundRow].Start;
 
+                    offset -= _rowInfo[foundRow].Start;
                 }
 
                 AddDragHandle(Orientation.Horizontal, rows - 1);
@@ -396,11 +405,13 @@ namespace FancyZonesEditor
                             newCellChildMap[row, col] = model.CellChildMap[sourceRow, col];
                         }
                     }
+
                     if (row != foundRow)
                     {
                         sourceRow++;
                     }
                 }
+
                 model.CellChildMap = newCellChildMap;
 
                 sourceRow = 0;
@@ -421,6 +432,7 @@ namespace FancyZonesEditor
                         newRowInfo[row] = _rowInfo[sourceRow++];
                     }
                 }
+
                 _rowInfo = newRowInfo;
                 model.RowPercents = newRowPercents;
 
@@ -454,15 +466,19 @@ namespace FancyZonesEditor
 
         private void AddDragHandle(Orientation orientation, int index)
         {
-            GridResizer resizer = new GridResizer();
-            resizer.Orientation = orientation;
-            resizer.Index = index;
-            resizer.Model = Model;
+            GridResizer resizer = new GridResizer
+            {
+                Orientation = orientation,
+                Index = index,
+                Model = Model,
+            };
             resizer.DragDelta += Resizer_DragDelta;
+
             if (orientation == Orientation.Vertical)
             {
-                index += (Model.Rows - 1);
+                index += Model.Rows - 1;
             }
+
             AdornerLayer.Children.Insert(index, resizer);
         }
 
@@ -476,6 +492,7 @@ namespace FancyZonesEditor
             }
 
             freeZones.Add(index);
+
             GridZone zone = (GridZone)Preview.Children[index];
             zone.Visibility = Visibility.Hidden;
             zone.MinHeight = 0;
@@ -516,14 +533,14 @@ namespace FancyZonesEditor
                 OnGridDimensionsChanged();
             }
         }
+
         private static void OnGridDimensionsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((GridEditor)d).OnGridDimensionsChanged();
         }
+
         private void OnGridDimensionsChanged()
         {
-            GridLayoutModel model = Model;
-
             Size actualSize = new Size(ActualWidth, ActualHeight);
             if (actualSize.Width > 0)
             {
@@ -539,9 +556,10 @@ namespace FancyZonesEditor
                 return;
             }
 
-            Settings settings = ((App)(Application.Current)).ZoneSettings;
-            int spacing = settings.Spacing;
-            int gutter = settings.Spacing;
+            Settings settings = ((App)Application.Current).ZoneSettings;
+
+            int spacing, gutter;
+            spacing = gutter = settings.ShowSpacing ? settings.Spacing : 0;
 
             int cols = model.Columns;
             int rows = model.Rows;
@@ -552,18 +570,16 @@ namespace FancyZonesEditor
             double top = gutter;
             for (int row = 0; row < rows; row++)
             {
-                double cellHeight = _rowInfo[row].SetExtent(top, totalHeight);
+                double cellHeight = _rowInfo[row].Recalculate(top, totalHeight);
                 top += cellHeight + spacing;
             }
 
             double left = gutter;
             for (int col = 0; col < cols; col++)
             {
-                double cellWidth = _colInfo[col].SetExtent(left, totalWidth);
+                double cellWidth = _colInfo[col].Recalculate(left, totalWidth);
                 left += cellWidth + spacing;
             }
-
-
 
             for (int row = 0; row < rows; row++)
             {
@@ -585,6 +601,7 @@ namespace FancyZonesEditor
                         {
                             maxRow++;
                         }
+
                         zone.HorizontalSnapPoints = null;
                         if (maxRow > row)
                         {
@@ -592,7 +609,7 @@ namespace FancyZonesEditor
                             int pointsIndex = 0;
                             for (int walk = row; walk < maxRow; walk++)
                             {
-                                zone.HorizontalSnapPoints[pointsIndex++] = _rowInfo[walk].End + spacing / 2 - top;
+                                zone.HorizontalSnapPoints[pointsIndex++] = _rowInfo[walk].End + (spacing / 2) - top;
                             }
                         }
 
@@ -609,7 +626,7 @@ namespace FancyZonesEditor
                             int pointsIndex = 0;
                             for (int walk = col; walk < maxCol; walk++)
                             {
-                                zone.VerticalSnapPoints[pointsIndex++] = _colInfo[walk].End + spacing / 2 - left;
+                                zone.VerticalSnapPoints[pointsIndex++] = _colInfo[walk].End + (spacing / 2) - left;
                             }
                         }
 
@@ -639,9 +656,11 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if (startCol != -1)
                 {
-                    Canvas.SetTop(resizer, _rowInfo[row].End + (spacing / 2) - 24); // hard coding this as (resizer.ActualHeight / 2) will still evaluate to 0 here ... a layout hasn't yet happened 
+                    // hard coding this as (resizer.ActualHeight / 2) will still evaluate to 0 here ... a layout hasn't yet happened
+                    Canvas.SetTop(resizer, _rowInfo[row].End + (spacing / 2) - 24);
                     Canvas.SetLeft(resizer, (_colInfo[endCol].End + _colInfo[startCol].Start) / 2);
                 }
                 else
@@ -654,7 +673,7 @@ namespace FancyZonesEditor
             {
                 GridResizer resizer = (GridResizer)adornerChildren[childIndex++];
                 int startRow = -1;
-                int endRow = rows - 1;;
+                int endRow = rows - 1;
                 for (int row = 0; row < rows; row++)
                 {
                     if ((startRow == -1) && (model.CellChildMap[row, col] != model.CellChildMap[row, col + 1]))
@@ -667,6 +686,7 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if (startRow != -1)
                 {
                     Canvas.SetLeft(resizer, _colInfo[col].End + (spacing / 2) - 24); // hard coding this as (resizer.ActualWidth / 2) will still evaluate to 0 here ... a layout hasn't yet happened
@@ -805,6 +825,7 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if ((_startRow >= 0) && (_endRow == -1))
                 {
                     _endRow = rows - 1;
@@ -825,6 +846,7 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
+
                 if ((_startCol >= 0) && (_endCol == -1))
                 {
                     _endCol = cols - 1;
@@ -842,14 +864,15 @@ namespace FancyZonesEditor
 
                 e.Handled = true;
             }
-            base.OnPreviewMouseMove(e);
+
+            OnPreviewMouseMove(e);
         }
 
         private void ClearSelection()
         {
             foreach (UIElement zone in Preview.Children)
             {
-                ((GridZone) zone).IsSelected = false;
+                ((GridZone)zone).IsSelected = false;
             }
         }
 
@@ -872,6 +895,7 @@ namespace FancyZonesEditor
                     }
                 }
             }
+
             OnGridDimensionsChanged();
             ClearSelection();
         }
@@ -895,7 +919,6 @@ namespace FancyZonesEditor
             return returnSize;
         }
 
-        Point _mouseDownPos = new Point(-1, -1);
         private RowColInfo[] _rowInfo;
         private RowColInfo[] _colInfo;
 
@@ -903,9 +926,5 @@ namespace FancyZonesEditor
         private int _endRow = -1;
         private int _startCol = -1;
         private int _endCol = -1;
-
-        private const int c_multiplier = 10000;
-
     }
-
 }

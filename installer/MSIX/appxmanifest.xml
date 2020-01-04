@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" 
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10" 
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" 
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5" 
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" 
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10" 
+  xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4" 
+  xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5" IgnorableNamespaces="desktop4">
+  <Identity Name="PowerToys" Version="0.15.0.0" Publisher="CN=Microsoft Corporation" ProcessorArchitecture="x64" />
+  <Properties>
+    <DisplayName>PowerToys</DisplayName>
+    <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
+    <Description>Windows system utilities to maximize productivity</Description>
+    <Logo>Images\logo.png</Logo>
+  </Properties>
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.18362.30" />
+  </Dependencies>
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust"/>
+    <rescap:Capability Name="allowElevation"/>
+  </Capabilities>
+  <Applications>
+    <Application Id="PowerToys" Executable="PowerToys.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="PowerToys" Description="Windows system utilities to maximize productivity" Square150x150Logo="Images\logo150.png" Square44x44Logo="Images\logo44.png" BackgroundColor="transparent" />
+      <Extensions>
+        <uap5:Extension Category="windows.startupTask" Executable="PowerToys.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap5:StartupTask TaskId="PowerToysStartupTaskID" Enabled="true" DisplayName="PowerToys" />
+        </uap5:Extension>
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer Executable="modules\PowerRenameUWPUI.exe" DisplayName="PowerRenameUWPUI">
+              <com:Class Id="0440049F-D1DC-4E46-B27B-98393D79486B"/>
+            </com:ExeServer>
+          </com:ComServer>
+        </com:Extension>
+        <desktop4:Extension Category="windows.fileExplorerContextMenus">
+          <desktop4:FileExplorerContextMenus>
+            <desktop4:ItemType Type="*">
+              <desktop4:Verb Id="FilePowerRename" Clsid="0440049F-D1DC-4E46-B27B-98393D79486B" />
+            </desktop4:ItemType>
+            <desktop5:ItemType Type="Directory">
+              <desktop5:Verb Id="DirectoryPowerRename" Clsid="0440049F-D1DC-4E46-B27B-98393D79486B" />
+            </desktop5:ItemType>
+          </desktop4:FileExplorerContextMenus>
+        </desktop4:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+</Package>

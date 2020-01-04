@@ -53,7 +53,8 @@ Ex: txt.txt -> txt.NewExtension
 
 For most use cases, a simple search and replace is sufficient.  Other users will need more control over.  That is where Regular Expressions come in.  Regular Expressions define a search pattern for text.  Regular expressions can be used to search, edit and manipulate text. The pattern defined by the regular expression may match one or several times or not at all for a given string.  PowerRename uses the ECMAScript grammar, which is common amongst modern programming languages.
 
-To enable regular expressions, check the "Use Regular Expressions" checkbox. Note: You will likely want to check "Match All Occurrences" while using regular expressions.
+To enable regular expressions, check the "Use Regular Expressions" checkbox. 
+**Note:** You will likely want to check "Match All Occurrences" while using regular expressions.
 
 ### Examples
 
@@ -70,6 +71,7 @@ Simple matching examples:
 
 
 Matching and variable examples:
+**Note:** For using the variables, you do need "Match All Occurrences" enabled
 
 | Search for | Replace With  | Description                                |
 | ---------- | ------------- |--------------------------------------------|

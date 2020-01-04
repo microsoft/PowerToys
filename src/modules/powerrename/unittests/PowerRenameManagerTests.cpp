@@ -22,7 +22,6 @@ namespace PowerRenameManagerTests
     TEST_CLASS(SimpleTests)
     {
     public:
-
         struct rename_pairs
         {
             std::wstring originalName;
@@ -32,7 +31,7 @@ namespace PowerRenameManagerTests
             int depth;
         };
 
-        void RenameHelper(_In_ rename_pairs* renamePairs, _In_ int numPairs, _In_ std::wstring searchTerm, _In_ std::wstring replaceTerm, _In_ DWORD flags)
+        void RenameHelper(_In_ rename_pairs * renamePairs, _In_ int numPairs, _In_ std::wstring searchTerm, _In_ std::wstring replaceTerm, _In_ DWORD flags)
         {
             // Create a single item (in a temp directory) and verify rename works as expected
             CTestFileHelper testFileHelper;
@@ -60,11 +59,12 @@ namespace PowerRenameManagerTests
             {
                 CComPtr<IPowerRenameItem> item;
                 CMockPowerRenameItem::CreateInstance(testFileHelper.GetFullPath(
-                    renamePairs[i].originalName).c_str(),
-                    renamePairs[i].originalName.c_str(),
-                    renamePairs[i].depth,
-                    !renamePairs[i].isFile,
-                    &item);
+                                                                       renamePairs[i].originalName)
+                                                         .c_str(),
+                                                     renamePairs[i].originalName.c_str(),
+                                                     renamePairs[i].depth,
+                                                     !renamePairs[i].isFile,
+                                                     &item);
 
                 int itemId = 0;
                 Assert::IsTrue(item->get_id(&itemId) == S_OK);
@@ -153,9 +153,8 @@ namespace PowerRenameManagerTests
         TEST_METHOD(VerifySingleRename)
         {
             // Create a single item and verify rename works as expected
-            rename_pairs renamePairs[] =
-            {
-                {L"foo.txt", L"bar.txt", true, true}
+            rename_pairs renamePairs[] = {
+                { L"foo.txt", L"bar.txt", true, true }
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS);
@@ -164,14 +163,13 @@ namespace PowerRenameManagerTests
         TEST_METHOD(VerifyMultiRename)
         {
             // Create a single item and verify rename works as expected
-            rename_pairs renamePairs[] =
-            {
-                {L"foo1.txt", L"bar1.txt", true, true, 0},
-                {L"foo2.txt", L"bar2.txt", true, true, 0},
-                {L"foo3.txt", L"bar3.txt", true, true, 0},
-                {L"foo4.txt", L"bar4.txt", true, true, 0},
-                {L"foo5.txt", L"bar5.txt", true, true, 0},
-                {L"baa.txt", L"baa_norename.txt", true, false, 0}
+            rename_pairs renamePairs[] = {
+                { L"foo1.txt", L"bar1.txt", true, true, 0 },
+                { L"foo2.txt", L"bar2.txt", true, true, 0 },
+                { L"foo3.txt", L"bar3.txt", true, true, 0 },
+                { L"foo4.txt", L"bar4.txt", true, true, 0 },
+                { L"foo5.txt", L"bar5.txt", true, true, 0 },
+                { L"baa.txt", L"baa_norename.txt", true, false, 0 }
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS);
@@ -180,10 +178,9 @@ namespace PowerRenameManagerTests
         TEST_METHOD(VerifyFilesOnlyRename)
         {
             // Verify only files are renamed when folders match too
-            rename_pairs renamePairs[] =
-            {
-                {L"foo.txt", L"bar.txt", true, true, 0},
-                {L"foo", L"foo_norename", false, false, 0}
+            rename_pairs renamePairs[] = {
+                { L"foo.txt", L"bar.txt", true, true, 0 },
+                { L"foo", L"foo_norename", false, false, 0 }
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS | ExcludeFolders);
@@ -192,10 +189,9 @@ namespace PowerRenameManagerTests
         TEST_METHOD(VerifyFoldersOnlyRename)
         {
             // Verify only folders are renamed when files match too
-            rename_pairs renamePairs[] =
-            {
-                {L"foo.txt", L"foo_norename.txt", true, false, 0},
-                {L"foo", L"bar", false, true, 0}
+            rename_pairs renamePairs[] = {
+                { L"foo.txt", L"foo_norename.txt", true, false, 0 },
+                { L"foo", L"bar", false, true, 0 }
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS | ExcludeFiles);
@@ -204,10 +200,9 @@ namespace PowerRenameManagerTests
         TEST_METHOD(VerifyFileNameOnlyRename)
         {
             // Verify only file name is renamed, not extension
-            rename_pairs renamePairs[] =
-            {
-                {L"foo.foo", L"bar.foo", true, true, 0},
-                {L"test.foo", L"test.foo_norename", true, false, 0}
+            rename_pairs renamePairs[] = {
+                { L"foo.foo", L"bar.foo", true, true, 0 },
+                { L"test.foo", L"test.foo_norename", true, false, 0 }
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS | NameOnly);
@@ -216,10 +211,9 @@ namespace PowerRenameManagerTests
         TEST_METHOD(VerifyFileExtensionOnlyRename)
         {
             // Verify only file extension is renamed, not name
-            rename_pairs renamePairs[] =
-            {
-                {L"foo.foo", L"foo.bar", true, true, 0},
-                {L"test.foo", L"test.bar", true, true, 0}
+            rename_pairs renamePairs[] = {
+                { L"foo.foo", L"foo.bar", true, true, 0 },
+                { L"test.foo", L"test.bar", true, true, 0 }
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS | ExtensionOnly);
@@ -228,14 +222,12 @@ namespace PowerRenameManagerTests
         TEST_METHOD(VerifySubFoldersRename)
         {
             // Verify subfolders do not get renamed
-            rename_pairs renamePairs[] =
-            {
-                {L"foo1", L"bar1", false, true, 0},
-                {L"foo2", L"foo2_norename", false, false, 1}
+            rename_pairs renamePairs[] = {
+                { L"foo1", L"bar1", false, true, 0 },
+                { L"foo2", L"foo2_norename", false, false, 1 }
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS | ExcludeSubfolders);
         }
-
     };
 }

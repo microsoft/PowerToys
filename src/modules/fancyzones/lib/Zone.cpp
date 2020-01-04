@@ -1,5 +1,10 @@
 #include "pch.h"
 
+#include <common/dpi_aware.h>
+#include <common/monitors.h>
+#include "Zone.h"
+#include "Settings.h"
+
 struct Zone : winrt::implements<Zone, IZone>
 {
 public:
@@ -56,6 +61,12 @@ IFACEMETHODIMP_(void) Zone::RemoveWindowFromZone(HWND window, bool restoreSize) 
 
 void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
 {
+    // Skip invisible windows
+    if (!IsWindowVisible(window))
+    {
+        return;
+    }
+  
     // Take care of 1px border
     RECT zoneRect = m_zoneRect;
 
@@ -63,12 +74,17 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
     ::GetWindowRect(window, &windowRect);
 
     RECT frameRect{};
-    // Failure is expected on down level systems.
+
+    const auto level = DPIAware::GetAwarenessLevel(GetWindowDpiAwarenessContext(window));
+    const bool accountForUnawareness = level < DPIAware::PER_MONITOR_AWARE;
     if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
     {
-        zoneRect.bottom -= (frameRect.bottom - windowRect.bottom);
-        zoneRect.right -= (frameRect.right - windowRect.right);
-        zoneRect.left -= (frameRect.left - windowRect.left);
+        const auto left_margin = frameRect.left - windowRect.left;
+        const auto right_margin = frameRect.right - windowRect.right;
+        const auto bottom_margin = frameRect.bottom - windowRect.bottom;
+        zoneRect.left -= left_margin;
+        zoneRect.right -= right_margin;
+        zoneRect.bottom -= bottom_margin;
     }
 
     // Map to screen coords
@@ -77,14 +93,27 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
     MONITORINFO mi{sizeof(mi)};
     if (GetMonitorInfoW(MonitorFromWindow(zoneWindow, MONITOR_DEFAULTTONEAREST), &mi))
     {
-        OffsetRect(&zoneRect, mi.rcMonitor.left - mi.rcWork.left, mi.rcMonitor.top - mi.rcWork.top);
+        const auto taskbar_left_size = std::abs(mi.rcMonitor.left - mi.rcWork.left);
+        const auto taskbar_top_size = std::abs(mi.rcMonitor.top - mi.rcWork.top);
+        OffsetRect(&zoneRect, -taskbar_left_size, -taskbar_top_size);
+        if (accountForUnawareness)
+        {
+            zoneRect.left = max(mi.rcMonitor.left, zoneRect.left);
+            zoneRect.right = min(mi.rcMonitor.right - taskbar_left_size, zoneRect.right);
+            zoneRect.top = max(mi.rcMonitor.top, zoneRect.top);
+            zoneRect.bottom = min(mi.rcMonitor.bottom - taskbar_top_size, zoneRect.bottom);
+        }
     }
 
-    WINDOWPLACEMENT placement;
+    WINDOWPLACEMENT placement{};
     ::GetWindowPlacement(window, &placement);
     placement.rcNormalPosition = zoneRect;
     placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
-    placement.showCmd = SW_RESTORE | SW_SHOWNA;
+    // Do not restore minimized windows. We change their placement though so they restore to the correct zone.
+    if ((placement.showCmd & SW_SHOWMINIMIZED) == 0)
+    {
+        placement.showCmd = SW_RESTORE | SW_SHOWNA;
+    }
     ::SetWindowPlacement(window, &placement);
 }
 

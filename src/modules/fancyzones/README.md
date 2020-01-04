@@ -1,4 +1,4 @@
-# Fancy Zones
+# Overview
 Fancy Zones is a window manager that is designed to make it easy to arrange and snap windows into efficient layouts for your workflow and also to restore these layouts quickly.  Fancy Zones allows the user to define a set of window locations for a desktop that are drag targets for windows.  When the user drags a window into a zone, the windows is resized and repositioned to fill that zone.  
 
 ![Fancy Zones](FancyZones.png)
@@ -17,25 +17,27 @@ The subtractive table layout model starts with a table layout and allows zones t
 
 The backlog for the utility can be found [here](https://github.com/Microsoft/PowerToys/tree/master/doc/planning/FancyZonesBacklog.md) and the source code is [here](https://github.com/Microsoft/PowerToys/tree/master/src/modules/fancyzones).
 
-## Shortcut Keys
+# Shortcut Keys
 | Shortcut      | Action |
 | ----------- | ----------- |
 | Win + `      | Launches editor (this shortcut is editable in the settings dialog)       |
 | Win+Ctrl+\<Number>   | Cycles through saved layouts with the corresponding number of zones        |
-| Win+Left/Right Arrow | Move focused window between zones (only if Override snap hotkeys setting is enabled)  |
+| Win+Left/Right Arrow | Move focused window between zones (only if Override snap hotkeys setting is enabled, in that case only the `Win+Left Arrow` and `Win+Right Arrow` are overriden, while the `Win+Up Arrow` and `Win+Down Arrow` keep working as usual)  |
 
-## Settings
+# Settings
 | Setting | Description |
 | --------- | ------------- |
+| Configure the zone editor hotkey | To change the default hotkey, click on the textbox (it's not necessary to select or delete the text) and then press on the keyboard the desired key combination |
 | Enable zones while dragging with the shift key | Toggles between auto-snap mode with the shift key disabling snapping during a drag and manual snap mode where pressing the shift key during a drag enables snapping |
-| Override Windows Snap hotkeys (win+arrow) to move between zones | Enables or disables Windows Aero Snapping when Fancy Zones is running |
+| Override Windows Snap hotkeys (win+arrow) to move between zones | When this option is on and Fancy Zones is running, it overrides two Windows Snap keys: `Win+Left Arrow` and `Win+Right Arrow` |
+| Flash zones when the active FancyZones layout changes | Briefly flash the zone layout when the layout changes or a new virtual desktop is activated |
 | Keep windows in their zones when the screen resolution changes | After a screen resolution change, if this setting is enabled, Fancy Zones will resize and reposition windows into the zones they were previously in |
 | Keep windows in their zones when the active FancyZones layout changes | When this option is on, Fancy Zones will resize and position windows into the new zone layout by maintaining the previous zone number location of each window |
-| Flash zones when the active FancyZones layout changes | Briefly flash the zone layout when the layout changes or a new virtual desktop is activated |
 | Keep windows in their zones when the active virtual desktop changes | If an application is pinned to all virtual desktops, this setting will keep that window in the same zone on all desktops |
-| Zone Highlight Color (Default #0078D7) | the color that a zone becomes when it is the active drop target during a window drag 
-| Use new zone editing experience (Preview) | When enabled, the new editor is enabled.  The original editor has better support for multi-mon layouts |  
 | Move newly created windows to the last known zone | Automatically move a newly opened window into the last zone location that application was in |
+| Follow mouse cursor instead of focus when launching editor in a multi screen environment | When this option is on, the editor hotkey will launch the editor on the monitor where the mouse cursor is, when this option is off, the editor hotkey will launch the editor on monitor where the current active window is  |
+| Zone Highlight Color (Default #0078D7) | the color that a zone becomes when it is the active drop target during a window drag |
+| Exclude applications from snapping to zones | Add the applications name, or part of the name, one per line (e.g., adding `Notepa` will match both `Notepad.exe` and `Notepad++.exe`, to match only `Notepad.exe` add the `.exe` extension) | 
 
 ![Fancy Zones Settings UI](FancyZonesSettings.png)
 

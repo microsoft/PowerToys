@@ -1,5 +1,8 @@
 #include "pch.h"
 
+#include "lib/ZoneSet.h"
+#include "lib/RegistryHelpers.h"
+
 struct ZoneSet : winrt::implements<ZoneSet, IZoneSet>
 {
 public:

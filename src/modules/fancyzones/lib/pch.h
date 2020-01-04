@@ -16,16 +16,6 @@
 #include <windows.foundation.h>
 #include <psapi.h>
 
-#include "trace.h"
-#include "Settings.h"
-#include "FancyZones.h"
-#include "ZoneWindow.h"
-#include "ZoneSet.h"
-#include "Zone.h"
-#include "util.h"
-#include "common/common.h"
-#include "RegistryHelpers.h"
-
 #pragma comment(lib, "windowsapp")
 
 namespace winrt

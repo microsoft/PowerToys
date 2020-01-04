@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "trace.h"
+#include "lib/ZoneSet.h"
+#include "lib/Settings.h"
 
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,

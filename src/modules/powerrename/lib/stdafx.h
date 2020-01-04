@@ -19,5 +19,3 @@
 #include <shlwapi.h>
 
 #include <ProjectTelemetry.h>
-
-#include "PowerRenameInterfaces.h"

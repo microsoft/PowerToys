@@ -1,36 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
 {
     /// <summary>
-    /// Once you've "Committ"ed the starter grid, then the Zones within the grid come to life for you to be able to further subdivide them 
+    /// Once you've "Committ"ed the starter grid, then the Zones within the grid come to life for you to be able to further subdivide them
     /// using splitters
     /// </summary>
-
     public partial class CanvasZone : UserControl
     {
+        public CanvasLayoutModel Model { get; set; }
+
+        public int ZoneIndex { get; set; }
+
+        private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
+
+        private static readonly int _minZoneWidth = 64;
+        private static readonly int _minZoneHeight = 72;
+        private static int _zIndex = 0;
+
         public CanvasZone()
         {
             InitializeComponent();
-            Canvas.SetZIndex(this, c_zIndex++);
+            Panel.SetZIndex(this, _zIndex++);
         }
-
-        public CanvasLayoutModel Model;
-        public int ZoneIndex;
 
         private void Move(double xDelta, double yDelta)
         {
@@ -53,8 +53,8 @@ namespace FancyZonesEditor
                 yDelta = Math.Min(yDelta, _settings.WorkArea.Height - rect.Height - rect.Y);
             }
 
-            rect.X += (int) xDelta;
-            rect.Y += (int) yDelta;
+            rect.X += (int)xDelta;
+            rect.Y += (int)yDelta;
 
             Canvas.SetLeft(this, rect.X);
             Canvas.SetTop(this, rect.Y);
@@ -73,9 +73,9 @@ namespace FancyZonesEditor
             }
             else if (xDelta > 0)
             {
-                if ((rect.Width - (int)xDelta) < c_minZoneWidth)
+                if ((rect.Width - (int)xDelta) < _minZoneWidth)
                 {
-                    xDelta = rect.Width - c_minZoneWidth;
+                    xDelta = rect.Width - _minZoneWidth;
                 }
             }
 
@@ -88,9 +88,9 @@ namespace FancyZonesEditor
             }
             else if (yDelta > 0)
             {
-                if ((rect.Height - (int)yDelta) < c_minZoneHeight)
+                if ((rect.Height - (int)yDelta) < _minZoneHeight)
                 {
-                    yDelta = rect.Height - c_minZoneHeight;
+                    yDelta = rect.Height - _minZoneHeight;
                 }
             }
 
@@ -112,16 +112,17 @@ namespace FancyZonesEditor
             Int32Rect rect = Model.Zones[ZoneIndex];
             if (xDelta != 0)
             {
-                int newWidth = rect.Width + (int) xDelta;
+                int newWidth = rect.Width + (int)xDelta;
 
-                if (newWidth < c_minZoneWidth)
+                if (newWidth < _minZoneWidth)
                 {
-                    newWidth = c_minZoneWidth;
+                    newWidth = _minZoneWidth;
                 }
                 else if (newWidth > (_settings.WorkArea.Width - rect.X))
                 {
-                    newWidth = (int) _settings.WorkArea.Width - rect.X;
+                    newWidth = (int)_settings.WorkArea.Width - rect.X;
                 }
+
                 MinWidth = rect.Width = newWidth;
             }
 
@@ -129,28 +130,27 @@ namespace FancyZonesEditor
             {
                 int newHeight = rect.Height + (int)yDelta;
 
-                if (newHeight < c_minZoneHeight)
+                if (newHeight < _minZoneHeight)
                 {
-                    newHeight = c_minZoneHeight;
+                    newHeight = _minZoneHeight;
                 }
                 else if (newHeight > (_settings.WorkArea.Height - rect.Y))
                 {
                     newHeight = (int)_settings.WorkArea.Height - rect.Y;
                 }
+
                 MinHeight = rect.Height = newHeight;
             }
+
             Model.Zones[ZoneIndex] = rect;
         }
 
-        private static int c_zIndex = 0;
-        private static int c_minZoneWidth = 64;
-        private static int c_minZoneHeight = 72;
-
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
-            Canvas.SetZIndex(this, c_zIndex++);
+            Panel.SetZIndex(this, _zIndex++);
             base.OnPreviewMouseDown(e);
         }
+
         private void NWResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
             SizeMove(e.HorizontalChange, e.VerticalChange);
@@ -203,7 +203,5 @@ namespace FancyZonesEditor
             ((Panel)Parent).Children.Remove(this);
             Model.RemoveZoneAt(ZoneIndex);
         }
-
-        private Settings _settings = ((App)Application.Current).ZoneSettings;
     }
 }

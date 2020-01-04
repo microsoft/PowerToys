@@ -4,12 +4,13 @@
 #include <fstream>
 
 namespace PTSettingsHelper {
+
+  constexpr inline const wchar_t * settings_filename = L"\\settings.json";
+
   std::wstring get_root_save_folder_location() {
     PWSTR local_app_path;
-    std::wstring result(L"");
-
     winrt::check_hresult(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &local_app_path));
-    result = std::wstring(local_app_path);
+    std::wstring result{local_app_path};
     CoTaskMemFree(local_app_path);
 
     result += L"\\Microsoft\\PowerToys";
@@ -20,7 +21,7 @@ namespace PTSettingsHelper {
     return result;
   }
 
-  std::wstring get_module_save_folder_location(const std::wstring& powertoy_name) {
+  std::wstring get_module_save_folder_location(std::wstring_view powertoy_name) {
     std::wstring result = get_root_save_folder_location();
     result += L"\\";
     result += powertoy_name;
@@ -31,45 +32,33 @@ namespace PTSettingsHelper {
     return result;
   }
 
-  std::wstring get_module_save_file_location(const std::wstring& powertoy_name) {
-    std::wstring result = get_module_save_folder_location(powertoy_name);
-    result += L"\\settings.json";
-    return result;
+  std::wstring get_module_save_file_location(std::wstring_view powertoy_name) {
+    return get_module_save_folder_location(powertoy_name) + settings_filename;
   }
 
   std::wstring get_powertoys_general_save_file_location() {
-    std::wstring result = get_root_save_folder_location();
-    result += L"\\settings.json";
-    return result;
+    return get_root_save_folder_location() + settings_filename;
   }
 
-  void save_module_settings(const std::wstring& powertoy_name, web::json::value& settings) {
-    std::wstring save_file_location = get_module_save_file_location(powertoy_name);
-    std::ofstream save_file(save_file_location, std::ios::binary);
-    settings.serialize(save_file);
-    save_file.close();
+  void save_module_settings(std::wstring_view powertoy_name, json::JsonObject& settings) {
+    const std::wstring save_file_location = get_module_save_file_location(powertoy_name);
+    json::to_file(save_file_location, settings);
   }
 
-  web::json::value load_module_settings(const std::wstring& powertoy_name) {
-    std::wstring save_file_location = get_module_save_file_location(powertoy_name);
-    std::ifstream save_file(save_file_location, std::ios::binary);
-    web::json::value result = web::json::value::parse(save_file);
-    save_file.close();
-    return result;
+  json::JsonObject load_module_settings(std::wstring_view powertoy_name) {
+    const std::wstring save_file_location = get_module_save_file_location(powertoy_name);
+    auto saved_settings = json::from_file(save_file_location);
+    return saved_settings.has_value() ? std::move(*saved_settings) : json::JsonObject{};
   }
 
-  void save_general_settings(web::json::value& settings) {
-    std::wstring save_file_location = get_powertoys_general_save_file_location();
-    std::ofstream save_file(save_file_location, std::ios::binary);
-    settings.serialize(save_file);
-    save_file.close();
+  void save_general_settings(const json::JsonObject& settings) {
+    const std::wstring save_file_location = get_powertoys_general_save_file_location();
+    json::to_file(save_file_location, settings);
   }
 
-  web::json::value load_general_settings() {
-    std::wstring save_file_location = get_powertoys_general_save_file_location();
-    std::ifstream save_file(save_file_location, std::ios::binary);
-    web::json::value result = web::json::value::parse(save_file);
-    save_file.close();
-    return result;
+  json::JsonObject load_general_settings() {
+    const std::wstring save_file_location = get_powertoys_general_save_file_location();
+    auto saved_settings = json::from_file(save_file_location);
+    return saved_settings.has_value() ? std::move(*saved_settings) : json::JsonObject{};
   }
 }

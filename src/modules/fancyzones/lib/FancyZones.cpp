@@ -2,6 +2,27 @@
 #include "common/dpi_aware.h"
 #include "common/on_thread_executor.h"
 
+#include "FancyZones.h"
+#include "lib/Settings.h"
+#include "lib/ZoneWindow.h"
+#include "lib/RegistryHelpers.h"
+#include "trace.h"
+
+#include <functional>
+#include <common/common.h>
+
+namespace std
+{
+    template<> struct hash<GUID>
+    {
+        size_t operator()(const GUID& Value) const
+        {
+            RPC_STATUS status = RPC_S_OK;
+            return ::UuidHash(&const_cast<GUID&>(Value), &status);
+        }
+    };
+}
+
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
 public:
@@ -22,6 +43,7 @@ public:
     IFACEMETHODIMP_(void) MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept;
     IFACEMETHODIMP_(void) MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     IFACEMETHODIMP_(void) VirtualDesktopChanged() noexcept;
+    IFACEMETHODIMP_(void) VirtualDesktopInitialize() noexcept;
     IFACEMETHODIMP_(void) WindowCreated(HWND window) noexcept;
     IFACEMETHODIMP_(bool) OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
     IFACEMETHODIMP_(void) ToggleEditor() noexcept;
@@ -38,6 +60,13 @@ public:
         const auto nG = (tmp & 0xFF00) >> 8;
         const auto nB = (tmp & 0xFF);
         return RGB(nR, nG, nB);
+    }
+    IFACEMETHODIMP_(GUID) GetCurrentMonitorZoneSetId(HMONITOR monitor) noexcept
+    {
+        if (auto it = m_zoneWindowMap.find(monitor); it != m_zoneWindowMap.end() && it->second->ActiveZoneSet()) {
+            return it->second->ActiveZoneSet()->Id();
+        }
+        return GUID_NULL;
     }
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
@@ -72,8 +101,11 @@ private:
     void MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
     void MoveSizeEndInternal(HWND window, POINT const& ptScreen, require_write_lock) noexcept;
     void MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
+    void HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) noexcept;
 
     const HINSTANCE m_hinstance{};
+
+    HKEY m_virtualDesktopsRegKey{ nullptr };
 
     mutable std::shared_mutex m_lock;
     HWND m_window{};
@@ -84,11 +116,15 @@ private:
     winrt::com_ptr<IZoneWindow> m_zoneWindowMoveSize; // "Active" ZoneWindow, where the move/size is happening. Will update as drag moves between monitors.
     IFancyZonesSettings* m_settings{};
     GUID m_currentVirtualDesktopId{}; // UUID of the current virtual desktop. Is GUID_NULL until first VD switch per session.
+    std::unordered_map<GUID, bool> m_virtualDesktopIds;
     wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
+    wil::unique_handle m_terminateVirtualDesktopTrackerEvent;
 
     OnThreadExecutor m_dpiUnawareThread;
+    OnThreadExecutor m_virtualDesktopTrackerThread;
 
     static UINT WM_PRIV_VDCHANGED; // Message to get back on to the UI thread when virtual desktop changes
+    static UINT WM_PRIV_VDINIT; // Message to get back to the UI thread when FancyZones are initialized
     static UINT WM_PRIV_EDITOR; // Message to get back on to the UI thread when the editor exits
 
     // Did we terminate the editor or was it closed cleanly?
@@ -100,6 +136,7 @@ private:
 };
 
 UINT FancyZones::WM_PRIV_VDCHANGED = RegisterWindowMessage(L"{128c2cb0-6bdf-493e-abbe-f8705e04aa95}");
+UINT FancyZones::WM_PRIV_VDINIT = RegisterWindowMessage(L"{469818a8-00fa-4069-b867-a1da484fcd9a}");
 UINT FancyZones::WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d9c-0404642fc7b6}");
 
 // IFancyZones
@@ -121,12 +158,18 @@ IFACEMETHODIMP_(void) FancyZones::Run() noexcept
 
     RegisterHotKey(m_window, 1, m_settings->GetSettings().editorHotkey.get_modifiers(), m_settings->GetSettings().editorHotkey.get_code());
 
-    VirtualDesktopChanged();
+    VirtualDesktopInitialize();
 
     m_dpiUnawareThread.submit(OnThreadExecutor::task_t{[]{
         SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
         SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
     }}).wait();
+
+    if (RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops", 0, KEY_ALL_ACCESS, &m_virtualDesktopsRegKey) == ERROR_SUCCESS) {
+        m_terminateVirtualDesktopTrackerEvent.reset(CreateEvent(nullptr, FALSE, FALSE, nullptr));
+        m_virtualDesktopTrackerThread.submit(
+            OnThreadExecutor::task_t{ std::bind(&FancyZones::HandleVirtualDesktopUpdates, this, m_terminateVirtualDesktopTrackerEvent.get()) });
+    }
 }
 
 // IFancyZones
@@ -139,6 +182,13 @@ IFACEMETHODIMP_(void) FancyZones::Destroy() noexcept
     {
         DestroyWindow(m_window);
         m_window = nullptr;
+    }
+    if (m_terminateVirtualDesktopTrackerEvent) {
+        SetEvent(m_terminateVirtualDesktopTrackerEvent.get());
+    }
+    if (m_virtualDesktopsRegKey) {
+        RegCloseKey(m_virtualDesktopsRegKey);
+        m_virtualDesktopsRegKey = nullptr;
     }
 }
 
@@ -169,6 +219,12 @@ IFACEMETHODIMP_(void) FancyZones::VirtualDesktopChanged() noexcept
     // VirtualDesktopChanged is called from another thread but results in new windows being created.
     // Jump over to the UI thread to handle it.
     PostMessage(m_window, WM_PRIV_VDCHANGED, 0, 0);
+}
+
+// IFancyZonesCallback
+IFACEMETHODIMP_(void) FancyZones::VirtualDesktopInitialize() noexcept
+{
+    PostMessage(m_window, WM_PRIV_VDINIT, 0, 0);
 }
 
 // IFancyZonesCallback
@@ -224,7 +280,7 @@ IFACEMETHODIMP_(bool) FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         // This allows you to cycle through ZoneSets while dragging a window
         Trace::FancyZones::OnKeyDown(info->vkCode, win, false /*control*/, true /*inMoveSize*/);
         CycleActiveZoneSet(info->vkCode);
-        return true;
+        return false;
     }
     return false;
 }
@@ -308,9 +364,12 @@ void FancyZones::ToggleEditor() noexcept
         std::to_wstring(width) + L"_" +
         std::to_wstring(height);
 
+    const auto activeZoneSet = iter->second->ActiveZoneSet();
+    const std::wstring layoutID = activeZoneSet ? std::to_wstring(activeZoneSet->LayoutId()) : L"0";
+
     const std::wstring params =
         iter->second->UniqueId() + L" " +
-        std::to_wstring(iter->second->ActiveZoneSet()->LayoutId()) + L" " +
+        layoutID + L" " +
         std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
         editorLocation + L" " +
         iter->second->WorkAreaKey() + L" " +
@@ -399,6 +458,10 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         {
             OnDisplayChange(DisplayChangeType::VirtualDesktop);
         }
+        else if (message == WM_PRIV_VDINIT)
+        {
+            OnDisplayChange(DisplayChangeType::Initialization);
+        }
         else if (message == WM_PRIV_EDITOR)
         {
             if (lparam == static_cast<LPARAM>(EditorExitKind::Exit))
@@ -425,7 +488,8 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 
 void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 {
-    if (changeType == DisplayChangeType::VirtualDesktop)
+    if (changeType == DisplayChangeType::VirtualDesktop ||
+        changeType == DisplayChangeType::Initialization)
     {
         // Explorer persists this value to the registry on a per session basis but only after
         // the first virtual desktop switch happens. If the user hasn't switched virtual desktops in this session
@@ -475,11 +539,17 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
     wil::unique_cotaskmem_string virtualDesktopId;
     if (SUCCEEDED_LOG(StringFromCLSID(m_currentVirtualDesktopId, &virtualDesktopId)))
     {
-        const bool flash = m_settings->GetSettings().zoneSetChange_flashZones;
+        bool newVirtualDesktop = true;
+        if (auto it = m_virtualDesktopIds.find(m_currentVirtualDesktopId); it != end(m_virtualDesktopIds)) {
+            newVirtualDesktop = it->second;
+        }
+        const bool flash = m_settings->GetSettings().zoneSetChange_flashZones && newVirtualDesktop;
+
         if (auto zoneWindow = MakeZoneWindow(this, m_hinstance, monitor, deviceId, virtualDesktopId.get(), flash))
         {
             m_zoneWindowMap[monitor] = std::move(zoneWindow);
         }
+        m_virtualDesktopIds[m_currentVirtualDesktopId] = false;
     }
 }
 
@@ -553,10 +623,6 @@ void FancyZones::UpdateZoneWindows() noexcept
         return TRUE;
     };
 
-    {
-        std::unique_lock writeLock(m_lock);
-        m_zoneWindowMap.clear();
-    }
     EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(this));
 }
 
@@ -579,7 +645,32 @@ void FancyZones::MoveWindowsOnDisplayChange() noexcept
 void FancyZones::UpdateDragState(require_write_lock) noexcept
 {
     const bool shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
-    m_dragEnabled = m_settings->GetSettings().shiftDrag ? shift : !shift;
+    const bool mouseL = GetAsyncKeyState(VK_LBUTTON) & 0x8000;
+    const bool mouseR = GetAsyncKeyState(VK_RBUTTON) & 0x8000;
+    const bool mouseM = GetAsyncKeyState(VK_MBUTTON) & 0x8000;
+    const bool mouseX1 = GetAsyncKeyState(VK_XBUTTON1) & 0x8000;
+    const bool mouseX2 = GetAsyncKeyState(VK_XBUTTON2) & 0x8000;
+
+    // Note, Middle, X1 and X2 can also be used in addition to R/L
+    bool mouse =  mouseM | mouseX1 | mouseX2;
+    // If the user has swapped their Right and Left Buttons, use the "Right" equivalent
+    if (GetSystemMetrics(SM_SWAPBUTTON))
+    {
+        mouse |= mouseL;
+    }
+    else
+    {
+        mouse |= mouseR;
+    }
+
+    if (m_settings->GetSettings().shiftDrag)
+    {
+        m_dragEnabled = (shift | mouse);
+    }
+    else
+    {
+        m_dragEnabled = !(shift | mouse);
+    }
 }
 
 void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
@@ -720,6 +811,51 @@ void FancyZones::MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen,
             MoveSizeStartInternal(m_windowMoveSize, monitor, ptScreen, writeLock);
             MoveSizeUpdateInternal(monitor, ptScreen, writeLock);
         }
+    }
+}
+
+void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) noexcept
+{
+    HANDLE regKeyEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+    HANDLE events[2] = { regKeyEvent, fancyZonesDestroyedEvent };
+    while (1) {
+        if (RegNotifyChangeKeyValue(HKEY_CURRENT_USER, TRUE, REG_NOTIFY_CHANGE_LAST_SET, regKeyEvent, TRUE) != ERROR_SUCCESS) {
+            return;
+        }
+        if (WaitForMultipleObjects(2, events, FALSE, INFINITE) != (WAIT_OBJECT_0 + 0)) {
+            // if fancyZonesDestroyedEvent is signalized or WaitForMultipleObjects failed, terminate thread execution
+            return;
+        }
+        DWORD bufferCapacity;
+        const WCHAR* key = L"VirtualDesktopIDs";
+        // request regkey binary buffer capacity only
+        if (RegQueryValueExW(m_virtualDesktopsRegKey, key, 0, nullptr, nullptr, &bufferCapacity) != ERROR_SUCCESS) {
+            return;
+        }
+        std::unique_ptr<BYTE[]> buffer = std::make_unique<BYTE[]>(bufferCapacity);
+        // request regkey binary content
+        if (RegQueryValueExW(m_virtualDesktopsRegKey, key, 0, nullptr, buffer.get(), &bufferCapacity) != ERROR_SUCCESS) {
+            return;
+        }
+        const int guidSize = sizeof(GUID);
+        std::unordered_map<GUID, bool> temp;
+        temp.reserve(bufferCapacity / guidSize);
+        for (size_t i = 0; i < bufferCapacity; i += guidSize) {
+            GUID *guid = reinterpret_cast<GUID*>(buffer.get() + i);
+            temp[*guid] = true;
+        }
+        std::unique_lock writeLock(m_lock);
+        for (auto it = begin(m_virtualDesktopIds); it != end(m_virtualDesktopIds);) {
+            if (auto iter = temp.find(it->first); iter == temp.end()) {
+                it = m_virtualDesktopIds.erase(it); // virtual desktop closed, remove it from map
+            }
+            else {
+                temp.erase(it->first); // virtual desktop already in map, skip it
+                ++it;
+            }
+        }
+        // register new virtual desktops, if any
+        m_virtualDesktopIds.insert(begin(temp), end(temp));
     }
 }
 

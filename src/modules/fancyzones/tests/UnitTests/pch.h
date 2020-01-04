@@ -13,6 +13,5 @@
 
 #include "lib\pch.h"
 #include "CppUnitTest.h"
-#include "Util.h"
 
 #endif //PCH_H

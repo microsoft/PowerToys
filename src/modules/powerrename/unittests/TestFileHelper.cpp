@@ -6,8 +6,6 @@
 
 namespace fs = std::filesystem;
 
-
-
 CTestFileHelper::CTestFileHelper()
 {
     _CreateTempDirectory();
@@ -70,4 +68,3 @@ void CTestFileHelper::_DeleteTempDirectory()
 {
     fs::remove_all(_tempDirectory);
 }
-

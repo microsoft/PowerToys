@@ -4,6 +4,8 @@
 #include <string>
 #include "srwlock.h"
 
+#include "PowerRenameInterfaces.h"
+
 #define DEFAULT_FLAGS MatchAllOccurences
 
 class CPowerRenameRegEx : public IPowerRenameRegEx

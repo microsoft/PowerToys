@@ -1,12 +1,14 @@
 #include "stdafx.h"
 #include "MockPowerRenameRegExEvents.h"
 
-IFACEMETHODIMP_(ULONG) CMockPowerRenameRegExEvents::AddRef()
+IFACEMETHODIMP_(ULONG)
+CMockPowerRenameRegExEvents::AddRef()
 {
     return InterlockedIncrement(&m_refCount);
 }
 
-IFACEMETHODIMP_(ULONG) CMockPowerRenameRegExEvents::Release()
+IFACEMETHODIMP_(ULONG)
+CMockPowerRenameRegExEvents::Release()
 {
     long refCount = InterlockedDecrement(&m_refCount);
 
@@ -66,4 +68,3 @@ HRESULT CMockPowerRenameRegExEvents::s_CreateInstance(_Outptr_ IPowerRenameRegEx
     }
     return hr;
 }
-

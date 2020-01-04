@@ -1,18 +1,12 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using FancyZonesEditor.Models;
 using MahApps.Metro.Controls;
 
@@ -24,30 +18,32 @@ namespace FancyZonesEditor
     public partial class MainWindow : MetroWindow
     {
         // TODO: share the constants b/w C# Editor and FancyZoneLib
-        public static int MAX_ZONES = 40;
-        
+        public const int MaxZones = 40;
+        private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
+        private static readonly string _defaultNamePrefix = "Custom Layout ";
+        private bool _editing = false;
+
+        public int WrapPanelItemSize { get; set; } = 262;
+
         public MainWindow()
         {
             InitializeComponent();
             DataContext = _settings;
+
+            KeyUp += MainWindow_KeyUp;
+
             if (_settings.WorkArea.Height < 900)
             {
-                this.SizeToContent = SizeToContent.WidthAndHeight;
-                this.WrapPanelItemSize = 180;
+                SizeToContent = SizeToContent.WidthAndHeight;
+                WrapPanelItemSize = 180;
             }
         }
 
-        private int _WrapPanelItemSize = 262;
-        public int WrapPanelItemSize
+        private void MainWindow_KeyUp(object sender, KeyEventArgs e)
         {
-            get
+            if (e.Key == Key.Escape)
             {
-                return _WrapPanelItemSize;
-            }
-
-            set
-            {
-                _WrapPanelItemSize = value;
+                OnClosing(sender, null);
             }
         }
 
@@ -61,19 +57,17 @@ namespace FancyZonesEditor
 
         private void IncrementZones_Click(object sender, RoutedEventArgs e)
         {
-            if (_settings.ZoneCount < MAX_ZONES)
+            if (_settings.ZoneCount < MaxZones)
             {
                 _settings.ZoneCount++;
             }
         }
 
-        private Settings _settings = ((App)Application.Current).ZoneSettings;
-
         private void NewCustomLayoutButton_Click(object sender, RoutedEventArgs e)
         {
             WindowLayout window = new WindowLayout();
             window.Show();
-            this.Close();
+            Close();
         }
 
         private void LayoutItem_Click(object sender, MouseButtonEventArgs e)
@@ -82,33 +76,27 @@ namespace FancyZonesEditor
         }
 
         private void Select(LayoutModel newSelection)
-        { 
-            LayoutModel currentSelection = EditorOverlay.Current.DataContext as LayoutModel;
-
-            if (currentSelection != null)
+        {
+            if (EditorOverlay.Current.DataContext is LayoutModel currentSelection)
             {
                 currentSelection.IsSelected = false;
             }
 
             newSelection.IsSelected = true;
-
             EditorOverlay.Current.DataContext = newSelection;
         }
-
-        private static string c_defaultNamePrefix = "Custom Layout ";
-        private bool _editing = false;
 
         private void EditLayout_Click(object sender, RoutedEventArgs e)
         {
             EditorOverlay mainEditor = EditorOverlay.Current;
-            LayoutModel model = mainEditor.DataContext as LayoutModel;
-            if (model == null)
+            if (!(mainEditor.DataContext is LayoutModel model))
             {
                 return;
             }
+
             model.IsSelected = false;
             _editing = true;
-            this.Close();
+            Close();
 
             bool isPredefinedLayout = Settings.IsPredefinedLayout(model);
 
@@ -125,10 +113,9 @@ namespace FancyZonesEditor
                 foreach (LayoutModel customModel in _settings.CustomModels)
                 {
                     string name = customModel.Name;
-                    if (name.StartsWith(c_defaultNamePrefix))
+                    if (name.StartsWith(_defaultNamePrefix))
                     {
-                        int i;
-                        if (Int32.TryParse(name.Substring(c_defaultNamePrefix.Length), out i))
+                        if (int.TryParse(name.Substring(_defaultNamePrefix.Length), out int i))
                         {
                             if (maxCustomIndex < i)
                             {
@@ -137,7 +124,8 @@ namespace FancyZonesEditor
                         }
                     }
                 }
-                model.Name = c_defaultNamePrefix + (++maxCustomIndex);
+
+                model.Name = _defaultNamePrefix + (++maxCustomIndex);
             }
 
             mainEditor.Edit();
@@ -151,6 +139,7 @@ namespace FancyZonesEditor
             {
                 window = new CanvasEditorWindow();
             }
+
             window.Owner = EditorOverlay.Current;
             window.DataContext = model;
             window.Show();
@@ -159,8 +148,7 @@ namespace FancyZonesEditor
         private void Apply_Click(object sender, RoutedEventArgs e)
         {
             EditorOverlay mainEditor = EditorOverlay.Current;
-            LayoutModel model = mainEditor.DataContext as LayoutModel;
-            if (model != null)
+            if (mainEditor.DataContext is LayoutModel model)
             {
                 if (model is GridLayoutModel)
                 {
@@ -170,11 +158,12 @@ namespace FancyZonesEditor
                 {
                     model.Apply((model as CanvasLayoutModel).Zones.ToArray());
                 }
-                this.Close();
+
+                Close();
             }
         }
 
-        private void OnClosed(object sender, EventArgs e)
+        private void OnClosing(object sender, EventArgs e)
         {
             if (!_editing)
             {
@@ -182,7 +171,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private void InitializedEventHandler(object sender, EventArgs e)
+        private void OnInitialized(object sender, EventArgs e)
         {
             SetSelectedItem();
         }
@@ -206,56 +195,8 @@ namespace FancyZonesEditor
             {
                 SetSelectedItem();
             }
+
             model.Delete();
-        }
-    }
-
-
-    public class BooleanToBrushConverter : IValueConverter
-    {
-        private static Brush c_selectedBrush = new SolidColorBrush(Color.FromRgb(0x00, 0x78, 0xD7));
-        private static Brush c_normalBrush = new SolidColorBrush(Color.FromRgb(0xF2, 0xF2, 0xF2));
-
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return ((bool)value) ? c_selectedBrush : c_normalBrush;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return value == c_selectedBrush;
-        }
-    }
-
-    public class ModelToVisibilityConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return Settings.IsPredefinedLayout((LayoutModel)value) ? Visibility.Collapsed : Visibility.Visible;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return null;
-        }
-    }
-    public class BooleanToIntConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            if (value is bool)
-            {
-                return (bool)value == true ? 1 : 0;
-            }
-            return 0;
-        }
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            if (value is int)
-            {
-                return (int)value == 1;
-            }
-            return false;
         }
     }
 }

@@ -8,7 +8,8 @@ enum class DisplayChangeType
     WorkArea,
     DisplayChange,
     VirtualDesktop,
-    Editor
+    Editor,
+    Initialization
 };
 
 interface __declspec(uuid("{50D3F0F5-736E-4186-BDF4-3D6BEE150C3A}")) IFancyZones : public IUnknown
@@ -34,6 +35,7 @@ interface __declspec(uuid("{5C8D99D6-34B2-4F4A-A8E5-7483F6869775}")) IZoneWindow
 {
     IFACEMETHOD_(void, MoveWindowsOnActiveZoneSetChange)() = 0;
     IFACEMETHOD_(COLORREF, GetZoneHighlightColor)() = 0;
+    IFACEMETHOD_(GUID, GetCurrentMonitorZoneSetId)(HMONITOR monitor) = 0;
 };
 
 winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance, IFancyZonesSettings* settings) noexcept;
