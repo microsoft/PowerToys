@@ -106,10 +106,8 @@ private:
     INT_PTR _DlgProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
     void _OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam);
     BOOL _OnNotify(_In_ WPARAM wParam, _In_ LPARAM lParam);
-    void _OnSize(_In_ WPARAM wParam, _In_ LPARAM lParam);
-    void _OnDpiChanged(_In_ WPARAM wParam, _In_ LPARAM lParam);
+    void _OnSize(_In_ WPARAM wParam);
     void _OnGetMinMaxInfo(_In_ LPARAM lParam);
-    void _AdjustLayout(RECT* prc);
     void _OnInitDlg();
     void _OnRename();
     void _OnAbout();
@@ -144,7 +142,6 @@ private:
     int m_initialHeight = 0;
     int m_lastWidth = 0;
     int m_lastHeight = 0;
-    UINT m_lastDpi = 0;
     CComPtr<IPowerRenameManager> m_spsrm;
     CComPtr<IUnknown> m_dataSource;
     CComPtr<IDropTargetHelper> m_spdth;
