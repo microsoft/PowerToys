@@ -13,31 +13,31 @@
 using namespace ATL;
 
 class ATL_NO_VTABLE CContextMenuHandler :
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CContextMenuHandler, &CLSID_ContextMenuHandler>,
-	public IShellExtInit,
-	public IContextMenu
+    public CComObjectRootEx<CComSingleThreadModel>,
+    public CComCoClass<CContextMenuHandler, &CLSID_ContextMenuHandler>,
+    public IShellExtInit,
+    public IContextMenu
 {
-	BEGIN_COM_MAP(CContextMenuHandler)
-		COM_INTERFACE_ENTRY(IShellExtInit)
-		COM_INTERFACE_ENTRY(IContextMenu)
-	END_COM_MAP()
-	DECLARE_REGISTRY_RESOURCEID(IDR_CONTEXTMENUHANDLER)
-	DECLARE_NOT_AGGREGATABLE(CContextMenuHandler)
+    BEGIN_COM_MAP(CContextMenuHandler)
+    COM_INTERFACE_ENTRY(IShellExtInit)
+    COM_INTERFACE_ENTRY(IContextMenu)
+    END_COM_MAP()
+    DECLARE_REGISTRY_RESOURCEID(IDR_CONTEXTMENUHANDLER)
+    DECLARE_NOT_AGGREGATABLE(CContextMenuHandler)
 
 public:
-	CContextMenuHandler();
-	~CContextMenuHandler();
-	HRESULT STDMETHODCALLTYPE Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _In_opt_ IDataObject *pdtobj, _In_opt_ HKEY hkeyProgID);
-	HRESULT STDMETHODCALLTYPE QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags);
-	HRESULT STDMETHODCALLTYPE GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT *pReserved, LPSTR pszName, UINT cchMax);
-	HRESULT STDMETHODCALLTYPE InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici);
+    CContextMenuHandler();
+    ~CContextMenuHandler();
+    HRESULT STDMETHODCALLTYPE Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _In_opt_ IDataObject* pdtobj, _In_opt_ HKEY hkeyProgID);
+    HRESULT STDMETHODCALLTYPE QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags);
+    HRESULT STDMETHODCALLTYPE GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* pReserved, LPSTR pszName, UINT cchMax);
+    HRESULT STDMETHODCALLTYPE InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici);
 
 private:
-	void Uninitialize();
-	HRESULT ResizePictures(CMINVOKECOMMANDINFO *pici);
-	PCIDLIST_ABSOLUTE m_pidlFolder;
-	IDataObject *m_pdtobj;
+    void Uninitialize();
+    HRESULT ResizePictures(CMINVOKECOMMANDINFO* pici);
+    PCIDLIST_ABSOLUTE m_pidlFolder;
+    IDataObject* m_pdtobj;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(ContextMenuHandler), CContextMenuHandler)
