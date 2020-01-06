@@ -3,12 +3,12 @@
 #include "ShellExtensions_i.h"
 #include "dllmain.h"
 
-STDAPI DllCanUnloadNow()
+__control_entrypoint(DllExport) STDAPI DllCanUnloadNow()
 {
     return _AtlModule.DllCanUnloadNow();
 }
 
-STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOID* ppv)
+_Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOID* ppv)
 {
     return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
 }
