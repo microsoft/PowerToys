@@ -120,6 +120,9 @@ namespace Wox.Infrastructure
                 // if finished looping through every character in the current substring
                 if (currentQuerySubstringCharacterIndex == currentQuerySubstring.Length)
                 {
+                    // if any of the substrings was not matched then consider as all are not matched
+                    allSubstringsContainedInCompareString = !matchFoundInPreviousLoop ? false : allSubstringsContainedInCompareString;
+
                     currentQuerySubstringIndex++;
 
                     allQuerySubstringsMatched = AllQuerySubstringsMatched(currentQuerySubstringIndex, querySubstrings.Length);
@@ -129,9 +132,6 @@ namespace Wox.Infrastructure
                     // otherwise move to the next query substring
                     currentQuerySubstring = querySubstrings[currentQuerySubstringIndex];
                     currentQuerySubstringCharacterIndex = 0;
-
-                    // if any of the substrings was not matched then consider as all are not matched
-                    allSubstringsContainedInCompareString = !matchFoundInPreviousLoop ? false : allSubstringsContainedInCompareString;
                 }
             }
             
