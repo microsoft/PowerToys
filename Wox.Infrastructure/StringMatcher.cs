@@ -133,7 +133,7 @@ namespace Wox.Infrastructure
                 }
             }
             
-            // return rendered string if every char or substring without whitespaces matched
+            // proceed to calculate score if every char or substring without whitespaces matched
             if (allQuerySubstringsMatched)
             {
                 // check if all query substrings were contained in the string to compare
