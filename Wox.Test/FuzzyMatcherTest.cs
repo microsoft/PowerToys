@@ -247,5 +247,21 @@ namespace Wox.Test
                 $"Raw Score: {matchResult.RawScore}{Environment.NewLine}" +
                 $"Precision Level: {expectedPrecisionString}={expectedPrecisionScore}");
         }
+
+        [TestCase("sql servman", MicrosoftSqlServerManagementStudio, false)]
+        [TestCase("sql serv man", MicrosoftSqlServerManagementStudio, true)]
+        [TestCase("sql", MicrosoftSqlServerManagementStudio, true)]
+        [TestCase("sqlserv", MicrosoftSqlServerManagementStudio, false)]
+        [TestCase("mssms", MicrosoftSqlServerManagementStudio, false)]
+        [TestCase("chr", "Change settings for text-to-speech and for speech recognition (if installed).", false)]
+        [TestCase("ch r", "Change settings for text-to-speech and for speech recognition (if installed).", true)]
+        public void WhenGivenQueryShouldEvaluateTrueFalseIfCompareStringContainsAllSubstrings(string queryString, string compareString, bool expectedResult)
+        {
+            // When, Given
+            var matchResult = StringMatcher.FuzzySearch(queryString, compareString).AllSubstringsContainedInCompareString;
+
+            // Should
+            Assert.AreEqual(matchResult, expectedResult);
+        }
     }
 }

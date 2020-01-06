@@ -147,7 +147,8 @@ namespace Wox.Infrastructure
                 {
                     Success = true,
                     MatchData = indexList,
-                    RawScore = Math.Max(score, pinyinScore)
+                    RawScore = Math.Max(score, pinyinScore),
+                    AllSubstringsContainedInCompareString = allSubstringsContainedInCompareString
                 };
 
                 return result;
@@ -287,6 +288,11 @@ namespace Wox.Infrastructure
                 Score = ApplySearchPrecisionFilter(_rawScore);
             }
         }
+
+        /// <summary>
+        /// Indicates if all query's substrings are contained in the string to compare
+        /// </summary>        
+        public bool AllSubstringsContainedInCompareString { get; set; }
 
         /// <summary>
         /// Matched data to highlight.
