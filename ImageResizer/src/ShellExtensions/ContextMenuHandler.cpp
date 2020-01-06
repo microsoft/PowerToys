@@ -55,7 +55,8 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     // NB: We just check the first item. We could iterate through more if the first one doesn't meet the criteria
     HDropIterator i(m_pdtobj);
     i.First();
-
+// Suppressing C26812 warning as the issue is in the shtypes.h library
+#pragma warning(suppress : 26812)
     PERCEIVED type;
     PERCEIVEDFLAG flag;
     LPTSTR pszPath = i.CurrentItem();
@@ -74,11 +75,15 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         // If handling drag-and-drop...
         if (m_pidlFolder)
         {
+            // Suppressing C6031 warning since return value is not required.
+#pragma warning(suppress : 6031)
             // Load 'Resize pictures here' string
             strResizePictures.LoadString(IDS_RESIZE_PICTURES_HERE);
         }
         else
         {
+            // Suppressing C6031 warning since return value is not required.
+#pragma warning(suppress : 6031)
             // Load 'Resize pictures' string
             strResizePictures.LoadString(IDS_RESIZE_PICTURES);
         }
