@@ -39,6 +39,19 @@ namespace Wox.Infrastructure.Image
             var contains = _data.ContainsKey(key);
             return contains;
         }
+
+        public int CacheSize()
+        {
+            return _data.Count;
+        }
+
+        /// <summary>
+        /// return the number of unique images in the cache (by reference not by checking images content)
+        /// </summary>
+        public int UniqueImagesInCache()
+        {
+            return _data.Values.Distinct().Count();
+        }
     }
 
 }
