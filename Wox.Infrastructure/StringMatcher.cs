@@ -41,13 +41,15 @@ namespace Wox.Infrastructure
         }
 
         /// <summary>
-        /// Current method: 
+        /// Current method:
         /// Character matching + substring matching;
-        /// 1. Check query substring's character against full compare string,
-        /// 2. if matched, loop back to verify the previous character.
-        /// 3. If previous character also matches, and is the start of the substring, update list.
-        /// 4. Once the previous character is verified, move on to the next character in the query substring.
-        /// 5. Consider success and move onto scoring if every char or substring without whitespaces matched
+        /// 1. Query search string is split into substrings, separator is whitespace.
+        /// 2. Check each query substring's characters against full compare string,
+        /// 3. if a character in the substring is matched, loop back to verify the previous character.
+        /// 4. If previous character also matches, and is the start of the substring, update list.
+        /// 5. Once the previous character is verified, move on to the next character in the query substring.
+        /// 6. Move onto the next substring's characters until all substrings are checked.
+        /// 7. Consider success and move onto scoring if every char or substring without whitespaces matched
         /// </summary>
         public static MatchResult FuzzySearch(string query, string stringToCompare, MatchOption opt)
         {
