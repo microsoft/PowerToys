@@ -192,7 +192,7 @@ namespace Wox.Infrastructure
             return currentQuerySubstringIndex >= querySubstringsLength;
         }
 
-        private static int CalculateSearchScore(string query, string stringToCompare, int firstIndex, int matchLen, bool allWordsFullyMatched)
+        private static int CalculateSearchScore(string query, string stringToCompare, int firstIndex, int matchLen, bool allSubstringsContainedInCompareString)
         {
             // A match found near the beginning of a string is scored more than a match found near the end
             // A match is scored more if the characters in the patterns are closer to each other, 
@@ -209,10 +209,8 @@ namespace Wox.Infrastructure
                 score += 10;
             }
 
-            if (allWordsFullyMatched)
-            {
-                score += 20;
-            }
+            if (allSubstringsContainedInCompareString)
+                score += 10 * string.Concat(query.Where(c => !char.IsWhiteSpace(c))).Count();
 
             return score;
         }
