@@ -109,34 +109,28 @@ namespace Wox.Infrastructure
 
                 currentQuerySubstringCharacterIndex++;
 
-                // if finished looping through every character in the substring
+                // if finished looping through every character in the current substring
                 if (currentQuerySubstringCharacterIndex == currentQuerySubstring.Length)
                 {
                     currentQuerySubstringIndex++;
 
-                    // if all query substrings are matched
-                    if (currentQuerySubstringIndex >= querySubstrings.Length)
-                    {
-                        allQuerySubstringsMatched = true;
+                    allQuerySubstringsMatched = AllQuerySubstringsMatched(currentQuerySubstringIndex, querySubstrings.Length);
+                    if (allQuerySubstringsMatched)
                         break;
-                    }
 
                     // otherwise move to the next query substring
                     currentQuerySubstring = querySubstrings[currentQuerySubstringIndex];
                     currentQuerySubstringCharacterIndex = 0;
 
-                    if (!matchFoundInPreviousLoop)
-                    {
-                        // if any of the words was not fully matched all are not fully matched
-                        allWordsFullyMatched = false;
-                    }
+                    // if any of the substrings was not matched then consider as all are not matched
+                    allWordsFullyMatched = !matchFoundInPreviousLoop ? false : allWordsFullyMatched;
                 }
             }
             
             // return rendered string if we have a match for every char or all substring without whitespaces matched
             if (allQuerySubstringsMatched)
             {
-                // check if all query string was contained in string to compare
+                // check if all query substrings were contained in the string to compare
                 bool containedFully = lastMatchIndex - firstMatchIndex == queryWithoutCase.Length;
                 var score = CalculateSearchScore(query, stringToCompare, firstMatchIndex, lastMatchIndex - firstMatchIndex, containedFully, allWordsFullyMatched);
                 var pinyinScore = ScoreForPinyin(stringToCompare, query);
@@ -184,6 +178,11 @@ namespace Wox.Infrastructure
             }
 
             return updatedList;
+        }
+
+        private static bool AllQuerySubstringsMatched(int currentQuerySubstringIndex, int querySubstringsLength)
+        {
+            return currentQuerySubstringIndex >= querySubstringsLength;
         }
 
         private static int CalculateSearchScore(string query, string stringToCompare, int firstIndex, int matchLen,
