@@ -214,6 +214,7 @@ namespace Wox.Test
         [TestCase("sql manag", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("sql", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("sql serv", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sql studio", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("mic", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("chr", "Shutdown", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
         [TestCase("chr", "Change settings for text-to-speech and for speech recognition (if installed).", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
