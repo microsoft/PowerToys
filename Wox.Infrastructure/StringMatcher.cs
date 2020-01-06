@@ -138,9 +138,7 @@ namespace Wox.Infrastructure
             // proceed to calculate score if every char or substring without whitespaces matched
             if (allQuerySubstringsMatched)
             {
-                // check if all query substrings were contained in the string to compare
-                bool containedFully = lastMatchIndex - firstMatchIndex == queryWithoutCase.Length;
-                var score = CalculateSearchScore(query, stringToCompare, firstMatchIndex, lastMatchIndex - firstMatchIndex, containedFully, allSubstringsContainedInCompareString);
+                var score = CalculateSearchScore(query, stringToCompare, firstMatchIndex, lastMatchIndex - firstMatchIndex, allSubstringsContainedInCompareString);
                 var pinyinScore = ScoreForPinyin(stringToCompare, query);
 
                 var result = new MatchResult
@@ -194,8 +192,7 @@ namespace Wox.Infrastructure
             return currentQuerySubstringIndex >= querySubstringsLength;
         }
 
-        private static int CalculateSearchScore(string query, string stringToCompare, int firstIndex, int matchLen,
-            bool isFullyContained, bool allWordsFullyMatched)
+        private static int CalculateSearchScore(string query, string stringToCompare, int firstIndex, int matchLen, bool allWordsFullyMatched)
         {
             // A match found near the beginning of a string is scored more than a match found near the end
             // A match is scored more if the characters in the patterns are closer to each other, 
@@ -210,11 +207,6 @@ namespace Wox.Infrastructure
             else if (stringToCompare.Length - query.Length < 10)
             {
                 score += 10;
-            }
-
-            if (isFullyContained)
-            {
-                score += 20; // honestly I'm not sure what would be a good number here or should it factor the size of the pattern
             }
 
             if (allWordsFullyMatched)
