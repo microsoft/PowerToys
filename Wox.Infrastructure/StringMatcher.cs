@@ -41,7 +41,13 @@ namespace Wox.Infrastructure
         }
 
         /// <summary>
-        /// refer to https://github.com/mattyork/fuzzy
+        /// Current method: 
+        /// Character matching + substring matching;
+        /// 1. Check query substring's character against full compare string,
+        /// 2. if matched, loop back to verify the previous character.
+        /// 3. If previous character also matches, and is the start of the substring, update list.
+        /// 4. Once the previous character is verified, move on to the next character in the query substring.
+        /// 5. Consider success and move onto scoring if every char or substring without whitespaces matched
         /// </summary>
         public static MatchResult FuzzySearch(string query, string stringToCompare, MatchOption opt)
         {
@@ -127,7 +133,7 @@ namespace Wox.Infrastructure
                 }
             }
             
-            // return rendered string if we have a match for every char or all substring without whitespaces matched
+            // return rendered string if every char or substring without whitespaces matched
             if (allQuerySubstringsMatched)
             {
                 // check if all query substrings were contained in the string to compare
