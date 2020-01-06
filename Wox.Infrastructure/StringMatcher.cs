@@ -71,7 +71,7 @@ namespace Wox.Infrastructure
             var lastMatchIndex = 0;
             bool allQuerySubstringsMatched = false;
             bool matchFoundInPreviousLoop = false;
-            bool allWordsFullyMatched = true;
+            bool allSubstringsContainedInCompareString = true;
 
             var indexList = new List<int>();
 
@@ -131,7 +131,7 @@ namespace Wox.Infrastructure
                     currentQuerySubstringCharacterIndex = 0;
 
                     // if any of the substrings was not matched then consider as all are not matched
-                    allWordsFullyMatched = !matchFoundInPreviousLoop ? false : allWordsFullyMatched;
+                    allSubstringsContainedInCompareString = !matchFoundInPreviousLoop ? false : allSubstringsContainedInCompareString;
                 }
             }
             
@@ -140,7 +140,7 @@ namespace Wox.Infrastructure
             {
                 // check if all query substrings were contained in the string to compare
                 bool containedFully = lastMatchIndex - firstMatchIndex == queryWithoutCase.Length;
-                var score = CalculateSearchScore(query, stringToCompare, firstMatchIndex, lastMatchIndex - firstMatchIndex, containedFully, allWordsFullyMatched);
+                var score = CalculateSearchScore(query, stringToCompare, firstMatchIndex, lastMatchIndex - firstMatchIndex, containedFully, allSubstringsContainedInCompareString);
                 var pinyinScore = ScoreForPinyin(stringToCompare, query);
 
                 var result = new MatchResult
