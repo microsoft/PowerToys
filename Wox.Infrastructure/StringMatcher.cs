@@ -61,7 +61,7 @@ namespace Wox.Infrastructure
 
             var queryWithoutCase = opt.IgnoreCase ? query.ToLower() : query;
                         
-            var querySubstrings = queryWithoutCase.Split(' ');
+            var querySubstrings = queryWithoutCase.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             int currentQuerySubstringIndex = 0;
             var currentQuerySubstring = querySubstrings[currentQuerySubstringIndex];
             var currentQuerySubstringCharacterIndex = 0;
