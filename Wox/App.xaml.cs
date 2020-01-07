@@ -25,6 +25,7 @@ namespace Wox
         private Settings _settings;
         private MainViewModel _mainVM;
         private SettingWindowViewModel _settingsVM;
+        private readonly Updater _updater = new Updater(Wox.Properties.Settings.Default.GithubRepo);
 
         [STAThread]
         public static void Main()
@@ -50,7 +51,7 @@ namespace Wox
 
                 ImageLoader.Initialize();
 
-                _settingsVM = new SettingWindowViewModel();
+                _settingsVM = new SettingWindowViewModel(_updater);
                 _settings = _settingsVM.Settings;
 
                 Alphabet.Initialize(_settings);
@@ -111,12 +112,12 @@ namespace Wox
                     var timer = new Timer(1000 * 60 * 60 * 5);
                     timer.Elapsed += async (s, e) =>
                     {
-                        await Updater.UpdateApp();
+                        await _updater.UpdateApp();
                     };
                     timer.Start();
 
                     // check updates on startup
-                    await Updater.UpdateApp();
+                    await _updater.UpdateApp();
                 }
             });
         }

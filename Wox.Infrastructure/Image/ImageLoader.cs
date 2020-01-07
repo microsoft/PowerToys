@@ -164,7 +164,7 @@ namespace Wox.Infrastructure.Image
             }
             catch (System.Exception e)
             {
-                Log.Exception($"|ImageLoader.Load|Failed to get thumbnail for {path}", e);
+                // Log.Exception($"|ImageLoader.Load|Failed to get thumbnail for {path}", e);
                 type = ImageType.Error;
                 image = ImageCache[Constant.ErrorIcon];
                 ImageCache[path] = image;
