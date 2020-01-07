@@ -55,7 +55,7 @@ namespace Wox
 
                 Alphabet.Initialize(_settings);
 
-                StringMatcher.UserSettingSearchPrecision = (int)_settings.QuerySearchPrecision;
+                StringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
                 StringMatcher.ShouldUsePinyin = _settings.ShouldUsePinyin;
 
                 PluginManager.LoadPlugins(_settings.PluginSettings);

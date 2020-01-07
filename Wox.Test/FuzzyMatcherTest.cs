@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 using Wox.Infrastructure;
-using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
 namespace Wox.Test
@@ -138,20 +137,20 @@ namespace Wox.Test
             Assert.AreEqual(expectedScore, rawScore, $"Expected score for compare string '{compareString}': {expectedScore}, Actual: {rawScore}");
         }
 
-        [TestCase("goo", "Google Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("chr", "Google Chrome", (int)StringMatcher.SearchPrecisionScore.Low, true)]
-        [TestCase("chr", "Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("chr", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("chr", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Low, true)]
-        [TestCase("chr", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("chr", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.None, true)]
-        [TestCase("ccs", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Low, true)]
-        [TestCase("cand", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("cand", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("goo", "Google Chrome", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("chr", "Google Chrome", StringMatcher.SearchPrecisionScore.Low, true)]
+        [TestCase("chr", "Chrome", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("chr", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("chr", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Low, true)]
+        [TestCase("chr", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("chr", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.None, true)]
+        [TestCase("ccs", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Low, true)]
+        [TestCase("cand", "Candy Crush Saga from King",StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("cand", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Regular, false)]
         public void WhenGivenDesiredPrecisionThenShouldReturnAllResultsGreaterOrEqual(
             string queryString,
             string compareString,
-            int expectedPrecisionScore,
+            StringMatcher.SearchPrecisionScore expectedPrecisionScore,
             bool expectedPrecisionResult)
         {
             // When            
@@ -163,7 +162,7 @@ namespace Wox.Test
             Debug.WriteLine("");
             Debug.WriteLine("###############################################");
             Debug.WriteLine($"QueryString: {queryString}     CompareString: {compareString}");
-            Debug.WriteLine($"RAW SCORE: {matchResult.RawScore.ToString()}, PrecisionLevelSetAt: {(StringMatcher.SearchPrecisionScore)expectedPrecisionScore} ({expectedPrecisionScore})");
+            Debug.WriteLine($"RAW SCORE: {matchResult.RawScore.ToString()}, PrecisionLevelSetAt: {expectedPrecisionScore} ({(int)expectedPrecisionScore})");
             Debug.WriteLine("###############################################");
             Debug.WriteLine("");
 
@@ -172,27 +171,27 @@ namespace Wox.Test
                 $"Query:{queryString}{Environment.NewLine} " +
                 $"Compare:{compareString}{Environment.NewLine}" +
                 $"Raw Score: {matchResult.RawScore}{Environment.NewLine}" +
-                $"Precision Level: {(StringMatcher.SearchPrecisionScore)expectedPrecisionScore}={expectedPrecisionScore}");
+                $"Precision Score: {(int)expectedPrecisionScore}");
         }
 
-        [TestCase("exce", "OverLeaf-Latex: An online LaTeX editor", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("term", "Windows Terminal (Preview)", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sql s managa", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("sql' s manag", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("sql s manag", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sql manag", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sql", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sql serv", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sql studio", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("mic", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("chr", "Shutdown", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("chr", "Change settings for text-to-speech and for speech recognition (if installed).", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("a test", "This is a test", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("test", "This is a test", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("exce", "OverLeaf-Latex: An online LaTeX editor", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("term", "Windows Terminal (Preview)", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sql s managa", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("sql' s manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("sql s manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sql manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sql", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sql serv", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sql studio", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("mic", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("chr", "Shutdown", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("chr", "Change settings for text-to-speech and for speech recognition (if installed).", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("a test", "This is a test", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("test", "This is a test", StringMatcher.SearchPrecisionScore.Regular, true)]
         public void WhenGivenQueryShouldReturnResultsContainingAllQuerySubstrings(
             string queryString,
             string compareString,
-            int expectedPrecisionScore,
+            StringMatcher.SearchPrecisionScore expectedPrecisionScore,
             bool expectedPrecisionResult)
         {
             // When
@@ -204,7 +203,7 @@ namespace Wox.Test
             Debug.WriteLine("");
             Debug.WriteLine("###############################################");
             Debug.WriteLine($"QueryString: {queryString}     CompareString: {compareString}");
-            Debug.WriteLine($"RAW SCORE: {matchResult.RawScore.ToString()}, PrecisionLevelSetAt: {(StringMatcher.SearchPrecisionScore)expectedPrecisionScore} ({expectedPrecisionScore})");
+            Debug.WriteLine($"RAW SCORE: {matchResult.RawScore.ToString()}, PrecisionLevelSetAt: {expectedPrecisionScore} ({(int)expectedPrecisionScore})");
             Debug.WriteLine("###############################################");
             Debug.WriteLine("");
 
@@ -213,7 +212,7 @@ namespace Wox.Test
                 $"Query:{queryString}{Environment.NewLine} " +
                 $"Compare:{compareString}{Environment.NewLine}" +
                 $"Raw Score: {matchResult.RawScore}{Environment.NewLine}" +
-                $"Precision Level: {(StringMatcher.SearchPrecisionScore)expectedPrecisionScore}={expectedPrecisionScore}");
+                $"Precision Score: {(int)expectedPrecisionScore}");
         }
 
         [TestCase("sql servman", MicrosoftSqlServerManagementStudio, false)]

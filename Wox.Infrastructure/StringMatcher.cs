@@ -12,7 +12,7 @@ namespace Wox.Infrastructure
     {
         public static MatchOption DefaultMatchOption = new MatchOption();
 
-        public static int UserSettingSearchPrecision { get; set; }
+        public static SearchPrecisionScore UserSettingSearchPrecision { get; set; }
 
         public static bool ShouldUsePinyin { get; set; }
 
@@ -296,7 +296,7 @@ namespace Wox.Infrastructure
 
         private bool IsSearchPrecisionScoreMet(int score)
         {
-            return score >= UserSettingSearchPrecision;
+            return score >= (int)UserSettingSearchPrecision;
         }
 
         private int ApplySearchPrecisionFilter(int score)

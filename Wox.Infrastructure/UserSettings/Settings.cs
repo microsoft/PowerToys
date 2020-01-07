@@ -45,16 +45,19 @@ namespace Wox.Infrastructure.UserSettings
             {
                 try
                 {
-                    var precisionScore = (StringMatcher.SearchPrecisionScore)Enum.Parse(
-                        typeof(StringMatcher.SearchPrecisionScore),
-                        value);
+                    var precisionScore = (StringMatcher.SearchPrecisionScore)Enum
+                                            .Parse(typeof(StringMatcher.SearchPrecisionScore), value);
+
                     QuerySearchPrecision = precisionScore;
-                    StringMatcher.UserSettingSearchPrecision = (int)precisionScore;
+                    StringMatcher.UserSettingSearchPrecision = precisionScore;
                 }
-                catch (System.Exception e)
+                catch (ArgumentException e)
                 {
-                    // what do we do here?!
-                    Logger.Log.Exception(nameof(Settings), "Fail to set QuerySearchPrecision", e);
+                    Logger.Log.Exception(nameof(Settings), "Failed to load QuerySearchPrecisionString value from Settings file", e);
+
+                    QuerySearchPrecision = StringMatcher.SearchPrecisionScore.Regular;
+                    StringMatcher.UserSettingSearchPrecision = StringMatcher.SearchPrecisionScore.Regular;
+
                     throw;
                 }
             }

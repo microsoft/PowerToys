@@ -73,7 +73,7 @@ namespace Wox.ViewModel
         public List<string> QuerySearchPrecisionStrings
         {
             get
-            { 
+            {
                 var precisionStrings = new List<string>();
 
                 var enumList = Enum.GetValues(typeof(StringMatcher.SearchPrecisionScore)).Cast<StringMatcher.SearchPrecisionScore>().ToList();
