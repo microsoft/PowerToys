@@ -13,7 +13,6 @@ using Wox.Core.Resource;
 using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
-using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
@@ -25,7 +24,7 @@ namespace Wox.ViewModel
     {
         #region Private Fields
 
-        private bool _queryHasReturn;
+        private bool _isQueryRunning;
         private Query _lastQuery;
         private string _queryTextBeforeLeaveResults;
 
@@ -41,7 +40,7 @@ namespace Wox.ViewModel
         private CancellationToken _updateToken;
         private bool _saved;
 
-        private Internationalization _translator = InternationalizationManager.Instance;
+        private readonly Internationalization _translator = InternationalizationManager.Instance;
 
         #endregion
 
@@ -312,7 +311,7 @@ namespace Wox.ViewModel
                 {
                     var filtered = results.Where
                     (
-                        r => StringMatcher.FuzzySearch(query, r.Title).IsSearchPrecisionScoreMet() 
+                        r => StringMatcher.FuzzySearch(query, r.Title).IsSearchPrecisionScoreMet()
                             || StringMatcher.FuzzySearch(query, r.SubTitle).IsSearchPrecisionScoreMet()
                     ).ToList();
                     ContextMenu.AddResults(filtered, id);
@@ -371,69 +370,89 @@ namespace Wox.ViewModel
             if (!string.IsNullOrEmpty(QueryText))
             {
                 _updateSource?.Cancel();
-                _updateSource = new CancellationTokenSource();
-                _updateToken = _updateSource.Token;
+                var currentUpdateSource = new CancellationTokenSource();
+                _updateSource = currentUpdateSource;
+                var currentCancellationToken = _updateSource.Token;
+                _updateToken = currentCancellationToken;
 
                 ProgressBarVisibility = Visibility.Hidden;
-                _queryHasReturn = false;
+                _isQueryRunning = true;
                 var query = PluginManager.QueryInit(QueryText.Trim());
                 if (query != null)
                 {
                     // handle the exclusiveness of plugin using action keyword
-                    string lastKeyword = _lastQuery.ActionKeyword;
-                    string keyword = query.ActionKeyword;
-                    if (string.IsNullOrEmpty(lastKeyword))
-                    {
-                        if (!string.IsNullOrEmpty(keyword))
-                        {
-                            Results.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
-                        }
-                    }
-                    else
-                    {
-                        if (string.IsNullOrEmpty(keyword))
-                        {
-                            Results.RemoveResultsFor(PluginManager.NonGlobalPlugins[lastKeyword].Metadata);
-                        }
-                        else if (lastKeyword != keyword)
-                        {
-                            Results.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
-                        }
-                    }
+                    RemoveOldQueryResults(query);
 
                     _lastQuery = query;
-                    Task.Delay(200, _updateToken).ContinueWith(_ =>
-                    {
-                        if (query.RawQuery == _lastQuery.RawQuery && !_queryHasReturn)
+                    Task.Delay(200, currentCancellationToken).ContinueWith(_ =>
+                    { // start the progress bar if query takes more than 200 ms and this is the current running query and it didn't finish yet
+                        if (currentUpdateSource == _updateSource && _isQueryRunning)
                         {
                             ProgressBarVisibility = Visibility.Visible;
                         }
-                    }, _updateToken);
+                    }, currentCancellationToken);
 
                     var plugins = PluginManager.ValidPluginsForQuery(query);
                     Task.Run(() =>
                     {
-                        Parallel.ForEach(plugins, plugin =>
+                        // so looping will stop once it was cancelled
+                        var parallelOptions = new ParallelOptions { CancellationToken = currentCancellationToken };
+                        try
                         {
-                            var config = _settings.PluginSettings.Plugins[plugin.Metadata.ID];
-                            if (!config.Disabled)
+                            Parallel.ForEach(plugins, parallelOptions, plugin =>
                             {
-                                var results = PluginManager.QueryForPlugin(plugin, query);
-                                UpdateResultView(results, plugin.Metadata, query);
-                            }
-                        });
+                                var config = _settings.PluginSettings.Plugins[plugin.Metadata.ID];
+                                if (!config.Disabled)
+                                {
+                                    var results = PluginManager.QueryForPlugin(plugin, query);
+                                    UpdateResultView(results, plugin.Metadata, query);
+                                }
+                            });
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            // nothing to do here
+                        }
+                        
 
                         // this should happen once after all queries are done so progress bar should continue
                         // until the end of all querying
-                        _queryHasReturn = true;
-                        ProgressBarVisibility = Visibility.Hidden;
-                    }, _updateToken);
+                        _isQueryRunning = false;
+                        if (currentUpdateSource == _updateSource)
+                        { // update to hidden if this is still the current query
+                            ProgressBarVisibility = Visibility.Hidden;
+                        }
+                    }, currentCancellationToken);
                 }
             }
             else
             {
                 Results.Clear();
                 Results.Visbility = Visibility.Collapsed;
+            }
+        }
+
+        private void RemoveOldQueryResults(Query query)
+        {
+            string lastKeyword = _lastQuery.ActionKeyword;
+            string keyword = query.ActionKeyword;
+            if (string.IsNullOrEmpty(lastKeyword))
+            {
+                if (!string.IsNullOrEmpty(keyword))
+                {
+                    Results.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
+                }
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(keyword))
+                {
+                    Results.RemoveResultsFor(PluginManager.NonGlobalPlugins[lastKeyword].Metadata);
+                }
+                else if (lastKeyword != keyword)
+                {
+                    Results.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
+                }
             }
         }
 
