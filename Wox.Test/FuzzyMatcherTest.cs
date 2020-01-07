@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 using Wox.Infrastructure;
-using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
 namespace Wox.Test
@@ -122,115 +121,114 @@ namespace Wox.Test
             }
         }
 
-        [TestCase]
-        public void WhenGivenStringsForCalScoreMethodThenShouldReturnCurrentScoring()
+        [TestCase(Chrome, Chrome, 167)]
+        [TestCase(Chrome, LastIsChrome, 113)]
+        [TestCase(Chrome, HelpCureHopeRaiseOnMindEntityChrome, 21)]
+        [TestCase(Chrome, UninstallOrChangeProgramsOnYourComputer, 15)]
+        [TestCase(Chrome, CandyCrushSagaFromKing, 0)]
+        [TestCase("sql", MicrosoftSqlServerManagementStudio, 56)]
+        [TestCase("sql  manag", MicrosoftSqlServerManagementStudio, 119)]//double spacing intended
+        public void WhenGivenQueryStringThenShouldReturnCurrentScoring(string queryString, string compareString, int expectedScore)
         {
-            // Arrange
-            string searchTerm = "chrome"; // since this looks for specific results it will always be one case
-            var searchStrings = new List<string>
-            {
-                Chrome,//SCORE: 107
-                LastIsChrome,//SCORE: 53
-                HelpCureHopeRaiseOnMindEntityChrome,//SCORE: 21
-                UninstallOrChangeProgramsOnYourComputer, //SCORE: 15
-                CandyCrushSagaFromKing//SCORE: 0
-            }
-            .OrderByDescending(x => x)
-            .ToList();
+            // When, Given
+            var rawScore = StringMatcher.FuzzySearch(queryString, compareString).RawScore;
 
-            // Act
-            var results = new List<Result>();
-            foreach (var str in searchStrings)
-            {
-                results.Add(new Result
-                {
-                    Title = str,
-                    Score = StringMatcher.FuzzySearch(searchTerm, str).RawScore
-                });
-            }
-
-            // Assert
-            VerifyResult(147, Chrome);
-            VerifyResult(93, LastIsChrome);
-            VerifyResult(41, HelpCureHopeRaiseOnMindEntityChrome);
-            VerifyResult(35, UninstallOrChangeProgramsOnYourComputer);
-            VerifyResult(0, CandyCrushSagaFromKing);
-
-            void VerifyResult(int expectedScore, string expectedTitle)
-            {
-                var result = results.FirstOrDefault(x => x.Title == expectedTitle);
-                if (result == null)
-                {
-                    Assert.Fail($"Fail to find result: {expectedTitle} in result list");
-                }
-
-                Assert.AreEqual(expectedScore, result.Score, $"Expected score for {expectedTitle}: {expectedScore}, Actual: {result.Score}");
-            }
+            // Should
+            Assert.AreEqual(expectedScore, rawScore, $"Expected score for compare string '{compareString}': {expectedScore}, Actual: {rawScore}");
         }
 
-        [TestCase("goo", "Google Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("chr", "Google Chrome", (int)StringMatcher.SearchPrecisionScore.Low, true)]
-        [TestCase("chr", "Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("chr", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("chr", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Low, true)]
-        [TestCase("chr", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("chr", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.None, true)]
-        [TestCase("ccs", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Low, true)]
-        [TestCase("cand", "Candy Crush Saga from King", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("cand", "Help cure hope raise on mind entity Chrome", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("goo", "Google Chrome", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("chr", "Google Chrome", StringMatcher.SearchPrecisionScore.Low, true)]
+        [TestCase("chr", "Chrome", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("chr", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("chr", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Low, true)]
+        [TestCase("chr", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("chr", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.None, true)]
+        [TestCase("ccs", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Low, true)]
+        [TestCase("cand", "Candy Crush Saga from King",StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("cand", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Regular, false)]
         public void WhenGivenDesiredPrecisionThenShouldReturnAllResultsGreaterOrEqual(
             string queryString,
             string compareString,
-            int expectedPrecisionScore,
+            StringMatcher.SearchPrecisionScore expectedPrecisionScore,
             bool expectedPrecisionResult)
         {
-            // Arrange
-            var expectedPrecisionString = (StringMatcher.SearchPrecisionScore)expectedPrecisionScore;
-            StringMatcher.UserSettingSearchPrecision = expectedPrecisionScore; // this is why static state is evil...
+            // When            
+            StringMatcher.UserSettingSearchPrecision = expectedPrecisionScore;
 
-            // Act
+            // Given
             var matchResult = StringMatcher.FuzzySearch(queryString, compareString);
 
-            // Assert
+            Debug.WriteLine("");
+            Debug.WriteLine("###############################################");
+            Debug.WriteLine($"QueryString: {queryString}     CompareString: {compareString}");
+            Debug.WriteLine($"RAW SCORE: {matchResult.RawScore.ToString()}, PrecisionLevelSetAt: {expectedPrecisionScore} ({(int)expectedPrecisionScore})");
+            Debug.WriteLine("###############################################");
+            Debug.WriteLine("");
+
+            // Should
             Assert.AreEqual(expectedPrecisionResult, matchResult.IsSearchPrecisionScoreMet(),
                 $"Query:{queryString}{Environment.NewLine} " +
                 $"Compare:{compareString}{Environment.NewLine}" +
                 $"Raw Score: {matchResult.RawScore}{Environment.NewLine}" +
-                $"Precision Level: {expectedPrecisionString}={expectedPrecisionScore}");
+                $"Precision Score: {(int)expectedPrecisionScore}");
         }
 
-        [TestCase("exce", "OverLeaf-Latex: An online LaTeX editor", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("term", "Windows Terminal (Preview)", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sql s managa", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("sql' s manag", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("sql s manag", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sql manag", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sql", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sql serv", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("mic", MicrosoftSqlServerManagementStudio, (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("chr", "Shutdown", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("chr", "Change settings for text-to-speech and for speech recognition (if installed).", (int)StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("a test", "This is a test", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("test", "This is a test", (int)StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("exce", "OverLeaf-Latex: An online LaTeX editor", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("term", "Windows Terminal (Preview)", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sql s managa", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("sql' s manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("sql s manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sql manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sql", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sql serv", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sql studio", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("mic", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("chr", "Shutdown", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("chr", "Change settings for text-to-speech and for speech recognition (if installed).", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("a test", "This is a test", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("test", "This is a test", StringMatcher.SearchPrecisionScore.Regular, true)]
         public void WhenGivenQueryShouldReturnResultsContainingAllQuerySubstrings(
             string queryString,
             string compareString,
-            int expectedPrecisionScore,
+            StringMatcher.SearchPrecisionScore expectedPrecisionScore,
             bool expectedPrecisionResult)
         {
-            // Arrange
-            var expectedPrecisionString = (StringMatcher.SearchPrecisionScore)expectedPrecisionScore;
-            StringMatcher.UserSettingSearchPrecision = expectedPrecisionScore; // this is why static state is evil...
+            // When
+            StringMatcher.UserSettingSearchPrecision = expectedPrecisionScore;
 
-            // Act
+            // Given
             var matchResult = StringMatcher.FuzzySearch(queryString, compareString);
 
-            // Assert
+            Debug.WriteLine("");
+            Debug.WriteLine("###############################################");
+            Debug.WriteLine($"QueryString: {queryString}     CompareString: {compareString}");
+            Debug.WriteLine($"RAW SCORE: {matchResult.RawScore.ToString()}, PrecisionLevelSetAt: {expectedPrecisionScore} ({(int)expectedPrecisionScore})");
+            Debug.WriteLine("###############################################");
+            Debug.WriteLine("");
+
+            // Should
             Assert.AreEqual(expectedPrecisionResult, matchResult.IsSearchPrecisionScoreMet(),
                 $"Query:{queryString}{Environment.NewLine} " +
                 $"Compare:{compareString}{Environment.NewLine}" +
                 $"Raw Score: {matchResult.RawScore}{Environment.NewLine}" +
-                $"Precision Level: {expectedPrecisionString}={expectedPrecisionScore}");
+                $"Precision Score: {(int)expectedPrecisionScore}");
+        }
+
+        [TestCase("sql servman", MicrosoftSqlServerManagementStudio, false)]
+        [TestCase("sql serv man", MicrosoftSqlServerManagementStudio, true)]
+        [TestCase("sql", MicrosoftSqlServerManagementStudio, true)]
+        [TestCase("sqlserv", MicrosoftSqlServerManagementStudio, false)]
+        [TestCase("mssms", MicrosoftSqlServerManagementStudio, false)]
+        [TestCase("chr", "Change settings for text-to-speech and for speech recognition (if installed).", false)]
+        [TestCase("ch r", "Change settings for text-to-speech and for speech recognition (if installed).", true)]
+        public void WhenGivenQueryShouldEvaluateTrueFalseIfCompareStringContainsAllSubstrings(string queryString, string compareString, bool expectedResult)
+        {
+            // When, Given
+            var matchResult = StringMatcher.FuzzySearch(queryString, compareString).AllSubstringsContainedInCompareString;
+
+            // Should
+            Assert.AreEqual(matchResult, expectedResult);
         }
     }
 }
