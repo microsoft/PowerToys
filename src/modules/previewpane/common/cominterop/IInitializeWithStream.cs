@@ -6,7 +6,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 
-namespace PreviewHandleManage.ComInterlop
+namespace Common.ComInterlop
 {
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
