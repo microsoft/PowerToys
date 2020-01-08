@@ -2,10 +2,172 @@
 #include "resource.h"
 #include "ShellExtensions_i.h"
 #include "dllmain.h"
+#include <common/common.h>
+#include <interface/powertoy_module_interface.h>
+#include <common/settings_objects.h>
 
 CShellExtensionsModule _AtlModule;
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
     return _AtlModule.DllMain(dwReason, lpReserved);
+}
+
+// The PowerToy name that will be shown in the settings.
+const static wchar_t* MODULE_NAME = L"ImageResizer";
+// Add a description that will we shown in the module settings page.
+const static wchar_t* MODULE_DESC = L"<no description>";
+
+// These are the properties shown in the Settings page.
+struct ModuleSettings
+{
+    // Add the PowerToy module properties with default values.
+    // Currently available types:
+    // - int
+    // - bool
+    // - string
+
+    //bool bool_prop = true;
+    //int int_prop = 10;
+    //std::wstring string_prop = L"The quick brown fox jumps over the lazy dog";
+    //std::wstring color_prop = L"#1212FF";
+
+} g_settings;
+
+class ImageResizerModule : public PowertoyModuleIface
+{
+private:
+    // The PowerToy state.
+    bool m_enabled = false;
+
+    // Load initial settings from the persisted values.
+    void init_settings();
+
+public:
+    // Constructor
+    ImageResizerModule()
+    {
+        init_settings();
+    };
+
+    // Destroy the powertoy and free memory
+    virtual void destroy() override
+    {
+        delete this;
+    }
+
+    // Return the display name of the powertoy, this will be cached by the runner
+    virtual const wchar_t* get_name() override
+    {
+        return MODULE_NAME;
+    }
+
+    // Return array of the names of all events that this powertoy listens for, with
+    // nullptr as the last element of the array. Nullptr can also be retured for empty
+    // list.
+    virtual const wchar_t** get_events() override
+    {
+        static const wchar_t* events[] = { nullptr };
+        // Available events:
+        // - ll_keyboard
+        // - win_hook_event
+        //
+        // static const wchar_t* events[] = { ll_keyboard,
+        //                                   win_hook_event,
+        //                                   nullptr };
+
+        return events;
+    }
+
+    // Return JSON with the configuration options.
+    virtual bool get_config(wchar_t* buffer, int* buffer_size) override
+    {
+        HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
+
+        // Create a Settings object.
+        PowerToysSettings::Settings settings(hinstance, get_name());
+        settings.set_description(MODULE_DESC);
+        return settings.serialize_to_buffer(buffer, buffer_size);
+    }
+
+    // Signal from the Settings editor to call a custom action.
+    // This can be used to spawn more complex editors.
+    virtual void call_custom_action(const wchar_t* action) override
+    {
+        static UINT custom_action_num_calls = 0;
+        try
+        {
+            // Parse the action values, including name.
+            PowerToysSettings::CustomActionObject action_object =
+                PowerToysSettings::CustomActionObject::from_json_string(action);
+
+            /*
+      if (action_object.get_name() == L"custom_action_id") {
+        // Execute your custom action
+      }
+      */
+        }
+        catch (std::exception ex)
+        {
+            // Improper JSON.
+        }
+    }
+
+    // Called by the runner to pass the updated settings values as a serialized JSON.
+    virtual void set_config(const wchar_t* config) override
+    {
+        try
+        {
+            // Parse the input JSON string.
+            PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::from_json_string(config);
+            // If you don't need to do any custom processing of the settings, proceed
+            // to persists the values calling:
+            values.save_to_settings_file();
+        }
+        catch (std::exception ex)
+        {
+            // Improper JSON.
+        }
+    }
+
+    // Enable the powertoy
+    virtual void enable()
+    {
+        m_enabled = true;
+    }
+
+    // Disable the powertoy
+    virtual void disable()
+    {
+        m_enabled = false;
+    }
+
+    // Returns if the powertoys is enabled
+    virtual bool is_enabled() override
+    {
+        return m_enabled;
+    }
+
+    // Handle incoming event, data is event-specific
+    virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
+    {
+        return 0;
+    }
+
+    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
+    virtual void signal_system_menu_action(const wchar_t* name) override {}
+};
+
+// Load the settings file.
+void ImageResizerModule::init_settings()
+{
+    try
+    {
+        // Load and parse the settings file for this PowerToy.
+        PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
+    }
+    catch (std::exception ex)
+    {
+        // Error while loading from the settings file. Let default values stay as they are.
+    }
 }
