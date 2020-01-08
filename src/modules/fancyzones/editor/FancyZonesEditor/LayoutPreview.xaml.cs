@@ -98,9 +98,98 @@ namespace FancyZonesEditor
             }
         }
 
-        private void RenderGridPreview(GridLayoutModel grid)
+        private void RenderActualScalePriview(GridLayoutModel grid)
         {
-            Body.RowDefinitions.Clear();
+            int rows = grid.Rows;
+            int cols = grid.Columns;
+
+            RowColInfo[] rowInfo = new RowColInfo[rows];
+            for (int row = 0; row < rows; row++)
+            {
+                rowInfo[row] = new RowColInfo(grid.RowPercents[row]);
+            }
+
+            RowColInfo[] colInfo = new RowColInfo[cols];
+            for (int col = 0; col < cols; col++)
+            {
+                colInfo[col] = new RowColInfo(grid.ColumnPercents[col]);
+            }
+
+            Settings settings = ((App)Application.Current).ZoneSettings;
+
+            int spacing = settings.ShowSpacing ? settings.Spacing : 0;
+
+            int width = (int)SystemParameters.WorkArea.Width;
+            int height = (int)SystemParameters.WorkArea.Height;
+
+            double totalWidth = width - (spacing * (cols + 1));
+            double totalHeight = height - (spacing * (rows + 1));
+
+            double top = spacing;
+            for (int row = 0; row < rows; row++)
+            {
+                double cellHeight = rowInfo[row].Recalculate(top, totalHeight);
+                top += cellHeight + spacing;
+            }
+
+            double left = spacing;
+            for (int col = 0; col < cols; col++)
+            {
+                double cellWidth = colInfo[col].Recalculate(left, totalWidth);
+                left += cellWidth + spacing;
+            }
+
+            Viewbox viewbox = new Viewbox
+            {
+                Stretch = Stretch.Uniform,
+            };
+            Body.Children.Add(viewbox);
+            Canvas frame = new Canvas
+            {
+                Width = width,
+                Height = height,
+            };
+            viewbox.Child = frame;
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols; col++)
+                {
+                    int i = grid.CellChildMap[row, col];
+                    if (((row == 0) || (grid.CellChildMap[row - 1, col] != i)) &&
+                        ((col == 0) || (grid.CellChildMap[row, col - 1] != i)))
+                    {
+                        Rectangle rect = new Rectangle();
+                        left = colInfo[col].Start;
+                        top = rowInfo[row].Start;
+                        Canvas.SetTop(rect, top);
+                        Canvas.SetLeft(rect, left);
+
+                        int maxRow = row;
+                        while (((maxRow + 1) < rows) && (grid.CellChildMap[maxRow + 1, col] == i))
+                        {
+                            maxRow++;
+                        }
+
+                        int maxCol = col;
+                        while (((maxCol + 1) < cols) && (grid.CellChildMap[row, maxCol + 1] == i))
+                        {
+                            maxCol++;
+                        }
+
+                        rect.Width = colInfo[maxCol].End - left;
+                        rect.Height = rowInfo[maxRow].End - top;
+                        rect.StrokeThickness = 1;
+                        rect.Stroke = Brushes.DarkGray;
+                        rect.Fill = Brushes.LightGray;
+                        frame.Children.Add(rect);
+                    }
+                }
+            }
+        }
+
+        private void RenderSmallScalePriview(GridLayoutModel grid)
+        {
             foreach (int percent in grid.RowPercents)
             {
                 RowDefinition def = new RowDefinition
@@ -110,7 +199,6 @@ namespace FancyZonesEditor
                 Body.RowDefinitions.Add(def);
             }
 
-            Body.ColumnDefinitions.Clear();
             foreach (int percent in grid.ColumnPercents)
             {
                 ColumnDefinition def = new ColumnDefinition
@@ -121,8 +209,7 @@ namespace FancyZonesEditor
             }
 
             Settings settings = ((App)Application.Current).ZoneSettings;
-            int divisor = IsActualSize ? 2 : 20;
-            Thickness margin = new Thickness(settings.ShowSpacing ? settings.Spacing / divisor : 0);
+            Thickness margin = new Thickness(settings.ShowSpacing ? settings.Spacing / 20 : 0);
 
             List<int> visited = new List<int>();
 
@@ -157,38 +244,27 @@ namespace FancyZonesEditor
 
                         Grid.SetColumnSpan(rect, columnSpan);
 
-                        Thickness m = margin;
-                        if (IsActualSize)
-                        {
-                            // if we are handling zones leanning on the edges of the screen we need to increase margin by 2
-                            if (col == 0)
-                            {
-                                m.Left *= divisor;
-                            }
-
-                            if (row == 0)
-                            {
-                                m.Top *= divisor;
-                            }
-
-                            if ((col == grid.Columns - 1) || (col + columnSpan == grid.Columns))
-                            {
-                                m.Right *= divisor;
-                            }
-
-                            if ((row == grid.Rows - 1) || (row + rowSpan == grid.Rows))
-                            {
-                                m.Bottom *= divisor;
-                            }
-                        }
-
-                        rect.Margin = m;
+                        rect.Margin = margin;
                         rect.StrokeThickness = 1;
                         rect.Stroke = Brushes.DarkGray;
                         rect.Fill = Brushes.LightGray;
                         Body.Children.Add(rect);
                     }
                 }
+            }
+        }
+
+        private void RenderGridPreview(GridLayoutModel grid)
+        {
+            Body.RowDefinitions.Clear();
+            Body.ColumnDefinitions.Clear();
+            if (IsActualSize)
+            {
+                RenderActualScalePriview(grid);
+            }
+            else
+            {
+                RenderSmallScalePriview(grid);
             }
         }
 
