@@ -11,18 +11,20 @@ namespace Wox.Infrastructure.Logger
     {
         public const string DirectoryName = "Logs";
 
+        public static string CurrentLogDirectory { get; private set; }
+
         static Log()
         {
-            var path = Path.Combine(Constant.DataDirectory, DirectoryName, Constant.Version);
-            if (!Directory.Exists(path))
+            CurrentLogDirectory = Path.Combine(Constant.DataDirectory, DirectoryName, Constant.Version);
+            if (!Directory.Exists(CurrentLogDirectory))
             {
-                Directory.CreateDirectory(path);
+                Directory.CreateDirectory(CurrentLogDirectory);
             }
 
             var configuration = new LoggingConfiguration();
             var target = new FileTarget();
             configuration.AddTarget("file", target);
-            target.FileName = path.Replace(@"\", "/") + "/${shortdate}.txt";
+            target.FileName = CurrentLogDirectory.Replace(@"\", "/") + "/${shortdate}.txt";
 #if DEBUG
             var rule = new LoggingRule("*", LogLevel.Debug, target);
 #else
