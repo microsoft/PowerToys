@@ -191,7 +191,9 @@ namespace Wox.Plugin.Folder
             if (incompleteName.StartsWith(">"))
             {
                 searchOption = SearchOption.AllDirectories;
-                incompleteName = incompleteName.Substring(1);
+
+                // match everything before and after search term using supported wildcard '*', ie. *searchterm*
+                incompleteName = "*" + incompleteName.Substring(1);
             }
             
             try
