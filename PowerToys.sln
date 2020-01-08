@@ -88,11 +88,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUWPUI", "src\mod
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "imageresizer", "imageresizer", "{6C7F47CC-2151-44A3-A546-41C70025132C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageResizer", "src\modules\imageresizer\src\ImageResizer\ImageResizer.csproj", "{2BE46397-4DFA-414C-9BD4-41E4BBF8CB34}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageResizer", "src\modules\imageresizer\ImageResizer\ImageResizer.csproj", "{2BE46397-4DFA-414C-9BD4-41E4BBF8CB34}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShellExtensions", "src\modules\imageresizer\src\ShellExtensions\ShellExtensions.vcxproj", "{0B43679E-EDFA-4DA0-AD30-F4628B308B1B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShellExtensions", "src\modules\imageresizer\ShellExtensions\ShellExtensions.vcxproj", "{0B43679E-EDFA-4DA0-AD30-F4628B308B1B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageResizer.Test", "src\modules\imageresizer\test\ImageResizer.Test\ImageResizer.Test.csproj", "{E0CC7526-D85E-43AC-844F-D5DF0D2F5AB8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageResizer.Test", "src\modules\imageresizer\ImageResizer.Test\ImageResizer.Test.csproj", "{E0CC7526-D85E-43AC-844F-D5DF0D2F5AB8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
