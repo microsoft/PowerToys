@@ -34,9 +34,13 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DocumentationFile>bin/Release/commonDocumentation.xml</DocumentationFile>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -45,6 +49,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="cominterop\COLORREF.cs" />
+    <Compile Include="cominterop\IInitializeWithStream.cs" />
+    <Compile Include="cominterop\IObjectWithSite.cs" />
+    <Compile Include="cominterop\IOleWindow.cs" />
+    <Compile Include="cominterop\IPreviewHandler.cs" />
+    <Compile Include="cominterop\IPreviewHandlerVisuals.cs" />
+    <Compile Include="cominterop\LOGFONT.cs" />
+    <Compile Include="cominterop\MSG.cs" />
+    <Compile Include="cominterop\RECT.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
