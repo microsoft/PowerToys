@@ -54,6 +54,7 @@
     <Compile Include="cominterop\IObjectWithSite.cs" />
     <Compile Include="cominterop\IOleWindow.cs" />
     <Compile Include="cominterop\IPreviewHandler.cs" />
+    <Compile Include="cominterop\IPreviewHandlerFrame.cs" />
     <Compile Include="cominterop\IPreviewHandlerVisuals.cs" />
     <Compile Include="cominterop\LOGFONT.cs" />
     <Compile Include="cominterop\MSG.cs" />
