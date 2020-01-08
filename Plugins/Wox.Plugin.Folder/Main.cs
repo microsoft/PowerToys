@@ -195,7 +195,10 @@ namespace Wox.Plugin.Folder
                 // match everything before and after search term using supported wildcard '*', ie. *searchterm*
                 incompleteName = "*" + incompleteName.Substring(1);
             }
-            
+
+            var folderList = new List<Result>();
+            var fileList = new List<Result>();
+
             try
             {
                 // search folder and add results
@@ -206,11 +209,14 @@ namespace Wox.Plugin.Folder
                 {
                     if ((fileSystemInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
 
-                    var result =
-                        fileSystemInfo is DirectoryInfo
-                            ? CreateFolderResult(fileSystemInfo.Name, fileSystemInfo.FullName, query)
-                            : CreateFileResult(fileSystemInfo.FullName, query);
-                    results.Add(result);
+                    if(fileSystemInfo is DirectoryInfo)
+                    {
+                        folderList.Add(CreateFolderResult(fileSystemInfo.Name, fileSystemInfo.FullName, query));
+                    }
+                    else
+                    {
+                        fileList.Add(CreateFileResult(fileSystemInfo.FullName, query));
+                    }
                 }
             }
             catch (Exception e)
@@ -225,7 +231,8 @@ namespace Wox.Plugin.Folder
                 throw;
             }
 
-            return results;
+            // Intial ordering, this order can be updated later by UpdateResultView.MainViewModel based on history of user selection.
+            return results.Concat(folderList.OrderBy(x => x.Title)).Concat(fileList.OrderBy(x => x.Title)).ToList();
         }
 
         private static Result CreateFileResult(string filePath, Query query)
