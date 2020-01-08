@@ -2,7 +2,6 @@
 #include "resource.h"
 #include "ShellExtensions_i.h"
 #include "dllmain.h"
-#include <common/common.h>
 #include <interface/powertoy_module_interface.h>
 #include <common/settings_objects.h>
 
