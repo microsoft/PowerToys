@@ -170,3 +170,8 @@ void ImageResizerModule::init_settings()
         // Error while loading from the settings file. Let default values stay as they are.
     }
 }
+
+extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
+{
+    return new ImageResizerModule();
+}
