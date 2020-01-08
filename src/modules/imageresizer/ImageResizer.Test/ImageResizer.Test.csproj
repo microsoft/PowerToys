@@ -23,7 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <CodeAnalysisRuleSet>..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,7 +33,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <CodeAnalysisRuleSet>..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
@@ -41,13 +41,13 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ImageResizer\ImageResizer.csproj">
+    <ProjectReference Include="..\ImageResizer\ImageResizer.csproj">
       <Project>{2be46397-4dfa-414c-9bd4-41e4bbf8cb34}</Project>
       <Name>ImageResizer</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <AdditionalFiles Include="..\..\codeAnalysis\StyleCop.json">
+    <AdditionalFiles Include="..\codeAnalysis\StyleCop.json">
       <Link>StyleCop.json</Link>
     </AdditionalFiles>
     <None Include="App.config">
@@ -55,7 +55,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\codeAnalysis\GlobalSuppressions.cs">
+    <Compile Include="..\codeAnalysis\GlobalSuppressions.cs">
       <Link>GlobalSuppressions.cs</Link>
     </Compile>
     <Compile Include="Models\CustomSizeTests.cs" />

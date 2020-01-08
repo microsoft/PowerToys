@@ -25,7 +25,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <CodeAnalysisRuleSet>..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -36,7 +36,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <CodeAnalysisRuleSet>..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Resources\ImageResizer.ico</ApplicationIcon>
@@ -54,7 +54,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="..\..\codeAnalysis\GlobalSuppressions.cs">
+    <Compile Include="..\codeAnalysis\GlobalSuppressions.cs">
       <Link>GlobalSuppressions.cs</Link>
     </Compile>
     <Compile Include="Extensions\BitmapEncoderExtensions.cs" />
@@ -171,7 +171,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <AdditionalFiles Include="..\..\codeAnalysis\StyleCop.json" />
+    <AdditionalFiles Include="..\codeAnalysis\StyleCop.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
