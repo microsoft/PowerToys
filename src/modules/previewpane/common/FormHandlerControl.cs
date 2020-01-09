@@ -12,9 +12,17 @@ namespace Common
     /// <summary>
     /// Todo.
     /// </summary>
-    public class FormHandlerControl : UserControl, IPreviewHandlerControl
+    public abstract class FormHandlerControl : UserControl, IPreviewHandlerControl
     {
         private IntPtr parentHwnd;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FormHandlerControl"/> class.
+        /// </summary>
+        public FormHandlerControl()
+        {
+            var forceCreation = this.Handle;
+        }
 
         /// <summary>
         /// Todo.
@@ -123,16 +131,20 @@ namespace Common
             });
         }
 
+        /// <summary>
+        /// Todo.
+        /// </summary>
+        /// <param name="d">Todof.</param>
+        public void InvokeOnControlThread(MethodInvoker d)
+        {
+            this.Invoke(d);
+        }
+
         [DllImport("user32.dll")]
         private static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern IntPtr GetFocus();
-
-        private void InvokeOnControlThread(MethodInvoker d)
-        {
-            this.Invoke(d);
-        }
 
         private void UpdateWindowBounds(Rectangle windowBounds)
         {
