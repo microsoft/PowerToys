@@ -20,6 +20,7 @@ namespace Common
         {
             this.InvokeOnControlThread(() =>
             {
+                this.Visible = true;
                 var text = File.ReadAllText(filePath);
                 WebBrowser browser = new WebBrowser();
                 browser.DocumentText = text;
