@@ -10,7 +10,7 @@ namespace Common.ComInterlop
     /// Defines the attributes of a font.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-    internal struct LOGFONT
+    public struct LOGFONT
     {
         /// <summary>
         /// Value of type INT that specifies the height, in logical units, of the font's character cell or character.

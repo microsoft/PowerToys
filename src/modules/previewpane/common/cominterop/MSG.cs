@@ -11,7 +11,7 @@ namespace Common.ComInterlop
     /// Contains message information from a thread's message queue.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    internal struct MSG
+    public struct MSG
     {
         /// <summary>
         /// A handle to the window whose window procedure receives the message. This member is NULL when the message is a thread message.
