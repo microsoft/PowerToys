@@ -50,7 +50,7 @@ class WindowWalker : public PowertoyModuleIface
 {
 private:
     // The PowerToy state.
-    bool m_enabled = false;
+    bool m_enabled = true;
 
     // Load initial settings from the persisted values.
     void init_settings();
@@ -214,6 +214,11 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+        SHELLEXECUTEINFO sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+        sei.lpFile = L"modules\\WindowWalker.exe";
+        sei.nShow = SW_SHOWNORMAL;
+        ShellExecuteEx(&sei);
         m_enabled = true;
     }
 
