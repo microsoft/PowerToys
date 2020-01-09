@@ -80,7 +80,7 @@ int runner()
     catch (std::runtime_error& err)
     {
         std::string err_what = err.what();
-        MessageBoxW(NULL, std::wstring(err_what.begin(), err_what.end()).c_str(), L"Error", MB_OK | MB_ICONERROR);
+        MessageBoxW(nullptr, std::wstring(err_what.begin(), err_what.end()).c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
         result = -1;
     }
     Trace::UnregisterProvider();
@@ -92,8 +92,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     WCHAR username[UNLEN + 1];
     DWORD username_length = UNLEN + 1;
     GetUserNameW(username, &username_length);
-    auto runner_mutex = CreateMutexW(NULL, TRUE, (std::wstring(L"Local\\PowerToyRunMutex") + username).c_str());
-    if (runner_mutex == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
+    auto runner_mutex = CreateMutexW(nullptr, TRUE, (std::wstring(L"Local\\PowerToyRunMutex") + username).c_str());
+    if (runner_mutex == nullptr || GetLastError() == ERROR_ALREADY_EXISTS)
     {
         // The app is already running
         return 0;
@@ -124,7 +124,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     catch (std::runtime_error& err)
     {
         std::string err_what = err.what();
-        MessageBoxW(NULL, std::wstring(err_what.begin(), err_what.end()).c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
+        MessageBoxW(nullptr, std::wstring(err_what.begin(), err_what.end()).c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
         result = -1;
     }
     ReleaseMutex(runner_mutex);
@@ -135,7 +135,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         {
             auto text = is_process_elevated() ? GET_RESOURCE_STRING(IDS_COULDNOT_RESTART_NONELEVATED) :
                                                 GET_RESOURCE_STRING(IDS_COULDNOT_RESTART_ELEVATED);
-            MessageBoxW(NULL, text.c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
+            MessageBoxW(nullptr, text.c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
+
+            restart_same_elevation();
             result = -1;
         }
     }
