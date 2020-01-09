@@ -25,9 +25,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 }
 
 // The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"$projectname$";
+const static wchar_t* MODULE_NAME = L"Window Walker";
 // Add a description that will we shown in the module settings page.
-const static wchar_t* MODULE_DESC = L"<no description>";
+const static wchar_t* MODULE_DESC = L"Alt+Tab but with search";
 
 // These are the properties shown in the Settings page.
 struct ModuleSettings
@@ -46,7 +46,7 @@ struct ModuleSettings
 } g_settings;
 
 // Implement the PowerToy Module Interface and all the required methods.
-class $safeprojectname$ : public PowertoyModuleIface
+class WindowWalker : public PowertoyModuleIface
 {
 private:
     // The PowerToy state.
@@ -57,7 +57,7 @@ private:
 
 public:
     // Constructor
-    $safeprojectname$()
+    WindowWalker()
     {
         init_settings();
     };
@@ -259,13 +259,13 @@ public:
 };
 
 // Load the settings file.
-void $safeprojectname$::init_settings()
+void WindowWalker::init_settings()
 {
     try
     {
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file($safeprojectname$::get_name());
+            PowerToysSettings::PowerToyValues::load_from_settings_file(WindowWalker::get_name());
 
         // Load a bool property.
         //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {
@@ -334,5 +334,5 @@ void $safeprojectname$::init_settings()
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
-    return new $safeprojectname$();
+    return new WindowWalker();
 }
