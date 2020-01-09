@@ -90,6 +90,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "windowwalker", "windowwalke
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Window Walker", "src\modules\windowwalker\app\Window Walker\Window Walker.csproj", "{B9BDF8BE-FED7-49B5-A7AE-DD4D1CA2D9EB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WindowWalker", "WindowWalker\WindowWalker.vcxproj", "{51D3BD1F-07A8-48EB-B2A0-0A249CD4E1A6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -168,6 +170,10 @@ Global
 		{B9BDF8BE-FED7-49B5-A7AE-DD4D1CA2D9EB}.Debug|x64.Build.0 = Debug|x64
 		{B9BDF8BE-FED7-49B5-A7AE-DD4D1CA2D9EB}.Release|x64.ActiveCfg = Release|x64
 		{B9BDF8BE-FED7-49B5-A7AE-DD4D1CA2D9EB}.Release|x64.Build.0 = Release|x64
+		{51D3BD1F-07A8-48EB-B2A0-0A249CD4E1A6}.Debug|x64.ActiveCfg = Debug|x64
+		{51D3BD1F-07A8-48EB-B2A0-0A249CD4E1A6}.Debug|x64.Build.0 = Debug|x64
+		{51D3BD1F-07A8-48EB-B2A0-0A249CD4E1A6}.Release|x64.ActiveCfg = Release|x64
+		{51D3BD1F-07A8-48EB-B2A0-0A249CD4E1A6}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -193,6 +199,7 @@ Global
 		{0485F45C-EA7A-4BB5-804B-3E8D14699387} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
 		{8DC78AF7-DC3E-4C57-A8FB-7E347DE74A03} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{B9BDF8BE-FED7-49B5-A7AE-DD4D1CA2D9EB} = {8DC78AF7-DC3E-4C57-A8FB-7E347DE74A03}
+		{51D3BD1F-07A8-48EB-B2A0-0A249CD4E1A6} = {8DC78AF7-DC3E-4C57-A8FB-7E347DE74A03}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
