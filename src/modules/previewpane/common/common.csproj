@@ -43,6 +43,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -61,6 +62,11 @@
     <Compile Include="cominterop\LOGFONT.cs" />
     <Compile Include="cominterop\MSG.cs" />
     <Compile Include="cominterop\RECT.cs" />
+    <Compile Include="FormHandlerControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="IPreviewHandlerControl.cs" />
+    <Compile Include="PreviewHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

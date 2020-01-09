@@ -11,7 +11,7 @@ namespace Common.ComInterlop
     /// The COLORREF value is used to specify an RGB color.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    internal struct COLORREF
+    public struct COLORREF
     {
         /// <summary>
         /// Stores an RGB color value in a 32 bit integer.
