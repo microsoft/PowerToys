@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="cominterop\IInitializeWithFile.cs" />
     <Compile Include="cominterop\COLORREF.cs" />
     <Compile Include="cominterop\IInitializeWithStream.cs" />
     <Compile Include="cominterop\IObjectWithSite.cs" />
@@ -62,12 +63,18 @@
     <Compile Include="cominterop\LOGFONT.cs" />
     <Compile Include="cominterop\MSG.cs" />
     <Compile Include="cominterop\RECT.cs" />
+    <Compile Include="CustomControlTest.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FileBasedPreviewHandler.cs" />
     <Compile Include="FormHandlerControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="IPreviewHandlerControl.cs" />
     <Compile Include="PreviewHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SteamBasedPreviewHandler.cs" />
+    <Compile Include="TestCustomHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
