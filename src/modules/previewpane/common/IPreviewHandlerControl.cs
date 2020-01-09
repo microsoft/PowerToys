@@ -1,8 +1,11 @@
-﻿using Common.ComInterlop;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Drawing;
 
-namespace common
+namespace Common
 {
     /// <summary>
     /// Todo.
@@ -12,9 +15,9 @@ namespace common
         /// <summary>
         /// Todo.
         /// </summary>
-        /// <param name="result"></param>
+        /// <param name="result">Rewsult.</param>
         void QueryFocus(out IntPtr result);
-        
+
         /// <summary>
         /// Todo.
         /// </summary>
@@ -23,25 +26,25 @@ namespace common
         /// <summary>
         /// Todo.
         /// </summary>
-        /// <param name="font"></param>
+        /// <param name="font">font.</param>
         void SetFont(Font font);
 
         /// <summary>
         /// Todo.
         /// </summary>
-        /// <param name="color"></param>
+        /// <param name="color">color.</param>
         void SetTextColor(Color color);
 
         /// <summary>
         /// Todo.
         /// </summary>
-        /// <param name="argbColor"></param>
+        /// <param name="argbColor">color.</param>
         void SetBackgroundColor(Color argbColor);
 
         /// <summary>
         /// Todo.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>pointrt.</returns>
         IntPtr GetHandle();
 
         /// <summary>
@@ -52,14 +55,14 @@ namespace common
         /// <summary>
         /// Todo.
         /// </summary>
-        /// <param name="_windowBounds"></param>
-        void SetRect(Rectangle _windowBounds);
+        /// <param name="windowBounds">Bounds.</param>
+        void SetRect(Rectangle windowBounds);
 
         /// <summary>
         /// Todo.
         /// </summary>
-        /// <param name="hwnd"></param>
-        /// <param name="rect"></param>
+        /// <param name="hwnd">handle.</param>
+        /// <param name="rect">Rectangle.</param>
         void SetWindow(IntPtr hwnd, Rectangle rect);
     }
 }
