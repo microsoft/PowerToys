@@ -1,73 +1,54 @@
-﻿using Common.ComInterlop;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace common
+namespace Common
 {
     /// <summary>
     /// Todo.
     /// </summary>
     public class FormHandlerControl : UserControl, IPreviewHandlerControl
     {
-        private IntPtr _parentHwnd;
-
-        private void InvokeOnControlThread(MethodInvoker d)
-        {
-            Invoke(d);
-        }
-
-        private void UpdateWindowBounds(Rectangle windowBounds)
-        {
-            if (Visible)
-            {
-                InvokeOnControlThread(delegate ()
-                {
-                    SetParent(Handle, _parentHwnd);
-                    Bounds = windowBounds;
-                    Visible = true;
-                });
-            }
-        }
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+        private IntPtr parentHwnd;
 
         /// <summary>
         /// Todo.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Returns the handle of the control.</returns>
         public IntPtr GetHandle()
         {
-            return Handle;
+            return this.Handle;
         }
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        private static extern IntPtr GetFocus();
 
         /// <summary>
         /// Todo.
         /// </summary>
-        /// <param name="result"></param>
+        /// <param name="result">Todorsult.</param>
         public void QueryFocus(out IntPtr result)
         {
             var getResult = IntPtr.Zero;
-            InvokeOnControlThread(delegate () { getResult = GetFocus(); });
+            this.InvokeOnControlThread(() =>
+            {
+                getResult = GetFocus();
+            });
             result = getResult;
         }
 
         /// <summary>
         /// Todo.
         /// </summary>
-        /// <param name="argbColor"></param>
+        /// <param name="argbColor">argbColor.</param>
         public void SetBackgroundColor(Color argbColor)
         {
-            InvokeOnControlThread(delegate () { BackColor = argbColor; });
+            this.InvokeOnControlThread(() =>
+            {
+                this.BackColor = argbColor;
+            });
         }
 
         /// <summary>
@@ -75,45 +56,54 @@ namespace common
         /// </summary>
         public void SetFocus()
         {
-            InvokeOnControlThread(delegate () { Focus(); });
+            this.InvokeOnControlThread(() =>
+            {
+                this.Focus();
+            });
         }
 
         /// <summary>
         /// Todo.
         /// </summary>
-        /// <param name="font"></param>
+        /// <param name="font">font.</param>
         public void SetFont(Font font)
         {
-            InvokeOnControlThread(delegate () { Font = font; });
+            this.InvokeOnControlThread(() =>
+            {
+                this.Font = font;
+            });
         }
 
         /// <summary>
         /// Todo.
         /// </summary>
-        /// <param name="WindowBounds"></param>
-        public void SetRect(Rectangle WindowBounds)
+        /// <param name="windowBounds">Bounds.</param>
+        public void SetRect(Rectangle windowBounds)
         {
-            UpdateWindowBounds(WindowBounds);
+            this.UpdateWindowBounds(windowBounds);
         }
 
         /// <summary>
         /// Todo.
         /// </summary>
-        /// <param name="color"></param>
+        /// <param name="color">color.</param>
         public void SetTextColor(Color color)
         {
-            InvokeOnControlThread(delegate () { ForeColor = color; });
+            this.InvokeOnControlThread(() =>
+            {
+                this.ForeColor = color;
+            });
         }
 
         /// <summary>
         /// Todo.
         /// </summary>
-        /// <param name="hwnd"></param>
-        /// <param name="rect"></param>
+        /// <param name="hwnd">Handle.</param>
+        /// <param name="rect">Rectangle.</param>
         public void SetWindow(IntPtr hwnd, Rectangle rect)
         {
-            _parentHwnd = hwnd;
-            UpdateWindowBounds(rect);
+            this.parentHwnd = hwnd;
+            this.UpdateWindowBounds(rect);
         }
 
         /// <summary>
@@ -121,12 +111,40 @@ namespace common
         /// </summary>
         public void Unload()
         {
-            InvokeOnControlThread(delegate ()
+            this.InvokeOnControlThread(() =>
             {
-                Visible = false;
-                foreach (Control c in Controls) c.Dispose();
-                Controls.Clear();
+                this.Visible = false;
+                foreach (Control c in this.Controls)
+                {
+                    c.Dispose();
+                }
+
+                this.Controls.Clear();
             });
+        }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern IntPtr GetFocus();
+
+        private void InvokeOnControlThread(MethodInvoker d)
+        {
+            this.Invoke(d);
+        }
+
+        private void UpdateWindowBounds(Rectangle windowBounds)
+        {
+            if (this.Visible)
+            {
+                this.InvokeOnControlThread(() =>
+                {
+                    SetParent(this.Handle, this.parentHwnd);
+                    this.Bounds = windowBounds;
+                    this.Visible = true;
+                });
+            }
         }
     }
 }
