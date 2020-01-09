@@ -5,6 +5,7 @@
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Windows.Forms;
 
 namespace Common

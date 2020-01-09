@@ -10,7 +10,7 @@ using Common.ComInterlop;
 namespace Common
 {
     /// <summary>
-    /// Todo.
+    /// Preview Handler base class implmenenting interfaces required by Preview Handler.
     /// </summary>
     public abstract class PreviewHandler : IPreviewHandler, IOleWindow, IObjectWithSite, IPreviewHandlerVisuals
     {
@@ -28,16 +28,10 @@ namespace Common
             this.previewControl = this.CreatePreviewHandlerControl();
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
+        /// <inheritdoc />
         public abstract void DoPreview();
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        /// <param name="hwnd">hanlde.</param>
-        /// <param name="rect">rectangle.</param>
+        /// <inheritdoc />
         public void SetWindow(IntPtr hwnd, ref RECT rect)
         {
             this.parentHwnd = hwnd;
@@ -45,36 +39,26 @@ namespace Common
             this.previewControl.SetWindow(hwnd, this.windowBounds);
         }
 
-        /// <summary>
-        /// todo.
-        /// </summary>
-        /// <param name="rect">rectan.</param>
+        /// <inheritdoc />
         public void SetRect(ref RECT rect)
         {
             this.windowBounds = rect.ToRectangle();
             this.previewControl.SetRect(this.windowBounds);
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
+        /// <inheritdoc />
         public void Unload()
         {
             this.previewControl.Unload();
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
+        /// <inheritdoc />
         public void SetFocus()
         {
             this.previewControl.SetFocus();
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        /// <param name="phwnd">Handle.</param>
+        /// <inheritdoc />
         public void QueryFocus(out IntPtr phwnd)
         {
             this.previewControl.QueryFocus(out IntPtr result);
@@ -85,13 +69,11 @@ namespace Common
             }
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        /// <param name="pmsg">Message.</param>
-        /// <returns>Temp.</returns>
+        /// <inheritdoc />
         public uint TranslateAccelerator(ref MSG pmsg)
         {
+            // Current implementation simply directs all Keystrokes to IPreviewHandlerFrame. This is the recommended approach to handle keystokes for all low-integrity preview handlers.
+            // Source: https://docs.microsoft.com/en-us/windows/win32/shell/building-preview-handlers#ipreviewhandlertranslateaccelerator
             if (this.frame != null)
             {
                 return this.frame.TranslateAccelerator(ref pmsg);
@@ -101,48 +83,34 @@ namespace Common
             return S_FALSE;
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        /// <param name="phwnd">Handle.</param>
+        /// <inheritdoc />
         public void GetWindow(out IntPtr phwnd)
         {
             phwnd = this.previewControl.GetHandle();
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        /// <param name="fEnterMode">Temp.</param>
+        /// <inheritdoc />
         public void ContextSensitiveHelp(bool fEnterMode)
         {
+            // Should always return NotImplementedException. Source: https://docs.microsoft.com/en-us/windows/win32/shell/building-preview-handlers#iolewindowcontextsensitivehelp
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// too.
-        /// </summary>
-        /// <param name="pUnkSite">Temp.</param>
+        /// <inheritdoc />
         public void SetSite(object pUnkSite)
         {
+            // Implementation logic details: https://docs.microsoft.com/en-us/windows/win32/shell/building-preview-handlers#iobjectwithsitesetsite
             this.unkSite = pUnkSite;
             this.frame = this.unkSite as IPreviewHandlerFrame;
         }
 
-        /// <summary>
-        /// todo.
-        /// </summary>
-        /// <param name="riid">Rid.</param>
-        /// <param name="ppvSite">Site.</param>
+        /// <inheritdoc />
         public void GetSite(ref Guid riid, out object ppvSite)
         {
             ppvSite = this.unkSite;
         }
 
-        /// <summary>
-        /// todo.
-        /// </summary>
-        /// <param name="color">Colorr.</param>
+        /// <inheritdoc />
         public void SetBackgroundColor(COLORREF color)
         {
             var argbColor = color.Color;
@@ -164,9 +132,9 @@ namespace Common
         }
 
         /// <summary>
-        /// Tdod.
+        /// Provide instance of the implementation of <see cref="IPreviewHandlerControl"/>. Should be overide by the implementation class with control object to be used.
         /// </summary>
-        /// <returns>Todo.</returns>
+        /// <returns>Instance of the <see cref="IPreviewHandlerControl"/>.</returns>
         protected abstract IPreviewHandlerControl CreatePreviewHandlerControl();
     }
 }
