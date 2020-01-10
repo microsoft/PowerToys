@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "ContextMenuHandler.h"
 #include "HDropIterator.h"
+#include "Settings.h"
 
 CContextMenuHandler::CContextMenuHandler()
 {
@@ -51,7 +52,8 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     {
         return S_OK;
     }
-
+    if (!CSettings::GetEnabled())
+        return E_FAIL;
     // NB: We just check the first item. We could iterate through more if the first one doesn't meet the criteria
     HDropIterator i(m_pdtobj);
     i.First();

@@ -4,6 +4,7 @@
 #include "dllmain.h"
 #include <interface/powertoy_module_interface.h>
 #include <common/settings_objects.h>
+#include "Settings.h"
 
 CShellExtensionsModule _AtlModule;
 
@@ -117,12 +118,14 @@ public:
     virtual void enable()
     {
         m_enabled = true;
+        CSettings::SetEnabled(m_enabled);
     }
 
     // Disable the powertoy
     virtual void disable()
     {
         m_enabled = false;
+        CSettings::SetEnabled(m_enabled);
     }
 
     // Returns if the powertoys is enabled
