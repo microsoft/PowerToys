@@ -12,7 +12,7 @@ namespace Common
     /// <summary>
     /// Form based implementation of <see cref="IPreviewHandlerControl"/>.
     /// </summary>
-    public abstract class FormHandlerControl : UserControl, IPreviewHandlerControl
+    public abstract class FormHandlerControl : Form, IPreviewHandlerControl
     {
         private IntPtr parentHwnd;
 
@@ -25,6 +25,8 @@ namespace Common
             // This is important, because the thread that instantiates the preview handler component and calls its constructor is a single-threaded apartment (STA) thread, but the thread that calls into the interface members later on is a multithreaded apartment (MTA) thread. Windows Forms controls are meant to run on STA threads.
             // More details: https://docs.microsoft.com/en-us/archive/msdn-magazine/2007/january/windows-vista-and-office-writing-your-own-preview-handlers.
             var forceCreation = this.Handle;
+            this.FormBorderStyle = FormBorderStyle.None;
+            this.Visible = false;
         }
 
         /// <inheritdoc />
@@ -125,15 +127,11 @@ namespace Common
 
         private void UpdateWindowBounds(Rectangle windowBounds)
         {
-            if (this.Visible)
+            this.InvokeOnControlThread(() =>
             {
-                this.InvokeOnControlThread(() =>
-                {
-                    SetParent(this.Handle, this.parentHwnd);
-                    this.Bounds = windowBounds;
-                    this.Visible = true;
-                });
-            }
+                SetParent(this.Handle, this.parentHwnd);
+                this.Bounds = windowBounds;
+            });
         }
     }
 }
