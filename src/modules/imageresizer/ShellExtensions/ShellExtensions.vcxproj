@@ -266,6 +266,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Settings.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -277,6 +278,7 @@
     <ClInclude Include="ContextMenuHandler.h" />
     <ClInclude Include="HDropIterator.h" />
     <ClInclude Include="dllmain.h" />
+    <ClInclude Include="Settings.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ShellExtensions_i.h" />
     <ClInclude Include="stdafx.h" />
