@@ -8,18 +8,19 @@ using Common.ComInterlop;
 namespace Common
 {
     /// <summary>
-    /// Todo.
+    /// Extends the <see cref="PreviewHandler" /> by implementing IInitializeWithStream.
     /// </summary>
     public abstract class SteamBasedPreviewHandler : PreviewHandler, IInitializeWithStream
     {
         /// <summary>
-        /// Gets todo.
+        /// Gets the stream object to access file.
         /// </summary>
         public IStream Stream { get; private set; }
 
         /// <inheritdoc/>
         public void Initialize(IStream pstream, uint grfMode)
         {
+            // Ignore the grfMode always use read mode to access the file.
             this.Stream = pstream;
         }
     }

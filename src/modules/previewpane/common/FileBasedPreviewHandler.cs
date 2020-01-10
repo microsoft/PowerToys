@@ -8,18 +8,19 @@ using Common.Cominterop;
 namespace Common
 {
     /// <summary>
-    /// Todo.
+    /// Extends the <see cref="PreviewHandler" /> by implementing IInitializeWithFile.
     /// </summary>
     public abstract class FileBasedPreviewHandler : PreviewHandler, IInitializeWithFile
     {
         /// <summary>
-        /// Gets or file path.
+        /// Gets the file path.
         /// </summary>
         public string FilePath { get; private set; }
 
         /// <inheritdoc />
         public void Initialize([MarshalAs(UnmanagedType.LPWStr)] string pszFilePath, uint grfMode)
         {
+            // Ignore the grfMode always use read mode to access the file.
             this.FilePath = pszFilePath;
         }
     }

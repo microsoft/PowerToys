@@ -8,7 +8,7 @@ using System.Windows.Forms;
 namespace Common
 {
     /// <summary>
-    /// Todl.
+    /// This is test custom control to test the implementation.
     /// </summary>
     public class CustomControlTest : FormHandlerControl
     {
