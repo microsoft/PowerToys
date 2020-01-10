@@ -5,7 +5,7 @@
 namespace Common
 {
     /// <summary>
-    /// Test the implementation.
+    /// This is a test custom handler to check the implemnatation will be removed in future PR.
     /// </summary>
     public class TestCustomHandler : FileBasedPreviewHandler
     {
