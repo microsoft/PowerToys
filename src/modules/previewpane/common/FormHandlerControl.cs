@@ -5,13 +5,12 @@
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 using System.Windows.Forms;
 
 namespace Common
 {
     /// <summary>
-    /// Todo.
+    /// Form based implementation of <see cref="IPreviewHandlerControl"/>.
     /// </summary>
     public abstract class FormHandlerControl : UserControl, IPreviewHandlerControl
     {
@@ -22,22 +21,19 @@ namespace Common
         /// </summary>
         public FormHandlerControl()
         {
+            // Gets the handle of the control to create the control on the VI thread. Invoking the Control.Handle get accessor forces the creation of the underlying window for the control.
+            // This is important, because the thread that instantiates the preview handler component and calls its constructor is a single-threaded apartment (STA) thread, but the thread that calls into the interface members later on is a multithreaded apartment (MTA) thread. Windows Forms controls are meant to run on STA threads.
+            // More details: https://docs.microsoft.com/en-us/archive/msdn-magazine/2007/january/windows-vista-and-office-writing-your-own-preview-handlers.
             var forceCreation = this.Handle;
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        /// <returns>Returns the handle of the control.</returns>
+        /// <inheritdoc />
         public IntPtr GetHandle()
         {
             return this.Handle;
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        /// <param name="result">Todorsult.</param>
+        /// <inheritdoc />
         public void QueryFocus(out IntPtr result)
         {
             var getResult = IntPtr.Zero;
@@ -48,10 +44,7 @@ namespace Common
             result = getResult;
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        /// <param name="argbColor">argbColor.</param>
+        /// <inheritdoc />
         public void SetBackgroundColor(Color argbColor)
         {
             this.InvokeOnControlThread(() =>
@@ -60,9 +53,7 @@ namespace Common
             });
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
+        /// <inheritdoc />
         public void SetFocus()
         {
             this.InvokeOnControlThread(() =>
@@ -71,10 +62,7 @@ namespace Common
             });
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        /// <param name="font">font.</param>
+        /// <inheritdoc />
         public void SetFont(Font font)
         {
             this.InvokeOnControlThread(() =>
@@ -83,19 +71,13 @@ namespace Common
             });
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        /// <param name="windowBounds">Bounds.</param>
+        /// <inheritdoc />
         public void SetRect(Rectangle windowBounds)
         {
             this.UpdateWindowBounds(windowBounds);
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        /// <param name="color">color.</param>
+        /// <inheritdoc />
         public void SetTextColor(Color color)
         {
             this.InvokeOnControlThread(() =>
@@ -104,20 +86,14 @@ namespace Common
             });
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        /// <param name="hwnd">Handle.</param>
-        /// <param name="rect">Rectangle.</param>
+        /// <inheritdoc />
         public void SetWindow(IntPtr hwnd, Rectangle rect)
         {
             this.parentHwnd = hwnd;
             this.UpdateWindowBounds(rect);
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
+        /// <inheritdoc />
         public void Unload()
         {
             this.InvokeOnControlThread(() =>
@@ -133,12 +109,12 @@ namespace Common
         }
 
         /// <summary>
-        /// Todo.
+        /// Executes the specified delegate on the thread that owns the control's underlying window handle.
         /// </summary>
-        /// <param name="d">Todof.</param>
-        public void InvokeOnControlThread(MethodInvoker d)
+        /// <param name="func">Delegate to run.</param>
+        public void InvokeOnControlThread(MethodInvoker func)
         {
-            this.Invoke(d);
+            this.Invoke(func);
         }
 
         [DllImport("user32.dll")]

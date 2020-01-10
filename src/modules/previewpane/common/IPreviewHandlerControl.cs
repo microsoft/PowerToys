@@ -8,61 +8,63 @@ using System.Drawing;
 namespace Common
 {
     /// <summary>
-    /// Todo.
+    /// Interface defining methods requirement by the <see cref="PreviewHandler"/> control.
     /// </summary>
     public interface IPreviewHandlerControl
     {
         /// <summary>
-        /// Todo.
+        /// Directs the preview handler to return the HWND from calling the GetFocus function.
+        /// Source: https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-ipreviewhandler-queryfocus.
         /// </summary>
-        /// <param name="result">Rewsult.</param>
+        /// <param name="result">Returns the handle of the window with focus.</param>
         void QueryFocus(out IntPtr result);
 
         /// <summary>
-        /// Todo.
+        /// Sets focus to the control.
         /// </summary>
         void SetFocus();
 
         /// <summary>
-        /// Todo.
+        /// Sets the font according to the font set in Windows Settings.
+        /// More details: https://docs.microsoft.com/en-us/windows/win32/shell/building-preview-handlers#ipreviewhandlervisualssetfont.
         /// </summary>
-        /// <param name="font">font.</param>
+        /// <param name="font">Instance of Font.</param>
         void SetFont(Font font);
 
         /// <summary>
-        /// Todo.
+        /// Sets the Text color according to the Windows Settings.
         /// </summary>
-        /// <param name="color">color.</param>
+        /// <param name="color">Instance of color.</param>
         void SetTextColor(Color color);
 
         /// <summary>
-        /// Todo.
+        /// Sets the Background color. For instance to fill the window when the handler renders to area smaller provided by SetWindow and SetRect.
         /// </summary>
-        /// <param name="argbColor">color.</param>
+        /// <param name="argbColor">Instance of color.</param>
         void SetBackgroundColor(Color argbColor);
 
         /// <summary>
-        /// Todo.
+        /// Gets the HWND of the control window.
         /// </summary>
-        /// <returns>pointrt.</returns>
+        /// <returns>Pointer to the window handle.</returns>
         IntPtr GetHandle();
 
         /// <summary>
-        /// Todo.
+        /// Hide the preview and free any resource used for the preview.
         /// </summary>
         void Unload();
 
         /// <summary>
-        /// Todo.
+        /// Directs the control to change the area within the parent hwnd that it draws into.
         /// </summary>
-        /// <param name="windowBounds">Bounds.</param>
+        /// <param name="windowBounds">Instance of Rectangle defining the area.</param>
         void SetRect(Rectangle windowBounds);
 
         /// <summary>
-        /// Todo.
+        /// Sets the parent window of the previewer window, as well as the area within the parent to be used for the previewer window..
         /// </summary>
-        /// <param name="hwnd">handle.</param>
-        /// <param name="rect">Rectangle.</param>
+        /// <param name="hwnd">Pointer to the parent window handle.</param>
+        /// <param name="rect">Instance of Rectangle defining the area.</param>
         void SetWindow(IntPtr hwnd, Rectangle rect);
     }
 }
