@@ -5,7 +5,7 @@ WoX
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/jjw24/wox)](https://github.com/jjw24/Wox/releases/latest)
 ![GitHub Release Date](https://img.shields.io/github/release-date/jjw24/wox)
 ![GitHub commits since latest release](https://img.shields.io/github/commits-since/jjw24/wox/v1.3.524)
-[![Build status](https://ci.appveyor.com/api/projects/status/bfktntbivg32e103/branch/master?svg=true)](https://ci.appveyor.com/project/happlebao/wox/branch/master)
+[![Build Status](https://dev.azure.com/Wox-Launcher/Wox/_apis/build/status/jjw24.Wox?branchName=master)](https://dev.azure.com/Wox-Launcher/Wox/_build/latest?definitionId=1&branchName=master)
 [![Github All Releases](https://img.shields.io/github/downloads/Wox-launcher/Wox/total.svg)](https://github.com/Wox-launcher/Wox/releases)
 [![RamenBless](https://cdn.rawgit.com/LunaGao/BlessYourCodeTag/master/tags/ramen.svg)](https://github.com/LunaGao/BlessYourCodeTag)
 
