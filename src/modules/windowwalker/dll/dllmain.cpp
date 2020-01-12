@@ -55,6 +55,9 @@ private:
     // Load initial settings from the persisted values.
     void init_settings();
 
+    // Handle to the Window Walker app we launch
+    HANDLE m_hProcess;
+
 public:
     // Constructor
     WindowWalker()
@@ -219,12 +222,20 @@ public:
         sei.lpFile = L"modules\\WindowWalker.exe";
         sei.nShow = SW_SHOWNORMAL;
         ShellExecuteEx(&sei);
+
+        m_hProcess = sei.hProcess;
+
         m_enabled = true;
     }
 
     // Disable the powertoy
     virtual void disable()
     {
+        if (m_enabled)
+        {
+            TerminateProcess(m_hProcess, 1);
+        }
+
         m_enabled = false;
     }
 
