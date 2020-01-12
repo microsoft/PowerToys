@@ -8,7 +8,7 @@ trigger:
 - dev
 
 pool:
-  vmImage: 'vs2017-win2016' #'windows-latest'
+  vmImage: 'vs2017-win2016' #'due to windows SDK dependency for building UWP project'
 
 variables:
   solution: '**/*.sln'
