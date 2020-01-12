@@ -1,12 +1,12 @@
 WoX
 ===
 
-![Maintenance](https://img.shields.io/maintenance/yes/2019)
+![Maintenance](https://img.shields.io/maintenance/yes/2020)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/jjw24/wox)](https://github.com/jjw24/Wox/releases/latest)
 ![GitHub Release Date](https://img.shields.io/github/release-date/jjw24/wox)
 ![GitHub commits since latest release](https://img.shields.io/github/commits-since/jjw24/wox/v1.3.524)
 [![Build Status](https://dev.azure.com/Wox-Launcher/Wox/_apis/build/status/jjw24.Wox?branchName=master)](https://dev.azure.com/Wox-Launcher/Wox/_build/latest?definitionId=1&branchName=master)
-[![Github All Releases](https://img.shields.io/github/downloads/Wox-launcher/Wox/total.svg)](https://github.com/Wox-launcher/Wox/releases)
+[![Github All Releases](https://img.shields.io/github/downloads/jjw24/Wox/total.svg)](https://github.com/jjw24/Wox/releases)
 [![RamenBless](https://cdn.rawgit.com/LunaGao/BlessYourCodeTag/master/tags/ramen.svg)](https://github.com/LunaGao/BlessYourCodeTag)
 
 **WoX** is a launcher for Windows that simply works. It's an alternative to [Alfred](https://www.alfredapp.com/) and [Launchy](http://www.launchy.net/). You can call it Windows omni-eXecutor if you want a long name.
