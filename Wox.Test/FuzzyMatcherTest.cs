@@ -182,10 +182,15 @@ namespace Wox.Test
         [TestCase("sql manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("sql", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("sql serv", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("sqlserv", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("sql servman", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("sql serv man", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("sql studio", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("mic", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("chr", "Shutdown", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("mssms", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
         [TestCase("chr", "Change settings for text-to-speech and for speech recognition (if installed).", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [TestCase("ch r", "Change settings for text-to-speech and for speech recognition (if installed).", StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("a test", "This is a test", StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("test", "This is a test", StringMatcher.SearchPrecisionScore.Regular, true)]
         public void WhenGivenQueryShouldReturnResultsContainingAllQuerySubstrings(
@@ -213,22 +218,6 @@ namespace Wox.Test
                 $"Compare:{compareString}{Environment.NewLine}" +
                 $"Raw Score: {matchResult.RawScore}{Environment.NewLine}" +
                 $"Precision Score: {(int)expectedPrecisionScore}");
-        }
-
-        [TestCase("sql servman", MicrosoftSqlServerManagementStudio, false)]
-        [TestCase("sql serv man", MicrosoftSqlServerManagementStudio, true)]
-        [TestCase("sql", MicrosoftSqlServerManagementStudio, true)]
-        [TestCase("sqlserv", MicrosoftSqlServerManagementStudio, false)]
-        [TestCase("mssms", MicrosoftSqlServerManagementStudio, false)]
-        [TestCase("chr", "Change settings for text-to-speech and for speech recognition (if installed).", false)]
-        [TestCase("ch r", "Change settings for text-to-speech and for speech recognition (if installed).", true)]
-        public void WhenGivenQueryShouldEvaluateTrueFalseIfCompareStringContainsAllSubstrings(string queryString, string compareString, bool expectedResult)
-        {
-            // When, Given
-            var matchResult = StringMatcher.FuzzySearch(queryString, compareString).AllSubstringsContainedInCompareString;
-
-            // Should
-            Assert.AreEqual(matchResult, expectedResult);
         }
     }
 }
