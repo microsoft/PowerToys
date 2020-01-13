@@ -47,8 +47,53 @@ namespace Wox.Infrastructure.Logger
             return valid;
         }
 
-        /// <param name="message">example: "|prefix|unprefixed" </param>
-        public static void Error(string message)
+        
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public static void Exception(string className, string message, System.Exception exception, [CallerMemberName] string methodName = "")
+        {
+            if (string.IsNullOrWhiteSpace(className))
+            {
+                LogFaultyFormat($"Fail to specify a class name during logging of message: {message ?? "no message entered"}");
+            }
+
+            if (string.IsNullOrWhiteSpace(message))
+            { // todo: not sure we really need that
+                LogFaultyFormat($"Fail to specify a message during logging");
+            }
+
+            if (!string.IsNullOrWhiteSpace(methodName))
+            {
+                className += "." + methodName;
+            }
+
+            ExceptionInternal(className, message, exception);
+        }
+
+        private static void ExceptionInternal(string classAndMethod, string message, System.Exception e)
+        {
+            var logger = LogManager.GetLogger(classAndMethod);
+
+            System.Diagnostics.Debug.WriteLine($"ERROR|{message}");
+
+            logger.Error("-------------------------- Begin exception --------------------------");
+            logger.Error(message);
+
+            do
+            {
+                logger.Error($"Exception full name:\n <{e.GetType().FullName}>");
+                logger.Error($"Exception message:\n <{e.Message}>");
+                logger.Error($"Exception stack trace:\n <{e.StackTrace}>");
+                logger.Error($"Exception source:\n <{e.Source}>");
+                logger.Error($"Exception target site:\n <{e.TargetSite}>");
+                logger.Error($"Exception HResult:\n <{e.HResult}>");
+                e = e.InnerException;
+            } while (e != null);
+
+            logger.Error("-------------------------- End exception --------------------------");
+        }
+
+        private static void LogInternal(string message, LogLevel level)
         {
             if (FormatValid(message))
             {
@@ -57,8 +102,8 @@ namespace Wox.Infrastructure.Logger
                 var unprefixed = parts[2];
                 var logger = LogManager.GetLogger(prefix);
 
-                System.Diagnostics.Debug.WriteLine($"ERROR|{message}");
-                logger.Error(unprefixed);
+                System.Diagnostics.Debug.WriteLine($"{level.Name}|{message}");
+                logger.Log(level, unprefixed);
             }
             else
             {
@@ -78,25 +123,7 @@ namespace Wox.Infrastructure.Logger
                 var parts = message.Split('|');
                 var prefix = parts[1];
                 var unprefixed = parts[2];
-                var logger = LogManager.GetLogger(prefix);
-
-                System.Diagnostics.Debug.WriteLine($"ERROR|{message}");
-
-                logger.Error("-------------------------- Begin exception --------------------------");
-                logger.Error(unprefixed);
-
-                do
-                {
-                    logger.Error($"Exception full name:\n <{e.GetType().FullName}>");
-                    logger.Error($"Exception message:\n <{e.Message}>");
-                    logger.Error($"Exception stack trace:\n <{e.StackTrace}>");
-                    logger.Error($"Exception source:\n <{e.Source}>");
-                    logger.Error($"Exception target site:\n <{e.TargetSite}>");
-                    logger.Error($"Exception HResult:\n <{e.HResult}>");
-                    e = e.InnerException;
-                } while (e != null);
-
-                logger.Error("-------------------------- End exception --------------------------");
+                ExceptionInternal(prefix, unprefixed, e);
             }
             else
             {
@@ -104,62 +131,29 @@ namespace Wox.Infrastructure.Logger
             }
 #endif
         }
-        
+
+        /// <param name="message">example: "|prefix|unprefixed" </param>
+        public static void Error(string message)
+        {
+            LogInternal(message, LogLevel.Error);
+        }
+
         /// <param name="message">example: "|prefix|unprefixed" </param>
         public static void Debug(string message)
         {
-            if (FormatValid(message))
-            {
-                var parts = message.Split('|');
-                var prefix = parts[1];
-                var unprefixed = parts[2];
-                var logger = LogManager.GetLogger(prefix);
-
-                System.Diagnostics.Debug.WriteLine($"DEBUG|{message}");
-                logger.Debug(unprefixed);
-            }
-            else
-            {
-                LogFaultyFormat(message);
-            }
+            LogInternal(message, LogLevel.Debug);
         }
 
         /// <param name="message">example: "|prefix|unprefixed" </param>
         public static void Info(string message)
         {
-            if (FormatValid(message))
-            {
-                var parts = message.Split('|');
-                var prefix = parts[1];
-                var unprefixed = parts[2];
-                var logger = LogManager.GetLogger(prefix);
-
-                System.Diagnostics.Debug.WriteLine($"INFO|{message}");
-                logger.Info(unprefixed);
-            }
-            else
-            {
-                LogFaultyFormat(message);
-            }
+            LogInternal(message, LogLevel.Info);
         }
 
         /// <param name="message">example: "|prefix|unprefixed" </param>
         public static void Warn(string message)
         {
-            if (FormatValid(message))
-            {
-                var parts = message.Split('|');
-                var prefix = parts[1];
-                var unprefixed = parts[2];
-                var logger = LogManager.GetLogger(prefix);
-
-                System.Diagnostics.Debug.WriteLine($"WARN|{message}");
-                logger.Warn(unprefixed);
-            }
-            else
-            {
-                LogFaultyFormat(message);
-            }
+            LogInternal(message, LogLevel.Warn);
         }
     }
 }
