@@ -121,7 +121,7 @@ namespace Wox.Infrastructure
                 if (currentQuerySubstringCharacterIndex == currentQuerySubstring.Length)
                 {
                     // if any of the substrings was not matched then consider as all are not matched
-                    allSubstringsContainedInCompareString = !matchFoundInPreviousLoop ? false : allSubstringsContainedInCompareString;
+                    allSubstringsContainedInCompareString = matchFoundInPreviousLoop && allSubstringsContainedInCompareString;
 
                     currentQuerySubstringIndex++;
 
