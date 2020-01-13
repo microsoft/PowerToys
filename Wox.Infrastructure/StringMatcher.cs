@@ -105,7 +105,7 @@ namespace Wox.Infrastructure
                     {
                         matchFoundInPreviousLoop = true;
 
-                        // if it's the begining character of the first query substring that is matched then we need to update start index
+                        // if it's the beginning character of the first query substring that is matched then we need to update start index
                         firstMatchIndex = currentQuerySubstringIndex == 0 ? startIndexToVerify : firstMatchIndex;
 
                         indexList = GetUpdatedIndexList(startIndexToVerify, currentQuerySubstringCharacterIndex, firstMatchIndexInWord, indexList);
