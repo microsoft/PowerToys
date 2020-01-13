@@ -210,7 +210,11 @@ namespace Wox.Infrastructure
             }
 
             if (allSubstringsContainedInCompareString)
-                score += 10 * string.Concat(query.Where(c => !char.IsWhiteSpace(c))).Count();
+            {
+                int count = query.Count(c => !char.IsWhiteSpace(c));
+                int factor = count < 4 ? 10 : 5;
+                score += factor * count;
+            }
 
             return score;
         }

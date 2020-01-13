@@ -121,13 +121,13 @@ namespace Wox.Test
             }
         }
 
-        [TestCase(Chrome, Chrome, 167)]
-        [TestCase(Chrome, LastIsChrome, 113)]
+        [TestCase(Chrome, Chrome, 137)]
+        [TestCase(Chrome, LastIsChrome, 83)]
         [TestCase(Chrome, HelpCureHopeRaiseOnMindEntityChrome, 21)]
         [TestCase(Chrome, UninstallOrChangeProgramsOnYourComputer, 15)]
         [TestCase(Chrome, CandyCrushSagaFromKing, 0)]
         [TestCase("sql", MicrosoftSqlServerManagementStudio, 56)]
-        [TestCase("sql  manag", MicrosoftSqlServerManagementStudio, 119)]//double spacing intended
+        [TestCase("sql  manag", MicrosoftSqlServerManagementStudio, 79)]//double spacing intended
         public void WhenGivenQueryStringThenShouldReturnCurrentScoring(string queryString, string compareString, int expectedScore)
         {
             // When, Given
