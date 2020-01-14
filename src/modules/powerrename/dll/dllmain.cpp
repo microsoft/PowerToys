@@ -206,38 +206,38 @@ public:
 
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
-        settings.set_description(L"A Windows Shell Extension for more advanced bulk renaming using search and replace or regular expressions.");
-        settings.set_icon_key(L"pt-power-rename");
+        settings.set_description(GET_RESOURCE_STRING(IDS_SETTINGS_DESCRIPTION));
+        settings.set_icon_key(GET_RESOURCE_STRING(IDS_SETTINGS_ICON));
 
         // Link to the GitHub PowerRename sub-page
-        settings.set_overview_link(L"https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename");
+        settings.set_overview_link(GET_RESOURCE_STRING(IDS_OVERVIEW_LINK));
 
         settings.add_bool_toogle(
-            L"bool_persist_input",
-            L"Restore search, replace and flags values on launch from previous run.",
+            GET_RESOURCE_STRING(IDS_BOOL_PERSIST),
+            GET_RESOURCE_STRING(IDS_RESTORE_SEARCH),
             CSettings::GetPersistState());
 
         settings.add_bool_toogle(
-            L"bool_mru_enabled",
-            L"Enable autocomplete and autosuggest of recently used inputs for search and replace values.",
+            GET_RESOURCE_STRING(IDS_MRU_ENABLED),
+            GET_RESOURCE_STRING(IDS_ENABLE_AUTO),
             CSettings::GetMRUEnabled());
 
         settings.add_int_spinner(
-            L"int_max_mru_size",
-            L"Maximum number of items to show in recently used list for autocomplete dropdown.",
+            GET_RESOURCE_STRING(IDS_MAX_MRU_SIZE),
+            GET_RESOURCE_STRING(IDS_MAX_ITEMS),
             CSettings::GetMaxMRUSize(),
             0,
             20,
             1);
 
         settings.add_bool_toogle(
-            L"bool_show_icon_on_menu",
-            L"Show icon on context menu.",
+            GET_RESOURCE_STRING(IDS_SHOW_ICON),
+            GET_RESOURCE_STRING(IDS_ICON_CONTEXT_MENU),
             CSettings::GetShowIconOnMenu());
 
         settings.add_bool_toogle(
-            L"bool_show_extended_menu",
-            L"Only show the PowerRename menu item on the extended context menu (SHIFT + Right-click).",
+            GET_RESOURCE_STRING(IDS_EXTENDED_MENU),
+            GET_RESOURCE_STRING(IDS_EXTENDED_MENU_INFO),
             CSettings::GetExtendedContextMenuOnly());
 
         return settings.serialize_to_buffer(buffer, buffer_size);
@@ -253,11 +253,11 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config);
 
-            CSettings::SetPersistState(values.get_bool_value(L"bool_persist_input").value());
-            CSettings::SetMRUEnabled(values.get_bool_value(L"bool_mru_enabled").value());
-            CSettings::SetMaxMRUSize(values.get_int_value(L"int_max_mru_size").value());
-            CSettings::SetShowIconOnMenu(values.get_bool_value(L"bool_show_icon_on_menu").value());
-            CSettings::SetExtendedContextMenuOnly(values.get_bool_value(L"bool_show_extended_menu").value());
+            CSettings::SetPersistState(values.get_bool_value(GET_RESOURCE_STRING(IDS_BOOL_PERSIST)).value());
+            CSettings::SetMRUEnabled(values.get_bool_value(GET_RESOURCE_STRING(IDS_MRU_ENABLED)).value());
+            CSettings::SetMaxMRUSize(values.get_int_value(GET_RESOURCE_STRING(IDS_MAX_MRU_SIZE)).value());
+            CSettings::SetShowIconOnMenu(values.get_bool_value(GET_RESOURCE_STRING(IDS_SHOW_ICON)).value());
+            CSettings::SetExtendedContextMenuOnly(values.get_bool_value(GET_RESOURCE_STRING(IDS_EXTENDED_MENU)).value());
         }
         catch (std::exception)
         {
