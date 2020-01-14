@@ -225,7 +225,7 @@ export class GeneralSettings extends React.Component <any, any> {
           ref={(input) => {this.theme_reference=input;}}
         />
         <Stack>
-          <Text variant='xLarge'>About PowerToys</Text>
+          <Text variant='xLarge'>About PowerToys (Preview)</Text>
           <Label>Version {this.state.settings.general.powertoys_version}</Label>
             <PrimaryButton
               styles={{
