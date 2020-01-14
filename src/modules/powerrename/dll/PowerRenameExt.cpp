@@ -4,6 +4,7 @@
 #include <PowerRenameItem.h>
 #include <PowerRenameManager.h>
 #include <trace.h>
+#include <common/common.h>
 #include <Helpers.h>
 #include <Settings.h>
 #include "resource.h"
@@ -195,7 +196,8 @@ DWORD WINAPI CPowerRenameMenu::s_PowerRenameUIThreadProc(_In_ void* pData)
 
 HRESULT __stdcall CPowerRenameMenu::GetTitle(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszName)
 {
-    return SHStrDup(L"PowerRename", ppszName);
+    app_name = GET_RES_STRING_WCHAR(IDS_POWERRENAME);
+    return SHStrDup(app_name, ppszName);
 }
 
 HRESULT __stdcall CPowerRenameMenu::GetIcon(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszIcon)
