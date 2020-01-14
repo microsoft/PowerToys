@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
-using PropertyChanged;
+
 namespace Wox.Plugin
 {
     [JsonObject(MemberSerialization.OptOut)]
