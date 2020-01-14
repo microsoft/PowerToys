@@ -64,7 +64,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     LPTSTR pszPath = i.CurrentItem();
     LPTSTR pszExt = PathFindExtension(pszPath);
 
-    // TODO: Instead, detech whether there's a WIC codec installd that can handle this file (issue #7)
+    // TODO: Instead, detect whether there's a WIC codec installd that can handle this file (issue #7)
     AssocGetPerceivedType(pszExt, &type, &flag, NULL);
 
     free(pszPath);
@@ -72,28 +72,79 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     // If selected file is an image...
     if (type == PERCEIVED_TYPE_IMAGE)
     {
-        CString strResizePictures;
+//        CString strResizePictures;
+//
+//        // If handling drag-and-drop...
+//        if (m_pidlFolder)
+//        {
+//            // Suppressing C6031 warning since return value is not required.
+//#pragma warning(suppress : 6031)
+//            // Load 'Resize pictures here' string
+//            strResizePictures.LoadString(IDS_RESIZE_PICTURES_HERE);
+//        }
+//        else
+//        {
+//            // Suppressing C6031 warning since return value is not required.
+//#pragma warning(suppress : 6031)
+//            // Load 'Resize pictures' string
+//            strResizePictures.LoadString(IDS_RESIZE_PICTURES);
+//        }
+//
+//        // Add menu item
+        //InsertMenu(hmenu, indexMenu, MF_BYPOSITION, idCmdFirst + ID_RESIZE_PICTURES, strResizePictures);
+//
+//        return MAKE_HRESULT(SEVERITY_SUCCESS, 0, ID_RESIZE_PICTURES + 1);
 
+        HRESULT hr = E_UNEXPECTED;
+        wchar_t strResizePictures[64] = { 0 };
         // If handling drag-and-drop...
         if (m_pidlFolder)
         {
             // Suppressing C6031 warning since return value is not required.
 #pragma warning(suppress : 6031)
             // Load 'Resize pictures here' string
-            strResizePictures.LoadString(IDS_RESIZE_PICTURES_HERE);
+            LoadString(nullptr, IDS_RESIZE_PICTURES_HERE, strResizePictures, ARRAYSIZE(strResizePictures));
         }
         else
         {
             // Suppressing C6031 warning since return value is not required.
 #pragma warning(suppress : 6031)
             // Load 'Resize pictures' string
-            strResizePictures.LoadString(IDS_RESIZE_PICTURES);
+            LoadString(nullptr, IDS_RESIZE_PICTURES, strResizePictures, ARRAYSIZE(strResizePictures));
         }
 
-        // Add menu item
-        InsertMenu(hmenu, indexMenu, MF_BYPOSITION, idCmdFirst + ID_RESIZE_PICTURES, strResizePictures);
+        MENUITEMINFO mii;
+        mii.cbSize = sizeof(MENUITEMINFO);
+        mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_STATE;
+        mii.wID = idCmdFirst + ID_RESIZE_PICTURES;
+        mii.fType = MFT_STRING;
+        mii.dwTypeData = (PWSTR)strResizePictures;
+        mii.fState = MFS_ENABLED;
 
-        return MAKE_HRESULT(SEVERITY_SUCCESS, 0, ID_RESIZE_PICTURES + 1);
+        /*if (CSettings::GetShowIconOnMenu())
+        {
+            HICON hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_RENAME), IMAGE_ICON, 16, 16, 0);
+            if (hIcon)
+            {
+                mii.fMask |= MIIM_BITMAP;
+                if (m_hbmpIcon == NULL)
+                {
+                    m_hbmpIcon = CreateBitmapFromIcon(hIcon);
+                }
+                mii.hbmpItem = m_hbmpIcon;
+                DestroyIcon(hIcon);
+            }
+        }*/
+
+        if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+        }
+        else
+        {
+            hr = MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1);
+        }
+        return hr;
     }
 
     return S_OK;
