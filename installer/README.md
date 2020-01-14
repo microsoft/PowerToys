@@ -11,15 +11,18 @@ For the first-time installation, you'll need to generate a self-signed certifica
 1. Open PowerShell as an Admin
 2. Navigate to your repo's `installer\MSIX`
 3. Run `.\generate_self_sign_cert.ps1`
+4. Add your Windows SDK to your Path variable based on your most recent SDK.  Example:  `%ProgramFiles(x86)%\Windows Kits\10\bin\10.0.18362.0\x86`
 
-**To Build**
+## To Build
 1. Make sure you've built the `Release` configuration of `powertoys.sln`
 2. Open PowerShell
 3. Navigate to your repo's `installer\MSIX`
 4. Run `.\msix_reinstall.ps1` from the devenv powershell
 
+### What msix_reinstall.ps1 does
 `msix_reinstall.ps1` removes the current PowerToys installation, restarts explorer.exe (to update PowerRename shell extension), builds `PowerToys-x64.msix` package, signs it with a PowerToys_TemporaryKey.pfx, and finally installs it.
-## Removing all .msi/.msix PowerToys installations
+
+#### Removing all .msi/.msix PowerToys installations
 ```ps
 $name='PowerToys'
 Get-AppxPackage -Name $name | select -ExpandProperty "PackageFullName" | Remove-AppxPackage
