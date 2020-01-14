@@ -2,7 +2,7 @@
 
 #define ID_RESIZE_PICTURES 0
 #define RESIZE_PICTURES_VERBW L"resize"
-
+#include "stdafx.h"
 #include "resource.h"
 #include "ShellExtensions_i.h"
 
