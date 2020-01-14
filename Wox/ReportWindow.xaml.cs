@@ -23,7 +23,7 @@ namespace Wox
 
         private void SetException(Exception exception)
         {
-            string path = Path.Combine(Constant.DataDirectory, Log.DirectoryName, Constant.Version);
+            string path = Log.CurrentLogDirectory;
             var directory = new DirectoryInfo(path);
             var log = directory.GetFiles().OrderByDescending(f => f.LastWriteTime).First();
 

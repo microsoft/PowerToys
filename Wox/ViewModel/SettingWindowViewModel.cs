@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -20,10 +21,12 @@ namespace Wox.ViewModel
 {
     public class SettingWindowViewModel : BaseModel
     {
+        private readonly Updater _updater;
         private readonly WoxJsonStorage<Settings> _storage;
 
-        public SettingWindowViewModel()
+        public SettingWindowViewModel(Updater updater)
         {
+            _updater = updater;
             _storage = new WoxJsonStorage<Settings>();
             Settings = _storage.Load();
             Settings.PropertyChanged += (s, e) =>
@@ -39,6 +42,10 @@ namespace Wox.ViewModel
 
         public Settings Settings { get; set; }
 
+        public async void UpdateApp()
+        {
+            await _updater.UpdateApp();
+        }
 
         public void Save()
         {
@@ -87,6 +94,50 @@ namespace Wox.ViewModel
         private Internationalization _translater => InternationalizationManager.Instance;
         public List<Language> Languages => _translater.LoadAvailableLanguages();
         public IEnumerable<int> MaxResultsRange => Enumerable.Range(2, 16);
+
+        public string TestProxy()
+        {
+            var proxyServer = Settings.Proxy.Server;
+            var proxyUserName = Settings.Proxy.UserName;
+            if (string.IsNullOrEmpty(proxyServer))
+            {
+                return InternationalizationManager.Instance.GetTranslation("serverCantBeEmpty");
+            }
+            if (Settings.Proxy.Port <= 0)
+            {
+                return InternationalizationManager.Instance.GetTranslation("portCantBeEmpty");
+            }
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(_updater.GitHubRepository);
+            
+            if (string.IsNullOrEmpty(proxyUserName) || string.IsNullOrEmpty(Settings.Proxy.Password))
+            {
+                request.Proxy = new WebProxy(proxyServer, Settings.Proxy.Port);
+            }
+            else
+            {
+                request.Proxy = new WebProxy(proxyServer, Settings.Proxy.Port)
+                {
+                    Credentials = new NetworkCredential(proxyUserName, Settings.Proxy.Password)
+                };
+            }
+            try
+            {
+                var response = (HttpWebResponse)request.GetResponse();
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    return InternationalizationManager.Instance.GetTranslation("proxyIsCorrect");
+                }
+                else
+                {
+                    return InternationalizationManager.Instance.GetTranslation("proxyConnectFailed");
+                }
+            }
+            catch
+            {
+                return InternationalizationManager.Instance.GetTranslation("proxyConnectFailed");
+            }
+        }
 
         #endregion
 
@@ -220,7 +271,7 @@ namespace Wox.ViewModel
                     },
                     new Result
                     {
-                        Title = $"Open Source: {Constant.Repository}",
+                        Title = $"Open Source: {_updater.GitHubRepository}",
                         SubTitle = "Please star it!"
                     }
                 };
@@ -330,8 +381,8 @@ namespace Wox.ViewModel
 
         #region about
 
-        public static string Github => Constant.Repository;
-        public static string ReleaseNotes => @"https://github.com/Wox-launcher/Wox/releases/latest";
+        public string Github => _updater.GitHubRepository;
+        public string ReleaseNotes => _updater.GitHubRepository +  @"/releases/latest";
         public static string Version => Constant.Version;
         public string ActivatedTimes => string.Format(_translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
         #endregion

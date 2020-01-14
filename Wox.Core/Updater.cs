@@ -16,18 +16,23 @@ using Wox.Infrastructure.Logger;
 
 namespace Wox.Core
 {
-    public static class Updater
+    public class Updater
     {
-        private static readonly Internationalization Translater = InternationalizationManager.Instance;
+        public string GitHubRepository { get; }
 
-        public static async Task UpdateApp()
+        public Updater(string gitHubRepository)
+        {
+            GitHubRepository = gitHubRepository;
+        }
+
+        public async Task UpdateApp()
         {
             UpdateManager m;
             UpdateInfo u;
 
             try
             {
-                m = await GitHubUpdateManager(Constant.Repository);
+                m = await GitHubUpdateManager(GitHubRepository);
             }
             catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
             {
@@ -66,8 +71,8 @@ namespace Wox.Core
                 await m.ApplyReleases(u);
                 await m.CreateUninstallerRegistryEntry();
 
-                var newVersionTips = Translater.GetTranslation("newVersionTips");
-                newVersionTips = string.Format(newVersionTips, fr.Version);
+                var newVersionTips = this.NewVersinoTips(fr.Version.ToString());
+                
                 MessageBox.Show(newVersionTips);
                 Log.Info($"|Updater.UpdateApp|Update success:{newVersionTips}");
             }
@@ -90,7 +95,7 @@ namespace Wox.Core
         }
 
         /// https://github.com/Squirrel/Squirrel.Windows/blob/master/src/Squirrel/UpdateManager.Factory.cs
-        private static async Task<UpdateManager> GitHubUpdateManager(string repository)
+        private async Task<UpdateManager> GitHubUpdateManager(string repository)
         {
             var uri = new Uri(repository);
             var api = $"https://api.github.com/repos{uri.AbsolutePath}/releases";
@@ -109,7 +114,7 @@ namespace Wox.Core
             return manager;
         }
 
-        public static string NewVersinoTips(string version)
+        public string NewVersinoTips(string version)
         {
             var translater = InternationalizationManager.Instance;
             var tips = string.Format(translater.GetTranslation("newVersionTips"), version);
