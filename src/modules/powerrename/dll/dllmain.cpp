@@ -4,7 +4,8 @@
 #include <settings.h>
 #include <trace.h>
 #include <common/settings_objects.h>
-
+#include <common/common.h>
+#include "resource.h"
 #include <atomic>
 
 std::atomic<DWORD> g_dwModuleRefCount = 0;
@@ -160,12 +161,14 @@ class PowerRenameModule : public PowertoyModuleIface
 private:
     // Enabled by default
     bool m_enabled = true;
+    wchar_t* app_name;
 
 public:
     // Return the display name of the powertoy, this will be cached
     virtual PCWSTR get_name() override
     {
-        return L"PowerRename";
+        app_name = GET_RES_STRING_WCHAR(IDS_POWERRENAME);
+        return app_name;
     }
 
     // Enable the powertoy
@@ -298,6 +301,11 @@ public:
     PowerRenameModule()
     {
         init_settings();
+    }
+
+    ~PowerRenameModule()
+    {
+        delete app_name;
     }
 };
 
