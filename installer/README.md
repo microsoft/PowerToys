@@ -7,11 +7,16 @@
   * The resulting installer will be built to `PowerToysSetup\bin\Release\PowerToysSetup.msi`.
 
 ## Building and installing self-signed PowerToys MSIX package
-For the first-time installation, you should generate a self-signed certificate and add it to the [TRCA store](https://docs.microsoft.com/en-us/windows-hardware/drivers/install/trusted-root-certification-authorities-certificate-store). That could be done by simply running ` 
-generate_self_sign_cert.ps1` from a powershell admin. After that:
+For the first-time installation, you'll need to generate a self-signed certificate.  The script below will generate and add a cert to your [TRCA store](https://docs.microsoft.com/en-us/windows-hardware/drivers/install/trusted-root-certification-authorities-certificate-store). 
+1. Open PowerShell as an Admin
+2. Navigate to your repo's `installer\MSIX`
+3. Run `.\generate_self_sign_cert.ps1`
 
-* Make sure you've built the `Release` configuration of `powertoys.sln`
-* Launch `msix_reinstall.ps1` from the devenv powershell
+**To Build**
+1. Make sure you've built the `Release` configuration of `powertoys.sln`
+2. Open PowerShell
+3. Navigate to your repo's `installer\MSIX`
+4. Run `.\msix_reinstall.ps1` from the devenv powershell
 
 `msix_reinstall.ps1` removes the current PowerToys installation, restarts explorer.exe (to update PowerRename shell extension), builds `PowerToys-x64.msix` package, signs it with a PowerToys_TemporaryKey.pfx, and finally installs it.
 ## Removing all .msi/.msix PowerToys installations
