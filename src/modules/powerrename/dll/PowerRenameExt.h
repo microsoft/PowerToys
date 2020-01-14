@@ -66,9 +66,12 @@ public:
     static bool IsEnabled();
 
 private:
-    ~CPowerRenameMenu();
+    ~CPowerRenameMenu(){
+        delete (app_name);
+    }
 
     std::atomic<long> m_refCount = 1;
     HBITMAP m_hbmpIcon = nullptr;
     CComPtr<IDataObject> m_spdo;
+    wchar_t* app_name;
 };
