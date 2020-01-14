@@ -519,6 +519,11 @@ HRESULT CPowerRenameUI::_DoModeless(__in_opt HWND hwnd)
     if (NULL != CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MAIN), hwnd, s_DlgProc, (LPARAM)this))
     {
         ShowWindow(m_hwnd, SW_SHOWNORMAL);
+        if (SetForegroundWindow(m_hwnd) == FALSE)
+        {
+            SetWindowPos(m_hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+        }
+        
         MSG msg;
         while (GetMessage(&msg, NULL, 0, 0))
         {
