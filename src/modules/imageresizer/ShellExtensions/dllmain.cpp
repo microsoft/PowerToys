@@ -76,26 +76,7 @@ public:
 
     // Signal from the Settings editor to call a custom action.
     // This can be used to spawn more complex editors.
-    virtual void call_custom_action(const wchar_t* action) override
-    {
-        static UINT custom_action_num_calls = 0;
-        try
-        {
-            // Parse the action values, including name.
-            PowerToysSettings::CustomActionObject action_object =
-                PowerToysSettings::CustomActionObject::from_json_string(action);
-
-            /*
-      if (action_object.get_name() == L"custom_action_id") {
-        // Execute your custom action
-      }
-      */
-        }
-        catch (std::exception ex)
-        {
-            // Improper JSON.
-        }
-    }
+    virtual void call_custom_action(const wchar_t* action) override {}
 
     // Called by the runner to pass the updated settings values as a serialized JSON.
     virtual void set_config(const wchar_t* config) override
