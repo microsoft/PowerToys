@@ -558,22 +558,23 @@ namespace FancyZonesEditor
 
             Settings settings = ((App)Application.Current).ZoneSettings;
 
-            int spacing = settings.ShowSpacing ? settings.Spacing : 0;
+            int spacing, gutter;
+            spacing = gutter = settings.ShowSpacing ? settings.Spacing : 0;
 
             int cols = model.Columns;
             int rows = model.Rows;
 
-            double totalWidth = arrangeSize.Width - (spacing * (cols + 1));
-            double totalHeight = arrangeSize.Height - (spacing * (rows + 1));
+            double totalWidth = arrangeSize.Width - (gutter * 2) - (spacing * (cols - 1));
+            double totalHeight = arrangeSize.Height - (gutter * 2) - (spacing * (rows - 1));
 
-            double top = spacing;
+            double top = gutter;
             for (int row = 0; row < rows; row++)
             {
                 double cellHeight = _rowInfo[row].Recalculate(top, totalHeight);
                 top += cellHeight + spacing;
             }
 
-            double left = spacing;
+            double left = gutter;
             for (int col = 0; col < cols; col++)
             {
                 double cellWidth = _colInfo[col].Recalculate(left, totalWidth);
