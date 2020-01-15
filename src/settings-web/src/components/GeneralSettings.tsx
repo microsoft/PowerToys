@@ -225,16 +225,26 @@ export class GeneralSettings extends React.Component <any, any> {
           ref={(input) => {this.theme_reference=input;}}
         />
         <Stack>
-        <Label>Version {this.state.settings.general.powertoys_version}</Label>
-          <PrimaryButton
-            styles={{
+          <Text variant='xLarge'>About PowerToys (Preview)</Text>
+          <Label>Version {this.state.settings.general.powertoys_version}</Label>
+            <PrimaryButton
+              styles={{
+                  root: {
+                    alignSelf: "start"
+                  }
+              }}
+              href='https://github.com/microsoft/PowerToys/releases'
+              target='_blank'
+            >Check for updates</PrimaryButton>
+            <Link
+              href="https://github.com/microsoft/PowerToys#privacy-statement"
+              target='_blank'
+              styles = {{
                 root: {
-                  alignSelf: "start"
+                  paddingTop: '10px'
                 }
-            }}
-            href='https://github.com/microsoft/PowerToys/releases'
-            target='_blank'
-          >Check for updates</PrimaryButton>
+              }}
+            >Privacy statement</Link>
         </Stack>
         {/* An empty span to always give 30px padding in Edge. */}
         <span/>
