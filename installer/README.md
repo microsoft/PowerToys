@@ -8,14 +8,13 @@
 
 ## Building and installing self-signed PowerToys MSIX package
 For the first-time installation, you'll need to generate a self-signed certificate.  The script below will generate and add a cert to your [TRCA store](https://docs.microsoft.com/en-us/windows-hardware/drivers/install/trusted-root-certification-authorities-certificate-store). 
-1. Open PowerShell as an Admin
+1. Open `Developer PowerShell for VS` as an Admin
 2. Navigate to your repo's `installer\MSIX`
 3. Run `.\generate_self_sign_cert.ps1`
-4. Add your Windows SDK to your Path variable based on your most recent SDK.  Example:  `%ProgramFiles(x86)%\Windows Kits\10\bin\10.0.18362.0\x86`
 
 ## To Build
 1. Make sure you've built the `Release` configuration of `powertoys.sln`
-2. Open PowerShell
+2. Open `Developer PowerShell for VS`
 3. Navigate to your repo's `installer\MSIX`
 4. Run `.\msix_reinstall.ps1` from the devenv powershell
 
