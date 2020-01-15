@@ -4,21 +4,19 @@
 #include "Settings.h"
 #include "PowerRenameInterfaces.h"
 #include "resource.h"
-#include <common.h>
 
-wchar_t* c_rootRegPath = GET_RES_STRING_WCHAR(IDS_ROOT_PATH);
-wchar_t* c_mruSearchRegPath = GET_RES_STRING_WCHAR(IDS_SEARCH_PATH);
-wchar_t* c_mruReplaceRegPath = GET_RES_STRING_WCHAR(IDS_REPLACE_PATH);
-
-wchar_t* c_enabled = GET_RES_STRING_WCHAR(IDS_ENABLED);
-wchar_t* c_showIconOnMenu = GET_RES_STRING_WCHAR(IDS_SHOW_ICON);
-wchar_t* c_extendedContextMenuOnly = GET_RES_STRING_WCHAR(IDS_CONTEXT_MENU);
-wchar_t* c_persistState = GET_RES_STRING_WCHAR(IDS_PERSIST_STATE);
-wchar_t* c_maxMRUSize = GET_RES_STRING_WCHAR(IDS_MAX_MRU_SIZE);
-wchar_t* c_flags = GET_RES_STRING_WCHAR(IDS_FLAGS);
-wchar_t* c_searchText = GET_RES_STRING_WCHAR(IDS_SEARCH_TEXT);
-wchar_t* c_replaceText = GET_RES_STRING_WCHAR(IDS_REPLACE_TEXT);
-wchar_t* c_mruEnabled = GET_RES_STRING_WCHAR(IDS_MRU_ENABLED);
+const wchar_t c_rootRegPath[] = L"Software\\Microsoft\\PowerRename";
+const wchar_t c_mruSearchRegPath[] = L"SearchMRU";
+const wchar_t c_mruReplaceRegPath[] = L"ReplaceMRU";
+const wchar_t c_enabled[] = L"Enabled";
+const wchar_t c_showIconOnMenu[] = L"ShowIcon";
+const wchar_t c_extendedContextMenuOnly[] = L"ExtendedContextMenuOnly";
+const wchar_t c_persistState[] = L"PersistState";
+const wchar_t c_maxMRUSize[] = L"MaxMRUSize";
+const wchar_t c_flags[] = L"Flags";
+const wchar_t c_searchText[] = L"SearchText";
+const wchar_t c_replaceText[] = L"ReplaceText";
+const wchar_t c_mruEnabled[] = L"MRUEnabled";
 
 const bool c_enabledDefault = true;
 const bool c_showIconOnMenuDefault = true;

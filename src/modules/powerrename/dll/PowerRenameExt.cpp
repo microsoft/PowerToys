@@ -4,7 +4,7 @@
 #include <PowerRenameItem.h>
 #include <PowerRenameManager.h>
 #include <trace.h>
-#include <common/common.h>
+#include <common.h>
 #include <Helpers.h>
 #include <Settings.h>
 #include "resource.h"
