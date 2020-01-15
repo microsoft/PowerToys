@@ -1,0 +1,73 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE  
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE  
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE  
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+STRINGTABLE
+BEGIN
+    IDS_ROOT_PATH     L"Software\\Microsoft\\PowerRename" 
+    IDS_SEARCH_PATH L"SearchMRU" 
+    IDS_REPLACE_PATH L"ReplaceMRU" 
+    IDS_ENABLED L"Enabled" 
+    IDS_SHOW_ICON L"ShowIcon" 
+    IDS_CONTEXT_MENU L"ExtendedContextMenuOnly" 
+    IDS_PERSIST_STATE L"PersistState" 
+    IDS_MAX_MRU_SIZE L"MaxMRUSize" 
+    IDS_FLAGS L"Flags" 
+    IDS_SEARCH_TEXT L"SearchText" 
+    IDS_REPLACE_TEXT L"ReplaceText" 
+    IDS_MRU_ENABLED L"MRUEnabled"
+END
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
