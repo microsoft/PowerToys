@@ -66,7 +66,10 @@
     <Property Id ="EXISTINGPOWERRENAMEEXTPATH">
       <RegistrySearch Id="ExistingExtPath" Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}\InprocServer32" Type="raw"/>
     </Property>
-
+    <Property Id ="EXISTINGIMAGERESIZERPATH">
+      <RegistrySearch Id="ExistingImageResizerPath" Root="HKCR" Key="CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32" Type="raw"/>
+    </Property>
+    
     <InstallExecuteSequence>
       <Custom Action="SetRegisterPowerToysSchTaskParam" Before="RegisterPowerToysSchTask" />
       <Custom Action="RegisterPowerToysSchTask" After="InstallFiles">
@@ -161,9 +164,9 @@
 
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
-    <!-- Restart explorer.exe if we detect existing powerrenameext.dll installation -->
+    <!-- Restart explorer.exe if we detect existing powerrenameext.dll or shellextensions.dll installation -->
     <util:CloseApplication Target="explorer.exe" RebootPrompt="no" TerminateProcess="0">
-      EXISTINGPOWERRENAMEEXTPATH
+      EXISTINGPOWERRENAMEEXTPATH OR EXISTINGIMAGERESIZERPATH
     </util:CloseApplication>
     <util:CloseApplication CloseMessage="yes" Target="PowerToys.exe" ElevatedCloseMessage="yes" RebootPrompt="no" TerminateProcess="0" />
   </Product>
@@ -254,6 +257,32 @@
             <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
         </RegistryKey>
       </Component>
+      <Component Id="Module_ImageResizer" Guid="96E63289-759C-4A73-A56B-EE7429932F72" Win64="yes">
+        <File Source="$(var.BinX64Dir)\modules\ImageResizer.exe">
+          <netfx:NativeImage Id="ImageResizer.exe" Platform="all" Priority="0" />
+        </File>
+        <RegistryValue Root="HKLM" Key="Software\Microsoft\ImageResizer" Value="[ModulesInstallFolder]ImageResizer.exe" Type="string"/>
+        <File Source="$(var.BinX64Dir)\modules\GalaSoft.MvvmLight.dll" />
+        <File Source="$(var.BinX64Dir)\modules\GalaSoft.MvvmLight.Platform.dll" />
+        <File Source="$(var.BinX64Dir)\modules\GalaSoft.MvvmLight.Extras.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Windows.Interactivity.dll">
+          <!-- NB: Needed since it's only referenced in XAML. -->
+          <netfx:NativeImage Id="Interactivity" Platform="all" Priority="0"/>
+        </File>
+        <File Source="$(var.BinX64Dir)\modules\ShellExtensions.dll" KeyPath="yes" />
+        <RegistryKey Root="HKCR" Key="CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
+          <RegistryValue Value="[ModulesInstallFolder]ShellExtensions.dll" Type="string" />
+          <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
+        </RegistryKey>
+        <RegistryValue Root="HKCR"
+                       Key="Directory\ShellEx\DragDropHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="*\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+      </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsHtmlInstallFolder" FileSource="$(var.RepoDir)\settings\settings-html\">
       <Component Id="settings_html" Guid="87881A99-E917-4B0D-B1D8-5C6EB9709F96" Win64="yes">
@@ -298,6 +327,7 @@
       <ComponentRef Id="Module_FancyZones" />
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
+      <ComponentRef Id="Module_ImageResizer" />
       <ComponentRef Id="settings_exe" />
       <ComponentRef Id="settings_html" />
       <ComponentRef Id="settings_dark_html" />
