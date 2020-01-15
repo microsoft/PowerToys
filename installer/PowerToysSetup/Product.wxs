@@ -248,9 +248,6 @@
         <File Source="$(var.BinX64Dir)\modules\WindowWalker.exe" >
           <netfx:NativeImage Id="WindowWalker.exe" Platform="64bit" Priority="0" />
         </File>
-        <File Source="$(var.BinX64Dir)\modules\ControlzEx.dll" />
-        <File Source="$(var.BinX64Dir)\modules\MahApps.Metro.dll" />
-        <File Source="$(var.BinX64Dir)\modules\Microsoft.Xaml.Behaviors.dll" />
       </Component>
       <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
         <File Source="$(var.BinX64Dir)\modules\PowerRenameExt.dll" KeyPath="yes" />
