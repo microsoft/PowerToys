@@ -5,6 +5,8 @@
 #include "HDropIterator.h"
 #include "Settings.h"
 
+extern HINSTANCE g_hInst_imageResizer;
+
 CContextMenuHandler::CContextMenuHandler()
 {
     m_pidlFolder = NULL;
@@ -72,29 +74,6 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     // If selected file is an image...
     if (type == PERCEIVED_TYPE_IMAGE)
     {
-//        CString strResizePictures;
-//
-//        // If handling drag-and-drop...
-//        if (m_pidlFolder)
-//        {
-//            // Suppressing C6031 warning since return value is not required.
-//#pragma warning(suppress : 6031)
-//            // Load 'Resize pictures here' string
-//            strResizePictures.LoadString(IDS_RESIZE_PICTURES_HERE);
-//        }
-//        else
-//        {
-//            // Suppressing C6031 warning since return value is not required.
-//#pragma warning(suppress : 6031)
-//            // Load 'Resize pictures' string
-//            strResizePictures.LoadString(IDS_RESIZE_PICTURES);
-//        }
-//
-//        // Add menu item
-        //InsertMenu(hmenu, indexMenu, MF_BYPOSITION, idCmdFirst + ID_RESIZE_PICTURES, strResizePictures);
-//
-//        return MAKE_HRESULT(SEVERITY_SUCCESS, 0, ID_RESIZE_PICTURES + 1);
-
         HRESULT hr = E_UNEXPECTED;
         wchar_t strResizePictures[64] = { 0 };
         // If handling drag-and-drop...
@@ -103,14 +82,14 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
             // Suppressing C6031 warning since return value is not required.
 #pragma warning(suppress : 6031)
             // Load 'Resize pictures here' string
-            LoadString(nullptr, IDS_RESIZE_PICTURES_HERE, strResizePictures, ARRAYSIZE(strResizePictures));
+            LoadString(g_hInst_imageResizer, IDS_RESIZE_PICTURES_HERE, strResizePictures, ARRAYSIZE(strResizePictures));
         }
         else
         {
             // Suppressing C6031 warning since return value is not required.
 #pragma warning(suppress : 6031)
             // Load 'Resize pictures' string
-            LoadString(nullptr, IDS_RESIZE_PICTURES, strResizePictures, ARRAYSIZE(strResizePictures));
+            LoadString(g_hInst_imageResizer, IDS_RESIZE_PICTURES, strResizePictures, ARRAYSIZE(strResizePictures));
         }
 
         MENUITEMINFO mii;
@@ -120,22 +99,17 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         mii.fType = MFT_STRING;
         mii.dwTypeData = (PWSTR)strResizePictures;
         mii.fState = MFS_ENABLED;
-
-        /*if (CSettings::GetShowIconOnMenu())
+        HICON hIcon = (HICON)LoadImage(g_hInst_imageResizer, MAKEINTRESOURCE(IDI_RESIZE_PICTURES), IMAGE_ICON, 16, 16, 0);
+        if (hIcon)
         {
-            HICON hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_RENAME), IMAGE_ICON, 16, 16, 0);
-            if (hIcon)
+            mii.fMask |= MIIM_BITMAP;
+            if (m_hbmpIcon == NULL)
             {
-                mii.fMask |= MIIM_BITMAP;
-                if (m_hbmpIcon == NULL)
-                {
-                    m_hbmpIcon = CreateBitmapFromIcon(hIcon);
-                }
-                mii.hbmpItem = m_hbmpIcon;
-                DestroyIcon(hIcon);
+                m_hbmpIcon = CreateBitmapFromIcon(hIcon, 0, 0);
             }
-        }*/
-
+            mii.hbmpItem = m_hbmpIcon;
+            DestroyIcon(hIcon);
+        }
         if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
         {
             hr = HRESULT_FROM_WIN32(GetLastError());
