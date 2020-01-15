@@ -553,7 +553,7 @@ void ZoneWindow::DrawActiveZoneSet(wil::unique_hdc& hdc, RECT const& clientRect)
         auto zones = m_activeZoneSet->GetZones();
         const size_t maxColorIndex = min(size(zones) - 1, size(colors) - 1);
         size_t colorIndex = maxColorIndex;
-        for (auto iter = zones.rbegin(); iter != zones.rend(); iter++)
+        for (auto iter = zones.begin(); iter != zones.end(); iter++)
         {
             winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
             if (!zone)
