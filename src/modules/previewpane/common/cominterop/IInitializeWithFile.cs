@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 namespace Common.Cominterop
 {
     /// <summary>
-    /// Todod.
+    /// Exposes a method to initialize a handler, such as a property handler, thumbnail handler, or preview handler, with a file path.
     /// </summary>
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -16,10 +16,10 @@ namespace Common.Cominterop
     public interface IInitializeWithFile
     {
         /// <summary>
-        /// Todo.
+        /// Initializes a handler with a file path.
         /// </summary>
-        /// <param name="pszFilePath">Path.</param>
-        /// <param name="grfMode">Mode.</param>
+        /// <param name="pszFilePath">File Path.</param>
+        /// <param name="grfMode">Indicate the Access Mode either STGM_READ (Read Only Access) or STGM_READWRITE (Read and Write Access).</param>
         void Initialize([MarshalAs(UnmanagedType.LPWStr)] string pszFilePath, uint grfMode);
     }
 }

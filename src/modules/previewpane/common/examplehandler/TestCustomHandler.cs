@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 namespace Common
 {
     /// <summary>
-    /// This is a test custom handler to check the implemnatation will be removed in future PR.
+    /// This is a example custom handler to show how to extend the library.
     /// </summary>
     [PreviewHandler("SvgPreviewHandler", ".svg", "{88235ab2-bfce-4be8-9ed0-0408cd8da792}")]
     [ProgId("SvgPreviewHandler")]
@@ -18,18 +18,13 @@ namespace Common
     {
         private CustomControlTest previewHandlerControl;
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
+        /// <inheritdoc />
         public override void DoPreview()
         {
             this.previewHandlerControl.DoPreview(this.FilePath);
         }
 
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        /// <returns>Toddo.</returns>
+        /// <inheritdoc />
         protected override IPreviewHandlerControl CreatePreviewHandlerControl()
         {
             this.previewHandlerControl = new CustomControlTest();

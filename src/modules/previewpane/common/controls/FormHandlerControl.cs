@@ -14,6 +14,9 @@ namespace Common
     /// </summary>
     public abstract class FormHandlerControl : Form, IPreviewHandlerControl
     {
+        /// <summary>
+        /// Holds the parent window handle.
+        /// </summary>
         private IntPtr parentHwnd;
 
         /// <summary>
@@ -119,12 +122,26 @@ namespace Common
             this.Invoke(func);
         }
 
+        /// <summary>
+        /// Changes the parent window of the specified child window.
+        /// </summary>
+        /// <param name="hWndChild">A handle to the child window.</param>
+        /// <param name="hWndNewParent">A handle to the new parent window.</param>
+        /// <returns>If the function succeeds, the return value is a handle to the previous parent window and NULL in case of failure.</returns>
         [DllImport("user32.dll")]
         private static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
 
+        /// <summary>
+        /// Retrieves the handle to the window that has the keyboard focus, if the window is attached to the calling thread's message queue.
+        /// </summary>
+        /// <returns>The return value is the handle to the window with the keyboard focus. If the calling thread's message queue does not have an associated window with the keyboard focus, the return value is NULL.</returns>
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern IntPtr GetFocus();
 
+        /// <summary>
+        /// Update the Form Control window with the passed rectangle.
+        /// </summary>
+        /// <param name="windowBounds">An instance of rectangle.</param>
         private void UpdateWindowBounds(Rectangle windowBounds)
         {
             this.InvokeOnControlThread(() =>
