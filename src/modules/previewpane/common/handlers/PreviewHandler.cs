@@ -16,10 +16,29 @@ namespace Common
     /// </summary>
     public abstract class PreviewHandler : IPreviewHandler, IOleWindow, IObjectWithSite, IPreviewHandlerVisuals
     {
+        /// <summary>
+        /// An instance of Preview Control Used by the Handler.
+        /// </summary>
         private IPreviewHandlerControl previewControl;
+
+        /// <summary>
+        /// Hold reference for the window handle.
+        /// </summary>
         private IntPtr parentHwnd;
+
+        /// <summary>
+        /// Hold the bounds of the window.
+        /// </summary>
         private Rectangle windowBounds;
+
+        /// <summary>
+        /// Holds the site pointer.
+        /// </summary>
         private object unkSite;
+
+        /// <summary>
+        /// Holds reference for the IPreviewHandlerFrame.
+        /// </summary>
         private IPreviewHandlerFrame frame;
 
         /// <summary>
@@ -151,22 +170,19 @@ namespace Common
         /// <inheritdoc />
         public void SetBackgroundColor(COLORREF color)
         {
-            var argbColor = color.Color;
-            this.previewControl.SetBackgroundColor(argbColor);
+            this.previewControl.SetBackgroundColor(color.Color);
         }
 
         /// <inheritdoc />
         public void SetFont(ref LOGFONT plf)
         {
-            var font = Font.FromLogFont(plf);
-            this.previewControl.SetFont(font);
+            this.previewControl.SetFont(Font.FromLogFont(plf));
         }
 
         /// <inheritdoc />
         public void SetTextColor(COLORREF color)
         {
-            var argbColor = color.Color;
-            this.previewControl.SetTextColor(argbColor);
+            this.previewControl.SetTextColor(color.Color);
         }
 
         /// <summary>
