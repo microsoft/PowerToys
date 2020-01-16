@@ -5,7 +5,9 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using Common.ComInterlop;
+using Microsoft.Win32;
 
 namespace Common
 {
@@ -26,6 +28,42 @@ namespace Common
         public PreviewHandler()
         {
             this.previewControl = this.CreatePreviewHandlerControl();
+        }
+
+        /// <summary>
+        /// Do the registeration of preview handler.
+        /// </summary>
+        /// <param name="t">Type of the class to register.</param>
+        [ComRegisterFunction]
+        public static void Register(Type t)
+        {
+            if (t != null && t.IsSubclassOf(typeof(PreviewHandler)))
+            {
+                object[] attrs = (object[])t.GetCustomAttributes(typeof(PreviewHandlerAttribute), true);
+                if (attrs != null && attrs.Length == 1)
+                {
+                    PreviewHandlerAttribute attr = attrs[0] as PreviewHandlerAttribute;
+                    RegisterPreviewHandler(attr.Name, attr.Extension, t.GUID.ToString("B"), attr.AppId);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Do the unregisteration of preview handler.
+        /// </summary>
+        /// <param name="t">Type of the class to register.</param>
+        [ComUnregisterFunction]
+        public static void Unregister(Type t)
+        {
+            if (t != null && t.IsSubclassOf(typeof(PreviewHandler)))
+            {
+                object[] attrs = (object[])t.GetCustomAttributes(typeof(PreviewHandlerAttribute), true);
+                if (attrs != null && attrs.Length == 1)
+                {
+                    PreviewHandlerAttribute attr = attrs[0] as PreviewHandlerAttribute;
+                    UnregisterPreviewHandler(attr.Extension, t.GUID.ToString("B"), attr.AppId);
+                }
+            }
         }
 
         /// <inheritdoc />
@@ -136,5 +174,62 @@ namespace Common
         /// </summary>
         /// <returns>Instance of the <see cref="IPreviewHandlerControl"/>.</returns>
         protected abstract IPreviewHandlerControl CreatePreviewHandlerControl();
+
+        private static void RegisterPreviewHandler(string name, string extensions, string previewerGuid, string appId)
+        {
+            // Create a new prevhost AppID so that this always runs in its own isolated process
+            using (RegistryKey appIdsKey = Registry.ClassesRoot.OpenSubKey("AppID", true))
+            using (RegistryKey appIdKey = appIdsKey.CreateSubKey(appId))
+            {
+                appIdKey.SetValue("DllSurrogate", @"%SystemRoot%\system32\prevhost.exe", RegistryValueKind.ExpandString);
+            }
+
+            // Add preview handler to preview handler list
+            using (RegistryKey handlersKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", true))
+            {
+                handlersKey.SetValue(previewerGuid, name, RegistryValueKind.String);
+            }
+
+            // Modify preview handler registration
+            using (RegistryKey clsidKey = Registry.ClassesRoot.OpenSubKey("CLSID"))
+            using (RegistryKey idKey = clsidKey.OpenSubKey(previewerGuid, true))
+            {
+                idKey.SetValue("DisplayName", name, RegistryValueKind.String);
+                idKey.SetValue("AppID", appId, RegistryValueKind.String);
+                idKey.SetValue("DisableLowILProcessIsolation", 1, RegistryValueKind.DWord); // optional, depending on what preview handler needs to be able to do
+            }
+
+            foreach (string extension in extensions.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                // Set preview handler for specific extension
+                using (RegistryKey extensionKey = Registry.ClassesRoot.CreateSubKey(extension))
+                using (RegistryKey shellexKey = extensionKey.CreateSubKey("shellex"))
+                using (RegistryKey previewKey = shellexKey.CreateSubKey("{8895b1c6-b41f-4c1c-a562-0d564250836f}"))
+                {
+                    previewKey.SetValue(null, previewerGuid, RegistryValueKind.String);
+                }
+            }
+        }
+
+        private static void UnregisterPreviewHandler(string extensions, string previewerGuid, string appId)
+        {
+            foreach (string extension in extensions.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                using (RegistryKey shellexKey = Registry.ClassesRoot.OpenSubKey(extension + "\\shellex", true))
+                {
+                    shellexKey.DeleteSubKey("{8895b1c6-b41f-4c1c-a562-0d564250836f}");
+                }
+            }
+
+            using (RegistryKey appIdsKey = Registry.ClassesRoot.OpenSubKey("AppID", true))
+            {
+                appIdsKey.DeleteSubKey(appId);
+            }
+
+            using (RegistryKey classesKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", true))
+            {
+                classesKey.DeleteValue(previewerGuid);
+            }
+        }
     }
 }

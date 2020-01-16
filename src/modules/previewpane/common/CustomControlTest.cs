@@ -13,7 +13,7 @@ namespace Common
     public class CustomControlTest : FormHandlerControl
     {
         /// <summary>
-        /// Todo.
+        /// Start the preview on the Control.
         /// </summary>
         /// <param name="filePath">Path to the file.</param>
         public void DoPreview(string filePath)
@@ -21,14 +21,12 @@ namespace Common
             this.InvokeOnControlThread(() =>
             {
                 this.Visible = true;
-                var text = File.ReadAllText(filePath);
                 WebBrowser browser = new WebBrowser();
-                browser.DocumentText = text;
+
+                // browser.Navigate(filePath);
+                browser.DocumentText = "Test";
                 browser.Dock = DockStyle.Fill;
                 browser.IsWebBrowserContextMenuEnabled = false;
-                browser.AllowWebBrowserDrop = false;
-                browser.Navigating += new WebBrowserNavigatingEventHandler((sender, e) => { e.Cancel = true; });
-                browser.Invalidate();
                 this.Controls.Add(browser);
             });
         }
