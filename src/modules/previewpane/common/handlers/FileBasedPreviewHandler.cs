@@ -8,9 +8,9 @@ using Common.Cominterop;
 namespace Common
 {
     /// <summary>
-    /// Extends the <see cref="PreviewHandler" /> by implementing IInitializeWithFile.
+    /// Extends the <see cref="PreviewHandlerBase" /> by implementing IInitializeWithFile.
     /// </summary>
-    public abstract class FileBasedPreviewHandler : PreviewHandler, IInitializeWithFile
+    public abstract class FileBasedPreviewHandler : PreviewHandlerBase, IInitializeWithFile
     {
         /// <summary>
         /// Gets the file path.

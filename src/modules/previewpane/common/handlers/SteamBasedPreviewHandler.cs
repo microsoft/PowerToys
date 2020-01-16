@@ -8,9 +8,9 @@ using Common.ComInterlop;
 namespace Common
 {
     /// <summary>
-    /// Extends the <see cref="PreviewHandler" /> by implementing IInitializeWithStream.
+    /// Extends the <see cref="PreviewHandlerBase" /> by implementing IInitializeWithStream.
     /// </summary>
-    public abstract class SteamBasedPreviewHandler : PreviewHandler, IInitializeWithStream
+    public abstract class SteamBasedPreviewHandler : PreviewHandlerBase, IInitializeWithStream
     {
         /// <summary>
         /// Gets the stream object to access file.
