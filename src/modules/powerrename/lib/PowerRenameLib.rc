@@ -48,18 +48,18 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_ROOT_PATH     L"Software\\Microsoft\\PowerRename" 
-    IDS_SEARCH_PATH L"SearchMRU" 
-    IDS_REPLACE_PATH L"ReplaceMRU" 
-    IDS_ENABLED L"Enabled" 
-    IDS_SHOW_ICON L"ShowIcon" 
-    IDS_CONTEXT_MENU L"ExtendedContextMenuOnly" 
-    IDS_PERSIST_STATE L"PersistState" 
-    IDS_MAX_MRU_SIZE L"MaxMRUSize" 
-    IDS_FLAGS L"Flags" 
-    IDS_SEARCH_TEXT L"SearchText" 
-    IDS_REPLACE_TEXT L"ReplaceText" 
-    IDS_MRU_ENABLED L"MRUEnabled"
+    IDS_ROOT_PATH                      L"Software\\Microsoft\\PowerRename" 
+    IDS_SEARCH_PATH                    L"SearchMRU" 
+    IDS_REPLACE_PATH                   L"ReplaceMRU" 
+    IDS_ENABLED                        L"Enabled" 
+    IDS_SHOW_ICON                      L"ShowIcon" 
+    IDS_CONTEXT_MENU                   L"ExtendedContextMenuOnly" 
+    IDS_PERSIST_STATE                  L"PersistState" 
+    IDS_MAX_MRU_SIZE                   L"MaxMRUSize" 
+    IDS_FLAGS                          L"Flags" 
+    IDS_SEARCH_TEXT                    L"SearchText" 
+    IDS_REPLACE_TEXT                   L"ReplaceText" 
+    IDS_MRU_ENABLED                    L"MRUEnabled"
 END
 
 #ifndef APSTUDIO_INVOKED
