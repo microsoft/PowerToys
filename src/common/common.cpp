@@ -310,6 +310,33 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params) {
   return succedded;
 }
 
+bool run_same_elevation(const std::wstring& file, const std::wstring& params) {
+  auto executable_args = file;
+  if (!params.empty()) {
+    executable_args += L" " + params;
+  }
+  STARTUPINFO si = { 0 };
+  PROCESS_INFORMATION pi = { 0 };
+  auto succedded = CreateProcessW(file.c_str(),
+                                  const_cast<LPWSTR>(executable_args.c_str()),
+                                  nullptr,
+                                  nullptr,
+                                  FALSE,
+                                  0,
+                                  nullptr,
+                                  nullptr,
+                                  &si,
+                                  &pi);
+  if (pi.hProcess) {
+    CloseHandle(pi.hProcess);
+  }
+  if (pi.hThread) {
+    CloseHandle(pi.hThread);
+  }
+  return succedded;
+}
+
+
 std::wstring get_process_path(HWND window) noexcept {
   const static std::wstring app_frame_host = L"ApplicationFrameHost.exe";
   DWORD pid{};

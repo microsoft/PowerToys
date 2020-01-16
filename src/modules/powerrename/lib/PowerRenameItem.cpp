@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "PowerRenameItem.h"
-#include "helpers.h"
+#include "icon_helpers.h"
 
 int CPowerRenameItem::s_id = 0;
 
