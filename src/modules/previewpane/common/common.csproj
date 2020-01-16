@@ -39,6 +39,9 @@
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>PreviewHandlerCommon.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -72,6 +75,7 @@
     </Compile>
     <Compile Include="IPreviewHandlerControl.cs" />
     <Compile Include="PreviewHandler.cs" />
+    <Compile Include="PreviewHandlerAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SteamBasedPreviewHandler.cs" />
     <Compile Include="TestCustomHandler.cs" />
@@ -81,6 +85,7 @@
       <Link>StyleCop.json</Link>
     </AdditionalFiles>
     <None Include="packages.config" />
+    <None Include="PreviewHandlerCommon.snk" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\..\..\..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
