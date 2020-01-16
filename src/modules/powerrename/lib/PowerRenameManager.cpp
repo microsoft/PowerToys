@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <shlobj.h>
 #include "helpers.h"
+#include "window_helpers.h"
 #include <filesystem>
 #include "trace.h"
 

@@ -6,6 +6,7 @@
 #include <trace.h>
 #include <common.h>
 #include <Helpers.h>
+#include <icon_helpers.h>
 #include <Settings.h>
 #include "resource.h"
 
