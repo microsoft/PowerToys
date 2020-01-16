@@ -14,7 +14,7 @@ namespace Common
     /// <summary>
     /// Preview Handler base class implmenenting interfaces required by Preview Handler.
     /// </summary>
-    public abstract class PreviewHandler : IPreviewHandler, IOleWindow, IObjectWithSite, IPreviewHandlerVisuals
+    public abstract class PreviewHandlerBase : IPreviewHandler, IOleWindow, IObjectWithSite, IPreviewHandlerVisuals
     {
         /// <summary>
         /// An instance of Preview Control Used by the Handler.
@@ -42,9 +42,9 @@ namespace Common
         private IPreviewHandlerFrame frame;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PreviewHandler"/> class.
+        /// Initializes a new instance of the <see cref="PreviewHandlerBase"/> class.
         /// </summary>
-        public PreviewHandler()
+        public PreviewHandlerBase()
         {
             this.previewControl = this.CreatePreviewHandlerControl();
         }
@@ -56,7 +56,7 @@ namespace Common
         [ComRegisterFunction]
         public static void Register(Type t)
         {
-            if (t != null && t.IsSubclassOf(typeof(PreviewHandler)))
+            if (t != null && t.IsSubclassOf(typeof(PreviewHandlerBase)))
             {
                 object[] attrs = (object[])t.GetCustomAttributes(typeof(PreviewHandlerAttribute), true);
                 if (attrs != null && attrs.Length == 1)
@@ -74,7 +74,7 @@ namespace Common
         [ComUnregisterFunction]
         public static void Unregister(Type t)
         {
-            if (t != null && t.IsSubclassOf(typeof(PreviewHandler)))
+            if (t != null && t.IsSubclassOf(typeof(PreviewHandlerBase)))
             {
                 object[] attrs = (object[])t.GetCustomAttributes(typeof(PreviewHandlerAttribute), true);
                 if (attrs != null && attrs.Length == 1)
