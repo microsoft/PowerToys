@@ -137,17 +137,17 @@ A brief survey was sent to the Windows Developer community during the planning s
 ### 2.1 Functional Requirements Overview
 
 | No. | Requirement                                                                                                                                                                                          | Pri |
-| --- |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
-|  1  | Remap any button on keyboard to any other button on keyboard                                                                                                                                         | P0  |
-|  2  | OS-Level key shortcuts. Example: Making WinKey + G lock the computer.                                                                                                                                | P1  | 
-|  3  | App level keyboard shortcuts. Example: Going to the address bar in Chrome on a MacOS is CMD+L, on a PC, that would map to Alt-L.                                                                     | P2  |
-|  4  | Settings page that easily configures all supported scenarios.                                                                                                                                        | P1  |
+| --- |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+|  1  | Remap any button on keyboard to any other button on keyboard                                                                                                                                           | P0  |
+|  2  | OS-Level key shortcuts. Example: Making WinKey + G lock the computer.                                                                                                                                  | P1  | 
+|  3  | App level keyboard shortcuts. Example: Going to the address bar in Chrome on a MacOS is CMD+L, on a PC, that would map to Alt-L.                                                                       | P2  |
+|  4  | Settings page that easily configures all supported scenarios.                                                                                                                                          | P1  |
 |  5  | The Powertoys Shortcut Guide needs to be aware of keyboard remaps. Example: If Winkey + G locks the computer the Shortcut Guide needs to list this as the method to lock a computer, not Winkey + L. | P1  |
-|  6  | A Mac ready profile that is prepopulated with commonly used remaps and adjustments.                                                                                                                  | P1  |
-|  6  | A Linux ready profile that is prepopulated with commonly used remaps and adjustments.                                                                                                                | P1  |
-|  7  | Multiple keyboard support. Example: Surface Laptop and Surface keyboard have different layout and a remap maybe needed.                                                                              | P1  |
-|  8  | The KSM needs to meet accessibility requirements.                                                                                                                                                    | P1  |
-|  9  | The KSM needs to meet localization requirements.                                                                                                                                                     | P1  |
+|  6  | A Mac ready profile that is prepopulated with commonly used remappings and adjustments.                                                                                                                | P1  |
+|  6  | A Linux ready profile that is prepopulated with commonly used remappings and adjustments.                                                                                                              | P1  |
+|  7  | Multiple keyboard support. Example: Surface Laptop and Surface keyboard have different layout and a remap maybe needed.                                                                                | P1  |
+|  8  | The KSM needs to meet accessibility requirements.                                                                                                                                                      | P1  |
+|  9  | The KSM needs to meet localization requirements.                                                                                                                                                       | P1  |
 
 ###  2.2 Functional Requirements for remapping of keys
 
