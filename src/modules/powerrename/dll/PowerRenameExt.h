@@ -71,5 +71,5 @@ private:
     std::atomic<long> m_refCount = 1;
     HBITMAP m_hbmpIcon = nullptr;
     CComPtr<IDataObject> m_spdo;
-    wchar_t* app_name;
+    std::wstring app_name;
 };
