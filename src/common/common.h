@@ -14,9 +14,10 @@ std::optional<POINT> get_mouse_pos();
 // Gets active window, filtering out all "non standard" windows like the taskbar, etc.
 HWND get_filtered_active_window();
 // Gets window ancestor (usualy the window we want to do stuff with), filtering out all "non standard" windows like the taskbar, etc. and provide the app process path
-struct WindowAndProcPath {
-  HWND hwnd = nullptr;
-  std::wstring process_path;
+struct WindowAndProcPath
+{
+    HWND hwnd = nullptr;
+    std::wstring process_path;
 };
 WindowAndProcPath get_filtered_base_window_and_path(HWND window);
 
@@ -32,17 +33,18 @@ int run_message_loop();
 
 void show_last_error_message(LPCWSTR lpszFunction, DWORD dw);
 
-enum WindowState {
-  UNKNONW,
-  MINIMIZED,
-  MAXIMIZED,
-  SNAPED_TOP_LEFT,
-  SNAPED_LEFT,
-  SNAPED_BOTTOM_LEFT,
-  SNAPED_TOP_RIGHT,
-  SNAPED_RIGHT,
-  SNAPED_BOTTOM_RIGHT,
-  RESTORED
+enum WindowState
+{
+    UNKNONW,
+    MINIMIZED,
+    MAXIMIZED,
+    SNAPED_TOP_LEFT,
+    SNAPED_LEFT,
+    SNAPED_BOTTOM_LEFT,
+    SNAPED_TOP_RIGHT,
+    SNAPED_RIGHT,
+    SNAPED_BOTTOM_RIGHT,
+    RESTORED
 };
 WindowState get_window_state(HWND hwnd);
 
@@ -78,15 +80,3 @@ std::wstring get_resource_string(UINT resource_id, HINSTANCE instance, const wch
 //  extern "C" IMAGE_DOS_HEADER __ImageBase;
 // is added to the .cpp file.
 #define GET_RESOURCE_STRING(resource_id) get_resource_string(resource_id, reinterpret_cast<HINSTANCE>(&__ImageBase), L#resource_id)
-
-// Function which takes a pointer ptr and allocates space before populating it with the string from the resource table
-// using this approach as wstring cannot be cast to PCWSTR without allocating space
-// hence, we have to malloc and free the pointer after each use
-wchar_t* get_resource_string_wchar(UINT resource_id, HINSTANCE instance);
-
-// Wrapper for getting a string from the resource file.
-// Requires that
-//  extern "C" IMAGE_DOS_HEADER __ImageBase;
-// is added to the .cpp file.
-// used when the return type must be a wchar_t* instead of a wstring.
-#define GET_RES_STRING_WCHAR(resource_id) get_resource_string_wchar(resource_id, reinterpret_cast<HINSTANCE>(&__ImageBase))
