@@ -70,7 +70,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     AssocGetPerceivedType(pszExt, &type, &flag, NULL);
 
     free(pszPath);
-
+    bool dragDropFlag = false;
     // If selected file is an image...
     if (type == PERCEIVED_TYPE_IMAGE)
     {
@@ -83,6 +83,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
 #pragma warning(suppress : 6031)
             // Load 'Resize pictures here' string
             LoadString(g_hInst_imageResizer, IDS_RESIZE_PICTURES_HERE, strResizePictures, ARRAYSIZE(strResizePictures));
+            dragDropFlag = true;
         }
         else
         {
@@ -110,6 +111,29 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
             mii.hbmpItem = m_hbmpIcon;
             DestroyIcon(hIcon);
         }
+
+        if (dragDropFlag)
+        {
+            // Insert the menu entry at indexMenu+1 since the first entry should be "Copy here"
+            indexMenu++;
+        }
+        else
+        {
+            // indexMenu gets the first possible menu item index based on the location of the shellex registry key.
+            // If the registry entry is under SystemFileAssociations for the image formats, ShellImagePreview (in Windows by default) will be at indexMenu=0
+            // Shell ImagePreview consists of 4 menu items, a separator, Rotate right, Rotate left, and another separator
+            // Check if the entry at indexMenu is a separator, insert the new menu item at indexMenu+1 if true
+            MENUITEMINFO miiExisting;
+            miiExisting.dwTypeData = NULL;
+            miiExisting.fMask = MIIM_TYPE;
+            miiExisting.cbSize = sizeof(MENUITEMINFO);
+            GetMenuItemInfo(hmenu, indexMenu, TRUE, &miiExisting);
+            if (miiExisting.fType == MFT_SEPARATOR)
+            {
+                indexMenu++;
+            }
+        }
+
         if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
         {
             hr = HRESULT_FROM_WIN32(GetLastError());
