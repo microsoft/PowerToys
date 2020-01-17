@@ -224,7 +224,8 @@ A brief survey was sent to the Windows Developer community during the planning s
 | 10 | Maximum number of keyboards someone has attached to their keyboard in a 28-day period                               | Validates whether to prioritize additional keyboard support               | P1  |
 
 ## 4. UI Mockup
-### See below for UI mockups:
+### See below for screenshots of the UI mockups:
+*Please understand that these are preliminary*
 
 ### 4.1 Main UI Settings
 ![alt text][ui_main] 
