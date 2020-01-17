@@ -217,11 +217,11 @@ A brief survey was sent to the Windows Developer community during the planning s
 | 3  | \# of times the same user loads different key configurations.                                                       | Should multi-profile use be prioritized                                       | P1  |
 | 4  | \# of times built-in shortcuts are disabled                                                                         | Recommended defaults for developers                                           | P1  |
 | 5  | \# of times built-in shortcuts are remapped                                                                         | Recommended defaults for developers                                           | P1  |
-| 6  | Specificity and frequency of *exotic* keys being remapped.                                                          | Whether the KSM is missing keys and if some keys not useful                   | P1  |
-| 7  | \# of visits to the KSM editor/settings in a given time period                                                      | Continuous visits could imply lack of clarity with UX or bug in app           | P1  |
+| 6  | Specificity and frequency of *exotic* keys being remapped.                                                          | Whether the KSM is missing keys and if some keys not useful                | P1  |
+| 7  | \# of visits to the KSM editor/settings in a given time period                                                      | Continuous visits could imply lack of clarity with UX or bug in app         | P1  |
 | 8  | Frequency of keys being mapped to each other (swapped). Example: *Key A* -> Key B, Key B -> Key C, Key C -> *Key A* | Whether auto/hot swapping needs to be prioritized                             | P1  |
 | 9  | Amount of people that have remapped turned on / off                                                                 | Information on whether KSM is being utilized                                  | P1  |
-| 10 | Maximum number of keyboards someone has attached to their keyboard in a 28-day period                               | Validates whether to prioritize additional keyboard support                   | P1  |
+| 10 | Maximum number of keyboards someone has attached to their keyboard in a 28-day period                               | Validates whether to prioritize additional keyboard support               | P1  |
 
 ## 4. UI Mockup
 ### See [here](https://microsoft-my.sharepoint.com/:p:/p/saahmedm/ESCEBGT04NdNkRz6EFHz3JUBu3NymloLXOEu4cPy8cp48g) for UI mockup
