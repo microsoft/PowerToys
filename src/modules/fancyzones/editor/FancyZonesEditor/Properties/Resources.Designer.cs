@@ -59,5 +59,41 @@ namespace FancyZonesEditor.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        internal static string Cancel {
+            get {
+                return ResourceManager.GetString("Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom layout creator.
+        /// </summary>
+        internal static string Custom_layout_creator {
+            get {
+                return ResourceManager.GetString("Custom_layout_creator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        internal static string Name {
+            get {
+                return ResourceManager.GetString("Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save and apply.
+        /// </summary>
+        internal static string Save_and_apply {
+            get {
+                return ResourceManager.GetString("Save_and_apply", resourceCulture);
+            }
+        }
     }
 }

@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:local="clr-namespace:FancyZonesEditor"
+        xmlns:props="clr-namespace:FancyZonesEditor.Properties"
         mc:Ignorable="d"
         Title="" 
         Width="528"
@@ -164,14 +165,14 @@
 
     </Window.Resources>
     <StackPanel>
-        <TextBlock Name="windowEditorDialogTitle" Text="Custom layout creator" Style="{StaticResource titleText}"  />
+        <TextBlock Name="windowEditorDialogTitle" Text="{x:Static props:Resources.Custom_layout_creator}" Style="{StaticResource titleText}"  />
         <Button x:Name="newZoneButton" Width="496" Height="136" Style="{StaticResource newZoneButton}" Click="OnAddZone">
             <StackPanel>
                 <TextBlock x:Name="newSoneName" Text="Add new zone" Style="{StaticResource templateTitleText}"  />
                 <TextBlock HorizontalAlignment="Center" Text="+" Margin="0,-40,0,0"/>
             </StackPanel>
         </Button>
-        <TextBlock Text="Name" Style="{StaticResource textLabel}" />
+        <TextBlock Text="{x:Static props:Resources.Name}" Style="{StaticResource textLabel}" />
         <TextBox Text="{Binding Name}" Width="496" Style="{StaticResource textBox}" />
         <!--
         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
@@ -182,8 +183,8 @@
         </StackPanel>
         -->
         <StackPanel Orientation="Horizontal" Margin="0,12,0,16">
-            <Button Content="Cancel" Style="{StaticResource secondaryButton}" Click="OnCancel"/>
-            <Button Content="Save and apply" Style="{StaticResource primaryButton}" Click="OnSaveApplyTemplate" />
+            <Button Content="{x:Static props:Resources.Cancel}" Style="{StaticResource secondaryButton}" Click="OnCancel"/>
+            <Button Content="{x:Static props:Resources.Save_and_apply}" Style="{StaticResource primaryButton}" Click="OnSaveApplyTemplate" />
         </StackPanel>
     </StackPanel>
     </local:EditorWindow>
