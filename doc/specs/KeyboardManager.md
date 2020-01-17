@@ -47,7 +47,7 @@ party tools or has left their keys alone but voiced frustration with the lack of
 We have two primary customers:
 
 - **Developers/PowerUsers** of Windows10 that want a built-in and lightweight solution to remap their own hotkeys which will increase their efficiency in completing tasks.
-- **Former MacOS** users who now use Windows and would like to utilize their former keyboard shortcuts to get rid of the learning period and ease the transition to using a new device.
+- **Former Linux and MacOS** users who now use Windows and would like to utilize their former keyboard shortcuts to get rid of the learning period and ease the transition to using a new device.
 
 ## 1.7 Problem Statement and Supporting Customer Insights
 
@@ -143,7 +143,8 @@ A brief survey was sent to the Windows Developer community during the planning s
 |  3  | App level keyboard shortcuts. Example: Going to the address bar in Chrome on a MacOS is CMD+L, on a PC, that would map to Alt-L.                                                                     | P2  |
 |  4  | Settings page that easily configures all supported scenarios.                                                                                                                                        | P1  |
 |  5  | The Powertoys Shortcut Guide needs to be aware of keyboard remaps. Example: If Winkey + G locks the computer the Shortcut Guide needs to list this as the method to lock a computer, not Winkey + L. | P1  |
-|  6  | A Mac and Linux ready profile that is prepopulated with commonly used remaps and adjustments.                                                                                                        | P1  |
+|  6  | A Mac ready profile that is prepopulated with commonly used remaps and adjustments.                                                                                                                  | P1  |
+|  6  | A Linux ready profile that is prepopulated with commonly used remaps and adjustments.                                                                                                                | P1  |
 |  7  | Multiple keyboard support. Example: Surface Laptop and Surface keyboard have different layout and a remap maybe needed.                                                                              | P1  |
 |  8  | The KSM needs to meet accessibility requirements.                                                                                                                                                    | P1  |
 |  9  | The KSM needs to meet localization requirements.                                                                                                                                                     | P1  |
@@ -175,17 +176,17 @@ A brief survey was sent to the Windows Developer community during the planning s
 ### 2.5 Functional Requirements for Settings
 
 | No. | Requirement                                                                                                                                                                   | Pri |
-| - | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
-| 1 | Recognize key presses.                                                                                                                                                          | P0  |
-| 2 | Clearly show what keys cannot be remapped                                                                                                                                       | P1  |
-| 3 | Option to reset to default                                                                                                                                                      | P1  |
-| 4 | Save, load, and export KSM settings so they can be loaded onto a different computer                                                                                             | P1  |
-| 5 | Warn users if any Winkey shortcuts have been orphaned. Example: Mapping Winkey + D to Winkey + L in one-direction, ergo no longer providing the user a method to lock their PC. | P1  |
-| 6 | Display all remapping and shortcut changes that have been made                                                                                                                  | P1  |
-| 7 | Settings are capable of dark mode                                                                                                                                               | P2  |
-| 8 | Warn users when multiple keys have the same function. Example: Left-Alt and Right Alt                                                                                           | P2  |
-| 9 | I am presented with a list of all the current OS-level key mapping and shortcuts in use                                                                                         | P3  |
-| 10 | Users can quickly swap profiles for different workloads. Example: See \#2                                                                                                      | P3  |
+| -  | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| 1  | Recognize key presses.                                                                                                                                                          | P0  |
+| 2  | Clearly show what keys cannot be remapped                                                                                                                                       | P1  |
+| 3  | Option to reset to default                                                                                                                                                      | P1  |
+| 4  | Save, load, and export KSM settings so they can be loaded onto a different computer                                                                                             | P1  |
+| 5  | Warn users if any Winkey shortcuts have been orphaned. Example: Mapping Winkey + D to Winkey + L in one-direction, ergo no longer providing the user a method to lock their PC. | P1  |
+| 6  | Display all remapping and shortcut changes that have been made                                                                                                                  | P1  |
+| 7  | Settings are capable of dark mode                                                                                                                                               | P2  |
+| 8  | Warn users when multiple keys have the same function. Example: Left-Alt and Right Alt                                                                                           | P2  |
+| 9  | I am presented with a list of all the current OS-level key mapping and shortcuts in use                                                                                         | P3  |
+| 10 | Users can quickly swap profiles for different workloads. Example: See \#2                                                                                                       | P3  |
 
 ###  2.6 Functional Requirements Open Questions / Concerns
     
