@@ -21,6 +21,7 @@ struct InvokeStruct
 CPowerRenameMenu::CPowerRenameMenu()
 {
     ModuleAddRef();
+    app_name = GET_RESOURCE_STRING(IDS_POWERRENAME);
 }
 
 CPowerRenameMenu::~CPowerRenameMenu()
@@ -197,7 +198,6 @@ DWORD WINAPI CPowerRenameMenu::s_PowerRenameUIThreadProc(_In_ void* pData)
 
 HRESULT __stdcall CPowerRenameMenu::GetTitle(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszName)
 {
-    app_name = GET_RESOURCE_STRING(IDS_POWERRENAME);
     return SHStrDup(app_name.c_str(), ppszName);
 }
 
