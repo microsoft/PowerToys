@@ -164,7 +164,7 @@
 
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
-    <!-- Restart explorer.exe if we detect existing powerrenameext.dll installation -->
+    <!-- Restart explorer.exe if we detect existing powerrenameext.dll or shellextensions.dll installation -->
     <util:CloseApplication Target="explorer.exe" RebootPrompt="no" TerminateProcess="0">
       EXISTINGPOWERRENAMEEXTPATH OR EXISTINGIMAGERESIZERPATH
     </util:CloseApplication>
