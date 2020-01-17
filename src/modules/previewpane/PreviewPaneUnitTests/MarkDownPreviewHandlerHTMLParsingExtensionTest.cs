@@ -1,7 +1,5 @@
 ﻿using System;
 using Markdig;
-using Markdig.Extensions.Tables;
-using Markdig.Syntax;
 using MarkDownPreviewHandler;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -9,41 +7,58 @@ namespace PreviewPaneUnitTests
 {
     [TestClass]
     public class MarkDownPreviewHandlerHTMLParsingExtensionTest
-    {
-        public MarkdownPipeline TestBase()
+    {       
+        public MarkdownPipeline TestBase(IMarkdownExtension extension)
         {
-            MarkdownPipeline pipeline = new MarkdownPipelineBuilder().Build();
-            return pipeline;
+            MarkdownPipelineBuilder pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions();
+            pipelineBuilder.Extensions.Add(extension);
+            return pipelineBuilder.Build();
         }
 
         [TestMethod]
-        public void PipelineOnDocumentProcessed_UpdatesTablesClass_WhenCalled()
+        public void Extension_UpdatesTablesClass_WhenUsed()
         {
             // Arrange 
-            String mdString = "Markdown | Less | Pretty\n-- - | --- | ---";
-            MarkdownDocument md = Markdown.Parse(mdString);
-            HTMLParsingExtension hTMLParsingExtension = new HTMLParsingExtension();
+            String mdString = "| A | B |\n| -- | -- | ";
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension();
+            MarkdownPipeline markdownPipeline = TestBase(htmlParsingExtension);
 
             // Act
-            hTMLParsingExtension.PipelineOnDocumentProcessed(md);
+            String html = Markdown.ToHtml(mdString, markdownPipeline);
 
             // Assert
-            Assert.IsInstanceOfType(md.LastChild, typeof(Table));
+            Assert.AreEqual(html, "<table class=\"table table-striped table-bordered\">\n<thead>\n<tr>\n<th>A</th>\n<th>B</th>\n</tr>\n</thead>\n</table>\n");
+        }
+
+
+        [TestMethod]
+        public void Extension_UpdatesBlockQuotesClass_WhenUsed()
+        {
+            // Arrange 
+            String mdString = "> Blockquotes.";
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension();
+            MarkdownPipeline markdownPipeline = TestBase(htmlParsingExtension);
+
+            // Act
+            String html = Markdown.ToHtml(mdString, markdownPipeline);
+
+            // Assert
+            Assert.AreEqual(html, "<blockquote class=\"blockquote\">\n<p>Blockquotes.</p>\n</blockquote>\n");
         }
 
         [TestMethod]
-        public void PipelineOnDocumentProcessed_UpdatesBlockQuotesClass_WhenCalled()
+        public void extension_updatesFigureClassAndRelativeUrltoAbsolute_whenused()
         {
-            // Arrange 
-            String mdString = "> Blockquotes are very handy in email to emulate reply text.";
-            MarkdownDocument md = Markdown.Parse(mdString);
-            HTMLParsingExtension hTMLParsingExtension = new HTMLParsingExtension();
+            // arrange 
+            String mdString = "![text](a.jpg \"Figure\")";
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension("C:\\Users\\");
+            MarkdownPipeline markdownPipeline = TestBase(htmlParsingExtension);
 
             // Act
-            hTMLParsingExtension.PipelineOnDocumentProcessed(md);
+            String html = Markdown.ToHtml(mdString, markdownPipeline);
 
             // Assert
-            Assert.IsInstanceOfType(md.LastChild, typeof(QuoteBlock));
+            Assert.AreEqual(html, "<p><img src=\"file:///C:/Users/a.jpg\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n");
         }
     }
 }

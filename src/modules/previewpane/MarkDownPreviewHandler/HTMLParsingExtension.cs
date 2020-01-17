@@ -20,9 +20,17 @@ namespace MarkDownPreviewHandler
     internal class HTMLParsingExtension : IMarkdownExtension
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="HTMLParsingExtension"/> class.
+        /// </summary>
+        public HTMLParsingExtension(string baseUrl = "")
+        {
+            this.BaseUrl = baseUrl;
+        }
+
+        /// <summary>
         /// Gets or sets path to directory containing markdown file.
         /// </summary>
-        private string BaseUrl { get; set; }
+        public string BaseUrl { get; set; }
 
         /// <inheritdoc/>
         public void Setup(MarkdownPipelineBuilder pipeline)
