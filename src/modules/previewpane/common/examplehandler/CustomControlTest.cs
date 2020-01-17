@@ -15,16 +15,17 @@ namespace Common
         /// <summary>
         /// Start the preview on the Control.
         /// </summary>
-        /// <param name="filePath">Path to the file.</param>
-        public void DoPreview(string filePath)
+        /// <param name="dataSource">Path to the file.</param>
+        public override void DoPreview<T>(T dataSource)
         {
             this.InvokeOnControlThread(() =>
             {
                 this.Visible = true;
+                var filePath = dataSource as string;
                 WebBrowser browser = new WebBrowser();
 
-                // browser.Navigate(filePath);
-                browser.DocumentText = "Test";
+                // browser.DocumentText = "Test";
+                browser.Navigate(filePath);
                 browser.Dock = DockStyle.Fill;
                 browser.IsWebBrowserContextMenuEnabled = false;
                 this.Controls.Add(browser);
