@@ -161,14 +161,14 @@ class PowerRenameModule : public PowertoyModuleIface
 private:
     // Enabled by default
     bool m_enabled = true;
-    wchar_t* app_name;
+    std::wstring app_name;
 
 public:
     // Return the display name of the powertoy, this will be cached
     virtual PCWSTR get_name() override
     {
-        app_name = GET_RES_STRING_WCHAR(IDS_POWERRENAME);
-        return app_name;
+        app_name = GET_RESOURCE_STRING(IDS_POWERRENAME);
+        return app_name.c_str();
     }
 
     // Enable the powertoy
@@ -303,10 +303,7 @@ public:
         init_settings();
     }
 
-    ~PowerRenameModule()
-    {
-        delete app_name;
-    }
+    ~PowerRenameModule(){};
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
