@@ -165,7 +165,7 @@
 
     </Window.Resources>
     <StackPanel>
-        <TextBlock Name="windowEditorDialogTitle" Text="{x:Static props:Resources.Custom_layout_creator}" Style="{StaticResource titleText}"  />
+        <TextBlock Name="windowEditorDialogTitle" Text="{x:Static props:Resources.Custom_Layout_Creator}" Style="{StaticResource titleText}"  />
         <Button x:Name="newZoneButton" Width="496" Height="136" Style="{StaticResource newZoneButton}" Click="OnAddZone">
             <StackPanel>
                 <TextBlock x:Name="newSoneName" Text="Add new zone" Style="{StaticResource templateTitleText}"  />
@@ -184,7 +184,7 @@
         -->
         <StackPanel Orientation="Horizontal" Margin="0,12,0,16">
             <Button Content="{x:Static props:Resources.Cancel}" Style="{StaticResource secondaryButton}" Click="OnCancel"/>
-            <Button Content="{x:Static props:Resources.Save_and_apply}" Style="{StaticResource primaryButton}" Click="OnSaveApplyTemplate" />
+            <Button Content="{x:Static props:Resources.Save_Apply}" Style="{StaticResource primaryButton}" Click="OnSaveApplyTemplate" />
         </StackPanel>
     </StackPanel>
     </local:EditorWindow>

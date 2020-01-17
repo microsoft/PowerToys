@@ -120,13 +120,19 @@
   <data name="Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="Custom_layout_creator" xml:space="preserve">
+  <data name="Custom_Layout_Creator" xml:space="preserve">
     <value>Custom layout creator</value>
+  </data>
+  <data name="Custom_Table_Layout" xml:space="preserve">
+    <value>Custom table layout creator</value>
   </data>
   <data name="Name" xml:space="preserve">
     <value>Name</value>
   </data>
-  <data name="Save_and_apply" xml:space="preserve">
+  <data name="Note_Custom_Table" xml:space="preserve">
+    <value>Note: Hold down Shift Key to change orientation of splitter</value>
+  </data>
+  <data name="Save_Apply" xml:space="preserve">
     <value>Save and apply</value>
   </data>
 </root>

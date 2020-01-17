@@ -72,9 +72,18 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Custom layout creator.
         /// </summary>
-        internal static string Custom_layout_creator {
+        internal static string Custom_Layout_Creator {
             get {
-                return ResourceManager.GetString("Custom_layout_creator", resourceCulture);
+                return ResourceManager.GetString("Custom_Layout_Creator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom table layout creator.
+        /// </summary>
+        internal static string Custom_Table_Layout {
+            get {
+                return ResourceManager.GetString("Custom_Table_Layout", resourceCulture);
             }
         }
         
@@ -88,11 +97,20 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Note: Hold down Shift Key to change orientation of splitter.
+        /// </summary>
+        internal static string Note_Custom_Table {
+            get {
+                return ResourceManager.GetString("Note_Custom_Table", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Save and apply.
         /// </summary>
-        internal static string Save_and_apply {
+        internal static string Save_Apply {
             get {
-                return ResourceManager.GetString("Save_and_apply", resourceCulture);
+                return ResourceManager.GetString("Save_Apply", resourceCulture);
             }
         }
     }
