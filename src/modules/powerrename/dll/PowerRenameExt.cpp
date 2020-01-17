@@ -197,8 +197,8 @@ DWORD WINAPI CPowerRenameMenu::s_PowerRenameUIThreadProc(_In_ void* pData)
 
 HRESULT __stdcall CPowerRenameMenu::GetTitle(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszName)
 {
-    app_name = GET_RES_STRING_WCHAR(IDS_POWERRENAME);
-    return SHStrDup(app_name, ppszName);
+    app_name = GET_RESOURCE_STRING(IDS_POWERRENAME);
+    return SHStrDup(app_name.c_str(), ppszName);
 }
 
 HRESULT __stdcall CPowerRenameMenu::GetIcon(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszIcon)
