@@ -167,7 +167,6 @@ public:
     // Return the display name of the powertoy, this will be cached
     virtual PCWSTR get_name() override
     {
-        app_name = GET_RESOURCE_STRING(IDS_POWERRENAME);
         return app_name.c_str();
     }
 
@@ -301,6 +300,7 @@ public:
     PowerRenameModule()
     {
         init_settings();
+        app_name = GET_RESOURCE_STRING(IDS_POWERRENAME);
     }
 
     ~PowerRenameModule(){};
