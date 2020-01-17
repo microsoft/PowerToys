@@ -17,7 +17,7 @@ namespace MarkDownPreviewHandler
     /// <summary>
     /// Markdig Extension to process html nodes in markdown AST.
     /// </summary>
-    internal class Extension : IMarkdownExtension
+    internal class HTMLParsingExtension : IMarkdownExtension
     {
         /// <summary>
         /// Gets or sets path to directory containing markdown file.
@@ -41,7 +41,7 @@ namespace MarkDownPreviewHandler
         /// Process nodes in markdown AST.
         /// </summary>
         /// <param name="document">Markdown Document.</param>
-        private void PipelineOnDocumentProcessed(MarkdownDocument document)
+        public void PipelineOnDocumentProcessed(MarkdownDocument document)
         {
             foreach (var node in document.Descendants())
             {

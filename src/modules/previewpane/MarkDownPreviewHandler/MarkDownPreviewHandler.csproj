@@ -22,7 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin/Debug/commonDocumentation.xml</DocumentationFile>
+    <DocumentationFile>bin/Debug/MarkdownPreviewPaneDocumentation.xml</DocumentationFile>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
@@ -47,7 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extension.cs" />
+    <Compile Include="HTMLParsingExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -64,6 +64,12 @@
     <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
       <Link>StyleCop.json</Link>
     </AdditionalFiles>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\common\Common.csproj">
+      <Project>{af2349b8-e5b6-4004-9502-687c1c7730b1}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
