@@ -1,10 +1,8 @@
-
 #include "stdafx.h"
 #include <commctrl.h>
 #include "Settings.h"
 #include "PowerRenameInterfaces.h"
 
-// Note: Not moving these strings to the resource file as these are internal and used as IDs
 const wchar_t c_rootRegPath[] = L"Software\\Microsoft\\PowerRename";
 const wchar_t c_mruSearchRegPath[] = L"SearchMRU";
 const wchar_t c_mruReplaceRegPath[] = L"ReplaceMRU";
@@ -167,15 +165,15 @@ bool CSettings::GetRegStringValue(_In_ PCWSTR valueName, __out_ecount(cchBuf) PW
     return (SUCCEEDED(HRESULT_FROM_WIN32(SHGetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName, &type, value, &cb) == ERROR_SUCCESS)));
 }
 
-typedef int(CALLBACK* MRUCMPPROC)(LPCWSTR, LPCWSTR);
 
-typedef struct
-{
-    DWORD cbSize;
-    UINT uMax;
-    UINT fFlags;
-    HKEY hKey;
-    LPCTSTR lpszSubKey;
+typedef int (CALLBACK* MRUCMPPROC)(LPCWSTR, LPCWSTR);
+
+typedef struct {
+    DWORD      cbSize;
+    UINT       uMax;
+    UINT       fFlags;
+    HKEY       hKey;
+    LPCTSTR    lpszSubKey;
     MRUCMPPROC lpfnCompare;
 } MRUINFO;
 
@@ -190,21 +188,15 @@ class CRenameMRU :
 {
 public:
     // IUnknown
-    IFACEMETHODIMP_(ULONG)
-    AddRef();
-    IFACEMETHODIMP_(ULONG)
-    Release();
+    IFACEMETHODIMP_(ULONG) AddRef();
+    IFACEMETHODIMP_(ULONG) Release();
     IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ void** ppv);
 
     // IEnumString
     IFACEMETHODIMP Next(__in ULONG celt, __out_ecount_part(celt, *pceltFetched) LPOLESTR* rgelt, __out_opt ULONG* pceltFetched);
     IFACEMETHODIMP Skip(__in ULONG) { return E_NOTIMPL; }
     IFACEMETHODIMP Reset();
-    IFACEMETHODIMP Clone(__deref_out IEnumString** ppenum)
-    {
-        *ppenum = nullptr;
-        return E_NOTIMPL;
-    }
+    IFACEMETHODIMP Clone(__deref_out IEnumString** ppenum) { *ppenum = nullptr;  return E_NOTIMPL; }
 
     // IPowerRenameMRU
     IFACEMETHODIMP AddMRUString(_In_ PCWSTR entry);
@@ -221,20 +213,19 @@ private:
     int _EnumMRUList(_In_ int nItem, _Out_ void* lpData, _In_ UINT uLen);
     void _FreeMRUList();
 
-    long m_refCount = 0;
-    HKEY m_hKey = NULL;
-    ULONG m_maxMRUSize = 0;
-    ULONG m_mruIndex = 0;
-    ULONG m_mruSize = 0;
+    long   m_refCount = 0;
+    HKEY   m_hKey = NULL;
+    ULONG  m_maxMRUSize = 0;
+    ULONG  m_mruIndex = 0;
+    ULONG  m_mruSize = 0;
     HANDLE m_mruHandle = NULL;
     HMODULE m_hComctl32Dll = NULL;
-    PWSTR m_regPath = nullptr;
+    PWSTR  m_regPath = nullptr;
 };
 
 CRenameMRU::CRenameMRU() :
     m_refCount(1)
-{
-}
+{}
 
 CRenameMRU::~CRenameMRU()
 {
@@ -277,14 +268,12 @@ HRESULT CRenameMRU::CreateInstance(_In_ PCWSTR regPathMRU, _In_ ULONG maxMRUSize
 }
 
 // IUnknown
-IFACEMETHODIMP_(ULONG)
-CRenameMRU::AddRef()
+IFACEMETHODIMP_(ULONG) CRenameMRU::AddRef()
 {
     return InterlockedIncrement(&m_refCount);
 }
 
-IFACEMETHODIMP_(ULONG)
-CRenameMRU::Release()
+IFACEMETHODIMP_(ULONG) CRenameMRU::Release()
 {
     long refCount = InterlockedDecrement(&m_refCount);
 
@@ -475,6 +464,7 @@ void CRenameMRU::_FreeMRUList()
             {
                 pfnFreeMRUList(m_mruHandle);
             }
+            
         }
         m_mruHandle = NULL;
     }
