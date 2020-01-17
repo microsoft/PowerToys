@@ -61,11 +61,38 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Apply.
+        /// </summary>
+        internal static string Apply {
+            get {
+                return ResourceManager.GetString("Apply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cancel.
         /// </summary>
         internal static string Cancel {
             get {
                 return ResourceManager.GetString("Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choose your layout.
+        /// </summary>
+        internal static string Choose_Layout {
+            get {
+                return ResourceManager.GetString("Choose_Layout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom.
+        /// </summary>
+        internal static string Custom {
+            get {
+                return ResourceManager.GetString("Custom", resourceCulture);
             }
         }
         
@@ -84,6 +111,15 @@ namespace FancyZonesEditor.Properties {
         internal static string Custom_Table_Layout {
             get {
                 return ResourceManager.GetString("Custom_Table_Layout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit selected layout.
+        /// </summary>
+        internal static string Edit_Selected_Layout {
+            get {
+                return ResourceManager.GetString("Edit_Selected_Layout", resourceCulture);
             }
         }
         
@@ -111,6 +147,33 @@ namespace FancyZonesEditor.Properties {
         internal static string Save_Apply {
             get {
                 return ResourceManager.GetString("Save_Apply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show space around zones.
+        /// </summary>
+        internal static string Show_Space_Zones {
+            get {
+                return ResourceManager.GetString("Show_Space_Zones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Space around zones.
+        /// </summary>
+        internal static string Space_Around_Zones {
+            get {
+                return ResourceManager.GetString("Space_Around_Zones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Templates.
+        /// </summary>
+        internal static string Templates {
+            get {
+                return ResourceManager.GetString("Templates", resourceCulture);
             }
         }
     }

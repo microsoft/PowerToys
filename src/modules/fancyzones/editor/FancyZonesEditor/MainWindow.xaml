@@ -7,6 +7,7 @@
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:local="clr-namespace:FancyZonesEditor"
         xmlns:Converters="clr-namespace:FancyZonesEditor.Converters"
+        xmlns:props="clr-namespace:FancyZonesEditor.Properties"
         mc:Ignorable="d"
         Title=""
         Width="810"
@@ -177,10 +178,10 @@
     
     <StackPanel>
 
-        <TextBlock Name="dialog_Title" Text="Choose your layout" Style="{StaticResource titleText}"  />
+        <TextBlock Name="dialog_Title" Text="{x:Static props:Resources.Choose_Layout}" Style="{StaticResource titleText}"  />
 
         <TabControl BorderThickness="0" x:Name="TemplateTab" SelectedIndex="{Binding IsCustomLayoutActive, Mode=OneWay, Converter={StaticResource BooleanToIntConverter}}">
-            <TabItem Header="Templates" Template="{StaticResource myTabs}">
+            <TabItem Header="{x:Static props:Resources.Templates}" Template="{StaticResource myTabs}">
                 <StackPanel>
                     <StackPanel Margin="0,15,0,8" Orientation="Horizontal" HorizontalAlignment="Center">
                         <Button x:Name="decrementZones" Width="40" Height="40" Content="-" Style="{StaticResource spinnerButton}" Click="DecrementZones_Click"/>

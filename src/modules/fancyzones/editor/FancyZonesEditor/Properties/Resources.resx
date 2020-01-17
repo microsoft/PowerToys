@@ -117,14 +117,26 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
   <data name="Cancel" xml:space="preserve">
     <value>Cancel</value>
+  </data>
+  <data name="Choose_Layout" xml:space="preserve">
+    <value>Choose your layout</value>
+  </data>
+  <data name="Custom" xml:space="preserve">
+    <value>Custom</value>
   </data>
   <data name="Custom_Layout_Creator" xml:space="preserve">
     <value>Custom layout creator</value>
   </data>
   <data name="Custom_Table_Layout" xml:space="preserve">
     <value>Custom table layout creator</value>
+  </data>
+  <data name="Edit_Selected_Layout" xml:space="preserve">
+    <value>Edit selected layout</value>
   </data>
   <data name="Name" xml:space="preserve">
     <value>Name</value>
@@ -134,5 +146,14 @@
   </data>
   <data name="Save_Apply" xml:space="preserve">
     <value>Save and apply</value>
+  </data>
+  <data name="Show_Space_Zones" xml:space="preserve">
+    <value>Show space around zones</value>
+  </data>
+  <data name="Space_Around_Zones" xml:space="preserve">
+    <value>Space around zones</value>
+  </data>
+  <data name="Templates" xml:space="preserve">
+    <value>Templates</value>
   </data>
 </root>
