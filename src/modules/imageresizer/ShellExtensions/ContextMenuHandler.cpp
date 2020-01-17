@@ -68,7 +68,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     LPTSTR pszPath = i.CurrentItem();
     LPTSTR pszExt = PathFindExtension(pszPath);
 
-    // TODO: Instead, detect whether there's a WIC codec installd that can handle this file (issue #7)
+    // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
     AssocGetPerceivedType(pszExt, &type, &flag, NULL);
 
     free(pszPath);
