@@ -113,6 +113,9 @@ namespace Common
             });
         }
 
+        /// <inheritdoc />
+        public abstract void DoPreview<T>(T dataSource);
+
         /// <summary>
         /// Executes the specified delegate on the thread that owns the control's underlying window handle.
         /// </summary>
