@@ -108,84 +108,84 @@ Features</th>
 <tbody>
 <tr class="odd">
 <td><a href="https://www.alfredapp.com/">Alfred</a> (free)</td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
 </tr>
 <tr class="even">
 <td><a href="https://support.apple.com/en-us/HT204014">Spotlight</a></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
 </tr>
 <tr class="odd">
 <td><a href="https://www.listary.com/">Listary</a></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> shown as a separate cmd</td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> on right click</td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> shown as a separate cmd</td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> on right click</td>
 </tr>
 <tr class="even">
 <td><a href="http://www.wox.one/">Wox</a></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> via “&gt;” or Win+R</td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> on right-click</td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> on right click</td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> via “&gt;” or Win+R</td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> on right-click</td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> on right click</td>
 </tr>
 <tr class="odd">
 <td><a href="https://www.launchy.net/index.php">Launchy</a></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
 </tr>
 <tr class="even">
 <td><a href="https://github.com/davatorium/rofi">Rofi</a></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
 <td>N/A</td>
 <td>N/A</td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
 </tr>
 <tr class="odd">
 <td><a href="http://www.executor.dk/">Executor</a></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> Shift+enter</td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> on right click</td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> Shift+enter</td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> on right click</td>
 </tr>
 <tr class="even">
 <td>Run (Win+R)</td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> Ctrl+Shift+enter</td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> Ctrl+Shift+enter</td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
 </tr>
 <tr class="odd">
 <td>Search (Win+S)</td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> on right click</td>
-<td><img src="images/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" />on right click</td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> on right click</td>
+<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
+<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" />on right click</td>
 </tr>
 </tbody>
 </table>
@@ -195,37 +195,37 @@ launchers:
 
 1.  Spotlight
 
-![](images/Spotlight1.png)
+![](images/PowerLauncher/Spotlight1.png)
 
-![](images/Spotlight2.png)
+![](images/PowerLauncher/Spotlight2.png)
 
 2.  Wox
 
-![](images/Wox1.png)
+![](images/PowerLauncher/Wox1.png)
 
-![](images/Wox2.jpg)
+![](images/PowerLauncher/Wox2.jpg)
 
-![](images/Wox3.png)
+![](images/PowerLauncher/Wox3.png)
 
 3.  Launchy
 
-![](images/Launchy1.png)
+![](images/PowerLauncher/Launchy1.png)
 
-![](images/Launchy2.jpg)
+![](images/PowerLauncher/Launchy2.jpg)
 
-![](images/Launchy3.jpg)
+![](images/PowerLauncher/Launchy3.jpg)
 
-![](images/Launchy4.png)
+![](images/PowerLauncher/Launchy4.png)
 
 4.  Alfred
 
-![](images/Alfred1.png)
+![](images/PowerLauncher/Alfred1.png)
 
-![](images/Alfred2.png)
+![](images/PowerLauncher/Alfred2.png)
 
-![](images/Alfred3.png)
+![](images/PowerLauncher/Alfred3.png)
 
-![](images/Alfred4.png)
+![](images/PowerLauncher/Alfred4.png)
 
 ## 1.5. Goals/Non-Goals
 
@@ -402,27 +402,27 @@ The initially proposed name for this app is PowerLauncher.
 
 ## 3.1 State Flow Diagram
 
-![](images/StateFlow.png)
+![](images/PowerLauncher/StateFlow.png)
 
 ## 3.2 Mockups
 
-![](images/UI1.png)
+![](images/PowerLauncher/UI1.png)
 
-![](images/UI2.png)
+![](images/PowerLauncher/UI2.png)
 
-![](images/UI3.png)
+![](images/PowerLauncher/UI3.png)
 
-![](images/UI4.png)
+![](images/PowerLauncher/UI4.png)
 
-![](images/UI5.png)
+![](images/PowerLauncher/UI5.png)
 
-![](images/UI6.png)
+![](images/PowerLauncher/UI6.png)
 
-![](images/UI7.png)
+![](images/PowerLauncher/UI7.png)
 
-![](images/UI8.png)
+![](images/PowerLauncher/UI8.png)
 
-![](images/UI9.png)
+![](images/PowerLauncher/UI9.png)
 
 There are 2 behaviour options for Tab:
 
@@ -433,19 +433,19 @@ There are 2 behaviour options for Tab:
 2.  Use Tab to go to the next option which is similar behavior as to how
     Command Prompt works.
 
-![](images/UI10.png)
+![](images/PowerLauncher/UI10.png)
 
-![](images/UI11.png)
+![](images/PowerLauncher/UI11.png)
 
-![](images/UI12.png)
+![](images/PowerLauncher/UI12.png)
 
-![](images/UI13.png)
+![](images/PowerLauncher/UI13.png)
 
-![](images/UI14.png)
+![](images/PowerLauncher/UI14.png)
 
-![](images/UI15.png)
+![](images/PowerLauncher/UI15.png)
 
-![](images/UI16.png)
+![](images/PowerLauncher/UI16.png)
 
 # 4\. Dependencies
 
