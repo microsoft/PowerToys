@@ -99,7 +99,7 @@ namespace Common
         }
 
         /// <inheritdoc />
-        public void Unload()
+        public virtual void Unload()
         {
             this.InvokeOnControlThread(() =>
             {
@@ -114,7 +114,10 @@ namespace Common
         }
 
         /// <inheritdoc />
-        public abstract void DoPreview<T>(T dataSource);
+        public virtual void DoPreview<T>(T dataSource)
+        {
+            this.Visible = true;
+        }
 
         /// <summary>
         /// Executes the specified delegate on the thread that owns the control's underlying window handle.

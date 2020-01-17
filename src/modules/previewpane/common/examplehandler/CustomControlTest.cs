@@ -20,7 +20,6 @@ namespace Common
         {
             this.InvokeOnControlThread(() =>
             {
-                this.Visible = true;
                 var filePath = dataSource as string;
                 WebBrowser browser = new WebBrowser();
 
@@ -29,6 +28,7 @@ namespace Common
                 browser.Dock = DockStyle.Fill;
                 browser.IsWebBrowserContextMenuEnabled = false;
                 this.Controls.Add(browser);
+                base.DoPreview(dataSource);
             });
         }
     }
