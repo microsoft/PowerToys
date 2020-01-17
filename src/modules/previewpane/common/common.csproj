@@ -39,10 +39,14 @@
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>PreviewHandlerCommon.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -51,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="cominterop\IInitializeWithFile.cs" />
     <Compile Include="cominterop\COLORREF.cs" />
     <Compile Include="cominterop\IInitializeWithStream.cs" />
     <Compile Include="cominterop\IObjectWithSite.cs" />
@@ -61,13 +66,26 @@
     <Compile Include="cominterop\LOGFONT.cs" />
     <Compile Include="cominterop\MSG.cs" />
     <Compile Include="cominterop\RECT.cs" />
+    <Compile Include="examplehandler\CustomControlTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="handlers\FileBasedPreviewHandler.cs" />
+    <Compile Include="controls\FormHandlerControl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="controls\IPreviewHandlerControl.cs" />
+    <Compile Include="handlers\PreviewHandlerBase.cs" />
+    <Compile Include="handlers\PreviewHandlerAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="handlers\SteamBasedPreviewHandler.cs" />
+    <Compile Include="examplehandler\TestCustomHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
       <Link>StyleCop.json</Link>
     </AdditionalFiles>
     <None Include="packages.config" />
+    <None Include="PreviewHandlerCommon.snk" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\..\..\..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
