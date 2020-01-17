@@ -66,5 +66,12 @@ namespace Common
         /// <param name="hwnd">Pointer to the parent window handle.</param>
         /// <param name="rect">Instance of Rectangle defining the area.</param>
         void SetWindow(IntPtr hwnd, Rectangle rect);
+
+        /// <summary>
+        /// Called by Preview Handler to start the preview.
+        /// </summary>
+        /// <typeparam name="T">File Path or Stream reference for the file.</typeparam>
+        /// <param name="dataSource">Represents the source of preview data.</param>
+        void DoPreview<T>(T dataSource);
     }
 }
