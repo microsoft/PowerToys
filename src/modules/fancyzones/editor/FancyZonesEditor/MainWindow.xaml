@@ -233,7 +233,7 @@
             </TabItem>
             
             
-            <TabItem Header="Custom" Template="{StaticResource myTabs}">
+            <TabItem Header="{x:Static props:Resources.Custom}" Template="{StaticResource myTabs}">
                 <StackPanel>
                     <ItemsControl ItemsSource="{Binding CustomModels}" Margin="8,8,0,0">
                         <ItemsControl.ItemsPanel>
@@ -268,8 +268,8 @@
                     </ItemsControl>
 
                     <StackPanel Orientation="Horizontal" Margin="0,10,0,16">
-                        <Button x:Name="EditCustomButton" Content="Edit selected layout" Padding="8" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
-                        <Button x:Name="ApplyCustomButton" Content="Apply" Padding="8" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
+                        <Button x:Name="EditCustomButton" Content="{x:Static props:Resources.Edit_Selected_Layout}" Padding="8" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
+                        <Button x:Name="ApplyCustomButton" Content="{x:Static props:Resources.Apply}" Padding="8" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
                     </StackPanel>
                 </StackPanel>
             </TabItem>
