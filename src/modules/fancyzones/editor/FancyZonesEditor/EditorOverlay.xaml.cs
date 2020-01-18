@@ -23,39 +23,39 @@ namespace FancyZonesEditor
         public Int32Rect[] GetZoneRects()
         {
             // TODO: the ideal here is that the ArrangeRects logic is entirely inside the model, so we don't have to walk the UIElement children to get the rect info
-            Panel previewPanel;
             if (_editor != null)
             {
                 if (_editor is GridEditor gridEditor)
                 {
-                    previewPanel = gridEditor.PreviewPanel;
+                    return ZoneRectsFromPanel(gridEditor.PreviewPanel);
                 }
                 else
                 {
                     // CanvasEditor
-                    previewPanel = ((CanvasEditor)_editor).Preview;
+                    return ZoneRectsFromPanel(((CanvasEditor)_editor).Preview);
                 }
             }
             else
             {
-                previewPanel = _layoutPreview.PreviewPanel;
+                // One of the predefined zones (neither grid or canvas editor used).
+                return _layoutPreview.GetZoneRects();
             }
+        }
 
-            var count = previewPanel.Children.Count;
+        private Int32Rect[] ZoneRectsFromPanel(Panel previewPanel)
+        {
+            int count = previewPanel.Children.Count;
             Int32Rect[] zones = new Int32Rect[count];
 
-            int i = 0;
-            foreach (FrameworkElement child in previewPanel.Children)
+            for (int i = 0; i < count; i++)
             {
+                FrameworkElement child = (FrameworkElement)previewPanel.Children[i];
                 Point topLeft = child.TransformToAncestor(previewPanel).Transform(default);
 
-                var right = topLeft.X + child.ActualWidth;
-                var bottom = topLeft.Y + child.ActualHeight;
                 zones[i].X = (int)topLeft.X;
                 zones[i].Y = (int)topLeft.Y;
                 zones[i].Width = (int)child.ActualWidth;
                 zones[i].Height = (int)child.ActualHeight;
-                i++;
             }
 
             return zones;

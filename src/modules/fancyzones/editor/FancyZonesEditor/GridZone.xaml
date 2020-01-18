@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
             Background="LightGray"
             BorderThickness="1"
-            BorderBrush="SlateGray"
+            BorderBrush="DarkGray"
               Opacity="0.5"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid x:Name="Frame" Visibility="Collapsed">
