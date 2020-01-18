@@ -22,7 +22,7 @@ namespace FancyZonesEditor.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace FancyZonesEditor.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("FancyZonesEditor.Properties.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace FancyZonesEditor.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Apply.
         /// </summary>
-        internal static string Apply {
+        public static string Apply {
             get {
                 return ResourceManager.GetString("Apply", resourceCulture);
             }
@@ -72,7 +72,7 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Cancel.
         /// </summary>
-        internal static string Cancel {
+        public static string Cancel {
             get {
                 return ResourceManager.GetString("Cancel", resourceCulture);
             }
@@ -81,7 +81,7 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Choose your layout.
         /// </summary>
-        internal static string Choose_Layout {
+        public static string Choose_Layout {
             get {
                 return ResourceManager.GetString("Choose_Layout", resourceCulture);
             }
@@ -90,7 +90,7 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Custom.
         /// </summary>
-        internal static string Custom {
+        public static string Custom {
             get {
                 return ResourceManager.GetString("Custom", resourceCulture);
             }
@@ -99,7 +99,7 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Custom layout creator.
         /// </summary>
-        internal static string Custom_Layout_Creator {
+        public static string Custom_Layout_Creator {
             get {
                 return ResourceManager.GetString("Custom_Layout_Creator", resourceCulture);
             }
@@ -108,7 +108,7 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Custom table layout creator.
         /// </summary>
-        internal static string Custom_Table_Layout {
+        public static string Custom_Table_Layout {
             get {
                 return ResourceManager.GetString("Custom_Table_Layout", resourceCulture);
             }
@@ -117,7 +117,7 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Edit selected layout.
         /// </summary>
-        internal static string Edit_Selected_Layout {
+        public static string Edit_Selected_Layout {
             get {
                 return ResourceManager.GetString("Edit_Selected_Layout", resourceCulture);
             }
@@ -126,7 +126,7 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Name.
         /// </summary>
-        internal static string Name {
+        public static string Name {
             get {
                 return ResourceManager.GetString("Name", resourceCulture);
             }
@@ -135,7 +135,7 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Note: Hold down Shift Key to change orientation of splitter.
         /// </summary>
-        internal static string Note_Custom_Table {
+        public static string Note_Custom_Table {
             get {
                 return ResourceManager.GetString("Note_Custom_Table", resourceCulture);
             }
@@ -144,7 +144,7 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Save and apply.
         /// </summary>
-        internal static string Save_Apply {
+        public static string Save_Apply {
             get {
                 return ResourceManager.GetString("Save_Apply", resourceCulture);
             }
@@ -153,7 +153,7 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Show space around zones.
         /// </summary>
-        internal static string Show_Space_Zones {
+        public static string Show_Space_Zones {
             get {
                 return ResourceManager.GetString("Show_Space_Zones", resourceCulture);
             }
@@ -162,7 +162,7 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Space around zones.
         /// </summary>
-        internal static string Space_Around_Zones {
+        public static string Space_Around_Zones {
             get {
                 return ResourceManager.GetString("Space_Around_Zones", resourceCulture);
             }
@@ -171,7 +171,7 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Templates.
         /// </summary>
-        internal static string Templates {
+        public static string Templates {
             get {
                 return ResourceManager.GetString("Templates", resourceCulture);
             }
