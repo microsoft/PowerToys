@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Windows;
 using FancyZonesEditor.Models;
 
@@ -20,6 +21,7 @@ namespace FancyZonesEditor
         public App()
         {
             ZoneSettings = new Settings();
+            System.Threading.Thread.CurrentThread.CurrentUICulture = CultureInfo.CurrentUICulture;
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
