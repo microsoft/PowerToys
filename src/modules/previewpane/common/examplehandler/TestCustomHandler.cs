@@ -9,11 +9,11 @@ namespace Common
     /// <summary>
     /// This is a example custom handler to show how to extend the library.
     /// </summary>
-    [PreviewHandler("SvgPreviewHandler", ".svg", "{88235ab2-bfce-4be8-9ed0-0408cd8da792}")]
+    /*[PreviewHandler("SvgPreviewHandler", ".svg", "{88235ab2-bfce-4be8-9ed0-0408cd8da792}")]
     [ProgId("SvgPreviewHandler")]
     [Guid("22a1a8e8-e929-4732-90ce-91eaff38b614")]
     [ClassInterface(ClassInterfaceType.None)]
-    [ComVisible(true)]
+    [ComVisible(true)]*/
     public class TestCustomHandler : FileBasedPreviewHandler
     {
         private CustomControlTest previewHandlerControl;
