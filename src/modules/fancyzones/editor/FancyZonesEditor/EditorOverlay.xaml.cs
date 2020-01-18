@@ -22,7 +22,6 @@ namespace FancyZonesEditor
 
         public Int32Rect[] GetZoneRects()
         {
-            // TODO: the ideal here is that the ArrangeRects logic is entirely inside the model, so we don't have to walk the UIElement children to get the rect info
             if (_editor != null)
             {
                 if (_editor is GridEditor gridEditor)
@@ -44,6 +43,7 @@ namespace FancyZonesEditor
 
         private Int32Rect[] ZoneRectsFromPanel(Panel previewPanel)
         {
+            // TODO: the ideal here is that the ArrangeRects logic is entirely inside the model, so we don't have to walk the UIElement children to get the rect info
             int count = previewPanel.Children.Count;
             Int32Rect[] zones = new Int32Rect[count];
 
