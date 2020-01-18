@@ -90,6 +90,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "previewpane", "previewpane"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "src\modules\previewpane\common\Common.csproj", "{AF2349B8-E5B6-4004-9502-687C1C7730B1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvgPreviewHandler", "src\modules\previewpane\SvgPreviewHandler\SvgPreviewHandler.csproj", "{DA425894-6E13-404F-8DCB-78584EC0557A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -168,6 +170,10 @@ Global
 		{AF2349B8-E5B6-4004-9502-687C1C7730B1}.Debug|x64.Build.0 = Debug|x64
 		{AF2349B8-E5B6-4004-9502-687C1C7730B1}.Release|x64.ActiveCfg = Release|x64
 		{AF2349B8-E5B6-4004-9502-687C1C7730B1}.Release|x64.Build.0 = Release|x64
+		{DA425894-6E13-404F-8DCB-78584EC0557A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DA425894-6E13-404F-8DCB-78584EC0557A}.Debug|x64.Build.0 = Debug|Any CPU
+		{DA425894-6E13-404F-8DCB-78584EC0557A}.Release|x64.ActiveCfg = Release|Any CPU
+		{DA425894-6E13-404F-8DCB-78584EC0557A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -193,6 +199,7 @@ Global
 		{0485F45C-EA7A-4BB5-804B-3E8D14699387} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
 		{2F305555-C296-497E-AC20-5FA1B237996A} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{AF2349B8-E5B6-4004-9502-687C1C7730B1} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{DA425894-6E13-404F-8DCB-78584EC0557A} = {2F305555-C296-497E-AC20-5FA1B237996A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
