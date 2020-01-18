@@ -62,7 +62,7 @@
                     <TextBlock Text="{DynamicResource querySearchPrecision}" />
                     <ComboBox Margin="10 0 0 0" Width="120"
                               ItemsSource="{Binding QuerySearchPrecisionStrings}" 
-                              SelectedItem="{Binding Settings.QuerySearchPrecision}" />
+                              SelectedItem="{Binding Settings.QuerySearchPrecisionString}" />
                 </StackPanel>
                 <StackPanel Margin="10" Orientation="Horizontal">
                     <TextBlock Text="{DynamicResource lastQueryMode}" />
