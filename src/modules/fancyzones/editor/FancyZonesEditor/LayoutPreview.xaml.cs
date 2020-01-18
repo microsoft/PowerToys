@@ -91,7 +91,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private void RenderActualScalePriview(GridLayoutModel grid)
+        private void RenderActualScalePreview(GridLayoutModel grid)
         {
             int rows = grid.Rows;
             int cols = grid.Columns;
@@ -178,7 +178,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private void RenderSmallScalePriview(GridLayoutModel grid)
+        private void RenderSmallScalePreview(GridLayoutModel grid)
         {
             foreach (int percent in grid.RowPercents)
             {
@@ -248,11 +248,11 @@ namespace FancyZonesEditor
         {
             if (IsActualSize)
             {
-                RenderActualScalePriview(grid);
+                RenderActualScalePreview(grid);
             }
             else
             {
-                RenderSmallScalePriview(grid);
+                RenderSmallScalePreview(grid);
             }
         }
 
