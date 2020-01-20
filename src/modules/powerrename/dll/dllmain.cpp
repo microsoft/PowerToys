@@ -206,23 +206,23 @@ public:
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(GET_RESOURCE_STRING(IDS_SETTINGS_DESCRIPTION));
-        settings.set_icon_key(GET_RESOURCE_STRING(IDS_SETTINGS_ICON));
+        settings.set_icon_key(L"pt-power-rename");
 
         // Link to the GitHub PowerRename sub-page
         settings.set_overview_link(GET_RESOURCE_STRING(IDS_OVERVIEW_LINK));
 
         settings.add_bool_toogle(
-            GET_RESOURCE_STRING(IDS_BOOL_PERSIST),
+            L"bool_persist_input",
             GET_RESOURCE_STRING(IDS_RESTORE_SEARCH),
             CSettings::GetPersistState());
 
         settings.add_bool_toogle(
-            GET_RESOURCE_STRING(IDS_MRU_ENABLED),
+            L"bool_mru_enabled",
             GET_RESOURCE_STRING(IDS_ENABLE_AUTO),
             CSettings::GetMRUEnabled());
 
         settings.add_int_spinner(
-            GET_RESOURCE_STRING(IDS_MAX_MRU_SIZE),
+            L"int_max_mru_size",
             GET_RESOURCE_STRING(IDS_MAX_ITEMS),
             CSettings::GetMaxMRUSize(),
             0,
@@ -230,12 +230,12 @@ public:
             1);
 
         settings.add_bool_toogle(
-            GET_RESOURCE_STRING(IDS_SHOW_ICON),
+            L"bool_show_icon_on_menu",
             GET_RESOURCE_STRING(IDS_ICON_CONTEXT_MENU),
             CSettings::GetShowIconOnMenu());
 
         settings.add_bool_toogle(
-            GET_RESOURCE_STRING(IDS_EXTENDED_MENU),
+            L"bool_show_extended_menu",
             GET_RESOURCE_STRING(IDS_EXTENDED_MENU_INFO),
             CSettings::GetExtendedContextMenuOnly());
 
@@ -252,11 +252,11 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config);
 
-            CSettings::SetPersistState(values.get_bool_value(GET_RESOURCE_STRING(IDS_BOOL_PERSIST)).value());
-            CSettings::SetMRUEnabled(values.get_bool_value(GET_RESOURCE_STRING(IDS_MRU_ENABLED)).value());
-            CSettings::SetMaxMRUSize(values.get_int_value(GET_RESOURCE_STRING(IDS_MAX_MRU_SIZE)).value());
-            CSettings::SetShowIconOnMenu(values.get_bool_value(GET_RESOURCE_STRING(IDS_SHOW_ICON)).value());
-            CSettings::SetExtendedContextMenuOnly(values.get_bool_value(GET_RESOURCE_STRING(IDS_EXTENDED_MENU)).value());
+            CSettings::SetPersistState(values.get_bool_value(L"bool_persist_input").value());
+            CSettings::SetMRUEnabled(values.get_bool_value(L"bool_mru_enabled").value());
+            CSettings::SetMaxMRUSize(values.get_int_value(L"int_max_mru_size").value());
+            CSettings::SetShowIconOnMenu(values.get_bool_value(L"bool_show_icon_on_menu").value());
+            CSettings::SetExtendedContextMenuOnly(values.get_bool_value(L"bool_show_extended_menu").value());
         }
         catch (std::exception)
         {
