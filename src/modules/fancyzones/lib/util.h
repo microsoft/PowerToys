@@ -133,3 +133,9 @@ inline void ParseDeviceId(PCWSTR deviceId, PWSTR parsedId, size_t size)
         StringCchCopy(parsedId, size, L"FallbackDevice");
     }
 }
+
+inline int OpacitySettingToAlpha(int opacity)
+{
+    // convert percentage to a 0-255 alpha value
+    return opacity * 2.55;
+}
