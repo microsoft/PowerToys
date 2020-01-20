@@ -680,6 +680,10 @@ void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
 {
     if (const HWND window = get_filtered_active_window())
     {
+        if (GetWindow(window, GW_OWNER) != nullptr)
+        {
+            return;
+        }
         if (const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL))
         {
             std::shared_lock readLock(m_lock);
@@ -696,6 +700,10 @@ void FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 {
     if (const HWND window = get_filtered_active_window())
     {
+        if (GetWindow(window, GW_OWNER) != nullptr)
+        {
+            return;
+        }
         if (const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL))
         {
             std::shared_lock readLock(m_lock);
