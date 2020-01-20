@@ -10,12 +10,12 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ImageResizer")]
+[assembly: AssemblyTitle("Image Resizer")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft Corp.")]
-[assembly: AssemblyProduct("ImageResizer")]
-[assembly: AssemblyCopyright("Copyright (C) 2019 Microsoft Corp.")]
+[assembly: AssemblyCompany("Brice Lambson")]
+[assembly: AssemblyProduct("Image Resizer for Windows")]
+[assembly: AssemblyCopyright("© 2019 Brice Lambson. All rights reserved.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
