@@ -164,7 +164,7 @@
 
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
-    <!-- Restart explorer.exe if we detect existing powerrenameext.dll or shellextensions.dll installation -->
+    <!-- Restart explorer.exe if we detect existing PowerRenameExt.dll or ImageResizerExt.dll installation -->
     <util:CloseApplication Target="explorer.exe" RebootPrompt="no" TerminateProcess="0">
       EXISTINGPOWERRENAMEEXTPATH OR EXISTINGIMAGERESIZERPATH
     </util:CloseApplication>
@@ -269,9 +269,9 @@
           <!-- NB: Needed since it's only referenced in XAML. -->
           <netfx:NativeImage Id="Interactivity" Platform="all" Priority="0"/>
         </File>
-        <File Source="$(var.BinX64Dir)\modules\ShellExtensions.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)\modules\ImageResizerExt.dll" KeyPath="yes" />
         <RegistryKey Root="HKCR" Key="CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
-          <RegistryValue Value="[ModulesInstallFolder]ShellExtensions.dll" Type="string" />
+          <RegistryValue Value="[ModulesInstallFolder]ImageResizerExt.dll" Type="string" />
           <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
         </RegistryKey>
         <RegistryValue Root="HKCR"
