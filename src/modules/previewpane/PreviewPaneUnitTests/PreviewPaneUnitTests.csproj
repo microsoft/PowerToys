@@ -42,9 +42,11 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MarkDownPreviewHandlerHTMLParsingExtensionTest.cs" />
+    <Compile Include="MarkdownPreviewHandlerHTMLParsingExtensionTest.cs" />
+    <Compile Include="MarkdownPreviewHandlerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -59,10 +61,20 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{AF2349B8-E5B6-4004-9502-687C1C7730B1}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MarkDownPreviewHandler\MarkdownPreviewHandler.csproj">
       <Project>{6a71162e-fc4c-4a2c-b90f-3cf94f59a9bb}</Project>
       <Name>MarkdownPreviewHandler</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="HelperFiles\SampleMarkdown.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

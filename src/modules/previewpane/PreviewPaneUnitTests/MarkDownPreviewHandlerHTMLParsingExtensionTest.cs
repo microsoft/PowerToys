@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace PreviewPaneUnitTests
 {
     [TestClass]
-    public class MarkDownPreviewHandlerHTMLParsingExtensionTest
+    public class MarkdownPreviewHandlerHTMLParsingExtensionTest
     {       
         public MarkdownPipeline TestBase(IMarkdownExtension extension)
         {
