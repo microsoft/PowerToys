@@ -22,13 +22,13 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShellExtensions.cpp">
+    <ClCompile Include="ImageResizerExt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShellExtensions_i.c">
+    <ClCompile Include="ImageResizerExt_i.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="ContextMenuHandler.cpp">
@@ -54,7 +54,7 @@
     <ClInclude Include="dllmain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShellExtensions_i.h">
+    <ClInclude Include="ImageResizerExt_i.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="ContextMenuHandler.h">
@@ -68,15 +68,15 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ShellExtensions.rc">
+    <ResourceCompile Include="ImageResizerExt.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ShellExtensions.rgs">
+    <None Include="ImageResizerExt.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="ShellExtensions.def">
+    <None Include="ImageResizerExt.def">
       <Filter>Source Files</Filter>
     </None>
     <None Include="ContextMenuHandler.rgs">
@@ -84,7 +84,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="ShellExtensions.idl">
+    <Midl Include="ImageResizerExt.idl">
       <Filter>Source Files</Filter>
     </Midl>
   </ItemGroup>
