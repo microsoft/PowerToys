@@ -232,7 +232,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Advanced Options.
+        ///   Looks up a localized string similar to Settings.
         /// </summary>
         public static string Advanced_Title {
             get {
@@ -340,7 +340,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Advanced options....
+        ///   Looks up a localized string similar to Settings.
         /// </summary>
         public static string Input_ShowAdvanced {
             get {

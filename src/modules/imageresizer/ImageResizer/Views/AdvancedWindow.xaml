@@ -250,30 +250,6 @@
                               IsChecked="{Binding Settings.KeepDateModified}"/>
                 </StackPanel>
             </TabItem>
-            <TabItem Header="{x:Static p:Resources.Advanced_About}">
-                <Grid Margin="11">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <Image Width="48"
-                           Height="48"
-                           VerticalAlignment="Top"
-                           Source="../Resources/ImageResizer.png"/>
-                    <TextBlock Grid.Column="1"
-                               Margin="11,0,0,0"
-                               TextWrapping="Wrap">
-                        <Run Text="{x:Static p:Resources.ImageResizer}"/>
-                        <LineBreak/>
-                        <Run Text="{x:Static p:Resources.Version}"/>
-                        <TextBlock Text="{Binding Version}"/>
-                        <LineBreak/>
-                        <Run Text="{x:Static p:Resources.Copyright}"/>
-                        <LineBreak/>
-                        <Hyperlink NavigateUri="http://www.bricelam.net/ImageResizer/" RequestNavigate="HandleRequestNavigate">http://bricelam.net/ImageResizer</Hyperlink>
-                    </TextBlock>
-                </Grid>
-            </TabItem>
         </TabControl>
         <StackPanel Grid.Row="1"
                     Margin="0,11,0,0"
