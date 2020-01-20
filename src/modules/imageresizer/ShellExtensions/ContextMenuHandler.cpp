@@ -4,6 +4,7 @@
 #include "ContextMenuHandler.h"
 #include "HDropIterator.h"
 #include "Settings.h"
+#include "common/icon_helpers.h"
 
 extern HINSTANCE g_hInst_imageResizer;
 
@@ -107,7 +108,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
             mii.fMask |= MIIM_BITMAP;
             if (m_hbmpIcon == NULL)
             {
-                m_hbmpIcon = CreateBitmapFromIcon(hIcon, 0, 0);
+                m_hbmpIcon = CreateBitmapFromIcon(hIcon);
             }
             mii.hbmpItem = m_hbmpIcon;
             DestroyIcon(hIcon);
