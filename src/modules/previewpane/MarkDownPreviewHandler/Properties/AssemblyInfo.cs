@@ -9,17 +9,14 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("MarkDownPreviewHandler")]
+[assembly: AssemblyTitle("MarkdownPreviewHandler")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("MarkDownPreviewHandler")]
+[assembly: AssemblyProduct("MarkdownPreviewHandler")]
 [assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-
-// Make assembly visible to UnitTest Project
-[assembly: InternalsVisibleTo("PreviewPaneUnitTests")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from

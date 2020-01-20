@@ -59,9 +59,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MarkDownPreviewHandler\MarkDownPreviewHandler.csproj">
+    <ProjectReference Include="..\MarkDownPreviewHandler\MarkdownPreviewHandler.csproj">
       <Project>{6a71162e-fc4c-4a2c-b90f-3cf94f59a9bb}</Project>
-      <Name>MarkDownPreviewHandler</Name>
+      <Name>MarkdownPreviewHandler</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

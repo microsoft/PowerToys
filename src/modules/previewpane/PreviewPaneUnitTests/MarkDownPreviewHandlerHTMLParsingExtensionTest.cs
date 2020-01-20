@@ -1,6 +1,6 @@
 ﻿using System;
 using Markdig;
-using MarkDownPreviewHandler;
+using MarkdownPreviewHandler;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PreviewPaneUnitTests
