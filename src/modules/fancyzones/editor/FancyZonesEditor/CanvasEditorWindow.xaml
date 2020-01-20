@@ -168,7 +168,7 @@
         <TextBlock Name="windowEditorDialogTitle" Text="{x:Static props:Resources.Custom_Layout_Creator}" Style="{StaticResource titleText}"  />
         <Button x:Name="newZoneButton" Width="496" Height="136" Style="{StaticResource newZoneButton}" Click="OnAddZone">
             <StackPanel>
-                <TextBlock x:Name="newSoneName" Text="Add new zone" Style="{StaticResource templateTitleText}"  />
+                <TextBlock x:Name="newSoneName" Text="{x:Static props:Resources.Add_zone}" Style="{StaticResource templateTitleText}"  />
                 <TextBlock HorizontalAlignment="Center" Text="+" Margin="0,-40,0,0"/>
             </StackPanel>
         </Button>

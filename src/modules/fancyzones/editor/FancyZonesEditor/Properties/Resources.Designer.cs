@@ -61,6 +61,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add new zone.
+        /// </summary>
+        public static string Add_zone {
+            get {
+                return ResourceManager.GetString("Add_zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Apply.
         /// </summary>
         public static string Apply {
