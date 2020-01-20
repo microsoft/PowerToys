@@ -110,6 +110,7 @@ namespace Common
                 }
 
                 this.Controls.Clear();
+                GC.Collect();
             });
         }
 
