@@ -41,11 +41,3 @@ bool restart_if_scheduled()
         return false;
     }
 }
-
-bool restart_same_elevation()
-{
-    constexpr DWORD exe_path_size = 0xFFFF;
-    auto exe_path = std::make_unique<wchar_t[]>(exe_path_size);
-    GetModuleFileNameW(nullptr, exe_path.get(), exe_path_size);
-    return run_same_elevation(exe_path.get(), {});
-}

@@ -68,10 +68,6 @@ public:
         }
         return GUID_NULL;
     }
-    IFACEMETHODIMP_(int) GetZoneHighlightOpacity() noexcept
-    {
-        return m_settings->GetSettings().zoneHighlightOpacity;
-    }
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void OnDisplayChange(DisplayChangeType changeType) noexcept;
@@ -325,6 +321,7 @@ void FancyZones::ToggleEditor() noexcept
         monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTOPRIMARY);
     }
 
+
     if (!monitor)
     {
         return;
@@ -355,7 +352,7 @@ void FancyZones::ToggleEditor() noexcept
 
     const auto taskbar_x_offset = MulDiv(mi.rcWork.left - mi.rcMonitor.left, DPIAware::DEFAULT_DPI, dpi_x);
     const auto taskbar_y_offset = MulDiv(mi.rcWork.top - mi.rcMonitor.top, DPIAware::DEFAULT_DPI, dpi_y);
-
+    
     // Do not scale window params by the dpi, that will be done in the editor - see LayoutModel.Apply
     const auto x = mi.rcMonitor.left + taskbar_x_offset;
     const auto y = mi.rcMonitor.top + taskbar_y_offset;

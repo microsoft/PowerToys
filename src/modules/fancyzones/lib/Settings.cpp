@@ -49,7 +49,6 @@ private:
     const std::wstring m_zoneHiglightName = L"fancyzones_zoneHighlightColor";
     const std::wstring m_editorHotkeyName = L"fancyzones_editor_hotkey";
     const std::wstring m_excludedAppsName = L"fancyzones_excluded_apps";
-    const std::wstring m_zoneHighlightOpacity = L"fancyzones_highlight_opacity";
 };
 
 IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ int *buffer_size) noexcept
@@ -77,7 +76,6 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
         settings.add_bool_toogle(setting.name, setting.resourceId, *setting.value);
     }
 
-    settings.add_int_spinner(m_zoneHighlightOpacity, IDS_SETTINGS_HIGHLIGHT_OPACITY, m_settings.zoneHighlightOpacity, 0, 100, 1);
     settings.add_color_picker(m_zoneHiglightName, IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, m_settings.zoneHightlightColor);
     settings.add_multiline_string(m_excludedAppsName, IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, m_settings.excludedApps);
 
@@ -155,11 +153,6 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept try
             }
         }
     }
-
-    if (auto val = values.get_int_value(m_zoneHighlightOpacity))
-    {
-        m_settings.zoneHighlightOpacity = *val;
-    }
 }
 CATCH_LOG();
 
@@ -173,7 +166,6 @@ void FancyZonesSettings::SaveSettings() noexcept try
     }
 
     values.add_property(m_zoneHiglightName, m_settings.zoneHightlightColor);
-    values.add_property(m_zoneHighlightOpacity, m_settings.zoneHighlightOpacity);
     values.add_property(m_editorHotkeyName, m_settings.editorHotkey.get_json());
     values.add_property(m_excludedAppsName, m_settings.excludedApps);
 

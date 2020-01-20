@@ -585,20 +585,44 @@ INT_PTR CPowerRenameUI::_DlgProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void CPowerRenameUI::_OnInitDlg()
 {
+    // Initialize from stored settings
+    _ReadSettings();
+
     m_hwndLV = GetDlgItem(m_hwnd, IDC_LIST_PREVIEW);
 
     m_listview.Init(m_hwndLV);
+
+    // Initialize checkboxes from flags
+    if (m_spsrm)
+    {
+        // Check if we should read flags from settings
+        // or the defaults from the manager.
+        DWORD flags = 0;
+        if (CSettings::GetPersistState())
+        {
+            flags = CSettings::GetFlags();
+            wchar_t buffer[MAX_INPUT_STRING_LEN];
+            buffer[0] = L'\0';
+            CSettings::GetSearchText(buffer, ARRAYSIZE(buffer));
+            SetDlgItemText(m_hwnd, IDC_EDIT_SEARCHFOR, buffer);
+
+            buffer[0] = L'\0';
+            CSettings::GetReplaceText(buffer, ARRAYSIZE(buffer));
+            SetDlgItemText(m_hwnd, IDC_EDIT_REPLACEWITH, buffer);
+        }
+        else
+        {
+            m_spsrm->get_flags(&flags);
+        }
+
+        _SetCheckboxesFromFlags(flags);
+    }
 
     if (m_dataSource)
     {
         // Populate the manager from the data object
         _EnumerateItems(m_dataSource);
     }
-
-    // Initialize from stored settings. Do this now in case we have
-    // restored a previous search or replace text that needs to be
-    // evaluated against the items we just enumerated.
-    _ReadSettings();
 
     // Load the main icon
     LoadIconWithScaleDown(g_hInst, MAKEINTRESOURCE(IDI_RENAME), 32, 32, &m_iconMain);

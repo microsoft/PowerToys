@@ -22,11 +22,6 @@ namespace FancyZonesUnitTests
         {
             return m_guid;
         }
-        IFACEMETHODIMP_(int)
-        GetZoneHighlightOpacity() noexcept
-        {
-            return 100;
-        }
 
         GUID m_guid;
     };
