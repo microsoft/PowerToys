@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "resource.h"
-#include "ShellExtensions_i.h"
+#include "ImageResizerExt_i.h"
 #include "dllmain.h"
 #include <interface/powertoy_module_interface.h>
 #include <common/settings_objects.h>
 #include "Settings.h"
 
-CShellExtensionsModule _AtlModule;
+CImageResizerExtModule _AtlModule;
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {

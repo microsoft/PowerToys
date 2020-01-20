@@ -1,10 +1,10 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by ShellExtensions.rc
+// Used by ImageResizerExt.rc
 //
 #define IDS_RESIZE_PICTURES             100
 #define IDS_RESIZE_PICTURES_HERE        101
-#define IDR_SHELLEXTENSIONS             101
+#define IDR_IMAGERESIZEREXT             101
 #define IDR_CONTEXTMENUHANDLER          102
 
 // Next default values for new objects
