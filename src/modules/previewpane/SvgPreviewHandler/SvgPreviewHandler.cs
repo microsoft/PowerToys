@@ -13,7 +13,7 @@ namespace SvgPreviewHandler
     /// </summary>
     [PreviewHandler("SvgPreviewHandler", ".svg", "{88235ab2-bfce-4be8-9ed0-0408cd8da792}")]
     [ProgId("SvgPreviewHandler")]
-    [Guid("22a1a8e8-e929-4732-90ce-91eaff38b614")]
+    [Guid("ddee2b8a-6807-48a6-bb20-2338174ff779")]
     [ClassInterface(ClassInterfaceType.None)]
     [ComVisible(true)]
     public class SvgPreviewHandler : StreamBasedPreviewHandler
