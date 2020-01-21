@@ -107,7 +107,7 @@ A brief survey was sent to the Windows Developer community during the planning s
   - Nearly 30% of survey respondents used 3<sup>rd</sup> party tools. This indicates that there is not only a real demand for the utility and many users currently remap their keys.
 
 - *Question*: Which third party tools do you use to remap keys and create shortcuts?
-  - The most popular 3<sup>rd</sup> party tool was AutoHotKey, followed by SharpKeys. Karabiner was not mentioned as this was sent to Windows develoeprs but it was still highlighted in the competitive research due to its popularity among Mac users.
+  - The most popular 3<sup>rd</sup> party tool was AutoHotKey, followed by SharpKeys. Karabiner was not mentioned as this was sent to Windows developers but it was still highlighted in the competitive research due to its popularity among Mac users.
   
 - *Question*: If you could improve the way that you manage your remap keys and create shortcuts using the third-party tools, what would you change?  
   - Over 50% of survey respondents asked for either native integration into Windows and / or a pleasant UI experience instead of scripting. This confirmed the decision to ensure users can engage with all of the utility’s functionality through a UI.
