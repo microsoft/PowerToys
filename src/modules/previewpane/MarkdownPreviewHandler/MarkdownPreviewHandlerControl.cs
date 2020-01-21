@@ -28,7 +28,7 @@ namespace MarkdownPreviewHandler
         /// <summary>
         /// Markdown HTML header.
         /// </summary>
-        private readonly string htmlHeader = "<!doctype html><html lang=\"en\"><head></head><body><div class=\"container\">";
+        private readonly string htmlHeader = "<!doctype html><html lang=\"en\"><head></head><style>body img{max-width:100%;height:auto}body h1,body h2,body h3,body h4,body h5,body h6{margin-top:24px;margin-bottom:16px;font-weight:600;line-height:1.25}body h1,body h2{padding-bottom:.3em;border-bottom:1px solid #eaecef}body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji}body h3{font-size:1.25em}body h4{font-size:1em}body h5{font-size:.875em}body h6{font-size:.85em;color:#6a737d}pre{font-family:SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;background-color:#f6f8fa;border-radius:3px;padding:16px;font-size:85%}a{color:#0366d6}strong{font-weight:600}em{font-style:italic}code{padding:.2em .4em;margin:0;font-size:85%;background-color:#f6f8fa;border-radius:3px}hr{-moz-border-bottom-colors:none;-moz-border-image:none;-moz-border-left-colors:none;-moz-border-right-colors:none;-moz-border-top-colors:none;border-color:#EEE -moz-use-text-color #FFF;border-style:solid none;border-width:.5px 0;margin:18px 0}table{display:block;width:100%;overflow:auto;border-spacing:0;border-collapse:collapse}tbody{display:table-row-group;vertical-align:middle;border-color:inherit;display:table-row;vertical-align:inherit;border-color:inherit}table tr{background-color:#fff;border-top:1px solid #c6cbd1}tr{display:table-row;vertical-align:inherit;border-color:inherit}table td,table th{padding:6px 13px;border:1px solid #dfe2e5}th{font-weight:600;display:table-cell;vertical-align:inherit;font-weight:bold;text-align:-internal-center}thead{display:table-header-group;vertical-align:middle;border-color:inherit}td{display:table-cell;vertical-align:inherit}code,pre,tt{font-family:SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;color:#24292e}blockquote{background-color:#fff;border-radius:3px;padding:15px;font-size:14px;display:block;margin-block-start:1em;margin-block-end:1em;margin-inline-start:40px;margin-inline-end:40px;padding:0 1em;color:#6a737d;border-left:.25em solid #dfe2e5}body{width:90%}</style><body><div class=\"container\">";
 
         /// <summary>
         /// Markdown HTML footer.
@@ -61,7 +61,7 @@ namespace MarkdownPreviewHandler
                 string parsedMarkdown = Markdown.ToHtml(fileText, pipeline);
                 string html = this.htmlHeader + parsedMarkdown + this.htmlFooter;
 
-                File.WriteAllText("C:\\Users\\divyan\\Desktop\\output.txt", html);
+                // File.WriteAllText("C:\\Users\\divyan\\Desktop\\output.html", html);
                 WebBrowser browser = new WebBrowser();
                 browser.DocumentText = html;
                 browser.Dock = DockStyle.Fill;
