@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
 using System.Runtime.InteropServices.ComTypes;
 using System.Windows.Forms;
@@ -38,6 +39,17 @@ namespace SvgPreviewHandler
                 this.Controls.Add(browser);
                 base.DoPreview(dataSource);
             });
+        }
+
+        /// <summary>
+        /// Override the base Unload method to free resources.
+        /// </summary>
+        public override void Unload()
+        {
+            base.Unload();
+
+            // Call the GC after disposing controls. This is to fix the issue Prevhost Process is not exiting after closing the File Explorer.
+            GC.Collect();
         }
     }
 }

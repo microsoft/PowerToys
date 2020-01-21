@@ -62,6 +62,8 @@ namespace Common.Utilities
             {
                 this.CheckDisposed();
                 System.Runtime.InteropServices.ComTypes.STATSTG stat;
+
+                // Stat called with STATFLAG_NONAME. The pwcsName is not required more details https://docs.microsoft.com/en-us/windows/win32/api/wtypes/ne-wtypes-statflag
                 this.stream.Stat(out stat, 1); // STATFLAG_NONAME
 
                 return stat.cbSize;
@@ -123,9 +125,9 @@ namespace Common.Utilities
         public override long Seek(long offset, SeekOrigin origin)
         {
             this.CheckDisposed();
-
             int dwOrigin;
 
+            // Maps the SeekOrigin with dworigin more details: https://docs.microsoft.com/en-us/windows/win32/api/objidl/ne-objidl-stream_seek
             switch (origin)
             {
                 case SeekOrigin.Begin:
