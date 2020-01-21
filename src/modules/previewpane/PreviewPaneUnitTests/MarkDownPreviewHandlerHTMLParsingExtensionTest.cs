@@ -7,7 +7,7 @@ namespace PreviewPaneUnitTests
 {
     [TestClass]
     public class MarkDownPreviewHandlerHTMLParsingExtensionTest
-    {       
+    {
         public MarkdownPipeline BuidPipeline(IMarkdownExtension extension)
         {
             MarkdownPipelineBuilder pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions();
@@ -47,7 +47,7 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
-        public void Extension_UpdatesFigureClassAndRelativeUrltoAbsolute_Whenused()
+        public void Extension_UpdatesFigureClassAndRelativeUrltoAbsolute_WhenUsed()
         {
             // arrange 
             String mdString = "![text](a.jpg \"Figure\")";
@@ -62,7 +62,7 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
-        public void Extension_CreatesCorrectAbsoluteLinkByTrimmingForwardSlash_Whenused()
+        public void Extension_CreatesCorrectAbsoluteLinkByTrimmingForwardSlash_WhenUsed()
         {
             // arrange 
             String mdString = "![text](\\document\\a.jpg \"Figure\")";
@@ -77,7 +77,7 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
-        public void Extension_CreatesCorrectAbsoluteLinkByTrimmingBackwardSlash_Whenused()
+        public void Extension_CreatesCorrectAbsoluteLinkByTrimmingBackwardSlash_WhenUsed()
         {
             // arrange 
             String mdString = "![text](/document/a.jpg \"Figure\")";
@@ -89,6 +89,21 @@ namespace PreviewPaneUnitTests
 
             // Assert
             Assert.AreEqual(html, "<p><img src=\"file:///C:/Users/document/a.jpg\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n");
+        }
+
+        [TestMethod]
+        public void Extension_AddsClassToFigureCaption_WhenUsed()
+        {
+            // arrange 
+            String mdString = "^^^ This is a caption";
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension("C:/Users/");
+            MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
+
+            // Act
+            String html = Markdown.ToHtml(mdString, markdownPipeline);
+
+            // Assert
+            Assert.AreEqual(html, "<figure class=\"figure\">\n<figcaption class=\"figure-caption\">This is a caption</figcaption>\n</figure>\n");
         }
     }
 }
