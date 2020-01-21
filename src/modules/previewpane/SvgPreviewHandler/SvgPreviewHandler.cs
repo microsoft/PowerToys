@@ -9,21 +9,21 @@ using Common;
 namespace SvgPreviewHandler
 {
     /// <summary>
-    /// Extends <see cref="FileBasedPreviewHandler"/> for Svg Preview Handler.
+    /// Extends <see cref="StreamBasedPreviewHandler"/> for Svg Preview Handler.
     /// </summary>
     [PreviewHandler("SvgPreviewHandler", ".svg", "{88235ab2-bfce-4be8-9ed0-0408cd8da792}")]
     [ProgId("SvgPreviewHandler")]
     [Guid("22a1a8e8-e929-4732-90ce-91eaff38b614")]
     [ClassInterface(ClassInterfaceType.None)]
     [ComVisible(true)]
-    public class SvgPreviewHandler : FileBasedPreviewHandler
+    public class SvgPreviewHandler : StreamBasedPreviewHandler
     {
         private SvgPreviewControl svgPreviewControl;
 
         /// <inheritdoc/>
         public override void DoPreview()
         {
-            this.svgPreviewControl.DoPreview(this.FilePath);
+            this.svgPreviewControl.DoPreview(this.Stream);
         }
 
         /// <inheritdoc/>

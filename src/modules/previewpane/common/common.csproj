@@ -77,8 +77,9 @@
     <Compile Include="handlers\PreviewHandlerBase.cs" />
     <Compile Include="handlers\PreviewHandlerAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="handlers\SteamBasedPreviewHandler.cs" />
+    <Compile Include="handlers\StreamBasedPreviewHandler.cs" />
     <Compile Include="examplehandler\TestCustomHandler.cs" />
+    <Compile Include="Utilities\StreamWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
