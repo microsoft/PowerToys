@@ -15,3 +15,4 @@
 #define IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION                      115
 #define IDS_SETTINGS_HIGHLIGHT_OPACITY                              116
 #define IDS_FANCYZONES                                              117
+#define IDS_SUPER_FANCYZONES                                        118
