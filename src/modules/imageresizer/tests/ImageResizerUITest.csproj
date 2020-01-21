@@ -41,9 +41,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ImageResizer\ImageResizer.csproj">
+    <ProjectReference Include="..\ui\ImageResizerUI.csproj">
       <Project>{2be46397-4dfa-414c-9bd4-41e4bbf8cb34}</Project>
-      <Name>ImageResizer</Name>
+      <Name>ImageResizerUI</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

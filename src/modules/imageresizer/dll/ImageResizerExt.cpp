@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "resource.h"
-#include "ShellExtensions_i.h"
+#include "ImageResizerExt_i.h"
 #include "dllmain.h"
 
 __control_entrypoint(DllExport) STDAPI DllCanUnloadNow()

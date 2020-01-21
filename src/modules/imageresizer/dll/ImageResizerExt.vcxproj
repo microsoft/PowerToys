@@ -103,11 +103,11 @@
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <TargetEnvironment>Win32</TargetEnvironment>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <HeaderFileName>ShellExtensions_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName>ShellExtensions_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ShellExtensions_p.c</ProxyFileName>
+      <HeaderFileName>ImageResizerExt_i.h</HeaderFileName>
+      <InterfaceIdentifierFileName>ImageResizerExt_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>ImageResizerExt_p.c</ProxyFileName>
       <GenerateStublessProxies>true</GenerateStublessProxies>
-      <TypeLibraryName>$(IntDir)ShellExtensions.tlb</TypeLibraryName>
+      <TypeLibraryName>$(IntDir)ImageResizerExt.tlb</TypeLibraryName>
       <DllDataFileName />
       <ValidateAllParameters>true</ValidateAllParameters>
     </Midl>
@@ -118,7 +118,7 @@
     </ResourceCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <ModuleDefinitionFile>.\ShellExtensions.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>.\ImageResizerExt.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RegisterOutput>true</RegisterOutput>
       <PerUserRedirection>true</PerUserRedirection>
@@ -138,11 +138,11 @@
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <HeaderFileName>ShellExtensions_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName>ShellExtensions_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ShellExtensions_p.c</ProxyFileName>
+      <HeaderFileName>ImageResizerExt_i.h</HeaderFileName>
+      <InterfaceIdentifierFileName>ImageResizerExt_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>ImageResizerExt_p.c</ProxyFileName>
       <GenerateStublessProxies>true</GenerateStublessProxies>
-      <TypeLibraryName>$(IntDir)ShellExtensions.tlb</TypeLibraryName>
+      <TypeLibraryName>$(IntDir)ImageResizerExt.tlb</TypeLibraryName>
       <DllDataFileName />
       <ValidateAllParameters>true</ValidateAllParameters>
     </Midl>
@@ -153,7 +153,7 @@
     </ResourceCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <ModuleDefinitionFile>.\ShellExtensions.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>.\ImageResizerExt.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RegisterOutput>true</RegisterOutput>
       <PerUserRedirection>true</PerUserRedirection>
@@ -174,11 +174,11 @@
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <TargetEnvironment>Win32</TargetEnvironment>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <HeaderFileName>ShellExtensions_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName>ShellExtensions_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ShellExtensions_p.c</ProxyFileName>
+      <HeaderFileName>ImageResizerExt_i.h</HeaderFileName>
+      <InterfaceIdentifierFileName>ImageResizerExt_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>ImageResizerExt_p.c</ProxyFileName>
       <GenerateStublessProxies>true</GenerateStublessProxies>
-      <TypeLibraryName>$(IntDir)ShellExtensions.tlb</TypeLibraryName>
+      <TypeLibraryName>$(IntDir)ImageResizerExt.tlb</TypeLibraryName>
       <DllDataFileName />
       <ValidateAllParameters>true</ValidateAllParameters>
     </Midl>
@@ -189,7 +189,7 @@
     </ResourceCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <ModuleDefinitionFile>.\ShellExtensions.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>.\ImageResizerExt.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
@@ -211,11 +211,11 @@
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <HeaderFileName>ShellExtensions_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName>ShellExtensions_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ShellExtensions_p.c</ProxyFileName>
+      <HeaderFileName>ImageResizerExt_i.h</HeaderFileName>
+      <InterfaceIdentifierFileName>ImageResizerExt_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>ImageResizerExt_p.c</ProxyFileName>
       <GenerateStublessProxies>true</GenerateStublessProxies>
-      <TypeLibraryName>$(IntDir)ShellExtensions.tlb</TypeLibraryName>
+      <TypeLibraryName>$(IntDir)ImageResizerExt.tlb</TypeLibraryName>
       <DllDataFileName />
       <ValidateAllParameters>true</ValidateAllParameters>
     </Midl>
@@ -226,7 +226,7 @@
     </ResourceCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <ModuleDefinitionFile>.\ShellExtensions.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>.\ImageResizerExt.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
@@ -251,8 +251,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ShellExtensions.cpp" />
-    <ClCompile Include="ShellExtensions_i.c">
+    <ClCompile Include="ImageResizerExt.cpp" />
+    <ClCompile Include="ImageResizerExt_i.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
@@ -280,20 +280,20 @@
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="ShellExtensions_i.h" />
+    <ClInclude Include="ImageResizerExt_i.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ShellExtensions.rc" />
+    <ResourceCompile Include="ImageResizerExt.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ContextMenuHandler.rgs" />
-    <None Include="ShellExtensions.def" />
-    <None Include="ShellExtensions.rgs" />
+    <None Include="ImageResizerExt.def" />
+    <None Include="ImageResizerExt.rgs" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="ShellExtensions.idl" />
+    <Midl Include="ImageResizerExt.idl" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\common.vcxproj">
@@ -301,7 +301,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\ImageResizer\Resources\ImageResizer.ico" />
+    <Image Include="..\ui\Resources\ImageResizer.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
