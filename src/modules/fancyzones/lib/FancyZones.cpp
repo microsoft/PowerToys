@@ -7,7 +7,6 @@
 #include "lib/ZoneWindow.h"
 #include "lib/RegistryHelpers.h"
 #include "trace.h"
-#include "resource.h"
 
 #include <functional>
 #include <common/common.h>
@@ -156,13 +155,12 @@ IFACEMETHODIMP_(void) FancyZones::Run() noexcept
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.lpfnWndProc = s_WndProc;
     wcex.hInstance = m_hinstance;
-    base_window_title = GET_RESOURCE_STRING(IDS_SUPER_FANCYZONES);
-    wcex.lpszClassName = base_window_title.c_str();
+    wcex.lpszClassName = L"SuperFancyZones";
     RegisterClassExW(&wcex);
 
     BufferedPaintInit();
 
-    m_window = CreateWindowExW(WS_EX_TOOLWINDOW, base_window_title.c_str() , L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, m_hinstance, this);
+    m_window = CreateWindowExW(WS_EX_TOOLWINDOW, L"SuperFancyZones" , L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, m_hinstance, this);
     if (!m_window) return;
 
     RegisterHotKey(m_window, 1, m_settings->GetSettings().editorHotkey.get_modifiers(), m_settings->GetSettings().editorHotkey.get_code());
