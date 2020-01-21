@@ -8,8 +8,6 @@
 
 extern HINSTANCE g_hInst_imageResizer;
 
-extern HINSTANCE g_hInst_imageResizer;
-
 CContextMenuHandler::CContextMenuHandler()
 {
     m_pidlFolder = NULL;
@@ -111,7 +109,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
             mii.fMask |= MIIM_BITMAP;
             if (m_hbmpIcon == NULL)
             {
-                m_hbmpIcon = CreateBitmapFromIcon(hIcon, 0, 0);
+                m_hbmpIcon = CreateBitmapFromIcon(hIcon);
             }
             mii.hbmpItem = m_hbmpIcon;
             DestroyIcon(hIcon);
