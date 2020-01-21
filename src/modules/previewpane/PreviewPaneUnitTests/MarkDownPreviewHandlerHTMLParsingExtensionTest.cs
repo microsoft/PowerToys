@@ -8,7 +8,7 @@ namespace PreviewPaneUnitTests
     [TestClass]
     public class MarkDownPreviewHandlerHTMLParsingExtensionTest
     {       
-        public MarkdownPipeline TestBase(IMarkdownExtension extension)
+        public MarkdownPipeline BuidPipeline(IMarkdownExtension extension)
         {
             MarkdownPipelineBuilder pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions();
             pipelineBuilder.Extensions.Add(extension);
@@ -21,7 +21,7 @@ namespace PreviewPaneUnitTests
             // Arrange 
             String mdString = "| A | B |\n| -- | -- | ";
             HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension();
-            MarkdownPipeline markdownPipeline = TestBase(htmlParsingExtension);
+            MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
 
             // Act
             String html = Markdown.ToHtml(mdString, markdownPipeline);
@@ -37,7 +37,7 @@ namespace PreviewPaneUnitTests
             // Arrange 
             String mdString = "> Blockquotes.";
             HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension();
-            MarkdownPipeline markdownPipeline = TestBase(htmlParsingExtension);
+            MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
 
             // Act
             String html = Markdown.ToHtml(mdString, markdownPipeline);
@@ -47,18 +47,48 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
-        public void extension_updatesFigureClassAndRelativeUrltoAbsolute_whenused()
+        public void Extension_UpdatesFigureClassAndRelativeUrltoAbsolute_Whenused()
         {
             // arrange 
             String mdString = "![text](a.jpg \"Figure\")";
             HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension("C:\\Users\\");
-            MarkdownPipeline markdownPipeline = TestBase(htmlParsingExtension);
+            MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
 
             // Act
             String html = Markdown.ToHtml(mdString, markdownPipeline);
 
             // Assert
             Assert.AreEqual(html, "<p><img src=\"file:///C:/Users/a.jpg\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n");
+        }
+
+        [TestMethod]
+        public void Extension_CreatesCorrectAbsoluteLinkByTrimmingForwardSlash_Whenused()
+        {
+            // arrange 
+            String mdString = "![text](\\document\\a.jpg \"Figure\")";
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension("C:\\Users\\");
+            MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
+
+            // Act
+            String html = Markdown.ToHtml(mdString, markdownPipeline);
+
+            // Assert
+            Assert.AreEqual(html, "<p><img src=\"file:///C:/Users/document/a.jpg\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n");
+        }
+
+        [TestMethod]
+        public void Extension_CreatesCorrectAbsoluteLinkByTrimmingBackwardSlash_Whenused()
+        {
+            // arrange 
+            String mdString = "![text](/document/a.jpg \"Figure\")";
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension("C:/Users/");
+            MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
+
+            // Act
+            String html = Markdown.ToHtml(mdString, markdownPipeline);
+
+            // Assert
+            Assert.AreEqual(html, "<p><img src=\"file:///C:/Users/document/a.jpg\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n");
         }
     }
 }

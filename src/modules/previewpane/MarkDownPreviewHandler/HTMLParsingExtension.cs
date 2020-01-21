@@ -78,8 +78,8 @@ namespace MarkDownPreviewHandler
                     {
                         if (!Uri.TryCreate(link.Url, UriKind.Absolute, out Uri uriLink))
                         {
-                            link.Url = link.Url.TrimStart('/');
-                            this.BaseUrl = this.BaseUrl.TrimEnd('/');
+                            link.Url = link.Url.TrimStart('/', '\\');
+                            this.BaseUrl = this.BaseUrl.TrimEnd('/', '\\');
                             uriLink = new Uri(Path.Combine(this.BaseUrl, link.Url));
                             link.Url = uriLink.ToString();
                         }
