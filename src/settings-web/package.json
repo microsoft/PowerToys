@@ -30,7 +30,8 @@
   "dependencies": {
     "@svgr/webpack": "^4.3.3",
     "@uifabric/azure-themes": "^7.0.10",
-    "office-ui-fabric-react": "^7.76.2",
+    "@uifabric/styling": "^7.10.1",
+    "office-ui-fabric-react": "^7.83.1",
     "react": "~16.8.0",
     "react-dom": "~16.8.0"
   },
