@@ -11,8 +11,6 @@
 #include <functional>
 #include <common/common.h>
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
-
 namespace std
 {
     template<> struct hash<GUID>
@@ -125,7 +123,6 @@ private:
     std::unordered_map<GUID, bool> m_virtualDesktopIds;
     wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
     wil::unique_handle m_terminateVirtualDesktopTrackerEvent;
-    std::wstring base_window_title;
 
     OnThreadExecutor m_dpiUnawareThread;
     OnThreadExecutor m_virtualDesktopTrackerThread;
@@ -160,7 +157,7 @@ IFACEMETHODIMP_(void) FancyZones::Run() noexcept
 
     BufferedPaintInit();
 
-    m_window = CreateWindowExW(WS_EX_TOOLWINDOW, L"SuperFancyZones" , L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, m_hinstance, this);
+    m_window = CreateWindowExW(WS_EX_TOOLWINDOW, L"SuperFancyZones", L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, m_hinstance, this);
     if (!m_window) return;
 
     RegisterHotKey(m_window, 1, m_settings->GetSettings().editorHotkey.get_modifiers(), m_settings->GetSettings().editorHotkey.get_code());
