@@ -21,7 +21,6 @@ namespace FancyZonesEditor
         public App()
         {
             ZoneSettings = new Settings();
-            System.Threading.Thread.CurrentThread.CurrentUICulture = CultureInfo.CurrentUICulture;
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
