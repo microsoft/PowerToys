@@ -92,103 +92,18 @@ also exist to extend the capability of Windows’ launcher.
 
 Here is a matrix which compares features between third-party tools:
 
-<table>
-<thead>
-<tr class="header">
-<th>Tools/<br />
-Features</th>
-<th>Text suggestion</th>
-<th>App suggestion</th>
-<th>Open in cmd/powershell (or terminal)</th>
-<th>Run as admin</th>
-<th>Saved history from previous session</th>
-<th>Open file location</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><a href="https://www.alfredapp.com/">Alfred</a> (free)</td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-</tr>
-<tr class="even">
-<td><a href="https://support.apple.com/en-us/HT204014">Spotlight</a></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-</tr>
-<tr class="odd">
-<td><a href="https://www.listary.com/">Listary</a></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> shown as a separate cmd</td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> on right click</td>
-</tr>
-<tr class="even">
-<td><a href="http://www.wox.one/">Wox</a></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> via “&gt;” or Win+R</td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> on right-click</td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> on right click</td>
-</tr>
-<tr class="odd">
-<td><a href="https://www.launchy.net/index.php">Launchy</a></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-</tr>
-<tr class="even">
-<td><a href="https://github.com/davatorium/rofi">Rofi</a></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td>N/A</td>
-<td>N/A</td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-</tr>
-<tr class="odd">
-<td><a href="http://www.executor.dk/">Executor</a></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> Shift+enter</td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> on right click</td>
-</tr>
-<tr class="even">
-<td>Run (Win+R)</td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> Ctrl+Shift+enter</td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-</tr>
-<tr class="odd">
-<td>Search (Win+S)</td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" /> on right click</td>
-<td><img src="images/PowerLauncher/cross.png" style="width:0.375in;height:0.375in" alt="Close" /></td>
-<td><img src="images/PowerLauncher/check.png" style="width:0.34375in;height:0.34375in" alt="Checkmark" />on right click</td>
-</tr>
-</tbody>
-</table>
+| Tools/Features     | Text suggestion    | App suggestion     | Open in terminal  | Run as admin       | Saved history from previous session | Open file location |
+|--------------------|--------------------|--------------------|-------------------|--------------------|-------------------------------------|--------------------|
+|[Alfred (free)](https://www.alfredapp.com/)       | ![alt text][cross] | ![alt text][check] |![alt text][cross] | ![alt text][cross] | ![alt text][check]                  | ![alt text][cross] |
+|[Spotlight](https://support.apple.com/en-us/HT204014)</p>       | ![alt text][check] | ![alt text][check] |![alt text][cross] | ![alt text][cross] | ![alt text][check]                  | ![alt text][check] |
+|[Listary](https://www.listary.com/)</p>         | ![alt text][cross] | ![alt text][check] |![alt text][cross] | ![alt text][check] shown as a separate cmd | ![alt text][cross]                  | ![alt text][check] on right click |
+|[Wox](http://www.wox.one/)</p>             | ![alt text][cross] | ![alt text][check] |![alt text][check] via “>” or Win+R | ![alt text][check] on right click | ![alt text][check]                  | ![alt text][check] on right click|
+|[Launchy](https://www.launchy.net/index.php)</p>         | ![alt text][cross] | ![alt text][check] |![alt text][cross] | ![alt text][cross] | ![alt text][cross]                  | ![alt text][cross] |
+|[Rofi](https://github.com/davatorium/rofi)</p>            | ![alt text][cross] | ![alt text][check] | N/A | N/A | ![alt text][check]                  | ![alt text][cross] |
+|[Executor](http://www.executor.dk/)</p>        | ![alt text][check] | ![alt text][check] |![alt text][cross] | ![alt text][check]Shift+Enter | ![alt text][check]                  | ![alt text][check] on right click |
+|Run (Win+R)</p>     | ![alt text][cross] | ![alt text][cross] |![alt text][check] | ![alt text][check] Ctrl+Shift+Enter | ![alt text][check]                  | ![alt text][cross] |
+|Search (Win+S)</p>  | ![alt text][check] | ![alt text][check] |![alt text][check] | ![alt text][check] on right click | ![alt text][cross]                  | ![alt text][check] on right click |
+
 
 Here are some screenshots on Spotlight and some of the most commonly used third-party
 launchers:
@@ -466,7 +381,7 @@ There are 2 behaviour options for Tab:
         toys.
 
   - [Ability to set a default
-    console](https://nam06.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fmicrosoft%2Fterminal%2Fissues%2F492&data=02%7C01%7CJessica.Yuwono%40microsoft.com%7C9747fbabea5344fbe76308d78d70b745%7C72f988bf86f141af91ab2d7cd011db47%7C1%7C0%7C637133387606886938&sdata=i3iHTjw8z5x1Dpu40PQ6feylOXM%2F3jmG9atV%2F%2F1QAlU%3D&reserved=0)
+    console](https://github.com/microsoft/terminal/issues/492)
     
       - Currently, there is no way to set the conhost.exe in order to
         set a console as default
@@ -478,3 +393,6 @@ There are 2 behaviour options for Tab:
 
 2.  [Search indexing in
     Windows 10](https://support.microsoft.com/en-us/help/4098843/windows-10-search-indexing-faq)
+
+[cross]: ./images/PowerLauncher/cross.png
+[check]: ./images/PowerLauncher/check.png
