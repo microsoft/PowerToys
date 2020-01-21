@@ -21,9 +21,9 @@ namespace MarkdownPreviewHandler
         private readonly HTMLParsingExtension extension;
 
         /// <summary>
-        /// Pipeline for markdig markdown renderer.
+        /// Markdig Pipeline builder.
         /// </summary>
-        private readonly MarkdownPipeline pipeline;
+        private readonly MarkdownPipelineBuilder pipelineBuilder;
 
         /// <summary>
         /// Markdown HTML header.
@@ -40,9 +40,9 @@ namespace MarkdownPreviewHandler
         /// </summary>
         public MarkdownPreviewHandlerControl()
         {
-            MarkdownPipelineBuilder pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseEmojiAndSmiley();
             this.extension = new HTMLParsingExtension();
-            this.pipeline = pipelineBuilder.Build();
+            this.pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseEmojiAndSmiley();
+            this.pipelineBuilder.Extensions.Add(this.extension);
         }
 
         /// <summary>
@@ -55,14 +55,16 @@ namespace MarkdownPreviewHandler
             {
                 string filePath = dataSource as string;
                 string fileText = File.ReadAllText(filePath);
-                this.extension.BaseUrl = filePath;
+                this.extension.BaseUrl = Path.GetDirectoryName(filePath);
 
-                string parsedMarkdown = Markdown.ToHtml(fileText, this.pipeline);
+                MarkdownPipeline pipeline = this.pipelineBuilder.Build();
+                string parsedMarkdown = Markdown.ToHtml(fileText, pipeline);
                 string html = this.htmlHeader + parsedMarkdown + this.htmlFooter;
+
+                File.WriteAllText("C:\\Users\\divyan\\Desktop\\output.txt", html);
                 WebBrowser browser = new WebBrowser();
                 browser.DocumentText = html;
                 browser.Dock = DockStyle.Fill;
-                browser.AllowNavigation = false;
                 browser.IsWebBrowserContextMenuEnabled = false;
                 browser.ScriptErrorsSuppressed = true;
                 browser.ScrollBarsEnabled = true;
