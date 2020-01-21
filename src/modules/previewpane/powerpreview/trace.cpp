@@ -69,6 +69,17 @@ void Trace::ExplorerSVGRenderDisabled()
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
+void Trace::PowerPreviewSettingsUpDateFailed(LPCWSTR _SettingsName)
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "PowerPreview_FilePreview_FailedUpdatingSettings",
+        TraceLoggingWideString(_SettingsName, "ExceptionMessage"),
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
 void Trace::PreviewPaneSVGRenderEnabled()
 {
     TraceLoggingWrite(
@@ -121,11 +132,11 @@ void Trace::SetConfigInvalidJSON(const char* _exceptionMessage)
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
-void Trace::Debug()
+void Trace::Destroyed()
 {
     TraceLoggingWrite(
         g_hProvider,
-        "PreviewPane__InitSettings",
+        "PowerPreview__Destroyed",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));

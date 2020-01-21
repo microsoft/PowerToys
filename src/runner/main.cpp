@@ -53,7 +53,7 @@ int runner()
             L"shortcut_guide.dll",
             L"fancyzones.dll",
             L"PowerRenameExt.dll",
-            L"previewpane.dll"
+            L"powerpreview.dll"
         };
         for (auto& file : std::filesystem::directory_iterator(L"modules/"))
         {

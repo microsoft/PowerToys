@@ -15,5 +15,6 @@ public:
     static void PreviewPaneMarkDownRenderEnabled();
     static void SetConfigInvalidJSON(const char* _exceptionMessage);
     static void InitSetErrorLoadingFile(const char* _exceptionMessage);
-    static void Debug();
+    static void PowerPreviewSettingsUpDateFailed(LPCWSTR _SettingsName);
+    static void Destroyed();
 };
