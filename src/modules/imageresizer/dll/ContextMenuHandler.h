@@ -38,6 +38,7 @@ private:
     HRESULT ResizePictures(CMINVOKECOMMANDINFO* pici);
     PCIDLIST_ABSOLUTE m_pidlFolder;
     IDataObject* m_pdtobj;
+    HBITMAP m_hbmpIcon = nullptr;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(ContextMenuHandler), CContextMenuHandler)

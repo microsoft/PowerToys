@@ -6,6 +6,7 @@
 #define IDS_RESIZE_PICTURES_HERE        101
 #define IDR_IMAGERESIZEREXT             101
 #define IDR_CONTEXTMENUHANDLER          102
+#define IDI_RESIZE_PICTURES             103
 
 // Next default values for new objects
 //

@@ -88,4 +88,9 @@
       <Filter>Source Files</Filter>
     </Midl>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\ui\Resources\ImageResizer.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

@@ -175,7 +175,7 @@
     <value>_TIFF compression:</value>
   </data>
   <data name="Advanced_Title" xml:space="preserve">
-    <value>Advanced Options</value>
+    <value>Settings</value>
   </data>
   <data name="AllFilesFilter" xml:space="preserve">
     <value>All Files</value>
@@ -211,7 +211,7 @@
     <value>_Resize</value>
   </data>
   <data name="Input_ShowAdvanced" xml:space="preserve">
-    <value>Advanced options...</value>
+    <value>Settings</value>
   </data>
   <data name="Input_ShrinkOnly" xml:space="preserve">
     <value>_Make pictures smaller but not larger</value>

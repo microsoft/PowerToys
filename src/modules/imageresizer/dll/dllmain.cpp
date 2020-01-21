@@ -7,9 +7,15 @@
 #include "Settings.h"
 
 CImageResizerExtModule _AtlModule;
+HINSTANCE g_hInst_imageResizer = 0;
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
+    switch (dwReason)
+    {
+    case DLL_PROCESS_ATTACH:
+        g_hInst_imageResizer = hInstance;
+    }
     return _AtlModule.DllMain(dwReason, lpReserved);
 }
 
