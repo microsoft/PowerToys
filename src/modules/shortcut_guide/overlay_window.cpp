@@ -818,7 +818,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     case SNAPED_LEFT:
         left = GET_RESOURCE_STRING(IDS_SNAP_RIGHT);
         right = GET_RESOURCE_STRING(IDS_RESTORE);
-        up = GET_RESOURCE_STRING(IDS_SNAP_LOWER_LEFT);
+        up = GET_RESOURCE_STRING(IDS_SNAP_UPPER_LEFT);
         down = GET_RESOURCE_STRING(IDS_SNAP_LOWER_LEFT);
         break;
     case SNAPED_BOTTOM_LEFT:
@@ -836,7 +836,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     case SNAPED_RIGHT:
         left = GET_RESOURCE_STRING(IDS_RESTORE);
         right = GET_RESOURCE_STRING(IDS_SNAP_LEFT);
-        up = GET_RESOURCE_STRING(IDS_SNAP_LOWER_RIGHT);
+        up = GET_RESOURCE_STRING(IDS_SNAP_UPPER_RIGHT);
         down = GET_RESOURCE_STRING(IDS_SNAP_LOWER_RIGHT);
         break;
     case SNAPED_BOTTOM_RIGHT:
