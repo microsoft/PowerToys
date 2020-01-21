@@ -58,17 +58,16 @@ namespace MarkdownPreviewHandler
                 this.extension.BaseUrl = filePath;
 
                 string parsedMarkdown = Markdown.ToHtml(fileText, this.pipeline);
-
-                WebBrowser browser = new WebBrowser
-                {
-                    DocumentText = this.htmlHeader + parsedMarkdown + this.htmlFooter,
-                };
+                string html = this.htmlHeader + parsedMarkdown + this.htmlFooter;
+                WebBrowser browser = new WebBrowser();
+                browser.DocumentText = html;
+                browser.Dock = DockStyle.Fill;
                 browser.AllowNavigation = false;
                 browser.IsWebBrowserContextMenuEnabled = false;
-                browser.AllowWebBrowserDrop = false;
                 browser.ScriptErrorsSuppressed = true;
                 browser.ScrollBarsEnabled = true;
                 this.Controls.Add(browser);
+                base.DoPreview(dataSource);
             });
         }
     }
