@@ -97,6 +97,7 @@ private:
         require_write_lock(const std::unique_lock<T>& lock) { lock; }
     };
 
+    bool IsWindowInteresting(HWND hwnd);
     void UpdateZoneWindows() noexcept;
     void MoveWindowsOnDisplayChange() noexcept;
     void UpdateDragState(require_write_lock) noexcept;
@@ -199,8 +200,11 @@ IFACEMETHODIMP_(void) FancyZones::Destroy() noexcept
 // IFancyZonesCallback
 IFACEMETHODIMP_(void) FancyZones::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
 {
-    std::unique_lock writeLock(m_lock);
-    MoveSizeStartInternal(window, monitor, ptScreen, writeLock);
+    if (IsWindowInteresting(window))
+    {
+        std::unique_lock writeLock(m_lock);
+        MoveSizeStartInternal(window, monitor, ptScreen, writeLock);
+    }
 }
 
 // IFancyZonesCallback
@@ -213,8 +217,11 @@ IFACEMETHODIMP_(void) FancyZones::MoveSizeUpdate(HMONITOR monitor, POINT const& 
 // IFancyZonesCallback
 IFACEMETHODIMP_(void) FancyZones::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
 {
-    std::unique_lock writeLock(m_lock);
-    MoveSizeEndInternal(window, ptScreen, writeLock);
+    if (IsWindowInteresting(window) || window == m_windowMoveSize)
+    {
+        std::unique_lock writeLock(m_lock);
+        MoveSizeEndInternal(window, ptScreen, writeLock);
+    }
 }
 
 // IFancyZonesCallback
@@ -234,6 +241,10 @@ IFACEMETHODIMP_(void) FancyZones::VirtualDesktopInitialize() noexcept
 // IFancyZonesCallback
 IFACEMETHODIMP_(void) FancyZones::WindowCreated(HWND window) noexcept
 {
+    if (!IsWindowInteresting(window))
+    {
+        return;
+    }
     if (m_settings->GetSettings().appLastZone_moveWindows)
     {
         auto processPath = get_process_path(window);
@@ -586,10 +597,37 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
         DefWindowProc(window, message, wparam, lparam);
 }
 
+bool FancyZones::IsWindowInteresting(HWND hwnd)
+{
+    auto windowInfo = get_filtered_window_info(hwnd);
+    if (windowInfo.hwnd == nullptr)
+    {
+        return false;
+    }
+    CharUpperBuffW(windowInfo.process_path.data(), (DWORD)windowInfo.process_path.length());
+    if (m_settings)
+    {
+        for (const auto& excluded : m_settings->GetSettings().excludedAppsArray)
+        {
+            if (windowInfo.process_path.find(excluded) != std::wstring::npos)
+            {
+                return false;
+            }
+        }
+        for (const auto& approved : m_settings->GetSettings().approvedAppsArray)
+        {
+            if (windowInfo.process_path.find(approved) != std::wstring::npos)
+            {
+                return true;
+            }
+        }
+    }
+    return !windowInfo.has_owner && windowInfo.standard;
+}
+
 void FancyZones::UpdateZoneWindows() noexcept
 {
-    auto callback = [](HMONITOR monitor, HDC, RECT *, LPARAM data) -> BOOL
-    {
+    auto callback = [](HMONITOR monitor, HDC, RECT*, LPARAM data) -> BOOL {
         MONITORINFOEX mi;
         mi.cbSize = sizeof(mi);
         if (GetMonitorInfo(monitor, &mi))
@@ -678,12 +716,9 @@ void FancyZones::UpdateDragState(require_write_lock) noexcept
 
 void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
 {
-    if (const HWND window = get_filtered_active_window())
+    HWND window = GetAncestor(GetForegroundWindow(), GA_ROOT);
+    if (IsWindowInteresting(window))
     {
-        if (GetWindow(window, GW_OWNER) != nullptr)
-        {
-            return;
-        }
         if (const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL))
         {
             std::shared_lock readLock(m_lock);
@@ -698,12 +733,9 @@ void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
 
 void FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 {
-    if (const HWND window = get_filtered_active_window())
+    HWND window = GetAncestor(GetForegroundWindow(), GA_ROOT);
+    if (IsWindowInteresting(window))
     {
-        if (GetWindow(window, GW_OWNER) != nullptr)
-        {
-            return;
-        }
         if (const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL))
         {
             std::shared_lock readLock(m_lock);

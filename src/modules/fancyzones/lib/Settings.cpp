@@ -49,6 +49,7 @@ private:
     const std::wstring m_zoneHiglightName = L"fancyzones_zoneHighlightColor";
     const std::wstring m_editorHotkeyName = L"fancyzones_editor_hotkey";
     const std::wstring m_excludedAppsName = L"fancyzones_excluded_apps";
+    const std::wstring m_approvedAppsName = L"fancyzones_approved_apps";
     const std::wstring m_zoneHighlightOpacity = L"fancyzones_highlight_opacity";
 };
 
@@ -80,7 +81,7 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
     settings.add_int_spinner(m_zoneHighlightOpacity, IDS_SETTINGS_HIGHLIGHT_OPACITY, m_settings.zoneHighlightOpacity, 0, 100, 1);
     settings.add_color_picker(m_zoneHiglightName, IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, m_settings.zoneHightlightColor);
     settings.add_multiline_string(m_excludedAppsName, IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, m_settings.excludedApps);
-
+    settings.add_multiline_string(m_approvedAppsName, IDS_SETTING_APPROVED_APPS_DESCRIPTION, m_settings.approvedApps);
     return settings.serialize_to_buffer(buffer, buffer_size);
 }
 
@@ -133,13 +134,11 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept try
         m_settings.editorHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
     }
 
-    if (auto val = values.get_string_value(m_excludedAppsName))
-    {
-        m_settings.excludedApps = std::move(*val);
-        m_settings.excludedAppsArray.clear();
-        auto excludedUppercase = m_settings.excludedApps;
-        CharUpperBuffW(excludedUppercase.data(), (DWORD)excludedUppercase.length());
-        std::wstring_view view(excludedUppercase);
+    auto splitToArray = [](const std::wstring& string) {
+        auto uppercase = string;
+        CharUpperBuffW(uppercase.data(), (DWORD)uppercase.length());
+        std::vector<std::wstring> split;
+        std::wstring_view view(uppercase);
         while (view.starts_with('\n') || view.starts_with('\r'))
         {
             view.remove_prefix(1);
@@ -147,13 +146,24 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept try
         while (!view.empty())
         {
             auto pos = (std::min)(view.find_first_of(L"\r\n"), view.length());
-            m_settings.excludedAppsArray.emplace_back(view.substr(0, pos));
+            split.emplace_back(view.substr(0, pos));
             view.remove_prefix(pos);
             while (view.starts_with('\n') || view.starts_with('\r'))
             {
                 view.remove_prefix(1);
             }
         }
+        return split;
+    };
+    if (auto val = values.get_string_value(m_excludedAppsName))
+    {
+        m_settings.excludedApps = std::move(*val);
+        m_settings.excludedAppsArray = splitToArray(m_settings.excludedApps);
+    }
+    if (auto val = values.get_string_value(m_approvedAppsName))
+    {
+        m_settings.approvedApps = std::move(*val);
+        m_settings.approvedAppsArray = splitToArray(m_settings.approvedApps);
     }
 
     if (auto val = values.get_int_value(m_zoneHighlightOpacity))
@@ -176,6 +186,7 @@ void FancyZonesSettings::SaveSettings() noexcept try
     values.add_property(m_zoneHighlightOpacity, m_settings.zoneHighlightOpacity);
     values.add_property(m_editorHotkeyName, m_settings.editorHotkey.get_json());
     values.add_property(m_excludedAppsName, m_settings.excludedApps);
+    values.add_property(m_approvedAppsName, m_settings.approvedApps);
 
     values.save_to_settings_file();
 }

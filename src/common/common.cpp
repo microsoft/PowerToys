@@ -34,12 +34,13 @@ std::optional<POINT> get_mouse_pos() {
   }
 }
 
-WindowAndProcPath get_filtered_base_window_and_path(HWND window) {
-  return hwnd_cache.get_window_and_path(window);
+WindowInfo get_filtered_window_info(HWND window) {
+  return hwnd_cache.get_window_info(window);
 }
 
 HWND get_filtered_active_window() {
-  return hwnd_cache.get_window(GetForegroundWindow());
+  auto root = GetAncestor(GetForegroundWindow(), GA_ROOT);
+  return hwnd_cache.get_window_info(root).hwnd;
 }
 
 int width(const RECT& rect) {

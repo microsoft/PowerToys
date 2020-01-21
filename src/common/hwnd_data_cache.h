@@ -1,34 +1,39 @@
 #pragma once
-
 #include <vector>
 #include <string>
+#include <mutex>
 #include <Windows.h>
 
-#include "common.h"
+struct WindowInfo {
+  // Path to the process executable
+  std::wstring process_path;
+  // HWND of the window
+  HWND hwnd = nullptr;
+  // Does window have an owner or a parent
+  bool has_owner = false;
+  // Is window - more or less - a "standard" window - i.e. one that FancyZones will zone by default
+  bool standard = false;
+  // Is window resizable
+  bool resizable = false;
+};
 
 class HWNDDataCache {
 public:
-  WindowAndProcPath get_window_and_path(HWND hwnd);
-  HWND get_window(HWND hwnd);
+  WindowInfo get_window_info(HWND hwnd);
 private:
   // Return pointer to our internal cache - we cannot pass this to user
   // since next call to get_* might invalidate that pointer
-  WindowAndProcPath* get_internal(HWND hwnd);
-  WindowAndProcPath* get_from_cache(HWND root, DWORD pid);
-  WindowAndProcPath* put_in_cache(HWND root, DWORD pid);
+  WindowInfo* get_internal(HWND hwnd);
+  WindowInfo* get_from_cache(HWND root, DWORD pid);
+  WindowInfo* put_in_cache(HWND root, DWORD pid);
   // Various validation routines
   bool is_invalid_hwnd(HWND hwnd) const;
   bool is_invalid_class(HWND hwnd) const;
-  bool is_invalid_style(HWND hwnd) const;
   bool is_uwp_app(HWND hwnd) const;
   bool is_invalid_uwp_app(const std::wstring& binary_path) const;
 
   // List of HWNDs that are not interesting - like desktop, cortana, etc
   std::vector<HWND> invalid_hwnds = { GetDesktopWindow(), GetShellWindow() };
-  // List of invalid window basic styles
-  std::vector<LONG> invalid_basic_styles = { WS_CHILD, WS_DISABLED };
-  // List of invalid window extended styles
-  std::vector<LONG> invalid_ext_styles = { WS_EX_TOOLWINDOW, WS_EX_NOACTIVATE };
   // List of invalid window classes - things like start menu, etc.
   std::vector<const char*> invalid_classes = { "SysListView32", "WorkerW", "Shell_TrayWnd", "Shell_SecondaryTrayWnd", "Progman" };
   // List of invalid persistent UWP app - like Cortana
@@ -47,7 +52,7 @@ private:
     // one with minimal atime value. We update this value
     // every time we query the cache 
     unsigned atime = 0;
-    WindowAndProcPath data;
+    WindowInfo data;
   };
   std::vector<Entry> cache{ 32 };
 };
