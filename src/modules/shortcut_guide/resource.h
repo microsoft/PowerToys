@@ -7,3 +7,13 @@
 #define IDS_SETTINGS_DESCRIPTION                   107
 #define IDS_README_LINK                            108
 #define IDS_SHORTCUT_GUIDE                         109
+#define IDS_NO_ACTION                              110
+#define IDS_RESTORE                                111
+#define IDS_SNAP_RIGHT                             112
+#define IDS_SNAP_LEFT                              113
+#define IDS_SNAP_UPPER_RIGHT                       114
+#define IDS_SNAP_UPPER_LEFT                        115
+#define IDS_SNAP_LOWER_RIGHT                       116
+#define IDS_SNAP_LOWER_LEFT                        117
+#define IDS_MINIMIZE                               118
+#define IDS_MAXIMIZE                               119
