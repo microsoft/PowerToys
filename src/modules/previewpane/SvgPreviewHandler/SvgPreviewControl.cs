@@ -40,16 +40,5 @@ namespace SvgPreviewHandler
                 base.DoPreview(dataSource);
             });
         }
-
-        /// <summary>
-        /// Override the base Unload method to free resources.
-        /// </summary>
-        public override void Unload()
-        {
-            base.Unload();
-
-            // Call the GC after disposing controls. This is to fix the issue Prevhost Process is not exiting after closing the File Explorer.
-            GC.Collect();
-        }
     }
 }
