@@ -5,6 +5,8 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="settings.cpp" />
+    <ClCompile Include="powerpreview.h" />
+    <ClCompile Include="powerpreview.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
