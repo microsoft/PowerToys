@@ -64,7 +64,6 @@ namespace MarkdownPreviewHandler
                 string parsedMarkdown = Markdown.ToHtml(fileText, pipeline);
                 sb.AppendFormat("{0}{1}{2}", this.htmlHeader, parsedMarkdown, this.htmlFooter);
 
-                File.WriteAllText("C:\\Users\\divyan\\Desktop\\output.html", sb.ToString());
                 WebBrowser browser = new WebBrowser();
                 browser.DocumentText = sb.ToString();
                 browser.Dock = DockStyle.Fill;
