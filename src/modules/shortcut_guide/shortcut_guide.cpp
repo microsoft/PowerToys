@@ -2,6 +2,7 @@
 #include "shortcut_guide.h"
 #include "target_state.h"
 #include "trace.h"
+#include "resource.h"
 
 #include <common/common.h>
 #include <common/settings_objects.h>
@@ -12,12 +13,13 @@ OverlayWindow* instance = nullptr;
 
 OverlayWindow::OverlayWindow()
 {
+    app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
     init_settings();
 }
 
 const wchar_t* OverlayWindow::get_name()
 {
-    return L"Shortcut Guide";
+    return app_name.c_str();
 }
 
 const wchar_t** OverlayWindow::get_events()
@@ -31,7 +33,7 @@ bool OverlayWindow::get_config(wchar_t* buffer, int* buffer_size)
     HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
     PowerToysSettings::Settings settings(hinstance, get_name());
-    settings.set_description(L"Shows a help overlay with Windows shortcuts when the Windows key is pressed.");
+    settings.set_description(GET_RESOURCE_STRING(IDS_SETTINGS_DESCRIPTION));
     settings.set_overview_link(L"https://github.com/microsoft/PowerToys/blob/master/src/modules/shortcut_guide/README.md");
     settings.set_icon_key(L"pt-shortcut-guide");
 
