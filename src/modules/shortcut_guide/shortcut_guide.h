@@ -35,6 +35,7 @@ public:
     virtual void destroy() override;
 
 private:
+    std::wstring app_name;
     std::unique_ptr<TargetState> target_state;
     std::unique_ptr<D2DOverlayWindow> winkey_popup;
     bool _enabled = false;
