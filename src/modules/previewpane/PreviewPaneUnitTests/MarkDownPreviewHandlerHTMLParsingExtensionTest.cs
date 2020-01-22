@@ -1,14 +1,14 @@
 ﻿using System;
 using Markdig;
-using MarkDownPreviewHandler;
+using MarkdownPreviewHandler;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PreviewPaneUnitTests
 {
     [TestClass]
-    public class MarkDownPreviewHandlerHTMLParsingExtensionTest
+    public class MarkdownPreviewHandlerHTMLParsingExtensionTest
     {
-        public MarkdownPipeline BuidPipeline(IMarkdownExtension extension)
+        private MarkdownPipeline BuidPipeline(IMarkdownExtension extension)
         {
             MarkdownPipelineBuilder pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions();
             pipelineBuilder.Extensions.Add(extension);
