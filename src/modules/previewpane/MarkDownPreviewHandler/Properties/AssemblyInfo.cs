@@ -9,14 +9,17 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Common")]
+[assembly: AssemblyTitle("MarkDownPreviewHandler")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Common")]
+[assembly: AssemblyProduct("MarkDownPreviewHandler")]
 [assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
+
+// Make assembly visible to UnitTest Project
+[assembly: InternalsVisibleTo("PreviewPaneUnitTests")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
@@ -24,7 +27,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("af2349b8-e5b6-4004-9502-687c1c7730b1")]
+[assembly: Guid("6a71162e-fc4c-4a2c-b90f-3cf94f59a9bb")]
 
 // Version information for an assembly consists of the following four values:
 //
