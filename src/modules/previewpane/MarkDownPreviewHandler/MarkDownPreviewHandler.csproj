@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AF2349B8-E5B6-4004-9502-687C1C7730B1}</ProjectGuid>
+    <ProjectGuid>{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Common</RootNamespace>
-    <AssemblyName>Common</AssemblyName>
+    <RootNamespace>MarkDownPreviewHandler</RootNamespace>
+    <AssemblyName>MarkDownPreviewHandler</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -22,7 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin/Debug/commonDocumentation.xml</DocumentationFile>
+    <DocumentationFile>bin/Debug/MarkdownPreviewPaneDocumentation.xml</DocumentationFile>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
@@ -36,17 +36,9 @@
     <DocumentationFile>bin/Release/commonDocumentation.xml</DocumentationFile>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>PreviewHandlerCommon.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -55,41 +47,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="cominterop\IInitializeWithFile.cs" />
-    <Compile Include="cominterop\COLORREF.cs" />
-    <Compile Include="cominterop\IInitializeWithStream.cs" />
-    <Compile Include="cominterop\IObjectWithSite.cs" />
-    <Compile Include="cominterop\IOleWindow.cs" />
-    <Compile Include="cominterop\IPreviewHandler.cs" />
-    <Compile Include="cominterop\IPreviewHandlerFrame.cs" />
-    <Compile Include="cominterop\IPreviewHandlerVisuals.cs" />
-    <Compile Include="cominterop\LOGFONT.cs" />
-    <Compile Include="cominterop\MSG.cs" />
-    <Compile Include="cominterop\RECT.cs" />
-    <Compile Include="examplehandler\CustomControlTest.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="handlers\FileBasedPreviewHandler.cs" />
-    <Compile Include="controls\FormHandlerControl.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="controls\IPreviewHandlerControl.cs" />
-    <Compile Include="handlers\PreviewHandlerBase.cs" />
-    <Compile Include="handlers\PreviewHandlerAttribute.cs" />
+    <Compile Include="HTMLParsingExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="handlers\SteamBasedPreviewHandler.cs" />
-    <Compile Include="examplehandler\TestCustomHandler.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Markdig.Signed">
+      <Version>0.18.0</Version>
+    </PackageReference>
+    <PackageReference Include="StyleCop.Analyzers">
+      <Version>1.1.118</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
       <Link>StyleCop.json</Link>
     </AdditionalFiles>
-    <None Include="packages.config" />
-    <None Include="PreviewHandlerCommon.snk" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\..\..\..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
-    <Analyzer Include="..\..\..\..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+    <ProjectReference Include="..\common\Common.csproj">
+      <Project>{af2349b8-e5b6-4004-9502-687c1c7730b1}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
