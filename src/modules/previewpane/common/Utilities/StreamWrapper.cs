@@ -182,7 +182,11 @@ namespace Common.Utilities
         {
             if (this.stream != null)
             {
-                Marshal.ReleaseComObject(this.stream);
+                if (Marshal.IsComObject(this.stream))
+                {
+                    Marshal.ReleaseComObject(this.stream);
+                }
+
                 this.stream = null;
             }
         }
