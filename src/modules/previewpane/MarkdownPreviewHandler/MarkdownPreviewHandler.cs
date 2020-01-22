@@ -9,7 +9,7 @@ using Common;
 namespace MarkdownPreviewHandler
 {
     /// <summary>
-    /// This is a example custom handler to show how to extend the library.
+    /// Implementation of preview handler for markdown files.
     /// </summary>
     [PreviewHandler("MarkdownPreviewPaneHandler", ".md", "{88235ab2-bfce-4be8-9ed0-0408cd8da792}")]
     [ProgId("MarkdownPreviewPaneHandler")]
