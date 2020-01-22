@@ -7,8 +7,8 @@
     <ProjectGuid>{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MarkDownPreviewHandler</RootNamespace>
-    <AssemblyName>MarkDownPreviewHandler</AssemblyName>
+    <RootNamespace>MarkdownPreviewHandler</RootNamespace>
+    <AssemblyName>MarkdownPreviewHandler</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -36,9 +36,16 @@
     <DocumentationFile>bin/Release/commonDocumentation.xml</DocumentationFile>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>MarkdownPreviewHandler.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -48,6 +55,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HTMLParsingExtension.cs" />
+    <Compile Include="MarkdownPreviewHandler.cs" />
+    <Compile Include="MarkdownPreviewHandlerControl.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +81,9 @@
       <Project>{af2349b8-e5b6-4004-9502-687c1c7730b1}</Project>
       <Name>Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MarkdownPreviewHandler.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
