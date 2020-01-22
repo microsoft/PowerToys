@@ -132,7 +132,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "msi_to_msix_upgrade_lib", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "previewpane", "previewpane", "{2F305555-C296-497E-AC20-5FA1B237996A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "src\modules\previewpane\common\Common.csproj", "{AF2349B8-E5B6-4004-9502-687C1C7730B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "src\modules\previewpane\Common\Common.csproj", "{AF2349B8-E5B6-4004-9502-687C1C7730B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkDownPreviewHandler", "src\modules\previewpane\MarkDownPreviewHandler\MarkDownPreviewHandler.csproj", "{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PreviewPaneUnitTests", "src\modules\previewpane\PreviewPaneUnitTests\PreviewPaneUnitTests.csproj", "{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -236,6 +240,14 @@ Global
 		{AF2349B8-E5B6-4004-9502-687C1C7730B1}.Debug|x64.Build.0 = Debug|x64
 		{AF2349B8-E5B6-4004-9502-687C1C7730B1}.Release|x64.ActiveCfg = Release|x64
 		{AF2349B8-E5B6-4004-9502-687C1C7730B1}.Release|x64.Build.0 = Release|x64
+		{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}.Debug|x64.ActiveCfg = Debug|x64
+		{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}.Debug|x64.Build.0 = Debug|x64
+		{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}.Release|x64.ActiveCfg = Release|x64
+		{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}.Release|x64.Build.0 = Release|x64
+		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}.Debug|x64.ActiveCfg = Debug|x64
+		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}.Debug|x64.Build.0 = Debug|x64
+		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}.Release|x64.ActiveCfg = Release|x64
+		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -267,6 +279,8 @@ Global
 		{17DA04DF-E393-4397-9CF0-84DABE11032E} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{2F305555-C296-497E-AC20-5FA1B237996A} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{AF2349B8-E5B6-4004-9502-687C1C7730B1} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A} = {2F305555-C296-497E-AC20-5FA1B237996A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
