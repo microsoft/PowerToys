@@ -28,7 +28,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 }
 
 // Implement the PowerToy Module Interface and all the required methods.
-class FileExplorer : public PowertoyModuleIface
+class PowerPreviewModule : public PowertoyModuleIface
 {
 private:
     // The PowerToy state.
@@ -42,7 +42,7 @@ private:
     void init_settings();
 
 public:
-    FileExplorer()
+    PowerPreviewModule()
     {
         moduleName = GET_RESOURCE_STRING(IDS_MODULE_NAME);
         init_settings();
@@ -159,13 +159,13 @@ public:
 };
 
 // Load the settings file.
-void FileExplorer::init_settings()
+void PowerPreviewModule::init_settings()
 {
     try
     {
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(FileExplorer::get_name());
+            PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_name());
 
         // Load settings states.
         explrSVGSettings.LoadState(settings);
@@ -180,5 +180,5 @@ void FileExplorer::init_settings()
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
-    return new FileExplorer();
+    return new PowerPreviewModule();
 }
