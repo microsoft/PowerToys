@@ -106,8 +106,8 @@ namespace FancyZonesEditor
 
             int spacing = settings.ShowSpacing ? settings.Spacing : 0;
 
-            int width = (int)SystemParameters.WorkArea.Width;
-            int height = (int)SystemParameters.WorkArea.Height;
+            int width = (int)settings.WorkArea.Width;
+            int height = (int)settings.WorkArea.Height;
 
             double totalWidth = width - (spacing * (cols + 1));
             double totalHeight = height - (spacing * (rows + 1));
