@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
@@ -17,10 +18,10 @@ namespace UnitTests_SvgPreviewHandler
         {
             // Arrange
             var svgPreviewControl = new SvgPreviewControl();
-            var mockStreamObject = GetMockStream(string.Empty);
+            var mockStream = new Mock<IStream>();
 
             // Act
-            svgPreviewControl.DoPreview(mockStreamObject);
+            svgPreviewControl.DoPreview(mockStream.Object);
 
             // Assert
             Assert.AreEqual(svgPreviewControl.Controls.Count, 1);
@@ -28,17 +29,17 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void SvgPreviewControl_ShouldSetDocumentText_WhenDoPreviewCalled()
+        public void SvgPreviewControl_ShouldSetDocumentStream_WhenDoPreviewCalled()
         {
             // Arrange
             var svgPreviewControl = new SvgPreviewControl();
-            var mockStreamObject = GetMockStream(string.Empty);
+            var mockStream = new Mock<IStream>();
 
             // Act
-            svgPreviewControl.DoPreview(mockStreamObject);
-
+            svgPreviewControl.DoPreview(mockStream.Object);
+            
             // Assert
-            Assert.IsNotNull(((WebBrowser)svgPreviewControl.Controls[0]).DocumentText);
+            Assert.IsNotNull(((WebBrowser)svgPreviewControl.Controls[0]).DocumentStream);
         }
 
         [TestMethod]
@@ -46,10 +47,10 @@ namespace UnitTests_SvgPreviewHandler
         {
             // Arrange
             var svgPreviewControl = new SvgPreviewControl();
-            var mockStreamObject = GetMockStream(string.Empty);
+            var mockStream = new Mock<IStream>();
 
             // Act
-            svgPreviewControl.DoPreview(mockStreamObject);
+            svgPreviewControl.DoPreview(mockStream.Object);
 
             // Assert
             Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).IsWebBrowserContextMenuEnabled, false);
@@ -60,36 +61,41 @@ namespace UnitTests_SvgPreviewHandler
         {
             // Arrange
             var svgPreviewControl = new SvgPreviewControl();
-            var mockStreamObject = GetMockStream(string.Empty);
+            var mockStream = new Mock<IStream>();
 
             // Act
-            svgPreviewControl.DoPreview(mockStreamObject);
+            svgPreviewControl.DoPreview(mockStream.Object);
 
             // Assert
             Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).Dock, DockStyle.Fill);
         }
 
-        private IStream GetMockStream(string streamData)
+        [TestMethod]
+        public void SvgPreviewControl_ShouldSetScriptErrorsSuppressedProperty_WhenDoPreviewCalled()
         {
-            var byteStreamData = Encoding.Unicode.GetBytes(streamData);
+            // Arrange
+            var svgPreviewControl = new SvgPreviewControl();
             var mockStream = new Mock<IStream>();
-            bool doesRead = false;
-            mockStream.Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
-                .Callback<byte[], int, IntPtr>((pv, cb, pcbRead) =>
-                {
-                    if (!doesRead)
-                    {
-                        Array.Copy(byteStreamData, 0, pv, 0, byteStreamData.Length);
-                        Marshal.WriteInt32(pcbRead, byteStreamData.Length);
-                        doesRead = true;
-                    }
-                    else
-                    {
-                        Marshal.WriteInt32(pcbRead, 0);
-                    }
-                });
 
-            return mockStream.Object;
+            // Act
+            svgPreviewControl.DoPreview(mockStream.Object);
+
+            // Assert
+            Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).ScriptErrorsSuppressed, true);
+        }
+
+        [TestMethod]
+        public void SvgPreviewControl_ShouldSetScrollBarsEnabledProperty_WhenDoPreviewCalled()
+        {
+            // Arrange
+            var svgPreviewControl = new SvgPreviewControl();
+            var mockStream = new Mock<IStream>();
+
+            // Act
+            svgPreviewControl.DoPreview(mockStream.Object);
+
+            // Assert
+            Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).ScrollBarsEnabled, true);
         }
     }
 }

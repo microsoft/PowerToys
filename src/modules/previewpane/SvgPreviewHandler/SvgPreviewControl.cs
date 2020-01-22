@@ -16,6 +16,8 @@ namespace SvgPreviewHandler
     /// </summary>
     public class SvgPreviewControl : FormHandlerControl
     {
+        private Stream dataSourceStream;
+
         /// <summary>
         /// Start the preview on the Control.
         /// </summary>
@@ -25,20 +27,29 @@ namespace SvgPreviewHandler
             this.InvokeOnControlThread(() =>
             {
                 WebBrowser browser = new WebBrowser();
-                var stream = dataSource as IStream;
-                using (var streamWrapper = new StreamWrapper(stream))
-                {
-                    using (var reader = new StreamReader(streamWrapper))
-                    {
-                        browser.DocumentText = reader.ReadToEnd();
-                    }
-                }
+                this.dataSourceStream = new StreamWrapper(dataSource as IStream);
 
+                browser.DocumentStream = this.dataSourceStream;
                 browser.Dock = DockStyle.Fill;
                 browser.IsWebBrowserContextMenuEnabled = false;
+                browser.ScriptErrorsSuppressed = true;
+                browser.ScrollBarsEnabled = true;
                 this.Controls.Add(browser);
                 base.DoPreview(dataSource);
             });
+        }
+
+        /// <summary>
+        /// Free resources on the unload of Preview.
+        /// </summary>
+        public override void Unload()
+        {
+            base.Unload();
+            if (this.dataSourceStream != null)
+            {
+                this.dataSourceStream.Dispose();
+                this.dataSourceStream = null;
+            }
         }
     }
 }
