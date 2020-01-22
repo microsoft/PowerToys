@@ -12,12 +12,12 @@ using Markdig.Renderers.Html;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 
-namespace MarkDownPreviewHandler
+namespace MarkdownPreviewHandler
 {
     /// <summary>
     /// Markdig Extension to process html nodes in markdown AST.
     /// </summary>
-    internal class HTMLParsingExtension : IMarkdownExtension
+    public class HTMLParsingExtension : IMarkdownExtension
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="HTMLParsingExtension"/> class.
