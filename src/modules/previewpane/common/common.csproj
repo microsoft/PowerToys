@@ -7,8 +7,8 @@
     <ProjectGuid>{AF2349B8-E5B6-4004-9502-687C1C7730B1}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>common</RootNamespace>
-    <AssemblyName>common</AssemblyName>
+    <RootNamespace>Common</RootNamespace>
+    <AssemblyName>Common</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

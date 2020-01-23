@@ -201,7 +201,7 @@ namespace Common
             }
 
             // Add preview handler to preview handler list
-            using (RegistryKey handlersKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", true))
+            using (RegistryKey handlersKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", true))
             {
                 handlersKey.SetValue(previewerGuid, name, RegistryValueKind.String);
             }
