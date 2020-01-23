@@ -248,7 +248,7 @@ bool run_elevated(const std::wstring& file, const std::wstring& params) {
 }
 
 bool run_non_elevated(const std::wstring& file, const std::wstring& params) {
-  auto executable_args = file;
+  auto executable_args = L"\"" + file + L"\"";
   if (!params.empty()) {
     executable_args += L" " + params;
   }
@@ -311,7 +311,7 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params) {
 }
 
 bool run_same_elevation(const std::wstring& file, const std::wstring& params) {
-  auto executable_args = file;
+  auto executable_args = L"\"" + file + L"\"";
   if (!params.empty()) {
     executable_args += L" " + params;
   }
