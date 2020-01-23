@@ -1,4 +1,4 @@
-﻿
+﻿﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.452
@@ -138,6 +138,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkdownPreviewHandler", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PreviewPaneUnitTests", "src\modules\previewpane\PreviewPaneUnitTests\PreviewPaneUnitTests.csproj", "{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvgPreviewHandler", "src\modules\previewpane\SvgPreviewHandler\SvgPreviewHandler.csproj", "{DA425894-6E13-404F-8DCB-78584EC0557A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests-SvgPreviewHandler", "src\modules\previewpane\UnitTests-SvgPreviewHandler\UnitTests-SvgPreviewHandler.csproj", "{060D75DA-2D1C-48E6-A4A1-6F0718B64661}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -248,6 +252,14 @@ Global
 		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}.Debug|x64.Build.0 = Debug|x64
 		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}.Release|x64.ActiveCfg = Release|x64
 		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}.Release|x64.Build.0 = Release|x64
+		{DA425894-6E13-404F-8DCB-78584EC0557A}.Debug|x64.ActiveCfg = Debug|x64
+		{DA425894-6E13-404F-8DCB-78584EC0557A}.Debug|x64.Build.0 = Debug|x64
+		{DA425894-6E13-404F-8DCB-78584EC0557A}.Release|x64.ActiveCfg = Release|x64
+		{DA425894-6E13-404F-8DCB-78584EC0557A}.Release|x64.Build.0 = Release|x64
+		{060D75DA-2D1C-48E6-A4A1-6F0718B64661}.Debug|x64.ActiveCfg = Debug|x64
+		{060D75DA-2D1C-48E6-A4A1-6F0718B64661}.Debug|x64.Build.0 = Debug|x64
+		{060D75DA-2D1C-48E6-A4A1-6F0718B64661}.Release|x64.ActiveCfg = Release|x64
+		{060D75DA-2D1C-48E6-A4A1-6F0718B64661}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -281,6 +293,8 @@ Global
 		{AF2349B8-E5B6-4004-9502-687C1C7730B1} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{DA425894-6E13-404F-8DCB-78584EC0557A} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{060D75DA-2D1C-48E6-A4A1-6F0718B64661} = {2F305555-C296-497E-AC20-5FA1B237996A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

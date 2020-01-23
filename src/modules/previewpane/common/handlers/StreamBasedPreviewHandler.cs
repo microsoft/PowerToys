@@ -10,7 +10,7 @@ namespace Common
     /// <summary>
     /// Extends the <see cref="PreviewHandlerBase" /> by implementing IInitializeWithStream.
     /// </summary>
-    public abstract class SteamBasedPreviewHandler : PreviewHandlerBase, IInitializeWithStream
+    public abstract class StreamBasedPreviewHandler : PreviewHandlerBase, IInitializeWithStream
     {
         /// <summary>
         /// Gets the stream object to access file.
