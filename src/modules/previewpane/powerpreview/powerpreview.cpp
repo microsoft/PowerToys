@@ -18,7 +18,7 @@ void PowerPreviewModule::destroy()
 // Return the display name of the powertoy, this will be cached
 const wchar_t* PowerPreviewModule::get_name()
 {
-    return moduleName.c_str();
+    return m_moduleName.c_str();
 }
 
 const wchar_t** PowerPreviewModule::get_events()
@@ -46,9 +46,9 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
 
     // Explorer: SVG Icon Settings.
     settings.add_bool_toogle(
-        explrSVGSettings.GetName(),
-        explrSVGSettings.GetDescription(),
-        explrSVGSettings.GetState());
+        m_explrSVGSettings.GetName(),
+        m_explrSVGSettings.GetDescription(),
+        m_explrSVGSettings.GetState());
 
     // Preview Pane: Settings Group Header.
     settings.add_header_szLarge(
@@ -58,15 +58,15 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
 
     // Preview Pane: SVG Settings.
     settings.add_bool_toogle(
-        prevPaneSVGSettings.GetName(),
-        prevPaneSVGSettings.GetDescription(),
-        prevPaneSVGSettings.GetState());
+        m_prevPaneSVGSettings.GetName(),
+        m_prevPaneSVGSettings.GetDescription(),
+        m_prevPaneSVGSettings.GetState());
 
     // Preview Pane: Mark Down Settings.
     settings.add_bool_toogle(
-        prevPaneMDSettings.GetName(),
-        prevPaneMDSettings.GetDescription(),
-        prevPaneMDSettings.GetState());
+        m_prevPaneMDSettings.GetName(),
+        m_prevPaneMDSettings.GetDescription(),
+        m_prevPaneMDSettings.GetState());
 
     return settings.serialize_to_buffer(buffer, buffer_size);
 }
@@ -77,9 +77,9 @@ void PowerPreviewModule::set_config(const wchar_t* config)
     try
     {
         PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::from_json_string(config);
-        explrSVGSettings.UpdateState(values);
-        prevPaneSVGSettings.UpdateState(values);
-        prevPaneMDSettings.UpdateState(values);
+        m_explrSVGSettings.UpdateState(values);
+        m_prevPaneSVGSettings.UpdateState(values);
+        m_prevPaneMDSettings.UpdateState(values);
         values.save_to_settings_file();
     }
     catch (std::exception const& e)
@@ -124,9 +124,9 @@ void PowerPreviewModule::init_settings()
             PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_name());
 
         // Load settings states.
-        explrSVGSettings.LoadState(settings);
-        prevPaneSVGSettings.LoadState(settings);
-        prevPaneMDSettings.LoadState(settings);
+        m_explrSVGSettings.LoadState(settings);
+        m_prevPaneSVGSettings.LoadState(settings);
+        m_prevPaneMDSettings.LoadState(settings);
     }
     catch (std::exception const& e)
     {

@@ -8,9 +8,9 @@ namespace PowerPreviewSettings
 	// PowerToy Winodws Explore File Preview Settings.
 	class FileExplorerPreviewSettings{
 	protected:
-		bool IsPreviewEnabled;
-		std::wstring Name;
-		std::wstring Description;
+		bool m_isPreviewEnabled;
+        std::wstring m_name;
+        std::wstring m_description;
 
 	public:
 		FileExplorerPreviewSettings(bool _state, std::wstring _Name, std::wstring _Description);

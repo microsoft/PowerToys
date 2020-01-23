@@ -14,10 +14,10 @@ class PowerPreviewModule : public PowertoyModuleIface
 private:
     // The PowerToy state.
     bool m_enabled = false;
-    ExplrSVGSttngs explrSVGSettings = ExplrSVGSttngs();
-    PrevPaneSVGRendrSettings prevPaneSVGSettings = PrevPaneSVGRendrSettings();
-    PrevPaneMDRendrSettings prevPaneMDSettings = PrevPaneMDRendrSettings();
-    std::wstring moduleName;
+    ExplrSVGSttngs m_explrSVGSettings = ExplrSVGSttngs();
+    PrevPaneSVGRendrSettings m_prevPaneSVGSettings = PrevPaneSVGRendrSettings();
+    PrevPaneMDRendrSettings m_prevPaneMDSettings = PrevPaneMDRendrSettings();
+    std::wstring m_moduleName;
 
     // Load and save Settings.
     void init_settings();
@@ -25,11 +25,11 @@ private:
 public:
     PowerPreviewModule()
     {
-        this->moduleName = GET_RESOURCE_STRING(IDS_MODULE_NAME);
+        this->m_moduleName = GET_RESOURCE_STRING(IDS_MODULE_NAME);
 
-        this->explrSVGSettings = ExplrSVGSttngs();
-        this->prevPaneSVGSettings = PrevPaneSVGRendrSettings();
-        this->prevPaneMDSettings = PrevPaneMDRendrSettings();
+        this->m_explrSVGSettings = ExplrSVGSttngs();
+        this->m_prevPaneSVGSettings = PrevPaneSVGRendrSettings();
+        this->m_prevPaneMDSettings = PrevPaneMDRendrSettings();
 
         init_settings();
     };
