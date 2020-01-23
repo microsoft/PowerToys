@@ -15,6 +15,11 @@ namespace PowerPreviewSettings
 		this->m_description = _Description;
 	}
 
+	FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state)
+    {
+        this->m_isPreviewEnabled = state;
+    }
+
 	FileExplorerPreviewSettings::FileExplorerPreviewSettings()
 	{
 		this->m_isPreviewEnabled = false;
@@ -86,9 +91,9 @@ namespace PowerPreviewSettings
 
 
 	// Explorer SVG Icons Preview Settings Implemention
-	ExplrSVGSttngs::ExplrSVGSttngs()
+    ExplrSVGSttngs::ExplrSVGSttngs() 
+		:FileExplorerPreviewSettings(false)
 	{
-		this->m_isPreviewEnabled = false;
 		this->m_name = GET_RESOURCE_STRING(IDS_EXPLR_SVG_BOOL_TOGGLE_CONTROLL);
 		this->m_description = GET_RESOURCE_STRING(IDS_EXPLR_SVG_SETTINGS_DESCRIPTION);
 	}
@@ -104,9 +109,9 @@ namespace PowerPreviewSettings
 	}
 
 	// Preview Pane SVG Render Settings
-	PrevPaneSVGRendrSettings::PrevPaneSVGRendrSettings()
+    PrevPaneSVGRendrSettings::PrevPaneSVGRendrSettings() 
+		:FileExplorerPreviewSettings(false)
 	{
-		this->m_isPreviewEnabled = false;
 		this->m_name = GET_RESOURCE_STRING(IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL);
 		this->m_description = GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION);
 	}
@@ -122,9 +127,9 @@ namespace PowerPreviewSettings
 	}
 
 	// Preview Pane Mark Down Render Settings
-	PrevPaneMDRendrSettings::PrevPaneMDRendrSettings()
+	PrevPaneMDRendrSettings::PrevPaneMDRendrSettings() 
+		:FileExplorerPreviewSettings(false)
 	{
-		this->m_isPreviewEnabled = false;
 		this->m_name = GET_RESOURCE_STRING(IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL);
 		this->m_description = GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION);
 	}

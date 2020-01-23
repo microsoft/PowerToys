@@ -14,6 +14,7 @@ namespace PowerPreviewSettings
 
 	public:
 		FileExplorerPreviewSettings(bool _state, std::wstring _Name, std::wstring _Description);
+		FileExplorerPreviewSettings(bool state);
 		FileExplorerPreviewSettings();
 
 		virtual bool GetState();
