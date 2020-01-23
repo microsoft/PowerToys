@@ -4,48 +4,49 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AF2349B8-E5B6-4004-9502-687C1C7730B1}</ProjectGuid>
+    <ProjectGuid>{DA425894-6E13-404F-8DCB-78584EC0557A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Common</RootNamespace>
-    <AssemblyName>Common</AssemblyName>
+    <RootNamespace>SvgPreviewHandler</RootNamespace>
+    <AssemblyName>SvgPreviewHandler</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin/Debug/commonDocumentation.xml</DocumentationFile>
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin/Release/commonDocumentation.xml</DocumentationFile>
-    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>PreviewHandlerCommon.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>SvgPreviewHandler.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DocumentationFile>bin\Debug\SvgPreviewHandler.xml</DocumentationFile>
+    <WarningLevel>2</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>bin\Release\SvgPreviewHandler.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -55,37 +56,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="cominterop\IInitializeWithFile.cs" />
-    <Compile Include="cominterop\COLORREF.cs" />
-    <Compile Include="cominterop\IInitializeWithStream.cs" />
-    <Compile Include="cominterop\IObjectWithSite.cs" />
-    <Compile Include="cominterop\IOleWindow.cs" />
-    <Compile Include="cominterop\IPreviewHandler.cs" />
-    <Compile Include="cominterop\IPreviewHandlerFrame.cs" />
-    <Compile Include="cominterop\IPreviewHandlerVisuals.cs" />
-    <Compile Include="cominterop\LOGFONT.cs" />
-    <Compile Include="cominterop\MSG.cs" />
-    <Compile Include="cominterop\RECT.cs" />
-    <Compile Include="examplehandler\CustomControlTest.cs">
+    <Compile Include="SvgPreviewControl.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="handlers\FileBasedPreviewHandler.cs" />
-    <Compile Include="controls\FormHandlerControl.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="controls\IPreviewHandlerControl.cs" />
-    <Compile Include="handlers\PreviewHandlerBase.cs" />
-    <Compile Include="handlers\PreviewHandlerAttribute.cs" />
+    <Compile Include="SvgPreviewHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="handlers\StreamBasedPreviewHandler.cs" />
-    <Compile Include="examplehandler\TestCustomHandler.cs" />
-    <Compile Include="Utilities\StreamWrapper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\common\Common.csproj">
+      <Project>{af2349b8-e5b6-4004-9502-687c1c7730b1}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
       <Link>StyleCop.json</Link>
     </AdditionalFiles>
-    <None Include="PreviewHandlerCommon.snk" />
+    <None Include="SvgPreviewHandler.snk" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers">
