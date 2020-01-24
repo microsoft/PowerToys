@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace UnitTests_PreviewHandlerCommon
 {
     [TestClass]
-    public class UnitTest1
+    public class PreviewHandlerBaseTests
     {
         [TestMethod]
         public void TestMethod1()
