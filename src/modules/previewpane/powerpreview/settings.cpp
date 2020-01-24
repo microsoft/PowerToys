@@ -27,7 +27,7 @@ namespace PowerPreviewSettings
 		this->m_description = L"_UNDEFINED_";
 	}
 
-	bool FileExplorerPreviewSettings::GetState()
+	bool FileExplorerPreviewSettings::GetState() const
 	{
 		return this->m_isPreviewEnabled;
 	}
@@ -69,7 +69,7 @@ namespace PowerPreviewSettings
 
 
 
-	std::wstring FileExplorerPreviewSettings::GetName()
+	std::wstring FileExplorerPreviewSettings::GetName() const
 	{
 		return this->m_name;
 	}
@@ -79,7 +79,7 @@ namespace PowerPreviewSettings
 		this->m_name = std::move(name);
 	}
 
-	std::wstring FileExplorerPreviewSettings::GetDescription()
+	std::wstring FileExplorerPreviewSettings::GetDescription() const
 	{
 		return this->m_description;
 	}
