@@ -49,6 +49,7 @@
     <Compile Include="PreviewHandlerBaseTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StreamBasedPreviewHandlerTests.cs" />
+    <Compile Include="StreamWrapperTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Moq">
