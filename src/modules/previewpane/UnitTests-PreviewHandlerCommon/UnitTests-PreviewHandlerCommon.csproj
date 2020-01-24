@@ -42,18 +42,28 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PreviewHandlerBaseTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Moq">
+      <Version>4.13.1</Version>
+    </PackageReference>
     <PackageReference Include="MSTest.TestAdapter">
       <Version>1.3.2</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestFramework">
       <Version>1.3.2</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\PreviewHandlerCommon.csproj">
+      <Project>{af2349b8-e5b6-4004-9502-687c1c7730b1}</Project>
+      <Name>PreviewHandlerCommon</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
