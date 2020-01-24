@@ -98,6 +98,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvgPreviewHandler", "src\mo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests-SvgPreviewHandler", "src\modules\previewpane\UnitTests-SvgPreviewHandler\UnitTests-SvgPreviewHandler.csproj", "{060D75DA-2D1C-48E6-A4A1-6F0718B64661}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests-PreviewHandlerCommon", "src\modules\previewpane\UnitTests-PreviewHandlerCommon\UnitTests-PreviewHandlerCommon.csproj", "{73A93F5C-EC6D-43C1-A914-07B897F1D550}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -192,6 +194,10 @@ Global
 		{060D75DA-2D1C-48E6-A4A1-6F0718B64661}.Debug|x64.Build.0 = Debug|x64
 		{060D75DA-2D1C-48E6-A4A1-6F0718B64661}.Release|x64.ActiveCfg = Release|x64
 		{060D75DA-2D1C-48E6-A4A1-6F0718B64661}.Release|x64.Build.0 = Release|x64
+		{73A93F5C-EC6D-43C1-A914-07B897F1D550}.Debug|x64.ActiveCfg = Debug|x64
+		{73A93F5C-EC6D-43C1-A914-07B897F1D550}.Debug|x64.Build.0 = Debug|x64
+		{73A93F5C-EC6D-43C1-A914-07B897F1D550}.Release|x64.ActiveCfg = Release|x64
+		{73A93F5C-EC6D-43C1-A914-07B897F1D550}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -221,6 +227,7 @@ Global
 		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{DA425894-6E13-404F-8DCB-78584EC0557A} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{060D75DA-2D1C-48E6-A4A1-6F0718B64661} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{73A93F5C-EC6D-43C1-A914-07B897F1D550} = {2F305555-C296-497E-AC20-5FA1B237996A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
