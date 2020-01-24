@@ -13,18 +13,18 @@ namespace PowerPreviewSettings
         std::wstring m_description;
 
 	public:
-		FileExplorerPreviewSettings(bool _state, std::wstring _Name, std::wstring _Description);
+		FileExplorerPreviewSettings(bool state, std::wstring name, std::wstring description);
 		FileExplorerPreviewSettings(bool state);
 		FileExplorerPreviewSettings();
 
 		virtual bool GetState();
-		virtual void SetState(bool _State);
-		virtual void LoadState(PowerToysSettings::PowerToyValues settings);
-		virtual void UpdateState(PowerToysSettings::PowerToyValues values);
+		virtual void SetState(bool state);
+		virtual void LoadState(PowerToysSettings::PowerToyValues &settings);
+		virtual void UpdateState(PowerToysSettings::PowerToyValues &values);
 		virtual std::wstring GetName();
-		virtual void SetName(std::wstring _Name);
+		virtual void SetName(std::wstring name);
 		virtual std::wstring GetDescription();
-		virtual void SetDescription(std::wstring _Description);
+		virtual void SetDescription(std::wstring description);
 		virtual void EnablePreview() = 0;
 		virtual void DisabledPreview() = 0;
 	};

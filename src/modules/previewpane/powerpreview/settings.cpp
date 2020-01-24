@@ -8,16 +8,16 @@ namespace PowerPreviewSettings
 	extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 	// Base Settinngs Class Implementation
-	FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool _state, std::wstring _Name, std::wstring _Description)
+	FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state, std::wstring name, std::wstring description)
 	{
-		this->m_isPreviewEnabled = false;
-		this->m_name = _Name;
-		this->m_description = _Description;
+        this->m_isPreviewEnabled = std::move(state);
+		this->m_name = std::move(name);
+        this->m_description = std::move(description);
 	}
 
 	FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state)
     {
-        this->m_isPreviewEnabled = state;
+        this->m_isPreviewEnabled = std::move(state);
     }
 
 	FileExplorerPreviewSettings::FileExplorerPreviewSettings()
@@ -32,12 +32,12 @@ namespace PowerPreviewSettings
 		return this->m_isPreviewEnabled;
 	}
 
-	void FileExplorerPreviewSettings::SetState(bool _State)
+	void FileExplorerPreviewSettings::SetState(bool state)
 	{
-		this->m_isPreviewEnabled = _State;
+        this->m_isPreviewEnabled = std::move(state);
 	}
 
-	void FileExplorerPreviewSettings::LoadState(PowerToysSettings::PowerToyValues settings)
+	void FileExplorerPreviewSettings::LoadState(PowerToysSettings::PowerToyValues &settings)
 	{
 		auto toggle = settings.get_bool_value(this->GetName());
 		if(toggle != std::nullopt)
@@ -46,9 +46,9 @@ namespace PowerPreviewSettings
 		}
 	}
 
-	void FileExplorerPreviewSettings::UpdateState(PowerToysSettings::PowerToyValues values)
+	void FileExplorerPreviewSettings::UpdateState(PowerToysSettings::PowerToyValues &values)
 	{
-		auto toggle = values.get_bool_value(this->GetName());
+        auto toggle = values.get_bool_value(this->GetName());
 		if(toggle != std::nullopt)
 		{
 			this->m_isPreviewEnabled  = toggle.value();
@@ -74,9 +74,9 @@ namespace PowerPreviewSettings
 		return this->m_name;
 	}
 
-	void FileExplorerPreviewSettings::SetName(std::wstring _Name)
+	void FileExplorerPreviewSettings::SetName(std::wstring name)
 	{
-		this->m_name = _Name;
+		this->m_name = std::move(name);
 	}
 
 	std::wstring FileExplorerPreviewSettings::GetDescription()
@@ -84,9 +84,9 @@ namespace PowerPreviewSettings
 		return this->m_description;
 	}
 
-	void FileExplorerPreviewSettings::SetDescription(std::wstring _Description)
+	void FileExplorerPreviewSettings::SetDescription(std::wstring description)
 	{
-		this->m_description = _Description;
+        this->m_description = std::move(description);
 	}
 
 
