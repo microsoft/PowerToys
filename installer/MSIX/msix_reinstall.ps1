@@ -6,6 +6,6 @@ Get-AppxPackage -Name 'PowerToys' | select -ExpandProperty "PackageFullName" | R
 signtool sign /debug /a /fd SHA256 /f PowerToys_TemporaryKey.pfx /p 12345 bin\PowerToys-x64.msix
 signtool sign /debug /a /fd SHA256 /f PowerToys_TemporaryKey.pfx /p 12345 bin\PowerToys.msixbundle
 
-Add-AppxPackage .\bin\PowerToys-x64.msix
+Add-AppxPackage .\bin\PowerToys.msixbundle
 
 start $Env:windir\explorer.exe
