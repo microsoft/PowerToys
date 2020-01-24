@@ -9,11 +9,13 @@ struct WindowInfo {
   std::wstring process_path;
   // HWND of the window
   HWND hwnd = nullptr;
+  // Is a valid window - equals to hwnd not set to nullptr
+  bool is_valid = false;
   // Does window have an owner or a parent
   bool has_owner = false;
   // Is window - more or less - a "standard" window - i.e. one that FancyZones will zone by default
   bool standard = false;
-  // Is window resizable
+  // Is window resizable - has a thick frame or has a maximize button
   bool resizable = false;
 };
 

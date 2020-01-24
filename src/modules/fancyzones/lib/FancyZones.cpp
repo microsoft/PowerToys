@@ -600,7 +600,7 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
 bool FancyZones::IsWindowInteresting(HWND hwnd)
 {
     auto windowInfo = get_filtered_window_info(hwnd);
-    if (windowInfo.hwnd == nullptr)
+    if (!windowInfo.is_valid)
     {
         return false;
     }

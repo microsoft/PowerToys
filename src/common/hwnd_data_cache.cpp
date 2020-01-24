@@ -12,9 +12,11 @@ WindowInfo HWNDDataCache::get_window_info(HWND hwnd) {
 
 WindowInfo* HWNDDataCache::get_internal(HWND hwnd) {
   // Filter the fast and easy cases
+  auto style = GetWindowLong(hwnd, GWL_STYLE);
   if (!IsWindowVisible(hwnd) ||
       is_invalid_hwnd(hwnd) ||
-      is_invalid_class(hwnd)) {
+      is_invalid_class(hwnd) ||
+      (style & WS_CHILD) == WS_CHILD) {
     return nullptr;
   }
   // Get the HWND process path from the cache
@@ -29,13 +31,12 @@ WindowInfo* HWNDDataCache::get_internal(HWND hwnd) {
     invalid_hwnds.push_back(hwnd);
     return nullptr;
   }
+  cache_ptr->is_valid = true;
   cache_ptr->has_owner = (GetAncestor(hwnd, GA_ROOT) != hwnd) || GetWindow(hwnd, GW_OWNER) != nullptr;
-  auto style = GetWindowLong(hwnd, GWL_STYLE);
   auto ex_style = GetWindowLong(hwnd, GWL_EXSTYLE);
-  cache_ptr->standard = !((style & WS_CHILD) ||
-                             (style & WS_DISABLED) ||
-                             (ex_style & WS_EX_TOOLWINDOW) ||
-                             (ex_style & WS_EX_NOACTIVATE));
+  cache_ptr->standard = !((style & WS_DISABLED) ||
+                          (ex_style & WS_EX_TOOLWINDOW) ||
+                          (ex_style & WS_EX_NOACTIVATE));
   cache_ptr->resizable = (style & WS_THICKFRAME) || (style & WS_MAXIMIZEBOX);
   return cache_ptr;
 }
