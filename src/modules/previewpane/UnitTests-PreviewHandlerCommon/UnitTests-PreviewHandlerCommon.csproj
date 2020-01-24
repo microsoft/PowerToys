@@ -45,8 +45,10 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileBasedPreviewHandlerTests.cs" />
     <Compile Include="PreviewHandlerBaseTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StreamBasedPreviewHandlerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Moq">
