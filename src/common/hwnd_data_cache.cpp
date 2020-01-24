@@ -13,10 +13,10 @@ WindowInfo HWNDDataCache::get_window_info(HWND hwnd) {
 WindowInfo* HWNDDataCache::get_internal(HWND hwnd) {
   // Filter the fast and easy cases
   auto style = GetWindowLong(hwnd, GWL_STYLE);
-  if (!IsWindowVisible(hwnd) ||
-      is_invalid_hwnd(hwnd) ||
-      is_invalid_class(hwnd) ||
-      (style & WS_CHILD) == WS_CHILD) {
+  if (!IsWindowVisible(hwnd) ||  // invisible windows
+      is_invalid_hwnd(hwnd) ||   // desktop, shell, and cortana
+      is_invalid_class(hwnd) ||  // start menu, various taskbars
+      (style & WS_CHILD) == WS_CHILD) { // window elements
     return nullptr;
   }
   // Get the HWND process path from the cache

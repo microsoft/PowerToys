@@ -599,11 +599,13 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
 
 bool FancyZones::IsWindowInteresting(HWND hwnd)
 {
+    // Get general window ifo
     auto windowInfo = get_filtered_window_info(hwnd);
-    if (!windowInfo.is_valid)
+    if (!windowInfo.is_valid) // Filter out invalid windows - start menu, buttons, etc.
     {
         return false;
     }
+    // Test if the app is on the approved or the excluded apps list
     CharUpperBuffW(windowInfo.process_path.data(), (DWORD)windowInfo.process_path.length());
     if (m_settings)
     {
@@ -622,6 +624,8 @@ bool FancyZones::IsWindowInteresting(HWND hwnd)
             }
         }
     }
+    // If the app is not on any of the lists, reeturn true if the window does not have 
+    // an owner and if the window does not have some styles typical for special windows.
     return !windowInfo.has_owner && windowInfo.standard;
 }
 
