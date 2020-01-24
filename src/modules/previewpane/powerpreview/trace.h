@@ -13,8 +13,8 @@ public:
     static void PreviewPaneSVGRenderDisabled();
     static void PreviewPaneMarkDownRenderDisabled();
     static void PreviewPaneMarkDownRenderEnabled();
-    static void SetConfigInvalidJSON(const char* _exceptionMessage);
-    static void InitSetErrorLoadingFile(const char* _exceptionMessage);
-    static void PowerPreviewSettingsUpDateFailed(LPCWSTR _SettingsName);
+    static void SetConfigInvalidJSON(const char* exceptionMessage);
+    static void InitSetErrorLoadingFile(const char* exceptionMessage);
+    static void PowerPreviewSettingsUpDateFailed(LPCWSTR SettingsName);
     static void Destroyed();
 };

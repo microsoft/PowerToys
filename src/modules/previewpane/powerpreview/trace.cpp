@@ -69,12 +69,12 @@ void Trace::ExplorerSVGRenderDisabled()
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
-void Trace::PowerPreviewSettingsUpDateFailed(LPCWSTR _SettingsName)
+void Trace::PowerPreviewSettingsUpDateFailed(LPCWSTR SettingsName)
 {
     TraceLoggingWrite(
         g_hProvider,
         "PowerPreview_FilePreview_FailedUpdatingSettings",
-        TraceLoggingWideString(_SettingsName, "ExceptionMessage"),
+        TraceLoggingWideString(SettingsName, "ExceptionMessage"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -121,12 +121,12 @@ void Trace::PreviewPaneMarkDownRenderEnabled()
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
-void Trace::SetConfigInvalidJSON(const char* _exceptionMessage)
+void Trace::SetConfigInvalidJSON(const char* exceptionMessage)
 {
     TraceLoggingWrite(
         g_hProvider,
         "PowerPreview_SetConfig__InvalidJSONGiven",
-        TraceLoggingString(_exceptionMessage, "ExceptionMessage"),
+        TraceLoggingString(exceptionMessage, "ExceptionMessage"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -142,12 +142,12 @@ void Trace::Destroyed()
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
-void Trace::InitSetErrorLoadingFile(const char* _exceptionMessage) 
+void Trace::InitSetErrorLoadingFile(const char* exceptionMessage) 
 {
     TraceLoggingWrite(
         g_hProvider,
         "PowerPreview_InitSet__ErrorLoadingFile",
-        TraceLoggingString(_exceptionMessage, "ExceptionMessage"),
+        TraceLoggingString(exceptionMessage, "ExceptionMessage"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
