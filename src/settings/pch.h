@@ -15,3 +15,4 @@
 #pragma pop_macro("GetCurrentTime")
 #include <strsafe.h>
 #include <Shlwapi.h>
+#include <ProjectTelemetry.h>

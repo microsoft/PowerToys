@@ -8,6 +8,8 @@
 #include <common/dpi_aware.h>
 #include <common/common.h>
 
+#include "trace.h"
+
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "shcore.lib")
 #pragma comment(lib, "windowsapp")
@@ -272,6 +274,7 @@ void initialize_webview(int nShowCmd)
             else if (status == AsyncStatus::Error)
             {
                 MessageBox(NULL, L"Failed to create the WebView control.\nPlease report the bug to https://github.com/microsoft/PowerToys/issues", L"PowerToys Settings Error", MB_OK);
+                Trace::SettingsInitError(Trace::SettingsInitErrorCause::WebViewInitAsyncError);
                 exit(1);
             }
             else if (status == AsyncStatus::Started)
@@ -286,6 +289,7 @@ void initialize_webview(int nShowCmd)
     }
     catch (hresult_error const& e)
     {
+        Trace::SettingsInitError(Trace::SettingsInitErrorCause::WebViewInitWinRTException);
         WCHAR message[1024] = L"";
         StringCchPrintf(message, ARRAYSIZE(message), L"failed: %ls", e.message().c_str());
         MessageBox(g_main_wnd, message, L"Error", MB_OK);
@@ -553,6 +557,7 @@ bool initialize_com_security_policy_for_webview()
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
+    Trace::RegisterProvider();
     CoInitialize(nullptr);
 
     const bool should_try_drop_privileges = !initialize_com_security_policy_for_webview() && is_process_elevated();
@@ -562,6 +567,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         if (!drop_elevated_privileges())
         {
             MessageBox(NULL, L"Failed to drop admin privileges.\nPlease report the bug to https://github.com/microsoft/PowerToys/issues", L"PowerToys Settings Error", MB_OK);
+            Trace::SettingsInitError(Trace::SettingsInitErrorCause::FailedToDropPrivileges);
             exit(1);
         }
     }
@@ -585,5 +591,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         DispatchMessage(&msg);
     }
 
+    Trace::UnregisterProvider();
     return (int)msg.wParam;
 }
