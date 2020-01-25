@@ -1,6 +1,8 @@
 ﻿using Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace UnitTests_PreviewHandlerCommon
@@ -150,5 +152,26 @@ namespace UnitTests_PreviewHandlerCommon
             // Assert
             Assert.IsTrue(testFormHandlerControl.Visible);
         }
+
+        [TestMethod]
+        public void FormHandlerControl_ShouldSetParentHandle_WhenSetWindowCalled()
+        {
+            // Arrange
+            var testFormHandlerControl = new TestFormControl();
+            var parentFormWindow = new UserControl();
+            var parentHwnd = parentFormWindow.Handle;
+            var rect = new Rectangle(2, 2, 4, 4);
+
+            // Act
+            testFormHandlerControl.SetWindow(parentHwnd, rect);
+            var actualParentHwnd = GetAncestor(testFormHandlerControl.Handle, 1); // GA_PARENT 1
+
+            // Assert
+            Assert.AreEqual(parentHwnd, actualParentHwnd);
+        }
+
+        // Gets the ancestor window: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getancestor
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetAncestor(IntPtr hWnd, uint gaFlags);
     }
 }
