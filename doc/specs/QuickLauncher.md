@@ -97,7 +97,7 @@ Here is a matrix which compares features between third-party tools:
 |[Alfred (free)](https://www.alfredapp.com/)       | ![alt text][cross] | ![alt text][check] |![alt text][cross] | ![alt text][cross] | ![alt text][check]                  | ![alt text][cross] |
 |[Spotlight](https://support.apple.com/en-us/HT204014)</p>       | ![alt text][check] | ![alt text][check] |![alt text][cross] | ![alt text][cross] | ![alt text][check]                  | ![alt text][check] |
 |[Listary](https://www.listary.com/)</p>         | ![alt text][cross] | ![alt text][check] |![alt text][cross] | ![alt text][check] shown as a separate cmd | ![alt text][cross]                  | ![alt text][check] on right click |
-|[Wox](http://www.wox.one/)</p>             | ![alt text][cross] | ![alt text][check] |![alt text][check] via “>” or Win+R | ![alt text][check] on right click | ![alt text][check]                  | ![alt text][check] on right click|
+|[Wox](http://www.wox.one/)</p>             | ![alt text][cross] | ![alt text][check] |![alt text][check] via “>” or Win+R | ![alt text][check] on right click/ Shift+Enter | ![alt text][check]                  | ![alt text][check] on right click/ Shift+Enter|
 |[Launchy](https://www.launchy.net/index.php)</p>         | ![alt text][cross] | ![alt text][check] |![alt text][cross] | ![alt text][cross] | ![alt text][cross]                  | ![alt text][cross] |
 |[Rofi](https://github.com/davatorium/rofi)</p>            | ![alt text][cross] | ![alt text][check] | N/A | N/A | ![alt text][check]                  | ![alt text][cross] |
 |[Executor](http://www.executor.dk/)</p>        | ![alt text][check] | ![alt text][check] |![alt text][cross] | ![alt text][check]Shift+Enter | ![alt text][check]                  | ![alt text][check] on right click |
@@ -287,7 +287,7 @@ preference as follows:
 | ------ | --------------------------------------------------------------------------------------------------- | ------------ |
 | 1      | Users can choose to remove override of Win+R or Win+S to launch PowerLauncher                       | 1            |
 | 2      | Users can run an application as administrator when executing Ctrl+Shift+Enter                       | 1            |
-| 3      | PowerLauncher should open when Win+Space is executed                                                | 1            |
+| 3      | PowerLauncher should open when Alt+Space is executed                                                | 1            |
 | 4      | Users can close PowerLauncher by pressing Escape if the search box is empty                         | 1            |
 | 5      | Users can auto-complete text suggestions (per words) by pressing Tab                                | 1            |
 | 6      | Users can perform right-click by pressing the Shift+F10                                             | 1            |
@@ -373,7 +373,7 @@ There are 2 behaviour options for Tab:
     
       - We may collaborate with WoX
 
-  - Keyboard Shortcut Manager PowerToy
+  - [Keyboard Shortcut Manager PowerToy](https://github.com/microsoft/PowerToys/pull/1112)
     
       - PowerLauncher has functionality to modify keyboard shortcuts.
         This UI should eventually be integrated with keyboard shortcut
