@@ -29,7 +29,6 @@ namespace PowerPreviewSettings
 		virtual void DisabledPreview() = 0;
 	};
 
-
 	class ExplrSVGSttngs: public FileExplorerPreviewSettings{
 	public:
 		ExplrSVGSttngs();

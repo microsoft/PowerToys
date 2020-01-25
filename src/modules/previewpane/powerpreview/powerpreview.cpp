@@ -8,14 +8,14 @@
 #include "settings.h"
 #include "resource.h"
 
-// Destroy the powertoy and free memory
+// Destroy the powertoy and free memory.
 void PowerPreviewModule::destroy()
 {
-    delete this;
     Trace::Destroyed();
+    delete this;
 }
 
-// Return the display name of the powertoy, this will be cached
+// Return the display name of the powertoy, this will be cached.
 const wchar_t* PowerPreviewModule::get_name()
 {
     return m_moduleName.c_str();

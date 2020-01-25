@@ -67,8 +67,6 @@ namespace PowerPreviewSettings
 		}
 	}
 
-
-
 	std::wstring FileExplorerPreviewSettings::GetName() const
 	{
 		return this->m_name;

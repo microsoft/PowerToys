@@ -158,15 +158,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BaseSettingsClassTest.cpp" />
+    <ClCompile Include="FileExplorerPreviewSettingsTest.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="powerpreviewTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BaseSettingsClassTest.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>

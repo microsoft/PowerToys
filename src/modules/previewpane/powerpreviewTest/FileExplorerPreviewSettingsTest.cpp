@@ -3,20 +3,21 @@
 #include <powerpreview/settings.cpp>
 #include <powerpreview/trace.cpp>
 #include <settings_objects.h>
+#include <powerpreviewTest/BaseSettingsClassTest.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace PowerToysSettings;
 using namespace PowerPreviewSettings;
 
-namespace powerpreviewTest
+namespace BaseSettingsTest
 {
-	TEST_CLASS(powerpreviewTest)
+    TEST_CLASS(FileExplorerPreviewSettingsTest)
 	{
 		public:
 			TEST_METHOD(LoadState_ShouldLoadNewState_WhenSucessfull)
 			{
 				// Arrange
-				ExplrSVGSttngs tempSettings = ExplrSVGSttngs();
+                BaseSettingsClassTest tempSettings = BaseSettingsClassTest();
 				PowerToyValues values = PowerToyValues::from_json_string(GetJSONSettings(tempSettings.GetName(), L"true"));
 				tempSettings.SetState(false);
 				bool expectedState = true; 
@@ -32,7 +33,7 @@ namespace powerpreviewTest
 			TEST_METHOD(UpdateState_ShouldChangeState_WhenSucessfull)
 			{
 				// Arrange
-				ExplrSVGSttngs tempSettings = ExplrSVGSttngs();
+                BaseSettingsClassTest tempSettings = BaseSettingsClassTest();
 				PowerToyValues values = PowerToyValues::from_json_string(GetJSONSettings(tempSettings.GetName(), L"true"));
 				tempSettings.SetState(false);
 				bool expectedState = true; 
@@ -45,7 +46,7 @@ namespace powerpreviewTest
 				Assert::AreEqual(actualState, expectedState);
 			}
 
-			std::wstring GetJSONSettings(std::wstring _settingsNameId, std::wstring _value)
+			std::wstring GetJSONSettings(std::wstring _settingsNameId, std::wstring _value) const
 			{
 				return L"{\"name\":\"Module Name\",\"properties\" : {\""+_settingsNameId+L"\":{\"value\":"+_value+L"}},\"version\" : \"1.0\" }";
 			}
