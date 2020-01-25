@@ -43,9 +43,12 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FileBasedPreviewHandlerTests.cs" />
+    <Compile Include="FormHandlerControlTests.cs" />
+    <Compile Include="PreviewHandlerAttributeTests.cs" />
     <Compile Include="PreviewHandlerBaseTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StreamBasedPreviewHandlerTests.cs" />
