@@ -32,7 +32,6 @@ namespace Wox.Infrastructure
 
         public static void ValidateDataDirectory(string bundledDataDirectory, string dataDirectory)
         {
-
             if (!Directory.Exists(dataDirectory))
             {
                 Directory.CreateDirectory(dataDirectory);

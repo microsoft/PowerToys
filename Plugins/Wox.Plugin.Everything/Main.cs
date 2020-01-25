@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin.Everything.Everything;
 
@@ -15,14 +16,16 @@ namespace Wox.Plugin.Everything
 {
     public class Main : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
     {
-        private readonly EverythingAPI _api = new EverythingAPI();
-
         public const string DLL = "Everything.dll";
+        private readonly IEverythingApi _api = new EverythingApi();
+
+        
 
         private PluginInitContext _context;
 
         private Settings _settings;
         private PluginJsonStorage<Settings> _storage;
+        private CancellationTokenSource _cancellationTokenSource;
 
         public void Save()
         {
@@ -31,55 +34,24 @@ namespace Wox.Plugin.Everything
 
         public List<Result> Query(Query query)
         {
+            _cancellationTokenSource?.Cancel(); // cancel if already exist
+            var cts = _cancellationTokenSource = new CancellationTokenSource();
             var results = new List<Result>();
             if (!string.IsNullOrEmpty(query.Search))
             {
                 var keyword = query.Search;
-                if (_settings.MaxSearchCount <= 0)
-                {
-                    _settings.MaxSearchCount = 50;
-                }
-
+                
                 try
                 {
-                    var searchList = _api.Search(keyword, maxCount: _settings.MaxSearchCount).ToList();
-                    foreach (var s in searchList)
+                    var searchList = _api.Search(keyword, cts.Token, maxCount: _settings.MaxSearchCount);
+                    if (searchList == null)
                     {
-                        var path = s.FullPath;
+                        return results;
+                    }
 
-                        string workingDir = null;
-                        if (_settings.UseLocationAsWorkingDir)
-                            workingDir = Path.GetDirectoryName(path);
-
-                        Result r = new Result();
-                        r.Title = Path.GetFileName(path);
-                        r.SubTitle = path;
-                        r.IcoPath = path;
-                        r.TitleHighlightData = StringMatcher.FuzzySearch(keyword, Path.GetFileName(path)).MatchData;
-                        r.Action = c =>
-                        {
-                            bool hide;
-                            try
-                            {
-                                Process.Start(new ProcessStartInfo
-                                {
-                                    FileName = path,
-                                    UseShellExecute = true,
-                                    WorkingDirectory = workingDir
-                                });
-                                hide = true;
-                            }
-                            catch (Win32Exception)
-                            {
-                                var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
-                                var message = "Can't open this file";
-                                _context.API.ShowMsg(name, message, string.Empty);
-                                hide = false;
-                            }
-                            return hide;
-                        };
-                        r.ContextData = s;
-                        r.SubTitleHighlightData = StringMatcher.FuzzySearch(keyword, path).MatchData;
+                    foreach (var searchResult in searchList)
+                    {
+                        var r = CreateResult(keyword, searchResult);
                         results.Add(r);
                     }
                 }
@@ -93,6 +65,7 @@ namespace Wox.Plugin.Everything
                 }
                 catch (Exception e)
                 {
+                    Log.Exception("EverythingPlugin", "Query Error", e);
                     results.Add(new Result
                     {
                         Title = _context.API.GetTranslation("wox_plugin_everything_query_error"),
@@ -108,13 +81,51 @@ namespace Wox.Plugin.Everything
                 }
             }
 
-            _api.Reset();
-
             return results;
         }
 
-        [DllImport("kernel32.dll")]
-        private static extern int LoadLibrary(string name);
+        private Result CreateResult(string keyword, SearchResult searchResult)
+        {
+            var path = searchResult.FullPath;
+
+            string workingDir = null;
+            if (_settings.UseLocationAsWorkingDir)
+                workingDir = Path.GetDirectoryName(path);
+
+            var r = new Result
+            {
+                Title = Path.GetFileName(path),
+                SubTitle = path,
+                IcoPath = path,
+                TitleHighlightData = StringMatcher.FuzzySearch(keyword, Path.GetFileName(path)).MatchData,
+                Action = c =>
+                {
+                    bool hide;
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = path, UseShellExecute = true, WorkingDirectory = workingDir
+                        });
+                        hide = true;
+                    }
+                    catch (Win32Exception)
+                    {
+                        var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
+                        var message = "Can't open this file";
+                        _context.API.ShowMsg(name, message, string.Empty);
+                        hide = false;
+                    }
+
+                    return hide;
+                },
+                ContextData = searchResult,
+                SubTitleHighlightData = StringMatcher.FuzzySearch(keyword, path).MatchData
+            };
+            return r;
+        }
+
+        
 
         private List<ContextMenu> GetDefaultContextMenu()
         {
@@ -149,6 +160,10 @@ namespace Wox.Plugin.Everything
             _context = context;
             _storage = new PluginJsonStorage<Settings>();
             _settings = _storage.Load();
+            if (_settings.MaxSearchCount <= 0)
+            {
+                _settings.MaxSearchCount = Settings.DefaultMaxSearchCount;
+            }
 
             var pluginDirectory = context.CurrentPluginMetadata.PluginDirectory;
             const string sdk = "EverythingSDK";
@@ -158,7 +173,7 @@ namespace Wox.Plugin.Everything
 
             var sdkPath = Path.Combine(sdkDirectory, DLL);
             Constant.EverythingSDKPath = sdkPath;
-            LoadLibrary(sdkPath);
+            _api.Load(sdkPath);
         }
 
         private static string CpuType()

@@ -61,6 +61,7 @@
     <Compile Include="EverythingSettings.xaml.cs">
       <DependentUpon>EverythingSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Everything\EverythingApiDllImport.cs" />
     <Compile Include="Everything\Exceptions\CreateThreadException.cs" />
     <Compile Include="Everything\Exceptions\CreateWindowException.cs" />
     <Compile Include="Everything\EverythingAPI.cs" />
@@ -71,6 +72,7 @@
     <Compile Include="Everything\Exceptions\RegisterClassExException.cs" />
     <Compile Include="Everything\ResultType.cs" />
     <Compile Include="Everything\SearchResult.cs" />
+    <Compile Include="IEverythingDllLoader.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
