@@ -11,7 +11,7 @@
 
 | **Terminology** | **Definition**                                                                              |
 | --------------- | ------------------------------------------------------------------------------------------- |
-| Context menu    | The menu which opens when a user performs right-click/Shift+F10 on a selected search result |
+| Context menu    | The menu which opens when a user performs right-click/<kbd>Shift</kbd>+<kbd>F10</kbd> on a selected search result |
 | Text suggestion | Text which appears on the search box when users type           |
 | App suggestion  | List of applications that may be relevant on the search result based on the typed string    |
 
@@ -83,8 +83,8 @@ PowerToys team sent a survey to Windows Developer community to gain preliminary 
 ## 1.4. Existing Solutions or Expectations
 
 Currently, power users can launch an application using Windows launcher by
-running Win+R shortcut or searching the desired application in Windows
-Search (Win+S, Windows menu + start typing). Power users can also search
+running <kbd>Win</kbd>+<kbd>R</kbd> shortcut or searching the desired application in Windows
+Search (<kbd>Win</kbd>+<kbd>S</kbd>, Windows menu + start typing). Power users can also search
 for results through Windows Search by typing in the search bar directly
 or by specifying a category (apps, documents, email, web, folders,
 music, people, photos, settings, and videos). Several third-party tools
@@ -97,13 +97,13 @@ Here is a matrix which compares features between third-party tools:
 |[Alfred (free)](https://www.alfredapp.com/)       | ![alt text][cross] | ![alt text][check] |![alt text][cross] | ![alt text][cross] | ![alt text][check]                  | ![alt text][cross] |
 |[Spotlight](https://support.apple.com/en-us/HT204014)</p>       | ![alt text][check] | ![alt text][check] |![alt text][cross] | ![alt text][cross] | ![alt text][check]                  | ![alt text][check] |
 |[Listary](https://www.listary.com/)</p>         | ![alt text][cross] | ![alt text][check] |![alt text][cross] | ![alt text][check] shown as a separate cmd | ![alt text][cross]                  | ![alt text][check] on right click |
-|[Wox](http://www.wox.one/)</p>             | ![alt text][cross] | ![alt text][check] |![alt text][check] via “>” or Win+R | ![alt text][check] on right click/ Shift+Enter | ![alt text][check]                  | ![alt text][check] on right click/ Shift+Enter|
+|[Wox](http://www.wox.one/)</p>             | ![alt text][cross] | ![alt text][check] |![alt text][check] via <kbd>></kbd> or <kbd>Win</kbd>+<kbd>R</kbd> | ![alt text][check] on right click/ <kbd>Shift</kbd>+<kbd>Enter</kbd> | ![alt text][check]                  | ![alt text][check] on right click/ <kbd>Shift</kbd>+<kbd>Enter</kbd>|
 |[Launchy](https://www.launchy.net/index.php)</p>         | ![alt text][cross] | ![alt text][check] |![alt text][cross] | ![alt text][cross] | ![alt text][cross]                  | ![alt text][cross] |
 |[Rofi](https://github.com/davatorium/rofi)</p>            | ![alt text][cross] | ![alt text][check] | N/A | N/A | ![alt text][check]                  | ![alt text][cross] |
-|[Executor](http://www.executor.dk/)</p>        | ![alt text][check] | ![alt text][check] |![alt text][cross] | ![alt text][check]Shift+Enter | ![alt text][check]                  | ![alt text][check] on right click |
-|[Ueli](https://github.com/oliverschwendener/ueli)</p>             | ![alt text][cross] | ![alt text][check] |![alt text][check] via “>”| ![alt text][check] Ctrl+Shift+Enter | ![alt text][check] configurable in settings | ![alt text][check] on file/folder type |
-|Run (Win+R)</p>     | ![alt text][cross] | ![alt text][cross] |![alt text][check] | ![alt text][check] Ctrl+Shift+Enter | ![alt text][check]                  | ![alt text][cross] |
-|Search (Win+S)</p>  | ![alt text][check] | ![alt text][check] |![alt text][check] | ![alt text][check] on right click | ![alt text][cross]                  | ![alt text][check] on right click |
+|[Executor](http://www.executor.dk/)</p>        | ![alt text][check] | ![alt text][check] |![alt text][cross] | ![alt text][check]<kbd>Shift</kbd>+<kbd>Enter</kbd> | ![alt text][check]                  | ![alt text][check] on right click |
+|[Ueli](https://github.com/oliverschwendener/ueli)</p>             | ![alt text][cross] | ![alt text][check] |![alt text][check] via <kbd>></kbd>| ![alt text][check] <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> | ![alt text][check] configurable in settings | ![alt text][check] on file/folder type |
+|Run (<kbd>Win</kbd>+<kbd>R</kbd>)</p>     | ![alt text][cross] | ![alt text][cross] |![alt text][check] | ![alt text][check] <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> | ![alt text][check]                  | ![alt text][cross] |
+|Search (<kbd>Win</kbd>+<kbd>S</kbd>)</p>  | ![alt text][check] | ![alt text][check] |![alt text][check] | ![alt text][check] on right click | ![alt text][cross]                  | ![alt text][check] on right click |
 
 
 Here are some screenshots on Spotlight and some of the most commonly used third-party
@@ -154,7 +154,7 @@ launchers:
 
   - > PowerLauncher is available for Windows 10
 
-  - > PowerLauncher should be faster than start menu/Win+S for showing
+  - > PowerLauncher should be faster than start menu/<kbd>Win</kbd>+<kbd>S</kbd> for showing
     > the search result and launching applications
 
 **b. Settings**
@@ -210,12 +210,12 @@ launchers:
 | 12     | If name or location path is too long to display, users can hover on the name or location path and see the full text                                      | 1            |
 | 13     | Users can see the icon of the application/file/folder next to the application/file/folder name                                                           | 1            |
 | 14     | Users can see the executable type (App/File Folder/Documents) of each search result                                                                      | 1            |
-| 15     | Users can right-click or press Shift+F10 on a selection to open right-click context-menu                                                                 | 1            |
+| 15     | Users can right-click or press <kbd>Shift</kbd>+<kbd>F10</kbd> on a selection to open right-click context-menu                                                                 | 1            |
 | 16     | Users can open selected file location on right-click                                                                                                     | 1            |
 | 17     | Users can run selected application as administrator on right-click                                                                                       | 1            |
 | 18     | Users can see the keyboard shortcut to run as administrator on the context menu                                                                          | 1            |
 | 19     | Users can open selected search result in a specified console (PowerShell/command prompt) on right-click                                                  | 1            |
-| 20     | Users can go back to previously search result from context menu if they press the “Back” arrow or “Esc”                                                  | 1            |
+| 20     | Users can go back to previously search result from context menu if they press the "Back” arrow or <kbd>Esc</kbd>                                                  | 1            |
 | 21     | For multiple monitors, the interface should follow where the mouse cursor is located                                                                     | 1            |
 | 22     | Users can navigate and open currently running applications/processes with at least one opened window                                                     | 2            |
 | 23     | Users can pin selected application/file/folder at the top of the search result which ties to the search term they input in the search box                | 2            |
@@ -286,12 +286,12 @@ preference as follows:
 
 | **No** | **Requirement**                                                                                     | **Priority** |
 | ------ | --------------------------------------------------------------------------------------------------- | ------------ |
-| 1      | Users can choose to remove override of Win+R or Win+S to launch PowerLauncher                       | 1            |
-| 2      | Users can run an application as administrator when executing Ctrl+Shift+Enter                       | 1            |
-| 3      | PowerLauncher should open when Alt+Space is executed                                                | 1            |
-| 4      | Users can close PowerLauncher by pressing Escape if the search box is empty                         | 1            |
-| 5      | Users can auto-complete text suggestions (per words) by pressing Tab                                | 1            |
-| 6      | Users can perform right-click by pressing the Shift+F10                                             | 1            |
+| 1      | Users can choose to remove override of <kbd>Win</kbd>+<kbd>R</kbd> or <kbd>Win</kbd>+<kbd>S</kbd> to launch PowerLauncher                       | 1            |
+| 2      | Users can run an application as administrator when executing <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd>                       | 1            |
+| 3      | PowerLauncher should open when <kbd>Alt</kbd>+<kbd>Space</kbd> is executed                                                | 1            |
+| 4      | Users can close PowerLauncher by pressing <kbd>Esc</kbd> if the search box is empty                         | 1            |
+| 5      | Users can auto-complete text suggestions (per words) by pressing <kbd>Tab</kbd>                                | 1            |
+| 6      | Users can perform right-click by pressing the <kbd>Shift</kbd>+<kbd>F10</kbd>                                             | 1            |
 | 7      | Any changes in the keyboard shortcut in PowerLauncher should be reflected in Windows Shortcut Guide | 1            |
 | 8      | Users can add custom aliases which tie to a specific application                                    | 3            |
 
@@ -307,7 +307,7 @@ preference as follows:
 | 6      | Number of times users launch the context menu                                                            | Identify how many times does a user use the context menu                             | 1            |
 | 7      | Average number of times “Open file location” is selected from the right-click context menu in 24 hours   | Identify how many times does a user use “Open file location” from the context menu   | 1            |
 | 8      | Average number of times “Run as administrator” is selected from the right-click context menu in 24 hours | Identify how many times does a user use “Run as administrator” from the context menu | 1            |
-| 9      | Average number of times Ctrl+Shift+Enter is executed in 24 hours                                         | Identify how many times does a user use shortcut to run as administrator             | 1            |
+| 9      | Average number of times <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> is executed in 24 hours                                         | Identify how many times does a user use shortcut to run as administrator             | 1            |
 | 10     | Average number of times “Open in console” is selected from the right-click context menu in 24 hours      | Identify how many times does a user use “Open in console” from the context menu      | 1            |
 
 ## 2.3 Public Name
@@ -340,13 +340,13 @@ The initially proposed name for this app is PowerLauncher.
 
 ![](images/PowerLauncher/UI9.png)
 
-There are 2 behaviour options for Tab:
+There are 2 behaviour options for <kbd>Tab</kbd>:
 
-1.  Use Tab to auto-complete a word. For example, if the auto-complete
-    text suggestion is for “Command Prompt”, pressing Tab after typing
+1.  Use <kbd>Tab</kbd> to auto-complete a word. For example, if the auto-complete
+    text suggestion is for “Command Prompt”, pressing <kbd>Tab</kbd> after typing
     “co” will only complete the word “Command”.
 
-2.  Use Tab to go to the next option which is similar behavior as to how
+2.  Use <kbd>Tab</kbd> to go to the next option which is similar behavior as to how
     Command Prompt works.
 
 ![](images/PowerLauncher/UI10.png)
