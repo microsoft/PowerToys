@@ -101,6 +101,7 @@ Here is a matrix which compares features between third-party tools:
 |[Launchy](https://www.launchy.net/index.php)</p>         | ![alt text][cross] | ![alt text][check] |![alt text][cross] | ![alt text][cross] | ![alt text][cross]                  | ![alt text][cross] |
 |[Rofi](https://github.com/davatorium/rofi)</p>            | ![alt text][cross] | ![alt text][check] | N/A | N/A | ![alt text][check]                  | ![alt text][cross] |
 |[Executor](http://www.executor.dk/)</p>        | ![alt text][check] | ![alt text][check] |![alt text][cross] | ![alt text][check]Shift+Enter | ![alt text][check]                  | ![alt text][check] on right click |
+|[Ueli](https://github.com/oliverschwendener/ueli)</p>             | ![alt text][cross] | ![alt text][check] |![alt text][check] via “>”| ![alt text][check] Ctrl+Shift+Enter | ![alt text][check] configurable in settings | ![alt text][check] on file/folder type |
 |Run (Win+R)</p>     | ![alt text][cross] | ![alt text][cross] |![alt text][check] | ![alt text][check] Ctrl+Shift+Enter | ![alt text][check]                  | ![alt text][cross] |
 |Search (Win+S)</p>  | ![alt text][check] | ![alt text][check] |![alt text][check] | ![alt text][check] on right click | ![alt text][cross]                  | ![alt text][check] on right click |
 
