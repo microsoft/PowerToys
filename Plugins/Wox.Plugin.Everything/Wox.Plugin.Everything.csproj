@@ -61,6 +61,7 @@
     <Compile Include="EverythingSettings.xaml.cs">
       <DependentUpon>EverythingSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Everything\EverythingApiDllImport.cs" />
     <Compile Include="Everything\Exceptions\CreateThreadException.cs" />
     <Compile Include="Everything\Exceptions\CreateWindowException.cs" />
     <Compile Include="Everything\EverythingAPI.cs" />
