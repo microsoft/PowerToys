@@ -57,7 +57,8 @@ namespace Wox
                 _settings = _settingsVM.Settings;
 
                 _alphabet.Initialize(_settings);
-                StringMatcher.Instance = new StringMatcher(_alphabet);
+                _stringMatcher = new StringMatcher(_alphabet);
+                StringMatcher.Instance = _stringMatcher;
                 _stringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
                 PluginManager.LoadPlugins(_settings.PluginSettings);

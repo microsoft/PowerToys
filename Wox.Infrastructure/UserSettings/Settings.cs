@@ -30,6 +30,7 @@ namespace Wox.Infrastructure.UserSettings
 
         internal StringMatcher.SearchPrecisionScore QuerySearchPrecision { get; private set; } = StringMatcher.SearchPrecisionScore.Regular;
 
+        [JsonIgnore]
         public string QuerySearchPrecisionString
         {
             get { return QuerySearchPrecision.ToString(); }
