@@ -237,17 +237,25 @@ export class GeneralSettings extends React.Component <any, any> {
               target='_blank'
             >Check for updates</PrimaryButton>
             <Link
-              href="https://github.com/microsoft/PowerToys#privacy-statement"
+              href="https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=&template=bug_report.md&title="
               target='_blank'
               styles = {{
                 root: {
                   paddingTop: '10px'
                 }
               }}
+            >Report a bug</Link>
+            <Link
+              href="https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=&template=feature_request.md&title="
+              target='_blank'
+            >Request a feature</Link>
+            <Link
+              href="https://github.com/microsoft/PowerToys#privacy-statement"
+              target='_blank'
             >Privacy statement</Link>
         </Stack>
         {/* An empty span to always give 30px padding in Edge. */}
-        <span/>
+        <span />
       </Stack>
     )
   }
