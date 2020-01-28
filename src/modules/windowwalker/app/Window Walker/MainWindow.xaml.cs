@@ -50,6 +50,8 @@ namespace WindowWalker
             searchBox.Focus();
 
             UpdateDisplayedVersionNumber();
+
+            HideWindow();
         }
 
         private void SearchBoxKeyUp(object sender, KeyEventArgs e)
@@ -97,6 +99,11 @@ namespace WindowWalker
         }
 
         private void Window_Deactivated(object sender, EventArgs e)
+        {
+            HideWindow();
+        }
+
+        private void HideWindow()
         {
             var viewModel = (ViewModels.WindowWalkerViewModel)DataContext;
             if (viewModel.WindowHideCommand.CanExecute(null))
