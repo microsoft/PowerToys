@@ -11,6 +11,13 @@
 static std::wstring settings_theme = L"system";
 static bool run_as_elevated = false;
 
+// TODO: add resource.rc for settings project and localize
+namespace localized_strings
+{
+    const std::wstring_view STARTUP_DISABLED_BY_POLICY = L"Disabled by admin policy.";
+    const std::wstring_view STARTUP_DISABLED_BY_USER = L"Disabled by user.";
+}
+
 json::JsonObject load_general_settings()
 {
     auto loaded = PTSettingsHelper::load_general_settings();
@@ -27,10 +34,36 @@ json::JsonObject get_general_settings()
 {
     json::JsonObject result;
 
-    const bool packaged = running_as_packaged();
+    const bool packaged = winstore::running_as_packaged();
     result.SetNamedValue(L"packaged", json::value(packaged));
 
-    const bool startup = is_auto_start_task_active_for_this_user();
+    bool startup{};
+    if (winstore::running_as_packaged())
+    {
+        using namespace localized_strings;
+        const auto task_state = winstore::get_startup_task_status_async().get();
+        switch (task_state)
+        {
+        case winstore::StartupTaskState::Disabled:
+            startup = false;
+            break;
+        case winstore::StartupTaskState::Enabled:
+            startup = true;
+            break;
+        case winstore::StartupTaskState::DisabledByPolicy:
+            result.SetNamedValue(L"startup_disabled_reason", json::value(STARTUP_DISABLED_BY_POLICY));
+            startup = false;
+            break;
+        case winstore::StartupTaskState::DisabledByUser:
+            result.SetNamedValue(L"startup_disabled_reason", json::value(STARTUP_DISABLED_BY_USER));
+            startup = false;
+            break;
+        }
+    }
+    else
+    {
+        startup = is_auto_start_task_active_for_this_user();
+    }
     result.SetNamedValue(L"startup", json::value(startup));
 
     json::JsonObject enabled;
@@ -54,16 +87,23 @@ void apply_general_settings(const json::JsonObject& general_configs)
     if (json::has(general_configs, L"startup", json::JsonValueType::Boolean))
     {
         const bool startup = general_configs.GetNamedBoolean(L"startup");
-        const bool current_startup = is_auto_start_task_active_for_this_user();
-        if (!running_as_packaged() && current_startup != startup)
+        if (winstore::running_as_packaged())
         {
-            if (startup)
+            winstore::switch_startup_task_state_async(startup).wait();
+        }
+        else
+        {
+            const bool current_startup = is_auto_start_task_active_for_this_user();
+            if (current_startup != startup)
             {
-                enable_auto_start_task_for_this_user();
-            }
-            else
-            {
-                disable_auto_start_task_for_this_user();
+                if (startup)
+                {
+                    enable_auto_start_task_for_this_user();
+                }
+                else
+                {
+                    disable_auto_start_task_for_this_user();
+                }
             }
         }
     }
