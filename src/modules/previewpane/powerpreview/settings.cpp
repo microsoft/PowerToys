@@ -14,10 +14,6 @@ namespace PowerPreviewSettings
         m_name(name),
         m_description(description){}
 
-	FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state) 
-		:
-        m_isPreviewEnabled(state){}
-
 	FileExplorerPreviewSettings::FileExplorerPreviewSettings()
 		:
         m_isPreviewEnabled(false),
