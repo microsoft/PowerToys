@@ -72,7 +72,7 @@ namespace PowerPreviewSettings
 		return this->m_name;
 	}
 
-	void FileExplorerPreviewSettings::SetName(std::wstring name)
+	void FileExplorerPreviewSettings::SetName(const std::wstring name)
 	{
 		this->m_name = std::move(name);
 	}
@@ -82,7 +82,7 @@ namespace PowerPreviewSettings
 		return this->m_description;
 	}
 
-	void FileExplorerPreviewSettings::SetDescription(std::wstring description)
+	void FileExplorerPreviewSettings::SetDescription(const std::wstring description)
 	{
         this->m_description = std::move(description);
 	}

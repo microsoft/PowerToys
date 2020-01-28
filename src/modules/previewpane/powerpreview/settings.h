@@ -6,7 +6,8 @@
 namespace PowerPreviewSettings
 {
 	// PowerToy Winodws Explore File Preview Settings.
-	class FileExplorerPreviewSettings{
+	class FileExplorerPreviewSettings
+	{
 	protected:
 		bool m_isPreviewEnabled;
         std::wstring m_name;
@@ -22,9 +23,9 @@ namespace PowerPreviewSettings
 		virtual void LoadState(PowerToysSettings::PowerToyValues &settings);
 		virtual void UpdateState(PowerToysSettings::PowerToyValues &values);
         virtual std::wstring GetName() const;
-		virtual void SetName(std::wstring name);
+		virtual void SetName(const std::wstring name);
         virtual std::wstring GetDescription() const;
-		virtual void SetDescription(std::wstring description);
+        virtual void SetDescription(const std::wstring description);
 		virtual void EnablePreview() = 0;
 		virtual void DisabledPreview() = 0;
 	};
