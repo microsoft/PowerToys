@@ -10,14 +10,14 @@ namespace PowerPreviewSettings
 	// Base Settinngs Class Implementation
 	FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state, std::wstring name, std::wstring description)
 	{
-        this->m_isPreviewEnabled = std::move(state);
-		this->m_name = std::move(name);
-        this->m_description = std::move(description);
+        this->m_isPreviewEnabled = state;
+		this->m_name = name;
+        this->m_description = description;
 	}
 
 	FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state)
     {
-        this->m_isPreviewEnabled = std::move(state);
+        this->m_isPreviewEnabled = state;
     }
 
 	FileExplorerPreviewSettings::FileExplorerPreviewSettings()
@@ -34,7 +34,7 @@ namespace PowerPreviewSettings
 
 	void FileExplorerPreviewSettings::SetState(bool state)
 	{
-        this->m_isPreviewEnabled = std::move(state);
+        this->m_isPreviewEnabled = state;
 	}
 
 	void FileExplorerPreviewSettings::LoadState(PowerToysSettings::PowerToyValues &settings)
@@ -74,7 +74,7 @@ namespace PowerPreviewSettings
 
 	void FileExplorerPreviewSettings::SetName(const std::wstring name)
 	{
-		this->m_name = std::move(name);
+		this->m_name = name;
 	}
 
 	std::wstring FileExplorerPreviewSettings::GetDescription() const
@@ -84,9 +84,8 @@ namespace PowerPreviewSettings
 
 	void FileExplorerPreviewSettings::SetDescription(const std::wstring description)
 	{
-        this->m_description = std::move(description);
+        this->m_description = description;
 	}
-
 
 	// Explorer SVG Icons Preview Settings Implemention
     ExplrSVGSttngs::ExplrSVGSttngs() 

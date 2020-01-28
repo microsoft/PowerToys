@@ -14,7 +14,7 @@ namespace PowerPreviewSettings
         std::wstring m_description;
 
 	public:
-		FileExplorerPreviewSettings(bool state, std::wstring name, std::wstring description);
+        FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description);
 		FileExplorerPreviewSettings(bool state);
 		FileExplorerPreviewSettings();
 
