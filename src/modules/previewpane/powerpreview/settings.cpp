@@ -91,8 +91,8 @@ namespace PowerPreviewSettings
     ExplrSVGSttngs::ExplrSVGSttngs() 
 		:FileExplorerPreviewSettings(false)
 	{
-		this->m_name = GET_RESOURCE_STRING(IDS_EXPLR_SVG_BOOL_TOGGLE_CONTROLL);
-		this->m_description = GET_RESOURCE_STRING(IDS_EXPLR_SVG_SETTINGS_DESCRIPTION);
+        this ->SetName(GET_RESOURCE_STRING(IDS_EXPLR_SVG_BOOL_TOGGLE_CONTROLL));
+        this->SetDescription(GET_RESOURCE_STRING(IDS_EXPLR_SVG_SETTINGS_DESCRIPTION));
 	}
 
 	void ExplrSVGSttngs::EnablePreview()
@@ -109,8 +109,8 @@ namespace PowerPreviewSettings
     PrevPaneSVGRendrSettings::PrevPaneSVGRendrSettings() 
 		:FileExplorerPreviewSettings(false)
 	{
-		this->m_name = GET_RESOURCE_STRING(IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL);
-		this->m_description = GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION);
+        this->SetName(GET_RESOURCE_STRING(IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL));
+        this->SetDescription(GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION));
 	}
 
 	void PrevPaneSVGRendrSettings::EnablePreview()
@@ -127,8 +127,8 @@ namespace PowerPreviewSettings
 	PrevPaneMDRendrSettings::PrevPaneMDRendrSettings() 
 		:FileExplorerPreviewSettings(false)
 	{
-		this->m_name = GET_RESOURCE_STRING(IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL);
-		this->m_description = GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION);
+        this->SetName(GET_RESOURCE_STRING(IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL));
+        this->SetDescription(GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION));
 	}
 
 	void PrevPaneMDRendrSettings::EnablePreview()
