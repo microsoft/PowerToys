@@ -8,24 +8,21 @@ namespace PowerPreviewSettings
 	extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 	// Base Settinngs Class Implementation
-	FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state, std::wstring name, std::wstring description)
-	{
-        this->m_isPreviewEnabled = state;
-		this->m_name = name;
-        this->m_description = description;
-	}
+    FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description) 
+		: 
+		m_isPreviewEnabled(state),
+        m_name(name),
+        m_description(description){}
 
-	FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state)
-    {
-        this->m_isPreviewEnabled = state;
-    }
+	FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state) 
+		:
+        m_isPreviewEnabled(state){}
 
 	FileExplorerPreviewSettings::FileExplorerPreviewSettings()
-	{
-		this->m_isPreviewEnabled = false;
-		this->m_name = L"_UNDEFINED_";
-		this->m_description = L"_UNDEFINED_";
-	}
+		:
+        m_isPreviewEnabled(false),
+        m_name(L"_UNDEFINED_"),
+        m_description(L"_UNDEFINED_"){}
 
 	bool FileExplorerPreviewSettings::GetState() const
 	{
@@ -37,16 +34,16 @@ namespace PowerPreviewSettings
         this->m_isPreviewEnabled = state;
 	}
 
-	void FileExplorerPreviewSettings::LoadState(PowerToysSettings::PowerToyValues &settings)
+	void FileExplorerPreviewSettings::LoadState(PowerToysSettings::PowerToyValues& settings)
 	{
-		auto toggle = settings.get_bool_value(this->GetName());
+        auto toggle = settings.get_bool_value(this->GetName());
 		if(toggle != std::nullopt)
 		{
 			this->m_isPreviewEnabled = toggle.value();
 		}
 	}
 
-	void FileExplorerPreviewSettings::UpdateState(PowerToysSettings::PowerToyValues &values)
+	void FileExplorerPreviewSettings::UpdateState(PowerToysSettings::PowerToyValues& values)
 	{
         auto toggle = values.get_bool_value(this->GetName());
 		if(toggle != std::nullopt)
@@ -89,11 +86,11 @@ namespace PowerPreviewSettings
 
 	// Explorer SVG Icons Preview Settings Implemention
     ExplrSVGSttngs::ExplrSVGSttngs() 
-		:FileExplorerPreviewSettings(false)
-	{
-        this ->SetName(GET_RESOURCE_STRING(IDS_EXPLR_SVG_BOOL_TOGGLE_CONTROLL));
-        this->SetDescription(GET_RESOURCE_STRING(IDS_EXPLR_SVG_SETTINGS_DESCRIPTION));
-	}
+		:
+        FileExplorerPreviewSettings(
+			false, 
+			GET_RESOURCE_STRING(IDS_EXPLR_SVG_BOOL_TOGGLE_CONTROLL),
+            GET_RESOURCE_STRING(IDS_EXPLR_SVG_SETTINGS_DESCRIPTION)){}
 
 	void ExplrSVGSttngs::EnablePreview()
 	{
@@ -107,11 +104,11 @@ namespace PowerPreviewSettings
 
 	// Preview Pane SVG Render Settings
     PrevPaneSVGRendrSettings::PrevPaneSVGRendrSettings() 
-		:FileExplorerPreviewSettings(false)
-	{
-        this->SetName(GET_RESOURCE_STRING(IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL));
-        this->SetDescription(GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION));
-	}
+		:
+		FileExplorerPreviewSettings(
+			false,
+            GET_RESOURCE_STRING(IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL),
+            GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION)){}
 
 	void PrevPaneSVGRendrSettings::EnablePreview()
 	{
@@ -125,11 +122,11 @@ namespace PowerPreviewSettings
 
 	// Preview Pane Mark Down Render Settings
 	PrevPaneMDRendrSettings::PrevPaneMDRendrSettings() 
-		:FileExplorerPreviewSettings(false)
-	{
-        this->SetName(GET_RESOURCE_STRING(IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL));
-        this->SetDescription(GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION));
-	}
+		:
+		FileExplorerPreviewSettings(
+			false,
+            GET_RESOURCE_STRING(IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL),
+            GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION)){}
 
 	void PrevPaneMDRendrSettings::EnablePreview()
 	{

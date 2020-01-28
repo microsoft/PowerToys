@@ -14,23 +14,19 @@ class PowerPreviewModule : public PowertoyModuleIface
 private:
     // The PowerToy state.
     bool m_enabled = false;
-    ExplrSVGSttngs m_explrSVGSettings = ExplrSVGSttngs();
-    PrevPaneSVGRendrSettings m_prevPaneSVGSettings = PrevPaneSVGRendrSettings();
-    PrevPaneMDRendrSettings m_prevPaneMDSettings = PrevPaneMDRendrSettings();
+    ExplrSVGSttngs m_explrSVGSettings;
+    PrevPaneSVGRendrSettings m_prevPaneSVGSettings;
+    PrevPaneMDRendrSettings m_prevPaneMDSettings;
     std::wstring m_moduleName;
 
-    // Load and save Settings.
-    void init_settings();
-
 public:
-    PowerPreviewModule()
+    PowerPreviewModule() 
+        :
+        m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
+        m_explrSVGSettings(ExplrSVGSttngs()),
+        m_prevPaneSVGSettings(PrevPaneSVGRendrSettings()),
+        m_prevPaneMDSettings(PrevPaneMDRendrSettings())
     {
-        this->m_moduleName = GET_RESOURCE_STRING(IDS_MODULE_NAME);
-
-        this->m_explrSVGSettings = ExplrSVGSttngs();
-        this->m_prevPaneSVGSettings = PrevPaneSVGRendrSettings();
-        this->m_prevPaneMDSettings = PrevPaneMDRendrSettings();
-
         init_settings();
     };
 
@@ -42,6 +38,7 @@ public:
     virtual void enable();
     virtual void disable();
     virtual bool is_enabled();
+    virtual void init_settings();
     virtual intptr_t signal_event(const wchar_t* name, intptr_t data);
     virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
     virtual void signal_system_menu_action(const wchar_t* name) override {}
