@@ -121,11 +121,14 @@ export class GeneralSettings extends React.Component <any, any> {
         }
         <Separator />
         <Text variant='xLarge'>General</Text>
-        <BoolToggleSettingsControl
-          setting={{display_name: 'Run at Startup', value: this.state.settings.general.startup}}
-          on_change={this.parent_on_change}
-          ref={(input) => {this.startup_reference=input;}}
-        />
+        {!this.state.settings.general.packaged &&
+        (
+          <BoolToggleSettingsControl
+            setting={{display_name: 'Run at Startup', value: this.state.settings.general.startup}}
+            on_change={this.parent_on_change}
+            ref={(input) => {this.startup_reference=input;}}
+          />
+        )}
         <BoolToggleSettingsControl
           setting={{display_name: 'Always run as administrator', value: this.state.settings.general.run_elevated}}
           on_change={this.parent_on_change}
