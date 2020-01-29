@@ -5,7 +5,6 @@
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <interface/win_hook_event_data.h>
 #include <lib/ZoneSet.h>
-#include <lib/RegistryHelpers.h>
 
 #include <lib/resource.h>
 #include <lib/trace.h>
@@ -31,76 +30,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
             break;
     }
     return TRUE;
-}
-
-// This function is exported and called from FancyZonesEditor.exe to save a layout from the editor.
-STDAPI PersistZoneSet(
-    PCWSTR activeKey, // Registry key holding ActiveZoneSet
-    PCWSTR resolutionKey, // Registry key to persist ZoneSet to
-    HMONITOR monitor,
-    WORD layoutId, // LayoutModel Id
-    int zoneCount, // Number of zones in zones
-    int zones[]) // Array of zones serialized in left/top/right/bottom chunks
-{
-    // See if we have already persisted this layout we can update.
-    UUID id{GUID_NULL};
-    if (wil::unique_hkey key{ RegistryHelpers::OpenKey(resolutionKey) })
-    {
-        ZoneSetPersistedData data{};
-        DWORD dataSize = sizeof(data);
-        wchar_t value[256]{};
-        DWORD valueLength = ARRAYSIZE(value);
-        DWORD i = 0;
-        while (RegEnumValueW(key.get(), i++, value, &valueLength, nullptr, nullptr, reinterpret_cast<BYTE*>(&data), &dataSize) == ERROR_SUCCESS)
-        {
-            if (data.LayoutId == layoutId)
-            {
-                if (data.ZoneCount == zoneCount)
-                {
-                    CLSIDFromString(value, &id);
-                    break;
-                }
-            }
-            valueLength = ARRAYSIZE(value);
-            dataSize = sizeof(data);
-        }
-    }
-
-    if (id == GUID_NULL)
-    {
-        // No existing layout found so let's create a new one.
-        UuidCreate(&id);
-    }
-
-    if (id != GUID_NULL)
-    {
-        winrt::com_ptr<IZoneSet> zoneSet = MakeZoneSet(
-            ZoneSetConfig(
-                id,
-                layoutId,
-                MonitorFromPoint({}, MONITOR_DEFAULTTOPRIMARY),
-                resolutionKey));
-
-        for (int i = 0; i < zoneCount; i++)
-        {
-            const int baseIndex = i * 4;
-            const int left = zones[baseIndex];
-            const int top = zones[baseIndex+1];
-            const int right = zones[baseIndex+2];
-            const int bottom = zones[baseIndex+3];
-            zoneSet->AddZone(MakeZone({ left, top, right, bottom }));
-        }
-        zoneSet->Save();
-
-        wil::unique_cotaskmem_string zoneSetId;
-        if (SUCCEEDED_LOG(StringFromCLSID(id, &zoneSetId)))
-        {
-            RegistryHelpers::SetString(activeKey, L"ActiveZoneSetId", zoneSetId.get());
-        }
-
-        return S_OK;
-    }
-    return E_FAIL;
 }
 
 class FancyZonesModule : public PowertoyModuleIface
@@ -147,7 +76,7 @@ public:
         if (!m_app)
         {
             Trace::FancyZones::EnableFancyZones(true);
-            m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings.get());
+            m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings);
             if (m_app)
             {
                 m_app->Run();
@@ -200,12 +129,14 @@ public:
     {
         app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
         m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModule::get_name());
+        JSONHelpers::FancyZonesDataInstance().LoadFancyZonesData();
     }
 
 private:
     void Disable(bool const traceEvent)
     {
         if (m_app) {
+            JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
             if (traceEvent) 
             {
                 Trace::FancyZones::EnableFancyZones(false);
