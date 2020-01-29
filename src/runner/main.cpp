@@ -13,6 +13,9 @@
 #include <common/common.h>
 #include <common/dpi_aware.h>
 
+#include <common/winstore.h>
+#include <common/notifications.h>
+
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
 #endif
@@ -43,6 +46,10 @@ int runner()
     Trace::RegisterProvider();
     winrt::init_apartment();
     start_tray_icon();
+    if (winstore::running_as_packaged())
+    {
+        notifications::register_background_toast_handler();
+    }
     int result;
     try
     {
