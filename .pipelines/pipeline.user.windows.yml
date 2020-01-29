@@ -49,9 +49,6 @@ build:
           - 'modules\FancyZonesEditor.exe'
           - 'modules\fancyzones.dll'
           - 'modules\shortcut_guide.dll'
-          - 'modules\shortcut_guide.dll'
-          - 'modules\WindowWalker.exe'
-          - 'modules\windowwalker.dll'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
     - !!buildcommand

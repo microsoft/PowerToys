@@ -243,14 +243,6 @@
         <File Source="$(var.BinX64Dir)\modules\MahApps.Metro.dll" />
         <File Source="$(var.BinX64Dir)\modules\Microsoft.Xaml.Behaviors.dll" />
       </Component>
-      <Component Id="Module_WindowWalker" Guid="AEE4AF0A-2EE4-473B-8194-19493E4FCD37" Win64="yes">
-        <File Source="$(var.BinX64Dir)\modules\WindowWalker.dll" KeyPath="yes" />
-        <File Source="$(var.BinX64Dir)\modules\WindowWalker.exe" >
-          <netfx:NativeImage Id="WindowWalker.exe" Platform="64bit" Priority="0" />
-        </File>
-        <File Source="$(var.BinX64Dir)\modules\MaterialDesignColors.dll" />
-        <File Source="$(var.BinX64Dir)\modules\MaterialDesignThemes.Wpf.dll" />
-      </Component>
       <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
         <File Source="$(var.BinX64Dir)\modules\PowerRenameExt.dll" KeyPath="yes" />
         <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
@@ -304,7 +296,6 @@
       <ComponentRef Id="PowerToysSvgs" />
       <ComponentRef Id="Module_ShortcutGuide" />
       <ComponentRef Id="Module_FancyZones" />
-      <ComponentRef Id="Module_WindowWalker" />
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
       <ComponentRef Id="settings_exe" />
