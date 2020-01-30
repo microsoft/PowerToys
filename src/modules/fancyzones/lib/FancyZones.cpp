@@ -102,7 +102,7 @@ private:
     void MoveWindowsOnDisplayChange() noexcept;
     void UpdateDragState(require_write_lock) noexcept;
     void CycleActiveZoneSet(DWORD vkCode) noexcept;
-    void OnSnapHotkey(DWORD vkCode) noexcept;
+    bool OnSnapHotkey(DWORD vkCode) noexcept;
     void MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
     void MoveSizeEndInternal(HWND window, POINT const& ptScreen, require_write_lock) noexcept;
     void MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
@@ -281,8 +281,7 @@ IFACEMETHODIMP_(bool) FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
             {
                 // Win+Left, Win+Right will cycle through Zones in the active ZoneSet
                 Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
-                OnSnapHotkey(info->vkCode);
-                return true;
+                return OnSnapHotkey(info->vkCode);
             }
         }
     }
@@ -735,7 +734,7 @@ void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
     }
 }
 
-void FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
+bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 {
     auto window = GetForegroundWindow();
     if (IsInterestingWindow(window))
@@ -747,9 +746,11 @@ void FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
             if (iter != m_zoneWindowMap.end())
             {
                 iter->second->MoveWindowIntoZoneByDirection(window, vkCode);
+                return true;
             }
         }
     }
+    return false;
 }
 
 void FancyZones::MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT const& ptScreen, require_write_lock writeLock) noexcept
