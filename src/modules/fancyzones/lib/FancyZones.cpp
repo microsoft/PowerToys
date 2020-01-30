@@ -217,7 +217,7 @@ IFACEMETHODIMP_(void) FancyZones::MoveSizeUpdate(HMONITOR monitor, POINT const& 
 // IFancyZonesCallback
 IFACEMETHODIMP_(void) FancyZones::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
 {
-    if (IsInterestingWindow(window) || window == m_windowMoveSize)
+    if (window == m_windowMoveSize || IsInterestingWindow(window))
     {
         std::unique_lock writeLock(m_lock);
         MoveSizeEndInternal(window, ptScreen, writeLock);
@@ -241,7 +241,7 @@ IFACEMETHODIMP_(void) FancyZones::VirtualDesktopInitialize() noexcept
 // IFancyZonesCallback
 IFACEMETHODIMP_(void) FancyZones::WindowCreated(HWND window) noexcept
 {
-    if (IsInterestingWindow(window) && m_settings->GetSettings().appLastZone_moveWindows)
+    if (m_settings->GetSettings().appLastZone_moveWindows && IsInterestingWindow(window))
     {
         auto processPath = get_process_path(window);
         if (!processPath.empty()) 
