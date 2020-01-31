@@ -6,7 +6,10 @@
 #include "keyboard_state.h"
 #include "shortcut_guide.h"
 #include "trace.h"
+#include "resource.h"
 #include <common/common.h>
+
+extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 D2DOverlaySVG& D2DOverlaySVG::load(const std::wstring& filename, ID2D1DeviceContext5* d2d_dc)
 {
@@ -791,71 +794,71 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     switch (window_state)
     {
     case MINIMIZED:
-        left = L"No action";
+        left = GET_RESOURCE_STRING(IDS_NO_ACTION);
         left_disabled = true;
-        right = L"No action";
+        right = GET_RESOURCE_STRING(IDS_NO_ACTION);
         right_disabled = true;
-        up = L"Restore";
-        down = L"No action";
+        up = GET_RESOURCE_STRING(IDS_RESTORE);
+        down = GET_RESOURCE_STRING(IDS_NO_ACTION);
         down_disabled = true;
         break;
     case MAXIMIZED:
-        left = L"Snap left";
-        right = L"Snap right";
-        up = L"No action";
+        left = GET_RESOURCE_STRING(IDS_SNAP_LEFT);
+        right = GET_RESOURCE_STRING(IDS_SNAP_RIGHT);
+        up = GET_RESOURCE_STRING(IDS_NO_ACTION);
         up_disabled = true;
-        down = L"Restore";
+        down = GET_RESOURCE_STRING(IDS_RESTORE);
         break;
     case SNAPED_TOP_LEFT:
-        left = L"Snap upper right";
-        right = L"Snap upper right";
-        up = L"Maximize";
-        down = L"Snap left";
+        left = GET_RESOURCE_STRING(IDS_SNAP_UPPER_RIGHT);
+        right = GET_RESOURCE_STRING(IDS_SNAP_UPPER_RIGHT);
+        up = GET_RESOURCE_STRING(IDS_MAXIMIZE);
+        down = GET_RESOURCE_STRING(IDS_SNAP_LEFT);
         break;
     case SNAPED_LEFT:
-        left = L"Snap right";
-        right = L"Restore";
-        up = L"Snap upper left";
-        down = L"Snap lower left";
+        left = GET_RESOURCE_STRING(IDS_SNAP_RIGHT);
+        right = GET_RESOURCE_STRING(IDS_RESTORE);
+        up = GET_RESOURCE_STRING(IDS_SNAP_UPPER_LEFT);
+        down = GET_RESOURCE_STRING(IDS_SNAP_LOWER_LEFT);
         break;
     case SNAPED_BOTTOM_LEFT:
-        left = L"Snap lower right";
-        right = L"Snap lower right";
-        up = L"Snap left";
-        down = L"Minimize";
+        left = GET_RESOURCE_STRING(IDS_SNAP_LOWER_RIGHT);
+        right = GET_RESOURCE_STRING(IDS_SNAP_LOWER_RIGHT);
+        up = GET_RESOURCE_STRING(IDS_SNAP_LEFT);
+        down = GET_RESOURCE_STRING(IDS_MINIMIZE);
         break;
     case SNAPED_TOP_RIGHT:
-        left = L"Snap upper left";
-        right = L"Snap upper left";
-        up = L"Maximize";
-        down = L"Snap right";
+        left = GET_RESOURCE_STRING(IDS_SNAP_UPPER_LEFT);
+        right = GET_RESOURCE_STRING(IDS_SNAP_UPPER_LEFT);
+        up = GET_RESOURCE_STRING(IDS_MAXIMIZE);
+        down = GET_RESOURCE_STRING(IDS_SNAP_RIGHT);
         break;
     case SNAPED_RIGHT:
-        left = L"Restore";
-        right = L"Snap left";
-        up = L"Snap upper right";
-        down = L"Snap lower right";
+        left = GET_RESOURCE_STRING(IDS_RESTORE);
+        right = GET_RESOURCE_STRING(IDS_SNAP_LEFT);
+        up = GET_RESOURCE_STRING(IDS_SNAP_UPPER_RIGHT);
+        down = GET_RESOURCE_STRING(IDS_SNAP_LOWER_RIGHT);
         break;
     case SNAPED_BOTTOM_RIGHT:
-        left = L"Snap lower left";
-        right = L"Snap lower left";
-        up = L"Snap right";
-        down = L"Minimize";
+        left = GET_RESOURCE_STRING(IDS_SNAP_LOWER_LEFT);
+        right = GET_RESOURCE_STRING(IDS_SNAP_LOWER_LEFT);
+        up = GET_RESOURCE_STRING(IDS_SNAP_RIGHT);
+        down = GET_RESOURCE_STRING(IDS_MINIMIZE);
         break;
     case RESTORED:
-        left = L"Snap left";
-        right = L"Snap right";
-        up = L"Maximize";
-        down = L"Minimize";
+        left = GET_RESOURCE_STRING(IDS_SNAP_LEFT);
+        right = GET_RESOURCE_STRING(IDS_SNAP_RIGHT);
+        up = GET_RESOURCE_STRING(IDS_MAXIMIZE);
+        down = GET_RESOURCE_STRING(IDS_MINIMIZE);
         break;
     default:
-        left = L"No action";
+        left = GET_RESOURCE_STRING(IDS_NO_ACTION);
         left_disabled = true;
-        right = L"No action";
+        right = GET_RESOURCE_STRING(IDS_NO_ACTION);
         right_disabled = true;
-        up = L"No action";
+        up = GET_RESOURCE_STRING(IDS_NO_ACTION);
         up_disabled = true;
-        down = L"No action";
+        down = GET_RESOURCE_STRING(IDS_NO_ACTION);
         down_disabled = true;
     }
     auto text_color = D2D1::ColorF(light_mode ? 0x222222 : 0xDDDDDD, minature_shown || window_state == MINIMIZED ? 1.0f : 0.3f);

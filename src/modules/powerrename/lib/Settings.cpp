@@ -1,4 +1,3 @@
-
 #include "stdafx.h"
 #include <commctrl.h>
 #include "Settings.h"

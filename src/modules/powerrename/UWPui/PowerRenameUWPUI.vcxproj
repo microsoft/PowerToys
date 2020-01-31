@@ -117,7 +117,7 @@
     <Image Include="..\ui\PowerRename.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\ui\PowerRenameUI.rc" />
+    <ResourceCompile Include="PowerRenameUWPUI.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

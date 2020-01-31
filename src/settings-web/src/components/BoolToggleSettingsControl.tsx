@@ -24,6 +24,7 @@ export class BoolToggleSettingsControl extends BaseSettingsControl {
   public render(): JSX.Element {
     return (
       <Toggle
+        disabled={this.props.disabled}
         onChange={
           (_event,_check) => {
             this.setState( (prev_state:any) => ({

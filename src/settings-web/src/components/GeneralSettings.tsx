@@ -121,11 +121,18 @@ export class GeneralSettings extends React.Component <any, any> {
         }
         <Separator />
         <Text variant='xLarge'>General</Text>
-        <BoolToggleSettingsControl
-          setting={{display_name: 'Run at Startup', value: this.state.settings.general.startup}}
-          on_change={this.parent_on_change}
-          ref={(input) => {this.startup_reference=input;}}
-        />
+        <Stack>
+          {this.state.settings.general.startup_disabled_reason != null && 
+            <span style={{color:"#c50500"}} dangerouslySetInnerHTML={{__html: this.state.settings.general.startup_disabled_reason }} />
+          }
+          <Label>Run at Startup</Label>
+          <BoolToggleSettingsControl
+            disabled={this.state.settings.general.startup_disabled_reason}
+            setting={{value: this.state.settings.general.startup}}
+            on_change={this.parent_on_change}
+            ref={(input) => {this.startup_reference=input;}}
+          />
+        </Stack>
         <BoolToggleSettingsControl
           setting={{display_name: 'Always run as administrator', value: this.state.settings.general.run_elevated}}
           on_change={this.parent_on_change}
@@ -237,17 +244,25 @@ export class GeneralSettings extends React.Component <any, any> {
               target='_blank'
             >Check for updates</PrimaryButton>
             <Link
-              href="https://github.com/microsoft/PowerToys#privacy-statement"
+              href="https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=&template=bug_report.md&title="
               target='_blank'
               styles = {{
                 root: {
                   paddingTop: '10px'
                 }
               }}
+            >Report a bug</Link>
+            <Link
+              href="https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=&template=feature_request.md&title="
+              target='_blank'
+            >Request a feature</Link>
+            <Link
+              href="https://github.com/microsoft/PowerToys#privacy-statement"
+              target='_blank'
             >Privacy statement</Link>
         </Stack>
         {/* An empty span to always give 30px padding in Edge. */}
-        <span/>
+        <span />
       </Stack>
     )
   }

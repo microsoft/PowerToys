@@ -3,6 +3,7 @@
 #include <string>
 #include <Windows.h>
 #include <string>
+#include <memory>
 
 // Returns RECT with positions of the minmize/maximize buttons of the given window.
 // Does not always work, since some apps draw custom toolbars.
@@ -78,3 +79,31 @@ std::wstring get_resource_string(UINT resource_id, HINSTANCE instance, const wch
 //  extern "C" IMAGE_DOS_HEADER __ImageBase;
 // is added to the .cpp file.
 #define GET_RESOURCE_STRING(resource_id) get_resource_string(resource_id, reinterpret_cast<HINSTANCE>(&__ImageBase), L#resource_id)
+
+// Helper class for various COM-related APIs, e.g working with security descriptors
+template<typename T>
+struct typed_storage
+{
+    std::unique_ptr<char[]> _buffer;
+    inline explicit typed_storage(const DWORD size) :
+        _buffer{ std::make_unique<char[]>(size) }
+    {
+    }
+    inline operator T*()
+    {
+        return reinterpret_cast<T*>(_buffer.get());
+    }
+};
+
+template<typename Callable>
+struct on_scope_exit
+{
+    Callable _f;
+    on_scope_exit(Callable f) :
+        _f{ std::move(f) } {}
+
+    ~on_scope_exit()
+    {
+        _f();
+    }
+};
