@@ -121,14 +121,18 @@ export class GeneralSettings extends React.Component <any, any> {
         }
         <Separator />
         <Text variant='xLarge'>General</Text>
-        {!this.state.settings.general.packaged &&
-        (
+        <Stack>
+          {this.state.settings.general.startup_disabled_reason != null && 
+            <span style={{color:"#c50500"}} dangerouslySetInnerHTML={{__html: this.state.settings.general.startup_disabled_reason }} />
+          }
+          <Label>Run at Startup</Label>
           <BoolToggleSettingsControl
-            setting={{display_name: 'Run at Startup', value: this.state.settings.general.startup}}
+            disabled={this.state.settings.general.startup_disabled_reason}
+            setting={{value: this.state.settings.general.startup}}
             on_change={this.parent_on_change}
             ref={(input) => {this.startup_reference=input;}}
           />
-        )}
+        </Stack>
         <BoolToggleSettingsControl
           setting={{display_name: 'Always run as administrator', value: this.state.settings.general.run_elevated}}
           on_change={this.parent_on_change}
