@@ -52,7 +52,8 @@ int runner()
         std::unordered_set<std::wstring> known_dlls = {
             L"shortcut_guide.dll",
             L"fancyzones.dll",
-            L"PowerRenameExt.dll"
+            L"PowerRenameExt.dll",
+            L"powerpreview.dll"
         };
         for (auto& file : std::filesystem::directory_iterator(L"modules/"))
         {
