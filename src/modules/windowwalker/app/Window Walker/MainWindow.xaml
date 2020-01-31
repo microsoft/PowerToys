@@ -1,0 +1,54 @@
+<Window x:Class="WindowWalker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:local="clr-namespace:WindowWalker"
+        Title="MainWindow" Width="1000" MinHeight="10" Height="85" ResizeMode="NoResize" Topmost="True" WindowStyle="None" Loaded="Window_Loaded" WindowStartupLocation="CenterScreen" SizeToContent="Height" Visibility="{Binding WindowVisibility, Mode=TwoWay, Converter={StaticResource BoolToVis}}"
+        BorderBrush="{DynamicResource PrimaryHueDarkBrush}"
+        BorderThickness="2"        
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        Background="{DynamicResource MaterialDesignPaper}"
+        TextElement.FontWeight="Medium"
+        TextElement.FontSize="14"
+        FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
+        Deactivated="Window_Deactivated"
+        ShowInTaskbar="false">
+    
+    <Window.Resources>
+        <ResourceDictionary>    
+            <BooleanToVisibilityConverter x:Key="BoolToVis" />
+            <local:WindowSearchResultToXamlConverter x:Key="windowSearchResultToXamlConverter"/>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <StackPanel Margin="1" Orientation="Vertical">
+            <TextBox x:Name="searchBox" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" FontSize="40" Margin="10" KeyUp="SearchBoxKeyUp" materialDesign:HintAssist.Hint="{Binding Hint}" materialDesign:HintAssist.HintOpacity="0.2"/>
+            <ListBox x:Name="results" ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedWindowResult}" HorizontalContentAlignment="Stretch" MouseDoubleClick="Results_MouseDoubleClick">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="200"/>
+                            </Grid.ColumnDefinitions>
+                            <!--<TextBlock Grid.Column="0" Text="{Binding ResultWindow.Title}"/>-->
+                            <ContentControl Grid.Column="0"  Content="{Binding Converter={StaticResource windowSearchResultToXamlConverter}, Mode=OneTime}"/>
+                            <!--<TextBlock Grid.Column="1" TextAlignment="Right" Text="{Binding ResultWindow.ProcessName}"/>-->
+
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </StackPanel>
+        <TextBox x:Name="versionDisplay" HorizontalAlignment="Right" Foreground="White" Opacity="0.1" VerticalAlignment="Top" BorderThickness="0" Margin="0,0,14,0"/>
+    </Grid>
+</Window>
