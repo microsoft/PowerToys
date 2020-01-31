@@ -95,6 +95,16 @@ namespace PowerToysSettings {
     m_json.GetNamedObject(L"properties").SetNamedValue(name, ml_string);
   }
 
+  void Settings::add_header_szLarge(std::wstring_view name, std::wstring_view description, std::wstring_view value){
+        json::JsonObject string;
+        string.SetNamedValue(L"display_name", json::value(description));	
+        string.SetNamedValue(L"editor_type", json::value(L"header_large"));	 
+        string.SetNamedValue(L"value", json::value(value));
+        string.SetNamedValue(L"order", json::value(++m_curr_priority));
+
+        m_json.GetNamedObject(L"properties").SetNamedValue(name, string);
+  }
+
   // add_color_picker overloads.
   void Settings::add_color_picker(std::wstring_view name, UINT description_resource_id, std::wstring_view value) {
     add_color_picker(name, get_resource(description_resource_id), value);
