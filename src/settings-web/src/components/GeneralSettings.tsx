@@ -123,7 +123,6 @@ export class GeneralSettings extends React.Component <any, any> {
         <Text variant='xLarge'>General</Text>
         <Stack>
           {this.state.settings.general.startup_disabled_reason != null && 
-          
             <span style={{color:"#c50500"}} dangerouslySetInnerHTML={{__html: this.state.settings.general.startup_disabled_reason }} />
           }
           <Label>Run at Startup</Label>
