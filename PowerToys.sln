@@ -132,7 +132,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "msi_to_msix_upgrade_lib", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "previewpane", "previewpane", "{2F305555-C296-497E-AC20-5FA1B237996A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "src\modules\previewpane\Common\Common.csproj", "{AF2349B8-E5B6-4004-9502-687C1C7730B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PreviewHandlerCommon", "src\modules\previewpane\Common\PreviewHandlerCommon.csproj", "{AF2349B8-E5B6-4004-9502-687C1C7730B1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkdownPreviewHandler", "src\modules\previewpane\MarkDownPreviewHandler\MarkdownPreviewHandler.csproj", "{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}"
 EndProject
@@ -141,6 +141,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvgPreviewHandler", "src\modules\previewpane\SvgPreviewHandler\SvgPreviewHandler.csproj", "{DA425894-6E13-404F-8DCB-78584EC0557A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests-SvgPreviewHandler", "src\modules\previewpane\UnitTests-SvgPreviewHandler\UnitTests-SvgPreviewHandler.csproj", "{060D75DA-2D1C-48E6-A4A1-6F0718B64661}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests-PreviewHandlerCommon", "src\modules\previewpane\UnitTests-PreviewHandlerCommon\UnitTests-PreviewHandlerCommon.csproj", "{73A93F5C-EC6D-43C1-A914-07B897F1D550}"
+EndProject
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "powerpreview", "src\modules\previewpane\powerpreview\powerpreview.vcxproj", "{217DF501-135C-4E38-BFC8-99D4821032EA}"
 EndProject
@@ -264,6 +267,10 @@ Global
 		{060D75DA-2D1C-48E6-A4A1-6F0718B64661}.Debug|x64.Build.0 = Debug|x64
 		{060D75DA-2D1C-48E6-A4A1-6F0718B64661}.Release|x64.ActiveCfg = Release|x64
 		{060D75DA-2D1C-48E6-A4A1-6F0718B64661}.Release|x64.Build.0 = Release|x64
+		{73A93F5C-EC6D-43C1-A914-07B897F1D550}.Debug|x64.ActiveCfg = Debug|x64
+		{73A93F5C-EC6D-43C1-A914-07B897F1D550}.Debug|x64.Build.0 = Debug|x64
+		{73A93F5C-EC6D-43C1-A914-07B897F1D550}.Release|x64.ActiveCfg = Release|x64
+		{73A93F5C-EC6D-43C1-A914-07B897F1D550}.Release|x64.Build.0 = Release|x64
 		{217DF501-135C-4E38-BFC8-99D4821032EA}.Debug|x64.ActiveCfg = Debug|x64
 		{217DF501-135C-4E38-BFC8-99D4821032EA}.Debug|x64.Build.0 = Debug|x64
 		{217DF501-135C-4E38-BFC8-99D4821032EA}.Release|x64.ActiveCfg = Release|x64
@@ -307,6 +314,7 @@ Global
 		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{DA425894-6E13-404F-8DCB-78584EC0557A} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{060D75DA-2D1C-48E6-A4A1-6F0718B64661} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{73A93F5C-EC6D-43C1-A914-07B897F1D550} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{217DF501-135C-4E38-BFC8-99D4821032EA} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{47310AB4-9034-4BD1-8D8B-E88AD21A171B} = {2F305555-C296-497E-AC20-5FA1B237996A}
 	EndGlobalSection

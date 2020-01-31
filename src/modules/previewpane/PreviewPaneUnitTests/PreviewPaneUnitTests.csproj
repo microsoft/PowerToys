@@ -61,9 +61,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj">
+    <ProjectReference Include="..\common\PreviewHandlerCommon.csproj">
       <Project>{AF2349B8-E5B6-4004-9502-687C1C7730B1}</Project>
-      <Name>Common</Name>
+      <Name>PreviewHandlerCommon</Name>
     </ProjectReference>
     <ProjectReference Include="..\MarkDownPreviewHandler\MarkdownPreviewHandler.csproj">
       <Project>{6a71162e-fc4c-4a2c-b90f-3cf94f59a9bb}</Project>

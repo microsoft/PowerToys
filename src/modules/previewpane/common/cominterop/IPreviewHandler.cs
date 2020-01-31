@@ -13,7 +13,7 @@ namespace Common.ComInterlop
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("8895b1c6-b41f-4c1c-a562-0d564250836f")]
-    internal interface IPreviewHandler
+    public interface IPreviewHandler
     {
         /// <summary>
         /// Sets the parent window of the previewer window, as well as the area within the parent to be used for the previewer window.
