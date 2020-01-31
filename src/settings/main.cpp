@@ -242,7 +242,7 @@ void initialize_webview(int nShowCmd)
                 g_webview.Settings().IsJavaScriptEnabled(true);
 
                 g_webview.NewWindowRequested([=](IWebViewControl sender_requester, WebViewControlNewWindowRequestedEventArgs args) {
-                    //// Open the requested link in the default browser registered in the Shell
+                    // Open the requested link in the default browser registered in the Shell
                     using winrt::Windows::Foundation::Uri;
                     Uri uri = args.Uri();
                     // WebView doesn't let us to open ms-settings:protocol links directly, so we translate it
