@@ -1,0 +1,76 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE  
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE  
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE  
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+STRINGTABLE
+BEGIN
+	IDS_GENERAL_DESCRIPTION                             L"These settings allow you to manage your Windows File Explorer Addons.";
+	IDS_MODULE_NAME                                     L"File Explorer Preview";
+	IDS_ICON_KEY_NAME                                   L"pt-power-preview";
+	IDS_EXPLR_ICONS_PREV_STTNGS_GROUP_HEADER_ID         L"EXPLR_ICONS_PREV_STTNGS_GROUP_HEADER_ID";
+	IDS_EXPLR_ICONS_PREV_STTNGS_GROUP_DESC              L"Settings Group Header Text";
+	IDS_EXPLR_ICONS_PREV_STTNGS_GROUP_TEXT              L"Explorer Icons";
+	IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_HEADER_ID        L"PRVPANE_FILE_PREV_STTNGS_GROUP_HEADER_ID";
+	IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_DESC             L"Settings Group Header Text";
+	IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_TEXT             L"Preview Pane";
+	IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL                L"PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID"
+	IDS_PREVPANE_MD_SETTINGS_DESCRIPTION                L"Show Markdown"
+	IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL               L"IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL"
+	IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION               L"Show SVG"
+	IDS_EXPLR_SVG_BOOL_TOGGLE_CONTROLL                  L"EXPLR_SVG_BOOL_TOGGLE_CONTROLL"
+	IDS_EXPLR_SVG_SETTINGS_DESCRIPTION                  L"Render SVG images"
+END
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
