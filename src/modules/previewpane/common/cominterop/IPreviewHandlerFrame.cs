@@ -13,7 +13,7 @@ namespace Common.ComInterlop
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("fec87aaf-35f9-447a-adb7-20234491401a")]
-    internal interface IPreviewHandlerFrame
+    public interface IPreviewHandlerFrame
     {
         /// <summary>
         /// Gets a list of the keyboard shortcuts for the preview host.

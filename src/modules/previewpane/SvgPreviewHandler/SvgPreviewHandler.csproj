@@ -63,9 +63,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\common\Common.csproj">
+    <ProjectReference Include="..\common\PreviewHandlerCommon.csproj">
       <Project>{af2349b8-e5b6-4004-9502-687c1c7730b1}</Project>
-      <Name>Common</Name>
+      <Name>PreviewHandlerCommon</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -13,7 +13,7 @@ namespace Common.ComInterlop
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("fc4801a3-2ba9-11cf-a229-00aa003d7352")]
-    internal interface IObjectWithSite
+    public interface IObjectWithSite
     {
         /// <summary>
         /// Provides the site's pointer to the site object.
