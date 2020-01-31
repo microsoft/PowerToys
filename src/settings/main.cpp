@@ -242,9 +242,14 @@ void initialize_webview(int nShowCmd)
                 g_webview.Settings().IsJavaScriptEnabled(true);
 
                 g_webview.NewWindowRequested([=](IWebViewControl sender_requester, WebViewControlNewWindowRequestedEventArgs args) {
-                    // Open the requested link in the default browser registered in the Shell
-                    int res = static_cast<int>(reinterpret_cast<uintptr_t>(ShellExecute(nullptr, L"open", args.Uri().AbsoluteUri().c_str(), nullptr, nullptr, SW_SHOWNORMAL)));
-                    WINRT_VERIFY(res > 32);
+                    //// Open the requested link in the default browser registered in the Shell
+                    using winrt::Windows::Foundation::Uri;
+                    Uri uri = args.Uri();
+                    // WebView doesn't let us to open ms-settings:protocol links directly, so we translate it
+                    // from a https placeholder
+                    if (uri.AbsoluteUri() == L"https://ms_settings_startupapps/")
+                        uri = Uri{L"ms-settings:startupapps"};
+                    winrt::Windows::System::Launcher::LaunchUriAsync(uri);
                 });
 
                 g_webview.ContentLoading([=](IWebViewControl sender, WebViewControlContentLoadingEventArgs const& args) {

@@ -122,15 +122,11 @@ export class GeneralSettings extends React.Component <any, any> {
         <Separator />
         <Text variant='xLarge'>General</Text>
         <Stack>
+          {this.state.settings.general.startup_disabled_reason != null && 
+          
+            <span style={{color:"#c50500"}} dangerouslySetInnerHTML={{__html: this.state.settings.general.startup_disabled_reason }} />
+          }
           <Label>Run at Startup</Label>
-          {this.state.settings.general.startup_disabled_reason != null && <Text
-            styles = {{
-              root: {
-                paddingBottom: '5px'
-              }
-            }}
-          >{this.state.settings.general.startup_disabled_reason}</Text>
-          }     
           <BoolToggleSettingsControl
             disabled={this.state.settings.general.startup_disabled_reason}
             setting={{value: this.state.settings.general.startup}}

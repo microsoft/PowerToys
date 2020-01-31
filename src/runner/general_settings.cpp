@@ -14,8 +14,8 @@ static bool run_as_elevated = false;
 // TODO: add resource.rc for settings project and localize
 namespace localized_strings
 {
-    const std::wstring_view STARTUP_DISABLED_BY_POLICY = L"Disabled by admin policy.";
-    const std::wstring_view STARTUP_DISABLED_BY_USER = L"Disabled by user.";
+    const std::wstring_view STARTUP_DISABLED_BY_POLICY = L"This setting has been disabled by your administrator";
+    const std::wstring_view STARTUP_DISABLED_BY_USER = LR"(This setting has been disabled manually via <a href="https://ms_settings_startupapps" target="_blank">Startup Settings</a>.)";
 }
 
 json::JsonObject load_general_settings()
