@@ -11,7 +11,7 @@
 
 Here are a few definitions of words found throughout this document to ensure clarity:  
 - **Key Remapping:** Refers to the act of changing the output of a keystroke on your keyboard. An example is remapping the “Tab” key to “Delete”.
-- **Shortcuts or Key shortcuts:** A combination of 2 or more keystrokes that results in a user-defined action. An example is CTRL-Z un-doing an action in Microsoft Word
+- **Shortcuts or Key shortcuts:** A combination of 2 or more keystrokes that results in a user-defined action. An example is <kbd>Ctrl</kbd>+<kbd>Z</kbd> un-doing an action in Microsoft Word
 - **KSM:** Acronym for Keyboard Shortcut Manager
 - **Keystroke:** A single press of a key
 - **Exotic key:** These are keys that are unique and don’t exist on many keyboards. Example: Calculator or search button.
@@ -32,13 +32,11 @@ A keyboard is an extremely powerful and primary method of interacting with your 
 
 ## 1.5 Narrative / Scenario  
 
-**User Problem 1** - Mac/Linux “switch” users: A user who has recently made the switch to Windows and is having trouble adjusting to the keyboard differences. Simple tasks like locking the computer, copy / paste, and switching browsers now require thinking and the lack of muscle memory makes the user feels clumsy at times. For example, copying an object on MacOS, *CMD+C,* requires your
-thumb whereas on Windows, *CTRL + C*, it’s your pinky. Even within identical applications there are shortcut disparities. Going to the address bar in Google Chrome on a Mac is CMD+L, on a PC, that would map to Alt-D.
+**User Problem 1** - Mac/Linux “switch” users: A user who has recently made the switch to Windows and is having trouble adjusting to the keyboard differences. Simple tasks like locking the computer, copy / paste, and switching browsers now require thinking and the lack of muscle memory makes the user feels clumsy at times. For example, copying an object on MacOS, <kbd>cmd</kbd> + <kbd>C</kbd>, requires your thumb whereas on Windows, <kbd>Ctrl</kbd> + <kbd>C</kbd>, it’s your pinky. Even within identical applications there are shortcut disparities. Going to the address bar in Google Chrome on a Mac is <kbd>cmd</kbd> + <kbd>L</kbd>, on a PC, that would map to <kbd>Alt</kbd> + <kbd>D</kbd>.
  
 **Outcome**: A successful KSM manager would increase comfortability and users wouldn’t feel like they lost functionality or convenience with switching to Windows 10. In effect, it would help decrease churn and avoid a negative experience for a new user, which is crucial moment for public sentiment on Windows.
 
- **User Problem 2** – Users want customizability to make them faster: **Developers, or power users, who use their keyboard a lot are constantly looking to save themselves time and make their processes more convenient. This community has largely relied on 3<sup>rd</sup>
-party tools or has left their keys alone but voiced frustration with the lack of a native tool to remap keys. An example of a power shortcut that made its way into Windows is Winkey+L. You used to have to hit Ctrl-Alt-Del then click “Lock”.
+ **User Problem 2** – Users want customizability to make them faster: Developers, or power users, who use their keyboard a lot are constantly looking to save themselves time and make their processes more convenient. This community has largely relied on 3<sup>rd</sup> party tools or has left their keys alone but voiced frustration with the lack of a native tool to remap keys. An example of a power shortcut that made its way into Windows is Winkey+L. You used to have to hit <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Del</kbd> then click “Lock”.
 
 **Outcome**: A successful KSM manager would ‘unlock’ functionality and convenience for many power users, increasing their everyday efficiency. Keyboard changes are highly visible and successfully extending control would greatly boost satisfaction to continue to cement Windows as the *ideal* platform for a developer.
 
@@ -139,10 +137,10 @@ A brief survey was sent to the Windows Developer community during the planning s
 | No. | Requirement                                                                                                                                                                                          | Pri |
 | --- |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
 |  1  | Remap any button on keyboard to any other button on keyboard                                                                                                                                           | P0  |
-|  2  | OS-Level key shortcuts. Example: Making WinKey + G lock the computer.                                                                                                                                  | P1  | 
-|  3  | App level keyboard shortcuts. Example: Going to the address bar in Chrome on a MacOS is CMD+L, on a PC, that would map to Alt-L.                                                                       | P2  |
+|  2  | OS-Level key shortcuts. Example: Making <kbd>![Windows Key][winlogo]</kbd> WinKey + <kbd>G</kbd> lock the computer.                                                                                                                                  | P1  | 
+|  3  | App level keyboard shortcuts. Example: Going to the address bar in Chrome on a MacOS is <kbd>cmd</kbd>+<kbd>L</kbd>, on a PC, that would map to <kbd>Alt</kbd> + <kbd>D</kbd>.                                                                       | P2  |
 |  4  | Settings page that easily configures all supported scenarios.                                                                                                                                          | P1  |
-|  5  | The Powertoys Shortcut Guide needs to be aware of keyboard remaps. Example: If Winkey + G locks the computer the Shortcut Guide needs to list this as the method to lock a computer, not Winkey + L. | P1  |
+|  5  | The Powertoys Shortcut Guide needs to be aware of keyboard remaps. Example: If <kbd>![Windows Key][winlogo]</kbd> + <kbd>G</kbd> locks the computer the Shortcut Guide needs to list this as the method to lock a computer, not <kbd>![Windows Key][winlogo]</kbd> + <kbd>L</kbd>. | P1  |
 |  6  | A Mac ready profile that is prepopulated with commonly used remappings and adjustments.                                                                                                                | P1  |
 |  6  | A Linux ready profile that is prepopulated with commonly used remappings and adjustments.                                                                                                              | P1  |
 |  7  | Multiple keyboard support. Example: Surface Laptop and Surface keyboard have different layout and a remap maybe needed.                                                                                | P1  |
@@ -162,8 +160,8 @@ A brief survey was sent to the Windows Developer community during the planning s
 
 | No. | Requirement                                                                                                                                             | Pri |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
-|  1  | Can disable any existing OS-level shortcuts. Example: Winkey + C                                                                                        | P0  |
-|  2  | OS-level shortcuts have priority over apps that come with shortcuts. Example: Alt-Enter will trigger OS action, not excel-specific action when in Excel | P1  |
+|  1  | Can disable any existing OS-level shortcuts. Example: <kbd>![Windows Key][winlogo]</kbd> + <kbd>C</kbd>                                                                                        | P0  |
+|  2  | OS-level shortcuts have priority over apps that come with shortcuts. Example: <kbd>Alt</kbd> + <kbd>Enter</kbd> will trigger OS action, not excel-specific action when in Excel | P1  |
 |  3  | Winkey shortcuts have priority over app-specific shortcuts                                                                                              | P2  |
 
 ### 2.4  Functional Requirements for App-Level shortcuts *(stretch goal)*
@@ -181,10 +179,10 @@ A brief survey was sent to the Windows Developer community during the planning s
 | 2  | Clearly show what keys cannot be remapped                                                                                                                                       | P1  |
 | 3  | Option to reset to default                                                                                                                                                      | P1  |
 | 4  | Save, load, and export KSM settings so they can be loaded onto a different computer                                                                                             | P1  |
-| 5  | Warn users if any Winkey shortcuts have been orphaned. Example: Mapping Winkey + D to Winkey + L in one-direction, ergo no longer providing the user a method to lock their PC. | P1  |
+| 5  | Warn users if any Winkey shortcuts have been orphaned. Example: Mapping <kbd>![Windows Key][winlogo]</kbd> + <kbd>D</kbd> to <kbd>![Windows Key][winlogo]</kbd> + <kbd>L</kbd> in one-direction, ergo no longer providing the user a method to lock their PC. | P1  |
 | 6  | Display all remapping and shortcut changes that have been made                                                                                                                  | P1  |
 | 7  | Settings are capable of dark mode                                                                                                                                               | P2  |
-| 8  | Warn users when multiple keys have the same function. Example: Left-Alt and Right Alt                                                                                           | P2  |
+| 8  | Warn users when multiple keys have the same function. Example: Left <kbd>Alt</kbd> and Right <kbd>Alt</kbd>                                                                                           | P2  |
 | 9  | I am presented with a list of all the current OS-level key mapping and shortcuts in use                                                                                         | P3  |
 | 10 | Users can quickly swap profiles for different workloads. Example: See \#2                                                                                                       | P3  |
 
@@ -194,7 +192,7 @@ A brief survey was sent to the Windows Developer community during the planning s
 - When two or more keys are remapped to each other the logic needs to ensure there is never a loop and clear indication regarding priority order of operations.
 
 #### 2.6.2 WinKey Priority and Access
-- Should certain shortcuts be restricted to the user? Example: Winkey + D
+- Should certain shortcuts be restricted to the user? Example: <kbd>![Windows Key][winlogo]</kbd> + D
 
 #### 2.6.3 Multiple Keyboards – Shortcut support
 - Currently, there exists no plan to incorporate the creation of shortcuts for specific keyboards. Is this an expected use case?
@@ -206,7 +204,7 @@ A brief survey was sent to the Windows Developer community during the planning s
 - Is consistently running elevated (aka run as admin) required for the Keyboard Shortcut Manager?
 
 #### 2.6.6 F-Key / Fn key ignore
-- Can we have a setting that makes F-Keys (IE F1-F12) always act like function keys?
+- Can we have a setting that makes <kbd>Fn</kbd> keys (i.e <kbd>F1</kbd>-<kbd>F12</kbd>) always act like function keys?
 
 ## 3. Measure Requirements
 
@@ -219,13 +217,13 @@ A brief survey was sent to the Windows Developer community during the planning s
 | 5  | \# of times built-in shortcuts are remapped                                                                         | Recommended defaults for developers                                           | P1  |
 | 6  | Specificity and frequency of *exotic* keys being remapped.                                                          | Whether the KSM is missing keys and if some keys not useful                | P1  |
 | 7  | \# of visits to the KSM editor/settings in a given time period                                                      | Continuous visits could imply lack of clarity with UX or bug in app         | P1  |
-| 8  | Frequency of keys being mapped to each other (swapped). Example: *Key A* -> Key B, Key B -> Key C, Key C -> *Key A* | Whether auto/hot swapping needs to be prioritized                             | P1  |
+| 8  | Frequency of keys being mapped to each other (swapped). Example: <kbd>*Key A*</kbd> -> <kbd>Key B</kbd>, <kbd>Key B</kbd> -> <kbd>Key C</kbd>, <kbd>Key C</kbd> -> <kbd>*Key A*</kbd> | Whether auto/hot swapping needs to be prioritized                             | P1  |
 | 9  | Amount of people that have remapped turned on / off                                                                 | Information on whether KSM is being utilized                                  | P1  |
 | 10 | Maximum number of keyboards someone has attached to their keyboard in a 28-day period                               | Validates whether to prioritize additional keyboard support               | P1  |
 
 ## 4. UI Mockup
 ### See below for screenshots of the UI mockups:
-*Please understand that these are preliminary*
+*Please understand that these are preliminary** 
 
 ### 4.1 Main UI Settings
 ![alt text][ui_main] 
@@ -260,6 +258,9 @@ A brief survey was sent to the Windows Developer community during the planning s
 [ui_main2]: ./images/keymanager/UI_mainsettings2.png "Settings Landing page continued"
 [ui_remap1]: ./images/keymanager/UI_remapsettings.png "Remapping Keys"
 [ui_remap2]: ./images/keymanager/UI_remapsettings2.png "Drop down "
-[ui_remap3]: ./images/keymanager/UI_remapsettings3.png "Feature"
-[ui_editshortcuts1]: ./images/keymanager/UI_editshortcut.png "Feature"
-[ui_editshortcuts2]: ./images/keymanager/UI_editshortcut2.png "Feature"
+[ui_remap3]: ./images/keymanager/UI_remapsettings3.png "Remapping key pop up"
+[ui_editshortcuts1]: ./images/keymanager/UI_editshortcut.png "Edit Shortcuts Settings"
+[ui_editshortcuts2]: ./images/keymanager/UI_editshortcut2.png "Edit Shortcuts key pop up"
+[winlogo]: ./images/keymanager/winkey.png 
+
+
