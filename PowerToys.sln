@@ -108,10 +108,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUWPUI", "src\mod
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "notifications", "src\common\notifications_winrt\notifications.vcxproj", "{0B593A6C-4143-4337-860E-DB5710FB87DB}"
 EndProject
+<<<<<<< HEAD
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "notifications_dll", "src\common\notifications\notifications_dll.vcxproj", "{031AC72E-FA28-4AB7-B690-6F7B9C28AA73}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0B593A6C-4143-4337-860E-DB5710FB87DB} = {0B593A6C-4143-4337-860E-DB5710FB87DB}
 	EndProjectSection
+=======
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PreviewHandlerCommon", "src\modules\previewpane\Common\PreviewHandlerCommon.csproj", "{AF2349B8-E5B6-4004-9502-687C1C7730B1}"
+>>>>>>> Adding unit tests for preview handler common (#1156)
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "windowwalker", "windowwalker", "{8DC78AF7-DC3E-4C57-A8FB-7E347DE74A03}"
 EndProject
@@ -124,9 +128,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WindowWalker", "src\modules
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "previewpane", "previewpane", "{2F305555-C296-497E-AC20-5FA1B237996A}"
 EndProject
+<<<<<<< HEAD
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "src\modules\previewpane\Common\Common.csproj", "{AF2349B8-E5B6-4004-9502-687C1C7730B1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkDownPreviewHandler", "src\modules\previewpane\MarkDownPreviewHandler\MarkDownPreviewHandler.csproj", "{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}"
+=======
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests-PreviewHandlerCommon", "src\modules\previewpane\UnitTests-PreviewHandlerCommon\UnitTests-PreviewHandlerCommon.csproj", "{73A93F5C-EC6D-43C1-A914-07B897F1D550}"
+EndProject
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "powerpreview", "src\modules\previewpane\powerpreview\powerpreview.vcxproj", "{217DF501-135C-4E38-BFC8-99D4821032EA}"
+>>>>>>> Adding unit tests for preview handler common (#1156)
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PreviewPaneUnitTests", "src\modules\previewpane\PreviewPaneUnitTests\PreviewPaneUnitTests.csproj", "{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}"
 EndProject

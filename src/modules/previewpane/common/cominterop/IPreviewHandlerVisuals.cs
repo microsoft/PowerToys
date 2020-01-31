@@ -13,7 +13,7 @@ namespace Common.ComInterlop
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("8327b13c-b63f-4b24-9b8a-d010dcc3f599")]
-    internal interface IPreviewHandlerVisuals
+    public interface IPreviewHandlerVisuals
     {
         /// <summary>
         /// Sets the background color of the preview handler.

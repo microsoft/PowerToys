@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{060D75DA-2D1C-48E6-A4A1-6F0718B64661}</ProjectGuid>
+    <ProjectGuid>{748417CA-F17E-487F-9411-CAFB6D3F4877}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UnitTests_SvgPreviewHandler</RootNamespace>
-    <AssemblyName>UnitTests-SvgPreviewHandler</AssemblyName>
+    <RootNamespace>UnitTests_PreviewHandlerCommon</RootNamespace>
+    <AssemblyName>UnitTests-PreviewHandlerCommon</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -42,11 +42,17 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SvgPreviewControlTests.cs" />
+    <Compile Include="FileBasedPreviewHandlerTests.cs" />
+    <Compile Include="FormHandlerControlTests.cs" />
+    <Compile Include="PreviewHandlerAttributeTests.cs" />
+    <Compile Include="PreviewHandlerBaseTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StreamBasedPreviewHandlerTests.cs" />
+    <Compile Include="StreamWrapperTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Moq">
@@ -60,14 +66,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\common\PreviewHandlerCommon.csproj">
-      <Project>{AF2349B8-E5B6-4004-9502-687C1C7730B1}</Project>
+    <ProjectReference Include="..\Common\PreviewHandlerCommon.csproj">
+      <Project>{af2349b8-e5b6-4004-9502-687c1c7730b1}</Project>
       <Name>PreviewHandlerCommon</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SvgPreviewHandler\SvgPreviewHandler.csproj">
-      <Project>{DA425894-6E13-404F-8DCB-78584EC0557A}</Project>
-      <Name>SvgPreviewHandler</Name>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

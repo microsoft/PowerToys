@@ -33,7 +33,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin/Release/commonDocumentation.xml</DocumentationFile>
+    <DocumentationFile>bin/Release/MarkdownPreviewPaneDocumentation.xml</DocumentationFile>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup>
@@ -77,9 +77,9 @@
     </AdditionalFiles>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\common\Common.csproj">
+    <ProjectReference Include="..\common\PreviewHandlerCommon.csproj">
       <Project>{af2349b8-e5b6-4004-9502-687c1c7730b1}</Project>
-      <Name>Common</Name>
+      <Name>PreviewHandlerCommon</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

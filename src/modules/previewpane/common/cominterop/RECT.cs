@@ -16,22 +16,22 @@ namespace Common.ComInterlop
         /// <summary>
         /// Specifies the x-coordinate of the upper-left corner of the rectangle.
         /// </summary>
-        public readonly int Left;
+        public int Left;
 
         /// <summary>
         /// Specifies the y-coordinate of the upper-left corner of the rectangle.
         /// </summary>
-        public readonly int Top;
+        public int Top;
 
         /// <summary>
         /// Specifies the x-coordinate of the lower-right corner of the rectangle.
         /// </summary>
-        public readonly int Right;
+        public int Right;
 
         /// <summary>
         /// Specifies the y-coordinate of the lower-right corner of the rectangle.
         /// </summary>
-        public readonly int Bottom;
+        public int Bottom;
 
         /// <summary>
         /// Creates a <see cref="Rectangle" /> structure with the edge locations specified in the struct.
