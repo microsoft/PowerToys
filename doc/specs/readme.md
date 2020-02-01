@@ -16,4 +16,5 @@ This folder is where specs for PowerToys will be stored.
 
 - [FancyZones](PowerToys-fancyzones.md)
 - [PowerRename](PowerRename.md)
+- [Keyboard Manager](KeyboardManager.md)
 - Windows key shortcut guide
