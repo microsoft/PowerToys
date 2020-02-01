@@ -199,33 +199,40 @@ launchers:
 | 1      | Users can navigate through PowerLauncher by using their keyboard                                                                                         | 1            |
 | 2      | Users can see their previously typed text on PowerLauncher                                                                                               | 1            |
 | 3      | PowerLauncher should use fuzzy search                                                                                                                    | 1            |
-| 4      | Users can directly call command like they would via Run prompt                                                                                           | 1            |
-| 5      | PowerLauncher should meet [accessibility requirements](https://docs.microsoft.com/en-us/style-guide/accessibility/accessibility-guidelines-requirements) | 1            |
-| 6      | PowerLauncher should respect light, dark, and high-contrast mode                                                                                         | 1            |
-| 7      | PowerLauncher should meet [localization](https://docs.microsoft.com/en-us/dotnet/standard/globalization-localization/localization) requirements          | 1            |
-| 8      | Users should be notified if they have indexer turned off                                                                                                 | 1            |
-| 9      | Users will get text suggestion as they type in the launcher                                                                                              | 1            |
-| 10     | Users can see the name of the application/file/folder on the search result                                                                               | 1            |
-| 11     | Users can see path location of each search result                                                                                                        | 1            |
-| 12     | If name or location path is too long to display, users can hover on the name or location path and see the full text                                      | 1            |
-| 13     | Users can see the icon of the application/file/folder next to the application/file/folder name                                                           | 1            |
-| 14     | Users can see the executable type (App/File Folder/Documents) of each search result                                                                      | 1            |
-| 15     | Users can right-click or press <kbd>Shift</kbd>+<kbd>F10</kbd> on a selection to open right-click context-menu                                                                 | 1            |
-| 16     | Users can open selected file location on right-click                                                                                                     | 1            |
-| 17     | Users can run selected application as administrator on right-click                                                                                       | 1            |
-| 18     | Users can see the keyboard shortcut to run as administrator on the context menu                                                                          | 1            |
-| 19     | Users can open selected search result in a specified console (PowerShell/command prompt) on right-click                                                  | 1            |
-| 20     | Users can go back to previously search result from context menu if they press the "Back” arrow or <kbd>Esc</kbd>                                                  | 1            |
-| 21     | For multiple monitors, the interface should follow where the mouse cursor is located                                                                     | 1            |
-| 22     | Users can navigate and open currently running applications/processes with at least one opened window                                                     | 2            |
-| 23     | Users can pin selected application/file/folder at the top of the search result which ties to the search term they input in the search box                | 2            |
-| 24     | Users can install their own plugin to add additional capability to PowerLauncher                                                                         | 3            |
-| 25     | Users should be able to use PowerLauncher as a calculator                                                                                                | 3            |
-| 26     | If user selects enter on a result of calculator, PowerLauncher should copy the result to clipboard                                                       | 3            |
-| 27     | PowerLauncher should respect users’ default browser setting for web searches                                                                             | 3            |
-| 28     | Users can search websites                                                                                                                                | 3            |
-| 29     | Users should be able to use PowerLauncher as a dictionary                                                                                                | 3            |
-| 30     | Users should be able to see clipboard history                                                                                                            | 3            |
+| 4      | PowerLauncher should appear in the center of the screen                                                                                                                    | 1            |
+| 5      | Users can directly call command like they would via Run prompt                                                                                           | 1            |
+| 6      | PowerLauncher should meet [accessibility requirements](https://docs.microsoft.com/en-us/style-guide/accessibility/accessibility-guidelines-requirements) | 1            |
+| 7      | PowerLauncher should respect light, dark, and high-contrast mode                                                                                         | 1            |
+| 8      | PowerLauncher should meet [localization](https://docs.microsoft.com/en-us/dotnet/standard/globalization-localization/localization) requirements          | 1            |
+| 9      | Users should be notified if they have indexer turned off                                                                                                 | 1            |
+| 10      | Users will get text suggestion as they type in the launcher                                                                                              | 1            |
+| 11     | Users can see the name of the application/file/folder on the search result                                                                               | 1            |
+| 12     | Users can see path location of each search result                                                                                                        | 1            |
+| 13     | If name or location path is too long to display, users can hover on the name or location path and see the full text                                      | 1            |
+| 14     | Users can see the icon of the application/file/folder next to the application/file/folder name                                                           | 1            |
+| 15     | Users can see the executable type (App/File Folder/Documents) of each search result                                                                      | 1            |
+| 16     | Users can right-click or press <kbd>Shift</kbd>+<kbd>F10</kbd> on a selection to open right-click context-menu                                                                 | 1            |
+| 17     | Users can open selected file location on right-click                                                                                                     | 1            |
+| 18     | Users can run selected application as administrator on right-click                                                                                       | 1            |
+| 19     | Users can see the keyboard shortcut to run as administrator on the context menu                                                                          | 1            |
+| 20     | Users can open selected search result in a specified console (PowerShell/command prompt) on right-click                                                  | 1            |
+| 21     | Users can copy path location on right-click                                                                                                   | 1            |
+| 22     | Users can see the keyboard shortcut to copy path location on the context menu                                                                                                     | 1            |
+| 23     | Users can go back to previously search result from context menu if they press the "Back” arrow or <kbd>Esc</kbd>                                                  | 1            |
+| 24     | For multiple monitors, the interface should follow where the mouse cursor is located                                                                     | 1            |
+| 25     | Users can navigate and open currently running applications/processes with at least one opened window                                                     | 2            |
+| 26     | Users can pin selected application/file/folder at the top of the search result which ties to the search term they input in the search box                | 2            |
+| 27     | Users can use keyboard shortcuts to open the search result                | 2            |
+| 28     | When using multiple keyboard layouts, users can type using any keyboard which will map to the pressed keys                 | 2            |
+| 29     | Users can search based on specified category | 2            |
+| 30     | Users can install their own plugin to add additional capability to PowerLauncher                                                                         | 3            |
+| 31     | Users should be able to use PowerLauncher as a calculator                                                                                                | 3            |
+| 32     | If user selects enter on a result of calculator, PowerLauncher should copy the result to clipboard                                                       | 3            |
+| 33     | PowerLauncher should respect users’ default browser setting for web searches                                                                             | 3            |
+| 34     | Users can search websites                                                                                                                                | 3            |
+| 35     | Users should be able to use PowerLauncher as a dictionary                                                                                                | 3            |
+| 36     | Users should be able to see clipboard history                                                                                                            | 3            |
+| 37     | Users should be able to see options in the context menu which are similar to explorer                                                                                                            | 3            |
 
 ### 2.1.2 Settings
 
@@ -242,6 +249,7 @@ launchers:
 | 9      | Users can set customize text size and text font                               | 2            |
 | 10     | Users can change the theme of PowerLauncher                                   | 3            |
 | 11     | Users can see third-party terminals in the dropdown list for default terminal | 3            |
+| 12     | Users can customize icon size in the search result | 3            |
 
 PowerLauncher will have a settings UI to allow users to set their
 preference as follows:
@@ -287,13 +295,15 @@ preference as follows:
 | **No** | **Requirement**                                                                                     | **Priority** |
 | ------ | --------------------------------------------------------------------------------------------------- | ------------ |
 | 1      | Users can choose to remove override of <kbd>Win</kbd>+<kbd>R</kbd> or <kbd>Win</kbd>+<kbd>S</kbd> to launch PowerLauncher                       | 1            |
-| 2      | Users can run an application as administrator when executing <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd>                       | 1            |
-| 3      | PowerLauncher should open when <kbd>Alt</kbd>+<kbd>Space</kbd> is executed                                                | 1            |
-| 4      | Users can close PowerLauncher by pressing <kbd>Esc</kbd> if the search box is empty                         | 1            |
-| 5      | Users can auto-complete text suggestions (per words) by pressing <kbd>Tab</kbd>                                | 1            |
-| 6      | Users can perform right-click by pressing the <kbd>Shift</kbd>+<kbd>F10</kbd>                                             | 1            |
-| 7      | Any changes in the keyboard shortcut in PowerLauncher should be reflected in Windows Shortcut Guide | 1            |
-| 8      | Users can add custom aliases which tie to a specific application                                    | 3            |
+| 2      | Users can run an application as administrator when executing <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> | 1 |
+| 3      | Users can copy path location when executing <kbd>Ctrl</kbd>+<kbd>C</kbd>                            | 1            |
+| 4      | PowerLauncher should open when <kbd>Alt</kbd>+<kbd>Space</kbd> is executed                                                | 1            |
+| 5      | Users can close PowerLauncher by pressing <kbd>Esc</kbd> if the search box is empty                         | 1            |
+| 6      | Users can auto-complete text suggestions (per words) by pressing <kbd>Tab</kbd>                                | 1            |
+| 7      | Users can perform right-click by pressing the <kbd>Shift</kbd>+<kbd>F10</kbd>                                             | 1            |
+| 8      | Any changes in the keyboard shortcut in PowerLauncher should be reflected in Windows Shortcut Guide | 1            |
+| 9      | Users can use <kbd>Ctrl</kbd>+\<insert number> to launch from the search result | 2            |
+| 10      | Users can add custom aliases which tie to a specific application                                    | 3            |
 
 ## 2.2 Measure Requirements
 
