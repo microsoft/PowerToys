@@ -19,6 +19,16 @@ namespace FancyZonesEditor
     //  Other UIs in the editor will subscribe to change events on the properties to stay up to date as these properties change
     public class Settings : INotifyPropertyChanged
     {
+        private enum CmdArgs
+        {
+            MonitorHandle = 1,
+            X_Y_Width_Height,
+            ResolutionKey,
+            ActiveZoneSetTmpFile,
+            AppliedZoneSetTmpFile,
+            CustomZoneSetsTmpFile,
+        }
+
         private static CanvasLayoutModel _blankCustomModel;
         private readonly CanvasLayoutModel _focusModel;
         private readonly GridLayoutModel _rowsModel;
@@ -282,8 +292,6 @@ namespace FancyZonesEditor
 
         public static string WorkAreaKey { get; private set; }
 
-        public static float Dpi { get; private set; }
-
         // UpdateLayoutModels
         //  Update the five default layouts based on the new ZoneCount
         private void UpdateLayoutModels()
@@ -427,24 +435,16 @@ namespace FancyZonesEditor
         {
             _workArea = SystemParameters.WorkArea;
             Monitor = 0;
-            Dpi = 1;
 
             string[] args = Environment.GetCommandLineArgs();
-            if (args.Length == 8)
+            if (args.Length == 7)
             {
-                // 1 = handle to monitor (passed back to engine to persist data)
-                // 2 = X_Y_Width_Height in a dpi-scaled-but-unaware coords (where EditorOverlay shows up)
-                // 3 = resolution key (passed back to engine to persist data)
-                // 4 = monitor DPI (float)
-                // 5 = temp file for active zone set
-                // 6 = temp file for applied zone set
-                // 7 = temp file for custom zone sets
-                if (uint.TryParse(args[1], out uint monitor))
+                if (uint.TryParse(args[(int)CmdArgs.MonitorHandle], out uint monitor))
                 {
                     Monitor = monitor;
                 }
 
-                var parsedLocation = args[2].Split('_');
+                var parsedLocation = args[(int)CmdArgs.X_Y_Width_Height].Split('_');
                 var x = int.Parse(parsedLocation[0]);
                 var y = int.Parse(parsedLocation[1]);
                 var width = int.Parse(parsedLocation[2]);
@@ -452,24 +452,11 @@ namespace FancyZonesEditor
 
                 _workArea = new Rect(x, y, width, height);
 
-                WorkAreaKey = args[3];
+                WorkAreaKey = args[(int)CmdArgs.ResolutionKey];
 
-                // Try invariant culture first, caller likely uses invariant i.e. "C" locale to construct parameters
-                foreach (var cultureInfo in new[] { CultureInfo.InvariantCulture, CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture })
-                {
-                    try
-                    {
-                        Dpi = float.Parse(args[4], cultureInfo);
-                        break;
-                    }
-                    catch (FormatException)
-                    {
-                    }
-                }
-
-                _activeZoneSetTmpFile = args[5];
-                _appliedZoneSetTmpFile = args[6];
-                _customZoneSetsTmpFile = args[7];
+                _activeZoneSetTmpFile = args[(int)CmdArgs.ActiveZoneSetTmpFile];
+                _appliedZoneSetTmpFile = args[(int)CmdArgs.AppliedZoneSetTmpFile];
+                _customZoneSetsTmpFile = args[(int)CmdArgs.CustomZoneSetsTmpFile];
 
                 ParseDeviceInfoData();
             }
