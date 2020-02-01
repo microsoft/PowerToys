@@ -137,7 +137,7 @@ A brief survey was sent to the Windows Developer community during the planning s
 | No. | Requirement                                                                                                                                                                                          | Pri |
 | --- |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
 |  1  | Remap any button on keyboard to any other button on keyboard                                                                                                                                           | P0  |
-|  2  | OS-Level key shortcuts. Example: Making <kbd>![Windows Key][winlogo]</kbd> WinKey + <kbd>G</kbd> lock the computer.                                                                                                                                  | P1  | 
+|  2  | OS-Level key shortcuts. Example: Making <kbd>![Windows Key][winlogo]</kbd> + <kbd>G</kbd> lock the computer.                                                                                                                                  | P1  | 
 |  3  | App level keyboard shortcuts. Example: Going to the address bar in Chrome on a MacOS is <kbd>cmd</kbd>+<kbd>L</kbd>, on a PC, that would map to <kbd>Alt</kbd> + <kbd>D</kbd>.                                                                       | P2  |
 |  4  | Settings page that easily configures all supported scenarios.                                                                                                                                          | P1  |
 |  5  | The Powertoys Shortcut Guide needs to be aware of keyboard remaps. Example: If <kbd>![Windows Key][winlogo]</kbd> + <kbd>G</kbd> locks the computer the Shortcut Guide needs to list this as the method to lock a computer, not <kbd>![Windows Key][winlogo]</kbd> + <kbd>L</kbd>. | P1  |
@@ -192,7 +192,7 @@ A brief survey was sent to the Windows Developer community during the planning s
 - When two or more keys are remapped to each other the logic needs to ensure there is never a loop and clear indication regarding priority order of operations.
 
 #### 2.6.2 WinKey Priority and Access
-- Should certain shortcuts be restricted to the user? Example: <kbd>![Windows Key][winlogo]</kbd> + D
+- Should certain shortcuts be restricted to the user? Example: <kbd>![Windows Key][winlogo]</kbd> + <kbd>D</kbd>
 
 #### 2.6.3 Multiple Keyboards – Shortcut support
 - Currently, there exists no plan to incorporate the creation of shortcuts for specific keyboards. Is this an expected use case?
