@@ -82,7 +82,7 @@ public:
     {
         //NOTE: as public method it's unsafe without lock, but it's called from AddZoneWindow through making ZoneWindow that causes deadlock
         //TODO: needs refactoring
-        if (auto it = m_zoneWindowMap.find(monitor); it != m_zoneWindowMap.end() && it->second->ActiveZoneSet())
+        if (auto it = m_zoneWindowMap.find(monitor); it != m_zoneWindowMap.end())
         {
             return it->second->ActiveZoneSet();
         }
