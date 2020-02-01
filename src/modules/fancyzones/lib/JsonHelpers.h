@@ -182,17 +182,17 @@ namespace JSONHelpers
             return deviceInfoMap;
         }
 
-        const TCustomZoneSetsMap& GetCustomZoneSetsMap()
+        inline const TCustomZoneSetsMap& GetCustomZoneSetsMap() const
         {
             return customZoneSetsMap;
         }
 
-        const TAppZoneHistoryMap& GetAppZoneHistoryMap()
+        inline const TAppZoneHistoryMap& GetAppZoneHistoryMap() const
         {
             return appZoneHistoryMap;
         }
 
-        const TDeviceID GetActiveDeviceId()
+        inline const TDeviceID GetActiveDeviceId() const
         {
             return activeDeviceId;
         }
