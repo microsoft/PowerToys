@@ -274,11 +274,7 @@ preference as follows:
 
 3.  \[Number\] Maximum results shown. Default to 4.
 
-4.  \[Dropdown\] Default shell. 
-
-5.  \[Dropdown\] Default terminal.
-
-6.  Modify default keyboard shortcuts
+4.  Modify default keyboard shortcuts
     
     1.  \[Hotkey editor box\] Open PowerLauncher
     
@@ -286,9 +282,16 @@ preference as follows:
     
     3.  \[Hotkey editor box\] Run as administrator
 
-7.  \[Boolean\] Override Win+R key. Default to yes.
+5.  \[Boolean\] Override Win+R key. Default to yes.
 
-8.  \[Boolean\] Override Win+S key. Default to yes.
+6.  \[Boolean\] Override Win+S key. Default to yes.
+
+
+In PowerToys General Settings:
+
+1.  \[Dropdown\] Default shell. 
+
+2.  \[Dropdown\] Default terminal.
 
 ### 2.1.3 Keyboard Shortcuts
 
