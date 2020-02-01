@@ -42,7 +42,7 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
     settings.add_header_szLarge(
         GET_RESOURCE_STRING(IDS_EXPLR_ICONS_PREV_STTNGS_GROUP_HEADER_ID),
         GET_RESOURCE_STRING(IDS_EXPLR_ICONS_PREV_STTNGS_GROUP_DESC),
-        GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_TEXT));
+        GET_RESOURCE_STRING(IDS_EXPLR_ICONS_PREV_STTNGS_GROUP_TEXT));
 
     // Explorer: SVG Icon Settings.
     settings.add_bool_toogle(
@@ -53,8 +53,8 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
     // Preview Pane: Settings Group Header.
     settings.add_header_szLarge(
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_HEADER_ID),
-        GET_RESOURCE_STRING(IDS_EXPLR_ICONS_PREV_STTNGS_GROUP_DESC),
-        GET_RESOURCE_STRING(IDS_EXPLR_ICONS_PREV_STTNGS_GROUP_TEXT));
+        GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_DESC),
+        GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_TEXT));
 
     // Preview Pane: SVG Settings.
     settings.add_bool_toogle(
