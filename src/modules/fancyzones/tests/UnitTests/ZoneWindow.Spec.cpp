@@ -5,31 +5,12 @@
 #include <lib/util.h>
 #include <lib/ZoneSet.h>
 #include <lib/ZoneWindow.h>
+#include <lib/FancyZones.h>
 #include "Util.h"
 
 #include <common/common.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
-namespace
-{
-    std::wstring GenerateUniqueId(HMONITOR monitor, PCWSTR deviceId, PCWSTR virtualDesktopId) noexcept
-    {
-        wchar_t uniqueId[256]{}; // Parsed deviceId + resolution + virtualDesktopId
-
-        MONITORINFOEXW mi;
-        mi.cbSize = sizeof(mi);
-        if (virtualDesktopId && GetMonitorInfo(monitor, &mi))
-        {
-            wchar_t parsedId[256]{};
-            ParseDeviceId(deviceId, parsedId, 256);
-
-            Rect const monitorRect(mi.rcMonitor);
-            StringCchPrintf(uniqueId, ARRAYSIZE(uniqueId), L"%s_%d_%d_%s", parsedId, monitorRect.width(), monitorRect.height(), virtualDesktopId);
-        }
-        return std::wstring{ uniqueId };
-    }
-}
 
 namespace FancyZonesUnitTests
 {

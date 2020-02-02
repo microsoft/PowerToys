@@ -258,7 +258,7 @@ struct ZoneWindow : public winrt::implements<ZoneWindow, IZoneWindow>
 {
 public:
     ZoneWindow(HINSTANCE hinstance);
-    bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, std::wstring uniqueId, bool flashZones);
+    bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZones);
 
     IFACEMETHODIMP MoveSizeEnter(HWND window, bool dragEnabled) noexcept;
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled) noexcept;
@@ -320,7 +320,7 @@ ZoneWindow::ZoneWindow(HINSTANCE hinstance)
     RegisterClassExW(&wcex);
 }
 
-bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, std::wstring uniqueId, bool flashZones)
+bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZones)
 {
     if (!host)
     {
@@ -762,7 +762,7 @@ LRESULT CALLBACK ZoneWindow::s_WndProc(HWND window, UINT message, WPARAM wparam,
                                   DefWindowProc(window, message, wparam, lparam);
 }
 
-winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, std::wstring uniqueId, bool flashZones) noexcept
+winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZones) noexcept
 {
     auto self = winrt::make_self<ZoneWindow>(hinstance);
     if (self->Init(host, hinstance, monitor, uniqueId, flashZones))
