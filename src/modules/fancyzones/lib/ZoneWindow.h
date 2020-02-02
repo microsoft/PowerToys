@@ -7,6 +7,7 @@ namespace ZoneWindowUtils
     const std::wstring& GetActiveZoneSetTmpPath();
     const std::wstring& GetAppliedZoneSetTmpPath();
     const std::wstring& GetCustomZoneSetsTmpPath();
+    std::wstring GenerateUniqueId(HMONITOR monitor, PCWSTR deviceId, PCWSTR virtualDesktopId);
 }
 
 interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow : public IUnknown

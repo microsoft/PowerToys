@@ -591,7 +591,7 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
     wil::unique_cotaskmem_string virtualDesktopId;
     if (SUCCEEDED_LOG(StringFromCLSID(m_currentVirtualDesktopId, &virtualDesktopId)))
     {
-        std::wstring uniqueId = GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
+        std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
         bool newVirtualDesktop = true;
         if (auto it = m_virtualDesktopIds.find(m_currentVirtualDesktopId); it != end(m_virtualDesktopIds))
         {
@@ -945,23 +945,6 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) no
         // register new virtual desktops, if any
         m_virtualDesktopIds.insert(begin(temp), end(temp));
     }
-}
-
-std::wstring GenerateUniqueId(HMONITOR monitor, PCWSTR deviceId, PCWSTR virtualDesktopId) noexcept
-{
-    wchar_t uniqueId[256]{}; // Parsed deviceId + resolution + virtualDesktopId
-
-    MONITORINFOEXW mi;
-    mi.cbSize = sizeof(mi);
-    if (virtualDesktopId && GetMonitorInfo(monitor, &mi))
-    {
-        wchar_t parsedId[256]{};
-        ParseDeviceId(deviceId, parsedId, 256);
-
-        Rect const monitorRect(mi.rcMonitor);
-        StringCchPrintf(uniqueId, ARRAYSIZE(uniqueId), L"%s_%d_%d_%s", parsedId, monitorRect.width(), monitorRect.height(), virtualDesktopId);
-    }
-    return std::wstring{ uniqueId };
 }
 
 winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept
