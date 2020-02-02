@@ -549,9 +549,8 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         GUID currentVirtualDesktopId{};
         if (SUCCEEDED(RegistryHelpers::GetCurrentVirtualDesktop(&currentVirtualDesktopId)))
         {
-            m_lock.lock();
+            std::unique_lock writeLock(m_lock); 
             m_currentVirtualDesktopId = currentVirtualDesktopId;
-            m_lock.unlock();
         }
         else
         {
