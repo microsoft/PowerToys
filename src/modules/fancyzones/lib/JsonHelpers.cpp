@@ -85,23 +85,23 @@ namespace JSONHelpers
 
     ZoneSetLayoutType TypeFromString(const std::wstring& typeStr)
     {
-        if (typeStr.compare(L"focus") == 0)
+        if (typeStr == L"focus")
         {
             return JSONHelpers::ZoneSetLayoutType::Focus;
         }
-        else if (typeStr.compare(L"columns") == 0)
+        else if (typeStr == L"columns")
         {
             return JSONHelpers::ZoneSetLayoutType::Columns;
         }
-        else if (typeStr.compare(L"rows") == 0)
+        else if (typeStr == L"rows")
         {
             return JSONHelpers::ZoneSetLayoutType::Rows;
         }
-        else if (typeStr.compare(L"grid") == 0)
+        else if (typeStr == L"grid")
         {
             return JSONHelpers::ZoneSetLayoutType::Grid;
         }
-        else if (typeStr.compare(L"priority-grid") == 0)
+        else if (typeStr == L"priority-grid")
         {
             return JSONHelpers::ZoneSetLayoutType::PriorityGrid;
         }
