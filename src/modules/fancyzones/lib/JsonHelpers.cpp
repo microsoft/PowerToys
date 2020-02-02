@@ -10,15 +10,6 @@
 
 namespace
 {
-    using TMonitors = std::vector<HMONITOR>;
-
-    BOOL CALLBACK CollectMonitorsData(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
-    {
-        TMonitors* monitors = reinterpret_cast<TMonitors*>(dwData);
-        monitors->push_back(hMonitor);
-        return true;
-    }
-
     // From Settings.cs
     constexpr int c_focusModelId = 0xFFFF;
     constexpr int c_rowsModelId = 0xFFFE;
@@ -26,7 +17,6 @@ namespace
     constexpr int c_gridModelId = 0xFFFC;
     constexpr int c_priorityGridModelId = 0xFFFB;
     constexpr int c_blankCustomModelId = 0xFFFA;
-
 }
 
 namespace JSONHelpers
@@ -485,8 +475,15 @@ namespace JSONHelpers
 
     void FancyZonesData::MigrateAppZoneHistoryFromRegistry()
     {
-        TMonitors monitors;
-        EnumDisplayMonitors(NULL, NULL, &CollectMonitorsData, reinterpret_cast<LPARAM>(&monitors));
+        auto collectMonitorsData = [](HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) -> BOOL {
+            std::vector<HMONITOR>* monitors = reinterpret_cast<std::vector<HMONITOR>*>(dwData);
+            monitors->push_back(hMonitor);
+            return true;
+        };
+
+        std::vector<HMONITOR> monitors;
+
+        EnumDisplayMonitors(NULL, NULL, collectMonitorsData, reinterpret_cast<LPARAM>(&monitors));
 
         for (HMONITOR monitor : monitors)
         {
