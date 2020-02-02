@@ -17,6 +17,8 @@ namespace
     constexpr int c_gridModelId = 0xFFFC;
     constexpr int c_priorityGridModelId = 0xFFFB;
     constexpr int c_blankCustomModelId = 0xFFFA;
+
+    const wchar_t* FANCY_ZONES_DATA_FILE = L"PersistFancyZones.json";
 }
 
 namespace JSONHelpers
@@ -149,7 +151,7 @@ namespace JSONHelpers
 
         if (auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL))
         {
-            TAppPath path{ appPath };
+            std::wstring path{ appPath };
             if (appZoneHistoryMap.contains(path))
             {
                 iZoneIndex = appZoneHistoryMap.at(path).zoneIndex;
@@ -165,19 +167,19 @@ namespace JSONHelpers
         {
             if (zoneIndex == -1)
             {
-                appZoneHistoryMap.erase(TAppPath{ appPath });
+                appZoneHistoryMap.erase(std::wstring{ appPath });
             }
             else
             {
                 //TODO(stefan) provide correct uuid in the future
-                appZoneHistoryMap[TAppPath{ appPath }] = AppZoneHistoryData{ L"", static_cast<int>(zoneIndex) };
+                appZoneHistoryMap[std::wstring{ appPath }] = AppZoneHistoryData{ L"", static_cast<int>(zoneIndex) };
             }
             return true;
         }
         return false;
     }
 
-    void FancyZonesData::SetActiveZoneSet(const TDeviceID& deviceId, const TZoneSetUUID& uuid)
+    void FancyZonesData::SetActiveZoneSet(const std::wstring& deviceId, const std::wstring& uuid)
     {
         if (!uuid.empty() && deviceInfoMap.find(deviceId) != deviceInfoMap.end())
         {
@@ -213,7 +215,7 @@ namespace JSONHelpers
         }
     }
 
-    bool FancyZonesData::ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath, const TZoneSetUUID& uuid)
+    bool FancyZonesData::ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath, const std::wstring& uuid)
     {
         bool res = true;
         if (std::filesystem::exists(tmpFilePath))
@@ -508,7 +510,7 @@ namespace JSONHelpers
         }
     }
 
-    void FancyZonesData::MigrateDeviceInfoFromRegistry(const TDeviceID& deviceId)
+    void FancyZonesData::MigrateDeviceInfoFromRegistry(const std::wstring& deviceId)
     {
         wchar_t key[256];
         StringCchPrintf(key, ARRAYSIZE(key), L"%s\\%s", RegistryHelpers::REG_SETTINGS, deviceId.c_str());
@@ -552,7 +554,7 @@ namespace JSONHelpers
                 // int version =  data[0] * 256 + data[1]; - Not used anymore
 
                 std::wstring uuid = std::to_wstring(data[3] * 256 + data[4]);
-                auto it = std::find_if(appliedZoneSetsMap.begin(), appliedZoneSetsMap.end(), [&uuid](std::pair<TZoneSetUUID, ZoneSetData> zoneSetMap) {
+                auto it = std::find_if(appliedZoneSetsMap.begin(), appliedZoneSetsMap.end(), [&uuid](std::pair<std::wstring, ZoneSetData> zoneSetMap) {
                     return zoneSetMap.second.uuid.compare(uuid) == 0;
                 });
 
