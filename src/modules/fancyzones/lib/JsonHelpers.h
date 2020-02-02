@@ -202,9 +202,9 @@ namespace JSONHelpers
             activeDeviceId = deviceId;
         }
 
-        inline bool DeleteTmpFile(const std::wstring& tmpFilePath)
+        inline bool DeleteTmpFile(std::wstring_view tmpFilePath) const
         {
-            return DeleteFileW(tmpFilePath.c_str());
+            return DeleteFileW(tmpFilePath.data());
         }
 
         int GetAppLastZone(HWND window, PCWSTR appPath) const;
@@ -212,11 +212,11 @@ namespace JSONHelpers
 
         void SetActiveZoneSet(const TDeviceID& deviceId, const TZoneSetUUID& uuid);
 
-        void SerializeDeviceInfoToTmpFile(const DeviceInfoJSON& deviceInfo, const std::wstring& tmpFilePath) const;
-        void ParseDeviceInfoFromTmpFile(const std::wstring& tmpFilePath);
+        void SerializeDeviceInfoToTmpFile(const DeviceInfoJSON& deviceInfo, std::wstring_view tmpFilePath) const;
+        void ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath);
 
-        bool ParseCustomZoneSetFromTmpFile(const std::wstring& tmpFilePath, const TZoneSetUUID& uuid);
-        bool ParseDeletedCustomZoneSetsFromTmpFile(const std::wstring& tmpFilePath);
+        bool ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath, const TZoneSetUUID& uuid);
+        bool ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
 
         bool ParseAppZoneHistory(const json::JsonObject& fancyZonesDataJSON);
         json::JsonArray SerializeAppZoneHistory() const;
@@ -224,7 +224,7 @@ namespace JSONHelpers
         json::JsonArray SerializeDeviceInfos() const;
         bool ParseCustomZoneSets(const json::JsonObject& fancyZonesDataJSON);
         json::JsonArray SerializeCustomZoneSets() const;
-        void CustomZoneSetsToJsonFile(const std::wstring& filePath) const;
+        void CustomZoneSetsToJsonFile(std::wstring_view filePath) const;
 
         void LoadFancyZonesData();
         void SaveFancyZonesData() const;

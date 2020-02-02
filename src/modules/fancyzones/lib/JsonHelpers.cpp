@@ -185,13 +185,13 @@ namespace JSONHelpers
         }
     }
 
-    void FancyZonesData::SerializeDeviceInfoToTmpFile(const DeviceInfoJSON& deviceInfo, const std::wstring& tmpFilePath) const
+    void FancyZonesData::SerializeDeviceInfoToTmpFile(const DeviceInfoJSON& deviceInfo, std::wstring_view tmpFilePath) const
     {
         json::JsonObject deviceInfoJson = DeviceInfoJSON::ToJson(deviceInfo);
         json::to_file(tmpFilePath, deviceInfoJson);
     }
 
-    void FancyZonesData::ParseDeviceInfoFromTmpFile(const std::wstring& tmpFilePath)
+    void FancyZonesData::ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath)
     {
         if (std::filesystem::exists(tmpFilePath))
         {
@@ -213,7 +213,7 @@ namespace JSONHelpers
         }
     }
 
-    bool FancyZonesData::ParseCustomZoneSetFromTmpFile(const std::wstring& tmpFilePath, const TZoneSetUUID& uuid)
+    bool FancyZonesData::ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath, const TZoneSetUUID& uuid)
     {
         bool res = true;
         if (std::filesystem::exists(tmpFilePath))
@@ -240,7 +240,7 @@ namespace JSONHelpers
         return res;
     }
 
-    bool FancyZonesData::ParseDeletedCustomZoneSetsFromTmpFile(const std::wstring& tmpFilePath)
+    bool FancyZonesData::ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath)
     {
         bool res = true;
         if (std::filesystem::exists(tmpFilePath))
@@ -380,7 +380,7 @@ namespace JSONHelpers
         return customZoneSetsJSON;
     }
 
-    void FancyZonesData::CustomZoneSetsToJsonFile(const std::wstring& filePath) const
+    void FancyZonesData::CustomZoneSetsToJsonFile(std::wstring_view filePath) const
     {
         const auto& customZoneSetsJson = SerializeCustomZoneSets();
         json::JsonObject root{};
