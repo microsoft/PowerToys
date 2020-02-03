@@ -713,10 +713,9 @@ namespace JSONHelpers
 
             result.deviceId = device.GetNamedString(L"device-id");
 
-            const auto zoneSet = ZoneSetData::FromJson(device.GetNamedObject(L"active-zoneset"));
-            if (zoneSet.has_value())
+            if (auto zoneSet = ZoneSetData::FromJson(device.GetNamedObject(L"active-zoneset")); zoneSet.has_value())
             {
-                result.data.activeZoneSet = *zoneSet;
+                result.data.activeZoneSet = std::move(zoneSet.value());
             }
             else
             {
