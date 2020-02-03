@@ -208,14 +208,12 @@ namespace JSONHelpers
     {
         if (std::filesystem::exists(tmpFilePath))
         {
-            auto zoneSetJson = json::from_file(tmpFilePath);
-            if (zoneSetJson.has_value())
+            if (auto zoneSetJson = json::from_file(tmpFilePath); zoneSetJson.has_value())
             {
-                const auto deviceInfo = DeviceInfoJSON::FromJson(*zoneSetJson);
-                activeDeviceId = deviceInfo->deviceId;
-                if (deviceInfo.has_value())
+                if (auto deviceInfo = DeviceInfoJSON::FromJson(zoneSetJson.value()); deviceInfo.has_value())
                 {
-                    deviceInfoMap[activeDeviceId] = deviceInfo->data;
+                    activeDeviceId = deviceInfo->deviceId;
+                    deviceInfoMap[activeDeviceId] = std::move(deviceInfo->data);
                     DeleteTmpFile(tmpFilePath);
                 }
             }
@@ -233,13 +231,11 @@ namespace JSONHelpers
         {
             try
             {
-                auto customZoneSetJson = json::from_file(tmpFilePath);
-                if (customZoneSetJson.has_value())
+                if (auto customZoneSetJson = json::from_file(tmpFilePath); customZoneSetJson.has_value())
                 {
-                    const auto customZoneSet = CustomZoneSetJSON::FromJson(*customZoneSetJson);
-                    if (customZoneSet.has_value())
+                    if (auto customZoneSet = CustomZoneSetJSON::FromJson(customZoneSetJson.value()); customZoneSet.has_value())
                     {
-                        customZoneSetsMap[uuid] = customZoneSet->data;
+                        customZoneSetsMap[uuid] = std::move(customZoneSet->data);
                     }
                 }
             }
@@ -288,10 +284,9 @@ namespace JSONHelpers
             for (uint32_t i = 0; i < appLastZones.Size(); ++i)
             {
                 json::JsonObject appLastZone = appLastZones.GetObjectAt(i);
-                const auto appZoneHistory = AppZoneHistoryJSON::FromJson(appLastZone);
-                if (appZoneHistory.has_value())
+                if (auto appZoneHistory = AppZoneHistoryJSON::FromJson(appLastZone); appZoneHistory.has_value())
                 {
-                    appZoneHistoryMap[appZoneHistory->appPath] = appZoneHistory->data;
+                    appZoneHistoryMap[appZoneHistory->appPath] = std::move(appZoneHistory->data);
                 }
                 else
                 {
@@ -327,10 +322,9 @@ namespace JSONHelpers
 
             for (uint32_t i = 0; i < devices.Size(); ++i)
             {
-                const auto device = DeviceInfoJSON::DeviceInfoJSON::FromJson(devices.GetObjectAt(i));
-                if (device.has_value())
+                if (auto device = DeviceInfoJSON::DeviceInfoJSON::FromJson(devices.GetObjectAt(i)); device.has_value())
                 {
-                    deviceInfoMap[device->deviceId] = device->data;
+                    deviceInfoMap[device->deviceId] = std::move(device->data);
                 }
                 else
                 {
@@ -366,10 +360,9 @@ namespace JSONHelpers
 
             for (uint32_t i = 0; i < customZoneSets.Size(); ++i)
             {
-                const auto zoneSet = CustomZoneSetJSON::FromJson(customZoneSets.GetObjectAt(i));
-                if (zoneSet.has_value())
+                if (auto zoneSet = CustomZoneSetJSON::FromJson(customZoneSets.GetObjectAt(i)); zoneSet.has_value())
                 {
-                    customZoneSetsMap[zoneSet->uuid] = zoneSet->data;
+                    customZoneSetsMap[zoneSet->uuid] = std::move(zoneSet->data);
                 }
             }
 
@@ -774,7 +767,9 @@ namespace JSONHelpers
             info.referenceWidth = static_cast<int>(infoJson.GetNamedNumber(L"ref-width"));
             info.referenceHeight = static_cast<int>(infoJson.GetNamedNumber(L"ref-height"));
             json::JsonArray zonesJson = infoJson.GetNamedArray(L"zones");
-            for (uint32_t i = 0; i < zonesJson.Size(); ++i)
+            uint32_t size = zonesJson.Size();
+            info.zones.reserve(size);
+            for (uint32_t i = 0; i < size; ++i)
             {
                 json::JsonObject zoneJson = zonesJson.GetObjectAt(i);
                 const int x = static_cast<int>(zoneJson.GetNamedNumber(L"X"));
@@ -921,11 +916,10 @@ namespace JSONHelpers
             std::wstring zoneSetType = std::wstring{ customZoneSet.GetNamedString(L"type") };
             if (zoneSetType.compare(L"canvas") == 0)
             {
-                const auto info = CanvasLayoutInfo::FromJson(infoJson);
-                if (info.has_value())
+                if (auto info = CanvasLayoutInfo::FromJson(infoJson); info.has_value())
                 {
                     result.data.type = CustomLayoutType::Canvas;
-                    result.data.info = *info;
+                    result.data.info = std::move(info.value());
                 }
                 else
                 {
@@ -934,11 +928,10 @@ namespace JSONHelpers
             }
             else if (zoneSetType.compare(L"grid") == 0)
             {
-                const auto info = GridLayoutInfo::FromJson(infoJson);
-                if (info.has_value())
+                if (auto info = GridLayoutInfo::FromJson(infoJson); info.has_value())
                 {
                     result.data.type = CustomLayoutType::Grid;
-                    result.data.info = *info;
+                    result.data.info = std::move(info.value());
                 }
                 else
                 {
