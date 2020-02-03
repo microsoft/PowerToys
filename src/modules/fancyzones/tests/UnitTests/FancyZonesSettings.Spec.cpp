@@ -92,12 +92,6 @@ namespace FancyZonesUnitTests
             compareSettings(m_defaultSettings, actualSettings);
         }
 
-        TEST_METHOD(CreateWithNameNullptr)
-        {
-            auto actual = MakeFancyZonesSettings(m_hInst, nullptr);
-            Assert::IsTrue(actual == nullptr);
-        }
-
         TEST_METHOD(Create)
         {
             //prepare data
@@ -714,20 +708,6 @@ namespace FancyZonesUnitTests
             auto actual = m_settings->GetSettings();
             compareSettings(expected, actual);
 
-            Assert::IsTrue(std::filesystem::exists(settingsFile));
-        }
-
-        TEST_METHOD(SetConfigNullptr)
-        {
-            //cleanup file before call set config
-            const auto settingsFile = PTSettingsHelper::get_module_save_folder_location(m_moduleName) + L"\\settings.json";
-            std::filesystem::remove(settingsFile);
-
-            const auto expected = m_settings->GetSettings();
-            m_settings->SetConfig(nullptr);
-
-            auto actual = m_settings->GetSettings();
-            compareSettings(expected, actual);
             Assert::IsTrue(std::filesystem::exists(settingsFile));
         }
     };

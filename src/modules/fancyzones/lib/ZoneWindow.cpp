@@ -339,10 +339,6 @@ ZoneWindow::ZoneWindow(HINSTANCE hinstance)
 
 bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZones)
 {
-    if (!host)
-    {
-        return false;
-    }
     m_host.copy_from(host);
 
     MONITORINFO mi{};

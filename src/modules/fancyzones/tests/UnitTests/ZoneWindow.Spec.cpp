@@ -133,20 +133,6 @@ namespace FancyZonesUnitTests
             Assert::IsNull(m_zoneWindow->ActiveZoneSet());
         }
 
-        TEST_METHOD(CreateZoneWindowNoZoneWindowHost)
-        {
-            m_zoneWindow = MakeZoneWindow(nullptr, m_hInst, m_monitor, m_uniqueId.str(), false);
-
-            Assert::IsNull(m_zoneWindow.get());
-        }
-
-        TEST_METHOD(CreateZoneWindowNoZoneWindowHostFlashZones)
-        {
-            m_zoneWindow = MakeZoneWindow(nullptr, m_hInst, m_monitor, m_uniqueId.str(), true);
-
-            Assert::IsNull(m_zoneWindow.get());
-        }
-
         TEST_METHOD(CreateZoneWindowNoHinst)
         {
             m_zoneWindow = MakeZoneWindow(m_hostPtr, {}, m_monitor, m_uniqueId.str(), false);
