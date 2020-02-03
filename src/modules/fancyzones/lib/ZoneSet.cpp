@@ -224,7 +224,7 @@ ZoneSet::MoveWindowIntoZoneByIndex(HWND window, HWND windowZone, int index) noex
         return;
     }
 
-    if (index >= static_cast<int>(m_zones.size()))
+    if (index >= int(m_zones.size()))
     {
         index = 0;
     }
@@ -244,7 +244,9 @@ IFACEMETHODIMP_(void)
 ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCode) noexcept
 {
     if (m_zones.empty())
+    {
         return;
+    }
 
     winrt::com_ptr<IZone> oldZone = nullptr;
     winrt::com_ptr<IZone> newZone = nullptr;
@@ -340,13 +342,15 @@ bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
 {
     bool success = true;
 
-    LONG left{ static_cast<LONG>(workArea.width() * 0.1) };
-    LONG top{ static_cast<LONG>(workArea.height() * 0.1) };
-    LONG right{ static_cast<LONG>(workArea.width() * 0.6) };
-    LONG bottom{ static_cast<LONG>(workArea.height() * 0.6) };
+    long left{ long(workArea.width() * 0.1) };
+    long top{ long(workArea.height() * 0.1) };
+    long right{ long(workArea.width() * 0.6) };
+    long bottom{ long(workArea.height() * 0.6) };
+
     RECT focusZoneRect{ left, top, right, bottom };
-    int focusRectXIncrement = (zoneCount <= 1) ? 0 : (int)(workArea.width() * 0.2) / (zoneCount - 1);
-    int focusRectYIncrement = (zoneCount <= 1) ? 0 : (int)(workArea.height() * 0.2) / (zoneCount - 1);
+
+    long focusRectXIncrement = (zoneCount <= 1) ? 0 : (int)(workArea.width() * 0.2) / (zoneCount - 1);
+    long focusRectYIncrement = (zoneCount <= 1) ? 0 : (int)(workArea.height() * 0.2) / (zoneCount - 1);
 
     if (left >= right || top >= bottom || left < 0 || right < 0 || top < 0 || bottom < 0)
     {
@@ -369,35 +373,33 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetL
 {
     bool success = true;
 
-    int gutter = spacing;
-
     int zonePercent = C_MULTIPLIER / zoneCount;
 
-    LONG totalWidth;
-    LONG totalHeight;
+    long totalWidth;
+    long totalHeight;
 
-    LONG cellWidth;
-    LONG cellHeight;
+    long cellWidth;
+    long cellHeight;
 
     if (type == JSONHelpers::ZoneSetLayoutType::Columns)
     {
-        totalWidth = workArea.width() - (gutter * 2) - (spacing * (zoneCount - 1));
-        totalHeight = workArea.height() - (gutter * 2);
+        totalWidth = workArea.width() - (spacing * (zoneCount + 1));
+        totalHeight = workArea.height() - (spacing * 2);
         cellWidth = totalWidth * zonePercent / C_MULTIPLIER;
         cellHeight = totalHeight;
     }
     else
     { //Rows
-        totalWidth = workArea.width() - (gutter * 2);
-        totalHeight = workArea.height() - (gutter * 2) - (spacing * (zoneCount - 1));
+        totalWidth = workArea.width() - (spacing * 2);
+        totalHeight = workArea.height() - (spacing * (zoneCount + 1));
         cellWidth = totalWidth;
         cellHeight = totalHeight * zonePercent / C_MULTIPLIER;
     }
 
-    LONG top = spacing;
-    LONG left = spacing;
-    LONG bottom = top + cellHeight;
-    LONG right = left + cellWidth;
+    long top = spacing;
+    long left = spacing;
+    long bottom = top + cellHeight;
+    long right = left + cellWidth;
 
     for (int zone = 0; zone < zoneCount; zone++)
     {
@@ -521,8 +523,7 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, const std::wstring& customZon
                 DPIAware::Convert(m_config.Monitor, x, y);
                 DPIAware::Convert(m_config.Monitor, width, height);
 
-                RECT focusZoneRect{ x, y, x + width, y + height };
-                AddZone(MakeZone(focusZoneRect));
+                AddZone(MakeZone(RECT{ x, y, x + width, y + height }));
             }
 
             return true;
@@ -541,20 +542,18 @@ bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo grid
 {
     bool success = true;
 
-    int gutter = spacing;
-
-    LONG totalWidth = static_cast<LONG>(workArea.width()) - (gutter * 2) - (spacing * (gridLayoutInfo.columns() - 1));
-    LONG totalHeight = static_cast<LONG>(workArea.height()) - (gutter * 2) - (spacing * (gridLayoutInfo.rows() - 1));
+    long totalWidth = workArea.width() - (spacing * (gridLayoutInfo.columns() + 1));
+    long totalHeight = workArea.height() - (spacing * (gridLayoutInfo.rows() + 1));
     struct Info
     {
-        LONG Extent;
-        LONG Start;
-        LONG End;
+        long Extent;
+        long Start;
+        long End;
     };
     Info rowInfo[JSONHelpers::MAX_ZONE_COUNT];
     Info columnInfo[JSONHelpers::MAX_ZONE_COUNT];
 
-    LONG top = gutter;
+    long top = spacing;
     for (int row = 0; row < gridLayoutInfo.rows(); row++)
     {
         rowInfo[row].Start = top;
@@ -563,7 +562,7 @@ bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo grid
         top += rowInfo[row].Extent + spacing;
     }
 
-    LONG left = gutter;
+    long left = spacing;
     for (int col = 0; col < gridLayoutInfo.columns(); col++)
     {
         columnInfo[col].Start = left;
@@ -594,16 +593,15 @@ bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo grid
                     maxCol++;
                 }
 
-                LONG right = columnInfo[maxCol].End;
-                LONG bottom = rowInfo[maxRow].End;
+                long right = columnInfo[maxCol].End;
+                long bottom = rowInfo[maxRow].End;
 
                 if (left >= right || top >= bottom || left < 0 || right < 0 || top < 0 || bottom < 0)
                 {
                     success = false;
                 }
 
-                RECT focusZoneRect{ left, top, right, bottom };
-                AddZone(MakeZone(focusZoneRect));
+                AddZone(MakeZone(RECT{ left, top, right, bottom }));
             }
         }
     }
