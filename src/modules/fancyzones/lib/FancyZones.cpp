@@ -97,6 +97,7 @@ private:
         require_write_lock(const std::unique_lock<T>& lock) { lock; }
     };
 
+    bool IsInterestingWindow(HWND window) noexcept;
     void UpdateZoneWindows() noexcept;
     void MoveWindowsOnDisplayChange() noexcept;
     void UpdateDragState(require_write_lock) noexcept;
@@ -199,8 +200,11 @@ IFACEMETHODIMP_(void) FancyZones::Destroy() noexcept
 // IFancyZonesCallback
 IFACEMETHODIMP_(void) FancyZones::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
 {
-    std::unique_lock writeLock(m_lock);
-    MoveSizeStartInternal(window, monitor, ptScreen, writeLock);
+    if (IsInterestingWindow(window))
+    {
+        std::unique_lock writeLock(m_lock);
+        MoveSizeStartInternal(window, monitor, ptScreen, writeLock);
+    }
 }
 
 // IFancyZonesCallback
@@ -213,8 +217,11 @@ IFACEMETHODIMP_(void) FancyZones::MoveSizeUpdate(HMONITOR monitor, POINT const& 
 // IFancyZonesCallback
 IFACEMETHODIMP_(void) FancyZones::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
 {
-    std::unique_lock writeLock(m_lock);
-    MoveSizeEndInternal(window, ptScreen, writeLock);
+    if (window == m_windowMoveSize || IsInterestingWindow(window))
+    {
+        std::unique_lock writeLock(m_lock);
+        MoveSizeEndInternal(window, ptScreen, writeLock);
+    }
 }
 
 // IFancyZonesCallback
@@ -234,7 +241,7 @@ IFACEMETHODIMP_(void) FancyZones::VirtualDesktopInitialize() noexcept
 // IFancyZonesCallback
 IFACEMETHODIMP_(void) FancyZones::WindowCreated(HWND window) noexcept
 {
-    if (m_settings->GetSettings().appLastZone_moveWindows)
+    if (m_settings->GetSettings().appLastZone_moveWindows && IsInterestingWindow(window))
     {
         auto processPath = get_process_path(window);
         if (!processPath.empty()) 
@@ -586,6 +593,41 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
         DefWindowProc(window, message, wparam, lparam);
 }
 
+bool FancyZones::IsInterestingWindow(HWND window) noexcept
+{
+    auto style = GetWindowLongPtr(window, GWL_STYLE);
+    auto exStyle = GetWindowLongPtr(window, GWL_EXSTYLE);
+    // Ignore:
+    if (GetAncestor(window, GA_ROOT) != window || // windows that are not top-level
+        GetWindow(window, GW_OWNER) != nullptr || // windows that have an owner - like Save As dialogs
+        (style & WS_CHILD) != 0 || // windows that are child elements of other windows - like buttons
+        (style & WS_DISABLED) != 0 || // windows that are disabled
+        (exStyle & WS_EX_TOOLWINDOW) != 0 || // toolbar windows
+        !IsWindowVisible(window)) // invisible windows
+    {
+        return false;
+    }
+    // Filter some windows like the Start menu or Cortana
+    auto windowAndPath = get_filtered_base_window_and_path(window);
+    if (windowAndPath.hwnd == nullptr)
+    {
+        return false;
+    }
+    // Filter out user specified apps
+    CharUpperBuffW(windowAndPath.process_path.data(), (DWORD)windowAndPath.process_path.length());
+    if (m_settings)
+    {
+        for (const auto& excluded : m_settings->GetSettings().excludedAppsArray)
+        {
+            if (windowAndPath.process_path.find(excluded) != std::wstring::npos)
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 void FancyZones::UpdateZoneWindows() noexcept
 {
     auto callback = [](HMONITOR monitor, HDC, RECT *, LPARAM data) -> BOOL
@@ -678,12 +720,9 @@ void FancyZones::UpdateDragState(require_write_lock) noexcept
 
 void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
 {
-    if (const HWND window = get_filtered_active_window())
+    auto window = GetForegroundWindow();
+    if (IsInterestingWindow(window))
     {
-        if (GetWindow(window, GW_OWNER) != nullptr)
-        {
-            return;
-        }
         if (const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL))
         {
             std::shared_lock readLock(m_lock);
@@ -698,12 +737,9 @@ void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
 
 void FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 {
-    if (const HWND window = get_filtered_active_window())
+    auto window = GetForegroundWindow();
+    if (IsInterestingWindow(window))
     {
-        if (GetWindow(window, GW_OWNER) != nullptr)
-        {
-            return;
-        }
         if (const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL))
         {
             std::shared_lock readLock(m_lock);
