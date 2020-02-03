@@ -281,7 +281,8 @@ IFACEMETHODIMP_(void) FancyZones::WindowCreated(HWND window) noexcept
         auto processPath = get_process_path(window);
         if (!processPath.empty())
         {
-            int zoneIndex = JSONHelpers::FancyZonesDataInstance().GetAppLastZone(window, processPath.data());
+            const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+            int zoneIndex = fancyZonesData.GetAppLastZone(window, processPath.data());
 
             if (zoneIndex != -1)
             {
@@ -397,7 +398,8 @@ void FancyZones::ToggleEditor() noexcept
 
     auto zoneWindow = iter->second;
 
-    JSONHelpers::FancyZonesDataInstance().CustomZoneSetsToJsonFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
+    const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+    fancyZonesData.CustomZoneSetsToJsonFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
 
     const auto taskbar_x_offset = MulDiv(mi.rcWork.left - mi.rcMonitor.left, DPIAware::DEFAULT_DPI, dpi_x);
     const auto taskbar_y_offset = MulDiv(mi.rcWork.top - mi.rcMonitor.top, DPIAware::DEFAULT_DPI, dpi_y);
@@ -413,10 +415,10 @@ void FancyZones::ToggleEditor() noexcept
         std::to_wstring(width) + L"_" +
         std::to_wstring(height);
 
-    const auto& deviceInfo = JSONHelpers::FancyZonesDataInstance().GetDeviceInfoMap().at(zoneWindow->UniqueId());
+    const auto& deviceInfo = fancyZonesData.GetDeviceInfoMap().at(zoneWindow->UniqueId());
 
     JSONHelpers::DeviceInfoJSON deviceInfoJson{ zoneWindow->UniqueId(), deviceInfo };
-    JSONHelpers::FancyZonesDataInstance().SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath());
+    fancyZonesData.SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath());
 
     const std::wstring params =
         /*1*/ std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +

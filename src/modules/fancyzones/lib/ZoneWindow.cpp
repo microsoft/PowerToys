@@ -539,14 +539,7 @@ void ZoneWindow::HideZoneWindow() noexcept
 
 void ZoneWindow::LoadSettings() noexcept
 {
-    auto& deviceInfoMap = JSONHelpers::FancyZonesDataInstance().GetDeviceInfoMap();
-    if (!deviceInfoMap.contains(m_uniqueId))
-    {
-        // Creates entry in map when ZoneWindow is created
-        deviceInfoMap[m_uniqueId] = JSONHelpers::DeviceInfoData{ JSONHelpers::ZoneSetData{ L"null", JSONHelpers::ZoneSetLayoutType::Grid, 1 }, true, 16, 3 };
-
-        JSONHelpers::FancyZonesDataInstance().MigrateDeviceInfoFromRegistry(m_uniqueId);
-    }
+    JSONHelpers::FancyZonesDataInstance().AddDevice(m_uniqueId);
 
     JSONHelpers::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(ZoneWindowUtils::GetActiveZoneSetTmpPath());
     JSONHelpers::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
@@ -564,8 +557,9 @@ void ZoneWindow::InitializeZoneSets(MONITORINFO const& mi) noexcept
 
 void ZoneWindow::CalculateZoneSet() noexcept
 {
-    const auto& deviceInfoMap = JSONHelpers::FancyZonesDataInstance().GetDeviceInfoMap();
-    const auto& activeDeviceId = JSONHelpers::FancyZonesDataInstance().GetActiveDeviceId();
+    const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+    const auto& deviceInfoMap = fancyZonesData.GetDeviceInfoMap();
+    const auto& activeDeviceId = fancyZonesData.GetActiveDeviceId();
     const auto& activeZoneSet = deviceInfoMap.at(m_uniqueId).activeZoneSet;
 
     if (!activeDeviceId.empty() && activeDeviceId.compare(m_uniqueId) != 0 && !activeZoneSet.uuid.empty())

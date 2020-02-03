@@ -145,6 +145,17 @@ namespace JSONHelpers
         }
     }
 
+    void FancyZonesData::AddDevice(const std::wstring& deviceId)
+    {
+        if (!deviceInfoMap.contains(deviceId))
+        {
+            // Creates default entry in map when ZoneWindow is created
+            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ L"null", ZoneSetLayoutType::Grid, 1 }, true, 16, 3 };
+
+            MigrateDeviceInfoFromRegistry(deviceId);
+        }
+    }
+
     int FancyZonesData::GetAppLastZone(HWND window, PCWSTR appPath) const
     {
         int iZoneIndex = -1;
@@ -725,7 +736,7 @@ namespace JSONHelpers
             result.data.showSpacing = device.GetNamedBoolean(L"editor-show-spacing");
             result.data.spacing = static_cast<int>(device.GetNamedNumber(L"editor-spacing"));
             result.data.zoneCount = static_cast<int>(
-              device.GetNamedNumber(L"editor-zone-count"));
+                device.GetNamedNumber(L"editor-zone-count"));
 
             return result;
         }

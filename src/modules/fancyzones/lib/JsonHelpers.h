@@ -165,7 +165,7 @@ namespace JSONHelpers
         const std::wstring& GetPersistFancyZonesJSONPath() const;
         json::JsonObject GetPersistFancyZonesJSON();
 
-        std::unordered_map<std::wstring, DeviceInfoData>& GetDeviceInfoMap()
+        inline const std::unordered_map<std::wstring, DeviceInfoData>& GetDeviceInfoMap() const
         {
             return deviceInfoMap;
         }
@@ -194,6 +194,8 @@ namespace JSONHelpers
         {
             return DeleteFileW(tmpFilePath.data());
         }
+
+        void AddDevice(const std::wstring& deviceId);
 
         int GetAppLastZone(HWND window, PCWSTR appPath) const;
         bool SetAppLastZone(HWND window, PCWSTR appPath, DWORD zoneIndex); //TODO(stefan): Missing zone uuid (pass as arg)
