@@ -35,6 +35,11 @@ HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _
 {
     Uninitialize();
 
+    if (!CSettings::GetEnabled())
+    {
+        return E_FAIL;
+    }
+
     if (pidlFolder)
     {
         m_pidlFolder = ILClone(pidlFolder);
@@ -198,15 +203,14 @@ HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
 // TODO: Error handling and memory management
 HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici)
 {
-    // Set the application path from the registry
-    LPTSTR lpApplicationName = new TCHAR[MAX_PATH];
-    ULONG nChars = MAX_PATH;
-    CRegKey regKey;
-    // Open registry key saved by installer under HKLM
-    regKey.Open(HKEY_LOCAL_MACHINE, _T("Software\\Microsoft\\ImageResizer"), KEY_READ | KEY_WOW64_64KEY);
-    regKey.QueryStringValue(NULL, lpApplicationName, &nChars);
-    regKey.Close();
-
+    // Set the application path based on the location of the dll
+    LPTSTR buffer = new TCHAR[MAX_PATH];
+    GetModuleFileName(g_hInst_imageResizer, buffer, MAX_PATH);
+    std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
+    std::wstring path = std::wstring(buffer).substr(0, pos);
+    path = path + L"\\ImageResizer.exe";
+    LPTSTR lpApplicationName = (LPTSTR)path.c_str();
+    delete[] buffer;
     // Create an anonymous pipe to stream filenames
     SECURITY_ATTRIBUTES sa;
     HANDLE hReadPipe;
@@ -220,7 +224,6 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici)
 
     CString commandLine;
     commandLine.Format(_T("\"%s\""), lpApplicationName);
-    delete[] lpApplicationName;
 
     // Set the output directory
     if (m_pidlFolder)
