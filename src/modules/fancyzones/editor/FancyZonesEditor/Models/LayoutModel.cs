@@ -278,9 +278,11 @@ namespace FancyZonesEditor.Models
 
             writer.WriteEndObject();
 
-            writer.WriteBoolean("editor-show-spacing", Settings._settingsToPersist.ShowSpacing);
-            writer.WriteNumber("editor-spacing", Settings._settingsToPersist.Spacing);
-            writer.WriteNumber("editor-zone-count", Settings._settingsToPersist.ZoneCount);
+            Settings settings = ((App)Application.Current).ZoneSettings;
+
+            writer.WriteBoolean("editor-show-spacing", settings.ShowSpacing);
+            writer.WriteNumber("editor-spacing", settings.Spacing);
+            writer.WriteNumber("editor-zone-count", settings.ZoneCount);
             writer.WriteEndObject();
             writer.Flush();
             outputStream.Close();

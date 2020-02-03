@@ -109,8 +109,6 @@ namespace FancyZonesEditor
 
             _blankCustomModel = new CanvasLayoutModel("Create new custom", LayoutType.Blank, (int)_workArea.Width, (int)_workArea.Height);
 
-            _settingsToPersist = new SettingsToPersist(_showSpacing, _spacing, _zoneCount);
-
             UpdateLayoutModels();
         }
 
@@ -127,7 +125,6 @@ namespace FancyZonesEditor
                 if (_zoneCount != value)
                 {
                     _zoneCount = value;
-                    _settingsToPersist.ZoneCount = value;
                     UpdateLayoutModels();
                     FirePropertyChanged("ZoneCount");
                 }
@@ -149,7 +146,6 @@ namespace FancyZonesEditor
                 if (_spacing != value)
                 {
                     _spacing = value;
-                    _settingsToPersist.Spacing = value;
                     FirePropertyChanged("Spacing");
                 }
             }
@@ -170,49 +166,12 @@ namespace FancyZonesEditor
                 if (_showSpacing != value)
                 {
                     _showSpacing = value;
-                    _settingsToPersist.ShowSpacing = value;
                     FirePropertyChanged("ShowSpacing");
                 }
             }
         }
 
         private bool _showSpacing;
-
-        public class SettingsToPersist
-        {
-            public SettingsToPersist(bool showSpacing, int spacing, int zoneCount)
-            {
-                _showSpacing = showSpacing;
-                _spacing = spacing;
-                _zoneCount = zoneCount;
-            }
-
-            private bool _showSpacing;
-
-            public bool ShowSpacing
-            {
-                get { return _showSpacing; }
-                set { _showSpacing = value; }
-            }
-
-            private int _spacing;
-
-            public int Spacing
-            {
-                get { return _spacing; }
-                set { _spacing = value; }
-            }
-
-            private int _zoneCount;
-
-            public int ZoneCount
-            {
-                get { return _zoneCount; }
-                set { _zoneCount = value; }
-            }
-        }
-
-        public static SettingsToPersist _settingsToPersist;
 
         // IsShiftKeyPressed - is the shift key currently being held down
         public bool IsShiftKeyPressed
