@@ -253,7 +253,8 @@ namespace FancyZonesUnitTests
             const auto appliedZoneSetTempPath = ZoneWindowUtils::GetAppliedZoneSetTmpPath();
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
-            const auto expectedZoneSet = ZoneSetData{ guidString(), type, 5 };
+            const auto customSetGuid = guidString();
+            const auto expectedZoneSet = ZoneSetData{ customSetGuid, type, 5 };
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
             const auto deviceInfo = DeviceInfoJSON{ m_uniqueId.str(), data };
             const auto json = DeviceInfoJSON::ToJson(deviceInfo);
@@ -263,7 +264,7 @@ namespace FancyZonesUnitTests
                 100, 100, std::vector{ CanvasLayoutInfo::Rect{ 0, 0, 100, 100 } }
             };
             const auto customZoneData = CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info };
-            auto customZoneJson = CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ guidString(), customZoneData });
+            auto customZoneJson = CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ customSetGuid, customZoneData });
             json::to_file(appliedZoneSetTempPath, customZoneJson);
 
             //temp file read on initialization
@@ -287,7 +288,8 @@ namespace FancyZonesUnitTests
             const auto deletedZonesTempPath = ZoneWindowUtils::GetCustomZoneSetsTmpPath();
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
-            const auto expectedZoneSet = ZoneSetData{ guidString(), type, 5 };
+            const auto customSetGuid = guidString();
+            const auto expectedZoneSet = ZoneSetData{ customSetGuid, type, 5 };
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
             const auto deviceInfo = DeviceInfoJSON{ m_uniqueId.str(), data };
             const auto json = DeviceInfoJSON::ToJson(deviceInfo);
@@ -297,7 +299,7 @@ namespace FancyZonesUnitTests
                 100, 100, std::vector{ CanvasLayoutInfo::Rect{ 0, 0, 100, 100 } }
             };
             const auto customZoneData = CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info };
-            const auto customZoneSet = CustomZoneSetJSON{ guidString(), customZoneData };
+            const auto customZoneSet = CustomZoneSetJSON{ customSetGuid, customZoneData };
             auto customZoneJson = CustomZoneSetJSON::ToJson(customZoneSet);
             json::to_file(appliedZoneSetTempPath, customZoneJson);
 
@@ -328,7 +330,8 @@ namespace FancyZonesUnitTests
             const auto deletedZonesTempPath = ZoneWindowUtils::GetCustomZoneSetsTmpPath();
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
-            const auto expectedZoneSet = ZoneSetData{ guidString(), type, 5 };
+            const auto customSetGuid = guidString();
+            const auto expectedZoneSet = ZoneSetData{ customSetGuid, type, 5 };
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
             const auto deviceInfo = DeviceInfoJSON{ m_uniqueId.str(), data };
             const auto json = DeviceInfoJSON::ToJson(deviceInfo);
@@ -338,7 +341,7 @@ namespace FancyZonesUnitTests
                 100, 100, std::vector{ CanvasLayoutInfo::Rect{ 0, 0, 100, 100 } }
             };
             const auto customZoneData = CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info };
-            const auto customZoneSet = CustomZoneSetJSON{ guidString(), customZoneData };
+            const auto customZoneSet = CustomZoneSetJSON{ customSetGuid, customZoneData };
             auto customZoneJson = CustomZoneSetJSON::ToJson(customZoneSet);
             json::to_file(appliedZoneSetTempPath, customZoneJson);
 

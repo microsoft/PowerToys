@@ -125,7 +125,7 @@ namespace FancyZonesEditor.Models
             using (var writer = new Utf8JsonWriter(outputStream, writerOptions))
             {
                 writer.WriteStartObject();
-                writer.WriteString("uuid", Guid.ToString());
+                writer.WriteString("uuid", "{" + Guid.ToString().ToUpper() + "}");
                 writer.WriteString("name", Name);
 
                 writer.WriteString("type", "canvas");

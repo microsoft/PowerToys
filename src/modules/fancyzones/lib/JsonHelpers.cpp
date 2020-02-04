@@ -224,8 +224,12 @@ namespace JSONHelpers
         }
     }
 
-    bool FancyZonesData::ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath, const std::wstring& uuid)
+    bool FancyZonesData::ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath, const std::wstring& deviceId)
     {
+        if (deviceInfoMap.at(deviceId).activeZoneSet.type != JSONHelpers::ZoneSetLayoutType::Custom)
+        {
+            return false;
+        }
         bool res = true;
         if (std::filesystem::exists(tmpFilePath))
         {
@@ -235,7 +239,7 @@ namespace JSONHelpers
                 {
                     if (auto customZoneSet = CustomZoneSetJSON::FromJson(customZoneSetJson.value()); customZoneSet.has_value())
                     {
-                        customZoneSetsMap[uuid] = std::move(customZoneSet->data);
+                        customZoneSetsMap[customZoneSet->uuid] = std::move(customZoneSet->data);
                     }
                 }
             }

@@ -1257,6 +1257,7 @@ namespace FancyZonesUnitTests
             compareJsonArrays(expected, actual);
         }
 
+#if 0
         TEST_METHOD(CustomZoneSetsReadTemp)
         {
             const std::wstring uuid = L"uuid";
@@ -1272,7 +1273,7 @@ namespace FancyZonesUnitTests
             const std::wstring path = data.GetPersistFancyZonesJSONPath() + L".test_tmp";
             json::to_file(path, CustomZoneSetJSON::ToJson(expected));
 
-            data.ParseCustomZoneSetFromTmpFile(path, uuid);
+            data.ParseCustomZoneSetFromTmpFile(path);
 
             bool actualFileExists = std::filesystem::exists(path);
             if (actualFileExists)
@@ -1292,40 +1293,20 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(expectedGrid.rows(), actualGrid.rows());
             Assert::AreEqual(expectedGrid.columns(), actualGrid.columns());
         }
+#endif
 
+#if 0
         TEST_METHOD(CustomZoneSetsReadTempUnexsisted)
         {
-            const std::wstring uuid = L"uuid";
             FancyZonesData data;
 
             const std::wstring path = data.GetPersistFancyZonesJSONPath() + L".test_tmp";
 
-            data.ParseCustomZoneSetFromTmpFile(path, uuid);
+            data.ParseCustomZoneSetFromTmpFile(path);
             auto devices = data.GetDeviceInfoMap();
             Assert::AreEqual((size_t)0, devices.size());
         }
-
-        TEST_METHOD(CustomZoneSetsReadTempMissedUuid)
-        {
-            const std::wstring uuid = L"uuid";
-            CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, GridLayoutInfo(GridLayoutInfo::Minimal{ 1, 2 }) } };
-            FancyZonesData data;
-
-            const std::wstring path = data.GetPersistFancyZonesJSONPath() + L".test_tmp";
-
-            json::to_file(path, CustomZoneSetJSON::ToJson(expected));
-            data.ParseCustomZoneSetFromTmpFile(path, L"another_uuid");
-
-            bool actualFileExists = std::filesystem::exists(path);
-            if (actualFileExists)
-            {
-                std::filesystem::remove(path); //clean up before compare asserts
-            }
-            Assert::IsFalse(actualFileExists);
-
-            auto devices = data.GetDeviceInfoMap();
-            Assert::AreEqual((size_t)0, devices.size());
-        }
+#endif
 
         TEST_METHOD(SetActiveZoneSet)
         {

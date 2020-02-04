@@ -135,14 +135,14 @@ public:
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByPoint(HWND window, HWND zoneWindow, POINT ptClient) noexcept;
     IFACEMETHODIMP_(bool)
-    CalculateZones(MONITORINFO monitorInfo, int zoneCount, int spacing, const std::wstring& customZoneSetFilePath) noexcept;
+    CalculateZones(MONITORINFO monitorInfo, int zoneCount, int spacing) noexcept;
 
 private:
     bool CalculateFocusLayout(Rect workArea, int zoneCount) noexcept;
     bool CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
     bool CalculateGridLayout(Rect workArea, JSONHelpers::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
     bool CalculateUniquePriorityGridLayout(Rect workArea, int zoneCount, int spacing) noexcept;
-    bool CalculateCustomLayout(Rect workArea, const std::wstring& customZoneSetFilePath, int spacing) noexcept;
+    bool CalculateCustomLayout(Rect workArea, int spacing) noexcept;
 
     bool CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo gridLayoutInfo, int spacing);
 
@@ -301,7 +301,7 @@ ZoneSet::MoveWindowIntoZoneByPoint(HWND window, HWND zoneWindow, POINT ptClient)
 }
 
 IFACEMETHODIMP_(bool)
-ZoneSet::CalculateZones(MONITORINFO monitorInfo, int zoneCount, int spacing, const std::wstring& customZoneSetFilePath) noexcept
+ZoneSet::CalculateZones(MONITORINFO monitorInfo, int zoneCount, int spacing) noexcept
 {
     Rect const workArea(monitorInfo.rcWork);
     //invalid work area
@@ -331,7 +331,7 @@ ZoneSet::CalculateZones(MONITORINFO monitorInfo, int zoneCount, int spacing, con
         success = CalculateGridLayout(workArea, m_config.LayoutType, zoneCount, spacing);
         break;
     case JSONHelpers::ZoneSetLayoutType::Custom:
-        success = CalculateCustomLayout(workArea, customZoneSetFilePath, spacing);
+        success = CalculateCustomLayout(workArea, spacing);
         break;
     }
 
@@ -491,13 +491,12 @@ bool ZoneSet::CalculateUniquePriorityGridLayout(Rect workArea, int zoneCount, in
     return CalculateGridZones(workArea, predefinedPriorityGridLayouts[zoneCount - 1], spacing);
 }
 
-bool ZoneSet::CalculateCustomLayout(Rect workArea, const std::wstring& customZoneSetFilePath, int spacing) noexcept
+bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
 {
     wil::unique_cotaskmem_string guuidStr;
     if (SUCCEEDED_LOG(StringFromCLSID(m_config.Id, &guuidStr)))
     {
-        const auto guuid = guuidStr.get();
-        JSONHelpers::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(customZoneSetFilePath, guuid);
+        const std::wstring guuid = guuidStr.get();
         const auto& customZoneSets = JSONHelpers::FancyZonesDataInstance().GetCustomZoneSetsMap();
         if (!customZoneSets.contains(guuid))
         {

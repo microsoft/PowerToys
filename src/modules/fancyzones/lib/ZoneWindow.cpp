@@ -210,8 +210,7 @@ namespace ZoneWindowDrawUtils
         DrawIndex(hdc, offset, index, padding, size, false, true, colorFill); // bottom left
     }
 
-    void DrawActiveZoneSet(wil::unique_hdc& hdc, COLORREF highlightColor, int highlightOpacity, const std::vector<winrt::com_ptr<IZone>>& zones
-        , const winrt::com_ptr<IZone>& highlightZone, bool flashMode, bool drawHints) noexcept
+    void DrawActiveZoneSet(wil::unique_hdc& hdc, COLORREF highlightColor, int highlightOpacity, const std::vector<winrt::com_ptr<IZone>>& zones, const winrt::com_ptr<IZone>& highlightZone, bool flashMode, bool drawHints) noexcept
     {
         static constexpr std::array<COLORREF, 9> colors{
             RGB(75, 75, 85),
@@ -543,6 +542,9 @@ void ZoneWindow::LoadSettings() noexcept
 
     JSONHelpers::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(ZoneWindowUtils::GetActiveZoneSetTmpPath());
     JSONHelpers::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
+    JSONHelpers::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(ZoneWindowUtils::GetAppliedZoneSetTmpPath(), m_uniqueId);
+
+    JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
 }
 
 void ZoneWindow::InitializeZoneSets(MONITORINFO const& mi) noexcept
@@ -581,7 +583,7 @@ void ZoneWindow::CalculateZoneSet() noexcept
             bool showSpacing = deviceInfoMap.at(m_uniqueId).showSpacing;
             int spacing = showSpacing ? deviceInfoMap.at(m_uniqueId).spacing : 0;
             int zoneCount = activeZoneSet.zoneCount.has_value() ? activeZoneSet.zoneCount.value() : 0;
-            zoneSet->CalculateZones(monitorInfo, zoneCount, spacing, ZoneWindowUtils::GetAppliedZoneSetTmpPath());
+            zoneSet->CalculateZones(monitorInfo, zoneCount, spacing);
             UpdateActiveZoneSet(zoneSet.get());
         }
     }
