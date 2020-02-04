@@ -80,6 +80,14 @@ bool HWNDDataCache::is_invalid_class(HWND hwnd) const {
 }
 bool HWNDDataCache::is_invalid_style(HWND hwnd) const {
   auto style = GetWindowLong(hwnd, GWL_STYLE);
+  // WS_POPUP need to have a border or minimize/maximize buttons,
+  // otherwise the window is "not interesting"
+  if ((style & WS_POPUP) == WS_POPUP &&
+      (style & WS_THICKFRAME) == 0 &&
+      (style & WS_MINIMIZEBOX) == 0 &&
+      (style & WS_MAXIMIZEBOX) == 0) {
+    return true;
+  }
   for (auto invalid : invalid_basic_styles) {
     if ((invalid & style) != 0) {
       return true;
