@@ -99,6 +99,7 @@
     <ClInclude Include="d2d_text.h" />
     <ClInclude Include="d2d_window.h" />
     <ClInclude Include="dpi_aware.h" />
+    <ClInclude Include="notifications.h" />
     <ClInclude Include="window_helpers.h" />
     <ClInclude Include="icon_helpers.h" />
     <ClInclude Include="hwnd_data_cache.h" />
@@ -127,6 +128,7 @@
     <ClCompile Include="hwnd_data_cache.cpp" />
     <ClCompile Include="json.cpp" />
     <ClCompile Include="monitors.cpp" />
+    <ClCompile Include="notifications.cpp" />
     <ClCompile Include="on_thread_executor.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

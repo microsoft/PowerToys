@@ -48,7 +48,20 @@
             </desktop5:ItemType>
           </desktop4:FileExplorerContextMenus>
         </desktop4:Extension>
+        <Extension Category="windows.backgroundTasks" EntryPoint="PowerToysNotifications.BackgroundHandler">
+          <BackgroundTasks>
+            <Task Type="general" />
+          </BackgroundTasks>
+        </Extension>
       </Extensions>
     </Application>
   </Applications>
+  <Extensions>
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>Notifications.dll</Path>
+        <ActivatableClass ActivatableClassId="PowerToysNotifications.BackgroundHandler" ThreadingModel="both"/>
+      </InProcessServer>
+    </Extension>
+  </Extensions>
 </Package>

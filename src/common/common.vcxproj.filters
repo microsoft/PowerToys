@@ -87,6 +87,9 @@
     <ClInclude Include="window_helpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="notifications.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d2d_svg.cpp">
@@ -142,6 +145,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="window_helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="notifications.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
