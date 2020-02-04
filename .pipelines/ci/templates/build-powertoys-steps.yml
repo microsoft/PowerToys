@@ -33,3 +33,8 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     clean: true
     maximumCpuCount: true
+
+- task: VSTest@2
+  inputs:
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
