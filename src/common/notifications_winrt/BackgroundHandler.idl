@@ -1,0 +1,11 @@
+namespace PowerToysNotifications
+{
+    [version(1)]
+    [default_interface]
+    runtimeclass BackgroundHandler : Windows.ApplicationModel.Background.IBackgroundTask
+    {
+        BackgroundHandler();
+        
+        void Run(Windows.ApplicationModel.Background.IBackgroundTaskInstance taskInstance);
+    }
+}
