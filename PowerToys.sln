@@ -91,6 +91,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "notifications", "src\common\notifications_winrt\notifications.vcxproj", "{0B593A6C-4143-4337-860E-DB5710FB87DB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "notifications_dll", "src\common\notifications\notifications_dll.vcxproj", "{031AC72E-FA28-4AB7-B690-6F7B9C28AA73}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "windowwalker", "windowwalker", "{8DC78AF7-DC3E-4C57-A8FB-7E347DE74A03}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Window Walker", "src\modules\windowwalker\app\Window Walker\Window Walker.csproj", "{B9BDF8BE-FED7-49B5-A7AE-DD4D1CA2D9EB}"
