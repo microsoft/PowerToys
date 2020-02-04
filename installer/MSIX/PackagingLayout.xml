@@ -16,6 +16,7 @@
         <File DestinationPath="modules\PowerRenameExt.dll" SourcePath="..\..\x64\Release\modules\PowerRenameExt.dll"/>
         <File DestinationPath="modules\shortcut_guide.dll" SourcePath="..\..\x64\Release\modules\shortcut_guide.dll"/>
         <File DestinationPath="modules\PowerRenameUWPUI.exe" SourcePath="..\..\x64\Release\PowerRenameUWPUI.exe"/>
+        <File DestinationPath="Notifications.dll" SourcePath="..\..\x64\Release\Notifications.dll"/>
 
         <File DestinationPath="svgs\*" SourcePath="..\..\x64\Release\svgs\*"/>
         <File DestinationPath="settings-html\**" SourcePath="..\..\x64\Release\settings-html\**"/>
