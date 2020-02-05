@@ -36,6 +36,9 @@
             <com:ExeServer Executable="modules\PowerRenameUWPUI.exe" DisplayName="PowerRenameUWPUI">
               <com:Class Id="0440049F-D1DC-4E46-B27B-98393D79486B"/>
             </com:ExeServer>
+            <com:SurrogateServer AppId="51B4D7E5-7568-4234-B4BB-47FB3C016A69" DisplayName="ImageResizerExt">
+              <com:Class Id="51B4D7E5-7568-4234-B4BB-47FB3C016A69" Path="modules\ImageResizerExt.dll" ThreadingModel="STA"/>
+            </com:SurrogateServer>
           </com:ComServer>
         </com:Extension>
         <desktop4:Extension Category="windows.fileExplorerContextMenus">
@@ -46,6 +49,45 @@
             <desktop5:ItemType Type="Directory">
               <desktop5:Verb Id="DirectoryPowerRename" Clsid="0440049F-D1DC-4E46-B27B-98393D79486B" />
             </desktop5:ItemType>
+            <desktop4:ItemType Type=".bmp">
+              <desktop4:Verb Id="BMPImageResizer" Clsid="51B4D7E5-7568-4234-B4BB-47FB3C016A69" />
+            </desktop4:ItemType>
+            <desktop4:ItemType Type=".dib">
+              <desktop4:Verb Id="DIBImageResizer" Clsid="51B4D7E5-7568-4234-B4BB-47FB3C016A69" />
+            </desktop4:ItemType>
+            <desktop4:ItemType Type=".gif">
+              <desktop4:Verb Id="GIFImageResizer" Clsid="51B4D7E5-7568-4234-B4BB-47FB3C016A69" />
+            </desktop4:ItemType>
+            <desktop4:ItemType Type=".jfif">
+              <desktop4:Verb Id="JFIFImageResizer" Clsid="51B4D7E5-7568-4234-B4BB-47FB3C016A69" />
+            </desktop4:ItemType>
+            <desktop4:ItemType Type=".jpe">
+              <desktop4:Verb Id="JPEImageResizer" Clsid="51B4D7E5-7568-4234-B4BB-47FB3C016A69" />
+            </desktop4:ItemType>
+            <desktop4:ItemType Type=".jpeg">
+              <desktop4:Verb Id="JPEGImageResizer" Clsid="51B4D7E5-7568-4234-B4BB-47FB3C016A69" />
+            </desktop4:ItemType>
+            <desktop4:ItemType Type=".jpg">
+              <desktop4:Verb Id="JPGImageResizer" Clsid="51B4D7E5-7568-4234-B4BB-47FB3C016A69" />
+            </desktop4:ItemType>
+            <desktop4:ItemType Type=".jxr">
+              <desktop4:Verb Id="JXRImageResizer" Clsid="51B4D7E5-7568-4234-B4BB-47FB3C016A69" />
+            </desktop4:ItemType>
+            <desktop4:ItemType Type=".png">
+              <desktop4:Verb Id="PNGImageResizer" Clsid="51B4D7E5-7568-4234-B4BB-47FB3C016A69" />
+            </desktop4:ItemType>
+            <desktop4:ItemType Type=".rle">
+              <desktop4:Verb Id="RLEImageResizer" Clsid="51B4D7E5-7568-4234-B4BB-47FB3C016A69" />
+            </desktop4:ItemType>
+            <desktop4:ItemType Type=".tif">
+              <desktop4:Verb Id="TIFImageResizer" Clsid="51B4D7E5-7568-4234-B4BB-47FB3C016A69" />
+            </desktop4:ItemType>
+            <desktop4:ItemType Type=".tiff">
+              <desktop4:Verb Id="TIFFImageResizer" Clsid="51B4D7E5-7568-4234-B4BB-47FB3C016A69" />
+            </desktop4:ItemType>
+            <desktop4:ItemType Type=".wdp">
+              <desktop4:Verb Id="WDPImageResizer" Clsid="51B4D7E5-7568-4234-B4BB-47FB3C016A69" />
+            </desktop4:ItemType>
           </desktop4:FileExplorerContextMenus>
         </desktop4:Extension>
       </Extensions>

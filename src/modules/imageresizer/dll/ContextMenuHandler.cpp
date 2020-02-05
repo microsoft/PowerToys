@@ -5,7 +5,6 @@
 #include "HDropIterator.h"
 #include "Settings.h"
 #include "common/icon_helpers.h"
-#include <fstream>
 
 extern HINSTANCE g_hInst_imageResizer;
 
@@ -291,12 +290,6 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
         DWORD fileCount = 0;
         // Gets the list of files currently selected using the IShellItemArray
         psiItemArray->GetCount(&fileCount);
-
-        std::ofstream logFile("D:\\arjunlog.txt");
-        if (logFile.is_open())
-        {
-            logFile << fileCount << std::endl;
-        }
         // Iterate over the list of files
         for (DWORD i = 0; i < fileCount; i++)
         {
@@ -309,29 +302,7 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
             fileName.Append(_T("\r\n"));
             // Write the file path into the input stream for image resizer
             writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
-            LPSTR result = NULL;
-
-            int len = WideCharToMultiByte(CP_UTF8, 0, itemName, -1, NULL, 0, 0, 0);
-
-            if (len > 0)
-            {
-                result = new char[len + 1];
-                if (result)
-                {
-                    int resLen = WideCharToMultiByte(CP_UTF8, 0, itemName, -1, &result[0], len, 0, 0);
-
-                    if (resLen == len)
-                    {
-                        logFile.write(result, len);
-                    }
-
-                    delete[] result;
-                }
-            }
-            logFile << std::endl;
         }
-
-        logFile.close();
     }
 
     writePipe.Close();
@@ -346,12 +317,11 @@ HRESULT __stdcall CContextMenuHandler::GetTitle(IShellItemArray* /*psiItemArray*
 
 HRESULT __stdcall CContextMenuHandler::GetIcon(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszIcon)
 {
-    /*std::wstring iconResourcePath = get_module_filename();
+    // Since ImageResizer is registered as a COM SurrogateServer the current module filename would be dllhost.exe. To get the icon we need the path of ImageResizerExt.dll, which can be obtained by passing the HINSTANCE of the dll
+    std::wstring iconResourcePath = get_module_filename(g_hInst_imageResizer);
     iconResourcePath += L",-";
     iconResourcePath += std::to_wstring(IDI_RESIZE_PICTURES);
-    return SHStrDup(iconResourcePath.c_str(), ppszIcon);*/
-    *ppszIcon = nullptr;
-    return E_NOTIMPL;
+    return SHStrDup(iconResourcePath.c_str(), ppszIcon);
 }
 
 HRESULT __stdcall CContextMenuHandler::GetToolTip(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszInfotip)
