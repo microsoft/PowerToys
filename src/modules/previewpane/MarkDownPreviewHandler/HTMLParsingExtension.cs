@@ -15,15 +15,26 @@ using Markdig.Syntax.Inlines;
 namespace MarkdownPreviewHandler
 {
     /// <summary>
+    /// Callback if extension blocks external images.
+    /// </summary>
+    public delegate void ImagesBlockedCallBack();
+
+    /// <summary>
     /// Markdig Extension to process html nodes in markdown AST.
     /// </summary>
     public class HTMLParsingExtension : IMarkdownExtension
     {
         /// <summary>
+        /// Callback if extension blocks external images.
+        /// </summary>
+        private readonly ImagesBlockedCallBack imagesBlockedCallBack;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="HTMLParsingExtension"/> class.
         /// </summary>
-        public HTMLParsingExtension(string baseUrl = "")
+        public HTMLParsingExtension(ImagesBlockedCallBack imagesBlockedCallBack, string baseUrl = "")
         {
+            this.imagesBlockedCallBack = imagesBlockedCallBack;
             this.BaseUrl = baseUrl;
         }
 
@@ -98,6 +109,7 @@ namespace MarkdownPreviewHandler
                             if (link.IsImage)
                             {
                                 link.Url = "#";
+                                this.imagesBlockedCallBack();
                             }
                         }
                     }
