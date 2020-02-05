@@ -338,7 +338,29 @@ HRESULT __stdcall CContextMenuHandler::GetCanonicalName(GUID* pguidCommandName)
 
 HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
 {
-    *pCmdState = CSettings::GetEnabled() ? ECS_ENABLED : ECS_HIDDEN;
+    // Hide if the file is not an image
+    *pCmdState = ECS_HIDDEN;
+    // Suppressing C26812 warning as the issue is in the shtypes.h library
+#pragma warning(suppress : 26812)
+    PERCEIVED type;
+    PERCEIVEDFLAG flag;
+    IShellItem* shellItem;
+    //Check extension of first item in the list (the item which is right-clicked on)
+    psiItemArray->GetItemAt(0, &shellItem);
+    LPTSTR pszPath;
+    // Retrieves the entire file system path of the file from its shell item
+    shellItem->GetDisplayName(SIGDN_FILESYSPATH, &pszPath);
+    LPTSTR pszExt = PathFindExtension(pszPath);
+
+    // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
+    AssocGetPerceivedType(pszExt, &type, &flag, NULL);
+
+    free(pszPath);
+    // If selected file is an image...
+    if (type == PERCEIVED_TYPE_IMAGE)
+    {
+        *pCmdState = CSettings::GetEnabled() ? ECS_ENABLED : ECS_HIDDEN;
+    }
     return S_OK;
 }
 
