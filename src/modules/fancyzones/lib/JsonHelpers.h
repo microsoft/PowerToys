@@ -224,7 +224,6 @@ namespace JSONHelpers
 
     private:
         void TmpMigrateAppliedZoneSetsFromRegistry();
-        void MigrateAppZoneHistoryFromRegistry(); //TODO(stefan): If uuid is needed here, it needs to be resolved here some how
         void MigrateCustomZoneSetsFromRegistry();
 
         std::unordered_map<std::wstring, ZoneSetData> appliedZoneSetsMap{};

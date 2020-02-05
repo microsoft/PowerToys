@@ -425,9 +425,8 @@ namespace JSONHelpers
         {
             TmpMigrateAppliedZoneSetsFromRegistry();
 
-            // Custom zone sets have to be migrated before applied zone sets!
+            // Custom zone sets have to be migrated after applied zone sets!
             MigrateCustomZoneSetsFromRegistry();
-            MigrateAppZoneHistoryFromRegistry();
 
             SaveFancyZonesData();
         }
@@ -498,41 +497,6 @@ namespace JSONHelpers
                     }
                 }
                 resolutionKeyLength = ARRAYSIZE(resolutionKey);
-            }
-        }
-    }
-
-    void FancyZonesData::MigrateAppZoneHistoryFromRegistry()
-    {
-        auto collectMonitorsData = [](HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) -> BOOL {
-            std::vector<HMONITOR>* monitors = reinterpret_cast<std::vector<HMONITOR>*>(dwData);
-            monitors->push_back(hMonitor);
-            return true;
-        };
-
-        std::vector<HMONITOR> monitors;
-
-        EnumDisplayMonitors(NULL, NULL, collectMonitorsData, reinterpret_cast<LPARAM>(&monitors));
-
-        for (HMONITOR monitor : monitors)
-        {
-            wchar_t key[256];
-            StringCchPrintf(key, ARRAYSIZE(key), L"%s\\%s\\%x", RegistryHelpers::REG_SETTINGS, RegistryHelpers::APP_ZONE_HISTORY_SUBKEY, monitor);
-            HKEY hkey;
-            if (RegOpenKeyExW(HKEY_CURRENT_USER, key, 0, KEY_ALL_ACCESS, &hkey) == ERROR_SUCCESS)
-            {
-                DWORD zoneIndex;
-                DWORD dataSize = sizeof(DWORD);
-                wchar_t value[256]{};
-                DWORD valueLength = ARRAYSIZE(value);
-                DWORD i = 0;
-                while (RegEnumValueW(hkey, i++, value, &valueLength, nullptr, nullptr, reinterpret_cast<BYTE*>(&zoneIndex), &dataSize) == ERROR_SUCCESS)
-                {
-                    appZoneHistoryMap[std::wstring{ value }] = AppZoneHistoryData{ .zoneSetUuid = L"", .deviceId = L"", .zoneIndex = static_cast<int>(zoneIndex) }; //TODO(stefan) provide correct uuid in the future
-
-                    valueLength = ARRAYSIZE(value);
-                    dataSize = sizeof(zoneIndex);
-                }
             }
         }
     }
