@@ -115,6 +115,8 @@ namespace FancyZonesUnitTests
             json::to_file(activeZoneSetTempPath, json);
             Assert::IsTrue(std::filesystem::exists(activeZoneSetTempPath));
 
+            m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
+
             return MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false);
         }
 
@@ -212,6 +214,8 @@ namespace FancyZonesUnitTests
                 const auto json = DeviceInfoJSON::ToJson(deviceInfo);
                 json::to_file(activeZoneSetTempPath, json);
 
+                m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
+
                 //temp file read on initialization
                 auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false);
 
@@ -235,6 +239,8 @@ namespace FancyZonesUnitTests
             const auto deviceInfo = DeviceInfoJSON{ m_uniqueId.str(), data };
             const auto json = DeviceInfoJSON::ToJson(deviceInfo);
             json::to_file(activeZoneSetTempPath, json);
+
+            m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
 
             //temp file read on initialization
             auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false);
@@ -269,6 +275,7 @@ namespace FancyZonesUnitTests
             const auto customZoneData = CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info };
             auto customZoneJson = CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ customSetGuid, customZoneData });
             json::to_file(appliedZoneSetTempPath, customZoneJson);
+            m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
 
             //temp file read on initialization
             auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false);
@@ -313,6 +320,9 @@ namespace FancyZonesUnitTests
             deletedCustomZoneSets.SetNamedValue(L"deleted-custom-zone-sets", zonesArray);
             json::to_file(deletedZonesTempPath, deletedCustomZoneSets);
 
+            m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
+            m_fancyZonesData.ParseDeletedCustomZoneSetsFromTmpFile(deletedZonesTempPath);
+
             //temp file read on initialization
             auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false);
 
@@ -355,6 +365,9 @@ namespace FancyZonesUnitTests
             zonesArray.Append(json::JsonValue::CreateStringValue(uuid.substr(1, uuid.size() - 2).c_str()));
             deletedCustomZoneSets.SetNamedValue(L"deleted-custom-zone-sets", zonesArray);
             json::to_file(deletedZonesTempPath, deletedCustomZoneSets);
+
+            m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
+            m_fancyZonesData.ParseDeletedCustomZoneSetsFromTmpFile(deletedZonesTempPath);
 
             //temp file read on initialization
             auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false);

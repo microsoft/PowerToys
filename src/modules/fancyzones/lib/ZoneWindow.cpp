@@ -544,11 +544,7 @@ void ZoneWindow::HideZoneWindow() noexcept
 void ZoneWindow::LoadSettings() noexcept
 {
     JSONHelpers::FancyZonesDataInstance().AddDevice(m_uniqueId);
-
-    JSONHelpers::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(ZoneWindowUtils::GetActiveZoneSetTmpPath());
-    JSONHelpers::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
     JSONHelpers::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(ZoneWindowUtils::GetAppliedZoneSetTmpPath(), m_uniqueId);
-
     JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
 }
 

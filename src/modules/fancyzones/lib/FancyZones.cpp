@@ -138,6 +138,7 @@ private:
     void MoveSizeEndInternal(HWND window, POINT const& ptScreen, require_write_lock) noexcept;
     void MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
     void HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) noexcept;
+    void OnEditorExitEvent() noexcept;
 
     const HINSTANCE m_hinstance{};
 
@@ -534,7 +535,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         {
             if (lparam == static_cast<LPARAM>(EditorExitKind::Exit))
             {
-                // Don't reload settings if we terminated the editor
+                OnEditorExitEvent();
                 OnDisplayChange(DisplayChangeType::Editor);
             }
 
@@ -986,6 +987,13 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) no
         // register new virtual desktops, if any
         m_virtualDesktopIds.insert(begin(temp), end(temp));
     }
+}
+
+void FancyZones::OnEditorExitEvent() noexcept
+{
+    // Colect information about changes in zone layout after editor exited.
+    JSONHelpers::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(ZoneWindowUtils::GetActiveZoneSetTmpPath());
+    JSONHelpers::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
 }
 
 winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept
