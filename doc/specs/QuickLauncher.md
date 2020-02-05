@@ -21,9 +21,7 @@ Jane is a Windows power user who uses Run prompt to launch her
 applications. She types in the executable name for most cases. However,
 sometimes she needs to search the name of the application she needs to
 launch. Search is slower compared to Run prompt and she often doesn’t
-get the result that she wants. She is frustrated at how slow it is to
-launch an application from search and when she types too fast, it will
-take her to web search which is not what she expects.
+get the result that she wants.
 
 She learns about PowerToys and installed PowerToys on her machine. Once
 Jane downloads it, PowerLauncher is included in PowerToys. She can now
@@ -54,9 +52,7 @@ issues](https://github.com/microsoft/PowerToys/issues/44) in PowerToys
 repository, Windows users expressed the need for a fast and reliable
 launcher with additional capabilities, such as text suggestion as users
 type, auto-completion on tab, and options to do more actions like run in
-administrator mode or open in PowerShell. Windows users also pointed out
-that search is not fast enough and it does not give results that are
-relevant to them. This issue received the fourth most thumbs up (with
+administrator mode or open in PowerShell. This issue received the fourth most thumbs up (with
 70+ thumbs up) in the category of suggested PowerToy indicating that
 users are interested in this PowerToy.
 
@@ -155,7 +151,7 @@ launchers:
   - > PowerLauncher is available for Windows 10
 
   - > PowerLauncher should be faster than start menu/<kbd>Win</kbd>+<kbd>S</kbd> for showing
-    > the search result and launching applications
+    > search result and launching applications
 
 **b. Settings**
 
@@ -322,6 +318,8 @@ In PowerToys General Settings:
 | 8      | Average number of times “Run as administrator” is selected from the right-click context menu in 24 hours | Identify how many times does a user use “Run as administrator” from the context menu | 1            |
 | 9      | Average number of times <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> is executed in 24 hours                                         | Identify how many times does a user use shortcut to run as administrator             | 1            |
 | 10     | Average number of times “Open in console” is selected from the right-click context menu in 24 hours      | Identify how many times does a user use “Open in console” from the context menu      | 1            |
+| 11      | Average number of times <kbd>Ctrl</kbd>+<kbd>C</kbd> is executed in 24 hours                                         | Identify how many times does a user use shortcut to copy path location           | 1            |
+| 12     | Average number of times “Copy path location” is selected from the right-click context menu in 24 hours      | Identify how many times does a user use “Copy path location” from the context menu      | 1            |
 
 ## 2.3 Public Name
 
@@ -407,6 +405,8 @@ There are 2 behaviour options for <kbd>Tab</kbd>:
 
 2.  [Search indexing in
     Windows 10](https://support.microsoft.com/en-us/help/4098843/windows-10-search-indexing-faq)
+
+3.  [Collect known PowerShell installations for settings](https://github.com/microsoft/terminal/commit/bba0527af9853f984a30183c2d9d5bfca7469f09)
 
 [cross]: ./images/PowerLauncher/cross.png
 [check]: ./images/PowerLauncher/check.png
