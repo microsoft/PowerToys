@@ -20,7 +20,7 @@ namespace
     constexpr int c_priorityGridModelId = 0xFFFB;
     constexpr int c_blankCustomModelId = 0xFFFA;
 
-    const wchar_t* FANCY_ZONES_DATA_FILE = L"PersistFancyZones.json";
+    const wchar_t* FANCY_ZONES_DATA_FILE = L"zones-settings.json";
 }
 
 namespace JSONHelpers
