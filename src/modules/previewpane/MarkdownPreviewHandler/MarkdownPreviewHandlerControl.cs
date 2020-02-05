@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
@@ -64,15 +66,82 @@ namespace MarkdownPreviewHandler
                 string parsedMarkdown = Markdown.ToHtml(fileText, pipeline);
                 sb.AppendFormat("{0}{1}{2}", this.htmlHeader, parsedMarkdown, this.htmlFooter);
 
+                File.WriteAllText("C:\\Users\\divyan\\Desktop\\output.html", sb.ToString());
+
+                TableLayoutPanel dynamicTableLayoutPanel = new TableLayoutPanel();
+                dynamicTableLayoutPanel.ColumnCount = 1;
+                dynamicTableLayoutPanel.RowCount = 2;
+                dynamicTableLayoutPanel.Dock = DockStyle.Fill;
+                dynamicTableLayoutPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+
+                dynamicTableLayoutPanel.BackColor = Color.White;
+
                 WebBrowser browser = new WebBrowser();
                 browser.DocumentText = sb.ToString();
+
                 browser.Dock = DockStyle.Fill;
                 browser.IsWebBrowserContextMenuEnabled = false;
                 browser.ScriptErrorsSuppressed = true;
                 browser.ScrollBarsEnabled = true;
-                this.Controls.Add(browser);
+                browser.Navigating += this.WebBrowserNavigating;
+
+                // browser.Anchor = AnchorStyles.Bottom;
+                this.Controls.Add(dynamicTableLayoutPanel);
+
+                // Create an instance of a TextBox control.
+                RichTextBox textBox1 = new RichTextBox
+                {
+                    //// Set the Multiline property to true.
+                    Multiline = true,
+
+                    // Add vertical scroll bars to the TextBox control.
+                    ScrollBars = RichTextBoxScrollBars.None,
+
+                    // Set WordWrap to true to allow text to wrap to the next line.
+                    WordWrap = false,
+
+                    // Set the default text of the control.
+                    Text = "Some pictures have been blocked to help prevent the sender from identifying this computer. Open this item to view pictures.",
+                    BackColor = Color.LightYellow,
+                    BorderStyle = BorderStyle.None,
+
+                    // Width = 1000,
+                };
+                dynamicTableLayoutPanel.Controls.Add(browser, 1, 0);
+                dynamicTableLayoutPanel.Controls.Add(textBox1, 0, 0);
+                textBox1.ContentsResized += this.Rtb_ContentsResized;
+                textBox1.Dock = DockStyle.Fill;
+
+                // TextBox t1 = new TextBox
+                // {
+                //    Text = "Some pictures have been blocked to help prevent the sender from identifying this computer. Open this item to view pictures.",
+                //    BackColor = Color.LightYellow,
+                // };
+                // t1.Font = new Font(t1.Font.FontFamily, 12);
+                // t1.Dock = DockStyle.Top;
+                // t1.Multiline = true;
+                // t1.Height = 24;
+                // flowLayoutPanel1.Controls.Add(textBox1);
                 base.DoPreview(dataSource);
+
+                // Rtb_ContentsResized(textBox1, new ContentsResizedEventArgs(new Rectangle()));
             });
+        }
+
+        private void Rtb_ContentsResized(object sender, ContentsResizedEventArgs e)
+        {
+            ((RichTextBox)sender).ClientSize = new Size(e.NewRectangle.Width + 5, e.NewRectangle.Height + 5);
+        }
+
+        /// <summary>
+        /// .
+        /// </summary>
+        /// <param name="sender">h.</param>
+        /// <param name="e">sh.</param>
+        private void WebBrowserNavigating(object sender, WebBrowserNavigatingEventArgs e)
+        {
+            e.Cancel = true;
+            Process.Start(e.Url.ToString());
         }
     }
 }

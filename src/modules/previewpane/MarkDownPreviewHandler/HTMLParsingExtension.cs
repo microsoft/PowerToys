@@ -53,6 +53,11 @@ namespace MarkdownPreviewHandler
         {
             foreach (var node in document.Descendants())
             {
+                if (node is HtmlBlock && ((HtmlBlock)node).Type == HtmlBlockType.ScriptPreOrStyle)
+                {
+                    document.Remove((Block)node);
+                }
+
                 if (node is Block)
                 {
                     if (node is Table)
@@ -74,17 +79,27 @@ namespace MarkdownPreviewHandler
                 }
                 else if (node is Inline)
                 {
-                    if (node is LinkInline link && link.IsImage)
+                    if (node is LinkInline link)
                     {
-                        if (!Uri.TryCreate(link.Url, UriKind.Absolute, out Uri uriLink))
+                        if (link.IsImage)
+                        {
+                            link.GetAttributes().AddClass("img-fluid");
+                        }
+
+                        if (!Uri.TryCreate(link.Url, UriKind.Absolute, out _))
                         {
                             link.Url = link.Url.TrimStart('/', '\\');
                             this.BaseUrl = this.BaseUrl.TrimEnd('/', '\\');
-                            uriLink = new Uri(Path.Combine(this.BaseUrl, link.Url));
+                            Uri uriLink = new Uri(Path.Combine(this.BaseUrl, link.Url));
                             link.Url = uriLink.ToString();
                         }
-
-                        link.GetAttributes().AddClass("img-fluid");
+                        else
+                        {
+                            if (link.IsImage)
+                            {
+                                link.Url = "#";
+                            }
+                        }
                     }
                 }
             }
