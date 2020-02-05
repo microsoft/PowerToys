@@ -12,15 +12,17 @@
 
 using namespace ATL;
 
-class ATL_NO_VTABLE CContextMenuHandler :
+class ATL_NO_VTABLE __declspec(uuid("51B4D7E5-7568-4234-B4BB-47FB3C016A69")) CContextMenuHandler :
     public CComObjectRootEx<CComSingleThreadModel>,
     public CComCoClass<CContextMenuHandler, &CLSID_ContextMenuHandler>,
     public IShellExtInit,
-    public IContextMenu
+    public IContextMenu,
+    public IExplorerCommand
 {
     BEGIN_COM_MAP(CContextMenuHandler)
     COM_INTERFACE_ENTRY(IShellExtInit)
     COM_INTERFACE_ENTRY(IContextMenu)
+    COM_INTERFACE_ENTRY(IExplorerCommand)
     END_COM_MAP()
     DECLARE_REGISTRY_RESOURCEID(IDR_CONTEXTMENUHANDLER)
     DECLARE_NOT_AGGREGATABLE(CContextMenuHandler)
@@ -33,12 +35,23 @@ public:
     HRESULT STDMETHODCALLTYPE GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* pReserved, LPSTR pszName, UINT cchMax);
     HRESULT STDMETHODCALLTYPE InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici);
 
+    // Inherited via IExplorerCommand
+    virtual HRESULT __stdcall GetTitle(IShellItemArray* psiItemArray, LPWSTR* ppszName) override;
+    virtual HRESULT __stdcall GetIcon(IShellItemArray* psiItemArray, LPWSTR* ppszIcon) override;
+    virtual HRESULT __stdcall GetToolTip(IShellItemArray* psiItemArray, LPWSTR* ppszInfotip) override;
+    virtual HRESULT __stdcall GetCanonicalName(GUID* pguidCommandName) override;
+    virtual HRESULT __stdcall GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState) override;
+    virtual HRESULT __stdcall Invoke(IShellItemArray* psiItemArray, IBindCtx* pbc) override;
+    virtual HRESULT __stdcall GetFlags(EXPCMDFLAGS* pFlags) override;
+    virtual HRESULT __stdcall EnumSubCommands(IEnumExplorerCommand** ppEnum) override;
+
 private:
     void Uninitialize();
-    HRESULT ResizePictures(CMINVOKECOMMANDINFO* pici);
+    HRESULT ResizePictures(CMINVOKECOMMANDINFO* pici, IShellItemArray* psiItemArray);
     PCIDLIST_ABSOLUTE m_pidlFolder;
     IDataObject* m_pdtobj;
     HBITMAP m_hbmpIcon = nullptr;
+    std::wstring app_name;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(ContextMenuHandler), CContextMenuHandler)

@@ -5,6 +5,7 @@
 #include "HDropIterator.h"
 #include "Settings.h"
 #include "common/icon_helpers.h"
+#include <fstream>
 
 extern HINSTANCE g_hInst_imageResizer;
 
@@ -12,6 +13,7 @@ CContextMenuHandler::CContextMenuHandler()
 {
     m_pidlFolder = NULL;
     m_pdtobj = NULL;
+    app_name = GET_RESOURCE_STRING(IDS_RESIZE_PICTURES);
 }
 
 CContextMenuHandler::~CContextMenuHandler()
@@ -189,19 +191,19 @@ HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
     {
         if (wcscmp(((CMINVOKECOMMANDINFOEX*)pici)->lpVerbW, RESIZE_PICTURES_VERBW) == 0)
         {
-            return ResizePictures(pici);
+            return ResizePictures(pici, nullptr);
         }
     }
     else if (LOWORD(pici->lpVerb) == ID_RESIZE_PICTURES)
     {
-        return ResizePictures(pici);
+        return ResizePictures(pici, nullptr);
     }
 
     return E_FAIL;
 }
 
-// TODO: Error handling and memory management
-HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici)
+// This function is used for both MSI and MSIX. If pici is null and psiItemArray is not null then this is called by Invoke(MSIX). If pici is not null and psiItemArray is null then this is called by InvokeCommand(MSI).
+HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellItemArray* psiItemArray)
 {
     // Set the application path based on the location of the dll
     LPTSTR buffer = new TCHAR[MAX_PATH];
@@ -243,7 +245,14 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici)
     startupInfo.cb = sizeof(STARTUPINFO);
     startupInfo.hStdInput = hReadPipe;
     startupInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-    startupInfo.wShowWindow = pici->nShow;
+    if (pici)
+    {
+        startupInfo.wShowWindow = pici->nShow;
+    }
+    else
+    {
+        startupInfo.wShowWindow = SW_SHOWNORMAL;
+    }
 
     PROCESS_INFORMATION processInformation;
 
@@ -263,17 +272,120 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici)
     CloseHandle(processInformation.hProcess);
     CloseHandle(processInformation.hThread);
 
-    // Stream the input files
-    HDropIterator i(m_pdtobj);
-    for (i.First(); !i.IsDone(); i.Next())
+    // psiItemArray is NULL if called from InvokeCommand. This part is used for the MSI installer. It is not NULL if it is called from Invoke (MSIX).
+    if (!psiItemArray)
     {
-        CString fileName(i.CurrentItem());
-        fileName.Append(_T("\r\n"));
+        // Stream the input files
+        HDropIterator i(m_pdtobj);
+        for (i.First(); !i.IsDone(); i.Next())
+        {
+            CString fileName(i.CurrentItem());
+            fileName.Append(_T("\r\n"));
 
-        writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+            writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+        }
+    }
+    else
+    {
+        //m_pdtobj will be NULL when invoked from the MSIX build as Initialize is never called (IShellExtInit functions aren't called in case of MSIX).
+        DWORD fileCount = 0;
+        // Gets the list of files currently selected using the IShellItemArray
+        psiItemArray->GetCount(&fileCount);
+
+        std::ofstream logFile("D:\\arjunlog.txt");
+        if (logFile.is_open())
+        {
+            logFile << fileCount << std::endl;
+        }
+        // Iterate over the list of files
+        for (DWORD i = 0; i < fileCount; i++)
+        {
+            IShellItem* shellItem;
+            psiItemArray->GetItemAt(i, &shellItem);
+            LPWSTR itemName;
+            // Retrieves the entire file system path of the file from its shell item
+            shellItem->GetDisplayName(SIGDN_FILESYSPATH, &itemName);
+            CString fileName(itemName);
+            fileName.Append(_T("\r\n"));
+            // Write the file path into the input stream for image resizer
+            writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+            LPSTR result = NULL;
+
+            int len = WideCharToMultiByte(CP_UTF8, 0, itemName, -1, NULL, 0, 0, 0);
+
+            if (len > 0)
+            {
+                result = new char[len + 1];
+                if (result)
+                {
+                    int resLen = WideCharToMultiByte(CP_UTF8, 0, itemName, -1, &result[0], len, 0, 0);
+
+                    if (resLen == len)
+                    {
+                        logFile.write(result, len);
+                    }
+
+                    delete[] result;
+                }
+            }
+            logFile << std::endl;
+        }
+
+        logFile.close();
     }
 
     writePipe.Close();
 
     return S_OK;
+}
+
+HRESULT __stdcall CContextMenuHandler::GetTitle(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszName)
+{
+    return SHStrDup(app_name.c_str(), ppszName);
+}
+
+HRESULT __stdcall CContextMenuHandler::GetIcon(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszIcon)
+{
+    /*std::wstring iconResourcePath = get_module_filename();
+    iconResourcePath += L",-";
+    iconResourcePath += std::to_wstring(IDI_RESIZE_PICTURES);
+    return SHStrDup(iconResourcePath.c_str(), ppszIcon);*/
+    *ppszIcon = nullptr;
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CContextMenuHandler::GetToolTip(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszInfotip)
+{
+    *ppszInfotip = nullptr;
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CContextMenuHandler::GetCanonicalName(GUID* pguidCommandName)
+{
+    *pguidCommandName = __uuidof(this);
+    return S_OK;
+}
+
+HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
+{
+    *pCmdState = CSettings::GetEnabled() ? ECS_ENABLED : ECS_HIDDEN;
+    return S_OK;
+}
+
+HRESULT __stdcall CContextMenuHandler::GetFlags(EXPCMDFLAGS* pFlags)
+{
+    *pFlags = ECF_DEFAULT;
+    return S_OK;
+}
+
+HRESULT __stdcall CContextMenuHandler::EnumSubCommands(IEnumExplorerCommand** ppEnum)
+{
+    *ppEnum = nullptr;
+    return E_NOTIMPL;
+}
+
+// psiItemArray contains the list of files that have been selected when the context menu entry is invoked
+HRESULT __stdcall CContextMenuHandler::Invoke(IShellItemArray* psiItemArray, IBindCtx* /*pbc*/)
+{
+    return ResizePictures(nullptr, psiItemArray);
 }
