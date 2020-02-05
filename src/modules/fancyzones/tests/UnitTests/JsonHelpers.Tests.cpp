@@ -2,6 +2,7 @@
 #include <filesystem>
 
 #include <lib/JsonHelpers.h>
+#include "util.h"
 
 #include <CppUnitTestLogger.h>
 
@@ -611,8 +612,8 @@ namespace FancyZonesUnitTests
     {
         TEST_METHOD(ToJson)
         {
-            AppZoneHistoryJSON appZoneHistory{ L"appPath", AppZoneHistoryData{ L"zone-set-uuid", 54321 } };
-            json::JsonObject expected = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"zoneset-uuid\": \"zone-set-uuid\", \"zone-index\": 54321}");
+            AppZoneHistoryJSON appZoneHistory{ L"appPath", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } };
+            json::JsonObject expected = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"device-id\": \"device-id\", \"zoneset-uuid\": \"zoneset-uuid\", \"zone-index\": 54321}");
 
             auto actual = AppZoneHistoryJSON::ToJson(appZoneHistory);
             compareJsonObjects(expected, actual);
@@ -620,20 +621,21 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(FromJson)
         {
-            AppZoneHistoryJSON expected{ L"appPath", AppZoneHistoryData{ L"zone-set-uuid", 54321 } };
-            json::JsonObject json = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"zoneset-uuid\": \"zone-set-uuid\", \"zone-index\": 54321}");
+            AppZoneHistoryJSON expected{ L"appPath", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } };
+            json::JsonObject json = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"device-id\": \"device-id\", \"zoneset-uuid\": \"zoneset-uuid\", \"zone-index\": 54321}");
 
             auto actual = AppZoneHistoryJSON::FromJson(json);
             Assert::IsTrue(actual.has_value());
 
             Assert::AreEqual(expected.appPath.c_str(), actual->appPath.c_str());
             Assert::AreEqual(expected.data.zoneIndex, actual->data.zoneIndex);
+            Assert::AreEqual(expected.data.deviceId.c_str(), actual->data.deviceId.c_str());
             Assert::AreEqual(expected.data.zoneSetUuid.c_str(), actual->data.zoneSetUuid.c_str());
         }
 
         TEST_METHOD(FromJsonMissingKeys)
         {
-            AppZoneHistoryJSON appZoneHistory{ L"appPath", AppZoneHistoryData{ L"zone-set-uuid", 54321 } };
+            AppZoneHistoryJSON appZoneHistory{ L"appPath", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } };
             const auto json = AppZoneHistoryJSON::ToJson(appZoneHistory);
 
             auto iter = json.First();
@@ -759,6 +761,8 @@ namespace FancyZonesUnitTests
         const json::JsonValue m_defaultCustomDeviceValue = json::JsonValue::Parse(m_defaultCustomDeviceStr);
         const json::JsonObject m_defaultCustomDeviceObj = json::JsonObject::Parse(m_defaultCustomDeviceStr);
 
+        HINSTANCE m_hInst{};
+
         void compareJsonArrays(const json::JsonArray& expected, const json::JsonArray& actual)
         {
             Assert::AreEqual(expected.Size(), actual.Size());
@@ -766,6 +770,11 @@ namespace FancyZonesUnitTests
             {
                 compareJsonObjects(expected.GetObjectAt(i), actual.GetObjectAt(i));
             }
+        }
+
+        TEST_METHOD_INITIALIZE(Init)
+        {
+            m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
         }
 
     public:
@@ -985,9 +994,13 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(AppZoneHistoryParseSingle)
         {
-            const std::wstring appPath = L"appPath";
+            const std::wstring expectedAppPath = L"appPath";
+            const std::wstring expectedDeviceId = L"device-id";
+            const std::wstring expectedZoneSetId = L"zone-set-id";
+            const int expectedIndex = 54321;
+            
             json::JsonObject json;
-            AppZoneHistoryJSON expected{ appPath, AppZoneHistoryData{ L"zone-set-uuid", 54321 } };
+            AppZoneHistoryJSON expected{ expectedAppPath, AppZoneHistoryData{ .zoneSetUuid = expectedZoneSetId, .deviceId = expectedDeviceId, .zoneIndex = expectedIndex } };
             json::JsonArray zoneHistoryArray;
             zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(expected));
             json.SetNamedValue(L"app-zone-history", json::JsonValue::Parse(zoneHistoryArray.Stringify()));
@@ -995,22 +1008,27 @@ namespace FancyZonesUnitTests
             FancyZonesData data;
             data.ParseAppZoneHistory(json);
 
-            auto actualMap = data.GetAppZoneHistoryMap();
-            Assert::AreEqual((size_t)zoneHistoryArray.Size(), actualMap.size());
+            const auto actualProcessHistoryMap = data.GetAppZoneHistoryMap();
+            Assert::AreEqual((size_t)zoneHistoryArray.Size(), actualProcessHistoryMap.size());
 
-            auto actual = actualMap.find(appPath)->second;
-            Assert::AreEqual(expected.data.zoneSetUuid.c_str(), actual.zoneSetUuid.c_str());
-            Assert::AreEqual(expected.data.zoneIndex, actual.zoneIndex);
+            const auto actualProcessHistory = actualProcessHistoryMap.begin();
+            Assert::AreEqual(expectedAppPath.c_str(), actualProcessHistory->first.c_str());
+
+            const auto actualAppZoneHistory = actualProcessHistory->second;
+            Assert::AreEqual(expectedZoneSetId.c_str(), actualAppZoneHistory.zoneSetUuid.c_str());
+            Assert::AreEqual(expectedDeviceId.c_str(), actualAppZoneHistory.deviceId.c_str());
+            Assert::AreEqual(expectedIndex, actualAppZoneHistory.zoneIndex);           
         }
 
-        TEST_METHOD(AppZoneHistoryParseMany)
+        TEST_METHOD(AppZoneHistoryParseManyApps)
         {
             json::JsonObject json;
             json::JsonArray zoneHistoryArray;
-            zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-1", AppZoneHistoryData{ L"zone-set-uuid", 54321 } }));
-            zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-2", AppZoneHistoryData{ L"zone-set-uuid", 54321 } }));
-            zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-3", AppZoneHistoryData{ L"zone-set-uuid", 54321 } }));
-            zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-4", AppZoneHistoryData{ L"zone-set-uuid", 54321 } }));
+            zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-1", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-1", .deviceId = L"device-id-1", .zoneIndex = 1 } }));
+            zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-2", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-2", .deviceId = L"device-id-2", .zoneIndex = 2 } }));
+            zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-3", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-3", .deviceId = L"device-id-3", .zoneIndex = 3 } }));
+            zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-4", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-4", .deviceId = L"device-id-4", .zoneIndex = 4 } }));
+
             json.SetNamedValue(L"app-zone-history", json::JsonValue::Parse(zoneHistoryArray.Stringify()));
 
             FancyZonesData data;
@@ -1019,16 +1037,46 @@ namespace FancyZonesUnitTests
             auto actualMap = data.GetAppZoneHistoryMap();
             Assert::AreEqual((size_t)zoneHistoryArray.Size(), actualMap.size());
 
+            const auto actualProcessHistoryMap = data.GetAppZoneHistoryMap();
+            Assert::AreEqual((size_t)zoneHistoryArray.Size(), actualProcessHistoryMap.size());
+
             auto iter = zoneHistoryArray.First();
             while (iter.HasCurrent())
             {
-                auto expected = AppZoneHistoryJSON::FromJson(json::JsonObject::Parse(iter.Current().Stringify()));
-                auto actual = actualMap.find(expected->appPath)->second;
+                auto expected = AppZoneHistoryJSON::FromJson(json::JsonObject::Parse(iter.Current().Stringify()));         
+
+                const auto actual = actualProcessHistoryMap.at(expected->appPath);
+                Assert::AreEqual(expected->data.deviceId.c_str(), actual.deviceId.c_str());
                 Assert::AreEqual(expected->data.zoneSetUuid.c_str(), actual.zoneSetUuid.c_str());
                 Assert::AreEqual(expected->data.zoneIndex, actual.zoneIndex);
 
                 iter.MoveNext();
             }
+        }
+
+        TEST_METHOD(AppZoneHistoryParseManyZonesForSingleApp)
+        {
+            json::JsonObject json;
+            json::JsonArray zoneHistoryArray;
+
+            const auto appPath = L"app-path";
+            zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-1", .deviceId = L"device-id-1", .zoneIndex = 1 } }));
+            zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-2", .deviceId = L"device-id-2", .zoneIndex = 2 } }));
+            zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-3", .deviceId = L"device-id-3", .zoneIndex = 3 } }));
+            const auto expected = AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-4", .deviceId = L"device-id-4", .zoneIndex = 4 };
+            zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, expected }));
+            json.SetNamedValue(L"app-zone-history", json::JsonValue::Parse(zoneHistoryArray.Stringify()));
+
+            FancyZonesData data;
+            data.ParseAppZoneHistory(json);
+
+            const auto actualProcessHistoryMap = data.GetAppZoneHistoryMap();
+            Assert::AreEqual((size_t)1, actualProcessHistoryMap.size());
+            
+            const auto actual = actualProcessHistoryMap.at(appPath);
+            Assert::AreEqual(expected.deviceId.c_str(), actual.deviceId.c_str());
+            Assert::AreEqual(expected.zoneSetUuid.c_str(), actual.zoneSetUuid.c_str());
+            Assert::AreEqual(expected.zoneIndex, actual.zoneIndex);
         }
 
         TEST_METHOD(AppZoneHistoryParseEmpty)
@@ -1044,7 +1092,7 @@ namespace FancyZonesUnitTests
         {
             const std::wstring appPath = L"appPath";
             json::JsonObject json;
-            AppZoneHistoryJSON expected{ appPath, AppZoneHistoryData{ L"zone-set-uuid", 54321 } };
+            AppZoneHistoryJSON expected{ appPath, AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } };
             json.SetNamedValue(L"app-zone-history", json::JsonValue::Parse(AppZoneHistoryJSON::ToJson(expected).Stringify()));
 
             FancyZonesData data;
@@ -1057,7 +1105,7 @@ namespace FancyZonesUnitTests
         {
             const std::wstring appPath = L"appPath";
             json::JsonArray expected;
-            expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, AppZoneHistoryData{ L"zone-set-uuid", 54321 } }));
+            expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } }));
             json::JsonObject json;
             json.SetNamedValue(L"app-zone-history", json::JsonValue::Parse(expected.Stringify()));
 
@@ -1072,10 +1120,10 @@ namespace FancyZonesUnitTests
         {
             json::JsonObject json;
             json::JsonArray expected;
-            expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-1", AppZoneHistoryData{ L"zone-set-uuid", 54321 } }));
-            expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-2", AppZoneHistoryData{ L"zone-set-uuid", 54321 } }));
-            expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-3", AppZoneHistoryData{ L"zone-set-uuid", 54321 } }));
-            expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-4", AppZoneHistoryData{ L"zone-set-uuid", 54321 } }));
+            expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-1", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } }));
+            expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-2", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } }));
+            expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-3", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } }));
+            expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-4", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } }));
             json.SetNamedValue(L"app-zone-history", json::JsonValue::Parse(expected.Stringify()));
 
             FancyZonesData data;
@@ -1386,7 +1434,7 @@ namespace FancyZonesUnitTests
                 .columnsPercents = { 2500, 5000, 2500 },
                 .cellChildMap = { { 0, 1, 2 } } }));
             CustomZoneSetJSON zoneSets{ L"zone-set-uuid", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
-            AppZoneHistoryJSON appZoneHistory{ L"app-path", AppZoneHistoryData{ L"zone-set-uuid", 54321 } };
+            AppZoneHistoryJSON appZoneHistory{ L"app-path", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } };
             DeviceInfoJSON deviceInfo{ L"uuid", DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
             json::JsonArray zoneSetsArray, appZonesArray, deviceInfoArray;
             zoneSetsArray.Append(CustomZoneSetJSON::ToJson(zoneSets));
@@ -1463,6 +1511,180 @@ namespace FancyZonesUnitTests
             }
 
             Assert::IsTrue(actual);
+        }
+
+        TEST_METHOD(AppLastZoneIndex)
+        {
+            const std::wstring deviceId = L"device-id";
+            const std::wstring zoneSetId = L"zoneset-uuid";
+            const auto window = Mocks::WindowCreate(m_hInst);
+            FancyZonesData data;
+
+            Assert::AreEqual(-1, data.GetAppLastZoneIndex(window, deviceId, zoneSetId));
+
+            const int expectedZoneIndex = 10;
+            Assert::IsTrue(data.SetAppLastZone(window, deviceId, zoneSetId, expectedZoneIndex));
+            Assert::AreEqual(expectedZoneIndex, data.GetAppLastZoneIndex(window, deviceId, zoneSetId));
+        }
+
+        TEST_METHOD(AppLastZoneIndexZero)
+        {
+            const std::wstring zoneSetId = L"zoneset-uuid";
+            const std::wstring deviceId = L"device-id";
+            const auto window = Mocks::WindowCreate(m_hInst);
+            FancyZonesData data;
+
+            const int expectedZoneIndex = 0;
+            Assert::IsTrue(data.SetAppLastZone(window, deviceId, zoneSetId, expectedZoneIndex));
+            Assert::AreEqual(expectedZoneIndex, data.GetAppLastZoneIndex(window, deviceId, zoneSetId));
+        }
+
+        TEST_METHOD(AppLastZoneIndexNegative)
+        {
+            const std::wstring zoneSetId = L"zoneset-uuid";
+            const std::wstring deviceId = L"device-id";
+            const auto window = Mocks::WindowCreate(m_hInst);
+            FancyZonesData data;
+
+            const int expectedZoneIndex = -1;
+            Assert::IsTrue(data.SetAppLastZone(window, deviceId, zoneSetId, expectedZoneIndex));
+            Assert::AreEqual(expectedZoneIndex, data.GetAppLastZoneIndex(window, deviceId, zoneSetId));
+        }
+
+        TEST_METHOD(AppLastZoneIndexOverflow)
+        {
+            const std::wstring zoneSetId = L"zoneset-uuid";
+            const std::wstring deviceId = L"device-id";
+            const auto window = Mocks::WindowCreate(m_hInst);
+            FancyZonesData data;
+
+            const long expectedZoneIndex = LONG_MAX;
+            Assert::IsTrue(data.SetAppLastZone(window, deviceId, zoneSetId, expectedZoneIndex));
+            Assert::AreEqual(static_cast<int>(expectedZoneIndex), data.GetAppLastZoneIndex(window, deviceId, zoneSetId));
+        }
+
+        TEST_METHOD(AppLastZoneIndexOverride)
+        {
+            const std::wstring zoneSetId = L"zoneset-uuid";
+            const std::wstring deviceId = L"device-id";
+            const auto window = Mocks::WindowCreate(m_hInst);
+            FancyZonesData data;
+
+            const int expectedZoneIndex = 3;
+            Assert::IsTrue(data.SetAppLastZone(window, deviceId, zoneSetId, 1));
+            Assert::IsTrue(data.SetAppLastZone(window, deviceId, zoneSetId, 2));
+            Assert::IsTrue(data.SetAppLastZone(window, deviceId, zoneSetId, expectedZoneIndex));
+            Assert::AreEqual(expectedZoneIndex, data.GetAppLastZoneIndex(window, deviceId, zoneSetId));
+        }
+
+        TEST_METHOD(AppLastZoneInvalidWindow)
+        {
+            const std::wstring zoneSetId = L"zoneset-uuid";
+            const std::wstring deviceId = L"device-id";
+            const auto window = Mocks::Window();
+            FancyZonesData data;
+
+            Assert::AreEqual(-1, data.GetAppLastZoneIndex(window, deviceId, zoneSetId));
+
+            const int expectedZoneIndex = 1;
+            Assert::IsFalse(data.SetAppLastZone(window, deviceId, zoneSetId, expectedZoneIndex));
+        }
+
+        TEST_METHOD(AppLastZoneNullWindow)
+        {
+            const std::wstring zoneSetId = L"zoneset-uuid";
+            const auto window = nullptr;
+            FancyZonesData data;
+
+            const int expectedZoneIndex = 1;
+            Assert::IsFalse(data.SetAppLastZone(window, L"device-id", zoneSetId, expectedZoneIndex));
+        }
+
+        TEST_METHOD(AppLastdeviceIdTest)
+        {
+            const std::wstring zoneSetId = L"zoneset-uuid";
+            const std::wstring deviceId1 = L"device-id-1";
+            const std::wstring deviceId2 = L"device-id-2";
+            const auto window = Mocks::WindowCreate(m_hInst);
+            FancyZonesData data;
+
+            const int expectedZoneIndex = 10;
+            Assert::IsTrue(data.SetAppLastZone(window, deviceId1, zoneSetId, expectedZoneIndex));
+            Assert::AreEqual(expectedZoneIndex, data.GetAppLastZoneIndex(window, deviceId1, zoneSetId));
+            Assert::AreEqual(-1, data.GetAppLastZoneIndex(window, deviceId2, zoneSetId));
+        }
+
+        TEST_METHOD(AppLastZoneSetIdTest)
+        {
+            const std::wstring zoneSetId1 = L"zoneset-uuid-1";
+            const std::wstring zoneSetId2 = L"zoneset-uuid-2";
+            const std::wstring deviceId = L"device-id";
+            const auto window = Mocks::WindowCreate(m_hInst);
+            FancyZonesData data;
+
+            const int expectedZoneIndex = 10;
+            Assert::IsTrue(data.SetAppLastZone(window, deviceId, zoneSetId1, expectedZoneIndex));
+            Assert::AreEqual(expectedZoneIndex, data.GetAppLastZoneIndex(window, deviceId, zoneSetId1));
+            Assert::AreEqual(-1, data.GetAppLastZoneIndex(window, deviceId, zoneSetId2));
+        }
+
+        TEST_METHOD(AppLastZoneRemoveWindow)
+        {
+            const std::wstring zoneSetId = L"zoneset-uuid";
+            const std::wstring deviceId = L"device-id";
+            const auto window = Mocks::WindowCreate(m_hInst);
+            FancyZonesData data;
+
+            Assert::IsTrue(data.SetAppLastZone(window, deviceId, zoneSetId, 1));
+            Assert::IsTrue(data.RemoveAppLastZone(window, deviceId, zoneSetId));
+            Assert::AreEqual(-1, data.GetAppLastZoneIndex(window, deviceId, zoneSetId));
+        }
+
+        TEST_METHOD(AppLastZoneRemoveUnknownWindow)
+        {
+            const std::wstring zoneSetId = L"zoneset-uuid";
+            const std::wstring deviceId = L"device-id";
+            const auto window = Mocks::WindowCreate(m_hInst);
+            FancyZonesData data;
+
+            Assert::IsFalse(data.RemoveAppLastZone(window, deviceId, zoneSetId));
+            Assert::AreEqual(-1, data.GetAppLastZoneIndex(window, deviceId, zoneSetId));
+        }
+
+        TEST_METHOD(AppLastZoneRemoveUnknownZoneSetId)
+        {
+            const std::wstring zoneSetIdToInsert = L"zoneset-uuid-to-insert";
+            const std::wstring zoneSetIdToRemove = L"zoneset-uuid-to-remove";
+            const std::wstring deviceId = L"device-id";
+            const auto window = Mocks::WindowCreate(m_hInst);
+            FancyZonesData data;
+
+            Assert::IsTrue(data.SetAppLastZone(window, deviceId, zoneSetIdToInsert, 1));
+            Assert::IsFalse(data.RemoveAppLastZone(window, deviceId, zoneSetIdToRemove));
+            Assert::AreEqual(1, data.GetAppLastZoneIndex(window, deviceId, zoneSetIdToInsert));
+        }
+
+        TEST_METHOD(AppLastZoneRemoveUnknownWindowId)
+        {
+            const std::wstring zoneSetId = L"zoneset-uuid";
+            const std::wstring deviceIdToInsert = L"device-id-insert";
+            const std::wstring deviceIdToRemove = L"device-id-remove";
+            const auto window = Mocks::WindowCreate(m_hInst);
+            FancyZonesData data;
+
+            Assert::IsTrue(data.SetAppLastZone(window, deviceIdToInsert, zoneSetId, 1));
+            Assert::IsFalse(data.RemoveAppLastZone(window, deviceIdToRemove, zoneSetId));
+            Assert::AreEqual(1, data.GetAppLastZoneIndex(window, deviceIdToInsert, zoneSetId));
+        }
+
+        TEST_METHOD(AppLastZoneRemoveNullWindow)
+        {
+            const std::wstring zoneSetId = L"zoneset-uuid";
+            const std::wstring deviceId = L"device-id";
+            const auto window = Mocks::WindowCreate(m_hInst);
+            FancyZonesData data;
+
+            Assert::IsFalse(data.RemoveAppLastZone(nullptr, deviceId, zoneSetId));
         }
     };
 }

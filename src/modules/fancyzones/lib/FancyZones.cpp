@@ -82,9 +82,11 @@ public:
     {
         //NOTE: as public method it's unsafe without lock, but it's called from AddZoneWindow through making ZoneWindow that causes deadlock
         //TODO: needs refactoring
-        if (auto it = m_zoneWindowMap.find(monitor); it != m_zoneWindowMap.end())
+        auto it = m_zoneWindowMap.find(monitor);
+        if (it != m_zoneWindowMap.end())
         {
-            return it->second->ActiveZoneSet();
+            const auto& zoneWindowPtr = it->second;
+            return zoneWindowPtr->ActiveZoneSet();
         }
         return nullptr;
     }
@@ -278,15 +280,28 @@ IFACEMETHODIMP_(void) FancyZones::WindowCreated(HWND window) noexcept
 {
     if (m_settings->GetSettings().appLastZone_moveWindows && IsInterestingWindow(window))
     {
-        auto processPath = get_process_path(window);
-        if (!processPath.empty())
+        auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+        if (monitor)
         {
-            const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
-            int zoneIndex = fancyZonesData.GetAppLastZone(window, processPath.data());
-
-            if (zoneIndex != -1)
+            auto zoneWindow = m_zoneWindowMap.find(monitor);
+            if (zoneWindow != m_zoneWindowMap.end())
             {
-                MoveWindowIntoZoneByIndex(window, zoneIndex);
+                const auto& zoneWindowPtr = zoneWindow->second;
+                const auto activeZoneSet = zoneWindowPtr->ActiveZoneSet();
+                if (activeZoneSet)
+                {
+                    const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+
+                    wil::unique_cotaskmem_string guidString;
+                    if (SUCCEEDED_LOG(StringFromCLSID(activeZoneSet->Id(), &guidString)))
+                    {
+                        int zoneIndex = fancyZonesData.GetAppLastZoneIndex(window, zoneWindowPtr->UniqueId(), guidString.get());
+                        if (zoneIndex != -1)
+                        {
+                            MoveWindowIntoZoneByIndex(window, zoneIndex);
+                        }
+                    }
+                }
             }
         }
     }
@@ -594,14 +609,17 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
     {
         std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
         bool newVirtualDesktop = true;
-        if (auto it = m_virtualDesktopIds.find(m_currentVirtualDesktopId); it != end(m_virtualDesktopIds))
+
+        auto it = m_virtualDesktopIds.find(m_currentVirtualDesktopId);
+        if (it != end(m_virtualDesktopIds))
         {
             newVirtualDesktop = it->second;
             JSONHelpers::FancyZonesDataInstance().SetActiveDeviceId(uniqueId);
         }
-        const bool flash = m_settings->GetSettings().zoneSetChange_flashZones && newVirtualDesktop;
 
-        if (auto zoneWindow = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, flash))
+        const bool flash = m_settings->GetSettings().zoneSetChange_flashZones && newVirtualDesktop;
+        auto zoneWindow = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, flash);
+        if (zoneWindow)
         {
             m_zoneWindowMap[monitor] = std::move(zoneWindow);
         }
@@ -614,12 +632,14 @@ void FancyZones::MoveWindowIntoZoneByIndex(HWND window, int index) noexcept
     std::shared_lock readLock(m_lock);
     if (window != m_windowMoveSize)
     {
-        if (const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL))
+        const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+        if (monitor)
         {
             auto iter = m_zoneWindowMap.find(monitor);
             if (iter != m_zoneWindowMap.end())
             {
-                iter->second->MoveWindowIntoZoneByIndex(window, index);
+                const auto& zoneWindowPtr = iter->second;
+                zoneWindowPtr->MoveWindowIntoZoneByIndex(window, index);
             }
         }
     }
@@ -754,13 +774,16 @@ void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
     auto window = GetForegroundWindow();
     if (IsInterestingWindow(window))
     {
-        if (const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL))
+        const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+        if (monitor)
         {
             std::shared_lock readLock(m_lock);
+
             auto iter = m_zoneWindowMap.find(monitor);
             if (iter != m_zoneWindowMap.end())
             {
-                iter->second->CycleActiveZoneSet(vkCode);
+                const auto& zoneWindowPtr = iter->second;
+                zoneWindowPtr->CycleActiveZoneSet(vkCode);
             }
         }
     }
@@ -771,13 +794,16 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
     auto window = GetForegroundWindow();
     if (IsInterestingWindow(window))
     {
-        if (const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL))
+        const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+        if (monitor)
         {
             std::shared_lock readLock(m_lock);
+
             auto iter = m_zoneWindowMap.find(monitor);
             if (iter != m_zoneWindowMap.end())
             {
-                iter->second->MoveWindowIntoZoneByDirection(window, vkCode);
+                const auto& zoneWindowPtr = iter->second;
+                zoneWindowPtr->MoveWindowIntoZoneByDirection(window, vkCode);
                 return true;
             }
         }
@@ -843,10 +869,23 @@ void FancyZones::MoveSizeEndInternal(HWND window, POINT const& ptScreen, require
     {
         ::RemoveProp(window, ZONE_STAMP);
 
-        auto processPath = get_process_path(window);
-        if (!processPath.empty())
+        auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+        if (monitor)
         {
-            JSONHelpers::FancyZonesDataInstance().SetAppLastZone(window, processPath.data(), -1);
+            auto zoneWindow = m_zoneWindowMap.find(monitor);
+            if (zoneWindow != m_zoneWindowMap.end())
+            {
+                const auto zoneWindowPtr = zoneWindow->second;
+                const auto activeZoneSet = zoneWindowPtr->ActiveZoneSet();
+                if (activeZoneSet)
+                {
+                    wil::unique_cotaskmem_string guidString;
+                    if (SUCCEEDED_LOG(StringFromCLSID(activeZoneSet->Id(), &guidString)))
+                    {
+                        JSONHelpers::FancyZonesDataInstance().RemoveAppLastZone(window, zoneWindowPtr->UniqueId(), guidString.get());
+                    }
+                }
+            }
         }
     }
 }
@@ -933,7 +972,8 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) no
         std::unique_lock writeLock(m_lock);
         for (auto it = begin(m_virtualDesktopIds); it != end(m_virtualDesktopIds);)
         {
-            if (auto iter = temp.find(it->first); iter == temp.end())
+            auto iter = temp.find(it->first);
+            if (iter == temp.end())
             {
                 it = m_virtualDesktopIds.erase(it); // virtual desktop closed, remove it from map
             }

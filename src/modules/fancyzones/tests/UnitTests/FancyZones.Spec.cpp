@@ -321,23 +321,6 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(m_fzCallback->InMoveSize());
         }
 
-        TEST_METHOD(MoveSizeEndAppLastZoneTest)
-        {
-            const auto window = Mocks::WindowCreate(m_hInst);
-            const auto processPath = get_process_path(window);
-
-            Assert::AreEqual(-1, m_fancyZonesData.GetAppLastZone(window, processPath.c_str()));
-
-            m_fzCallback->MoveSizeEnd(window, POINT{ 0, 0 });
-            Assert::AreEqual(-1, m_fancyZonesData.GetAppLastZone(window, processPath.c_str()));
-
-            m_fancyZonesData.SetAppLastZone(window, processPath.c_str(), 1);
-            Assert::AreEqual(1, m_fancyZonesData.GetAppLastZone(window, processPath.c_str()));
-
-            m_fzCallback->MoveSizeEnd(window, POINT{ 0, 0 });
-            Assert::AreEqual(-1, m_fancyZonesData.GetAppLastZone(window, processPath.c_str()));
-        }
-
         TEST_METHOD(OnKeyDownNothingPressed)
         {
             for (DWORD code = '0'; code <= '9'; code++)

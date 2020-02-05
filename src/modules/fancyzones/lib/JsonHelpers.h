@@ -126,9 +126,9 @@ namespace JSONHelpers
 
     struct AppZoneHistoryData
     {
-        std::wstring zoneSetUuid; //TODO(stefan): is this nessecary? It doesn't exist with registry impl.
+        std::wstring zoneSetUuid;
+        std::wstring deviceId;
         int zoneIndex;
-        //TODO(stefan): Also, do we need DeviceID here? Do we want to support that - app history per monitor?
     };
 
     struct AppZoneHistoryJSON
@@ -197,8 +197,9 @@ namespace JSONHelpers
 
         void AddDevice(const std::wstring& deviceId);
 
-        int GetAppLastZone(HWND window, PCWSTR appPath) const;
-        bool SetAppLastZone(HWND window, PCWSTR appPath, DWORD zoneIndex); //TODO(stefan): Missing zone uuid (pass as arg)
+        int GetAppLastZoneIndex(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const;
+        bool RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId);
+        bool SetAppLastZone(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, int zoneIndex);
 
         void SetActiveZoneSet(const std::wstring& deviceId, const std::wstring& uuid);
 
