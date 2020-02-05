@@ -105,5 +105,36 @@ namespace PreviewPaneUnitTests
             // Assert
             Assert.AreEqual(html, "<figure class=\"figure\">\n<figcaption class=\"figure-caption\">This is a caption</figcaption>\n</figure>\n");
         }
+
+        [TestMethod]
+        public void Extension_RemovesExternalImageUrlAndMakeCallback_WhenUsed()
+        {
+            // arrange
+            int count = 0;
+            String mdString = "![text](http://dev.nodeca.com \"Figure\")";
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { count++; });
+            MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
+
+            // Act
+            String html = Markdown.ToHtml(mdString, markdownPipeline);
+
+            // Assert
+            Assert.AreEqual(count, 1);
+        }
+
+        [TestMethod]
+        public void Extension_RemovesScriptTags_WhenUsed()
+        {
+            // arrange
+            String mdString = "<script>alert(\"hello\");</script><script>alert(\"hello\");</script>";
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { }, "C:/Users/");
+            MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
+
+            // Act
+            String html = Markdown.ToHtml(mdString, markdownPipeline);
+
+            // Assert
+            Assert.AreEqual(html, "");
+        }
     }
 }

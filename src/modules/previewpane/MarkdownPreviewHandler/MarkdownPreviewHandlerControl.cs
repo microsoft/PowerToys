@@ -39,8 +39,19 @@ namespace MarkdownPreviewHandler
         /// </summary>
         private readonly string htmlFooter = "</div></body></html>";
 
+        /// <summary>
+        /// RichTextBox control to display if external images are blocked.
+        /// </summary>
         private RichTextBox infoBar;
 
+        /// <summary>
+        /// WebBrowser control to display markdown html.
+        /// </summary>
+        private WebBrowser browser;
+
+        /// <summary>
+        /// True if external image is blocked.
+        /// </summary>
         private bool imagesBlocked = false;
 
         /// <summary>
@@ -72,17 +83,7 @@ namespace MarkdownPreviewHandler
                 string parsedMarkdown = Markdown.ToHtml(fileText, pipeline);
                 sb.AppendFormat("{0}{1}{2}", this.htmlHeader, parsedMarkdown, this.htmlFooter);
 
-                TableLayoutPanel dynamicTableLayoutPanel = new TableLayoutPanel
-                {
-                    ColumnCount = 1,
-                    RowCount = 2,
-                    Dock = DockStyle.Fill,
-                    AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                    BackColor = Color.White,
-                };
-
-                // this.Controls.Add(dynamicTableLayoutPanel);
-                WebBrowser browser = new WebBrowser
+                this.browser = new WebBrowser
                 {
                     DocumentText = sb.ToString(),
                     Dock = DockStyle.Fill,
@@ -90,8 +91,8 @@ namespace MarkdownPreviewHandler
                     ScriptErrorsSuppressed = true,
                     ScrollBarsEnabled = true,
                 };
-                browser.Navigating += this.WebBrowserNavigating;
-                this.Controls.Add(browser);
+                this.browser.Navigating += this.WebBrowserNavigating;
+                this.Controls.Add(this.browser);
 
                 if (this.imagesBlocked)
                 {
@@ -113,12 +114,22 @@ namespace MarkdownPreviewHandler
             });
         }
 
+        /// <summary>
+        /// Callback when rich text box is resized.
+        /// </summary>
+        /// <param name="sender">control which </param>
+        /// <param name="e">yhjj.</param>
         private void RTBContentsResized(object sender, ContentsResizedEventArgs e)
         {
             RichTextBox richTextBox = (RichTextBox)sender;
             richTextBox.Height = e.NewRectangle.Height + 5;
         }
 
+        /// <summary>
+        /// .
+        /// </summary>
+        /// <param name="sender">wdd.</param>
+        /// <param name="e">edff.</param>
         private void FormResized(object sender, EventArgs e)
         {
             if (this.imagesBlocked)
@@ -127,15 +138,18 @@ namespace MarkdownPreviewHandler
             }
         }
 
+        /// <summary>
+        /// Callback for 
+        /// </summary>
         private void ImagesBlockedCallBack()
         {
             this.imagesBlocked = true;
         }
 
         /// <summary>
-        /// .
+        /// Callback for link tags in html.
         /// </summary>
-        /// <param name="sender">h.</param>
+        /// <param name="sender"></param>
         /// <param name="e">sh.</param>
         private void WebBrowserNavigating(object sender, WebBrowserNavigatingEventArgs e)
         {
