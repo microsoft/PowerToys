@@ -108,7 +108,7 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(std::filesystem::exists(activeZoneSetTempPath));
 
             const auto type = JSONHelpers::ZoneSetLayoutType::Columns;
-            const auto expectedZoneSet = JSONHelpers::ZoneSetData{ CreateGuidString(), type};
+            const auto expectedZoneSet = JSONHelpers::ZoneSetData{ CreateGuidString(), type };
             const auto data = JSONHelpers::DeviceInfoData{ expectedZoneSet, true, 16, 3 };
             const auto deviceInfo = JSONHelpers::DeviceInfoJSON{ m_uniqueId.str(), data };
             const auto json = JSONHelpers::DeviceInfoJSON::ToJson(deviceInfo);
@@ -261,7 +261,7 @@ namespace FancyZonesUnitTests
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto customSetGuid = CreateGuidString();
-            const auto expectedZoneSet = ZoneSetData{ customSetGuid, type};
+            const auto expectedZoneSet = ZoneSetData{ customSetGuid, type };
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
             const auto deviceInfo = DeviceInfoJSON{ m_uniqueId.str(), data };
             const auto json = DeviceInfoJSON::ToJson(deviceInfo);
