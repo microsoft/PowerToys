@@ -152,7 +152,7 @@ namespace JSONHelpers
         if (!deviceInfoMap.contains(deviceId))
         {
             // Creates default entry in map when ZoneWindow is created
-            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ L"null", ZoneSetLayoutType::Grid, 1 }, true, 16, 3 };
+            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ L"null", ZoneSetLayoutType::Grid }, true, 16, 3 };
 
             MigrateDeviceInfoFromRegistry(deviceId);
         }
@@ -486,7 +486,6 @@ namespace JSONHelpers
                         if (appliedZoneSetData.type != ZoneSetLayoutType::Custom)
                         {
                             appliedZoneSetData.uuid = std::wstring{ value };
-                            appliedZoneSetData.zoneCount = data.ZoneCount;
                         }
                         else
                         {
@@ -627,10 +626,6 @@ namespace JSONHelpers
 
         result.SetNamedValue(L"uuid", json::value(zoneSet.uuid));
         result.SetNamedValue(L"type", json::value(TypeToString(zoneSet.type)));
-        if (zoneSet.type != ZoneSetLayoutType::Custom)
-        {
-            result.SetNamedValue(L"zone-count", json::value(*zoneSet.zoneCount));
-        }
 
         return result;
     }
@@ -643,10 +638,6 @@ namespace JSONHelpers
 
             zoneSetData.uuid = zoneSet.GetNamedString(L"uuid");
             zoneSetData.type = TypeFromString(std::wstring{ zoneSet.GetNamedString(L"type") });
-            if (zoneSetData.type != ZoneSetLayoutType::Custom)
-            {
-                zoneSetData.zoneCount = static_cast<int>(zoneSet.GetNamedNumber(L"zone-count"));
-            }
 
             return zoneSetData;
         }

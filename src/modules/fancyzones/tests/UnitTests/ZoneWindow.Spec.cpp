@@ -108,7 +108,7 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(std::filesystem::exists(activeZoneSetTempPath));
 
             const auto type = JSONHelpers::ZoneSetLayoutType::Columns;
-            const auto expectedZoneSet = JSONHelpers::ZoneSetData{ CreateGuidString(), type, 5 };
+            const auto expectedZoneSet = JSONHelpers::ZoneSetData{ CreateGuidString(), type};
             const auto data = JSONHelpers::DeviceInfoData{ expectedZoneSet, true, 16, 3 };
             const auto deviceInfo = JSONHelpers::DeviceInfoJSON{ m_uniqueId.str(), data };
             const auto json = JSONHelpers::DeviceInfoJSON::ToJson(deviceInfo);
@@ -208,7 +208,7 @@ namespace FancyZonesUnitTests
 
             for (int type = static_cast<int>(ZoneSetLayoutType::Focus); type < static_cast<int>(ZoneSetLayoutType::Custom); type++)
             {
-                const auto expectedZoneSet = ZoneSetData{ CreateGuidString(), static_cast<ZoneSetLayoutType>(type), 5 };
+                const auto expectedZoneSet = ZoneSetData{ CreateGuidString(), static_cast<ZoneSetLayoutType>(type) };
                 const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
                 const auto deviceInfo = DeviceInfoJSON{ m_uniqueId.str(), data };
                 const auto json = DeviceInfoJSON::ToJson(deviceInfo);
@@ -223,7 +223,6 @@ namespace FancyZonesUnitTests
 
                 Assert::IsNotNull(actual->ActiveZoneSet());
                 const auto actualZoneSet = actual->ActiveZoneSet()->GetZones();
-                Assert::AreEqual((size_t)expectedZoneSet.zoneCount.value(), actualZoneSet.size());
             }
         }
 
@@ -234,7 +233,7 @@ namespace FancyZonesUnitTests
             const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
-            const auto expectedZoneSet = ZoneSetData{ CreateGuidString(), type, 5 };
+            const auto expectedZoneSet = ZoneSetData{ CreateGuidString(), type };
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
             const auto deviceInfo = DeviceInfoJSON{ m_uniqueId.str(), data };
             const auto json = DeviceInfoJSON::ToJson(deviceInfo);
@@ -263,7 +262,7 @@ namespace FancyZonesUnitTests
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto customSetGuid = CreateGuidString();
-            const auto expectedZoneSet = ZoneSetData{ customSetGuid, type, 5 };
+            const auto expectedZoneSet = ZoneSetData{ customSetGuid, type};
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
             const auto deviceInfo = DeviceInfoJSON{ m_uniqueId.str(), data };
             const auto json = DeviceInfoJSON::ToJson(deviceInfo);
@@ -299,7 +298,7 @@ namespace FancyZonesUnitTests
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto customSetGuid = CreateGuidString();
-            const auto expectedZoneSet = ZoneSetData{ customSetGuid, type, 5 };
+            const auto expectedZoneSet = ZoneSetData{ customSetGuid, type };
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
             const auto deviceInfo = DeviceInfoJSON{ m_uniqueId.str(), data };
             const auto json = DeviceInfoJSON::ToJson(deviceInfo);
@@ -344,7 +343,7 @@ namespace FancyZonesUnitTests
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto customSetGuid = CreateGuidString();
-            const auto expectedZoneSet = ZoneSetData{ customSetGuid, type, 5 };
+            const auto expectedZoneSet = ZoneSetData{ customSetGuid, type };
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
             const auto deviceInfo = DeviceInfoJSON{ m_uniqueId.str(), data };
             const auto json = DeviceInfoJSON::ToJson(deviceInfo);

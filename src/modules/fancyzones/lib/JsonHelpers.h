@@ -118,7 +118,6 @@ namespace JSONHelpers
     {
         std::wstring uuid;
         ZoneSetLayoutType type;
-        std::optional<int> zoneCount;
 
         static json::JsonObject ToJson(const ZoneSetData& zoneSet);
         static std::optional<ZoneSetData> FromJson(const json::JsonObject& zoneSet);

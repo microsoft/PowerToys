@@ -530,8 +530,8 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(ToJsonGeneral)
         {
-            json::JsonObject expected = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"type\": \"rows\", \"zone-count\": 47372}");
-            ZoneSetData data{ L"uuid", ZoneSetLayoutType::Rows, 47372 };
+            json::JsonObject expected = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"type\": \"rows\"}");
+            ZoneSetData data{ L"uuid", ZoneSetLayoutType::Rows };
             const auto actual = ZoneSetData::ToJson(data);
             compareJsonObjects(expected, actual);
         }
@@ -546,34 +546,30 @@ namespace FancyZonesUnitTests
 
             Assert::AreEqual(expected.uuid.c_str(), actual->uuid.c_str());
             Assert::AreEqual((int)expected.type, (int)actual->type);
-            Assert::IsFalse(actual->zoneCount.has_value());
         }
 
         TEST_METHOD(FromJsonCustomZoneAdded)
         {
             ZoneSetData expected{ L"uuid", ZoneSetLayoutType::Custom };
 
-            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"type\": \"custom\", \"zone-count\": 47372}");
+            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"type\": \"custom\"}");
             auto actual = ZoneSetData::FromJson(json);
             Assert::IsTrue(actual.has_value());
 
             Assert::AreEqual(expected.uuid.c_str(), actual->uuid.c_str());
             Assert::AreEqual((int)expected.type, (int)actual->type);
-            Assert::IsFalse(actual->zoneCount.has_value());
         }
 
         TEST_METHOD(FromJsonGeneral)
         {
-            ZoneSetData expected{ L"uuid", ZoneSetLayoutType::Columns, 47372 };
+            ZoneSetData expected{ L"uuid", ZoneSetLayoutType::Columns };
 
-            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"type\": \"columns\", \"zone-count\": 47372}");
+            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"type\": \"columns\"}");
             auto actual = ZoneSetData::FromJson(json);
             Assert::IsTrue(actual.has_value());
 
             Assert::AreEqual(expected.uuid.c_str(), actual->uuid.c_str());
             Assert::AreEqual((int)expected.type, (int)actual->type);
-            Assert::IsTrue(actual->zoneCount.has_value());
-            Assert::AreEqual(*expected.zoneCount, *actual->zoneCount);
         }
 
         TEST_METHOD(FromJsonTypeInvalid)
@@ -586,12 +582,11 @@ namespace FancyZonesUnitTests
 
             Assert::AreEqual(expected.uuid.c_str(), actual->uuid.c_str());
             Assert::AreEqual((int)expected.type, (int)actual->type);
-            Assert::IsFalse(actual->zoneCount.has_value());
         }
 
         TEST_METHOD(FromJsonMissingKeys)
         {
-            ZoneSetData data{ L"uuid", ZoneSetLayoutType::Columns, 47372 };
+            ZoneSetData data{ L"uuid", ZoneSetLayoutType::Columns };
             const auto json = ZoneSetData::ToJson(data);
 
             auto iter = json.First();
@@ -717,22 +712,18 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(actual.has_value());
 
             Assert::AreEqual((int)expected.data.activeZoneSet.type, (int)actual->data.activeZoneSet.type, L"zone set type");
-            Assert::IsFalse(actual->data.activeZoneSet.zoneCount.has_value(), L"zone set count");
         }
 
         TEST_METHOD(FromJsonZoneGeneral)
         {
             DeviceInfoJSON expected = m_defaultDeviceInfo;
             expected.data.activeZoneSet.type = ZoneSetLayoutType::PriorityGrid;
-            expected.data.activeZoneSet.zoneCount = 10;
 
             json::JsonObject json = DeviceInfoJSON::ToJson(expected);
             auto actual = DeviceInfoJSON::FromJson(json);
             Assert::IsTrue(actual.has_value());
 
             Assert::AreEqual((int)expected.data.activeZoneSet.type, (int)actual->data.activeZoneSet.type, L"zone set type");
-            Assert::IsTrue(actual->data.activeZoneSet.zoneCount.has_value(), L"zone set count");
-            Assert::AreEqual(*expected.data.activeZoneSet.zoneCount, *actual->data.activeZoneSet.zoneCount);
         }
 
         TEST_METHOD(FromJsonMissingKeys)
@@ -981,7 +972,6 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(expected.data.zoneCount, actual.zoneCount);
             Assert::AreEqual((int)expected.data.activeZoneSet.type, (int)actual.activeZoneSet.type);
             Assert::AreEqual(expected.data.activeZoneSet.uuid.c_str(), actual.activeZoneSet.uuid.c_str());
-            Assert::IsFalse(actual.activeZoneSet.zoneCount.has_value());
         }
 
         TEST_METHOD(DeviceInfoReadTempUnexsisted)

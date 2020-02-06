@@ -271,11 +271,6 @@ namespace FancyZonesEditor.Models
                     break;
             }
 
-            if (!custom)
-            {
-                writer.WriteNumber("zone-count", zoneCount);
-            }
-
             writer.WriteEndObject();
 
             Settings settings = ((App)Application.Current).ZoneSettings;
@@ -283,6 +278,7 @@ namespace FancyZonesEditor.Models
             writer.WriteBoolean("editor-show-spacing", settings.ShowSpacing);
             writer.WriteNumber("editor-spacing", settings.Spacing);
             writer.WriteNumber("editor-zone-count", settings.ZoneCount);
+
             writer.WriteEndObject();
             writer.Flush();
             outputStream.Close();
