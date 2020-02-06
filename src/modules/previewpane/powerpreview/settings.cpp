@@ -12,7 +12,7 @@ namespace PowerPreviewSettings
 	extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 	// Base Settinngs Class Implementation
-    FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCSTR clsid, const std::wstring displayname) 
+    FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCWSTR clsid, const std::wstring displayname) 
 		: 
 		m_isPreviewEnabled(state),
         m_name(name),
@@ -25,7 +25,7 @@ namespace PowerPreviewSettings
         m_isPreviewEnabled(false),
         m_name(L"_UNDEFINED_"),
         m_description(L"_UNDEFINED_"),
-		m_clsid("_UNDEFINED_"),
+		m_clsid(L"_UNDEFINED_"),
 		m_displayName(L"_UNDEFINED_"){}
 
 	bool FileExplorerPreviewSettings::GetState() const
@@ -79,11 +79,9 @@ namespace PowerPreviewSettings
 
 		if (err == ERROR_SUCCESS)
 		{
-			CString tempCoversionKey = this->GetCLSID();
-			
-			err = RegSetValueEx(
+			err = RegSetValueExW(
 					OpenResult,
-					(LPCTSTR)tempCoversionKey,
+					this->GetCLSID(),
 					0,
 					REG_SZ,
 					(LPBYTE)this->GetDisplayName().c_str(),
@@ -111,7 +109,7 @@ namespace PowerPreviewSettings
 		LONG err = RegOpenKeyEx(hKey, this->GetSubKey(), options, WRITE_PERMISSION, &OpenResult); 
 		if (err == ERROR_SUCCESS)
 		{
-			err = RegDeleteKeyValueA(
+			err = RegDeleteKeyValueW(
 				OpenResult,
 				NULL,
 				this->GetCLSID());
@@ -149,14 +147,10 @@ namespace PowerPreviewSettings
 			PVOID pvData = value;
 			DWORD size = sizeof(value);
 
-			LPCSTR stringToConvert = this->GetCLSID();
-			CString transitionString = stringToConvert;
-			LPCTSTR longPointerString = transitionString;
-
-			err = RegGetValue(
+			err = RegGetValueW(
 					OpenResult, 
 					NULL,
-					longPointerString,
+					this->GetCLSID(),
 					RRF_RT_ANY,
 					&dataType,
 					pvData,
@@ -194,7 +188,7 @@ namespace PowerPreviewSettings
 		return this->m_subKey;
 	}
 
-	LPCSTR FileExplorerPreviewSettings::GetCLSID() const
+	LPCWSTR FileExplorerPreviewSettings::GetCLSID() const
 	{
 		return this->m_clsid;
 	}
@@ -216,7 +210,7 @@ namespace PowerPreviewSettings
 			false,
             GET_RESOURCE_STRING(IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL),
             GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION),
-			"{ddee2b8a-6807-48a6-bb20-2338174ff779}",
+			L"{ddee2b8a-6807-48a6-bb20-2338174ff779}",
 			GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DISPLAYNAME)){}
 
 	void PrevPaneSVGRendrSettings::EnablePreview()
@@ -252,7 +246,7 @@ namespace PowerPreviewSettings
 			false,
             GET_RESOURCE_STRING(IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL),
             GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
-			"{45769bcc-e8fd-42d0-947e-02beef77a1f5}",
+			L"{45769bcc-e8fd-42d0-947e-02beef77a1f5}",
 			GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DISPLAYNAME)){}
 
 	void PrevPaneMDRendrSettings::EnablePreview()
