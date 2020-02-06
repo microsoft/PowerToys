@@ -222,7 +222,6 @@ namespace FancyZonesUnitTests
                 testZoneWindow(actual);
 
                 Assert::IsNotNull(actual->ActiveZoneSet());
-                const auto actualZoneSet = actual->ActiveZoneSet()->GetZones();
             }
         }
 
