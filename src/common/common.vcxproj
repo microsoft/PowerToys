@@ -102,7 +102,6 @@
     <ClInclude Include="notifications.h" />
     <ClInclude Include="window_helpers.h" />
     <ClInclude Include="icon_helpers.h" />
-    <ClInclude Include="hwnd_data_cache.h" />
     <ClInclude Include="json.h" />
     <ClInclude Include="monitors.h" />
     <ClInclude Include="on_thread_executor.h" />
@@ -125,7 +124,6 @@
     <ClCompile Include="d2d_text.cpp" />
     <ClCompile Include="d2d_window.cpp" />
     <ClCompile Include="dpi_aware.cpp" />
-    <ClCompile Include="hwnd_data_cache.cpp" />
     <ClCompile Include="json.cpp" />
     <ClCompile Include="monitors.cpp" />
     <ClCompile Include="notifications.cpp" />
