@@ -17,8 +17,8 @@
 #define	IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION                 212
 #define	IDS_EXPLR_SVG_BOOL_TOGGLE_CONTROLL                    213
 #define	IDS_EXPLR_SVG_SETTINGS_DESCRIPTION                    214
-#define	IDS_PREVPANE_SVG_SETTINGS_DISPLAYNAME				  215
-#define	IDS_PREVPANE_MD_SETTINGS_DISPLAYNAME				  216
+#define	IDS_PREVPANE_SVG_SETTINGS_DISPLAYNAME				          215
+#define	IDS_PREVPANE_MD_SETTINGS_DISPLAYNAME				          216
 
 // Next default values for new objects
 // 
