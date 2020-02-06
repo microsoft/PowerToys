@@ -15,7 +15,7 @@ namespace BaseSettingsTest
 			TEST_METHOD(LoadState_ShouldLoadNewState_WhenSucessfull)
 			{
 				// Arrange
-                BaseSettingsClassTest tempSettings = BaseSettingsClassTest();
+                		BaseSettingsClassTest tempSettings = BaseSettingsClassTest();
 				PowerToyValues values = PowerToyValues::from_json_string(GetJSONSettings(tempSettings.GetName(), L"true"));
 				tempSettings.SetState(false);
 				bool expectedState = true; 
@@ -31,7 +31,7 @@ namespace BaseSettingsTest
 			TEST_METHOD(UpdateState_ShouldChangeState_WhenSucessfull)
 			{
 				// Arrange
-                BaseSettingsClassTest tempSettings = BaseSettingsClassTest();
+                		BaseSettingsClassTest tempSettings = BaseSettingsClassTest();
 				PowerToyValues values = PowerToyValues::from_json_string(GetJSONSettings(tempSettings.GetName(), L"true"));
 				tempSettings.SetState(false);
 				bool expectedState = true; 
