@@ -11,8 +11,8 @@ namespace PowerPreviewSettings
 	{
 	private:
 		bool m_isPreviewEnabled;
-        std::wstring m_name;
-        std::wstring m_description;
+		std::wstring m_name;
+		std::wstring m_description;
 		std::wstring m_displayName;
 
 		LPCWSTR m_clsid;
