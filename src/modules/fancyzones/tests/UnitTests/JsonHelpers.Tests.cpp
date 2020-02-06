@@ -520,44 +520,12 @@ namespace FancyZonesUnitTests
     };
 
     TEST_CLASS(ZoneSetDataUnitTest){
-        TEST_METHOD(ToJsonCustom)
-        {
-            json::JsonObject expected = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"type\": \"custom\"}");
-            ZoneSetData data{ L"uuid", ZoneSetLayoutType::Custom };
-            const auto actual = ZoneSetData::ToJson(data);
-            compareJsonObjects(expected, actual);
-        }
-
         TEST_METHOD(ToJsonGeneral)
         {
             json::JsonObject expected = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"type\": \"rows\"}");
             ZoneSetData data{ L"uuid", ZoneSetLayoutType::Rows };
             const auto actual = ZoneSetData::ToJson(data);
             compareJsonObjects(expected, actual);
-        }
-
-        TEST_METHOD(FromJsonCustom)
-        {
-            ZoneSetData expected{ L"uuid", ZoneSetLayoutType::Custom };
-
-            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"type\": \"custom\"}");
-            auto actual = ZoneSetData::FromJson(json);
-            Assert::IsTrue(actual.has_value());
-
-            Assert::AreEqual(expected.uuid.c_str(), actual->uuid.c_str());
-            Assert::AreEqual((int)expected.type, (int)actual->type);
-        }
-
-        TEST_METHOD(FromJsonCustomZoneAdded)
-        {
-            ZoneSetData expected{ L"uuid", ZoneSetLayoutType::Custom };
-
-            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"type\": \"custom\"}");
-            auto actual = ZoneSetData::FromJson(json);
-            Assert::IsTrue(actual.has_value());
-
-            Assert::AreEqual(expected.uuid.c_str(), actual->uuid.c_str());
-            Assert::AreEqual((int)expected.type, (int)actual->type);
         }
 
         TEST_METHOD(FromJsonGeneral)
