@@ -229,6 +229,7 @@ launchers:
 | 35     | Users should be able to use PowerLauncher as a dictionary                                                                                                | 3            |
 | 36     | Users should be able to see clipboard history                                                                                                            | 3            |
 | 37     | Users should be able to see options in the context menu which are similar to explorer                                                                                                            | 3            |
+| 38     | Users can see preview of selected search result                                                                                                            | 3            |
 
 ### 2.1.2 Settings
 
