@@ -14,13 +14,13 @@ namespace FancyZonesEditor.Models
 {
     public enum LayoutType
     {
+        Blank = -1,
         Focus,
         Columns,
         Rows,
         Grid,
         PriorityGrid,
         Custom,
-        Blank,
     }
 
     // Base LayoutModel
@@ -247,7 +247,6 @@ namespace FancyZonesEditor.Models
 
             writer.WriteStartObject("active-zoneset");
             writer.WriteString("uuid", "{" + Guid.ToString().ToUpper() + "}");
-            bool custom = false;
             switch (Type)
             {
                 case LayoutType.Focus:
@@ -267,7 +266,6 @@ namespace FancyZonesEditor.Models
                     break;
                 case LayoutType.Custom:
                     writer.WriteString("type", "custom");
-                    custom = true;
                     break;
             }
 

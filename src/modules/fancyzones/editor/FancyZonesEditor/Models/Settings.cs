@@ -355,10 +355,13 @@ namespace FancyZonesEditor
             ActiveZoneSetUUid = jsonObject.GetProperty("active-zoneset").GetProperty("uuid").GetString();
             string layoutType = jsonObject.GetProperty("active-zoneset").GetProperty("type").GetString();
 
-            if (ActiveZoneSetUUid == "null")
+            if (ActiveZoneSetUUid == "null" || layoutType == "blank")
             {
                 // Default selection is Focus
                 ActiveZoneSetLayoutType = LayoutType.Focus;
+                _showSpacing = true;
+                _spacing = 16;
+                _zoneCount = 3;
             }
             else
             {
@@ -383,11 +386,11 @@ namespace FancyZonesEditor
                         ActiveZoneSetLayoutType = LayoutType.Custom;
                         break;
                 }
-            }
 
-            _showSpacing = jsonObject.GetProperty("editor-show-spacing").GetBoolean();
-            _spacing = jsonObject.GetProperty("editor-spacing").GetInt32();
-            _zoneCount = jsonObject.GetProperty("editor-zone-count").GetInt32();
+                _showSpacing = jsonObject.GetProperty("editor-show-spacing").GetBoolean();
+                _spacing = jsonObject.GetProperty("editor-spacing").GetInt32();
+                _zoneCount = jsonObject.GetProperty("editor-zone-count").GetInt32();
+            }
         }
 
         private void ParseCommandLineArgs()

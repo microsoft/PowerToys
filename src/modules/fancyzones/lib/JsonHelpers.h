@@ -17,7 +17,8 @@ namespace JSONHelpers
 
     enum class ZoneSetLayoutType : int
     {
-        Focus = 0,
+        Blank = -1,
+        Focus,
         Columns,
         Rows,
         Grid,
@@ -195,6 +196,7 @@ namespace JSONHelpers
         }
 
         void AddDevice(const std::wstring& deviceId);
+        void CloneDeviceInfo(const std::wstring& source, const std::wstring& destination);
 
         int GetAppLastZoneIndex(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const;
         bool RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId);
@@ -205,7 +207,7 @@ namespace JSONHelpers
         void SerializeDeviceInfoToTmpFile(const DeviceInfoJSON& deviceInfo, std::wstring_view tmpFilePath) const;
 
         void ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath);
-        bool ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath, const std::wstring& deviceId);
+        bool ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath);
         bool ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
 
         bool ParseAppZoneHistory(const json::JsonObject& fancyZonesDataJSON);

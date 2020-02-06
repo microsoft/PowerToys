@@ -61,6 +61,8 @@ namespace JSONHelpers
             return ZoneSetLayoutType::Grid;
         case c_priorityGridModelId:
             return ZoneSetLayoutType::PriorityGrid;
+        case c_blankCustomModelId:
+            return ZoneSetLayoutType::Blank;
         default:
             return ZoneSetLayoutType::Custom;
         }
@@ -70,6 +72,8 @@ namespace JSONHelpers
     {
         switch (type)
         {
+        case ZoneSetLayoutType::Blank:
+            return L"blank";
         case ZoneSetLayoutType::Focus:
             return L"focus";
         case ZoneSetLayoutType::Columns:
@@ -109,9 +113,13 @@ namespace JSONHelpers
         {
             return JSONHelpers::ZoneSetLayoutType::PriorityGrid;
         }
-        else
-        { //Custom
+        else if (typeStr == L"custom")
+        {
             return JSONHelpers::ZoneSetLayoutType::Custom;
+        }
+        else
+        {
+            return JSONHelpers::ZoneSetLayoutType::Blank;
         }
     }
 
@@ -152,9 +160,19 @@ namespace JSONHelpers
         if (!deviceInfoMap.contains(deviceId))
         {
             // Creates default entry in map when ZoneWindow is created
-            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ L"null", ZoneSetLayoutType::Grid }, true, 16, 3 };
+            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ L"null", ZoneSetLayoutType::Blank }  };
 
             MigrateDeviceInfoFromRegistry(deviceId);
+        }
+    }
+
+    void FancyZonesData::CloneDeviceInfo(const std::wstring& source, const std::wstring& destination)
+    {
+        // Clone information from source device if destination device is uninitialized (Blank).
+        auto& destInfo = deviceInfoMap[destination];
+        if (destInfo.activeZoneSet.type == ZoneSetLayoutType::Blank)
+        {
+            destInfo = deviceInfoMap[source];
         }
     }
 
@@ -244,14 +262,8 @@ namespace JSONHelpers
         }
     }
 
-    bool FancyZonesData::ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath, const std::wstring& deviceId)
+    bool FancyZonesData::ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath)
     {
-        const auto device = deviceInfoMap.find(deviceId); 
-        if (device == deviceInfoMap.end() || device->second.activeZoneSet.type != JSONHelpers::ZoneSetLayoutType::Custom)
-        {
-            return false;
-        }
-
         bool res = true;
         if (std::filesystem::exists(tmpFilePath))
         {
@@ -372,7 +384,9 @@ namespace JSONHelpers
 
         for (const auto& [deviceID, deviceData] : deviceInfoMap)
         {
-            DeviceInfosJSON.Append(DeviceInfoJSON::DeviceInfoJSON::ToJson(DeviceInfoJSON{ deviceID, deviceData }));
+            if (deviceData.activeZoneSet.type != ZoneSetLayoutType::Blank) {
+                DeviceInfosJSON.Append(DeviceInfoJSON::DeviceInfoJSON::ToJson(DeviceInfoJSON{ deviceID, deviceData }));
+            }
         }
 
         return DeviceInfosJSON;

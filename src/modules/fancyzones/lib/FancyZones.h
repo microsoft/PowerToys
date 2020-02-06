@@ -27,7 +27,7 @@ interface __declspec(uuid("{5C8D99D6-34B2-4F4A-A8E5-7483F6869775}")) IZoneWindow
 {
     IFACEMETHOD_(void, MoveWindowsOnActiveZoneSetChange)() = 0;
     IFACEMETHOD_(COLORREF, GetZoneHighlightColor)() = 0;
-    IFACEMETHOD_(IZoneSet*, GetCurrentMonitorZoneSet) (HMONITOR monitor) = 0;
+    IFACEMETHOD_(IZoneWindow*, GetParentZoneWindow) (HMONITOR monitor) = 0;
     IFACEMETHOD_(int, GetZoneHighlightOpacity)() = 0;
 };
 

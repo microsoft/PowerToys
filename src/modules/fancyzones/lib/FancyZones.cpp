@@ -78,15 +78,14 @@ public:
         const auto nB = (tmp & 0xFF);
         return RGB(nR, nG, nB);
     }
-    IFACEMETHODIMP_(IZoneSet*) GetCurrentMonitorZoneSet(HMONITOR monitor) noexcept
+    IFACEMETHODIMP_(IZoneWindow*)GetParentZoneWindow(HMONITOR monitor) noexcept
     {
         //NOTE: as public method it's unsafe without lock, but it's called from AddZoneWindow through making ZoneWindow that causes deadlock
         //TODO: needs refactoring
         auto it = m_zoneWindowMap.find(monitor);
         if (it != m_zoneWindowMap.end())
         {
-            const auto& zoneWindowPtr = it->second;
-            return zoneWindowPtr->ActiveZoneSet();
+            return it->second.get();
         }
         return nullptr;
     }
@@ -994,6 +993,8 @@ void FancyZones::OnEditorExitEvent() noexcept
     // Colect information about changes in zone layout after editor exited.
     JSONHelpers::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(ZoneWindowUtils::GetActiveZoneSetTmpPath());
     JSONHelpers::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
+    JSONHelpers::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(ZoneWindowUtils::GetAppliedZoneSetTmpPath());
+    JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
 }
 
 winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept

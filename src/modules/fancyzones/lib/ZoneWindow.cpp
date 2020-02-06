@@ -303,7 +303,6 @@ private:
     void OnPaint(wil::unique_hdc& hdc) noexcept;
     void OnKeyUp(WPARAM wparam) noexcept;
     winrt::com_ptr<IZone> ZoneFromPoint(POINT pt) noexcept;
-    void ChooseDefaultActiveZoneSet() noexcept;
     void CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::InputMode mode) noexcept;
     void FlashZones() noexcept;
 
@@ -544,18 +543,17 @@ void ZoneWindow::HideZoneWindow() noexcept
 void ZoneWindow::LoadSettings() noexcept
 {
     JSONHelpers::FancyZonesDataInstance().AddDevice(m_uniqueId);
-    JSONHelpers::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(ZoneWindowUtils::GetAppliedZoneSetTmpPath(), m_uniqueId);
-    JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
 }
 
 void ZoneWindow::InitializeZoneSets(MONITORINFO const& mi) noexcept
 {
-    CalculateZoneSet();
-
-    if (!m_activeZoneSet)
+    auto parent = m_host->GetParentZoneWindow(m_monitor);
+    if (parent)
     {
-        ChooseDefaultActiveZoneSet();
+        // Update device info with device info from parent virtual desktop (if empty).
+        JSONHelpers::FancyZonesDataInstance().CloneDeviceInfo(parent->UniqueId(), m_uniqueId);
     }
+    CalculateZoneSet();
 }
 
 void ZoneWindow::CalculateZoneSet() noexcept
@@ -565,10 +563,16 @@ void ZoneWindow::CalculateZoneSet() noexcept
     const auto& activeDeviceId = fancyZonesData.GetActiveDeviceId();
     const auto& activeZoneSet = deviceInfoMap.at(m_uniqueId).activeZoneSet;
 
-    if (!activeDeviceId.empty() && activeDeviceId.compare(m_uniqueId) != 0 && !activeZoneSet.uuid.empty())
+    if (activeDeviceId != m_uniqueId)
     {
         return;
     }
+
+    if (activeZoneSet.uuid.empty() || activeZoneSet.type == JSONHelpers::ZoneSetLayoutType::Blank)
+    {
+        return;
+    }
+
     GUID zoneSetId;
     if (SUCCEEDED_LOG(CLSIDFromString(activeZoneSet.uuid.c_str(), &zoneSetId)))
     {
@@ -687,20 +691,6 @@ winrt::com_ptr<IZone> ZoneWindow::ZoneFromPoint(POINT pt) noexcept
         return m_activeZoneSet->ZoneFromPoint(pt);
     }
     return nullptr;
-}
-
-void ZoneWindow::ChooseDefaultActiveZoneSet() noexcept
-{
-    // Default zone set can be empty (no fancyzones layout), or it can be layout from virtual
-    // desktop from which this virtual desktop is created.
-    if (m_host)
-    {
-        auto* zoneSet = m_host->GetCurrentMonitorZoneSet(m_monitor);
-        if (zoneSet)
-        {
-            UpdateActiveZoneSet(zoneSet);
-        }
-    }
 }
 
 void ZoneWindow::CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::InputMode mode) noexcept
