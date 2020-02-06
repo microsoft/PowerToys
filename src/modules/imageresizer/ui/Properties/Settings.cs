@@ -2,6 +2,7 @@
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,7 +12,7 @@ using ImageResizer.Models;
 
 namespace ImageResizer.Properties
 {
-    public partial class Settings : IDataErrorInfo
+    public partial class Settings : IDataErrorInfo, INotifyPropertyChanged
     {
         private string _fileNameFormat;
 
@@ -52,7 +53,7 @@ namespace ImageResizer.Properties
         string IDataErrorInfo.Error
             => string.Empty;
 
-        public override object this[string propertyName]
+        public object this[string propertyName]
         {
             get
             {
@@ -183,6 +184,270 @@ namespace ImageResizer.Properties
                 public void Reset()
                     => _index = -1;
             }
+        }
+
+        private static Settings defaultInstance = (Settings)System.Configuration.ApplicationSettingsBase.Synchronized(new Settings());
+
+        public static Settings Default
+        {
+            get
+            {
+                return defaultInstance;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int SelectedSizeIndex
+        {
+            get
+            {
+                return (int)this["SelectedSizeIndex"];
+            }
+
+            set
+            {
+                this["SelectedSizeIndex"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShrinkOnly
+        {
+            get
+            {
+                return (bool)this["ShrinkOnly"];
+            }
+
+            set
+            {
+                this["ShrinkOnly"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Replace
+        {
+            get
+            {
+                return (bool)this["Replace"];
+            }
+
+            set
+            {
+                this["Replace"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IgnoreOrientation
+        {
+            get
+            {
+                return (bool)this["IgnoreOrientation"];
+            }
+
+            set
+            {
+                this["IgnoreOrientation"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.Configuration.DefaultSettingValueAttribute("90")]
+        public int JpegQualityLevel
+        {
+            get
+            {
+                return (int)this["JpegQualityLevel"];
+            }
+
+            set
+            {
+                this["JpegQualityLevel"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.Configuration.DefaultSettingValueAttribute("Default")]
+        public global::System.Windows.Media.Imaging.PngInterlaceOption PngInterlaceOption
+        {
+            get
+            {
+                return (System.Windows.Media.Imaging.PngInterlaceOption)this["PngInterlaceOption"];
+            }
+
+            set
+            {
+                this["PngInterlaceOption"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.Configuration.DefaultSettingValueAttribute("Default")]
+        public global::System.Windows.Media.Imaging.TiffCompressOption TiffCompressOption
+        {
+            get
+            {
+                return (System.Windows.Media.Imaging.TiffCompressOption)this["TiffCompressOption"];
+            }
+
+            set
+            {
+                this["TiffCompressOption"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.Configuration.DefaultSettingValueAttribute("%1 (%2)")]
+        public string FileName
+        {
+            get
+            {
+                return (string)this["FileName"];
+            }
+
+            set
+            {
+                this["FileName"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"
+          <ArrayOfResizeSize xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+            <ResizeSize>
+              <Name>$small$</Name>
+              <Fit>Fit</Fit>
+              <Width>854</Width>
+              <Height>480</Height>
+              <Unit>Pixel</Unit>
+            </ResizeSize>
+            <ResizeSize>
+              <Name>$medium$</Name>
+              <Fit>Fit</Fit>
+              <Width>1366</Width>
+              <Height>768</Height>
+              <Unit>Pixel</Unit>
+            </ResizeSize>
+            <ResizeSize>
+              <Name>$large$</Name>
+              <Fit>Fit</Fit>
+              <Width>1920</Width>
+              <Height>1080</Height>
+              <Unit>Pixel</Unit>
+            </ResizeSize>
+            <ResizeSize>
+              <Name>$phone$</Name>
+              <Fit>Fit</Fit>
+              <Width>320</Width>
+              <Height>569</Height>
+              <Unit>Pixel</Unit>
+            </ResizeSize>
+          </ArrayOfResizeSize>
+        ")]
+        public global::System.Collections.ObjectModel.ObservableCollection<ImageResizer.Models.ResizeSize> Sizes
+        {
+            get
+            {
+                return (ObservableCollection<ResizeSize>)this["Sizes"];
+            }
+
+            set
+            {
+                this["Sizes"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool KeepDateModified
+        {
+            get
+            {
+                return (bool)this["KeepDateModified"];
+            }
+
+            set
+            {
+                this["KeepDateModified"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.Configuration.DefaultSettingValueAttribute("19e4a5aa-5662-4fc5-a0c0-1758028e1057")]
+        public global::System.Guid FallbackEncoder
+        {
+            get
+            {
+                return (Guid)this["FallbackEncoder"];
+            }
+
+            set
+            {
+                this["FallbackEncoder"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"
+          <CustomSize xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+            <Name>Custom</Name>
+            <Fit>Fit</Fit>
+            <Width>1024</Width>
+            <Height>640</Height>
+            <Unit>Pixel</Unit>
+          </CustomSize>
+        ")]
+        public global::ImageResizer.Models.CustomSize CustomSize
+        {
+            get
+            {
+                return (CustomSize)this["CustomSize"];
+            }
+
+            set
+            {
+                this["CustomSize"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UpgradeRequired
+        {
+            get
+            {
+                return (bool)this["UpgradeRequired"];
+            }
+
+            set
+            {
+                this["UpgradeRequired"] = value;
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
