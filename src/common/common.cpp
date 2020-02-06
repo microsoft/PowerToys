@@ -33,18 +33,17 @@ std::optional<POINT> get_mouse_pos() {
   }
 }
 
-static bool is_system_window(HWND hwnd, const char* class_name = nullptr) {
+// Test if a window is part of the shell or the task bar.
+// We compare the HWND against HWND of the desktop and shell windows,
+// we also filter out some window class names know to belong to
+// the taskbar.
+static bool is_system_window(HWND hwnd, const char* class_name) {
   static auto system_classes = { "SysListView32", "WorkerW", "Shell_TrayWnd", "Shell_SecondaryTrayWnd", "Progman" };
   static auto system_hwnds = { GetDesktopWindow(), GetShellWindow() };
   for (auto system_hwnd : system_hwnds) {
     if (hwnd == system_hwnd) {
       return true;
     }
-  }
-  std::array<char, 256> class_name_buff;
-  if (class_name == nullptr) {
-    GetClassNameA(hwnd, class_name_buff.data(), static_cast<int>(class_name_buff.size()));
-    class_name = class_name_buff.data();
   }
   for (const auto& system_class : system_classes) {
     if (strcmp(system_class, class_name) == 0) {
