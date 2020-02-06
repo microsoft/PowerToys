@@ -200,7 +200,7 @@ namespace JSONHelpers
         bool RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId);
         bool SetAppLastZone(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, int zoneIndex);
 
-        void SetActiveZoneSet(const std::wstring& deviceId, const std::wstring& uuid);
+        void SetActiveZoneSet(const std::wstring& deviceId, const ZoneSetData& zoneSet);
 
         void SerializeDeviceInfoToTmpFile(const DeviceInfoJSON& deviceInfo, std::wstring_view tmpFilePath) const;
 
