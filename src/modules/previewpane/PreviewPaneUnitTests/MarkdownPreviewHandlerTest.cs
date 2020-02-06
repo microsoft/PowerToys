@@ -17,7 +17,7 @@ namespace PreviewPaneUnitTests
             MarkdownPreviewHandlerControl markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl();
 
             // Act
-            markdownPreviewHandlerControl.DoPreview<string>("HelperFiles/SampleMarkDown.txt");
+            markdownPreviewHandlerControl.DoPreview<string>("HelperFiles/MarkdownWithExternalImage.txt");
 
             // Assert
             Assert.AreEqual(markdownPreviewHandlerControl.Controls.Count, 2);
@@ -31,11 +31,25 @@ namespace PreviewPaneUnitTests
             MarkdownPreviewHandlerControl markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl();
 
             // Act
-            markdownPreviewHandlerControl.DoPreview<string>("HelperFiles/SampleMarkDown.txt");
+            markdownPreviewHandlerControl.DoPreview<string>("HelperFiles/MarkdownWithExternalImage.txt");
 
             // Assert
             Assert.AreEqual(markdownPreviewHandlerControl.Controls.Count, 2);
             Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[1], typeof(RichTextBox));
+        }
+
+        [TestMethod]
+        public void MarkdownPreviewHandlerControl__DoesNotAddInfoBarToFormIfExternalImageLinkPresent_WhenDoPreviewIsCalled()
+        {
+            // Arrange 
+            MarkdownPreviewHandlerControl markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl();
+
+            // Act
+            markdownPreviewHandlerControl.DoPreview<string>("HelperFiles/MarkdownWithScript.txt");
+
+            // Assert
+            Assert.AreEqual(markdownPreviewHandlerControl.Controls.Count, 1);
+            Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[0], typeof(WebBrowser));
         }
 
         [TestMethod]
@@ -45,7 +59,7 @@ namespace PreviewPaneUnitTests
             MarkdownPreviewHandlerControl markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl();
 
             // Act
-            markdownPreviewHandlerControl.DoPreview<string>("HelperFiles/SampleMarkDown.txt");
+            markdownPreviewHandlerControl.DoPreview<string>("HelperFiles/MarkdownWithExternalImage.txt");
 
             // Assert
             Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[0], typeof(WebBrowser));
@@ -63,7 +77,7 @@ namespace PreviewPaneUnitTests
             MarkdownPreviewHandlerControl markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl();
 
             // Act
-            markdownPreviewHandlerControl.DoPreview<string>("HelperFiles/SampleMarkDown.txt");
+            markdownPreviewHandlerControl.DoPreview<string>("HelperFiles/MarkdownWithExternalImage.txt");
 
             // Assert
             Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[1], typeof(RichTextBox));

@@ -73,7 +73,10 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Content Include="HelperFiles\SampleMarkdown.txt">
+    <Content Include="HelperFiles\MarkdownWithExternalImage.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="HelperFiles\MarkdownWithscript.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
