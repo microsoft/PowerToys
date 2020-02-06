@@ -55,8 +55,7 @@ namespace SvgPreviewHandler
                     }
                 }
 
-                svgData = SvgPreviewHandlerHelper.RemoveElements(svgData, out this.foundFilteredElements);
-
+                svgData = string.IsNullOrWhiteSpace(svgData) ? svgData : SvgPreviewHandlerHelper.RemoveElements(svgData, out this.foundFilteredElements);
                 if (this.foundFilteredElements)
                 {
                     this.AddTextBoxControl();
@@ -68,12 +67,22 @@ namespace SvgPreviewHandler
             });
         }
 
+        /// <summary>
+        /// Occurs when RichtextBox is resized.
+        /// </summary>
+        /// <param name="sender">Reference to resized control.</param>
+        /// <param name="e">Provides data for the ContentsResized event.</param>
         private void RTBContentsResized(object sender, ContentsResizedEventArgs e)
         {
-            RichTextBox richTextBox = (RichTextBox)sender;
+            var richTextBox = sender as RichTextBox;
             richTextBox.Height = e.NewRectangle.Height + 5;
         }
 
+        /// <summary>
+        /// Occurs when form is resized.
+        /// </summary>
+        /// <param name="sender">Reference to resized control.</param>
+        /// <param name="e">Provides data for the resize event.</param>
         private void FormResized(object sender, EventArgs e)
         {
             if (this.foundFilteredElements)
