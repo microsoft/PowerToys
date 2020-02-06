@@ -762,6 +762,7 @@ namespace FancyZonesUnitTests
         const json::JsonObject m_defaultCustomDeviceObj = json::JsonObject::Parse(m_defaultCustomDeviceStr);
 
         HINSTANCE m_hInst{};
+        FancyZonesData& m_fzData = FancyZonesDataInstance();
 
         void compareJsonArrays(const json::JsonArray& expected, const json::JsonArray& actual)
         {
@@ -775,6 +776,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD_INITIALIZE(Init)
         {
             m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
+            m_fzData = FancyZonesData();
         }
 
     public:
@@ -1305,9 +1307,20 @@ namespace FancyZonesUnitTests
             compareJsonArrays(expected, actual);
         }
 
-#if 0
         TEST_METHOD(CustomZoneSetsReadTemp)
         {
+            //prepare device data
+            const std::wstring deviceId = L"default_device_id";
+
+            {    
+                DeviceInfoJSON deviceInfo{ deviceId, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
+                const std::wstring deviceInfoPath = m_fzData.GetPersistFancyZonesJSONPath() + L".device_info_tmp";
+                m_fzData.SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
+
+                m_fzData.ParseDeviceInfoFromTmpFile(deviceInfoPath);
+                std::filesystem::remove(deviceInfoPath);
+            }
+
             const std::wstring uuid = L"uuid";
             const GridLayoutInfo grid(GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
                 .rows = 1,
@@ -1319,9 +1332,8 @@ namespace FancyZonesUnitTests
 
             FancyZonesData data;
             const std::wstring path = data.GetPersistFancyZonesJSONPath() + L".test_tmp";
-            json::to_file(path, CustomZoneSetJSON::ToJson(expected));
-
-            data.ParseCustomZoneSetFromTmpFile(path);
+            json::to_file(path, CustomZoneSetJSON::ToJson(expected));            
+            m_fzData.ParseCustomZoneSetFromTmpFile(path, deviceId);
 
             bool actualFileExists = std::filesystem::exists(path);
             if (actualFileExists)
@@ -1330,7 +1342,7 @@ namespace FancyZonesUnitTests
             }
             Assert::IsFalse(actualFileExists);
 
-            auto devices = data.GetCustomZoneSetsMap();
+            auto devices = m_fzData.GetCustomZoneSetsMap();
             Assert::AreEqual((size_t)1, devices.size());
 
             auto actual = devices.find(uuid)->second;
@@ -1341,20 +1353,16 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(expectedGrid.rows(), actualGrid.rows());
             Assert::AreEqual(expectedGrid.columns(), actualGrid.columns());
         }
-#endif
 
-#if 0
         TEST_METHOD(CustomZoneSetsReadTempUnexsisted)
         {
-            FancyZonesData data;
+            const std::wstring path = m_fzData.GetPersistFancyZonesJSONPath() + L".test_tmp";
+            const std::wstring deviceId = L"default_device_id";
 
-            const std::wstring path = data.GetPersistFancyZonesJSONPath() + L".test_tmp";
-
-            data.ParseCustomZoneSetFromTmpFile(path);
-            auto devices = data.GetDeviceInfoMap();
+            m_fzData.ParseCustomZoneSetFromTmpFile(path, deviceId);
+            auto devices = m_fzData.GetDeviceInfoMap();
             Assert::AreEqual((size_t)0, devices.size());
         }
-#endif
 
         TEST_METHOD(SetActiveZoneSet)
         {

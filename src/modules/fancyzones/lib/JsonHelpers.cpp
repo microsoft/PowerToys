@@ -245,10 +245,12 @@ namespace JSONHelpers
 
     bool FancyZonesData::ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath, const std::wstring& deviceId)
     {
-        if (deviceInfoMap.at(deviceId).activeZoneSet.type != JSONHelpers::ZoneSetLayoutType::Custom)
+        const auto device = deviceInfoMap.find(deviceId); 
+        if (device == deviceInfoMap.end() || device->second.activeZoneSet.type != JSONHelpers::ZoneSetLayoutType::Custom)
         {
             return false;
         }
+
         bool res = true;
         if (std::filesystem::exists(tmpFilePath))
         {

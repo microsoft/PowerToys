@@ -1089,22 +1089,35 @@ namespace FancyZonesUnitTests
                 Assert::IsFalse(result);
             }
         }
-#if 0
+
         TEST_METHOD(CustomZoneFromValidCanvasLayoutInfo)
         {
             using namespace JSONHelpers;
 
-            const std::wstring uuid = L"uuid";
+            //prepare device data
+            {
+                const std::wstring zoneUuid = L"default_device_id";
+                DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
+                const std::wstring deviceInfoPath = FancyZonesDataInstance().GetPersistFancyZonesJSONPath() + L".device_info_tmp";
+                FancyZonesDataInstance().SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
+
+                FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
+                std::filesystem::remove(deviceInfoPath);
+            }
+
+            //prepare expected data
+            wil::unique_cotaskmem_string uuid;
+            Assert::AreEqual(S_OK, StringFromCLSID(m_id, &uuid));
             const CanvasLayoutInfo info{ 123, 321, { CanvasLayoutInfo::Rect{ 0, 0, 100, 100 }, CanvasLayoutInfo::Rect{ 50, 50, 150, 150 } } };
-            CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info } };
+            CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info } };
             json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
             Assert::IsTrue(std::filesystem::exists(m_path));
+            FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path, L"default_device_id");
 
+            //test
             const int spacing = 10;
             const auto zoneCount = info.zones.size();
-
             ZoneSetConfig m_config = ZoneSetConfig(m_id, TZoneSetLayoutType::Custom, m_monitor, m_resolutionKey);
-
             for (const auto& monitorInfo : m_popularMonitors)
             {
                 auto set = MakeZoneSet(m_config);
@@ -1113,23 +1126,35 @@ namespace FancyZonesUnitTests
                 checkZones(set, zoneCount, monitorInfo);
             }
         }
-#endif
 
-#if 0
         TEST_METHOD(CustomZoneFromValidGridFullLayoutInfo)
         {
             using namespace JSONHelpers;
 
-            const std::wstring uuid = L"uuid";
+            //prepare device data
+            {
+                const std::wstring zoneUuid = L"default_device_id";
+                DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
+                const std::wstring deviceInfoPath = FancyZonesDataInstance().GetPersistFancyZonesJSONPath() + L".device_info_tmp";
+                FancyZonesDataInstance().SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
+
+                FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
+                std::filesystem::remove(deviceInfoPath);
+            }
+
+            //prepare expected data
+            wil::unique_cotaskmem_string uuid;
+            Assert::AreEqual(S_OK, StringFromCLSID(m_id, &uuid));
             const GridLayoutInfo grid(GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
                 .rows = 1,
                 .columns = 3,
                 .rowsPercents = { 10000 },
                 .columnsPercents = { 2500, 5000, 2500 },
                 .cellChildMap = { { 0, 1, 2 } } }));
-            CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+            CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
             json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
             Assert::IsTrue(std::filesystem::exists(m_path));
+            FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path, L"default_device_id");
 
             const int spacing = 10;
             const int zoneCount = grid.rows() * grid.columns();
@@ -1144,7 +1169,6 @@ namespace FancyZonesUnitTests
                 checkZones(set, zoneCount, monitorInfo);
             }
         }
-#endif
 
         TEST_METHOD(CustomZoneFromValidGridMinimalLayoutInfo)
         {
