@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -12,6 +13,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Common;
 using Common.Utilities;
+using SvgPreviewHandler.Utilities;
 
 namespace SvgPreviewHandler
 {
@@ -20,10 +22,19 @@ namespace SvgPreviewHandler
     /// </summary>
     public class SvgPreviewControl : FormHandlerControl
     {
-        private Stream dataSourceStream;
+        /// <summary>
+        /// Browser Control to display Svg.
+        /// </summary>
+        private WebBrowser browser;
 
+        /// <summary>
+        /// Text box to display the information about blocked elements from Svg.
+        /// </summary>
         private RichTextBox textBox;
 
+        /// <summary>
+        /// Represent if any blocked element is found in the Svg.
+        /// </summary>
         private bool foundFilteredElements = false;
 
         /// <summary>
@@ -35,7 +46,6 @@ namespace SvgPreviewHandler
             this.InvokeOnControlThread(() =>
             {
                 this.foundFilteredElements = false;
-                WebBrowser browser = new WebBrowser();
                 string svgData = null;
                 using (var stream = new StreamWrapper(dataSource as IStream))
                 {
@@ -45,44 +55,17 @@ namespace SvgPreviewHandler
                     }
                 }
 
-                browser.DocumentText = this.RemoveFilteredElements(svgData);
-                browser.Dock = DockStyle.Fill;
-                browser.IsWebBrowserContextMenuEnabled = false;
-                browser.ScriptErrorsSuppressed = true;
-                browser.ScrollBarsEnabled = true;
+                svgData = SvgPreviewHandlerHelper.RemoveElements(svgData, out this.foundFilteredElements);
 
                 if (this.foundFilteredElements)
                 {
-                    this.textBox = new RichTextBox();
-                    this.textBox.Text = "Blocked scripts and image to load external resources components Blocked scripts and image to load external resources components Blocked scripts and image to load external resources components";
-                    this.textBox.BackColor = Color.LightYellow;
-                    this.textBox.Multiline = true;
-                    this.textBox.Dock = DockStyle.Top;
-                    this.textBox.ReadOnly = true;
-                    this.textBox.ContentsResized += this.RTBContentsResized;
-                    this.textBox.ScrollBars = RichTextBoxScrollBars.None;
-                    this.textBox.BorderStyle = BorderStyle.None;
-                    this.Controls.Add(this.textBox);
+                    this.AddTextBoxControl();
                 }
 
-                this.Controls.Add(browser);
-
+                this.AddBrowserControl(svgData);
                 this.Resize += this.FormResized;
                 base.DoPreview(dataSource);
             });
-        }
-
-        /// <summary>
-        /// Free resources on the unload of Preview.
-        /// </summary>
-        public override void Unload()
-        {
-            base.Unload();
-            if (this.dataSourceStream != null)
-            {
-                this.dataSourceStream.Dispose();
-                this.dataSourceStream = null;
-            }
         }
 
         private void RTBContentsResized(object sender, ContentsResizedEventArgs e)
@@ -99,20 +82,36 @@ namespace SvgPreviewHandler
             }
         }
 
-        private string RemoveFilteredElements(string svgData)
+        /// <summary>
+        /// Adds a Web Browser Control to Control Collection.
+        /// </summary>
+        /// <param name="svgData">Svg to display on Browser Control.</param>
+        private void AddBrowserControl(string svgData)
         {
-            var doc = XDocument.Parse(svgData);
-            var elements = doc.Descendants().ToList();
-            foreach (XElement node in elements)
-            {
-                if (string.Equals(node.Name.LocalName, "script", StringComparison.OrdinalIgnoreCase) || string.Equals(node.Name.LocalName, "image", StringComparison.OrdinalIgnoreCase))
-                {
-                    node.RemoveAll();
-                    this.foundFilteredElements = true;
-                }
-            }
+            this.browser = new WebBrowser();
+            this.browser.DocumentText = svgData;
+            this.browser.Dock = DockStyle.Fill;
+            this.browser.IsWebBrowserContextMenuEnabled = false;
+            this.browser.ScriptErrorsSuppressed = true;
+            this.browser.ScrollBarsEnabled = true;
+            this.Controls.Add(this.browser);
+        }
 
-            return doc.ToString();
+        /// <summary>
+        /// Adds a Text Box in Controls for showing information about blocked elements.
+        /// </summary>
+        private void AddTextBoxControl()
+        {
+            this.textBox = new RichTextBox();
+            this.textBox.Text = "Some elements have been blocked to help prevent the sender from identifying your computer. Open this item to view all elements.";
+            this.textBox.BackColor = Color.LightYellow;
+            this.textBox.Multiline = true;
+            this.textBox.Dock = DockStyle.Top;
+            this.textBox.ReadOnly = true;
+            this.textBox.ContentsResized += this.RTBContentsResized;
+            this.textBox.ScrollBars = RichTextBoxScrollBars.None;
+            this.textBox.BorderStyle = BorderStyle.None;
+            this.Controls.Add(this.textBox);
         }
     }
 }
