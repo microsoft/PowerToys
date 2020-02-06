@@ -24,6 +24,12 @@
     <ClCompile Include="BaseSettingsClassTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MarkDownPreviewSettingsClassTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SVGPreviewSettingsClassTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">

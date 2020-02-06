@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "CppUnitTest.h"
-#include <powerpreview/settings.cpp>
-#include <powerpreview/trace.cpp>
 #include <settings_objects.h>
 #include <powerpreviewTest/BaseSettingsClassTest.h>
 
@@ -44,6 +42,32 @@ namespace BaseSettingsTest
 				
 				// Assert
 				Assert::AreEqual(actualState, expectedState);
+			}
+
+			TEST_METHOD(SetRegistryValue_ShouldCreateAValueInRegistry_WhenSucessfull)
+			{
+				// Arrange
+				BaseSettingsClassTest tempSettings = BaseSettingsClassTest();
+
+				// Act
+				tempSettings.SetRegistryValue();
+				bool results = tempSettings.GetRegistryValue();
+
+				// Assert
+				Assert::IsTrue(results);
+			}
+
+			TEST_METHOD(RemoveRegistryValue_ShouldDeleteAValueInRegistry_WhenSucessfull)
+			{
+				// Arrange
+				BaseSettingsClassTest tempSettings = BaseSettingsClassTest();
+
+				// Act
+				tempSettings.SetRegistryValue();
+				bool results = tempSettings.RemvRegistryValue();
+
+				// Assert
+				Assert::IsFalse(results);
 			}
 
 			std::wstring GetJSONSettings(std::wstring _settingsNameId, std::wstring _value) const

@@ -38,18 +38,6 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
     settings.set_description(GET_RESOURCE_STRING(IDS_GENERAL_DESCRIPTION));
     settings.set_icon_key(GET_RESOURCE_STRING(IDS_ICON_KEY_NAME));
 
-    // Explorer: Settings Group Header.
-    settings.add_header_szLarge(
-        GET_RESOURCE_STRING(IDS_EXPLR_ICONS_PREV_STTNGS_GROUP_HEADER_ID),
-        GET_RESOURCE_STRING(IDS_EXPLR_ICONS_PREV_STTNGS_GROUP_DESC),
-        GET_RESOURCE_STRING(IDS_EXPLR_ICONS_PREV_STTNGS_GROUP_TEXT));
-
-    // Explorer: SVG Icon Settings.
-    settings.add_bool_toogle(
-        m_explrSVGSettings.GetName(),
-        m_explrSVGSettings.GetDescription(),
-        m_explrSVGSettings.GetState());
-
     // Preview Pane: Settings Group Header.
     settings.add_header_szLarge(
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_HEADER_ID),
@@ -77,7 +65,6 @@ void PowerPreviewModule::set_config(const wchar_t* config)
     try
     {
         PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::from_json_string(config);
-        m_explrSVGSettings.UpdateState(values);
         m_prevPaneSVGSettings.UpdateState(values);
         m_prevPaneMDSettings.UpdateState(values);
         values.save_to_settings_file();
@@ -124,7 +111,6 @@ void PowerPreviewModule::init_settings()
             PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_name());
 
         // Load settings states.
-        m_explrSVGSettings.LoadState(settings);
         m_prevPaneSVGSettings.LoadState(settings);
         m_prevPaneMDSettings.LoadState(settings);
     }

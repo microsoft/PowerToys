@@ -1,4 +1,5 @@
 #pragma once
+#include <pch.h>
 #include <string>
 #include "resource.h"
 #include <settings_objects.h>
@@ -12,9 +13,12 @@ namespace PowerPreviewSettings
 		bool m_isPreviewEnabled;
         std::wstring m_name;
         std::wstring m_description;
+		LPCSTR m_clsid;
+		std::wstring m_displayName;
+		LPCWSTR m_subKey = L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers";
 
 	public:
-        FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description);
+        FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCSTR clsid, const std::wstring displayname);
 		FileExplorerPreviewSettings();
 
 		virtual bool GetState() const;
@@ -22,20 +26,18 @@ namespace PowerPreviewSettings
         virtual void LoadState(PowerToysSettings::PowerToyValues &settings);
 		virtual void UpdateState(PowerToysSettings::PowerToyValues &values);
         virtual std::wstring GetName() const;
-		virtual void SetName(const std::wstring name);
+		virtual void SetName(const std::wstring &name);
         virtual std::wstring GetDescription() const;
-        virtual void SetDescription(const std::wstring description);
+        virtual void SetDescription(const std::wstring &description);
+		virtual void SetDisplayName(const std::wstring &displayName);
+		virtual LONG SetRegistryValue() const;
+		virtual LONG RemvRegistryValue() const;
+	    virtual bool GetRegistryValue() const;
+		virtual std::wstring GetDisplayName() const;
+		virtual LPCSTR GetCLSID() const;
+		virtual LPCWSTR GetSubKey() const;
 		virtual void EnablePreview() = 0;
 		virtual void DisabledPreview() = 0;
-	};
-
-	class ExplrSVGSttngs: public FileExplorerPreviewSettings
-	{
-	public:
-		ExplrSVGSttngs();
-
-		virtual void EnablePreview();
-		virtual void DisabledPreview();
 	};
 
 	class PrevPaneSVGRendrSettings: public FileExplorerPreviewSettings

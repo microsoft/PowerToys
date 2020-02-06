@@ -1,6 +1,6 @@
 #include "pch.h"
 #include <powerpreview/settings.h>
-
+#include <atlstr.h>
 
 using namespace PowerPreviewSettings;
 

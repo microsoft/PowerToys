@@ -9,7 +9,9 @@ BaseSettingsClassTest::BaseSettingsClassTest() :
     FileExplorerPreviewSettings(
         false,
         GET_RESOURCE_STRING(IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL),
-        GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION)){}
+        GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
+        "{test-guid}",
+        TEXT("Test Handler\0")){}
 
 void BaseSettingsClassTest::EnablePreview() {}
 
