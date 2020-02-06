@@ -670,18 +670,6 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(expected.data.spacing, actual->data.spacing);
         }
 
-        TEST_METHOD(FromJsonZoneCustom)
-        {
-            DeviceInfoJSON expected = m_defaultDeviceInfo;
-            expected.data.activeZoneSet.type = ZoneSetLayoutType::Custom;
-
-            json::JsonObject json = DeviceInfoJSON::ToJson(expected);
-            auto actual = DeviceInfoJSON::FromJson(json);
-            Assert::IsTrue(actual.has_value());
-
-            Assert::AreEqual((int)expected.data.activeZoneSet.type, (int)actual->data.activeZoneSet.type, L"zone set type");
-        }
-
         TEST_METHOD(FromJsonZoneGeneral)
         {
             DeviceInfoJSON expected = m_defaultDeviceInfo;
