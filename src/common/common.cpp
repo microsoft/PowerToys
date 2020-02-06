@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "common.h"
-#include "hwnd_data_cache.h"
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
 #include <strsafe.h>
@@ -34,12 +33,67 @@ std::optional<POINT> get_mouse_pos() {
   }
 }
 
+static bool is_system_window(HWND hwnd, const char* class_name = nullptr) {
+  static auto system_classes = { "SysListView32", "WorkerW", "Shell_TrayWnd", "Shell_SecondaryTrayWnd", "Progman" };
+  static auto system_hwnds = { GetDesktopWindow(), GetShellWindow() };
+  for (auto system_hwnd : system_hwnds) {
+    if (hwnd == system_hwnd) {
+      return true;
+    }
+  }
+  std::array<char, 256> class_name_buff;
+  if (class_name == nullptr) {
+    GetClassNameA(hwnd, class_name_buff.data(), static_cast<int>(class_name_buff.size()));
+    class_name = class_name_buff.data();
+  }
+  for (const auto& system_class : system_classes) {
+    if (strcmp(system_class, class_name) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 WindowAndProcPath get_filtered_base_window_and_path(HWND window) {
-  return hwnd_cache.get_window_and_path(window);
+  WindowAndProcPath result;
+  auto root = GetAncestor(window, GA_ROOT);
+  if (!IsWindowVisible(root)) { 
+    return result;
+  }
+  auto style = GetWindowLong(root, GWL_STYLE);
+  auto exStyle = GetWindowLong(root, GWL_EXSTYLE);
+  // WS_POPUP need to have a border or minimize/maximize buttons,
+  // otherwise the window is "not interesting"
+  if ((style & WS_POPUP) == WS_POPUP &&
+      (style & WS_THICKFRAME) == 0 &&
+      (style & WS_MINIMIZEBOX) == 0 &&
+      (style & WS_MAXIMIZEBOX) == 0) {
+    return result;
+  }
+  if ((style & WS_CHILD) == WS_CHILD ||
+      (style & WS_DISABLED) == WS_DISABLED ||
+      (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW ||
+      (exStyle & WS_EX_NOACTIVATE) == WS_EX_NOACTIVATE) {
+    return result;
+  }
+  std::array<char, 256> class_name;
+  GetClassNameA(root, class_name.data(), static_cast<int>(class_name.size()));
+  if (is_system_window(root, class_name.data())) {
+    return result;
+  }
+  auto process_path = get_process_path(root);
+  // Check for Cortana:
+  if (strcmp(class_name.data(), "Windows.UI.Core.CoreWindow") == 0 &&
+      process_path.ends_with(L"SearchUI.exe")) {
+    return result;
+  }
+  result.hwnd = root;
+  result.process_path = std::move(process_path);
+  return result;
 }
 
 HWND get_filtered_active_window() {
-  return hwnd_cache.get_window(GetForegroundWindow());
+  return get_filtered_base_window_and_path(GetForegroundWindow()).hwnd;
 }
 
 int width(const RECT& rect) {

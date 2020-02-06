@@ -72,9 +72,6 @@
     <ClInclude Include="on_thread_executor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="hwnd_data_cache.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="json.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -130,9 +127,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="on_thread_executor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="hwnd_data_cache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="json.cpp">
