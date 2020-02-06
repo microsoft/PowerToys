@@ -55,7 +55,8 @@ namespace FancyZonesUnitTests
     {
         TEST_METHOD(ZoneSetLayoutTypeToString){
             std::map<int, std::wstring> expectedMap = {
-                std::make_pair(-1, L"TypeToString_ERROR"),
+                std::make_pair(-2, L"TypeToString_ERROR"),
+                std::make_pair(-1, L"blank"),
                 std::make_pair(0, L"focus"),
                 std::make_pair(1, L"columns"),
                 std::make_pair(2, L"rows"),
@@ -98,8 +99,9 @@ namespace FancyZonesUnitTests
                 std::make_pair(ZoneSetLayoutType::Rows, 0xFFFE),
                 std::make_pair(ZoneSetLayoutType::Grid, 0xFFFC),
                 std::make_pair(ZoneSetLayoutType::PriorityGrid, 0xFFFB),
-                std::make_pair(ZoneSetLayoutType::Custom, 0xFFFA),
+                std::make_pair(ZoneSetLayoutType::Blank, 0xFFFA),
                 std::make_pair(ZoneSetLayoutType::Custom, 0),
+                std::make_pair(ZoneSetLayoutType::Custom, 1),
                 std::make_pair(ZoneSetLayoutType::Custom, -1),
             };
 
@@ -542,7 +544,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(FromJsonTypeInvalid)
         {
-            ZoneSetData expected{ L"uuid", ZoneSetLayoutType::Custom };
+            ZoneSetData expected{ L"uuid", ZoneSetLayoutType::Blank };
 
             json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"type\": \"invalid_type\"}");
             auto actual = ZoneSetData::FromJson(json);
@@ -1279,7 +1281,7 @@ namespace FancyZonesUnitTests
             FancyZonesData data;
             const std::wstring path = data.GetPersistFancyZonesJSONPath() + L".test_tmp";
             json::to_file(path, CustomZoneSetJSON::ToJson(expected));            
-            m_fzData.ParseCustomZoneSetFromTmpFile(path, deviceId);
+            m_fzData.ParseCustomZoneSetFromTmpFile(path);
 
             bool actualFileExists = std::filesystem::exists(path);
             if (actualFileExists)
@@ -1305,7 +1307,7 @@ namespace FancyZonesUnitTests
             const std::wstring path = m_fzData.GetPersistFancyZonesJSONPath() + L".test_tmp";
             const std::wstring deviceId = L"default_device_id";
 
-            m_fzData.ParseCustomZoneSetFromTmpFile(path, deviceId);
+            m_fzData.ParseCustomZoneSetFromTmpFile(path);
             auto devices = m_fzData.GetDeviceInfoMap();
             Assert::AreEqual((size_t)0, devices.size());
         }

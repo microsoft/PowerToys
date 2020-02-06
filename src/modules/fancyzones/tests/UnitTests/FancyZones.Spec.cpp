@@ -227,13 +227,13 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(GetCurrentMonitorZoneSetEmpty)
         {
-            const auto* actual = m_zoneWindowHost->GetCurrentMonitorZoneSet(Mocks::Monitor());
+            const auto* actual = m_zoneWindowHost->GetParentZoneWindow(Mocks::Monitor());
             Assert::IsNull(actual);
         }
 
         TEST_METHOD(GetCurrentMonitorZoneSetNullMonitor)
         {
-            const auto* actual = m_zoneWindowHost->GetCurrentMonitorZoneSet(nullptr);
+            const auto* actual = m_zoneWindowHost->GetParentZoneWindow(nullptr);
             Assert::IsNull(actual);
         }
     };

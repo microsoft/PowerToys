@@ -1112,7 +1112,7 @@ namespace FancyZonesUnitTests
             CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info } };
             json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
             Assert::IsTrue(std::filesystem::exists(m_path));
-            FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path, L"default_device_id");
+            FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path);
 
             //test
             const int spacing = 10;
@@ -1154,7 +1154,7 @@ namespace FancyZonesUnitTests
             CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
             json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
             Assert::IsTrue(std::filesystem::exists(m_path));
-            FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path, L"default_device_id");
+            FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path);
 
             const int spacing = 10;
             const int zoneCount = grid.rows() * grid.columns();

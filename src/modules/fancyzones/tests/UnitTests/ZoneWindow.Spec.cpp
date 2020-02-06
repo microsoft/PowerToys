@@ -22,10 +22,10 @@ namespace FancyZonesUnitTests
         {
             return RGB(0xFF, 0xFF, 0xFF);
         }
-        IFACEMETHODIMP_(IZoneSet*)
-        GetCurrentMonitorZoneSet(HMONITOR monitor) noexcept
+        IFACEMETHODIMP_(IZoneWindow*)
+        GetParentZoneWindow(HMONITOR monitor) noexcept
         {
-            return m_zoneSet;
+            return m_zoneWindow;
         }
         IFACEMETHODIMP_(int)
         GetZoneHighlightOpacity() noexcept
@@ -33,7 +33,7 @@ namespace FancyZonesUnitTests
             return 100;
         }
 
-        IZoneSet* m_zoneSet;
+        IZoneWindow* m_zoneWindow;
     };
 
     TEST_CLASS(ZoneWindowUnitTests)
@@ -274,6 +274,7 @@ namespace FancyZonesUnitTests
             auto customZoneJson = CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ customSetGuid, customZoneData });
             json::to_file(appliedZoneSetTempPath, customZoneJson);
             m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
+            m_fancyZonesData.ParseCustomZoneSetFromTmpFile(appliedZoneSetTempPath);
 
             //temp file read on initialization
             auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false);
@@ -320,6 +321,7 @@ namespace FancyZonesUnitTests
 
             m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
             m_fancyZonesData.ParseDeletedCustomZoneSetsFromTmpFile(deletedZonesTempPath);
+            m_fancyZonesData.ParseCustomZoneSetFromTmpFile(appliedZoneSetTempPath);
 
             //temp file read on initialization
             auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false);
@@ -366,6 +368,7 @@ namespace FancyZonesUnitTests
 
             m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
             m_fancyZonesData.ParseDeletedCustomZoneSetsFromTmpFile(deletedZonesTempPath);
+            m_fancyZonesData.ParseCustomZoneSetFromTmpFile(appliedZoneSetTempPath);
 
             //temp file read on initialization
             auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false);
