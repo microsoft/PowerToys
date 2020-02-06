@@ -15,16 +15,16 @@ namespace PowerPreviewSettings
     FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCSTR clsid, const std::wstring displayname) 
 		: 
 		m_isPreviewEnabled(state),
-        m_name(name),
-        m_description(description),
+        	m_name(name),
+        	m_description(description),
 		m_clsid(clsid),
 		m_displayName(displayname){}
 
 	FileExplorerPreviewSettings::FileExplorerPreviewSettings()
 		:
-        m_isPreviewEnabled(false),
-        m_name(L"_UNDEFINED_"),
-        m_description(L"_UNDEFINED_"),
+        	m_isPreviewEnabled(false),
+        	m_name(L"_UNDEFINED_"),
+        	m_description(L"_UNDEFINED_"),
 		m_clsid("_UNDEFINED_"),
 		m_displayName(L"_UNDEFINED_"){}
 
@@ -35,12 +35,12 @@ namespace PowerPreviewSettings
 
 	void FileExplorerPreviewSettings::SetState(bool state)
 	{
-        this->m_isPreviewEnabled = state;
+        	this->m_isPreviewEnabled = state;
 	}
 
 	void FileExplorerPreviewSettings::LoadState(PowerToysSettings::PowerToyValues& settings)
 	{
-        auto toggle = settings.get_bool_value(this->GetName());
+        	auto toggle = settings.get_bool_value(this->GetName());
 		if(toggle != std::nullopt)
 		{
 			this->m_isPreviewEnabled = toggle.value();
@@ -49,7 +49,7 @@ namespace PowerPreviewSettings
 
 	void FileExplorerPreviewSettings::UpdateState(PowerToysSettings::PowerToyValues& values)
 	{
-        auto toggle = values.get_bool_value(this->GetName());
+        	auto toggle = values.get_bool_value(this->GetName());
 		if(toggle != std::nullopt)
 		{
 			this->m_isPreviewEnabled  = toggle.value();
@@ -98,7 +98,7 @@ namespace PowerPreviewSettings
 		{
 			return err;
 		}
-        RegCloseKey(OpenResult);
+        	RegCloseKey(OpenResult);
 	}
 
 	LONG FileExplorerPreviewSettings::RemvRegistryValue() const
@@ -125,7 +125,7 @@ namespace PowerPreviewSettings
 		{
 			return err;
 		}
-        RegCloseKey(OpenResult);
+        	RegCloseKey(OpenResult);
 	}
 
 	bool FileExplorerPreviewSettings::GetRegistryValue() const
@@ -214,8 +214,8 @@ namespace PowerPreviewSettings
 		:
 		FileExplorerPreviewSettings(
 			false,
-            GET_RESOURCE_STRING(IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL),
-            GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION),
+            		GET_RESOURCE_STRING(IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL),
+            		GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION),
 			"{ddee2b8a-6807-48a6-bb20-2338174ff779}",
 			GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DISPLAYNAME)){}
 
@@ -250,8 +250,8 @@ namespace PowerPreviewSettings
 		:
 		FileExplorerPreviewSettings(
 			false,
-            GET_RESOURCE_STRING(IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL),
-            GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
+            		GET_RESOURCE_STRING(IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL),
+            		GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
 			"{45769bcc-e8fd-42d0-947e-02beef77a1f5}",
 			GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DISPLAYNAME)){}
 
