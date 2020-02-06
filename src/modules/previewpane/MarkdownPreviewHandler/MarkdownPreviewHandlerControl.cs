@@ -50,7 +50,7 @@ namespace MarkdownPreviewHandler
         private WebBrowser browser;
 
         /// <summary>
-        /// True if external image is blocked.
+        /// True if external image is blocked, false otherwise.
         /// </summary>
         private bool imagesBlocked = false;
 
@@ -115,10 +115,10 @@ namespace MarkdownPreviewHandler
         }
 
         /// <summary>
-        /// Callback when rich text box is resized.
+        /// Callback when RichTextBox is resized.
         /// </summary>
-        /// <param name="sender">control which </param>
-        /// <param name="e">yhjj.</param>
+        /// <param name="sender">Reference to resized control.</param>
+        /// <param name="e">Provides data for the resize event.</param>
         private void RTBContentsResized(object sender, ContentsResizedEventArgs e)
         {
             RichTextBox richTextBox = (RichTextBox)sender;
@@ -126,10 +126,10 @@ namespace MarkdownPreviewHandler
         }
 
         /// <summary>
-        /// .
+        /// Callback when form is resized.
         /// </summary>
-        /// <param name="sender">wdd.</param>
-        /// <param name="e">edff.</param>
+        /// <param name="sender">Reference to resized control.</param>
+        /// <param name="e">Provides data for the event.</param>
         private void FormResized(object sender, EventArgs e)
         {
             if (this.imagesBlocked)
@@ -139,7 +139,7 @@ namespace MarkdownPreviewHandler
         }
 
         /// <summary>
-        /// Callback for 
+        /// Callback when image is blocked by extension.
         /// </summary>
         private void ImagesBlockedCallBack()
         {
@@ -147,10 +147,10 @@ namespace MarkdownPreviewHandler
         }
 
         /// <summary>
-        /// Callback for link tags in html.
+        /// Callback when link tag is clicked in html.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e">sh.</param>
+        /// <param name="sender">Reference to resized control.</param>
+        /// <param name="e">Provides data for the WebBrowserNavigatingEventArgs event.</param>
         private void WebBrowserNavigating(object sender, WebBrowserNavigatingEventArgs e)
         {
             e.Cancel = true;
