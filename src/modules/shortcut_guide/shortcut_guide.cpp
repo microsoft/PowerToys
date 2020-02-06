@@ -158,8 +158,8 @@ intptr_t OverlayWindow::signal_event(const wchar_t* name, intptr_t data)
 
 void OverlayWindow::on_held()
 {
-    auto active_window = get_filtered_active_window();
-    winkey_popup->show(active_window);
+    auto filter = get_shortcutguide_filtered_window();
+    winkey_popup->show(filter.hwnd, filter.snappable);
 }
 
 void OverlayWindow::on_held_press(DWORD vkCode)
