@@ -15,7 +15,7 @@ namespace BaseSettingsTest
 			TEST_METHOD(EnableRender_ShouldUpdateStateToTrue_WhenSucessfull)
 			{
 				// Arrange
-                PrevPaneSVGRendrSettings tempSettings = PrevPaneSVGRendrSettings();
+                		PrevPaneSVGRendrSettings tempSettings = PrevPaneSVGRendrSettings();
 				PowerToyValues values = PowerToyValues::from_json_string(GetJSONSettings(tempSettings.GetName(), L"false"));
 				tempSettings.UpdateState(values);
 
@@ -29,7 +29,7 @@ namespace BaseSettingsTest
 			TEST_METHOD(DisableRender_ShouldUpdateStateToFalse_WhenSucessfull)
 			{
 				// Arrange
-                PrevPaneSVGRendrSettings tempSettings = PrevPaneSVGRendrSettings();
+                		PrevPaneSVGRendrSettings tempSettings = PrevPaneSVGRendrSettings();
 				bool valueExists = tempSettings.GetRegistryValue(); // check if key-value exists.
 
 				// Act

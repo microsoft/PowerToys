@@ -15,17 +15,17 @@ namespace PowerPreviewSettings
     FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCWSTR clsid, const std::wstring displayname) 
 		: 
 		m_isPreviewEnabled(state),
-        m_name(name),
-        m_description(description),
+        	m_name(name),
+        	m_description(description),
 		m_clsid(clsid),
 		m_displayName(displayname){}
 
 	FileExplorerPreviewSettings::FileExplorerPreviewSettings()
 		:
-        m_isPreviewEnabled(false),
-        m_name(L"_UNDEFINED_"),
-        m_description(L"_UNDEFINED_"),
-		m_clsid(L"_UNDEFINED_"),
+        	m_isPreviewEnabled(false),
+        	m_name(L"_UNDEFINED_"),
+        	m_description(L"_UNDEFINED_"),
+		m_clsid("L_UNDEFINED_"),
 		m_displayName(L"_UNDEFINED_"){}
 
 	bool FileExplorerPreviewSettings::GetState() const
@@ -35,12 +35,12 @@ namespace PowerPreviewSettings
 
 	void FileExplorerPreviewSettings::SetState(bool state)
 	{
-        this->m_isPreviewEnabled = state;
+        	this->m_isPreviewEnabled = state;
 	}
 
 	void FileExplorerPreviewSettings::LoadState(PowerToysSettings::PowerToyValues& settings)
 	{
-        auto toggle = settings.get_bool_value(this->GetName());
+        	auto toggle = settings.get_bool_value(this->GetName());
 		if(toggle != std::nullopt)
 		{
 			this->m_isPreviewEnabled = toggle.value();
@@ -49,7 +49,7 @@ namespace PowerPreviewSettings
 
 	void FileExplorerPreviewSettings::UpdateState(PowerToysSettings::PowerToyValues& values)
 	{
-        auto toggle = values.get_bool_value(this->GetName());
+        	auto toggle = values.get_bool_value(this->GetName());
 		if(toggle != std::nullopt)
 		{
 			this->m_isPreviewEnabled  = toggle.value();
@@ -96,7 +96,7 @@ namespace PowerPreviewSettings
 		{
 			return err;
 		}
-        RegCloseKey(OpenResult);
+        	RegCloseKey(OpenResult);
 	}
 
 	LONG FileExplorerPreviewSettings::RemvRegistryValue() const
@@ -123,7 +123,7 @@ namespace PowerPreviewSettings
 		{
 			return err;
 		}
-        RegCloseKey(OpenResult);
+        	RegCloseKey(OpenResult);
 	}
 
 	bool FileExplorerPreviewSettings::GetRegistryValue() const
