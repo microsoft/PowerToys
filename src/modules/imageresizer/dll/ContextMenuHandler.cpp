@@ -205,13 +205,9 @@ HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
 HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellItemArray* psiItemArray)
 {
     // Set the application path based on the location of the dll
-    LPTSTR buffer = new TCHAR[MAX_PATH];
-    GetModuleFileName(g_hInst_imageResizer, buffer, MAX_PATH);
-    std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
-    std::wstring path = std::wstring(buffer).substr(0, pos);
+    std::wstring path = get_module_folderpath(g_hInst_imageResizer);
     path = path + L"\\ImageResizer.exe";
     LPTSTR lpApplicationName = (LPTSTR)path.c_str();
-    delete[] buffer;
     // Create an anonymous pipe to stream filenames
     SECURITY_ATTRIBUTES sa;
     HANDLE hReadPipe;
@@ -338,6 +334,11 @@ HRESULT __stdcall CContextMenuHandler::GetCanonicalName(GUID* pguidCommandName)
 
 HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
 {
+    if (!CSettings::GetEnabled())
+    {
+        *pCmdState = ECS_HIDDEN;
+        return S_OK;
+    }
     // Hide if the file is not an image
     *pCmdState = ECS_HIDDEN;
     // Suppressing C26812 warning as the issue is in the shtypes.h library
@@ -359,7 +360,7 @@ HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, B
     // If selected file is an image...
     if (type == PERCEIVED_TYPE_IMAGE)
     {
-        *pCmdState = CSettings::GetEnabled() ? ECS_ENABLED : ECS_HIDDEN;
+        *pCmdState = ECS_ENABLED;
     }
     return S_OK;
 }

@@ -36,7 +36,7 @@
             <com:ExeServer Executable="modules\PowerRenameUWPUI.exe" DisplayName="PowerRenameUWPUI">
               <com:Class Id="0440049F-D1DC-4E46-B27B-98393D79486B"/>
             </com:ExeServer>
-            <com:SurrogateServer AppId="51B4D7E5-7568-4234-B4BB-47FB3C016A69" DisplayName="ImageResizerExt">
+            <com:SurrogateServer DisplayName="ImageResizerExt">
               <com:Class Id="51B4D7E5-7568-4234-B4BB-47FB3C016A69" Path="modules\ImageResizerExt.dll" ThreadingModel="STA"/>
             </com:SurrogateServer>
           </com:ComServer>
