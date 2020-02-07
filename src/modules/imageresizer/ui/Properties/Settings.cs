@@ -2,24 +2,67 @@
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.IO;
+using System.Threading;
+using System.Windows.Media.Imaging;
 using ImageResizer.Models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace ImageResizer.Properties
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public partial class Settings : IDataErrorInfo, INotifyPropertyChanged
     {
+        // Used to synchronize access to the settings.json file
+        private static Mutex jsonMutex = new Mutex();
+        private static string _settingsPath;
         private string _fileNameFormat;
+        private bool _shrinkOnly;
+        private int _selectedSizeIndex;
+        private bool _replace;
+        private bool _ignoreOrientation;
+        private int _jpegQualityLevel;
+        private System.Windows.Media.Imaging.PngInterlaceOption _pngInterlaceOption;
+        private System.Windows.Media.Imaging.TiffCompressOption _tiffCompressOption;
+        private string _fileName;
+        private System.Collections.ObjectModel.ObservableCollection<ImageResizer.Models.ResizeSize> _sizes;
+        private bool _keepDateModified;
+        private System.Guid _fallbackEncoder;
+        private ImageResizer.Models.CustomSize _customSize;
 
         public Settings()
-            => AllSizes = new AllSizesCollection(this);
+        {
+            _settingsPath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "ImageResizer", "settings.json");
 
-        public IEnumerable<ResizeSize> AllSizes { get; }
+            SelectedSizeIndex = 0;
+            ShrinkOnly = false;
+            Replace = false;
+            IgnoreOrientation = true;
+            JpegQualityLevel = 90;
+            PngInterlaceOption = System.Windows.Media.Imaging.PngInterlaceOption.Default;
+            TiffCompressOption = System.Windows.Media.Imaging.TiffCompressOption.Default;
+            FileName = "%1 (%2)";
+            Sizes = new ObservableCollection<ResizeSize>
+            {
+                new ResizeSize("$small$", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel),
+                new ResizeSize("$medium$", ResizeFit.Fit, 1366, 768, ResizeUnit.Pixel),
+                new ResizeSize("$large$", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
+                new ResizeSize("$phone$", ResizeFit.Fit, 320, 568, ResizeUnit.Pixel),
+            };
+            KeepDateModified = false;
+            FallbackEncoder = new System.Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057");
+            CustomSize = new CustomSize(ResizeFit.Fit, 1024, 640, ResizeUnit.Pixel);
+            AllSizes = new AllSizesCollection(this);
+        }
+
+        public IEnumerable<ResizeSize> AllSizes { get; set; }
 
         public string FileNameFormat
             => _fileNameFormat
@@ -53,22 +96,22 @@ namespace ImageResizer.Properties
         string IDataErrorInfo.Error
             => string.Empty;
 
-        public object this[string propertyName]
-        {
-            get
-            {
-                return base[propertyName];
-            }
+        /*//public object this[string propertyName]
+        //{
+        //    get
+        //    {
+        //        return base[propertyName];
+        //    }
 
-            set
-            {
-                base[propertyName] = value;
-                if (propertyName == nameof(FileName))
-                {
-                    _fileNameFormat = null;
-                }
-            }
-        }
+        //    set
+        //    {
+        //        base[propertyName] = value;
+        //        if (propertyName == nameof(FileName))
+        //        {
+        //            _fileNameFormat = null;
+        //        }
+        //    }
+        //}*/
 
         string IDataErrorInfo.this[string columnName]
         {
@@ -103,7 +146,7 @@ namespace ImageResizer.Properties
 
                 settings.PropertyChanged += (sender, e) =>
                 {
-                    if (e.PropertyName == nameof(CustomSize))
+                    if (e.PropertyName == nameof(Models.CustomSize))
                     {
                         var oldCustomSize = _customSize;
                         _customSize = settings.CustomSize;
@@ -186,260 +229,151 @@ namespace ImageResizer.Properties
             }
         }
 
-        private static Settings defaultInstance = (Settings)System.Configuration.ApplicationSettingsBase.Synchronized(new Settings());
+        private static Settings defaultInstance = new Settings();
 
         public static Settings Default
         {
             get
             {
+                defaultInstance.Reload();
                 return defaultInstance;
             }
         }
 
-        [global::System.Configuration.UserScopedSettingAttribute]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [JsonProperty(PropertyName = "imageresizer_selectedSizeIndex")]
         public int SelectedSizeIndex
         {
-            get
-            {
-                return (int)this["SelectedSizeIndex"];
-            }
-
+            get => _selectedSizeIndex;
             set
             {
-                this["SelectedSizeIndex"] = value;
+                _selectedSizeIndex = value;
+                NotifyPropertyChanged();
             }
         }
 
-        [global::System.Configuration.UserScopedSettingAttribute]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [JsonProperty(PropertyName = "imageresizer_shrinkOnly")]
         public bool ShrinkOnly
         {
-            get
-            {
-                return (bool)this["ShrinkOnly"];
-            }
-
+            get => _shrinkOnly;
             set
             {
-                this["ShrinkOnly"] = value;
+                _shrinkOnly = value;
+                NotifyPropertyChanged();
             }
         }
 
-        [global::System.Configuration.UserScopedSettingAttribute]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [JsonProperty(PropertyName = "imageresizer_replace")]
         public bool Replace
         {
-            get
-            {
-                return (bool)this["Replace"];
-            }
-
+            get => _replace;
             set
             {
-                this["Replace"] = value;
+                _replace = value;
+                NotifyPropertyChanged();
             }
         }
 
-        [global::System.Configuration.UserScopedSettingAttribute]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [JsonProperty(PropertyName = "imageresizer_ignoreOrientation")]
         public bool IgnoreOrientation
         {
-            get
-            {
-                return (bool)this["IgnoreOrientation"];
-            }
-
+            get => _ignoreOrientation;
             set
             {
-                this["IgnoreOrientation"] = value;
+                _ignoreOrientation = value;
+                NotifyPropertyChanged();
             }
         }
 
-        [global::System.Configuration.UserScopedSettingAttribute]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.Configuration.DefaultSettingValueAttribute("90")]
+        [JsonProperty(PropertyName = "imageresizer_jpegQualityLevel")]
         public int JpegQualityLevel
         {
-            get
-            {
-                return (int)this["JpegQualityLevel"];
-            }
-
+            get => _jpegQualityLevel;
             set
             {
-                this["JpegQualityLevel"] = value;
+                _jpegQualityLevel = value;
+                NotifyPropertyChanged();
             }
         }
 
-        [global::System.Configuration.UserScopedSettingAttribute]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.Configuration.DefaultSettingValueAttribute("Default")]
-        public global::System.Windows.Media.Imaging.PngInterlaceOption PngInterlaceOption
+        [JsonProperty(PropertyName = "imageresizer_pngInterlaceOption")]
+        public PngInterlaceOption PngInterlaceOption
         {
-            get
-            {
-                return (System.Windows.Media.Imaging.PngInterlaceOption)this["PngInterlaceOption"];
-            }
-
+            get => _pngInterlaceOption;
             set
             {
-                this["PngInterlaceOption"] = value;
+                _pngInterlaceOption = value;
+                NotifyPropertyChanged();
             }
         }
 
-        [global::System.Configuration.UserScopedSettingAttribute]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.Configuration.DefaultSettingValueAttribute("Default")]
-        public global::System.Windows.Media.Imaging.TiffCompressOption TiffCompressOption
+        [JsonProperty(PropertyName = "imageresizer_tiffCompressOption")]
+        public TiffCompressOption TiffCompressOption
         {
-            get
-            {
-                return (System.Windows.Media.Imaging.TiffCompressOption)this["TiffCompressOption"];
-            }
-
+            get => _tiffCompressOption;
             set
             {
-                this["TiffCompressOption"] = value;
+                _tiffCompressOption = value;
+                NotifyPropertyChanged();
             }
         }
 
-        [global::System.Configuration.UserScopedSettingAttribute]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.Configuration.DefaultSettingValueAttribute("%1 (%2)")]
+        [JsonProperty(PropertyName = "imageresizer_fileName")]
         public string FileName
         {
-            get
-            {
-                return (string)this["FileName"];
-            }
-
+            get => _fileName;
             set
             {
-                this["FileName"] = value;
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new System.ArgumentNullException();
+                }
+
+                _fileName = value;
+                NotifyPropertyChanged();
             }
         }
 
-        [global::System.Configuration.UserScopedSettingAttribute]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.Configuration.DefaultSettingValueAttribute(@"
-          <ArrayOfResizeSize xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
-            <ResizeSize>
-              <Name>$small$</Name>
-              <Fit>Fit</Fit>
-              <Width>854</Width>
-              <Height>480</Height>
-              <Unit>Pixel</Unit>
-            </ResizeSize>
-            <ResizeSize>
-              <Name>$medium$</Name>
-              <Fit>Fit</Fit>
-              <Width>1366</Width>
-              <Height>768</Height>
-              <Unit>Pixel</Unit>
-            </ResizeSize>
-            <ResizeSize>
-              <Name>$large$</Name>
-              <Fit>Fit</Fit>
-              <Width>1920</Width>
-              <Height>1080</Height>
-              <Unit>Pixel</Unit>
-            </ResizeSize>
-            <ResizeSize>
-              <Name>$phone$</Name>
-              <Fit>Fit</Fit>
-              <Width>320</Width>
-              <Height>569</Height>
-              <Unit>Pixel</Unit>
-            </ResizeSize>
-          </ArrayOfResizeSize>
-        ")]
-        public global::System.Collections.ObjectModel.ObservableCollection<ImageResizer.Models.ResizeSize> Sizes
+        [JsonProperty(PropertyName = "imageresizer_sizes")]
+        public ObservableCollection<ResizeSize> Sizes
         {
-            get
-            {
-                return (ObservableCollection<ResizeSize>)this["Sizes"];
-            }
-
+            get => _sizes;
             set
             {
-                this["Sizes"] = value;
+                _sizes = value;
+                NotifyPropertyChanged();
             }
         }
 
-        [global::System.Configuration.UserScopedSettingAttribute]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [JsonProperty(PropertyName = "imageresizer_keepDateModified")]
         public bool KeepDateModified
         {
-            get
-            {
-                return (bool)this["KeepDateModified"];
-            }
-
+            get => _keepDateModified;
             set
             {
-                this["KeepDateModified"] = value;
+                _keepDateModified = value;
+                NotifyPropertyChanged();
             }
         }
 
-        [global::System.Configuration.UserScopedSettingAttribute]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.Configuration.DefaultSettingValueAttribute("19e4a5aa-5662-4fc5-a0c0-1758028e1057")]
-        public global::System.Guid FallbackEncoder
+        [JsonProperty(PropertyName = "imageresizer_fallbackEncoder")]
+        public System.Guid FallbackEncoder
         {
-            get
-            {
-                return (Guid)this["FallbackEncoder"];
-            }
-
+            get => _fallbackEncoder;
             set
             {
-                this["FallbackEncoder"] = value;
+                _fallbackEncoder = value;
+                NotifyPropertyChanged();
             }
         }
 
-        [global::System.Configuration.UserScopedSettingAttribute]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.Configuration.DefaultSettingValueAttribute(@"
-          <CustomSize xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
-            <Name>Custom</Name>
-            <Fit>Fit</Fit>
-            <Width>1024</Width>
-            <Height>640</Height>
-            <Unit>Pixel</Unit>
-          </CustomSize>
-        ")]
-        public global::ImageResizer.Models.CustomSize CustomSize
+        [JsonProperty(PropertyName = "imageresizer_customSize")]
+        public CustomSize CustomSize
         {
-            get
-            {
-                return (CustomSize)this["CustomSize"];
-            }
-
+            get => _customSize;
             set
             {
-                this["CustomSize"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UpgradeRequired
-        {
-            get
-            {
-                return (bool)this["UpgradeRequired"];
-            }
-
-            set
-            {
-                this["UpgradeRequired"] = value;
+                _customSize = value;
+                NotifyPropertyChanged();
             }
         }
 
@@ -448,6 +382,66 @@ namespace ImageResizer.Properties
         private void NotifyPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public void Save()
+        {
+            jsonMutex.WaitOne();
+            string jsonData = "{\"version\":\"1.0\",\"name\":\"ImageResizer\",\"properties\":";
+            string tempJsonData = JsonConvert.SerializeObject(this);
+            JObject tempSettings = JObject.Parse(tempJsonData);
+
+            // Replace the <Value> of the property with { "value": <Value> } to be consistent with PowerToys
+            foreach (var property in tempSettings)
+            {
+                tempSettings[property.Key] = new JObject { { "value", property.Value } };
+            }
+
+            jsonData += tempSettings.ToString(Formatting.None);
+            jsonData += "}";
+
+            // write string to file
+            File.WriteAllText(_settingsPath, jsonData);
+            jsonMutex.ReleaseMutex();
+        }
+
+        public void Reload()
+        {
+            try
+            {
+                jsonMutex.WaitOne();
+                string jsonData = File.ReadAllText(_settingsPath);
+                JObject powertoysSettings = JObject.Parse(jsonData);
+
+                // Replace the { "value": <Value> } with <Value> to match the Settings object format
+                foreach (var property in (JObject)powertoysSettings["properties"])
+                {
+                    powertoysSettings["properties"][property.Key] = property.Value["value"];
+                }
+
+                Settings jsonSettings = JsonConvert.DeserializeObject<Settings>(powertoysSettings["properties"].ToString(), new JsonSerializerSettings() { ObjectCreationHandling = ObjectCreationHandling.Replace });
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    ShrinkOnly = jsonSettings.ShrinkOnly;
+                    Replace = jsonSettings.Replace;
+                    IgnoreOrientation = jsonSettings.IgnoreOrientation;
+                    JpegQualityLevel = jsonSettings.JpegQualityLevel;
+                    PngInterlaceOption = jsonSettings.PngInterlaceOption;
+                    TiffCompressOption = jsonSettings.TiffCompressOption;
+                    FileName = jsonSettings.FileName;
+                    Sizes = jsonSettings.Sizes;
+                    KeepDateModified = jsonSettings.KeepDateModified;
+                    FallbackEncoder = jsonSettings.FallbackEncoder;
+                    CustomSize = jsonSettings.CustomSize;
+                    SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
+                });
+                jsonMutex.ReleaseMutex();
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                jsonMutex.ReleaseMutex();
+                Save();
+            }
         }
     }
 }

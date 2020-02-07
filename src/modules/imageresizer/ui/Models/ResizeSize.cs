@@ -6,9 +6,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using GalaSoft.MvvmLight;
 using ImageResizer.Properties;
+using Newtonsoft.Json;
 
 namespace ImageResizer.Models
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class ResizeSize : ObservableObject
     {
         private static readonly IDictionary<string, string> _tokens;
@@ -29,12 +31,27 @@ namespace ImageResizer.Models
                 ["$phone$"] = Resources.Phone,
             };
 
+        public ResizeSize(string name, ResizeFit fit, double width, double height, ResizeUnit unit)
+        {
+            Name = name;
+            Fit = fit;
+            Width = width;
+            Height = height;
+            Unit = unit;
+        }
+
+        public ResizeSize()
+        {
+        }
+
+        [JsonProperty(PropertyName = "name")]
         public virtual string Name
         {
             get => _name;
             set => Set(nameof(Name), ref _name, ReplaceTokens(value));
         }
 
+        [JsonProperty(PropertyName = "fit")]
         public ResizeFit Fit
         {
             get => _fit;
@@ -47,12 +64,14 @@ namespace ImageResizer.Models
             }
         }
 
+        [JsonProperty(PropertyName = "width")]
         public double Width
         {
             get => _width;
             set => Set(nameof(Width), ref _width, value);
         }
 
+        [JsonProperty(PropertyName = "height")]
         public double Height
         {
             get => _height;
@@ -65,6 +84,7 @@ namespace ImageResizer.Models
         public bool HasAuto
             => Width == 0 || Height == 0;
 
+        [JsonProperty(PropertyName = "unit")]
         public ResizeUnit Unit
         {
             get => _unit;
