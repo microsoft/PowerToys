@@ -19,18 +19,18 @@ namespace PowerPreviewSettings
 		LPCWSTR m_subKey = L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers";
 
 	public:
-        FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCWSTR clsid, const std::wstring displayname);
+		FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCWSTR clsid, const std::wstring displayname);
 		FileExplorerPreviewSettings();
 
 		virtual bool GetState() const;
 		virtual void SetState(bool state);
-		virtual void LoadState(PowerToysSettings::PowerToyValues &settings);
-		virtual void UpdateState(PowerToysSettings::PowerToyValues &values);
+		virtual void LoadState(PowerToysSettings::PowerToyValues& settings);
+		virtual void UpdateState(PowerToysSettings::PowerToyValues& values);
 		virtual std::wstring GetName() const;
-		virtual void SetName(const std::wstring &name);
+		virtual void SetName(const std::wstring& name);
 		virtual std::wstring GetDescription() const;
-		virtual void SetDescription(const std::wstring &description);
-		virtual void SetDisplayName(const std::wstring &displayName);
+		virtual void SetDescription(const std::wstring& description);
+		virtual void SetDisplayName(const std::wstring& displayName);
 		virtual LONG SetRegistryValue() const;
 		virtual LONG RemvRegistryValue() const;
 		virtual bool GetRegistryValue() const;
@@ -41,7 +41,7 @@ namespace PowerPreviewSettings
 		virtual void DisabledPreview() = 0;
 	};
 
-	class PrevPaneSVGRendrSettings: public FileExplorerPreviewSettings
+	class PrevPaneSVGRendrSettings : public FileExplorerPreviewSettings
 	{
 	public:
 		PrevPaneSVGRendrSettings();
@@ -50,7 +50,7 @@ namespace PowerPreviewSettings
 		virtual void DisabledPreview();
 	};
 
-	class PrevPaneMDRendrSettings: public FileExplorerPreviewSettings
+	class PrevPaneMDRendrSettings : public FileExplorerPreviewSettings
 	{
 	public:
 		PrevPaneMDRendrSettings();
