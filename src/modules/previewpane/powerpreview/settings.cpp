@@ -86,7 +86,7 @@ namespace PowerPreviewSettings
 					REG_SZ,
 					(LPBYTE)this->GetDisplayName().c_str(),
 					this->GetDisplayName().length() * sizeof(wchar_t));
-
+			RegCloseKey(OpenResult);
 			if (err != ERROR_SUCCESS)
 			{
 				return err;
@@ -96,7 +96,6 @@ namespace PowerPreviewSettings
 		{
 			return err;
 		}
-        	RegCloseKey(OpenResult);
 	}
 
 	LONG FileExplorerPreviewSettings::RemvRegistryValue() const
@@ -113,6 +112,7 @@ namespace PowerPreviewSettings
 				OpenResult,
 				NULL,
 				this->GetCLSID());
+			RegCloseKey(OpenResult);
 
 			if (err != ERROR_SUCCESS)
 			{
@@ -123,7 +123,6 @@ namespace PowerPreviewSettings
 		{
 			return err;
 		}
-        	RegCloseKey(OpenResult);
 	}
 
 	bool FileExplorerPreviewSettings::GetRegistryValue() const
@@ -151,6 +150,7 @@ namespace PowerPreviewSettings
 					&dataType,
 					NULL,
 					0);
+			RegCloseKey(OpenResult);
 			if (err != ERROR_SUCCESS)
 			{
 				return false;

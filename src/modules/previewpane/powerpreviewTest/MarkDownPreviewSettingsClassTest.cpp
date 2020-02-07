@@ -13,7 +13,7 @@ namespace BaseSettingsTest
     TEST_CLASS(MarkDownPreviewSettingsClassTest)
 	{
 		public:
-			TEST_METHOD(EnableRender_ShouldUpdateStateToTrue_WhenSucessfull)
+			TEST_METHOD(EnableRender_ShouldUpdateStateToTrue_WhenSuccessful)
 			{
 				// Arrange
                 		PrevPaneMDRendrSettings tempSettings = PrevPaneMDRendrSettings();
@@ -27,7 +27,7 @@ namespace BaseSettingsTest
 				Assert::IsTrue(tempSettings.GetState());
 			}
 
-			TEST_METHOD(DisableRender_ShouldUpdateStateToFalse_WhenSucessfull)
+			TEST_METHOD(DisableRender_ShouldUpdateStateToFalse_WhenSuccessful)
 			{
 				// Arrange
                 		PrevPaneMDRendrSettings tempSettings = PrevPaneMDRendrSettings();

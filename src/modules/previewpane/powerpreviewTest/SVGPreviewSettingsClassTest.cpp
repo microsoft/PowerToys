@@ -12,7 +12,7 @@ namespace BaseSettingsTest
     TEST_CLASS(SVGPreviewSettingsClassTest)
 	{
 		public:
-			TEST_METHOD(EnableRender_ShouldUpdateStateToTrue_WhenSucessfull)
+			TEST_METHOD(EnableRender_ShouldUpdateStateToTrue_WhenSuccessful)
 			{
 				// Arrange
                 		PrevPaneSVGRendrSettings tempSettings = PrevPaneSVGRendrSettings();
@@ -26,10 +26,10 @@ namespace BaseSettingsTest
 				Assert::IsTrue(tempSettings.GetState());
 			}
 
-			TEST_METHOD(DisableRender_ShouldUpdateStateToFalse_WhenSucessfull)
+			TEST_METHOD(DisableRender_ShouldUpdateStateToFalse_WhenSuccessful)
 			{
 				// Arrange
-                		PrevPaneSVGRendrSettings tempSettings = PrevPaneSVGRendrSettings();
+				PrevPaneSVGRendrSettings tempSettings = PrevPaneSVGRendrSettings();
 				bool valueExists = tempSettings.GetRegistryValue(); // check if key-value exists.
 
 				// Act
