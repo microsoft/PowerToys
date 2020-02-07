@@ -13,15 +13,21 @@ std::optional<RECT> get_window_pos(HWND hwnd);
 // Gets mouse postion.
 std::optional<POINT> get_mouse_pos();
 
-// Gets window ancestor (usualy the window we want to do stuff with), filtering out all "non standard" windows like the taskbar, etc. and provide the app process path
-struct WindowAndProcPath {
-  HWND hwnd = nullptr;
-  std::wstring process_path;
+// Test if window can be zoned by FancyZones
+struct FancyZonesFilter {
+  bool zonable = false; // If the window is zonable by FancyZones by default - true when both standard_window and no_visible_owner are also true
+  bool standard_window = false; // True if from the styles the window looks like a standard window
+  bool no_visible_owner = false; // True if the window is a top-level window that does not have a visible owner
+  std::wstring process_path; // Path to the executable owning the window
 };
-WindowAndProcPath get_filtered_base_window_and_path(HWND window);
-// Gets active window, filtering out all "non standard" windows like the taskbar, etc.
-HWND get_filtered_active_window();
+FancyZonesFilter get_fancyzones_filtered_window(HWND window);
 
+// Gets active foreground window, filtering out all "non standard" windows like the taskbar, etc.
+struct ShortcutGuideFilter {
+  HWND hwnd = nullptr; // Handle to the top-level foreground window or nullptr if there is no such window
+  bool snappable = false; // True, if the window can react to Windows Snap keys
+};
+ShortcutGuideFilter get_shortcutguide_filtered_window();
 
 // Calculate sizes
 int width(const RECT& rect);

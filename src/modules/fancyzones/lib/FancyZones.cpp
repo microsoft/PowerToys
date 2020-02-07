@@ -592,53 +592,20 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
         DefWindowProc(window, message, wparam, lparam);
 }
 
-static bool HasVisibleOwner(HWND window) noexcept
-{
-    auto owner = GetWindow(window, GW_OWNER);
-    if (owner == nullptr)
-    {
-        return false; // There is no owner at all
-    }
-    if (!IsWindowVisible(owner))
-    {
-        return false; // Owner is invisible
-    }
-    RECT rect;
-    if (!GetWindowRect(owner, &rect))
-    {
-        return true; // Could not get the rect, return true (and filter out the window) just in case
-    }
-    // Return false (and allow the window to be zonable) if the owner window size is zero
-    return rect.top != rect.bottom || rect.left != rect.right;
-}
-
 bool FancyZones::IsInterestingWindow(HWND window) noexcept
 {
-    auto style = GetWindowLongPtr(window, GWL_STYLE);
-    auto exStyle = GetWindowLongPtr(window, GWL_EXSTYLE);
-    // Ignore:
-    if (GetAncestor(window, GA_ROOT) != window || // windows that are not top-level
-        HasVisibleOwner(window) || // windows that have an visible owner - like Save As dialogs
-        (style & WS_CHILD) != 0 || // windows that are child elements of other windows - like buttons
-        (style & WS_DISABLED) != 0 || // windows that are disabled
-        (exStyle & WS_EX_TOOLWINDOW) != 0 || // toolbar windows
-        !IsWindowVisible(window)) // invisible windows
-    {
-        return false;
-    }
-    // Filter some windows like the Start menu or Cortana
-    auto windowAndPath = get_filtered_base_window_and_path(window);
-    if (windowAndPath.hwnd == nullptr)
+    auto filtered = get_fancyzones_filtered_window(window);
+    if (!filtered.zonable)
     {
         return false;
     }
     // Filter out user specified apps
-    CharUpperBuffW(windowAndPath.process_path.data(), (DWORD)windowAndPath.process_path.length());
+    CharUpperBuffW(filtered.process_path.data(), (DWORD)filtered.process_path.length());
     if (m_settings)
     {
         for (const auto& excluded : m_settings->GetSettings().excludedAppsArray)
         {
-            if (windowAndPath.process_path.find(excluded) != std::wstring::npos)
+            if (filtered.process_path.find(excluded) != std::wstring::npos)
             {
                 return false;
             }
