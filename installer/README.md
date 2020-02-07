@@ -15,6 +15,9 @@ For the first-time installation, you'll need to generate a self-signed certifica
 1. Open `Developer PowerShell for VS` as admin
 2. Run `Set-ExecutionPolicy -executionPolicy Unrestricted`
 
+### Allow Sideloaded apps
+In order to install the MSIX package without using the Microsoft Store, sideloading apps needs to be enabled. This can be done by enabling `Developer Options > Sideload apps` or `Developer Options > Developer mode`. 
+
 ## To Build MSIX
 1. Make sure you've built the `Release` configuration of `powertoys.sln`
 2. Open `Developer PowerShell for VS`
