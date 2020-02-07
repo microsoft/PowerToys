@@ -47,7 +47,7 @@ class D2DOverlayWindow : public D2DWindow
 {
 public:
     D2DOverlayWindow();
-    void show(HWND active_window);
+    void show(HWND active_window, bool snappable);
     void animate(int vk_code);
     ~D2DOverlayWindow();
     void apply_overlay_opacity(float opacity);
@@ -84,6 +84,7 @@ private:
 
     HTHUMBNAIL thumbnail;
     HWND active_window = nullptr;
+    bool active_window_snappable = false;
     D2DOverlaySVG landscape, portrait;
     D2DOverlaySVG* use_overlay = nullptr;
     D2DSVG no_active;
