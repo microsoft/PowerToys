@@ -14,7 +14,6 @@ class PowerPreviewModule : public PowertoyModuleIface
 private:
     // The PowerToy state.
     bool m_enabled = false;
-    ExplrSVGSttngs m_explrSVGSettings;
     PrevPaneSVGRendrSettings m_prevPaneSVGSettings;
     PrevPaneMDRendrSettings m_prevPaneMDSettings;
     std::wstring m_moduleName;
@@ -23,7 +22,6 @@ public:
     PowerPreviewModule() 
         :
         m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
-        m_explrSVGSettings(ExplrSVGSttngs()),
         m_prevPaneSVGSettings(PrevPaneSVGRendrSettings()),
         m_prevPaneMDSettings(PrevPaneMDRendrSettings())
     {
