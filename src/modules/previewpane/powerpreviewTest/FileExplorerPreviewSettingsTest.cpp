@@ -64,7 +64,7 @@ namespace BaseSettingsTest
 
 			// Act
 			tempSettings.SetRegistryValue();
-			bool results = tempSettings.RemvRegistryValue();
+			bool results = tempSettings.DeleteRegistryValue();
 
 			// Assert
 			Assert::IsFalse(results);

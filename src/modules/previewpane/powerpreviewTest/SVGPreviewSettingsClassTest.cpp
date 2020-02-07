@@ -33,7 +33,7 @@ namespace BaseSettingsTest
 			bool valueExists = tempSettings.GetRegistryValue(); // check if key-value exists.
 
 			// Act
-			tempSettings.DisabledPreview(); // should set state to false if Value exists.
+			tempSettings.DisablePreview(); // should set state to false if Value exists.
 			bool previewState = tempSettings.GetState();
 
 			// Assert

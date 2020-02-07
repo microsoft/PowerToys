@@ -59,7 +59,7 @@ namespace PowerPreviewSettings
 			}
 			else
 			{
-				this->DisabledPreview();
+				this->DisablePreview();
 			}
 		}
 		else
@@ -98,7 +98,7 @@ namespace PowerPreviewSettings
 		}
 	}
 
-	LONG FileExplorerPreviewSettings::RemvRegistryValue() const
+	LONG FileExplorerPreviewSettings::DeleteRegistryValue() const
 	{
 		HKEY hKey = HKEY_CURRENT_USER;
 		const REGSAM WRITE_PERMISSION = KEY_WRITE;
@@ -222,9 +222,9 @@ namespace PowerPreviewSettings
 		}
 	}
 
-	void PrevPaneSVGRendrSettings::DisabledPreview()
+	void PrevPaneSVGRendrSettings::DisablePreview()
 	{
-		if (this->RemvRegistryValue() == ERROR_SUCCESS)
+		if (this->DeleteRegistryValue() == ERROR_SUCCESS)
 		{
 			Trace::ExplorerSVGRenderDisabled();
 		}
@@ -258,9 +258,9 @@ namespace PowerPreviewSettings
 		}
 	}
 
-	void PrevPaneMDRendrSettings::DisabledPreview()
+	void PrevPaneMDRendrSettings::DisablePreview()
 	{
-		if (this->RemvRegistryValue() == ERROR_SUCCESS)
+		if (this->DeleteRegistryValue() == ERROR_SUCCESS)
 		{
 			Trace::ExplorerSVGRenderDisabled();
 		}

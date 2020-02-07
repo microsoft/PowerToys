@@ -15,4 +15,4 @@ BaseSettingsClassTest::BaseSettingsClassTest() :
 
 void BaseSettingsClassTest::EnablePreview() {}
 
-void BaseSettingsClassTest::DisabledPreview() {}
+void BaseSettingsClassTest::DisablePreview() {}

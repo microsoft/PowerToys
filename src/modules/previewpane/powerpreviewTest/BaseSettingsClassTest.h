@@ -11,5 +11,5 @@ public:
 
 	virtual void EnablePreview();
 
-    virtual void DisabledPreview();
+    virtual void DisablePreview();
 };

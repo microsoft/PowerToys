@@ -32,13 +32,13 @@ namespace PowerPreviewSettings
 		virtual void SetDescription(const std::wstring& description);
 		virtual void SetDisplayName(const std::wstring& displayName);
 		virtual LONG SetRegistryValue() const;
-		virtual LONG RemvRegistryValue() const;
+		virtual LONG DeleteRegistryValue() const;
 		virtual bool GetRegistryValue() const;
 		virtual std::wstring GetDisplayName() const;
 		virtual LPCWSTR GetCLSID() const;
 		virtual LPCWSTR GetSubKey() const;
 		virtual void EnablePreview() = 0;
-		virtual void DisabledPreview() = 0;
+		virtual void DisablePreview() = 0;
 	};
 
 	class PrevPaneSVGRendrSettings : public FileExplorerPreviewSettings
@@ -47,7 +47,7 @@ namespace PowerPreviewSettings
 		PrevPaneSVGRendrSettings();
 
 		virtual void EnablePreview();
-		virtual void DisabledPreview();
+		virtual void DisablePreview();
 	};
 
 	class PrevPaneMDRendrSettings : public FileExplorerPreviewSettings
@@ -56,7 +56,7 @@ namespace PowerPreviewSettings
 		PrevPaneMDRendrSettings();
 
 		virtual void EnablePreview();
-		virtual void DisabledPreview();
+		virtual void DisablePreview();
 	};
 
 }
