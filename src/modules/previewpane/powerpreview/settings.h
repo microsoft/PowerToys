@@ -24,16 +24,16 @@ namespace PowerPreviewSettings
 
 		virtual bool GetState() const;
 		virtual void SetState(bool state);
-        	virtual void LoadState(PowerToysSettings::PowerToyValues &settings);
+		virtual void LoadState(PowerToysSettings::PowerToyValues &settings);
 		virtual void UpdateState(PowerToysSettings::PowerToyValues &values);
-        	virtual std::wstring GetName() const;
+		virtual std::wstring GetName() const;
 		virtual void SetName(const std::wstring &name);
-        	virtual std::wstring GetDescription() const;
-        	virtual void SetDescription(const std::wstring &description);
+		virtual std::wstring GetDescription() const;
+		virtual void SetDescription(const std::wstring &description);
 		virtual void SetDisplayName(const std::wstring &displayName);
 		virtual LONG SetRegistryValue() const;
 		virtual LONG RemvRegistryValue() const;
-	    	virtual bool GetRegistryValue() const;
+		virtual bool GetRegistryValue() const;
 		virtual std::wstring GetDisplayName() const;
 		virtual LPCWSTR GetCLSID() const;
 		virtual LPCWSTR GetSubKey() const;
