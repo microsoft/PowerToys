@@ -135,11 +135,7 @@ namespace PowerPreviewSettings
 			KEY_READ,
 			&OpenResult);
 
-		if (err != ERROR_SUCCESS)
-		{
-			return false;
-		}
-		else
+		if (err == ERROR_SUCCESS)
 		{
 			DWORD dataType;
 			err = RegGetValueW(
@@ -155,6 +151,10 @@ namespace PowerPreviewSettings
 			{
 				return false;
 			}
+		}
+		else
+		{
+			return false;
 		}
 		return true;
 	}
