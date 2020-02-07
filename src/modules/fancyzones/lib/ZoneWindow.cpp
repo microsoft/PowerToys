@@ -563,7 +563,7 @@ void ZoneWindow::CalculateZoneSet() noexcept
     const auto& activeDeviceId = fancyZonesData.GetActiveDeviceId();
     const auto& activeZoneSet = deviceInfoMap.at(m_uniqueId).activeZoneSet;
 
-    if (activeDeviceId != m_uniqueId)
+    if (!activeDeviceId.empty() && activeDeviceId != m_uniqueId)
     {
         return;
     }
