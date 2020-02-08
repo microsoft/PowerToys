@@ -2,9 +2,11 @@
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Security.Principal;
 using ImageResizer.Models;
 using ImageResizer.Test;
 using Moq;
@@ -229,8 +231,16 @@ namespace ImageResizer.Properties
         [Fact]
         public void Save_json_is_readable_by_Reload()
         {
-            // App needs to be created as Reload uses the UI thread
-            new App();
+            try
+            {
+                var imageResizerApp = new App();
+            }
+
+            // Required to catch unable to create to App instances error
+            catch (System.InvalidOperationException)
+            {
+            }
+
             var settings = new Settings();
             Settings.SettingsPath = ".\\test_settings.json";
             if (System.IO.File.Exists(Settings.SettingsPath))
@@ -240,6 +250,47 @@ namespace ImageResizer.Properties
 
             settings.Save();
             settings.Reload();
+
+            if (System.IO.File.Exists(Settings.SettingsPath))
+            {
+                System.IO.File.Delete(Settings.SettingsPath);
+            }
+        }
+
+        [Fact]
+        public void Reload_raises_PropertyChanged_()
+        {
+            try
+            {
+                var imageResizerApp = new App();
+            }
+
+            // Required to catch unable to create to App instances error
+            catch (System.InvalidOperationException)
+            {
+            }
+
+            var settings = new Settings();
+            Settings.SettingsPath = ".\\test_settings.json";
+            if (System.IO.File.Exists(Settings.SettingsPath))
+            {
+                System.IO.File.Delete(Settings.SettingsPath);
+            }
+
+            settings.Save();
+
+            Assert.PropertyChanged(settings, "ShrinkOnly", new System.Action(settings.Reload));
+            Assert.PropertyChanged(settings, "Replace", new System.Action(settings.Reload));
+            Assert.PropertyChanged(settings, "IgnoreOrientation", new System.Action(settings.Reload));
+            Assert.PropertyChanged(settings, "JpegQualityLevel", new System.Action(settings.Reload));
+            Assert.PropertyChanged(settings, "PngInterlaceOption", new System.Action(settings.Reload));
+            Assert.PropertyChanged(settings, "TiffCompressOption", new System.Action(settings.Reload));
+            Assert.PropertyChanged(settings, "FileName", new System.Action(settings.Reload));
+            Assert.PropertyChanged(settings, "Sizes", new System.Action(settings.Reload));
+            Assert.PropertyChanged(settings, "KeepDateModified", new System.Action(settings.Reload));
+            Assert.PropertyChanged(settings, "FallbackEncoder", new System.Action(settings.Reload));
+            Assert.PropertyChanged(settings, "CustomSize", new System.Action(settings.Reload));
+            Assert.PropertyChanged(settings, "SelectedSizeIndex", new System.Action(settings.Reload));
 
             if (System.IO.File.Exists(Settings.SettingsPath))
             {
