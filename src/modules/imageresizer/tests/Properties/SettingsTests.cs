@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using ImageResizer.Models;
 using ImageResizer.Test;
+using Moq;
 using Xunit;
 using Xunit.Extensions;
 
@@ -185,6 +186,65 @@ namespace ImageResizer.Properties
             var result = ((IDataErrorInfo)settings)["Unknown"];
 
             Assert.Empty(result);
+        }
+
+        [Fact]
+        public void Reload_createsFile_when_FileNotFound()
+        {
+            var settings = new Settings();
+            Settings.SettingsPath = ".\\test_settings.json";
+            if (System.IO.File.Exists(Settings.SettingsPath))
+            {
+                System.IO.File.Delete(Settings.SettingsPath);
+            }
+
+            Assert.False(System.IO.File.Exists(Settings.SettingsPath));
+            settings.Reload();
+            Assert.True(System.IO.File.Exists(Settings.SettingsPath));
+            if (System.IO.File.Exists(Settings.SettingsPath))
+            {
+                System.IO.File.Delete(Settings.SettingsPath);
+            }
+        }
+
+        [Fact]
+        public void Save_creates_file()
+        {
+            var settings = new Settings();
+            Settings.SettingsPath = ".\\test_settings.json";
+            if (System.IO.File.Exists(Settings.SettingsPath))
+            {
+                System.IO.File.Delete(Settings.SettingsPath);
+            }
+
+            Assert.False(System.IO.File.Exists(Settings.SettingsPath));
+            settings.Save();
+            Assert.True(System.IO.File.Exists(Settings.SettingsPath));
+            if (System.IO.File.Exists(Settings.SettingsPath))
+            {
+                System.IO.File.Delete(Settings.SettingsPath);
+            }
+        }
+
+        [Fact]
+        public void Save_json_is_readable_by_Reload()
+        {
+            // App needs to be created as Reload uses the UI thread
+            new App();
+            var settings = new Settings();
+            Settings.SettingsPath = ".\\test_settings.json";
+            if (System.IO.File.Exists(Settings.SettingsPath))
+            {
+                System.IO.File.Delete(Settings.SettingsPath);
+            }
+
+            settings.Save();
+            settings.Reload();
+
+            if (System.IO.File.Exists(Settings.SettingsPath))
+            {
+                System.IO.File.Delete(Settings.SettingsPath);
+            }
         }
     }
 }

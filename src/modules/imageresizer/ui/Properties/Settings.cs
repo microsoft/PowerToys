@@ -22,25 +22,23 @@ namespace ImageResizer.Properties
     {
         // Used to synchronize access to the settings.json file
         private static Mutex jsonMutex = new Mutex();
-        private static string _settingsPath;
+        private static string _settingsPath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "ImageResizer", "settings.json");
         private string _fileNameFormat;
         private bool _shrinkOnly;
         private int _selectedSizeIndex;
         private bool _replace;
         private bool _ignoreOrientation;
         private int _jpegQualityLevel;
-        private System.Windows.Media.Imaging.PngInterlaceOption _pngInterlaceOption;
-        private System.Windows.Media.Imaging.TiffCompressOption _tiffCompressOption;
+        private PngInterlaceOption _pngInterlaceOption;
+        private TiffCompressOption _tiffCompressOption;
         private string _fileName;
-        private System.Collections.ObjectModel.ObservableCollection<ImageResizer.Models.ResizeSize> _sizes;
+        private ObservableCollection<ImageResizer.Models.ResizeSize> _sizes;
         private bool _keepDateModified;
         private System.Guid _fallbackEncoder;
-        private ImageResizer.Models.CustomSize _customSize;
+        private CustomSize _customSize;
 
         public Settings()
         {
-            _settingsPath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "ImageResizer", "settings.json");
-
             SelectedSizeIndex = 0;
             ShrinkOnly = false;
             Replace = false;
@@ -95,23 +93,6 @@ namespace ImageResizer.Properties
 
         string IDataErrorInfo.Error
             => string.Empty;
-
-        /*//public object this[string propertyName]
-        //{
-        //    get
-        //    {
-        //        return base[propertyName];
-        //    }
-
-        //    set
-        //    {
-        //        base[propertyName] = value;
-        //        if (propertyName == nameof(FileName))
-        //        {
-        //            _fileNameFormat = null;
-        //        }
-        //    }
-        //}*/
 
         string IDataErrorInfo.this[string columnName]
         {
@@ -377,6 +358,8 @@ namespace ImageResizer.Properties
             }
         }
 
+        public static string SettingsPath { get => _settingsPath; set => _settingsPath = value; }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void NotifyPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
@@ -401,47 +384,46 @@ namespace ImageResizer.Properties
             jsonData += "}";
 
             // write string to file
-            File.WriteAllText(_settingsPath, jsonData);
+            File.WriteAllText(SettingsPath, jsonData);
             jsonMutex.ReleaseMutex();
         }
 
         public void Reload()
         {
-            try
-            {
-                jsonMutex.WaitOne();
-                string jsonData = File.ReadAllText(_settingsPath);
-                JObject powertoysSettings = JObject.Parse(jsonData);
-
-                // Replace the { "value": <Value> } with <Value> to match the Settings object format
-                foreach (var property in (JObject)powertoysSettings["properties"])
-                {
-                    powertoysSettings["properties"][property.Key] = property.Value["value"];
-                }
-
-                Settings jsonSettings = JsonConvert.DeserializeObject<Settings>(powertoysSettings["properties"].ToString(), new JsonSerializerSettings() { ObjectCreationHandling = ObjectCreationHandling.Replace });
-                App.Current.Dispatcher.Invoke(() =>
-                {
-                    ShrinkOnly = jsonSettings.ShrinkOnly;
-                    Replace = jsonSettings.Replace;
-                    IgnoreOrientation = jsonSettings.IgnoreOrientation;
-                    JpegQualityLevel = jsonSettings.JpegQualityLevel;
-                    PngInterlaceOption = jsonSettings.PngInterlaceOption;
-                    TiffCompressOption = jsonSettings.TiffCompressOption;
-                    FileName = jsonSettings.FileName;
-                    Sizes = jsonSettings.Sizes;
-                    KeepDateModified = jsonSettings.KeepDateModified;
-                    FallbackEncoder = jsonSettings.FallbackEncoder;
-                    CustomSize = jsonSettings.CustomSize;
-                    SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
-                });
-                jsonMutex.ReleaseMutex();
-            }
-            catch (System.IO.FileNotFoundException)
+            jsonMutex.WaitOne();
+            if (!File.Exists(SettingsPath))
             {
                 jsonMutex.ReleaseMutex();
                 Save();
+                return;
             }
+
+            string jsonData = File.ReadAllText(SettingsPath);
+            JObject powertoysSettings = JObject.Parse(jsonData);
+
+            // Replace the { "value": <Value> } with <Value> to match the Settings object format
+            foreach (var property in (JObject)powertoysSettings["properties"])
+            {
+                powertoysSettings["properties"][property.Key] = property.Value["value"];
+            }
+
+            Settings jsonSettings = JsonConvert.DeserializeObject<Settings>(powertoysSettings["properties"].ToString(), new JsonSerializerSettings() { ObjectCreationHandling = ObjectCreationHandling.Replace });
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                ShrinkOnly = jsonSettings.ShrinkOnly;
+                Replace = jsonSettings.Replace;
+                IgnoreOrientation = jsonSettings.IgnoreOrientation;
+                JpegQualityLevel = jsonSettings.JpegQualityLevel;
+                PngInterlaceOption = jsonSettings.PngInterlaceOption;
+                TiffCompressOption = jsonSettings.TiffCompressOption;
+                FileName = jsonSettings.FileName;
+                Sizes = jsonSettings.Sizes;
+                KeepDateModified = jsonSettings.KeepDateModified;
+                FallbackEncoder = jsonSettings.FallbackEncoder;
+                CustomSize = jsonSettings.CustomSize;
+                SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
+            });
+            jsonMutex.ReleaseMutex();
         }
     }
 }
