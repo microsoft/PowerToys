@@ -2,14 +2,11 @@
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
-using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Security.Principal;
 using ImageResizer.Models;
 using ImageResizer.Test;
-using Moq;
 using Xunit;
 using Xunit.Extensions;
 

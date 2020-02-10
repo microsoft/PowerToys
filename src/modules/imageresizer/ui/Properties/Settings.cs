@@ -9,7 +9,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
-using System.Windows;
 using System.Windows.Media.Imaging;
 using ImageResizer.Models;
 using Newtonsoft.Json;
