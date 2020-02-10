@@ -62,6 +62,7 @@
     <Compile Include="Models\ResizeSizeTests.cs" />
     <Compile Include="Models\ResizeBatchTests.cs" />
     <Compile Include="Models\ResizeOperationTests.cs" />
+    <Compile Include="Properties\AppFixture.cs" />
     <Compile Include="Properties\SettingsTests.cs" />
     <Compile Include="Test\AssertEx.cs" />
     <Compile Include="Test\BitmapSourceExtensions.cs" />

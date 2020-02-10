@@ -12,7 +12,7 @@ using Xunit.Extensions;
 
 namespace ImageResizer.Properties
 {
-    public class SettingsTests
+    public class SettingsTests : IClassFixture<AppFixture>
     {
         [Fact]
         public void AllSizes_propagates_Sizes_collection_events()
@@ -228,16 +228,6 @@ namespace ImageResizer.Properties
         [Fact]
         public void Save_json_is_readable_by_Reload()
         {
-            try
-            {
-                var imageResizerApp = new App();
-            }
-
-            // Required to catch System.InvalidOperationException : Cannot create more than one System.Windows.Application instance in the same AppDomain.
-            catch (System.InvalidOperationException)
-            {
-            }
-
             var settings = new Settings();
             Settings.SettingsPath = ".\\test_settings.json";
             if (System.IO.File.Exists(Settings.SettingsPath))
@@ -257,16 +247,6 @@ namespace ImageResizer.Properties
         [Fact]
         public void Reload_raises_PropertyChanged_()
         {
-            try
-            {
-                var imageResizerApp = new App();
-            }
-
-            // Required to catch System.InvalidOperationException : Cannot create more than one System.Windows.Application instance in the same AppDomain.
-            catch (System.InvalidOperationException)
-            {
-            }
-
             var settings = new Settings();
             Settings.SettingsPath = ".\\test_settings.json";
             if (System.IO.File.Exists(Settings.SettingsPath))
