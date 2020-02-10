@@ -12,9 +12,11 @@
 #include "targetver.h"
 #include "resource.h"
 
+#include <winrt/base.h>
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlfile.h>
 #include <atlstr.h>
+#include <windows.h>
 
 #include <ShlObj.h>

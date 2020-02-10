@@ -22,7 +22,7 @@ For the first-time installation, you'll need to generate a self-signed certifica
 4. Run `.\msix_reinstall.ps1` from the devenv powershell
 
 #### What msix_reinstall.ps1 does
-`msix_reinstall.ps1` removes the current PowerToys installation, restarts explorer.exe (to update PowerRename shell extension), builds `PowerToys-x64.msix` package, signs it with a PowerToys_TemporaryKey.pfx, and finally installs it.
+`msix_reinstall.ps1` removes the current PowerToys installation, restarts explorer.exe (to update PowerRename and ImageResizer shell extension), builds `PowerToys-x64.msix` package, signs it with a PowerToys_TemporaryKey.pfx, and finally installs it.
 
 #### Removing all .msi/.msix PowerToys installations
 ```ps
