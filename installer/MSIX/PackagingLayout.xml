@@ -26,6 +26,27 @@
         <File DestinationPath="svgs\*" SourcePath="..\..\x64\Release\svgs\*"/>
         <File DestinationPath="settings-html\**" SourcePath="..\..\x64\Release\settings-html\**"/>
         <File DestinationPath="Images\*.png" SourcePath="Images\*.png"/>
+
+        <!-- Resource files for ar,bg,ca,cs,de,es,eu-ES,fr,he,hu,it,nb-NO,nl,pl,pt-BR,ru,sk,tr,zh-Hans -->
+        <File DestinationPath="modules\ar\**" SourcePath="..\..\x64\Release\modules\ar\**"/>
+        <File DestinationPath="modules\bg\**" SourcePath="..\..\x64\Release\modules\bg\**"/>
+        <File DestinationPath="modules\ca\**" SourcePath="..\..\x64\Release\modules\ca\**"/>
+        <File DestinationPath="modules\cs\**" SourcePath="..\..\x64\Release\modules\cs\**"/>
+        <File DestinationPath="modules\de\**" SourcePath="..\..\x64\Release\modules\de\**"/>
+        <File DestinationPath="modules\es\**" SourcePath="..\..\x64\Release\modules\es\**"/>
+        <File DestinationPath="modules\eu-ES\**" SourcePath="..\..\x64\Release\modules\eu-ES\**"/>
+        <File DestinationPath="modules\fr\**" SourcePath="..\..\x64\Release\modules\fr\**"/>
+        <File DestinationPath="modules\he\**" SourcePath="..\..\x64\Release\modules\he\**"/>
+        <File DestinationPath="modules\hu\**" SourcePath="..\..\x64\Release\modules\hu\**"/>
+        <File DestinationPath="modules\it\**" SourcePath="..\..\x64\Release\modules\it\**"/>
+        <File DestinationPath="modules\nb-NO\**" SourcePath="..\..\x64\Release\modules\nb-NO\**"/>
+        <File DestinationPath="modules\nl\**" SourcePath="..\..\x64\Release\modules\nl\**"/>
+        <File DestinationPath="modules\pl\**" SourcePath="..\..\x64\Release\modules\pl\**"/>
+        <File DestinationPath="modules\pt-BR\**" SourcePath="..\..\x64\Release\modules\pt-BR\**"/>
+        <File DestinationPath="modules\ru\**" SourcePath="..\..\x64\Release\modules\ru\**"/>
+        <File DestinationPath="modules\sk\**" SourcePath="..\..\x64\Release\modules\sk\**"/>
+        <File DestinationPath="modules\tr\**" SourcePath="..\..\x64\Release\modules\tr\**"/>
+        <File DestinationPath="modules\zh-Hans\**" SourcePath="..\..\x64\Release\modules\zh-Hans\**"/>
       </Files>
     </Package>
   </PackageFamily>
