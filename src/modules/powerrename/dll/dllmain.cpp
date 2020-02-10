@@ -246,21 +246,24 @@ public:
     // This is called when the user hits Save on the settings page.
     virtual void set_config(PCWSTR config) override
     {
-        try
+        if (m_enabled)
         {
-            // Parse the input JSON string.
-            PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config);
+            try
+            {
+                // Parse the input JSON string.
+                PowerToysSettings::PowerToyValues values =
+                    PowerToysSettings::PowerToyValues::from_json_string(config);
 
-            CSettings::SetPersistState(values.get_bool_value(L"bool_persist_input").value());
-            CSettings::SetMRUEnabled(values.get_bool_value(L"bool_mru_enabled").value());
-            CSettings::SetMaxMRUSize(values.get_int_value(L"int_max_mru_size").value());
-            CSettings::SetShowIconOnMenu(values.get_bool_value(L"bool_show_icon_on_menu").value());
-            CSettings::SetExtendedContextMenuOnly(values.get_bool_value(L"bool_show_extended_menu").value());
-        }
-        catch (std::exception)
-        {
-            // Improper JSON.
+                CSettings::SetPersistState(values.get_bool_value(L"bool_persist_input").value());
+                CSettings::SetMRUEnabled(values.get_bool_value(L"bool_mru_enabled").value());
+                CSettings::SetMaxMRUSize(values.get_int_value(L"int_max_mru_size").value());
+                CSettings::SetShowIconOnMenu(values.get_bool_value(L"bool_show_icon_on_menu").value());
+                CSettings::SetExtendedContextMenuOnly(values.get_bool_value(L"bool_show_extended_menu").value());
+            }
+            catch (std::exception)
+            {
+                // Improper JSON.
+            }
         }
     }
 
