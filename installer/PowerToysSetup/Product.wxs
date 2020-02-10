@@ -261,7 +261,6 @@
         <File Source="$(var.BinX64Dir)\modules\ImageResizer.exe">
           <netfx:NativeImage Id="ImageResizer.exe" Platform="all" Priority="0" />
         </File>
-        <RegistryValue Root="HKLM" Key="Software\Microsoft\ImageResizer" Value="[ModulesInstallFolder]ImageResizer.exe" Type="string"/>
         <File Source="$(var.BinX64Dir)\modules\GalaSoft.MvvmLight.dll" />
         <File Source="$(var.BinX64Dir)\modules\GalaSoft.MvvmLight.Platform.dll" />
         <File Source="$(var.BinX64Dir)\modules\GalaSoft.MvvmLight.Extras.dll" />

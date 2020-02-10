@@ -36,6 +36,9 @@
             <com:ExeServer Executable="modules\PowerRenameUWPUI.exe" DisplayName="PowerRenameUWPUI">
               <com:Class Id="0440049F-D1DC-4E46-B27B-98393D79486B"/>
             </com:ExeServer>
+            <com:SurrogateServer DisplayName="ImageResizerExt">
+              <com:Class Id="51B4D7E5-7568-4234-B4BB-47FB3C016A69" Path="modules\ImageResizerExt.dll" ThreadingModel="STA"/>
+            </com:SurrogateServer>
           </com:ComServer>
         </com:Extension>
         <desktop4:Extension Category="windows.fileExplorerContextMenus">
@@ -46,6 +49,9 @@
             <desktop5:ItemType Type="Directory">
               <desktop5:Verb Id="DirectoryPowerRename" Clsid="0440049F-D1DC-4E46-B27B-98393D79486B" />
             </desktop5:ItemType>
+            <desktop4:ItemType Type="*">
+              <desktop4:Verb Id="ImageResizer" Clsid="51B4D7E5-7568-4234-B4BB-47FB3C016A69" />
+            </desktop4:ItemType>
           </desktop4:FileExplorerContextMenus>
         </desktop4:Extension>
       </Extensions>
