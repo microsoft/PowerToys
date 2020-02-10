@@ -112,7 +112,7 @@ namespace SvgPreviewHandler
         private void AddTextBoxControl()
         {
             this.textBox = new RichTextBox();
-            this.textBox.Text = "Some elements have been blocked to help prevent the sender from identifying your computer. Open this item to view all elements.";
+            this.textBox.Text = Resource.BlockedElementInfoText;
             this.textBox.BackColor = Color.LightYellow;
             this.textBox.Multiline = true;
             this.textBox.Dock = DockStyle.Top;
