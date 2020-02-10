@@ -64,12 +64,17 @@ bool OverlayWindow::get_config(wchar_t* buffer, int* buffer_size)
 
 void OverlayWindow::set_config(const wchar_t* config)
 {
-    if (_enabled)
+    try
     {
-        try
+        // save configuration
+        PowerToysSettings::PowerToyValues _values =
+            PowerToysSettings::PowerToyValues::from_json_string(config);
+        _values.save_to_settings_file();
+        Trace::SettingsChanged(pressTime.value, overlayOpacity.value, theme.value);
+
+        // apply new settings if powertoy is enabled
+        if (_enabled)
         {
-            PowerToysSettings::PowerToyValues _values =
-                PowerToysSettings::PowerToyValues::from_json_string(config);
             if (const auto press_delay_time = _values.get_int_value(pressTime.name))
             {
                 pressTime.value = *press_delay_time;
@@ -94,13 +99,12 @@ void OverlayWindow::set_config(const wchar_t* config)
                     winkey_popup->set_theme(theme.value);
                 }
             }
-            _values.save_to_settings_file();
-            Trace::SettingsChanged(pressTime.value, overlayOpacity.value, theme.value);
         }
-        catch (...)
-        {
-            // Improper JSON. TODO: handle the error.
-        }
+    }
+    catch (...)
+    {
+        // Improper JSON. TODO: handle the error.
+        return;
     }
 }
 

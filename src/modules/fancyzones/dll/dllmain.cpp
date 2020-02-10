@@ -60,20 +60,14 @@ public:
     // This is called when the user hits Save on the settings page.
     virtual void set_config(PCWSTR config) override
     {
-        if (m_app)
-        {
-            m_settings->SetConfig(config);
-        }
+        m_settings->SetConfig(config);
     }
 
     // Signal from the Settings editor to call a custom action.
     // This can be used to spawn more complex editors.
     virtual void call_custom_action(const wchar_t* action) override
     {
-        if (m_app)
-        {
-            m_settings->CallCustomAction(action);
-        }
+        m_settings->CallCustomAction(action);
     }
 
     // Enable the powertoy
@@ -150,6 +144,7 @@ private:
             }
             m_app->Destroy();
             m_app = nullptr;
+            m_settings->ResetCallback();
         }
     }
 
