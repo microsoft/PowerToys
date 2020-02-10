@@ -13,6 +13,7 @@
 #include <common/common.h>
 #include <common/dpi_aware.h>
 
+#include "msi_to_msix_upgrade.h"
 #include <common/winstore.h>
 #include <common/notifications.h>
 
@@ -53,6 +54,11 @@ int runner()
     int result;
     try
     {
+        // If we're running as a MSIX application, offer a user uninstall option of an old version if detected
+        std::thread{ [] {
+            uninstall_msi_with_confirmation();
+        } }.detach();
+
         chdir_current_executable();
         // Load Powertyos DLLS
         // For now only load known DLLs

@@ -25,10 +25,10 @@
     <rescap:Capability Name="allowElevation"/>
   </Capabilities>
   <Applications>
-    <Application Id="PowerToys" Executable="PowerToys.exe" EntryPoint="Windows.FullTrustApplication">
+    <Application Id="PowerToys" Executable="Power Toys.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements DisplayName="PowerToys (Preview)" Description="Windows system utilities to maximize productivity" Square150x150Logo="Images\logo150.png" Square44x44Logo="Images\logo44.png" BackgroundColor="transparent" />
       <Extensions>
-        <uap5:Extension Category="windows.startupTask" Executable="PowerToys.exe" EntryPoint="Windows.FullTrustApplication">
+        <uap5:Extension Category="windows.startupTask" Executable="Power Toys.exe" EntryPoint="Windows.FullTrustApplication">
           <uap5:StartupTask TaskId="PowerToysStartupTaskID" Enabled="true" DisplayName="PowerToys" />
         </uap5:Extension>
         <com:Extension Category="windows.comServer">
