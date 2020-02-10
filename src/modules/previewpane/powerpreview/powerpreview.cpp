@@ -78,15 +78,19 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 // Enable the powertoy
 void PowerPreviewModule::enable()
 {
-    this->m_enabled = true;
+    m_prevPaneSVGSettings.EnablePreview();
+    m_prevPaneMDSettings.EnablePreview();
     Trace::FilePreviewerIsEnabled();
+    this->m_enabled = true;
 }
 
 // Disable the powertoy
 void PowerPreviewModule::disable()
 {
-    this->m_enabled = false;
+    m_prevPaneSVGSettings.DisablePreview();
+    m_prevPaneMDSettings.DisablePreview();
     Trace::FilePreviewerIsDisabled();
+    this->m_enabled = false;
 }
 
 // Returns if the powertoys is enabled

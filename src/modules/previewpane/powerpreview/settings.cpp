@@ -70,12 +70,8 @@ namespace PowerPreviewSettings
 
 	LONG FileExplorerPreviewSettings::SetRegistryValue() const
 	{
-		HKEY hKey = HKEY_CURRENT_USER;
-		const REGSAM WRITE_PERMISSION = KEY_WRITE;
-		DWORD options = 0;
 		HKEY OpenResult;
-
-		LONG err = RegOpenKeyEx(hKey, this->GetSubKey(), options, WRITE_PERMISSION, &OpenResult);
+		LONG err = RegOpenKeyExW(HKEY_CURRENT_USER, this->GetSubKey(), 0, KEY_WRITE, &OpenResult);
 
 		if (err == ERROR_SUCCESS)
 		{
@@ -85,27 +81,18 @@ namespace PowerPreviewSettings
 				0,
 				REG_SZ,
 				(LPBYTE)this->GetDisplayName().c_str(),
-				this->GetDisplayName().length() * sizeof(wchar_t));
+				(DWORD) this->GetDisplayName().length() * sizeof(wchar_t));
 			RegCloseKey(OpenResult);
-			if (err != ERROR_SUCCESS)
-			{
-				return err;
-			}
 		}
-		else
-		{
-			return err;
-		}
+
+		return err;
 	}
 
 	LONG FileExplorerPreviewSettings::DeleteRegistryValue() const
 	{
-		HKEY hKey = HKEY_CURRENT_USER;
-		const REGSAM WRITE_PERMISSION = KEY_WRITE;
-		DWORD options = 0;
 		HKEY OpenResult;
-
-		LONG err = RegOpenKeyEx(hKey, this->GetSubKey(), options, WRITE_PERMISSION, &OpenResult);
+		LONG err = RegOpenKeyExW(HKEY_CURRENT_USER, this->GetSubKey(), 0, KEY_WRITE, &OpenResult);
+		
 		if (err == ERROR_SUCCESS)
 		{
 			err = RegDeleteKeyValueW(
@@ -113,27 +100,15 @@ namespace PowerPreviewSettings
 				NULL,
 				this->GetCLSID());
 			RegCloseKey(OpenResult);
+		}
 
-			if (err != ERROR_SUCCESS)
-			{
-				return err;
-			}
-		}
-		else
-		{
-			return err;
-		}
+		return err;
 	}
 
 	bool FileExplorerPreviewSettings::GetRegistryValue() const
 	{
 		HKEY OpenResult;
-		LONG err = RegOpenKeyEx(
-			HKEY_CURRENT_USER,
-			this->GetSubKey(),
-			0,
-			KEY_READ,
-			&OpenResult);
+		LONG err = RegOpenKeyExW(HKEY_CURRENT_USER, this->GetSubKey(), 0, KEY_READ, &OpenResult);
 
 		if (err == ERROR_SUCCESS)
 		{
@@ -147,19 +122,16 @@ namespace PowerPreviewSettings
 				NULL,
 				0);
 			RegCloseKey(OpenResult);
-			if (err != ERROR_SUCCESS)
+			if (err == ERROR_SUCCESS)
 			{
-				return false;
+				return true;
 			}
 		}
-		else
-		{
-			return false;
-		}
-		return true;
+
+		return false;
 	}
 
-	std::wstring FileExplorerPreviewSettings::GetName() const
+	const std::wstring FileExplorerPreviewSettings::GetName() const
 	{
 		return this->m_name;
 	}
@@ -169,7 +141,7 @@ namespace PowerPreviewSettings
 		this->m_name = name;
 	}
 
-	std::wstring FileExplorerPreviewSettings::GetDescription() const
+	const std::wstring FileExplorerPreviewSettings::GetDescription() const
 	{
 		return this->m_description;
 	}
@@ -179,12 +151,12 @@ namespace PowerPreviewSettings
 		this->m_description = description;
 	}
 
-	LPCWSTR FileExplorerPreviewSettings::GetSubKey() const
+	const LPCWSTR FileExplorerPreviewSettings::GetSubKey() const
 	{
 		return this->m_subKey;
 	}
 
-	LPCWSTR FileExplorerPreviewSettings::GetCLSID() const
+	const LPCWSTR FileExplorerPreviewSettings::GetCLSID() const
 	{
 		return this->m_clsid;
 	}
@@ -214,11 +186,12 @@ namespace PowerPreviewSettings
 		if (this->SetRegistryValue() == ERROR_SUCCESS)
 		{
 			Trace::ExplorerSVGRenderEnabled();
+			this->SetState(true);
 		}
 		else
 		{
 			Trace::PowerPreviewSettingsUpDateFailed(this->GetName().c_str());
-			this->SetState(false);
+			//this->SetState(false);
 		}
 	}
 
@@ -227,11 +200,12 @@ namespace PowerPreviewSettings
 		if (this->DeleteRegistryValue() == ERROR_SUCCESS)
 		{
 			Trace::ExplorerSVGRenderDisabled();
+			this->SetState(false);
 		}
 		else
 		{
 			Trace::PowerPreviewSettingsUpDateFailed(this->GetName().c_str());
-			this->SetState(true);
+			//this->SetState(true);
 		}
 	}
 
@@ -250,11 +224,12 @@ namespace PowerPreviewSettings
 		if (this->SetRegistryValue() == ERROR_SUCCESS)
 		{
 			Trace::ExplorerSVGRenderEnabled();
+			this->SetState(true);
 		}
 		else
 		{
 			Trace::PowerPreviewSettingsUpDateFailed(this->GetName().c_str());
-			this->SetState(false);
+			//this->SetState(false);
 		}
 	}
 
@@ -263,11 +238,12 @@ namespace PowerPreviewSettings
 		if (this->DeleteRegistryValue() == ERROR_SUCCESS)
 		{
 			Trace::ExplorerSVGRenderDisabled();
+			this->SetState(false);
 		}
 		else
 		{
 			Trace::PowerPreviewSettingsUpDateFailed(this->GetName().c_str());
-			this->SetState(true);
+			//this->SetState(true);
 		}
 	}
 

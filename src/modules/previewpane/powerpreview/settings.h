@@ -16,7 +16,7 @@ namespace PowerPreviewSettings
 		std::wstring m_displayName;
 
 		LPCWSTR m_clsid;
-		LPCWSTR m_subKey = L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers";
+		const LPCWSTR m_subKey = L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers";
 
 	public:
 		FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCWSTR clsid, const std::wstring displayname);
@@ -26,17 +26,17 @@ namespace PowerPreviewSettings
 		virtual void SetState(bool state);
 		virtual void LoadState(PowerToysSettings::PowerToyValues& settings);
 		virtual void UpdateState(PowerToysSettings::PowerToyValues& values);
-		virtual std::wstring GetName() const;
+		virtual const std::wstring GetName() const;
 		virtual void SetName(const std::wstring& name);
-		virtual std::wstring GetDescription() const;
+		virtual const std::wstring GetDescription() const;
 		virtual void SetDescription(const std::wstring& description);
 		virtual void SetDisplayName(const std::wstring& displayName);
 		virtual LONG SetRegistryValue() const;
 		virtual LONG DeleteRegistryValue() const;
 		virtual bool GetRegistryValue() const;
 		virtual std::wstring GetDisplayName() const;
-		virtual LPCWSTR GetCLSID() const;
-		virtual LPCWSTR GetSubKey() const;
+		virtual const LPCWSTR GetCLSID() const;
+		virtual const LPCWSTR GetSubKey() const;
 		virtual void EnablePreview() = 0;
 		virtual void DisablePreview() = 0;
 	};
