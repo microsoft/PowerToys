@@ -1,6 +1,6 @@
 # PowerLauncher  
 
-  - **What is it:** Quick launcher that has additional capabilities
+  - **What is it:** Quick launcher for power users which has additional capabilities
     without sacrificing performance
 
   - **Author:** Jessica Yuwono
@@ -18,10 +18,7 @@
 ## 1.1. Elevator Pitch / Narrative
 
 Jane is a Windows power user who uses Run prompt to launch her
-applications. She types in the executable name for most cases. However,
-sometimes she needs to search the name of the application she needs to
-launch. Search is slower compared to Run prompt and she often doesn’t
-get the result that she wants.
+applications. She types in the executable name of an application using Run prompt for most cases. However, there are times when she doesn’t know the executable name. She needs to launch the application using Search but Search is slower compared to Run prompt and she often doesn’t get the result that she wants. Switching between Run and Search also slows down her workflow.
 
 She learns about PowerToys and installed PowerToys on her machine. Once
 Jane downloads it, PowerLauncher is included in PowerToys. She can now
@@ -29,8 +26,8 @@ search for an application and launch an application instantly with
 PowerLauncher. She can also personalize her launcher to cater to her
 needs by putting search based on executable names on top of the result
 and show her the most recently used application. She can also add
-plugins which gives her additional features like calculator or
-dictionary which she needs. After using PowerLauncher, she feels more productive since it is fast, customizable, and it gets the result
+plugins which gives her additional features that she needs in a launcher, like calculator or
+dictionary. After using PowerLauncher, she feels more productive since it is fast, customizable, and it gets the result
 that she wants.
 
 ### 1.1.1 Short Version
@@ -72,7 +69,7 @@ PowerToys team sent a survey to Windows Developer community to gain preliminary 
 4.  All respondents who use MacOS as their main OS and use third-party tools to launch an
     application runs Alfred.
 
-5.  For respondents who use Search on Windows, performance and accuracy
+5.  For respondents who launch applications using Search on Windows, performance and accuracy
     of search result are two top most requested improvements that
     they would like to see.
 
@@ -99,7 +96,7 @@ Here is a matrix which compares features between third-party tools:
 |[Executor](http://www.executor.dk/)</p>        | ![alt text][check] | ![alt text][check] |![alt text][cross] | ![alt text][check]<kbd>Shift</kbd>+<kbd>Enter</kbd> | ![alt text][check]                  | ![alt text][check] on right click |
 |[Ueli](https://github.com/oliverschwendener/ueli)</p>             | ![alt text][cross] | ![alt text][check] |![alt text][check] via <kbd>></kbd>| ![alt text][check] <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> | ![alt text][check] configurable in settings | ![alt text][check] on file/folder type |
 |Run (<kbd>Win</kbd>+<kbd>R</kbd>)</p>     | ![alt text][cross] | ![alt text][cross] |![alt text][check] | ![alt text][check] <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> | ![alt text][check]                  | ![alt text][cross] |
-|Search (<kbd>Win</kbd>+<kbd>S</kbd>)</p>  | ![alt text][check] | ![alt text][check] |![alt text][check] | ![alt text][check] on right click | ![alt text][cross]                  | ![alt text][check] on right click |
+|Search (<kbd>Win</kbd>+<kbd>S</kbd>)</p>  | ![alt text][check] | ![alt text][check] |![alt text][check] | ![alt text][check] on right click/preview | ![alt text][cross]                  | ![alt text][check] on right click/preview |
 
 
 Here are some screenshots on Spotlight and some of the most commonly used third-party
@@ -281,7 +278,7 @@ preference as follows:
 
 5.  \[Boolean\] Override Win+R key. Default to yes.
 
-6.  \[Boolean\] Override Win+S key. Default to yes.
+6.  \[Boolean\] Override Win+S key. Default to no.
 
 
 In PowerToys General Settings:
