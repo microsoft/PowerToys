@@ -233,7 +233,7 @@ namespace ImageResizer.Properties
                 var imageResizerApp = new App();
             }
 
-            // Required to catch unable to create to App instances error
+            // Required to catch System.InvalidOperationException : Cannot create more than one System.Windows.Application instance in the same AppDomain.
             catch (System.InvalidOperationException)
             {
             }
@@ -262,7 +262,7 @@ namespace ImageResizer.Properties
                 var imageResizerApp = new App();
             }
 
-            // Required to catch unable to create to App instances error
+            // Required to catch System.InvalidOperationException : Cannot create more than one System.Windows.Application instance in the same AppDomain.
             catch (System.InvalidOperationException)
             {
             }
