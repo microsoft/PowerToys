@@ -207,6 +207,7 @@ namespace JSONHelpers
                 if (data.zoneSetUuid == zoneSetId && data.deviceId == deviceId)
                 {
                     appZoneHistoryMap.erase(processPath);
+                    SaveFancyZonesData();
                     return true;
                 }
             }
@@ -224,6 +225,7 @@ namespace JSONHelpers
         }
 
         appZoneHistoryMap[processPath] = AppZoneHistoryData{ .zoneSetUuid = zoneSetId, .deviceId = deviceId, .zoneIndex = zoneIndex };
+        SaveFancyZonesData();
         return true;
     }
 
@@ -538,6 +540,7 @@ namespace JSONHelpers
         if (appliedZoneSetsMap.contains(std::wstring{ activeZoneSetId }))
         {
             deviceInfoMap[deviceId] = DeviceInfoData{ appliedZoneSetsMap.at(std::wstring{ activeZoneSetId }), static_cast<bool>(showSpacing), static_cast<int>(spacing), static_cast<int>(zoneCount) };
+            SaveFancyZonesData();
         }
     }
 
@@ -628,6 +631,7 @@ namespace JSONHelpers
                     abort(); // TODO(stefan): Exception safety
                 }
                 customZoneSetsMap[uuid] = zoneSetData;
+                SaveFancyZonesData();
 
                 valueLength = ARRAYSIZE(value);
                 dataSize = ARRAYSIZE(data);
