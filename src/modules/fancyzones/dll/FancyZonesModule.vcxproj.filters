@@ -26,7 +26,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="fancyzones.def" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\lib\fancyzones.rc" />

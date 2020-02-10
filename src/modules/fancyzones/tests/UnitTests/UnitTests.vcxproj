@@ -96,12 +96,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FancyZones.Spec.cpp" />
+    <ClCompile Include="FancyZonesSettings.Spec.cpp" />
+    <ClCompile Include="JsonHelpers.Tests.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="RegistryHelpers.Spec.cpp" />
     <ClCompile Include="Util.Spec.cpp" />
+    <ClCompile Include="Util.cpp" />
     <ClCompile Include="Zone.Spec.cpp" />
     <ClCompile Include="ZoneSet.Spec.cpp" />
     <ClCompile Include="ZoneWindow.Spec.cpp" />

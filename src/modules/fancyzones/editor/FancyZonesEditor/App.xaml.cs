@@ -15,8 +15,6 @@ namespace FancyZonesEditor
     {
         public Settings ZoneSettings { get; }
 
-        private ushort _idInitial = 0;
-
         public App()
         {
             ZoneSettings = new Settings();
@@ -24,35 +22,27 @@ namespace FancyZonesEditor
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            if (e.Args.Length > 1)
-            {
-                ushort.TryParse(e.Args[1], out _idInitial);
-            }
-
             LayoutModel foundModel = null;
 
-            if (_idInitial != 0)
+            foreach (LayoutModel model in ZoneSettings.DefaultModels)
             {
-                foreach (LayoutModel model in ZoneSettings.DefaultModels)
+                if (model.Type == Settings.ActiveZoneSetLayoutType)
                 {
-                    if (model.Id == _idInitial)
+                    // found match
+                    foundModel = model;
+                    break;
+                }
+            }
+
+            if (foundModel == null)
+            {
+                foreach (LayoutModel model in Settings.CustomModels)
+                {
+                    if ("{" + model.Guid.ToString().ToUpper() + "}" == Settings.ActiveZoneSetUUid.ToUpper())
                     {
                         // found match
                         foundModel = model;
                         break;
-                    }
-                }
-
-                if (foundModel == null)
-                {
-                    foreach (LayoutModel model in ZoneSettings.CustomModels)
-                    {
-                        if (model.Id == _idInitial)
-                        {
-                            // found match
-                            foundModel = model;
-                            break;
-                        }
                     }
                 }
             }
