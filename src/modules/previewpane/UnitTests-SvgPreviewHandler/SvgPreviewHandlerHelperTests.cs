@@ -105,5 +105,29 @@ namespace UnitTests_SvgPreviewHandler
             // Assert
             Assert.AreEqual(expectedSvgData, actualSvgData);
         }
+
+        [TestMethod]
+        public void RemoveElements_ShoudRemoveAllBlockedElements_IfMultipleElementsArePresent()
+        {
+            // Arrange
+            var xmlTree = new XElement("svg",
+                new XElement("script", "valid-script-1"),
+                new XElement("script", "valid-script-2"),
+                new XElement("image", "valid-image"),
+                new XElement("valid-element", "valid")
+            );
+            var svgData = xmlTree.ToString();
+            var expectedXmlTree = new XElement("svg",
+                new XElement("valid-element", "valid")
+            );
+            var expectedSvgData = expectedXmlTree.ToString();
+            bool foundFilteredElement;
+
+            // Act
+            var actualSvgData = SvgPreviewHandlerHelper.RemoveElements(svgData, out foundFilteredElement);
+
+            // Assert
+            Assert.AreEqual(expectedSvgData, actualSvgData);
+        }
     }
 }
