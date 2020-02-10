@@ -104,7 +104,6 @@ void OverlayWindow::set_config(const wchar_t* config)
     catch (...)
     {
         // Improper JSON. TODO: handle the error.
-        return;
     }
 }
 
