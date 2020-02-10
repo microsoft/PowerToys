@@ -87,7 +87,10 @@ void OverlayWindow::set_config(const wchar_t* config)
         if (auto val = _values.get_string_value(theme.name))
         {
             theme.value = std::move(*val);
-            winkey_popup->set_theme(theme.value);
+            if (winkey_popup)
+            {
+                winkey_popup->set_theme(theme.value);
+            }
         }
         _values.save_to_settings_file();
         Trace::SettingsChanged(pressTime.value, overlayOpacity.value, theme.value);
