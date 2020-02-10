@@ -136,8 +136,6 @@ private:
     void Disable(bool const traceEvent)
     {
         if (m_app) {
-            const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
-            fancyZonesData.SaveFancyZonesData();
             if (traceEvent) 
             {
                 Trace::FancyZones::EnableFancyZones(false);
