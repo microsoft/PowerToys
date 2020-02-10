@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using Markdig;
 using MarkdownPreviewHandler;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -39,7 +42,7 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
-        public void MarkdownPreviewHandlerControl__DoesNotAddInfoBarToFormIfExternalImageLinkPresent_WhenDoPreviewIsCalled()
+        public void MarkdownPreviewHandlerControl__DoesNotAddInfoBarToFormIfExternalImageLinkNotPresent_WhenDoPreviewIsCalled()
         {
             // Arrange 
             MarkdownPreviewHandlerControl markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl();
@@ -86,6 +89,20 @@ namespace PreviewPaneUnitTests
             Assert.AreEqual(((RichTextBox)markdownPreviewHandlerControl.Controls[1]).BorderStyle, BorderStyle.None);
             Assert.AreEqual(((RichTextBox)markdownPreviewHandlerControl.Controls[1]).BackColor, Color.LightYellow);
             Assert.AreEqual(((RichTextBox)markdownPreviewHandlerControl.Controls[1]).Multiline, true);
+        }
+
+        [TestMethod]
+        public void MarkdownPreviewHandlerControl_RemovesScriptTags_RemoveScriptFromHTMLIsCalled()
+        {
+            // Arrange
+            MarkdownPreviewHandlerControl markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl();
+            string html = "<html><style></style><script>alert(\"hello\");</script><script></script></html>";
+
+            // Act
+            string parsedHTML = markdownPreviewHandlerControl.RemoveScriptFromHTML(html);
+
+            // Assert
+            Assert.AreEqual(parsedHTML, "<html>\r\n  <style></style>\r\n</html>");
         }
     }
 }

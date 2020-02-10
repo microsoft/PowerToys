@@ -32,6 +32,8 @@ namespace MarkdownPreviewHandler
         /// <summary>
         /// Initializes a new instance of the <see cref="HTMLParsingExtension"/> class.
         /// </summary>
+        /// <param name="imagesBlockedCallBack">Callback function if image is blocked by extension.</param>
+        /// <param name="baseUrl">Absolute path of markdown file.</param>
         public HTMLParsingExtension(ImagesBlockedCallBack imagesBlockedCallBack, string baseUrl = "")
         {
             this.imagesBlockedCallBack = imagesBlockedCallBack;
@@ -64,11 +66,6 @@ namespace MarkdownPreviewHandler
         {
             foreach (var node in document.Descendants())
             {
-                if (node is HtmlBlock && ((HtmlBlock)node).Type == HtmlBlockType.ScriptPreOrStyle)
-                {
-                    document.Remove((Block)node);
-                }
-
                 if (node is Block)
                 {
                     if (node is Table)

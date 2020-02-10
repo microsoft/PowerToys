@@ -120,21 +120,9 @@ namespace PreviewPaneUnitTests
 
             // Assert
             Assert.AreEqual(count, 1);
+            Assert.AreEqual(html, "<p><img src=\"#\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n");
+
         }
 
-        [TestMethod]
-        public void Extension_RemovesScriptTags_WhenUsed()
-        {
-            // arrange
-            String mdString = "<script>alert(\"hello\");</script><script>alert(\"hello\");</script>";
-            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { }, "C:/Users/");
-            MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
-
-            // Act
-            String html = Markdown.ToHtml(mdString, markdownPipeline);
-
-            // Assert
-            Assert.AreEqual(html, "");
-        }
     }
 }
