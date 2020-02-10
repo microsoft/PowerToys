@@ -129,7 +129,7 @@ void Zone::StampZone(HWND window, bool stamp) noexcept
     }
 }
 
-winrt::com_ptr<IZone> MakeZone(RECT zoneRect) noexcept
+winrt::com_ptr<IZone> MakeZone(const RECT& zoneRect) noexcept
 {
     return winrt::make_self<Zone>(zoneRect);
 }

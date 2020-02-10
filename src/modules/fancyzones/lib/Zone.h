@@ -11,4 +11,4 @@ interface __declspec(uuid("{8228E934-B6EF-402A-9892-15A1441BF8B0}")) IZone : pub
     IFACEMETHOD_(size_t, Id)() = 0;
 };
 
-winrt::com_ptr<IZone> MakeZone(RECT zoneRect) noexcept;
+winrt::com_ptr<IZone> MakeZone(const RECT& zoneRect) noexcept;
