@@ -275,19 +275,19 @@ namespace ImageResizer.Properties
             }
 
             settings.Save();
-
-            Assert.PropertyChanged(settings, "ShrinkOnly", new System.Action(settings.Reload));
-            Assert.PropertyChanged(settings, "Replace", new System.Action(settings.Reload));
-            Assert.PropertyChanged(settings, "IgnoreOrientation", new System.Action(settings.Reload));
-            Assert.PropertyChanged(settings, "JpegQualityLevel", new System.Action(settings.Reload));
-            Assert.PropertyChanged(settings, "PngInterlaceOption", new System.Action(settings.Reload));
-            Assert.PropertyChanged(settings, "TiffCompressOption", new System.Action(settings.Reload));
-            Assert.PropertyChanged(settings, "FileName", new System.Action(settings.Reload));
-            Assert.PropertyChanged(settings, "Sizes", new System.Action(settings.Reload));
-            Assert.PropertyChanged(settings, "KeepDateModified", new System.Action(settings.Reload));
-            Assert.PropertyChanged(settings, "FallbackEncoder", new System.Action(settings.Reload));
-            Assert.PropertyChanged(settings, "CustomSize", new System.Action(settings.Reload));
-            Assert.PropertyChanged(settings, "SelectedSizeIndex", new System.Action(settings.Reload));
+            var action = new System.Action(settings.Reload);
+            Assert.PropertyChanged(settings, "ShrinkOnly", action);
+            Assert.PropertyChanged(settings, "Replace", action);
+            Assert.PropertyChanged(settings, "IgnoreOrientation", action);
+            Assert.PropertyChanged(settings, "JpegQualityLevel", action);
+            Assert.PropertyChanged(settings, "PngInterlaceOption", action);
+            Assert.PropertyChanged(settings, "TiffCompressOption", action);
+            Assert.PropertyChanged(settings, "FileName", action);
+            Assert.PropertyChanged(settings, "Sizes", action);
+            Assert.PropertyChanged(settings, "KeepDateModified", action);
+            Assert.PropertyChanged(settings, "FallbackEncoder", action);
+            Assert.PropertyChanged(settings, "CustomSize", action);
+            Assert.PropertyChanged(settings, "SelectedSizeIndex", action);
 
             if (System.IO.File.Exists(Settings.SettingsPath))
             {
