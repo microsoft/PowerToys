@@ -22,6 +22,7 @@
         <File DestinationPath="modules\GalaSoft.MvvmLight.Platform.dll" SourcePath="..\..\x64\Release\GalaSoft.MvvmLight.Platform.dll"/>
         <File DestinationPath="modules\GalaSoft.MvvmLight.Extras.dll" SourcePath="..\..\x64\Release\GalaSoft.MvvmLight.Extras.dll"/>
         <File DestinationPath="modules\System.Windows.Interactivity.dll" SourcePath="..\..\x64\Release\System.Windows.Interactivity.dll"/>
+        <File DestinationPath="modules\Newtonsoft.Json.dll" SourcePath="..\..\x64\Release\Newtonsoft.Json.dll"/>
 
         <File DestinationPath="svgs\*" SourcePath="..\..\x64\Release\svgs\*"/>
         <File DestinationPath="settings-html\**" SourcePath="..\..\x64\Release\settings-html\**"/>
