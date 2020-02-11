@@ -144,6 +144,7 @@ private:
             }
             m_app->Destroy();
             m_app = nullptr;
+            m_settings->ResetCallback();
         }
     }
 
