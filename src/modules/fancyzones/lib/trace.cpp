@@ -66,6 +66,8 @@ void Trace::FancyZones::OnKeyDown(DWORD vkCode, bool win, bool control, bool inM
 
 void Trace::SettingsChanged(const Settings& settings) noexcept
 {
+    const auto& editorHotkey = settings.editorHotkey;
+    
     TraceLoggingWrite(
         g_hProvider,
         "FancyZones_SettingsChanged",
@@ -81,7 +83,12 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingBoolean(settings.use_cursorpos_editor_startupscreen, "UseCursorPosOnEditorStartup"),
         TraceLoggingWideString(settings.zoneHightlightColor.c_str(), "ZoneHighlightColor"),
         TraceLoggingInt32(settings.zoneHighlightOpacity, "ZoneHighlightOpacity"),
-        TraceLoggingWideString(settings.editorHotkey.get_json().Stringify().c_str(), "HotkeyObject"),
+        TraceLoggingBoolean(editorHotkey.alt_pressed(), "HotkeyAltPressed"),
+        TraceLoggingBoolean(editorHotkey.ctrl_pressed(), "HotkeyCtrlPressed"),
+        TraceLoggingBoolean(editorHotkey.shift_pressed(), "HotkeyShiftPressed"),
+        TraceLoggingBoolean(editorHotkey.win_pressed(), "HotkeyWinPressed"),
+        TraceLoggingUInt32(editorHotkey.get_code(), "HotkeyCode"),
+        TraceLoggingWideString(editorHotkey.get_key().c_str(), "HotkeyKeyFromCode"),
         TraceLoggingInt32(static_cast<int>(settings.excludedAppsArray.size()), "ExcludedAppsCount")
     );
 }
