@@ -108,14 +108,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUWPUI", "src\mod
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "notifications", "src\common\notifications_winrt\notifications.vcxproj", "{0B593A6C-4143-4337-860E-DB5710FB87DB}"
 EndProject
-<<<<<<< HEAD
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "notifications_dll", "src\common\notifications\notifications_dll.vcxproj", "{031AC72E-FA28-4AB7-B690-6F7B9C28AA73}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0B593A6C-4143-4337-860E-DB5710FB87DB} = {0B593A6C-4143-4337-860E-DB5710FB87DB}
 	EndProjectSection
-=======
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PreviewHandlerCommon", "src\modules\previewpane\Common\PreviewHandlerCommon.csproj", "{AF2349B8-E5B6-4004-9502-687C1C7730B1}"
->>>>>>> Adding unit tests for preview handler common (#1156)
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "windowwalker", "windowwalker", "{8DC78AF7-DC3E-4C57-A8FB-7E347DE74A03}"
 EndProject
@@ -131,10 +127,14 @@ EndProject
 <<<<<<< HEAD
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "src\modules\previewpane\Common\Common.csproj", "{AF2349B8-E5B6-4004-9502-687C1C7730B1}"
 EndProject
+<<<<<<< HEAD
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkDownPreviewHandler", "src\modules\previewpane\MarkDownPreviewHandler\MarkDownPreviewHandler.csproj", "{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}"
 =======
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests-PreviewHandlerCommon", "src\modules\previewpane\UnitTests-PreviewHandlerCommon\UnitTests-PreviewHandlerCommon.csproj", "{73A93F5C-EC6D-43C1-A914-07B897F1D550}"
 EndProject
+=======
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests-PreviewHandlerCommon", "src\modules\previewpane\UnitTests-PreviewHandlerCommon\UnitTests-PreviewHandlerCommon.csproj", "{748417CA-F17E-487F-9411-CAFB6D3F4877}"
+>>>>>>> Markdown preview pane  (#1220)
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "powerpreview", "src\modules\previewpane\powerpreview\powerpreview.vcxproj", "{217DF501-135C-4E38-BFC8-99D4821032EA}"
 >>>>>>> Adding unit tests for preview handler common (#1156)
@@ -215,6 +215,7 @@ Global
 		{0485F45C-EA7A-4BB5-804B-3E8D14699387}.Debug|x64.Build.0 = Debug|x64
 		{0485F45C-EA7A-4BB5-804B-3E8D14699387}.Release|x64.ActiveCfg = Release|x64
 		{0485F45C-EA7A-4BB5-804B-3E8D14699387}.Release|x64.Build.0 = Release|x64
+<<<<<<< HEAD
 		{0B593A6C-4143-4337-860E-DB5710FB87DB}.Debug|x64.ActiveCfg = Debug|x64
 		{0B593A6C-4143-4337-860E-DB5710FB87DB}.Debug|x64.Build.0 = Debug|x64
 		{0B593A6C-4143-4337-860E-DB5710FB87DB}.Release|x64.ActiveCfg = Release|x64
@@ -239,6 +240,40 @@ Global
 		{AF2349B8-E5B6-4004-9502-687C1C7730B1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AF2349B8-E5B6-4004-9502-687C1C7730B1}.Release|x64.ActiveCfg = Release|Any CPU
 		{AF2349B8-E5B6-4004-9502-687C1C7730B1}.Release|x64.Build.0 = Release|Any CPU
+=======
+		{AF2349B8-E5B6-4004-9502-687C1C7730B1}.Debug|x64.ActiveCfg = Debug|x64
+		{AF2349B8-E5B6-4004-9502-687C1C7730B1}.Debug|x64.Build.0 = Debug|x64
+		{AF2349B8-E5B6-4004-9502-687C1C7730B1}.Release|x64.ActiveCfg = Release|x64
+		{AF2349B8-E5B6-4004-9502-687C1C7730B1}.Release|x64.Build.0 = Release|x64
+		{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}.Debug|x64.ActiveCfg = Debug|x64
+		{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}.Debug|x64.Build.0 = Debug|x64
+		{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}.Release|x64.ActiveCfg = Release|x64
+		{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}.Release|x64.Build.0 = Release|x64
+		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}.Debug|x64.ActiveCfg = Debug|x64
+		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}.Debug|x64.Build.0 = Debug|x64
+		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}.Release|x64.ActiveCfg = Release|x64
+		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}.Release|x64.Build.0 = Release|x64
+		{DA425894-6E13-404F-8DCB-78584EC0557A}.Debug|x64.ActiveCfg = Debug|x64
+		{DA425894-6E13-404F-8DCB-78584EC0557A}.Debug|x64.Build.0 = Debug|x64
+		{DA425894-6E13-404F-8DCB-78584EC0557A}.Release|x64.ActiveCfg = Release|x64
+		{DA425894-6E13-404F-8DCB-78584EC0557A}.Release|x64.Build.0 = Release|x64
+		{060D75DA-2D1C-48E6-A4A1-6F0718B64661}.Debug|x64.ActiveCfg = Debug|x64
+		{060D75DA-2D1C-48E6-A4A1-6F0718B64661}.Debug|x64.Build.0 = Debug|x64
+		{060D75DA-2D1C-48E6-A4A1-6F0718B64661}.Release|x64.ActiveCfg = Release|x64
+		{060D75DA-2D1C-48E6-A4A1-6F0718B64661}.Release|x64.Build.0 = Release|x64
+		{748417CA-F17E-487F-9411-CAFB6D3F4877}.Debug|x64.ActiveCfg = Debug|x64
+		{748417CA-F17E-487F-9411-CAFB6D3F4877}.Debug|x64.Build.0 = Debug|x64
+		{748417CA-F17E-487F-9411-CAFB6D3F4877}.Release|x64.ActiveCfg = Release|x64
+		{748417CA-F17E-487F-9411-CAFB6D3F4877}.Release|x64.Build.0 = Release|x64
+		{217DF501-135C-4E38-BFC8-99D4821032EA}.Debug|x64.ActiveCfg = Debug|x64
+		{217DF501-135C-4E38-BFC8-99D4821032EA}.Debug|x64.Build.0 = Debug|x64
+		{217DF501-135C-4E38-BFC8-99D4821032EA}.Release|x64.ActiveCfg = Release|x64
+		{217DF501-135C-4E38-BFC8-99D4821032EA}.Release|x64.Build.0 = Release|x64
+		{47310AB4-9034-4BD1-8D8B-E88AD21A171B}.Debug|x64.ActiveCfg = Debug|x64
+		{47310AB4-9034-4BD1-8D8B-E88AD21A171B}.Debug|x64.Build.0 = Debug|x64
+		{47310AB4-9034-4BD1-8D8B-E88AD21A171B}.Release|x64.ActiveCfg = Release|x64
+		{47310AB4-9034-4BD1-8D8B-E88AD21A171B}.Release|x64.Build.0 = Release|x64
+>>>>>>> Markdown preview pane  (#1220)
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -273,6 +308,14 @@ Global
 		{AF2349B8-E5B6-4004-9502-687C1C7730B1} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A} = {2F305555-C296-497E-AC20-5FA1B237996A}
+<<<<<<< HEAD
+=======
+		{DA425894-6E13-404F-8DCB-78584EC0557A} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{060D75DA-2D1C-48E6-A4A1-6F0718B64661} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{748417CA-F17E-487F-9411-CAFB6D3F4877} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{217DF501-135C-4E38-BFC8-99D4821032EA} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{47310AB4-9034-4BD1-8D8B-E88AD21A171B} = {2F305555-C296-497E-AC20-5FA1B237996A}
+>>>>>>> Markdown preview pane  (#1220)
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
