@@ -77,7 +77,13 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingBoolean(settings.zoneSetChange_flashZones, "FlashZonesOnZoneSetChange"),
         TraceLoggingBoolean(settings.zoneSetChange_moveWindows, "MoveWindowsOnZoneSetChange"),
         TraceLoggingBoolean(settings.overrideSnapHotkeys, "OverrideSnapHotKeys"),
-        TraceLoggingWideString(settings.zoneHightlightColor.c_str(), "ZoneHighlightColor"));
+        TraceLoggingBoolean(settings.appLastZone_moveWindows, "MoveWindowsToLastZoneOnAppOpening"),
+        TraceLoggingBoolean(settings.use_cursorpos_editor_startupscreen, "UseCursorPosOnEditorStartup"),
+        TraceLoggingWideString(settings.zoneHightlightColor.c_str(), "ZoneHighlightColor"),
+        TraceLoggingInt32(settings.zoneHighlightOpacity, "ZoneHighlightOpacity"),
+        TraceLoggingWideString(settings.editorHotkey.get_json().Stringify().c_str(), "HotkeyObject"),
+        TraceLoggingWideString(settings.excludedApps.c_str(), "ExcludedApps")
+    );
 }
 
 void Trace::VirtualDesktopChanged() noexcept
