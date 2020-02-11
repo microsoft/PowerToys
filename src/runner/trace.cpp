@@ -53,11 +53,11 @@ void Trace::SettingsChanged(const GeneralSettings& settings)
         "GeneralSettingsChanged",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(settings.isPackaged, "Packaged"),
-        TraceLoggingBoolean(settings.isStartupEnabled, "Startup"),
+        TraceLoggingBoolean(settings.isStartupEnabled, "RunAtStartup"),
         TraceLoggingWideString(settings.startupDisabledReason.c_str(), "StartupDisabledReason"),
         TraceLoggingWideString(enabledModules.c_str(), "ModulesEnabled"),
         TraceLoggingBoolean(settings.isElevated, "Elevated"),
-        TraceLoggingBoolean(settings.isRunElevated, "RunElevated"),
+        TraceLoggingBoolean(settings.isRunElevated, "AlwaysRunElevated"),
         TraceLoggingWideString(settings.theme.c_str(), "Theme"),
         TraceLoggingWideString(settings.systemTheme.c_str(), "SystemTheme"),
         TraceLoggingWideString(settings.powerToysVersion.c_str(), "PowerToysVersion"));
