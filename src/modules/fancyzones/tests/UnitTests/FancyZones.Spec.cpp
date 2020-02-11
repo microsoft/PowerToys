@@ -303,24 +303,6 @@ namespace FancyZonesUnitTests
             std::filesystem::remove(settingsFile);
         }
 
-        TEST_METHOD(InMoveSizeTest)
-        {
-            Assert::IsFalse(m_fzCallback->InMoveSize());
-
-            m_fzCallback->MoveSizeStart(Mocks::Window(), Mocks::Monitor(), POINT{ 0, 0 });
-            Assert::IsFalse(m_fzCallback->InMoveSize()); //point outside of window rect
-
-            const auto window = Mocks::WindowCreate(m_hInst);
-            const int paddingX = 8, paddingY = 6;
-            RECT windowRect{};
-            ::GetWindowRect(window, &windowRect);
-            m_fzCallback->MoveSizeStart(window, Mocks::Monitor(), POINT{ windowRect.left + paddingX, windowRect.top + paddingY });
-            Assert::IsTrue(m_fzCallback->InMoveSize());
-
-            m_fzCallback->MoveSizeEnd(Mocks::Window(), POINT{ 0, 0 });
-            Assert::IsFalse(m_fzCallback->InMoveSize());
-        }
-
         TEST_METHOD(OnKeyDownNothingPressed)
         {
             for (DWORD code = '0'; code <= '9'; code++)
@@ -448,6 +430,7 @@ namespace FancyZonesUnitTests
             }
         }
 
+#if 0
         TEST_METHOD(OnKeyDownWinPressedOverride)
         {
             sendKeyboardInput(VK_LWIN);
@@ -471,5 +454,6 @@ namespace FancyZonesUnitTests
                 Assert::IsTrue(m_fzCallback->OnKeyDown(&input));
             }
         }
+#endif
     };
 }
