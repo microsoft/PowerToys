@@ -13,6 +13,7 @@ using System.Xml.Linq;
 using Common;
 using Markdig;
 using Markdig.Helpers;
+using MarkdownPreviewHandler.Properties;
 
 namespace MarkdownPreviewHandler
 {
@@ -102,7 +103,7 @@ namespace MarkdownPreviewHandler
                     this.infoBar = new RichTextBox
                     {
                         Multiline = true,
-                        Text = "Some pictures have been blocked to help prevent the sender from identifying this computer. Open this item to view pictures.",
+                        Text = Resources.BlockedImageInfoText,
                         BackColor = Color.LightYellow,
                         BorderStyle = BorderStyle.None,
                         Width = this.Width,
