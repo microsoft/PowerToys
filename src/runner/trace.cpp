@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "trace.h"
 
+#include "general_settings.h"
+
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
     "Microsoft.PowerToys",
@@ -28,4 +30,35 @@ void Trace::EventLaunch(const std::wstring& versionNumber, bool isProcessElevate
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(isProcessElevated, "Elevated"));
+}
+
+void Trace::SettingsChanged(const GeneralSettings& settings)
+{
+    std::wstring enabledModules;
+    for (const auto& [name, isEnabled] : settings.isModulesEnabledMap)
+    {
+        if (isEnabled)
+        {
+            if (!enabledModules.empty())
+            {
+                enabledModules += L", ";
+            }
+
+            enabledModules += name;
+        }
+    }
+
+    TraceLoggingWrite(
+        g_hProvider,
+        "GeneralSettingsChanged",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingBoolean(settings.isPackaged, "Packaged"),
+        TraceLoggingBoolean(settings.isStartupEnabled, "Startup"),
+        TraceLoggingWideString(settings.startupDisabledReason.c_str(), "StartupDisabledReason"),
+        TraceLoggingWideString(enabledModules.c_str(), "ModulesEnabled"),
+        TraceLoggingBoolean(settings.isElevated, "Elevated"),
+        TraceLoggingBoolean(settings.isRunElevated, "RunElevated"),
+        TraceLoggingWideString(settings.theme.c_str(), "Theme"),
+        TraceLoggingWideString(settings.systemTheme.c_str(), "SystemTheme"),
+        TraceLoggingWideString(settings.powerToysVersion.c_str(), "PowerToysVersion"));
 }

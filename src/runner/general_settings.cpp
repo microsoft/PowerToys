@@ -8,6 +8,8 @@
 #include <common/windows_colors.h>
 #include <common/winstore.h>
 
+#include "trace.h"
+
 static std::wstring settings_theme = L"system";
 static bool run_as_elevated = false;
 
@@ -170,8 +172,10 @@ void apply_general_settings(const json::JsonObject& general_configs)
     {
         settings_theme = general_configs.GetNamedString(L"theme");
     }
-    json::JsonObject save_settings = get_general_settings();
-    PTSettingsHelper::save_general_settings(save_settings);
+
+    GeneralSettings save_settings = get_settings();
+    PTSettingsHelper::save_general_settings(save_settings.to_json());
+    Trace::SettingsChanged(save_settings);
 }
 
 void start_initial_powertoys()
