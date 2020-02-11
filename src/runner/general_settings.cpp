@@ -18,6 +18,33 @@ namespace localized_strings
     const std::wstring_view STARTUP_DISABLED_BY_USER = LR"(This setting has been disabled manually via <a href="https://ms_settings_startupapps" target="_blank">Startup Settings</a>.)";
 }
 
+json::JsonObject GeneralSettings::to_json()
+{
+    json::JsonObject result;
+
+    result.SetNamedValue(L"packaged", json::value(isPackaged));
+    result.SetNamedValue(L"startup", json::value(isStartupEnabled));
+    if (!startupDisabledReason.empty())
+    {
+        result.SetNamedValue(L"startup_disabled_reason", json::value(startupDisabledReason));
+    }
+
+    json::JsonObject enabled;
+    for (const auto& [name, isEnabled] : isModulesEnabledMap)
+    {
+        enabled.SetNamedValue(name, json::value(isEnabled));
+    }
+    result.SetNamedValue(L"enabled", std::move(enabled));
+
+    result.SetNamedValue(L"is_elevated", json::value(isElevated));
+    result.SetNamedValue(L"run_elevated", json::value(isRunElevated));
+    result.SetNamedValue(L"theme", json::value(theme));
+    result.SetNamedValue(L"system_theme", json::value(systemTheme));
+    result.SetNamedValue(L"powertoys_version", json::value(powerToysVersion));
+
+    return result;
+}
+
 json::JsonObject load_general_settings()
 {
     auto loaded = PTSettingsHelper::load_general_settings();
@@ -30,14 +57,17 @@ json::JsonObject load_general_settings()
     return loaded;
 }
 
-json::JsonObject get_general_settings()
+GeneralSettings get_settings()
 {
-    json::JsonObject result;
+    GeneralSettings settings{
+        .isPackaged = winstore::running_as_packaged(),
+        .isElevated = is_process_elevated(),
+        .isRunElevated = run_as_elevated,
+        .theme = settings_theme,
+        .systemTheme = WindowsColors::is_dark_mode() ? L"dark" : L"light",
+        .powerToysVersion = get_product_version(),
+    };
 
-    const bool packaged = winstore::running_as_packaged();
-    result.SetNamedValue(L"packaged", json::value(packaged));
-
-    bool startup{};
     if (winstore::running_as_packaged())
     {
         using namespace localized_strings;
@@ -45,41 +75,38 @@ json::JsonObject get_general_settings()
         switch (task_state)
         {
         case winstore::StartupTaskState::Disabled:
-            startup = false;
+            settings.isStartupEnabled = false;
             break;
         case winstore::StartupTaskState::Enabled:
-            startup = true;
+            settings.isStartupEnabled = true;
             break;
         case winstore::StartupTaskState::DisabledByPolicy:
-            result.SetNamedValue(L"startup_disabled_reason", json::value(STARTUP_DISABLED_BY_POLICY));
-            startup = false;
+            settings.startupDisabledReason = STARTUP_DISABLED_BY_POLICY;
+            settings.isStartupEnabled = false;
             break;
         case winstore::StartupTaskState::DisabledByUser:
-            result.SetNamedValue(L"startup_disabled_reason", json::value(STARTUP_DISABLED_BY_USER));
-            startup = false;
+            settings.startupDisabledReason = STARTUP_DISABLED_BY_USER;
+            settings.isStartupEnabled = false;
             break;
         }
     }
     else
     {
-        startup = is_auto_start_task_active_for_this_user();
+        settings.isStartupEnabled = is_auto_start_task_active_for_this_user();
     }
-    result.SetNamedValue(L"startup", json::value(startup));
 
-    json::JsonObject enabled;
     for (auto& [name, powertoy] : modules())
     {
-        enabled.SetNamedValue(name, json::value(powertoy.is_enabled()));
+        settings.isModulesEnabledMap[name] = powertoy.is_enabled();
     }
-    result.SetNamedValue(L"enabled", std::move(enabled));
 
-    bool is_elevated = is_process_elevated();
-    result.SetNamedValue(L"is_elevated", json::value(is_elevated));
-    result.SetNamedValue(L"run_elevated", json::value(run_as_elevated));
-    result.SetNamedValue(L"theme", json::value(settings_theme));
-    result.SetNamedValue(L"system_theme", json::value(WindowsColors::is_dark_mode() ? L"dark" : L"light"));
-    result.SetNamedValue(L"powertoys_version", json::value(get_product_version()));
-    return result;
+    return settings;
+}
+
+json::JsonObject get_general_settings()
+{
+    auto settings = get_settings();
+    return settings.to_json();
 }
 
 void apply_general_settings(const json::JsonObject& general_configs)
