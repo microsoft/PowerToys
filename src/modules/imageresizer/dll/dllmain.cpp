@@ -16,6 +16,11 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpRes
     {
     case DLL_PROCESS_ATTACH:
         g_hInst_imageResizer = hInstance;
+        Trace::RegisterProvider();
+        break;
+    case DLL_PROCESS_DETACH:
+        Trace::UnregisterProvider();
+        break;
     }
     return _AtlModule.DllMain(dwReason, lpReserved);
 }
