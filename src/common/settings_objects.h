@@ -14,7 +14,7 @@ namespace PowerToysSettings {
     );
 
     // Add additional general information to the PowerToy settings.
-    void set_description(const UINT &resource_id);
+    void set_description(UINT resource_id);
     void set_description(const std::wstring_view &description);
 
     void set_icon_key(const std::wstring_view &icon_key);
@@ -22,32 +22,32 @@ namespace PowerToysSettings {
     void set_video_link(const std::wstring_view &video_link);
 
     // Add properties to the PowerToy settings.
-    void add_bool_toogle(const std::wstring_view &name, const UINT &description_resource_id,const bool &value);
+    void add_bool_toogle(const std::wstring_view &name, UINT description_resource_id,const bool &value);
     void add_bool_toogle(const std::wstring_view &name, const std::wstring_view &description,const bool &value);
 
-    void add_int_spinner(const std::wstring_view &name, const UINT &description_resource_id,const int &value,const int &min,const int &max, const int &step);
+    void add_int_spinner(const std::wstring_view &name, UINT description_resource_id,const int &value,const int &min,const int &max, const int &step);
     void add_int_spinner(const std::wstring_view &name, const std::wstring_view &description,const int &value,const int &min,const int &max, const int &step);
 
-    void add_string(const std::wstring_view &name,const UINT &description_resource_id,const std::wstring_view &value);
+    void add_string(const std::wstring_view &name, UINT description_resource_id,const std::wstring_view &value);
     void add_string(const std::wstring_view &name, const std::wstring_view &description,const std::wstring_view &value);
 
-    void add_multiline_string(const std::wstring_view &name, const UINT &description_resource_id,const  std::wstring_view &value);
+    void add_multiline_string(const std::wstring_view &name,  UINT description_resource_id,const  std::wstring_view &value);
     void add_multiline_string(const std::wstring_view &name,const std::wstring_view &description,const std::wstring_view &value);
 
-    void add_color_picker(const std::wstring_view &name,const UINT &description_resource_id,const std::wstring_view &value);
+    void add_color_picker(const std::wstring_view &name, UINT description_resource_id,const std::wstring_view &value);
     void add_color_picker(const std::wstring_view &name,const std::wstring_view &description,const std::wstring_view &value);
 
-    void add_hotkey(const std::wstring_view &name,const UINT &description_resource_id, const HotkeyObject& hotkey);
+    void add_hotkey(const std::wstring_view &name, UINT description_resource_id, const HotkeyObject& hotkey);
     void add_hotkey(const std::wstring_view &name,const std::wstring_view &description, const HotkeyObject& hotkey);
 
-    void add_choice_group(const std::wstring_view &name,const UINT &description_resource_id,const std::wstring_view &value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
+    void add_choice_group(const std::wstring_view &name, UINT description_resource_id,const std::wstring_view &value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
     void add_choice_group(const std::wstring_view &name,const std::wstring_view &description,const std::wstring_view &value, const std::vector<std::pair<std::wstring, std::wstring>>& keys_and_texts);
 
-    void add_dropdown(const std::wstring_view &name,const UINT &description_resource_id,const std::wstring_view &value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
+    void add_dropdown(const std::wstring_view &name, UINT description_resource_id,const std::wstring_view &value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
     void add_dropdown(const std::wstring_view &name,const std::wstring_view &description,const std::wstring_view &value, const std::vector<std::pair<std::wstring, std::wstring>>& keys_and_texts);
 
-    void add_custom_action(const std::wstring_view &name,const UINT &description_resource_id,const UINT &button_text_resource_id,const UINT &ext_description_resource_id);
-    void add_custom_action(const std::wstring_view &name,const UINT &description_resource_id,const UINT &button_text_resource_id,const std::wstring_view &value);
+    void add_custom_action(const std::wstring_view &name,UINT description_resource_id, UINT button_text_resource_id, UINT ext_description_resource_id);
+    void add_custom_action(const std::wstring_view &name, UINT description_resource_id, UINT button_text_resource_id,const std::wstring_view &value);
     void add_custom_action(const std::wstring_view &name,const std::wstring_view &description,const std::wstring_view &button_text,const std::wstring_view &value);
 
     void add_header_szLarge(const std::wstring_view &name,const std::wstring_view &description,const std::wstring_view &value);
@@ -61,7 +61,7 @@ namespace PowerToysSettings {
     int m_curr_priority = 0; // For keeping order when adding elements.
     HINSTANCE m_instance;
 
-    std::wstring get_resource(const UINT &resource_id) const;
+    std::wstring get_resource( UINT resource_id) const;
   };
 
   class PowerToyValues {

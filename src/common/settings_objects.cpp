@@ -11,7 +11,7 @@ namespace PowerToysSettings {
     m_json.SetNamedValue(L"properties", json::JsonObject{});
   }
 
-  void Settings::set_description(const UINT &resource_id) {
+  void Settings::set_description( UINT resource_id) {
     m_json.SetNamedValue(L"description", json::value(get_resource(resource_id)));
   }
 
@@ -32,7 +32,7 @@ namespace PowerToysSettings {
   }
 
   // add_bool_toogle overloads.
-  void Settings::add_bool_toogle(const std::wstring_view &name, const UINT &description_resource_id, const bool &value) {
+  void Settings::add_bool_toogle(const std::wstring_view &name,  UINT description_resource_id, const bool &value) {
     add_bool_toogle(name, get_resource(description_resource_id), value);
   }
 
@@ -47,7 +47,7 @@ namespace PowerToysSettings {
   }
 
   // add_int_spinner overloads.
-  void Settings::add_int_spinner(const const std::wstring_view &name, const UINT &description_resource_id,const  int &value,const int &min, const int &max, const int &step) {
+  void Settings::add_int_spinner(const const std::wstring_view &name,  UINT description_resource_id,const  int &value,const int &min, const int &max, const int &step) {
     add_int_spinner(name, get_resource(description_resource_id), value, min, max, step);
   }
 
@@ -65,7 +65,7 @@ namespace PowerToysSettings {
   }
 
   // add_string overloads.
-  void Settings::add_string(const std::wstring_view &name,const UINT &description_resource_id, const std::wstring_view &value) {
+  void Settings::add_string(const std::wstring_view &name, UINT description_resource_id, const std::wstring_view &value) {
     add_string(name, get_resource(description_resource_id), value);
   }
 
@@ -80,7 +80,7 @@ namespace PowerToysSettings {
   }
 
   // add_multiline_string overloads.
-  void Settings::add_multiline_string(const std::wstring_view &name,const UINT &description_resource_id,const std::wstring_view &value) {
+  void Settings::add_multiline_string(const std::wstring_view &name, UINT description_resource_id,const std::wstring_view &value) {
     add_multiline_string(name, get_resource(description_resource_id), value);
   }
 
@@ -106,7 +106,7 @@ namespace PowerToysSettings {
   }
 
   // add_color_picker overloads.
-  void Settings::add_color_picker(const std::wstring_view &name,const UINT &description_resource_id,const std::wstring_view &value) {
+  void Settings::add_color_picker(const std::wstring_view &name, UINT description_resource_id,const std::wstring_view &value) {
     add_color_picker(name, get_resource(description_resource_id), value);
   }
 
@@ -120,7 +120,7 @@ namespace PowerToysSettings {
     m_json.GetNamedObject(L"properties").SetNamedValue(name, picker);
   }
 
-  void Settings::add_hotkey(const std::wstring_view &name,const UINT &description_resource_id, const HotkeyObject& hotkey) {
+  void Settings::add_hotkey(const std::wstring_view &name, UINT description_resource_id, const HotkeyObject& hotkey) {
     add_hotkey(name, get_resource(description_resource_id), hotkey);
   }
 
@@ -134,7 +134,7 @@ namespace PowerToysSettings {
     m_json.GetNamedObject(L"properties").SetNamedValue(name, hotkey);
   }
 
-  void Settings::add_choice_group(const std::wstring_view &name, const UINT &description_resource_id,const std::wstring_view &value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids) {
+  void Settings::add_choice_group(const std::wstring_view &name,  UINT description_resource_id,const std::wstring_view &value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids) {
     std::vector<std::pair<std::wstring, std::wstring>> keys_and_texts;
     keys_and_texts.reserve(keys_and_text_ids.size());
     for (const auto& kv : keys_and_text_ids) {
@@ -161,7 +161,7 @@ namespace PowerToysSettings {
     m_json.GetNamedObject(L"properties").SetNamedValue(name, choice_group);
   }
 
-  void Settings::add_dropdown(const std::wstring_view &name,const UINT &description_resource_id,const std::wstring_view &value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids) {
+  void Settings::add_dropdown(const std::wstring_view &name, UINT description_resource_id,const std::wstring_view &value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids) {
     std::vector<std::pair<std::wstring, std::wstring>> keys_and_texts;
     keys_and_texts.reserve(keys_and_text_ids.size());
     for (const auto& kv : keys_and_text_ids) {
@@ -189,11 +189,11 @@ namespace PowerToysSettings {
   }
 
   // add_custom_action overloads.
-  void Settings::add_custom_action(const std::wstring_view &name,const UINT &description_resource_id,const UINT &button_text_resource_id,const UINT &ext_description_resource_id) {
+  void Settings::add_custom_action(const std::wstring_view &name, UINT description_resource_id, UINT button_text_resource_id, UINT ext_description_resource_id) {
     add_custom_action(name, get_resource(description_resource_id), get_resource(button_text_resource_id), get_resource(ext_description_resource_id));
   }
 
-  void Settings::add_custom_action(const std::wstring_view &name,const UINT &description_resource_id,const UINT &button_text_resource_id,const std::wstring_view &value) {
+  void Settings::add_custom_action(const std::wstring_view &name, UINT description_resource_id, UINT button_text_resource_id,const std::wstring_view &value) {
     add_custom_action(name, get_resource(description_resource_id), get_resource(button_text_resource_id), value);
   }
 
@@ -227,7 +227,7 @@ namespace PowerToysSettings {
   }
 
   // Resource helper.
-  std::wstring Settings::get_resource(const UINT &resource_id) const{
+  std::wstring Settings::get_resource( UINT resource_id) const{
     if (resource_id != 0) {
       wchar_t* res_ptr;
       const size_t resource_length = LoadStringW(m_instance, resource_id, reinterpret_cast<wchar_t *>(&res_ptr), 0);
