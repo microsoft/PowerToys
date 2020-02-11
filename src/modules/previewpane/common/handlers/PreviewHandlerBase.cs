@@ -56,6 +56,7 @@ namespace Common
         [ComRegisterFunction]
         public static void Register(Type t)
         {
+            Console.WriteLine("Adding keys to registry.");
             if (t != null && t.IsSubclassOf(typeof(PreviewHandlerBase)))
             {
                 object[] attrs = (object[])t.GetCustomAttributes(typeof(PreviewHandlerAttribute), true);
@@ -74,6 +75,7 @@ namespace Common
         [ComUnregisterFunction]
         public static void Unregister(Type t)
         {
+            Console.WriteLine("Removing keys to registry.");
             if (t != null && t.IsSubclassOf(typeof(PreviewHandlerBase)))
             {
                 object[] attrs = (object[])t.GetCustomAttributes(typeof(PreviewHandlerAttribute), true);
@@ -201,7 +203,7 @@ namespace Common
             }
 
             // Add preview handler to preview handler list
-            using (RegistryKey handlersKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", true))
+            using (RegistryKey handlersKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", true))
             {
                 handlersKey.SetValue(previewerGuid, name, RegistryValueKind.String);
             }

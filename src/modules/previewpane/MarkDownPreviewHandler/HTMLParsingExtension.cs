@@ -15,15 +15,28 @@ using Markdig.Syntax.Inlines;
 namespace MarkdownPreviewHandler
 {
     /// <summary>
+    /// Callback if extension blocks external images.
+    /// </summary>
+    public delegate void ImagesBlockedCallBack();
+
+    /// <summary>
     /// Markdig Extension to process html nodes in markdown AST.
     /// </summary>
     public class HTMLParsingExtension : IMarkdownExtension
     {
         /// <summary>
+        /// Callback if extension blocks external images.
+        /// </summary>
+        private readonly ImagesBlockedCallBack imagesBlockedCallBack;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="HTMLParsingExtension"/> class.
         /// </summary>
-        public HTMLParsingExtension(string baseUrl = "")
+        /// <param name="imagesBlockedCallBack">Callback function if image is blocked by extension.</param>
+        /// <param name="baseUrl">Absolute path of markdown file.</param>
+        public HTMLParsingExtension(ImagesBlockedCallBack imagesBlockedCallBack, string baseUrl = "")
         {
+            this.imagesBlockedCallBack = imagesBlockedCallBack;
             this.BaseUrl = baseUrl;
         }
 
@@ -74,17 +87,28 @@ namespace MarkdownPreviewHandler
                 }
                 else if (node is Inline)
                 {
-                    if (node is LinkInline link && link.IsImage)
+                    if (node is LinkInline link)
                     {
-                        if (!Uri.TryCreate(link.Url, UriKind.Absolute, out Uri uriLink))
+                        if (link.IsImage)
+                        {
+                            link.GetAttributes().AddClass("img-fluid");
+                        }
+
+                        if (!Uri.TryCreate(link.Url, UriKind.Absolute, out _))
                         {
                             link.Url = link.Url.TrimStart('/', '\\');
                             this.BaseUrl = this.BaseUrl.TrimEnd('/', '\\');
-                            uriLink = new Uri(Path.Combine(this.BaseUrl, link.Url));
+                            Uri uriLink = new Uri(Path.Combine(this.BaseUrl, link.Url));
                             link.Url = uriLink.ToString();
                         }
-
-                        link.GetAttributes().AddClass("img-fluid");
+                        else
+                        {
+                            if (link.IsImage)
+                            {
+                                link.Url = "#";
+                                this.imagesBlockedCallBack();
+                            }
+                        }
                     }
                 }
             }
