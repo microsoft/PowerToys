@@ -644,7 +644,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(GetConfig)
         {
-            const int expectedSize = m_ptSettings->serialize().size() + 1;
+            const int expectedSize = static_cast<int>(m_ptSettings->serialize().size()) + 1;
 
             int actualBufferSize = expectedSize;
             PWSTR actualBuffer = new wchar_t[actualBufferSize];
@@ -658,9 +658,10 @@ namespace FancyZonesUnitTests
         TEST_METHOD(GetConfigSmallBuffer)
         {
             const auto serialized = m_ptSettings->serialize();
-            const int expectedSize = serialized.size() + 1;
+            const int size = static_cast<int>(serialized.size());
+            const int expectedSize = size + 1;
 
-            int actualBufferSize = m_ptSettings->serialize().size() - 1;
+            int actualBufferSize = size - 1;
             PWSTR actualBuffer = new wchar_t[actualBufferSize];
 
             Assert::IsFalse(m_settings->GetConfig(actualBuffer, &actualBufferSize));
@@ -671,12 +672,11 @@ namespace FancyZonesUnitTests
         TEST_METHOD(GetConfigNullBuffer)
         {
             const auto serialized = m_ptSettings->serialize();
-            const int expectedSize = serialized.size() + 1;
+            const int expectedSize = static_cast<int>(serialized.size()) + 1;
 
             int actualBufferSize = 0;
-            PWSTR actualBuffer = nullptr;
 
-            Assert::IsFalse(m_settings->GetConfig(actualBuffer, &actualBufferSize));
+            Assert::IsFalse(m_settings->GetConfig(nullptr, &actualBufferSize));
             Assert::AreEqual(expectedSize, actualBufferSize);
         }
 
