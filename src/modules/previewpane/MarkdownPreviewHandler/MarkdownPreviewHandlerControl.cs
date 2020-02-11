@@ -89,7 +89,7 @@ namespace MarkdownPreviewHandler
 
                 this.browser = new WebBrowser
                 {
-                    DocumentText = sb.ToString(),
+                    DocumentText = markdownHTML,
                     Dock = DockStyle.Fill,
                     IsWebBrowserContextMenuEnabled = false,
                     ScriptErrorsSuppressed = true,
@@ -102,14 +102,15 @@ namespace MarkdownPreviewHandler
                 {
                     this.infoBar = new RichTextBox
                     {
-                        Multiline = true,
                         Text = Resources.BlockedImageInfoText,
                         BackColor = Color.LightYellow,
-                        BorderStyle = BorderStyle.None,
-                        Width = this.Width,
+                        Multiline = true,
                         Dock = DockStyle.Top,
+                        ReadOnly = true,
                     };
                     this.infoBar.ContentsResized += this.RTBContentsResized;
+                    this.infoBar.ScrollBars = RichTextBoxScrollBars.None;
+                    this.infoBar.BorderStyle = BorderStyle.None;
                     this.Controls.Add(this.infoBar);
                 }
 

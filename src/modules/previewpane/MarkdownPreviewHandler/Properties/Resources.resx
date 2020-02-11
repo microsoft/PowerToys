@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="BlockedImageInfoText" xml:space="preserve">
-    <value>"Some pictures have been blocked to help prevent the sender from identifying this computer. Open this item to view pictures."</value>
+    <value>Some pictures have been blocked to help prevent the sender from identifying this computer. Open this item to view pictures.</value>
     <comment>This text is displayed if image is blocked from being displayed.</comment>
   </data>
 </root>

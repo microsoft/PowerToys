@@ -61,7 +61,7 @@ namespace MarkdownPreviewHandler.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;Some pictures have been blocked to help prevent the sender from identifying this computer. Open this item to view pictures.&quot;.
+        ///   Looks up a localized string similar to Some pictures have been blocked to help prevent the sender from identifying this computer. Open this item to view pictures..
         /// </summary>
         internal static string BlockedImageInfoText {
             get {
