@@ -6,6 +6,7 @@
 #include <common/settings_objects.h>
 #include "Settings.h"
 #include "trace.h"
+#include <common/common.h>
 
 CImageResizerExtModule _AtlModule;
 HINSTANCE g_hInst_imageResizer = 0;
@@ -25,16 +26,12 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpRes
     return _AtlModule.DllMain(dwReason, lpReserved);
 }
 
-// The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"ImageResizer";
-// Add a description that will we shown in the module settings page.
-const static wchar_t* MODULE_DESC = L"<no description>";
-
 class ImageResizerModule : public PowertoyModuleIface
 {
 private:
     // The PowerToy state.
     bool m_enabled = false;
+    std::wstring app_name;
 
     // Load initial settings from the persisted values.
     void init_settings();
@@ -44,6 +41,7 @@ public:
     ImageResizerModule()
     {
         init_settings();
+        app_name = GET_RESOURCE_STRING(IDS_IMAGERESIZER);
     };
 
     // Destroy the powertoy and free memory
@@ -55,7 +53,7 @@ public:
     // Return the display name of the powertoy, this will be cached by the runner
     virtual const wchar_t* get_name() override
     {
-        return MODULE_NAME;
+        return app_name.c_str();
     }
 
     // Return array of the names of all events that this powertoy listens for, with
@@ -82,7 +80,7 @@ public:
 
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
-        settings.set_description(MODULE_DESC);
+        settings.set_description(GET_RESOURCE_STRING(IDS_SETTINGS_DESCRIPTION));
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
