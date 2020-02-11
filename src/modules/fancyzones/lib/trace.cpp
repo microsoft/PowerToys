@@ -82,7 +82,7 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingWideString(settings.zoneHightlightColor.c_str(), "ZoneHighlightColor"),
         TraceLoggingInt32(settings.zoneHighlightOpacity, "ZoneHighlightOpacity"),
         TraceLoggingWideString(settings.editorHotkey.get_json().Stringify().c_str(), "HotkeyObject"),
-        TraceLoggingWideString(settings.excludedApps.c_str(), "ExcludedApps")
+        TraceLoggingInt32(static_cast<int>(settings.excludedAppsArray.size()), "ExcludedAppsCount")
     );
 }
 
