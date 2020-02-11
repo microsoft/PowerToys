@@ -18,7 +18,7 @@ void Trace::UnregisterProvider()
     TraceLoggingUnregister(g_hProvider);
 }
 
-void Trace::EventLaunch(const std::wstring& versionNumber)
+void Trace::EventLaunch(const std::wstring& versionNumber, bool isProcessElevated)
 {
     TraceLoggingWrite(
         g_hProvider,
@@ -26,5 +26,6 @@ void Trace::EventLaunch(const std::wstring& versionNumber)
         TraceLoggingWideString(versionNumber.c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(isProcessElevated, "Elevated"));
 }
