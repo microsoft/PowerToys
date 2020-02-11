@@ -631,7 +631,6 @@ namespace JSONHelpers
                     abort(); // TODO(stefan): Exception safety
                 }
                 customZoneSetsMap[uuid] = zoneSetData;
-                SaveFancyZonesData();
 
                 valueLength = ARRAYSIZE(value);
                 dataSize = ARRAYSIZE(data);
