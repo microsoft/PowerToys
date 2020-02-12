@@ -3,6 +3,8 @@
 class CSettings
 {
 public:
+    static const int MAX_INPUT_STRING_LEN = 1024;
+
     static bool GetEnabled();
     static bool SetEnabled(_In_ bool enabled);
 
