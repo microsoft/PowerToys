@@ -257,6 +257,8 @@ public:
             CSettings::SetMaxMRUSize(values.get_int_value(L"int_max_mru_size").value());
             CSettings::SetShowIconOnMenu(values.get_bool_value(L"bool_show_icon_on_menu").value());
             CSettings::SetExtendedContextMenuOnly(values.get_bool_value(L"bool_show_extended_menu").value());
+
+            Trace::SettingsChanged();
         }
         catch (std::exception)
         {

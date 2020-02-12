@@ -6,6 +6,7 @@
 #include <helpers.h>
 #include <settings.h>
 #include <windowsx.h>
+#include <trace.h>
 
 extern HINSTANCE g_hInst;
 
@@ -443,6 +444,8 @@ HRESULT CPowerRenameUI::_WriteSettings()
                 spReplaceMRU->AddMRUString(buffer);
             }
         }
+
+        Trace::SettingsChanged();
     }
 
     return S_OK;
