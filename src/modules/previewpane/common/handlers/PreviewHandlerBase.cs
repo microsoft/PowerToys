@@ -203,7 +203,7 @@ namespace Common
             }
 
             // Add preview handler to preview handler list
-            using (RegistryKey handlersKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", true))
+            using (RegistryKey handlersKey = Registry.CurrentUser.CreateSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", true))
             {
                 handlersKey.SetValue(previewerGuid, name, RegistryValueKind.String);
             }
@@ -244,7 +244,7 @@ namespace Common
                 appIdsKey.DeleteSubKey(appId);
             }
 
-            using (RegistryKey classesKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", true))
+            using (RegistryKey classesKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", true))
             {
                 classesKey.DeleteValue(previewerGuid);
             }
