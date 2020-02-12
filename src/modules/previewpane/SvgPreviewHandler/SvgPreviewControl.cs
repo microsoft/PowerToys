@@ -3,11 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Windows.Forms;
+using System.Xml;
+using System.Xml.Linq;
 using Common;
 using Common.Utilities;
+using SvgPreviewHandler.Utilities;
 
 namespace SvgPreviewHandler
 {
@@ -16,7 +22,20 @@ namespace SvgPreviewHandler
     /// </summary>
     public class SvgPreviewControl : FormHandlerControl
     {
-        private Stream dataSourceStream;
+        /// <summary>
+        /// Browser Control to display Svg.
+        /// </summary>
+        private WebBrowser browser;
+
+        /// <summary>
+        /// Text box to display the information about blocked elements from Svg.
+        /// </summary>
+        private RichTextBox textBox;
+
+        /// <summary>
+        /// Represent if any blocked element is found in the Svg.
+        /// </summary>
+        private bool foundFilteredElements = false;
 
         /// <summary>
         /// Start the preview on the Control.
@@ -26,30 +45,82 @@ namespace SvgPreviewHandler
         {
             this.InvokeOnControlThread(() =>
             {
-                WebBrowser browser = new WebBrowser();
-                this.dataSourceStream = new StreamWrapper(dataSource as IStream);
+                this.foundFilteredElements = false;
+                string svgData = null;
+                using (var stream = new StreamWrapper(dataSource as IStream))
+                {
+                    using (var reader = new StreamReader(stream))
+                    {
+                        svgData = reader.ReadToEnd();
+                    }
+                }
 
-                browser.DocumentStream = this.dataSourceStream;
-                browser.Dock = DockStyle.Fill;
-                browser.IsWebBrowserContextMenuEnabled = false;
-                browser.ScriptErrorsSuppressed = true;
-                browser.ScrollBarsEnabled = true;
-                this.Controls.Add(browser);
+                svgData = string.IsNullOrWhiteSpace(svgData) ? svgData : SvgPreviewHandlerHelper.RemoveElements(svgData, out this.foundFilteredElements);
+                if (this.foundFilteredElements)
+                {
+                    this.AddTextBoxControl();
+                }
+
+                this.AddBrowserControl(svgData);
+                this.Resize += this.FormResized;
                 base.DoPreview(dataSource);
             });
         }
 
         /// <summary>
-        /// Free resources on the unload of Preview.
+        /// Occurs when RichtextBox is resized.
         /// </summary>
-        public override void Unload()
+        /// <param name="sender">Reference to resized control.</param>
+        /// <param name="e">Provides data for the ContentsResized event.</param>
+        private void RTBContentsResized(object sender, ContentsResizedEventArgs e)
         {
-            base.Unload();
-            if (this.dataSourceStream != null)
+            var richTextBox = sender as RichTextBox;
+            richTextBox.Height = e.NewRectangle.Height + 5;
+        }
+
+        /// <summary>
+        /// Occurs when form is resized.
+        /// </summary>
+        /// <param name="sender">Reference to resized control.</param>
+        /// <param name="e">Provides data for the resize event.</param>
+        private void FormResized(object sender, EventArgs e)
+        {
+            if (this.foundFilteredElements)
             {
-                this.dataSourceStream.Dispose();
-                this.dataSourceStream = null;
+                this.textBox.Width = this.Width;
             }
+        }
+
+        /// <summary>
+        /// Adds a Web Browser Control to Control Collection.
+        /// </summary>
+        /// <param name="svgData">Svg to display on Browser Control.</param>
+        private void AddBrowserControl(string svgData)
+        {
+            this.browser = new WebBrowser();
+            this.browser.DocumentText = svgData;
+            this.browser.Dock = DockStyle.Fill;
+            this.browser.IsWebBrowserContextMenuEnabled = false;
+            this.browser.ScriptErrorsSuppressed = true;
+            this.browser.ScrollBarsEnabled = true;
+            this.Controls.Add(this.browser);
+        }
+
+        /// <summary>
+        /// Adds a Text Box in Controls for showing information about blocked elements.
+        /// </summary>
+        private void AddTextBoxControl()
+        {
+            this.textBox = new RichTextBox();
+            this.textBox.Text = Resource.BlockedElementInfoText;
+            this.textBox.BackColor = Color.LightYellow;
+            this.textBox.Multiline = true;
+            this.textBox.Dock = DockStyle.Top;
+            this.textBox.ReadOnly = true;
+            this.textBox.ContentsResized += this.RTBContentsResized;
+            this.textBox.ScrollBars = RichTextBoxScrollBars.None;
+            this.textBox.BorderStyle = BorderStyle.None;
+            this.Controls.Add(this.textBox);
         }
     }
 }
