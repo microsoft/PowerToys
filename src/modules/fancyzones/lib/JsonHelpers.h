@@ -188,16 +188,13 @@ namespace JSONHelpers
 
         inline const std::unordered_map<std::wstring, CustomZoneSetData>& GetCustomZoneSetsMap() const
         {
-            
             return customZoneSetsMap;
         }
 
         inline const std::unordered_map<std::wstring, AppZoneHistoryData>& GetAppZoneHistoryMap() const
         {
-            
             return appZoneHistoryMap;
         }
-
 
         inline void clear_data()
         {

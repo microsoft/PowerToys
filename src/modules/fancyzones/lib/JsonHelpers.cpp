@@ -172,7 +172,7 @@ namespace JSONHelpers
         if (!deviceInfoMap.contains(deviceId))
         {
             // Creates default entry in map when ZoneWindow is created
-            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ L"null", ZoneSetLayoutType::Blank }  };
+            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ L"null", ZoneSetLayoutType::Blank } };
 
             MigrateDeviceInfoFromRegistry(deviceId);
         }
@@ -202,7 +202,7 @@ namespace JSONHelpers
                 if (data.zoneSetUuid == zoneSetId && data.deviceId == deviceId)
                 {
                     return history->second.zoneIndex;
-                }                
+                }
             }
         }
 
@@ -411,7 +411,8 @@ namespace JSONHelpers
 
         for (const auto& [deviceID, deviceData] : deviceInfoMap)
         {
-            if (deviceData.activeZoneSet.type != ZoneSetLayoutType::Blank) {
+            if (deviceData.activeZoneSet.type != ZoneSetLayoutType::Blank)
+            {
                 DeviceInfosJSON.Append(DeviceInfoJSON::DeviceInfoJSON::ToJson(DeviceInfoJSON{ deviceID, deviceData }));
             }
         }
@@ -607,8 +608,7 @@ namespace JSONHelpers
                 }
                 switch (zoneSetData.type)
                 {
-                case CustomLayoutType::Grid:
-                {
+                case CustomLayoutType::Grid: {
                     int j = 5;
                     GridLayoutInfo zoneSetInfo(GridLayoutInfo::Minimal{ .rows = data[j++], .columns = data[j++] });
 
@@ -632,8 +632,7 @@ namespace JSONHelpers
                     zoneSetData.info = zoneSetInfo;
                     break;
                 }
-                case CustomLayoutType::Canvas:
-                {
+                case CustomLayoutType::Canvas: {
                     CanvasLayoutInfo info;
 
                     int j = 5;
@@ -913,8 +912,7 @@ namespace JSONHelpers
         result.SetNamedValue(L"name", json::value(customZoneSet.data.name));
         switch (customZoneSet.data.type)
         {
-        case CustomLayoutType::Canvas:
-        {
+        case CustomLayoutType::Canvas: {
             result.SetNamedValue(L"type", json::value(L"canvas"));
 
             CanvasLayoutInfo info = std::get<CanvasLayoutInfo>(customZoneSet.data.info);
@@ -922,8 +920,7 @@ namespace JSONHelpers
 
             break;
         }
-        case CustomLayoutType::Grid:
-        {
+        case CustomLayoutType::Grid: {
             result.SetNamedValue(L"type", json::value(L"grid"));
 
             GridLayoutInfo gridInfo = std::get<GridLayoutInfo>(customZoneSet.data.info);

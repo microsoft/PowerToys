@@ -47,28 +47,42 @@ public:
     }
 
     // IFancyZones
-    IFACEMETHODIMP_(void) Run() noexcept;
-    IFACEMETHODIMP_(void) Destroy() noexcept;
+    IFACEMETHODIMP_(void)
+    Run() noexcept;
+    IFACEMETHODIMP_(void)
+    Destroy() noexcept;
 
     // IFancyZonesCallback
-    IFACEMETHODIMP_(bool) InMoveSize() noexcept
+    IFACEMETHODIMP_(bool)
+    InMoveSize() noexcept
     {
         std::shared_lock readLock(m_lock);
         return m_inMoveSize;
     }
-    IFACEMETHODIMP_(void) MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept;
-    IFACEMETHODIMP_(void) MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept;
-    IFACEMETHODIMP_(void) MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
-    IFACEMETHODIMP_(void) VirtualDesktopChanged() noexcept;
-    IFACEMETHODIMP_(void) VirtualDesktopInitialize() noexcept;
-    IFACEMETHODIMP_(void) WindowCreated(HWND window) noexcept;
-    IFACEMETHODIMP_(bool) OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
-    IFACEMETHODIMP_(void) ToggleEditor() noexcept;
-    IFACEMETHODIMP_(void) SettingsChanged() noexcept;
+    IFACEMETHODIMP_(void)
+    MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept;
+    IFACEMETHODIMP_(void)
+    MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept;
+    IFACEMETHODIMP_(void)
+    MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
+    IFACEMETHODIMP_(void)
+    VirtualDesktopChanged() noexcept;
+    IFACEMETHODIMP_(void)
+    VirtualDesktopInitialize() noexcept;
+    IFACEMETHODIMP_(void)
+    WindowCreated(HWND window) noexcept;
+    IFACEMETHODIMP_(bool)
+    OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
+    IFACEMETHODIMP_(void)
+    ToggleEditor() noexcept;
+    IFACEMETHODIMP_(void)
+    SettingsChanged() noexcept;
 
     // IZoneWindowHost
-    IFACEMETHODIMP_(void) MoveWindowsOnActiveZoneSetChange() noexcept;
-    IFACEMETHODIMP_(COLORREF) GetZoneHighlightColor() noexcept
+    IFACEMETHODIMP_(void)
+    MoveWindowsOnActiveZoneSetChange() noexcept;
+    IFACEMETHODIMP_(COLORREF)
+    GetZoneHighlightColor() noexcept
     {
         // Skip the leading # and convert to long
         const auto color = m_settings->GetSettings().zoneHightlightColor;
@@ -78,7 +92,8 @@ public:
         const auto nB = (tmp & 0xFF);
         return RGB(nR, nG, nB);
     }
-    IFACEMETHODIMP_(IZoneWindow*)GetParentZoneWindow(HMONITOR monitor) noexcept
+    IFACEMETHODIMP_(IZoneWindow*)
+    GetParentZoneWindow(HMONITOR monitor) noexcept
     {
         //NOTE: as public method it's unsafe without lock, but it's called from AddZoneWindow through making ZoneWindow that causes deadlock
         //TODO: needs refactoring
@@ -89,7 +104,8 @@ public:
         }
         return nullptr;
     }
-    IFACEMETHODIMP_(int) GetZoneHighlightOpacity() noexcept
+    IFACEMETHODIMP_(int)
+    GetZoneHighlightOpacity() noexcept
     {
         return m_settings->GetSettings().zoneHighlightOpacity;
     }
@@ -176,7 +192,8 @@ UINT FancyZones::WM_PRIV_VDINIT = RegisterWindowMessage(L"{469818a8-00fa-4069-b8
 UINT FancyZones::WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d9c-0404642fc7b6}");
 
 // IFancyZones
-IFACEMETHODIMP_(void) FancyZones::Run() noexcept
+IFACEMETHODIMP_(void)
+FancyZones::Run() noexcept
 {
     std::unique_lock writeLock(m_lock);
 
@@ -212,7 +229,8 @@ IFACEMETHODIMP_(void) FancyZones::Run() noexcept
 }
 
 // IFancyZones
-IFACEMETHODIMP_(void) FancyZones::Destroy() noexcept
+IFACEMETHODIMP_(void)
+FancyZones::Destroy() noexcept
 {
     std::unique_lock writeLock(m_lock);
     m_zoneWindowMap.clear();
@@ -234,7 +252,8 @@ IFACEMETHODIMP_(void) FancyZones::Destroy() noexcept
 }
 
 // IFancyZonesCallback
-IFACEMETHODIMP_(void) FancyZones::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
+IFACEMETHODIMP_(void)
+FancyZones::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
 {
     if (IsInterestingWindow(window))
     {
@@ -244,14 +263,16 @@ IFACEMETHODIMP_(void) FancyZones::MoveSizeStart(HWND window, HMONITOR monitor, P
 }
 
 // IFancyZonesCallback
-IFACEMETHODIMP_(void) FancyZones::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
+IFACEMETHODIMP_(void)
+FancyZones::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
 {
     std::unique_lock writeLock(m_lock);
     MoveSizeUpdateInternal(monitor, ptScreen, writeLock);
 }
 
 // IFancyZonesCallback
-IFACEMETHODIMP_(void) FancyZones::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
+IFACEMETHODIMP_(void)
+FancyZones::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
 {
     if (window == m_windowMoveSize || IsInterestingWindow(window))
     {
@@ -261,7 +282,8 @@ IFACEMETHODIMP_(void) FancyZones::MoveSizeEnd(HWND window, POINT const& ptScreen
 }
 
 // IFancyZonesCallback
-IFACEMETHODIMP_(void) FancyZones::VirtualDesktopChanged() noexcept
+IFACEMETHODIMP_(void)
+FancyZones::VirtualDesktopChanged() noexcept
 {
     // VirtualDesktopChanged is called from another thread but results in new windows being created.
     // Jump over to the UI thread to handle it.
@@ -270,13 +292,15 @@ IFACEMETHODIMP_(void) FancyZones::VirtualDesktopChanged() noexcept
 }
 
 // IFancyZonesCallback
-IFACEMETHODIMP_(void) FancyZones::VirtualDesktopInitialize() noexcept
+IFACEMETHODIMP_(void)
+FancyZones::VirtualDesktopInitialize() noexcept
 {
     PostMessage(m_window, WM_PRIV_VDINIT, 0, 0);
 }
 
 // IFancyZonesCallback
-IFACEMETHODIMP_(void) FancyZones::WindowCreated(HWND window) noexcept
+IFACEMETHODIMP_(void)
+FancyZones::WindowCreated(HWND window) noexcept
 {
     if (m_settings->GetSettings().appLastZone_moveWindows && IsInterestingWindow(window))
     {
@@ -308,7 +332,8 @@ IFACEMETHODIMP_(void) FancyZones::WindowCreated(HWND window) noexcept
 }
 
 // IFancyZonesCallback
-IFACEMETHODIMP_(bool) FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
+IFACEMETHODIMP_(bool)
+FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
 {
     // Return true to swallow the keyboard event
     bool const shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
@@ -431,9 +456,9 @@ void FancyZones::ToggleEditor() noexcept
         std::to_wstring(height);
 
     const auto deviceInfo = fancyZonesData.FindDeviceInfo(zoneWindow->UniqueId());
-    if(!deviceInfo.has_value())
+    if (!deviceInfo.has_value())
     {
-       return;
+        return;
     }
 
     JSONHelpers::DeviceInfoJSON deviceInfoJson{ zoneWindow->UniqueId(), *deviceInfo };
@@ -488,7 +513,8 @@ void FancyZones::SettingsChanged() noexcept
 }
 
 // IZoneWindowHost
-IFACEMETHODIMP_(void) FancyZones::MoveWindowsOnActiveZoneSetChange() noexcept
+IFACEMETHODIMP_(void)
+FancyZones::MoveWindowsOnActiveZoneSetChange() noexcept
 {
     if (m_settings->GetSettings().zoneSetChange_moveWindows)
     {
@@ -500,8 +526,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 {
     switch (message)
     {
-    case WM_HOTKEY:
-    {
+    case WM_HOTKEY: {
         if (wparam == 1)
         {
             ToggleEditor();
@@ -509,8 +534,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     }
     break;
 
-    case WM_SETTINGCHANGE:
-    {
+    case WM_SETTINGCHANGE: {
         if (wparam == SPI_SETWORKAREA)
         {
             OnDisplayChange(DisplayChangeType::WorkArea);
@@ -518,8 +542,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     }
     break;
 
-    case WM_DISPLAYCHANGE:
-    {
+    case WM_DISPLAYCHANGE: {
         OnDisplayChange(DisplayChangeType::DisplayChange);
     }
     break;
@@ -570,7 +593,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         GUID currentVirtualDesktopId{};
         if (SUCCEEDED(RegistryHelpers::GetCurrentVirtualDesktop(&currentVirtualDesktopId)))
         {
-            std::unique_lock writeLock(m_lock); 
+            std::unique_lock writeLock(m_lock);
             m_currentVirtualDesktopId = currentVirtualDesktopId;
         }
         else

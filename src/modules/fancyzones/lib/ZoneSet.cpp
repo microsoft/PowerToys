@@ -497,10 +497,10 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
     if (SUCCEEDED_LOG(StringFromCLSID(m_config.Id, &guuidStr)))
     {
         const std::wstring guuid = guuidStr.get();
-        
+
         const auto zoneSetSearchResult = JSONHelpers::FancyZonesDataInstance().FindCustomZoneSet(guuid);
 
-        if(!zoneSetSearchResult.has_value())
+        if (!zoneSetSearchResult.has_value())
         {
             return false;
         }

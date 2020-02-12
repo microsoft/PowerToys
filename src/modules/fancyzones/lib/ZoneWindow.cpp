@@ -280,14 +280,22 @@ public:
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled) noexcept;
     IFACEMETHODIMP MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     IFACEMETHODIMP MoveSizeCancel() noexcept;
-    IFACEMETHODIMP_(bool) IsDragEnabled() noexcept { return m_dragEnabled; }
-    IFACEMETHODIMP_(void) MoveWindowIntoZoneByIndex(HWND window, int index) noexcept;
-    IFACEMETHODIMP_(void) MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode) noexcept;
-    IFACEMETHODIMP_(void) CycleActiveZoneSet(DWORD vkCode) noexcept;
-    IFACEMETHODIMP_(std::wstring) UniqueId() noexcept { return { m_uniqueId }; }
-    IFACEMETHODIMP_(std::wstring) WorkAreaKey() noexcept { return { m_workArea }; }
-    IFACEMETHODIMP_(void) SaveWindowProcessToZoneIndex(HWND window) noexcept;
-    IFACEMETHODIMP_(IZoneSet*) ActiveZoneSet() noexcept { return m_activeZoneSet.get(); }
+    IFACEMETHODIMP_(bool)
+    IsDragEnabled() noexcept { return m_dragEnabled; }
+    IFACEMETHODIMP_(void)
+    MoveWindowIntoZoneByIndex(HWND window, int index) noexcept;
+    IFACEMETHODIMP_(void)
+    MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode) noexcept;
+    IFACEMETHODIMP_(void)
+    CycleActiveZoneSet(DWORD vkCode) noexcept;
+    IFACEMETHODIMP_(std::wstring)
+    UniqueId() noexcept { return { m_uniqueId }; }
+    IFACEMETHODIMP_(std::wstring)
+    WorkAreaKey() noexcept { return { m_workArea }; }
+    IFACEMETHODIMP_(void)
+    SaveWindowProcessToZoneIndex(HWND window) noexcept;
+    IFACEMETHODIMP_(IZoneSet*)
+    ActiveZoneSet() noexcept { return m_activeZoneSet.get(); }
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
