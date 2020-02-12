@@ -63,16 +63,6 @@ Chris Davis contributed his [SmartRename tool](https://github.com/chrdavis/Smart
 
 ![SmartRename](https://github.com/microsoft/PowerToys/raw/master/src/modules/powerrename/images/PowerRenameDemo.gif)
 
-### Additional utilities in the pipeline are
-
-* Maximize to new desktop widget - The MTND widget shows a pop-up button when a user hovers over the maximize / restore button on any window.  Clicking it creates a new desktop, sends the app to that desktop and maximizes the app on the new desktop.
-* [Process terminate tool](doc/specs/Terminate%20Spec.md)
-* [Animated gif screen recorder](doc/specs/Gif-Maker.md)
-
-### Backlog
-
-The full backlog of utilities can be found [here](https://github.com/Microsoft/PowerToys/tree/master/doc/planning/PowerToysBacklog.md)
-
 ## What's Happening
 
 ### December Update
@@ -147,10 +137,10 @@ provided by the bot. You will only need to do this once across all repos using o
 
 This project has adopted the [Microsoft Open Source Code of Conduct][conduct-code]. For more information see the [Code of Conduct FAQ][conduct-FAQ] or contact [opencode@microsoft.com][conduct-email] with any additional questions or comments.
 
-[conduct-code]: https://opensource.microsoft.com/codeofconduct/ 
-[conduct-FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
-[conduct-email]: mailto:opencode@microsoft.com
-
 ## Privacy Statement
 
 The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has the trends from the telemetry. Please read the [Microsoft privacy statement](http://go.microsoft.com/fwlink/?LinkId=521839) for more information.
+
+[conduct-code]: https://opensource.microsoft.com/codeofconduct/ 
+[conduct-FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
+[conduct-email]: mailto:opencode@microsoft.com
