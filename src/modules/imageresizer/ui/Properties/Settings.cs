@@ -21,7 +21,7 @@ namespace ImageResizer.Properties
     public partial class Settings : IDataErrorInfo, INotifyPropertyChanged
     {
         // Used to synchronize access to the settings.json file
-        private static Mutex jsonMutex = new Mutex();
+        private static Mutex _jsonMutex = new Mutex();
         private static string _settingsPath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "ImageResizer", "settings.json");
         private string _fileNameFormat;
         private bool _shrinkOnly;
@@ -369,7 +369,7 @@ namespace ImageResizer.Properties
 
         public void Save()
         {
-            jsonMutex.WaitOne();
+            _jsonMutex.WaitOne();
             string jsonData = "{\"version\":\"1.0\",\"name\":\"ImageResizer\",\"properties\":";
             string tempJsonData = JsonConvert.SerializeObject(this);
             JObject tempSettings = JObject.Parse(tempJsonData);
@@ -385,15 +385,15 @@ namespace ImageResizer.Properties
 
             // write string to file
             File.WriteAllText(SettingsPath, jsonData);
-            jsonMutex.ReleaseMutex();
+            _jsonMutex.ReleaseMutex();
         }
 
         public void Reload()
         {
-            jsonMutex.WaitOne();
+            _jsonMutex.WaitOne();
             if (!File.Exists(SettingsPath))
             {
-                jsonMutex.ReleaseMutex();
+                _jsonMutex.ReleaseMutex();
                 Save();
                 return;
             }
@@ -423,7 +423,7 @@ namespace ImageResizer.Properties
                 CustomSize = jsonSettings.CustomSize;
                 SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
             });
-            jsonMutex.ReleaseMutex();
+            _jsonMutex.ReleaseMutex();
         }
     }
 }
