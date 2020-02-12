@@ -187,75 +187,94 @@ namespace ImageResizer.Properties
             Assert.Empty(result);
         }
 
-        [Fact]
-        public void Reload_createsFile_when_FileNotFound()
+        private Settings SettingsWithTempFile()
         {
             var settings = new Settings();
             Settings.SettingsPath = ".\\test_settings.json";
-            if (System.IO.File.Exists(Settings.SettingsPath))
-            {
-                System.IO.File.Delete(Settings.SettingsPath);
-            }
+            return settings;
+        }
 
-            Assert.False(System.IO.File.Exists(Settings.SettingsPath));
-            settings.Reload();
-            Assert.True(System.IO.File.Exists(Settings.SettingsPath));
+        private void DeleteSettingsFileIfExists(Settings settings)
+        {
             if (System.IO.File.Exists(Settings.SettingsPath))
             {
                 System.IO.File.Delete(Settings.SettingsPath);
             }
+        }
+
+        [Fact]
+        public void Reload_createsFile_when_FileNotFound()
+        {
+            // Arrange
+            var settings = SettingsWithTempFile();
+            DeleteSettingsFileIfExists(settings);
+
+            // Assert
+            Assert.False(System.IO.File.Exists(Settings.SettingsPath));
+
+            // Act
+            settings.Reload();
+
+            // Assert
+            Assert.True(System.IO.File.Exists(Settings.SettingsPath));
+
+            // Arrange
+            DeleteSettingsFileIfExists(settings);
         }
 
         [Fact]
         public void Save_creates_file()
         {
-            var settings = new Settings();
-            Settings.SettingsPath = ".\\test_settings.json";
-            if (System.IO.File.Exists(Settings.SettingsPath))
-            {
-                System.IO.File.Delete(Settings.SettingsPath);
-            }
+            // Arrange
+            var settings = SettingsWithTempFile();
+            DeleteSettingsFileIfExists(settings);
 
+            // Assert
             Assert.False(System.IO.File.Exists(Settings.SettingsPath));
+
+            // Act
             settings.Save();
+
+            // Assert
             Assert.True(System.IO.File.Exists(Settings.SettingsPath));
-            if (System.IO.File.Exists(Settings.SettingsPath))
-            {
-                System.IO.File.Delete(Settings.SettingsPath);
-            }
+
+            // Arrange
+            DeleteSettingsFileIfExists(settings);
         }
 
         [Fact]
         public void Save_json_is_readable_by_Reload()
         {
-            var settings = new Settings();
-            Settings.SettingsPath = ".\\test_settings.json";
-            if (System.IO.File.Exists(Settings.SettingsPath))
-            {
-                System.IO.File.Delete(Settings.SettingsPath);
-            }
+            // Arrange
+            var settings = SettingsWithTempFile();
+            DeleteSettingsFileIfExists(settings);
 
+            // Assert
+            Assert.False(System.IO.File.Exists(Settings.SettingsPath));
+
+            // Act
             settings.Save();
-            settings.Reload();
+            settings.Reload();  // If the JSON file created by Save() is not readable this function will throw an error
 
-            if (System.IO.File.Exists(Settings.SettingsPath))
-            {
-                System.IO.File.Delete(Settings.SettingsPath);
-            }
+            // Assert
+            Assert.True(System.IO.File.Exists(Settings.SettingsPath));
+
+            // Arrange
+            DeleteSettingsFileIfExists(settings);
         }
 
         [Fact]
         public void Reload_raises_PropertyChanged_()
         {
-            var settings = new Settings();
-            Settings.SettingsPath = ".\\test_settings.json";
-            if (System.IO.File.Exists(Settings.SettingsPath))
-            {
-                System.IO.File.Delete(Settings.SettingsPath);
-            }
+            // Arrange
+            var settings = SettingsWithTempFile();
+            DeleteSettingsFileIfExists(settings);
+            settings.Save();    // To create the settings file
 
-            settings.Save();
+            // Act
             var action = new System.Action(settings.Reload);
+
+            // Assert
             Assert.PropertyChanged(settings, "ShrinkOnly", action);
             Assert.PropertyChanged(settings, "Replace", action);
             Assert.PropertyChanged(settings, "IgnoreOrientation", action);
@@ -269,10 +288,8 @@ namespace ImageResizer.Properties
             Assert.PropertyChanged(settings, "CustomSize", action);
             Assert.PropertyChanged(settings, "SelectedSizeIndex", action);
 
-            if (System.IO.File.Exists(Settings.SettingsPath))
-            {
-                System.IO.File.Delete(Settings.SettingsPath);
-            }
+            // Arrange
+            DeleteSettingsFileIfExists(settings);
         }
     }
 }
