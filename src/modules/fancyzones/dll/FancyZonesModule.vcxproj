@@ -15,7 +15,7 @@
     <ProjectGuid>{48804216-2A0E-4168-A6D8-9CD068D14227}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>fancyzones</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
     <ProjectName>fancyzones</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
