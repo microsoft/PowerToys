@@ -239,11 +239,13 @@ launchers:
 | 5      | Users can set their default terminal                                          | 1            |
 | 6      | Users can modify default keyboard shortcut to open PowerLauncher              | 1            |
 | 7      | Users can modify default keyboard shortcut to open right-click context menu   | 1            |
-| 8      | Users can modify default keyboard shortcut to run as administrator            | 1            |
-| 9      | Users can set customize text size and text font                               | 2            |
-| 10     | Users can change the theme of PowerLauncher                                   | 3            |
-| 11     | Users can see third-party terminals in the dropdown list for default terminal | 3            |
-| 12     | Users can customize icon size in the search result | 3            |
+| 8      | Users can modify default keyboard shortcut to open file location            | 1            |
+| 9      | Users can modify default keyboard shortcut to copy path location            | 1            |
+| 10      | Users can modify default keyboard shortcut to open in console            | 1            |
+| 11      | Users can set customize text size and text font                               | 2            |
+| 12     | Users can change the theme of PowerLauncher                                   | 3            |
+| 13     | Users can see third-party terminals in the dropdown list for default terminal | 3            |
+| 14     | Users can customize icon size in the search result | 3            |
 
 PowerLauncher will have a settings UI to allow users to set their
 preference as follows:
@@ -274,7 +276,11 @@ preference as follows:
     
     2.  \[Hotkey editor box\] Open right-click context menu
     
-    3.  \[Hotkey editor box\] Run as administrator
+    3.  \[Hotkey editor box\] Open file location
+
+    4. \[Hotkey editor box\] Copy path location
+
+    5. \[Hotkey editor box\] Open in console
 
 5.  \[Boolean\] Override Win+R key. Default to yes.
 
@@ -294,13 +300,15 @@ In PowerToys General Settings:
 | 1      | Users can choose to remove override of <kbd>Win</kbd>+<kbd>R</kbd> or <kbd>Win</kbd>+<kbd>S</kbd> to launch PowerLauncher                       | 1            |
 | 2      | Users can run an application as administrator when executing <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> | 1 |
 | 3      | Users can copy path location when executing <kbd>Ctrl</kbd>+<kbd>C</kbd>                            | 1            |
-| 4      | PowerLauncher should open when <kbd>Alt</kbd>+<kbd>Space</kbd> is executed                                                | 1            |
-| 5      | Users can close PowerLauncher by pressing <kbd>Esc</kbd> if the search box is empty                         | 1            |
-| 6      | Users can auto-complete text suggestions (per words) by pressing <kbd>Tab</kbd>                                | 1            |
-| 7      | Users can perform right-click by pressing the <kbd>Shift</kbd>+<kbd>F10</kbd>                                             | 1            |
-| 8      | Any changes in the keyboard shortcut in PowerLauncher should be reflected in Windows Shortcut Guide | 1            |
-| 9      | Users can use <kbd>Ctrl</kbd>+\<insert number> to launch from the search result | 2            |
-| 10      | Users can add custom aliases which tie to a specific application                                    | 3            |
+| 4      | Users can open file location when executing <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd>                            | 1            |
+| 5      | Users can open selected result in console when executing <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>                            | 1            |
+| 6      | PowerLauncher should open when <kbd>Alt</kbd>+<kbd>Space</kbd> is executed                                                | 1            |
+| 7      | Users can close PowerLauncher by pressing <kbd>Esc</kbd> if the search box is empty                         | 1            |
+| 8      | Users can auto-complete text suggestions (per words) by pressing <kbd>Tab</kbd>                                | 1            |
+| 9      | Users can perform right-click by pressing the <kbd>Shift</kbd>+<kbd>F10</kbd>                                             | 1            |
+| 10      | Any changes in the keyboard shortcut in PowerLauncher should be reflected in Windows Shortcut Guide | 1            |
+| 11      | Users can use <kbd>Ctrl</kbd>+\<insert number> to launch from the search result | 2            |
+| 12      | Users can add custom aliases which tie to a specific application                                    | 3            |
 
 ## 2.2 Measure Requirements
 
