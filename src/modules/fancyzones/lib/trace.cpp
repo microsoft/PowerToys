@@ -67,6 +67,12 @@ void Trace::FancyZones::OnKeyDown(DWORD vkCode, bool win, bool control, bool inM
 void Trace::SettingsChanged(const Settings& settings) noexcept
 {
     const auto& editorHotkey = settings.editorHotkey;
+    std::wstring hotkeyStr = L"alt:" + std::to_wstring(editorHotkey.alt_pressed()) 
+        + L", ctrl:" + std::to_wstring(editorHotkey.ctrl_pressed()) 
+        + L", shift:" + std::to_wstring(editorHotkey.shift_pressed()) 
+        + L", win:" + std::to_wstring(editorHotkey.win_pressed()) 
+        + L", code:" + std::to_wstring(editorHotkey.get_code()) 
+        + L", keyFromCode:" + editorHotkey.get_key();
     
     TraceLoggingWrite(
         g_hProvider,
@@ -83,12 +89,7 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingBoolean(settings.use_cursorpos_editor_startupscreen, "UseCursorPosOnEditorStartup"),
         TraceLoggingWideString(settings.zoneHightlightColor.c_str(), "ZoneHighlightColor"),
         TraceLoggingInt32(settings.zoneHighlightOpacity, "ZoneHighlightOpacity"),
-        TraceLoggingBoolean(editorHotkey.alt_pressed(), "HotkeyAltPressed"),
-        TraceLoggingBoolean(editorHotkey.ctrl_pressed(), "HotkeyCtrlPressed"),
-        TraceLoggingBoolean(editorHotkey.shift_pressed(), "HotkeyShiftPressed"),
-        TraceLoggingBoolean(editorHotkey.win_pressed(), "HotkeyWinPressed"),
-        TraceLoggingUInt32(editorHotkey.get_code(), "HotkeyCode"),
-        TraceLoggingWideString(editorHotkey.get_key().c_str(), "HotkeyKeyFromCode"),
+        TraceLoggingWideString(hotkeyStr.c_str(), "Hotkey"),
         TraceLoggingInt32(static_cast<int>(settings.excludedAppsArray.size()), "ExcludedAppsCount")
     );
 }
