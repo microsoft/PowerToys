@@ -34,7 +34,7 @@ void chdir_current_executable()
     }
 }
 
-int runner()
+int runner(bool isProcessElevated)
 {
     DPIAware::EnableDPIAwarenessForThisProcess();
 
@@ -80,7 +80,7 @@ int runner()
         // Start initial powertoys
         start_initial_powertoys();
 
-        Trace::EventLaunch(get_product_version());
+        Trace::EventLaunch(get_product_version(), isProcessElevated);
 
         result = run_message_loop();
     }
@@ -116,11 +116,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         auto general_settings = load_general_settings();
         int rvalue = 0;
-        if (is_process_elevated() ||
+        bool isProcessElevated = is_process_elevated();
+        if (isProcessElevated ||
             general_settings.GetNamedBoolean(L"run_elevated", false) == false ||
             strcmp(lpCmdLine, "--dont-elevate") == 0)
         {
-            result = runner();
+            result = runner(isProcessElevated);
         }
         else
         {
