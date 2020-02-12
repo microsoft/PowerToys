@@ -18,7 +18,7 @@
 ## 1.1. Elevator Pitch / Narrative
 
 Jane is a Windows power user who uses Run prompt to launch her
-applications. She types in the executable name of an application using Run prompt for most cases. However, there are times when she doesn’t know the executable name. She needs to launch the application using Search but Search is slower compared to Run prompt and she often doesn’t get the result that she wants. Switching between Run and Search also slows down her workflow.
+applications. She types in the executable name of an application using Run prompt for most cases. However, there are times when she doesn’t know the executable name. She needs to launch the application using Search but Run is faster than Search and Search doesn't always provide relevant results to her. Switching between Run and Search also slows down her workflow.
 
 She learns about PowerToys and installed PowerToys on her machine. Once
 Jane downloads it, PowerLauncher is included in PowerToys. She can now
@@ -167,7 +167,7 @@ launchers:
 
 **a. User Experience**
 
-  - > Support Windows version earlier than Windows build 17134
+  - > Support Windows version earlier than Windows build 17134 [April 2018 Update](https://support.microsoft.com/en-us/help/4516058/windows-10-update-kb4516058)
 
 **b. Settings**
 
@@ -191,7 +191,7 @@ launchers:
 | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
 | 1      | Users can navigate through PowerLauncher by using their keyboard                                                                                         | 1            |
 | 2      | Users can see their previously typed text on PowerLauncher                                                                                               | 1            |
-| 3      | PowerLauncher should use fuzzy search                                                                                                                    | 1            |
+| 3      | PowerLauncher should use fuzzy search to provide search results based on any typed character                                                                                                                   | 1            |
 | 4      | PowerLauncher should appear in the center of the screen                                                                                                                    | 1            |
 | 5      | Users can directly call command like they would via Run prompt                                                                                           | 1            |
 | 6      | PowerLauncher should meet [accessibility requirements](https://docs.microsoft.com/en-us/style-guide/accessibility/accessibility-guidelines-requirements) | 1            |
@@ -311,13 +311,11 @@ In PowerToys General Settings:
 | 3      | Number of times a user deletes typed text after launching the application                                | Make sure PowerLauncher is not missing any keystrokes on initial launch              | 1            |
 | 4      | Number of users who disabled PowerLauncher                                                               | Identify whether PowerLauncher is being used by users                                | 1            |
 | 5      | Average number of times PowerLauncher is displayed on the screen in 24 hours                             | Identify how many times does a user use PowerLauncher                                | 1            |
-| 6      | Number of times users launch the context menu                                                            | Identify how many times does a user use the context menu                             | 1            |
-| 7      | Average number of times “Open file location” is selected from the right-click context menu in 24 hours   | Identify how many times does a user use “Open file location” from the context menu   | 1            |
-| 8      | Average number of times “Run as administrator” is selected from the right-click context menu in 24 hours | Identify how many times does a user use “Run as administrator” from the context menu | 1            |
-| 9      | Average number of times <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> is executed in 24 hours                                         | Identify how many times does a user use shortcut to run as administrator             | 1            |
-| 10     | Average number of times “Open in console” is selected from the right-click context menu in 24 hours      | Identify how many times does a user use “Open in console” from the context menu      | 1            |
-| 11      | Average number of times <kbd>Ctrl</kbd>+<kbd>C</kbd> is executed in 24 hours                                         | Identify how many times does a user use shortcut to copy path location           | 1            |
-| 12     | Average number of times “Copy path location” is selected from the right-click context menu in 24 hours      | Identify how many times does a user use “Copy path location” from the context menu      | 1            |
+| 6      | Average number of times right-click context menu is opened in 24 hours                                                            | Identify how many times does a user use the context menu                             | 1            |
+| 7      | Average number of times an option in the right-click context menu is selected in 24 hours   | Understand what is the most and least used option to help drive priority for enhancements and fixes  | 1            |
+| 8      | Average number of times an option in the right-click context menu is executed through keyboard shortcuts in 24 hours                                         | Understand and compare usage of keyboard shortcuts versus context menu             | 1            |
+
+
 
 ## 2.3 Public Name
 
@@ -326,10 +324,12 @@ The initially proposed name for this app is PowerLauncher.
 # 3\. Storyboard and Mockups
 
 ## 3.1 State Flow Diagram
+Every time PowerLauncher is launched, it will check whether there is a history (previously typed text and populated search result) present. If there is, PowerLauncher will pre-populate the text and search result, otherwise it will show an empty search box. Once users type a character in the search box, PowerLauncher will automatically populate search result based on the character. If users perform right-click/<kbd>Shift</kbd>+<kbd>F10</kbd> on a search result, they will see the context menu with various options. PowerLauncher will disappear from the view when users select on a search result.
 
 ![](images/PowerLauncher/StateFlow.png)
 
 ## 3.2 Mockups
+The following mockups only contain designs for requirements in priority 1.
 
 ![](images/PowerLauncher/UI1.png)
 
