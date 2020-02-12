@@ -26,10 +26,10 @@ void Trace::EventLaunch(const std::wstring& versionNumber, bool isProcessElevate
         g_hProvider,
         "Runner_Launch",
         TraceLoggingWideString(versionNumber.c_str(), "Version"),
+        TraceLoggingBoolean(isProcessElevated, "Elevated"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingBoolean(isProcessElevated, "Elevated"));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
 void Trace::SettingsChanged(const GeneralSettings& settings)
@@ -51,14 +51,12 @@ void Trace::SettingsChanged(const GeneralSettings& settings)
     TraceLoggingWrite(
         g_hProvider,
         "GeneralSettingsChanged",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingBoolean(settings.isPackaged, "Packaged"),
         TraceLoggingBoolean(settings.isStartupEnabled, "RunAtStartup"),
         TraceLoggingWideString(settings.startupDisabledReason.c_str(), "StartupDisabledReason"),
         TraceLoggingWideString(enabledModules.c_str(), "ModulesEnabled"),
-        TraceLoggingBoolean(settings.isElevated, "Elevated"),
         TraceLoggingBoolean(settings.isRunElevated, "AlwaysRunElevated"),
         TraceLoggingWideString(settings.theme.c_str(), "Theme"),
-        TraceLoggingWideString(settings.systemTheme.c_str(), "SystemTheme"),
-        TraceLoggingWideString(settings.powerToysVersion.c_str(), "PowerToysVersion"));
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
