@@ -2,23 +2,31 @@
 #include <common.h>
 #include "settings.h"
 #include "trace.h"
+#include <iostream>
+#include <atlstr.h>
+
+using namespace std;
 
 namespace PowerPreviewSettings
 {
 	extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 	// Base Settinngs Class Implementation
-    FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description) 
-		: 
+	FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCWSTR clsid, const std::wstring displayname)
+		:
 		m_isPreviewEnabled(state),
-        m_name(name),
-        m_description(description){}
+		m_name(name),
+		m_description(description),
+		m_clsid(clsid),
+		m_displayName(displayname) {}
 
 	FileExplorerPreviewSettings::FileExplorerPreviewSettings()
 		:
-        m_isPreviewEnabled(false),
-        m_name(L"_UNDEFINED_"),
-        m_description(L"_UNDEFINED_"){}
+		m_isPreviewEnabled(false),
+		m_name(L"_UNDEFINED_"),
+		m_description(L"_UNDEFINED_"),
+		m_clsid(L"_UNDEFINED_"),
+		m_displayName(L"_UNDEFINED_") {}
 
 	bool FileExplorerPreviewSettings::GetState() const
 	{
@@ -27,13 +35,13 @@ namespace PowerPreviewSettings
 
 	void FileExplorerPreviewSettings::SetState(bool state)
 	{
-        this->m_isPreviewEnabled = state;
+		this->m_isPreviewEnabled = state;
 	}
 
 	void FileExplorerPreviewSettings::LoadState(PowerToysSettings::PowerToyValues& settings)
 	{
-        auto toggle = settings.get_bool_value(this->GetName());
-		if(toggle != std::nullopt)
+		auto toggle = settings.get_bool_value(this->GetName());
+		if (toggle != std::nullopt)
 		{
 			this->m_isPreviewEnabled = toggle.value();
 		}
@@ -41,17 +49,17 @@ namespace PowerPreviewSettings
 
 	void FileExplorerPreviewSettings::UpdateState(PowerToysSettings::PowerToyValues& values)
 	{
-        auto toggle = values.get_bool_value(this->GetName());
-		if(toggle != std::nullopt)
+		auto toggle = values.get_bool_value(this->GetName());
+		if (toggle != std::nullopt)
 		{
-			this->m_isPreviewEnabled  = toggle.value();
+			this->m_isPreviewEnabled = toggle.value();
 			if (this->m_isPreviewEnabled)
 			{
 				this->EnablePreview();
 			}
 			else
 			{
-				this->DisabledPreview();
+				this->DisablePreview();
 			}
 		}
 		else
@@ -60,12 +68,103 @@ namespace PowerPreviewSettings
 		}
 	}
 
+	LONG FileExplorerPreviewSettings::SetRegistryValue() const
+	{
+		HKEY hKey = HKEY_CURRENT_USER;
+		const REGSAM WRITE_PERMISSION = KEY_WRITE;
+		DWORD options = 0;
+		HKEY OpenResult;
+
+		LONG err = RegOpenKeyEx(hKey, this->GetSubKey(), options, WRITE_PERMISSION, &OpenResult);
+
+		if (err == ERROR_SUCCESS)
+		{
+			err = RegSetValueExW(
+				OpenResult,
+				this->GetCLSID(),
+				0,
+				REG_SZ,
+				(LPBYTE)this->GetDisplayName().c_str(),
+				this->GetDisplayName().length() * sizeof(wchar_t));
+			RegCloseKey(OpenResult);
+			if (err != ERROR_SUCCESS)
+			{
+				return err;
+			}
+		}
+		else
+		{
+			return err;
+		}
+	}
+
+	LONG FileExplorerPreviewSettings::DeleteRegistryValue() const
+	{
+		HKEY hKey = HKEY_CURRENT_USER;
+		const REGSAM WRITE_PERMISSION = KEY_WRITE;
+		DWORD options = 0;
+		HKEY OpenResult;
+
+		LONG err = RegOpenKeyEx(hKey, this->GetSubKey(), options, WRITE_PERMISSION, &OpenResult);
+		if (err == ERROR_SUCCESS)
+		{
+			err = RegDeleteKeyValueW(
+				OpenResult,
+				NULL,
+				this->GetCLSID());
+			RegCloseKey(OpenResult);
+
+			if (err != ERROR_SUCCESS)
+			{
+				return err;
+			}
+		}
+		else
+		{
+			return err;
+		}
+	}
+
+	bool FileExplorerPreviewSettings::GetRegistryValue() const
+	{
+		HKEY OpenResult;
+		LONG err = RegOpenKeyEx(
+			HKEY_CURRENT_USER,
+			this->GetSubKey(),
+			0,
+			KEY_READ,
+			&OpenResult);
+
+		if (err == ERROR_SUCCESS)
+		{
+			DWORD dataType;
+			err = RegGetValueW(
+				OpenResult,
+				NULL,
+				this->GetCLSID(),
+				RRF_RT_ANY,
+				&dataType,
+				NULL,
+				0);
+			RegCloseKey(OpenResult);
+			if (err != ERROR_SUCCESS)
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+		return true;
+	}
+
 	std::wstring FileExplorerPreviewSettings::GetName() const
 	{
 		return this->m_name;
 	}
 
-	void FileExplorerPreviewSettings::SetName(const std::wstring name)
+	void FileExplorerPreviewSettings::SetName(const std::wstring& name)
 	{
 		this->m_name = name;
 	}
@@ -75,63 +174,101 @@ namespace PowerPreviewSettings
 		return this->m_description;
 	}
 
-	void FileExplorerPreviewSettings::SetDescription(const std::wstring description)
+	void FileExplorerPreviewSettings::SetDescription(const std::wstring& description)
 	{
-        this->m_description = description;
+		this->m_description = description;
 	}
 
-	// Explorer SVG Icons Preview Settings Implemention
-    ExplrSVGSttngs::ExplrSVGSttngs() 
-		:
-        FileExplorerPreviewSettings(
-			false, 
-			GET_RESOURCE_STRING(IDS_EXPLR_SVG_BOOL_TOGGLE_CONTROLL),
-            GET_RESOURCE_STRING(IDS_EXPLR_SVG_SETTINGS_DESCRIPTION)){}
-
-	void ExplrSVGSttngs::EnablePreview()
+	LPCWSTR FileExplorerPreviewSettings::GetSubKey() const
 	{
-		Trace::ExplorerSVGRenderEnabled();
+		return this->m_subKey;
 	}
 
-	void ExplrSVGSttngs::DisabledPreview()
+	LPCWSTR FileExplorerPreviewSettings::GetCLSID() const
 	{
-		Trace::ExplorerSVGRenderDisabled();
+		return this->m_clsid;
+	}
+
+	std::wstring FileExplorerPreviewSettings::GetDisplayName() const
+	{
+		return this->m_displayName;
+	}
+
+	void FileExplorerPreviewSettings::SetDisplayName(const std::wstring& displayName)
+	{
+		this->m_displayName = displayName;
 	}
 
 	// Preview Pane SVG Render Settings
-    PrevPaneSVGRendrSettings::PrevPaneSVGRendrSettings() 
+	PrevPaneSVGRendrSettings::PrevPaneSVGRendrSettings()
 		:
 		FileExplorerPreviewSettings(
 			false,
-            GET_RESOURCE_STRING(IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL),
-            GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION)){}
+			GET_RESOURCE_STRING(IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL),
+			GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION),
+			L"{ddee2b8a-6807-48a6-bb20-2338174ff779}",
+			GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DISPLAYNAME)) {}
 
 	void PrevPaneSVGRendrSettings::EnablePreview()
 	{
-		Trace::ExplorerSVGRenderEnabled();
+		if (this->SetRegistryValue() == ERROR_SUCCESS)
+		{
+			Trace::ExplorerSVGRenderEnabled();
+		}
+		else
+		{
+			Trace::PowerPreviewSettingsUpDateFailed(this->GetName().c_str());
+			this->SetState(false);
+		}
 	}
 
-	void PrevPaneSVGRendrSettings::DisabledPreview()
+	void PrevPaneSVGRendrSettings::DisablePreview()
 	{
-		Trace::ExplorerSVGRenderDisabled();
+		if (this->DeleteRegistryValue() == ERROR_SUCCESS)
+		{
+			Trace::ExplorerSVGRenderDisabled();
+		}
+		else
+		{
+			Trace::PowerPreviewSettingsUpDateFailed(this->GetName().c_str());
+			this->SetState(true);
+		}
 	}
 
 	// Preview Pane Mark Down Render Settings
-	PrevPaneMDRendrSettings::PrevPaneMDRendrSettings() 
+	PrevPaneMDRendrSettings::PrevPaneMDRendrSettings()
 		:
 		FileExplorerPreviewSettings(
 			false,
-            GET_RESOURCE_STRING(IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL),
-            GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION)){}
+			GET_RESOURCE_STRING(IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL),
+			GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
+			L"{45769bcc-e8fd-42d0-947e-02beef77a1f5}",
+			GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DISPLAYNAME)) {}
 
 	void PrevPaneMDRendrSettings::EnablePreview()
 	{
-		Trace::ExplorerSVGRenderEnabled();
+		if (this->SetRegistryValue() == ERROR_SUCCESS)
+		{
+			Trace::ExplorerSVGRenderEnabled();
+		}
+		else
+		{
+			Trace::PowerPreviewSettingsUpDateFailed(this->GetName().c_str());
+			this->SetState(false);
+		}
 	}
 
-	void PrevPaneMDRendrSettings::DisabledPreview()
+	void PrevPaneMDRendrSettings::DisablePreview()
 	{
-		Trace::ExplorerSVGRenderDisabled();
+		if (this->DeleteRegistryValue() == ERROR_SUCCESS)
+		{
+			Trace::ExplorerSVGRenderDisabled();
+		}
+		else
+		{
+			Trace::PowerPreviewSettingsUpDateFailed(this->GetName().c_str());
+			this->SetState(true);
+		}
 	}
 
 }

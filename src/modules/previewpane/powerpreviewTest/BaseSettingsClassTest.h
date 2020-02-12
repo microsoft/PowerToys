@@ -1,6 +1,6 @@
 #include "pch.h"
 #include <powerpreview/settings.h>
-
+#include <atlstr.h>
 
 using namespace PowerPreviewSettings;
 
@@ -11,5 +11,5 @@ public:
 
 	virtual void EnablePreview();
 
-    virtual void DisabledPreview();
+    virtual void DisablePreview();
 };

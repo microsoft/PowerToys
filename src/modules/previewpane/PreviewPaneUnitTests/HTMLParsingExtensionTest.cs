@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace PreviewPaneUnitTests
 {
     [TestClass]
-    public class MarkdownPreviewHandlerHTMLParsingExtensionTest
+    public class HTMLParsingExtensionTest
     {
         private MarkdownPipeline BuidPipeline(IMarkdownExtension extension)
         {
@@ -20,7 +20,7 @@ namespace PreviewPaneUnitTests
         {
             // Arrange 
             String mdString = "| A | B |\n| -- | -- | ";
-            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension();
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { });
             MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
 
             // Act
@@ -36,7 +36,7 @@ namespace PreviewPaneUnitTests
         {
             // Arrange 
             String mdString = "> Blockquotes.";
-            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension();
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(()=> { });
             MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
 
             // Act
@@ -51,7 +51,7 @@ namespace PreviewPaneUnitTests
         {
             // arrange 
             String mdString = "![text](a.jpg \"Figure\")";
-            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension("C:\\Users\\");
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { }, "C:\\Users\\");
             MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
 
             // Act
@@ -66,7 +66,7 @@ namespace PreviewPaneUnitTests
         {
             // arrange 
             String mdString = "![text](\\document\\a.jpg \"Figure\")";
-            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension("C:\\Users\\");
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { }, "C:\\Users\\");
             MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
 
             // Act
@@ -81,7 +81,7 @@ namespace PreviewPaneUnitTests
         {
             // arrange 
             String mdString = "![text](/document/a.jpg \"Figure\")";
-            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension("C:/Users/");
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { }, "C:/Users/");
             MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
 
             // Act
@@ -96,7 +96,7 @@ namespace PreviewPaneUnitTests
         {
             // arrange 
             String mdString = "^^^ This is a caption";
-            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension("C:/Users/");
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { }, "C:/Users/");
             MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
 
             // Act
@@ -105,5 +105,24 @@ namespace PreviewPaneUnitTests
             // Assert
             Assert.AreEqual(html, "<figure class=\"figure\">\n<figcaption class=\"figure-caption\">This is a caption</figcaption>\n</figure>\n");
         }
+
+        [TestMethod]
+        public void Extension_RemovesExternalImageUrlAndMakeCallback_WhenUsed()
+        {
+            // arrange
+            int count = 0;
+            String mdString = "![text](http://dev.nodeca.com \"Figure\")";
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { count++; });
+            MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
+
+            // Act
+            String html = Markdown.ToHtml(mdString, markdownPipeline);
+
+            // Assert
+            Assert.AreEqual(count, 1);
+            Assert.AreEqual(html, "<p><img src=\"#\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n");
+
+        }
+
     }
 }
