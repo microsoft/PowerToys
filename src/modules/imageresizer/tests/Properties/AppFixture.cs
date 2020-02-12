@@ -4,6 +4,8 @@
 
 using System;
 
+[module: System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1636:FileHeaderCopyrightTextMustMatch", Justification = "File created under PowerToys.")]
+
 namespace ImageResizer.Properties
 {
     public class AppFixture : IDisposable
