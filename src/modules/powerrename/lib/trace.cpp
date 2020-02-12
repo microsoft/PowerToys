@@ -74,14 +74,6 @@ void Trace::RenameOperation(_In_ UINT totalItemCount, _In_ UINT selectedItemCoun
 
 void Trace::SettingsChanged() noexcept
 {
-    wchar_t searchBuffer[CSettings::MAX_INPUT_STRING_LEN];
-    searchBuffer[0] = L'\0';
-    CSettings::GetSearchText(searchBuffer, ARRAYSIZE(searchBuffer));
-
-    wchar_t replaceBuffer[CSettings::MAX_INPUT_STRING_LEN];
-    replaceBuffer[0] = L'\0';
-    CSettings::GetReplaceText(replaceBuffer, ARRAYSIZE(replaceBuffer));
-
     TraceLoggingWrite(
         g_hProvider,
         "PowerRename_SettingsChanged",
@@ -93,8 +85,5 @@ void Trace::SettingsChanged() noexcept
         TraceLoggingBoolean(CSettings::GetPersistState(), "PersistState"),
         TraceLoggingBoolean(CSettings::GetMRUEnabled(), "IsMRUEnabled"),
         TraceLoggingUInt64(CSettings::GetMaxMRUSize(), "MaxMRUSize"),
-        TraceLoggingUInt64(CSettings::GetFlags(), "Flags"),
-        TraceLoggingWideString(searchBuffer, "SearchText"),
-        TraceLoggingWideString(replaceBuffer, "ReplaceText")
-    );
+        TraceLoggingUInt64(CSettings::GetFlags(), "Flags"));
 }
