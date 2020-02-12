@@ -2,6 +2,7 @@
 
 #include <common/settings_helpers.h>
 #include <common/json.h>
+#include <mutex>
 
 #include <string>
 #include <strsafe.h>
@@ -159,12 +160,27 @@ namespace JSONHelpers
 
     class FancyZonesData
     {
+        mutable std::recursive_mutex dataLock;
+
     public:
         FancyZonesData();
 
-        const std::wstring& GetPersistFancyZonesJSONPath() const;
+        inline const std::wstring& GetPersistFancyZonesJSONPath() const
+        {
+            return jsonFilePath;
+        }
         json::JsonObject GetPersistFancyZonesJSON();
 
+        std::optional<DeviceInfoData> FindDeviceInfo(const std::wstring& zoneWindowId) const;
+
+        std::optional<CustomZoneSetData> FindCustomZoneSet(const std::wstring& guuid) const;
+
+        inline const std::wstring GetActiveDeviceId() const
+        {
+            return activeDeviceId;
+        }
+
+#if defined(UNIT_TESTS)
         inline const std::unordered_map<std::wstring, DeviceInfoData>& GetDeviceInfoMap() const
         {
             return deviceInfoMap;
@@ -172,21 +188,30 @@ namespace JSONHelpers
 
         inline const std::unordered_map<std::wstring, CustomZoneSetData>& GetCustomZoneSetsMap() const
         {
+            
             return customZoneSetsMap;
         }
 
         inline const std::unordered_map<std::wstring, AppZoneHistoryData>& GetAppZoneHistoryMap() const
         {
+            
             return appZoneHistoryMap;
         }
 
-        inline const std::wstring GetActiveDeviceId() const
-        {
-            return activeDeviceId;
-        }
 
-        void SetActiveDeviceId(const std::wstring& deviceId)
+        inline void clear_data()
         {
+            appliedZoneSetsMap.clear();
+            appZoneHistoryMap.clear();
+            deviceInfoMap.clear();
+            customZoneSetsMap.clear();
+            activeDeviceId.clear();
+        }
+#endif
+
+        inline void SetActiveDeviceId(const std::wstring& deviceId)
+        {
+            std::scoped_lock lock{ dataLock };
             activeDeviceId = deviceId;
         }
 

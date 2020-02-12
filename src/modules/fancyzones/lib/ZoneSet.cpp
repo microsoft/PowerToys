@@ -497,13 +497,15 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
     if (SUCCEEDED_LOG(StringFromCLSID(m_config.Id, &guuidStr)))
     {
         const std::wstring guuid = guuidStr.get();
-        const auto& customZoneSets = JSONHelpers::FancyZonesDataInstance().GetCustomZoneSetsMap();
-        if (!customZoneSets.contains(guuid))
+        
+        const auto zoneSetSearchResult = JSONHelpers::FancyZonesDataInstance().FindCustomZoneSet(guuid);
+
+        if(!zoneSetSearchResult.has_value())
         {
             return false;
         }
 
-        const auto& zoneSet = customZoneSets.at(guuid);
+        const auto& zoneSet = *zoneSetSearchResult;
         if (zoneSet.type == JSONHelpers::CustomLayoutType::Canvas && std::holds_alternative<JSONHelpers::CanvasLayoutInfo>(zoneSet.info))
         {
             const auto& zoneSetInfo = std::get<JSONHelpers::CanvasLayoutInfo>(zoneSet.info);

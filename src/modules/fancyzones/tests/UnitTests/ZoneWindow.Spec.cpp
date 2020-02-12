@@ -89,7 +89,7 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetAppliedZoneSetTmpPath()));
             Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetCustomZoneSetsTmpPath()));
 
-            m_fancyZonesData = JSONHelpers::FancyZonesData();
+            m_fancyZonesData.clear_data();
         }
 
         TEST_METHOD_CLEANUP(Cleanup)

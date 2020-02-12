@@ -725,7 +725,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD_INITIALIZE(Init)
         {
             m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
-            m_fzData = FancyZonesData();
+            m_fzData.clear_data();
         }
 
     public:
