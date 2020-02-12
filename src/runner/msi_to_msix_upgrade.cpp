@@ -14,6 +14,13 @@ namespace
     const wchar_t* DONT_SHOW_AGAIN_RECORD_REGISTRY_PATH = L"delete_previous_powertoys_confirm";
 }
 
+namespace localized_strings
+{
+    const wchar_t* OFFER_UNINSTALL_MSI = L"We've detected a previous installation of PowerToys. Would you like to remove it?";
+    const wchar_t* OFFER_UNINSTALL_MSI_TITLE = L"PowerToys: uninstall previous version?";
+    const wchar_t* UNINSTALLATION_SUCCESS = L"Previous version of PowerToys was uninstalled successfully.";
+}
+
 void uninstall_msi_with_confirmation()
 {
     if (!winstore::running_as_packaged())
@@ -46,7 +53,7 @@ void uninstall_msi_with_confirmation()
         return;
     }
 
-    const auto selection = SHMessageBoxCheckW(nullptr, L"We've detected a previous installation of PowerToys. Would you like to remove it?", L"PowerToys: uninstall previous version?", MB_ICONQUESTION | MB_YESNO, IDNO, DONT_SHOW_AGAIN_RECORD_REGISTRY_PATH);
+    const auto selection = SHMessageBoxCheckW(nullptr, localized_strings::OFFER_UNINSTALL_MSI, localized_strings::OFFER_UNINSTALL_MSI_TITLE, MB_ICONQUESTION | MB_YESNO, IDNO, DONT_SHOW_AGAIN_RECORD_REGISTRY_PATH);
     if (selection != IDYES)
     {
         return;
@@ -56,7 +63,7 @@ void uninstall_msi_with_confirmation()
     auto system_message = get_last_error_message(uninstall_result);
     if (ERROR_SUCCESS == uninstall_result)
     {
-        notifications::show_toast(L"Previous version of PowerToys was uninstalled successfully.");
+        notifications::show_toast(localized_strings::UNINSTALLATION_SUCCESS);
     }
     else if (auto system_message = get_last_error_message(uninstall_result); system_message.has_value())
     {

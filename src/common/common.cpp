@@ -6,6 +6,12 @@
 #include <sddl.h>
 #include "version.h"
 
+namespace localized_strings
+{
+  const wchar_t LAST_ERROR_FORMAT_STRING[] = L"%s failed with error %d: %s";
+  const wchar_t LAST_ERROR_TITLE_STRING[] = L"Error";
+}
+
 std::optional<RECT> get_button_pos(HWND hwnd) {
   RECT button;
   if (DwmGetWindowAttribute(hwnd, DWMWA_CAPTION_BUTTON_BOUNDS, &button, sizeof(RECT)) == S_OK) {
@@ -239,9 +245,9 @@ void show_last_error_message(LPCWSTR lpszFunction, DWORD dw) {
   if (lpDisplayBuf != NULL) {
     StringCchPrintfW(lpDisplayBuf,
       LocalSize(lpDisplayBuf) / sizeof(WCHAR),
-      L"%s failed with error %d: %s",
+      localized_strings::LAST_ERROR_FORMAT_STRING,
       lpszFunction, dw, system_message->c_str());
-    MessageBoxW(NULL, (LPCTSTR)lpDisplayBuf, L"Error", MB_OK);
+    MessageBoxW(NULL, (LPCTSTR)lpDisplayBuf, localized_strings::LAST_ERROR_TITLE_STRING, MB_OK);
     LocalFree(lpDisplayBuf);
   }
 }
