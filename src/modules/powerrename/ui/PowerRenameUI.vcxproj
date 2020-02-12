@@ -14,7 +14,7 @@
     <ProjectGuid>{0E072714-D127-460B-AFAD-B4C40B412798}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PowerRename</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
     <ProjectName>PowerRenameUI</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

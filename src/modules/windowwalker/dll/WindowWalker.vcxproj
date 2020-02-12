@@ -15,7 +15,7 @@
     <ProjectGuid>{51d3bd1f-07a8-48eb-b2a0-0a249cd4e1a6}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>WindowWalker</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
     <ProjectName>WindowWalker</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
