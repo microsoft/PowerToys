@@ -11,7 +11,7 @@ namespace PowerToysSettings {
     m_json.SetNamedValue(L"properties", json::JsonObject{});
   }
 
-  void Settings::set_description( UINT resource_id) {
+  void Settings::set_description(UINT resource_id) {
     m_json.SetNamedValue(L"description", json::value(get_resource(resource_id)));
   }
 
@@ -227,7 +227,7 @@ namespace PowerToysSettings {
   }
 
   // Resource helper.
-  std::wstring Settings::get_resource( UINT resource_id) const{
+  std::wstring Settings::get_resource(UINT resource_id) const{
     if (resource_id != 0) {
       wchar_t* res_ptr;
       const size_t resource_length = LoadStringW(m_instance, resource_id, reinterpret_cast<wchar_t *>(& res_ptr), 0);

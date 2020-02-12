@@ -61,7 +61,7 @@ namespace PowerToysSettings {
     int m_curr_priority = 0; // For keeping order when adding elements.
     HINSTANCE m_instance;
 
-    std::wstring get_resource( UINT resource_id) const;
+    std::wstring get_resource(UINT resource_id) const;
   };
 
   class PowerToyValues {
