@@ -1,8 +1,5 @@
-﻿// Copyright (c) Microsoft Corporation
-// The Microsoft Corporation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,192 +13,436 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class CanvasZone : UserControl
     {
-        public CanvasLayoutModel Model { get; set; }
-
-        public int ZoneIndex { get; set; }
-
-        private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
-
-        private static readonly int _minZoneWidth = 64;
-        private static readonly int _minZoneHeight = 72;
-        private static int _zIndex = 0;
-
         public CanvasZone()
         {
             InitializeComponent();
-            Panel.SetZIndex(this, _zIndex++);
+            Canvas.SetZIndex(this, zIndex++);
         }
 
-        private void Move(double xDelta, double yDelta)
+        public CanvasLayoutModel Model;
+        public int ZoneIndex;
+
+        private abstract class SnappyHelperBase
+        {
+            protected readonly int screenW;
+            protected readonly List<int> snaps;
+            protected readonly int minValue;
+            protected readonly int maxValue;
+
+            public int Position { get; protected set; }
+
+            public int Mode { get; private set; }
+
+            public const int ModeLow = 1;
+            public const int ModeHigh = 2;
+            public const int ModeBoth = 3;
+
+            /// <summary>
+            ///     Initialize the SnappyHelperBase. Just pass it the canvas arguments. Use mode
+            ///     to tell it which edges of the existing masks to use when building its list
+            ///     of snap points, and generally which edges to track. There will be two
+            ///     SnappyHelpers, one for X-coordinates and one for
+            ///     Y-coordinates, they work independently but share the same logic.
+            /// </summary>
+            /// <param name="zones">The list of rectangles describing all zones</param>
+            /// <param name="zoneIndex">The index of the zone to track</param>
+            /// <param name="isX"> Whether this is the X or Y SnappyHelper</param>
+            /// <param name="mode"> One of the three modes of operation (for example: tracking left/right/both edges)</param>
+            /// <param name="screen_w"> The size of the screen in this (X or Y) dimension</param>
+            public SnappyHelperBase(IList<Int32Rect> zones, int zoneIndex, bool isX, int mode, int screen_w)
+            {
+                int track_p = isX ? zones[zoneIndex].X : zones[zoneIndex].Y;
+                int track_w = isX ? zones[zoneIndex].Width : zones[zoneIndex].Height;
+                int min_w = isX ? MinZoneWidth : MinZoneHeight;
+                List<int> key_positions = new List<int>();
+                for (int i = 0; i < zones.Count; ++i)
+                {
+                    if (i != zoneIndex)
+                    {
+                        int curr_p = isX ? zones[i].X : zones[i].Y;
+                        int curr_w = isX ? zones[i].Width : zones[i].Height;
+                        key_positions.Add(curr_p);
+                        key_positions.Add(curr_p + curr_w);
+                        if (mode == ModeBoth)
+                        {
+                            key_positions.Add(curr_p - track_w);
+                            key_positions.Add(curr_p + curr_w - track_w);
+                        }
+                    }
+                }
+
+                // Remove duplicates and sort
+                key_positions.Sort();
+                snaps = new List<int>();
+                if (key_positions.Count > 0)
+                {
+                    snaps.Add(key_positions[0]);
+                    for (int i = 1; i < key_positions.Count; ++i)
+                    {
+                        if (key_positions[i] != key_positions[i - 1])
+                        {
+                            snaps.Add(key_positions[i]);
+                        }
+                    }
+                }
+
+                // Initialize minValue
+                if (mode == ModeLow)
+                {
+                    // We're dragging the low edge, don't go below zero
+                    minValue = 0;
+                }
+                else if (mode == ModeHigh)
+                {
+                    // We're dragging the high edge, don't make the zone smaller than min_w
+                    minValue = track_p + min_w;
+                }
+                else if (mode == ModeBoth)
+                {
+                    // We're moving the window, don't move it below zero
+                    minValue = 0;
+                }
+
+                // Initialize maxValue
+                if (mode == ModeLow)
+                {
+                    // We're dragging the low edge, it can't make the zone smaller than min_w
+                    maxValue = track_p + track_w - min_w;
+                }
+                else if (mode == ModeHigh)
+                {
+                    // We're dragging the high edge, don't go off the screen
+                    maxValue = screen_w;
+                }
+                else if (mode == ModeBoth)
+                {
+                    // We're moving the window, don't go off the screen (this time the lower edge is tracked)
+                    maxValue = screen_w - track_w;
+                }
+
+                // Initialize position
+                if (mode == ModeLow)
+                {
+                    Position = track_p;
+                }
+                else if (mode == ModeHigh)
+                {
+                    Position = track_p + track_w;
+                }
+                else if (mode == ModeBoth)
+                {
+                    Position = track_p;
+                }
+
+                Mode = mode;
+                this.screenW = screen_w;
+            }
+
+            public abstract void Move(int delta);
+        }
+
+        private class SnappyHelperSliding : SnappyHelperBase
+        {
+            private int MaxEnergy
+            {
+                get
+                {
+                    return (int)(0.008 * screenW);
+                }
+            }
+
+            /// <summary>
+            ///     Initialize the SnappyHelper. Just pass it the canvas arguments. Use mode
+            ///     to tell it which edges of the existing masks to use when building its list
+            ///     of snap points, and generally which edges to track. There will be two
+            ///     SnappyHelpers, one for X-coordinates and one for
+            ///     Y-coordinates, they work independently but share the same logic.
+            /// </summary>
+            /// <param name="zones">The list of rectangles describing all zones</param>
+            /// <param name="zoneIndex">The index of the zone to track</param>
+            /// <param name="isX"> Whether this is the X or Y SnappyHelper</param>
+            /// <param name="mode"> One of the three modes of operation (for example: tracking left/right/both edges)</param>
+            /// <param name="screen_w"> The size of the screen in this (X or Y) dimension</param>
+            public SnappyHelperSliding(IList<Int32Rect> zones, int zoneIndex, bool isX, int mode, int screen_w)
+                : base(zones, zoneIndex, isX, mode, screen_w)
+            {
+            }
+
+            public override void Move(int delta)
+            {
+                if (delta == 0)
+                {
+                    return;
+                }
+
+                int target_position = Position + delta;
+                if (target_position > maxValue)
+                {
+                    Position = maxValue;
+                    return;
+                }
+
+                if (target_position < minValue)
+                {
+                    Position = minValue;
+                    return;
+                }
+
+                // are we flying over a snap position?
+                int snapId = -1;
+
+                if (delta > 0)
+                {
+                    for (int i = 0; i < snaps.Count; ++i)
+                    {
+                        if (Position <= snaps[i] && snaps[i] <= target_position)
+                        {
+                            snapId = i;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = snaps.Count - 1; i >= 0; --i)
+                    {
+                        if (target_position <= snaps[i] && snaps[i] <= Position)
+                        {
+                            snapId = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (snapId == -1)
+                {
+                    Position = target_position;
+                }
+                else
+                {
+                    int energy = target_position - snaps[snapId];
+                    Position = snaps[snapId];
+                    if (energy > MaxEnergy)
+                    {
+                        energy = 0;
+                        Position += 1;
+                    }
+                    else if (energy < -MaxEnergy)
+                    {
+                        energy = 0;
+                        Position -= 1;
+                    }
+                }
+            }
+        }
+
+        private class SnappyHelperMagnetic : SnappyHelperBase
+        {
+            private List<int> magnetZoneSizes;
+            private int freePosition;
+
+            private int MagnetZoneMaxSize
+            {
+                get => (int)(0.08 * screenW);
+            }
+
+            public SnappyHelperMagnetic(IList<Int32Rect> zones, int zoneIndex, bool isX, int mode, int screen_w)
+                : base(zones, zoneIndex, isX, mode, screen_w)
+            {
+                freePosition = Position;
+                magnetZoneSizes = new List<int>();
+                for (int i = 0; i < snaps.Count; ++i)
+                {
+                    int previous = i == 0 ? 0 : snaps[i - 1];
+                    int next = i == snaps.Count - 1 ? screenW : snaps[i + 1];
+                    magnetZoneSizes.Add(Math.Min(snaps[i] - previous, Math.Min(next - snaps[i], MagnetZoneMaxSize)) / 2);
+                }
+            }
+
+            public override void Move(int delta)
+            {
+                freePosition = Position + delta;
+                int snapId = -1;
+                for (int i = 0; i < snaps.Count; ++i)
+                {
+                    if (Math.Abs(freePosition - snaps[i]) <= magnetZoneSizes[i])
+                    {
+                        snapId = i;
+                        break;
+                    }
+                }
+
+                if (snapId == -1)
+                {
+                    Position = freePosition;
+                }
+                else
+                {
+                    int deadZoneWidth = (magnetZoneSizes[snapId] + 1) / 2;
+                    if (Math.Abs(freePosition - snaps[snapId]) <= deadZoneWidth)
+                    {
+                        Position = snaps[snapId];
+                    }
+                    else if (freePosition < snaps[snapId])
+                    {
+                        Position = freePosition + (freePosition - (snaps[snapId] - magnetZoneSizes[snapId]));
+                    }
+                    else
+                    {
+                        Position = freePosition - ((snaps[snapId] + magnetZoneSizes[snapId]) - freePosition);
+                    }
+                }
+
+                Position = Math.Max(Math.Min(maxValue, Position), minValue);
+            }
+        }
+
+        private SnappyHelperBase snappyX;
+        private SnappyHelperBase snappyY;
+        
+        // change to SnappyHelperSliding for different behavior
+        private SnappyHelperBase NewDefaultSnappyHelper(bool isX, int mode, int screen_w) {
+            return new SnappyHelperMagnetic(Model.Zones, ZoneIndex, isX, mode, screen_w);
+        }
+
+        private void UpdateFromSnappyHelpers()
         {
             Int32Rect rect = Model.Zones[ZoneIndex];
-            if (xDelta < 0)
+
+            if (snappyX != null)
             {
-                xDelta = Math.Max(xDelta, -rect.X);
-            }
-            else if (xDelta > 0)
-            {
-                xDelta = Math.Min(xDelta, _settings.WorkArea.Width - rect.Width - rect.X);
+                if (snappyX.Mode == SnappyHelperBase.ModeLow)
+                {
+                    int changeX = snappyX.Position - rect.X;
+                    rect.X += changeX;
+                    rect.Width -= changeX;
+                }
+                else if (snappyX.Mode == SnappyHelperBase.ModeHigh)
+                {
+                    rect.Width = snappyX.Position - rect.X;
+                }
+                else
+                {
+                    int changeX = snappyX.Position - rect.X;
+                    rect.X += changeX;
+                }
+
+                Canvas.SetLeft(this, rect.X);
+                Width = rect.Width;
             }
 
-            if (yDelta < 0)
+            if (snappyY != null)
             {
-                yDelta = Math.Max(yDelta, -rect.Y);
-            }
-            else if (yDelta > 0)
-            {
-                yDelta = Math.Min(yDelta, _settings.WorkArea.Height - rect.Height - rect.Y);
+                if (snappyY.Mode == SnappyHelperBase.ModeLow)
+                {
+                    int changeY = snappyY.Position - rect.Y;
+                    rect.Y += changeY;
+                    rect.Height -= changeY;
+                }
+                else if (snappyY.Mode == SnappyHelperBase.ModeHigh)
+                {
+                    rect.Height = snappyY.Position - rect.Y;
+                }
+                else
+                {
+                    int changeY = snappyY.Position - rect.Y;
+                    rect.Y += changeY;
+                }
+
+                Canvas.SetTop(this, rect.Y);
+                Height = rect.Height;
             }
 
-            rect.X += (int)xDelta;
-            rect.Y += (int)yDelta;
-
-            Canvas.SetLeft(this, rect.X);
-            Canvas.SetTop(this, rect.Y);
             Model.Zones[ZoneIndex] = rect;
         }
 
-        private void SizeMove(double xDelta, double yDelta)
-        {
-            Int32Rect rect = Model.Zones[ZoneIndex];
-            if (xDelta < 0)
-            {
-                if ((rect.X + xDelta) < 0)
-                {
-                    xDelta = -rect.X;
-                }
-            }
-            else if (xDelta > 0)
-            {
-                if ((rect.Width - (int)xDelta) < _minZoneWidth)
-                {
-                    xDelta = rect.Width - _minZoneWidth;
-                }
-            }
-
-            if (yDelta < 0)
-            {
-                if ((rect.Y + yDelta) < 0)
-                {
-                    yDelta = -rect.Y;
-                }
-            }
-            else if (yDelta > 0)
-            {
-                if ((rect.Height - (int)yDelta) < _minZoneHeight)
-                {
-                    yDelta = rect.Height - _minZoneHeight;
-                }
-            }
-
-            rect.X += (int)xDelta;
-            rect.Width -= (int)xDelta;
-            MinWidth = rect.Width;
-
-            rect.Y += (int)yDelta;
-            rect.Height -= (int)yDelta;
-            MinHeight = rect.Height;
-
-            Canvas.SetLeft(this, rect.X);
-            Canvas.SetTop(this, rect.Y);
-            Model.Zones[ZoneIndex] = rect;
-        }
-
-        private void Size(double xDelta, double yDelta)
-        {
-            Int32Rect rect = Model.Zones[ZoneIndex];
-            if (xDelta != 0)
-            {
-                int newWidth = rect.Width + (int)xDelta;
-
-                if (newWidth < _minZoneWidth)
-                {
-                    newWidth = _minZoneWidth;
-                }
-                else if (newWidth > (_settings.WorkArea.Width - rect.X))
-                {
-                    newWidth = (int)_settings.WorkArea.Width - rect.X;
-                }
-
-                MinWidth = rect.Width = newWidth;
-            }
-
-            if (yDelta != 0)
-            {
-                int newHeight = rect.Height + (int)yDelta;
-
-                if (newHeight < _minZoneHeight)
-                {
-                    newHeight = _minZoneHeight;
-                }
-                else if (newHeight > (_settings.WorkArea.Height - rect.Y))
-                {
-                    newHeight = (int)_settings.WorkArea.Height - rect.Y;
-                }
-
-                MinHeight = rect.Height = newHeight;
-            }
-
-            Model.Zones[ZoneIndex] = rect;
-        }
+        private static int zIndex = 0;
+        private const int MinZoneWidth = 64;
+        private const int MinZoneHeight = 72;
 
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
-            Panel.SetZIndex(this, _zIndex++);
+            Canvas.SetZIndex(this, zIndex++);
             base.OnPreviewMouseDown(e);
         }
 
-        private void NWResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
+        private void UniversalDragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
-            SizeMove(e.HorizontalChange, e.VerticalChange);
-        }
+            if (snappyX != null)
+            {
+                snappyX.Move((int)e.HorizontalChange);
+            }
 
-        private void NEResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
-        {
-            SizeMove(0, e.VerticalChange);
-            Size(e.HorizontalChange, 0);
-        }
+            if (snappyY != null)
+            {
+                snappyY.Move((int)e.VerticalChange);
+            }
 
-        private void SWResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
-        {
-            SizeMove(e.HorizontalChange, 0);
-            Size(0, e.VerticalChange);
-        }
-
-        private void SEResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
-        {
-            Size(e.HorizontalChange, e.VerticalChange);
-        }
-
-        private void NResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
-        {
-            SizeMove(0, e.VerticalChange);
-        }
-
-        private void SResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
-        {
-            Size(0, e.VerticalChange);
-        }
-
-        private void WResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
-        {
-            SizeMove(e.HorizontalChange, 0);
-        }
-
-        private void EResize_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
-        {
-            Size(e.HorizontalChange, 0);
-        }
-
-        private void Caption_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
-        {
-            Move(e.HorizontalChange, e.VerticalChange);
+            UpdateFromSnappyHelpers();
         }
 
         private void OnClose(object sender, RoutedEventArgs e)
         {
             ((Panel)Parent).Children.Remove(this);
             Model.RemoveZoneAt(ZoneIndex);
+        }
+
+        // Corner dragging
+        private void Caption_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            snappyX = NewDefaultSnappyHelper(true, SnappyHelperBase.ModeBoth, Model.ReferenceWidth);
+            snappyY = NewDefaultSnappyHelper(false, SnappyHelperBase.ModeBoth, Model.ReferenceHeight);
+        }
+
+        private Settings _settings = ((App)Application.Current).ZoneSettings;
+
+        private void NWResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            snappyX = NewDefaultSnappyHelper(true, SnappyHelperBase.ModeLow, Model.ReferenceWidth);
+            snappyY = NewDefaultSnappyHelper(false, SnappyHelperBase.ModeLow, Model.ReferenceHeight);
+        }
+
+        private void NEResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            snappyX = NewDefaultSnappyHelper(true, SnappyHelperBase.ModeHigh, Model.ReferenceWidth);
+            snappyY = NewDefaultSnappyHelper(false, SnappyHelperBase.ModeLow, Model.ReferenceHeight);
+        }
+
+        private void SWResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            snappyX = NewDefaultSnappyHelper(true, SnappyHelperBase.ModeLow, Model.ReferenceWidth);
+            snappyY = NewDefaultSnappyHelper(false, SnappyHelperBase.ModeHigh, Model.ReferenceHeight);
+        }
+
+        private void SEResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            snappyX = NewDefaultSnappyHelper(true, SnappyHelperBase.ModeHigh, Model.ReferenceWidth);
+            snappyY = NewDefaultSnappyHelper(false, SnappyHelperBase.ModeHigh, Model.ReferenceHeight);
+        }
+
+        // Edge dragging
+        private void NResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            snappyX = null;
+            snappyY = NewDefaultSnappyHelper(false, SnappyHelperBase.ModeLow, Model.ReferenceHeight);
+        }
+
+        private void SResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            snappyX = null;
+            snappyY = NewDefaultSnappyHelper(false, SnappyHelperBase.ModeHigh, Model.ReferenceHeight);
+        }
+
+        private void WResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            snappyX = NewDefaultSnappyHelper(true, SnappyHelperBase.ModeLow, Model.ReferenceWidth);
+            snappyY = null;
+        }
+
+        private void EResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            snappyX = NewDefaultSnappyHelper(true, SnappyHelperBase.ModeHigh, Model.ReferenceWidth);
+            snappyY = null;
         }
     }
 }
