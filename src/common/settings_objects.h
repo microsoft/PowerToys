@@ -22,35 +22,35 @@ namespace PowerToysSettings {
     void set_video_link(const std::wstring_view& video_link);
 
     // Add properties to the PowerToy settings.
-    void add_bool_toogle(const std::wstring_view& name, UINT description_resource_id,const bool& value);
-    void add_bool_toogle(const std::wstring_view& name, const std::wstring_view& description,const bool& value);
+    void add_bool_toogle(const std::wstring_view& name, UINT description_resource_id, const bool& value);
+    void add_bool_toogle(const std::wstring_view& name, const std::wstring_view& description, const bool& value);
 
-    void add_int_spinner(const std::wstring_view& name, UINT description_resource_id,int value,int min,int max, int step);
-    void add_int_spinner(const std::wstring_view& name, const std::wstring_view& description,int value,int min,int max, int step);
+    void add_int_spinner(const std::wstring_view& name, UINT description_resource_id, int value, int min, int max, int step);
+    void add_int_spinner(const std::wstring_view& name, const std::wstring_view& description, int value, int min, int max, int step);
 
-    void add_string(const std::wstring_view& name, UINT description_resource_id,const std::wstring_view& value);
-    void add_string(const std::wstring_view& name, const std::wstring_view& description,const std::wstring_view& value);
+    void add_string(const std::wstring_view& name, UINT description_resource_id, const std::wstring_view& value);
+    void add_string(const std::wstring_view& name, const std::wstring_view& description, const std::wstring_view& value);
 
-    void add_multiline_string(const std::wstring_view& name,  UINT description_resource_id,const  std::wstring_view& value);
-    void add_multiline_string(const std::wstring_view& name,const std::wstring_view& description,const std::wstring_view& value);
+    void add_multiline_string(const std::wstring_view& name, UINT description_resource_id, const  std::wstring_view& value);
+    void add_multiline_string(const std::wstring_view& name, const std::wstring_view& description, const std::wstring_view& value);
 
-    void add_color_picker(const std::wstring_view& name, UINT description_resource_id,const std::wstring_view& value);
-    void add_color_picker(const std::wstring_view& name,const std::wstring_view& description,const std::wstring_view& value);
+    void add_color_picker(const std::wstring_view& name, UINT description_resource_id, const std::wstring_view& value);
+    void add_color_picker(const std::wstring_view& name, const std::wstring_view& description, const std::wstring_view& value);
 
     void add_hotkey(const std::wstring_view& name, UINT description_resource_id, const HotkeyObject& hotkey);
-    void add_hotkey(const std::wstring_view& name,const std::wstring_view& description, const HotkeyObject& hotkey);
+    void add_hotkey(const std::wstring_view& name, const std::wstring_view& description, const HotkeyObject& hotkey);
 
-    void add_choice_group(const std::wstring_view& name, UINT description_resource_id,const std::wstring_view& value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
-    void add_choice_group(const std::wstring_view& name,const std::wstring_view& description,const std::wstring_view& value, const std::vector<std::pair<std::wstring, std::wstring>>& keys_and_texts);
+    void add_choice_group(const std::wstring_view& name, UINT description_resource_id, const std::wstring_view& value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
+    void add_choice_group(const std::wstring_view& name, const std::wstring_view& description, const std::wstring_view& value, const std::vector<std::pair<std::wstring, std::wstring>>& keys_and_texts);
 
-    void add_dropdown(const std::wstring_view& name, UINT description_resource_id,const std::wstring_view& value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
-    void add_dropdown(const std::wstring_view& name,const std::wstring_view& description,const std::wstring_view& value, const std::vector<std::pair<std::wstring, std::wstring>>& keys_and_texts);
+    void add_dropdown(const std::wstring_view& name, UINT description_resource_id, const std::wstring_view& value, const std::vector<std::pair<std::wstring, UINT>>& keys_and_text_ids);
+    void add_dropdown(const std::wstring_view& name, const std::wstring_view& description, const std::wstring_view& value, const std::vector<std::pair<std::wstring, std::wstring>>& keys_and_texts);
 
-    void add_custom_action(const std::wstring_view& name,UINT description_resource_id, UINT button_text_resource_id, UINT ext_description_resource_id);
-    void add_custom_action(const std::wstring_view& name, UINT description_resource_id, UINT button_text_resource_id,const std::wstring_view& value);
-    void add_custom_action(const std::wstring_view& name,const std::wstring_view& description,const std::wstring_view& button_text,const std::wstring_view& value);
+    void add_custom_action(const std::wstring_view& name, UINT description_resource_id, UINT button_text_resource_id, UINT ext_description_resource_id);
+    void add_custom_action(const std::wstring_view& name, UINT description_resource_id, UINT button_text_resource_id, const std::wstring_view& value);
+    void add_custom_action(const std::wstring_view& name, const std::wstring_view& description, const std::wstring_view& button_text, const std::wstring_view& value);
 
-    void add_header_szLarge(const std::wstring_view& name,const std::wstring_view& description,const std::wstring_view& value);
+    void add_header_szLarge(const std::wstring_view& name, const std::wstring_view& description, const std::wstring_view& value);
     // Serialize the internal json to a string.
     std::wstring serialize();
     // Serialize the internal json to the input buffer.
@@ -150,8 +150,8 @@ namespace PowerToysSettings {
       // Determinate if vk is an extended key. Unfortunatly MAPVK_VK_TO_VSC_EX
       // does not return correct values.
       static std::vector<UINT> extended_keys = {
-        VK_APPS, VK_CANCEL, VK_SNAPSHOT, VK_DIVIDE, VK_NUMLOCK, VK_LWIN, VK_RWIN, VK_RMENU,
-        VK_RCONTROL, VK_RSHIFT, VK_RETURN, VK_INSERT, VK_DELETE, VK_PRIOR, VK_NEXT,
+        VK_APPS, VK_CANCEL, VK_SNAPSHOT, VK_DIVIDE, VK_NUMLOCK, VK_LWIN, VK_RWIN, VK_RMENU, 
+        VK_RCONTROL, VK_RSHIFT, VK_RETURN, VK_INSERT, VK_DELETE, VK_PRIOR, VK_NEXT, 
         VK_HOME, VK_END, VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, 
       };
       if (find(begin(extended_keys), end(extended_keys), key_code) != end(extended_keys)) {
