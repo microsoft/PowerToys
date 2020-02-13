@@ -12,6 +12,9 @@ namespace MarkdownPreviewHandler
     /// </summary>
     public class MarkdownTelemetry : TelemetryBase
     {
+        /// <summary>
+        /// Name for ETW event.
+        /// </summary>
         private const string EventSourceName = "Microsoft.PowerToys";
 
         /// <summary>

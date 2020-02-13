@@ -22,6 +22,9 @@ namespace PreviewHandlerCommon.Telemetry
         /// </summary>
         public const EventKeywords PROJECTKEYWORDMEASURE = (EventKeywords)0x0;
 
+        /// <summary>
+        /// Group ID for Powertoys project.
+        /// </summary>
         private static readonly string[] PowerToysTelemetryTraits = { "ETW_GROUP", "{42749043-438c-46a2-82be-c6cbeb192ff2}" };
 
         /// <summary>
