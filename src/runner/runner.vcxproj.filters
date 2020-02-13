@@ -39,9 +39,6 @@
     <ClCompile Include="restart_elevated.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="msi_to_msix_upgrade.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -80,9 +77,6 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="restart_elevated.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="msi_to_msix_upgrade.h">
       <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>

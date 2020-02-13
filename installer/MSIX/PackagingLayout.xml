@@ -5,7 +5,8 @@
       <Files>
         <File DestinationPath="License.rtf" SourcePath="..\..\License.rtf"/>
 
-        <File DestinationPath="Power Toys.exe" SourcePath="..\..\x64\Release\PowerToys.exe"/>
+        <File DestinationPath="action_runner.exe" SourcePath="..\..\x64\Release\action_runner.exe"/>
+        <File DestinationPath="PowerToys.exe" SourcePath="..\..\x64\Release\PowerToys.exe"/>
         <File DestinationPath="PowerToysSettings.exe" SourcePath="..\..\x64\Release\PowerToysSettings.exe"/>
 
         <File DestinationPath="modules\FancyZonesEditor.exe" SourcePath="..\..\x64\Release\modules\FancyZonesEditor.exe"/>

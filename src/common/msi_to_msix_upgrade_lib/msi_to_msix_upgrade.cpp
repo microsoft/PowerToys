@@ -6,6 +6,7 @@
 
 #include <common/winstore.h>
 #include <common/notifications.h>
+#include <MsiQuery.h>
 
 namespace
 {
@@ -42,7 +43,6 @@ std::wstring get_msi_package_path()
     }
 
     package_path = std::wstring(++package_path_size, L'\0');
-    const auto ptr = package_path.data();
     if (const bool got_package_path = ERROR_SUCCESS == MsiGetProductInfoW(GUID_product_string, INSTALLPROPERTY_LOCALPACKAGE, package_path.data(), &package_path_size); !got_package_path)
     {
         package_path = {};
@@ -63,7 +63,6 @@ bool offer_msi_uninstallation()
 void uninstall_msi_version(const std::wstring& package_path)
 {
     const auto uninstall_result = MsiInstallProductW(package_path.c_str(), L"REMOVE=ALL");
-    auto system_message = get_last_error_message(uninstall_result);
     if (ERROR_SUCCESS == uninstall_result)
     {
         notifications::show_toast(localized_strings::UNINSTALLATION_SUCCESS);

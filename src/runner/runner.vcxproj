@@ -65,7 +65,7 @@
     <Link>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalDependencies>Msi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Msi.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableDpiAwareness>false</EnableDpiAwareness>
@@ -91,7 +91,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalDependencies>Msi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Msi.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableDpiAwareness>false</EnableDpiAwareness>
@@ -101,7 +101,6 @@
     <ClCompile Include="auto_start_helper.cpp" />
     <ClCompile Include="general_settings.cpp" />
     <ClCompile Include="lowlevel_keyboard_event.cpp" />
-    <ClCompile Include="msi_to_msix_upgrade.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -121,7 +120,6 @@
     <ClInclude Include="auto_start_helper.h" />
     <ClInclude Include="general_settings.h" />
     <ClInclude Include="lowlevel_keyboard_event.h" />
-    <ClInclude Include="msi_to_msix_upgrade.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="powertoys_events.h" />
     <ClInclude Include="powertoy_module.h" />
@@ -226,6 +224,9 @@
   <ItemGroup>
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\common\msi_to_msix_upgrade_lib\msi_to_msix_upgrade_lib.vcxproj">
+      <Project>{17da04df-e393-4397-9cf0-84dabe11032e}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

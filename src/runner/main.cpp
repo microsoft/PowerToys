@@ -13,7 +13,7 @@
 #include <common/common.h>
 #include <common/dpi_aware.h>
 
-#include "msi_to_msix_upgrade.h"
+#include <common/msi_to_msix_upgrade_lib/msi_to_msix_upgrade.h>
 #include <common/winstore.h>
 #include <common/notifications.h>
 
@@ -33,6 +33,32 @@ void chdir_current_executable()
     {
         show_last_error_message(L"Change Directory to Executable Path", GetLastError());
     }
+}
+
+void start_msi_uninstallation_sequence()
+{
+    const auto package_path = get_msi_package_path();
+
+    if (package_path.empty())
+    {
+        // No MSI version detected
+        return;
+    }
+
+    if (!offer_msi_uninstallation())
+    {
+        // User declined to uninstall
+        return;
+    }
+
+    std::wstring action_runner_path{ winrt::Windows::ApplicationModel::Package::Current().InstalledLocation().Path() };
+    action_runner_path += L"\\action_runner.exe";
+    SHELLEXECUTEINFOW sei{ sizeof(sei) };
+    sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
+    sei.lpFile = action_runner_path.c_str();
+    sei.nShow = SW_SHOWNORMAL;
+    sei.lpParameters = L"-uninstall_msi";
+    ShellExecuteExW(&sei);
 }
 
 int runner()
@@ -55,9 +81,12 @@ int runner()
     try
     {
         // If we're running as a MSIX application, offer a user uninstall option of an old version if detected
-        std::thread{ [] {
-            uninstall_msi_with_confirmation();
-        } }.detach();
+        if (winstore::running_as_packaged())
+        {
+            std::thread{ [] {
+                start_msi_uninstallation_sequence();
+            } }.detach();
+        }
 
         chdir_current_executable();
         // Load Powertyos DLLS
