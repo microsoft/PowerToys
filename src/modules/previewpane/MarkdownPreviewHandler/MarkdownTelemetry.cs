@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.Tracing;
+using System.Windows.Forms;
 using PreviewHandlerCommon.Telemetry;
 
 namespace MarkdownPreviewHandler
@@ -41,6 +42,21 @@ namespace MarkdownPreviewHandler
                 Keywords = TelemetryBase.PROJECTKEYWORDMEASURE,
                 Tags = TelemetryBase.ProjectTelemetryTagProductAndServicePerformance,
             });
+        }
+
+        /// <summary>
+        /// Publishes ETW event when markdown could not be previewed.
+        /// </summary>
+        public void MarkdownFilePreviewError(string message)
+        {
+            this.Write(
+                "PowerPreview_PreviewPane_MDRendererError",
+                new EventSourceOptions()
+                {
+                    Keywords = TelemetryBase.PROJECTKEYWORDMEASURE,
+                    Tags = TelemetryBase.ProjectTelemetryTagProductAndServicePerformance,
+                },
+                new { Message = message, });
         }
     }
 }
