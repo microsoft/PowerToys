@@ -46,7 +46,7 @@ struct ModuleSettings
 } g_settings;
 
 // Implement the PowerToy Module Interface and all the required methods.
-class $safeprojectname$ : public PowertoyModuleIface
+class PowerKeys : public PowertoyModuleIface
 {
 private:
     // The PowerToy state.
@@ -57,7 +57,7 @@ private:
 
 public:
     // Constructor
-    $safeprojectname$()
+    PowerKeys()
     {
         init_settings();
     };
@@ -79,14 +79,12 @@ public:
     // list.
     virtual const wchar_t** get_events() override
     {
-        static const wchar_t* events[] = { nullptr };
+        //static const wchar_t* events[] = { nullptr };
         // Available events:
         // - ll_keyboard
         // - win_hook_event
         //
-        // static const wchar_t* events[] = { ll_keyboard,
-        //                                   win_hook_event,
-        //                                   nullptr };
+        static const wchar_t* events[] = { ll_keyboard, nullptr };
 
         return events;
     }
@@ -232,40 +230,84 @@ public:
     // Handle incoming event, data is event-specific
     virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
     {
-        if (wcscmp(name, ll_keyboard) == 0)
+        if (m_enabled)
         {
-            auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
-            // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
-            // otherwise return 0.
-            return 0;
-        }
-        else if (wcscmp(name, win_hook_event) == 0)
-        {
-            auto& event = *(reinterpret_cast<WinHookEvent*>(data));
-            // Return value is ignored
-            return 0;
+            if (wcscmp(name, ll_keyboard) == 0)
+            {
+                auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
+                // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
+                // otherwise return 0.
+                return HandleKeyboardHookEvent(&event);
+            }
+            else if (wcscmp(name, win_hook_event) == 0)
+            {
+                auto& event = *(reinterpret_cast<WinHookEvent*>(data));
+                // Return value is ignored
+                return 0;
+            }
         }
         return 0;
     }
 
     // This methods are part of an experimental features not fully supported yet
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override
-    {
-    }
+    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
 
-    virtual void signal_system_menu_action(const wchar_t* name) override
+    virtual void signal_system_menu_action(const wchar_t* name) override {}
+
+    intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
+        // WM_KEYDOWN only captures key-presses when Alt is not held. WM_SYSKEYDOWN captures key-presses when Alt is held
+        WORD input = VK_TAB; // A
+        WORD output = VK_RSHIFT; // B
+        if (!(data->lParam->flags & LLKHF_INJECTED))
+        {
+            if (data->lParam->vkCode == input)
+            {
+                int key_count = 1;
+                LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+                memset(keyEventList, 0, sizeof(keyEventList));
+                keyEventList[0].type = INPUT_KEYBOARD;
+                keyEventList[0].ki.wVk = output;
+                keyEventList[0].ki.dwFlags = (data->wParam == WM_KEYUP ? KEYEVENTF_KEYUP : 0);
+
+                UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+                delete[] keyEventList;
+                return 1;
+            }
+            if (data->lParam->vkCode == output)
+            {
+                int key_count = 1;
+                LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+                memset(keyEventList, 0, sizeof(keyEventList));
+                keyEventList[0].type = INPUT_KEYBOARD;
+                keyEventList[0].ki.wVk = input;
+                keyEventList[0].ki.dwFlags = 0;
+                if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+                {
+                    keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
+                }
+
+                UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+                delete[] keyEventList;
+                return 1;
+            }
+        }
+        return 0;
+        /* else if (data->wParam == WM_SYSKEYDOWN)
+        {
+        
+        }*/
     }
 };
 
 // Load the settings file.
-void $safeprojectname$::init_settings()
+void PowerKeys::init_settings()
 {
     try
     {
-        // Load and parse the settings file for this PowerToy.
-        PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file($safeprojectname$::get_name());
+        //// Load and parse the settings file for this PowerToy.
+        //PowerToysSettings::PowerToyValues settings =
+        //    PowerToysSettings::PowerToyValues::load_from_settings_file(PowerKeys::get_name());
 
         // Load a bool property.
         //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {
@@ -295,7 +337,7 @@ void $safeprojectname$::init_settings()
 
 // This method of saving the module settings is only required if you need to do any
 // custom processing of the settings before saving them to disk.
-//void $projectname$::save_settings() {
+//void PowerKeys::save_settings() {
 //  try {
 //    // Create a PowerToyValues object for this PowerToy
 //    PowerToysSettings::PowerToyValues values(get_name());
@@ -334,5 +376,5 @@ void $safeprojectname$::init_settings()
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
-    return new $safeprojectname$();
+    return new PowerKeys();
 }
