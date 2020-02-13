@@ -48,13 +48,6 @@ namespace ImageResizer.ViewModels
                 _batch.Files.AddRange(view.OpenPictureFiles());
             }
 
-            if (_settings.UpgradeRequired)
-            {
-                _settings.Upgrade();
-                _settings.UpgradeRequired = false;
-                _settings.Save();
-            }
-
             CurrentPage = new InputViewModel(_settings, this, view, _batch);
         }
     }
