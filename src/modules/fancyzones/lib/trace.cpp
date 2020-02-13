@@ -104,7 +104,7 @@ void Trace::FancyZones::DataChanged() noexcept
 
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones_SettingsChanged",
+        "FancyZones_ZoneSettingsChanged",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingInt32(appsHistorySize, "AppsInHistoryCount"),
