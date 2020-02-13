@@ -2,18 +2,34 @@
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using ImageResizer.Models;
 using ImageResizer.Test;
 using Xunit;
+using Xunit.Abstractions;
 using Xunit.Extensions;
 
 namespace ImageResizer.Properties
 {
-    public class SettingsTests : IClassFixture<AppFixture>
+    public class SettingsTests : IClassFixture<AppFixture>, IDisposable
     {
+        public SettingsTests()
+        {
+            // Change settings.json path to a temp file
+            Settings.SettingsPath = ".\\test_settings.json";
+        }
+
+        public void Dispose()
+        {
+            if (System.IO.File.Exists(Settings.SettingsPath))
+            {
+                System.IO.File.Delete(Settings.SettingsPath);
+            }
+        }
+
         [Fact]
         public void AllSizes_propagates_Sizes_collection_events()
         {
@@ -187,27 +203,11 @@ namespace ImageResizer.Properties
             Assert.Empty(result);
         }
 
-        private Settings SettingsWithTempFile()
-        {
-            var settings = new Settings();
-            Settings.SettingsPath = ".\\test_settings.json";
-            return settings;
-        }
-
-        private void DeleteSettingsFileIfExists(Settings settings)
-        {
-            if (System.IO.File.Exists(Settings.SettingsPath))
-            {
-                System.IO.File.Delete(Settings.SettingsPath);
-            }
-        }
-
         [Fact]
         public void Reload_createsFile_when_FileNotFound()
         {
             // Arrange
-            var settings = SettingsWithTempFile();
-            DeleteSettingsFileIfExists(settings);
+            var settings = new Settings();
 
             // Assert
             Assert.False(System.IO.File.Exists(Settings.SettingsPath));
@@ -217,17 +217,13 @@ namespace ImageResizer.Properties
 
             // Assert
             Assert.True(System.IO.File.Exists(Settings.SettingsPath));
-
-            // Arrange
-            DeleteSettingsFileIfExists(settings);
         }
 
         [Fact]
         public void Save_creates_file()
         {
             // Arrange
-            var settings = SettingsWithTempFile();
-            DeleteSettingsFileIfExists(settings);
+            var settings = new Settings();
 
             // Assert
             Assert.False(System.IO.File.Exists(Settings.SettingsPath));
@@ -237,17 +233,13 @@ namespace ImageResizer.Properties
 
             // Assert
             Assert.True(System.IO.File.Exists(Settings.SettingsPath));
-
-            // Arrange
-            DeleteSettingsFileIfExists(settings);
         }
 
         [Fact]
         public void Save_json_is_readable_by_Reload()
         {
             // Arrange
-            var settings = SettingsWithTempFile();
-            DeleteSettingsFileIfExists(settings);
+            var settings = new Settings();
 
             // Assert
             Assert.False(System.IO.File.Exists(Settings.SettingsPath));
@@ -258,17 +250,13 @@ namespace ImageResizer.Properties
 
             // Assert
             Assert.True(System.IO.File.Exists(Settings.SettingsPath));
-
-            // Arrange
-            DeleteSettingsFileIfExists(settings);
         }
 
         [Fact]
         public void Reload_raises_PropertyChanged_()
         {
             // Arrange
-            var settings = SettingsWithTempFile();
-            DeleteSettingsFileIfExists(settings);
+            var settings = new Settings();
             settings.Save();    // To create the settings file
 
             // Act
@@ -287,9 +275,6 @@ namespace ImageResizer.Properties
             Assert.PropertyChanged(settings, "FallbackEncoder", action);
             Assert.PropertyChanged(settings, "CustomSize", action);
             Assert.PropertyChanged(settings, "SelectedSizeIndex", action);
-
-            // Arrange
-            DeleteSettingsFileIfExists(settings);
         }
     }
 }

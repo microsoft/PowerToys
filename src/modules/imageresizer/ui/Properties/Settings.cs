@@ -408,6 +408,8 @@ namespace ImageResizer.Properties
             }
 
             Settings jsonSettings = JsonConvert.DeserializeObject<Settings>(powertoysSettings["properties"].ToString(), new JsonSerializerSettings() { ObjectCreationHandling = ObjectCreationHandling.Replace });
+
+            // Needs to be called on the App UI thread as the properties are bound to the UI.
             App.Current.Dispatcher.Invoke(() =>
             {
                 ShrinkOnly = jsonSettings.ShrinkOnly;

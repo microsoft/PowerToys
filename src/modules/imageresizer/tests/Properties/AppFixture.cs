@@ -12,6 +12,7 @@ namespace ImageResizer.Properties
     {
         public AppFixture()
         {
+            // new App() needs to be created since Settings.Reload() uses App.Current to update properties on the UI thread. App() can be created only once otherwise it results in System.InvalidOperationException : Cannot create more than one System.Windows.Application instance in the same AppDomain.
             imageResizerApp = new App();
         }
 
