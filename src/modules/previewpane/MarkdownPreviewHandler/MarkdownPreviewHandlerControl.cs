@@ -116,6 +116,7 @@ namespace MarkdownPreviewHandler
 
                 this.Resize += this.FormResized;
                 base.DoPreview(dataSource);
+                MarkdownTelemetry.Log.MarkdownFilePreviewed();
             });
         }
 
