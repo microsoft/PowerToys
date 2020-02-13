@@ -2,6 +2,7 @@
 #include "trace.h"
 #include "lib/ZoneSet.h"
 #include "lib/Settings.h"
+#include "lib/JsonHelpers.h"
 
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
@@ -62,6 +63,53 @@ void Trace::FancyZones::OnKeyDown(DWORD vkCode, bool win, bool control, bool inM
         TraceLoggingBoolean(win, "WindowsKey"),
         TraceLoggingBoolean(control, "ControlKey"),
         TraceLoggingBoolean(inMoveSize, "InMoveSize"));
+}
+
+void Trace::FancyZones::DataChanged() noexcept
+{
+    const JSONHelpers::FancyZonesData& data = JSONHelpers::FancyZonesDataInstance();
+    int appsHistorySize = data.GetAppZoneHistoryMap().size();
+    const auto& customZones = data.GetCustomZoneSetsMap();
+    const auto& devices = data.GetDeviceInfoMap();
+
+    INT32* customZonesArray = new (std::nothrow) INT32[customZones.size()];
+    INT32* templateZonesArray = new (std::nothrow) INT32[devices.size()];
+    if (!customZonesArray || !templateZonesArray)
+    {
+        return;
+    }
+
+    int i = 0;
+    for (const auto& [id, customZoneSetData] : customZones)
+    {
+        if (std::holds_alternative<JSONHelpers::GridLayoutInfo>(customZoneSetData.info))
+        {
+            const auto& info = std::get<JSONHelpers::GridLayoutInfo>(customZoneSetData.info);
+            customZonesArray[i] = info.rows() * info.columns();
+        }
+        else if (std::holds_alternative<JSONHelpers::CanvasLayoutInfo>(customZoneSetData.info))
+        {
+            const auto& info = std::get<JSONHelpers::CanvasLayoutInfo>(customZoneSetData.info);
+            customZonesArray[i] = info.zones.size();
+        }
+        i++;
+    }
+
+    i = 0;
+    for (const auto& [id, deviceInfoData] : data.GetDeviceInfoMap())
+    {
+        templateZonesArray[i] = deviceInfoData.zoneCount;
+        i++;
+    }
+
+    TraceLoggingWrite(
+        g_hProvider,
+        "FancyZones_SettingsChanged",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingInt32(appsHistorySize, "AppsInHistoryCount"),
+        TraceLoggingInt32Array(customZonesArray, customZones.size(), "NumberOfZonesForEachCustomZoneSet"),
+        TraceLoggingInt32Array(templateZonesArray, devices.size(), "NumberOfZonesForEachTemplateZoneSet"));
 }
 
 void Trace::SettingsChanged(const Settings& settings) noexcept
