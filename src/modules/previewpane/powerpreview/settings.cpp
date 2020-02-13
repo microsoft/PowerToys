@@ -214,11 +214,11 @@ namespace PowerPreviewSettings
 		if (this->SetRegistryValue() == ERROR_SUCCESS)
 		{
 			Trace::ExplorerSVGRenderEnabled();
+			this->SetState(true);
 		}
 		else
 		{
 			Trace::PowerPreviewSettingsUpDateFailed(this->GetName().c_str());
-			this->SetState(false);
 		}
 	}
 
@@ -227,11 +227,11 @@ namespace PowerPreviewSettings
 		if (this->DeleteRegistryValue() == ERROR_SUCCESS)
 		{
 			Trace::ExplorerSVGRenderDisabled();
+			this->SetState(false);
 		}
 		else
 		{
 			Trace::PowerPreviewSettingsUpDateFailed(this->GetName().c_str());
-			this->SetState(true);
 		}
 	}
 
@@ -250,11 +250,11 @@ namespace PowerPreviewSettings
 		if (this->SetRegistryValue() == ERROR_SUCCESS)
 		{
 			Trace::ExplorerSVGRenderEnabled();
+			this->SetState(true);
 		}
 		else
 		{
 			Trace::PowerPreviewSettingsUpDateFailed(this->GetName().c_str());
-			this->SetState(false);
 		}
 	}
 
@@ -263,11 +263,11 @@ namespace PowerPreviewSettings
 		if (this->DeleteRegistryValue() == ERROR_SUCCESS)
 		{
 			Trace::ExplorerSVGRenderDisabled();
+			this->SetState(false);
 		}
 		else
 		{
 			Trace::PowerPreviewSettingsUpDateFailed(this->GetName().c_str());
-			this->SetState(true);
 		}
 	}
 
