@@ -526,7 +526,8 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 {
     switch (message)
     {
-    case WM_HOTKEY: {
+    case WM_HOTKEY:
+    {
         if (wparam == 1)
         {
             ToggleEditor();
@@ -534,7 +535,8 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     }
     break;
 
-    case WM_SETTINGCHANGE: {
+    case WM_SETTINGCHANGE:
+    {
         if (wparam == SPI_SETWORKAREA)
         {
             OnDisplayChange(DisplayChangeType::WorkArea);
@@ -542,7 +544,8 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     }
     break;
 
-    case WM_DISPLAYCHANGE: {
+    case WM_DISPLAYCHANGE:
+    {
         OnDisplayChange(DisplayChangeType::DisplayChange);
     }
     break;
