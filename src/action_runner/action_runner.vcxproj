@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{D29DDD63-E2CF-4657-9FD5-2AEDE4257E5D}</ProjectGuid>
-    <RootNamespace>servicerunner</RootNamespace>
+    <RootNamespace>actionrunner</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>action_runner</ProjectName>
   </PropertyGroup>
