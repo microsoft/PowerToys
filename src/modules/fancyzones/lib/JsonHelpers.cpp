@@ -21,6 +21,12 @@ namespace
     constexpr int c_blankCustomModelId = 0xFFFA;
 
     const wchar_t* FANCY_ZONES_DATA_FILE = L"zones-settings.json";
+
+    std::wstring ExtractVirtualDesktopId(const std::wstring& deviceId)
+    {
+        // Format: <device-id>_<resolution>_<virtual-desktop-id>
+        return deviceId.substr(deviceId.rfind('_') + 1);
+    }
 }
 
 namespace JSONHelpers
@@ -160,9 +166,30 @@ namespace JSONHelpers
         if (!deviceInfoMap.contains(deviceId))
         {
             // Creates default entry in map when ZoneWindow is created
-            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ L"null", ZoneSetLayoutType::Blank }  };
+            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ L"null", ZoneSetLayoutType::Blank } };
 
             MigrateDeviceInfoFromRegistry(deviceId);
+        }
+    }
+
+    void FancyZonesData::RemoveDevicesByVirtualDesktopId(const std::wstring& virtualDesktopId)
+    {
+        bool modified{ false };
+        for (auto it = deviceInfoMap.begin(); it != deviceInfoMap.end();)
+        {
+            if (ExtractVirtualDesktopId(it->first) == virtualDesktopId)
+            {
+                it = deviceInfoMap.erase(it);
+                modified = true;
+            }
+            else
+            {
+                ++it;
+            }
+        }
+        if (modified)
+        {
+            SaveFancyZonesData();
         }
     }
 
@@ -386,7 +413,8 @@ namespace JSONHelpers
 
         for (const auto& [deviceID, deviceData] : deviceInfoMap)
         {
-            if (deviceData.activeZoneSet.type != ZoneSetLayoutType::Blank) {
+            if (deviceData.activeZoneSet.type != ZoneSetLayoutType::Blank)
+            {
                 DeviceInfosJSON.Append(DeviceInfoJSON::DeviceInfoJSON::ToJson(DeviceInfoJSON{ deviceID, deviceData }));
             }
         }

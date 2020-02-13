@@ -13,6 +13,7 @@
 #include <functional>
 #include <common/common.h>
 #include <lib\util.h>
+#include <unordered_set>
 
 enum class DisplayChangeType
 {
@@ -136,7 +137,12 @@ private:
     void MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
     void MoveSizeEndInternal(HWND window, POINT const& ptScreen, require_write_lock) noexcept;
     void MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
+
     void HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) noexcept;
+    void RegisterVirtualDesktopUpdates(std::unique_ptr<BYTE[]>& buffer, int bufferCapacity) noexcept;
+    void RegisterNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
+    bool IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
+
     void OnEditorExitEvent() noexcept;
 
     const HINSTANCE m_hinstance{};
@@ -152,7 +158,7 @@ private:
     winrt::com_ptr<IZoneWindow> m_zoneWindowMoveSize; // "Active" ZoneWindow, where the move/size is happening. Will update as drag moves between monitors.
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
     GUID m_currentVirtualDesktopId{}; // UUID of the current virtual desktop. Is GUID_NULL until first VD switch per session.
-    std::unordered_map<GUID, bool> m_virtualDesktopIds;
+    std::unordered_map<GUID, std::vector<HMONITOR>> m_processedWorkAreas; // Work area is defined by monitor and virtual desktop id.
     wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
     wil::unique_handle m_terminateVirtualDesktopTrackerEvent;
 
@@ -608,22 +614,21 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
     if (SUCCEEDED_LOG(StringFromCLSID(m_currentVirtualDesktopId, &virtualDesktopId)))
     {
         std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
-        bool newVirtualDesktop = true;
+        JSONHelpers::FancyZonesDataInstance().SetActiveDeviceId(uniqueId);
 
-        auto it = m_virtualDesktopIds.find(m_currentVirtualDesktopId);
-        if (it != end(m_virtualDesktopIds))
-        {
-            newVirtualDesktop = it->second;
-            JSONHelpers::FancyZonesDataInstance().SetActiveDeviceId(uniqueId);
-        }
+        bool newWorkArea = IsNewWorkArea(m_currentVirtualDesktopId, monitor);
+        const bool flash = m_settings->GetSettings().zoneSetChange_flashZones && newWorkArea;
 
-        const bool flash = m_settings->GetSettings().zoneSetChange_flashZones && newVirtualDesktop;
         auto zoneWindow = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, flash);
         if (zoneWindow)
         {
             m_zoneWindowMap[monitor] = std::move(zoneWindow);
         }
-        m_virtualDesktopIds[m_currentVirtualDesktopId] = false;
+        if (newWorkArea)
+        {
+            RegisterNewWorkArea(m_currentVirtualDesktopId, monitor);
+            JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
+        }
     }
 }
 
@@ -961,31 +966,68 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) no
         {
             return;
         }
-        const int guidSize = sizeof(GUID);
-        std::unordered_map<GUID, bool> temp;
-        temp.reserve(bufferCapacity / guidSize);
-        for (size_t i = 0; i < bufferCapacity; i += guidSize)
-        {
-            GUID* guid = reinterpret_cast<GUID*>(buffer.get() + i);
-            temp[*guid] = true;
-        }
-        std::unique_lock writeLock(m_lock);
-        for (auto it = begin(m_virtualDesktopIds); it != end(m_virtualDesktopIds);)
-        {
-            auto iter = temp.find(it->first);
-            if (iter == temp.end())
-            {
-                it = m_virtualDesktopIds.erase(it); // virtual desktop closed, remove it from map
-            }
-            else
-            {
-                temp.erase(it->first); // virtual desktop already in map, skip it
-                ++it;
-            }
-        }
-        // register new virtual desktops, if any
-        m_virtualDesktopIds.insert(begin(temp), end(temp));
+        RegisterVirtualDesktopUpdates(buffer, bufferCapacity);
     }
+}
+
+void FancyZones::RegisterVirtualDesktopUpdates(std::unique_ptr<BYTE[]>& buffer, int bufferCapacity) noexcept
+{
+    const int guidSize = sizeof(GUID);
+    std::unordered_set<GUID> temp;
+    temp.reserve(bufferCapacity / guidSize);
+    for (size_t i = 0; i < bufferCapacity; i += guidSize)
+    {
+        GUID* guid = reinterpret_cast<GUID*>(buffer.get() + i);
+        temp.insert(*guid);
+    }
+    std::unique_lock writeLock(m_lock);
+    for (auto it = begin(m_processedWorkAreas); it != end(m_processedWorkAreas);)
+    {
+        auto iter = temp.find(it->first);
+        if (iter == temp.end())
+        {
+            // clean up data related to virtual desktop
+            wil::unique_cotaskmem_string virtualDesktopId;
+            if (SUCCEEDED_LOG(StringFromCLSID(it->first, &virtualDesktopId)))
+            {
+                JSONHelpers::FancyZonesDataInstance().RemoveDevicesByVirtualDesktopId(virtualDesktopId.get());
+            }
+            it = m_processedWorkAreas.erase(it); // virtual desktop closed, remove it from map
+        }
+        else
+        {
+            temp.erase(it->first); // virtual desktop already in map, skip it
+            ++it;
+        }
+    }
+    // register new virtual desktops, if any
+    for (const auto& id : temp)
+    {
+        m_processedWorkAreas[id] = std::vector<HMONITOR>();
+    }
+}
+
+void FancyZones::RegisterNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept
+{
+    if (!m_processedWorkAreas.contains(virtualDesktopId))
+    {
+        m_processedWorkAreas[virtualDesktopId] = { monitor };
+    }
+    else
+    {
+        m_processedWorkAreas[virtualDesktopId].push_back(monitor);
+    }
+}
+
+bool FancyZones::IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept
+{
+    auto it = m_processedWorkAreas.find(virtualDesktopId);
+    if (it != m_processedWorkAreas.end())
+    {
+        // virtual desktop exists, check if it's processed on given monitor
+        return std::find(it->second.begin(), it->second.end(), monitor) == it->second.end();
+    }
+    return true;
 }
 
 void FancyZones::OnEditorExitEvent() noexcept
