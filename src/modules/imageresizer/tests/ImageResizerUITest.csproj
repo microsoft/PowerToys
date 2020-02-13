@@ -13,6 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <DebugSymbols>true</DebugSymbols>
@@ -62,6 +63,7 @@
     <Compile Include="Models\ResizeSizeTests.cs" />
     <Compile Include="Models\ResizeBatchTests.cs" />
     <Compile Include="Models\ResizeOperationTests.cs" />
+    <Compile Include="Properties\AppFixture.cs" />
     <Compile Include="Properties\SettingsTests.cs" />
     <Compile Include="Test\AssertEx.cs" />
     <Compile Include="Test\BitmapSourceExtensions.cs" />

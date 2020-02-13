@@ -2,18 +2,34 @@
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using ImageResizer.Models;
 using ImageResizer.Test;
 using Xunit;
+using Xunit.Abstractions;
 using Xunit.Extensions;
 
 namespace ImageResizer.Properties
 {
-    public class SettingsTests
+    public class SettingsTests : IClassFixture<AppFixture>, IDisposable
     {
+        public SettingsTests()
+        {
+            // Change settings.json path to a temp file
+            Settings.SettingsPath = ".\\test_settings.json";
+        }
+
+        public void Dispose()
+        {
+            if (System.IO.File.Exists(Settings.SettingsPath))
+            {
+                System.IO.File.Delete(Settings.SettingsPath);
+            }
+        }
+
         [Fact]
         public void AllSizes_propagates_Sizes_collection_events()
         {
@@ -185,6 +201,80 @@ namespace ImageResizer.Properties
             var result = ((IDataErrorInfo)settings)["Unknown"];
 
             Assert.Empty(result);
+        }
+
+        [Fact]
+        public void Reload_createsFile_when_FileNotFound()
+        {
+            // Arrange
+            var settings = new Settings();
+
+            // Assert
+            Assert.False(System.IO.File.Exists(Settings.SettingsPath));
+
+            // Act
+            settings.Reload();
+
+            // Assert
+            Assert.True(System.IO.File.Exists(Settings.SettingsPath));
+        }
+
+        [Fact]
+        public void Save_creates_file()
+        {
+            // Arrange
+            var settings = new Settings();
+
+            // Assert
+            Assert.False(System.IO.File.Exists(Settings.SettingsPath));
+
+            // Act
+            settings.Save();
+
+            // Assert
+            Assert.True(System.IO.File.Exists(Settings.SettingsPath));
+        }
+
+        [Fact]
+        public void Save_json_is_readable_by_Reload()
+        {
+            // Arrange
+            var settings = new Settings();
+
+            // Assert
+            Assert.False(System.IO.File.Exists(Settings.SettingsPath));
+
+            // Act
+            settings.Save();
+            settings.Reload();  // If the JSON file created by Save() is not readable this function will throw an error
+
+            // Assert
+            Assert.True(System.IO.File.Exists(Settings.SettingsPath));
+        }
+
+        [Fact]
+        public void Reload_raises_PropertyChanged_()
+        {
+            // Arrange
+            var settings = new Settings();
+            settings.Save();    // To create the settings file
+
+            // Act
+            var action = new System.Action(settings.Reload);
+
+            // Assert
+            Assert.PropertyChanged(settings, "ShrinkOnly", action);
+            Assert.PropertyChanged(settings, "Replace", action);
+            Assert.PropertyChanged(settings, "IgnoreOrientation", action);
+            Assert.PropertyChanged(settings, "JpegQualityLevel", action);
+            Assert.PropertyChanged(settings, "PngInterlaceOption", action);
+            Assert.PropertyChanged(settings, "TiffCompressOption", action);
+            Assert.PropertyChanged(settings, "FileName", action);
+            Assert.PropertyChanged(settings, "Sizes", action);
+            Assert.PropertyChanged(settings, "KeepDateModified", action);
+            Assert.PropertyChanged(settings, "FallbackEncoder", action);
+            Assert.PropertyChanged(settings, "CustomSize", action);
+            Assert.PropertyChanged(settings, "SelectedSizeIndex", action);
         }
     }
 }
