@@ -7,9 +7,9 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace PowerToysSettings;
 using namespace PowerPreviewSettings;
 
-namespace BaseSettingsTest
+namespace PreviewHandlerSettingsTest
 {
-	TEST_CLASS(FileExplorerPreviewSettingsTest)
+	TEST_CLASS(BaseSettingsTest)
 	{
 	public:
 		TEST_METHOD(LoadState_ShouldLoadNewState_WhenSucessfull)
@@ -70,7 +70,7 @@ namespace BaseSettingsTest
 			Assert::IsFalse(results);
 		}
 
-		std::wstring GetJSONSettings(std::wstring _settingsNameId, std::wstring _value) const
+		std::wstring GetJSONSettings(const std::wstring &_settingsNameId, const std::wstring &_value) const
 		{
 			return L"{\"name\":\"Module Name\",\"properties\" : {\"" + _settingsNameId + L"\":{\"value\":" + _value + L"}},\"version\" : \"1.0\" }";
 		}
