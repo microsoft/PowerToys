@@ -40,6 +40,7 @@ json::JsonObject GeneralSettings::to_json()
 
     result.SetNamedValue(L"is_elevated", json::value(isElevated));
     result.SetNamedValue(L"run_elevated", json::value(isRunElevated));
+    result.SetNamedValue(L"is_admin", json::value(isAdmin));
     result.SetNamedValue(L"theme", json::value(theme));
     result.SetNamedValue(L"system_theme", json::value(systemTheme));
     result.SetNamedValue(L"powertoys_version", json::value(powerToysVersion));
@@ -65,6 +66,7 @@ GeneralSettings get_settings()
         .isPackaged = winstore::running_as_packaged(),
         .isElevated = is_process_elevated(),
         .isRunElevated = run_as_elevated,
+        .isAdmin = check_user_is_admin(),
         .theme = settings_theme,
         .systemTheme = WindowsColors::is_dark_mode() ? L"dark" : L"light",
         .powerToysVersion = get_product_version(),
