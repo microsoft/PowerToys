@@ -8,7 +8,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace PowerToysSettings;
 using namespace PowerPreviewSettings;
 
-namespace BaseSettingsTest
+namespace PreviewHandlerSettingsTest
 {
 	TEST_CLASS(MarkDownPreviewSettingsClassTest)
 	{
@@ -17,8 +17,7 @@ namespace BaseSettingsTest
 		{
 			// Arrange
 			PrevPaneMDRendrSettings tempSettings = PrevPaneMDRendrSettings();
-			PowerToyValues values = PowerToyValues::from_json_string(GetJSONSettings(tempSettings.GetName(), L"false"));
-			tempSettings.UpdateState(values);
+			tempSettings.SetState(false); //preview handler initially disabled
 
 			// Act
 			tempSettings.EnablePreview();
@@ -31,24 +30,16 @@ namespace BaseSettingsTest
 		{
 			// Arrange
 			PrevPaneMDRendrSettings tempSettings = PrevPaneMDRendrSettings();
-			bool valueExists = tempSettings.GetRegistryValue(); // check if key-value exists.
+			tempSettings.SetState(true); //preview handler initially enabled
 
 			// Act
-			tempSettings.DisablePreview(); // should set state to false if Value exists.
-			bool previewState = tempSettings.GetState();
+			tempSettings.DisablePreview();
 
 			// Assert
-			if (valueExists)
-			{
-				Assert::IsFalse(previewState);
-			}
-			else
-			{
-				Assert::IsTrue(previewState);
-			}
+			Assert::IsFalse(tempSettings.GetState());
 		}
 
-		std::wstring GetJSONSettings(std::wstring _settingsNameId, std::wstring _value) const
+		std::wstring GetJSONSettings(const std::wstring &_settingsNameId,const std::wstring &_value) const
 		{
 			return L"{\"name\":\"Module Name\",\"properties\" : {\"" + _settingsNameId + L"\":{\"value\":" + _value + L"}},\"version\" : \"1.0\" }";
 		}
