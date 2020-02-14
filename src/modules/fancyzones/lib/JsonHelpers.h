@@ -177,6 +177,7 @@ namespace JSONHelpers
 
         inline const std::wstring GetActiveDeviceId() const
         {
+            std::scoped_lock lock{ dataLock };
             return activeDeviceId;
         }
 
