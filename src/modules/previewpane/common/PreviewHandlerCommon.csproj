@@ -79,6 +79,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="handlers\StreamBasedPreviewHandler.cs" />
     <Compile Include="examplehandler\TestCustomHandler.cs" />
+    <Compile Include="Telemetry\TelemetryBase.cs" />
     <Compile Include="Utilities\StreamWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
