@@ -60,6 +60,7 @@
     <Compile Include="MarkdownPreviewHandlerControl.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="MarkdownTelemetry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

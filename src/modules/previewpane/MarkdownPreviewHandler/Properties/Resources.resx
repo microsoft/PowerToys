@@ -121,4 +121,8 @@
     <value>Some pictures have been blocked to help prevent the sender from identifying this computer. Open this item to view pictures.</value>
     <comment>This text is displayed if image is blocked from being displayed.</comment>
   </data>
+  <data name="MarkdownNotPreviewedError" xml:space="preserve">
+    <value>The markdown could not be preview due to an internal error.</value>
+    <comment>This text is displayed if markdown fails to preview</comment>
+  </data>
 </root>

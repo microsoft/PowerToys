@@ -68,5 +68,14 @@ namespace MarkdownPreviewHandler.Properties {
                 return ResourceManager.GetString("BlockedImageInfoText", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The markdown could not be preview due to an internal error..
+        /// </summary>
+        internal static string MarkdownNotPreviewedError {
+            get {
+                return ResourceManager.GetString("MarkdownNotPreviewedError", resourceCulture);
+            }
+        }
     }
 }
