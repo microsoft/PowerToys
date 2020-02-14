@@ -23,6 +23,17 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+namespace localized_strings
+{
+    const wchar_t MSI_VERSION_IS_ALSO_RUNNING[] = L"Warning: MSI version is also running!";
+}
+
+namespace
+{
+    const wchar_t MSI_VERSION_MUTEX_NAME[] = L"Local\\PowerToyRunMutex";
+    const wchar_t MSIX_VERSION_MUTEX_NAME[] = L"Local\\PowerToyMSIXRunMutex";
+}
+
 void chdir_current_executable()
 {
     // Change current directory to the path of the executable.
@@ -32,6 +43,23 @@ void chdir_current_executable()
     if (!SetCurrentDirectory(executable_path))
     {
         show_last_error_message(L"Change Directory to Executable Path", GetLastError());
+    }
+}
+
+wil::unique_mutex_nothrow create_runner_mutex(const bool acquire, const bool msix_version)
+{
+    wchar_t username[UNLEN + 1];
+    DWORD username_length = UNLEN + 1;
+    GetUserNameW(username, &username_length);
+
+    return wil::unique_mutex_nothrow{ CreateMutexW(nullptr, acquire, (std::wstring(msix_version ? MSIX_VERSION_MUTEX_NAME : MSI_VERSION_MUTEX_NAME) + username).c_str()) };
+}
+
+void notify_if_msi_version_is_running()
+{
+    if (!create_runner_mutex(true, false) || GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+        notifications::show_toast(localized_strings::MSI_VERSION_IS_ALSO_RUNNING);
     }
 }
 
@@ -129,10 +157,13 @@ int runner(bool isProcessElevated)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-    WCHAR username[UNLEN + 1];
-    DWORD username_length = UNLEN + 1;
-    GetUserNameW(username, &username_length);
-    auto runner_mutex = CreateMutexW(nullptr, TRUE, (std::wstring(L"Local\\PowerToyRunMutex") + username).c_str());
+    const bool msix_version = winstore::running_as_packaged();
+    if (msix_version)
+    {
+        notify_if_msi_version_is_running();
+    }
+
+    auto runner_mutex = create_runner_mutex(true, msix_version);
     if (runner_mutex == nullptr || GetLastError() == ERROR_ALREADY_EXISTS)
     {
         // The app is already running
@@ -168,8 +199,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         MessageBoxW(nullptr, std::wstring(err_what.begin(), err_what.end()).c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
         result = -1;
     }
-    ReleaseMutex(runner_mutex);
-    CloseHandle(runner_mutex);
+
     if (is_restart_scheduled())
     {
         if (restart_if_scheduled() == false)

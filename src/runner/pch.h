@@ -26,3 +26,5 @@
 
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Storage.h>
+
+#include <wil/resource.h>
