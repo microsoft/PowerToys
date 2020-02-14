@@ -69,6 +69,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack">
+      <Version>1.8.10</Version>
+    </PackageReference>
     <PackageReference Include="Markdig.Signed">
       <Version>0.18.0</Version>
     </PackageReference>
