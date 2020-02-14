@@ -51,7 +51,7 @@ class PowerKeys : public PowertoyModuleIface
 private:
     // The PowerToy state.
     bool m_enabled = false;
-
+    std::unordered_map<WORD, WORD> reMap;
     // Load initial settings from the persisted values.
     void init_settings();
 
@@ -60,7 +60,17 @@ public:
     PowerKeys()
     {
         init_settings();
+        init_map();
     };
+
+    void init_map()
+    {
+        reMap[VK_TAB] = VK_LSHIFT;
+        reMap[VK_LSHIFT] = VK_TAB;
+        // Swap A and B
+        reMap[0x41] = 0x42;
+        reMap[0x42] = 0x41;
+    }
 
     // Destroy the powertoy and free memory
     virtual void destroy() override
@@ -256,31 +266,30 @@ public:
 
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
-        // WM_KEYDOWN only captures key-presses when Alt is not held. WM_SYSKEYDOWN captures key-presses when Alt is held
-        WORD input = VK_TAB; // A
-        WORD output = VK_RSHIFT; // B
+        intptr_t SingleKeyRemapResult = HandleSingleKeyRemapEvent(data);
+        intptr_t ShortcutRemapResult = HandleShortcutRemapEvent(data);
+        if ((SingleKeyRemapResult + ShortcutRemapResult) > 0)
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    intptr_t HandleSingleKeyRemapEvent(LowlevelKeyboardEvent* data) noexcept
+    {
         if (!(data->lParam->flags & LLKHF_INJECTED))
         {
-            if (data->lParam->vkCode == input)
+            auto it = reMap.find(data->lParam->vkCode);
+            if (it != reMap.end())
             {
                 int key_count = 1;
                 LPINPUT keyEventList = new INPUT[size_t(key_count)]();
                 memset(keyEventList, 0, sizeof(keyEventList));
                 keyEventList[0].type = INPUT_KEYBOARD;
-                keyEventList[0].ki.wVk = output;
-                keyEventList[0].ki.dwFlags = (data->wParam == WM_KEYUP ? KEYEVENTF_KEYUP : 0);
-
-                UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
-                delete[] keyEventList;
-                return 1;
-            }
-            if (data->lParam->vkCode == output)
-            {
-                int key_count = 1;
-                LPINPUT keyEventList = new INPUT[size_t(key_count)]();
-                memset(keyEventList, 0, sizeof(keyEventList));
-                keyEventList[0].type = INPUT_KEYBOARD;
-                keyEventList[0].ki.wVk = input;
+                keyEventList[0].ki.wVk = it->second;
                 keyEventList[0].ki.dwFlags = 0;
                 if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
                 {
@@ -292,11 +301,13 @@ public:
                 return 1;
             }
         }
+
         return 0;
-        /* else if (data->wParam == WM_SYSKEYDOWN)
-        {
-        
-        }*/
+    }
+
+    intptr_t HandleShortcutRemapEvent(LowlevelKeyboardEvent* data) noexcept
+    {
+        return 0;
     }
 };
 
