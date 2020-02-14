@@ -161,28 +161,6 @@ namespace MarkdownPreviewHandler
         }
 
         /// <summary>
-        /// Gets a textbox control.
-        /// </summary>
-        /// <param name="message">Message to be displayed in textbox.</param>
-        /// <returns>An object of type <see cref="RichTextBox"/>.</returns>
-        private RichTextBox GetTextBoxControl(string message)
-        {
-            RichTextBox richTextBox = new RichTextBox
-            {
-                Text = message,
-                BackColor = Color.LightYellow,
-                Multiline = true,
-                Dock = DockStyle.Top,
-                ReadOnly = true,
-            };
-            richTextBox.ContentsResized += this.RTBContentsResized;
-            richTextBox.ScrollBars = RichTextBoxScrollBars.None;
-            richTextBox.BorderStyle = BorderStyle.None;
-
-            return richTextBox;
-        }
-
-        /// <summary>
         /// Callback when RichTextBox is resized.
         /// </summary>
         /// <param name="sender">Reference to resized control.</param>
