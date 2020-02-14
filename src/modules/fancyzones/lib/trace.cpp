@@ -154,7 +154,8 @@ void Trace::FancyZones::DataChanged() noexcept
         TraceLoggingInt32(appsHistorySize, "AppsInHistoryCount"),
         TraceLoggingInt32Array(customZonesArray, customZones.size(), "NumberOfZonesForEachCustomZoneSet"),
         TraceLoggingInt32Array(templateZonesArray, devices.size(), "NumberOfZonesForEachTemplateZoneSet"),
-        TraceLoggingWideString(activeZoneSetInfo.c_str(), "ActiveZoneSet"));
+        TraceLoggingInt32(devices.size(), "ActiveZoneSetsNumber"),
+        TraceLoggingWideString(activeZoneSetInfo.c_str(), "CurrentActiveZoneSet"));
 }
 
 void Trace::SettingsChanged(const Settings& settings) noexcept
