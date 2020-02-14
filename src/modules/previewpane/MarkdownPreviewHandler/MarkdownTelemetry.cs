@@ -18,6 +18,16 @@ namespace MarkdownPreviewHandler
         private const string EventSourceName = "Microsoft.PowerToys";
 
         /// <summary>
+        /// ETW event name when markdown is previewed.
+        /// </summary>
+        private const string MarkdownFilePreviewedEventName = "PowerPreview_PreviewPane_MDRendererPreviewed";
+
+        /// <summary>
+        /// ETW event name when error is thrown during markdown preview.
+        /// </summary>
+        private const string MarkdownFilePreviewErrorEventName = "PowerPreview_PreviewPane_MDRendererError";
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MarkdownTelemetry"/> class.
         /// </summary>
         public MarkdownTelemetry()
@@ -36,7 +46,7 @@ namespace MarkdownPreviewHandler
         /// </summary>
         public void MarkdownFilePreviewed()
         {
-            this.Write("PowerPreview_PreviewPane_MDRendererPreviewed", new EventSourceOptions()
+            this.Write(MarkdownFilePreviewedEventName, new EventSourceOptions()
             {
                 Keywords = PROJECTKEYWORDMEASURE,
                 Tags = ProjectTelemetryTagProductAndServicePerformance,
@@ -49,7 +59,7 @@ namespace MarkdownPreviewHandler
         public void MarkdownFilePreviewError(string message)
         {
             this.Write(
-                "PowerPreview_PreviewPane_MDRendererError",
+                MarkdownFilePreviewErrorEventName,
                 new EventSourceOptions()
                 {
                     Keywords = PROJECTKEYWORDMEASURE,
