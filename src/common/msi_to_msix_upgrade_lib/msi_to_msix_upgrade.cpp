@@ -19,6 +19,7 @@ namespace localized_strings
     const wchar_t* OFFER_UNINSTALL_MSI = L"We've detected a previous installation of PowerToys. Would you like to remove it?";
     const wchar_t* OFFER_UNINSTALL_MSI_TITLE = L"PowerToys: uninstall previous version?";
     const wchar_t* UNINSTALLATION_SUCCESS = L"Previous version of PowerToys was uninstalled successfully.";
+    const wchar_t * UNINSTALLATION_UNKNOWN_ERROR = L"Error: please uninstall the previous version of PowerToys manually.";
 }
 
 std::wstring get_msi_package_path()
@@ -69,6 +70,13 @@ void uninstall_msi_version(const std::wstring& package_path)
     }
     else if (auto system_message = get_last_error_message(uninstall_result); system_message.has_value())
     {
-        notifications::show_toast(*system_message);
+        try
+        {
+            notifications::show_toast(*system_message);
+        }
+        catch(...)
+        {
+            notifications::show_toast(localized_strings::UNINSTALLATION_UNKNOWN_ERROR);
+        }
     }
 }
