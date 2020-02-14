@@ -12,7 +12,6 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using Common;
 using Markdig;
-using Markdig.Helpers;
 using MarkdownPreviewHandler.Properties;
 
 namespace MarkdownPreviewHandler
@@ -55,7 +54,7 @@ namespace MarkdownPreviewHandler
         /// <summary>
         /// True if external image is blocked, false otherwise.
         /// </summary>
-        private bool imagesBlocked = false;
+        private bool infoBarDisplayed = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MarkdownPreviewHandlerControl"/> class.
@@ -75,47 +74,51 @@ namespace MarkdownPreviewHandler
         {
             this.InvokeOnControlThread(() =>
             {
-                this.imagesBlocked = false;
-
-                StringBuilder sb = new StringBuilder();
-                string filePath = dataSource as string;
-                string fileText = File.ReadAllText(filePath);
-                this.extension.BaseUrl = Path.GetDirectoryName(filePath);
-
-                MarkdownPipeline pipeline = this.pipelineBuilder.Build();
-                string parsedMarkdown = Markdown.ToHtml(fileText, pipeline);
-                sb.AppendFormat("{0}{1}{2}", this.htmlHeader, parsedMarkdown, this.htmlFooter);
-                string markdownHTML = this.RemoveScriptFromHTML(sb.ToString());
-
-                this.browser = new WebBrowser
+                try
                 {
-                    DocumentText = markdownHTML,
-                    Dock = DockStyle.Fill,
-                    IsWebBrowserContextMenuEnabled = false,
-                    ScriptErrorsSuppressed = true,
-                    ScrollBarsEnabled = true,
-                };
-                this.browser.Navigating += this.WebBrowserNavigating;
-                this.Controls.Add(this.browser);
+                    this.infoBarDisplayed = false;
 
-                if (this.imagesBlocked)
-                {
-                    this.infoBar = new RichTextBox
+                    StringBuilder sb = new StringBuilder();
+                    string filePath = dataSource as string;
+                    string fileText = File.ReadAllText(filePath);
+                    this.extension.BaseUrl = Path.GetDirectoryName(filePath);
+
+                    MarkdownPipeline pipeline = this.pipelineBuilder.Build();
+                    string parsedMarkdown = Markdown.ToHtml(fileText, pipeline);
+                    sb.AppendFormat("{0}{1}{2}", this.htmlHeader, parsedMarkdown, this.htmlFooter);
+                    string markdownHTML = this.RemoveScriptFromHTML(sb.ToString());
+
+                    this.browser = new WebBrowser
                     {
-                        Text = Resources.BlockedImageInfoText,
-                        BackColor = Color.LightYellow,
-                        Multiline = true,
-                        Dock = DockStyle.Top,
-                        ReadOnly = true,
+                        DocumentText = markdownHTML,
+                        Dock = DockStyle.Fill,
+                        IsWebBrowserContextMenuEnabled = false,
+                        ScriptErrorsSuppressed = true,
+                        ScrollBarsEnabled = true,
                     };
-                    this.infoBar.ContentsResized += this.RTBContentsResized;
-                    this.infoBar.ScrollBars = RichTextBoxScrollBars.None;
-                    this.infoBar.BorderStyle = BorderStyle.None;
-                    this.Controls.Add(this.infoBar);
-                }
+                    this.browser.Navigating += this.WebBrowserNavigating;
+                    this.Controls.Add(this.browser);
 
-                this.Resize += this.FormResized;
-                base.DoPreview(dataSource);
+                    if (this.infoBarDisplayed)
+                    {
+                        this.infoBar = this.GetTextBoxControl(Resources.BlockedImageInfoText);
+                        this.Controls.Add(this.infoBar);
+                    }
+
+                    this.Resize += this.FormResized;
+                    base.DoPreview(dataSource);
+                    MarkdownTelemetry.Log.MarkdownFilePreviewed();
+                }
+                catch (Exception e)
+                {
+                    MarkdownTelemetry.Log.MarkdownFilePreviewError(e.Message);
+                    this.infoBarDisplayed = true;
+                    this.infoBar = this.GetTextBoxControl(Resources.MarkdownNotPreviewedError);
+                    this.Resize += this.FormResized;
+                    this.Controls.Clear();
+                    this.Controls.Add(this.infoBar);
+                    base.DoPreview(dataSource);
+                }
             });
         }
 
@@ -140,6 +143,28 @@ namespace MarkdownPreviewHandler
         }
 
         /// <summary>
+        /// Gets a textbox control.
+        /// </summary>
+        /// <param name="message">Message to be displayed in textbox.</param>
+        /// <returns>An object of type <see cref="RichTextBox"/>.</returns>
+        private RichTextBox GetTextBoxControl(string message)
+        {
+            RichTextBox richTextBox = new RichTextBox
+            {
+                Text = message,
+                BackColor = Color.LightYellow,
+                Multiline = true,
+                Dock = DockStyle.Top,
+                ReadOnly = true,
+            };
+            richTextBox.ContentsResized += this.RTBContentsResized;
+            richTextBox.ScrollBars = RichTextBoxScrollBars.None;
+            richTextBox.BorderStyle = BorderStyle.None;
+
+            return richTextBox;
+        }
+
+        /// <summary>
         /// Callback when RichTextBox is resized.
         /// </summary>
         /// <param name="sender">Reference to resized control.</param>
@@ -157,7 +182,7 @@ namespace MarkdownPreviewHandler
         /// <param name="e">Provides data for the event.</param>
         private void FormResized(object sender, EventArgs e)
         {
-            if (this.imagesBlocked)
+            if (this.infoBarDisplayed)
             {
                 this.infoBar.Width = this.Width;
             }
@@ -168,7 +193,7 @@ namespace MarkdownPreviewHandler
         /// </summary>
         private void ImagesBlockedCallBack()
         {
-            this.imagesBlocked = true;
+            this.infoBarDisplayed = true;
         }
 
         /// <summary>
