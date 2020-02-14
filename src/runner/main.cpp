@@ -73,16 +73,15 @@ int runner(bool isProcessElevated)
     Trace::RegisterProvider();
     winrt::init_apartment();
     start_tray_icon();
-    if (winstore::running_as_packaged())
-    {
-        notifications::register_background_toast_handler();
-    }
-    int result;
+
+    int result = -1;
     try
     {
-        // If we're running as a MSIX application, offer a user uninstall option of an old version if detected
         if (winstore::running_as_packaged())
         {
+            notifications::register_background_toast_handler();
+
+            // If we're running as a MSIX application, offer a user uninstall option of an old version if detected
             std::thread{ [] {
                 start_msi_uninstallation_sequence();
             } }.detach();
