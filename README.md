@@ -71,7 +71,26 @@ Our plan for all the [goals and utilities for v1.0 detailed over here in the wik
 
 ### February 2020 Update
 
-CLINT TO FILL IN
+Our mantra for the 0.15 was infrastructure, stability and Microsoft Store support.  While it took a bit longer to get here, we feel it was worth the extra time to fix bugs that really impacted your experience with PowerToys.
+
+Below are just a few of the bullet items from this release.
+
+- We shipped [v0.15 to the Microsoft Store][store-install-link]!
+- Removed requirement to 'run as admin'
+- Added almost 300 unit tests to increase stability
+- Resolved 80+ issues
+- Made .NET Framework parts of the source run faster with NGEN
+- Adjustments for how we store data locally.
+- Increased FancyZones compatability with applications
+- Created the v1.0 strategy, the launcher, the keyboard manager specs
+- Initial work for 4 new PowerToys added for 0.16!
+
+For 0.16, we have some fun things planned. Here are the new utilities we'll enable. 
+
+ - A alternative to alt-Tab PowerToy
+ - SVG preview pane for support Explorer
+ - Markdown preview pane support for Explorer 
+ - Image Resizer PowerToy
 
 ## Developer Guidance
 
