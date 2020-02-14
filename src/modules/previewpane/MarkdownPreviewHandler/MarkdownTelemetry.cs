@@ -20,12 +20,12 @@ namespace MarkdownPreviewHandler
         /// <summary>
         /// ETW event name when markdown is previewed.
         /// </summary>
-        private const string MarkdownFilePreviewedEventName = "PowerPreview_PreviewPane_MDRendererPreviewed";
+        private const string MarkdownFilePreviewedEventName = "PowerPreview_MDRenderer_Previewed";
 
         /// <summary>
         /// ETW event name when error is thrown during markdown preview.
         /// </summary>
-        private const string MarkdownFilePreviewErrorEventName = "PowerPreview_PreviewPane_MDRendererError";
+        private const string MarkdownFilePreviewErrorEventName = "PowerPreview_MDRenderer_Error";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MarkdownTelemetry"/> class.
@@ -48,7 +48,7 @@ namespace MarkdownPreviewHandler
         {
             this.Write(MarkdownFilePreviewedEventName, new EventSourceOptions()
             {
-                Keywords = PROJECTKEYWORDMEASURE,
+                Keywords = ProjectKeywordMeasure,
                 Tags = ProjectTelemetryTagProductAndServicePerformance,
             });
         }
@@ -62,7 +62,7 @@ namespace MarkdownPreviewHandler
                 MarkdownFilePreviewErrorEventName,
                 new EventSourceOptions()
                 {
-                    Keywords = PROJECTKEYWORDMEASURE,
+                    Keywords = ProjectKeywordMeasure,
                     Tags = ProjectTelemetryTagProductAndServicePerformance,
                 },
                 new { Message = message, });

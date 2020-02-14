@@ -20,7 +20,7 @@ namespace PreviewHandlerCommon.Telemetry
         /// <summary>
         /// The event keyword for this event source.
         /// </summary>
-        public const EventKeywords PROJECTKEYWORDMEASURE = (EventKeywords)0x0;
+        public const EventKeywords ProjectKeywordMeasure = (EventKeywords)0x0;
 
         /// <summary>
         /// Group ID for Powertoys project.
