@@ -79,27 +79,71 @@ void Trace::FancyZones::DataChanged() noexcept
         return;
     }
 
+    auto getCustomZoneCount = [&data](const std::variant<JSONHelpers::CanvasLayoutInfo, JSONHelpers::GridLayoutInfo>& layoutInfo) -> int 
+    {
+        if (std::holds_alternative<JSONHelpers::GridLayoutInfo>(layoutInfo))
+        {
+            const auto& info = std::get<JSONHelpers::GridLayoutInfo>(layoutInfo);
+            return (info.rows() * info.columns());
+        }
+        else if (std::holds_alternative<JSONHelpers::CanvasLayoutInfo>(layoutInfo))
+        {
+            const auto& info = std::get<JSONHelpers::CanvasLayoutInfo>(layoutInfo);
+            return info.zones.size();
+        }
+    };
+
+    //NumberOfZonesForEachCustomZoneSet
     int i = 0;
     for (const auto& [id, customZoneSetData] : customZones)
     {
-        if (std::holds_alternative<JSONHelpers::GridLayoutInfo>(customZoneSetData.info))
-        {
-            const auto& info = std::get<JSONHelpers::GridLayoutInfo>(customZoneSetData.info);
-            customZonesArray[i] = info.rows() * info.columns();
-        }
-        else if (std::holds_alternative<JSONHelpers::CanvasLayoutInfo>(customZoneSetData.info))
-        {
-            const auto& info = std::get<JSONHelpers::CanvasLayoutInfo>(customZoneSetData.info);
-            customZonesArray[i] = info.zones.size();
-        }
+        customZonesArray[i] = getCustomZoneCount(customZoneSetData.info);
         i++;
     }
 
+    //NumberOfZonesForEachTemplateZoneSet
     i = 0;
     for (const auto& [id, deviceInfoData] : data.GetDeviceInfoMap())
     {
         templateZonesArray[i] = deviceInfoData.zoneCount;
         i++;
+    }
+
+    //ActiveZoneSet
+    const auto& activeDeviceId = data.GetActiveDeviceId();
+    const auto& activeDevice = devices.find(activeDeviceId);
+    std::wstring activeZoneSetInfo;
+    if (activeDevice != devices.end())
+    {
+        const JSONHelpers::ZoneSetLayoutType type = activeDevice->second.activeZoneSet.type;
+        activeZoneSetInfo = L"type: " + JSONHelpers::TypeToString(type);
+
+        int zoneCount = -1;
+        if (type == JSONHelpers::ZoneSetLayoutType::Custom)
+        {
+            const auto& activeCustomZone = customZones.find(activeDevice->second.activeZoneSet.uuid);
+            if (activeCustomZone != customZones.end())
+            {
+                zoneCount = getCustomZoneCount(activeCustomZone->second.info);
+            }
+        }
+        else
+        {
+            zoneCount = activeDevice->second.zoneCount;
+        }
+
+        if (zoneCount != -1)
+        {
+            activeZoneSetInfo += L", zone count: " + std::to_wstring(zoneCount);
+        }
+        else
+        {
+            activeZoneSetInfo += L", custom zone data was deleted";
+        }
+    }
+    else
+    {
+        activeZoneSetInfo = L"no active zoneset";
     }
 
     TraceLoggingWrite(
@@ -109,7 +153,8 @@ void Trace::FancyZones::DataChanged() noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingInt32(appsHistorySize, "AppsInHistoryCount"),
         TraceLoggingInt32Array(customZonesArray, customZones.size(), "NumberOfZonesForEachCustomZoneSet"),
-        TraceLoggingInt32Array(templateZonesArray, devices.size(), "NumberOfZonesForEachTemplateZoneSet"));
+        TraceLoggingInt32Array(templateZonesArray, devices.size(), "NumberOfZonesForEachTemplateZoneSet"),
+        TraceLoggingWideString(activeZoneSetInfo.c_str(), "ActiveZoneSet"));
 }
 
 void Trace::SettingsChanged(const Settings& settings) noexcept
@@ -138,8 +183,7 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingWideString(settings.zoneHightlightColor.c_str(), "ZoneHighlightColor"),
         TraceLoggingInt32(settings.zoneHighlightOpacity, "ZoneHighlightOpacity"),
         TraceLoggingWideString(hotkeyStr.c_str(), "Hotkey"),
-        TraceLoggingInt32(static_cast<int>(settings.excludedAppsArray.size()), "ExcludedAppsCount")
-    );
+        TraceLoggingInt32(static_cast<int>(settings.excludedAppsArray.size()), "ExcludedAppsCount"));
 }
 
 void Trace::VirtualDesktopChanged() noexcept
