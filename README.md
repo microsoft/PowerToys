@@ -1,6 +1,6 @@
 # Overview
 
-<img align="right" width="200" src="./doc/images/Logo.jpg">
+<img align="right" width="200" src="./doc/images/Logo.jpg" />
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. Inspired by the [Windows 95 era PowerToys project](https://en.wikipedia.org/wiki/Microsoft_PowerToys), this reboot provides power users with ways to squeeze more efficiency out of the Windows 10 shell and customize it for individual workflows.  A great overview of the Windows 95 PowerToys can be found [here](https://socket3.wordpress.com/2016/10/22/using-windows-95-powertoys/).
 
@@ -12,7 +12,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 > 👉 Note: Microsoft PowerToys requires Windows 10 1803 (build 17134) or later
 
-### Microsoft Store [RECOMMENED]
+### Microsoft Store [RECOMMENDED]
 
 Install [Microsoft PowerToys from the Microsoft Store][store-install-link]. This allows you to always be on the latest version when we release new builds with automatic upgrades. 
 
@@ -81,16 +81,16 @@ Below are just a few of the bullet items from this release.
 - Resolved 80+ issues
 - Made .NET Framework parts of the source run faster with NGEN
 - Adjustments for how we store data locally.
-- Increased FancyZones compatability with applications
+- Increased FancyZones compatibility with applications
 - Created the v1.0 strategy, the launcher, the keyboard manager specs
 - Initial work for 4 new PowerToys added for 0.16!
 
 For 0.16, we have some fun things planned. Here are the new utilities we'll enable. 
 
- - A alternative to alt-Tab PowerToy
- - SVG preview pane for support Explorer
- - Markdown preview pane support for Explorer 
- - Image Resizer PowerToy
+- A alternative to alt-Tab PowerToy
+- SVG preview pane for support Explorer
+- Markdown preview pane support for Explorer
+- Image Resizer PowerToy
 
 ## Developer Guidance
 
