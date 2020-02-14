@@ -8,46 +8,48 @@ PowerToys is a set of utilities for power users to tune and streamline their Win
 
 [![Build Status](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build?definitionId=35096)
 
-## Installation
+## Installing and running Microsoft PowerToys
 
-_**Note:** in order to run PowerToys, you'll need to be running at least Windows build 17134 or higher._
+> 👉 Note: Microsoft PowerToys requires Windows 10 1803 (build 17134) or later
 
-The latest release of PowerToys can be downloaded currently a few different ways.  Our current recommended way is via GitHub.
+### Microsoft Store [RECOMMENED]
 
-| x64 | x86 | ARM |
-|:---:|:---:|:---:|
-| [Supported](/releases) | [Issue #602](/issues/602)  | [Issue #490](/issues/490)|
+Install [Microsoft PowerToys from the Microsoft Store][store-install-link]. This allows you to always be on the latest version when we release new builds with automatic upgrades. 
 
-### Windows Store [RECOMMENED]
+This is our perferred method.
 
-We recommend downloading the [Microsoft PowerToys from the Microsoft Store](store-install-link) allow you to always be on the latest version when we release new builds due to automatic upgrades:
+### Other install methods
 
-**TODO ADD LINK / install image  store-install-link **
+#### Via GitHub
 
-### GitHub
-
-The preview of these utilities can be installed from the [PowerToys GitHub releases page](/releases). Click on `Assets` to show the files available in the release and then click on `PowerToysSetup.msi` to download the PowerToys installer. <br />
+The preview of these utilities can be installed from the [PowerToys GitHub releases page](/releases). Click on `Assets` to show the files available in the release and then click on `PowerToysSetup.msix` to download the PowerToys installer. <br />
 PDB symbols for the release are available in a separate zip file `PDB symbols.zip`.
 
-### Chocolatey (Unofficial)
+#### Via Chocolatey (Unofficial)
 
-Download and upgrade PowerToys from [Chocolatey](https://chocolatey.org).
+Download and upgrade PowerToys from [Chocolatey](https://chocolatey.org). If you have any issues when installing/upgrading the package please go to the [package page](https://chocolatey.org/packages/powertoys) and follow the [Chocolatey triage process](https://chocolatey.org/docs/package-triage-process)
 
-To install PowerToys, run the following command from the command line or from PowerShell:
+To install PowerToys, run the following command from the command line / PowerShell:
 
 ```powershell
 choco install powertoys
 ```
 
-To upgrade PowerToys, run the following command from the command line or from PowerShell:
+To upgrade PowerToys, run the following command from the command line / PowerShell:
 
 ```powershell
 choco upgrade powertoys
 ```
 
-If you have any issues when installing/upgrading the package please go to the [package page](https://chocolatey.org/packages/powertoys) and follow the [Chocolatey triage process](https://chocolatey.org/docs/package-triage-process)
+### Processor support
 
-## PowerToy Utilities
+We currently support the matrix below.  Adding Store/MSIX support will make supporting x86 and ARM much easier.
+
+| x64 | x86 | ARM |
+|:---:|:---:|:---:|
+| [Install][store-install-link] | [Issue #602](/issues/602)  | [Issue #490](/issues/490)|
+
+## Current PowerToy Utilities
 
 ### FancyZones
 
