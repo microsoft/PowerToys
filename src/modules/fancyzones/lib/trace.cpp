@@ -72,8 +72,8 @@ void Trace::FancyZones::DataChanged() noexcept
     const auto& customZones = data.GetCustomZoneSetsMap();
     const auto& devices = data.GetDeviceInfoMap();
 
-    INT32* customZonesArray = new (std::nothrow) INT32[customZones.size()];
-    INT32* templateZonesArray = new (std::nothrow) INT32[devices.size()];
+    std::unique_ptr<INT32[]> customZonesArray(new (std::nothrow) INT32[customZones.size()]);
+    std::unique_ptr<INT32[]> templateZonesArray(new (std::nothrow) INT32[devices.size()]);
     if (!customZonesArray || !templateZonesArray)
     {
         return;
@@ -97,7 +97,7 @@ void Trace::FancyZones::DataChanged() noexcept
     int i = 0;
     for (const auto& [id, customZoneSetData] : customZones)
     {
-        customZonesArray[i] = getCustomZoneCount(customZoneSetData.info);
+        customZonesArray.get()[i] = getCustomZoneCount(customZoneSetData.info);
         i++;
     }
 
@@ -105,7 +105,7 @@ void Trace::FancyZones::DataChanged() noexcept
     i = 0;
     for (const auto& [id, deviceInfoData] : data.GetDeviceInfoMap())
     {
-        templateZonesArray[i] = deviceInfoData.zoneCount;
+        templateZonesArray.get()[i] = deviceInfoData.zoneCount;
         i++;
     }
 
@@ -152,8 +152,8 @@ void Trace::FancyZones::DataChanged() noexcept
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingInt32(appsHistorySize, "AppsInHistoryCount"),
-        TraceLoggingInt32Array(customZonesArray, customZones.size(), "NumberOfZonesForEachCustomZoneSet"),
-        TraceLoggingInt32Array(templateZonesArray, devices.size(), "NumberOfZonesForEachTemplateZoneSet"),
+        TraceLoggingInt32Array(customZonesArray.get(), customZones.size(), "NumberOfZonesForEachCustomZoneSet"),
+        TraceLoggingInt32Array(templateZonesArray.get(), devices.size(), "NumberOfZonesForEachTemplateZoneSet"),
         TraceLoggingInt32(devices.size(), "ActiveZoneSetsNumber"),
         TraceLoggingWideString(activeZoneSetInfo.c_str(), "CurrentActiveZoneSet"));
 }
