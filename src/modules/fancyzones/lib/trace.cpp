@@ -68,7 +68,7 @@ void Trace::FancyZones::OnKeyDown(DWORD vkCode, bool win, bool control, bool inM
 void Trace::FancyZones::DataChanged() noexcept
 {
     const JSONHelpers::FancyZonesData& data = JSONHelpers::FancyZonesDataInstance();
-    int appsHistorySize = data.GetAppZoneHistoryMap().size();
+    int appsHistorySize = static_cast<int>(data.GetAppZoneHistoryMap().size());
     const auto& customZones = data.GetCustomZoneSetsMap();
     const auto& devices = data.GetDeviceInfoMap();
 
@@ -89,8 +89,9 @@ void Trace::FancyZones::DataChanged() noexcept
         else if (std::holds_alternative<JSONHelpers::CanvasLayoutInfo>(layoutInfo))
         {
             const auto& info = std::get<JSONHelpers::CanvasLayoutInfo>(layoutInfo);
-            return info.zones.size();
+            return static_cast<int>(info.zones.size());
         }
+        return 0;
     };
 
     //NumberOfZonesForEachCustomZoneSet
@@ -152,9 +153,9 @@ void Trace::FancyZones::DataChanged() noexcept
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingInt32(appsHistorySize, "AppsInHistoryCount"),
-        TraceLoggingInt32Array(customZonesArray.get(), customZones.size(), "NumberOfZonesForEachCustomZoneSet"),
-        TraceLoggingInt32Array(templateZonesArray.get(), devices.size(), "NumberOfZonesForEachTemplateZoneSet"),
-        TraceLoggingInt32(devices.size(), "ActiveZoneSetsNumber"),
+        TraceLoggingInt32Array(customZonesArray.get(), static_cast<int>(customZones.size()), "NumberOfZonesForEachCustomZoneSet"),
+        TraceLoggingInt32Array(templateZonesArray.get(), static_cast<int>(devices.size()), "NumberOfZonesForEachTemplateZoneSet"),
+        TraceLoggingInt32(static_cast<int>(devices.size()), "ActiveZoneSetsNumber"),
         TraceLoggingWideString(activeZoneSetInfo.c_str(), "CurrentActiveZoneSet"));
 }
 
