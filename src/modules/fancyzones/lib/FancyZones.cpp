@@ -981,7 +981,7 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) no
 void FancyZones::RegisterVirtualDesktopUpdates(std::unordered_set<GUID>& currentVirtualDesktopIds) noexcept
 {
     std::unique_lock writeLock(m_lock);
-    bool modified{ true };
+    bool modified{ false };
     for (auto it = begin(m_processedWorkAreas); it != end(m_processedWorkAreas);)
     {
         auto iter = currentVirtualDesktopIds.find(it->first);
@@ -991,7 +991,7 @@ void FancyZones::RegisterVirtualDesktopUpdates(std::unordered_set<GUID>& current
             wil::unique_cotaskmem_string virtualDesktopId;
             if (SUCCEEDED_LOG(StringFromCLSID(it->first, &virtualDesktopId)))
             {
-                modified &= JSONHelpers::FancyZonesDataInstance().RemoveDevicesByVirtualDesktopId(virtualDesktopId.get());
+                modified |= JSONHelpers::FancyZonesDataInstance().RemoveDevicesByVirtualDesktopId(virtualDesktopId.get());
             }
             it = m_processedWorkAreas.erase(it);
         }
