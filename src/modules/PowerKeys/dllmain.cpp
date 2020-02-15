@@ -4,6 +4,7 @@
 #include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
 #include "trace.h"
+#include <unordered_set>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -51,9 +52,11 @@ class PowerKeys : public PowertoyModuleIface
 private:
     // The PowerToy state.
     bool m_enabled = false;
-    std::unordered_map<WORD, WORD> reMap;
+    std::unordered_map<DWORD, WORD> singleKeyReMap;
+    std::unordered_set<DWORD> singleKeyToggleToMod;
     // Load initial settings from the persisted values.
     void init_settings();
+    static const ULONG_PTR POWERKEYS_INJECTED_FLAG = 54321;
 
 public:
     // Constructor
@@ -65,11 +68,11 @@ public:
 
     void init_map()
     {
-        reMap[VK_TAB] = VK_LSHIFT;
-        reMap[VK_LSHIFT] = VK_TAB;
-        // Swap A and B
-        reMap[0x41] = 0x42;
-        reMap[0x42] = 0x41;
+        singleKeyReMap[0x42] = 0x41;
+        singleKeyReMap[0x41] = 0x42;
+        singleKeyReMap[VK_LWIN] = VK_MEDIA_PLAY_PAUSE;
+        singleKeyReMap[VK_MEDIA_PLAY_PAUSE] = VK_LWIN;
+        singleKeyToggleToMod.insert(VK_CAPITAL);
     }
 
     // Destroy the powertoy and free memory
@@ -267,8 +270,9 @@ public:
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
         intptr_t SingleKeyRemapResult = HandleSingleKeyRemapEvent(data);
+        intptr_t SingleKeyToggleToModResult = HandleSingleKeyToggleToModEvent(data);
         intptr_t ShortcutRemapResult = HandleShortcutRemapEvent(data);
-        if ((SingleKeyRemapResult + ShortcutRemapResult) > 0)
+        if ((SingleKeyRemapResult + SingleKeyToggleToModResult + ShortcutRemapResult) > 0)
         {
             return 1;
         }
@@ -280,10 +284,10 @@ public:
 
     intptr_t HandleSingleKeyRemapEvent(LowlevelKeyboardEvent* data) noexcept
     {
-        if (!(data->lParam->flags & LLKHF_INJECTED))
+        if (data->lParam->dwExtraInfo != POWERKEYS_INJECTED_FLAG)
         {
-            auto it = reMap.find(data->lParam->vkCode);
-            if (it != reMap.end())
+            auto it = singleKeyReMap.find(data->lParam->vkCode);
+            if (it != singleKeyReMap.end())
             {
                 int key_count = 1;
                 LPINPUT keyEventList = new INPUT[size_t(key_count)]();
@@ -291,10 +295,39 @@ public:
                 keyEventList[0].type = INPUT_KEYBOARD;
                 keyEventList[0].ki.wVk = it->second;
                 keyEventList[0].ki.dwFlags = 0;
+                keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
                 if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
                 {
                     keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
                 }
+
+                UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+                delete[] keyEventList;
+                return 1;
+            }
+        }
+
+        return 0;
+    }
+
+    intptr_t HandleSingleKeyToggleToModEvent(LowlevelKeyboardEvent* data) noexcept
+    {
+        if (data->lParam->dwExtraInfo != POWERKEYS_INJECTED_FLAG)
+        {
+            auto it = singleKeyToggleToMod.find(data->lParam->vkCode);
+            if (it != singleKeyToggleToMod.end())
+            {
+                int key_count = 2;
+                LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+                memset(keyEventList, 0, sizeof(keyEventList));
+                keyEventList[0].type = INPUT_KEYBOARD;
+                keyEventList[0].ki.wVk = (WORD)data->lParam->vkCode;
+                keyEventList[0].ki.dwFlags = 0;
+                keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                keyEventList[1].type = INPUT_KEYBOARD;
+                keyEventList[1].ki.wVk = (WORD)data->lParam->vkCode;
+                keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
+                keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
 
                 UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
                 delete[] keyEventList;
