@@ -172,7 +172,7 @@ namespace JSONHelpers
         }
     }
 
-    void FancyZonesData::RemoveDevicesByVirtualDesktopId(const std::wstring& virtualDesktopId)
+    bool FancyZonesData::RemoveDevicesByVirtualDesktopId(const std::wstring& virtualDesktopId)
     {
         bool modified{ false };
         for (auto it = deviceInfoMap.begin(); it != deviceInfoMap.end();)
@@ -187,10 +187,7 @@ namespace JSONHelpers
                 ++it;
             }
         }
-        if (modified)
-        {
-            SaveFancyZonesData();
-        }
+        return modified;
     }
 
     void FancyZonesData::CloneDeviceInfo(const std::wstring& source, const std::wstring& destination)

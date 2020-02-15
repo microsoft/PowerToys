@@ -139,7 +139,7 @@ private:
     void MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
 
     void HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) noexcept;
-    void RegisterVirtualDesktopUpdates(std::unique_ptr<BYTE[]>& buffer, int bufferCapacity) noexcept;
+    void RegisterVirtualDesktopUpdates(std::unordered_set<GUID>& currentVirtualDesktopIds) noexcept;
     void RegisterNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
     bool IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
 
@@ -616,7 +616,7 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
         std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
         JSONHelpers::FancyZonesDataInstance().SetActiveDeviceId(uniqueId);
 
-        bool newWorkArea = IsNewWorkArea(m_currentVirtualDesktopId, monitor);
+        const bool newWorkArea = IsNewWorkArea(m_currentVirtualDesktopId, monitor);
         const bool flash = m_settings->GetSettings().zoneSetChange_flashZones && newWorkArea;
 
         auto zoneWindow = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, flash);
@@ -966,42 +966,47 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) no
         {
             return;
         }
-        RegisterVirtualDesktopUpdates(buffer, bufferCapacity);
+        const size_t guidSize = sizeof(GUID);
+        std::unordered_set<GUID> temp;
+        temp.reserve(bufferCapacity / guidSize);
+        for (size_t i = 0; i < bufferCapacity; i += guidSize)
+        {
+            GUID* guid = reinterpret_cast<GUID*>(buffer.get() + i);
+            temp.insert(*guid);
+        }
+        RegisterVirtualDesktopUpdates(temp);
     }
 }
 
-void FancyZones::RegisterVirtualDesktopUpdates(std::unique_ptr<BYTE[]>& buffer, int bufferCapacity) noexcept
+void FancyZones::RegisterVirtualDesktopUpdates(std::unordered_set<GUID>& currentVirtualDesktopIds) noexcept
 {
-    const int guidSize = sizeof(GUID);
-    std::unordered_set<GUID> temp;
-    temp.reserve(bufferCapacity / guidSize);
-    for (size_t i = 0; i < bufferCapacity; i += guidSize)
-    {
-        GUID* guid = reinterpret_cast<GUID*>(buffer.get() + i);
-        temp.insert(*guid);
-    }
     std::unique_lock writeLock(m_lock);
+    bool modified{ true };
     for (auto it = begin(m_processedWorkAreas); it != end(m_processedWorkAreas);)
     {
-        auto iter = temp.find(it->first);
-        if (iter == temp.end())
+        auto iter = currentVirtualDesktopIds.find(it->first);
+        if (iter == currentVirtualDesktopIds.end())
         {
-            // clean up data related to virtual desktop
+            // if we couldn't find the GUID in currentVirtualDesktopIds, we must remove it from both m_processedWorkAreas and deviceInfoMap
             wil::unique_cotaskmem_string virtualDesktopId;
             if (SUCCEEDED_LOG(StringFromCLSID(it->first, &virtualDesktopId)))
             {
-                JSONHelpers::FancyZonesDataInstance().RemoveDevicesByVirtualDesktopId(virtualDesktopId.get());
+                modified &= JSONHelpers::FancyZonesDataInstance().RemoveDevicesByVirtualDesktopId(virtualDesktopId.get());
             }
-            it = m_processedWorkAreas.erase(it); // virtual desktop closed, remove it from map
+            it = m_processedWorkAreas.erase(it);
         }
         else
         {
-            temp.erase(it->first); // virtual desktop already in map, skip it
+            currentVirtualDesktopIds.erase(it->first); // virtual desktop already in map, skip it
             ++it;
         }
     }
+    if (modified)
+    {
+        JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
+    }
     // register new virtual desktops, if any
-    for (const auto& id : temp)
+    for (const auto& id : currentVirtualDesktopIds)
     {
         m_processedWorkAreas[id] = std::vector<HMONITOR>();
     }
