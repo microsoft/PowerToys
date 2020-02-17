@@ -73,14 +73,12 @@ void Trace::FancyZones::DataChanged() noexcept
     const auto& devices = data.GetDeviceInfoMap();
 
     std::unique_ptr<INT32[]> customZonesArray(new (std::nothrow) INT32[customZones.size()]);
-    std::unique_ptr<INT32[]> templateZonesArray(new (std::nothrow) INT32[devices.size()]);
-    if (!customZonesArray || !templateZonesArray)
+    if (!customZonesArray)
     {
         return;
     }
 
-    auto getCustomZoneCount = [&data](const std::variant<JSONHelpers::CanvasLayoutInfo, JSONHelpers::GridLayoutInfo>& layoutInfo) -> int 
-    {
+    auto getCustomZoneCount = [&data](const std::variant<JSONHelpers::CanvasLayoutInfo, JSONHelpers::GridLayoutInfo>& layoutInfo) -> int {
         if (std::holds_alternative<JSONHelpers::GridLayoutInfo>(layoutInfo))
         {
             const auto& info = std::get<JSONHelpers::GridLayoutInfo>(layoutInfo);
@@ -94,7 +92,7 @@ void Trace::FancyZones::DataChanged() noexcept
         return 0;
     };
 
-    //NumberOfZonesForEachCustomZoneSet
+    //CustomZoneSetCount
     int i = 0;
     for (const auto& [id, customZoneSetData] : customZones)
     {
@@ -102,27 +100,21 @@ void Trace::FancyZones::DataChanged() noexcept
         i++;
     }
 
-    //NumberOfZonesForEachTemplateZoneSet
-    i = 0;
-    for (const auto& [id, deviceInfoData] : data.GetDeviceInfoMap())
-    {
-        templateZonesArray.get()[i] = deviceInfoData.zoneCount;
-        i++;
-    }
-
-    //ActiveZoneSet
-    const auto& activeDeviceId = data.GetActiveDeviceId();
-    const auto& activeDevice = devices.find(activeDeviceId);
+    //ActiveZoneSetsList
     std::wstring activeZoneSetInfo;
-    if (activeDevice != devices.end())
+    for (const auto& [id, device] : devices)
     {
-        const JSONHelpers::ZoneSetLayoutType type = activeDevice->second.activeZoneSet.type;
-        activeZoneSetInfo = L"type: " + JSONHelpers::TypeToString(type);
+        const JSONHelpers::ZoneSetLayoutType type = device.activeZoneSet.type;
+        if (!activeZoneSetInfo.empty())
+        {
+            activeZoneSetInfo += L"; ";
+        }
+        activeZoneSetInfo += L"type: " + JSONHelpers::TypeToString(type);
 
         int zoneCount = -1;
         if (type == JSONHelpers::ZoneSetLayoutType::Custom)
         {
-            const auto& activeCustomZone = customZones.find(activeDevice->second.activeZoneSet.uuid);
+            const auto& activeCustomZone = customZones.find(device.activeZoneSet.uuid);
             if (activeCustomZone != customZones.end())
             {
                 zoneCount = getCustomZoneCount(activeCustomZone->second.info);
@@ -130,7 +122,7 @@ void Trace::FancyZones::DataChanged() noexcept
         }
         else
         {
-            zoneCount = activeDevice->second.zoneCount;
+            zoneCount = device.zoneCount;
         }
 
         if (zoneCount != -1)
@@ -142,10 +134,6 @@ void Trace::FancyZones::DataChanged() noexcept
             activeZoneSetInfo += L", custom zone data was deleted";
         }
     }
-    else
-    {
-        activeZoneSetInfo = L"no active zoneset";
-    }
 
     TraceLoggingWrite(
         g_hProvider,
@@ -153,10 +141,9 @@ void Trace::FancyZones::DataChanged() noexcept
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingInt32(appsHistorySize, "AppsInHistoryCount"),
-        TraceLoggingInt32Array(customZonesArray.get(), static_cast<int>(customZones.size()), "NumberOfZonesForEachCustomZoneSet"),
-        TraceLoggingInt32Array(templateZonesArray.get(), static_cast<int>(devices.size()), "NumberOfZonesForEachTemplateZoneSet"),
-        TraceLoggingInt32(static_cast<int>(devices.size()), "ActiveZoneSetsNumber"),
-        TraceLoggingWideString(activeZoneSetInfo.c_str(), "CurrentActiveZoneSet"));
+        TraceLoggingInt32Array(customZonesArray.get(), static_cast<int>(customZones.size()), "CustomZoneSetCount"),
+        TraceLoggingInt32(static_cast<int>(devices.size()), "ActiveZoneSetsCount"),
+        TraceLoggingWideString(activeZoneSetInfo.c_str(), "ActiveZoneSetsList"));
 }
 
 void Trace::SettingsChanged(const Settings& settings) noexcept
