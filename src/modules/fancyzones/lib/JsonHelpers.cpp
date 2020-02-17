@@ -21,6 +21,7 @@ namespace
     constexpr int c_blankCustomModelId = 0xFFFA;
 
     const wchar_t* FANCY_ZONES_DATA_FILE = L"zones-settings.json";
+    const wchar_t* DEFAULT_GUID = L"{00000000-0000-0000-0000-000000000000}";
 
     std::wstring ExtractVirtualDesktopId(const std::wstring& deviceId)
     {
@@ -174,6 +175,10 @@ namespace JSONHelpers
 
     bool FancyZonesData::RemoveDevicesByVirtualDesktopId(const std::wstring& virtualDesktopId)
     {
+        if (virtualDesktopId == DEFAULT_GUID)
+        {
+            return false;
+        }
         bool modified{ false };
         for (auto it = deviceInfoMap.begin(); it != deviceInfoMap.end();)
         {
