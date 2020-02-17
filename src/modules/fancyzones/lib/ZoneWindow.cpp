@@ -63,19 +63,15 @@ namespace ZoneWindowUtils
         return customZoneSetsTmpFileName;
     }
 
-    std::wstring GenerateUniqueId(HMONITOR monitor, PCWSTR deviceId, PCWSTR virtualDesktopId)
+    std::wstring GenerateUniqueId(PCWSTR deviceId, PCWSTR virtualDesktopId)
     {
         wchar_t uniqueId[256]{}; // Parsed deviceId + resolution + virtualDesktopId
 
-        MONITORINFOEXW mi;
-        mi.cbSize = sizeof(mi);
-        if (virtualDesktopId && GetMonitorInfo(monitor, &mi))
+        if (virtualDesktopId)
         {
             wchar_t parsedId[256]{};
             ParseDeviceId(deviceId, parsedId, 256);
-
-            Rect const monitorRect(mi.rcMonitor);
-            StringCchPrintf(uniqueId, ARRAYSIZE(uniqueId), L"%s_%d_%d_%s", parsedId, monitorRect.width(), monitorRect.height(), virtualDesktopId);
+            StringCchPrintf(uniqueId, ARRAYSIZE(uniqueId), L"%s_%s", parsedId, virtualDesktopId);
         }
         return std::wstring{ uniqueId };
     }

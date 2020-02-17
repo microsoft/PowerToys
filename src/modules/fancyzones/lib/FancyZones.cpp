@@ -613,7 +613,7 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
     wil::unique_cotaskmem_string virtualDesktopId;
     if (SUCCEEDED_LOG(StringFromCLSID(m_currentVirtualDesktopId, &virtualDesktopId)))
     {
-        std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
+        std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(deviceId, virtualDesktopId.get());
         JSONHelpers::FancyZonesDataInstance().SetActiveDeviceId(uniqueId);
 
         const bool newWorkArea = IsNewWorkArea(m_currentVirtualDesktopId, monitor);
