@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "common.h"
-#include "hwnd_data_cache.h"
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
 #include <strsafe.h>
@@ -34,12 +33,126 @@ std::optional<POINT> get_mouse_pos() {
   }
 }
 
-WindowAndProcPath get_filtered_base_window_and_path(HWND window) {
-  return hwnd_cache.get_window_and_path(window);
+// Test if a window is part of the shell or the task bar.
+// We compare the HWND against HWND of the desktop and shell windows,
+// we also filter out some window class names know to belong to
+// the taskbar.
+static bool is_system_window(HWND hwnd, const char* class_name) {
+  static auto system_classes = { "SysListView32", "WorkerW", "Shell_TrayWnd", "Shell_SecondaryTrayWnd", "Progman" };
+  static auto system_hwnds = { GetDesktopWindow(), GetShellWindow() };
+  for (auto system_hwnd : system_hwnds) {
+    if (hwnd == system_hwnd) {
+      return true;
+    }
+  }
+  for (const auto& system_class : system_classes) {
+    if (strcmp(system_class, class_name) == 0) {
+      return true;
+    }
+  }
+  return false;
 }
 
-HWND get_filtered_active_window() {
-  return hwnd_cache.get_window(GetForegroundWindow());
+static bool no_visible_owner(HWND window) noexcept
+{
+    auto owner = GetWindow(window, GW_OWNER);
+    if (owner == nullptr) {
+        return true; // There is no owner at all
+    }
+    if (!IsWindowVisible(owner)) {
+        return true; // Owner is invisible
+    }
+    RECT rect;
+    if (!GetWindowRect(owner, &rect)) {
+        return false; // Could not get the rect, return true (and filter out the window) just in case
+    }
+    // Return false (and allow the window to be zonable) if the owner window size is zero
+    // It is enough that the window is zero-sized in one dimension only.
+    return rect.top == rect.bottom || rect.left == rect.right;
+}
+
+FancyZonesFilter get_fancyzones_filtered_window(HWND window) {
+  FancyZonesFilter result;
+  if (GetAncestor(window, GA_ROOT) != window || !IsWindowVisible(window)) { 
+    return result;
+  }
+  auto style = GetWindowLong(window, GWL_STYLE);
+  auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
+  // WS_POPUP need to have a border or minimize/maximize buttons,
+  // otherwise the window is "not interesting"
+  if ((style & WS_POPUP) == WS_POPUP &&
+      (style & WS_THICKFRAME) == 0 &&
+      (style & WS_MINIMIZEBOX) == 0 &&
+      (style & WS_MAXIMIZEBOX) == 0) {
+    return result;
+  }
+  if ((style & WS_CHILD) == WS_CHILD ||
+      (style & WS_DISABLED) == WS_DISABLED ||
+      (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW ||
+      (exStyle & WS_EX_NOACTIVATE) == WS_EX_NOACTIVATE) {
+    return result;
+  }
+  std::array<char, 256> class_name;
+  GetClassNameA(window, class_name.data(), static_cast<int>(class_name.size()));
+  if (is_system_window(window, class_name.data())) {
+    return result;
+  }
+  auto process_path = get_process_path(window);
+  // Check for Cortana:
+  if (strcmp(class_name.data(), "Windows.UI.Core.CoreWindow") == 0 &&
+      process_path.ends_with(L"SearchUI.exe")) {
+    return result;
+  }
+  result.process_path = std::move(process_path);
+  result.standard_window = true;
+  result.no_visible_owner = no_visible_owner(window);
+  result.zonable = result.standard_window && result.no_visible_owner;
+  return result;
+}
+
+ShortcutGuideFilter get_shortcutguide_filtered_window() {
+  ShortcutGuideFilter result;
+  auto active_window = GetForegroundWindow();
+  active_window = GetAncestor(active_window, GA_ROOT);
+  if (!IsWindowVisible(active_window)) {
+    return result;
+  }
+  auto style = GetWindowLong(active_window, GWL_STYLE);
+  auto exStyle = GetWindowLong(active_window, GWL_EXSTYLE);
+  if ((style & WS_CHILD) == WS_CHILD ||
+      (style & WS_DISABLED) == WS_DISABLED ||
+      (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW ||
+      (exStyle & WS_EX_NOACTIVATE) == WS_EX_NOACTIVATE) {
+      return result;
+  }
+  std::array<char, 256> class_name;
+  GetClassNameA(active_window, class_name.data(), static_cast<int>(class_name.size()));
+  if (is_system_window(active_window, class_name.data())) {
+    return result;
+  }
+  static HWND cortanda_hwnd = nullptr;
+  if (cortanda_hwnd == nullptr) {
+    if (strcmp(class_name.data(), "Windows.UI.Core.CoreWindow") == 0 &&
+        get_process_path(active_window).ends_with(L"SearchUI.exe")) {
+      cortanda_hwnd = active_window;
+      return result;
+    }
+  } else if (cortanda_hwnd == active_window) {
+    return result;
+  }
+  result.hwnd = active_window;
+  // In reality, Windows Snap works if even one of those styles is set
+  // for a window, it is just limited. If there is no WS_MAXIMIZEBOX using
+  // WinKey + Up just won't maximize the window. Similary, without
+  // WS_MINIMIZEBOX the window will not get minimized. A "Save As..." dialog
+  // is a example of such window - it can be snapped to both sides and to
+  // all screen conrers, but will not get maximized nor minimized.
+  // For now, since ShortcutGuide can only disable entire "Windows Controls"
+  // group, we require that the window supports all the options.
+  result.snappable = ((style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX) &&
+                     ((style & WS_MINIMIZEBOX) == WS_MINIMIZEBOX) &&
+                     ((style & WS_THICKFRAME) == WS_THICKFRAME);
+  return result;
 }
 
 int width(const RECT& rect) {
@@ -248,7 +361,7 @@ bool run_elevated(const std::wstring& file, const std::wstring& params) {
 }
 
 bool run_non_elevated(const std::wstring& file, const std::wstring& params) {
-  auto executable_args = file;
+  auto executable_args = L"\"" + file + L"\"";
   if (!params.empty()) {
     executable_args += L" " + params;
   }
@@ -309,6 +422,33 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params) {
   }
   return succedded;
 }
+
+bool run_same_elevation(const std::wstring& file, const std::wstring& params) {
+  auto executable_args = L"\"" + file + L"\"";
+  if (!params.empty()) {
+    executable_args += L" " + params;
+  }
+  STARTUPINFO si = { 0 };
+  PROCESS_INFORMATION pi = { 0 };
+  auto succedded = CreateProcessW(file.c_str(),
+                                  const_cast<LPWSTR>(executable_args.c_str()),
+                                  nullptr,
+                                  nullptr,
+                                  FALSE,
+                                  0,
+                                  nullptr,
+                                  nullptr,
+                                  &si,
+                                  &pi);
+  if (pi.hProcess) {
+    CloseHandle(pi.hProcess);
+  }
+  if (pi.hThread) {
+    CloseHandle(pi.hThread);
+  }
+  return succedded;
+}
+
 
 std::wstring get_process_path(HWND window) noexcept {
   const static std::wstring app_frame_host = L"ApplicationFrameHost.exe";

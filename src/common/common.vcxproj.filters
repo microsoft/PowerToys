@@ -72,13 +72,19 @@
     <ClInclude Include="on_thread_executor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="hwnd_data_cache.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="json.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="winstore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="icon_helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="window_helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="notifications.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -123,13 +129,19 @@
     <ClCompile Include="on_thread_executor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="hwnd_data_cache.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="json.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="winstore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="icon_helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="window_helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="notifications.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

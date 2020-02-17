@@ -13,6 +13,9 @@
 #include <common/common.h>
 #include <common/dpi_aware.h>
 
+#include <common/winstore.h>
+#include <common/notifications.h>
+
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
 #endif
@@ -31,7 +34,7 @@ void chdir_current_executable()
     }
 }
 
-int runner()
+int runner(bool isProcessElevated)
 {
     DPIAware::EnableDPIAwarenessForThisProcess();
 
@@ -43,6 +46,10 @@ int runner()
     Trace::RegisterProvider();
     winrt::init_apartment();
     start_tray_icon();
+    if (winstore::running_as_packaged())
+    {
+        notifications::register_background_toast_handler();
+    }
     int result;
     try
     {
@@ -73,14 +80,14 @@ int runner()
         // Start initial powertoys
         start_initial_powertoys();
 
-        Trace::EventLaunch(get_product_version());
+        Trace::EventLaunch(get_product_version(), isProcessElevated);
 
         result = run_message_loop();
     }
     catch (std::runtime_error& err)
     {
         std::string err_what = err.what();
-        MessageBoxW(NULL, std::wstring(err_what.begin(), err_what.end()).c_str(), L"Error", MB_OK | MB_ICONERROR);
+        MessageBoxW(nullptr, std::wstring(err_what.begin(), err_what.end()).c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
         result = -1;
     }
     Trace::UnregisterProvider();
@@ -92,8 +99,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     WCHAR username[UNLEN + 1];
     DWORD username_length = UNLEN + 1;
     GetUserNameW(username, &username_length);
-    auto runner_mutex = CreateMutexW(NULL, TRUE, (std::wstring(L"Local\\PowerToyRunMutex") + username).c_str());
-    if (runner_mutex == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
+    auto runner_mutex = CreateMutexW(nullptr, TRUE, (std::wstring(L"Local\\PowerToyRunMutex") + username).c_str());
+    if (runner_mutex == nullptr || GetLastError() == ERROR_ALREADY_EXISTS)
     {
         // The app is already running
         return 0;
@@ -109,11 +116,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         auto general_settings = load_general_settings();
         int rvalue = 0;
-        if (is_process_elevated() ||
+        bool isProcessElevated = is_process_elevated();
+        if (isProcessElevated ||
             general_settings.GetNamedBoolean(L"run_elevated", false) == false ||
             strcmp(lpCmdLine, "--dont-elevate") == 0)
         {
-            result = runner();
+            result = runner(isProcessElevated);
         }
         else
         {
@@ -124,7 +132,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     catch (std::runtime_error& err)
     {
         std::string err_what = err.what();
-        MessageBoxW(NULL, std::wstring(err_what.begin(), err_what.end()).c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
+        MessageBoxW(nullptr, std::wstring(err_what.begin(), err_what.end()).c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
         result = -1;
     }
     ReleaseMutex(runner_mutex);
@@ -135,7 +143,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         {
             auto text = is_process_elevated() ? GET_RESOURCE_STRING(IDS_COULDNOT_RESTART_NONELEVATED) :
                                                 GET_RESOURCE_STRING(IDS_COULDNOT_RESTART_ELEVATED);
-            MessageBoxW(NULL, text.c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
+            MessageBoxW(nullptr, text.c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
+
+            restart_same_elevation();
             result = -1;
         }
     }

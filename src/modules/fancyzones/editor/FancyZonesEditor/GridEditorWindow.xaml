@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:local="clr-namespace:FancyZonesEditor"
+        xmlns:props="clr-namespace:FancyZonesEditor.Properties"
         mc:Ignorable="d"
         Title="" 
         Width="528"
@@ -163,10 +164,10 @@
 
     </Window.Resources>
     <StackPanel>
-        <TextBlock Name="windowEditorDialogTitle" Text="Custom table layout creator" Style="{StaticResource titleText}"  />
+        <TextBlock Name="windowEditorDialogTitle" Text="{x:Static props:Resources.Custom_Table_Layout}" Style="{StaticResource titleText}"  />
 
-        <TextBlock Text="Note: Hold down Shift Key to change orientation of splitter" Style="{StaticResource textLabel}" />
-        <TextBlock Text="Name" Style="{StaticResource textLabel}" />
+        <TextBlock Text="{x:Static props:Resources.Note_Custom_Table}" Style="{StaticResource textLabel}" />
+        <TextBlock Text="{x:Static props:Resources.Name}" Style="{StaticResource textLabel}" />
         <TextBox Text="{Binding Name}" Width="494" Style="{StaticResource textBox}" />
 <!--        
         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
@@ -177,8 +178,8 @@
         </StackPanel>
 -->        
         <StackPanel Orientation="Horizontal" Margin="0,12,0,16">
-            <Button Content="Cancel" Style="{StaticResource secondaryButton}" Click="OnCancel" />
-            <Button Content="Save and apply" Style="{StaticResource primaryButton}" Click="OnSaveApplyTemplate" />
+            <Button Content="{x:Static props:Resources.Cancel}" Style="{StaticResource secondaryButton}" Click="OnCancel" />
+            <Button Content="{x:Static props:Resources.Save_Apply}" Style="{StaticResource primaryButton}" Click="OnSaveApplyTemplate" />
         </StackPanel>
     </StackPanel>
 </local:EditorWindow>

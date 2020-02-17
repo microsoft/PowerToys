@@ -7,6 +7,7 @@
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:local="clr-namespace:FancyZonesEditor"
         xmlns:Converters="clr-namespace:FancyZonesEditor.Converters"
+        xmlns:props="clr-namespace:FancyZonesEditor.Properties"
         mc:Ignorable="d"
         Title=""
         Width="810"
@@ -177,10 +178,10 @@
     
     <StackPanel>
 
-        <TextBlock Name="dialog_Title" Text="Choose your layout" Style="{StaticResource titleText}"  />
+        <TextBlock Name="dialog_Title" Text="{x:Static props:Resources.Choose_Layout}" Style="{StaticResource titleText}"  />
 
         <TabControl BorderThickness="0" x:Name="TemplateTab" SelectedIndex="{Binding IsCustomLayoutActive, Mode=OneWay, Converter={StaticResource BooleanToIntConverter}}">
-            <TabItem Header="Templates" Template="{StaticResource myTabs}">
+            <TabItem Header="{x:Static props:Resources.Templates}" Template="{StaticResource myTabs}">
                 <StackPanel>
                     <StackPanel Margin="0,15,0,8" Orientation="Horizontal" HorizontalAlignment="Center">
                         <Button x:Name="decrementZones" Width="40" Height="40" Content="-" Style="{StaticResource spinnerButton}" Click="DecrementZones_Click"/>
@@ -232,7 +233,7 @@
             </TabItem>
             
             
-            <TabItem Header="Custom" Template="{StaticResource myTabs}">
+            <TabItem Header="{x:Static props:Resources.Custom}" Template="{StaticResource myTabs}">
                 <StackPanel>
                     <ItemsControl ItemsSource="{Binding CustomModels}" Margin="8,8,0,0">
                         <ItemsControl.ItemsPanel>
@@ -267,8 +268,8 @@
                     </ItemsControl>
 
                     <StackPanel Orientation="Horizontal" Margin="0,10,0,16">
-                        <Button x:Name="EditCustomButton" Content="Edit selected layout" Padding="8" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
-                        <Button x:Name="ApplyCustomButton" Content="Apply" Padding="8" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
+                        <Button x:Name="EditCustomButton" Content="{x:Static props:Resources.Edit_Selected_Layout}" Padding="8" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
+                            <Button x:Name="ApplyCustomButton" Content="{x:Static props:Resources.Apply}" Padding="8" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
                     </StackPanel>
                 </StackPanel>
             </TabItem>

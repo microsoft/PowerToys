@@ -3,6 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Text.Json;
 
 namespace FancyZonesEditor.Models
 {
@@ -10,8 +13,6 @@ namespace FancyZonesEditor.Models
     //  Grid-styled Layout Model, which specifies rows, columns, percentage sizes, and row/column spans
     public class GridLayoutModel : LayoutModel
     {
-        private static readonly ushort _latestVersion = 0;
-
         // Rows - number of rows in the Grid
         public int Rows
         {
@@ -78,18 +79,19 @@ namespace FancyZonesEditor.Models
         {
         }
 
-        public GridLayoutModel(string name, ushort id)
-            : base(name, id)
+        public GridLayoutModel(string name, LayoutType type)
+            : base(name, type)
         {
         }
 
-        public GridLayoutModel(ushort version, string name, ushort id, byte[] data)
-            : base(name, id)
+        public GridLayoutModel(string uuid, string name, LayoutType type, int rows, int cols, int[] rowPercents, int[] colsPercents, int[,] cellChildMap)
+            : base(uuid, name, type)
         {
-            if (version == _latestVersion)
-            {
-                Reload(data);
-            }
+            _rows = rows;
+            _cols = cols;
+            RowPercents = rowPercents;
+            ColumnPercents = colsPercents;
+            CellChildMap = cellChildMap;
         }
 
         public void Reload(byte[] data)
@@ -164,84 +166,63 @@ namespace FancyZonesEditor.Models
             return layout;
         }
 
-        // GetPersistData
-        //  Implements the LayoutModel.GetPersistData abstract method
-        //  Returns the state of this GridLayoutModel in persisted format
-        protected override byte[] GetPersistData()
+        // PersistData
+        // Implements the LayoutModel.PersistData abstract method
+        protected override void PersistData()
         {
-            int rows = Rows;
-            int cols = Columns;
-
-            int[,] cellChildMap;
-
-            if (FreeZones.Count == 0)
+            FileStream outputStream = File.Open(Settings.AppliedZoneSetTmpFile, FileMode.Create);
+            using (var writer = new Utf8JsonWriter(outputStream, options: default))
             {
-                // no unused indices -- so we can just use the _cellChildMap as is
-                cellChildMap = CellChildMap;
-            }
-            else
-            {
-                // compress cellChildMap to not have gaps for unused child indices;
-                List<int> mapping = new List<int>();
+                writer.WriteStartObject();
+                writer.WriteString("uuid", "{" + Guid.ToString().ToUpper() + "}");
+                writer.WriteString("name", Name);
 
-                cellChildMap = new int[rows, cols];
+                writer.WriteString("type", "grid");
 
-                for (int row = 0; row < rows; row++)
+                writer.WriteStartObject("info");
+
+                writer.WriteNumber("rows", Rows);
+                writer.WriteNumber("columns", Columns);
+
+                writer.WriteStartArray("rows-percentage");
+                for (int row = 0; row < Rows; row++)
                 {
-                    for (int col = 0; col < cols; col++)
-                    {
-                        int source = CellChildMap[row, col];
-
-                        int index = mapping.IndexOf(source);
-                        if (index == -1)
-                        {
-                            index = mapping.Count;
-                            mapping.Add(source);
-                        }
-
-                        cellChildMap[row, col] = index;
-                    }
+                    writer.WriteNumberValue(RowPercents[row]);
                 }
-            }
 
-            byte[] data = new byte[7 + (Rows * 2) + (Columns * 2) + (Rows * Columns)];
+                writer.WriteEndArray();
 
-            int i = 0;
-
-            // Common persisted values between all layout types
-            data[i++] = (byte)(_latestVersion / 256);
-            data[i++] = (byte)(_latestVersion % 256);
-            data[i++] = 0; // LayoutModelType: 0 == GridLayoutModel
-            data[i++] = (byte)(Id / 256);
-            data[i++] = (byte)(Id % 256);
-
-            // End common
-            data[i++] = (byte)Rows;
-            data[i++] = (byte)Columns;
-
-            for (int row = 0; row < Rows; row++)
-            {
-                int rowPercent = RowPercents[row];
-                data[i++] = (byte)(rowPercent / 256);
-                data[i++] = (byte)(rowPercent % 256);
-            }
-
-            for (int col = 0; col < Columns; col++)
-            {
-                int colPercent = ColumnPercents[col];
-                data[i++] = (byte)(colPercent / 256);
-                data[i++] = (byte)(colPercent % 256);
-            }
-
-            for (int row = 0; row < Rows; row++)
-            {
+                writer.WriteStartArray("columns-percentage");
                 for (int col = 0; col < Columns; col++)
                 {
-                    data[i++] = (byte)cellChildMap[row, col];
+                    writer.WriteNumberValue(ColumnPercents[col]);
                 }
+
+                writer.WriteEndArray();
+
+                writer.WriteStartArray("cell-child-map");
+                for (int row = 0; row < Rows; row++)
+                {
+                    writer.WriteStartArray();
+                    for (int col = 0; col < Columns; col++)
+                    {
+                        writer.WriteNumberValue(CellChildMap[row, col]);
+                    }
+
+                    writer.WriteEndArray();
+                }
+
+                writer.WriteEndArray();
+
+                // end info object
+                writer.WriteEndObject();
+
+                // end root object
+                writer.WriteEndObject();
+                writer.Flush();
             }
 
-            return data;
+            outputStream.Close();
         }
     }
 }

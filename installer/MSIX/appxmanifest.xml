@@ -7,7 +7,7 @@
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10" 
   xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4" 
   xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5" IgnorableNamespaces="desktop4">
-  <Identity Name="PowerToys" Version="0.15.0.0" Publisher="CN=Microsoft Corporation" ProcessorArchitecture="x64" />
+  <Identity Name="Microsoft.PowerToys" Version="0.15.0.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" ProcessorArchitecture="x64" />
   <Properties>
     <DisplayName>PowerToys</DisplayName>
     <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
@@ -26,7 +26,7 @@
   </Capabilities>
   <Applications>
     <Application Id="PowerToys" Executable="PowerToys.exe" EntryPoint="Windows.FullTrustApplication">
-      <uap:VisualElements DisplayName="PowerToys" Description="Windows system utilities to maximize productivity" Square150x150Logo="Images\logo150.png" Square44x44Logo="Images\logo44.png" BackgroundColor="transparent" />
+      <uap:VisualElements DisplayName="PowerToys (Preview)" Description="Windows system utilities to maximize productivity" Square150x150Logo="Images\logo150.png" Square44x44Logo="Images\logo44.png" BackgroundColor="transparent" />
       <Extensions>
         <uap5:Extension Category="windows.startupTask" Executable="PowerToys.exe" EntryPoint="Windows.FullTrustApplication">
           <uap5:StartupTask TaskId="PowerToysStartupTaskID" Enabled="true" DisplayName="PowerToys" />
@@ -48,7 +48,20 @@
             </desktop5:ItemType>
           </desktop4:FileExplorerContextMenus>
         </desktop4:Extension>
+        <Extension Category="windows.backgroundTasks" EntryPoint="PowerToysNotifications.BackgroundHandler">
+          <BackgroundTasks>
+            <Task Type="general" />
+          </BackgroundTasks>
+        </Extension>
       </Extensions>
     </Application>
   </Applications>
+  <Extensions>
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>Notifications.dll</Path>
+        <ActivatableClass ActivatableClassId="PowerToysNotifications.BackgroundHandler" ThreadingModel="both"/>
+      </InProcessServer>
+    </Extension>
+  </Extensions>
 </Package>
