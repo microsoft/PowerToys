@@ -17,4 +17,7 @@
   <ItemGroup>
     <ResourceCompile Include="powerpreview.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="powerpreview.def" />
+  </ItemGroup>
 </Project>
