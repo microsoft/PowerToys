@@ -181,22 +181,25 @@ namespace JSONHelpers
             return activeDeviceId;
         }
 
-#if defined(UNIT_TESTS)
         inline const std::unordered_map<std::wstring, DeviceInfoData>& GetDeviceInfoMap() const
         {
+            std::scoped_lock lock{ dataLock };
             return deviceInfoMap;
         }
 
         inline const std::unordered_map<std::wstring, CustomZoneSetData>& GetCustomZoneSetsMap() const
         {
+            std::scoped_lock lock{ dataLock };
             return customZoneSetsMap;
         }
 
         inline const std::unordered_map<std::wstring, AppZoneHistoryData>& GetAppZoneHistoryMap() const
         {
+            std::scoped_lock lock{ dataLock };
             return appZoneHistoryMap;
         }
 
+#if defined(UNIT_TESTS)
         inline void clear_data()
         {
             appliedZoneSetsMap.clear();

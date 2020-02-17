@@ -2,6 +2,7 @@
 #include "JsonHelpers.h"
 #include "RegistryHelpers.h"
 #include "ZoneSet.h"
+#include "trace.h"
 
 #include <common/common.h>
 
@@ -497,6 +498,12 @@ namespace JSONHelpers
         root.SetNamedValue(L"app-zone-history", SerializeAppZoneHistory());
         root.SetNamedValue(L"devices", SerializeDeviceInfos());
         root.SetNamedValue(L"custom-zone-sets", SerializeCustomZoneSets());
+
+        auto before = json::from_file(jsonFilePath);
+        if (!before.has_value() || before.value().Stringify() != root.Stringify())
+        {
+            Trace::FancyZones::DataChanged();
+        }
 
         json::to_file(jsonFilePath, root);
     }
