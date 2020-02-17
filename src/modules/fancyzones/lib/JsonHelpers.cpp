@@ -25,7 +25,7 @@ namespace
 
     std::wstring ExtractVirtualDesktopId(const std::wstring& deviceId)
     {
-        // Format: <device-id>_<virtual-desktop-id>
+        // Format: <device-id>_<resolution>_<virtual-desktop-id>
         return deviceId.substr(deviceId.rfind('_') + 1);
     }
 }

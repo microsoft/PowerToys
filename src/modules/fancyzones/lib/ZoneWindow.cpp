@@ -65,8 +65,7 @@ namespace ZoneWindowUtils
 
     std::wstring GenerateUniqueId(HMONITOR monitor, PCWSTR deviceId, PCWSTR virtualDesktopId)
     {
-        // Format: <device-id>_<virtual-desktop-id>
-        wchar_t uniqueId[256]{};
+        wchar_t uniqueId[256]{}; // Parsed deviceId + resolution + virtualDesktopId
 
         MONITORINFOEXW mi;
         mi.cbSize = sizeof(mi);
