@@ -173,11 +173,11 @@ namespace FancyZonesUnitTests
         TEST_METHOD(CreateZoneWindowNoDeviceId)
         {
             // Generate unique id without device id
-            std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(nullptr, m_virtualDesktopId.c_str());
+            std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(m_monitor, nullptr, m_virtualDesktopId.c_str());
             m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, uniqueId, false);
 
             const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
-            const std::wstring expectedUniqueId = L"FallbackDevice_" + m_virtualDesktopId;
+            const std::wstring expectedUniqueId = L"FallbackDevice_" + std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom) + L"_" + m_virtualDesktopId;
 
             Assert::IsNotNull(m_zoneWindow.get());
             Assert::IsFalse(m_zoneWindow->IsDragEnabled());
@@ -189,9 +189,10 @@ namespace FancyZonesUnitTests
         TEST_METHOD(CreateZoneWindowNoDesktopId)
         {
             // Generate unique id without virtual desktop id
-            std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(m_deviceId.c_str(), nullptr);
+            std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(m_monitor, m_deviceId.c_str(), nullptr);
             m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, uniqueId, false);
 
+            const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
             Assert::IsNotNull(m_zoneWindow.get());
             Assert::IsFalse(m_zoneWindow->IsDragEnabled());
             Assert::IsTrue(m_zoneWindow->UniqueId().empty());
