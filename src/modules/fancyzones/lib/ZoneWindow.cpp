@@ -65,7 +65,8 @@ namespace ZoneWindowUtils
 
     std::wstring GenerateUniqueId(PCWSTR deviceId, PCWSTR virtualDesktopId)
     {
-        wchar_t uniqueId[256]{}; // Parsed deviceId + resolution + virtualDesktopId
+        // Format: <device-id>_<virtual-desktop-id>
+        wchar_t uniqueId[256]{};
 
         if (virtualDesktopId)
         {
