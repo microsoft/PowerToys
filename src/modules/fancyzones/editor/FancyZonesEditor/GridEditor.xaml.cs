@@ -137,79 +137,90 @@ namespace FancyZonesEditor
             // extend each edge of the [(_startCol, _startRow) - (_endCol, _endRow)] range based on merged cells until you have 4 straight edges with no "straddling cells"
             GridLayoutModel model = Model;
 
-            while (_startRow > 0)
+            bool global_dirty = true;
+
+            while (global_dirty)
             {
-                bool dirty = false;
-                for (int col = _startCol; col <= _endCol; col++)
+                global_dirty = false;
+
+                while (_startRow > 0)
                 {
-                    if (model.CellChildMap[_startRow - 1, col] == model.CellChildMap[_startRow, col])
+                    bool dirty = false;
+                    for (int col = _startCol; col <= _endCol; col++)
                     {
-                        _startRow--;
-                        dirty = true;
+                        if (model.CellChildMap[_startRow - 1, col] == model.CellChildMap[_startRow, col])
+                        {
+                            _startRow--;
+                            dirty = true;
+                            global_dirty = true;
+                            break;
+                        }
+                    }
+
+                    if (!dirty)
+                    {
                         break;
                     }
                 }
 
-                if (!dirty)
+                while (_endRow < model.Rows - 1)
                 {
-                    break;
-                }
-            }
-
-            while (_endRow < model.Rows - 1)
-            {
-                bool dirty = false;
-                for (int col = _startCol; col <= _endCol; col++)
-                {
-                    if (model.CellChildMap[_endRow + 1, col] == model.CellChildMap[_endRow, col])
+                    bool dirty = false;
+                    for (int col = _startCol; col <= _endCol; col++)
                     {
-                        _endRow++;
-                        dirty = true;
+                        if (model.CellChildMap[_endRow + 1, col] == model.CellChildMap[_endRow, col])
+                        {
+                            _endRow++;
+                            dirty = true;
+                            global_dirty = true;
+                            break;
+                        }
+                    }
+
+                    if (!dirty)
+                    {
                         break;
                     }
                 }
 
-                if (!dirty)
+                while (_startCol > 0)
                 {
-                    break;
-                }
-            }
-
-            while (_startCol > 0)
-            {
-                bool dirty = false;
-                for (int row = _startRow; row <= _endRow; row++)
-                {
-                    if (model.CellChildMap[row, _startCol - 1] == model.CellChildMap[row, _startCol])
+                    bool dirty = false;
+                    for (int row = _startRow; row <= _endRow; row++)
                     {
-                        _startCol--;
-                        dirty = true;
+                        if (model.CellChildMap[row, _startCol - 1] == model.CellChildMap[row, _startCol])
+                        {
+                            _startCol--;
+                            dirty = true;
+                            global_dirty = true;
+                            break;
+                        }
+                    }
+
+                    if (!dirty)
+                    {
                         break;
                     }
                 }
 
-                if (!dirty)
+                while (_endCol < model.Columns - 1)
                 {
-                    break;
-                }
-            }
-
-            while (_endCol < model.Columns - 1)
-            {
-                bool dirty = false;
-                for (int row = _startRow; row <= _endRow; row++)
-                {
-                    if (model.CellChildMap[row, _endCol + 1] == model.CellChildMap[row, _endCol])
+                    bool dirty = false;
+                    for (int row = _startRow; row <= _endRow; row++)
                     {
-                        _endCol++;
-                        dirty = true;
+                        if (model.CellChildMap[row, _endCol + 1] == model.CellChildMap[row, _endCol])
+                        {
+                            _endCol++;
+                            dirty = true;
+                            global_dirty = true;
+                            break;
+                        }
+                    }
+
+                    if (!dirty)
+                    {
                         break;
                     }
-                }
-
-                if (!dirty)
-                {
-                    break;
                 }
             }
         }
