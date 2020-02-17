@@ -25,8 +25,12 @@
         <File DestinationPath="modules\System.ValueTuple.dll" SourcePath="..\..\x64\Release\modules\System.ValueTuple.dll"/>
         <File DestinationPath="modules\System.Numerics.Vectors.dll" SourcePath="..\..\x64\Release\modules\System.Numerics.Vectors.dll"/>
         <File DestinationPath="modules\Microsoft.Bcl.AsyncInterfaces.dll" SourcePath="..\..\x64\Release\modules\Microsoft.Bcl.AsyncInterfaces.dll"/>
-
         <File DestinationPath="modules\FancyZonesEditor.exe.config" SourcePath="..\..\x64\Release\modules\FancyZonesEditor.exe.config"/>
+        <File DestinationPath="modules\powerpreview.dll" SourcePath="..\..\x64\Release\modules\powerpreview.dll"/>
+        <File DestinationPath="modules\PreviewHandlerCommon.dll" SourcePath="..\..\x64\Release\modules\PreviewHandlerCommon.dll"/>
+        <File DestinationPath="modules\SvgPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\SvgPreviewHandler.dll"/>
+        <File DestinationPath="modules\MarkdownPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\MarkdownPreviewHandler.dll"/>
+        <File DestinationPath="modules\Markdig.Signed.dll" SourcePath="..\..\x64\Release\modules\Markdig.Signed.dll"/>
 
         <File DestinationPath="Notifications.dll" SourcePath="..\..\x64\Release\Notifications.dll"/>
 
