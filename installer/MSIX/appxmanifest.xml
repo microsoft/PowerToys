@@ -52,7 +52,7 @@
           </desktop4:FileExplorerContextMenus>
         </desktop4:Extension>
         <uap:Extension Category="windows.fileTypeAssociation">
-					<uap3:FileTypeAssociation Name="mdpreviewhandler" desktop2:AllowSilentDefaultTakeOver="false">
+					<uap3:FileTypeAssociation Name="mdpreviewhandler" desktop2:AllowSilentDefaultTakeOver="true">
 						<uap:SupportedFileTypes>
 							<uap:FileType>.md</uap:FileType>
 						</uap:SupportedFileTypes>
@@ -60,7 +60,7 @@
 					</uap3:FileTypeAssociation>
 				</uap:Extension>
         <uap:Extension Category="windows.fileTypeAssociation">
-					<uap3:FileTypeAssociation Name="svgpreviewhandler" desktop2:AllowSilentDefaultTakeOver="false">
+					<uap3:FileTypeAssociation Name="svgpreviewhandler" desktop2:AllowSilentDefaultTakeOver="true">
 						<uap:SupportedFileTypes>
 							<uap:FileType>.svg</uap:FileType>
 						</uap:SupportedFileTypes>
