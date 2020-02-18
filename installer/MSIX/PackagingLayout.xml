@@ -27,11 +27,12 @@
         <File DestinationPath="modules\Microsoft.Bcl.AsyncInterfaces.dll" SourcePath="..\..\x64\Release\modules\Microsoft.Bcl.AsyncInterfaces.dll"/>
         <File DestinationPath="modules\FancyZonesEditor.exe.config" SourcePath="..\..\x64\Release\modules\FancyZonesEditor.exe.config"/>
         <File DestinationPath="modules\powerpreview.dll" SourcePath="..\..\x64\Release\modules\powerpreview.dll"/>
-        <File DestinationPath="modules\PreviewHandlerCommon.dll" SourcePath="..\..\x64\Release\modules\PreviewHandlerCommon.dll"/>
-        <File DestinationPath="modules\SvgPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\SvgPreviewHandler.dll"/>
-        <File DestinationPath="modules\MarkdownPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\MarkdownPreviewHandler.dll"/>
-        <File DestinationPath="modules\Markdig.Signed.dll" SourcePath="..\..\x64\Release\modules\Markdig.Signed.dll"/>
-
+        <File DestinationPath="VFS\Windows\Microsoft.NET\assembly\GAC_64\PreviewHandlerCommon\v4.0_1.0.0.0__1c68b0a247329c04\PreviewHandlerCommon.dll" SourcePath="..\..\x64\Release\modules\PreviewHandlerCommon.dll"/>
+        <File DestinationPath="VFS\Windows\Microsoft.NET\assembly\GAC_64\SvgPreviewHandler\v4.0_1.0.0.0__9bdcf6dae174efd3\SvgPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\SvgPreviewHandler.dll"/>
+        <File DestinationPath="VFS\Windows\Microsoft.NET\assembly\GAC_64\MarkdownPreviewHandler\v4.0_1.0.0.0__201d23296ab86a5a\MarkdownPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\MarkdownPreviewHandler.dll"/>
+        <File DestinationPath="VFS\Windows\Microsoft.NET\assembly\GAC_64\Markdig.Signed\v4.0_0.18.0.0__870da25a133885f8\Markdig.Signed.dll" SourcePath="..\..\x64\Release\modules\Markdig.Signed.dll"/>
+        <File DestinationPath="registry.dat" SourcePath="registry.dat"/>
+        
         <File DestinationPath="Notifications.dll" SourcePath="..\..\x64\Release\Notifications.dll"/>
 
         <File DestinationPath="svgs\*" SourcePath="..\..\x64\Release\svgs\*"/>

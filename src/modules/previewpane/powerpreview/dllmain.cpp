@@ -19,29 +19,37 @@ HRESULT CALLBACK DllGetClassObject(REFCLSID clsid, REFIID riid, void** ppv)
 {
     *ppv = NULL;
     HRESULT hr = S_OK;
-    hr = CoGetClassObject(CLSID_SvgPreviewHandler, CLSCTX_INPROC_SERVER, NULL, riid, ppv);
+
+    if (clsid == CLSID_SHIMActivateSvgPreviewHandler)
+    {
+        hr = CoGetClassObject(CLSID_SvgPreviewHandler, CLSCTX_INPROC_SERVER, NULL, riid, ppv);
+    }
+    else if (clsid == CLSID_SHIMActivateMdPreviewHandler)
+    {
+        hr = CoGetClassObject(CLSID_MdPreviewHandler, CLSCTX_INPROC_SERVER, NULL, riid, ppv);
+    }
 
     return hr;
 }
 
-//BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
-//{
-//    switch (ul_reason_for_call)
-//    {
-//    case DLL_PROCESS_ATTACH:
-//        Trace::RegisterProvider();
-//        break;
-//    case DLL_THREAD_ATTACH:
-//    case DLL_THREAD_DETACH:
-//        break;
-//    case DLL_PROCESS_DETACH:
-//        Trace::UnregisterProvider();
-//        break;
-//    }
-//    return TRUE;
-//}
-//
-//extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
-//{
-//    return new PowerPreviewModule();
-//}
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+{
+    switch (ul_reason_for_call)
+    {
+    case DLL_PROCESS_ATTACH:
+        Trace::RegisterProvider();
+        break;
+    case DLL_THREAD_ATTACH:
+    case DLL_THREAD_DETACH:
+        break;
+    case DLL_PROCESS_DETACH:
+        Trace::UnregisterProvider();
+        break;
+    }
+    return TRUE;
+}
+
+extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
+{
+    return new PowerPreviewModule();
+}
