@@ -51,8 +51,9 @@ wil::unique_mutex_nothrow create_runner_mutex(const bool msix_version)
     wchar_t username[UNLEN + 1];
     DWORD username_length = UNLEN + 1;
     GetUserNameW(username, &username_length);
+    wil::unique_mutex_nothrow result{ CreateMutexW(nullptr, TRUE, (std::wstring(msix_version ? MSIX_VERSION_MUTEX_NAME : MSI_VERSION_MUTEX_NAME) + username).c_str()) };
 
-    return wil::unique_mutex_nothrow{ CreateMutexW(nullptr, TRUE, (std::wstring(msix_version ? MSIX_VERSION_MUTEX_NAME : MSI_VERSION_MUTEX_NAME) + username).c_str()) };
+    return GetLastError() == ERROR_ALREADY_EXISTS ? wil::unique_mutex_nothrow{} : std::move(result);
 }
 
 bool start_msi_uninstallation_sequence()
@@ -80,9 +81,10 @@ bool start_msi_uninstallation_sequence()
     sei.lpParameters = L"-uninstall_msi";
     ShellExecuteExW(&sei);
     WaitForSingleObject(sei.hProcess, INFINITE);
+    DWORD exit_code = 0;
+    GetExitCodeProcess(sei.hProcess, &exit_code);
     CloseHandle(sei.hProcess);
-
-    return true;
+    return exit_code == 0;
 }
 
 int runner(bool isProcessElevated)
@@ -148,7 +150,7 @@ int runner(bool isProcessElevated)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     auto msix_mutex = create_runner_mutex(true);
-    const bool msix_mutex_failed_to_lock = !msix_mutex || GetLastError() == ERROR_ALREADY_EXISTS;
+    const bool msix_mutex_failed_to_lock = !msix_mutex;
     if (msix_mutex_failed_to_lock)
     {
         // The app is already running
@@ -156,10 +158,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     auto msi_mutex = create_runner_mutex(false);
-    const bool msi_mutex_failed_to_lock = !msi_mutex || GetLastError() == ERROR_ALREADY_EXISTS;
-    if (msi_mutex_failed_to_lock)
+    const bool msi_mutex_already_taken = !msi_mutex;
+    if (msi_mutex_already_taken)
     {
-        // If we're running as an MSIX application, offer a user uninstall option of an old version if detected
         const bool declined_uninstall = !start_msi_uninstallation_sequence();
 
         if (declined_uninstall)

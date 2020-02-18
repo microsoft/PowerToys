@@ -19,7 +19,7 @@ namespace localized_strings
     const wchar_t* OFFER_UNINSTALL_MSI = L"We've detected a previous installation of PowerToys. Would you like to remove it?";
     const wchar_t* OFFER_UNINSTALL_MSI_TITLE = L"PowerToys: uninstall previous version?";
     const wchar_t* UNINSTALLATION_SUCCESS = L"Previous version of PowerToys was uninstalled successfully.";
-    const wchar_t * UNINSTALLATION_UNKNOWN_ERROR = L"Error: please uninstall the previous version of PowerToys manually.";
+    const wchar_t* UNINSTALLATION_UNKNOWN_ERROR = L"Error: please uninstall the previous version of PowerToys manually.";
 }
 
 std::wstring get_msi_package_path()
@@ -61,12 +61,13 @@ bool offer_msi_uninstallation()
     return selection == IDYES;
 }
 
-void uninstall_msi_version(const std::wstring& package_path)
+bool uninstall_msi_version(const std::wstring& package_path)
 {
     const auto uninstall_result = MsiInstallProductW(package_path.c_str(), L"REMOVE=ALL");
     if (ERROR_SUCCESS == uninstall_result)
     {
         notifications::show_toast(localized_strings::UNINSTALLATION_SUCCESS);
+        return true;
     }
     else if (auto system_message = get_last_error_message(uninstall_result); system_message.has_value())
     {
@@ -74,9 +75,10 @@ void uninstall_msi_version(const std::wstring& package_path)
         {
             notifications::show_toast(*system_message);
         }
-        catch(...)
+        catch (...)
         {
             notifications::show_toast(localized_strings::UNINSTALLATION_UNKNOWN_ERROR);
         }
     }
+    return false;
 }
