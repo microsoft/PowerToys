@@ -222,8 +222,6 @@ namespace JSONHelpers
         void LoadFancyZonesData();
         void SaveFancyZonesData() const;
 
-        void MigrateDeviceInfoFromRegistry(const std::wstring& deviceId);
-
     private:
         void TmpMigrateAppliedZoneSetsFromRegistry();
         void MigrateCustomZoneSetsFromRegistry();

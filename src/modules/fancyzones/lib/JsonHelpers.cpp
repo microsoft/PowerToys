@@ -168,8 +168,6 @@ namespace JSONHelpers
         {
             // Creates default entry in map when ZoneWindow is created
             deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ L"null", ZoneSetLayoutType::Blank } };
-
-            MigrateDeviceInfoFromRegistry(deviceId);
         }
     }
 
@@ -546,31 +544,6 @@ namespace JSONHelpers
                 }
                 resolutionKeyLength = ARRAYSIZE(resolutionKey);
             }
-        }
-    }
-
-    void FancyZonesData::MigrateDeviceInfoFromRegistry(const std::wstring& deviceId)
-    {
-        wchar_t key[256];
-        StringCchPrintf(key, ARRAYSIZE(key), L"%s\\%s", RegistryHelpers::REG_SETTINGS, deviceId.c_str());
-
-        wchar_t activeZoneSetId[256];
-        activeZoneSetId[0] = '\0';
-        DWORD bufferSize = sizeof(activeZoneSetId);
-        DWORD showSpacing = 1;
-        DWORD spacing = 16;
-        DWORD zoneCount = 3;
-        DWORD size = sizeof(DWORD);
-
-        SHRegGetUSValueW(key, L"ActiveZoneSetId", nullptr, &activeZoneSetId, &bufferSize, FALSE, nullptr, 0);
-        SHRegGetUSValueW(key, L"ShowSpacing", nullptr, &showSpacing, &size, FALSE, nullptr, 0);
-        SHRegGetUSValueW(key, L"Spacing", nullptr, &spacing, &size, FALSE, nullptr, 0);
-        SHRegGetUSValueW(key, L"ZoneCount", nullptr, &zoneCount, &size, FALSE, nullptr, 0);
-
-        if (appliedZoneSetsMap.contains(std::wstring{ activeZoneSetId }))
-        {
-            deviceInfoMap[deviceId] = DeviceInfoData{ appliedZoneSetsMap.at(std::wstring{ activeZoneSetId }), static_cast<bool>(showSpacing), static_cast<int>(spacing), static_cast<int>(zoneCount) };
-            SaveFancyZonesData();
         }
     }
 
