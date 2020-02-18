@@ -280,14 +280,22 @@ public:
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled) noexcept;
     IFACEMETHODIMP MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     IFACEMETHODIMP MoveSizeCancel() noexcept;
-    IFACEMETHODIMP_(bool) IsDragEnabled() noexcept { return m_dragEnabled; }
-    IFACEMETHODIMP_(void) MoveWindowIntoZoneByIndex(HWND window, int index) noexcept;
-    IFACEMETHODIMP_(void) MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode) noexcept;
-    IFACEMETHODIMP_(void) CycleActiveZoneSet(DWORD vkCode) noexcept;
-    IFACEMETHODIMP_(std::wstring) UniqueId() noexcept { return { m_uniqueId }; }
-    IFACEMETHODIMP_(std::wstring) WorkAreaKey() noexcept { return { m_workArea }; }
-    IFACEMETHODIMP_(void) SaveWindowProcessToZoneIndex(HWND window) noexcept;
-    IFACEMETHODIMP_(IZoneSet*) ActiveZoneSet() noexcept { return m_activeZoneSet.get(); }
+    IFACEMETHODIMP_(bool)
+    IsDragEnabled() noexcept { return m_dragEnabled; }
+    IFACEMETHODIMP_(void)
+    MoveWindowIntoZoneByIndex(HWND window, int index) noexcept;
+    IFACEMETHODIMP_(void)
+    MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode) noexcept;
+    IFACEMETHODIMP_(void)
+    CycleActiveZoneSet(DWORD vkCode) noexcept;
+    IFACEMETHODIMP_(std::wstring)
+    UniqueId() noexcept { return { m_uniqueId }; }
+    IFACEMETHODIMP_(std::wstring)
+    WorkAreaKey() noexcept { return { m_workArea }; }
+    IFACEMETHODIMP_(void)
+    SaveWindowProcessToZoneIndex(HWND window) noexcept;
+    IFACEMETHODIMP_(IZoneSet*)
+    ActiveZoneSet() noexcept { return m_activeZoneSet.get(); }
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
@@ -559,14 +567,20 @@ void ZoneWindow::InitializeZoneSets(MONITORINFO const& mi) noexcept
 void ZoneWindow::CalculateZoneSet() noexcept
 {
     const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
-    const auto& deviceInfoMap = fancyZonesData.GetDeviceInfoMap();
+    const auto deviceInfoData = fancyZonesData.FindDeviceInfo(m_uniqueId);
     const auto& activeDeviceId = fancyZonesData.GetActiveDeviceId();
-    const auto& activeZoneSet = deviceInfoMap.at(m_uniqueId).activeZoneSet;
 
     if (!activeDeviceId.empty() && activeDeviceId != m_uniqueId)
     {
         return;
     }
+
+    if (!deviceInfoData.has_value())
+    {
+        return;
+    }
+
+    const auto& activeZoneSet = deviceInfoData->activeZoneSet;
 
     if (activeZoneSet.uuid.empty() || activeZoneSet.type == JSONHelpers::ZoneSetLayoutType::Blank)
     {
@@ -585,9 +599,9 @@ void ZoneWindow::CalculateZoneSet() noexcept
         monitorInfo.cbSize = sizeof(monitorInfo);
         if (GetMonitorInfoW(m_monitor, &monitorInfo))
         {
-            bool showSpacing = deviceInfoMap.at(m_uniqueId).showSpacing;
-            int spacing = showSpacing ? deviceInfoMap.at(m_uniqueId).spacing : 0;
-            int zoneCount = deviceInfoMap.at(m_uniqueId).zoneCount;
+            bool showSpacing = deviceInfoData->showSpacing;
+            int spacing = showSpacing ? deviceInfoData->spacing : 0;
+            int zoneCount = deviceInfoData->zoneCount;
             zoneSet->CalculateZones(monitorInfo, zoneCount, spacing);
             UpdateActiveZoneSet(zoneSet.get());
         }
