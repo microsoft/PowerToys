@@ -31,6 +31,7 @@
         <File DestinationPath="VFS\Windows\Microsoft.NET\assembly\GAC_64\SvgPreviewHandler\v4.0_1.0.0.0__9bdcf6dae174efd3\SvgPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\SvgPreviewHandler.dll"/>
         <File DestinationPath="VFS\Windows\Microsoft.NET\assembly\GAC_64\MarkdownPreviewHandler\v4.0_1.0.0.0__201d23296ab86a5a\MarkdownPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\MarkdownPreviewHandler.dll"/>
         <File DestinationPath="VFS\Windows\Microsoft.NET\assembly\GAC_64\Markdig.Signed\v4.0_0.18.0.0__870da25a133885f8\Markdig.Signed.dll" SourcePath="..\..\x64\Release\modules\Markdig.Signed.dll"/>
+        <File DestinationPath="VFS\Windows\Microsoft.NET\assembly\GAC_64\HtmlAgilityPack\v4.0_1.8.10.0__bd319b19eaf3b43a\HtmlAgilityPack.dll" SourcePath="..\..\x64\Release\modules\HtmlAgilityPack.dll"/>
         <File DestinationPath="registry.dat" SourcePath="registry.dat"/>
         
         <File DestinationPath="Notifications.dll" SourcePath="..\..\x64\Release\Notifications.dll"/>
