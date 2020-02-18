@@ -15,6 +15,8 @@ const CLSID CLSID_SHIMActivateMdPreviewHandler = { 0xE0907A95, 0x6F9A, 0x4D1B, {
 // 45769bcc-e8fd-42d0-947e-02beef77a1f5
 const CLSID CLSID_MdPreviewHandler = { 0x45769bcc, 0xe8fd, 0x42d0, { 0x94, 0x7e, 0x02, 0xbe, 0xef, 0x77, 0xa1, 0xf5 } };
 
+// Logic to shim the Activation of .Net Assembly by calling CoGetClassObject. CLSID's of both Preview Handlers should be present in the package private hive.
+// This is required since MSIX currently not support .Net Assembly for Com Activation for Preview Handlers.
 HRESULT CALLBACK DllGetClassObject(REFCLSID clsid, REFIID riid, void** ppv)
 {
     *ppv = NULL;
