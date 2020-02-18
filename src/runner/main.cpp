@@ -74,11 +74,13 @@ bool start_msi_uninstallation_sequence()
     std::wstring action_runner_path{ winrt::Windows::ApplicationModel::Package::Current().InstalledLocation().Path() };
     action_runner_path += L"\\action_runner.exe";
     SHELLEXECUTEINFOW sei{ sizeof(sei) };
-    sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
+    sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS };
     sei.lpFile = action_runner_path.c_str();
     sei.nShow = SW_SHOWNORMAL;
     sei.lpParameters = L"-uninstall_msi";
     ShellExecuteExW(&sei);
+    WaitForSingleObject(sei.hProcess, INFINITE);
+    CloseHandle(sei.hProcess);
 
     return true;
 }
@@ -145,42 +147,43 @@ int runner(bool isProcessElevated)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-    const bool msix_version = winstore::running_as_packaged();
-
-    auto msi_mutex = create_runner_mutex(false);
-    const bool msi_mutex_failed_to_lock = !msi_mutex || GetLastError() == ERROR_ALREADY_EXISTS;
-    wil::unique_mutex_nothrow msix_mutex = { nullptr };
-    bool msix_mutex_failed_to_lock = false;
-    if (msix_version)
-    {
-        msix_mutex = create_runner_mutex(true);
-        msix_mutex_failed_to_lock = !msix_mutex || GetLastError() == ERROR_ALREADY_EXISTS;
-    }
-    if (msix_version ? msix_mutex_failed_to_lock : msi_mutex_failed_to_lock)
+    auto msix_mutex = create_runner_mutex(true);
+    const bool msix_mutex_failed_to_lock = !msix_mutex || GetLastError() == ERROR_ALREADY_EXISTS;
+    if (msix_mutex_failed_to_lock)
     {
         // The app is already running
         return 0;
     }
+
+    auto msi_mutex = create_runner_mutex(false);
+    const bool msi_mutex_failed_to_lock = !msi_mutex || GetLastError() == ERROR_ALREADY_EXISTS;
+    if (msi_mutex_failed_to_lock)
+    {
+        // If we're running as an MSIX application, offer a user uninstall option of an old version if detected
+        const bool declined_uninstall = !start_msi_uninstallation_sequence();
+
+        if (declined_uninstall)
+        {
+            // Warn and exit if msi version is already running
+            notifications::show_toast(localized_strings::MSI_VERSION_IS_ALREADY_RUNNING);
+            // Wait 1 second before exiting, since if we exit immediately, the toast notification becomes lost
+            Sleep(1000);
+            return 0;
+        }
+    }
+
     int result = 0;
     try
     {
         winrt::init_apartment();
 
-        if (msix_version)
+        if (winstore::running_as_packaged())
         {
             notifications::register_background_toast_handler();
 
-            // If we're running as an MSIX application, offer a user uninstall option of an old version if detected
-            const bool declined_uninstall = !start_msi_uninstallation_sequence();
-
-            if (declined_uninstall && msi_mutex_failed_to_lock)
-            {
-                // Warn and exit if msi version is already running
-                notifications::show_toast(localized_strings::MSI_VERSION_IS_ALREADY_RUNNING);
-                // Wait 1 second before exiting, since if we exit immediately, the toast notification becomes lost
-                Sleep(1000);
-                return 0;
-            }
+            std::thread{ [] {
+                start_msi_uninstallation_sequence();
+            } }.detach();
         }
         // Singletons initialization order needs to be preserved, first events and
         // then modules to guarantee the reverse destruction order.
