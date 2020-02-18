@@ -15,12 +15,12 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
     std::wstring m_moduleName;
-    std::vector<FileExplorerPreviewSettings> m_previewHanlders;
+    std::vector<FileExplorerPreviewSettings> m_previewHandlers;
 
 public:
     PowerPreviewModule() :
         m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
-        m_previewHanlders(
+        m_previewHandlers(
             { // SVG Preview Hanlder settings object.
               FileExplorerPreviewSettings(
                   false,

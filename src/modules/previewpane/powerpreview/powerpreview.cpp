@@ -44,7 +44,7 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_DESC),
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_TEXT));
 
-    for (FileExplorerPreviewSettings& previewHanlder : this->m_previewHanlders)
+    for (FileExplorerPreviewSettings& previewHanlder : this->m_previewHandlers)
     {
         settings.add_bool_toogle(
             previewHanlder.GetName(),
@@ -62,7 +62,7 @@ void PowerPreviewModule::set_config(const wchar_t* config)
     {
         PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::from_json_string(config);
 
-        for (FileExplorerPreviewSettings& previewHanlder : this->m_previewHanlders)
+        for (FileExplorerPreviewSettings& previewHanlder : this->m_previewHandlers)
         {
             previewHanlder.UpdateState(values);
         }
@@ -78,7 +78,7 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 // Enable preview handlers.
 void PowerPreviewModule::enable()
 {
-    for (FileExplorerPreviewSettings& previewHanlder : this->m_previewHanlders)
+    for (FileExplorerPreviewSettings& previewHanlder : this->m_previewHandlers)
     {
         previewHanlder.EnablePreview();
     }
@@ -88,7 +88,7 @@ void PowerPreviewModule::enable()
 // Disable all preview handlers.
 void PowerPreviewModule::disable()
 {
-    for (FileExplorerPreviewSettings& previewHanlder : this->m_previewHanlders)
+    for (FileExplorerPreviewSettings& previewHanlder : this->m_previewHandlers)
     {
         previewHanlder.DisablePreview();
     }
@@ -98,7 +98,7 @@ void PowerPreviewModule::disable()
 // Returns if the powertoys is enabled
 bool PowerPreviewModule::is_enabled()
 {
-    for (FileExplorerPreviewSettings& previewHanlder : this->m_previewHanlders)
+    for (FileExplorerPreviewSettings& previewHanlder : this->m_previewHandlers)
     {
         // if : at least one preview handler is enabled.
         //      => set the General settings state for the preview handlers to true.
@@ -130,7 +130,7 @@ void PowerPreviewModule::init_settings()
             PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_name());
 
         // Load settings states.
-        for (FileExplorerPreviewSettings& previewHanlder : this->m_previewHanlders)
+        for (FileExplorerPreviewSettings& previewHanlder : this->m_previewHandlers)
         {
             previewHanlder.LoadState(settings);
         }
