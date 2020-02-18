@@ -68,7 +68,7 @@ namespace FancyZonesUnitTests
             GUID guid;
             Assert::AreEqual(S_OK, CoCreateGuid(&guid));
 
-            return GuidString(guid);           
+            return GuidString(guid);
         }
 
         TEST_METHOD_INITIALIZE(Init)
@@ -89,7 +89,7 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetAppliedZoneSetTmpPath()));
             Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetCustomZoneSetsTmpPath()));
 
-            m_fancyZonesData = JSONHelpers::FancyZonesData();
+            m_fancyZonesData.clear_data();
         }
 
         TEST_METHOD_CLEANUP(Cleanup)
@@ -622,7 +622,7 @@ namespace FancyZonesUnitTests
             const auto processPath = get_process_path(window);
             const auto deviceId = m_zoneWindow->UniqueId();
             const auto zoneSetId = m_zoneWindow->ActiveZoneSet()->Id();
-            
+
             //fill app zone history map
             Assert::IsTrue(m_fancyZonesData.SetAppLastZone(window, deviceId, GuidString(zoneSetId), 0));
             Assert::AreEqual((size_t)1, m_fancyZonesData.GetAppZoneHistoryMap().size());

@@ -6,6 +6,7 @@
 #include <helpers.h>
 #include <settings.h>
 #include <windowsx.h>
+#include <thread>
 #include <trace.h>
 
 extern HINSTANCE g_hInst;
@@ -512,6 +513,12 @@ HRESULT CPowerRenameUI::_DoModal(__in_opt HWND hwnd)
     }
     return hr;
 }
+void CPowerRenameUI::BecomeForegroundWindow()
+{
+    static INPUT i = {INPUT_MOUSE, {}};
+    SendInput(1, &i, sizeof(i));
+    SetForegroundWindow(m_hwnd);
+}
 
 HRESULT CPowerRenameUI::_DoModeless(__in_opt HWND hwnd)
 {
@@ -520,6 +527,7 @@ HRESULT CPowerRenameUI::_DoModeless(__in_opt HWND hwnd)
     if (NULL != CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MAIN), hwnd, s_DlgProc, (LPARAM)this))
     {
         ShowWindow(m_hwnd, SW_SHOWNORMAL);
+        BecomeForegroundWindow();
         MSG msg;
         while (GetMessage(&msg, NULL, 0, 0))
         {

@@ -2,6 +2,7 @@
 #include "JsonHelpers.h"
 #include "RegistryHelpers.h"
 #include "ZoneSet.h"
+#include "trace.h"
 
 #include <common/common.h>
 
@@ -21,6 +22,13 @@ namespace
     constexpr int c_blankCustomModelId = 0xFFFA;
 
     const wchar_t* FANCY_ZONES_DATA_FILE = L"zones-settings.json";
+    const wchar_t* DEFAULT_GUID = L"{00000000-0000-0000-0000-000000000000}";
+
+    std::wstring ExtractVirtualDesktopId(const std::wstring& deviceId)
+    {
+        // Format: <device-id>_<resolution>_<virtual-desktop-id>
+        return deviceId.substr(deviceId.rfind('_') + 1);
+    }
 }
 
 namespace JSONHelpers
@@ -135,13 +143,10 @@ namespace JSONHelpers
         jsonFilePath = result + L"\\" + std::wstring(FANCY_ZONES_DATA_FILE);
     }
 
-    const std::wstring& FancyZonesData::GetPersistFancyZonesJSONPath() const
-    {
-        return jsonFilePath;
-    }
-
     json::JsonObject FancyZonesData::GetPersistFancyZonesJSON()
     {
+        std::scoped_lock lock{ dataLock };
+
         std::wstring save_file_path = GetPersistFancyZonesJSONPath();
 
         auto result = json::from_file(save_file_path);
@@ -155,19 +160,55 @@ namespace JSONHelpers
         }
     }
 
+    std::optional<DeviceInfoData> FancyZonesData::FindDeviceInfo(const std::wstring& zoneWindowId) const
+    {
+        std::scoped_lock lock{ dataLock };
+        auto it = deviceInfoMap.find(zoneWindowId);
+        return it != end(deviceInfoMap) ? std::optional{ it->second } : std::nullopt;
+    }
+
+    std::optional<CustomZoneSetData> FancyZonesData::FindCustomZoneSet(const std::wstring& guuid) const
+    {
+        std::scoped_lock lock{ dataLock };
+        auto it = customZoneSetsMap.find(guuid);
+        return it != end(customZoneSetsMap) ? std::optional{ it->second } : std::nullopt;
+    }
+
     void FancyZonesData::AddDevice(const std::wstring& deviceId)
     {
+        std::scoped_lock lock{ dataLock };
         if (!deviceInfoMap.contains(deviceId))
         {
             // Creates default entry in map when ZoneWindow is created
-            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ L"null", ZoneSetLayoutType::Blank }  };
-
-            MigrateDeviceInfoFromRegistry(deviceId);
+            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ L"null", ZoneSetLayoutType::Blank } };
         }
+    }
+
+    bool FancyZonesData::RemoveDevicesByVirtualDesktopId(const std::wstring& virtualDesktopId)
+    {
+        if (virtualDesktopId == DEFAULT_GUID)
+        {
+            return false;
+        }
+        bool modified{ false };
+        for (auto it = deviceInfoMap.begin(); it != deviceInfoMap.end();)
+        {
+            if (ExtractVirtualDesktopId(it->first) == virtualDesktopId)
+            {
+                it = deviceInfoMap.erase(it);
+                modified = true;
+            }
+            else
+            {
+                ++it;
+            }
+        }
+        return modified;
     }
 
     void FancyZonesData::CloneDeviceInfo(const std::wstring& source, const std::wstring& destination)
     {
+        std::scoped_lock lock{ dataLock };
         // Clone information from source device if destination device is uninitialized (Blank).
         auto& destInfo = deviceInfoMap[destination];
         if (destInfo.activeZoneSet.type == ZoneSetLayoutType::Blank)
@@ -178,6 +219,7 @@ namespace JSONHelpers
 
     int FancyZonesData::GetAppLastZoneIndex(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const
     {
+        std::scoped_lock lock{ dataLock };
         auto processPath = get_process_path(window);
         if (!processPath.empty())
         {
@@ -188,7 +230,7 @@ namespace JSONHelpers
                 if (data.zoneSetUuid == zoneSetId && data.deviceId == deviceId)
                 {
                     return history->second.zoneIndex;
-                }                
+                }
             }
         }
 
@@ -197,6 +239,7 @@ namespace JSONHelpers
 
     bool FancyZonesData::RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId)
     {
+        std::scoped_lock lock{ dataLock };
         auto processPath = get_process_path(window);
         if (!processPath.empty())
         {
@@ -218,6 +261,7 @@ namespace JSONHelpers
 
     bool FancyZonesData::SetAppLastZone(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, int zoneIndex)
     {
+        std::scoped_lock lock{ dataLock };
         auto processPath = get_process_path(window);
         if (processPath.empty())
         {
@@ -231,6 +275,7 @@ namespace JSONHelpers
 
     void FancyZonesData::SetActiveZoneSet(const std::wstring& deviceId, const ZoneSetData& data)
     {
+        std::scoped_lock lock{ dataLock };
         auto it = deviceInfoMap.find(deviceId);
         if (it != deviceInfoMap.end())
         {
@@ -240,12 +285,14 @@ namespace JSONHelpers
 
     void FancyZonesData::SerializeDeviceInfoToTmpFile(const DeviceInfoJSON& deviceInfo, std::wstring_view tmpFilePath) const
     {
+        std::scoped_lock lock{ dataLock };
         json::JsonObject deviceInfoJson = DeviceInfoJSON::ToJson(deviceInfo);
         json::to_file(tmpFilePath, deviceInfoJson);
     }
 
     void FancyZonesData::ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath)
     {
+        std::scoped_lock lock{ dataLock };
         if (std::filesystem::exists(tmpFilePath))
         {
             if (auto zoneSetJson = json::from_file(tmpFilePath); zoneSetJson.has_value())
@@ -266,6 +313,7 @@ namespace JSONHelpers
 
     bool FancyZonesData::ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath)
     {
+        std::scoped_lock lock{ dataLock };
         bool res = true;
         if (std::filesystem::exists(tmpFilePath))
         {
@@ -291,6 +339,7 @@ namespace JSONHelpers
 
     bool FancyZonesData::ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath)
     {
+        std::scoped_lock lock{ dataLock };
         bool res = true;
         if (std::filesystem::exists(tmpFilePath))
         {
@@ -317,6 +366,7 @@ namespace JSONHelpers
 
     bool FancyZonesData::ParseAppZoneHistory(const json::JsonObject& fancyZonesDataJSON)
     {
+        std::scoped_lock lock{ dataLock };
         try
         {
             auto appLastZones = fancyZonesDataJSON.GetNamedArray(L"app-zone-history");
@@ -344,6 +394,7 @@ namespace JSONHelpers
 
     json::JsonArray FancyZonesData::SerializeAppZoneHistory() const
     {
+        std::scoped_lock lock{ dataLock };
         json::JsonArray appHistoryArray;
 
         for (const auto& [appPath, appZoneHistoryData] : appZoneHistoryMap)
@@ -356,6 +407,7 @@ namespace JSONHelpers
 
     bool FancyZonesData::ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON)
     {
+        std::scoped_lock lock{ dataLock };
         try
         {
             auto devices = fancyZonesDataJSON.GetNamedArray(L"devices");
@@ -382,11 +434,13 @@ namespace JSONHelpers
 
     json::JsonArray FancyZonesData::SerializeDeviceInfos() const
     {
+        std::scoped_lock lock{ dataLock };
         json::JsonArray DeviceInfosJSON{};
 
         for (const auto& [deviceID, deviceData] : deviceInfoMap)
         {
-            if (deviceData.activeZoneSet.type != ZoneSetLayoutType::Blank) {
+            if (deviceData.activeZoneSet.type != ZoneSetLayoutType::Blank)
+            {
                 DeviceInfosJSON.Append(DeviceInfoJSON::DeviceInfoJSON::ToJson(DeviceInfoJSON{ deviceID, deviceData }));
             }
         }
@@ -396,6 +450,7 @@ namespace JSONHelpers
 
     bool FancyZonesData::ParseCustomZoneSets(const json::JsonObject& fancyZonesDataJSON)
     {
+        std::scoped_lock lock{ dataLock };
         try
         {
             auto customZoneSets = fancyZonesDataJSON.GetNamedArray(L"custom-zone-sets");
@@ -418,6 +473,7 @@ namespace JSONHelpers
 
     json::JsonArray FancyZonesData::SerializeCustomZoneSets() const
     {
+        std::scoped_lock lock{ dataLock };
         json::JsonArray customZoneSetsJSON{};
 
         for (const auto& [zoneSetId, zoneSetData] : customZoneSetsMap)
@@ -430,6 +486,7 @@ namespace JSONHelpers
 
     void FancyZonesData::CustomZoneSetsToJsonFile(std::wstring_view filePath) const
     {
+        std::scoped_lock lock{ dataLock };
         const auto& customZoneSetsJson = SerializeCustomZoneSets();
         json::JsonObject root{};
         root.SetNamedValue(L"custom-zone-sets", customZoneSetsJson);
@@ -438,6 +495,7 @@ namespace JSONHelpers
 
     void FancyZonesData::LoadFancyZonesData()
     {
+        std::scoped_lock lock{ dataLock };
         std::wstring jsonFilePath = GetPersistFancyZonesJSONPath();
 
         if (!std::filesystem::exists(jsonFilePath))
@@ -461,11 +519,18 @@ namespace JSONHelpers
 
     void FancyZonesData::SaveFancyZonesData() const
     {
+        std::scoped_lock lock{ dataLock };
         json::JsonObject root{};
 
         root.SetNamedValue(L"app-zone-history", SerializeAppZoneHistory());
         root.SetNamedValue(L"devices", SerializeDeviceInfos());
         root.SetNamedValue(L"custom-zone-sets", SerializeCustomZoneSets());
+
+        auto before = json::from_file(jsonFilePath);
+        if (!before.has_value() || before.value().Stringify() != root.Stringify())
+        {
+            Trace::FancyZones::DataChanged();
+        }
 
         json::to_file(jsonFilePath, root);
     }
@@ -474,6 +539,7 @@ namespace JSONHelpers
     {
         std::wregex ex(L"^[0-9]{3,4}_[0-9]{3,4}$");
 
+        std::scoped_lock lock{ dataLock };
         wchar_t key[256];
         StringCchPrintf(key, ARRAYSIZE(key), L"%s", RegistryHelpers::REG_SETTINGS);
         HKEY hkey;
@@ -519,33 +585,9 @@ namespace JSONHelpers
         }
     }
 
-    void FancyZonesData::MigrateDeviceInfoFromRegistry(const std::wstring& deviceId)
-    {
-        wchar_t key[256];
-        StringCchPrintf(key, ARRAYSIZE(key), L"%s\\%s", RegistryHelpers::REG_SETTINGS, deviceId.c_str());
-
-        wchar_t activeZoneSetId[256];
-        activeZoneSetId[0] = '\0';
-        DWORD bufferSize = sizeof(activeZoneSetId);
-        DWORD showSpacing = 1;
-        DWORD spacing = 16;
-        DWORD zoneCount = 3;
-        DWORD size = sizeof(DWORD);
-
-        SHRegGetUSValueW(key, L"ActiveZoneSetId", nullptr, &activeZoneSetId, &bufferSize, FALSE, nullptr, 0);
-        SHRegGetUSValueW(key, L"ShowSpacing", nullptr, &showSpacing, &size, FALSE, nullptr, 0);
-        SHRegGetUSValueW(key, L"Spacing", nullptr, &spacing, &size, FALSE, nullptr, 0);
-        SHRegGetUSValueW(key, L"ZoneCount", nullptr, &zoneCount, &size, FALSE, nullptr, 0);
-
-        if (appliedZoneSetsMap.contains(std::wstring{ activeZoneSetId }))
-        {
-            deviceInfoMap[deviceId] = DeviceInfoData{ appliedZoneSetsMap.at(std::wstring{ activeZoneSetId }), static_cast<bool>(showSpacing), static_cast<int>(spacing), static_cast<int>(zoneCount) };
-            SaveFancyZonesData();
-        }
-    }
-
     void FancyZonesData::MigrateCustomZoneSetsFromRegistry()
     {
+        std::scoped_lock lock{ dataLock };
         wchar_t key[256];
         StringCchPrintf(key, ARRAYSIZE(key), L"%s\\%s", RegistryHelpers::REG_SETTINGS, L"Layouts");
         HKEY hkey;
@@ -574,8 +616,7 @@ namespace JSONHelpers
                 }
                 switch (zoneSetData.type)
                 {
-                case CustomLayoutType::Grid:
-                {
+                case CustomLayoutType::Grid: {
                     int j = 5;
                     GridLayoutInfo zoneSetInfo(GridLayoutInfo::Minimal{ .rows = data[j++], .columns = data[j++] });
 
@@ -599,8 +640,7 @@ namespace JSONHelpers
                     zoneSetData.info = zoneSetInfo;
                     break;
                 }
-                case CustomLayoutType::Canvas:
-                {
+                case CustomLayoutType::Canvas: {
                     CanvasLayoutInfo info;
 
                     int j = 5;
@@ -880,8 +920,7 @@ namespace JSONHelpers
         result.SetNamedValue(L"name", json::value(customZoneSet.data.name));
         switch (customZoneSet.data.type)
         {
-        case CustomLayoutType::Canvas:
-        {
+        case CustomLayoutType::Canvas: {
             result.SetNamedValue(L"type", json::value(L"canvas"));
 
             CanvasLayoutInfo info = std::get<CanvasLayoutInfo>(customZoneSet.data.info);
@@ -889,8 +928,7 @@ namespace JSONHelpers
 
             break;
         }
-        case CustomLayoutType::Grid:
-        {
+        case CustomLayoutType::Grid: {
             result.SetNamedValue(L"type", json::value(L"grid"));
 
             GridLayoutInfo gridInfo = std::get<GridLayoutInfo>(customZoneSet.data.info);

@@ -290,7 +290,7 @@ namespace FancyZonesUnitTests
             m_fzCallback = fancyZones.as<IFancyZonesCallback>();
             Assert::IsTrue(m_fzCallback != nullptr);
 
-            m_fancyZonesData = JSONHelpers::FancyZonesData();
+            m_fancyZonesData.clear_data();
         }
 
         TEST_METHOD_CLEANUP(Cleanup)

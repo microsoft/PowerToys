@@ -86,6 +86,7 @@ private:
 
     HRESULT _DoModal(__in_opt HWND hwnd);
     HRESULT _DoModeless(__in_opt HWND hwnd);
+    void BecomeForegroundWindow();
 
     static INT_PTR CALLBACK s_DlgProc(HWND hdlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
