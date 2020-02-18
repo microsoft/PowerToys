@@ -133,12 +133,15 @@ export class GeneralSettings extends React.Component <any, any> {
             ref={(input) => {this.startup_reference=input;}}
           />
         </Stack>
-        <BoolToggleSettingsControl
+        {this.state.settings.general.is_admin &&
+        (<BoolToggleSettingsControl
           setting={{display_name: 'Always run as administrator', value: this.state.settings.general.run_elevated}}
           on_change={this.parent_on_change}
           ref={(input) => {this.elevated_reference=input;}}
-        />
-        <CustomActionSettingsControl
+        />)
+        }
+        {this.state.settings.general.is_admin &&
+        (<CustomActionSettingsControl
           setting={{
             display_name: '',
             value: this.state.settings.general.is_elevated ? 
@@ -160,7 +163,8 @@ export class GeneralSettings extends React.Component <any, any> {
             }));
           }}
           ref={(input) => {this.restart_reference=input;}}
-        />
+        />)
+        }
         <ChoiceGroupSettingsControl
           setting={{display_name: 'Chose Settings color',
                     value: this.state.settings.general.theme,

@@ -6,6 +6,8 @@
 #include <sddl.h>
 #include "version.h"
 
+#pragma comment(lib, "advapi32.lib")
+
 namespace localized_strings
 {
   const wchar_t LAST_ERROR_FORMAT_STRING[] = L"%s failed with error %d: %s";
@@ -538,4 +540,73 @@ std::wstring get_module_folderpath(HMODULE mod)
 
     PathRemoveFileSpecW(buffer);
     return { buffer, (UINT)lstrlenW(buffer) };
+}
+
+
+// The function returns true in case of error since we want to return false
+// only in case of a positive verification that the user is not an admin.
+bool check_user_is_admin()
+{
+    auto freeMemory = [](PSID pSID, PTOKEN_GROUPS pGroupInfo) {
+        if (pSID)
+        {
+            FreeSid(pSID);
+        }
+        if (pGroupInfo)
+        {
+            GlobalFree(pGroupInfo);
+        }
+    };
+
+    HANDLE hToken;
+    DWORD dwSize = 0, dwResult = 0;
+    PTOKEN_GROUPS pGroupInfo;
+    SID_IDENTIFIER_AUTHORITY SIDAuth = SECURITY_NT_AUTHORITY;
+    PSID pSID = NULL;
+
+    // Open a handle to the access token for the calling process.
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+    {
+        return true;
+    }
+
+    // Call GetTokenInformation to get the buffer size.
+    if (!GetTokenInformation(hToken, TokenGroups, NULL, dwSize, &dwSize))
+    {
+        dwResult = GetLastError();
+        if (dwResult != ERROR_INSUFFICIENT_BUFFER)
+        {
+            return true;
+        }
+    }
+
+    // Allocate the buffer.
+    pGroupInfo = (PTOKEN_GROUPS)GlobalAlloc(GPTR, dwSize);
+
+    // Call GetTokenInformation again to get the group information.
+    if (!GetTokenInformation(hToken, TokenGroups, pGroupInfo, dwSize, &dwSize))
+    {
+        freeMemory(pSID, pGroupInfo);
+        return true;
+    }
+
+    // Create a SID for the BUILTIN\Administrators group.
+    if (!AllocateAndInitializeSid(&SIDAuth, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &pSID))
+    {
+        freeMemory(pSID, pGroupInfo);
+        return true;
+    }
+
+    // Loop through the group SIDs looking for the administrator SID.
+    for (DWORD i = 0; i < pGroupInfo->GroupCount; ++i)
+    {
+        if (EqualSid(pSID, pGroupInfo->Groups[i].Sid))
+        {
+            freeMemory(pSID, pGroupInfo);
+            return true;
+        }
+    }
+
+    freeMemory(pSID, pGroupInfo);
+    return false;
 }
