@@ -120,4 +120,7 @@
   <data name="BlockedElementInfoText" xml:space="preserve">
     <value>Some elements have been blocked to help prevent the sender from identifying your computer. Open this item to view all elements.</value>
   </data>
+  <data name="SvgNotPreviewedError" xml:space="preserve">
+    <value>The Svg could not be preview due to an internal error in Svg Preview Handler.</value>
+  </data>
 </root>
