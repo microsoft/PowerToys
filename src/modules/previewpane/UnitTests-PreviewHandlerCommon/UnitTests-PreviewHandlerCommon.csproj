@@ -48,7 +48,6 @@
   <ItemGroup>
     <Compile Include="FileBasedPreviewHandlerTests.cs" />
     <Compile Include="FormHandlerControlTests.cs" />
-    <Compile Include="PreviewHandlerAttributeTests.cs" />
     <Compile Include="PreviewHandlerBaseTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StreamBasedPreviewHandlerTests.cs" />
