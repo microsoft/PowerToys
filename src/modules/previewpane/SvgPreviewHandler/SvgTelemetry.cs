@@ -59,7 +59,7 @@ namespace SvgPreviewHandler
         public void SvgFilePreviewError(string message)
         {
             this.Write(
-                SvgFilePreviewedEventName,
+                SvgFilePreviewErrorEventName,
                 new EventSourceOptions()
                 {
                     Keywords = ProjectKeywordMeasure,
