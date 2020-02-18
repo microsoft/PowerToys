@@ -222,6 +222,7 @@ namespace JSONHelpers
         }
 
         void AddDevice(const std::wstring& deviceId);
+        bool RemoveDevicesByVirtualDesktopId(const std::wstring& virtualDesktopId);
         void CloneDeviceInfo(const std::wstring& source, const std::wstring& destination);
 
         int GetAppLastZoneIndex(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const;
@@ -246,8 +247,6 @@ namespace JSONHelpers
 
         void LoadFancyZonesData();
         void SaveFancyZonesData() const;
-
-        void MigrateDeviceInfoFromRegistry(const std::wstring& deviceId);
 
     private:
         void TmpMigrateAppliedZoneSetsFromRegistry();
