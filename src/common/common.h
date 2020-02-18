@@ -39,6 +39,7 @@ RECT keep_rect_inside_rect(const RECT& small_rect, const RECT& big_rect);
 // Initializes and runs windows message loop
 int run_message_loop();
 
+std::optional<std::wstring> get_last_error_message(const DWORD dw);
 void show_last_error_message(LPCWSTR lpszFunction, DWORD dw);
 
 enum WindowState {

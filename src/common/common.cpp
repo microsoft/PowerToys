@@ -6,6 +6,12 @@
 #include <sddl.h>
 #include "version.h"
 
+namespace localized_strings
+{
+  const wchar_t LAST_ERROR_FORMAT_STRING[] = L"%s failed with error %d: %s";
+  const wchar_t LAST_ERROR_TITLE_STRING[] = L"Error";
+}
+
 std::optional<RECT> get_button_pos(HWND hwnd) {
   RECT button;
   if (DwmGetWindowAttribute(hwnd, DWMWA_CAPTION_BUTTON_BOUNDS, &button, sizeof(RECT)) == S_OK) {
@@ -218,28 +224,31 @@ int run_message_loop() {
   return static_cast<int>(msg.wParam);
 }
 
+std::optional<std::wstring> get_last_error_message(const DWORD dw) {
+  std::optional<std::wstring> message;
+  try {
+    const auto msg = std::system_category().message(dw);
+    message.emplace(begin(msg), end(msg));
+  }
+  catch(...) {
+    
+  }
+  return message;
+}
+
 void show_last_error_message(LPCWSTR lpszFunction, DWORD dw) {
-  // Retrieve the system error message for the error code
-  LPWSTR lpMsgBuf = NULL;
-  if (FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                     FORMAT_MESSAGE_FROM_SYSTEM |
-                     FORMAT_MESSAGE_IGNORE_INSERTS,
-                     NULL,
-                     dw,
-                     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                     lpMsgBuf,
-                     0, NULL) > 0) {
-    // Display the error message and exit the process
-    LPWSTR lpDisplayBuf = (LPWSTR)LocalAlloc(LMEM_ZEROINIT, (lstrlenW(lpMsgBuf) + lstrlenW(lpszFunction) + 40) * sizeof(WCHAR));
-    if (lpDisplayBuf != NULL) {
-      StringCchPrintfW(lpDisplayBuf,
-        LocalSize(lpDisplayBuf) / sizeof(WCHAR),
-        L"%s failed with error %d: %s",
-        lpszFunction, dw, lpMsgBuf);
-      MessageBoxW(NULL, (LPCTSTR)lpDisplayBuf, L"Error", MB_OK);
-      LocalFree(lpDisplayBuf);
-    }
-    LocalFree(lpMsgBuf);
+  const auto system_message = get_last_error_message(dw);
+  if(!system_message.has_value()) {
+    return;
+  }
+  LPWSTR lpDisplayBuf = (LPWSTR)LocalAlloc(LMEM_ZEROINIT, (system_message->size() + lstrlenW(lpszFunction) + 40) * sizeof(WCHAR));
+  if (lpDisplayBuf != NULL) {
+    StringCchPrintfW(lpDisplayBuf,
+      LocalSize(lpDisplayBuf) / sizeof(WCHAR),
+      localized_strings::LAST_ERROR_FORMAT_STRING,
+      lpszFunction, dw, system_message->c_str());
+    MessageBoxW(NULL, (LPCTSTR)lpDisplayBuf, localized_strings::LAST_ERROR_TITLE_STRING, MB_OK);
+    LocalFree(lpDisplayBuf);
   }
 }
 
