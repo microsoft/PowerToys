@@ -21,21 +21,9 @@
     <ClCompile Include="FileExplorerPreviewSettingsTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BaseSettingsClassTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MarkDownPreviewSettingsClassTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SVGPreviewSettingsClassTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BaseSettingsClassTest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

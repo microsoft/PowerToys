@@ -20,12 +20,11 @@ namespace PowerPreviewSettings
 
 	public:
 		FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCWSTR clsid, const std::wstring displayname);
-		FileExplorerPreviewSettings();
 
 		virtual bool GetState() const;
 		virtual void SetState(bool state);
 		virtual void LoadState(PowerToysSettings::PowerToyValues& settings);
-		virtual void UpdateState(PowerToysSettings::PowerToyValues& values);
+        virtual void UpdateState(PowerToysSettings::PowerToyValues& values);
 		virtual std::wstring GetName() const;
 		virtual void SetName(const std::wstring& name);
 		virtual std::wstring GetDescription() const;
@@ -37,26 +36,7 @@ namespace PowerPreviewSettings
 		virtual std::wstring GetDisplayName() const;
 		virtual LPCWSTR GetCLSID() const;
 		virtual LPCWSTR GetSubKey() const;
-		virtual void EnablePreview() = 0;
-		virtual void DisablePreview() = 0;
-	};
-
-	class PrevPaneSVGRendrSettings : public FileExplorerPreviewSettings
-	{
-	public:
-		PrevPaneSVGRendrSettings();
-
 		virtual void EnablePreview();
 		virtual void DisablePreview();
 	};
-
-	class PrevPaneMDRendrSettings : public FileExplorerPreviewSettings
-	{
-	public:
-		PrevPaneMDRendrSettings();
-
-		virtual void EnablePreview();
-		virtual void DisablePreview();
-	};
-
 }
