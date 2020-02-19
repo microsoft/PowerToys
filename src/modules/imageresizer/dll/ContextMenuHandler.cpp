@@ -5,6 +5,7 @@
 #include "HDropIterator.h"
 #include "Settings.h"
 #include "common/icon_helpers.h"
+#include "trace.h"
 
 extern HINSTANCE g_hInst_imageResizer;
 
@@ -177,7 +178,8 @@ HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ U
 HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
 {
     BOOL fUnicode = FALSE;
-
+    Trace::Invoked();
+    HRESULT hr = E_FAIL;
     if (pici->cbSize == sizeof(CMINVOKECOMMANDINFOEX) && pici->fMask & CMIC_MASK_UNICODE)
     {
         fUnicode = TRUE;
@@ -190,15 +192,15 @@ HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
     {
         if (wcscmp(((CMINVOKECOMMANDINFOEX*)pici)->lpVerbW, RESIZE_PICTURES_VERBW) == 0)
         {
-            return ResizePictures(pici, nullptr);
+            hr = ResizePictures(pici, nullptr);
         }
     }
     else if (LOWORD(pici->lpVerb) == ID_RESIZE_PICTURES)
     {
-        return ResizePictures(pici, nullptr);
+        hr = ResizePictures(pici, nullptr);
     }
-
-    return E_FAIL;
+    Trace::InvokedRet(hr);
+    return hr;
 }
 
 // This function is used for both MSI and MSIX. If pici is null and psiItemArray is not null then this is called by Invoke(MSIX). If pici is not null and psiItemArray is null then this is called by InvokeCommand(MSI).
@@ -215,8 +217,17 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
     sa.lpSecurityDescriptor = NULL;
     sa.bInheritHandle = TRUE;
-    CreatePipe(&hReadPipe, &hWritePipe, &sa, 0);
-    SetHandleInformation(hWritePipe, HANDLE_FLAG_INHERIT, 0);
+    HRESULT hr = E_FAIL;
+    if (!CreatePipe(&hReadPipe, &hWritePipe, &sa, 0))
+    {
+        Trace::InvokedRet(hr);
+        return hr;
+    }
+    if (!SetHandleInformation(hWritePipe, HANDLE_FLAG_INHERIT, 0))
+    {
+        Trace::InvokedRet(hr);
+        return hr;
+    }
     CAtlFile writePipe(hWritePipe);
 
     CString commandLine;
@@ -264,8 +275,16 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
         &startupInfo,
         &processInformation);
     delete[] lpszCommandLine;
-    CloseHandle(processInformation.hProcess);
-    CloseHandle(processInformation.hThread);
+    if (!CloseHandle(processInformation.hProcess))
+    {
+        Trace::InvokedRet(hr);
+        return hr;
+    }
+    if (!CloseHandle(processInformation.hThread))
+    {
+        Trace::InvokedRet(hr);
+        return hr;
+    }
 
     // psiItemArray is NULL if called from InvokeCommand. This part is used for the MSI installer. It is not NULL if it is called from Invoke (MSIX).
     if (!psiItemArray)
@@ -302,8 +321,9 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
     }
 
     writePipe.Close();
-
-    return S_OK;
+    hr = S_OK;
+    Trace::InvokedRet(hr);
+    return hr;
 }
 
 HRESULT __stdcall CContextMenuHandler::GetTitle(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszName)
@@ -380,5 +400,8 @@ HRESULT __stdcall CContextMenuHandler::EnumSubCommands(IEnumExplorerCommand** pp
 // psiItemArray contains the list of files that have been selected when the context menu entry is invoked
 HRESULT __stdcall CContextMenuHandler::Invoke(IShellItemArray* psiItemArray, IBindCtx* /*pbc*/)
 {
-    return ResizePictures(nullptr, psiItemArray);
+    Trace::Invoked();
+    HRESULT hr = ResizePictures(nullptr, psiItemArray);
+    Trace::InvokedRet(hr);
+    return hr;
 }

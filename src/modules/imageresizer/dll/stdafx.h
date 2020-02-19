@@ -20,3 +20,4 @@
 #include <windows.h>
 
 #include <ShlObj.h>
+#include <ProjectTelemetry.h>

@@ -5,6 +5,7 @@
 #include <interface/powertoy_module_interface.h>
 #include <common/settings_objects.h>
 #include "Settings.h"
+#include "trace.h"
 #include <common/common.h>
 
 CImageResizerExtModule _AtlModule;
@@ -16,6 +17,11 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpRes
     {
     case DLL_PROCESS_ATTACH:
         g_hInst_imageResizer = hInstance;
+        Trace::RegisterProvider();
+        break;
+    case DLL_PROCESS_DETACH:
+        Trace::UnregisterProvider();
+        break;
     }
     return _AtlModule.DllMain(dwReason, lpReserved);
 }
@@ -83,27 +89,14 @@ public:
     virtual void call_custom_action(const wchar_t* action) override {}
 
     // Called by the runner to pass the updated settings values as a serialized JSON.
-    virtual void set_config(const wchar_t* config) override
-    {
-        try
-        {
-            // Parse the input JSON string.
-            PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::from_json_string(config);
-            // If you don't need to do any custom processing of the settings, proceed
-            // to persists the values calling:
-            values.save_to_settings_file();
-        }
-        catch (std::exception ex)
-        {
-            // Improper JSON.
-        }
-    }
+    virtual void set_config(const wchar_t* config) override {}
 
     // Enable the powertoy
     virtual void enable()
     {
         m_enabled = true;
         CSettings::SetEnabled(m_enabled);
+        Trace::EnableImageResizer(m_enabled);
     }
 
     // Disable the powertoy
@@ -111,6 +104,7 @@ public:
     {
         m_enabled = false;
         CSettings::SetEnabled(m_enabled);
+        Trace::EnableImageResizer(m_enabled);
     }
 
     // Returns if the powertoys is enabled
@@ -130,18 +124,7 @@ public:
 };
 
 // Load the settings file.
-void ImageResizerModule::init_settings()
-{
-    try
-    {
-        // Load and parse the settings file for this PowerToy.
-        PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
-    }
-    catch (std::exception ex)
-    {
-        // Error while loading from the settings file. Let default values stay as they are.
-    }
-}
+void ImageResizerModule::init_settings() {}
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
