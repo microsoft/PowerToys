@@ -8,6 +8,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.Versioning;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
@@ -33,9 +34,9 @@ namespace SvgPreviewHandler
         private RichTextBox textBox;
 
         /// <summary>
-        /// Represent if any blocked element is found in the Svg.
+        /// Represent if an text box info bar is added for showing message.
         /// </summary>
-        private bool foundFilteredElements = false;
+        private bool infoBarAdded = false;
 
         /// <summary>
         /// Start the preview on the Control.
@@ -45,25 +46,37 @@ namespace SvgPreviewHandler
         {
             this.InvokeOnControlThread(() =>
             {
-                this.foundFilteredElements = false;
-                string svgData = null;
-                using (var stream = new StreamWrapper(dataSource as IStream))
+                try
                 {
-                    using (var reader = new StreamReader(stream))
+                    this.infoBarAdded = false;
+                    string svgData = null;
+                    using (var stream = new StreamWrapper(dataSource as IStream))
                     {
-                        svgData = reader.ReadToEnd();
+                        using (var reader = new StreamReader(stream))
+                        {
+                            svgData = reader.ReadToEnd();
+                        }
                     }
-                }
 
-                svgData = string.IsNullOrWhiteSpace(svgData) ? svgData : SvgPreviewHandlerHelper.RemoveElements(svgData, out this.foundFilteredElements);
-                if (this.foundFilteredElements)
+                    svgData = string.IsNullOrWhiteSpace(svgData) ? svgData : SvgPreviewHandlerHelper.RemoveElements(svgData, out this.infoBarAdded);
+                    if (this.infoBarAdded)
+                    {
+                        this.AddTextBoxControl(Resource.BlockedElementInfoText);
+                    }
+
+                    this.AddBrowserControl(svgData);
+                    this.Resize += this.FormResized;
+                    base.DoPreview(dataSource);
+                    SvgTelemetry.Log.SvgFilePreviewed();
+                }
+                catch (Exception ex)
                 {
-                    this.AddTextBoxControl();
+                    SvgTelemetry.Log.SvgFilePreviewError(ex.Message);
+                    this.Controls.Clear();
+                    this.infoBarAdded = true;
+                    this.AddTextBoxControl(Resource.SvgNotPreviewedError);
+                    base.DoPreview(dataSource);
                 }
-
-                this.AddBrowserControl(svgData);
-                this.Resize += this.FormResized;
-                base.DoPreview(dataSource);
             });
         }
 
@@ -85,7 +98,7 @@ namespace SvgPreviewHandler
         /// <param name="e">Provides data for the resize event.</param>
         private void FormResized(object sender, EventArgs e)
         {
-            if (this.foundFilteredElements)
+            if (this.infoBarAdded)
             {
                 this.textBox.Width = this.Width;
             }
@@ -109,10 +122,18 @@ namespace SvgPreviewHandler
         /// <summary>
         /// Adds a Text Box in Controls for showing information about blocked elements.
         /// </summary>
+<<<<<<< HEAD
         private void AddTextBoxControl()
         {
             this.textBox = new RichTextBox();
             this.textBox.Text = Resource.BlockedElementInfoText;
+=======
+        /// <param name="message">Message to be displayed in textbox.</param>
+        private void AddTextBoxControl(string message)
+        {
+            this.textBox = new RichTextBox();
+            this.textBox.Text = message;
+>>>>>>> dev/previewPane
             this.textBox.BackColor = Color.LightYellow;
             this.textBox.Multiline = true;
             this.textBox.Dock = DockStyle.Top;
