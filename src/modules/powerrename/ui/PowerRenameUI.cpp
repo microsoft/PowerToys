@@ -646,16 +646,16 @@ void CPowerRenameUI::_OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam)
     switch (LOWORD(wParam))
     {
     case IDOK:
-    case IDCANCEL:
-        _OnCloseDlg();
-        break;
-
     case ID_RENAME:
         _OnRename();
         break;
 
     case ID_ABOUT:
         _OnAbout();
+        break;
+
+    case IDCANCEL:
+        _OnCloseDlg();
         break;
 
     case IDC_EDIT_REPLACEWITH:
