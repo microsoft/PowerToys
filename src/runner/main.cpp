@@ -213,7 +213,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         MessageBoxW(nullptr, std::wstring(err_what.begin(), err_what.end()).c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
         result = -1;
     }
-
+    // We need to release mutices to be able to restart the application
+    msi_mutex.reset(nullptr);
+    msix_mutex.reset(nullptr);
     if (is_restart_scheduled())
     {
         if (restart_if_scheduled() == false)
