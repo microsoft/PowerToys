@@ -53,7 +53,9 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
     std::unordered_map<DWORD, WORD> singleKeyReMap;
-    std::unordered_set<DWORD> singleKeyToggleToMod;
+    //std::unordered_map<std::vector<DWORD>, std::vector<WORD>> osLevelShortcutReMap;
+    std::unordered_map<DWORD, bool> singleKeyToggleToMod;
+    bool shortcutflag;
     // Load initial settings from the persisted values.
     void init_settings();
     static const ULONG_PTR POWERKEYS_INJECTED_FLAG = 54321;
@@ -68,11 +70,14 @@ public:
 
     void init_map()
     {
-        singleKeyReMap[0x42] = 0x41;
-        singleKeyReMap[0x41] = 0x42;
-        singleKeyReMap[VK_LWIN] = VK_MEDIA_PLAY_PAUSE;
-        singleKeyReMap[VK_MEDIA_PLAY_PAUSE] = VK_LWIN;
-        singleKeyToggleToMod.insert(VK_CAPITAL);
+        // If mapped to 0x0 then key is disabled.
+        /*singleKeyReMap[0x42] = 0x41;
+        singleKeyReMap[0x41] = 0x42;*/
+        /*singleKeyReMap[VK_LWIN] = VK_MEDIA_PLAY_PAUSE;
+        singleKeyReMap[VK_MEDIA_PLAY_PAUSE] = VK_LWIN;*/
+        singleKeyReMap[VK_OEM_4] = 0x0;
+        singleKeyToggleToMod[VK_CAPITAL] = false;
+        shortcutflag = false;
     }
 
     // Destroy the powertoy and free memory
@@ -271,8 +276,8 @@ public:
     {
         intptr_t SingleKeyRemapResult = HandleSingleKeyRemapEvent(data);
         intptr_t SingleKeyToggleToModResult = HandleSingleKeyToggleToModEvent(data);
-        intptr_t ShortcutRemapResult = HandleShortcutRemapEvent(data);
-        if ((SingleKeyRemapResult + SingleKeyToggleToModResult + ShortcutRemapResult) > 0)
+        intptr_t OSLevelShortcutRemapResult = HandleOSLevelShortcutRemapEvent(data);
+        if ((SingleKeyRemapResult + SingleKeyToggleToModResult + OSLevelShortcutRemapResult) > 0)
         {
             return 1;
         }
@@ -289,6 +294,12 @@ public:
             auto it = singleKeyReMap.find(data->lParam->vkCode);
             if (it != singleKeyReMap.end())
             {
+                // If mapped to 0x0 then the key is disabled
+                if (it->second == 0x0)
+                {
+                    return 1;
+                }
+
                 int key_count = 1;
                 LPINPUT keyEventList = new INPUT[size_t(key_count)]();
                 memset(keyEventList, 0, sizeof(keyEventList));
@@ -317,6 +328,18 @@ public:
             auto it = singleKeyToggleToMod.find(data->lParam->vkCode);
             if (it != singleKeyToggleToMod.end())
             {
+                // To avoid long presses (which leads to continuous keydown messages) from toggling the key on and off
+                if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+                {
+                    if (it->second == false)
+                    {
+                        singleKeyToggleToMod[data->lParam->vkCode] = true;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
+                }
                 int key_count = 2;
                 LPINPUT keyEventList = new INPUT[size_t(key_count)]();
                 memset(keyEventList, 0, sizeof(keyEventList));
@@ -331,6 +354,12 @@ public:
 
                 UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
                 delete[] keyEventList;
+                
+                // Reset the long press flag when the key has been lifted.
+                if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+                {
+                    singleKeyToggleToMod[data->lParam->vkCode] = false;
+                }
                 return 1;
             }
         }
@@ -338,8 +367,121 @@ public:
         return 0;
     }
 
-    intptr_t HandleShortcutRemapEvent(LowlevelKeyboardEvent* data) noexcept
+    intptr_t HandleOSLevelShortcutRemapEvent(LowlevelKeyboardEvent* data) noexcept
     {
+        if (data->lParam->dwExtraInfo != POWERKEYS_INJECTED_FLAG)
+        {
+            //// Remap Alt+D with Ctrl+S
+            //if (GetAsyncKeyState(VK_LMENU) & 0x8000)
+            //{
+            //    if (data->lParam->vkCode == 0x44 && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+            //    {
+            //        int key_count = 6;
+            //        LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+            //        memset(keyEventList, 0, sizeof(keyEventList));
+            //        keyEventList[0].type = INPUT_KEYBOARD;
+            //        keyEventList[0].ki.wVk = 0x44;
+            //        keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
+            //        keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+            //        keyEventList[1].type = INPUT_KEYBOARD;
+            //        keyEventList[1].ki.wVk = VK_LMENU;
+            //        keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
+            //        keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+            //        keyEventList[2].type = INPUT_KEYBOARD;
+            //        keyEventList[2].ki.wVk = VK_CONTROL;
+            //        keyEventList[2].ki.dwFlags = 0;
+            //        keyEventList[2].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+            //        keyEventList[3].type = INPUT_KEYBOARD;
+            //        keyEventList[3].ki.wVk = 0x53;
+            //        keyEventList[3].ki.dwFlags = 0;
+            //        keyEventList[3].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+            //        keyEventList[4].type = INPUT_KEYBOARD;
+            //        keyEventList[4].ki.wVk = 0x53;
+            //        keyEventList[4].ki.dwFlags = KEYEVENTF_KEYUP;
+            //        keyEventList[4].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+            //        keyEventList[5].type = INPUT_KEYBOARD;
+            //        keyEventList[5].ki.wVk = VK_CONTROL;
+            //        keyEventList[5].ki.dwFlags = KEYEVENTF_KEYUP;
+            //        keyEventList[5].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+
+            //        UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+            //        delete[] keyEventList;
+            //        return 1;
+            //    }
+            //    else if (data->lParam->vkCode == 0x44 && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+            //    {
+            //        return 1;
+            //    }
+            //}
+            // Remap Alt+D with Ctrl+S
+            DWORD src_1 = VK_LWIN;
+            DWORD src_2 = 0x46;
+            WORD dest_1 = VK_LWIN;
+            WORD dest_2 = 0x41;
+            if (GetAsyncKeyState(src_1) & 0x8000)
+            {
+                if (data->lParam->vkCode == src_2 && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                {
+                    int key_count = 7;
+                    LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+                    memset(keyEventList, 0, sizeof(keyEventList));
+                    keyEventList[0].type = INPUT_KEYBOARD;
+                    keyEventList[0].ki.wVk = src_2;
+                    keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
+                    keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                    keyEventList[1].type = INPUT_KEYBOARD;
+                    keyEventList[1].ki.wVk = src_1;
+                    keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
+                    keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                    keyEventList[2].type = INPUT_KEYBOARD;
+                    keyEventList[2].ki.wVk = dest_1;
+                    keyEventList[2].ki.dwFlags = 0;
+                    keyEventList[2].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                    keyEventList[3].type = INPUT_KEYBOARD;
+                    keyEventList[3].ki.wVk = dest_2;
+                    keyEventList[3].ki.dwFlags = 0;
+                    keyEventList[3].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                    keyEventList[4].type = INPUT_KEYBOARD;
+                    keyEventList[4].ki.wVk = dest_2;
+                    keyEventList[4].ki.dwFlags = KEYEVENTF_KEYUP;
+                    keyEventList[4].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                    keyEventList[5].type = INPUT_KEYBOARD;
+                    keyEventList[5].ki.wVk = dest_1;
+                    keyEventList[5].ki.dwFlags = KEYEVENTF_KEYUP;
+                    keyEventList[5].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                    keyEventList[6].type = INPUT_KEYBOARD;
+                    keyEventList[6].ki.wVk = src_1;
+                    keyEventList[6].ki.dwFlags = 0;
+                    keyEventList[6].ki.dwExtraInfo = 0;
+
+                    shortcutflag = true;
+                    UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+                    delete[] keyEventList;
+                    return 1;
+                }
+            }
+            //// Applies if Alt is not left first. Try pasting this above as well
+            //if (data->lParam->vkCode == 0x44 && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+            //{
+            //    if (shortcutflag)
+            //    {
+            //        int key_count = 2;
+            //        LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+            //        memset(keyEventList, 0, sizeof(keyEventList));
+            //        keyEventList[0].type = INPUT_KEYBOARD;
+            //        keyEventList[0].ki.wVk = 0x53;
+            //        keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
+            //        keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+            //        keyEventList[1].type = INPUT_KEYBOARD;
+            //        keyEventList[1].ki.wVk = VK_CONTROL;
+            //        keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
+            //        keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+            //        shortcutflag = false;
+            //        return 1;
+            //    }
+            //}
+        }
+
         return 0;
     }
 };
