@@ -140,16 +140,12 @@ export class GeneralSettings extends React.Component <any, any> {
           ref={(input) => {this.elevated_reference=input;}}
         />)
         }
-        {this.state.settings.general.is_admin &&
+        {this.state.settings.general.is_admin && !this.state.settings.general.is_elevated &&
         (<CustomActionSettingsControl
           setting={{
             display_name: '',
-            value: this.state.settings.general.is_elevated ? 
-                   'Running as administrator. Do you wish to run as user instead?' :
-                   'Running as user. Do you wish to run as administrator instead?',
-            button_text: this.state.settings.general.is_elevated ? 
-                          'Restart as user' :
-                          'Restart as administrator'
+            value: 'Running as user. Do you wish to run as administrator instead?',
+            button_text: 'Restart as administrator'
           }}
           action_name={'restart_elevation'}
           action_callback={(action_name: any, value:any) => {
