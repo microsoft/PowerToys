@@ -19,7 +19,7 @@ Preview handlers are called when an item is selected to show a lightweight, rich
 <center>
 
 <figure>
-  <img src="./markdown.gif" alt="Mark Down Preview Handler Demo" >
+  <img src="../../../doc/images/preview_pane/markdown.gif" alt="Mark Down Preview Handler Demo" >
   <figcaption>Figure 1 : Mark Down Preview Handler Demo</figcaption>
 </figure>
 
@@ -117,7 +117,7 @@ After successful integration, your preview handler should appear in the PowerToy
 <center>
 
 <figure>
-  <img src="./settings-ui.png" alt="Settings UI - File Explorer Preview Tab" >
+  <img src="../../../doc/images/preview_pane/settings-ui.png" alt="Settings UI - File Explorer Preview Tab" >
   <figcaption>Figure 2 : Settings UI - File Explorer Preview Tab</figcaption>
 </figure>
 
@@ -128,7 +128,7 @@ In the general settings of the Settings UI, you should be able to disable and en
 <center>
 
 <figure>
-  <img src="./general-settings.png" alt="Settings UI - General Settings Tab" >
+  <img src="../../../doc/images/preview_pane/general-settings.png" alt="Settings UI - General Settings Tab" >
   <figcaption>Figure 3 : Settings UI - General Settings Tab</figcaption>
 </figure>
 
