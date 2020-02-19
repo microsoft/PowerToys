@@ -133,6 +133,9 @@ export class GeneralSettings extends React.Component <any, any> {
             ref={(input) => {this.startup_reference=input;}}
           />
         </Stack>
+        
+        {this.state.settings.general.is_elevated && (<Label>Currently running as administrator</Label>)}
+
         {this.state.settings.general.is_admin &&
         (<BoolToggleSettingsControl
           setting={{display_name: 'Always run as administrator', value: this.state.settings.general.run_elevated}}
