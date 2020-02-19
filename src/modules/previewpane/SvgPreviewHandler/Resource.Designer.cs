@@ -68,5 +68,14 @@ namespace SvgPreviewHandler {
                 return ResourceManager.GetString("BlockedElementInfoText", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Svg could not be preview due to an internal error in Svg Preview Handler..
+        /// </summary>
+        internal static string SvgNotPreviewedError {
+            get {
+                return ResourceManager.GetString("SvgNotPreviewedError", resourceCulture);
+            }
+        }
     }
 }

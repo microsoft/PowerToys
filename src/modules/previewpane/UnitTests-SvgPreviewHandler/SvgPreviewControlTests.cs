@@ -162,6 +162,31 @@ namespace UnitTests_SvgPreviewHandler
             Assert.AreEqual(finalParentWidth, textBox.Width);
         }
 
+        [TestMethod]
+        public void SvgPreviewControl_ShouldAddValidTextBox_IfSvgPreviewThrows()
+        {
+            // Arrange
+            var svgPreviewControl = new SvgPreviewControl();
+            var mockStream = new Mock<IStream>();
+            mockStream
+                .Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
+                .Throws(new Exception());
+
+            // Act
+            svgPreviewControl.DoPreview(mockStream.Object);
+            var textBox = svgPreviewControl.Controls[0] as RichTextBox;
+
+            // Assert
+            Assert.IsFalse(string.IsNullOrWhiteSpace(textBox.Text));
+            Assert.AreEqual(svgPreviewControl.Controls.Count, 1);
+            Assert.AreEqual(textBox.Dock, DockStyle.Top);
+            Assert.AreEqual(textBox.BackColor, Color.LightYellow);
+            Assert.IsTrue(textBox.Multiline);
+            Assert.IsTrue(textBox.ReadOnly);
+            Assert.AreEqual(textBox.ScrollBars, RichTextBoxScrollBars.None);
+            Assert.AreEqual(textBox.BorderStyle, BorderStyle.None);
+        }
+
         private IStream GetMockStream(string streamData) 
         {
             var mockStream = new Mock<IStream>();
