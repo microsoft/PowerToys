@@ -43,7 +43,7 @@ export class GeneralSettings extends React.Component <any, any> {
     let result : any = {};
     result[this.state.settings_key]= {
       startup: this.startup_reference.get_value().value,
-      run_elevated: this.elevated_reference.get_value().value,
+      run_elevated: this.elevated_reference != null && this.elevated_reference.get_value().value,
       theme: this.theme_reference.get_value().value,
       enabled: enabled
     };
