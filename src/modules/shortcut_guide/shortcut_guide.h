@@ -76,8 +76,8 @@ private:
         int resourceId = IDS_SETTING_DISPLAY_ON;
         std::vector<std::pair<std::wstring, UINT>> keys_and_texts = {
             { L"main display", IDS_SETTING_DISPLAY_ON_MAIN_DISPLAY},
-            { L"mouse cursor location", IDS_SETTING_DISPLAY_ON_ON_MOUSE_CURSOR_LOCATION},
-            { L"active window location", IDS_SETTING_DISPLAY_ON_ON_ACTIVE_WINDOW_LOCATION }
+            { L"mouse cursor location", IDS_SETTING_DISPLAY_ON_MOUSE_CURSOR_LOCATION},
+            { L"active window location", IDS_SETTING_DISPLAY_ON_ACTIVE_WINDOW_LOCATION }
         };
     } displayOnMethod;
 };
