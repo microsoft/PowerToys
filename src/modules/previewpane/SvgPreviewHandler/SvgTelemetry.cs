@@ -33,7 +33,6 @@ namespace SvgPreviewHandler
         public SvgTelemetry()
             : base(EventSourceName)
         {
-            return;
         }
 
         /// <summary>
