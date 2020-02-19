@@ -272,10 +272,33 @@ void D2DOverlayWindow::show(HWND active_window, bool snappable)
         DwmRegisterThumbnail(hwnd, active_window, &thumbnail);
     }
     animation.reset();
-    auto primary_screen = MonitorInfo::GetPrimaryMonitor();
+
+    auto target_screen = MonitorInfo::GetPrimaryMonitor();
+
+    switch (displayOn)
+    {
+    case DisplayOn::MouseCursorLocation:
+    {
+        POINT currentCursorPos{};
+        GetCursorPos(&currentCursorPos);
+        target_screen = MonitorInfo::GetFromPoint(currentCursorPos);
+
+        break;
+    }
+    case DisplayOn::ActiveWindowLocation:
+    {
+        HWND foregroundWindow = GetForegroundWindow();
+        target_screen = MonitorInfo::GetFromWindow(foregroundWindow);
+        break;
+    }
+    default:
+        target_screen = MonitorInfo::GetPrimaryMonitor();
+        break;
+    }
+
     shown_start_time = std::chrono::steady_clock::now();
     lock.unlock();
-    D2DWindow::show(primary_screen.left(), primary_screen.top(), primary_screen.width(), primary_screen.height());
+    D2DWindow::show(target_screen.left(), target_screen.top(), target_screen.width(), target_screen.height());
     key_pressed.clear();
     // Check if taskbar is auto-hidden. If so, don't display the number arrows
     APPBARDATA param = {};
@@ -458,6 +481,22 @@ void D2DOverlayWindow::set_theme(const std::wstring& theme)
     else
     {
         theme_setting = System;
+    }
+}
+
+void D2DOverlayWindow::set_display_on(const std::wstring& input)
+{
+    if (input == L"mouse cursor location")
+    {
+        displayOn = DisplayOn::MouseCursorLocation;
+    }
+    else if (input == L"active window location")
+    {
+        displayOn = DisplayOn::ActiveWindowLocation;
+    }
+    else
+    {
+        displayOn = DisplayOn::MainDisplay;
     }
 }
 

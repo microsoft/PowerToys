@@ -59,6 +59,12 @@ bool OverlayWindow::get_config(wchar_t* buffer, int* buffer_size)
         theme.value,
         theme.keys_and_texts);
 
+    settings.add_choice_group(
+        displayOnMethod.name,
+        displayOnMethod.resourceId,
+        displayOnMethod.value,
+        displayOnMethod.keys_and_texts);
+
     return settings.serialize_to_buffer(buffer, buffer_size);
 }
 
@@ -99,6 +105,14 @@ void OverlayWindow::set_config(const wchar_t* config)
                     winkey_popup->set_theme(theme.value);
                 }
             }
+            if (auto val = _values.get_string_value(displayOnMethod.name))
+            {
+                displayOnMethod.value = std::move(*val);
+                if (winkey_popup)
+                {
+                    winkey_popup->set_display_on(displayOnMethod.value);
+                }
+            }
         }
     }
     catch (...)
@@ -115,6 +129,7 @@ void OverlayWindow::enable()
         winkey_popup = std::make_unique<D2DOverlayWindow>();
         winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
         winkey_popup->set_theme(theme.value);
+        winkey_popup->set_display_on(displayOnMethod.value);
         target_state = std::make_unique<TargetState>(pressTime.value);
         winkey_popup->initialize();
     }
@@ -210,6 +225,10 @@ void OverlayWindow::init_settings()
         if (auto val = settings.get_string_value(theme.name))
         {
             theme.value = std::move(*val);
+        }
+        if (auto val = settings.get_string_value(displayOnMethod.name))
+        {
+            displayOnMethod.value = std::move(*val);
         }
     }
     catch (std::exception&)

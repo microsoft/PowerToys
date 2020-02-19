@@ -52,6 +52,7 @@ public:
     ~D2DOverlayWindow();
     void apply_overlay_opacity(float opacity);
     void set_theme(const std::wstring& theme);
+    void set_display_on(const std::wstring& value);
     void quick_hide();
 
 private:
@@ -91,6 +92,7 @@ private:
     std::vector<D2DSVG> arrows;
     std::chrono::steady_clock::time_point shown_start_time;
     float overlay_opacity = 0.9f;
+
     enum
     {
         Light,
@@ -98,4 +100,11 @@ private:
         System
     } theme_setting = System;
     bool light_mode = true;
+
+    enum class DisplayOn
+    {
+        MainDisplay,
+        MouseCursorLocation,
+        ActiveWindowLocation
+    } displayOn = DisplayOn::MainDisplay;
 };
