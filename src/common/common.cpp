@@ -491,10 +491,9 @@ std::wstring get_process_path(HWND window) noexcept {
 }
 
 std::wstring get_product_version() {
-  static std::wstring version = std::to_wstring(VERSION_MAJOR) +
+  static std::wstring version = L"v" + std::to_wstring(VERSION_MAJOR) +
     L"." + std::to_wstring(VERSION_MINOR) +
-    L"." + std::to_wstring(VERSION_REVISION) +
-    L"." + std::to_wstring(VERSION_BUILD);
+    L"." + std::to_wstring(VERSION_REVISION);
 
   return version;
 }
