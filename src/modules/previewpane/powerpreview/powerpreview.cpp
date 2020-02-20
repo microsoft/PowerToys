@@ -85,11 +85,7 @@ void PowerPreviewModule::enable()
 // Disable all preview handlers.
 void PowerPreviewModule::disable()
 {
-    for (FileExplorerPreviewSettings& previewHandler : this->m_previewHandlers)
-    {
-        previewHandler.DisablePreview();
-    }
-    this->m_enabled = false;
+    this->m_enabled;
 }
 
 // Returns if the powertoys is enabled
