@@ -53,9 +53,8 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
     std::unordered_map<DWORD, WORD> singleKeyReMap;
-    //std::unordered_map<std::vector<DWORD>, std::vector<WORD>> osLevelShortcutReMap;
+    std::map<std::vector<DWORD>, std::pair<std::vector<WORD>,bool>> osLevelShortcutReMap;
     std::unordered_map<DWORD, bool> singleKeyToggleToMod;
-    bool shortcutflag;
     // Load initial settings from the persisted values.
     void init_settings();
     static const ULONG_PTR POWERKEYS_INJECTED_FLAG = 54321;
@@ -77,7 +76,9 @@ public:
         singleKeyReMap[VK_MEDIA_PLAY_PAUSE] = VK_LWIN;*/
         singleKeyReMap[VK_OEM_4] = 0x0;
         singleKeyToggleToMod[VK_CAPITAL] = false;
-        shortcutflag = false;
+        osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
+        osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x45 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
+        osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x53 }), false);
     }
 
     // Destroy the powertoy and free memory
@@ -354,7 +355,7 @@ public:
 
                 UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
                 delete[] keyEventList;
-                
+
                 // Reset the long press flag when the key has been lifted.
                 if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
                 {
@@ -371,115 +372,107 @@ public:
     {
         if (data->lParam->dwExtraInfo != POWERKEYS_INJECTED_FLAG)
         {
-            //// Remap Alt+D with Ctrl+S
-            //if (GetAsyncKeyState(VK_LMENU) & 0x8000)
-            //{
-            //    if (data->lParam->vkCode == 0x44 && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
-            //    {
-            //        int key_count = 6;
-            //        LPINPUT keyEventList = new INPUT[size_t(key_count)]();
-            //        memset(keyEventList, 0, sizeof(keyEventList));
-            //        keyEventList[0].type = INPUT_KEYBOARD;
-            //        keyEventList[0].ki.wVk = 0x44;
-            //        keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
-            //        keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-            //        keyEventList[1].type = INPUT_KEYBOARD;
-            //        keyEventList[1].ki.wVk = VK_LMENU;
-            //        keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
-            //        keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-            //        keyEventList[2].type = INPUT_KEYBOARD;
-            //        keyEventList[2].ki.wVk = VK_CONTROL;
-            //        keyEventList[2].ki.dwFlags = 0;
-            //        keyEventList[2].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-            //        keyEventList[3].type = INPUT_KEYBOARD;
-            //        keyEventList[3].ki.wVk = 0x53;
-            //        keyEventList[3].ki.dwFlags = 0;
-            //        keyEventList[3].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-            //        keyEventList[4].type = INPUT_KEYBOARD;
-            //        keyEventList[4].ki.wVk = 0x53;
-            //        keyEventList[4].ki.dwFlags = KEYEVENTF_KEYUP;
-            //        keyEventList[4].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-            //        keyEventList[5].type = INPUT_KEYBOARD;
-            //        keyEventList[5].ki.wVk = VK_CONTROL;
-            //        keyEventList[5].ki.dwFlags = KEYEVENTF_KEYUP;
-            //        keyEventList[5].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-
-            //        UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
-            //        delete[] keyEventList;
-            //        return 1;
-            //    }
-            //    else if (data->lParam->vkCode == 0x44 && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
-            //    {
-            //        return 1;
-            //    }
-            //}
-            // Remap Alt+D with Ctrl+S
-            DWORD src_1 = VK_LWIN;
-            DWORD src_2 = 0x46;
-            WORD dest_1 = VK_LWIN;
-            WORD dest_2 = 0x41;
-            if (GetAsyncKeyState(src_1) & 0x8000)
+            for (auto& it : osLevelShortcutReMap)
             {
-                if (data->lParam->vkCode == src_2 && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                DWORD src_1 = it.first[0];
+                DWORD src_2 = it.first[1];
+                WORD dest_1 = it.second.first[0];
+                WORD dest_2 = it.second.first[1];
+                if ((GetAsyncKeyState(src_1) & 0x8000) && !it.second.second)
                 {
-                    int key_count = 7;
-                    LPINPUT keyEventList = new INPUT[size_t(key_count)]();
-                    memset(keyEventList, 0, sizeof(keyEventList));
-                    keyEventList[0].type = INPUT_KEYBOARD;
-                    keyEventList[0].ki.wVk = src_2;
-                    keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
-                    keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-                    keyEventList[1].type = INPUT_KEYBOARD;
-                    keyEventList[1].ki.wVk = src_1;
-                    keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
-                    keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-                    keyEventList[2].type = INPUT_KEYBOARD;
-                    keyEventList[2].ki.wVk = dest_1;
-                    keyEventList[2].ki.dwFlags = 0;
-                    keyEventList[2].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-                    keyEventList[3].type = INPUT_KEYBOARD;
-                    keyEventList[3].ki.wVk = dest_2;
-                    keyEventList[3].ki.dwFlags = 0;
-                    keyEventList[3].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-                    keyEventList[4].type = INPUT_KEYBOARD;
-                    keyEventList[4].ki.wVk = dest_2;
-                    keyEventList[4].ki.dwFlags = KEYEVENTF_KEYUP;
-                    keyEventList[4].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-                    keyEventList[5].type = INPUT_KEYBOARD;
-                    keyEventList[5].ki.wVk = dest_1;
-                    keyEventList[5].ki.dwFlags = KEYEVENTF_KEYUP;
-                    keyEventList[5].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-                    keyEventList[6].type = INPUT_KEYBOARD;
-                    keyEventList[6].ki.wVk = src_1;
-                    keyEventList[6].ki.dwFlags = 0;
-                    keyEventList[6].ki.dwExtraInfo = 0;
+                    if (data->lParam->vkCode == src_2 && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                    {
+                        int key_count = 4;
+                        LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+                        memset(keyEventList, 0, sizeof(keyEventList));
+                        keyEventList[0].type = INPUT_KEYBOARD;
+                        keyEventList[0].ki.wVk = (WORD)src_2;
+                        keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
+                        keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                        keyEventList[1].type = INPUT_KEYBOARD;
+                        keyEventList[1].ki.wVk = (WORD)src_1;
+                        keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
+                        keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                        keyEventList[2].type = INPUT_KEYBOARD;
+                        keyEventList[2].ki.wVk = dest_1;
+                        keyEventList[2].ki.dwFlags = 0;
+                        keyEventList[2].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                        keyEventList[3].type = INPUT_KEYBOARD;
+                        keyEventList[3].ki.wVk = dest_2;
+                        keyEventList[3].ki.dwFlags = 0;
+                        keyEventList[3].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
 
-                    shortcutflag = true;
-                    UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
-                    delete[] keyEventList;
-                    return 1;
+                        it.second.second = true;
+                        UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+                        delete[] keyEventList;
+                        return 1;
+                    }
+                }
+                else if (it.second.second)
+                {
+                    // If src1 up before src2 up
+                    if (data->lParam->vkCode == src_1 && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                    {
+                        int key_count = 1;
+                        LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+                        memset(keyEventList, 0, sizeof(keyEventList));
+                        keyEventList[0].type = INPUT_KEYBOARD;
+                        keyEventList[0].ki.wVk = dest_1;
+                        keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
+                        keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                        it.second.second = false;
+                        UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+
+                        delete[] keyEventList;
+                        return 1;
+                    }
+
+                    if (GetAsyncKeyState(dest_1) & 0x8000)
+                    {
+                        if (data->lParam->vkCode == src_2 && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                        {
+                            int key_count = 1;
+                            LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+                            memset(keyEventList, 0, sizeof(keyEventList));
+                            keyEventList[0].type = INPUT_KEYBOARD;
+                            keyEventList[0].ki.wVk = dest_2;
+                            keyEventList[0].ki.dwFlags = 0;
+                            keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+
+                            it.second.second = true;
+                            UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+                            delete[] keyEventList;
+                            return 1;
+                        }
+                        if (data->lParam->vkCode == src_2 && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                        {
+                            int key_count = 4;
+                            LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+                            memset(keyEventList, 0, sizeof(keyEventList));
+                            keyEventList[0].type = INPUT_KEYBOARD;
+                            keyEventList[0].ki.wVk = dest_2;
+                            keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
+                            keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                            keyEventList[1].type = INPUT_KEYBOARD;
+                            keyEventList[1].ki.wVk = dest_1;
+                            keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
+                            keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                            keyEventList[2].type = INPUT_KEYBOARD;
+                            keyEventList[2].ki.wVk = (WORD)src_1;
+                            keyEventList[2].ki.dwFlags = 0;
+                            keyEventList[2].ki.dwExtraInfo = 0;
+                            keyEventList[3].type = INPUT_KEYBOARD;
+                            keyEventList[3].ki.wVk = 0x0;
+                            keyEventList[3].ki.dwFlags = KEYEVENTF_KEYUP;
+                            keyEventList[3].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                            it.second.second = false;
+                            UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+                            delete[] keyEventList;
+                            return 1;
+                        }
+                    }
                 }
             }
-            //// Applies if Alt is not left first. Try pasting this above as well
-            //if (data->lParam->vkCode == 0x44 && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
-            //{
-            //    if (shortcutflag)
-            //    {
-            //        int key_count = 2;
-            //        LPINPUT keyEventList = new INPUT[size_t(key_count)]();
-            //        memset(keyEventList, 0, sizeof(keyEventList));
-            //        keyEventList[0].type = INPUT_KEYBOARD;
-            //        keyEventList[0].ki.wVk = 0x53;
-            //        keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
-            //        keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-            //        keyEventList[1].type = INPUT_KEYBOARD;
-            //        keyEventList[1].ki.wVk = VK_CONTROL;
-            //        keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
-            //        keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-            //        shortcutflag = false;
-            //        return 1;
-            //    }
-            //}
         }
 
         return 0;
