@@ -413,13 +413,17 @@ public:
                     // If src1 up before src2 up
                     if (data->lParam->vkCode == src_1 && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                     {
-                        int key_count = 1;
+                        int key_count = 2;
                         LPINPUT keyEventList = new INPUT[size_t(key_count)]();
                         memset(keyEventList, 0, sizeof(keyEventList));
                         keyEventList[0].type = INPUT_KEYBOARD;
-                        keyEventList[0].ki.wVk = dest_1;
+                        keyEventList[0].ki.wVk = dest_2;
                         keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
                         keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                        keyEventList[1].type = INPUT_KEYBOARD;
+                        keyEventList[1].ki.wVk = dest_1;
+                        keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
+                        keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
                         it.second.second = false;
                         UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
 
