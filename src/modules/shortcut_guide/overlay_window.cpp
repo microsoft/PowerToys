@@ -486,11 +486,11 @@ void D2DOverlayWindow::set_theme(const std::wstring& theme)
 
 void D2DOverlayWindow::set_display_on(const std::wstring& input)
 {
-    if (input == L"mouse cursor location")
+    if (input == MOUSE_CURSOR_LOCATION_WSTRING)
     {
         displayOn = DisplayOn::MouseCursorLocation;
     }
-    else if (input == L"active window location")
+    else if (input == ACTIVE_WINDOW_DISPLAY_WSTRING)
     {
         displayOn = DisplayOn::ActiveWindowLocation;
     }

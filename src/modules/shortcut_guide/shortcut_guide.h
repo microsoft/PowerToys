@@ -71,13 +71,13 @@ private:
 
     struct DisplayOnMethod
     {
-        PCWSTR name = L"display on method";
-        std::wstring value = L"monitor";
+        PCWSTR name = L"display_on_method";
+        std::wstring value = MAIN_DISPLAY_WSTRING;
         int resourceId = IDS_SETTING_DISPLAY_ON;
         std::vector<std::pair<std::wstring, UINT>> keys_and_texts = {
-            { L"main display", IDS_SETTING_DISPLAY_ON_MAIN_DISPLAY},
-            { L"mouse cursor location", IDS_SETTING_DISPLAY_ON_MOUSE_CURSOR_LOCATION},
-            { L"active window location", IDS_SETTING_DISPLAY_ON_ACTIVE_WINDOW_LOCATION }
+            { MAIN_DISPLAY_WSTRING, IDS_SETTING_DISPLAY_ON_MAIN_DISPLAY },
+            { MOUSE_CURSOR_LOCATION_WSTRING, IDS_SETTING_DISPLAY_ON_MOUSE_CURSOR_LOCATION },
+            { ACTIVE_WINDOW_DISPLAY_WSTRING, IDS_SETTING_DISPLAY_ON_ACTIVE_WINDOW_LOCATION }
         };
     } displayOnMethod;
 };

@@ -7,6 +7,10 @@
 #include "common/windows_colors.h"
 #include "common/tasklist_positions.h"
 
+const std::wstring MAIN_DISPLAY_WSTRING = L"main_display";
+const std::wstring ACTIVE_WINDOW_DISPLAY_WSTRING = L"active_window_display";
+const std::wstring MOUSE_CURSOR_LOCATION_WSTRING = L"mouse_cursor_location";
+
 struct ScaleResult
 {
     double scale;
