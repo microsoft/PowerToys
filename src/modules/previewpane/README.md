@@ -122,7 +122,7 @@ After successful integration, your preview handler should appear in the PowerToy
 
 </center>
 
-In the general settings of the Settings UI, you should be able to disable and enable all the preview handlers all at once. See Figure 2.
+In the general settings of the Settings UI, you should be able to disable and enable all the preview handlers all at once. See Figure 3.
 
 <center>
 
