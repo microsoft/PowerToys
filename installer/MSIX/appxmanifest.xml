@@ -51,16 +51,16 @@
             </desktop5:ItemType>
           </desktop4:FileExplorerContextMenus>
         </desktop4:Extension>
-        <uap:Extension Category="windows.fileTypeAssociation" desktop2:AllowSilentDefaultTakeOver="true">
-           <uap3:FileTypeAssociation Name="mdpreviewhandler">
+        <uap:Extension Category="windows.fileTypeAssociation">
+           <uap3:FileTypeAssociation Name="mdpreviewhandler" desktop2:AllowSilentDefaultTakeOver="true">
             <uap:SupportedFileTypes>
               <uap:FileType>.md</uap:FileType>
             </uap:SupportedFileTypes>
             <desktop2:DesktopPreviewHandler Clsid="E0907A95-6F9A-4D1B-A97A-7D9D2648881E"/>
          </uap3:FileTypeAssociation>
         </uap:Extension>
-        <uap:Extension Category="windows.fileTypeAssociation" desktop2:AllowSilentDefaultTakeOver="true">
-          <uap3:FileTypeAssociation Name="svgpreviewhandler">
+        <uap:Extension Category="windows.fileTypeAssociation">
+          <uap3:FileTypeAssociation Name="svgpreviewhandler" desktop2:AllowSilentDefaultTakeOver="true">
             <uap:SupportedFileTypes>
               <uap:FileType>.svg</uap:FileType>
             </uap:SupportedFileTypes>
