@@ -78,10 +78,7 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 // Enable preview handlers.
 void PowerPreviewModule::enable()
 {
-    for (FileExplorerPreviewSettings& previewHandler : this->m_previewHandlers)
-    {
-        previewHandler.EnablePreview();
-    }
+    init_settings();
     this->m_enabled = true;
 }
 
