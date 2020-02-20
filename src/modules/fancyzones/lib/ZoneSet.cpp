@@ -551,8 +551,8 @@ bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo grid
         long Start;
         long End;
     };
-    Info rowInfo[JSONHelpers::MAX_ZONE_COUNT];
-    Info columnInfo[JSONHelpers::MAX_ZONE_COUNT];
+    std::vector<Info> rowInfo(gridLayoutInfo.rows());
+    std::vector<Info> columnInfo(gridLayoutInfo.columns());
 
     long top = spacing;
     for (int row = 0; row < gridLayoutInfo.rows(); row++)
