@@ -3,15 +3,21 @@
 
 #include <msi.h>
 #include <common/common.h>
+#include <common/json.h>
 
 #include <common/winstore.h>
 #include <common/notifications.h>
 #include <MsiQuery.h>
 
+#include <winrt/Windows.Web.Http.h>
+#include <winrt/Windows.Web.Http.Headers.h>
+
 namespace
 {
     const wchar_t* POWER_TOYS_UPGRADE_CODE = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
     const wchar_t* DONT_SHOW_AGAIN_RECORD_REGISTRY_PATH = L"delete_previous_powertoys_confirm";
+    const wchar_t* USER_AGENT = L"Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0)";
+    const wchar_t* LATEST_RELEASE_ENDPOINT = L"https://api.github.com/repos/microsoft/PowerToys/releases/latest";
 }
 
 namespace localized_strings
@@ -81,4 +87,33 @@ bool uninstall_msi_version(const std::wstring& package_path)
         }
     }
     return false;
+}
+
+std::future<std::optional<new_version_download_info>> check_for_new_github_release_async()
+{
+    try
+    {
+        winrt::Windows::Web::Http::HttpClient client;
+        auto headers = client.DefaultRequestHeaders();
+        headers.UserAgent().TryParseAdd(USER_AGENT);
+
+        auto response = co_await client.GetAsync(winrt::Windows::Foundation::Uri{ LATEST_RELEASE_ENDPOINT });
+        (void)response.EnsureSuccessStatusCode();
+        const auto body = co_await response.Content().ReadAsStringAsync();
+        auto json_body = json::JsonValue::Parse(body).GetObjectW();
+        auto new_version = json_body.GetNamedString(L"tag_name");
+        winrt::Windows::Foundation::Uri release_page_uri{ json_body.GetNamedString(L"html_url") };
+
+        const auto current_version = get_product_version();
+        if (new_version == current_version)
+        {
+            co_return std::nullopt;
+        }
+
+        co_return new_version_download_info{ std::move(release_page_uri), new_version.c_str() };
+    }
+    catch (...)
+    {
+        co_return std::nullopt;
+    }
 }
