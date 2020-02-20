@@ -2,9 +2,12 @@
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" 
   xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10" 
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" 
+  xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" 
   xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5" 
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" 
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10" 
+  xmlns:desktop2="http://schemas.microsoft.com/appx/manifest/desktop/windows10/2"
   xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4" 
   xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5" IgnorableNamespaces="desktop4">
   <Identity Name="Microsoft.PowerToys" Version="0.15.0.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" ProcessorArchitecture="x64" />
@@ -48,6 +51,30 @@
             </desktop5:ItemType>
           </desktop4:FileExplorerContextMenus>
         </desktop4:Extension>
+        <uap:Extension Category="windows.fileTypeAssociation" desktop2:AllowSilentDefaultTakeOver="true">
+           <uap3:FileTypeAssociation Name="mdpreviewhandler">
+            <uap:SupportedFileTypes>
+              <uap:FileType>.md</uap:FileType>
+            </uap:SupportedFileTypes>
+            <desktop2:DesktopPreviewHandler Clsid="E0907A95-6F9A-4D1B-A97A-7D9D2648881E"/>
+         </uap3:FileTypeAssociation>
+        </uap:Extension>
+        <uap:Extension Category="windows.fileTypeAssociation" desktop2:AllowSilentDefaultTakeOver="true">
+          <uap3:FileTypeAssociation Name="svgpreviewhandler">
+            <uap:SupportedFileTypes>
+              <uap:FileType>.svg</uap:FileType>
+            </uap:SupportedFileTypes>
+            <desktop2:DesktopPreviewHandler Clsid="74619BDA-A66B-451D-864C-A7726F5FE650"/>
+          </uap3:FileTypeAssociation>
+        </uap:Extension>
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:SurrogateServer DisplayName="Preview Handler" AppId="E39A92FE-D89A-417B-9B9D-F0B6BD564B36" SystemSurrogate="PreviewHost">
+              <com:Class Id="74619BDA-A66B-451D-864C-A7726F5FE650" Path="modules\powerpreview.dll" ThreadingModel="Both"/>
+              <com:Class Id="E0907A95-6F9A-4D1B-A97A-7D9D2648881E" Path="modules\powerpreview.dll" ThreadingModel="Both"/>
+            </com:SurrogateServer>
+          </com:ComServer>
+        </com:Extension>
         <Extension Category="windows.backgroundTasks" EntryPoint="PowerToysNotifications.BackgroundHandler">
           <BackgroundTasks>
             <Task Type="general" />
