@@ -16,6 +16,11 @@
 #include <common/msi_to_msix_upgrade_lib/msi_to_msix_upgrade.h>
 #include <common/winstore.h>
 #include <common/notifications.h>
+#include <common/timeutil.h>
+
+#include "update_state.h"
+
+#include <winrt/Windows.System.h>
 
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
@@ -26,6 +31,8 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 namespace localized_strings
 {
     const wchar_t MSI_VERSION_IS_ALREADY_RUNNING[] = L"An older version of PowerToys is already running.";
+    const wchar_t GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT[] = L"An update to PowerToys is available. Visit our GitHub page to get ";
+    const wchar_t GITHUB_NEW_VERSION_AGREE[] = L"Visit";
 }
 
 namespace
@@ -97,6 +104,46 @@ bool start_msi_uninstallation_sequence()
     return exit_code == 0;
 }
 
+std::future<void> check_github_updates()
+{
+    const auto new_version = co_await check_for_new_github_release_async();
+    if (!new_version)
+    {
+        co_return;
+    }
+    using namespace localized_strings;
+
+    std::wstring contents = GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT;
+    contents += new_version->version_string;
+    contents += L'.';
+    notifications::show_toast_with_activations(contents, {}, { notifications::link_button{ GITHUB_NEW_VERSION_AGREE, new_version->release_page_uri.ToString() } });
+}
+
+void github_update_checking_worker()
+{
+    const int64_t update_check_period_minutes = 60 * 24;
+
+    auto state = UpdateState::load();
+    for (;;)
+    {
+        int64_t sleep_minutes_till_next_update = 0;
+        if (state.github_update_last_checked_date.has_value())
+        {
+            int64_t last_checked_minutes_ago = timeutil::diff::in_minutes(timeutil::now(), *state.github_update_last_checked_date);
+            if (last_checked_minutes_ago < 0)
+            {
+                last_checked_minutes_ago = update_check_period_minutes;
+            }
+            sleep_minutes_till_next_update = max(0, update_check_period_minutes - last_checked_minutes_ago);
+        }
+
+        std::this_thread::sleep_for(std::chrono::minutes(sleep_minutes_till_next_update));
+
+        check_github_updates().get();
+        state.github_update_last_checked_date.emplace(timeutil::now());
+        state.save();
+    }
+}
 void alert_already_running()
 {
     MessageBoxW(nullptr,
@@ -271,12 +318,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     try
     {
 
+        std::thread{ [] {
+            github_update_checking_worker();
+        } }.detach();
+
         if (winstore::running_as_packaged())
         {
             std::thread{ [] {
                 start_msi_uninstallation_sequence();
             } }.detach();
         }
+
         // Singletons initialization order needs to be preserved, first events and
         // then modules to guarantee the reverse destruction order.
         SystemMenuHelperInstace();

@@ -90,6 +90,9 @@
     <ClInclude Include="com_object_factory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="timeutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d2d_svg.cpp">
