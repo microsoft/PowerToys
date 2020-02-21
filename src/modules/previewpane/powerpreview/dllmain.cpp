@@ -20,7 +20,7 @@ const CLSID CLSID_MdPreviewHandler = { 0x45769bcc, 0xe8fd, 0x42d0, { 0x94, 0x7e,
 HRESULT CALLBACK DllGetClassObject(REFCLSID clsid, REFIID riid, void** ppv)
 {
     *ppv = NULL;
-    HRESULT hr = S_OK;
+    HRESULT hr = CLASS_E_CLASSNOTAVAILABLE;
 
     if (clsid == CLSID_SHIMActivateSvgPreviewHandler)
     {
@@ -29,6 +29,13 @@ HRESULT CALLBACK DllGetClassObject(REFCLSID clsid, REFIID riid, void** ppv)
     else if (clsid == CLSID_SHIMActivateMdPreviewHandler)
     {
         hr = CoGetClassObject(CLSID_MdPreviewHandler, CLSCTX_INPROC_SERVER, NULL, riid, ppv);
+    }
+
+    // In case of failed error code return by CoGetClassObject return CLASS_E_CLASSNOTAVAILABLE to the caller.
+    if (FAILED(hr))
+    {
+        hr = CLASS_E_CLASSNOTAVAILABLE;
+        *ppv = NULL;
     }
 
     return hr;
