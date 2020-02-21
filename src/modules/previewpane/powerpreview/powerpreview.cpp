@@ -95,7 +95,7 @@ void PowerPreviewModule::disable()
 // Returns if the powertoys is enabled
 bool PowerPreviewModule::is_enabled()
 {
-    return m_enabled;
+    return this->m_enabled;
 }
 
 // Handle incoming event, data is event-specific

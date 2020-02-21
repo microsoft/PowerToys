@@ -18,7 +18,7 @@ namespace PreviewHandlerSettingsTest
 		TEST_METHOD(LoadState_ShouldLoadNewState_WhenSucessfull)
 		{
 			// Arrange
-			FileExplorerPreviewSettings tempSettings = GetSttingsObject();
+			FileExplorerPreviewSettings tempSettings = GetSttingsObjects();
 			PowerToyValues values = PowerToyValues::from_json_string(GetJSONSettings(tempSettings.GetName(), L"true"));
 			tempSettings.SetState(false);
 			bool expectedState = true;
@@ -34,7 +34,7 @@ namespace PreviewHandlerSettingsTest
 		TEST_METHOD(UpdateState_ShouldChangeState_WhenSucessfull)
 		{
 			// Arrange
-			FileExplorerPreviewSettings tempSettings = GetSttingsObject();
+			FileExplorerPreviewSettings tempSettings = GetSttingsObjects();
 			PowerToyValues values = PowerToyValues::from_json_string(GetJSONSettings(tempSettings.GetName(), L"true"));
 			tempSettings.SetState(false);
 			bool expectedState = true;
@@ -50,7 +50,7 @@ namespace PreviewHandlerSettingsTest
 		TEST_METHOD(SetRegistryValue_ShouldCreateAValueInRegistry_WhenSucessfull)
 		{
 			// Arrange
-			FileExplorerPreviewSettings tempSettings = GetSttingsObject();
+			FileExplorerPreviewSettings tempSettings = GetSttingsObjects();
 
 			// Act
 			tempSettings.SetRegistryValue();
@@ -63,7 +63,7 @@ namespace PreviewHandlerSettingsTest
 		TEST_METHOD(RemoveRegistryValue_ShouldDeleteAValueInRegistry_WhenSucessfull)
 		{
 			// Arrange
-			FileExplorerPreviewSettings tempSettings = GetSttingsObject();
+			FileExplorerPreviewSettings tempSettings = GetSttingsObjects();
 
 			// Act
 			tempSettings.SetRegistryValue();
@@ -76,7 +76,7 @@ namespace PreviewHandlerSettingsTest
 		TEST_METHOD(EnableRender_ShouldUpdateStateToTrue_WhenSuccessful)
         {
             // Arrange
-            FileExplorerPreviewSettings tempSettings = GetSttingsObject();
+            FileExplorerPreviewSettings tempSettings = GetSttingsObjects();
             tempSettings.SetState(false); //preview handler initially disabled
 
             // Act
@@ -89,7 +89,7 @@ namespace PreviewHandlerSettingsTest
         TEST_METHOD(DisableRender_ShouldUpdateStateToFalse_WhenSuccessful)
         {
             // Arrange
-            FileExplorerPreviewSettings tempSettings = GetSttingsObject();
+            FileExplorerPreviewSettings tempSettings = GetSttingsObjects();
             tempSettings.SetState(true); //preview handler initially enabled
 
             // Act
@@ -99,7 +99,7 @@ namespace PreviewHandlerSettingsTest
             Assert::IsFalse(tempSettings.GetState());
         }
 
-		FileExplorerPreviewSettings GetSttingsObject()
+		FileExplorerPreviewSettings GetSttingsObjects()
 		{
             return FileExplorerPreviewSettings(
                 false,
