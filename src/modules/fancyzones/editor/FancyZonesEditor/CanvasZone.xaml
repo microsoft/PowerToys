@@ -40,5 +40,11 @@
         </DockPanel>
         <Rectangle Fill="LightGray" Grid.Row="3" Grid.Column="1" Grid.RowSpan="2" Grid.ColumnSpan="3"/>
         <Canvas x:Name="Body" />
+        <Label Name="LabelID"
+               Content="ID"
+               Canvas.Left="10" Canvas.Bottom="10"
+               FontSize="80" FontFamily="Times New Roman"
+               Background="LightSkyBlue"
+               Foreground="Red" Grid.Column="2" Grid.Row="3" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" RenderTransformOrigin="-0.743,-0.2"/>
     </Grid>
 </UserControl>
