@@ -65,6 +65,7 @@ namespace FancyZonesEditor
                 Canvas.SetTop(zone, rect.Y);
                 zone.Height = rect.Height;
                 zone.Width = rect.Width;
+                zone.LabelID.Content = i + 1;
             }
         }
     }
