@@ -15,7 +15,7 @@ class D2DWindow
 {
 public:
   D2DWindow();
-  void show(UINT x, UINT y, UINT width, UINT height);
+  void show(INT x, INT y, UINT width, UINT height);
   void hide();
   void initialize();
   virtual ~D2DWindow();
@@ -37,7 +37,7 @@ protected:
   static D2DWindow* this_from_hwnd(HWND window);
   
   void base_init();
-  void base_resize(UINT width, UINT height);
+  void base_resize();
   void base_render();
   void render_empty();
 

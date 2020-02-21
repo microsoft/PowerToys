@@ -22,11 +22,15 @@ D2DWindow::D2DWindow() {
   WINRT_VERIFY(hwnd);
 }
 
-void D2DWindow::show(UINT x, UINT y, UINT width, UINT height) {
+void D2DWindow::show(INT x, INT y, UINT width, UINT height) {
   if (!initialized) {
     base_init();
   }
-  base_resize(width, height);
+
+  window_width = width;
+  window_height = height;
+
+  base_resize();
   render_empty();
   on_show();
   SetWindowPos(hwnd, HWND_TOPMOST, x, y, width, height, 0);
@@ -81,13 +85,11 @@ void D2DWindow::base_init() {
   initialized = true;
 }
 
-void D2DWindow::base_resize(UINT width, UINT height) {
+void D2DWindow::base_resize() {
   std::unique_lock lock(mutex);
   if (!initialized) {
     return;
   }
-  window_width = width;
-  window_height = height;
   if (window_width == 0 || window_height == 0) {
     return;
   }
@@ -173,7 +175,7 @@ LRESULT __stdcall D2DWindow::d2d_window_proc(HWND window, UINT message, WPARAM w
   }
   case WM_MOVE:
   case WM_SIZE:
-    this_from_hwnd(window)->base_resize((unsigned)lparam & 0xFFFF, (unsigned)lparam >> 16);
+    this_from_hwnd(window)->base_resize();
     // Fall through to call 'base_render()'
   case WM_PAINT:
     this_from_hwnd(window)->base_render();
