@@ -13,6 +13,7 @@
     <ClInclude Include="trace.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="settings.h" />
+    <ClInclude Include="CLSID.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="powerpreview.rc" />
