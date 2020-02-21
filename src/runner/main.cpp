@@ -97,6 +97,14 @@ bool start_msi_uninstallation_sequence()
     return exit_code == 0;
 }
 
+void alert_already_running()
+{
+    MessageBoxW(nullptr,
+                GET_RESOURCE_STRING(IDS_ANOTHER_INSTANCE_RUNNING).c_str(),
+                GET_RESOURCE_STRING(IDS_POWERTOYS).c_str(),
+                MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
+}
+
 int runner(bool isProcessElevated)
 {
     DPIAware::EnableDPIAwarenessForThisProcess();
@@ -168,6 +176,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if (!msix_mutex)
         {
             // The MSIX version is already running.
+            alert_already_running();
             return 0;
         }
 
@@ -184,13 +193,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 msi_mutex = create_msi_mutex();
                 if (!msi_mutex)
                 {
-                    // Warn and exit since the MSI version is still running.
-                    notifications::show_toast(localized_strings::MSI_VERSION_IS_ALREADY_RUNNING);
-
-                    // Wait 1 second before exiting, since if we exit immediately,
-                    // the toast notification is lost.
-                    Sleep(1000);
-
+                    alert_already_running();
                     return 0;
                 }
             }
@@ -208,6 +211,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if (!msi_mutex)
         {
             // The MSI version is already running.
+            alert_already_running();
             return 0;
         }
 
@@ -218,6 +222,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if (!msix_mutex)
         {
             // The MSIX version is already running.
+            alert_already_running();
             return 0;
         }
         else
