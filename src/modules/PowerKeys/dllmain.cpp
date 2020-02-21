@@ -46,6 +46,28 @@ struct ModuleSettings
 
 } g_settings;
 
+// Callback function to identify correct child process from a parent window which is from ApplicationFrameHost
+BOOL CALLBACK GetRealProcessCallback(HWND hwnd, LPARAM lparam)
+{
+    DWORD process_id;
+    DWORD nSize = MAX_PATH;
+    WCHAR buffer[MAX_PATH] = { 0 };
+    DWORD thread_id = GetWindowThreadProcessId(hwnd, &process_id);
+    HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, process_id);
+    if (QueryFullProcessImageName(hProc, 0, buffer, &nSize))
+    {
+        std::wstring exePath = buffer;
+        PathStripPath(buffer);
+
+        if (wcscmp(buffer, L"ApplicationFrameHost.exe") != 0)
+        {
+            wcscpy_s(reinterpret_cast<LPWSTR>(lparam), MAX_PATH, exePath.c_str());
+        }
+    }
+
+    return true;
+}
+
 // Implement the PowerToy Module Interface and all the required methods.
 class PowerKeys : public PowertoyModuleIface
 {
@@ -54,11 +76,13 @@ private:
     bool m_enabled = false;
     std::unordered_map<DWORD, WORD> singleKeyReMap;
     std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>> osLevelShortcutReMap;
+    // Maps application name to the shortcut map
+    std::map<std::wstring, std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>>> appSpecificShortcutReMap;
     std::unordered_map<DWORD, bool> singleKeyToggleToMod;
     // Load initial settings from the persisted values.
     void init_settings();
     static const ULONG_PTR POWERKEYS_INJECTED_FLAG = 54321;
-    static const DWORD DUMMY_CHAR = 0x0;
+    static const DWORD DUMMY_KEY = 0xCF;
 
 public:
     // Constructor
@@ -71,16 +95,23 @@ public:
     void init_map()
     {
         // If mapped to 0x0 then key is disabled.
-        /*singleKeyReMap[0x42] = 0x41;
-        singleKeyReMap[0x41] = 0x42;*/
+        singleKeyReMap[0x42] = 0x41;
+        /*singleKeyReMap[0x41] = 0x42;*/
         /*singleKeyReMap[VK_LWIN] = VK_MEDIA_PLAY_PAUSE;
         singleKeyReMap[VK_MEDIA_PLAY_PAUSE] = VK_LWIN;*/
         singleKeyReMap[VK_OEM_4] = 0x0;
         singleKeyToggleToMod[VK_CAPITAL] = false;
+        // OS-level shortcut remappings
         osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
         osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x45 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
         osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x53 }), false);
         osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
+
+        //App-specific shortcut remappings
+        appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x43 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+C to Ctrl+V
+        appSpecificShortcutReMap[L"OUTLOOK.EXE"][std::vector<DWORD>({ VK_LCONTROL, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x45 }), false); // Ctrl+F to Ctrl+E
+        appSpecificShortcutReMap[L"MicrosoftEdge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+X to Ctrl+V
+        appSpecificShortcutReMap[L"Calculator.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x47 })] = std::make_pair(std::vector<WORD>({ VK_LSHIFT, 0x32 }), false); // Ctrl+G to Shift+2
     }
 
     // Destroy the powertoy and free memory
@@ -280,7 +311,8 @@ public:
         intptr_t SingleKeyRemapResult = HandleSingleKeyRemapEvent(data);
         intptr_t SingleKeyToggleToModResult = HandleSingleKeyToggleToModEvent(data);
         intptr_t OSLevelShortcutRemapResult = HandleOSLevelShortcutRemapEvent(data);
-        if ((SingleKeyRemapResult + SingleKeyToggleToModResult + OSLevelShortcutRemapResult) > 0)
+        intptr_t AppSpecificShortcutRemapResult = HandleAppSpecificShortcutRemapEvent(data);
+        if ((SingleKeyRemapResult + SingleKeyToggleToModResult + OSLevelShortcutRemapResult + AppSpecificShortcutRemapResult) > 0)
         {
             return 1;
         }
@@ -370,20 +402,99 @@ public:
         return 0;
     }
 
-    intptr_t HandleOSLevelShortcutRemapEvent(LowlevelKeyboardEvent* data) noexcept
+    intptr_t HandleShortcutRemapEvent(LowlevelKeyboardEvent* data, std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>>& reMap) noexcept
     {
-        if (data->lParam->dwExtraInfo != POWERKEYS_INJECTED_FLAG)
+        for (auto& it : reMap)
         {
-            for (auto& it : osLevelShortcutReMap)
+            DWORD src_1 = it.first[0];
+            DWORD src_2 = it.first[1];
+            WORD dest_1 = it.second.first[0];
+            WORD dest_2 = it.second.first[1];
+            // If the shortcut has been pressed down
+            if ((GetAsyncKeyState(src_1) & 0x8000) && !it.second.second)
             {
-                DWORD src_1 = it.first[0];
-                DWORD src_2 = it.first[1];
-                WORD dest_1 = it.second.first[0];
-                WORD dest_2 = it.second.first[1];
-                // If the shortcut has been pressed down
-                if ((GetAsyncKeyState(src_1) & 0x8000) && !it.second.second)
+                if (data->lParam->vkCode == src_2 && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                 {
+                    int key_count = 4;
+                    LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+                    memset(keyEventList, 0, sizeof(keyEventList));
+                    if (src_1 == dest_1)
+                    {
+                        key_count = 1;
+                        keyEventList[0].type = INPUT_KEYBOARD;
+                        keyEventList[0].ki.wVk = dest_2;
+                        keyEventList[0].ki.dwFlags = 0;
+                        keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                    }
+                    else
+                    {
+                        keyEventList[0].type = INPUT_KEYBOARD;
+                        keyEventList[0].ki.wVk = (WORD)DUMMY_KEY;
+                        keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
+                        keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                        keyEventList[1].type = INPUT_KEYBOARD;
+                        keyEventList[1].ki.wVk = (WORD)src_1;
+                        keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
+                        keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                        keyEventList[2].type = INPUT_KEYBOARD;
+                        keyEventList[2].ki.wVk = dest_1;
+                        keyEventList[2].ki.dwFlags = 0;
+                        keyEventList[2].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                        keyEventList[3].type = INPUT_KEYBOARD;
+                        keyEventList[3].ki.wVk = dest_2;
+                        keyEventList[3].ki.dwFlags = 0;
+                        keyEventList[3].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                    }
+
+                    it.second.second = true;
+                    UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+                    delete[] keyEventList;
+                    return 1;
+                }
+            }
+            else if (it.second.second)
+            {
+                // If the modifier key of the original shortcut is released before the normal key
+                if (data->lParam->vkCode == src_1 && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                {
+                    int key_count = 2;
+                    LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+                    memset(keyEventList, 0, sizeof(keyEventList));
+                    keyEventList[0].type = INPUT_KEYBOARD;
+                    keyEventList[0].ki.wVk = dest_2;
+                    keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
+                    keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                    keyEventList[1].type = INPUT_KEYBOARD;
+                    keyEventList[1].ki.wVk = dest_1;
+                    keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
+                    keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                    it.second.second = false;
+                    UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+
+                    delete[] keyEventList;
+                    return 1;
+                }
+
+                if (GetAsyncKeyState(dest_1) & 0x8000)
+                {
+                    // If the original shortcut is still held down the keyboard will see the original normal key along with the new modifier (keys held down send repeated keydown messages)
                     if (data->lParam->vkCode == src_2 && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                    {
+                        int key_count = 1;
+                        LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+                        memset(keyEventList, 0, sizeof(keyEventList));
+                        keyEventList[0].type = INPUT_KEYBOARD;
+                        keyEventList[0].ki.wVk = dest_2;
+                        keyEventList[0].ki.dwFlags = 0;
+                        keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+
+                        it.second.second = true;
+                        UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+                        delete[] keyEventList;
+                        return 1;
+                    }
+                    // If the normal key is released from the original shortcut then revert the keyboard state to just the original modifier being held down
+                    if (data->lParam->vkCode == src_2 && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                     {
                         int key_count = 4;
                         LPINPUT keyEventList = new INPUT[size_t(key_count)]();
@@ -393,116 +504,97 @@ public:
                             key_count = 1;
                             keyEventList[0].type = INPUT_KEYBOARD;
                             keyEventList[0].ki.wVk = dest_2;
-                            keyEventList[0].ki.dwFlags = 0;
+                            keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
                             keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
                         }
                         else
                         {
                             keyEventList[0].type = INPUT_KEYBOARD;
-                            keyEventList[0].ki.wVk = (WORD)DUMMY_CHAR;
+                            keyEventList[0].ki.wVk = dest_2;
                             keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
                             keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
                             keyEventList[1].type = INPUT_KEYBOARD;
-                            keyEventList[1].ki.wVk = (WORD)src_1;
+                            keyEventList[1].ki.wVk = dest_1;
                             keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
                             keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
                             keyEventList[2].type = INPUT_KEYBOARD;
-                            keyEventList[2].ki.wVk = dest_1;
+                            keyEventList[2].ki.wVk = (WORD)src_1;
                             keyEventList[2].ki.dwFlags = 0;
-                            keyEventList[2].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                            keyEventList[2].ki.dwExtraInfo = 0;
                             keyEventList[3].type = INPUT_KEYBOARD;
-                            keyEventList[3].ki.wVk = dest_2;
-                            keyEventList[3].ki.dwFlags = 0;
+                            keyEventList[3].ki.wVk = (WORD)DUMMY_KEY;
+                            keyEventList[3].ki.dwFlags = KEYEVENTF_KEYUP;
                             keyEventList[3].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
                         }
-
-                        it.second.second = true;
-                        UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
-                        delete[] keyEventList;
-                        return 1;
-                    }
-                }
-                else if (it.second.second)
-                {
-                    // If the modifier key of the original shortcut is released before the normal key
-                    if (data->lParam->vkCode == src_1 && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
-                    {
-                        int key_count = 2;
-                        LPINPUT keyEventList = new INPUT[size_t(key_count)]();
-                        memset(keyEventList, 0, sizeof(keyEventList));
-                        keyEventList[0].type = INPUT_KEYBOARD;
-                        keyEventList[0].ki.wVk = dest_2;
-                        keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
-                        keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-                        keyEventList[1].type = INPUT_KEYBOARD;
-                        keyEventList[1].ki.wVk = dest_1;
-                        keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
-                        keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
                         it.second.second = false;
                         UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
-
                         delete[] keyEventList;
                         return 1;
                     }
-
-                    if (GetAsyncKeyState(dest_1) & 0x8000)
-                    {
-                        // If the original shortcut is still held down the keyboard will see the original normal key along with the new modifier (keys held down send repeated keydown messages)
-                        if (data->lParam->vkCode == src_2 && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
-                        {
-                            int key_count = 1;
-                            LPINPUT keyEventList = new INPUT[size_t(key_count)]();
-                            memset(keyEventList, 0, sizeof(keyEventList));
-                            keyEventList[0].type = INPUT_KEYBOARD;
-                            keyEventList[0].ki.wVk = dest_2;
-                            keyEventList[0].ki.dwFlags = 0;
-                            keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-
-                            it.second.second = true;
-                            UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
-                            delete[] keyEventList;
-                            return 1;
-                        }
-                        // If the normal key is released from the original shortcut then revert the keyboard state to just the original modifier being held down
-                        if (data->lParam->vkCode == src_2 && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
-                        {
-                            int key_count = 4;
-                            LPINPUT keyEventList = new INPUT[size_t(key_count)]();
-                            memset(keyEventList, 0, sizeof(keyEventList));
-                            if (src_1 == dest_1)
-                            {
-                                key_count = 1;
-                                keyEventList[0].type = INPUT_KEYBOARD;
-                                keyEventList[0].ki.wVk = dest_2;
-                                keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
-                                keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-                            }
-                            else
-                            {
-                                keyEventList[0].type = INPUT_KEYBOARD;
-                                keyEventList[0].ki.wVk = dest_2;
-                                keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
-                                keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-                                keyEventList[1].type = INPUT_KEYBOARD;
-                                keyEventList[1].ki.wVk = dest_1;
-                                keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
-                                keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-                                keyEventList[2].type = INPUT_KEYBOARD;
-                                keyEventList[2].ki.wVk = (WORD)src_1;
-                                keyEventList[2].ki.dwFlags = 0;
-                                keyEventList[2].ki.dwExtraInfo = 0;
-                                keyEventList[3].type = INPUT_KEYBOARD;
-                                keyEventList[3].ki.wVk = (WORD)DUMMY_CHAR;
-                                keyEventList[3].ki.dwFlags = KEYEVENTF_KEYUP;
-                                keyEventList[3].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
-                            }
-                            it.second.second = false;
-                            UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
-                            delete[] keyEventList;
-                            return 1;
-                        }
-                    }
                 }
+            }
+        }
+
+        return 0;
+    }
+
+    intptr_t HandleOSLevelShortcutRemapEvent(LowlevelKeyboardEvent* data) noexcept
+    {
+        if (data->lParam->dwExtraInfo != POWERKEYS_INJECTED_FLAG)
+        {
+            return HandleShortcutRemapEvent(data, osLevelShortcutReMap);
+        }
+
+        return 0;
+    }
+
+    std::wstring GetCurrentApplication(bool keepPath)
+    {
+        HWND current_window_handle = GetForegroundWindow();
+        DWORD process_id;
+        DWORD nSize = MAX_PATH;
+        WCHAR buffer[MAX_PATH] = { 0 };
+        DWORD thread_id = GetWindowThreadProcessId(current_window_handle, &process_id);
+        HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, process_id);
+        bool res = QueryFullProcessImageName(hProc, 0, buffer, &nSize);
+        std::wstring process_name;
+        CloseHandle(hProc);
+
+        process_name = buffer;
+        if (res)
+        {
+            PathStripPath(buffer);
+
+            // Applies to UWP apps as they return the process ID of ApplicationFrameHost. Instead iterate through the child windows of the foreground window to get the actual process.
+            if (wcscmp(buffer, L"ApplicationFrameHost.exe") == 0)
+            {
+                EnumChildWindows(current_window_handle, GetRealProcessCallback, reinterpret_cast<LPARAM>(buffer));
+                process_name = buffer;
+                PathStripPath(buffer);
+            }
+
+            if (!keepPath)
+            {
+                process_name = buffer;
+            }
+        }
+        return process_name;
+    }
+
+    intptr_t HandleAppSpecificShortcutRemapEvent(LowlevelKeyboardEvent* data) noexcept
+    {
+        if (data->lParam->dwExtraInfo != POWERKEYS_INJECTED_FLAG)
+        {
+            std::wstring process_name = GetCurrentApplication(false);
+            if (process_name.empty())
+            {
+                return 0;
+            }
+
+            auto it = appSpecificShortcutReMap.find(process_name);
+            if (it != appSpecificShortcutReMap.end())
+            {
+                return HandleShortcutRemapEvent(data, appSpecificShortcutReMap[process_name]);
             }
         }
 
