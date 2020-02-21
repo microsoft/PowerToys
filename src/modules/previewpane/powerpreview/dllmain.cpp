@@ -4,7 +4,8 @@
 #include "powerpreview.h"
 #include "CLSID.h"
 
-// Logic to shim the Activation of .Net Assembly by calling CoGetClassObject. CLSID's of Preview Handlers should be present in the package private hive.
+// Logic to shim the Activation of .Net Assembly by calling CoGetClassObject. CLSID's of Preview Handlers should be present in the registry.dat under /Classes/CLSID/{guid}.
+// See the existing Preview Handlers registry entry in registry.reg file.
 // This is required since MSIX currently not support .Net Assembly for Com Activation for Preview Handlers.
 HRESULT CALLBACK DllGetClassObject(REFCLSID clsid, REFIID riid, void** ppv)
 {
