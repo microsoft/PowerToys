@@ -594,6 +594,7 @@ namespace FancyZonesEditor
                         top = _rowInfo[row].Start;
                         Canvas.SetLeft(zone, left);
                         Canvas.SetTop(zone, top);
+                        zone.LabelID.Content = i + 1;
 
                         int maxRow = row;
                         while (((maxRow + 1) < rows) && (model.CellChildMap[maxRow + 1, col] == i))
