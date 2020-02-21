@@ -46,6 +46,9 @@ namespace Wox.Plugin
         [Obsolete("Use IcoPath")]
         public string FullIcoPath => IcoPath;
 
+        /// <summary>
+        /// Init time include both plugin load time and init time
+        /// </summary>
         [JsonIgnore]
         public long InitTime { get; set; }
         [JsonIgnore]
