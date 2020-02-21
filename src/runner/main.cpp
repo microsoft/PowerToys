@@ -56,6 +56,16 @@ wil::unique_mutex_nothrow create_runner_mutex(const bool msix_version)
     return GetLastError() == ERROR_ALREADY_EXISTS ? wil::unique_mutex_nothrow{} : std::move(result);
 }
 
+wil::unique_mutex_nothrow create_msi_mutex()
+{
+    return create_runner_mutex(false);
+}
+
+wil::unique_mutex_nothrow create_msix_mutex()
+{
+    return create_runner_mutex(true);
+}
+
 bool start_msi_uninstallation_sequence()
 {
     const auto package_path = get_msi_package_path();
@@ -85,6 +95,14 @@ bool start_msi_uninstallation_sequence()
     GetExitCodeProcess(sei.hProcess, &exit_code);
     CloseHandle(sei.hProcess);
     return exit_code == 0;
+}
+
+void alert_already_running()
+{
+    MessageBoxW(nullptr,
+                GET_RESOURCE_STRING(IDS_ANOTHER_INSTANCE_RUNNING).c_str(),
+                GET_RESOURCE_STRING(IDS_POWERTOYS).c_str(),
+                MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
 }
 
 int runner(bool isProcessElevated)
@@ -149,27 +167,68 @@ int runner(bool isProcessElevated)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-    auto msix_mutex = create_runner_mutex(true);
-    const bool msix_mutex_failed_to_lock = !msix_mutex;
-    if (msix_mutex_failed_to_lock)
-    {
-        // The app is already running
-        return 0;
-    }
+    wil::unique_mutex_nothrow msi_mutex;
+    wil::unique_mutex_nothrow msix_mutex;
 
-    auto msi_mutex = create_runner_mutex(false);
-    const bool msi_mutex_already_taken = !msi_mutex;
-    if (msi_mutex_already_taken)
+    if (winstore::running_as_packaged())
     {
-        const bool declined_uninstall = !start_msi_uninstallation_sequence();
-
-        if (declined_uninstall)
+        msix_mutex = create_msix_mutex();
+        if (!msix_mutex)
         {
-            // Warn and exit if msi version is already running
-            notifications::show_toast(localized_strings::MSI_VERSION_IS_ALREADY_RUNNING);
-            // Wait 1 second before exiting, since if we exit immediately, the toast notification becomes lost
-            Sleep(1000);
+            // The MSIX version is already running.
+            alert_already_running();
             return 0;
+        }
+
+        // Check if the MSI version is running, if not, hold the
+        // mutex to prevent the old MSI versions to start.
+        msi_mutex = create_msi_mutex();
+        if (!msi_mutex)
+        {
+            // The MSI version is running, warn the user and offer to uninstall it.
+            const bool declined_uninstall = !start_msi_uninstallation_sequence();
+            if (declined_uninstall)
+            {
+                // Check again if the MSI version is still running.
+                msi_mutex = create_msi_mutex();
+                if (!msi_mutex)
+                {
+                    alert_already_running();
+                    return 0;
+                }
+            }
+        }
+        else
+        {
+            // Older MSI versions are not aware of the MSIX mutex, therefore
+            // hold the MSI mutex to prevent an old instance to start.
+        }
+    }
+    else
+    {
+        // Check if another instance of the MSI version is already running.
+        msi_mutex = create_msi_mutex();
+        if (!msi_mutex)
+        {
+            // The MSI version is already running.
+            alert_already_running();
+            return 0;
+        }
+
+        // Check if an instance of the MSIX version is already running.
+        // Note: this check should always be negative since the MSIX version
+        // is holding both mutexes.
+        msix_mutex = create_msix_mutex();
+        if (!msix_mutex)
+        {
+            // The MSIX version is already running.
+            alert_already_running();
+            return 0;
+        }
+        else
+        {
+            // The MSIX version isn't running, release the mutex.
+            msix_mutex.reset(nullptr);
         }
     }
 
@@ -213,9 +272,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         MessageBoxW(nullptr, std::wstring(err_what.begin(), err_what.end()).c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
         result = -1;
     }
-    // We need to release mutices to be able to restart the application
-    msi_mutex.reset(nullptr);
-    msix_mutex.reset(nullptr);
+
+    // We need to release the mutexes to be able to restart the application
+    if (msi_mutex)
+    {
+        msi_mutex.reset(nullptr);
+    }
+
+    if (msix_mutex)
+    {
+        msix_mutex.reset(nullptr);
+    }
+
     if (is_restart_scheduled())
     {
         if (restart_if_scheduled() == false)
