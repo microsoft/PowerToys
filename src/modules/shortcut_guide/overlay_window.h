@@ -93,7 +93,7 @@ private:
     D2DOverlaySVG landscape, portrait;
     D2DOverlaySVG* use_overlay = nullptr;
     D2DSVG no_active;
-    std::vector<D2DSVG> arrows;
+    std::vector<D2DSVG> taskbar_shortcut;
     std::chrono::steady_clock::time_point shown_start_time;
     float overlay_opacity = 0.9f;
 

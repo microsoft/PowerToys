@@ -224,7 +224,7 @@ void D2DOverlayWindow::show(HWND active_window, bool snappable)
         // update background colors
         landscape.recolor(old_bck, colors.start_color_menu);
         portrait.recolor(old_bck, colors.start_color_menu);
-        for (auto& arrow : arrows)
+        for (auto& arrow : taskbar_shortcut)
         {
             arrow.recolor(old_bck, colors.start_color_menu);
         }
@@ -233,7 +233,7 @@ void D2DOverlayWindow::show(HWND active_window, bool snappable)
         {
             landscape.recolor(0xDDDDDD, 0x222222);
             portrait.recolor(0xDDDDDD, 0x222222);
-            for (auto& arrow : arrows)
+            for (auto& arrow : taskbar_shortcut)
             {
                 arrow.recolor(0xDDDDDD, 0x222222);
             }
@@ -242,7 +242,7 @@ void D2DOverlayWindow::show(HWND active_window, bool snappable)
         {
             landscape.recolor(0x222222, 0xDDDDDD);
             portrait.recolor(0x222222, 0xDDDDDD);
-            for (auto& arrow : arrows)
+            for (auto& arrow : taskbar_shortcut)
             {
                 arrow.recolor(0x222222, 0xDDDDDD);
             }
@@ -529,17 +529,17 @@ void D2DOverlayWindow::init()
         .find_window_group(L"Group-1")
         .recolor(0x000000, colors.start_color_menu);
     no_active.load(L"svgs\\no_active_window.svg", d2d_dc.get());
-    arrows.resize(10);
-    for (unsigned i = 0; i < arrows.size(); ++i)
+    taskbar_shortcut.resize(10);
+    for (unsigned i = 0; i < taskbar_shortcut.size(); ++i)
     {
-        arrows[i].load(L"svgs\\" + std::to_wstring((i + 1) % 10) + L".svg", d2d_dc.get()).recolor(0x000000, colors.start_color_menu);
+        taskbar_shortcut[i].load(L"svgs\\" + std::to_wstring((i + 1) % 10) + L".svg", d2d_dc.get()).recolor(0x000000, colors.start_color_menu);
     }
     light_mode = (theme_setting == Light) || (theme_setting == System && colors.light_mode);
     if (!light_mode)
     {
         landscape.recolor(0x222222, 0xDDDDDD);
         portrait.recolor(0x222222, 0xDDDDDD);
-        for (auto& arrow : arrows)
+        for (auto& arrow : taskbar_shortcut)
         {
             arrow.recolor(0x222222, 0xDDDDDD);
         }
@@ -572,57 +572,57 @@ void D2DOverlayWindow::resize()
     text.resize(font, use_overlay->get_scale());
 }
 
-void render_arrow(D2DSVG& arrow, TasklistButton& button, RECT window, float max_scale, ID2D1DeviceContext5* d2d_dc)
+void render_taskbar_shortcut(D2DSVG& taskbar_shortcut, TasklistButton& button, RECT window, float max_scale, ID2D1DeviceContext5* d2d_dc)
 {
     int dx = 0, dy = 0;
     // Calculate taskbar orientation
-    arrow.toggle_element(L"left", false);
-    arrow.toggle_element(L"right", false);
-    arrow.toggle_element(L"top", false);
-    arrow.toggle_element(L"bottom", false);
+    taskbar_shortcut.toggle_element(L"left", false);
+    taskbar_shortcut.toggle_element(L"right", false);
+    taskbar_shortcut.toggle_element(L"top", false);
+    taskbar_shortcut.toggle_element(L"bottom", false);
     if (button.x <= window.left)
     { // taskbar on left
         dx = 1;
-        arrow.toggle_element(L"left", true);
+        taskbar_shortcut.toggle_element(L"left", true);
     }
     if (button.x >= window.right)
     { // taskbar on right
         dx = -1;
-        arrow.toggle_element(L"right", true);
+        taskbar_shortcut.toggle_element(L"right", true);
     }
     if (button.y <= window.top)
     { // taskbar on top
         dy = 1;
-        arrow.toggle_element(L"top", true);
+        taskbar_shortcut.toggle_element(L"top", true);
     }
     if (button.y >= window.bottom)
     { // taskbar on bottom
         dy = -1;
-        arrow.toggle_element(L"bottom", true);
+        taskbar_shortcut.toggle_element(L"bottom", true);
     }
-    double arrow_ratio = (double)arrow.height() / arrow.width();
+    double shortcut_ration = (double)taskbar_shortcut.height() / taskbar_shortcut.width();
     if (dy != 0)
     {
-        // assume button is 25% wider than taller, +10% to make room for each of the arrows that are hidden
-        auto render_arrow_width = (int)(button.height * 1.25f * 1.2f);
-        auto render_arrow_height = (int)(render_arrow_width * arrow_ratio);
-        arrow.resize(button.x + (button.width - render_arrow_width) / 2,
-                     dy == -1 ? button.y - render_arrow_height : 0,
-                     render_arrow_width,
-                     render_arrow_height,
+        // assume button is 25% wider than taller, +10% to make room for each of the shortcuts that are hidden
+        auto render_shortcut_width = (int)(button.height * 1.25f * 1.2f);
+        auto render_shortcut_height = (int)(render_shortcut_width * shortcut_ration);
+        taskbar_shortcut.resize(button.x + (button.width - render_shortcut_width) / 2,
+                     dy == -1 ? button.y - render_shortcut_height : 0,
+                     render_shortcut_width,
+                     render_shortcut_height,
                      0.95f,
                      max_scale)
             .render(d2d_dc);
     }
     else
     {
-        // same as above - make room for the hidden arrow
-        auto render_arrow_height = (int)(button.height * 1.2f);
-        auto render_arrow_width = (int)(render_arrow_height / arrow_ratio);
-        arrow.resize(dx == -1 ? button.x - render_arrow_width : 0,
-                     button.y + (button.height - render_arrow_height) / 2,
-                     render_arrow_width,
-                     render_arrow_height,
+        // same as above - make room for the hidden shortcuts
+        auto render_shortcut_height = (int)(button.height * 1.2f);
+        auto render_shortcut_width = (int)(render_shortcut_height / shortcut_ration);
+        taskbar_shortcut.resize(dx == -1 ? button.x - render_shortcut_width : 0,
+                     button.y + (button.height - render_shortcut_height) / 2,
+                     render_shortcut_width,
+                     render_shortcut_height,
                      0.95f,
                      max_scale)
             .render(d2d_dc);
@@ -913,10 +913,10 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     // ... and the arrows with numbers
     for (auto&& button : tasklist_buttons)
     {
-        if ((size_t)(button.keynum) - 1 >= arrows.size())
+        if ((size_t)(button.keynum) - 1 >= taskbar_shortcut.size())
         {
             continue;
         }
-        render_arrow(arrows[(size_t)(button.keynum) - 1], button, window_rect, use_overlay->get_scale(), d2d_dc);
+        render_taskbar_shortcut(taskbar_shortcut[(size_t)(button.keynum) - 1], button, window_rect, use_overlay->get_scale(), d2d_dc);
     }
 }
