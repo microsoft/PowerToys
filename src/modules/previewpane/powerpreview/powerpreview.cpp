@@ -44,17 +44,13 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_DESC),
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_TEXT));
 
-    // Preview Pane: SVG Settings.
-    settings.add_bool_toogle(
-        m_prevPaneSVGSettings.GetName(),
-        m_prevPaneSVGSettings.GetDescription(),
-        m_prevPaneSVGSettings.GetState());
-
-    // Preview Pane: Mark Down Settings.
-    settings.add_bool_toogle(
-        m_prevPaneMDSettings.GetName(),
-        m_prevPaneMDSettings.GetDescription(),
-        m_prevPaneMDSettings.GetState());
+    for (FileExplorerPreviewSettings& previewHandler : this->m_previewHandlers)
+    {
+        settings.add_bool_toogle(
+            previewHandler.GetName(),
+            previewHandler.GetDescription(),
+            previewHandler.GetState());
+    }
 
     return settings.serialize_to_buffer(buffer, buffer_size);
 }
@@ -65,8 +61,12 @@ void PowerPreviewModule::set_config(const wchar_t* config)
     try
     {
         PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::from_json_string(config);
-        m_prevPaneSVGSettings.UpdateState(values);
-        m_prevPaneMDSettings.UpdateState(values);
+
+        for (FileExplorerPreviewSettings& previewHandler : this->m_previewHandlers)
+        {
+            previewHandler.UpdateState(values);
+        }
+
         values.save_to_settings_file();
     }
     catch (std::exception const& e)
@@ -75,21 +75,20 @@ void PowerPreviewModule::set_config(const wchar_t* config)
     }
 }
 
-// Enable the powertoy
+// Enable preview handlers.
 void PowerPreviewModule::enable()
 {
-    m_prevPaneSVGSettings.EnablePreview();
-    m_prevPaneMDSettings.EnablePreview();
-    Trace::FilePreviewerIsEnabled();
+    init_settings();
     this->m_enabled = true;
 }
 
-// Disable the powertoy
+// Disable all preview handlers.
 void PowerPreviewModule::disable()
 {
-    m_prevPaneSVGSettings.DisablePreview();
-    m_prevPaneMDSettings.DisablePreview();
-    Trace::FilePreviewerIsDisabled();
+    for (FileExplorerPreviewSettings& previewHandler : this->m_previewHandlers)
+    {
+        previewHandler.DisablePreview();
+    }
     this->m_enabled = false;
 }
 
@@ -115,8 +114,10 @@ void PowerPreviewModule::init_settings()
             PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_name());
 
         // Load settings states.
-        m_prevPaneSVGSettings.LoadState(settings);
-        m_prevPaneMDSettings.LoadState(settings);
+        for (FileExplorerPreviewSettings& previewHandler : this->m_previewHandlers)
+        {
+            previewHandler.LoadState(settings);
+        }
     }
     catch (std::exception const& e)
     {
