@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,15 +23,19 @@ namespace FancyZonesEditor
             Canvas.SetZIndex(this, zIndex++);
         }
 
-        public CanvasLayoutModel Model;
-        public int ZoneIndex;
+        private CanvasLayoutModel model;
+
+        private int zoneIndex;
 
         private abstract class SnappyHelperBase
         {
-            protected readonly int screenW;
-            protected readonly List<int> snaps;
-            protected readonly int minValue;
-            protected readonly int maxValue;
+            public int ScreenW { get; private set; }
+
+            protected List<int> Snaps { get; private set; }
+
+            protected int MinValue { get; private set; }
+
+            protected int MaxValue { get; private set; }
 
             public int Position { get; protected set; }
 
@@ -38,7 +46,8 @@ namespace FancyZonesEditor
             public const int ModeBoth = 3;
 
             /// <summary>
-            ///     Initialize the SnappyHelperBase. Just pass it the canvas arguments. Use mode
+            /// Initializes a new instance of the <see cref="SnappyHelperBase"/> class.
+            ///     Just pass it the canvas arguments. Use mode
             ///     to tell it which edges of the existing masks to use when building its list
             ///     of snap points, and generally which edges to track. There will be two
             ///     SnappyHelpers, one for X-coordinates and one for
@@ -73,15 +82,15 @@ namespace FancyZonesEditor
 
                 // Remove duplicates and sort
                 key_positions.Sort();
-                snaps = new List<int>();
+                Snaps = new List<int>();
                 if (key_positions.Count > 0)
                 {
-                    snaps.Add(key_positions[0]);
+                    Snaps.Add(key_positions[0]);
                     for (int i = 1; i < key_positions.Count; ++i)
                     {
                         if (key_positions[i] != key_positions[i - 1])
                         {
-                            snaps.Add(key_positions[i]);
+                            Snaps.Add(key_positions[i]);
                         }
                     }
                 }
@@ -90,34 +99,34 @@ namespace FancyZonesEditor
                 if (mode == ModeLow)
                 {
                     // We're dragging the low edge, don't go below zero
-                    minValue = 0;
+                    MinValue = 0;
                 }
                 else if (mode == ModeHigh)
                 {
                     // We're dragging the high edge, don't make the zone smaller than min_w
-                    minValue = track_p + min_w;
+                    MinValue = track_p + min_w;
                 }
                 else if (mode == ModeBoth)
                 {
                     // We're moving the window, don't move it below zero
-                    minValue = 0;
+                    MinValue = 0;
                 }
 
                 // Initialize maxValue
                 if (mode == ModeLow)
                 {
                     // We're dragging the low edge, it can't make the zone smaller than min_w
-                    maxValue = track_p + track_w - min_w;
+                    MaxValue = track_p + track_w - min_w;
                 }
                 else if (mode == ModeHigh)
                 {
                     // We're dragging the high edge, don't go off the screen
-                    maxValue = screen_w;
+                    MaxValue = screen_w;
                 }
                 else if (mode == ModeBoth)
                 {
                     // We're moving the window, don't go off the screen (this time the lower edge is tracked)
-                    maxValue = screen_w - track_w;
+                    MaxValue = screen_w - track_w;
                 }
 
                 // Initialize position
@@ -135,7 +144,7 @@ namespace FancyZonesEditor
                 }
 
                 Mode = mode;
-                this.screenW = screen_w;
+                this.ScreenW = screen_w;
             }
 
             public abstract void Move(int delta);
@@ -147,12 +156,13 @@ namespace FancyZonesEditor
             {
                 get
                 {
-                    return (int)(0.008 * screenW);
+                    return (int)(0.008 * ScreenW);
                 }
             }
 
             /// <summary>
-            ///     Initialize the SnappyHelper. Just pass it the canvas arguments. Use mode
+            /// Initializes a new instance of the <see cref="SnappyHelperSliding"/> class.
+            ///     Just pass it the canvas arguments. Use mode
             ///     to tell it which edges of the existing masks to use when building its list
             ///     of snap points, and generally which edges to track. There will be two
             ///     SnappyHelpers, one for X-coordinates and one for
@@ -176,15 +186,15 @@ namespace FancyZonesEditor
                 }
 
                 int target_position = Position + delta;
-                if (target_position > maxValue)
+                if (target_position > MaxValue)
                 {
-                    Position = maxValue;
+                    Position = MaxValue;
                     return;
                 }
 
-                if (target_position < minValue)
+                if (target_position < MinValue)
                 {
-                    Position = minValue;
+                    Position = MinValue;
                     return;
                 }
 
@@ -193,9 +203,9 @@ namespace FancyZonesEditor
 
                 if (delta > 0)
                 {
-                    for (int i = 0; i < snaps.Count; ++i)
+                    for (int i = 0; i < Snaps.Count; ++i)
                     {
-                        if (Position <= snaps[i] && snaps[i] <= target_position)
+                        if (Position <= Snaps[i] && Snaps[i] <= target_position)
                         {
                             snapId = i;
                             break;
@@ -204,9 +214,9 @@ namespace FancyZonesEditor
                 }
                 else
                 {
-                    for (int i = snaps.Count - 1; i >= 0; --i)
+                    for (int i = Snaps.Count - 1; i >= 0; --i)
                     {
-                        if (target_position <= snaps[i] && snaps[i] <= Position)
+                        if (target_position <= Snaps[i] && Snaps[i] <= Position)
                         {
                             snapId = i;
                             break;
@@ -220,8 +230,8 @@ namespace FancyZonesEditor
                 }
                 else
                 {
-                    int energy = target_position - snaps[snapId];
-                    Position = snaps[snapId];
+                    int energy = target_position - Snaps[snapId];
+                    Position = Snaps[snapId];
                     if (energy > MaxEnergy)
                     {
                         energy = 0;
@@ -243,7 +253,7 @@ namespace FancyZonesEditor
 
             private int MagnetZoneMaxSize
             {
-                get => (int)(0.08 * screenW);
+                get => (int)(0.08 * ScreenW);
             }
 
             public SnappyHelperMagnetic(IList<Int32Rect> zones, int zoneIndex, bool isX, int mode, int screen_w)
@@ -251,11 +261,11 @@ namespace FancyZonesEditor
             {
                 freePosition = Position;
                 magnetZoneSizes = new List<int>();
-                for (int i = 0; i < snaps.Count; ++i)
+                for (int i = 0; i < Snaps.Count; ++i)
                 {
-                    int previous = i == 0 ? 0 : snaps[i - 1];
-                    int next = i == snaps.Count - 1 ? screenW : snaps[i + 1];
-                    magnetZoneSizes.Add(Math.Min(snaps[i] - previous, Math.Min(next - snaps[i], MagnetZoneMaxSize)) / 2);
+                    int previous = i == 0 ? 0 : Snaps[i - 1];
+                    int next = i == Snaps.Count - 1 ? ScreenW : Snaps[i + 1];
+                    magnetZoneSizes.Add(Math.Min(Snaps[i] - previous, Math.Min(next - Snaps[i], MagnetZoneMaxSize)) / 2);
                 }
             }
 
@@ -263,9 +273,9 @@ namespace FancyZonesEditor
             {
                 freePosition = Position + delta;
                 int snapId = -1;
-                for (int i = 0; i < snaps.Count; ++i)
+                for (int i = 0; i < Snaps.Count; ++i)
                 {
-                    if (Math.Abs(freePosition - snaps[i]) <= magnetZoneSizes[i])
+                    if (Math.Abs(freePosition - Snaps[i]) <= magnetZoneSizes[i])
                     {
                         snapId = i;
                         break;
@@ -279,29 +289,30 @@ namespace FancyZonesEditor
                 else
                 {
                     int deadZoneWidth = (magnetZoneSizes[snapId] + 1) / 2;
-                    if (Math.Abs(freePosition - snaps[snapId]) <= deadZoneWidth)
+                    if (Math.Abs(freePosition - Snaps[snapId]) <= deadZoneWidth)
                     {
-                        Position = snaps[snapId];
+                        Position = Snaps[snapId];
                     }
-                    else if (freePosition < snaps[snapId])
+                    else if (freePosition < Snaps[snapId])
                     {
-                        Position = freePosition + (freePosition - (snaps[snapId] - magnetZoneSizes[snapId]));
+                        Position = freePosition + (freePosition - (Snaps[snapId] - magnetZoneSizes[snapId]));
                     }
                     else
                     {
-                        Position = freePosition - ((snaps[snapId] + magnetZoneSizes[snapId]) - freePosition);
+                        Position = freePosition - ((Snaps[snapId] + magnetZoneSizes[snapId]) - freePosition);
                     }
                 }
 
-                Position = Math.Max(Math.Min(maxValue, Position), minValue);
+                Position = Math.Max(Math.Min(MaxValue, Position), MinValue);
             }
         }
 
         private SnappyHelperBase snappyX;
         private SnappyHelperBase snappyY;
-        
+
         // change to SnappyHelperSliding for different behavior
-        private SnappyHelperBase NewDefaultSnappyHelper(bool isX, int mode, int screen_w) {
+        private SnappyHelperBase NewDefaultSnappyHelper(bool isX, int mode, int screen_w)
+        {
             return new SnappyHelperMagnetic(Model.Zones, ZoneIndex, isX, mode, screen_w);
         }
 
@@ -395,6 +406,10 @@ namespace FancyZonesEditor
         }
 
         private Settings _settings = ((App)Application.Current).ZoneSettings;
+
+        public CanvasLayoutModel Model { get => model; set => model = value; }
+
+        public int ZoneIndex { get => zoneIndex; set => zoneIndex = value; }
 
         private void NWResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
