@@ -46,28 +46,6 @@ struct ModuleSettings
 
 } g_settings;
 
-// Callback function to identify correct child process from a parent window which is from ApplicationFrameHost
-BOOL CALLBACK GetRealProcessCallback(HWND hwnd, LPARAM lparam)
-{
-    DWORD process_id;
-    DWORD nSize = MAX_PATH;
-    WCHAR buffer[MAX_PATH] = { 0 };
-    DWORD thread_id = GetWindowThreadProcessId(hwnd, &process_id);
-    HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, process_id);
-    if (QueryFullProcessImageName(hProc, 0, buffer, &nSize))
-    {
-        std::wstring exePath = buffer;
-        PathStripPath(buffer);
-
-        if (wcscmp(buffer, L"ApplicationFrameHost.exe") != 0)
-        {
-            wcscpy_s(reinterpret_cast<LPWSTR>(lparam), MAX_PATH, exePath.c_str());
-        }
-    }
-
-    return true;
-}
-
 // Implement the PowerToy Module Interface and all the required methods.
 class PowerKeys : public PowertoyModuleIface
 {
@@ -101,6 +79,7 @@ public:
         singleKeyReMap[VK_MEDIA_PLAY_PAUSE] = VK_LWIN;*/
         singleKeyReMap[VK_OEM_4] = 0x0;
         singleKeyToggleToMod[VK_CAPITAL] = false;
+
         // OS-level shortcut remappings
         osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
         osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x45 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
@@ -550,12 +529,26 @@ public:
 
     std::wstring GetCurrentApplication(bool keepPath)
     {
-        HWND current_window_handle = GetForegroundWindow();
+        // Using GetGUIThreadInfo for getting the process of the window in focus. GetForegroundWindow has issues with UWP apps as it returns the Application Frame Host as its linked process
+        GUITHREADINFO guiThreadInfo;
+        guiThreadInfo.cbSize = sizeof(GUITHREADINFO);
+        GetGUIThreadInfo(0, &guiThreadInfo);
+        HWND current_window_handle = guiThreadInfo.hwndFocus;
+
+        // If no window in focus, use the active window
+        if (current_window_handle == nullptr)
+        {
+            current_window_handle = guiThreadInfo.hwndActive;
+        }
         DWORD process_id;
         DWORD nSize = MAX_PATH;
         WCHAR buffer[MAX_PATH] = { 0 };
+
+        // Get process ID of the focus window
         DWORD thread_id = GetWindowThreadProcessId(current_window_handle, &process_id);
         HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, process_id);
+
+        // Get full path of the executable
         bool res = QueryFullProcessImageName(hProc, 0, buffer, &nSize);
         std::wstring process_name;
         CloseHandle(hProc);
@@ -564,14 +557,6 @@ public:
         if (res)
         {
             PathStripPath(buffer);
-
-            // Applies to UWP apps as they return the process ID of ApplicationFrameHost. Instead iterate through the child windows of the foreground window to get the actual process.
-            if (wcscmp(buffer, L"ApplicationFrameHost.exe") == 0)
-            {
-                EnumChildWindows(current_window_handle, GetRealProcessCallback, reinterpret_cast<LPARAM>(buffer));
-                process_name = buffer;
-                PathStripPath(buffer);
-            }
 
             if (!keepPath)
             {
