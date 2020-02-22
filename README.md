@@ -12,20 +12,21 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 > 👉 Note: Microsoft PowerToys requires Windows 10 1803 (build 17134) or later
 
-### Microsoft Store [RECOMMENDED]
+### Via Github with MSI [RECOMMENDED]
 
-Install [Microsoft PowerToys from the Microsoft Store][store-install-link]. This allows you to always be on the latest version when we release new builds with automatic upgrades. 
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup.msi` to download the PowerToys installer.
 
 This is our preferred method.
 
 ### Other install methods
 
-#### Via GitHub
+#### Via GitHub with MSIX [EXPERIMENTAL]
 
-The preview of these utilities can be installed from the [PowerToys GitHub releases page](/releases). Click on `Assets` to show the files available in the release and then click on `PowerToysSetup.msix` to download the PowerToys installer. <br />
-PDB symbols for the release are available in a separate zip file `PDB symbols.zip`.
+The experimental version of PowerToys using MSIX is available.  It can be installed from the [PowerToys GitHub releases page][github-release-link].
 
-#### Via Chocolatey (Unofficial)
+Click on `Assets` to show the files available in the release and then click on `PowerToysSetup.msix` to download the PowerToys installer.
+
+#### Via Chocolatey [Unofficial]
 
 Download and upgrade PowerToys from [Chocolatey](https://chocolatey.org). If you have any issues when installing/upgrading the package please go to the [package page](https://chocolatey.org/packages/powertoys) and follow the [Chocolatey triage process](https://chocolatey.org/docs/package-triage-process)
 
@@ -41,13 +42,17 @@ To upgrade PowerToys, run the following command from the command line / PowerShe
 choco upgrade powertoys
 ```
 
+#### PDB Files
+
+PDB symbols for the release are available in a separate zip file `PDB symbols.zip` on the [releases page][github-release-link] for each build.
+
 ### Processor support
 
-We currently support the matrix below.  Adding Store/MSIX support will make supporting x86 and ARM much easier.
+We currently support the matrix below.  Adding MSIX support will make supporting x86 and ARM much easier.
 
 | x64 | x86 | ARM |
 |:---:|:---:|:---:|
-| [Install][store-install-link] | [Issue #602](/issues/602)  | [Issue #490](/issues/490)|
+| [Install][github-release-link] | [Issue #602](/issues/602)  | [Issue #490](/issues/490)|
 
 ## Current PowerToy Utilities
 
@@ -71,23 +76,25 @@ Our plan for all the [goals and utilities for v1.0 detailed over here in the wik
 
 ### February 2020 Update
 
-Our mantra for the 0.15 was infrastructure, stability and Microsoft Store support.  While it took a bit longer to get here, we feel it was worth the extra time to fix bugs that really impacted your experience with PowerToys.
+Our mantra for the 0.15 was infrastructure, stability and work toward getting a way to auto-update PowerToys.  While it took a bit longer to get here, we feel it was worth the extra time to fix bugs that really impacted your experience with PowerToys.
 
 Below are just a few of the bullet items from this release.
 
-- We shipped [v0.15 to the Microsoft Store][store-install-link]!
+- We shipped [v0.15][github-release-link]!
+- Make you aware there is a new version from within PowerToys
 - Removed requirement to 'run as admin'
-- Added almost 300 unit tests to increase stability
-- Resolved 80+ issues
+- Added almost 300 unit tests to increase stability and prevent regressions.
+- Resolved 90+ issues
 - Made .NET Framework parts of the source run faster with NGEN
-- Adjustments for how we store data locally.
+- Adjustments for how we store data locally
 - Increased FancyZones compatibility with applications
-- Created the v1.0 strategy, the launcher, the keyboard manager specs
 - Initial work for 4 new PowerToys added for 0.16!
+- Created the [v1.0 strategy](https://github.com/microsoft/PowerToys/wiki/Version-1.0-Strategy), the [launcher](https://github.com/microsoft/PowerToys/wiki/Launcher), the [keyboard manager](https://github.com/microsoft/PowerToys/wiki/Keyboard-Manager) specs
+- Work on cleaning up our issue backlog and labels.
 
-For 0.16, we have some fun things planned. Here are the new utilities we'll enable. 
+For 0.16, we have some fun things planned and hopefully will be able to ship pretty quickly. Here are the new utilities we'll enable:
 
-- A alternative to alt-Tab PowerToy
+- A alternative to Alt-Tab PowerToy
 - SVG preview pane for support Explorer
 - Markdown preview pane support for Explorer
 - Image Resizer PowerToy
@@ -117,4 +124,4 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [conduct-code]: https://opensource.microsoft.com/codeofconduct/
 [conduct-FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
 [conduct-email]: mailto:opencode@microsoft.com
-[store-install-link]: https://microsoft.com
+[github-release-link]: https://github.com/microsoft/PowerToys/releases/
