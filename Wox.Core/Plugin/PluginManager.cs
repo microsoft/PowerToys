@@ -120,7 +120,7 @@ namespace Wox.Core.Plugin
                 catch (Exception e)
                 {
                     Log.Exception(nameof(PluginManager), $"Fail to Init plugin: {pair.Metadata.Name}", e);
-                    pair.Metadata.Disabled = true; // TODO: not sure this really disable it later on
+                    pair.Metadata.Disabled = true; 
                     failedPlugins.Enqueue(pair);
                 }
             });
@@ -147,35 +147,6 @@ namespace Wox.Core.Plugin
         public static void InstallPlugin(string path)
         {
             PluginInstaller.Install(path);
-        }
-
-        public static Query QueryInit(string text) //todo is that possible to move it into type Query?
-        {
-            // replace multiple white spaces with one white space
-            var terms = text.Split(new[] { Query.TermSeperater }, StringSplitOptions.RemoveEmptyEntries);
-            var rawQuery = string.Join(Query.TermSeperater, terms);
-            var actionKeyword = string.Empty;
-            var search = rawQuery;
-            var actionParameters = terms.ToList();
-            if (terms.Length == 0) return null;
-            if (NonGlobalPlugins.ContainsKey(terms[0]) &&
-                !Settings.Plugins[NonGlobalPlugins[terms[0]].Metadata.ID].Disabled)
-            {
-                actionKeyword = terms[0];
-                actionParameters = terms.Skip(1).ToList();
-                search = string.Join(Query.TermSeperater, actionParameters.ToArray());
-            }
-            var query = new Query
-            {
-                Terms = terms,
-                RawQuery = rawQuery,
-                ActionKeyword = actionKeyword,
-                Search = search,
-                // Obsolete value initialisation
-                ActionName = actionKeyword,
-                ActionParameters = actionParameters
-            };
-            return query;
         }
 
         public static List<PluginPair> ValidPluginsForQuery(Query query)
