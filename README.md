@@ -22,6 +22,8 @@ This is our preferred method.
 
 #### Via GitHub with MSIX [EXPERIMENTAL]
 
+TODO: VERIFY INSTALL SCRIPT  
+
 The experimental version of PowerToys using MSIX is available.  It can be installed from the [PowerToys GitHub releases page][github-release-link].
 
 Click on `Assets` to show the files available in the release and then click on `PowerToysSetup.msix` to download the PowerToys installer.
