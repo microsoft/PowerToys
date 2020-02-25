@@ -1,4 +1,7 @@
 #include "pch.h"
+
+#include "version.h"
+
 #include "msi_to_msix_upgrade.h"
 
 #include <msi.h>
@@ -11,6 +14,8 @@
 
 #include <winrt/Windows.Web.Http.h>
 #include <winrt/Windows.Web.Http.Headers.h>
+
+#include "VersionHelper.h"
 
 namespace
 {
@@ -104,13 +109,18 @@ std::future<std::optional<new_version_download_info>> check_for_new_github_relea
         auto new_version = json_body.GetNamedString(L"tag_name");
         winrt::Windows::Foundation::Uri release_page_uri{ json_body.GetNamedString(L"html_url") };
 
-        const auto current_version = get_product_version();
-        if (new_version == current_version)
+        VersionHelper github_version(winrt::to_string(new_version));
+
+        VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
+
+        if (current_version > github_version)
         {
             co_return std::nullopt;
         }
-
-        co_return new_version_download_info{ std::move(release_page_uri), new_version.c_str() };
+        else
+        {
+            co_return new_version_download_info{ std::move(release_page_uri), new_version.c_str() };
+        }
     }
     catch (...)
     {
