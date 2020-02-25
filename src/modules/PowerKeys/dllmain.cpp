@@ -4,7 +4,6 @@
 #include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
 #include "trace.h"
-#include <unordered_set>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -61,6 +60,9 @@ private:
     void init_settings();
     static const ULONG_PTR POWERKEYS_INJECTED_FLAG = 54321;
     static const DWORD DUMMY_KEY = 0xCF;
+    static HHOOK hook_handle;
+    static HHOOK hook_handle_copy; // make sure we do use nullptr in CallNextHookEx call
+    static PowerKeys* powerkeys_object_ptr;
 
 public:
     // Constructor
@@ -68,6 +70,7 @@ public:
     {
         init_settings();
         init_map();
+        powerkeys_object_ptr = this;
     };
 
     void init_map()
@@ -75,27 +78,28 @@ public:
         // If mapped to 0x0 then key is disabled.
         singleKeyReMap[0x42] = 0x41;
         /*singleKeyReMap[0x41] = 0x42;*/
-        /*singleKeyReMap[VK_LWIN] = VK_MEDIA_PLAY_PAUSE;
-        singleKeyReMap[VK_MEDIA_PLAY_PAUSE] = VK_LWIN;*/
+        singleKeyReMap[VK_LWIN] = VK_LCONTROL;
+        singleKeyReMap[VK_LCONTROL] = VK_LWIN;
         singleKeyReMap[VK_OEM_4] = 0x0;
         singleKeyToggleToMod[VK_CAPITAL] = false;
 
-        // OS-level shortcut remappings
+        //// OS-level shortcut remappings
         osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
         osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x45 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
         osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x53 }), false);
         osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
 
-        //App-specific shortcut remappings
-        appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x43 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+C to Ctrl+V
-        appSpecificShortcutReMap[L"OUTLOOK.EXE"][std::vector<DWORD>({ VK_LCONTROL, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x45 }), false); // Ctrl+F to Ctrl+E
-        appSpecificShortcutReMap[L"MicrosoftEdge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+X to Ctrl+V
-        appSpecificShortcutReMap[L"Calculator.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x47 })] = std::make_pair(std::vector<WORD>({ VK_LSHIFT, 0x32 }), false); // Ctrl+G to Shift+2
+        ////App-specific shortcut remappings
+        //appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x43 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+C to Ctrl+V
+        //appSpecificShortcutReMap[L"OUTLOOK.EXE"][std::vector<DWORD>({ VK_LCONTROL, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x45 }), false); // Ctrl+F to Ctrl+E
+        //appSpecificShortcutReMap[L"MicrosoftEdge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+X to Ctrl+V
+        //appSpecificShortcutReMap[L"Calculator.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x47 })] = std::make_pair(std::vector<WORD>({ VK_LSHIFT, 0x32 }), false); // Ctrl+G to Shift+2
     }
 
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        stop_lowlevel_keyboard_hook();
         delete this;
     }
 
@@ -244,12 +248,14 @@ public:
     virtual void enable()
     {
         m_enabled = true;
+        start_lowlevel_keyboard_hook();
     }
 
     // Disable the powertoy
     virtual void disable()
     {
         m_enabled = false;
+        stop_lowlevel_keyboard_hook();
     }
 
     // Returns if the powertoys is enabled
@@ -261,22 +267,22 @@ public:
     // Handle incoming event, data is event-specific
     virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
     {
-        if (m_enabled)
-        {
-            if (wcscmp(name, ll_keyboard) == 0)
-            {
-                auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
-                // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
-                // otherwise return 0.
-                return HandleKeyboardHookEvent(&event);
-            }
-            else if (wcscmp(name, win_hook_event) == 0)
-            {
-                auto& event = *(reinterpret_cast<WinHookEvent*>(data));
-                // Return value is ignored
-                return 0;
-            }
-        }
+        //if (m_enabled)
+        //{
+        //    if (wcscmp(name, ll_keyboard) == 0)
+        //    {
+        //        auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
+        //        // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
+        //        // otherwise return 0.
+        //        return HandleKeyboardHookEvent(&event);
+        //    }
+        //    else if (wcscmp(name, win_hook_event) == 0)
+        //    {
+        //        auto& event = *(reinterpret_cast<WinHookEvent*>(data));
+        //        // Return value is ignored
+        //        return 0;
+        //    }
+        //}
         return 0;
     }
 
@@ -284,6 +290,54 @@ public:
     virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
 
     virtual void signal_system_menu_action(const wchar_t* name) override {}
+
+    // Hook procedure definition
+    static LRESULT CALLBACK hook_proc(int nCode, WPARAM wParam, LPARAM lParam)
+    {
+        LowlevelKeyboardEvent event;
+        if (nCode == HC_ACTION)
+        {
+            event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+            event.wParam = wParam;
+            if (powerkeys_object_ptr->HandleKeyboardHookEvent(&event) == 1)
+            {
+                return 1;
+            }
+        }
+        return CallNextHookEx(hook_handle_copy, nCode, wParam, lParam);
+    }
+
+    // Prevent system-wide input lagging while paused in the debugger
+    //#define DISABLE_LOWLEVEL_KBHOOK_WHEN_DEBUGGED
+    void start_lowlevel_keyboard_hook()
+    {
+#if defined(_DEBUG) && defined(DISABLE_LOWLEVEL_KBHOOK_WHEN_DEBUGGED)
+        if (IsDebuggerPresent())
+        {
+            return;
+        }
+#endif
+
+        if (!hook_handle)
+        {
+            hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, hook_proc, GetModuleHandle(NULL), NULL);
+            hook_handle_copy = hook_handle;
+            if (!hook_handle)
+            {
+                throw std::runtime_error("Cannot install keyboard listener");
+            }
+        }
+    }
+
+    void stop_lowlevel_keyboard_hook()
+    {
+        if (hook_handle)
+        {
+            UnhookWindowsHookEx(hook_handle);
+            hook_handle = nullptr;
+        }
+    }
+
 
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
@@ -586,6 +640,10 @@ public:
         return 0;
     }
 };
+
+HHOOK PowerKeys::hook_handle = nullptr;
+HHOOK PowerKeys::hook_handle_copy = nullptr;
+PowerKeys* PowerKeys::powerkeys_object_ptr = nullptr;
 
 // Load the settings file.
 void PowerKeys::init_settings()
