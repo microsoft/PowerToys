@@ -13,8 +13,7 @@ namespace Wox.Plugin.PluginIndicator
             var results = from keyword in PluginManager.NonGlobalPlugins.Keys
                           where keyword.StartsWith(query.Terms[0])
                           let metadata = PluginManager.NonGlobalPlugins[keyword].Metadata
-                          let disabled = PluginManager.Settings.Plugins[metadata.ID].Disabled
-                          where !disabled
+                          where !metadata.Disabled
                           select new Result
                           {
                               Title = keyword,
