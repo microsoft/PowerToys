@@ -1,43 +1,46 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using Wox.Infrastructure.Logger;
-using Wox.Infrastructure.UserSettings;
 using static Wox.Infrastructure.StringMatcher;
 
 namespace Wox.Infrastructure
 {
-    public static class StringMatcher
+    public class StringMatcher
     {
-        public static MatchOption DefaultMatchOption = new MatchOption();
+        private readonly MatchOption _defaultMatchOption = new MatchOption();
 
-        public static SearchPrecisionScore UserSettingSearchPrecision { get; set; }
+        public SearchPrecisionScore UserSettingSearchPrecision { get; set; }
 
-        public static bool ShouldUsePinyin { get; set; }
+        private readonly IAlphabet _alphabet;
+
+        public StringMatcher(IAlphabet alphabet = null)
+        {
+            _alphabet = alphabet;
+        }
+
+        public static StringMatcher Instance { get; internal set; }
 
         [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
         public static int Score(string source, string target)
         {
-            if (!string.IsNullOrEmpty(source) && !string.IsNullOrEmpty(target))
-            {
-                return FuzzySearch(target, source, DefaultMatchOption).Score;
-            }
-            else
-            {
-                return 0;
-            }
+            return FuzzySearch(target, source).Score;
         }
 
         [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
         public static bool IsMatch(string source, string target)
         {
-            return FuzzySearch(target, source, DefaultMatchOption).Score > 0;
+            return Score(source, target) > 0;
         }
 
         public static MatchResult FuzzySearch(string query, string stringToCompare)
         {
-            return FuzzySearch(query, stringToCompare, DefaultMatchOption);
+            return Instance.FuzzyMatch(query, stringToCompare);
+        }
+
+        public MatchResult FuzzyMatch(string query, string stringToCompare)
+        {
+            return FuzzyMatch(query, stringToCompare, _defaultMatchOption);
         }
 
         /// <summary>
@@ -51,11 +54,17 @@ namespace Wox.Infrastructure
         /// 6. Move onto the next substring's characters until all substrings are checked.
         /// 7. Consider success and move onto scoring if every char or substring without whitespaces matched
         /// </summary>
-        public static MatchResult FuzzySearch(string query, string stringToCompare, MatchOption opt)
+        public MatchResult FuzzyMatch(string query, string stringToCompare, MatchOption opt)
         {
-            if (string.IsNullOrEmpty(stringToCompare) || string.IsNullOrEmpty(query)) return new MatchResult { Success = false };
+            if (string.IsNullOrEmpty(stringToCompare) || string.IsNullOrEmpty(query)) return new MatchResult (false, UserSettingSearchPrecision);
             
             query = query.Trim();
+
+            if (_alphabet != null)
+            {
+                query = _alphabet.Translate(query);
+                stringToCompare = _alphabet.Translate(stringToCompare);
+            }
 
             var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToLower() : stringToCompare;
 
@@ -139,19 +148,11 @@ namespace Wox.Infrastructure
             if (allQuerySubstringsMatched)
             {
                 var score = CalculateSearchScore(query, stringToCompare, firstMatchIndex, lastMatchIndex - firstMatchIndex, allSubstringsContainedInCompareString);
-                var pinyinScore = ScoreForPinyin(stringToCompare, query);
 
-                var result = new MatchResult
-                {
-                    Success = true,
-                    MatchData = indexList,
-                    RawScore = Math.Max(score, pinyinScore)
-                };
-
-                return result;
+                return new MatchResult(true, UserSettingSearchPrecision, indexList, score);
             }
 
-            return new MatchResult { Success = false };
+            return new MatchResult (false, UserSettingSearchPrecision);
         }
 
         private static bool AllPreviousCharsMatched(int startIndexToVerify, int currentQuerySubstringCharacterIndex, 
@@ -224,46 +225,28 @@ namespace Wox.Infrastructure
             Low = 20,
             None = 0
         }
-
-        public static int ScoreForPinyin(string source, string target)
-        {
-            if (!ShouldUsePinyin)
-            {
-                return 0;
-            }
-
-            if (!string.IsNullOrEmpty(source) && !string.IsNullOrEmpty(target))
-            {
-                if (Alphabet.ContainsChinese(source))
-                {
-                    var combination = Alphabet.PinyinComination(source);
-                    var pinyinScore = combination
-                        .Select(pinyin => FuzzySearch(target, string.Join("", pinyin)).Score)
-                        .Max();
-                    var acronymScore = combination.Select(Alphabet.Acronym)
-                        .Select(pinyin => FuzzySearch(target, pinyin).Score)
-                        .Max();
-                    var score = Math.Max(pinyinScore, acronymScore);
-                    return score;
-                }
-                else
-                {
-                    return 0;
-                }
-            }
-            else
-            {
-                return 0;
-            }
-        }
     }
 
     public class MatchResult
     {
+        public MatchResult(bool success, SearchPrecisionScore searchPrecision)
+        {
+            Success = success;
+            SearchPrecision = searchPrecision;
+        }
+
+        public MatchResult(bool success, SearchPrecisionScore searchPrecision, List<int> matchData, int rawScore)
+        {
+            Success = success;
+            SearchPrecision = searchPrecision;
+            MatchData = matchData;
+            RawScore = rawScore;
+        }
+
         public bool Success { get; set; }
 
         /// <summary>
-        /// The final score of the match result with all search precision filters applied.
+        /// The final score of the match result with search precision filters applied.
         /// </summary>
         public int Score { get; private set; }
 
@@ -278,7 +261,7 @@ namespace Wox.Infrastructure
             set
             {
                 _rawScore = value;
-                Score = ApplySearchPrecisionFilter(_rawScore);
+                Score = ScoreAfterSearchPrecisionFilter(_rawScore);
             }
         }
 
@@ -287,19 +270,21 @@ namespace Wox.Infrastructure
         /// </summary>
         public List<int> MatchData { get; set; }
 
+        public SearchPrecisionScore SearchPrecision { get; set; }
+
         public bool IsSearchPrecisionScoreMet()
         {
-            return IsSearchPrecisionScoreMet(Score);
+            return IsSearchPrecisionScoreMet(_rawScore);
         }
 
-        private bool IsSearchPrecisionScoreMet(int score)
+        private bool IsSearchPrecisionScoreMet(int rawScore)
         {
-            return score >= (int)UserSettingSearchPrecision;
+            return rawScore >= (int)SearchPrecision;
         }
 
-        private int ApplySearchPrecisionFilter(int score)
+        private int ScoreAfterSearchPrecisionFilter(int rawScore)
         {
-            return IsSearchPrecisionScoreMet(score) ? score : 0;
+            return IsSearchPrecisionScoreMet(rawScore) ? rawScore : 0;
         }
     }
 

@@ -57,12 +57,13 @@ namespace Wox.Test
             };
 
             var results = new List<Result>();
+            var matcher = new StringMatcher();
             foreach (var str in sources)
             {
                 results.Add(new Result
                 {
                     Title = str,
-                    Score = StringMatcher.FuzzySearch("inst", str).RawScore
+                    Score = matcher.FuzzyMatch("inst", str).RawScore
                 });
             }
 
@@ -78,8 +79,8 @@ namespace Wox.Test
         public void WhenGivenNotAllCharactersFoundInSearchStringThenShouldReturnZeroScore(string searchString)
         {
             var compareString = "Can have rum only in my glass";
-
-            var scoreResult = StringMatcher.FuzzySearch(searchString, compareString).RawScore;
+            var matcher = new StringMatcher();
+            var scoreResult = matcher.FuzzyMatch(searchString, compareString).RawScore;
 
             Assert.True(scoreResult == 0);
         }
@@ -93,13 +94,13 @@ namespace Wox.Test
         public void WhenGivenStringsAndAppliedPrecisionFilteringThenShouldReturnGreaterThanPrecisionScoreResults(string searchTerm)
         {
             var results = new List<Result>();
-
+            var matcher = new StringMatcher();
             foreach (var str in GetSearchStrings())
             {
                 results.Add(new Result
                 {
                     Title = str,
-                    Score = StringMatcher.FuzzySearch(searchTerm, str).Score
+                    Score = matcher.FuzzyMatch(searchTerm, str).Score
                 });
             }
 
@@ -131,7 +132,8 @@ namespace Wox.Test
         public void WhenGivenQueryStringThenShouldReturnCurrentScoring(string queryString, string compareString, int expectedScore)
         {
             // When, Given
-            var rawScore = StringMatcher.FuzzySearch(queryString, compareString).RawScore;
+            var matcher = new StringMatcher();
+            var rawScore = matcher.FuzzyMatch(queryString, compareString).RawScore;
 
             // Should
             Assert.AreEqual(expectedScore, rawScore, $"Expected score for compare string '{compareString}': {expectedScore}, Actual: {rawScore}");
@@ -154,10 +156,10 @@ namespace Wox.Test
             bool expectedPrecisionResult)
         {
             // When            
-            StringMatcher.UserSettingSearchPrecision = expectedPrecisionScore;
+            var matcher = new StringMatcher {UserSettingSearchPrecision = expectedPrecisionScore};
 
             // Given
-            var matchResult = StringMatcher.FuzzySearch(queryString, compareString);
+            var matchResult = matcher.FuzzyMatch(queryString, compareString);
 
             Debug.WriteLine("");
             Debug.WriteLine("###############################################");
@@ -200,10 +202,10 @@ namespace Wox.Test
             bool expectedPrecisionResult)
         {
             // When
-            StringMatcher.UserSettingSearchPrecision = expectedPrecisionScore;
+            var matcher = new StringMatcher { UserSettingSearchPrecision = expectedPrecisionScore };
 
             // Given
-            var matchResult = StringMatcher.FuzzySearch(queryString, compareString);
+            var matchResult = matcher.FuzzyMatch(queryString, compareString);
 
             Debug.WriteLine("");
             Debug.WriteLine("###############################################");

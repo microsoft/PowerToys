@@ -2,76 +2,36 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
+using Wox.Infrastructure.Logger;
 using Wox.Plugin.Everything.Everything.Exceptions;
 
 namespace Wox.Plugin.Everything.Everything
 {
-    public sealed class EverythingAPI
+    public interface IEverythingApi
     {
-        #region DllImport
-        [DllImport(Main.DLL, CharSet = CharSet.Unicode)]
-        private static extern int Everything_SetSearchW(string lpSearchString);
-        [DllImport(Main.DLL)]
-        private static extern void Everything_SetMatchPath(bool bEnable);
-        [DllImport(Main.DLL)]
-        private static extern void Everything_SetMatchCase(bool bEnable);
-        [DllImport(Main.DLL)]
-        private static extern void Everything_SetMatchWholeWord(bool bEnable);
-        [DllImport(Main.DLL)]
-        private static extern void Everything_SetRegex(bool bEnable);
-        [DllImport(Main.DLL)]
-        private static extern void Everything_SetMax(int dwMax);
-        [DllImport(Main.DLL)]
-        private static extern void Everything_SetOffset(int dwOffset);
+        /// <summary>
+        /// Searches the specified key word.
+        /// </summary>
+        /// <param name="keyWord">The key word.</param>
+        /// <param name="token">token that allow cancellation</param>
+        /// <param name="offset">The offset.</param>
+        /// <param name="maxCount">The max count.</param>
+        /// <returns></returns>
+        List<SearchResult> Search(string keyWord, CancellationToken token, int offset = 0, int maxCount = 100);
 
-        [DllImport(Main.DLL)]
-        private static extern bool Everything_GetMatchPath();
-        [DllImport(Main.DLL)]
-        private static extern bool Everything_GetMatchCase();
-        [DllImport(Main.DLL)]
-        private static extern bool Everything_GetMatchWholeWord();
-        [DllImport(Main.DLL)]
-        private static extern bool Everything_GetRegex();
-        [DllImport(Main.DLL)]
-        private static extern UInt32 Everything_GetMax();
-        [DllImport(Main.DLL)]
-        private static extern UInt32 Everything_GetOffset();
-        [DllImport(Main.DLL, CharSet = CharSet.Unicode)]
-        private static extern string Everything_GetSearchW();
-        [DllImport(Main.DLL)]
-        private static extern StateCode Everything_GetLastError();
+        void Load(string sdkPath);
+    }
 
-        [DllImport(Main.DLL, CharSet = CharSet.Unicode)]
-        private static extern bool Everything_QueryW(bool bWait);
+    public sealed class EverythingApi : IEverythingApi
+    {
+        private const int BufferSize = 4096;
 
-        [DllImport(Main.DLL)]
-        private static extern void Everything_SortResultsByPath();
+        private readonly object _syncObject = new object();
+        // cached buffer to remove redundant allocations.
+        private readonly StringBuilder _buffer = new StringBuilder(BufferSize);
 
-        [DllImport(Main.DLL)]
-        private static extern int Everything_GetNumFileResults();
-        [DllImport(Main.DLL)]
-        private static extern int Everything_GetNumFolderResults();
-        [DllImport(Main.DLL)]
-        private static extern int Everything_GetNumResults();
-        [DllImport(Main.DLL)]
-        private static extern int Everything_GetTotFileResults();
-        [DllImport(Main.DLL)]
-        private static extern int Everything_GetTotFolderResults();
-        [DllImport(Main.DLL)]
-        private static extern int Everything_GetTotResults();
-        [DllImport(Main.DLL)]
-        private static extern bool Everything_IsVolumeResult(int nIndex);
-        [DllImport(Main.DLL)]
-        private static extern bool Everything_IsFolderResult(int nIndex);
-        [DllImport(Main.DLL)]
-        private static extern bool Everything_IsFileResult(int nIndex);
-        [DllImport(Main.DLL, CharSet = CharSet.Unicode)]
-        private static extern void Everything_GetResultFullPathNameW(int nIndex, StringBuilder lpString, int nMaxCount);
-        [DllImport(Main.DLL)]
-        private static extern void Everything_Reset();
-        #endregion
-
-        enum StateCode
+        public enum StateCode
         {
             OK,
             MemoryError,
@@ -87,15 +47,15 @@ namespace Wox.Plugin.Everything.Everything
         /// Gets or sets a value indicating whether [match path].
         /// </summary>
         /// <value><c>true</c> if [match path]; otherwise, <c>false</c>.</value>
-        public Boolean MatchPath
+        public bool MatchPath
         {
             get
             {
-                return Everything_GetMatchPath();
+                return EverythingApiDllImport.Everything_GetMatchPath();
             }
             set
             {
-                Everything_SetMatchPath(value);
+                EverythingApiDllImport.Everything_SetMatchPath(value);
             }
         }
 
@@ -103,15 +63,15 @@ namespace Wox.Plugin.Everything.Everything
         /// Gets or sets a value indicating whether [match case].
         /// </summary>
         /// <value><c>true</c> if [match case]; otherwise, <c>false</c>.</value>
-        public Boolean MatchCase
+        public bool MatchCase
         {
             get
             {
-                return Everything_GetMatchCase();
+                return EverythingApiDllImport.Everything_GetMatchCase();
             }
             set
             {
-                Everything_SetMatchCase(value);
+                EverythingApiDllImport.Everything_SetMatchCase(value);
             }
         }
 
@@ -119,15 +79,15 @@ namespace Wox.Plugin.Everything.Everything
         /// Gets or sets a value indicating whether [match whole word].
         /// </summary>
         /// <value><c>true</c> if [match whole word]; otherwise, <c>false</c>.</value>
-        public Boolean MatchWholeWord
+        public bool MatchWholeWord
         {
             get
             {
-                return Everything_GetMatchWholeWord();
+                return EverythingApiDllImport.Everything_GetMatchWholeWord();
             }
             set
             {
-                Everything_SetMatchWholeWord(value);
+                EverythingApiDllImport.Everything_SetMatchWholeWord(value);
             }
         }
 
@@ -135,15 +95,15 @@ namespace Wox.Plugin.Everything.Everything
         /// Gets or sets a value indicating whether [enable regex].
         /// </summary>
         /// <value><c>true</c> if [enable regex]; otherwise, <c>false</c>.</value>
-        public Boolean EnableRegex
+        public bool EnableRegex
         {
             get
             {
-                return Everything_GetRegex();
+                return EverythingApiDllImport.Everything_GetRegex();
             }
             set
             {
-                Everything_SetRegex(value);
+                EverythingApiDllImport.Everything_SetRegex(value);
             }
         }
 
@@ -152,12 +112,91 @@ namespace Wox.Plugin.Everything.Everything
         /// </summary>
         public void Reset()
         {
-            Everything_Reset();
+            lock (_syncObject)
+            {
+                EverythingApiDllImport.Everything_Reset();
+            }
         }
 
-        private void no()
+        /// <summary>
+        /// Searches the specified key word and reset the everything API afterwards
+        /// </summary>
+        /// <param name="keyWord">The key word.</param>
+        /// <param name="token">when cancelled the current search will stop and exit (and would not reset)</param>
+        /// <param name="offset">The offset.</param>
+        /// <param name="maxCount">The max count.</param>
+        /// <returns></returns>
+        public List<SearchResult> Search(string keyWord, CancellationToken token, int offset = 0, int maxCount = 100)
         {
-            switch (Everything_GetLastError())
+            if (string.IsNullOrEmpty(keyWord))
+                throw new ArgumentNullException(nameof(keyWord));
+
+            if (offset < 0)
+                throw new ArgumentOutOfRangeException(nameof(offset));
+
+            if (maxCount < 0)
+                throw new ArgumentOutOfRangeException(nameof(maxCount));
+
+            lock (_syncObject)
+            {
+                if (keyWord.StartsWith("@"))
+                {
+                    EverythingApiDllImport.Everything_SetRegex(true);
+                    keyWord = keyWord.Substring(1);
+                }
+
+                EverythingApiDllImport.Everything_SetSearchW(keyWord);
+                EverythingApiDllImport.Everything_SetOffset(offset);
+                EverythingApiDllImport.Everything_SetMax(maxCount);
+
+                if (token.IsCancellationRequested)
+                {
+                    return null;
+                }
+
+
+                if (!EverythingApiDllImport.Everything_QueryW(true))
+                {
+                    CheckAndThrowExceptionOnError();
+                    return null;
+                }
+
+                var results = new List<SearchResult>();
+                for (int idx = 0; idx < EverythingApiDllImport.Everything_GetNumResults(); ++idx)
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+
+                    EverythingApiDllImport.Everything_GetResultFullPathNameW(idx, _buffer, BufferSize);
+
+                    var result = new SearchResult { FullPath = _buffer.ToString() };
+                    if (EverythingApiDllImport.Everything_IsFolderResult(idx))
+                        result.Type = ResultType.Folder;
+                    else if (EverythingApiDllImport.Everything_IsFileResult(idx))
+                        result.Type = ResultType.File;
+
+                    results.Add(result);
+                }
+
+                Reset();
+
+                return results;
+            }
+        }
+
+        [DllImport("kernel32.dll")]
+        private static extern int LoadLibrary(string name);
+
+        public void Load(string sdkPath)
+        {
+            LoadLibrary(sdkPath);
+        }
+
+        private static void CheckAndThrowExceptionOnError()
+        {
+            switch (EverythingApiDllImport.Everything_GetLastError())
             {
                 case StateCode.CreateThreadError:
                     throw new CreateThreadException();
@@ -173,72 +212,6 @@ namespace Wox.Plugin.Everything.Everything
                     throw new MemoryErrorException();
                 case StateCode.RegisterClassExError:
                     throw new RegisterClassExException();
-            }
-        }
-
-        /// <summary>
-        /// Searches the specified key word.
-        /// </summary>
-        /// <param name="keyWord">The key word.</param>
-        /// <param name="offset">The offset.</param>
-        /// <param name="maxCount">The max count.</param>
-        /// <returns></returns>
-        public IEnumerable<SearchResult> Search(string keyWord, int offset = 0, int maxCount = 100)
-        {
-            if (string.IsNullOrEmpty(keyWord))
-                throw new ArgumentNullException("keyWord");
-
-            if (offset < 0)
-                throw new ArgumentOutOfRangeException("offset");
-
-            if (maxCount < 0)
-                throw new ArgumentOutOfRangeException("maxCount");
-
-            if (keyWord.StartsWith("@"))
-            {
-                Everything_SetRegex(true);
-                keyWord = keyWord.Substring(1);
-            }
-            Everything_SetSearchW(keyWord);
-            Everything_SetOffset(offset);
-            Everything_SetMax(maxCount);
-
-
-            if (!Everything_QueryW(true))
-            {
-                switch (Everything_GetLastError())
-                {
-                    case StateCode.CreateThreadError:
-                        throw new CreateThreadException();
-                    case StateCode.CreateWindowError:
-                        throw new CreateWindowException();
-                    case StateCode.InvalidCallError:
-                        throw new InvalidCallException();
-                    case StateCode.InvalidIndexError:
-                        throw new InvalidIndexException();
-                    case StateCode.IPCError:
-                        throw new IPCErrorException();
-                    case StateCode.MemoryError:
-                        throw new MemoryErrorException();
-                    case StateCode.RegisterClassExError:
-                        throw new RegisterClassExException();
-                }
-                yield break;
-            }
-
-            const int bufferSize = 4096;
-            StringBuilder buffer = new StringBuilder(bufferSize);
-            for (int idx = 0; idx < Everything_GetNumResults(); ++idx)
-            {
-                Everything_GetResultFullPathNameW(idx, buffer, bufferSize);
-
-                var result = new SearchResult { FullPath = buffer.ToString() };
-                if (Everything_IsFolderResult(idx))
-                    result.Type = ResultType.Folder;
-                else if (Everything_IsFileResult(idx))
-                    result.Type = ResultType.File;
-
-                yield return result;
             }
         }
     }

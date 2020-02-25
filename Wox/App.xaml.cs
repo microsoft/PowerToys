@@ -26,6 +26,8 @@ namespace Wox
         private MainViewModel _mainVM;
         private SettingWindowViewModel _settingsVM;
         private readonly Updater _updater = new Updater(Wox.Properties.Settings.Default.GithubRepo);
+        private readonly Alphabet _alphabet = new Alphabet();
+        private StringMatcher _stringMatcher;
 
         [STAThread]
         public static void Main()
@@ -54,15 +56,15 @@ namespace Wox
                 _settingsVM = new SettingWindowViewModel(_updater);
                 _settings = _settingsVM.Settings;
 
-                Alphabet.Initialize(_settings);
-
-                StringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
-                StringMatcher.ShouldUsePinyin = _settings.ShouldUsePinyin;
+                _alphabet.Initialize(_settings);
+                _stringMatcher = new StringMatcher(_alphabet);
+                StringMatcher.Instance = _stringMatcher;
+                _stringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
                 PluginManager.LoadPlugins(_settings.PluginSettings);
                 _mainVM = new MainViewModel(_settings);
                 var window = new MainWindow(_settings, _mainVM);
-                API = new PublicAPIInstance(_settingsVM, _mainVM);
+                API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet);
                 PluginManager.InitializePlugins(API);
                 Log.Info($"|App.OnStartup|Dependencies Info:{ErrorReporting.DependenciesInfo()}");
 
@@ -146,10 +148,6 @@ namespace Wox
         private static void RegisterAppDomainExceptions()
         {
             AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
-            AppDomain.CurrentDomain.FirstChanceException += (_, e) =>
-            {
-                Log.Exception("|App.RegisterAppDomainExceptions|First Chance Exception:", e.Exception);
-            };
         }
 
         public void Dispose()
@@ -158,13 +156,7 @@ namespace Wox
             // but if sessionending is not called, exit won't be called when log off / shutdown
             if (!_disposed)
             {
-                _mainVM.Save();
-                _settingsVM.Save();
-
-                PluginManager.Save();
-                ImageLoader.Save();
-                Alphabet.Save();
-
+                API.SaveAppAllSettings();
                 _disposed = true;
             }
         }

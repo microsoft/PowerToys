@@ -16,7 +16,7 @@ namespace Wox.Infrastructure
 
         public static FuzzyMatcher Create(string query)
         {
-            return new FuzzyMatcher(query, StringMatcher.DefaultMatchOption);
+            return new FuzzyMatcher(query, new MatchOption());
         }
 
         public static FuzzyMatcher Create(string query, MatchOption opt)
@@ -26,7 +26,7 @@ namespace Wox.Infrastructure
 
         public MatchResult Evaluate(string str)
         {
-            return StringMatcher.FuzzySearch(query, str, opt);
+            return StringMatcher.Instance.FuzzyMatch(query, str, opt);
         }
     }
 }

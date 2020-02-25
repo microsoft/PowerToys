@@ -17,6 +17,8 @@ namespace Wox.Plugin.Folder
         public const string DeleteFileFolderImagePath = "Images\\deletefilefolder.png";
         public const string CopyImagePath = "Images\\copy.png";
 
+        private string DefaultFolderSubtitleString = "Ctrl + Enter to open the directory";
+
         private static List<string> _driverNames;
         private PluginInitContext _context;
 
@@ -86,13 +88,13 @@ namespace Wox.Plugin.Folder
             return false;
         }
 
-        private Result CreateFolderResult(string title, string path, Query query)
+        private Result CreateFolderResult(string title, string subtitle, string path, Query query)
         {
             return new Result
             {
                 Title = title,
                 IcoPath = path,
-                SubTitle = "Ctrl + Enter to open the directory",
+                SubTitle = subtitle,
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, title).MatchData,
                 Action = c =>
                 {
@@ -126,7 +128,7 @@ namespace Wox.Plugin.Folder
             var userFolderLinks = _settings.FolderLinks.Where(
                 x => x.Nickname.StartsWith(search, StringComparison.OrdinalIgnoreCase));
             var results = userFolderLinks.Select(item =>
-                CreateFolderResult(item.Nickname, item.Path, query)).ToList();
+                CreateFolderResult(item.Nickname, DefaultFolderSubtitleString, item.Path, query)).ToList();
             return results;
         }
 
@@ -199,6 +201,8 @@ namespace Wox.Plugin.Folder
             var folderList = new List<Result>();
             var fileList = new List<Result>();
 
+            var folderSubtitleString = DefaultFolderSubtitleString;
+
             try
             {
                 // search folder and add results
@@ -211,7 +215,10 @@ namespace Wox.Plugin.Folder
 
                     if(fileSystemInfo is DirectoryInfo)
                     {
-                        folderList.Add(CreateFolderResult(fileSystemInfo.Name, fileSystemInfo.FullName, query));
+                        if (searchOption == SearchOption.AllDirectories)
+                            folderSubtitleString = fileSystemInfo.FullName;
+
+                        folderList.Add(CreateFolderResult(fileSystemInfo.Name, folderSubtitleString, fileSystemInfo.FullName, query));
                     }
                     else
                     {
@@ -240,6 +247,7 @@ namespace Wox.Plugin.Folder
             var result = new Result
             {
                 Title = Path.GetFileName(filePath),
+                SubTitle = filePath,
                 IcoPath = filePath,
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, Path.GetFileName(filePath)).MatchData,
                 Action = c =>
