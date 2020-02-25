@@ -105,6 +105,7 @@
     <ClInclude Include="d2d_text.h" />
     <ClInclude Include="d2d_window.h" />
     <ClInclude Include="dpi_aware.h" />
+    <ClInclude Include="com_object_factory.h" />
     <ClInclude Include="notifications.h" />
     <ClInclude Include="window_helpers.h" />
     <ClInclude Include="icon_helpers.h" />

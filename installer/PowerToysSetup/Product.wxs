@@ -192,6 +192,13 @@
 
   <Fragment>
     <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.BinX64Dir)">
+      <Component Id="powertoys_toast_clsid" Win64="yes">
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
+          <RegistryValue Type="string" Value="PowerToys Toast Notifications Background Activator" />
+          <RegistryValue Type="string" Key="LocalServer32" Value="[INSTALLFOLDER]PowerToys.exe -ToastActivated" />
+          <RegistryValue Type="string" Key="LocalServer32" Name="ThreadingModel" Value="Apartment" />
+        </RegistryKey>
+      </Component>
       <Component Id="powertoys_exe" Guid="A2C66D91-3485-4D00-B04D-91844E6B345B" Win64="yes">
         <File Id="PowerToys.exe" KeyPath="yes" Checksum="yes">
           <Shortcut Id="ApplicationStartMenuShortcut"
@@ -201,13 +208,19 @@
                     WorkingDirectory="INSTALLFOLDER"
                     Icon="powertoys.ico"
                     IconIndex="0"
-                    Advertise="yes" />
+                    Advertise="yes">
+            <ShortcutProperty Key="System.AppUserModel.ID" Value="Microsoft.PowerToysWin32"/>
+            <ShortcutProperty Key="System.AppUserModel.ToastActivatorCLSID" Value="{DD5CACDA-7C2E-4997-A62A-04A597B58F76}"/>
+          </Shortcut>
         </File>
 
         <RemoveFolder Id="DeleteShortcutFolder" Directory="ApplicationProgramsFolder" On="uninstall" />
       </Component>
       <Component Id="settings_exe" Guid="A5A461A9-7097-4CBA-9D39-3DBBB6B7B80C" Win64="yes">
         <File Id="PowerToysSettings.exe" KeyPath="yes" Checksum="yes" />
+      </Component>
+      <Component Id="notifications_dll" Guid="23B25EE4-BCA2-45DF-BBCD-82FBDF01C5AB" Win64="yes">
+        <File Id="Notifications.dll" KeyPath="yes" Checksum="yes" />
       </Component>
       <Component Id="License_rtf" Guid="3E5AE43B-CFB4-449B-A346-94CAAFF3312E" Win64="yes">
         <File Source="$(var.RepoDir)\License.rtf" Id="License.rtf" KeyPath="yes" />
@@ -292,6 +305,8 @@
   <Fragment>
     <ComponentGroup Id="CoreComponents" Directory="INSTALLFOLDER">
       <ComponentRef Id="powertoys_exe" />
+      <ComponentRef Id="notifications_dll" />
+      <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="PowerToysSvgs" />
       <ComponentRef Id="Module_ShortcutGuide" />
