@@ -108,6 +108,7 @@
     <ClInclude Include="com_object_factory.h" />
     <ClInclude Include="notifications.h" />
     <ClInclude Include="timeutil.h" />
+    <ClInclude Include="VersionHelper.h" />
     <ClInclude Include="window_helpers.h" />
     <ClInclude Include="icon_helpers.h" />
     <ClInclude Include="json.h" />
@@ -146,6 +147,7 @@
     <ClCompile Include="start_visible.cpp" />
     <ClCompile Include="tasklist_positions.cpp" />
     <ClCompile Include="common.cpp" />
+    <ClCompile Include="VersionHelper.cpp" />
     <ClCompile Include="windows_colors.cpp" />
     <ClCompile Include="window_helpers.cpp" />
     <ClCompile Include="winstore.cpp" />
