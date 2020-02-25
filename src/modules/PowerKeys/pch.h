@@ -4,3 +4,5 @@
 #include <common/common.h>
 #include <ProjectTelemetry.h>
 #include <shlwapi.h>
+#include <stdexcept>
+#include <unordered_set>
