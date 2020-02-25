@@ -435,31 +435,5 @@ namespace FancyZonesUnitTests
                 Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
             }
         }
-
-#if 0
-        TEST_METHOD(OnKeyDownWinPressedOverride)
-        {
-            sendKeyboardInput(VK_LWIN);
-
-            const Settings settings{
-                .overrideSnapHotkeys = true,
-            };
-
-            auto config = serializedPowerToySettings(settings);
-            m_settings->SetConfig(config.c_str());
-
-            {
-                tagKBDLLHOOKSTRUCT input{};
-                input.vkCode = VK_LEFT;
-                Assert::IsTrue(m_fzCallback->OnKeyDown(&input));
-            }
-
-            {
-                tagKBDLLHOOKSTRUCT input{};
-                input.vkCode = VK_RIGHT;
-                Assert::IsTrue(m_fzCallback->OnKeyDown(&input));
-            }
-        }
-#endif
     };
 }
