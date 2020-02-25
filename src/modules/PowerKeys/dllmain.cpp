@@ -58,7 +58,9 @@ private:
     std::unordered_map<DWORD, bool> singleKeyToggleToMod;
     // Load initial settings from the persisted values.
     void init_settings();
-    static const ULONG_PTR POWERKEYS_INJECTED_FLAG = 54321;
+    static const ULONG_PTR POWERKEYS_INJECTED_FLAG = 0x1;
+    static const ULONG_PTR POWERKEYS_SINGLEKEY_FLAG = 0x11;
+    static const ULONG_PTR POWERKEYS_SHORTCUT_FLAG = 0x101;
     static const DWORD DUMMY_KEY = 0xCF;
     static HHOOK hook_handle;
     static HHOOK hook_handle_copy; // make sure we do use nullptr in CallNextHookEx call
@@ -76,24 +78,30 @@ public:
     void init_map()
     {
         // If mapped to 0x0 then key is disabled.
-        singleKeyReMap[0x42] = 0x41;
-        /*singleKeyReMap[0x41] = 0x42;*/
+        //singleKeyReMap[0x41] = 0x42;
+        //singleKeyReMap[0x42] = 0x43;
+        //singleKeyReMap[0x43] = 0x41;
         singleKeyReMap[VK_LWIN] = VK_LCONTROL;
         singleKeyReMap[VK_LCONTROL] = VK_LWIN;
         singleKeyReMap[VK_OEM_4] = 0x0;
         singleKeyToggleToMod[VK_CAPITAL] = false;
 
-        //// OS-level shortcut remappings
+        // OS-level shortcut remappings
         osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
         osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x45 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
-        osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x53 }), false);
-        osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
+        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x53 }), false);
+        /*osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
+        osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);*/
 
-        ////App-specific shortcut remappings
-        //appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x43 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+C to Ctrl+V
-        //appSpecificShortcutReMap[L"OUTLOOK.EXE"][std::vector<DWORD>({ VK_LCONTROL, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x45 }), false); // Ctrl+F to Ctrl+E
-        //appSpecificShortcutReMap[L"MicrosoftEdge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+X to Ctrl+V
-        //appSpecificShortcutReMap[L"Calculator.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x47 })] = std::make_pair(std::vector<WORD>({ VK_LSHIFT, 0x32 }), false); // Ctrl+G to Shift+2
+        osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
+        osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LMENU, 0x44 }), false);
+        osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x56 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);
+
+        //App-specific shortcut remappings
+        appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x43 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+C to Ctrl+V
+        appSpecificShortcutReMap[L"OUTLOOK.EXE"][std::vector<DWORD>({ VK_LCONTROL, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x45 }), false); // Ctrl+F to Ctrl+E
+        appSpecificShortcutReMap[L"MicrosoftEdge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+X to Ctrl+V
+        appSpecificShortcutReMap[L"Calculator.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x47 })] = std::make_pair(std::vector<WORD>({ VK_LSHIFT, 0x32 }), false); // Ctrl+G to Shift+2
     }
 
     // Destroy the powertoy and free memory
@@ -338,13 +346,22 @@ public:
         }
     }
 
-
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
         intptr_t SingleKeyRemapResult = HandleSingleKeyRemapEvent(data);
+        // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts
+        if (SingleKeyRemapResult == 1)
+        {
+            return 1;
+        }
+
         intptr_t SingleKeyToggleToModResult = HandleSingleKeyToggleToModEvent(data);
-        intptr_t OSLevelShortcutRemapResult = HandleOSLevelShortcutRemapEvent(data);
         intptr_t AppSpecificShortcutRemapResult = HandleAppSpecificShortcutRemapEvent(data);
+        if (AppSpecificShortcutRemapResult == 1)
+        {
+            return 1;
+        }
+        intptr_t OSLevelShortcutRemapResult = HandleOSLevelShortcutRemapEvent(data);
         if ((SingleKeyRemapResult + SingleKeyToggleToModResult + OSLevelShortcutRemapResult + AppSpecificShortcutRemapResult) > 0)
         {
             return 1;
@@ -357,7 +374,7 @@ public:
 
     intptr_t HandleSingleKeyRemapEvent(LowlevelKeyboardEvent* data) noexcept
     {
-        if (data->lParam->dwExtraInfo != POWERKEYS_INJECTED_FLAG)
+        if (!(data->lParam->dwExtraInfo & POWERKEYS_INJECTED_FLAG))
         {
             auto it = singleKeyReMap.find(data->lParam->vkCode);
             if (it != singleKeyReMap.end())
@@ -374,7 +391,7 @@ public:
                 keyEventList[0].type = INPUT_KEYBOARD;
                 keyEventList[0].ki.wVk = it->second;
                 keyEventList[0].ki.dwFlags = 0;
-                keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                keyEventList[0].ki.dwExtraInfo = POWERKEYS_SINGLEKEY_FLAG;
                 if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
                 {
                     keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
@@ -391,7 +408,7 @@ public:
 
     intptr_t HandleSingleKeyToggleToModEvent(LowlevelKeyboardEvent* data) noexcept
     {
-        if (data->lParam->dwExtraInfo != POWERKEYS_INJECTED_FLAG)
+        if (!(data->lParam->dwExtraInfo & POWERKEYS_INJECTED_FLAG))
         {
             auto it = singleKeyToggleToMod.find(data->lParam->vkCode);
             if (it != singleKeyToggleToMod.end())
@@ -414,11 +431,11 @@ public:
                 keyEventList[0].type = INPUT_KEYBOARD;
                 keyEventList[0].ki.wVk = (WORD)data->lParam->vkCode;
                 keyEventList[0].ki.dwFlags = 0;
-                keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                keyEventList[0].ki.dwExtraInfo = POWERKEYS_SINGLEKEY_FLAG;
                 keyEventList[1].type = INPUT_KEYBOARD;
                 keyEventList[1].ki.wVk = (WORD)data->lParam->vkCode;
                 keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
-                keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                keyEventList[1].ki.dwExtraInfo = POWERKEYS_SINGLEKEY_FLAG;
 
                 UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
                 delete[] keyEventList;
@@ -457,26 +474,26 @@ public:
                         keyEventList[0].type = INPUT_KEYBOARD;
                         keyEventList[0].ki.wVk = dest_2;
                         keyEventList[0].ki.dwFlags = 0;
-                        keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                        keyEventList[0].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
                     }
                     else
                     {
                         keyEventList[0].type = INPUT_KEYBOARD;
                         keyEventList[0].ki.wVk = (WORD)DUMMY_KEY;
                         keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
-                        keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                        keyEventList[0].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
                         keyEventList[1].type = INPUT_KEYBOARD;
                         keyEventList[1].ki.wVk = (WORD)src_1;
                         keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
-                        keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                        keyEventList[1].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
                         keyEventList[2].type = INPUT_KEYBOARD;
                         keyEventList[2].ki.wVk = dest_1;
                         keyEventList[2].ki.dwFlags = 0;
-                        keyEventList[2].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                        keyEventList[2].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
                         keyEventList[3].type = INPUT_KEYBOARD;
                         keyEventList[3].ki.wVk = dest_2;
                         keyEventList[3].ki.dwFlags = 0;
-                        keyEventList[3].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                        keyEventList[3].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
                     }
 
                     it.second.second = true;
@@ -496,11 +513,11 @@ public:
                     keyEventList[0].type = INPUT_KEYBOARD;
                     keyEventList[0].ki.wVk = dest_2;
                     keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
-                    keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                    keyEventList[0].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
                     keyEventList[1].type = INPUT_KEYBOARD;
                     keyEventList[1].ki.wVk = dest_1;
                     keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
-                    keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                    keyEventList[1].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
                     it.second.second = false;
                     UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
 
@@ -519,7 +536,7 @@ public:
                         keyEventList[0].type = INPUT_KEYBOARD;
                         keyEventList[0].ki.wVk = dest_2;
                         keyEventList[0].ki.dwFlags = 0;
-                        keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                        keyEventList[0].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
 
                         it.second.second = true;
                         UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
@@ -538,26 +555,26 @@ public:
                             keyEventList[0].type = INPUT_KEYBOARD;
                             keyEventList[0].ki.wVk = dest_2;
                             keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
-                            keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                            keyEventList[0].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
                         }
                         else
                         {
                             keyEventList[0].type = INPUT_KEYBOARD;
                             keyEventList[0].ki.wVk = dest_2;
                             keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
-                            keyEventList[0].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                            keyEventList[0].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
                             keyEventList[1].type = INPUT_KEYBOARD;
                             keyEventList[1].ki.wVk = dest_1;
                             keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
-                            keyEventList[1].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                            keyEventList[1].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
                             keyEventList[2].type = INPUT_KEYBOARD;
                             keyEventList[2].ki.wVk = (WORD)src_1;
                             keyEventList[2].ki.dwFlags = 0;
-                            keyEventList[2].ki.dwExtraInfo = 0;
+                            keyEventList[2].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
                             keyEventList[3].type = INPUT_KEYBOARD;
                             keyEventList[3].ki.wVk = (WORD)DUMMY_KEY;
                             keyEventList[3].ki.dwFlags = KEYEVENTF_KEYUP;
-                            keyEventList[3].ki.dwExtraInfo = POWERKEYS_INJECTED_FLAG;
+                            keyEventList[3].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
                         }
                         it.second.second = false;
                         UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
@@ -573,7 +590,7 @@ public:
 
     intptr_t HandleOSLevelShortcutRemapEvent(LowlevelKeyboardEvent* data) noexcept
     {
-        if (data->lParam->dwExtraInfo != POWERKEYS_INJECTED_FLAG)
+        if (data->lParam->dwExtraInfo != POWERKEYS_SHORTCUT_FLAG)
         {
             return HandleShortcutRemapEvent(data, osLevelShortcutReMap);
         }
@@ -622,7 +639,7 @@ public:
 
     intptr_t HandleAppSpecificShortcutRemapEvent(LowlevelKeyboardEvent* data) noexcept
     {
-        if (data->lParam->dwExtraInfo != POWERKEYS_INJECTED_FLAG)
+        if (data->lParam->dwExtraInfo != POWERKEYS_SHORTCUT_FLAG)
         {
             std::wstring process_name = GetCurrentApplication(false);
             if (process_name.empty())
