@@ -131,6 +131,7 @@ namespace FancyZonesUnitTests
     TEST_CLASS(FancyZonesIZoneWindowHostUnitTests)
     {
         HINSTANCE m_hInst{};
+        std::wstring m_settingsLocation = L"FancyZonesUnitTests";
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
         winrt::com_ptr<IZoneWindowHost> m_zoneWindowHost = nullptr;
 
@@ -157,7 +158,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD_INITIALIZE(Init)
         {
             m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
-            m_settings = MakeFancyZonesSettings(m_hInst, L"FancyZonesUnitTests");
+            m_settings = MakeFancyZonesSettings(m_hInst, m_settingsLocation.c_str());
             Assert::IsTrue(m_settings != nullptr);
 
             auto fancyZones = MakeFancyZones(m_hInst, m_settings);
@@ -169,8 +170,10 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD_CLEANUP(Cleanup)
         {
-            const auto settingsFile = PTSettingsHelper::get_module_save_folder_location(L"FancyZonesUnitTests") + L"\\settings.json";
+            auto settingsFolder = PTSettingsHelper::get_module_save_folder_location(m_settingsLocation);
+            const auto settingsFile = settingsFolder + L"\\settings.json";
             std::filesystem::remove(settingsFile);
+            std::filesystem::remove(settingsFolder);
         }
 
         TEST_METHOD(GetZoneHighlightColor)
@@ -241,6 +244,7 @@ namespace FancyZonesUnitTests
     TEST_CLASS(FancyZonesIFancyZonesCallbackUnitTests)
     {
         HINSTANCE m_hInst{};
+        std::wstring m_settingsLocation = L"FancyZonesUnitTests";
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
         winrt::com_ptr<IFancyZonesCallback> m_fzCallback = nullptr;
 
@@ -281,7 +285,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD_INITIALIZE(Init)
         {
             m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
-            m_settings = MakeFancyZonesSettings(m_hInst, L"FancyZonesUnitTests");
+            m_settings = MakeFancyZonesSettings(m_hInst, m_settingsLocation.c_str());
             Assert::IsTrue(m_settings != nullptr);
 
             auto fancyZones = MakeFancyZones(m_hInst, m_settings);
@@ -299,8 +303,10 @@ namespace FancyZonesUnitTests
             sendKeyboardInput(VK_LWIN, true);
             sendKeyboardInput(VK_CONTROL, true);
 
-            const auto settingsFile = PTSettingsHelper::get_module_save_folder_location(L"FancyZonesUnitTests") + L"\\settings.json";
+            auto settingsFolder = PTSettingsHelper::get_module_save_folder_location(m_settingsLocation);
+            const auto settingsFile = settingsFolder + L"\\settings.json";
             std::filesystem::remove(settingsFile);
+            std::filesystem::remove(settingsFolder);
         }
 
         TEST_METHOD(OnKeyDownNothingPressed)
@@ -429,31 +435,5 @@ namespace FancyZonesUnitTests
                 Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
             }
         }
-
-#if 0
-        TEST_METHOD(OnKeyDownWinPressedOverride)
-        {
-            sendKeyboardInput(VK_LWIN);
-
-            const Settings settings{
-                .overrideSnapHotkeys = true,
-            };
-
-            auto config = serializedPowerToySettings(settings);
-            m_settings->SetConfig(config.c_str());
-
-            {
-                tagKBDLLHOOKSTRUCT input{};
-                input.vkCode = VK_LEFT;
-                Assert::IsTrue(m_fzCallback->OnKeyDown(&input));
-            }
-
-            {
-                tagKBDLLHOOKSTRUCT input{};
-                input.vkCode = VK_RIGHT;
-                Assert::IsTrue(m_fzCallback->OnKeyDown(&input));
-            }
-        }
-#endif
     };
 }
