@@ -120,10 +120,7 @@ int runner(bool isProcessElevated)
     int result = -1;
     try
     {
-        if (winstore::running_as_packaged())
-        {
-            notifications::register_background_toast_handler();
-        }
+        notifications::register_background_toast_handler();
 
         chdir_current_executable();
         // Load Powertyos DLLS
@@ -165,8 +162,46 @@ int runner(bool isProcessElevated)
     return result;
 }
 
+// If the PT runner is launched as part of some action and manually by a user, e.g. being activated as a COM server
+// for background toast notification handling, we should execute corresponding code flow instead of the main code flow.
+enum class SpecialMode
+{
+    None,
+    Win32ToastNotificationCOMServer
+};
+
+SpecialMode should_run_in_special_mode()
+{
+    int nArgs;
+    LPWSTR* szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+    for (size_t i = 1; i < nArgs; ++i)
+    {
+        if (!wcscmp(notifications::TOAST_ACTIVATED_LAUNCH_ARG, szArglist[i]))
+            return SpecialMode::Win32ToastNotificationCOMServer;
+    }
+
+    return SpecialMode::None;
+}
+
+int win32_toast_notification_COM_server_mode()
+{
+    notifications::run_desktop_app_activator_loop();
+    return 0;
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+    winrt::init_apartment();
+
+    switch (should_run_in_special_mode())
+    {
+    case SpecialMode::Win32ToastNotificationCOMServer:
+        return win32_toast_notification_COM_server_mode();
+    case SpecialMode::None:
+        // continue as usual
+        break;
+    }
+
     wil::unique_mutex_nothrow msi_mutex;
     wil::unique_mutex_nothrow msix_mutex;
 
@@ -235,12 +270,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     int result = 0;
     try
     {
-        winrt::init_apartment();
 
         if (winstore::running_as_packaged())
         {
-            notifications::register_background_toast_handler();
-
             std::thread{ [] {
                 start_msi_uninstallation_sequence();
             } }.detach();
