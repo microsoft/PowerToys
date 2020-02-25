@@ -6,6 +6,12 @@
 - **Authors:** Clint Rutkas
 - **Spec Status:** Draft
 
+# TODO's
+
+- Possible UX look/feel comps
+- Success metrics
+- more requirements for all of section 4.1
+
 # 1. Overview
 
 ## 1.1. Elevator Pitch / Narrative
@@ -93,7 +99,8 @@ TODO: CLINT ADD IN MOCKS
 
 ## 4.1. Functional Requirements
 
-Guidance: What feature functionality is required to deliver the outcomes listed above?
+### 4.1.1. General
+
 | No. | Requirement | Priority |
 | --- | ----------- | -------- |
 | 1 | The default experience is a grid based layout | 0 |
@@ -106,7 +113,7 @@ Guidance: What feature functionality is required to deliver the outcomes listed 
 - To enable layouts to resizing, is everything actually just a percentage under the hood?
   - or is it for the new monitor, everything is scaled based on those %'s <-- i like this more
 
-### Zone Editability
+### 4.1.2 Zone Editability
 
 | No. | Requirement | Priority |
 | --- | ----------- | -------- |
@@ -121,6 +128,11 @@ Guidance: What feature functionality is required to deliver the outcomes listed 
 
 TODO: CLINT ADD IN MORE
 
+###  4.1.3 Updates to FancyZones
+
+| No. | Requirement | Priority |
+| --- | ----------- | -------- |
+| 1 | Zone Number visible | 0 |
 
 ## 4.2. Measure Requirements
 
