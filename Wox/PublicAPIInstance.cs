@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
 using Squirrel;
+using Wox.Core;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Helper;
@@ -63,6 +64,11 @@ namespace Wox
             SaveAppAllSettings();
 
             UpdateManager.RestartApp();
+        }
+
+        public void CheckForNewUpdate()
+        {
+            _settingsVM.UpdateApp();
         }
 
         public void SaveAppAllSettings()

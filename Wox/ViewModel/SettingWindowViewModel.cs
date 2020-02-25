@@ -44,7 +44,7 @@ namespace Wox.ViewModel
 
         public async void UpdateApp()
         {
-            await _updater.UpdateApp();
+            await _updater.UpdateApp(false);
         }
 
         public void Save()

@@ -33,7 +33,8 @@
     <TabControl Height="auto" SelectedIndex="0">
         <TabItem Header="{DynamicResource general}">
             <StackPanel Orientation="Vertical">
-                <CheckBox IsChecked="{Binding Settings.StartWoxOnSystemStartup}" Margin="10">
+                <CheckBox Margin="10" IsChecked="{Binding Settings.StartWoxOnSystemStartup}"
+                          Checked="OnAutoStartupChecked" Unchecked="OnAutoStartupUncheck">
                     <TextBlock Text="{DynamicResource startWoxOnSystemStartup}" />
                 </CheckBox>
                 <CheckBox Margin="10" IsChecked="{Binding Settings.HideOnStartup}">
@@ -51,8 +52,7 @@
                 <CheckBox Margin="10" IsChecked="{Binding Settings.IgnoreHotkeysOnFullscreen}">
                     <TextBlock Text="{DynamicResource ignoreHotkeysOnFullscreen}" />
                 </CheckBox>
-                <CheckBox Margin="10" IsChecked="{Binding Settings.AutoUpdates}"
-                          Checked="OnAutoStartupChecked" Unchecked="OnAutoStartupUncheck">
+                <CheckBox Margin="10" IsChecked="{Binding Settings.AutoUpdates}">
                     <TextBlock Text="{DynamicResource autoUpdates}" />
                 </CheckBox>
                 <CheckBox Margin="10" IsChecked="{Binding Settings.ShouldUsePinyin}">

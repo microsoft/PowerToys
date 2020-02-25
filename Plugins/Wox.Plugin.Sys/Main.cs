@@ -234,6 +234,20 @@ namespace Wox.Plugin.Sys
                             context.API.GetTranslation("wox_plugin_sys_dlgtext_all_applicableplugins_reloaded"));
                         return true;
                     }
+                },
+                new Result
+                {
+                    Title = "Check For Update",
+                    SubTitle = "Check for new Wox update",
+                    IcoPath = "Images\\checkupdate.png",
+                    Action = c =>
+                    {
+                        Application.Current.MainWindow.Hide();
+                        context.API.CheckForNewUpdate();
+                        context.API.ShowMsg("Please wait...",
+                            "Checking for new update");
+                        return true;
+                    }
                 }
             });
             return results;

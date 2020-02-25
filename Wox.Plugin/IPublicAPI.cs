@@ -71,6 +71,11 @@ namespace Wox.Plugin
         void ReloadAllPluginData();
 
         /// <summary>
+        /// Check for new Wox update
+        /// </summary>
+        void CheckForNewUpdate();
+
+        /// <summary>
         /// Show message box
         /// </summary>
         /// <param name="title">Message title</param>
