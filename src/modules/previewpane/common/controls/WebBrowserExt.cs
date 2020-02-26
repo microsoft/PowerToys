@@ -9,7 +9,7 @@ using System.Windows.Forms;
 namespace PreviewHandlerCommon
 {
     /// <summary>
-    /// Customize the WebBrowser to block images and scripts.
+    /// Customized the WebBrowser to get control over what it downloads, displays and executes.
     /// </summary>
     public class WebBrowserExt : WebBrowser
     {
@@ -26,6 +26,7 @@ namespace PreviewHandlerCommon
         /// </summary>
         protected class WebBrowserSiteExt : WebBrowserSite, IReflect
         {
+            // Dispid of DISPID_AMBIENT_DLCONTROL is defined in MsHtmdid.h header file in distributed Windows Sdk component.
             private const string DISPIDAMBIENTDLCONTROL = "[DISPID=-5512]";
             private WebBrowserExt browserExtControl;
 
@@ -51,7 +52,7 @@ namespace PreviewHandlerCommon
                 object result = null;
                 if (name.Equals(DISPIDAMBIENTDLCONTROL))
                 {
-                    result = (int)(WebBrowserDownloadControlFlags.PRAGMA_NO_CACHE | WebBrowserDownloadControlFlags.FORCEOFFLINE | WebBrowserDownloadControlFlags.NO_CLIENTPULL | WebBrowserDownloadControlFlags.NO_SCRIPTS | WebBrowserDownloadControlFlags.NO_JAVA | WebBrowserDownloadControlFlags.NO_FRAMEDOWNLOAD | WebBrowserDownloadControlFlags.NOFRAMES | WebBrowserDownloadControlFlags.NO_DLACTIVEXCTLS | WebBrowserDownloadControlFlags.NO_RUNACTIVEXCTLS | WebBrowserDownloadControlFlags.NO_BEHAVIORS | WebBrowserDownloadControlFlags.SILENT);
+                    result = WebBrowserDownloadControlFlags.PRAGMA_NO_CACHE | WebBrowserDownloadControlFlags.FORCEOFFLINE | WebBrowserDownloadControlFlags.NO_CLIENTPULL | WebBrowserDownloadControlFlags.NO_SCRIPTS | WebBrowserDownloadControlFlags.NO_JAVA | WebBrowserDownloadControlFlags.NO_FRAMEDOWNLOAD | WebBrowserDownloadControlFlags.NOFRAMES | WebBrowserDownloadControlFlags.NO_DLACTIVEXCTLS | WebBrowserDownloadControlFlags.NO_RUNACTIVEXCTLS | WebBrowserDownloadControlFlags.NO_BEHAVIORS | WebBrowserDownloadControlFlags.SILENT;
                 }
 
                 return result;
