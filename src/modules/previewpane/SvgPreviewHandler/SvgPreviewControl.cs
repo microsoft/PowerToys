@@ -15,7 +15,6 @@ using System.Xml.Linq;
 using Common;
 using Common.Utilities;
 using PreviewHandlerCommon;
-using SvgPreviewHandler.Utilities;
 
 namespace SvgPreviewHandler
 {
@@ -25,7 +24,7 @@ namespace SvgPreviewHandler
     public class SvgPreviewControl : FormHandlerControl
     {
         /// <summary>
-        /// Browser Control to display Svg.
+        /// Extended Browser Control to display Svg.
         /// </summary>
         private WebBrowserExt browser;
 
@@ -57,12 +56,6 @@ namespace SvgPreviewHandler
                         {
                             svgData = reader.ReadToEnd();
                         }
-                    }
-
-                    // svgData = string.IsNullOrWhiteSpace(svgData) ? svgData : SvgPreviewHandlerHelper.RemoveElements(svgData, out this.infoBarAdded);
-                    if (this.infoBarAdded)
-                    {
-                        this.AddTextBoxControl(Resource.BlockedElementInfoText);
                     }
 
                     this.AddBrowserControl(svgData);
@@ -113,7 +106,6 @@ namespace SvgPreviewHandler
         {
             this.browser = new WebBrowserExt();
             this.browser.Dock = DockStyle.Fill;
-
             this.browser.DocumentText = svgData;
             this.browser.IsWebBrowserContextMenuEnabled = false;
             this.browser.ScriptErrorsSuppressed = true;
