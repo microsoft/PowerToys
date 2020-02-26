@@ -79,8 +79,8 @@ static_analysis_options:
     files_to_scan:
       - from: 'installer/packages'
         exclude:
-          - 'WiX.3.11.1/**/*.dll'
-          - 'Wix.3.11.1/**/*.exe'
+          - 'WiX.*/**/*.dll'
+          - 'Wix.*/**/*.exe'
   moderncop_options:           
     files_to_scan:
       - from: 'src'          
