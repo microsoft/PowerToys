@@ -11,6 +11,9 @@
 - Possible UX look/feel comps
 - Success metrics
 - more requirements for all of section 4.1
+- 4.1.2 - Think more about how keyboard UX for editor would work.
+  - Rather than title bar handle for moving, do we have modes (Move, Resize, Split, Edit (Rename, L/T/W/H))?
+    - I feel like this would heavily simplify information overload and easier for keyboard interaction.
 
 # 1. Overview
 
@@ -40,7 +43,7 @@ See Section 2.
 - Unified editor experience
 - Easier adjustments for zones
 - Easier shareability across multiple monitors
-- Easier readability
+- Easier discoverability for what zone you're in
 - Accessibility
 - Localized ready UX
 
@@ -51,11 +54,11 @@ See Section 2.
 - Profiles (Home vs Work)
 - Directly doing work for the actual zone interaction model
   - There will be work done to improve it within this work item
-- Improve OOBE for first-time user (#1285)
+- Improve OOBE for first-time user (will be addressed in #1285)
 
 We will discuss what currently is there for a knowledge base.
 
-# Existing Experience
+# 2. Existing Experience
 
 ## 2.1. Launching the editor / pick your layout
 
@@ -105,13 +108,11 @@ TODO: CLINT ADD IN MOCKS
 | --- | ----------- | -------- |
 | 1 | The default experience is a grid based layout | 0 |
 | 2 | User can delete zones out of the grid based layout | 0 |
+| 3 | User can add a zone on top of the existing master grid based layout (This would enable the hybrid canvas scenario) | 0 |
+| 4 | For applying layouts, the zone layout will resize smoothly to accordingly. *see edge cases | 0 |
 | x | x | 0 |
 
 **TODO: CLINT ADD IN MORE**
-**OPEN QUESTION:**
-
-- To enable layouts to resizing, is everything actually just a percentage under the hood?
-  - or is it for the new monitor, everything is scaled based on those %'s <-- i like this more
 
 ### 4.1.2 Zone Editability
 
@@ -121,18 +122,22 @@ TODO: CLINT ADD IN MOCKS
 | 1 | All Zones will have have a number that is clearly visible | 0 |
 | 1 | The zone number is alterable, when conflict happens, the conflict will become last #. | 0 |
 | 2 | Free form Zones can have their x/y top left coordinate adjusted | 0 |
-| 3 | Grid-based dividers can be removed with via right click->Delete | 0 |
+
+| 3 | Grid-based dividers can move via arrow keys | 0 |
+| 3 | Grid-based dividers, when focused, can be deleted with backspace or delete key | 0 |
+| 3 | Grid-based dividers can be deleted with via right click->Delete | 0 |
 | 3 | Grid-based zones can be merged together right click->merge | 0 |
-| 4 | TODO: how to do keyboard navigation | 0 |
 | x | x | 0 |
 
-TODO: CLINT ADD IN MORE
+**TODO: CLINT ADD IN MORE**
 
-###  4.1.3 Updates to FancyZones
+### 4.1.3 Updates to FancyZones
 
 | No. | Requirement | Priority |
 | --- | ----------- | -------- |
 | 1 | Zone Number visible | 0 |
+| 2 | Tab order is respected via WinKey+Arrow keys | 0 |
+| x | x | 0 |
 
 ## 4.2. Measure Requirements
 
@@ -140,8 +145,18 @@ TODO: CLINT ADD IN MORE
 |-----|---------|---------|----------|
 | 1 | TBD | TBD | TBD |
 
+# 5. Edge cases
 
-![alt text][multimMonStyleLayout]
+There are areas in this where we need to be aware of edge cases.  Automatic resizing due to monitor size difference is one area where we will hit it.
+
+- Reasons why i think we have to percentage based to allow for scale to fit vs allowing a hybrid of hard-coded & percentages.
+  - Lets use my 2 monitors for instance, 3840px in width versus 2256.  Any hard-coded layout would have to adjust 1584px.  
+  - the system would have to be aware at layout design time of monitor restrictions like not allowing a zone being designed on the larger screen to be larger than the smaller screen.
+  - if you get a new monitor, excellent chance it will have a different resolution/DPI.
+  - As an end user, would you really ever know that something was 12% of your screen versus a hard-coded 200px unless you measured and it was 201px?
+  - Also think about Left/Top, not just width, an item could easily be off screen.
+- We cannot automatically assume same Ratio, below is my 4k monitor and my surface laptops, different resolutions and screen ratios
+  - ![alt text][multimMonStyleLayout]
 
 [canvasEditor]: images/specs/fzv2/canvasEditor.png "v1 Canvas Editor screenshot"
 [gridEditor]: images/specs/fzv2/gridEditor.png "v1 Grid Editor screenshot"
