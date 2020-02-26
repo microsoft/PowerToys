@@ -54,7 +54,6 @@ namespace UnitTests_PreviewHandlerCommon
             Assert.IsTrue((actualFlags & (int)WebBrowserDownloadControlFlags.NO_METACHARSET) == 0);
             Assert.IsTrue((actualFlags & (int)WebBrowserDownloadControlFlags.URL_ENCODING_DISABLE_UTF8) == 0);
             Assert.IsTrue((actualFlags & (uint)WebBrowserDownloadControlFlags.URL_ENCODING_ENABLE_UTF8) == 0);
-            Assert.IsTrue((actualFlags & (uint)WebBrowserDownloadControlFlags.OFFLINEIFNOTCONNECTED) == 0);
         }
     }
 }
