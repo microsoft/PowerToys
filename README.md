@@ -44,6 +44,10 @@ To upgrade PowerToys, run the following command from the command line / PowerShe
 choco upgrade powertoys
 ```
 
+### Microsoft Store
+
+On backlog, [Issue #413](https://github.com/microsoft/PowerToys/issues/413) 
+
 #### PDB Files
 
 PDB symbols for the release are available in a separate zip file `PDB symbols.zip` on the [releases page][github-release-link] for each build.
