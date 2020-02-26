@@ -66,6 +66,10 @@
     <Compile Include="cominterop\LOGFONT.cs" />
     <Compile Include="cominterop\MSG.cs" />
     <Compile Include="cominterop\RECT.cs" />
+    <Compile Include="controls\WebBrowserDownloadControlFlags.cs" />
+    <Compile Include="controls\WebBrowserExt.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="examplehandler\CustomControlTest.cs">
       <SubType>Form</SubType>
     </Compile>

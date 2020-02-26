@@ -14,6 +14,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Common;
 using Common.Utilities;
+using PreviewHandlerCommon;
 using SvgPreviewHandler.Utilities;
 
 namespace SvgPreviewHandler
@@ -26,7 +27,7 @@ namespace SvgPreviewHandler
         /// <summary>
         /// Browser Control to display Svg.
         /// </summary>
-        private WebBrowser browser;
+        private WebBrowserExt browser;
 
         /// <summary>
         /// Text box to display the information about blocked elements from Svg.
@@ -58,7 +59,7 @@ namespace SvgPreviewHandler
                         }
                     }
 
-                    svgData = string.IsNullOrWhiteSpace(svgData) ? svgData : SvgPreviewHandlerHelper.RemoveElements(svgData, out this.infoBarAdded);
+                    // svgData = string.IsNullOrWhiteSpace(svgData) ? svgData : SvgPreviewHandlerHelper.RemoveElements(svgData, out this.infoBarAdded);
                     if (this.infoBarAdded)
                     {
                         this.AddTextBoxControl(Resource.BlockedElementInfoText);
@@ -110,9 +111,10 @@ namespace SvgPreviewHandler
         /// <param name="svgData">Svg to display on Browser Control.</param>
         private void AddBrowserControl(string svgData)
         {
-            this.browser = new WebBrowser();
-            this.browser.DocumentText = svgData;
+            this.browser = new WebBrowserExt();
             this.browser.Dock = DockStyle.Fill;
+
+            this.browser.DocumentText = svgData;
             this.browser.IsWebBrowserContextMenuEnabled = false;
             this.browser.ScriptErrorsSuppressed = true;
             this.browser.ScrollBarsEnabled = true;
