@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using PreviewHandlerCommon;
 using SvgPreviewHandler;
 
 namespace UnitTests_SvgPreviewHandler
@@ -15,7 +16,7 @@ namespace UnitTests_SvgPreviewHandler
     public class SvgPreviewControlTests
     {
         [TestMethod]
-        public void SvgPreviewControl_ShouldAddBrowserControl_WhenDoPreviewCalled()
+        public void SvgPreviewControl_ShouldAddExtendedBrowserControl_WhenDoPreviewCalled()
         {
             // Arrange
             var svgPreviewControl = new SvgPreviewControl();
@@ -25,7 +26,7 @@ namespace UnitTests_SvgPreviewHandler
 
             // Assert
             Assert.AreEqual(svgPreviewControl.Controls.Count, 1);
-            Assert.IsInstanceOfType(svgPreviewControl.Controls[0], typeof(WebBrowser));
+            Assert.IsInstanceOfType(svgPreviewControl.Controls[0], typeof(WebBrowserExt));
         }
 
         [TestMethod]
@@ -94,60 +95,15 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void SvgPreviewControl_ShouldAddTextBox_IfBlockedElementsArePresent()
-        {
-            // Arrange
-            var svgPreviewControl = new SvgPreviewControl();
-
-            // Act
-            svgPreviewControl.DoPreview(GetMockStream("<svg>\r\n <script> valid </script>\r\n </svg>"));
-
-            // Assert
-            Assert.IsInstanceOfType(svgPreviewControl.Controls[0], typeof(RichTextBox));
-            Assert.IsInstanceOfType(svgPreviewControl.Controls[1], typeof(WebBrowser));
-            Assert.AreEqual(svgPreviewControl.Controls.Count, 2);
-        }
-
-        [TestMethod]
-        public void SvgPreviewControl_ShouldNotAddTextBox_IfNoBlockedElementsArePresent()
-        {
-            // Arrange
-            var svgPreviewControl = new SvgPreviewControl();
-
-            // Act
-            svgPreviewControl.DoPreview(GetMockStream("<svg>valid</svg>"));
-
-            // Assert
-            Assert.IsNotInstanceOfType(svgPreviewControl.Controls[0], typeof(RichTextBox));
-            Assert.AreEqual(svgPreviewControl.Controls.Count, 1);
-        }
-
-        [TestMethod]
-        public void SvgPreviewControl_ShouldAddValidTextBox_IfBlockedElementsArePresent()
-        {
-            // Arrange
-            var svgPreviewControl = new SvgPreviewControl();
-
-            // Act
-            svgPreviewControl.DoPreview(GetMockStream("<svg>\r\n <script> valid </script>\r\n </svg>"));
-            var textBox = svgPreviewControl.Controls[0] as RichTextBox;
-
-            // Assert
-            Assert.IsFalse(string.IsNullOrWhiteSpace(textBox.Text));
-            Assert.AreEqual(textBox.Dock, DockStyle.Top);
-            Assert.AreEqual(textBox.BackColor, Color.LightYellow);
-            Assert.IsTrue(textBox.Multiline);
-            Assert.IsTrue(textBox.ReadOnly);
-            Assert.AreEqual(textBox.ScrollBars, RichTextBoxScrollBars.None);
-            Assert.AreEqual(textBox.BorderStyle, BorderStyle.None);
-        }
-
-        [TestMethod]
         public void SvgPreviewControl_RichTextBoxWidthShouldAdjust_IfParentControlWidthChanges()
         {
             // Arrange
             var svgPreviewControl = new SvgPreviewControl();
-            svgPreviewControl.DoPreview(GetMockStream("<svg>\r\n <script> valid </script>\r\n </svg>"));
+            var mockStream = new Mock<IStream>();
+            mockStream
+                .Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
+                .Throws(new Exception());
+            svgPreviewControl.DoPreview(mockStream.Object);
             var textBox = svgPreviewControl.Controls[0] as RichTextBox;
             var incrementParentControlWidth = 5;
             var intialParentWidth = svgPreviewControl.Width;
