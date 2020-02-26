@@ -24,7 +24,7 @@ namespace Wox.Core.Plugin
             { // use non global plugin for query
                 actionKeyword = possibleActionKeyword;
                 actionParameters = terms.Skip(1).ToList();
-                search = rawQuery.Substring(actionKeyword.Length + 1);
+                search = actionParameters.Count > 0 ? rawQuery.Substring(actionKeyword.Length + 1) : string.Empty;
             }
             else
             { // non action keyword
