@@ -111,6 +111,7 @@ TODO: CLINT ADD IN MOCKS
 | 4 | For applying layouts, the zone layout will resize smoothly to accordingly. *see edge cases | 0 |
 | 5 | Top center would have name,  | 0 |
 | 6 | Ability to delete layout from template | 0 |
+| 7 | Editor will be dark / light theme aware | 0 |
 | 7 | Ability to resize window | 2 |
 | 7 | Resize window remembered | 2 |
 | x | x | 0 |
@@ -156,6 +157,7 @@ TODO: CLINT ADD IN MOCKS
 | --- | ----------- | -------- |
 | 1 | Zone Number visible | 0 |
 | 2 | Tab order is respected via WinKey+Arrow keys | 0 |
+| 3 | Zones will be dark / light theme aware | 0 |
 | x | x | 0 |
 
 ## 4.2. Measure Requirements
