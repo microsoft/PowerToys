@@ -29,41 +29,13 @@ void Trace::UnregisterProvider()
     TraceLoggingUnregister(g_hProvider);
 }
 
-void Trace::FilePreviewerIsEnabled()
+void Trace::PreviewHandlerEnabled(bool enabled, LPCWSTR previewHandlerName)
 {
     TraceLoggingWrite(
         g_hProvider,
-        "PowerPreview_ExplorerFilePreview_PreviewIsEnabled",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
-}
-
-void Trace::FilePreviewerIsDisabled()
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "PowerPreview_ExplorerFilePreview_PreviewIsDisabled",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
-}
-
-void Trace::ExplorerSVGRenderEnabled()
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "PowerPreview_ExplorerFilePreview_SVGRenderEnabled",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
-}
-
-void Trace::ExplorerSVGRenderDisabled()
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "PowerPreview_ExplorerFilePreview_SVGRenderDisabled",
+        "PowerPreview_TweakUISettings_Enabled",
+        TraceLoggingWideString(previewHandlerName, "PreviewHanlder_FileType"),
+        TraceLoggingBoolean(enabled, "Enabled"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -73,49 +45,8 @@ void Trace::PowerPreviewSettingsUpDateFailed(LPCWSTR SettingsName)
 {
     TraceLoggingWrite(
         g_hProvider,
-        "PowerPreview_FilePreview_FailedUpdatingSettings",
+        "PowerPreview_TweakUISettings_FailedUpdatingSettings",
         TraceLoggingWideString(SettingsName, "ExceptionMessage"),
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
-}
-
-void Trace::PreviewPaneSVGRenderEnabled()
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "PowerPreview_PreviewPane_SVGRenderEnabled",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
-}
-
-void Trace::PreviewPaneSVGRenderDisabled()
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "PowerPreview_PreviewPane__SVGRenderDisabled",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
-}
-
-
-void Trace::PreviewPaneMarkDownRenderDisabled()
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "PowerPreview_PreviewPane_MDRenderEnabled",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
-}
-
-void Trace::PreviewPaneMarkDownRenderEnabled()
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "PowerPreview_PreviewPane__MDRenderDisabled",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -125,7 +56,7 @@ void Trace::SetConfigInvalidJSON(const char* exceptionMessage)
 {
     TraceLoggingWrite(
         g_hProvider,
-        "PowerPreview_SetConfig__InvalidJSONGiven",
+        "PowerPreview_TweakUISettings_SetConfig__InvalidJSONGiven",
         TraceLoggingString(exceptionMessage, "ExceptionMessage"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
@@ -136,7 +67,7 @@ void Trace::Destroyed()
 {
     TraceLoggingWrite(
         g_hProvider,
-        "PowerPreview__Destroyed",
+        "PowerPreview_TweakUISettings_Destroyed",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -146,7 +77,7 @@ void Trace::InitSetErrorLoadingFile(const char* exceptionMessage)
 {
     TraceLoggingWrite(
         g_hProvider,
-        "PowerPreview_InitSet__ErrorLoadingFile",
+        "PowerPreview_TweakUISettings_InitSet__ErrorLoadingFile",
         TraceLoggingString(exceptionMessage, "ExceptionMessage"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
