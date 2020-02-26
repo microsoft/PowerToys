@@ -52,7 +52,7 @@ namespace PreviewHandlerCommon
                 object result = null;
                 if (name.Equals(DISPIDAMBIENTDLCONTROL))
                 {
-                    result = (int)(WebBrowserDownloadControlFlags.PRAGMA_NO_CACHE | WebBrowserDownloadControlFlags.FORCEOFFLINE | WebBrowserDownloadControlFlags.NO_CLIENTPULL | WebBrowserDownloadControlFlags.NO_SCRIPTS | WebBrowserDownloadControlFlags.NO_JAVA | WebBrowserDownloadControlFlags.NO_FRAMEDOWNLOAD | WebBrowserDownloadControlFlags.NOFRAMES | WebBrowserDownloadControlFlags.NO_DLACTIVEXCTLS | WebBrowserDownloadControlFlags.NO_RUNACTIVEXCTLS | WebBrowserDownloadControlFlags.NO_BEHAVIORS | WebBrowserDownloadControlFlags.SILENT);
+                    result = Convert.ToInt32(WebBrowserDownloadControlFlags.PRAGMA_NO_CACHE | WebBrowserDownloadControlFlags.FORCEOFFLINE | WebBrowserDownloadControlFlags.NO_CLIENTPULL | WebBrowserDownloadControlFlags.NO_SCRIPTS | WebBrowserDownloadControlFlags.NO_JAVA | WebBrowserDownloadControlFlags.NO_FRAMEDOWNLOAD | WebBrowserDownloadControlFlags.NOFRAMES | WebBrowserDownloadControlFlags.NO_DLACTIVEXCTLS | WebBrowserDownloadControlFlags.NO_RUNACTIVEXCTLS | WebBrowserDownloadControlFlags.NO_BEHAVIORS | WebBrowserDownloadControlFlags.SILENT);
                 }
 
                 return result;

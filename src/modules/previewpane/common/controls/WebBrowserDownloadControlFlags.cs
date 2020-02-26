@@ -9,7 +9,7 @@ using System;
 /// Values of flags are defined in mshtmdid.h in distributed Windows Sdk.
 /// </summary>
 [Flags]
-public enum WebBrowserDownloadControlFlags : uint
+public enum WebBrowserDownloadControlFlags : int
 {
     /// <summary>
     /// Images will be downloaded from the server if this flag is set.
@@ -105,14 +105,4 @@ public enum WebBrowserDownloadControlFlags : uint
     /// No user interface will be displayed during downloads.
     /// </summary>
     SILENT = 0x40000000,
-
-    /// <summary>
-    /// WebBrowser Control will operate in offline mode if not connected to the Internet.
-    /// </summary>
-    OFFLINEIFNOTCONNECTED = 0x80000000,
-
-    /// <summary>
-    /// WebBrowser Control will operate in offline mode if not connected to the Internet.
-    /// </summary>
-    OFFLINE = OFFLINEIFNOTCONNECTED,
 }
