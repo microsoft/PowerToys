@@ -23,7 +23,7 @@ The latest release of PowerToys can be downloaded currently a few different ways
 The preview of these utilities can be installed from the [PowerToys GitHub releases page](https://github.com/Microsoft/powertoys/releases). Click on `Assets` to show the files available in the release and then click on `PowerToysSetup.msi` to download the PowerToys installer. <br />
 PDB symbols for the release are available in a separate zip file `PDB symbols.zip`.
 
-### Windows Store
+### Microsoft Store
 
 On backlog, [Issue #413](https://github.com/microsoft/PowerToys/issues/413) 
 
