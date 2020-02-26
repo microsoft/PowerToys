@@ -8,7 +8,7 @@
   <Product Id="*"
        Name="PowerToys"
        Language="1033"
-       Version="0.14.2"
+       Version="0.15.0"
        Manufacturer="Microsoft"
        UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
 
