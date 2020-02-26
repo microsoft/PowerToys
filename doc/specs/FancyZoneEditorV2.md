@@ -14,6 +14,7 @@
 - 4.1.2 - Think more about how keyboard UX for editor would work.
   - Rather than title bar handle for moving, do we have modes (Move, Resize, Split, Edit (Rename, L/T/W/H))?
     - I feel like this would heavily simplify information overload and easier for keyboard interaction.
+- Main dialog needs to display monitors.
 
 # 1. Overview
 
