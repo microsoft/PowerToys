@@ -92,7 +92,7 @@ Which monitor your screen is on determines the monitor the layout editor is laun
 
 | No. | Outcome | Measure | Priority |
 |-----|---------|---------|----------|
-| 1 | TBD | TBD | TBD |
+| 1 | TBD | TBD | 0 |
 
 # 4. Requirements
 
@@ -107,26 +107,45 @@ TODO: CLINT ADD IN MOCKS
 | No. | Requirement | Priority |
 | --- | ----------- | -------- |
 | 1 | The default experience is a grid based layout | 0 |
-| 2 | User can delete zones out of the grid based layout | 0 |
 | 3 | User can add a zone on top of the existing master grid based layout (This would enable the hybrid canvas scenario) | 0 |
 | 4 | For applying layouts, the zone layout will resize smoothly to accordingly. *see edge cases | 0 |
+| 5 | Top center would have name,  | 0 |
+| 6 | Ability to delete layout from template | 0 |
+| 7 | Ability to resize window | 2 |
+| 7 | Resize window remembered | 2 |
 | x | x | 0 |
 
 **TODO: CLINT ADD IN MORE**
 
-### 4.1.2 Zone Editability
+### 4.1.2 General Zone Editor
 
 | No. | Requirement | Priority |
 | --- | ----------- | -------- |
 | 1 | All Zones can have their height & width adjusted | 0 |
-| 1 | All Zones will have have a number that is clearly visible | 0 |
-| 1 | The zone number is alterable, when conflict happens, the conflict will become last #. | 0 |
-| 2 | Free form Zones can have their x/y top left coordinate adjusted | 0 |
+| 2 | All Zones will have have a number that is clearly visible | 0 |
+| 3 | The zone number is alterable, when conflict happens, the conflict will become last #. | 0 |
+| 4 | Free form Zones can have their x/y top left coordinate adjusted | 0 |
+| 5 | Ability to save, cancel, rename layout | 0 |
+| x | x | 0 |
 
-| 3 | Grid-based dividers can move via arrow keys | 0 |
-| 3 | Grid-based dividers, when focused, can be deleted with backspace or delete key | 0 |
+### 4.1.3 Grid-based Zones
+
+| No. | Requirement | Priority |
+| --- | ----------- | -------- |
+| 1 | Grid-based dividers can move via arrow keys | 0 |
+| 2 | Grid-based dividers, when focused, can be deleted with backspace or delete key | 0 |
 | 3 | Grid-based dividers can be deleted with via right click->Delete | 0 |
-| 3 | Grid-based zones can be merged together right click->merge | 0 |
+| 4 | Grid-based zones can be merged together right click->merge | 0 |
+| x | x | 0 |
+
+### 4.1.3 Canvas-based Zones
+
+| No. | Requirement | Priority |
+| --- | ----------- | -------- |
+| 1 | Zone can be added in via | 0 |
+| 2 | Users can adjust Top / Left of Zone | 0 |
+| 3 | This canvas zone can be divided | 0 |
+| 4 | The canvas itself can be deleted | 0 |
 | x | x | 0 |
 
 **TODO: CLINT ADD IN MORE**
