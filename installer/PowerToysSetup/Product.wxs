@@ -202,7 +202,7 @@
       <Component Id="powertoys_exe" Guid="A2C66D91-3485-4D00-B04D-91844E6B345B" Win64="yes">
         <File Id="PowerToys.exe" KeyPath="yes" Checksum="yes">
           <Shortcut Id="ApplicationStartMenuShortcut"
-                    Name="PowerToys"
+                    Name="PowerToys (Preview)"
                     Description="PowerToys - Windows system utilities to maximize productivity"
                     Directory="ApplicationProgramsFolder"
                     WorkingDirectory="INSTALLFOLDER"
@@ -292,7 +292,7 @@
                         Value="1"
                         KeyPath="yes"/>
         <Shortcut Id="DesktopShortcutId"
-                  Name="PowerToys"
+                  Name="PowerToys (Preview)"
                   Description="PowerToys - Windows system utilities to maximize productivity"
                   Target="[!PowerToys.exe]"
                   WorkingDirectory="INSTALLFOLDER"
