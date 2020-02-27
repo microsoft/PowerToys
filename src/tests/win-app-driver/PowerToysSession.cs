@@ -44,6 +44,19 @@ namespace PowerToysTests
             }
         }
 
+        public void OpenSettings()
+        {
+            trayButton.Click();
+            session.FindElementByName("PowerToys").Click();
+            trayButton.Click();
+        }
+
+        public void CloseSettings()
+        {
+            WindowsElement settings = session.FindElementByName("PowerToys Settings");
+            settings.SendKeys(Keys.Alt + Keys.F4);
+        }
+
         private static bool CheckPowerToysLaunched()        
         {
             trayButton.Click();
