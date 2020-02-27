@@ -62,9 +62,6 @@ build:
             - 'PowerToysSetup.msi'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
-  
-package:
-  commands:
     - !!buildcommand
       name: 'Build MSIX package'
       command: 'installer\msix\build_msix_cdpx.cmd'
@@ -74,6 +71,8 @@ package:
           include:
             - 'PowerToys-x64.msix'
             - 'PowerToys.msixbundle'
+          signing_options:
+            sign_inline: true  # This does signing a soon as this command completes
 
 static_analysis_options:                             
   binskim_options:  
