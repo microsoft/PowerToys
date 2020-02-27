@@ -54,6 +54,16 @@ Various tools used by PowerToys. Includes the Visual Studio 2019 project templat
 - The PowerToys binaries will be in your repo under `x64\Release`.
 - If you want to copy the `PowerToys.exe` binary to a different location, you'll also need to copy the `modules` and the `svgs` folders.
 
+### Building the .msi Installer
+
+* From the `installer` folder open `PowerToysSetup.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release` or `Debug`, from the `Build` menu choose `Build Solution`.
+* The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
+
+#### Prerequisites to Build the MSI Installer
+
+* Install the [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=RobMensching.WiXToolset).
+* Install the [WiX Toolset build tools](https://wixtoolset.org/releases/).
+
 ### Building the MSIX Installer
 
 Please follow the [installer instructions](./installer/readme.md) which include items such as creating the self-signed cert for testing.
