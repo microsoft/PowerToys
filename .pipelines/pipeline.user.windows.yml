@@ -67,9 +67,9 @@ package:
   commands:
     - !!buildcommand
       name: 'Build MSIX package'
-      command: '.pipelines\msix\build_msix.cmd'
+      command: 'installer\msix\build_msix_cdpx.cmd'
       artifacts:
-        - from: '.pipelines\msix\bin'
+        - from: 'installer\msix\bin'
           to: 'Build_MSIX_Package_Output'
           include:
             - 'PowerToys-x64.msix'
