@@ -255,6 +255,16 @@
         <File Source="$(var.BinX64Dir)\modules\ControlzEx.dll" />
         <File Source="$(var.BinX64Dir)\modules\MahApps.Metro.dll" />
         <File Source="$(var.BinX64Dir)\modules\Microsoft.Xaml.Behaviors.dll" />
+        <File Source="$(var.BinX64Dir)\modules\FancyZonesEditor.exe.config" />
+        <File Source="$(var.BinX64Dir)\modules\Microsoft.Bcl.AsyncInterfaces.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Buffers.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Memory.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Numerics.Vectors.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Runtime.CompilerServices.Unsafe.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Text.Encodings.Web.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Text.Json.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Threading.Tasks.Extensions.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.ValueTuple.dll" />
       </Component>
       <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
         <File Source="$(var.BinX64Dir)\modules\PowerRenameExt.dll" KeyPath="yes" />
