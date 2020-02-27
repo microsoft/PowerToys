@@ -83,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PowerToysSession.cs" />
+    <Compile Include="PowerToysTrayTests.cs" />
     <Compile Include="TestShortcutHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
