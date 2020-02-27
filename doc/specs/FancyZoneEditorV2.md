@@ -21,7 +21,8 @@
 ## 1.1. Elevator Pitch / Narrative
 
 Make a straight-forward layout selector / editor for FancyZone users. *mic drop*
-The Github issue which encompasses many of the asks, #1032, is an epic of a lot of user pain points.  This is also part of the v1.0 strategy under "Raise product quality".
+
+The Github issue which encompasses many of the asks, [#1032](https://github.com/microsoft/PowerToys/issues/1032), is an epic of a lot of user pain points.  This is also part of the v1.0 strategy under "Raise product quality".
 
 ## 1.2. Customers
 
@@ -56,6 +57,7 @@ See Section 2.
 - Directly doing work for the actual zone interaction model
   - There will be work done to improve it within this work item
 - Improve OOBE for first-time user (will be addressed in #1285)
+  - This doesn't mean the experience won't be more straight forward
 
 We will discuss what currently is there for a knowledge base.
 
@@ -63,21 +65,21 @@ We will discuss what currently is there for a knowledge base.
 
 ## 2.1. Launching the editor / pick your layout
 
-you must either use:
+The experience is based on the layout dialog box.  This will allow you to use a custom or predefined layout.
 
-- Hot key (WinKey+~)
-- Settings -> Fancy Zones -> Click “edit zones”
+![alt text][newLayoutDialog]
 
 ## 2.2. How to pick a monitor for layout
 
-Which monitor your screen is on determines the monitor the layout editor is launched.
+Which monitor your screen is on determines the monitor the layout editor is launched.  You must either use:
+
+- Hot key (WinKey+~)
+- Settings -> Fancy Zones -> Click “edit zones”
 
 ## 2.3. Types of editors
 
 - Canvas Editor – This allows for free form zone creation along with overlapping zones.
 - Grid Editor – Allows for zones to be merged and divided. You cannot do overlapping zones in this mode.
-
-![alt text][newLayoutDialog]
 
 ## 2.4. Canvas Editor
 
@@ -103,18 +105,29 @@ TODO: CLINT ADD IN MOCKS
 
 ## 4.1. Functional Requirements
 
-### 4.1.1. General
+For terminology, lets get some lock for v2
+
+- Dialog window: The editor window that lets you quick select.
+- Zone: the area a Window snaps to
+- Grid-based: this refers to the system where you can divide the zone
+- Canvas-based: this refers to a zone that was free-formed added.  Another way to think about it is a non-full screen zone.
+- Layout: this refers to the zones you created for FancyZones to snap to.  
+
+### 4.1.1. FZ Editor Dialog window
 
 | No. | Requirement | Priority |
 | --- | ----------- | -------- |
-| 1 | The default experience is a grid based layout | 0 |
-| 3 | User can add a zone on top of the existing master grid based layout (This would enable the hybrid canvas scenario) | 0 |
-| 4 | For applying layouts, the zone layout will resize smoothly to accordingly. *see edge cases | 0 |
-| 5 | Top center would have name,  | 0 |
-| 6 | Ability to delete layout from template | 0 |
-| 7 | Editor will be dark / light theme aware | 0 |
-| 7 | Ability to resize window | 2 |
-| 7 | Resize window remembered | 2 |
+| 1 | Ability to resize dialog | 2 |
+| 1 | Resize window remembered | 2 |
+| 1 | Editor will be dark / light theme aware | 0 |
+| x | User can apply selected layout | 0 |
+| x | User can remove applied layout | 0 |
+| x | User can delete saved layouts | 0 |
+| x | Editor's selected monitor follows existing logic | 0 |
+| x | Editor has selectable monitor layout that mimics Settings dialog interaction model and look/feel.  | 0 |
+| 1 | For applying layouts, the zone layout will resize smoothly to accordingly. *see edge cases | 0 |
+| 1 | New layouts can be added, Blank and "Quick Starts" (Focus, Column, Row, Grid, Priority Grid) | 0 |
+| x | Quickstarts can have base properties like `default zone count` and `zone padding` like in existing dialog | 0 |
 | x | x | 0 |
 
 **TODO: CLINT ADD IN MORE**
@@ -126,8 +139,8 @@ TODO: CLINT ADD IN MOCKS
 | 1 | All Zones can have their height & width adjusted | 0 |
 | 2 | All Zones will have have a number that is clearly visible | 0 |
 | 3 | The zone number is alterable, when conflict happens, the conflict will become last #. | 0 |
-| 4 | Free form Zones can have their x/y top left coordinate adjusted | 0 |
 | 5 | Ability to save, cancel, rename layout | 0 |
+| 1 | User can add a zone on top of the existing master grid based layout (This would enable the hybrid canvas scenario) | 0 |
 | x | x | 0 |
 
 ### 4.1.3 Grid-based Zones
@@ -138,15 +151,16 @@ TODO: CLINT ADD IN MOCKS
 | 2 | Grid-based dividers, when focused, can be deleted with backspace or delete key | 0 |
 | 3 | Grid-based dividers can be deleted with via right click->Delete | 0 |
 | 4 | Grid-based zones can be merged together right click->merge | 0 |
+| 2 | Users can adjust Width / Height of Zone. If a zone shares a common border, the other zones will be automatically adjusted. | 0 |
 | x | x | 0 |
 
 ### 4.1.3 Canvas-based Zones
 
 | No. | Requirement | Priority |
 | --- | ----------- | -------- |
-| 1 | Zone can be added in via | 0 |
+| 1 | Zone can be added in via TODO FILL IN | 0 |
 | 2 | Users can adjust Top / Left of Zone | 0 |
-| 3 | This canvas zone can be divided | 0 |
+| 3 | This canvas zone will be a grid-zone itself | 0 |
 | 4 | The canvas itself can be deleted | 0 |
 | x | x | 0 |
 
@@ -167,7 +181,9 @@ TODO: CLINT ADD IN MOCKS
 |-----|---------|---------|----------|
 | 1 | TBD | TBD | TBD |
 
-# 5. Edge cases
+# 5. Mocks
+
+# 6. Edge cases
 
 There are areas in this where we need to be aware of edge cases.  Automatic resizing due to monitor size difference is one area where we will hit it.
 
@@ -180,8 +196,16 @@ There are areas in this where we need to be aware of edge cases.  Automatic resi
 - We cannot automatically assume same Ratio, below is my 4k monitor and my surface laptops, different resolutions and screen ratios
   - ![alt text][multimMonStyleLayout]
 
+# 7. Existing reference material
+
+1. How settings displays
+
+   ![alt text][monitorDialog]
+
+
 [canvasEditor]: images/specs/fzv2/canvasEditor.png "v1 Canvas Editor screenshot"
 [gridEditor]: images/specs/fzv2/gridEditor.png "v1 Grid Editor screenshot"
 [multimMonStyleLayout]: images/specs/fzv2/multiMonStyleLayout.png "One permutation for multi-monitors"
 [newLayoutDialog]: images/specs/fzv2/newLayoutDialog.png "v1 New layout dialog prompt"
+[monitorDialog]: images/specs/fzv2/windowsSettingDialog.png "Settings monitor layout"
 <!-- [x]: images/specs/fzv2/x.png "x" -->
