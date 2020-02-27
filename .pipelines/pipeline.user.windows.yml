@@ -62,6 +62,9 @@ build:
             - 'PowerToysSetup.msi'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
+  
+package:
+  commands:
     - !!buildcommand
       name: 'Build MSIX package'
       command: '.pipelines\msix\build_msix.cmd'
@@ -72,7 +75,7 @@ build:
             - '*.msix'
             - '*.msixbundle'
           signing_options:
-            sign_inline: true
+            sign_inline: true  # This does signing a soon as this command completes
 
 static_analysis_options:                             
   binskim_options:  
