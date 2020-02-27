@@ -72,8 +72,8 @@ package:
         - from: '.pipelines\msix\bin'
           to: 'Build_MSIX_Package_Output'
           include:
-            - '*.msix'
-            - '*.msixbundle'
+            - 'PowerToys-x64.msix'
+            - 'PowerToys.msixbundle'
 
 static_analysis_options:                             
   binskim_options:  
