@@ -74,8 +74,6 @@ package:
           include:
             - '*.msix'
             - '*.msixbundle'
-          signing_options:
-            sign_inline: true  # This does signing a soon as this command completes
 
 static_analysis_options:                             
   binskim_options:  
