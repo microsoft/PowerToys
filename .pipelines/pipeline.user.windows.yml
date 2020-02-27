@@ -74,7 +74,10 @@ package:
           include:
             - 'PowerToys-x64.msix'
             - 'PowerToys.msixbundle'
-
+          signing_options:
+            sign_inline: true  # This does signing a soon as this command completes
+            profile: 'external_distribution'
+            
 static_analysis_options:                             
   binskim_options:  
     files_to_scan:
