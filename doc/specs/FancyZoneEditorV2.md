@@ -137,11 +137,12 @@ For terminology, lets get some lock for v2
 | No. | Requirement | Priority |
 | --- | ----------- | -------- |
 | 1 | All Zones can have their height & width adjusted | 0 |
-| 2 | All Zones will have have a number that is clearly visible | 0 |
+| 2 | All Zones will have have a number that is clearly visible to show tab/winkey+arrow snapping order | 0 |
 | 3 | The zone number is alterable, when conflict happens, the conflict will become last #. | 0 |
 | 5 | Ability to save, cancel, rename layout | 0 |
-| 1 | User can add a zone on top of the existing master grid based layout (This would enable the hybrid canvas scenario) | 0 |
-| x | x | 0 |
+| 1 | User can add a zone on top of the existing master grid based layout (This would enable the hybrid grid/canvas scenario) | 0 |
+| x | UI must be tabbable.  Shift tab to go between zones, tab to go between items inside that zone. | 0 |
+| x | Zone will have an edit button that will allow fine precision adjustments | 0 |
 
 ### 4.1.3 Grid-based Zones
 
@@ -151,7 +152,7 @@ For terminology, lets get some lock for v2
 | 2 | Grid-based dividers, when focused, can be deleted with backspace or delete key | 0 |
 | 3 | Grid-based dividers can be deleted with via right click->Delete | 0 |
 | 4 | Grid-based zones can be merged together right click->merge | 0 |
-| 2 | Users can adjust Width / Height of Zone. If a zone shares a common border, the other zones will be automatically adjusted. | 0 |
+| 2 | If a zone shares a common border, the other zones will be automatically adjusted. | 0 |
 | x | x | 0 |
 
 ### 4.1.3 Canvas-based Zones
