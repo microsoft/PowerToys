@@ -52,6 +52,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StreamBasedPreviewHandlerTests.cs" />
     <Compile Include="StreamWrapperTests.cs" />
+    <Compile Include="WebBrowserExtUnitTests.cs">
+      <SubType>Component</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Moq">
