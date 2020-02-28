@@ -62,20 +62,20 @@ build:
             - 'PowerToysSetup.msi'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
-    - !!buildcommand
-      name: 'Archive symbols to Symbol Server'
-      artifacts:
-        - to: 'x64 Symbols'
-          include:
-            - 'x64/Release/action_runner.pdb'
-            - 'x64/Release/Notifications.pdb'
-            - 'x64/Release/PowerRenameUWPUI.pdb'
-            - 'x64/Release/PowerToys.pdb'
-            - 'x64/Release/PowerToysSettings.pdb'
-            - 'x64/Release/modules/fancyzones.pdb'
-            - 'x64/Release/modules/FancyZonesEditor.pdb'
-            - 'x64/Release/modules/PowerRenameExt.pdb'
-            - 'x64/Release/modules/shortcut_guide.pdb'
+#    - !!buildcommand
+#      name: 'Archive symbols to Symbol Server'
+#      artifacts:
+#        - to: 'x64 Symbols'
+#          include:
+#            - 'x64/Release/action_runner.pdb'
+#            - 'x64/Release/Notifications.pdb'
+#            - 'x64/Release/PowerRenameUWPUI.pdb'
+#            - 'x64/Release/PowerToys.pdb'
+#            - 'x64/Release/PowerToysSettings.pdb'
+#            - 'x64/Release/modules/fancyzones.pdb'
+#            - 'x64/Release/modules/FancyZonesEditor.pdb'
+#            - 'x64/Release/modules/PowerRenameExt.pdb'
+#            - 'x64/Release/modules/shortcut_guide.pdb'
 
 package:
   commands:
