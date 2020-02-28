@@ -49,7 +49,6 @@
   <ItemGroup>
     <Compile Include="SvgPreviewControlTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SvgPreviewHandlerHelperTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Moq">

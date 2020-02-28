@@ -68,7 +68,6 @@
     <Compile Include="SvgPreviewHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SvgTelemetry.cs" />
-    <Compile Include="Utilities\SvgPreviewHandlerHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\common\PreviewHandlerCommon.csproj">
