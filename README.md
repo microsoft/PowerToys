@@ -24,7 +24,7 @@ This is our preferred method.
 
 The experimental version of PowerToys using MSIX is available.  It can be installed from the [PowerToys GitHub releases page][github-release-link].
 
-Click on `Assets` to show the files available in the release and then click on `PowerToys-0.15.0-x64.msix` to download the PowerToys installer.
+Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-MSIX-0.15.0.zip` to download the PowerToys installer zip.  From there, please read the ReadMe and you can double click to install the MSIX file.
 
 ##### Known issues with MSIX Build
 
