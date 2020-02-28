@@ -6,9 +6,9 @@
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
   <Product Id="*"
-       Name="PowerToys"
+       Name="PowerToys (Preview)"
        Language="1033"
-       Version="0.14.2"
+       Version="0.15.0"
        Manufacturer="Microsoft"
        UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
 
@@ -192,22 +192,35 @@
 
   <Fragment>
     <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.BinX64Dir)">
+      <Component Id="powertoys_toast_clsid" Win64="yes">
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
+          <RegistryValue Type="string" Value="PowerToys Toast Notifications Background Activator" />
+          <RegistryValue Type="string" Key="LocalServer32" Value="[INSTALLFOLDER]PowerToys.exe -ToastActivated" />
+          <RegistryValue Type="string" Key="LocalServer32" Name="ThreadingModel" Value="Apartment" />
+        </RegistryKey>
+      </Component>
       <Component Id="powertoys_exe" Guid="A2C66D91-3485-4D00-B04D-91844E6B345B" Win64="yes">
         <File Id="PowerToys.exe" KeyPath="yes" Checksum="yes">
           <Shortcut Id="ApplicationStartMenuShortcut"
-                    Name="PowerToys"
+                    Name="PowerToys (Preview)"
                     Description="PowerToys - Windows system utilities to maximize productivity"
                     Directory="ApplicationProgramsFolder"
                     WorkingDirectory="INSTALLFOLDER"
                     Icon="powertoys.ico"
                     IconIndex="0"
-                    Advertise="yes" />
+                    Advertise="yes">
+            <ShortcutProperty Key="System.AppUserModel.ID" Value="Microsoft.PowerToysWin32"/>
+            <ShortcutProperty Key="System.AppUserModel.ToastActivatorCLSID" Value="{DD5CACDA-7C2E-4997-A62A-04A597B58F76}"/>
+          </Shortcut>
         </File>
 
         <RemoveFolder Id="DeleteShortcutFolder" Directory="ApplicationProgramsFolder" On="uninstall" />
       </Component>
       <Component Id="settings_exe" Guid="A5A461A9-7097-4CBA-9D39-3DBBB6B7B80C" Win64="yes">
         <File Id="PowerToysSettings.exe" KeyPath="yes" Checksum="yes" />
+      </Component>
+      <Component Id="notifications_dll" Guid="23B25EE4-BCA2-45DF-BBCD-82FBDF01C5AB" Win64="yes">
+        <File Id="Notifications.dll" KeyPath="yes" Checksum="yes" />
       </Component>
       <Component Id="License_rtf" Guid="3E5AE43B-CFB4-449B-A346-94CAAFF3312E" Win64="yes">
         <File Source="$(var.RepoDir)\License.rtf" Id="License.rtf" KeyPath="yes" />
@@ -242,6 +255,16 @@
         <File Source="$(var.BinX64Dir)\modules\ControlzEx.dll" />
         <File Source="$(var.BinX64Dir)\modules\MahApps.Metro.dll" />
         <File Source="$(var.BinX64Dir)\modules\Microsoft.Xaml.Behaviors.dll" />
+        <File Source="$(var.BinX64Dir)\modules\FancyZonesEditor.exe.config" />
+        <File Source="$(var.BinX64Dir)\modules\Microsoft.Bcl.AsyncInterfaces.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Buffers.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Memory.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Numerics.Vectors.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Runtime.CompilerServices.Unsafe.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Text.Encodings.Web.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Text.Json.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Threading.Tasks.Extensions.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.ValueTuple.dll" />
       </Component>
       <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
         <File Source="$(var.BinX64Dir)\modules\PowerRenameExt.dll" KeyPath="yes" />
@@ -279,7 +302,7 @@
                         Value="1"
                         KeyPath="yes"/>
         <Shortcut Id="DesktopShortcutId"
-                  Name="PowerToys"
+                  Name="PowerToys (Preview)"
                   Description="PowerToys - Windows system utilities to maximize productivity"
                   Target="[!PowerToys.exe]"
                   WorkingDirectory="INSTALLFOLDER"
@@ -292,6 +315,8 @@
   <Fragment>
     <ComponentGroup Id="CoreComponents" Directory="INSTALLFOLDER">
       <ComponentRef Id="powertoys_exe" />
+      <ComponentRef Id="notifications_dll" />
+      <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="PowerToysSvgs" />
       <ComponentRef Id="Module_ShortcutGuide" />

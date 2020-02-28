@@ -1,20 +1,15 @@
 # Specs
 
-This folder is where specs for PowerToys will be stored.
+All approved specs are inside the [Wiki](https://github.com/microsoft/PowerToys/wiki)
 
-## Planning
+## Spec process
 
-- [Terminate](Terminate%20Spec.md)
-- [GIF Maker](Gif-Maker.md)
+1. A proposed item is either new or requesting additional design 
+2. Spec is written inside the Specs folder and a PR happens with feedback.
+3. Once spec is signed off, we move it into the [Wiki](https://github.com/microsoft/PowerToys/wiki).
 
-## System knowledge
+## Thought process behind this
 
-- [PowerToys Settings](PowerToys-fancyzones.md)
-- [PowerToys shared hooks](Shared-hooks.md)
+We want a single wholistic for PowerToys. This includes both source code, docs, and specs. At the same time, we want to ensure items have pull requests and feedback.  Since the wiki cannot do PR's, we will do the process above.
 
-## Done
-
-- [FancyZones](PowerToys-fancyzones.md)
-- [PowerRename](PowerRename.md)
-- [Keyboard Manager](KeyboardManager.md)
-- Windows key shortcut guide
+This process will allow specs to be image rich but not impact the primary repository's size as more items come online.

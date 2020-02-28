@@ -4,7 +4,7 @@ Have you ever needed to modify the file names of a large number of files but did
 PowerRename is a Windows Shell Context Menu Extension for advanced bulk renaming using simple search and replace or more powerful regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. You can toggle specific items to include or exclude from the operation in the preview area.  Other checkbox options allow more control of scope of the rename operation.  PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits.  PowerRename was designed to cover the majority of bulk rename scenarios while still striving for simplicity for the average user.
 
 ## Demo
-In the below demonstration, I am replacing all of the instances of "Pampalona" with "Pamplona" from all the image file names in the folder. Since all the files are uniquely named, this would have taken a long time to complete manually one-by-one. With PowerRename this tasks seconds. Notice that I can undo the rename if I want to from the Windows Explorer context menu.
+In the below demonstration, I am replacing all of the instances of "Pampalona" with "Pamplona" from all the image file names in the folder. Since all the files are uniquely named, this would have taken a long time to complete manually one-by-one. With PowerRename this takes seconds. Notice that I can undo the rename if I want to from the Windows Explorer context menu.
 
 ![PowerRename Demo](/src/modules/powerrename/images/PowerRenameDemo.gif)
 

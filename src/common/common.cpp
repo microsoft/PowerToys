@@ -6,6 +6,14 @@
 #include <sddl.h>
 #include "version.h"
 
+#pragma comment(lib, "advapi32.lib")
+
+namespace localized_strings
+{
+  const wchar_t LAST_ERROR_FORMAT_STRING[] = L"%s failed with error %d: %s";
+  const wchar_t LAST_ERROR_TITLE_STRING[] = L"Error";
+}
+
 std::optional<RECT> get_button_pos(HWND hwnd) {
   RECT button;
   if (DwmGetWindowAttribute(hwnd, DWMWA_CAPTION_BUTTON_BOUNDS, &button, sizeof(RECT)) == S_OK) {
@@ -218,28 +226,31 @@ int run_message_loop() {
   return static_cast<int>(msg.wParam);
 }
 
+std::optional<std::wstring> get_last_error_message(const DWORD dw) {
+  std::optional<std::wstring> message;
+  try {
+    const auto msg = std::system_category().message(dw);
+    message.emplace(begin(msg), end(msg));
+  }
+  catch(...) {
+    
+  }
+  return message;
+}
+
 void show_last_error_message(LPCWSTR lpszFunction, DWORD dw) {
-  // Retrieve the system error message for the error code
-  LPWSTR lpMsgBuf = NULL;
-  if (FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                     FORMAT_MESSAGE_FROM_SYSTEM |
-                     FORMAT_MESSAGE_IGNORE_INSERTS,
-                     NULL,
-                     dw,
-                     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                     lpMsgBuf,
-                     0, NULL) > 0) {
-    // Display the error message and exit the process
-    LPWSTR lpDisplayBuf = (LPWSTR)LocalAlloc(LMEM_ZEROINIT, (lstrlenW(lpMsgBuf) + lstrlenW(lpszFunction) + 40) * sizeof(WCHAR));
-    if (lpDisplayBuf != NULL) {
-      StringCchPrintfW(lpDisplayBuf,
-        LocalSize(lpDisplayBuf) / sizeof(WCHAR),
-        L"%s failed with error %d: %s",
-        lpszFunction, dw, lpMsgBuf);
-      MessageBoxW(NULL, (LPCTSTR)lpDisplayBuf, L"Error", MB_OK);
-      LocalFree(lpDisplayBuf);
-    }
-    LocalFree(lpMsgBuf);
+  const auto system_message = get_last_error_message(dw);
+  if(!system_message.has_value()) {
+    return;
+  }
+  LPWSTR lpDisplayBuf = (LPWSTR)LocalAlloc(LMEM_ZEROINIT, (system_message->size() + lstrlenW(lpszFunction) + 40) * sizeof(WCHAR));
+  if (lpDisplayBuf != NULL) {
+    StringCchPrintfW(lpDisplayBuf,
+      LocalSize(lpDisplayBuf) / sizeof(WCHAR),
+      localized_strings::LAST_ERROR_FORMAT_STRING,
+      lpszFunction, dw, system_message->c_str());
+    MessageBoxW(NULL, (LPCTSTR)lpDisplayBuf, localized_strings::LAST_ERROR_TITLE_STRING, MB_OK);
+    LocalFree(lpDisplayBuf);
   }
 }
 
@@ -480,10 +491,9 @@ std::wstring get_process_path(HWND window) noexcept {
 }
 
 std::wstring get_product_version() {
-  static std::wstring version = std::to_wstring(VERSION_MAJOR) +
+  static std::wstring version = L"v" + std::to_wstring(VERSION_MAJOR) +
     L"." + std::to_wstring(VERSION_MINOR) +
-    L"." + std::to_wstring(VERSION_REVISION) +
-    L"." + std::to_wstring(VERSION_BUILD);
+    L"." + std::to_wstring(VERSION_REVISION);
 
   return version;
 }
@@ -529,4 +539,73 @@ std::wstring get_module_folderpath(HMODULE mod)
 
     PathRemoveFileSpecW(buffer);
     return { buffer, (UINT)lstrlenW(buffer) };
+}
+
+
+// The function returns true in case of error since we want to return false
+// only in case of a positive verification that the user is not an admin.
+bool check_user_is_admin()
+{
+    auto freeMemory = [](PSID pSID, PTOKEN_GROUPS pGroupInfo) {
+        if (pSID)
+        {
+            FreeSid(pSID);
+        }
+        if (pGroupInfo)
+        {
+            GlobalFree(pGroupInfo);
+        }
+    };
+
+    HANDLE hToken;
+    DWORD dwSize = 0, dwResult = 0;
+    PTOKEN_GROUPS pGroupInfo;
+    SID_IDENTIFIER_AUTHORITY SIDAuth = SECURITY_NT_AUTHORITY;
+    PSID pSID = NULL;
+
+    // Open a handle to the access token for the calling process.
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+    {
+        return true;
+    }
+
+    // Call GetTokenInformation to get the buffer size.
+    if (!GetTokenInformation(hToken, TokenGroups, NULL, dwSize, &dwSize))
+    {
+        dwResult = GetLastError();
+        if (dwResult != ERROR_INSUFFICIENT_BUFFER)
+        {
+            return true;
+        }
+    }
+
+    // Allocate the buffer.
+    pGroupInfo = (PTOKEN_GROUPS)GlobalAlloc(GPTR, dwSize);
+
+    // Call GetTokenInformation again to get the group information.
+    if (!GetTokenInformation(hToken, TokenGroups, pGroupInfo, dwSize, &dwSize))
+    {
+        freeMemory(pSID, pGroupInfo);
+        return true;
+    }
+
+    // Create a SID for the BUILTIN\Administrators group.
+    if (!AllocateAndInitializeSid(&SIDAuth, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &pSID))
+    {
+        freeMemory(pSID, pGroupInfo);
+        return true;
+    }
+
+    // Loop through the group SIDs looking for the administrator SID.
+    for (DWORD i = 0; i < pGroupInfo->GroupCount; ++i)
+    {
+        if (EqualSid(pSID, pGroupInfo->Groups[i].Sid))
+        {
+            freeMemory(pSID, pGroupInfo);
+            return true;
+        }
+    }
+
+    freeMemory(pSID, pGroupInfo);
+    return false;
 }

@@ -39,6 +39,7 @@ RECT keep_rect_inside_rect(const RECT& small_rect, const RECT& big_rect);
 // Initializes and runs windows message loop
 int run_message_loop();
 
+std::optional<std::wstring> get_last_error_message(const DWORD dw);
 void show_last_error_message(LPCWSTR lpszFunction, DWORD dw);
 
 enum WindowState {
@@ -69,6 +70,9 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params);
 
 // Run command with the same elevation, returns true if succedded
 bool run_same_elevation(const std::wstring& file, const std::wstring& params);
+
+// Returns true if the current process is running from administrator account
+bool check_user_is_admin();
 
 // Get the executable path or module name for modern apps
 std::wstring get_process_path(DWORD pid) noexcept;
@@ -115,3 +119,11 @@ struct on_scope_exit
         _f();
     }
 };
+
+template<class... Ts>
+struct overloaded : Ts...
+{
+    using Ts::operator()...;
+};
+template<class... Ts>
+overloaded(Ts...)->overloaded<Ts...>;
