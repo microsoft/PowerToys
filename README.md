@@ -74,7 +74,7 @@ We currently support the matrix below.  Adding MSIX support will make supporting
 
 ### Version 1.0 plan
 
-Our plan for all the [goals and utilities for v1.0 detailed over here in the wiki][v1]].
+Our plan for all the [goals and utilities for v1.0 detailed over here in the wiki][v1].
 
 ## What's Happening
 
