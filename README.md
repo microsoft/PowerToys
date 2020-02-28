@@ -26,6 +26,10 @@ The experimental version of PowerToys using MSIX is available.  It can be instal
 
 Click on `Assets` to show the files available in the release and then click on `PowerToys-x64.msix` to download the PowerToys installer.
 
+##### Known issues with MSIX Build
+
+- For PowerRename, you may need to restart your machine to get this to work for the first time.
+
 #### Via Chocolatey - ⚠ Unofficial ⚠
 
 Download and upgrade PowerToys from [Chocolatey](https://chocolatey.org). If you have any issues when installing/upgrading the package please go to the [package page](https://chocolatey.org/packages/powertoys) and follow the [Chocolatey triage process](https://chocolatey.org/docs/package-triage-process)
@@ -70,7 +74,7 @@ We currently support the matrix below.  Adding MSIX support will make supporting
 
 ### Version 1.0 plan
 
-Our plan for all the [goals and utilities for v1.0 detailed over here in the wiki](/wiki/Version-1.0-Strategy).
+Our plan for all the [goals and utilities for v1.0 detailed over here in the wiki][v1]].
 
 ## What's Happening
 
@@ -89,7 +93,7 @@ Below are just a few of the bullet items from this release.
 - Improved for how we store data locally
 - Increased FancyZones compatibility with applications
 - Initial work for 4 new PowerToys added for 0.16!
-- Created the [v1.0 strategy](https://github.com/microsoft/PowerToys/wiki/Version-1.0-Strategy), the [launcher](https://github.com/microsoft/PowerToys/wiki/Launcher), the [keyboard manager](https://github.com/microsoft/PowerToys/wiki/Keyboard-Manager) specs
+- Created the [v1.0 strategy][v1], the [launcher](https://github.com/microsoft/PowerToys/wiki/Launcher), the [keyboard manager](https://github.com/microsoft/PowerToys/wiki/Keyboard-Manager) specs
 - Work on cleaning up our issue backlog and labels
 
 For 0.16, we have some fun things planned and hopefully will be able to ship pretty quickly. Here are the new utilities we'll enable:
@@ -101,7 +105,7 @@ For 0.16, we have some fun things planned and hopefully will be able to ship pre
 
 ## Developer Guidance
 
-Please read the [developer docs](/docs/devdocs/) for a detailed breakdown.
+Please read the [developer docs](/docs/devdocs) for a detailed breakdown.
 
 ## Contributing
 
@@ -123,9 +127,11 @@ This project has adopted the [Microsoft Open Source Code of Conduct][conduct-cod
 
 ## Privacy Statement
 
-The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has the trends from the telemetry. Please read the [Microsoft privacy statement](http://go.microsoft.com/fwlink/?LinkId=521839) for more information.
+The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has the trends from the telemetry. Please read the [Microsoft privacy statement][privacyLink] for more information.
 
 [conduct-code]: https://opensource.microsoft.com/codeofconduct/
 [conduct-FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
 [conduct-email]: mailto:opencode@microsoft.com
 [github-release-link]: https://github.com/microsoft/PowerToys/releases/
+[v1]: https://github.com/microsoft/PowerToys/wiki/Version-1.0-Strategy
+[privacyLink]: http://go.microsoft.com/fwlink/?LinkId=521839
