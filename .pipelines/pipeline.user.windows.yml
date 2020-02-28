@@ -72,8 +72,10 @@ package:
         - from: 'installer\msix\bin'
           to: 'Build_MSIX_Package_Output'
           include:
-            - 'PowerToys-x64.msix'
-            - 'PowerToys.msixbundle'
+            - '*.msix'
+            - '*.msixbundle'
+          signing_options:
+            profile: '400'
 
 static_analysis_options:                             
   binskim_options:  
