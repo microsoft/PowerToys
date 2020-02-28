@@ -119,19 +119,20 @@ PowerToys is still a very fluidic project and the team is actively working out o
 
 ### License Info
 
- Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit <https://cla.opensource.microsoft.com.>
+ Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit
 
 ## Code of Conduct
 
-This project has adopted the [Microsoft Open Source Code of Conduct][conduct-code]. For more information see the [Code of Conduct FAQ][conduct-FAQ] or contact [opencode@microsoft.com][conduct-email] with any additional questions or comments.
+This project has adopted the [Microsoft Open Source Code of Conduct][oss-conduct-code]. For more information see the [Code of Conduct FAQ][oss-conduct-FAQ] or contact [opencode@microsoft.com][oss-conduct-email] with any additional questions or comments.
 
 ## Privacy Statement
 
 The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has the trends from the telemetry. Please read the [Microsoft privacy statement][privacyLink] for more information.
 
-[conduct-code]: https://opensource.microsoft.com/codeofconduct/
-[conduct-FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
-[conduct-email]: mailto:opencode@microsoft.com
+[oss-CLA]: https://cla.opensource.microsoft.com
+[oss-conduct-code]: https://opensource.microsoft.com/codeofconduct/
+[oss-conduct-FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
+[oss-conduct-email]: mailto:opencode@microsoft.com
 [github-release-link]: https://github.com/microsoft/PowerToys/releases/
 [v1]: https://github.com/microsoft/PowerToys/wiki/Version-1.0-Strategy
 [privacyLink]: http://go.microsoft.com/fwlink/?LinkId=521839
