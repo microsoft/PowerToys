@@ -30,19 +30,6 @@ struct ZoneSetPersistedData
     RECT Zones[MAX_ZONES]{};
 };
 
-struct ZoneSetPersistedDataOLD
-{
-    static constexpr inline size_t MAX_ZONES = 40;
-    DWORD Version{ VERSION_PERSISTEDDATA };
-    WORD LayoutId{};
-    DWORD ZoneCount{};
-    JSONHelpers::ZoneSetLayoutType Layout{};
-    DWORD PaddingInner{};
-    DWORD PaddingOuter{};
-    RECT Zones[MAX_ZONES]{};
-};
-
-
 struct ZoneSetConfig
 {
     ZoneSetConfig(
