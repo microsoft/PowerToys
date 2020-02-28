@@ -105,8 +105,8 @@ namespace SvgPreviewHandler
         private void AddBrowserControl(string svgData)
         {
             this.browser = new WebBrowserExt();
-            this.browser.Dock = DockStyle.Fill;
             this.browser.DocumentText = svgData;
+            this.browser.Dock = DockStyle.Fill;
             this.browser.IsWebBrowserContextMenuEnabled = false;
             this.browser.ScriptErrorsSuppressed = true;
             this.browser.ScrollBarsEnabled = true;

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Reflection;
 using System.Windows.Forms;
 
@@ -47,12 +48,23 @@ namespace PreviewHandlerCommon
             }
 
             /// <inheritdoc/>
-            public object InvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, System.Globalization.CultureInfo culture, string[] namedParameters)
+            public object InvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
             {
                 object result;
                 if (name.Equals(DISPIDAMBIENTDLCONTROL))
                 {
-                    result = Convert.ToInt32(WebBrowserDownloadControlFlags.PRAGMA_NO_CACHE | WebBrowserDownloadControlFlags.FORCEOFFLINE | WebBrowserDownloadControlFlags.NO_CLIENTPULL | WebBrowserDownloadControlFlags.NO_SCRIPTS | WebBrowserDownloadControlFlags.NO_JAVA | WebBrowserDownloadControlFlags.NO_FRAMEDOWNLOAD | WebBrowserDownloadControlFlags.NOFRAMES | WebBrowserDownloadControlFlags.NO_DLACTIVEXCTLS | WebBrowserDownloadControlFlags.NO_RUNACTIVEXCTLS | WebBrowserDownloadControlFlags.NO_BEHAVIORS | WebBrowserDownloadControlFlags.SILENT);
+                    result = Convert.ToInt32(
+                        WebBrowserDownloadControlFlags.PRAGMA_NO_CACHE |
+                        WebBrowserDownloadControlFlags.FORCEOFFLINE |
+                        WebBrowserDownloadControlFlags.NO_CLIENTPULL |
+                        WebBrowserDownloadControlFlags.NO_SCRIPTS |
+                        WebBrowserDownloadControlFlags.NO_JAVA |
+                        WebBrowserDownloadControlFlags.NO_FRAMEDOWNLOAD |
+                        WebBrowserDownloadControlFlags.NOFRAMES |
+                        WebBrowserDownloadControlFlags.NO_DLACTIVEXCTLS |
+                        WebBrowserDownloadControlFlags.NO_RUNACTIVEXCTLS |
+                        WebBrowserDownloadControlFlags.NO_BEHAVIORS |
+                        WebBrowserDownloadControlFlags.SILENT);
                 }
                 else
                 {

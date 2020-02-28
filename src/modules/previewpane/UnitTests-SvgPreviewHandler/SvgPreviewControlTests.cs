@@ -95,31 +95,7 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void SvgPreviewControl_RichTextBoxWidthShouldAdjust_IfParentControlWidthChanges()
-        {
-            // Arrange
-            var svgPreviewControl = new SvgPreviewControl();
-            var mockStream = new Mock<IStream>();
-            mockStream
-                .Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
-                .Throws(new Exception());
-            svgPreviewControl.DoPreview(mockStream.Object);
-            var textBox = svgPreviewControl.Controls[0] as RichTextBox;
-            var incrementParentControlWidth = 5;
-            var intialParentWidth = svgPreviewControl.Width;
-            var intitialTextBoxWidth = textBox.Width;
-            var finalParentWidth = intialParentWidth + incrementParentControlWidth;
-
-            // Act
-            svgPreviewControl.Width += incrementParentControlWidth;
-
-            // Assert
-            Assert.AreEqual(intialParentWidth, intitialTextBoxWidth);
-            Assert.AreEqual(finalParentWidth, textBox.Width);
-        }
-
-        [TestMethod]
-        public void SvgPreviewControl_ShouldAddValidTextBox_IfSvgPreviewThrows()
+        public void SvgPreviewControl_ShouldAddValidInfoBar_IfSvgPreviewThrows()
         {
             // Arrange
             var svgPreviewControl = new SvgPreviewControl();
@@ -141,6 +117,31 @@ namespace UnitTests_SvgPreviewHandler
             Assert.IsTrue(textBox.ReadOnly);
             Assert.AreEqual(textBox.ScrollBars, RichTextBoxScrollBars.None);
             Assert.AreEqual(textBox.BorderStyle, BorderStyle.None);
+        }
+
+
+        [TestMethod]
+        public void SvgPreviewControl_InfoBarWidthShouldAdjustWithParentControlWidthChanges_IfSvgPreviewThrows()
+        {
+            // Arrange
+            var svgPreviewControl = new SvgPreviewControl();
+            var mockStream = new Mock<IStream>();
+            mockStream
+                .Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
+                .Throws(new Exception());
+            svgPreviewControl.DoPreview(mockStream.Object);
+            var textBox = svgPreviewControl.Controls[0] as RichTextBox;
+            var incrementParentControlWidth = 5;
+            var intialParentWidth = svgPreviewControl.Width;
+            var intitialTextBoxWidth = textBox.Width;
+            var finalParentWidth = intialParentWidth + incrementParentControlWidth;
+
+            // Act
+            svgPreviewControl.Width += incrementParentControlWidth;
+
+            // Assert
+            Assert.AreEqual(intialParentWidth, intitialTextBoxWidth);
+            Assert.AreEqual(finalParentWidth, textBox.Width);
         }
 
         private IStream GetMockStream(string streamData) 

@@ -37,7 +37,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void InvokeMember_ShouldNotSetNotValidFlags_WhenCalledWithValidDispId()
+        public void InvokeMember_ShouldOnlySetValidFlags_WhenCalledWithValidDispId()
         {
             // Arrange
             var extendedSite = CreateWebBrowserSiteBase() as WebBrowserSiteExt;
