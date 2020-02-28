@@ -12,7 +12,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 > 👉 Note: Microsoft PowerToys requires Windows 10 1803 (build 17134) or later
 
-### Via Github with MSI [RECOMMENDED]
+### Via Github with MSI [Recommended]
 
 Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup.msi` to download the PowerToys installer.
 
@@ -20,15 +20,13 @@ This is our preferred method.
 
 ### Other install methods
 
-#### Via GitHub with MSIX [EXPERIMENTAL]
-
-TODO: VERIFY INSTALL SCRIPT  
+#### Via GitHub with MSIX - ⚠ Experimental ⚠
 
 The experimental version of PowerToys using MSIX is available.  It can be installed from the [PowerToys GitHub releases page][github-release-link].
 
-Click on `Assets` to show the files available in the release and then click on `PowerToysSetup.msix` to download the PowerToys installer.
+Click on `Assets` to show the files available in the release and then click on `PowerToys-x64.msix` to download the PowerToys installer.
 
-#### Via Chocolatey [Unofficial]
+#### Via Chocolatey - ⚠ Unofficial ⚠
 
 Download and upgrade PowerToys from [Chocolatey](https://chocolatey.org). If you have any issues when installing/upgrading the package please go to the [package page](https://chocolatey.org/packages/powertoys) and follow the [Chocolatey triage process](https://chocolatey.org/docs/package-triage-process)
 
@@ -46,11 +44,7 @@ choco upgrade powertoys
 
 ### Microsoft Store
 
-On backlog, [Issue #413](https://github.com/microsoft/PowerToys/issues/413) 
-
-#### PDB Files
-
-PDB symbols for the release are available in a separate zip file `PDB symbols.zip` on the [releases page][github-release-link] for each build.
+On backlog, [Issue #413](https://github.com/microsoft/PowerToys/issues/413)
 
 ### Processor support
 
@@ -64,15 +58,15 @@ We currently support the matrix below.  Adding MSIX support will make supporting
 
 ### FancyZones
 
-[FancyZones](/src/modules/fancyzones/) - FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.  The FancyZones backlog can be found [here](https://github.com/Microsoft/PowerToys/tree/master/doc/planning/FancyZonesBacklog.md)
+[FancyZones](/src/modules/fancyzones/) - FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.
 
 ### Shortcut
 
-[Windows key shortcut guide](/src/modules/shortcut_guide) - The shortcut guide appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.  The shortcut guide backlog can be found [here](https://github.com/Microsoft/PowerToys/tree/master/doc/planning/ShortcutGuideBacklog.md)
+[Windows key shortcut guide](/src/modules/shortcut_guide) - The shortcut guide appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.
 
 ### PowerRename
 
-[PowerRename](/src/modules/powerrename) - PowerRename is a Windows Shell Extension for advanced bulk renaming using search and replace or regular expressions. PowerRename allows simple search and replace or more advanced regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits.  
+[PowerRename](/src/modules/powerrename) - PowerRename is a Windows Shell Extension for advanced bulk renaming using search and replace or regular expressions. PowerRename allows simple search and replace or more advanced regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits.
 
 ### Version 1.0 plan
 
@@ -82,21 +76,21 @@ Our plan for all the [goals and utilities for v1.0 detailed over here in the wik
 
 ### February 2020 Update
 
-Our mantra for the 0.15 was infrastructure, stability and work toward getting a way to auto-update PowerToys.  While it took a bit longer to get here, we feel it was worth the extra time to fix bugs that really impacted your experience with PowerToys.
+Our mantra for the 0.15 was infrastructure, quality, stability and work toward getting a way to auto-update PowerToys.  While it took a bit longer to get here, we feel it was worth the extra time to fix bugs that really impacted your experience with PowerToys.
 
 Below are just a few of the bullet items from this release.
 
 - We shipped [v0.15][github-release-link]!
 - Make you aware there is a new version from within PowerToys
-- Removed requirement to 'run as admin'
+- Removed requirement to always 'run as admin'
 - Added almost 300 unit tests to increase stability and prevent regressions.
-- Resolved 90+ issues
+- Resolved almost 100 issues
 - Made .NET Framework parts of the source run faster with NGEN
-- Adjustments for how we store data locally
+- Improved for how we store data locally
 - Increased FancyZones compatibility with applications
 - Initial work for 4 new PowerToys added for 0.16!
 - Created the [v1.0 strategy](https://github.com/microsoft/PowerToys/wiki/Version-1.0-Strategy), the [launcher](https://github.com/microsoft/PowerToys/wiki/Launcher), the [keyboard manager](https://github.com/microsoft/PowerToys/wiki/Keyboard-Manager) specs
-- Work on cleaning up our issue backlog and labels.
+- Work on cleaning up our issue backlog and labels
 
 For 0.16, we have some fun things planned and hopefully will be able to ship pretty quickly. Here are the new utilities we'll enable:
 
@@ -115,9 +109,13 @@ This project welcomes contributions of all times. Help spec'ing, design, documen
 
 We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](contributing.md). We will be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
 
-> ⚠ **Note**: PowerToys is still a nascent project and the team is actively working out of this repository.  We will be periodically re-structuring the code to make it easier to comprehend, navigate, build, test, and contribute to, so **DO expect significant changes to code layout on a regular basis**.
+### ⚠ State of code ⚠
 
-> ⚠ **License Info**: Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit <https://cla.opensource.microsoft.com.>
+PowerToys is still a very fluidic project and the team is actively working out of this repository.  We will be periodically re-structuring/refactoring the code to make it easier to comprehend, navigate, build, test, and contribute to, so **DO expect significant changes to code layout on a regular basis**.
+
+### License Info
+
+ Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit <https://cla.opensource.microsoft.com.>
 
 ## Code of Conduct
 
