@@ -56,7 +56,7 @@ We currently support the matrix below.  Adding MSIX support will make supporting
 
 | x64 | x86 | ARM |
 |:---:|:---:|:---:|
-| [Install][github-release-link] | [Issue #602](/issues/602)  | [Issue #490](/issues/490)|
+| [Install][github-release-link] | [Issue #602](https://github.com/microsoft/PowerToys/issues/602)  | [Issue #490](https://github.com/microsoft/PowerToys/issues/490)|
 
 ## Current PowerToy Utilities
 
@@ -105,7 +105,7 @@ For 0.16, we have some fun things planned and hopefully will be able to ship pre
 
 ## Developer Guidance
 
-Please read the [developer docs](/docs/devdocs) for a detailed breakdown.
+Please read the [developer docs](/doc/devdocs) for a detailed breakdown.
 
 ## Contributing
 
@@ -119,7 +119,7 @@ PowerToys is still a very fluidic project and the team is actively working out o
 
 ### License Info
 
- Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit
+ Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you have the right to, and actually do, grant us the rights to use your contribution.
 
 ## Code of Conduct
 
