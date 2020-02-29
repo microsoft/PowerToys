@@ -98,7 +98,7 @@ Below are just a few of the bullet items from this release.
 
 For 0.16, we have some fun things planned and hopefully will be able to ship pretty quickly. Here are the new utilities we'll enable:
 
-- A alternative to Alt-Tab PowerToy
+- An alternative to Alt-Tab PowerToy
 - SVG preview pane for support Explorer
 - Markdown preview pane support for Explorer
 - Image Resizer PowerToy
