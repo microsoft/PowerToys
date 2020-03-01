@@ -19,11 +19,22 @@ Features
 - Search for everything—applications, **uwp**, folders, files and more.
 - Use *pinyin* to search for programs / 支持用 **拼音** 搜索程序
   - wyy / wangyiyun → 网易云音乐
-- Keyword plugin search 
-  - search google with `g search_term`
+- Keyword plugin search `g search_term`
+- Search youtube, google, twitter and many more
 - Build custom themes at http://www.wox.one/theme/builder
 - Install plugins from http://www.wox.one/plugin
 
+**New from this fork:**
+- Portable mode
+- Drastically improved search experience
+- Search all subfolders and files
+- Option to always run CMD or Powershell as administrator
+- Run CMD, Powershell and programs as a different user
+- Manage what programs should be loaded
+- Highlighting of how results are matched during query search
+- Open web search result as a tab or a new window
+- Automatic update
+- Reload/update plugin data
 
 Installation
 ------------
@@ -42,8 +53,8 @@ Versions marked as **pre-release** are unstable pre-release versions.
 
 - Requirements:
   - .net >= 4.5.2
-  - [everything](https://www.voidtools.com/): `.exe` installer + use x64 if your windows is x64 + everything service is running
-  - [python3](https://www.python.org/downloads/): `.exe` installer + add it to `%PATH%` or set it in WoX settings
+  - If you want to integrate with [everything](https://www.voidtools.com/): `.exe` installer + use x64 if your windows is x64 + everything service is running. Supported version is 1.3.4.686
+  - If you use python plugins, install [python3](https://www.python.org/downloads/): `.exe` installer + add it to `%PATH%` or set it in WoX settings
 
 Usage
 -----

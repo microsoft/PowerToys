@@ -11,7 +11,7 @@ namespace Wox.Infrastructure.Logger
     {
         public const string DirectoryName = "Logs";
 
-        public static string CurrentLogDirectory { get; private set; }
+        public static string CurrentLogDirectory { get; }
 
         static Log()
         {
@@ -54,22 +54,31 @@ namespace Wox.Infrastructure.Logger
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static void Exception(string className, string message, System.Exception exception, [CallerMemberName] string methodName = "")
         {
+            var classNameWithMethod = CheckClassAndMessageAndReturnFullClassWithMethod(className, message, methodName);
+
+            ExceptionInternal(classNameWithMethod, message, exception);
+        }
+
+        private static string CheckClassAndMessageAndReturnFullClassWithMethod(string className, string message,
+            string methodName)
+        {
             if (string.IsNullOrWhiteSpace(className))
             {
                 LogFaultyFormat($"Fail to specify a class name during logging of message: {message ?? "no message entered"}");
             }
 
             if (string.IsNullOrWhiteSpace(message))
-            { // todo: not sure we really need that
+            {
+                // todo: not sure we really need that
                 LogFaultyFormat($"Fail to specify a message during logging");
             }
 
             if (!string.IsNullOrWhiteSpace(methodName))
             {
-                className += "." + methodName;
+                return className + "." + methodName;
             }
 
-            ExceptionInternal(className, message, exception);
+            return className;
         }
 
         private static void ExceptionInternal(string classAndMethod, string message, System.Exception e)
@@ -140,16 +149,46 @@ namespace Wox.Infrastructure.Logger
             LogInternal(message, LogLevel.Error);
         }
 
+        public static void Error(string className, string message, [CallerMemberName] string methodName = "")
+        {
+            LogInternal(LogLevel.Error, className, message, methodName);
+        }
+
+        private static void LogInternal(LogLevel level, string className, string message, [CallerMemberName] string methodName = "")
+        {
+            var classNameWithMethod = CheckClassAndMessageAndReturnFullClassWithMethod(className, message, methodName);
+
+            var logger = LogManager.GetLogger(classNameWithMethod);
+
+            System.Diagnostics.Debug.WriteLine($"{level.Name}|{message}");
+            logger.Log(level, message);
+        }
+
+        public static void Debug(string className, string message, [CallerMemberName] string methodName = "")
+        {
+            LogInternal(LogLevel.Debug, className, message, methodName);
+        }
+
         /// <param name="message">example: "|prefix|unprefixed" </param>
         public static void Debug(string message)
         {
             LogInternal(message, LogLevel.Debug);
         }
 
+        public static void Info(string className, string message, [CallerMemberName] string methodName = "")
+        {
+            LogInternal(LogLevel.Info, className, message, methodName);
+        }
+
         /// <param name="message">example: "|prefix|unprefixed" </param>
         public static void Info(string message)
         {
             LogInternal(message, LogLevel.Info);
+        }
+
+        public static void Warn(string className, string message, [CallerMemberName] string methodName = "")
+        {
+            LogInternal(LogLevel.Warn, className, message, methodName);
         }
 
         /// <param name="message">example: "|prefix|unprefixed" </param>

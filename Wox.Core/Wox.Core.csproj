@@ -53,6 +53,7 @@
     </Compile>
     <Compile Include="Plugin\ExecutablePlugin.cs" />
     <Compile Include="Plugin\PluginsLoader.cs" />
+    <Compile Include="Plugin\QueryBuilder.cs" />
     <Compile Include="Updater.cs" />
     <Compile Include="Resource\AvailableLanguages.cs" />
     <Compile Include="Resource\Internationalization.cs" />

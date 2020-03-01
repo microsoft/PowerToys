@@ -71,12 +71,17 @@ namespace Wox.Plugin
         void ReloadAllPluginData();
 
         /// <summary>
+        /// Check for new Wox update
+        /// </summary>
+        void CheckForNewUpdate();
+
+        /// <summary>
         /// Show message box
         /// </summary>
         /// <param name="title">Message title</param>
         /// <param name="subTitle">Message subtitle</param>
         /// <param name="iconPath">Message icon path (relative path to your plugin folder)</param>
-        void ShowMsg(string title, string subTitle = "", string iconPath = "");
+        void ShowMsg(string title, string subTitle = "", string iconPath = "", bool useMainWindowAsOwner = true);
 
         /// <summary>
         /// Open setting dialog

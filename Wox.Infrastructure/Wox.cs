@@ -7,12 +7,22 @@ namespace Wox.Infrastructure
 {
     public static class Constant
     {
+        public const string Wox = "Wox";
+        public const string Plugins = "Plugins";
+
+        private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
+        public static readonly string ProgramDirectory = Directory.GetParent(Assembly.Location.NonNull()).ToString();
+        public static readonly string ExecutablePath = Path.Combine(ProgramDirectory, Wox + ".exe");
+
+        public static bool IsPortableMode;
+        public const string PortableFolderName = "UserData";
+        public static string PortableDataPath = Path.Combine(ProgramDirectory, PortableFolderName);
         public static string DetermineDataDirectory()
         {
-            string portableDataPath = Path.Combine(ProgramDirectory, "UserData");
-            if (Directory.Exists(portableDataPath))
+            if (Directory.Exists(PortableDataPath))
             {
-                return portableDataPath;
+                IsPortableMode = true;
+                return PortableDataPath;
             }
             else
             {
@@ -20,12 +30,6 @@ namespace Wox.Infrastructure
             }
         }
 
-        public const string Wox = "Wox";
-        public const string Plugins = "Plugins";
-
-        private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
-        public static readonly string ProgramDirectory = Directory.GetParent(Assembly.Location.NonNull()).ToString();
-        public static readonly string ExecutablePath = Path.Combine(ProgramDirectory, Wox + ".exe");
         public static readonly string DataDirectory = DetermineDataDirectory();
         public static readonly string PluginsDirectory = Path.Combine(DataDirectory, Plugins);
         public static readonly string PreinstalledDirectory = Path.Combine(ProgramDirectory, Plugins);

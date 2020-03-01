@@ -45,7 +45,7 @@
     </Compile>
     <Compile Include="FuzzyMatcherTest.cs" />
     <Compile Include="Plugins\PluginInitTest.cs" />
-    <Compile Include="QueryTest.cs" />
+    <Compile Include="QueryBuilderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UrlPluginTest.cs" />
   </ItemGroup>

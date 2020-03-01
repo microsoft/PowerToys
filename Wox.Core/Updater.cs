@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -10,9 +10,11 @@ using JetBrains.Annotations;
 using Squirrel;
 using Newtonsoft.Json;
 using Wox.Core.Resource;
+using Wox.Plugin.SharedCommands;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Logger;
+using System.IO;
 
 namespace Wox.Core
 {
@@ -25,14 +27,14 @@ namespace Wox.Core
             GitHubRepository = gitHubRepository;
         }
 
-        public async Task UpdateApp()
+        public async Task UpdateApp(bool silentIfLatestVersion = true)
         {
-            UpdateManager m;
-            UpdateInfo u;
+            UpdateManager updateManager;
+            UpdateInfo newUpdateInfo;
 
             try
             {
-                m = await GitHubUpdateManager(GitHubRepository);
+                updateManager = await GitHubUpdateManager(GitHubRepository);
             }
             catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
             {
@@ -43,42 +45,61 @@ namespace Wox.Core
             try
             {
                 // UpdateApp CheckForUpdate will return value only if the app is squirrel installed
-                u = await m.CheckForUpdate().NonNull();
+                newUpdateInfo = await updateManager.CheckForUpdate().NonNull();
             }
             catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
             {
                 Log.Exception($"|Updater.UpdateApp|Check your connection and proxy settings to api.github.com.", e);
-                m.Dispose();
+                updateManager.Dispose();
                 return;
             }
 
-            var fr = u.FutureReleaseEntry;
-            var cr = u.CurrentlyInstalledVersion;
-            Log.Info($"|Updater.UpdateApp|Future Release <{fr.Formatted()}>");
-            if (fr.Version > cr.Version)
+            var newReleaseVersion = Version.Parse(newUpdateInfo.FutureReleaseEntry.Version.ToString());
+            var currentVersion = Version.Parse(Constant.Version);
+
+            Log.Info($"|Updater.UpdateApp|Future Release <{newUpdateInfo.FutureReleaseEntry.Formatted()}>");
+
+            if (newReleaseVersion <= currentVersion)
             {
-                try
-                {
-                    await m.DownloadReleases(u.ReleasesToApply);
-                }
-                catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
-                {
-                    Log.Exception($"|Updater.UpdateApp|Check your connection and proxy settings to github-cloud.s3.amazonaws.com.", e);
-                    m.Dispose();
-                    return;
-                }
-
-                await m.ApplyReleases(u);
-                await m.CreateUninstallerRegistryEntry();
-
-                var newVersionTips = this.NewVersinoTips(fr.Version.ToString());
-                
-                MessageBox.Show(newVersionTips);
-                Log.Info($"|Updater.UpdateApp|Update success:{newVersionTips}");
+                if (!silentIfLatestVersion)
+                    MessageBox.Show("You already have the latest Wox version");
+                updateManager.Dispose();
+                return;
             }
             
+            try
+            {
+                await updateManager.DownloadReleases(newUpdateInfo.ReleasesToApply);
+            }
+            catch (Exception e) when (e is HttpRequestException || e is WebException || e is SocketException)
+            {
+                Log.Exception($"|Updater.UpdateApp|Check your connection and proxy settings to github-cloud.s3.amazonaws.com.", e);
+                updateManager.Dispose();
+                return;
+            }
+            
+            await updateManager.ApplyReleases(newUpdateInfo);
+
+            if (Constant.IsPortableMode)
+            {
+                var targetDestination = updateManager.RootAppDirectory + $"\\app-{newReleaseVersion.ToString()}\\{Constant.PortableFolderName}";
+                FilesFolders.Copy(Constant.PortableDataPath, targetDestination);
+                if (!FilesFolders.VerifyBothFolderFilesEqual(Constant.PortableDataPath, targetDestination))
+                    MessageBox.Show(string.Format("Wox was not able to move your user profile data to the new update version. Please manually" +
+                        "move your profile data folder from {0} to {1}", Constant.PortableDataPath, targetDestination));
+            }
+            else
+            {
+                await updateManager.CreateUninstallerRegistryEntry();
+            }
+
+            var newVersionTips = NewVersinoTips(newReleaseVersion.ToString());
+            
+            MessageBox.Show(newVersionTips);
+            Log.Info($"|Updater.UpdateApp|Update success:{newVersionTips}");
+
             // always dispose UpdateManager
-            m.Dispose();
+            updateManager.Dispose();
         }
 
         [UsedImplicitly]

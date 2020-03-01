@@ -377,7 +377,7 @@ namespace Wox.ViewModel
 
                 ProgressBarVisibility = Visibility.Hidden;
                 _isQueryRunning = true;
-                var query = PluginManager.QueryInit(QueryText.Trim());
+                var query = QueryBuilder.Build(QueryText.Trim(), PluginManager.NonGlobalPlugins);
                 if (query != null)
                 {
                     // handle the exclusiveness of plugin using action keyword
@@ -401,8 +401,7 @@ namespace Wox.ViewModel
                         {
                             Parallel.ForEach(plugins, parallelOptions, plugin =>
                             {
-                                var config = _settings.PluginSettings.Plugins[plugin.Metadata.ID];
-                                if (!config.Disabled)
+                                if (!plugin.Metadata.Disabled)
                                 {
                                     var results = PluginManager.QueryForPlugin(plugin, query);
                                     UpdateResultView(results, plugin.Metadata, query);

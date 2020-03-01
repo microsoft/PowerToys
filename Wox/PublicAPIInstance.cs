@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
 using Squirrel;
+using Wox.Core;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Helper;
@@ -65,6 +66,11 @@ namespace Wox
             UpdateManager.RestartApp();
         }
 
+        public void CheckForNewUpdate()
+        {
+            _settingsVM.UpdateApp();
+        }
+
         public void SaveAppAllSettings()
         {
             _mainVM.Save();
@@ -91,12 +97,12 @@ namespace Wox
             _mainVM.MainWindowVisibility = Visibility.Visible;
         }
 
-        public void ShowMsg(string title, string subTitle = "", string iconPath = "")
+        public void ShowMsg(string title, string subTitle = "", string iconPath = "", bool useMainWindowAsOwner = true)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                var m = new Msg { Owner = Application.Current.MainWindow };
-                m.Show(title, subTitle, iconPath);
+                var msg = useMainWindowAsOwner ? new Msg {Owner = Application.Current.MainWindow} : new Msg();
+                msg.Show(title, subTitle, iconPath);
             });
         }
 

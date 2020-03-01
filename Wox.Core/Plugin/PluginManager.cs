@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -92,21 +93,36 @@ namespace Wox.Core.Plugin
             Settings.UpdatePluginSettings(_metadatas);
             AllPlugins = PluginsLoader.Plugins(_metadatas, Settings);
         }
+
+        /// <summary>
+        /// Call initialize for all plugins
+        /// </summary>
+        /// <returns>return the list of failed to init plugins or null for none</returns>
         public static void InitializePlugins(IPublicAPI api)
         {
             API = api;
+            var failedPlugins = new ConcurrentQueue<PluginPair>();
             Parallel.ForEach(AllPlugins, pair =>
             {
-                var milliseconds = Stopwatch.Debug($"|PluginManager.InitializePlugins|Init method time cost for <{pair.Metadata.Name}>", () =>
+                try
                 {
-                    pair.Plugin.Init(new PluginInitContext
+                    var milliseconds = Stopwatch.Debug($"|PluginManager.InitializePlugins|Init method time cost for <{pair.Metadata.Name}>", () =>
                     {
-                        CurrentPluginMetadata = pair.Metadata,
-                        API = API
+                        pair.Plugin.Init(new PluginInitContext
+                        {
+                            CurrentPluginMetadata = pair.Metadata,
+                            API = API
+                        });
                     });
-                });
-                pair.Metadata.InitTime += milliseconds;
-                Log.Info($"|PluginManager.InitializePlugins|Total init cost for <{pair.Metadata.Name}> is <{pair.Metadata.InitTime}ms>");
+                    pair.Metadata.InitTime += milliseconds;
+                    Log.Info($"|PluginManager.InitializePlugins|Total init cost for <{pair.Metadata.Name}> is <{pair.Metadata.InitTime}ms>");
+                }
+                catch (Exception e)
+                {
+                    Log.Exception(nameof(PluginManager), $"Fail to Init plugin: {pair.Metadata.Name}", e);
+                    pair.Metadata.Disabled = true; 
+                    failedPlugins.Enqueue(pair);
+                }
             });
 
             _contextMenuPlugins = GetPluginsForInterface<IContextMenu>();
@@ -121,40 +137,16 @@ namespace Wox.Core.Plugin
                                                 .ForEach(x => NonGlobalPlugins[x] = plugin);
             }
 
+            if (failedPlugins.Any())
+            {
+                var failed = string.Join(",", failedPlugins.Select(x => x.Metadata.Name));
+                API.ShowMsg($"Fail to Init Plugins", $"Plugins: {failed} - fail to load and would be disabled, please contact plugin creator for help", "", false);
+            }
         }
 
         public static void InstallPlugin(string path)
         {
             PluginInstaller.Install(path);
-        }
-
-        public static Query QueryInit(string text) //todo is that possible to move it into type Query?
-        {
-            // replace multiple white spaces with one white space
-            var terms = text.Split(new[] { Query.TermSeperater }, StringSplitOptions.RemoveEmptyEntries);
-            var rawQuery = string.Join(Query.TermSeperater, terms);
-            var actionKeyword = string.Empty;
-            var search = rawQuery;
-            var actionParameters = terms.ToList();
-            if (terms.Length == 0) return null;
-            if (NonGlobalPlugins.ContainsKey(terms[0]) &&
-                !Settings.Plugins[NonGlobalPlugins[terms[0]].Metadata.ID].Disabled)
-            {
-                actionKeyword = terms[0];
-                actionParameters = terms.Skip(1).ToList();
-                search = string.Join(Query.TermSeperater, actionParameters.ToArray());
-            }
-            var query = new Query
-            {
-                Terms = terms,
-                RawQuery = rawQuery,
-                ActionKeyword = actionKeyword,
-                Search = search,
-                // Obsolete value initialisation
-                ActionName = actionKeyword,
-                ActionParameters = actionParameters
-            };
-            return query;
         }
 
         public static List<PluginPair> ValidPluginsForQuery(Query query)
