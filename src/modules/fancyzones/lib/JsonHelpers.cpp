@@ -209,7 +209,18 @@ namespace JSONHelpers
 
     void FancyZonesData::CloneDeviceInfo(const std::wstring& source, const std::wstring& destination)
     {
+        if (source == destination)
+        {
+            return;
+        }
         std::scoped_lock lock{ dataLock };
+
+        // The source virtual desktop is deleted, simply ignore it.
+        if (!deviceInfoMap.contains(source))
+        {
+            return;
+        }
+
         // Clone information from source device if destination device is uninitialized (Blank).
         auto& destInfo = deviceInfoMap[destination];
         if (destInfo.activeZoneSet.type == ZoneSetLayoutType::Blank)
