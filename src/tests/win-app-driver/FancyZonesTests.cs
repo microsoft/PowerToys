@@ -1,4 +1,6 @@
-﻿using System;
+using System;
+using System.IO;
+using Newtonsoft.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium.Windows;
@@ -9,6 +11,8 @@ namespace PowerToysTests
     [TestClass]
     public class FancyZonesTests : PowerToysSession
     {
+        private string settingsFile = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft/PowerToys/FancyZones/settings.json");
+
         private void OpenFancyZonesSettings()
         {
             WindowsElement fzMenuButton = session.FindElementByXPath("//Button[@Name=\"FancyZones\"]");
@@ -42,6 +46,44 @@ namespace PowerToysTests
 
             WindowsElement editorWindow = session.FindElementByName("FancyZones Editor");
             Assert.IsNotNull(editorWindow);
+        }
+
+        [TestMethod]
+        /*
+         * click each toggle twice,
+         * save changes,
+         * check if settings are unchanged after clicking save button
+         */
+        [TestMethod]
+        public void TogglesDoubleClickSave()
+        {
+            OpenFancyZonesSettings();
+
+            WindowsElement saveButton = session.FindElementByName("Save");
+            Assert.IsNotNull(saveButton);
+            string isEnabled = saveButton.GetAttribute("IsEnabled");
+            Assert.AreEqual("False", isEnabled);
+
+            string initialSettings = File.ReadAllText(settingsFile);
+
+            for (int i = 37; i < 45; i++)
+            {
+                string toggleId = "Toggle" + i.ToString();
+                WindowsElement toggle = session.FindElementByAccessibilityId(toggleId);
+                Assert.IsNotNull(toggle);
+                toggle.Click();
+                toggle.Click();
+
+                isEnabled = saveButton.GetAttribute("IsEnabled");
+                Assert.AreEqual("True", isEnabled);
+
+                saveButton.Click();
+                isEnabled = saveButton.GetAttribute("IsEnabled");
+                Assert.AreEqual("False", isEnabled);
+
+                string savedSettings = File.ReadAllText(settingsFile);
+                Assert.AreEqual(initialSettings, savedSettings);
+            }
         }
 
         [ClassInitialize]
