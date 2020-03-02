@@ -82,6 +82,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FancyZonesTests.cs" />
     <Compile Include="PowerToysSession.cs" />
     <Compile Include="PowerToysTrayTests.cs" />
     <Compile Include="TestShortcutHelper.cs" />
