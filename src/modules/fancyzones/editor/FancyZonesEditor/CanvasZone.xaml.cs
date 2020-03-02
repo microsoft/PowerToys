@@ -150,102 +150,6 @@ namespace FancyZonesEditor
             public abstract void Move(int delta);
         }
 
-        private class SnappyHelperSliding : SnappyHelperBase
-        {
-            private int MaxEnergy
-            {
-                get
-                {
-                    return (int)(0.008 * ScreenW);
-                }
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="SnappyHelperSliding"/> class.
-            ///     Just pass it the canvas arguments. Use mode
-            ///     to tell it which edges of the existing masks to use when building its list
-            ///     of snap points, and generally which edges to track. There will be two
-            ///     SnappyHelpers, one for X-coordinates and one for
-            ///     Y-coordinates, they work independently but share the same logic.
-            /// </summary>
-            /// <param name="zones">The list of rectangles describing all zones</param>
-            /// <param name="zoneIndex">The index of the zone to track</param>
-            /// <param name="isX"> Whether this is the X or Y SnappyHelper</param>
-            /// <param name="mode"> One of the three modes of operation (for example: tracking left/right/both edges)</param>
-            /// <param name="screen_w"> The size of the screen in this (X or Y) dimension</param>
-            public SnappyHelperSliding(IList<Int32Rect> zones, int zoneIndex, bool isX, int mode, int screen_w)
-                : base(zones, zoneIndex, isX, mode, screen_w)
-            {
-            }
-
-            public override void Move(int delta)
-            {
-                if (delta == 0)
-                {
-                    return;
-                }
-
-                int target_position = Position + delta;
-                if (target_position > MaxValue)
-                {
-                    Position = MaxValue;
-                    return;
-                }
-
-                if (target_position < MinValue)
-                {
-                    Position = MinValue;
-                    return;
-                }
-
-                // are we flying over a snap position?
-                int snapId = -1;
-
-                if (delta > 0)
-                {
-                    for (int i = 0; i < Snaps.Count; ++i)
-                    {
-                        if (Position <= Snaps[i] && Snaps[i] <= target_position)
-                        {
-                            snapId = i;
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    for (int i = Snaps.Count - 1; i >= 0; --i)
-                    {
-                        if (target_position <= Snaps[i] && Snaps[i] <= Position)
-                        {
-                            snapId = i;
-                            break;
-                        }
-                    }
-                }
-
-                if (snapId == -1)
-                {
-                    Position = target_position;
-                }
-                else
-                {
-                    int energy = target_position - Snaps[snapId];
-                    Position = Snaps[snapId];
-                    if (energy > MaxEnergy)
-                    {
-                        energy = 0;
-                        Position += 1;
-                    }
-                    else if (energy < -MaxEnergy)
-                    {
-                        energy = 0;
-                        Position -= 1;
-                    }
-                }
-            }
-        }
-
         private class SnappyHelperMagnetic : SnappyHelperBase
         {
             private List<int> magnetZoneSizes;
@@ -310,7 +214,6 @@ namespace FancyZonesEditor
         private SnappyHelperBase snappyX;
         private SnappyHelperBase snappyY;
 
-        // change to SnappyHelperSliding for different behavior
         private SnappyHelperBase NewDefaultSnappyHelper(bool isX, int mode, int screen_w)
         {
             return new SnappyHelperMagnetic(Model.Zones, ZoneIndex, isX, mode, screen_w);
