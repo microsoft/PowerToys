@@ -29,18 +29,14 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpRes
 class ImageResizerModule : public PowertoyModuleIface
 {
 private:
-    // The PowerToy state.
-    bool m_enabled = false;
+    // Enabled by default
+    bool m_enabled = true;
     std::wstring app_name;
-
-    // Load initial settings from the persisted values.
-    void init_settings();
 
 public:
     // Constructor
     ImageResizerModule()
     {
-        init_settings();
         app_name = GET_RESOURCE_STRING(IDS_IMAGERESIZER);
     };
 
@@ -122,9 +118,6 @@ public:
     virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
     virtual void signal_system_menu_action(const wchar_t* name) override {}
 };
-
-// Load the settings file.
-void ImageResizerModule::init_settings() {}
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
