@@ -10,7 +10,9 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ## Installing and running Microsoft PowerToys
 
-> 👉 Note: Microsoft PowerToys requires Windows 10 1803 (build 17134) or later
+> 👉 **Note:** Microsoft PowerToys requires Windows 10 1803 (build 17134) or later.
+
+> 👉 **Upgrading to 0.15:** You need to reapply your zone layout for FancyZones.  Don't worry, your custom zone sets are preserved.
 
 ### Via Github with MSI [Recommended]
 
