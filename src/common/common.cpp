@@ -1,11 +1,18 @@
 #include "pch.h"
 #include "common.h"
-#include "hwnd_data_cache.h"
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
 #include <strsafe.h>
 #include <sddl.h>
 #include "version.h"
+
+#pragma comment(lib, "advapi32.lib")
+
+namespace localized_strings
+{
+  const wchar_t LAST_ERROR_FORMAT_STRING[] = L"%s failed with error %d: %s";
+  const wchar_t LAST_ERROR_TITLE_STRING[] = L"Error";
+}
 
 std::optional<RECT> get_button_pos(HWND hwnd) {
   RECT button;
@@ -34,12 +41,126 @@ std::optional<POINT> get_mouse_pos() {
   }
 }
 
-WindowAndProcPath get_filtered_base_window_and_path(HWND window) {
-  return hwnd_cache.get_window_and_path(window);
+// Test if a window is part of the shell or the task bar.
+// We compare the HWND against HWND of the desktop and shell windows,
+// we also filter out some window class names know to belong to
+// the taskbar.
+static bool is_system_window(HWND hwnd, const char* class_name) {
+  static auto system_classes = { "SysListView32", "WorkerW", "Shell_TrayWnd", "Shell_SecondaryTrayWnd", "Progman" };
+  static auto system_hwnds = { GetDesktopWindow(), GetShellWindow() };
+  for (auto system_hwnd : system_hwnds) {
+    if (hwnd == system_hwnd) {
+      return true;
+    }
+  }
+  for (const auto& system_class : system_classes) {
+    if (strcmp(system_class, class_name) == 0) {
+      return true;
+    }
+  }
+  return false;
 }
 
-HWND get_filtered_active_window() {
-  return hwnd_cache.get_window(GetForegroundWindow());
+static bool no_visible_owner(HWND window) noexcept
+{
+    auto owner = GetWindow(window, GW_OWNER);
+    if (owner == nullptr) {
+        return true; // There is no owner at all
+    }
+    if (!IsWindowVisible(owner)) {
+        return true; // Owner is invisible
+    }
+    RECT rect;
+    if (!GetWindowRect(owner, &rect)) {
+        return false; // Could not get the rect, return true (and filter out the window) just in case
+    }
+    // Return false (and allow the window to be zonable) if the owner window size is zero
+    // It is enough that the window is zero-sized in one dimension only.
+    return rect.top == rect.bottom || rect.left == rect.right;
+}
+
+FancyZonesFilter get_fancyzones_filtered_window(HWND window) {
+  FancyZonesFilter result;
+  if (GetAncestor(window, GA_ROOT) != window || !IsWindowVisible(window)) { 
+    return result;
+  }
+  auto style = GetWindowLong(window, GWL_STYLE);
+  auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
+  // WS_POPUP need to have a border or minimize/maximize buttons,
+  // otherwise the window is "not interesting"
+  if ((style & WS_POPUP) == WS_POPUP &&
+      (style & WS_THICKFRAME) == 0 &&
+      (style & WS_MINIMIZEBOX) == 0 &&
+      (style & WS_MAXIMIZEBOX) == 0) {
+    return result;
+  }
+  if ((style & WS_CHILD) == WS_CHILD ||
+      (style & WS_DISABLED) == WS_DISABLED ||
+      (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW ||
+      (exStyle & WS_EX_NOACTIVATE) == WS_EX_NOACTIVATE) {
+    return result;
+  }
+  std::array<char, 256> class_name;
+  GetClassNameA(window, class_name.data(), static_cast<int>(class_name.size()));
+  if (is_system_window(window, class_name.data())) {
+    return result;
+  }
+  auto process_path = get_process_path(window);
+  // Check for Cortana:
+  if (strcmp(class_name.data(), "Windows.UI.Core.CoreWindow") == 0 &&
+      process_path.ends_with(L"SearchUI.exe")) {
+    return result;
+  }
+  result.process_path = std::move(process_path);
+  result.standard_window = true;
+  result.no_visible_owner = no_visible_owner(window);
+  result.zonable = result.standard_window && result.no_visible_owner;
+  return result;
+}
+
+ShortcutGuideFilter get_shortcutguide_filtered_window() {
+  ShortcutGuideFilter result;
+  auto active_window = GetForegroundWindow();
+  active_window = GetAncestor(active_window, GA_ROOT);
+  if (!IsWindowVisible(active_window)) {
+    return result;
+  }
+  auto style = GetWindowLong(active_window, GWL_STYLE);
+  auto exStyle = GetWindowLong(active_window, GWL_EXSTYLE);
+  if ((style & WS_CHILD) == WS_CHILD ||
+      (style & WS_DISABLED) == WS_DISABLED ||
+      (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW ||
+      (exStyle & WS_EX_NOACTIVATE) == WS_EX_NOACTIVATE) {
+      return result;
+  }
+  std::array<char, 256> class_name;
+  GetClassNameA(active_window, class_name.data(), static_cast<int>(class_name.size()));
+  if (is_system_window(active_window, class_name.data())) {
+    return result;
+  }
+  static HWND cortanda_hwnd = nullptr;
+  if (cortanda_hwnd == nullptr) {
+    if (strcmp(class_name.data(), "Windows.UI.Core.CoreWindow") == 0 &&
+        get_process_path(active_window).ends_with(L"SearchUI.exe")) {
+      cortanda_hwnd = active_window;
+      return result;
+    }
+  } else if (cortanda_hwnd == active_window) {
+    return result;
+  }
+  result.hwnd = active_window;
+  // In reality, Windows Snap works if even one of those styles is set
+  // for a window, it is just limited. If there is no WS_MAXIMIZEBOX using
+  // WinKey + Up just won't maximize the window. Similary, without
+  // WS_MINIMIZEBOX the window will not get minimized. A "Save As..." dialog
+  // is a example of such window - it can be snapped to both sides and to
+  // all screen conrers, but will not get maximized nor minimized.
+  // For now, since ShortcutGuide can only disable entire "Windows Controls"
+  // group, we require that the window supports all the options.
+  result.snappable = ((style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX) &&
+                     ((style & WS_MINIMIZEBOX) == WS_MINIMIZEBOX) &&
+                     ((style & WS_THICKFRAME) == WS_THICKFRAME);
+  return result;
 }
 
 int width(const RECT& rect) {
@@ -105,28 +226,31 @@ int run_message_loop() {
   return static_cast<int>(msg.wParam);
 }
 
+std::optional<std::wstring> get_last_error_message(const DWORD dw) {
+  std::optional<std::wstring> message;
+  try {
+    const auto msg = std::system_category().message(dw);
+    message.emplace(begin(msg), end(msg));
+  }
+  catch(...) {
+    
+  }
+  return message;
+}
+
 void show_last_error_message(LPCWSTR lpszFunction, DWORD dw) {
-  // Retrieve the system error message for the error code
-  LPWSTR lpMsgBuf = NULL;
-  if (FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                     FORMAT_MESSAGE_FROM_SYSTEM |
-                     FORMAT_MESSAGE_IGNORE_INSERTS,
-                     NULL,
-                     dw,
-                     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                     lpMsgBuf,
-                     0, NULL) > 0) {
-    // Display the error message and exit the process
-    LPWSTR lpDisplayBuf = (LPWSTR)LocalAlloc(LMEM_ZEROINIT, (lstrlenW(lpMsgBuf) + lstrlenW(lpszFunction) + 40) * sizeof(WCHAR));
-    if (lpDisplayBuf != NULL) {
-      StringCchPrintfW(lpDisplayBuf,
-        LocalSize(lpDisplayBuf) / sizeof(WCHAR),
-        L"%s failed with error %d: %s",
-        lpszFunction, dw, lpMsgBuf);
-      MessageBoxW(NULL, (LPCTSTR)lpDisplayBuf, L"Error", MB_OK);
-      LocalFree(lpDisplayBuf);
-    }
-    LocalFree(lpMsgBuf);
+  const auto system_message = get_last_error_message(dw);
+  if(!system_message.has_value()) {
+    return;
+  }
+  LPWSTR lpDisplayBuf = (LPWSTR)LocalAlloc(LMEM_ZEROINIT, (system_message->size() + lstrlenW(lpszFunction) + 40) * sizeof(WCHAR));
+  if (lpDisplayBuf != NULL) {
+    StringCchPrintfW(lpDisplayBuf,
+      LocalSize(lpDisplayBuf) / sizeof(WCHAR),
+      localized_strings::LAST_ERROR_FORMAT_STRING,
+      lpszFunction, dw, system_message->c_str());
+    MessageBoxW(NULL, (LPCTSTR)lpDisplayBuf, localized_strings::LAST_ERROR_TITLE_STRING, MB_OK);
+    LocalFree(lpDisplayBuf);
   }
 }
 
@@ -367,10 +491,9 @@ std::wstring get_process_path(HWND window) noexcept {
 }
 
 std::wstring get_product_version() {
-  static std::wstring version = std::to_wstring(VERSION_MAJOR) +
+  static std::wstring version = L"v" + std::to_wstring(VERSION_MAJOR) +
     L"." + std::to_wstring(VERSION_MINOR) +
-    L"." + std::to_wstring(VERSION_REVISION) +
-    L"." + std::to_wstring(VERSION_BUILD);
+    L"." + std::to_wstring(VERSION_REVISION);
 
   return version;
 }
@@ -416,4 +539,73 @@ std::wstring get_module_folderpath(HMODULE mod)
 
     PathRemoveFileSpecW(buffer);
     return { buffer, (UINT)lstrlenW(buffer) };
+}
+
+
+// The function returns true in case of error since we want to return false
+// only in case of a positive verification that the user is not an admin.
+bool check_user_is_admin()
+{
+    auto freeMemory = [](PSID pSID, PTOKEN_GROUPS pGroupInfo) {
+        if (pSID)
+        {
+            FreeSid(pSID);
+        }
+        if (pGroupInfo)
+        {
+            GlobalFree(pGroupInfo);
+        }
+    };
+
+    HANDLE hToken;
+    DWORD dwSize = 0, dwResult = 0;
+    PTOKEN_GROUPS pGroupInfo;
+    SID_IDENTIFIER_AUTHORITY SIDAuth = SECURITY_NT_AUTHORITY;
+    PSID pSID = NULL;
+
+    // Open a handle to the access token for the calling process.
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+    {
+        return true;
+    }
+
+    // Call GetTokenInformation to get the buffer size.
+    if (!GetTokenInformation(hToken, TokenGroups, NULL, dwSize, &dwSize))
+    {
+        dwResult = GetLastError();
+        if (dwResult != ERROR_INSUFFICIENT_BUFFER)
+        {
+            return true;
+        }
+    }
+
+    // Allocate the buffer.
+    pGroupInfo = (PTOKEN_GROUPS)GlobalAlloc(GPTR, dwSize);
+
+    // Call GetTokenInformation again to get the group information.
+    if (!GetTokenInformation(hToken, TokenGroups, pGroupInfo, dwSize, &dwSize))
+    {
+        freeMemory(pSID, pGroupInfo);
+        return true;
+    }
+
+    // Create a SID for the BUILTIN\Administrators group.
+    if (!AllocateAndInitializeSid(&SIDAuth, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &pSID))
+    {
+        freeMemory(pSID, pGroupInfo);
+        return true;
+    }
+
+    // Loop through the group SIDs looking for the administrator SID.
+    for (DWORD i = 0; i < pGroupInfo->GroupCount; ++i)
+    {
+        if (EqualSid(pSID, pGroupInfo->Groups[i].Sid))
+        {
+            freeMemory(pSID, pGroupInfo);
+            return true;
+        }
+    }
+
+    freeMemory(pSID, pGroupInfo);
+    return false;
 }

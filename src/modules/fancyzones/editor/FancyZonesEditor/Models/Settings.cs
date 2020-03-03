@@ -7,9 +7,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
+using System.Text.Json;
 using System.Windows;
 using FancyZonesEditor.Models;
-using Microsoft.Win32;
 
 namespace FancyZonesEditor
 {
@@ -18,20 +19,30 @@ namespace FancyZonesEditor
     //  Other UIs in the editor will subscribe to change events on the properties to stay up to date as these properties change
     public class Settings : INotifyPropertyChanged
     {
-        private readonly CanvasLayoutModel _blankCustomModel;
+        private enum CmdArgs
+        {
+            MonitorHandle = 1,
+            X_Y_Width_Height,
+            ResolutionKey,
+            ActiveZoneSetTmpFile,
+            AppliedZoneSetTmpFile,
+            CustomZoneSetsTmpFile,
+        }
+
+        private static CanvasLayoutModel _blankCustomModel;
         private readonly CanvasLayoutModel _focusModel;
         private readonly GridLayoutModel _rowsModel;
         private readonly GridLayoutModel _columnsModel;
         private readonly GridLayoutModel _gridModel;
         private readonly GridLayoutModel _priorityGridModel;
 
-        private static readonly ushort _focusModelId = 0xFFFF;
-        private static readonly ushort _rowsModelId = 0xFFFE;
-        private static readonly ushort _columnsModelId = 0xFFFD;
-        private static readonly ushort _gridModelId = 0xFFFC;
-        private static readonly ushort _priorityGridModelId = 0xFFFB;
-        private static readonly ushort _blankCustomModelId = 0xFFFA;
-        private static readonly ushort _lastPrefinedId = _blankCustomModelId;
+        public const ushort _focusModelId = 0xFFFF;
+        public const ushort _rowsModelId = 0xFFFE;
+        public const ushort _columnsModelId = 0xFFFD;
+        public const ushort _gridModelId = 0xFFFC;
+        public const ushort _priorityGridModelId = 0xFFFB;
+        public const ushort _blankCustomModelId = 0xFFFA;
+        public const ushort _lastPrefinedId = _blankCustomModelId;
 
         // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
         private static readonly byte[][] _priorityData = new byte[][]
@@ -73,34 +84,30 @@ namespace FancyZonesEditor
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
             DefaultModels = new List<LayoutModel>(5);
-            _focusModel = new CanvasLayoutModel("Focus", _focusModelId, (int)_workArea.Width, (int)_workArea.Height);
+            _focusModel = new CanvasLayoutModel("Focus", LayoutType.Focus, (int)_workArea.Width, (int)_workArea.Height);
             DefaultModels.Add(_focusModel);
 
-            _columnsModel = new GridLayoutModel("Columns", _columnsModelId)
+            _columnsModel = new GridLayoutModel("Columns", LayoutType.Columns)
             {
                 Rows = 1,
                 RowPercents = new int[1] { _multiplier },
             };
             DefaultModels.Add(_columnsModel);
 
-            _rowsModel = new GridLayoutModel("Rows", _rowsModelId)
+            _rowsModel = new GridLayoutModel("Rows", LayoutType.Rows)
             {
                 Columns = 1,
                 ColumnPercents = new int[1] { _multiplier },
             };
             DefaultModels.Add(_rowsModel);
 
-            _gridModel = new GridLayoutModel("Grid", _gridModelId);
+            _gridModel = new GridLayoutModel("Grid", LayoutType.Grid);
             DefaultModels.Add(_gridModel);
 
-            _priorityGridModel = new GridLayoutModel("Priority Grid", _priorityGridModelId);
+            _priorityGridModel = new GridLayoutModel("Priority Grid", LayoutType.PriorityGrid);
             DefaultModels.Add(_priorityGridModel);
 
-            _blankCustomModel = new CanvasLayoutModel("Create new custom", _blankCustomModelId, (int)_workArea.Width, (int)_workArea.Height);
-
-            _zoneCount = ReadRegistryInt("ZoneCount", 3);
-            _spacing = ReadRegistryInt("Spacing", 16);
-            _showSpacing = ReadRegistryInt("ShowSpacing", 1) == 1;
+            _blankCustomModel = new CanvasLayoutModel("Create new custom", LayoutType.Blank, (int)_workArea.Width, (int)_workArea.Height);
 
             UpdateLayoutModels();
         }
@@ -118,7 +125,6 @@ namespace FancyZonesEditor
                 if (_zoneCount != value)
                 {
                     _zoneCount = value;
-                    Registry.SetValue(_uniqueRegistryPath, "ZoneCount", _zoneCount, RegistryValueKind.DWord);
                     UpdateLayoutModels();
                     FirePropertyChanged("ZoneCount");
                 }
@@ -140,7 +146,6 @@ namespace FancyZonesEditor
                 if (_spacing != value)
                 {
                     _spacing = value;
-                    Registry.SetValue(_uniqueRegistryPath, "Spacing", _spacing, RegistryValueKind.DWord);
                     FirePropertyChanged("Spacing");
                 }
             }
@@ -161,7 +166,6 @@ namespace FancyZonesEditor
                 if (_showSpacing != value)
                 {
                     _showSpacing = value;
-                    Registry.SetValue(_uniqueRegistryPath, "ShowSpacing", _showSpacing, RegistryValueKind.DWord);
                     FirePropertyChanged("ShowSpacing");
                 }
             }
@@ -220,17 +224,32 @@ namespace FancyZonesEditor
 
         public static string UniqueKey { get; private set; }
 
-        private string _uniqueRegistryPath;
+        public static string ActiveZoneSetUUid { get; private set; }
+
+        public static LayoutType ActiveZoneSetLayoutType { get; private set; }
+
+        public static string ActiveZoneSetTmpFile
+        {
+            get { return _activeZoneSetTmpFile; }
+        }
+
+        private static string _activeZoneSetTmpFile;
+
+        public static string AppliedZoneSetTmpFile
+        {
+            get { return _appliedZoneSetTmpFile; }
+        }
+
+        private static string _appliedZoneSetTmpFile;
+
+        public static string CustomZoneSetsTmpFile
+        {
+            get { return _customZoneSetsTmpFile; }
+        }
+
+        private static string _customZoneSetsTmpFile;
 
         public static string WorkAreaKey { get; private set; }
-
-        public static float Dpi { get; private set; }
-
-        private int ReadRegistryInt(string valueName, int defaultValue)
-        {
-            object obj = Registry.GetValue(_uniqueRegistryPath, valueName, defaultValue);
-            return (obj != null) ? (int)obj : defaultValue;
-        }
 
         // UpdateLayoutModels
         //  Update the five default layouts based on the new ZoneCount
@@ -238,6 +257,12 @@ namespace FancyZonesEditor
         {
             // Update the "Focus" Default Layout
             _focusModel.Zones.Clear();
+
+            // Sanity check for imported settings that may have invalid data
+            if (ZoneCount < 1)
+            {
+                ZoneCount = 3;
+            }
 
             Int32Rect focusZoneRect = new Int32Rect((int)(_focusModel.ReferenceWidth * 0.1), (int)(_focusModel.ReferenceHeight * 0.1), (int)(_focusModel.ReferenceWidth * 0.6), (int)(_focusModel.ReferenceHeight * 0.6));
             int focusRectXIncrement = (ZoneCount <= 1) ? 0 : (int)(_focusModel.ReferenceWidth * 0.2) / (ZoneCount - 1);
@@ -327,59 +352,87 @@ namespace FancyZonesEditor
             }
         }
 
+        private void ParseDeviceInfoData()
+        {
+            FileStream inputStream = File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
+            var jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
+
+            UniqueKey = jsonObject.GetProperty("device-id").GetString();
+            ActiveZoneSetUUid = jsonObject.GetProperty("active-zoneset").GetProperty("uuid").GetString();
+            string layoutType = jsonObject.GetProperty("active-zoneset").GetProperty("type").GetString();
+
+            if (ActiveZoneSetUUid == "null" || layoutType == "blank")
+            {
+                // Default selection is Focus
+                ActiveZoneSetLayoutType = LayoutType.Focus;
+                _showSpacing = true;
+                _spacing = 16;
+                _zoneCount = 3;
+            }
+            else
+            {
+                switch (layoutType)
+                {
+                    case "focus":
+                        ActiveZoneSetLayoutType = LayoutType.Focus;
+                        break;
+                    case "columns":
+                        ActiveZoneSetLayoutType = LayoutType.Columns;
+                        break;
+                    case "rows":
+                        ActiveZoneSetLayoutType = LayoutType.Rows;
+                        break;
+                    case "grid":
+                        ActiveZoneSetLayoutType = LayoutType.Grid;
+                        break;
+                    case "priority-grid":
+                        ActiveZoneSetLayoutType = LayoutType.PriorityGrid;
+                        break;
+                    case "custom":
+                        ActiveZoneSetLayoutType = LayoutType.Custom;
+                        break;
+                }
+
+                _showSpacing = jsonObject.GetProperty("editor-show-spacing").GetBoolean();
+                _spacing = jsonObject.GetProperty("editor-spacing").GetInt32();
+                _zoneCount = jsonObject.GetProperty("editor-zone-count").GetInt32();
+            }
+        }
+
         private void ParseCommandLineArgs()
         {
             _workArea = SystemParameters.WorkArea;
             Monitor = 0;
-            _uniqueRegistryPath = FullRegistryPath;
-            UniqueKey = string.Empty;
-            Dpi = 1;
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length == 7)
             {
-                // 1 = unique key for per-monitor settings
-                // 2 = layoutid used to generate current layout (used to pick the default layout to show)
-                // 3 = handle to monitor (passed back to engine to persist data)
-                // 4 = X_Y_Width_Height in a dpi-scaled-but-unaware coords (where EditorOverlay shows up)
-                // 5 = resolution key (passed back to engine to persist data)
-                // 6 = monitor DPI (float)
-                UniqueKey = args[1];
-                _uniqueRegistryPath += "\\" + UniqueKey;
+                if (uint.TryParse(args[(int)CmdArgs.MonitorHandle], out uint monitor))
+                {
+                    Monitor = monitor;
+                }
 
-                var parsedLocation = args[4].Split('_');
+                var parsedLocation = args[(int)CmdArgs.X_Y_Width_Height].Split('_');
                 var x = int.Parse(parsedLocation[0]);
                 var y = int.Parse(parsedLocation[1]);
                 var width = int.Parse(parsedLocation[2]);
                 var height = int.Parse(parsedLocation[3]);
 
-                WorkAreaKey = args[5];
-
-                // Try invariant culture first, caller likely uses invariant i.e. "C" locale to construct parameters
-                foreach (var cultureInfo in new[] { CultureInfo.InvariantCulture, CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture })
-                {
-                    try
-                    {
-                        Dpi = float.Parse(args[6], cultureInfo);
-                        break;
-                    }
-                    catch (FormatException)
-                    {
-                    }
-                }
-
                 _workArea = new Rect(x, y, width, height);
 
-                if (uint.TryParse(args[4], out uint monitor))
-                {
-                    Monitor = monitor;
-                }
+                WorkAreaKey = args[(int)CmdArgs.ResolutionKey];
+
+                _activeZoneSetTmpFile = args[(int)CmdArgs.ActiveZoneSetTmpFile];
+                _appliedZoneSetTmpFile = args[(int)CmdArgs.AppliedZoneSetTmpFile];
+                _customZoneSetsTmpFile = args[(int)CmdArgs.CustomZoneSetsTmpFile];
+
+                ParseDeviceInfoData();
             }
         }
 
         public IList<LayoutModel> DefaultModels { get; }
 
-        public ObservableCollection<LayoutModel> CustomModels
+        public static ObservableCollection<LayoutModel> CustomModels
         {
             get
             {
@@ -393,14 +446,14 @@ namespace FancyZonesEditor
             }
         }
 
-        private ObservableCollection<LayoutModel> _customModels;
+        private static ObservableCollection<LayoutModel> _customModels;
 
         public static readonly string RegistryPath = "SOFTWARE\\SuperFancyZones";
         public static readonly string FullRegistryPath = "HKEY_CURRENT_USER\\" + RegistryPath;
 
         public static bool IsPredefinedLayout(LayoutModel model)
         {
-            return model.Id >= _lastPrefinedId;
+            return model.Type != LayoutType.Custom;
         }
 
         // implementation of INotifyProeprtyChanged

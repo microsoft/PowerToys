@@ -210,11 +210,12 @@ D2DOverlayWindow::D2DOverlayWindow() :
     });
 }
 
-void D2DOverlayWindow::show(HWND active_window)
+void D2DOverlayWindow::show(HWND active_window, bool snappable)
 {
     std::unique_lock lock(mutex);
     tasklist_buttons.clear();
     this->active_window = active_window;
+    this->active_window_snappable = snappable;
     auto old_bck = colors.start_color_menu;
     auto colors_updated = colors.update();
     auto new_light_mode = (theme_setting == Light) || (theme_setting == System && colors.light_mode);
@@ -861,7 +862,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
         down = GET_RESOURCE_STRING(IDS_NO_ACTION);
         down_disabled = true;
     }
-    auto text_color = D2D1::ColorF(light_mode ? 0x222222 : 0xDDDDDD, minature_shown || window_state == MINIMIZED ? 1.0f : 0.3f);
+    auto text_color = D2D1::ColorF(light_mode ? 0x222222 : 0xDDDDDD, active_window_snappable && (minature_shown || window_state == MINIMIZED) ? 1.0f : 0.3f);
     use_overlay->find_element(L"KeyUpGroup")->SetAttributeValue(L"fill-opacity", up_disabled ? 0.3f : 1.0f);
     text.set_aligment_center().write(d2d_dc, text_color, use_overlay->get_maximize_label(), up);
     use_overlay->find_element(L"KeyDownGroup")->SetAttributeValue(L"fill-opacity", down_disabled ? 0.3f : 1.0f);

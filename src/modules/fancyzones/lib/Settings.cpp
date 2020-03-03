@@ -9,12 +9,13 @@ struct FancyZonesSettings : winrt::implements<FancyZonesSettings, IFancyZonesSet
 public:
     FancyZonesSettings(HINSTANCE hinstance, PCWSTR name)
         : m_hinstance(hinstance)
-        , m_name(name)
+        , m_moduleName(name)
     {
-        LoadSettings(name, true /*fromFile*/);
+        LoadSettings(name, true);
     }
-
+    
     IFACEMETHODIMP_(void) SetCallback(IFancyZonesCallback* callback) { m_callback = callback; }
+    IFACEMETHODIMP_(void) ResetCallback() { m_callback = nullptr; }
     IFACEMETHODIMP_(bool) GetConfig(_Out_ PWSTR buffer, _Out_ int *buffer_sizeg) noexcept;
     IFACEMETHODIMP_(void) SetConfig(PCWSTR config) noexcept;
     IFACEMETHODIMP_(void) CallCustomAction(PCWSTR action) noexcept;
@@ -26,7 +27,7 @@ private:
 
     IFancyZonesCallback* m_callback{};
     const HINSTANCE m_hinstance;
-    PCWSTR m_name{};
+    PCWSTR m_moduleName{};
 
     Settings m_settings;
 
@@ -54,7 +55,7 @@ private:
 
 IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ int *buffer_size) noexcept
 {
-    PowerToysSettings::Settings settings(m_hinstance, m_name);
+    PowerToysSettings::Settings settings(m_hinstance, m_moduleName);
 
     // Pass a string literal or a resource id to Settings::set_description().
     settings.set_description(IDS_SETTING_DESCRIPTION);
@@ -84,9 +85,9 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
     return settings.serialize_to_buffer(buffer, buffer_size);
 }
 
-IFACEMETHODIMP_(void) FancyZonesSettings::SetConfig(PCWSTR config) noexcept try
+IFACEMETHODIMP_(void) FancyZonesSettings::SetConfig(PCWSTR serializedPowerToysSettingsJson) noexcept try
 {
-    LoadSettings(config, false /*fromFile*/);
+    LoadSettings(serializedPowerToysSettingsJson, false /*fromFile*/);
     SaveSettings();
     if (m_callback)
     {
@@ -112,7 +113,7 @@ CATCH_LOG();
 void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept try
 {
     PowerToysSettings::PowerToyValues values = fromFile ?
-        PowerToysSettings::PowerToyValues::load_from_settings_file(m_name) :
+        PowerToysSettings::PowerToyValues::load_from_settings_file(m_moduleName) :
         PowerToysSettings::PowerToyValues::from_json_string(config);
 
     for (auto const& setting : m_configBools)
@@ -165,7 +166,7 @@ CATCH_LOG();
 
 void FancyZonesSettings::SaveSettings() noexcept try
 {
-    PowerToysSettings::PowerToyValues values(m_name);
+    PowerToysSettings::PowerToyValues values(m_moduleName);
 
     for (auto const& setting : m_configBools)
     {

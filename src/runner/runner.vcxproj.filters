@@ -39,6 +39,9 @@
     <ClCompile Include="restart_elevated.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="update_state.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -77,6 +80,9 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="restart_elevated.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="update_state.h">
       <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
@@ -135,5 +141,8 @@
     <CopyFileToFolders Include="svgs\overlay_portrait.svg">
       <Filter>svgs</Filter>
     </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

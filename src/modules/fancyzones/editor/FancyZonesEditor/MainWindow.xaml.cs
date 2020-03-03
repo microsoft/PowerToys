@@ -21,7 +21,6 @@ namespace FancyZonesEditor
         public const int MaxZones = 40;
         private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
         private static readonly string _defaultNamePrefix = "Custom Layout ";
-        private bool _editing = false;
 
         public int WrapPanelItemSize { get; set; } = 262;
 
@@ -67,7 +66,7 @@ namespace FancyZonesEditor
         {
             WindowLayout window = new WindowLayout();
             window.Show();
-            Close();
+            Hide();
         }
 
         private void LayoutItem_Click(object sender, MouseButtonEventArgs e)
@@ -95,12 +94,11 @@ namespace FancyZonesEditor
             }
 
             model.IsSelected = false;
-            _editing = true;
-            Close();
+            Hide();
 
             bool isPredefinedLayout = Settings.IsPredefinedLayout(model);
 
-            if (!_settings.CustomModels.Contains(model) || isPredefinedLayout)
+            if (!Settings.CustomModels.Contains(model) || isPredefinedLayout)
             {
                 if (isPredefinedLayout)
                 {
@@ -110,7 +108,7 @@ namespace FancyZonesEditor
                 }
 
                 int maxCustomIndex = 0;
-                foreach (LayoutModel customModel in _settings.CustomModels)
+                foreach (LayoutModel customModel in Settings.CustomModels)
                 {
                     string name = customModel.Name;
                     if (name.StartsWith(_defaultNamePrefix))
@@ -165,10 +163,8 @@ namespace FancyZonesEditor
 
         private void OnClosing(object sender, EventArgs e)
         {
-            if (!_editing)
-            {
-                EditorOverlay.Current.Close();
-            }
+            LayoutModel.SerializeDeletedCustomZoneSets();
+            EditorOverlay.Current.Close();
         }
 
         private void OnInitialized(object sender, EventArgs e)
@@ -178,7 +174,7 @@ namespace FancyZonesEditor
 
         private void SetSelectedItem()
         {
-            foreach (LayoutModel model in _settings.CustomModels)
+            foreach (LayoutModel model in Settings.CustomModels)
             {
                 if (model.IsSelected)
                 {
