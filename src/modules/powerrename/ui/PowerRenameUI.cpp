@@ -948,24 +948,25 @@ void CPowerRenameUI::_CollectItemPosition(_In_ DWORD id)
     GetWindowRect(hwnd, &rcWindow);
 
     MapWindowPoints(HWND_DESKTOP, GetParent(hwnd), (LPPOINT)&rcWindow, 2);
+    int itemWidth = rcWindow.right - rcWindow.left;
+    int itemHeight = rcWindow.bottom - rcWindow.top;
 
     switch (id)
     {
     case IDC_EDIT_SEARCHFOR:
     /* IDC_EDIT_REPLACEWITH uses same value*/
-        m_itemsPositioning.searchReplaceWidthDiff = m_initialWidth - (rcWindow.right - rcWindow.left);
+        m_itemsPositioning.searchReplaceWidthDiff = m_initialWidth - itemWidth;
         break;
     case IDC_PREVIEWGROUP:
-        m_itemsPositioning.previewGroupHeightDiff = m_initialHeight - (rcWindow.bottom - rcWindow.top);
+        m_itemsPositioning.previewGroupHeightDiff = m_initialHeight - itemHeight;
         break;
     case IDC_SEARCHREPLACEGROUP:
     /* IDC_OPTIONSGROUP uses same value */
-        m_itemsPositioning.groupsWidthDiff = m_initialWidth - (rcWindow.right - rcWindow.left);
-        break;
+        m_itemsPositioning.groupsWidthDiff = m_initialWidth - itemWidth;
         break;
     case IDC_LIST_PREVIEW:
-        m_itemsPositioning.listPreviewWidthDiff = m_initialWidth - (rcWindow.right - rcWindow.left);
-        m_itemsPositioning.listPreviewHeightDiff = m_initialHeight - (rcWindow.bottom - rcWindow.top);
+        m_itemsPositioning.listPreviewWidthDiff = m_initialWidth - itemWidth;
+        m_itemsPositioning.listPreviewHeightDiff = m_initialHeight - itemHeight;
         break;
     case IDC_STATUS_MESSAGE:
         m_itemsPositioning.statusMessageYDiff = m_initialHeight - rcWindow.top;
