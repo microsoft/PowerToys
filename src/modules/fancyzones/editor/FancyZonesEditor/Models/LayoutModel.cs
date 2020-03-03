@@ -154,7 +154,16 @@ namespace FancyZonesEditor.Models
             _customModels = new ObservableCollection<LayoutModel>();
 
             FileStream inputStream = File.Open(Settings.CustomZoneSetsTmpFile, FileMode.Open);
-            var jsonObject = JsonDocument.Parse(inputStream, options: default);
+            JsonDocument jsonObject;
+            try
+            {
+                jsonObject = JsonDocument.Parse(inputStream, options: default);
+            }
+            catch
+            {
+                return _customModels;
+            }
+
             JsonElement.ArrayEnumerator customZoneSetsEnumerator = jsonObject.RootElement.GetProperty("custom-zone-sets").EnumerateArray();
             while (customZoneSetsEnumerator.MoveNext())
             {
