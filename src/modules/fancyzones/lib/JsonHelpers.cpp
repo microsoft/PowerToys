@@ -626,6 +626,21 @@ namespace JSONHelpers
                 {
                     it->second.uuid = uuid = it->first;
                 }
+                else
+                {
+                    GUID guid;
+                    auto result = CoCreateGuid(&guid);
+                    if (result != S_OK)
+                    {
+                        return;
+                    }
+                    wil::unique_cotaskmem_string guidString;
+                    if (SUCCEEDED_LOG(StringFromCLSID(guid, &guidString)))
+                    {
+                        it->second.uuid = uuid = guidString.get();
+                    }
+                }
+
                 switch (zoneSetData.type)
                 {
                 case CustomLayoutType::Grid: {
