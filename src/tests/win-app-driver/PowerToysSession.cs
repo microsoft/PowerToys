@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
@@ -42,6 +43,11 @@ namespace PowerToysTests
                 session.Quit();
                 session = null;
             }
+        }
+
+        public static void ShortWait()
+        {
+            Thread.Sleep(TimeSpan.FromSeconds(0.5));
         }
 
         public void OpenSettings()

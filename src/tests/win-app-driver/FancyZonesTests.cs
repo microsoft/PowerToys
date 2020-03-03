@@ -20,7 +20,7 @@ namespace PowerToysTests
             fzMenuButton.Click();
             fzMenuButton.Click();
 
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+            ShortWait();
         }
 
         [TestMethod]
@@ -30,7 +30,7 @@ namespace PowerToysTests
             Assert.IsNotNull(fzMenuButton);
             fzMenuButton.Click();
             fzMenuButton.Click();
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+            ShortWait();
 
             WindowsElement fzTitle = session.FindElementByName("FancyZones Settings");
             Assert.IsNotNull(fzTitle);
@@ -42,7 +42,7 @@ namespace PowerToysTests
             OpenFancyZonesSettings();
 
             session.FindElementByXPath("//Button[@Name=\"Edit zones\"]").Click();
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+            ShortWait();
 
             WindowsElement editorWindow = session.FindElementByName("FancyZones Editor");
             Assert.IsNotNull(editorWindow);
