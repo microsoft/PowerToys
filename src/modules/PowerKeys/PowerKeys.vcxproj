@@ -122,6 +122,9 @@
     <ProjectReference Include="$(SolutionDir)src\common\common.vcxproj">
       <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\PowerKeysUI\Win32DesktopApp.vcxproj">
+      <Project>{eaf23649-ef6e-478b-980e-81fad96cca2a}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PowerKeys.rc" />

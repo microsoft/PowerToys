@@ -4,6 +4,7 @@
 #include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
 #include "trace.h"
+#include <PowerKeysUI/HelloWindowsDesktop.cpp>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -65,6 +66,8 @@ private:
     static HHOOK hook_handle;
     static HHOOK hook_handle_copy; // make sure we do use nullptr in CallNextHookEx call
     static PowerKeys* powerkeys_object_ptr;
+    static bool uiFlag;
+    static int detectVkCode;
 
 public:
     // Constructor
@@ -77,32 +80,32 @@ public:
 
     void init_map()
     {
-        // If mapped to 0x0 then key is disabled.
-        //singleKeyReMap[0x41] = 0x42;
-        //singleKeyReMap[0x42] = 0x43;
-        //singleKeyReMap[0x43] = 0x41;
-        singleKeyReMap[VK_LWIN] = VK_LCONTROL;
-        singleKeyReMap[VK_LCONTROL] = VK_LWIN;
-        singleKeyReMap[VK_OEM_4] = 0x0;
-        singleKeyToggleToMod[VK_CAPITAL] = false;
+        //// If mapped to 0x0 then key is disabled.
+        ////singleKeyReMap[0x41] = 0x42;
+        ////singleKeyReMap[0x42] = 0x43;
+        ////singleKeyReMap[0x43] = 0x41;
+        //singleKeyReMap[VK_LWIN] = VK_LCONTROL;
+        //singleKeyReMap[VK_LCONTROL] = VK_LWIN;
+        //singleKeyReMap[VK_OEM_4] = 0x0;
+        //singleKeyToggleToMod[VK_CAPITAL] = false;
 
-        // OS-level shortcut remappings
-        osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
-        osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x45 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
-        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x53 }), false);
-        /*osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
-        osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);*/
+        //// OS-level shortcut remappings
+        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
+        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x45 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
+        ////osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x53 }), false);
+        ///*osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
+        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);*/
 
-        osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
-        osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LMENU, 0x44 }), false);
-        osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x56 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);
+        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
+        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LMENU, 0x44 }), false);
+        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x56 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);
 
-        //App-specific shortcut remappings
-        appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x43 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+C to Ctrl+V
-        appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x46 }), false); // Alt+D to Ctrl+F
-        appSpecificShortcutReMap[L"OUTLOOK.EXE"][std::vector<DWORD>({ VK_LCONTROL, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x45 }), false); // Ctrl+F to Ctrl+E
-        appSpecificShortcutReMap[L"MicrosoftEdge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+X to Ctrl+V
-        appSpecificShortcutReMap[L"Calculator.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x47 })] = std::make_pair(std::vector<WORD>({ VK_LSHIFT, 0x32 }), false); // Ctrl+G to Shift+2
+        ////App-specific shortcut remappings
+        //appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x43 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+C to Ctrl+V
+        //appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x46 }), false); // Alt+D to Ctrl+F
+        //appSpecificShortcutReMap[L"OUTLOOK.EXE"][std::vector<DWORD>({ VK_LCONTROL, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x45 }), false); // Ctrl+F to Ctrl+E
+        //appSpecificShortcutReMap[L"MicrosoftEdge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+X to Ctrl+V
+        //appSpecificShortcutReMap[L"Calculator.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x47 })] = std::make_pair(std::vector<WORD>({ VK_LSHIFT, 0x32 }), false); // Ctrl+G to Shift+2
     }
 
     // Destroy the powertoy and free memory
@@ -257,6 +260,8 @@ public:
     virtual void enable()
     {
         m_enabled = true;
+        HINSTANCE hInstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
+        std::thread (UILogic, hInstance, &uiFlag).detach();
         start_lowlevel_keyboard_hook();
     }
 
@@ -349,6 +354,18 @@ public:
 
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
+        if (uiFlag)
+        {
+            singleKeyReMap[VK_OEM_4] = 0x0;
+        }
+        else if (singleKeyReMap.find(VK_OEM_4) == singleKeyReMap.end())
+        {
+        }
+        else
+        {
+            singleKeyReMap.erase(VK_OEM_4);
+        }
+
         intptr_t SingleKeyRemapResult = HandleSingleKeyRemapEvent(data);
         // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts
         if (SingleKeyRemapResult == 1)
@@ -662,6 +679,8 @@ public:
 HHOOK PowerKeys::hook_handle = nullptr;
 HHOOK PowerKeys::hook_handle_copy = nullptr;
 PowerKeys* PowerKeys::powerkeys_object_ptr = nullptr;
+bool PowerKeys::uiFlag = false;
+int PowerKeys::detectVkCode = 0;
 
 // Load the settings file.
 void PowerKeys::init_settings()
