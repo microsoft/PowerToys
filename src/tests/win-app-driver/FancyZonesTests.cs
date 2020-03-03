@@ -1,17 +1,18 @@
 using System;
 using System.IO;
-using Newtonsoft.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium.Windows;
-using System.Threading;
+using Newtonsoft.Json.Linq;
 
 namespace PowerToysTests
 {
     [TestClass]
     public class FancyZonesTests : PowerToysSession
     {
-        private string settingsFile = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft/PowerToys/FancyZones/settings.json");
+        private string _settingsPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft/PowerToys/FancyZones/settings.json");
+        private string _initialSettings;
+        private JObject _initialSettingsJson;
 
         private void OpenFancyZonesSettings()
         {
@@ -64,8 +65,6 @@ namespace PowerToysTests
             string isEnabled = saveButton.GetAttribute("IsEnabled");
             Assert.AreEqual("False", isEnabled);
 
-            string initialSettings = File.ReadAllText(settingsFile);
-
             for (int i = 37; i < 45; i++)
             {
                 string toggleId = "Toggle" + i.ToString();
@@ -80,10 +79,11 @@ namespace PowerToysTests
                 saveButton.Click();
                 isEnabled = saveButton.GetAttribute("IsEnabled");
                 Assert.AreEqual("False", isEnabled);
-
-                string savedSettings = File.ReadAllText(settingsFile);
-                Assert.AreEqual(initialSettings, savedSettings);
             }
+
+            string savedSettings = File.ReadAllText(_settingsPath);
+            Assert.AreEqual(_initialSettings, savedSettings);
+        }
         }
 
         [ClassInitialize]
@@ -101,11 +101,11 @@ namespace PowerToysTests
         [TestInitialize]
         public void TestInitialize()
         {
-            OpenSettings();
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+            _initialSettings = File.ReadAllText(_settingsPath);
+            _initialSettingsJson = JObject.Parse(_initialSettings);
 
-            WindowsElement settingsWindow = session.FindElementByName("PowerToys Settings");
-            settingsWindow.Click(); //set focus on window
+            OpenSettings();
+            ShortWait();
         }
 
         [TestCleanup]
@@ -123,9 +123,9 @@ namespace PowerToysTests
             {
                 //editor window not found
             }
-                      
 
             CloseSettings();
+            File.WriteAllText(_settingsPath, _initialSettings);
         }
     }
 }
