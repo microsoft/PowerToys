@@ -120,7 +120,7 @@
       <AdditionalIncludeDirectories>..\;..\..\..\common;..\..\..\common\telemetry;..\..\;..\..\..\;..\..\..\..\deps\cpprestsdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(SolutionDir)$(Platform)\$(Configuration)\PowerRenameLib.lib;$(SolutionDir)$(Platform)\$(Configuration)\PowerRenameUI.lib;Pathcch.lib;comctl32.lib;$(SolutionDir)$(Platform)\$(Configuration)\..\..\src\modules\powerrename\UI\$(Platform)\$(Configuration)\PowerRenameUI.res;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)$(Platform)\$(Configuration)\PowerRenameLib.lib;$(SolutionDir)$(Platform)\$(Configuration)\PowerRenameUI.lib;Pathcch.lib;comctl32.lib;$(SolutionDir)$(Platform)\$(Configuration)\..\..\src\modules\powerrename\UI\$(Platform)\$(Configuration)\PowerRenameUI.res;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>PowerRenameExt.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -158,7 +158,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>$(SolutionDir)$(Platform)\$(Configuration)\PowerRenameLib.lib;$(SolutionDir)$(Platform)\$(Configuration)\PowerRenameUI.lib;Pathcch.lib;comctl32.lib;$(SolutionDir)$(Platform)\$(Configuration)\..\..\src\modules\powerrename\UI\$(Platform)\$(Configuration)\PowerRenameUI.res;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)$(Platform)\$(Configuration)\PowerRenameLib.lib;$(SolutionDir)$(Platform)\$(Configuration)\PowerRenameUI.lib;Pathcch.lib;comctl32.lib;$(SolutionDir)$(Platform)\$(Configuration)\..\..\src\modules\powerrename\UI\$(Platform)\$(Configuration)\PowerRenameUI.res;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>PowerRenameExt.def</ModuleDefinitionFile>
       <DelayLoadDLLs>gdi32.dll;advapi32.dll;shell32.dll;ole32.dll;shlwapi.dll;oleaut32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>

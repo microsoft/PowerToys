@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "PowerRenameUI.h"
+#include "dpi_aware.h"
 #include <commctrl.h>
 #include <Shlobj.h>
 #include <helpers.h>
@@ -515,7 +516,7 @@ HRESULT CPowerRenameUI::_DoModal(__in_opt HWND hwnd)
 }
 void CPowerRenameUI::BecomeForegroundWindow()
 {
-    static INPUT i = {INPUT_MOUSE, {}};
+    static INPUT i = { INPUT_MOUSE, {} };
     SendInput(1, &i, sizeof(i));
     SetForegroundWindow(m_hwnd);
 }
@@ -626,8 +627,14 @@ void CPowerRenameUI::_OnInitDlg()
     GetWindowRect(m_hwnd, &rc);
     m_initialWidth = RECT_WIDTH(rc);
     m_initialHeight = RECT_HEIGHT(rc);
-    m_lastWidth = m_initialWidth;
-    m_lastHeight = m_initialHeight;
+
+    UINT dummy = 0;
+    DPIAware::GetScreenDPIForWindow(m_hwnd, m_initialDPI, dummy);
+
+    for (UINT u = 0; u < ARRAYSIZE(g_repositionMap); u++)
+    {
+        _CollectItemPosition(g_repositionMap[u].id);
+    }
 
     _InitAutoComplete();
 
@@ -759,25 +766,16 @@ void CPowerRenameUI::_OnSize(_In_ WPARAM wParam)
 {
     if ((wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED) && m_initialWidth)
     {
-        // Calculate window size change delta
-        RECT rc = { 0 };
-        GetWindowRect(m_hwnd, &rc);
-
-        const int xDelta = RECT_WIDTH(rc) - m_lastWidth;
-        m_lastWidth += xDelta;
-        const int yDelta = RECT_HEIGHT(rc) - m_lastHeight;
-        m_lastHeight += yDelta;
-
         for (UINT u = 0; u < ARRAYSIZE(g_repositionMap); u++)
         {
-            _MoveControl(g_repositionMap[u].id, g_repositionMap[u].flags, xDelta, yDelta);
+            _MoveControl(g_repositionMap[u].id, g_repositionMap[u].flags);
         }
 
         m_listview.OnSize();
     }
 }
 
-void CPowerRenameUI::_MoveControl(_In_ DWORD id, _In_ DWORD repositionFlags, _In_ int xDelta, _In_ int yDelta)
+void CPowerRenameUI::_MoveControl(_In_ DWORD id, _In_ DWORD repositionFlags)
 {
     HWND hwnd = GetDlgItem(m_hwnd, id);
 
@@ -791,40 +789,56 @@ void CPowerRenameUI::_MoveControl(_In_ DWORD id, _In_ DWORD repositionFlags, _In
     {
         flags |= SWP_NOSIZE;
     }
+    RECT rc = { 0 };
+    GetWindowRect(m_hwnd, &rc);
+    int mainWindowWidth = rc.right - rc.left;
+    int mainWindowHeight = rc.bottom - rc.top;
 
     RECT rcWindow = { 0 };
     GetWindowRect(hwnd, &rcWindow);
-
-    int cx = RECT_WIDTH(rcWindow);
-    int cy = RECT_HEIGHT(rcWindow);
-
     MapWindowPoints(HWND_DESKTOP, GetParent(hwnd), (LPPOINT)&rcWindow, 2);
-
     int x = rcWindow.left;
     int y = rcWindow.top;
+    int width = rcWindow.right - rcWindow.left;
+    int height = rcWindow.bottom - rcWindow.top;
 
-    if (repositionFlags & Reposition_X)
+    UINT currentDPI = 0, dummy;
+    DPIAware::GetScreenDPIForWindow(m_hwnd, currentDPI, dummy);
+    float scale = (float)currentDPI / m_initialDPI;
+
+    switch (id)
     {
-        x += xDelta;
+    case IDC_EDIT_SEARCHFOR:
+    case IDC_EDIT_REPLACEWITH:
+        width = mainWindowWidth - m_itemsPositioning.searchReplaceWidthDiff * scale;
+        break;
+    case IDC_PREVIEWGROUP:
+        height = mainWindowHeight - m_itemsPositioning.previewGroupHeightDiff * scale;
+    case IDC_SEARCHREPLACEGROUP:
+    case IDC_OPTIONSGROUP:
+        width = mainWindowWidth - m_itemsPositioning.groupsWidthDiff * scale;
+        break;
+    case IDC_LIST_PREVIEW:
+        width = mainWindowWidth - m_itemsPositioning.listPreviewWidthDiff * scale;
+        height = mainWindowHeight - m_itemsPositioning.listPreviewHeightDiff * scale;
+        break;
+    case IDC_STATUS_MESSAGE:
+        y = mainWindowHeight - m_itemsPositioning.statusMessageYDiff * scale;
+        break;
+    case ID_RENAME:
+        x = mainWindowWidth - m_itemsPositioning.renameButtonXDiff * scale;
+        y = mainWindowHeight - m_itemsPositioning.renameButtonYDiff * scale;
+        break;
+    case ID_ABOUT:
+        x = mainWindowWidth - m_itemsPositioning.helpButtonXDiff * scale;
+        y = mainWindowHeight - m_itemsPositioning.helpButtonYDiff * scale;
+        break;
+    case IDCANCEL:
+        x = mainWindowWidth - m_itemsPositioning.cancelButtonXDiff * scale;
+        y = mainWindowHeight - m_itemsPositioning.cancelButtonYDiff * scale;
+        break;
     }
-
-    if (repositionFlags & Reposition_Y)
-    {
-        y += yDelta;
-    }
-
-    if (repositionFlags & Reposition_Width)
-    {
-        cx += xDelta;
-    }
-
-    if (repositionFlags & Reposition_Height)
-    {
-        cy += yDelta;
-    }
-
-    SetWindowPos(hwnd, NULL, x, y, cx, cy, flags);
-
+    SetWindowPos(hwnd, NULL, x, y, width, height, flags);
     RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
 }
 
@@ -924,6 +938,50 @@ void CPowerRenameUI::_UpdateCounts()
 
         // Update Rename button state
         EnableWindow(GetDlgItem(m_hwnd, ID_RENAME), (renamingCount > 0));
+    }
+}
+
+void CPowerRenameUI::_CollectItemPosition(_In_ DWORD id)
+{
+    HWND hwnd = GetDlgItem(m_hwnd, id);
+    RECT rcWindow = { 0 };
+    GetWindowRect(hwnd, &rcWindow);
+
+    MapWindowPoints(HWND_DESKTOP, GetParent(hwnd), (LPPOINT)&rcWindow, 2);
+
+    switch (id)
+    {
+    case IDC_EDIT_SEARCHFOR:
+    /* IDC_EDIT_REPLACEWITH uses same value*/
+        m_itemsPositioning.searchReplaceWidthDiff = m_initialWidth - (rcWindow.right - rcWindow.left);
+        break;
+    case IDC_PREVIEWGROUP:
+        m_itemsPositioning.previewGroupHeightDiff = m_initialHeight - (rcWindow.bottom - rcWindow.top);
+        break;
+    case IDC_SEARCHREPLACEGROUP:
+    /* IDC_OPTIONSGROUP uses same value */
+        m_itemsPositioning.groupsWidthDiff = m_initialWidth - (rcWindow.right - rcWindow.left);
+        break;
+        break;
+    case IDC_LIST_PREVIEW:
+        m_itemsPositioning.listPreviewWidthDiff = m_initialWidth - (rcWindow.right - rcWindow.left);
+        m_itemsPositioning.listPreviewHeightDiff = m_initialHeight - (rcWindow.bottom - rcWindow.top);
+        break;
+    case IDC_STATUS_MESSAGE:
+        m_itemsPositioning.statusMessageYDiff = m_initialHeight - rcWindow.top;
+        break;
+    case ID_RENAME:
+        m_itemsPositioning.renameButtonXDiff = m_initialWidth - rcWindow.left;
+        m_itemsPositioning.renameButtonYDiff = m_initialHeight - rcWindow.top;
+        break;
+    case ID_ABOUT:
+        m_itemsPositioning.helpButtonXDiff = m_initialWidth - rcWindow.left;
+        m_itemsPositioning.helpButtonYDiff = m_initialHeight - rcWindow.top;
+        break;
+    case IDCANCEL:
+        m_itemsPositioning.cancelButtonXDiff = m_initialWidth - rcWindow.left;
+        m_itemsPositioning.cancelButtonYDiff = m_initialHeight - rcWindow.top;
+        break;
     }
 }
 
