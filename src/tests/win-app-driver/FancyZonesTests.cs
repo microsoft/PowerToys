@@ -241,6 +241,24 @@ namespace PowerToysTests
             SaveAndCheckOpacitySettings(saveButton, editor, 0);
         }
 
+        [TestMethod]
+        public void HighlightOpacityClearValueButton()
+        {
+            OpenFancyZonesSettings();
+            WindowsElement editor = session.FindElementByName("Zone Highlight Opacity (%)");
+            Assert.IsNotNull(editor);
+
+            editor.Click(); //activate
+            OpenQA.Selenium.Appium.AppiumWebElement clearButton = editor.FindElementByName("Clear value");
+            Assert.IsNotNull(clearButton);
+            
+            /*element is not pointer- or keyboard interactable.*/
+            Actions action = new Actions(session);
+            action.MoveToElement(clearButton).Click().Perform();
+
+            Assert.AreEqual("\r\n", editor.Text);
+        }
+
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
