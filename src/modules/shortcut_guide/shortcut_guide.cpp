@@ -66,31 +66,40 @@ void OverlayWindow::set_config(const wchar_t* config)
 {
     try
     {
+        // save configuration
         PowerToysSettings::PowerToyValues _values =
             PowerToysSettings::PowerToyValues::from_json_string(config);
-        if (const auto press_delay_time = _values.get_int_value(pressTime.name))
-        {
-            pressTime.value = *press_delay_time;
-            if (target_state)
-            {
-                target_state->set_delay(*press_delay_time);
-            }
-        }
-        if (const auto overlay_opacity = _values.get_int_value(overlayOpacity.name))
-        {
-            overlayOpacity.value = *overlay_opacity;
-            if (winkey_popup)
-            {
-                winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
-            }
-        }
-        if (auto val = _values.get_string_value(theme.name))
-        {
-            theme.value = std::move(*val);
-            winkey_popup->set_theme(theme.value);
-        }
         _values.save_to_settings_file();
         Trace::SettingsChanged(pressTime.value, overlayOpacity.value, theme.value);
+
+        // apply new settings if powertoy is enabled
+        if (_enabled)
+        {
+            if (const auto press_delay_time = _values.get_int_value(pressTime.name))
+            {
+                pressTime.value = *press_delay_time;
+                if (target_state)
+                {
+                    target_state->set_delay(*press_delay_time);
+                }
+            }
+            if (const auto overlay_opacity = _values.get_int_value(overlayOpacity.name))
+            {
+                overlayOpacity.value = *overlay_opacity;
+                if (winkey_popup)
+                {
+                    winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
+                }
+            }
+            if (auto val = _values.get_string_value(theme.name))
+            {
+                theme.value = std::move(*val);
+                if (winkey_popup)
+                {
+                    winkey_popup->set_theme(theme.value);
+                }
+            }
+        }
     }
     catch (...)
     {
@@ -158,8 +167,8 @@ intptr_t OverlayWindow::signal_event(const wchar_t* name, intptr_t data)
 
 void OverlayWindow::on_held()
 {
-    auto active_window = get_filtered_active_window();
-    winkey_popup->show(active_window);
+    auto filter = get_shortcutguide_filtered_window();
+    winkey_popup->show(filter.hwnd, filter.snappable);
 }
 
 void OverlayWindow::on_held_press(DWORD vkCode)

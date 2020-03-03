@@ -2,10 +2,10 @@ environment:
   host:
     os: 'windows'
     flavor: 'server'
-    version: '2016'
+    version: '2019'
   runtime:
     provider: 'appcontainer'
-    image: 'cdpxwin.azurecr.io/user/powertoys/vs2019:3.0'
+    image: 'cdpxwinrs5.azurecr.io/global/vse2019:16.4.3'
     source_mode: 'map'
 
 version:
@@ -44,11 +44,12 @@ build:
         - from: 'x64/Release'
           to: 'Build_Output'
           include:
-          - 'PowerToys.exe'
-          - 'PowerToysSettings.exe'
-          - 'modules\FancyZonesEditor.exe'
-          - 'modules\fancyzones.dll'
-          - 'modules\shortcut_guide.dll'
+            - 'PowerToys.exe'
+            - 'PowerToysSettings.exe'
+            - 'modules\FancyZonesEditor.exe'
+            - 'modules\fancyzones.dll'
+            - 'modules\shortcut_guide.dll'
+            - 'modules\PowerRenameExt.dll'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
     - !!buildcommand
@@ -61,21 +62,48 @@ build:
             - 'PowerToysSetup.msi'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
+#    - !!buildcommand
+#      name: 'Archive symbols to Symbol Server'
+#      artifacts:
+#        - to: 'x64 Symbols'
+#          include:
+#            - 'x64/Release/action_runner.pdb'
+#            - 'x64/Release/Notifications.pdb'
+#            - 'x64/Release/PowerRenameUWPUI.pdb'
+#            - 'x64/Release/PowerToys.pdb'
+#            - 'x64/Release/PowerToysSettings.pdb'
+#            - 'x64/Release/modules/fancyzones.pdb'
+#            - 'x64/Release/modules/FancyZonesEditor.pdb'
+#            - 'x64/Release/modules/PowerRenameExt.pdb'
+#            - 'x64/Release/modules/shortcut_guide.pdb'
+
+package:
+  commands:
+    - !!buildcommand
+      name: 'Build MSIX package'
+      command: 'installer\msix\build_msix_cdpx.cmd'
+      artifacts:
+        - from: 'installer\msix\bin'
+          to: 'Build_MSIX_Package_Output'
+          include:
+            - '*.msix'
+            - '*.msixbundle'
+          signing_options:
+            profile: '400'
 
 static_analysis_options:                             
   binskim_options:  
     files_to_scan:
       - from: 'installer/packages'
         exclude:
-        exclude:
-        - 'WiX.3.11.1/**/*.dll'
-        - 'Wix.3.11.1/**/*.exe'
+          - 'WiX.*/**/*.dll'
+          - 'Wix.*/**/*.exe'
   moderncop_options:           
     files_to_scan:
       - from: 'src'          
         exclude:                           
-        - '**/just.config.js'
-        - '**/webpack.config.js'
-        - '**/webpack.serve.config.js'
-        - '**/dist/bundle.js' 
+          - '**/just.config.js'
+          - '**/webpack.config.js'
+          - '**/webpack.serve.config.js'
+          - '**/dist/bundle.js' 
         

@@ -23,3 +23,8 @@
 #include <unordered_set>
 #include <string>
 #include <ProjectTelemetry.h>
+
+#include <winrt/Windows.ApplicationModel.h>
+#include <winrt/Windows.Storage.h>
+
+#include <wil/resource.h>

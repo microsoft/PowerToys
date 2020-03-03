@@ -6,6 +6,8 @@
 #include <helpers.h>
 #include <settings.h>
 #include <windowsx.h>
+#include <thread>
+#include <trace.h>
 
 extern HINSTANCE g_hInst;
 
@@ -76,8 +78,6 @@ inline int RECT_HEIGHT(RECT& r)
 {
     return r.bottom - r.top;
 }
-
-#define MAX_INPUT_STRING_LEN 1024
 
 // IUnknown
 IFACEMETHODIMP CPowerRenameUI::QueryInterface(__in REFIID riid, __deref_out void** ppv)
@@ -391,7 +391,7 @@ HRESULT CPowerRenameUI::_ReadSettings()
         flags = CSettings::GetFlags();
         m_spsrm->put_flags(flags);
 
-        wchar_t buffer[MAX_INPUT_STRING_LEN];
+        wchar_t buffer[CSettings::MAX_INPUT_STRING_LEN];
         buffer[0] = L'\0';
         CSettings::GetSearchText(buffer, ARRAYSIZE(buffer));
         SetDlgItemText(m_hwnd, IDC_EDIT_SEARCHFOR, buffer);
@@ -419,7 +419,7 @@ HRESULT CPowerRenameUI::_WriteSettings()
         m_spsrm->get_flags(&flags);
         CSettings::SetFlags(flags);
 
-        wchar_t buffer[MAX_INPUT_STRING_LEN];
+        wchar_t buffer[CSettings::MAX_INPUT_STRING_LEN];
         buffer[0] = L'\0';
         GetDlgItemText(m_hwnd, IDC_EDIT_SEARCHFOR, buffer, ARRAYSIZE(buffer));
         CSettings::SetSearchText(buffer);
@@ -445,6 +445,8 @@ HRESULT CPowerRenameUI::_WriteSettings()
                 spReplaceMRU->AddMRUString(buffer);
             }
         }
+
+        Trace::SettingsChanged();
     }
 
     return S_OK;
@@ -511,6 +513,12 @@ HRESULT CPowerRenameUI::_DoModal(__in_opt HWND hwnd)
     }
     return hr;
 }
+void CPowerRenameUI::BecomeForegroundWindow()
+{
+    static INPUT i = {INPUT_MOUSE, {}};
+    SendInput(1, &i, sizeof(i));
+    SetForegroundWindow(m_hwnd);
+}
 
 HRESULT CPowerRenameUI::_DoModeless(__in_opt HWND hwnd)
 {
@@ -519,6 +527,7 @@ HRESULT CPowerRenameUI::_DoModeless(__in_opt HWND hwnd)
     if (NULL != CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MAIN), hwnd, s_DlgProc, (LPARAM)this))
     {
         ShowWindow(m_hwnd, SW_SHOWNORMAL);
+        BecomeForegroundWindow();
         MSG msg;
         while (GetMessage(&msg, NULL, 0, 0))
         {
@@ -825,7 +834,7 @@ void CPowerRenameUI::_OnSearchReplaceChanged()
     CComPtr<IPowerRenameRegEx> spRegEx;
     if (m_spsrm && SUCCEEDED(m_spsrm->get_renameRegEx(&spRegEx)))
     {
-        wchar_t buffer[MAX_INPUT_STRING_LEN];
+        wchar_t buffer[CSettings::MAX_INPUT_STRING_LEN];
         buffer[0] = L'\0';
         GetDlgItemText(m_hwnd, IDC_EDIT_SEARCHFOR, buffer, ARRAYSIZE(buffer));
         spRegEx->put_searchTerm(buffer);

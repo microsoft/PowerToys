@@ -5,6 +5,7 @@
       <Files>
         <File DestinationPath="License.rtf" SourcePath="..\..\License.rtf"/>
 
+        <File DestinationPath="action_runner.exe" SourcePath="..\..\x64\Release\action_runner.exe"/>
         <File DestinationPath="PowerToys.exe" SourcePath="..\..\x64\Release\PowerToys.exe"/>
         <File DestinationPath="PowerToysSettings.exe" SourcePath="..\..\x64\Release\PowerToysSettings.exe"/>
 
@@ -23,6 +24,19 @@
         <File DestinationPath="modules\GalaSoft.MvvmLight.Extras.dll" SourcePath="..\..\x64\Release\modules\GalaSoft.MvvmLight.Extras.dll"/>
         <File DestinationPath="modules\System.Windows.Interactivity.dll" SourcePath="..\..\x64\Release\modules\System.Windows.Interactivity.dll"/>
         <File DestinationPath="modules\Newtonsoft.Json.dll" SourcePath="..\..\x64\Release\modules\Newtonsoft.Json.dll"/>
+        <File DestinationPath="modules\System.Text.Json.dll" SourcePath="..\..\x64\Release\modules\System.Text.Json.dll"/>
+        <File DestinationPath="modules\System.Memory.dll" SourcePath="..\..\x64\Release\modules\System.Memory.dll"/>
+        <File DestinationPath="modules\System.Buffers.dll" SourcePath="..\..\x64\Release\modules\System.Buffers.dll"/>
+        <File DestinationPath="modules\System.Runtime.CompilerServices.Unsafe.dll" SourcePath="..\..\x64\Release\modules\System.Runtime.CompilerServices.Unsafe.dll"/>
+        <File DestinationPath="modules\System.Text.Encodings.Web.dll" SourcePath="..\..\x64\Release\modules\System.Text.Encodings.Web.dll"/>
+        <File DestinationPath="modules\System.Threading.Tasks.Extensions.dll" SourcePath="..\..\x64\Release\modules\System.Threading.Tasks.Extensions.dll"/>
+        <File DestinationPath="modules\System.ValueTuple.dll" SourcePath="..\..\x64\Release\modules\System.ValueTuple.dll"/>
+        <File DestinationPath="modules\System.Numerics.Vectors.dll" SourcePath="..\..\x64\Release\modules\System.Numerics.Vectors.dll"/>
+        <File DestinationPath="modules\Microsoft.Bcl.AsyncInterfaces.dll" SourcePath="..\..\x64\Release\modules\Microsoft.Bcl.AsyncInterfaces.dll"/>
+
+        <File DestinationPath="modules\FancyZonesEditor.exe.config" SourcePath="..\..\x64\Release\modules\FancyZonesEditor.exe.config"/>
+
+        <File DestinationPath="Notifications.dll" SourcePath="..\..\x64\Release\Notifications.dll"/>
 
         <File DestinationPath="svgs\*" SourcePath="..\..\x64\Release\svgs\*"/>
         <File DestinationPath="settings-html\**" SourcePath="..\..\x64\Release\settings-html\**"/>

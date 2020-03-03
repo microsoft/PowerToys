@@ -1,5 +1,7 @@
 #pragma once
 
+#include "lib/JsonHelpers.h"
+
 namespace CustomAssert
 {
     static void AreEqual(const RECT& r1, const RECT& r2)
@@ -13,9 +15,9 @@ namespace CustomAssert
         Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsTrue(g1 == g2);
     }
 
-    static void AreEqual(WORD w1, WORD w2)
+    static void AreEqual(JSONHelpers::ZoneSetLayoutType t1, JSONHelpers::ZoneSetLayoutType t2)
     {
-        Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsTrue(w1 == w2);
+        Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsTrue(t1 == t2);
     }
 }
 
@@ -39,4 +41,5 @@ namespace Mocks
         return reinterpret_cast<HINSTANCE>(++s_nextInstance);
     }
 
+    HWND WindowCreate(HINSTANCE hInst);
 }
