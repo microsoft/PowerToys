@@ -270,6 +270,73 @@ namespace PowerToysTests
             Assert.AreEqual("\r\n", editor.Text);
         }
 
+        [TestMethod]
+        public void HighlightColorSliders()
+        {
+            OpenFancyZonesSettings();
+
+            WindowsElement saveButton = session.FindElementByName("Save");
+            Assert.IsNotNull(saveButton);
+
+            WindowsElement powerToysWindow = session.FindElementByXPath("//Window[@Name=\"PowerToys Settings\"]");
+
+            new Actions(session).MoveByOffset(powerToysWindow.Rect.X + powerToysWindow.Rect.Width / 2 - 100, powerToysWindow.Rect.Y).Click()
+                .SendKeys(OpenQA.Selenium.Keys.PageDown + OpenQA.Selenium.Keys.PageDown).Perform();
+
+            WindowsElement saturationAndBrightness = session.FindElementByName("Saturation and brightness");
+            WindowsElement hue = session.FindElementByName("Hue");
+            WindowsElement hex = session.FindElementByAccessibilityId("TextField54");
+            WindowsElement red = session.FindElementByAccessibilityId("TextField57");
+            WindowsElement green = session.FindElementByAccessibilityId("TextField60");
+            WindowsElement blue = session.FindElementByAccessibilityId("TextField63");
+
+            Assert.IsNotNull(saturationAndBrightness);
+            Assert.IsNotNull(hue);
+            Assert.IsNotNull(hex);
+            Assert.IsNotNull(red);
+            Assert.IsNotNull(green);
+            Assert.IsNotNull(blue);
+
+            System.Drawing.Rectangle satRect = saturationAndBrightness.Rect;
+            System.Drawing.Rectangle hueRect = hue.Rect;
+
+            //black on the bottom
+            new Actions(session).MoveToElement(saturationAndBrightness).ClickAndHold().MoveByOffset(0, satRect.Height / 2).Click().Perform();
+            ShortWait();
+
+            Assert.AreEqual("0\r\n", red.Text);
+            Assert.AreEqual("0\r\n", green.Text);
+            Assert.AreEqual("0\r\n", blue.Text);
+            Assert.AreEqual("000000\r\n", hex.Text);
+
+            saveButton.Click();
+            ShortWait();            
+            Assert.AreEqual("#000000", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
+
+            //white in left corner
+            new Actions(session).MoveToElement(saturationAndBrightness).ClickAndHold().MoveByOffset(-(satRect.Width/2), -(satRect.Height / 2)).Click().Perform();
+            Assert.AreEqual("255\r\n", red.Text);
+            Assert.AreEqual("255\r\n", green.Text);
+            Assert.AreEqual("255\r\n", blue.Text);
+            Assert.AreEqual("ffffff\r\n", hex.Text);
+
+            saveButton.Click();
+            ShortWait();
+            Assert.AreEqual("#ffffff", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
+
+            //color in right corner
+            new Actions(session).MoveToElement(saturationAndBrightness).ClickAndHold().MoveByOffset((satRect.Width / 2), -(satRect.Height / 2)).Click()
+                .MoveToElement(hue).ClickAndHold().MoveByOffset(-(hueRect.Width / 2), 0).Click().Perform();
+            Assert.AreEqual("255\r\n", red.Text);
+            Assert.AreEqual("0\r\n", green.Text);
+            Assert.AreEqual("0\r\n", blue.Text);
+            Assert.AreEqual("ff0000\r\n", hex.Text);
+
+            saveButton.Click();
+            ShortWait();
+            Assert.AreEqual("#ff0000", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
+        }
+
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
