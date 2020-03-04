@@ -10,7 +10,8 @@
         Name="_this"
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"
-        Title="{x:Static p:Resources.ImageResizer}">
+        Title="{x:Static p:Resources.ImageResizer}"
+        WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:InputViewModel}">
