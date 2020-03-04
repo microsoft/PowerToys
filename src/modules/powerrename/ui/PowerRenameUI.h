@@ -158,7 +158,7 @@ private:
     UINT m_selectedCount = 0;
     UINT m_renamingCount = 0;
     UINT m_initialDPI = 0;
-    DialogItemsPositioning m_itemsPositioning;
+    DialogItemsPositioning m_itemsPositioning {};
     int m_initialWidth = 0;
     int m_initialHeight = 0;
     int m_lastWidth = 0;

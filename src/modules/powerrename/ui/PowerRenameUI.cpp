@@ -810,34 +810,35 @@ void CPowerRenameUI::_MoveControl(_In_ DWORD id, _In_ DWORD repositionFlags)
     {
     case IDC_EDIT_SEARCHFOR:
     case IDC_EDIT_REPLACEWITH:
-        width = mainWindowWidth - m_itemsPositioning.searchReplaceWidthDiff * scale;
+        width = mainWindowWidth - static_cast<int>(m_itemsPositioning.searchReplaceWidthDiff * scale);
         break;
     case IDC_PREVIEWGROUP:
-        height = mainWindowHeight - m_itemsPositioning.previewGroupHeightDiff * scale;
+        height = mainWindowHeight - static_cast<int>(m_itemsPositioning.previewGroupHeightDiff * scale);
     case IDC_SEARCHREPLACEGROUP:
     case IDC_OPTIONSGROUP:
-        width = mainWindowWidth - m_itemsPositioning.groupsWidthDiff * scale;
+        width = mainWindowWidth - static_cast<int>(m_itemsPositioning.groupsWidthDiff * scale);
         break;
     case IDC_LIST_PREVIEW:
-        width = mainWindowWidth - m_itemsPositioning.listPreviewWidthDiff * scale;
-        height = mainWindowHeight - m_itemsPositioning.listPreviewHeightDiff * scale;
+        width = mainWindowWidth - static_cast<int>(m_itemsPositioning.listPreviewWidthDiff * scale);
+        height = mainWindowHeight - static_cast<int>(m_itemsPositioning.listPreviewHeightDiff * scale);
         break;
     case IDC_STATUS_MESSAGE:
-        y = mainWindowHeight - m_itemsPositioning.statusMessageYDiff * scale;
+        y = mainWindowHeight - static_cast<int>(m_itemsPositioning.statusMessageYDiff * scale);
         break;
     case ID_RENAME:
-        x = mainWindowWidth - m_itemsPositioning.renameButtonXDiff * scale;
-        y = mainWindowHeight - m_itemsPositioning.renameButtonYDiff * scale;
+        x = mainWindowWidth - static_cast<int>(m_itemsPositioning.renameButtonXDiff * scale);
+        y = mainWindowHeight - static_cast<int>(m_itemsPositioning.renameButtonYDiff * scale);
         break;
     case ID_ABOUT:
-        x = mainWindowWidth - m_itemsPositioning.helpButtonXDiff * scale;
-        y = mainWindowHeight - m_itemsPositioning.helpButtonYDiff * scale;
+        x = mainWindowWidth - static_cast<int>(m_itemsPositioning.helpButtonXDiff * scale);
+        y = mainWindowHeight - static_cast<int>(m_itemsPositioning.helpButtonYDiff * scale);
         break;
     case IDCANCEL:
-        x = mainWindowWidth - m_itemsPositioning.cancelButtonXDiff * scale;
-        y = mainWindowHeight - m_itemsPositioning.cancelButtonYDiff * scale;
+        x = mainWindowWidth - static_cast<int>(m_itemsPositioning.cancelButtonXDiff * scale);
+        y = mainWindowHeight - static_cast<int>(m_itemsPositioning.cancelButtonYDiff * scale);
         break;
     }
+
     SetWindowPos(hwnd, NULL, x, y, width, height, flags);
     RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
 }
