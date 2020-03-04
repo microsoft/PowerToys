@@ -7,7 +7,7 @@
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10" 
   xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4" 
   xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5" IgnorableNamespaces="desktop4">
-  <Identity Name="Microsoft.PowerToys" Version="0.15.1.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" ProcessorArchitecture="x64" />
+  <Identity Name="Microsoft.PowerToys" Version="0.15.2.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" ProcessorArchitecture="x64" />
   <Properties>
     <DisplayName>PowerToys</DisplayName>
     <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
