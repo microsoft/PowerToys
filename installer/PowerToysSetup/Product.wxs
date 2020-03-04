@@ -18,9 +18,9 @@
 
     <Upgrade Id="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
       <UpgradeVersion
-         Minimum="0.11.0" Maximum="$(var.PreviousVersion)"
+         Minimum="0.11.0" Maximum="$(var.Version)"
          Property="PREVIOUSVERSIONSINSTALLED"
-         IncludeMinimum="yes" IncludeMaximum="yes" />
+         IncludeMinimum="yes" IncludeMaximum="no" />
     </Upgrade>
     
     <MediaTemplate EmbedCab="yes" />
