@@ -11,16 +11,34 @@ namespace PowerToysTests
     [TestClass]
     public class FancyZonesTests : PowerToysSession
     {
-        private string _settingsPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft/PowerToys/FancyZones/settings.json");
+        private string _settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft/PowerToys/FancyZones/settings.json");
         private string _initialSettings;
         private JObject _initialSettingsJson;
+        
+        private JObject getProperties()
+        {
+            JObject settings = JObject.Parse(File.ReadAllText(_settingsPath));
+            return settings["properties"].ToObject<JObject>();
+        }
+
+        private T getPropertyValue<T>(string propertyName)
+        {
+            JObject properties = getProperties();
+            return properties[propertyName].ToObject<JObject>()["value"].Value<T>();
+        }
+
+        private T getPropertyValue<T>(JObject properties, string propertyName)
+        {
+            return properties[propertyName].ToObject<JObject>()["value"].Value<T>();
+        }
 
         private void OpenFancyZonesSettings()
         {
-            WindowsElement fzMenuButton = session.FindElementByXPath("//Button[@Name=\"FancyZones\"]");
-            Assert.IsNotNull(fzMenuButton);
-            fzMenuButton.Click();
-            fzMenuButton.Click();
+            WindowsElement fzNavigationButton = session.FindElementByXPath("//Button[@Name=\"FancyZones\"]");
+            Assert.IsNotNull(fzNavigationButton);
+
+            fzNavigationButton.Click();
+            fzNavigationButton.Click();
 
             ShortWait();
         }
@@ -32,9 +50,7 @@ namespace PowerToysTests
             saveButton.Click();
             ShortWait();
 
-            JObject savedSettings = JObject.Parse(File.ReadAllText(_settingsPath));
-            JObject savedProps = savedSettings["properties"].ToObject<JObject>();
-            int value = savedProps["fancyzones_highlight_opacity"].ToObject<JObject>()["value"].Value<int>();
+            int value = getPropertyValue<int>("fancyzones_highlight_opacity");
             Assert.AreEqual(expected, value);
         }
 
@@ -49,11 +65,7 @@ namespace PowerToysTests
         [TestMethod]
         public void FancyZonesSettingsOpen()
         {
-            WindowsElement fzMenuButton = session.FindElementByXPath("//Button[@Name=\"FancyZones\"]");
-            Assert.IsNotNull(fzMenuButton);
-            fzMenuButton.Click();
-            fzMenuButton.Click();
-            ShortWait();
+            OpenFancyZonesSettings();
 
             WindowsElement fzTitle = session.FindElementByName("FancyZones Settings");
             Assert.IsNotNull(fzTitle);
@@ -102,18 +114,17 @@ namespace PowerToysTests
             }
             
             //check saved settings
-            JObject savedSettings = JObject.Parse(File.ReadAllText(_settingsPath));
-            JObject savedProps = savedSettings["properties"].ToObject<JObject>();
+            JObject savedProps = getProperties();
             JObject initialProps = _initialSettingsJson["properties"].ToObject<JObject>();
 
-            Assert.AreNotEqual(initialProps["fancyzones_shiftDrag"].ToObject<JObject>()["value"].Value<bool>(), savedProps["fancyzones_shiftDrag"].ToObject<JObject>()["value"].Value<bool>());
-            Assert.AreNotEqual(initialProps["fancyzones_overrideSnapHotkeys"].ToObject<JObject>()["value"].Value<bool>(), savedProps["fancyzones_overrideSnapHotkeys"].ToObject<JObject>()["value"].Value<bool>());
-            Assert.AreNotEqual(initialProps["fancyzones_zoneSetChange_flashZones"].ToObject<JObject>()["value"].Value<bool>(), savedProps["fancyzones_zoneSetChange_flashZones"].ToObject<JObject>()["value"].Value<bool>());
-            Assert.AreNotEqual(initialProps["fancyzones_displayChange_moveWindows"].ToObject<JObject>()["value"].Value<bool>(), savedProps["fancyzones_displayChange_moveWindows"].ToObject<JObject>()["value"].Value<bool>());
-            Assert.AreNotEqual(initialProps["fancyzones_zoneSetChange_moveWindows"].ToObject<JObject>()["value"].Value<bool>(), savedProps["fancyzones_zoneSetChange_moveWindows"].ToObject<JObject>()["value"].Value<bool>());
-            Assert.AreNotEqual(initialProps["fancyzones_virtualDesktopChange_moveWindows"].ToObject<JObject>()["value"].Value<bool>(), savedProps["fancyzones_virtualDesktopChange_moveWindows"].ToObject<JObject>()["value"].Value<bool>());
-            Assert.AreNotEqual(initialProps["fancyzones_appLastZone_moveWindows"].ToObject<JObject>()["value"].Value<bool>(), savedProps["fancyzones_appLastZone_moveWindows"].ToObject<JObject>()["value"].Value<bool>());
-            Assert.AreNotEqual(initialProps["use_cursorpos_editor_startupscreen"].ToObject<JObject>()["value"].Value<bool>(), savedProps["use_cursorpos_editor_startupscreen"].ToObject<JObject>()["value"].Value<bool>());
+            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "fancyzones_shiftDrag"), getPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
+            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "fancyzones_overrideSnapHotkeys"), getPropertyValue<bool>(savedProps, "fancyzones_overrideSnapHotkeys"));
+            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "fancyzones_zoneSetChange_flashZones"), getPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_flashZones"));
+            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "fancyzones_displayChange_moveWindows"), getPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
+            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "fancyzones_zoneSetChange_moveWindows"), getPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
+            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "fancyzones_virtualDesktopChange_moveWindows"), getPropertyValue<bool>(savedProps, "fancyzones_virtualDesktopChange_moveWindows"));
+            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "fancyzones_appLastZone_moveWindows"), getPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
+            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "use_cursorpos_editor_startupscreen"), getPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
         }
 
         /*
