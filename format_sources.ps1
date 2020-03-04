@@ -36,7 +36,8 @@ if($all) {
   $filesToFormat = 
     Get-ChildItem -Recurse -File src | 
     Resolve-Path -Relative |
-    where {$sourceExtensions.Contains((Get-Item $_).Extension)}
+    where { (Get-Item $_).Directory -notmatch "(Generated Files)|node_modules" -And 
+      $sourceExtensions.Contains((Get-Item $_).Extension)}
 }
 else {
   $filesToFormat = Get-Dirty-Files-From-Git
