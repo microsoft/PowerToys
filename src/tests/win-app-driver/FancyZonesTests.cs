@@ -43,6 +43,13 @@ namespace PowerToysTests
             ShortWait();
         }
         
+        private void ScrollDown()
+        {
+            WindowsElement powerToysWindow = session.FindElementByXPath("//Window[@Name=\"PowerToys Settings\"]");
+            new Actions(session).MoveByOffset(powerToysWindow.Rect.X + powerToysWindow.Rect.Width / 2 - 100, powerToysWindow.Rect.Y).Click()
+                .SendKeys(OpenQA.Selenium.Keys.PageDown + OpenQA.Selenium.Keys.PageDown).Perform();
+        }
+
         private void SaveAndCheckOpacitySettings(WindowsElement saveButton, WindowsElement editor, int expected)
         {
             Assert.AreEqual(expected.ToString() + "\r\n", editor.Text);
@@ -60,6 +67,55 @@ namespace PowerToysTests
             editor.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace); //clear previous value
             editor.SendKeys(key);
             editor.SendKeys(OpenQA.Selenium.Keys.Enter); //confirm changes
+        }
+
+        private void TestRgbInput(string name)
+        {
+            WindowsElement colorInput = session.FindElementByAccessibilityId(name);
+            Assert.IsNotNull(colorInput);
+
+            colorInput.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
+            colorInput.SendKeys("0");
+            colorInput.SendKeys(OpenQA.Selenium.Keys.Enter);
+            Assert.AreEqual("0\r\n", colorInput.Text);
+            
+            string invalidSymbols = "qwertyuiopasdfghjklzxcvbnm,./';][{}:`~!@#$%^&*()_-+=\"\'\\";
+            foreach (char symbol in invalidSymbols)
+            {
+                colorInput.SendKeys(symbol.ToString() + OpenQA.Selenium.Keys.Enter);
+                Assert.AreEqual("0\r\n", colorInput.Text);
+            }
+
+            string validSymbols = "0123456789";
+            foreach (char symbol in validSymbols)
+            {
+                colorInput.SendKeys(symbol.ToString() + OpenQA.Selenium.Keys.Enter);
+                Assert.AreEqual(symbol.ToString() + "\r\n", colorInput.Text);
+                colorInput.SendKeys(OpenQA.Selenium.Keys.Backspace);
+            }
+
+            //print zero first
+            colorInput.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
+            colorInput.SendKeys("0");
+            colorInput.SendKeys("1");
+            Assert.AreEqual("1\r\n", colorInput.Text);
+
+            //too many symbols
+            colorInput.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
+            colorInput.SendKeys("1");
+            colorInput.SendKeys("2");
+            colorInput.SendKeys("3");
+            colorInput.SendKeys("4");
+            Assert.AreEqual("123\r\n", colorInput.Text);
+
+            //too big value
+            colorInput.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
+            colorInput.SendKeys("555");
+                        
+            Actions action = new Actions(session); //reset focus from input
+            action.MoveToElement(colorInput).MoveByOffset(0, colorInput.Rect.Height).Click().Perform();
+
+            Assert.AreEqual("255\r\n", colorInput.Text);
         }
 
         [TestMethod]
@@ -271,17 +327,14 @@ namespace PowerToysTests
         }
 
         [TestMethod]
-        public void HighlightColorSliders()
+        public void HighlightColorSlidersTest()
         {
             OpenFancyZonesSettings();
 
             WindowsElement saveButton = session.FindElementByName("Save");
             Assert.IsNotNull(saveButton);
 
-            WindowsElement powerToysWindow = session.FindElementByXPath("//Window[@Name=\"PowerToys Settings\"]");
-
-            new Actions(session).MoveByOffset(powerToysWindow.Rect.X + powerToysWindow.Rect.Width / 2 - 100, powerToysWindow.Rect.Y).Click()
-                .SendKeys(OpenQA.Selenium.Keys.PageDown + OpenQA.Selenium.Keys.PageDown).Perform();
+            ScrollDown();
 
             WindowsElement saturationAndBrightness = session.FindElementByName("Saturation and brightness");
             WindowsElement hue = session.FindElementByName("Hue");
@@ -335,6 +388,91 @@ namespace PowerToysTests
             saveButton.Click();
             ShortWait();
             Assert.AreEqual("#ff0000", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
+        }
+
+        [TestMethod]
+        public void HighlightRGBInputsTest()
+        {
+            OpenFancyZonesSettings();
+            ScrollDown();
+
+            TestRgbInput("TextField57"); //red
+            TestRgbInput("TextField60"); //green
+            TestRgbInput("TextField63"); //blue
+
+            session.FindElementByName("Save").Click();
+        }
+
+        [TestMethod]
+        public void HighlightHexInputTest()
+        {
+            OpenFancyZonesSettings();
+            ScrollDown();
+
+            WindowsElement hexInput = session.FindElementByAccessibilityId("TextField54");
+            Assert.IsNotNull(hexInput);
+
+            hexInput.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
+            
+            string invalidSymbols = "qwrtyuiopsghjklzxvnm,./';][{}:`~!#@$%^&*()_-+=\"\'\\";
+            foreach (char symbol in invalidSymbols)
+            {
+                hexInput.SendKeys(symbol.ToString());
+                Assert.AreEqual("", hexInput.Text.Trim());
+            }
+
+            string validSymbols = "0123456789abcdef";
+            foreach (char symbol in validSymbols)
+            {
+                hexInput.SendKeys(symbol.ToString());
+                Assert.AreEqual(symbol.ToString(), hexInput.Text.Trim());
+                hexInput.SendKeys(OpenQA.Selenium.Keys.Backspace);
+            }
+            
+            //too many symbols
+            hexInput.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
+            hexInput.SendKeys("000000");
+            hexInput.SendKeys("1");
+            Assert.AreEqual("000000\r\n", hexInput.Text);
+
+            //short string
+            hexInput.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
+            hexInput.SendKeys("000");
+            new Actions(session).MoveToElement(hexInput).MoveByOffset(0, hexInput.Rect.Height).Click().Perform();
+            Assert.AreEqual("000000\r\n", hexInput.Text);
+
+            hexInput.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
+            hexInput.SendKeys("1234");
+            new Actions(session).MoveToElement(hexInput).MoveByOffset(0, hexInput.Rect.Height).Click().Perform();
+            Assert.AreEqual("112233\r\n", hexInput.Text);
+
+            session.FindElementByName("Save").Click();
+        }
+
+        [TestMethod]
+        public void HighlightColorTest()
+        {
+            OpenFancyZonesSettings();
+            ScrollDown();
+
+            WindowsElement saturationAndBrightness = session.FindElementByName("Saturation and brightness");
+            WindowsElement hue = session.FindElementByName("Hue");
+            WindowsElement hex = session.FindElementByAccessibilityId("TextField54");
+
+            Assert.IsNotNull(saturationAndBrightness);
+            Assert.IsNotNull(hue);
+            Assert.IsNotNull(hex);
+
+            hex.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
+            hex.SendKeys("63c99a");
+            new Actions(session).MoveToElement(hex).MoveByOffset(0, hex.Rect.Height).Click().Perform();
+
+            Assert.AreEqual("Saturation 51 brightness 79", saturationAndBrightness.Text);
+            Assert.AreEqual("152", hue.Text);
+
+            session.FindElementByName("Save").Click();
+            ShortWait();
+            Assert.AreEqual("#63c99a", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
         }
 
         [ClassInitialize]
