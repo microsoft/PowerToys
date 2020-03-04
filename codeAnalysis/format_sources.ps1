@@ -34,7 +34,7 @@ function Get-Dirty-Files-From-Git() {
 
 if($all) { 
   $filesToFormat = 
-    Get-ChildItem -Recurse -File src | 
+    Get-ChildItem -Recurse -File ..\src | 
     Resolve-Path -Relative |
     where { (Get-Item $_).Directory -notmatch "(Generated Files)|node_modules" -And 
       $sourceExtensions.Contains((Get-Item $_).Extension)}
