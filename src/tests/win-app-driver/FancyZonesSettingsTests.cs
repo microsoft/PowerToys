@@ -20,6 +20,26 @@ namespace PowerToysTests
         private static Actions _scrollDown;
         private static Actions _scrollUp;
 
+        private static void Init()
+        {
+            OpenSettings();
+            ShortWait();
+
+            OpenFancyZonesSettings();
+
+            _saveButton = session.FindElementByName("Save");
+            Assert.IsNotNull(_saveButton);
+
+            WindowsElement powerToysWindow = session.FindElementByXPath("//Window[@Name=\"PowerToys Settings\"]");
+            Assert.IsNotNull(powerToysWindow);
+            _scrollUp = new Actions(session).MoveToElement(_saveButton).MoveByOffset(0, _saveButton.Rect.Height).ContextClick()
+                .SendKeys(OpenQA.Selenium.Keys.PageUp + OpenQA.Selenium.Keys.PageUp);
+            Assert.IsNotNull(_scrollUp);
+            _scrollDown = new Actions(session).MoveToElement(_saveButton).MoveByOffset(0, _saveButton.Rect.Height).ContextClick()
+                .SendKeys(OpenQA.Selenium.Keys.PageDown + OpenQA.Selenium.Keys.PageDown);
+            Assert.IsNotNull(_scrollDown);
+        }
+
         private static void OpenFancyZonesSettings()
         {
             WindowsElement fzNavigationButton = session.FindElementByXPath("//Button[@Name=\"FancyZones\"]");
@@ -490,33 +510,122 @@ namespace PowerToysTests
             Assert.AreEqual(inputValue, getPropertyValue<string>("fancyzones_excluded_apps"));
         }
 
+        [TestMethod]
+        public void ExitDialogSave()
+        {
+            JObject initialProps = _initialSettingsJson["properties"].ToObject<JObject>();
+            bool initialToggleValue = getPropertyValue<bool>(initialProps, "fancyzones_shiftDrag");
+
+            WindowsElement toggle = session.FindElementByAccessibilityId("Toggle37");
+            Assert.IsNotNull(toggle);
+            Assert.AreEqual(initialToggleValue, toggle.Selected);
+            
+            toggle.Click();
+            CloseSettings();
+            WindowsElement exitDialog = session.FindElementByName("Changes not saved");
+            Assert.IsNotNull(exitDialog);
+
+            exitDialog.FindElementByName("Save").Click();
+
+
+            //check if window still opened
+            WindowsElement powerToysWindow = session.FindElementByXPath("//Window[@Name=\"PowerToys Settings\"]");
+            Assert.IsNotNull(powerToysWindow); 
+
+            //check settings change
+            JObject savedProps = getProperties();
+            
+            Assert.AreNotEqual(initialToggleValue, getPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
+            
+            //return initial app state
+            toggle.Click(); 
+        }
+
+        [TestMethod]
+        public void ExitDialogExit()
+        {
+            WindowsElement toggle = session.FindElementByAccessibilityId("Toggle37");
+            Assert.IsNotNull(toggle);
+
+            toggle.Click();
+            CloseSettings();
+            WindowsElement exitDialog = session.FindElementByName("Changes not saved");
+            Assert.IsNotNull(exitDialog);
+
+            exitDialog.FindElementByName("Exit").Click();
+
+            //check if window still opened
+            try 
+            {
+                WindowsElement powerToysWindow = session.FindElementByXPath("//Window[@Name=\"PowerToys Settings\"]");
+                Assert.IsNull(powerToysWindow);
+            }
+            catch(OpenQA.Selenium.WebDriverException)
+            {
+                //window is no longer available, which is expected
+            }            
+
+            //check settings change
+            JObject savedProps = getProperties();
+            JObject initialProps = _initialSettingsJson["properties"].ToObject<JObject>();
+            Assert.AreEqual(getPropertyValue<bool>(initialProps, "fancyzones_shiftDrag"), getPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
+
+            //return initial app state
+            Init();
+        }
+
+        [TestMethod]
+        public void ExitDialogCancel()
+        {
+            WindowsElement toggle = session.FindElementByAccessibilityId("Toggle37");
+            Assert.IsNotNull(toggle);
+
+            toggle.Click();
+            CloseSettings();
+            WindowsElement exitDialog = session.FindElementByName("Changes not saved");
+            Assert.IsNotNull(exitDialog);
+
+            exitDialog.FindElementByName("Cancel").Click();
+
+            //check if window still opened
+            WindowsElement powerToysWindow = session.FindElementByXPath("//Window[@Name=\"PowerToys Settings\"]");
+            Assert.IsNotNull(powerToysWindow);
+
+            //check settings change
+            JObject savedProps = getProperties();
+            JObject initialProps = _initialSettingsJson["properties"].ToObject<JObject>();
+            Assert.AreEqual(getPropertyValue<bool>(initialProps, "fancyzones_shiftDrag"), getPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
+
+            //return initial app state
+            toggle.Click();
+            SaveChanges();
+        }
+
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
             Setup(context);
-
-            OpenSettings();
-            ShortWait();
-
-            OpenFancyZonesSettings();
-
-            _saveButton = session.FindElementByName("Save");
-            Assert.IsNotNull(_saveButton);
-
-            WindowsElement powerToysWindow = session.FindElementByXPath("//Window[@Name=\"PowerToys Settings\"]");
-            Assert.IsNotNull(powerToysWindow);
-            _scrollUp = new Actions(session).MoveToElement(_saveButton).MoveByOffset(0, _saveButton.Rect.Height).ContextClick()
-                .SendKeys(OpenQA.Selenium.Keys.PageUp + OpenQA.Selenium.Keys.PageUp);
-            Assert.IsNotNull(_scrollUp);
-            _scrollDown = new Actions(session).MoveToElement(_saveButton).MoveByOffset(0, _saveButton.Rect.Height).ContextClick()
-                .SendKeys(OpenQA.Selenium.Keys.PageDown + OpenQA.Selenium.Keys.PageDown);
-            Assert.IsNotNull(_scrollDown);
+            Init();
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
             CloseSettings();
+
+            try
+            {
+                WindowsElement exitDialogButton = session.FindElementByName("Exit");
+                if (exitDialogButton != null)
+                {
+                    exitDialogButton.Click();
+                }
+            }
+            catch(OpenQA.Selenium.WebDriverException)
+            {
+                //element couldn't be located
+            }
+
             TearDown();
         }
 
