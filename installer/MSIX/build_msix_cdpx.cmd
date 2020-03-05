@@ -11,4 +11,4 @@ for /f "tokens=3delims=<>" %%i in ('findstr "<Version>" "..\Version.props"') do 
   set MSIXVERSION=%%i
 )
 setlocal DisableDelayedExpansion
-ren "bin\PowerToys-x64.msix" PowerToys-%MSIXVERSION%-x64.msix
+ren "bin\PowerToys-x64.msix" PowerToysSetup-%MSIXVERSION%-x64.msix
