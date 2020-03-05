@@ -14,4 +14,5 @@ public:
       _In_ UINT renameItemCount,
       _In_ DWORD flags,
       _In_ PCWSTR extensionList) noexcept;
+  static void SettingsChanged() noexcept;
 };

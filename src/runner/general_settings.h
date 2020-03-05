@@ -10,6 +10,7 @@ struct GeneralSettings
     std::unordered_map<std::wstring, bool> isModulesEnabledMap;
     bool isElevated;
     bool isRunElevated;
+    bool isAdmin;
     std::wstring theme;
     std::wstring systemTheme;
     std::wstring powerToysVersion;
