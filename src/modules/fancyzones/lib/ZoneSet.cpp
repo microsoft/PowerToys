@@ -373,36 +373,38 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetL
 {
     bool success = true;
 
-    int zonePercent = C_MULTIPLIER / zoneCount;
-
     long totalWidth;
     long totalHeight;
-
-    long cellWidth;
-    long cellHeight;
 
     if (type == JSONHelpers::ZoneSetLayoutType::Columns)
     {
         totalWidth = workArea.width() - (spacing * (zoneCount + 1));
         totalHeight = workArea.height() - (spacing * 2);
-        cellWidth = totalWidth * zonePercent / C_MULTIPLIER;
-        cellHeight = totalHeight;
     }
     else
     { //Rows
         totalWidth = workArea.width() - (spacing * 2);
         totalHeight = workArea.height() - (spacing * (zoneCount + 1));
-        cellWidth = totalWidth;
-        cellHeight = totalHeight * zonePercent / C_MULTIPLIER;
     }
 
     long top = spacing;
     long left = spacing;
-    long bottom = top + cellHeight;
-    long right = left + cellWidth;
+    long bottom;
+    long right;
 
     for (int zone = 0; zone < zoneCount; zone++)
     {
+        if (type == JSONHelpers::ZoneSetLayoutType::Columns)
+        {
+            right = left + (zone + 1) * totalWidth / zoneCount - zone * totalWidth / zoneCount;
+            bottom = totalHeight - spacing;
+        }
+        else
+        { //Rows
+            right = totalWidth - spacing;
+            bottom = top + (zone + 1) * totalHeight / zoneCount - zone * totalHeight / zoneCount;
+        }
+        
         if (left >= right || top >= bottom || left < 0 || right < 0 || top < 0 || bottom < 0)
         {
             success = false;
@@ -413,13 +415,11 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetL
 
         if (type == JSONHelpers::ZoneSetLayoutType::Columns)
         {
-            left += cellWidth + spacing;
-            right = left + cellWidth;
+            left = right + spacing;
         }
         else
         { //Rows
-            top += cellHeight + spacing;
-            bottom = top + cellHeight;
+            top = bottom + spacing;
         }
     }
 
@@ -454,11 +454,11 @@ bool ZoneSet::CalculateGridLayout(Rect workArea, JSONHelpers::ZoneSetLayoutType 
 
     for (int row = 0; row < rows; row++)
     {
-        gridLayoutInfo.rowsPercents()[row] = C_MULTIPLIER / rows;
+        gridLayoutInfo.rowsPercents()[row] = C_MULTIPLIER * (row + 1) / rows - C_MULTIPLIER * row / rows;
     }
     for (int col = 0; col < columns; col++)
     {
-        gridLayoutInfo.columnsPercents()[col] = C_MULTIPLIER / columns;
+        gridLayoutInfo.columnsPercents()[col] = C_MULTIPLIER * (col + 1) / columns - C_MULTIPLIER * col / columns;
     }
 
     for (int i = 0; i < rows; ++i)
@@ -554,22 +554,22 @@ bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo grid
     Info rowInfo[JSONHelpers::MAX_ZONE_COUNT];
     Info columnInfo[JSONHelpers::MAX_ZONE_COUNT];
 
-    long top = spacing;
+    long long totalPercents = 0;
     for (int row = 0; row < gridLayoutInfo.rows(); row++)
     {
-        rowInfo[row].Start = top;
-        rowInfo[row].Extent = totalHeight * gridLayoutInfo.rowsPercents()[row] / C_MULTIPLIER;
-        rowInfo[row].End = rowInfo[row].Start + rowInfo[row].Extent;
-        top += rowInfo[row].Extent + spacing;
+        rowInfo[row].Start = totalPercents * totalHeight / C_MULTIPLIER + (row + 1) * spacing;
+        totalPercents += gridLayoutInfo.rowsPercents()[row];
+        rowInfo[row].End = totalPercents * totalHeight / C_MULTIPLIER + (row + 1) * spacing;;
+        rowInfo[row].Extent = rowInfo[row].End - rowInfo[row].Start;
     }
 
-    long left = spacing;
+    totalPercents = 0;
     for (int col = 0; col < gridLayoutInfo.columns(); col++)
     {
-        columnInfo[col].Start = left;
-        columnInfo[col].Extent = totalWidth * gridLayoutInfo.columnsPercents()[col] / C_MULTIPLIER;
-        columnInfo[col].End = columnInfo[col].Start + columnInfo[col].Extent;
-        left += columnInfo[col].Extent + spacing;
+        columnInfo[col].Start = totalPercents * totalWidth / C_MULTIPLIER + (col + 1) * spacing;;
+        totalPercents += gridLayoutInfo.columnsPercents()[col];
+        columnInfo[col].End = totalPercents * totalWidth / C_MULTIPLIER + (col + 1) * spacing;;
+        columnInfo[col].Extent = columnInfo[col].End - columnInfo[col].Start;
     }
 
     for (int row = 0; row < gridLayoutInfo.rows(); row++)
@@ -580,8 +580,8 @@ bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo grid
             if (((row == 0) || (gridLayoutInfo.cellChildMap()[row - 1][col] != i)) &&
                 ((col == 0) || (gridLayoutInfo.cellChildMap()[row][col - 1] != i)))
             {
-                left = columnInfo[col].Start;
-                top = rowInfo[row].Start;
+                long left = columnInfo[col].Start;
+                long top = rowInfo[row].Start;
 
                 int maxRow = row;
                 while (((maxRow + 1) < gridLayoutInfo.rows()) && (gridLayoutInfo.cellChildMap()[maxRow + 1][col] == i))

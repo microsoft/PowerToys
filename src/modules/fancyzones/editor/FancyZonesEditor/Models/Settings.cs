@@ -286,7 +286,7 @@ namespace FancyZonesEditor
             {
                 _rowsModel.CellChildMap[i, 0] = i;
                 _columnsModel.CellChildMap[0, i] = i;
-                _rowsModel.RowPercents[i] = _multiplier / ZoneCount; // _columnsModel is sharing the same array
+                _rowsModel.RowPercents[i] = ((_multiplier * (i + 1)) / ZoneCount) - ((_multiplier * i) / ZoneCount); // _columnsModel is sharing the same array
             }
 
             // Update the "Grid" Default Layout
@@ -315,12 +315,12 @@ namespace FancyZonesEditor
 
             for (int row = 0; row < rows; row++)
             {
-                _gridModel.RowPercents[row] = _multiplier / rows;
+                _gridModel.RowPercents[row] = ((_multiplier * (row + 1)) / rows) - ((_multiplier * row) / rows);
             }
 
             for (int col = 0; col < cols; col++)
             {
-                _gridModel.ColumnPercents[col] = _multiplier / cols;
+                _gridModel.ColumnPercents[col] = ((_multiplier * (col + 1)) / cols) - ((_multiplier * col) / cols);
             }
 
             int index = 0;
