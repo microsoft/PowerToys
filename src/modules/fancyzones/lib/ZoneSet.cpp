@@ -399,11 +399,11 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetL
         if (type == JSONHelpers::ZoneSetLayoutType::Columns)
         {
             right = left + (zone + 1) * totalWidth / zoneCount - zone * totalWidth / zoneCount;
-            bottom = totalHeight - spacing;
+            bottom = totalHeight + spacing;
         }
         else
         { //Rows
-            right = totalWidth - spacing;
+            right = totalWidth + spacing;
             bottom = top + (zone + 1) * totalHeight / zoneCount - zone * totalHeight / zoneCount;
         }
         
