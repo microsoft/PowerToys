@@ -12,7 +12,8 @@
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"
         Title="{x:Static p:Resources.Advanced_Title}"
-        WindowStyle="ToolWindow">
+        WindowStyle="ToolWindow"
+        WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
         <ObjectDataProvider x:Key="PngInterlaceOptionValues"
