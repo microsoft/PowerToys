@@ -140,88 +140,42 @@ namespace FancyZonesEditor
             // As long as there is an edge of the 2D range such that some zone crosses its boundary, extend that boundary.
             // A single pass is not enough, a while loop is needed. This results in the unique smallest rectangle containing
             // the initial range such that no zone is "broken".
-            bool global_dirty = true;
+            bool possibly_broken = true;
 
-            while (global_dirty)
+            while (possibly_broken)
             {
-                global_dirty = false;
+                possibly_broken = false;
 
-                while (_startRow > 0)
+                for (int col = _startCol; col <= _endCol; col++)
                 {
-                    bool dirty = false;
-                    for (int col = _startCol; col <= _endCol; col++)
+                    if (_startRow > 0 && model.CellChildMap[_startRow - 1, col] == model.CellChildMap[_startRow, col])
                     {
-                        if (model.CellChildMap[_startRow - 1, col] == model.CellChildMap[_startRow, col])
-                        {
-                            _startRow--;
-                            dirty = true;
-                            global_dirty = true;
-                            break;
-                        }
+                        _startRow--;
+                        possibly_broken = true;
+                        break;
                     }
 
-                    if (!dirty)
+                    if (_endRow < model.Rows - 1 && model.CellChildMap[_endRow + 1, col] == model.CellChildMap[_endRow, col])
                     {
+                        _endRow++;
+                        possibly_broken = true;
                         break;
                     }
                 }
 
-                while (_endRow < model.Rows - 1)
+                for (int row = _startRow; row <= _endRow; row++)
                 {
-                    bool dirty = false;
-                    for (int col = _startCol; col <= _endCol; col++)
+                    if (_startCol > 0 && model.CellChildMap[row, _startCol - 1] == model.CellChildMap[row, _startCol])
                     {
-                        if (model.CellChildMap[_endRow + 1, col] == model.CellChildMap[_endRow, col])
-                        {
-                            _endRow++;
-                            dirty = true;
-                            global_dirty = true;
-                            break;
-                        }
-                    }
-
-                    if (!dirty)
-                    {
+                        _startCol--;
+                        possibly_broken = true;
                         break;
                     }
-                }
 
-                while (_startCol > 0)
-                {
-                    bool dirty = false;
-                    for (int row = _startRow; row <= _endRow; row++)
+                    if (_endCol < model.Columns - 1 && model.CellChildMap[row, _endCol + 1] == model.CellChildMap[row, _endCol])
                     {
-                        if (model.CellChildMap[row, _startCol - 1] == model.CellChildMap[row, _startCol])
-                        {
-                            _startCol--;
-                            dirty = true;
-                            global_dirty = true;
-                            break;
-                        }
-                    }
-
-                    if (!dirty)
-                    {
-                        break;
-                    }
-                }
-
-                while (_endCol < model.Columns - 1)
-                {
-                    bool dirty = false;
-                    for (int row = _startRow; row <= _endRow; row++)
-                    {
-                        if (model.CellChildMap[row, _endCol + 1] == model.CellChildMap[row, _endCol])
-                        {
-                            _endCol++;
-                            dirty = true;
-                            global_dirty = true;
-                            break;
-                        }
-                    }
-
-                    if (!dirty)
-                    {
+                        _endCol++;
+                        possibly_broken = true;
                         break;
                     }
                 }
