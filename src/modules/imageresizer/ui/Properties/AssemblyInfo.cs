@@ -10,12 +10,12 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Image Resizer")]
+[assembly: AssemblyTitle("ImageResizer")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Brice Lambson")]
-[assembly: AssemblyProduct("Image Resizer for Windows")]
-[assembly: AssemblyCopyright("© 2019 Brice Lambson. All rights reserved.")]
+[assembly: AssemblyCompany("Microsoft Corp.")]
+[assembly: AssemblyProduct("ImageResizer")]
+[assembly: AssemblyCopyright("Copyright (C) 2019 Microsoft Corp.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -53,6 +53,6 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("3.1.3.0")]
-[assembly: AssemblyFileVersion("3.1.3.0")]
-[assembly: AssemblyInformationalVersion("3.1.3")]
+[assembly: AssemblyVersion("0.15.1.0")]
+[assembly: AssemblyFileVersion("0.15.1.0")]
+[assembly: AssemblyInformationalVersion("0.15.1.0")]
