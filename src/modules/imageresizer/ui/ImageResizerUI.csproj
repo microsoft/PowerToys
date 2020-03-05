@@ -71,6 +71,7 @@
     <Compile Include="Models\ResizeSize.cs" />
     <Compile Include="Models\ResizeUnit.cs" />
     <Compile Include="Utilities\MathHelpers.cs" />
+    <Compile Include="Utilities\Win32Helpers.cs" />
     <Compile Include="ViewModels\AdvancedViewModel.cs" />
     <Compile Include="ViewModels\InputViewModel.cs" />
     <Compile Include="ViewModels\ITabViewModel.cs" />
