@@ -111,6 +111,12 @@ namespace Common
 
                 this.Controls.Clear();
             });
+
+            // Call garbage collection at the time of unloading of Preview. This is to mitigate issue with WebBrowser Control not able to dispose properly.
+            // Which is preventing prevhost.exe to exit at the time of closing File explorer.
+            // Preview Handlers run in a separate process from PowerToys. This will not affect the performance of other modules.
+            // Mitigate the following Github issue: https://github.com/microsoft/PowerToys/issues/1468
+            GC.Collect();
         }
 
         /// <inheritdoc />
