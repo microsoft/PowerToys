@@ -27,6 +27,13 @@ namespace FancyZonesEditor
 
         private int zoneIndex;
 
+        public enum ResizeMode
+        {
+            ModeLow = 1,
+            ModeHigh = 2,
+            ModeBoth = 3,
+        }
+
         private abstract class SnappyHelperBase
         {
             public int ScreenW { get; private set; }
@@ -39,11 +46,13 @@ namespace FancyZonesEditor
 
             public int Position { get; protected set; }
 
-            public int Mode { get; private set; }
+            public ResizeMode Mode { get; private set; }
 
+            /*
             public const int ModeLow = 1;
             public const int ModeHigh = 2;
             public const int ModeBoth = 3;
+            */
 
             /// <summary>
             /// Initializes a new instance of the <see cref="SnappyHelperBase"/> class.
@@ -58,7 +67,7 @@ namespace FancyZonesEditor
             /// <param name="isX"> Whether this is the X or Y SnappyHelper</param>
             /// <param name="mode"> One of the three modes of operation (for example: tracking left/right/both edges)</param>
             /// <param name="screen_w"> The size of the screen in this (X or Y) dimension</param>
-            public SnappyHelperBase(IList<Int32Rect> zones, int zoneIndex, bool isX, int mode, int screen_w)
+            public SnappyHelperBase(IList<Int32Rect> zones, int zoneIndex, bool isX, ResizeMode mode, int screen_w)
             {
                 int track_p = isX ? zones[zoneIndex].X : zones[zoneIndex].Y;
                 int track_w = isX ? zones[zoneIndex].Width : zones[zoneIndex].Height;
@@ -72,7 +81,7 @@ namespace FancyZonesEditor
                         int curr_w = isX ? zones[i].Width : zones[i].Height;
                         key_positions.Add(curr_p);
                         key_positions.Add(curr_p + curr_w);
-                        if (mode == ModeBoth)
+                        if (mode == ResizeMode.ModeBoth)
                         {
                             key_positions.Add(curr_p - track_w);
                             key_positions.Add(curr_p + curr_w - track_w);
@@ -96,49 +105,49 @@ namespace FancyZonesEditor
                 }
 
                 // Initialize minValue
-                if (mode == ModeLow)
+                if (mode == ResizeMode.ModeLow)
                 {
                     // We're dragging the low edge, don't go below zero
                     MinValue = 0;
                 }
-                else if (mode == ModeHigh)
+                else if (mode == ResizeMode.ModeHigh)
                 {
                     // We're dragging the high edge, don't make the zone smaller than min_w
                     MinValue = track_p + min_w;
                 }
-                else if (mode == ModeBoth)
+                else if (mode == ResizeMode.ModeBoth)
                 {
                     // We're moving the window, don't move it below zero
                     MinValue = 0;
                 }
 
                 // Initialize maxValue
-                if (mode == ModeLow)
+                if (mode == ResizeMode.ModeLow)
                 {
                     // We're dragging the low edge, it can't make the zone smaller than min_w
                     MaxValue = track_p + track_w - min_w;
                 }
-                else if (mode == ModeHigh)
+                else if (mode == ResizeMode.ModeHigh)
                 {
                     // We're dragging the high edge, don't go off the screen
                     MaxValue = screen_w;
                 }
-                else if (mode == ModeBoth)
+                else if (mode == ResizeMode.ModeBoth)
                 {
                     // We're moving the window, don't go off the screen (this time the lower edge is tracked)
                     MaxValue = screen_w - track_w;
                 }
 
                 // Initialize position
-                if (mode == ModeLow)
+                if (mode == ResizeMode.ModeLow)
                 {
                     Position = track_p;
                 }
-                else if (mode == ModeHigh)
+                else if (mode == ResizeMode.ModeHigh)
                 {
                     Position = track_p + track_w;
                 }
-                else if (mode == ModeBoth)
+                else if (mode == ResizeMode.ModeBoth)
                 {
                     Position = track_p;
                 }
@@ -160,7 +169,7 @@ namespace FancyZonesEditor
                 get => (int)(0.08 * ScreenW);
             }
 
-            public SnappyHelperMagnetic(IList<Int32Rect> zones, int zoneIndex, bool isX, int mode, int screen_w)
+            public SnappyHelperMagnetic(IList<Int32Rect> zones, int zoneIndex, bool isX, ResizeMode mode, int screen_w)
                 : base(zones, zoneIndex, isX, mode, screen_w)
             {
                 freePosition = Position;
@@ -214,7 +223,7 @@ namespace FancyZonesEditor
         private SnappyHelperBase snappyX;
         private SnappyHelperBase snappyY;
 
-        private SnappyHelperBase NewDefaultSnappyHelper(bool isX, int mode, int screen_w)
+        private SnappyHelperBase NewDefaultSnappyHelper(bool isX, ResizeMode mode, int screen_w)
         {
             return new SnappyHelperMagnetic(Model.Zones, ZoneIndex, isX, mode, screen_w);
         }
@@ -225,13 +234,13 @@ namespace FancyZonesEditor
 
             if (snappyX != null)
             {
-                if (snappyX.Mode == SnappyHelperBase.ModeLow)
+                if (snappyX.Mode == ResizeMode.ModeLow)
                 {
                     int changeX = snappyX.Position - rect.X;
                     rect.X += changeX;
                     rect.Width -= changeX;
                 }
-                else if (snappyX.Mode == SnappyHelperBase.ModeHigh)
+                else if (snappyX.Mode == ResizeMode.ModeHigh)
                 {
                     rect.Width = snappyX.Position - rect.X;
                 }
@@ -247,13 +256,13 @@ namespace FancyZonesEditor
 
             if (snappyY != null)
             {
-                if (snappyY.Mode == SnappyHelperBase.ModeLow)
+                if (snappyY.Mode == ResizeMode.ModeLow)
                 {
                     int changeY = snappyY.Position - rect.Y;
                     rect.Y += changeY;
                     rect.Height -= changeY;
                 }
-                else if (snappyY.Mode == SnappyHelperBase.ModeHigh)
+                else if (snappyY.Mode == ResizeMode.ModeHigh)
                 {
                     rect.Height = snappyY.Position - rect.Y;
                 }
@@ -304,8 +313,8 @@ namespace FancyZonesEditor
         // Corner dragging
         private void Caption_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, SnappyHelperBase.ModeBoth, Model.ReferenceWidth);
-            snappyY = NewDefaultSnappyHelper(false, SnappyHelperBase.ModeBoth, Model.ReferenceHeight);
+            snappyX = NewDefaultSnappyHelper(true, ResizeMode.ModeBoth, Model.ReferenceWidth);
+            snappyY = NewDefaultSnappyHelper(false, ResizeMode.ModeBoth, Model.ReferenceHeight);
         }
 
         private Settings _settings = ((App)Application.Current).ZoneSettings;
@@ -316,50 +325,50 @@ namespace FancyZonesEditor
 
         private void NWResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, SnappyHelperBase.ModeLow, Model.ReferenceWidth);
-            snappyY = NewDefaultSnappyHelper(false, SnappyHelperBase.ModeLow, Model.ReferenceHeight);
+            snappyX = NewDefaultSnappyHelper(true, ResizeMode.ModeLow, Model.ReferenceWidth);
+            snappyY = NewDefaultSnappyHelper(false, ResizeMode.ModeLow, Model.ReferenceHeight);
         }
 
         private void NEResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, SnappyHelperBase.ModeHigh, Model.ReferenceWidth);
-            snappyY = NewDefaultSnappyHelper(false, SnappyHelperBase.ModeLow, Model.ReferenceHeight);
+            snappyX = NewDefaultSnappyHelper(true, ResizeMode.ModeHigh, Model.ReferenceWidth);
+            snappyY = NewDefaultSnappyHelper(false, ResizeMode.ModeLow, Model.ReferenceHeight);
         }
 
         private void SWResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, SnappyHelperBase.ModeLow, Model.ReferenceWidth);
-            snappyY = NewDefaultSnappyHelper(false, SnappyHelperBase.ModeHigh, Model.ReferenceHeight);
+            snappyX = NewDefaultSnappyHelper(true, ResizeMode.ModeLow, Model.ReferenceWidth);
+            snappyY = NewDefaultSnappyHelper(false, ResizeMode.ModeHigh, Model.ReferenceHeight);
         }
 
         private void SEResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, SnappyHelperBase.ModeHigh, Model.ReferenceWidth);
-            snappyY = NewDefaultSnappyHelper(false, SnappyHelperBase.ModeHigh, Model.ReferenceHeight);
+            snappyX = NewDefaultSnappyHelper(true, ResizeMode.ModeHigh, Model.ReferenceWidth);
+            snappyY = NewDefaultSnappyHelper(false, ResizeMode.ModeHigh, Model.ReferenceHeight);
         }
 
         // Edge dragging
         private void NResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
             snappyX = null;
-            snappyY = NewDefaultSnappyHelper(false, SnappyHelperBase.ModeLow, Model.ReferenceHeight);
+            snappyY = NewDefaultSnappyHelper(false, ResizeMode.ModeLow, Model.ReferenceHeight);
         }
 
         private void SResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
             snappyX = null;
-            snappyY = NewDefaultSnappyHelper(false, SnappyHelperBase.ModeHigh, Model.ReferenceHeight);
+            snappyY = NewDefaultSnappyHelper(false, ResizeMode.ModeHigh, Model.ReferenceHeight);
         }
 
         private void WResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, SnappyHelperBase.ModeLow, Model.ReferenceWidth);
+            snappyX = NewDefaultSnappyHelper(true, ResizeMode.ModeLow, Model.ReferenceWidth);
             snappyY = null;
         }
 
         private void EResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, SnappyHelperBase.ModeHigh, Model.ReferenceWidth);
+            snappyX = NewDefaultSnappyHelper(true, ResizeMode.ModeHigh, Model.ReferenceWidth);
             snappyY = null;
         }
     }
