@@ -2,10 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Text.Json;
+using System.Windows;
 
 namespace FancyZonesEditor.Models
 {
@@ -170,59 +171,69 @@ namespace FancyZonesEditor.Models
         // Implements the LayoutModel.PersistData abstract method
         protected override void PersistData()
         {
-            FileStream outputStream = File.Open(Settings.AppliedZoneSetTmpFile, FileMode.Create);
-            using (var writer = new Utf8JsonWriter(outputStream, options: default))
+            try
             {
-                writer.WriteStartObject();
-                writer.WriteString("uuid", "{" + Guid.ToString().ToUpper() + "}");
-                writer.WriteString("name", Name);
-
-                writer.WriteString("type", "grid");
-
-                writer.WriteStartObject("info");
-
-                writer.WriteNumber("rows", Rows);
-                writer.WriteNumber("columns", Columns);
-
-                writer.WriteStartArray("rows-percentage");
-                for (int row = 0; row < Rows; row++)
+                FileStream outputStream = File.Open(Settings.AppliedZoneSetTmpFile, FileMode.Create);
+                using (var writer = new Utf8JsonWriter(outputStream, options: default))
                 {
-                    writer.WriteNumberValue(RowPercents[row]);
-                }
+                    writer.WriteStartObject();
+                    writer.WriteString("uuid", "{" + Guid.ToString().ToUpper() + "}");
+                    writer.WriteString("name", Name);
 
-                writer.WriteEndArray();
+                    writer.WriteString("type", "grid");
 
-                writer.WriteStartArray("columns-percentage");
-                for (int col = 0; col < Columns; col++)
-                {
-                    writer.WriteNumberValue(ColumnPercents[col]);
-                }
+                    writer.WriteStartObject("info");
 
-                writer.WriteEndArray();
+                    writer.WriteNumber("rows", Rows);
+                    writer.WriteNumber("columns", Columns);
 
-                writer.WriteStartArray("cell-child-map");
-                for (int row = 0; row < Rows; row++)
-                {
-                    writer.WriteStartArray();
-                    for (int col = 0; col < Columns; col++)
+                    writer.WriteStartArray("rows-percentage");
+                    for (int row = 0; row < Rows; row++)
                     {
-                        writer.WriteNumberValue(CellChildMap[row, col]);
+                        writer.WriteNumberValue(RowPercents[row]);
                     }
 
                     writer.WriteEndArray();
+
+                    writer.WriteStartArray("columns-percentage");
+                    for (int col = 0; col < Columns; col++)
+                    {
+                        writer.WriteNumberValue(ColumnPercents[col]);
+                    }
+
+                    writer.WriteEndArray();
+
+                    writer.WriteStartArray("cell-child-map");
+                    for (int row = 0; row < Rows; row++)
+                    {
+                        writer.WriteStartArray();
+                        for (int col = 0; col < Columns; col++)
+                        {
+                            writer.WriteNumberValue(CellChildMap[row, col]);
+                        }
+
+                        writer.WriteEndArray();
+                    }
+
+                    writer.WriteEndArray();
+
+                    // end info object
+                    writer.WriteEndObject();
+
+                    // end root object
+                    writer.WriteEndObject();
+                    writer.Flush();
                 }
 
-                writer.WriteEndArray();
-
-                // end info object
-                writer.WriteEndObject();
-
-                // end root object
-                writer.WriteEndObject();
-                writer.Flush();
+                outputStream.Close();
             }
+            catch (Exception ex)
+            {
+                string message = "Please report the bug to https://github.com/microsoft/PowerToys/issues" + "\nError persisting grid layout: " + ex.Message;
+                string title = "FancyZones Editor Exception Handler";
 
-            outputStream.Close();
+                MessageBox.Show(message, title);
+            }
         }
     }
 }

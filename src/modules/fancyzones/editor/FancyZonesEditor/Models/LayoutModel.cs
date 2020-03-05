@@ -133,19 +133,29 @@ namespace FancyZonesEditor.Models
 
         public static void SerializeDeletedCustomZoneSets()
         {
-            FileStream outputStream = File.Open(Settings.CustomZoneSetsTmpFile, FileMode.Create);
-            var writer = new Utf8JsonWriter(outputStream, options: default);
-            writer.WriteStartObject();
-            writer.WriteStartArray("deleted-custom-zone-sets");
-            foreach (string zoneSet in _deletedCustomModels)
+            try
             {
-                writer.WriteStringValue(zoneSet);
-            }
+                FileStream outputStream = File.Open(Settings.CustomZoneSetsTmpFile, FileMode.Create);
+                var writer = new Utf8JsonWriter(outputStream, options: default);
+                writer.WriteStartObject();
+                writer.WriteStartArray("deleted-custom-zone-sets");
+                foreach (string zoneSet in _deletedCustomModels)
+                {
+                    writer.WriteStringValue(zoneSet);
+                }
 
-            writer.WriteEndArray();
-            writer.WriteEndObject();
-            writer.Flush();
-            outputStream.Close();
+                writer.WriteEndArray();
+                writer.WriteEndObject();
+                writer.Flush();
+                outputStream.Close();
+            }
+            catch (Exception ex)
+            {
+                string message = "Please report the bug to https://github.com/microsoft/PowerToys/issues" + "\nError serializing deleted layouts: " + ex.Message;
+                string title = "FancyZones Editor Exception Handler";
+
+                MessageBox.Show(message, title);
+            }
         }
 
         // Loads all the custom Layouts from tmp file passed by FancuZonesLib
@@ -153,79 +163,84 @@ namespace FancyZonesEditor.Models
         {
             _customModels = new ObservableCollection<LayoutModel>();
 
-            FileStream inputStream = File.Open(Settings.CustomZoneSetsTmpFile, FileMode.Open);
-            JsonDocument jsonObject;
             try
             {
-                jsonObject = JsonDocument.Parse(inputStream, options: default);
-            }
-            catch
-            {
-                return _customModels;
-            }
+                FileStream inputStream = File.Open(Settings.CustomZoneSetsTmpFile, FileMode.Open);
+                JsonDocument jsonObject = JsonDocument.Parse(inputStream, options: default);
+                JsonElement.ArrayEnumerator customZoneSetsEnumerator = jsonObject.RootElement.GetProperty("custom-zone-sets").EnumerateArray();
 
-            JsonElement.ArrayEnumerator customZoneSetsEnumerator = jsonObject.RootElement.GetProperty("custom-zone-sets").EnumerateArray();
-            while (customZoneSetsEnumerator.MoveNext())
-            {
-                var current = customZoneSetsEnumerator.Current;
-                string name = current.GetProperty("name").GetString();
-                string type = current.GetProperty("type").GetString();
-                string uuid = current.GetProperty("uuid").GetString();
-                var info = current.GetProperty("info");
-                if (type.Equals("grid"))
+                while (customZoneSetsEnumerator.MoveNext())
                 {
-                    int rows = info.GetProperty("rows").GetInt32();
-                    int columns = info.GetProperty("columns").GetInt32();
-                    int[] rowsPercentage = new int[rows];
-                    JsonElement.ArrayEnumerator rowsPercentageEnumerator = info.GetProperty("rows-percentage").EnumerateArray();
-                    int i = 0;
-                    while (rowsPercentageEnumerator.MoveNext())
+                    var current = customZoneSetsEnumerator.Current;
+                    string name = current.GetProperty("name").GetString();
+                    string type = current.GetProperty("type").GetString();
+                    string uuid = current.GetProperty("uuid").GetString();
+                    var info = current.GetProperty("info");
+                    if (type.Equals("grid"))
                     {
-                        rowsPercentage[i++] = rowsPercentageEnumerator.Current.GetInt32();
-                    }
-
-                    i = 0;
-                    int[] columnsPercentage = new int[columns];
-                    JsonElement.ArrayEnumerator columnsPercentageEnumerator = info.GetProperty("columns-percentage").EnumerateArray();
-                    while (columnsPercentageEnumerator.MoveNext())
-                    {
-                        columnsPercentage[i++] = columnsPercentageEnumerator.Current.GetInt32();
-                    }
-
-                    i = 0;
-                    JsonElement.ArrayEnumerator cellChildMapRows = info.GetProperty("cell-child-map").EnumerateArray();
-                    int[,] cellChildMap = new int[rows, columns];
-                    while (cellChildMapRows.MoveNext())
-                    {
-                        int j = 0;
-                        JsonElement.ArrayEnumerator cellChildMapRowElems = cellChildMapRows.Current.EnumerateArray();
-                        while (cellChildMapRowElems.MoveNext())
+                        int rows = info.GetProperty("rows").GetInt32();
+                        int columns = info.GetProperty("columns").GetInt32();
+                        int[] rowsPercentage = new int[rows];
+                        JsonElement.ArrayEnumerator rowsPercentageEnumerator = info.GetProperty("rows-percentage").EnumerateArray();
+                        int i = 0;
+                        while (rowsPercentageEnumerator.MoveNext())
                         {
-                            cellChildMap[i, j++] = cellChildMapRowElems.Current.GetInt32();
+                            rowsPercentage[i++] = rowsPercentageEnumerator.Current.GetInt32();
                         }
 
-                        i++;
-                    }
+                        i = 0;
+                        int[] columnsPercentage = new int[columns];
+                        JsonElement.ArrayEnumerator columnsPercentageEnumerator = info.GetProperty("columns-percentage").EnumerateArray();
+                        while (columnsPercentageEnumerator.MoveNext())
+                        {
+                            columnsPercentage[i++] = columnsPercentageEnumerator.Current.GetInt32();
+                        }
 
-                    _customModels.Add(new GridLayoutModel(uuid, name, LayoutType.Custom, rows, columns, rowsPercentage, columnsPercentage, cellChildMap));
-                }
-                else if (type.Equals("canvas"))
-                {
-                    int referenceWidth = info.GetProperty("ref-width").GetInt32();
-                    int referenceHeight = info.GetProperty("ref-height").GetInt32();
-                    JsonElement.ArrayEnumerator zonesEnumerator = info.GetProperty("zones").EnumerateArray();
-                    IList<Int32Rect> zones = new List<Int32Rect>();
-                    while (zonesEnumerator.MoveNext())
+                        i = 0;
+                        JsonElement.ArrayEnumerator cellChildMapRows = info.GetProperty("cell-child-map").EnumerateArray();
+                        int[,] cellChildMap = new int[rows, columns];
+                        while (cellChildMapRows.MoveNext())
+                        {
+                            int j = 0;
+                            JsonElement.ArrayEnumerator cellChildMapRowElems = cellChildMapRows.Current.EnumerateArray();
+                            while (cellChildMapRowElems.MoveNext())
+                            {
+                                cellChildMap[i, j++] = cellChildMapRowElems.Current.GetInt32();
+                            }
+
+                            i++;
+                        }
+
+                        _customModels.Add(new GridLayoutModel(uuid, name, LayoutType.Custom, rows, columns, rowsPercentage, columnsPercentage, cellChildMap));
+                    }
+                    else if (type.Equals("canvas"))
                     {
-                        int x = zonesEnumerator.Current.GetProperty("X").GetInt32();
-                        int y = zonesEnumerator.Current.GetProperty("Y").GetInt32();
-                        int width = zonesEnumerator.Current.GetProperty("width").GetInt32();
-                        int height = zonesEnumerator.Current.GetProperty("height").GetInt32();
-                        zones.Add(new Int32Rect(x, y, width, height));
-                    }
+                        int referenceWidth = info.GetProperty("ref-width").GetInt32();
+                        int referenceHeight = info.GetProperty("ref-height").GetInt32();
+                        JsonElement.ArrayEnumerator zonesEnumerator = info.GetProperty("zones").EnumerateArray();
+                        IList<Int32Rect> zones = new List<Int32Rect>();
+                        while (zonesEnumerator.MoveNext())
+                        {
+                            int x = zonesEnumerator.Current.GetProperty("X").GetInt32();
+                            int y = zonesEnumerator.Current.GetProperty("Y").GetInt32();
+                            int width = zonesEnumerator.Current.GetProperty("width").GetInt32();
+                            int height = zonesEnumerator.Current.GetProperty("height").GetInt32();
+                            zones.Add(new Int32Rect(x, y, width, height));
+                        }
 
-                    _customModels.Add(new CanvasLayoutModel(uuid, name, LayoutType.Custom, referenceWidth, referenceHeight, zones));
+                        _customModels.Add(new CanvasLayoutModel(uuid, name, LayoutType.Custom, referenceWidth, referenceHeight, zones));
+                    }
                 }
+
+                inputStream.Close();
+            }
+            catch (Exception ex)
+            {
+                string message = "Please report the bug to https://github.com/microsoft/PowerToys/issues" + "\nError loading custom layouts: " + ex.Message;
+                string title = "FancyZones Editor Exception Handler";
+
+                MessageBox.Show(message, title);
+                return new ObservableCollection<LayoutModel>();
             }
 
             return _customModels;
@@ -239,56 +254,65 @@ namespace FancyZonesEditor.Models
 
         public abstract LayoutModel Clone();
 
-        public void Persist(System.Windows.Int32Rect[] zones)
+        public void Persist()
         {
             PersistData();
-            Apply(zones);
+            Apply();
         }
 
-        public void Apply(System.Windows.Int32Rect[] zones)
+        public void Apply()
         {
-            int zoneCount = zones.Length;
-            FileStream outputStream = File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Create);
-            var writer = new Utf8JsonWriter(outputStream, options: default);
-
-            writer.WriteStartObject();
-            writer.WriteString("device-id", Settings.UniqueKey);
-
-            writer.WriteStartObject("active-zoneset");
-            writer.WriteString("uuid", "{" + Guid.ToString().ToUpper() + "}");
-            switch (Type)
+            try
             {
-                case LayoutType.Focus:
-                    writer.WriteString("type", "focus");
-                    break;
-                case LayoutType.Rows:
-                    writer.WriteString("type", "rows");
-                    break;
-                case LayoutType.Columns:
-                    writer.WriteString("type", "columns");
-                    break;
-                case LayoutType.Grid:
-                    writer.WriteString("type", "grid");
-                    break;
-                case LayoutType.PriorityGrid:
-                    writer.WriteString("type", "priority-grid");
-                    break;
-                case LayoutType.Custom:
-                    writer.WriteString("type", "custom");
-                    break;
+                FileStream outputStream = File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Create);
+                var writer = new Utf8JsonWriter(outputStream, options: default);
+
+                writer.WriteStartObject();
+                writer.WriteString("device-id", Settings.UniqueKey);
+
+                writer.WriteStartObject("active-zoneset");
+                writer.WriteString("uuid", "{" + Guid.ToString().ToUpper() + "}");
+                switch (Type)
+                {
+                    case LayoutType.Focus:
+                        writer.WriteString("type", "focus");
+                        break;
+                    case LayoutType.Rows:
+                        writer.WriteString("type", "rows");
+                        break;
+                    case LayoutType.Columns:
+                        writer.WriteString("type", "columns");
+                        break;
+                    case LayoutType.Grid:
+                        writer.WriteString("type", "grid");
+                        break;
+                    case LayoutType.PriorityGrid:
+                        writer.WriteString("type", "priority-grid");
+                        break;
+                    case LayoutType.Custom:
+                        writer.WriteString("type", "custom");
+                        break;
+                }
+
+                writer.WriteEndObject();
+
+                Settings settings = ((App)Application.Current).ZoneSettings;
+
+                writer.WriteBoolean("editor-show-spacing", settings.ShowSpacing);
+                writer.WriteNumber("editor-spacing", settings.Spacing);
+                writer.WriteNumber("editor-zone-count", settings.ZoneCount);
+
+                writer.WriteEndObject();
+                writer.Flush();
+                outputStream.Close();
             }
+            catch (Exception ex)
+            {
+                string message = "Please report the bug to https://github.com/microsoft/PowerToys/issues" + "\nError applying layout: " + ex.Message;
+                string title = "FancyZones Editor Exception Handler";
 
-            writer.WriteEndObject();
-
-            Settings settings = ((App)Application.Current).ZoneSettings;
-
-            writer.WriteBoolean("editor-show-spacing", settings.ShowSpacing);
-            writer.WriteNumber("editor-spacing", settings.Spacing);
-            writer.WriteNumber("editor-zone-count", settings.ZoneCount);
-
-            writer.WriteEndObject();
-            writer.Flush();
-            outputStream.Close();
+                MessageBox.Show(message, title);
+            }
         }
     }
 }

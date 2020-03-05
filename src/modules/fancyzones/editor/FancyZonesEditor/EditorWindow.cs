@@ -16,7 +16,7 @@ namespace FancyZonesEditor
             EditorOverlay mainEditor = EditorOverlay.Current;
             if (mainEditor.DataContext is LayoutModel model)
             {
-                model.Persist(mainEditor.GetZoneRects());
+                model.Persist();
             }
 
             _choosing = true;
