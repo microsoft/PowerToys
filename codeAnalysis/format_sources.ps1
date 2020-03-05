@@ -20,7 +20,9 @@ $sourceExtensions.Add(".cpp") | Out-Null
 $sourceExtensions.Add(".h")   | Out-Null
 
 function Get-Dirty-Files-From-Git() {
-  $staged    = & git diff --name-only --diff-filter=d --cached
+  $repo_root = & git rev-parse --show-toplevel
+
+  $staged    = & git diff --name-only --diff-filter=d --cached | % { $repo_root + "/" + $_ }
   $unstaged  = & git ls-files -m
   $untracked = & git ls-files --others --exclude-standard
   $result = New-Object System.Collections.Generic.List[string]
