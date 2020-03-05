@@ -23,9 +23,10 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{EAF23649-EF6E-478B-980E-81FAD96CCA2A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Win32DesktopApp</RootNamespace>
+    <RootNamespace>PowerKeysUI</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <CppWinRTEnabled>true</CppWinRTEnabled>
+    <ProjectName>PowerKeysUI</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -149,14 +150,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Dialog.cpp" />
-    <ClCompile Include="HelloWindowsDesktop.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Manifest Include="Win32DesktopApp.exe.manifest" />
+    <ClCompile Include="MainWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Dialog.h" />
-    <ClInclude Include="HelloWindowsDesktop.h" />
+    <ClInclude Include="MainWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

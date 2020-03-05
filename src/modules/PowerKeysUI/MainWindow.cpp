@@ -1,4 +1,4 @@
-#include "HelloWindowsDesktop.h"
+#include "MainWindow.h"
 #include "Dialog.h"
 
 using namespace winrt;
@@ -10,15 +10,12 @@ using namespace Windows::Foundation;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 
-HWND _hWnd;
-HWND _childhWnd;
+HWND _hWndMain;
 HINSTANCE _hInstance;
 // This Hwnd will be the window handler for the Xaml Island: A child window that contains Xaml.
-HWND hWndXamlIsland = nullptr;
-HWND retsom()
-{
-    return createDialog(_hInstance);
-}
+HWND hWndXamlIslandMain = nullptr;
+bool isRegistrationCompleted = false;
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
     UILogic(hInstance, nullptr);
@@ -28,28 +25,33 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 void UILogic(HINSTANCE hInstance, bool* ptr)
 {
     _hInstance = hInstance;
-    registerWinClass(_hInstance);
+
     // The main window class name.
-    const wchar_t szWindowClass[] = L"Win32DesktopApp";
-    WNDCLASSEX windowClass = {};
-
-    windowClass.cbSize = sizeof(WNDCLASSEX);
-    windowClass.lpfnWndProc = MainWindowProc;
-    windowClass.hInstance = hInstance;
-    windowClass.lpszClassName = szWindowClass;
-    windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-
-    windowClass.hIconSm = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
-
-    if (RegisterClassEx(&windowClass) == NULL)
+    const wchar_t szWindowClass[] = L"MainWindowClass";
+    if (!isRegistrationCompleted)
     {
-        MessageBox(NULL, L"Windows registration failed!", L"Error", NULL);
-        //return 0;
+        registerWinClass(_hInstance);
+        WNDCLASSEX windowClass = {};
+
+        windowClass.cbSize = sizeof(WNDCLASSEX);
+        windowClass.lpfnWndProc = MainWindowProc;
+        windowClass.hInstance = hInstance;
+        windowClass.lpszClassName = szWindowClass;
+        windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+
+        windowClass.hIconSm = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
+
+        if (RegisterClassEx(&windowClass) == NULL)
+        {
+            MessageBox(NULL, L"Windows registration failed!", L"Error", NULL);
+            return;
+        }
+        isRegistrationCompleted = true;
     }
 
-    _hWnd = CreateWindow(
+    _hWndMain = CreateWindow(
         szWindowClass,
-        L"Windows c++ Win32 Desktop App",
+        L"PowerKeys Settings",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
@@ -59,19 +61,13 @@ void UILogic(HINSTANCE hInstance, bool* ptr)
         NULL,
         hInstance,
         NULL);
-    if (_hWnd == NULL)
+    if (_hWndMain == NULL)
     {
         MessageBox(NULL, L"Call to CreateWindow failed!", L"Error", NULL);
-        //return 0;
+        return;
     }
 
     //XAML Island section
-
-    // The call to winrt::init_apartment initializes COM; by default, in a multithreaded apartment.
-    //winrt::init_apartment(apartment_type::single_threaded);
-
-    //// Initialize the Xaml Framework's corewindow for current thread
-    //WindowsXamlManager winxamlmanager = WindowsXamlManager::InitializeForCurrentThread();
 
     // This DesktopWindowXamlSource is the object that enables a non-UWP desktop application
     // to host UWP controls in any UI element that is associated with a window handle (HWND).
@@ -79,12 +75,12 @@ void UILogic(HINSTANCE hInstance, bool* ptr)
     // Get handle to corewindow
     auto interop = desktopSource.as<IDesktopWindowXamlSourceNative>();
     // Parent the DesktopWindowXamlSource object to current window
-    check_hresult(interop->AttachToWindow(_hWnd));
+    check_hresult(interop->AttachToWindow(_hWndMain));
 
     // Get the new child window's hwnd
-    interop->get_WindowHandle(&hWndXamlIsland);
+    interop->get_WindowHandle(&hWndXamlIslandMain);
     // Update the xaml island window size becuase initially is 0,0
-    SetWindowPos(hWndXamlIsland, 0, 0, 0, 800, 800, SWP_SHOWWINDOW);
+    SetWindowPos(hWndXamlIslandMain, 0, 0, 0, 800, 800, SWP_SHOWWINDOW);
 
     //Creating the Xaml content
     Windows::UI::Xaml::Controls::StackPanel xamlContainer;
@@ -115,7 +111,7 @@ void UILogic(HINSTANCE hInstance, bool* ptr)
         {
             *ptr = true;
         }
-        std::thread th(retsom);
+        std::thread th(createDialog, _hInstance);
         th.join();
         if (ptr != nullptr)
         {
@@ -130,9 +126,11 @@ void UILogic(HINSTANCE hInstance, bool* ptr)
     xamlContainer.UpdateLayout();
     desktopSource.Content(xamlContainer);
     //End XAML Island section
-
-    ShowWindow(_hWnd, SW_SHOW);
-    UpdateWindow(_hWnd);
+    if (_hWndMain)
+    {
+        ShowWindow(_hWndMain, SW_SHOW);
+        UpdateWindow(_hWndMain);
+    }
 
     //Message loop:
     MSG msg = {};
@@ -141,6 +139,7 @@ void UILogic(HINSTANCE hInstance, bool* ptr)
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+    desktopSource.Close();
 }
 
 LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT messageCode, WPARAM wParam, LPARAM lParam)
@@ -149,29 +148,13 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT messageCode, WPARAM wParam, LPAR
 
     switch (messageCode)
     {
-    //case WM_PAINT:
-
-    //    GetClientRect(hWnd, &rcClient);
-    //    SetWindowPos(hWndXamlIsland, 0, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom, SWP_SHOWWINDOW);
-    //    break;
+    case WM_PAINT:
+        GetClientRect(hWnd, &rcClient);
+        SetWindowPos(hWndXamlIslandMain, 0, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom, SWP_SHOWWINDOW);
+        break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
-
-        //    //creating main window
-        //case WM_CREATE:
-        //    //_childhWnd = CreateWindowEx(0, L"ChildWClass", NULL, WS_CHILD | WS_BORDER, 0, 0, 0, 0, hWnd, NULL, _hInstance, NULL);
-        //    return 0;
-        //    // main window changed size
-        //case WM_SIZE:
-        //    // Get the dimensions of the main window's client
-        //    // area, and enumerate the child windows. Pass the
-        //    // dimensions to the child windows during enumeration.
-
-        //    return 0;
-
-        //    // Process other messages.
-
     default:
         return DefWindowProc(hWnd, messageCode, wParam, lParam);
         break;

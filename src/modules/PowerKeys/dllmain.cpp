@@ -4,7 +4,7 @@
 #include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
 #include "trace.h"
-#include <PowerKeysUI/HelloWindowsDesktop.cpp>
+#include <PowerKeysUI/MainWindow.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -52,32 +52,41 @@ class PowerKeys : public PowertoyModuleIface
 private:
     // The PowerToy state.
     bool m_enabled = false;
+
+    // Maps which store the remappings for each of the features. The bool fields should be initalised to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
     std::unordered_map<DWORD, WORD> singleKeyReMap;
     std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>> osLevelShortcutReMap;
     // Maps application name to the shortcut map
     std::map<std::wstring, std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>>> appSpecificShortcutReMap;
     std::unordered_map<DWORD, bool> singleKeyToggleToMod;
-    // Load initial settings from the persisted values.
-    void init_settings();
+
+    // Flags used for distinguishing key events sent by PowerKeys
     static const ULONG_PTR POWERKEYS_INJECTED_FLAG = 0x1;
     static const ULONG_PTR POWERKEYS_SINGLEKEY_FLAG = 0x11;
     static const ULONG_PTR POWERKEYS_SHORTCUT_FLAG = 0x101;
-    static const DWORD DUMMY_KEY = 0xCF;
+
+    // Dummy key event used in between key up and down events to prevent certain global events from happening
+    static const DWORD DUMMY_KEY = 0xFF;
+
+    // Low level hook handles
     static HHOOK hook_handle;
     static HHOOK hook_handle_copy; // make sure we do use nullptr in CallNextHookEx call
+
+    // Static pointer to the current powerkeys object required for accessing the HandleKeyboardHookEvent function in the hook procedure
     static PowerKeys* powerkeys_object_ptr;
-    static bool uiFlag;
-    static int detectVkCode;
+
+    // Flag used to check if the UI window is currently up. A reference to the variable can be sent while calling the UI window
+    bool uiFlag = false;
 
 public:
     // Constructor
     PowerKeys()
     {
-        init_settings();
         init_map();
         powerkeys_object_ptr = this;
     };
 
+    // This function is used to add the hardcoded mappings
     void init_map()
     {
         //// If mapped to 0x0 then key is disabled.
@@ -145,52 +154,6 @@ public:
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(MODULE_DESC);
 
-        // Show an overview link in the Settings page
-        //settings.set_overview_link(L"https://");
-
-        // Show a video link in the Settings page.
-        //settings.set_video_link(L"https://");
-
-        // A bool property with a toggle editor.
-        //settings.add_bool_toogle(
-        //  L"bool_toggle_1", // property name.
-        //  L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
-        //  g_settings.bool_prop // property value.
-        //);
-
-        // An integer property with a spinner editor.
-        //settings.add_int_spinner(
-        //  L"int_spinner_1", // property name
-        //  L"This is what a IntSpinner property looks like", // description or resource id of the localized string.
-        //  g_settings.int_prop, // property value.
-        //  0, // min value.
-        //  100, // max value.
-        //  10 // incremental step.
-        //);
-
-        // A string property with a textbox editor.
-        //settings.add_string(
-        //  L"string_text_1", // property name.
-        //  L"This is what a String property looks like", // description or resource id of the localized string.
-        //  g_settings.string_prop // property value.
-        //);
-
-        // A string property with a color picker editor.
-        //settings.add_color_picker(
-        //  L"color_picker_1", // property name.
-        //  L"This is what a ColorPicker property looks like", // description or resource id of the localized string.
-        //  g_settings.color_prop // property value.
-        //);
-
-        // A custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-        // method should be overriden as well.
-        //settings.add_custom_action(
-        //  L"custom_action_id", // action name.
-        //  L"This is what a CustomAction property looks like", // label above the field.
-        //  L"Call a custom action", // button text.
-        //  L"Press the button to call a custom action." // display values / extended info.
-        //);
-
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
@@ -224,31 +187,9 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config);
 
-            // Update a bool property.
-            //if (auto v = values.get_bool_value(L"bool_toggle_1")) {
-            //  g_settings.bool_prop = *v;
-            //}
-
-            // Update an int property.
-            //if (auto v = values.get_int_value(L"int_spinner_1")) {
-            //  g_settings.int_prop = *v;
-            //}
-
-            // Update a string property.
-            //if (auto v = values.get_string_value(L"string_text_1")) {
-            //  g_settings.string_prop = *v;
-            //}
-
-            // Update a color property.
-            //if (auto v = values.get_string_value(L"color_picker_1")) {
-            //  g_settings.color_prop = *v;
-            //}
-
             // If you don't need to do any custom processing of the settings, proceed
             // to persists the values calling:
             values.save_to_settings_file();
-            // Otherwise call a custom function to process the settings before saving them to disk:
-            // save_settings();
         }
         catch (std::exception&)
         {
@@ -261,7 +202,7 @@ public:
     {
         m_enabled = true;
         HINSTANCE hInstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-        std::thread (UILogic, hInstance, &uiFlag).detach();
+        std::thread(UILogic, hInstance, &uiFlag).detach();
         start_lowlevel_keyboard_hook();
     }
 
@@ -281,22 +222,6 @@ public:
     // Handle incoming event, data is event-specific
     virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
     {
-        //if (m_enabled)
-        //{
-        //    if (wcscmp(name, ll_keyboard) == 0)
-        //    {
-        //        auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
-        //        // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
-        //        // otherwise return 0.
-        //        return HandleKeyboardHookEvent(&event);
-        //    }
-        //    else if (wcscmp(name, win_hook_event) == 0)
-        //    {
-        //        auto& event = *(reinterpret_cast<WinHookEvent*>(data));
-        //        // Return value is ignored
-        //        return 0;
-        //    }
-        //}
         return 0;
     }
 
@@ -352,10 +277,12 @@ public:
         }
     }
 
-    intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
+    // This function can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
+    void DetectKeyUIBackend()
     {
         if (uiFlag)
         {
+            // Disables the [ key when the UI window is up
             singleKeyReMap[VK_OEM_4] = 0x0;
         }
         else if (singleKeyReMap.find(VK_OEM_4) == singleKeyReMap.end())
@@ -363,9 +290,14 @@ public:
         }
         else
         {
+            // Removes the remapping if the UI window is not up and the remapping doesn't already exist
             singleKeyReMap.erase(VK_OEM_4);
         }
+    }
 
+    intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
+    {
+        DetectKeyUIBackend();
         intptr_t SingleKeyRemapResult = HandleSingleKeyRemapEvent(data);
         // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts
         if (SingleKeyRemapResult == 1)
@@ -679,82 +611,6 @@ public:
 HHOOK PowerKeys::hook_handle = nullptr;
 HHOOK PowerKeys::hook_handle_copy = nullptr;
 PowerKeys* PowerKeys::powerkeys_object_ptr = nullptr;
-bool PowerKeys::uiFlag = false;
-int PowerKeys::detectVkCode = 0;
-
-// Load the settings file.
-void PowerKeys::init_settings()
-{
-    try
-    {
-        //// Load and parse the settings file for this PowerToy.
-        //PowerToysSettings::PowerToyValues settings =
-        //    PowerToysSettings::PowerToyValues::load_from_settings_file(PowerKeys::get_name());
-
-        // Load a bool property.
-        //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {
-        //  g_settings.bool_prop = *v;
-        //}
-
-        // Load an int property.
-        //if (auto v = settings.get_int_value(L"int_spinner_1")) {
-        //  g_settings.int_prop = *v;
-        //}
-
-        // Load a string property.
-        //if (auto v = settings.get_string_value(L"string_text_1")) {
-        //  g_settings.string_prop = *v;
-        //}
-
-        // Load a color property.
-        //if (auto v = settings.get_string_value(L"color_picker_1")) {
-        //  g_settings.color_prop = *v;
-        //}
-    }
-    catch (std::exception&)
-    {
-        // Error while loading from the settings file. Let default values stay as they are.
-    }
-}
-
-// This method of saving the module settings is only required if you need to do any
-// custom processing of the settings before saving them to disk.
-//void PowerKeys::save_settings() {
-//  try {
-//    // Create a PowerToyValues object for this PowerToy
-//    PowerToysSettings::PowerToyValues values(get_name());
-//
-//    // Save a bool property.
-//    //values.add_property(
-//    //  L"bool_toggle_1", // property name
-//    //  g_settings.bool_prop // property value
-//    //);
-//
-//    // Save an int property.
-//    //values.add_property(
-//    //  L"int_spinner_1", // property name
-//    //  g_settings.int_prop // property value
-//    //);
-//
-//    // Save a string property.
-//    //values.add_property(
-//    //  L"string_text_1", // property name
-//    //  g_settings.string_prop // property value
-//    );
-//
-//    // Save a color property.
-//    //values.add_property(
-//    //  L"color_picker_1", // property name
-//    //  g_settings.color_prop // property value
-//    //);
-//
-//    // Save the PowerToyValues JSON to the power toy settings file.
-//    values.save_to_settings_file();
-//  }
-//  catch (std::exception ex) {
-//    // Couldn't save the settings.
-//  }
-//}
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {

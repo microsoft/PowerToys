@@ -124,7 +124,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WindowWalker", "src\modules
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerKeys", "src\modules\PowerKeys\PowerKeys.vcxproj", "{89F34AF7-1C34-4A72-AA6E-534BCF972BD9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32DesktopApp", "src\modules\PowerKeysUI\Win32DesktopApp.vcxproj", "{EAF23649-EF6E-478B-980E-81FAD96CCA2A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerKeysUI", "src\modules\PowerKeysUI\PowerKeysUI.vcxproj", "{EAF23649-EF6E-478B-980E-81FAD96CCA2A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
