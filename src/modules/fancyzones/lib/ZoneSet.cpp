@@ -392,6 +392,8 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetL
     long bottom;
     long right;
 
+    // Note: The expressions below are NOT equal to total{Width|Height} / zoneCount and are done
+    // like this to make the sum of all zones' sizes exactly total{Width|Height}.
     for (int zone = 0; zone < zoneCount; zone++)
     {
         if (type == JSONHelpers::ZoneSetLayoutType::Columns)
@@ -452,6 +454,8 @@ bool ZoneSet::CalculateGridLayout(Rect workArea, JSONHelpers::ZoneSetLayoutType 
 
     JSONHelpers::GridLayoutInfo gridLayoutInfo(JSONHelpers::GridLayoutInfo::Minimal{ .rows = rows, .columns = columns });
 
+    // Note: The expressions below are NOT equal to C_MULTIPLIER / {rows|columns} and are done
+    // like this to make the sum of all percents exactly C_MULTIPLIER
     for (int row = 0; row < rows; row++)
     {
         gridLayoutInfo.rowsPercents()[row] = C_MULTIPLIER * (row + 1) / rows - C_MULTIPLIER * row / rows;
@@ -554,21 +558,23 @@ bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo grid
     Info rowInfo[JSONHelpers::MAX_ZONE_COUNT];
     Info columnInfo[JSONHelpers::MAX_ZONE_COUNT];
 
+    // Note: The expressions below are carefully written to 
+    // make the sum of all zones' sizes exactly total{Width|Height}
     long long totalPercents = 0;
     for (int row = 0; row < gridLayoutInfo.rows(); row++)
     {
         rowInfo[row].Start = totalPercents * totalHeight / C_MULTIPLIER + (row + 1) * spacing;
         totalPercents += gridLayoutInfo.rowsPercents()[row];
-        rowInfo[row].End = totalPercents * totalHeight / C_MULTIPLIER + (row + 1) * spacing;;
+        rowInfo[row].End = totalPercents * totalHeight / C_MULTIPLIER + (row + 1) * spacing;
         rowInfo[row].Extent = rowInfo[row].End - rowInfo[row].Start;
     }
 
     totalPercents = 0;
     for (int col = 0; col < gridLayoutInfo.columns(); col++)
     {
-        columnInfo[col].Start = totalPercents * totalWidth / C_MULTIPLIER + (col + 1) * spacing;;
+        columnInfo[col].Start = totalPercents * totalWidth / C_MULTIPLIER + (col + 1) * spacing;
         totalPercents += gridLayoutInfo.columnsPercents()[col];
-        columnInfo[col].End = totalPercents * totalWidth / C_MULTIPLIER + (col + 1) * spacing;;
+        columnInfo[col].End = totalPercents * totalWidth / C_MULTIPLIER + (col + 1) * spacing;
         columnInfo[col].Extent = columnInfo[col].End - columnInfo[col].Start;
     }
 
