@@ -48,14 +48,14 @@ namespace UnitTestsCommonLib
         }
     }
 
-    TEST_CLASS(PowerToyValuesUnitTests)
+    TEST_CLASS (PowerToyValuesUnitTests)
     {
     private:
         const std::wstring m_json = L"{\"name\":\"Module Name\",\"properties\" : {\"bool_toggle_true\":{\"value\":true},\"bool_toggle_false\":{\"value\":false},\"color_picker\" : {\"value\":\"#ff8d12\"},\"int_spinner\" : {\"value\":10},\"string_text\" : {\"value\":\"a quick fox\"}},\"version\" : \"1.0\" }";
         const std::wstring m_moduleName = L"Module Name";
 
     public:
-        TEST_METHOD(LoadFromJsonBoolTrue)
+        TEST_METHOD (LoadFromJsonBoolTrue)
         {
             PowerToyValues values = PowerToyValues::from_json_string(m_json);
             auto value = values.get_bool_value(L"bool_toggle_true");
@@ -63,7 +63,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(true, *value);
         }
 
-        TEST_METHOD(LoadFromJsonBoolFalse)
+        TEST_METHOD (LoadFromJsonBoolFalse)
         {
             PowerToyValues values = PowerToyValues::from_json_string(m_json);
             auto value = values.get_bool_value(L"bool_toggle_false");
@@ -71,7 +71,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(false, *value);
         }
 
-        TEST_METHOD(LoadFromJsonInt)
+        TEST_METHOD (LoadFromJsonInt)
         {
             PowerToyValues values = PowerToyValues::from_json_string(m_json);
             auto value = values.get_int_value(L"int_spinner");
@@ -79,7 +79,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(10, *value);
         }
 
-        TEST_METHOD(LoadFromJsonString)
+        TEST_METHOD (LoadFromJsonString)
         {
             PowerToyValues values = PowerToyValues::from_json_string(m_json);
             auto value = values.get_string_value(L"string_text");
@@ -89,7 +89,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(expected, *value);
         }
 
-        TEST_METHOD(LoadFromJsonColorPicker)
+        TEST_METHOD (LoadFromJsonColorPicker)
         {
             PowerToyValues values = PowerToyValues::from_json_string(m_json);
             auto value = values.get_string_value(L"color_picker");
@@ -99,19 +99,19 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(expected, *value);
         }
 
-        TEST_METHOD(LoadFromEmptyString)
+        TEST_METHOD (LoadFromEmptyString)
         {
             auto func = [] { PowerToyValues values = PowerToyValues::from_json_string(L""); };
             Assert::ExpectException<winrt::hresult_error>(func);
         }
 
-        TEST_METHOD(LoadFromInvalidString_NameMissed)
+        TEST_METHOD (LoadFromInvalidString_NameMissed)
         {
             auto func = [] { PowerToyValues values = PowerToyValues::from_json_string(L"{\"properties\" : {\"bool_toggle_true\":{\"value\":true},\"bool_toggle_false\":{\"value\":false},\"color_picker\" : {\"value\":\"#ff8d12\"},\"int_spinner\" : {\"value\":10},\"string_text\" : {\"value\":\"a quick fox\"}},\"version\" : \"1.0\" }"); };
             Assert::ExpectException<winrt::hresult_error>(func);
         }
 
-        TEST_METHOD(LoadFromInvalidString_VersionMissed)
+        TEST_METHOD (LoadFromInvalidString_VersionMissed)
         {
             PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"properties\" : {}}");
             const std::wstring expectedStr = L"{\"name\" : \"Module Name\", \"properties\" : {},\"version\" : \"1.0\"}";
@@ -121,7 +121,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(LoadFromInvalidString_PropertiesMissed)
+        TEST_METHOD (LoadFromInvalidString_PropertiesMissed)
         {
             PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"version\" : \"1.0\" }");
             const std::wstring expectedStr = L"{\"name\":\"Module Name\",\"version\" : \"1.0\" }";
@@ -131,7 +131,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(LoadFromValidString_EmptyProperties)
+        TEST_METHOD (LoadFromValidString_EmptyProperties)
         {
             PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"properties\" : {}, \"version\" : \"1.0\" }");
             const std::wstring expectedStr = L"{\"name\":\"Module Name\",\"properties\" : {},\"version\" : \"1.0\" }";
@@ -141,7 +141,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(LoadFromValidString_ChangedVersion)
+        TEST_METHOD (LoadFromValidString_ChangedVersion)
         {
             PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"properties\" : {},\"version\" : \"2.0\"}");
             const std::wstring expectedStr = L"{\"name\" : \"Module Name\", \"properties\" : {},\"version\" : \"1.0\"}"; //version from input json is ignored
@@ -152,7 +152,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(CreateWithName)
+        TEST_METHOD (CreateWithName)
         {
             PowerToyValues values(m_moduleName);
             const std::wstring expectedStr = L"{\"name\":\"Module Name\",\"properties\" : {},\"version\" : \"1.0\" }";
@@ -163,7 +163,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(AddPropertyBoolPositive)
+        TEST_METHOD (AddPropertyBoolPositive)
         {
             PowerToyValues values(m_moduleName);
             values.add_property<bool>(L"positive_bool_value", true);
@@ -173,7 +173,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(true, *value);
         }
 
-        TEST_METHOD(AddPropertyBoolNegative)
+        TEST_METHOD (AddPropertyBoolNegative)
         {
             PowerToyValues values(m_moduleName);
             values.add_property<bool>(L"negative_bool_value", false);
@@ -183,7 +183,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(false, *value);
         }
 
-        TEST_METHOD(AddPropertyIntPositive)
+        TEST_METHOD (AddPropertyIntPositive)
         {
             PowerToyValues values(m_moduleName);
             const int intVal = 4392854;
@@ -194,7 +194,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(intVal, *value);
         }
 
-        TEST_METHOD(AddPropertyIntNegative)
+        TEST_METHOD (AddPropertyIntNegative)
         {
             PowerToyValues values(m_moduleName);
             const int intVal = -4392854;
@@ -205,7 +205,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(intVal, *value);
         }
 
-        TEST_METHOD(AddPropertyIntZero)
+        TEST_METHOD (AddPropertyIntZero)
         {
             PowerToyValues values(m_moduleName);
             const int intVal = 0;
@@ -216,7 +216,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(intVal, *value);
         }
 
-        TEST_METHOD(AddPropertyStringEmpty)
+        TEST_METHOD (AddPropertyStringEmpty)
         {
             PowerToyValues values(m_moduleName);
             const std::wstring stringVal = L"";
@@ -227,7 +227,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(stringVal, *value);
         }
 
-        TEST_METHOD(AddPropertyString)
+        TEST_METHOD (AddPropertyString)
         {
             PowerToyValues values(m_moduleName);
             const std::wstring stringVal = L"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
@@ -238,7 +238,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(stringVal, *value);
         }
 
-        TEST_METHOD(AddPropertyJsonEmpty)
+        TEST_METHOD (AddPropertyJsonEmpty)
         {
             PowerToyValues values(m_moduleName);
             const auto json = json::JsonObject();
@@ -249,7 +249,7 @@ namespace UnitTestsCommonLib
             compareJsons(json, *value);
         }
 
-        TEST_METHOD(AddPropertyJsonObject)
+        TEST_METHOD (AddPropertyJsonObject)
         {
             PowerToyValues values(m_moduleName);
             const auto json = json::JsonObject::Parse(m_json);
@@ -261,7 +261,7 @@ namespace UnitTestsCommonLib
         }
     };
 
-    TEST_CLASS(SettingsUnitTests)
+    TEST_CLASS (SettingsUnitTests)
     {
     private:
         const std::wstring m_moduleName = L"Module Name";
@@ -279,7 +279,7 @@ namespace UnitTestsCommonLib
         }
 
     public:
-        TEST_METHOD(SettingsSerialization)
+        TEST_METHOD (SettingsSerialization)
         {
             Settings settings(nullptr, m_moduleName);
 
@@ -288,7 +288,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsSerializationToBuffer)
+        TEST_METHOD (SettingsSerializationToBuffer)
         {
             Settings settings(nullptr, m_moduleName);
 
@@ -307,7 +307,7 @@ namespace UnitTestsCommonLib
             compareJsons(m_defaultSettingsJson, actualJson);
         }
 
-        TEST_METHOD(SettingsSetDescription)
+        TEST_METHOD (SettingsSetDescription)
         {
             const auto value = L"description value";
             Settings settings(nullptr, m_moduleName);
@@ -320,7 +320,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsSetIconKey)
+        TEST_METHOD (SettingsSetIconKey)
         {
             const auto value = L"icon key";
             Settings settings(nullptr, m_moduleName);
@@ -333,7 +333,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsSetOverviewLink)
+        TEST_METHOD (SettingsSetOverviewLink)
         {
             const auto value = L"overview link";
             Settings settings(nullptr, m_moduleName);
@@ -346,7 +346,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsSetVideoLink)
+        TEST_METHOD (SettingsSetVideoLink)
         {
             const auto value = L"video link";
             Settings settings(nullptr, m_moduleName);
@@ -359,7 +359,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsAddBoolTogglePositive)
+        TEST_METHOD (SettingsAddBoolTogglePositive)
         {
             const auto value = true;
 
@@ -376,7 +376,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsAddBoolToggleNegative)
+        TEST_METHOD (SettingsAddBoolToggleNegative)
         {
             const auto value = false;
 
@@ -393,7 +393,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsAddSpinner)
+        TEST_METHOD (SettingsAddSpinner)
         {
             const int value = 738543;
             const int min = 0;
@@ -416,7 +416,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsAddString)
+        TEST_METHOD (SettingsAddString)
         {
             const auto value = L"string text ";
 
@@ -433,7 +433,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsAddStringMultiline)
+        TEST_METHOD (SettingsAddStringMultiline)
         {
             const auto value = L"Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit,\nsed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\nExcepteur sint occaecat cupidatat non proident,\nsunt in culpa qui officia deserunt mollit anim id est laborum.";
 
@@ -451,7 +451,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsAddColorPicker)
+        TEST_METHOD (SettingsAddColorPicker)
         {
             const auto value = L"#ffffff";
 
@@ -468,7 +468,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsAddHotkey)
+        TEST_METHOD (SettingsAddHotkey)
         {
             const auto value = PowerToysSettings::HotkeyObject::from_settings(true, true, true, true, 0);
 
@@ -485,7 +485,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsAddChoiceGroup)
+        TEST_METHOD (SettingsAddChoiceGroup)
         {
             const auto value = L"choice group value";
             const auto keysAndTexts = {
@@ -516,7 +516,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsAddChoiceGroupEmpty)
+        TEST_METHOD (SettingsAddChoiceGroupEmpty)
         {
             const auto value = L"choice group value";
 
@@ -534,7 +534,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsAddDropdown)
+        TEST_METHOD (SettingsAddDropdown)
         {
             const auto value = L"dropdown value";
             const auto keysAndTexts = {
@@ -565,7 +565,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsAddDropdownEmpty)
+        TEST_METHOD (SettingsAddDropdownEmpty)
         {
             const auto value = L"dropdown value";
 
@@ -582,7 +582,7 @@ namespace UnitTestsCommonLib
             compareJsons(expected, actual);
         }
 
-        TEST_METHOD(SettingsAddCustomAction)
+        TEST_METHOD (SettingsAddCustomAction)
         {
             const auto value = L"custom action value";
             const std::wstring buttonText = L"button text";
@@ -602,17 +602,17 @@ namespace UnitTestsCommonLib
         }
     };
 
-    TEST_CLASS(CustomActionObjectUnitTests)
+    TEST_CLASS (CustomActionObjectUnitTests)
     {
     public:
-        TEST_METHOD(CustomActionObjectName)
+        TEST_METHOD (CustomActionObjectName)
         {
             const std::wstring json = L"{\"action_name\": \"action name\", \"value\": \"action value\"}";
             CustomActionObject obj = CustomActionObject::from_json_string(json);
             Assert::AreEqual(std::wstring(L"action name"), obj.get_name());
         }
 
-        TEST_METHOD(CustomActionObjectValue)
+        TEST_METHOD (CustomActionObjectValue)
         {
             const std::wstring json = L"{\"action_name\": \"action name\", \"value\": \"action value\"}";
             CustomActionObject obj = CustomActionObject::from_json_string(json);
@@ -620,44 +620,44 @@ namespace UnitTestsCommonLib
         }
     };
 
-    TEST_CLASS(HotkeyObjectUnitTests)
+    TEST_CLASS (HotkeyObjectUnitTests)
     {
     private:
         json::JsonObject m_defaultHotkeyJson = json::JsonObject::Parse(L"{\"key\":\"(Key 0)\", \"code\": 123, \"win\": true, \"ctrl\": true, \"alt\": true, \"shift\": true}");
         json::JsonObject m_defaultHotkeyJsonAlternative = json::JsonObject::Parse(L"{\"key\":\"(Key 0)\", \"code\": 123, \"win\": false, \"ctrl\": false, \"alt\": false, \"shift\": false}");
 
     public:
-        TEST_METHOD(GetKeyFromJson)
+        TEST_METHOD (GetKeyFromJson)
         {
             HotkeyObject object = HotkeyObject::from_json(m_defaultHotkeyJson);
             Assert::AreEqual(std::wstring(L"(Key 0)"), object.get_key());
         }
 
-        TEST_METHOD(GetKeyFromJsonString)
+        TEST_METHOD (GetKeyFromJsonString)
         {
             HotkeyObject object = HotkeyObject::from_json_string(m_defaultHotkeyJson.Stringify());
             Assert::AreEqual(std::wstring(L"(Key 0)"), object.get_key());
         }
 
-        TEST_METHOD(GetCodeFromJson)
+        TEST_METHOD (GetCodeFromJson)
         {
             HotkeyObject object = HotkeyObject::from_json(m_defaultHotkeyJson);
             Assert::AreEqual(UINT(123), object.get_code());
         }
 
-        TEST_METHOD(GetCodeFromJsonString)
+        TEST_METHOD (GetCodeFromJsonString)
         {
             HotkeyObject object = HotkeyObject::from_json_string(m_defaultHotkeyJson.Stringify());
             Assert::AreEqual(UINT(123), object.get_code());
         }
 
-        TEST_METHOD(GetCodeFromSettings)
+        TEST_METHOD (GetCodeFromSettings)
         {
             HotkeyObject object = HotkeyObject::from_settings(true, true, true, true, 123);
             Assert::AreEqual(UINT(123), object.get_code());
         }
 
-        TEST_METHOD(GetWinPressedFromJson)
+        TEST_METHOD (GetWinPressedFromJson)
         {
             HotkeyObject object = HotkeyObject::from_json(m_defaultHotkeyJson);
             Assert::AreEqual(true, object.win_pressed());
@@ -666,7 +666,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(false, objectNegativeValues.win_pressed());
         }
 
-        TEST_METHOD(GetWinPressedFromJsonString)
+        TEST_METHOD (GetWinPressedFromJsonString)
         {
             HotkeyObject object = HotkeyObject::from_json_string(m_defaultHotkeyJson.Stringify());
             Assert::AreEqual(true, object.win_pressed());
@@ -675,7 +675,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(false, objectNegativeValues.win_pressed());
         }
 
-        TEST_METHOD(GetWinPressedFromSettings)
+        TEST_METHOD (GetWinPressedFromSettings)
         {
             HotkeyObject object = HotkeyObject::from_settings(true, true, true, true, 123);
             Assert::AreEqual(true, object.win_pressed());
@@ -684,7 +684,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(false, objectNegativeValues.win_pressed());
         }
 
-        TEST_METHOD(GetCtrlPressedFromJson)
+        TEST_METHOD (GetCtrlPressedFromJson)
         {
             HotkeyObject object = HotkeyObject::from_json(m_defaultHotkeyJson);
             Assert::AreEqual(true, object.ctrl_pressed());
@@ -693,7 +693,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(false, objectNegativeValues.ctrl_pressed());
         }
 
-        TEST_METHOD(GetCtrlPressedFromJsonString)
+        TEST_METHOD (GetCtrlPressedFromJsonString)
         {
             HotkeyObject object = HotkeyObject::from_json_string(m_defaultHotkeyJson.Stringify());
             Assert::AreEqual(true, object.ctrl_pressed());
@@ -702,7 +702,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(false, objectNegativeValues.ctrl_pressed());
         }
 
-        TEST_METHOD(GetCtrlPressedFromSettings)
+        TEST_METHOD (GetCtrlPressedFromSettings)
         {
             HotkeyObject object = HotkeyObject::from_settings(true, true, true, true, 123);
             Assert::AreEqual(true, object.ctrl_pressed());
@@ -711,7 +711,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(false, objectNegativeValues.ctrl_pressed());
         }
 
-        TEST_METHOD(GetAltPressedFromJson)
+        TEST_METHOD (GetAltPressedFromJson)
         {
             HotkeyObject object = HotkeyObject::from_json(m_defaultHotkeyJson);
             Assert::AreEqual(true, object.alt_pressed());
@@ -720,7 +720,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(false, objectNegativeValues.alt_pressed());
         }
 
-        TEST_METHOD(GetAltPressedFromJsonString)
+        TEST_METHOD (GetAltPressedFromJsonString)
         {
             HotkeyObject object = HotkeyObject::from_json_string(m_defaultHotkeyJson.Stringify());
             Assert::AreEqual(true, object.alt_pressed());
@@ -729,7 +729,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(false, objectNegativeValues.alt_pressed());
         }
 
-        TEST_METHOD(GetAltPressedFromSettings)
+        TEST_METHOD (GetAltPressedFromSettings)
         {
             HotkeyObject object = HotkeyObject::from_settings(true, true, true, true, 123);
             Assert::AreEqual(true, object.alt_pressed());
@@ -738,7 +738,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(false, objectNegativeValues.alt_pressed());
         }
 
-        TEST_METHOD(GetShiftPressedFromJson)
+        TEST_METHOD (GetShiftPressedFromJson)
         {
             HotkeyObject object = HotkeyObject::from_json(m_defaultHotkeyJson);
             Assert::AreEqual(true, object.shift_pressed());
@@ -747,7 +747,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(false, objectNegativeValues.shift_pressed());
         }
 
-        TEST_METHOD(GetShiftPressedFromJsonString)
+        TEST_METHOD (GetShiftPressedFromJsonString)
         {
             HotkeyObject object = HotkeyObject::from_json_string(m_defaultHotkeyJson.Stringify());
             Assert::AreEqual(true, object.shift_pressed());
@@ -756,7 +756,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(false, objectNegativeValues.shift_pressed());
         }
 
-        TEST_METHOD(GetShiftPressedFromSettings)
+        TEST_METHOD (GetShiftPressedFromSettings)
         {
             HotkeyObject object = HotkeyObject::from_settings(true, true, true, true, 123);
             Assert::AreEqual(true, object.shift_pressed());
@@ -765,7 +765,7 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(false, objectNegativeValues.shift_pressed());
         }
 
-        TEST_METHOD(GetModifiersRepeat)
+        TEST_METHOD (GetModifiersRepeat)
         {
             std::map<UINT, HotkeyObject> expectedMap = {
                 std::make_pair(0x0000, HotkeyObject::from_settings(false, false, false, false, 0)),
@@ -792,7 +792,7 @@ namespace UnitTestsCommonLib
             }
         }
 
-        TEST_METHOD(GetModifiers)
+        TEST_METHOD (GetModifiers)
         {
             std::map<UINT, HotkeyObject> expectedMap = {
                 std::make_pair(0x4000, HotkeyObject::from_settings(false, false, false, false, 0)),

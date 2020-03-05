@@ -374,6 +374,10 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         CycleActiveZoneSet(info->vkCode);
         return false;
     }
+    if (m_dragEnabled && shift)
+    {
+        return true;
+    }
     return false;
 }
 
@@ -654,6 +658,7 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
         {
             m_zoneWindowMap[monitor] = std::move(zoneWindow);
         }
+
         if (newWorkArea)
         {
             RegisterNewWorkArea(m_currentVirtualDesktopId, monitor);

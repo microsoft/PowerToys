@@ -690,6 +690,7 @@ namespace FancyZonesEditor
                 {
                     Canvas.SetLeft(resizer, _colInfo[col].End + (spacing / 2) - 24); // hard coding this as (resizer.ActualWidth / 2) will still evaluate to 0 here ... a layout hasn't yet happened
                     Canvas.SetTop(resizer, (_rowInfo[endRow].End + _rowInfo[startRow].Start) / 2);
+                    resizer.Visibility = Visibility.Visible;
                 }
                 else
                 {
