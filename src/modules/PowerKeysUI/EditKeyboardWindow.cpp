@@ -1,17 +1,17 @@
-#include "Dialog.h"
+#include "EditKeyboardWindow.h"
 
-LRESULT CALLBACK DialogWindowProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 
-HWND hWndXamlIslandDialog = nullptr;
+HWND hWndXamlIslandEditKeyboardWindow = nullptr;
 
 void registerWinClass(HINSTANCE& hInst)
 {
     // The main window class name.
-    const wchar_t szWindowClass[] = L"DialogWindow";
+    const wchar_t szWindowClass[] = L"EditKeyboardWindow";
     WNDCLASSEX windowClass = {};
 
     windowClass.cbSize = sizeof(WNDCLASSEX);
-    windowClass.lpfnWndProc = DialogWindowProc;
+    windowClass.lpfnWndProc = EditKeyboardWindowProc;
     windowClass.hInstance = hInst;
     windowClass.lpszClassName = szWindowClass;
     windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW);
@@ -25,11 +25,11 @@ void registerWinClass(HINSTANCE& hInst)
     }
 }
 
-void createDialog(HINSTANCE hInst)
+void createEditKeyboardWindow(HINSTANCE hInst)
 {
     // The main window class name.
-    const wchar_t szWindowClass[] = L"DialogWindow";
-    HWND _hWndDialog = CreateWindow(
+    const wchar_t szWindowClass[] = L"EditKeyboardWindow";
+    HWND _hWndEditKeyboardWindow = CreateWindow(
         szWindowClass,
         L"PowerKeys Remap Keyboard",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
@@ -41,7 +41,7 @@ void createDialog(HINSTANCE hInst)
         NULL,
         hInst,
         NULL);
-    if (_hWndDialog == NULL)
+    if (_hWndEditKeyboardWindow == NULL)
     {
         MessageBox(NULL, L"Call to CreateWindow failed!", L"Error", NULL);
         return;
@@ -53,12 +53,12 @@ void createDialog(HINSTANCE hInst)
     // Get handle to corewindow
     auto interop = desktopSource.as<IDesktopWindowXamlSourceNative>();
     // Parent the DesktopWindowXamlSource object to current window
-    check_hresult(interop->AttachToWindow(_hWndDialog));
+    check_hresult(interop->AttachToWindow(_hWndEditKeyboardWindow));
 
     // Get the new child window's hwnd
-    interop->get_WindowHandle(&hWndXamlIslandDialog);
+    interop->get_WindowHandle(&hWndXamlIslandEditKeyboardWindow);
     // Update the xaml island window size becuase initially is 0,0
-    SetWindowPos(hWndXamlIslandDialog, 0, 0, 0, 400, 400, SWP_SHOWWINDOW);
+    SetWindowPos(hWndXamlIslandEditKeyboardWindow, 0, 0, 0, 400, 400, SWP_SHOWWINDOW);
 
     //Creating the Xaml content
     Windows::UI::Xaml::Controls::StackPanel xamlContainer;
@@ -69,10 +69,10 @@ void createDialog(HINSTANCE hInst)
     xamlContainer.UpdateLayout();
     desktopSource.Content(xamlContainer);
     ////End XAML Island section
-    if (_hWndDialog)
+    if (_hWndEditKeyboardWindow)
     {
-        ShowWindow(_hWndDialog, SW_SHOW);
-        UpdateWindow(_hWndDialog);
+        ShowWindow(_hWndEditKeyboardWindow, SW_SHOW);
+        UpdateWindow(_hWndEditKeyboardWindow);
     }
 
     // Message loop:
@@ -85,14 +85,14 @@ void createDialog(HINSTANCE hInst)
     desktopSource.Close();
 }
 
-LRESULT CALLBACK DialogWindowProc(HWND hWnd, UINT messageCode, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wParam, LPARAM lParam)
 {
     RECT rcClient;
     switch (messageCode)
     {
     case WM_PAINT:
         GetClientRect(hWnd, &rcClient);
-        SetWindowPos(hWndXamlIslandDialog, 0, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom, SWP_SHOWWINDOW);
+        SetWindowPos(hWndXamlIslandEditKeyboardWindow, 0, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom, SWP_SHOWWINDOW);
         break;
     case WM_DESTROY:
         PostQuitMessage(0);

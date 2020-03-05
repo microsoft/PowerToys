@@ -22,5 +22,5 @@ using namespace Windows::Foundation;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 
-__declspec(dllexport) void createDialog(HINSTANCE hInst);
+__declspec(dllexport) void createEditKeyboardWindow(HINSTANCE hInst);
 __declspec(dllexport) void registerWinClass(HINSTANCE& hInst);

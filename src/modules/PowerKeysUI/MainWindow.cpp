@@ -1,5 +1,5 @@
 #include "MainWindow.h"
-#include "Dialog.h"
+#include "EditKeyboardWindow.h"
 
 using namespace winrt;
 using namespace Windows::UI;
@@ -16,13 +16,7 @@ HINSTANCE _hInstance;
 HWND hWndXamlIslandMain = nullptr;
 bool isRegistrationCompleted = false;
 
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
-{
-    UILogic(hInstance, nullptr);
-    return 0;
-}
-
-void UILogic(HINSTANCE hInstance, bool* ptr)
+void createMainWindow(HINSTANCE hInstance, bool* ptr)
 {
     _hInstance = hInstance;
 
@@ -111,7 +105,7 @@ void UILogic(HINSTANCE hInstance, bool* ptr)
         {
             *ptr = true;
         }
-        std::thread th(createDialog, _hInstance);
+        std::thread th(createEditKeyboardWindow, _hInstance);
         th.join();
         if (ptr != nullptr)
         {

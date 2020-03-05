@@ -186,7 +186,7 @@ public:
     {
         m_enabled = true;
         HINSTANCE hInstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-        std::thread(UILogic, hInstance, &uiFlag).detach();
+        std::thread(createMainWindow, hInstance, &uiFlag).detach();
         start_lowlevel_keyboard_hook();
     }
 
