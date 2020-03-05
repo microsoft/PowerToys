@@ -72,6 +72,7 @@ namespace PreviewPaneUnitTests
             Assert.AreEqual(((WebBrowser)markdownPreviewHandlerControl.Controls[0]).IsWebBrowserContextMenuEnabled, false);
             Assert.AreEqual(((WebBrowser)markdownPreviewHandlerControl.Controls[0]).ScriptErrorsSuppressed, true);
             Assert.AreEqual(((WebBrowser)markdownPreviewHandlerControl.Controls[0]).ScrollBarsEnabled, true);
+            Assert.AreEqual(((WebBrowser)markdownPreviewHandlerControl.Controls[0]).AllowNavigation, false);
         }
 
         [TestMethod]

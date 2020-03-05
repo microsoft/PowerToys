@@ -49,7 +49,7 @@ namespace MarkdownPreviewHandler
         /// <summary>
         /// Extended Browser Control to display markdown html.
         /// </summary>
-        private WebBrowser browser;
+        private WebBrowserExt browser;
 
         /// <summary>
         /// True if external image is blocked, false otherwise.
@@ -88,15 +88,15 @@ namespace MarkdownPreviewHandler
                     sb.AppendFormat("{0}{1}{2}", this.htmlHeader, parsedMarkdown, this.htmlFooter);
                     string markdownHTML = sb.ToString();
 
-                    this.browser = new WebBrowser
+                    this.browser = new WebBrowserExt
                     {
                         DocumentText = markdownHTML,
                         Dock = DockStyle.Fill,
                         IsWebBrowserContextMenuEnabled = false,
                         ScriptErrorsSuppressed = true,
                         ScrollBarsEnabled = true,
+                        AllowNavigation = false,
                     };
-                    this.browser.Navigating += this.WebBrowserNavigating;
                     this.Controls.Add(this.browser);
 
                     if (this.infoBarDisplayed)
@@ -174,17 +174,6 @@ namespace MarkdownPreviewHandler
         private void ImagesBlockedCallBack()
         {
             this.infoBarDisplayed = true;
-        }
-
-        /// <summary>
-        /// Callback when link tag is clicked in html.
-        /// </summary>
-        /// <param name="sender">Reference to resized control.</param>
-        /// <param name="e">Provides data for the WebBrowserNavigatingEventArgs event.</param>
-        private void WebBrowserNavigating(object sender, WebBrowserNavigatingEventArgs e)
-        {
-            e.Cancel = true;
-            Process.Start(e.Url.ToString());
         }
     }
 }
