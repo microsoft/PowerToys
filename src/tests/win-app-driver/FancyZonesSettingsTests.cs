@@ -3,18 +3,34 @@ using System.IO;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 
 namespace PowerToysTests
 {
     [TestClass]
-    public class FancyZonesTests : PowerToysSession
+    public class FancyZonesSettingsTests : PowerToysSession
     {
         private string _settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft/PowerToys/FancyZones/settings.json");
         private string _initialSettings;
         private JObject _initialSettingsJson;
-        
+
+        private static WindowsElement _saveButton;
+        private static Actions _scrollDown;
+        private static Actions _scrollUp;
+
+        private static void OpenFancyZonesSettings()
+        {
+            WindowsElement fzNavigationButton = session.FindElementByXPath("//Button[@Name=\"FancyZones\"]");
+            Assert.IsNotNull(fzNavigationButton);
+
+            fzNavigationButton.Click();
+            fzNavigationButton.Click();
+
+            ShortWait();
+        }
+
         private JObject getProperties()
         {
             JObject settings = JObject.Parse(File.ReadAllText(_settingsPath));
@@ -31,30 +47,33 @@ namespace PowerToysTests
         {
             return properties[propertyName].ToObject<JObject>()["value"].Value<T>();
         }
-
-        private void OpenFancyZonesSettings()
-        {
-            WindowsElement fzNavigationButton = session.FindElementByXPath("//Button[@Name=\"FancyZones\"]");
-            Assert.IsNotNull(fzNavigationButton);
-
-            fzNavigationButton.Click();
-            fzNavigationButton.Click();
-
-            ShortWait();
-        }
         
         private void ScrollDown()
         {
-            WindowsElement powerToysWindow = session.FindElementByXPath("//Window[@Name=\"PowerToys Settings\"]");
-            new Actions(session).MoveByOffset(powerToysWindow.Rect.X + powerToysWindow.Rect.Width / 2 - 100, powerToysWindow.Rect.Y).Click()
-                .SendKeys(OpenQA.Selenium.Keys.PageDown + OpenQA.Selenium.Keys.PageDown).Perform();
+            _scrollDown.Perform();
         }
 
-        private void SaveAndCheckOpacitySettings(WindowsElement saveButton, WindowsElement editor, int expected)
+        private void ScrollUp()
+        {
+            _scrollUp.Perform();
+        }
+
+        private void SaveChanges()
+        {
+            string isEnabled = _saveButton.GetAttribute("IsEnabled");
+            Assert.AreEqual("True", isEnabled);
+
+            _saveButton.Click();
+
+            isEnabled = _saveButton.GetAttribute("IsEnabled");
+            Assert.AreEqual("False", isEnabled);
+        }
+
+        private void SaveAndCheckOpacitySettings(WindowsElement editor, int expected)
         {
             Assert.AreEqual(expected.ToString() + "\r\n", editor.Text);
 
-            saveButton.Click();
+            SaveChanges();
             ShortWait();
 
             int value = getPropertyValue<int>("fancyzones_highlight_opacity");
@@ -121,24 +140,22 @@ namespace PowerToysTests
         [TestMethod]
         public void FancyZonesSettingsOpen()
         {
-            OpenFancyZonesSettings();
-
             WindowsElement fzTitle = session.FindElementByName("FancyZones Settings");
             Assert.IsNotNull(fzTitle);
         }
-
+        /*
         [TestMethod]
         public void EditorOpen()
         {
-            OpenFancyZonesSettings();
-
             session.FindElementByXPath("//Button[@Name=\"Edit zones\"]").Click();
             ShortWait();
 
             WindowsElement editorWindow = session.FindElementByName("FancyZones Editor");
             Assert.IsNotNull(editorWindow);
-        }
 
+            editorWindow.SendKeys(OpenQA.Selenium.Keys.Alt + OpenQA.Selenium.Keys.F4);
+        }
+        */
         /*
          * click each toggle,
          * save changes,
@@ -147,13 +164,6 @@ namespace PowerToysTests
         [TestMethod]
         public void TogglesSingleClickSaveButtonTest()
         {
-            OpenFancyZonesSettings();
-
-            WindowsElement saveButton = session.FindElementByName("Save");
-            Assert.IsNotNull(saveButton);
-            string IsEnabled = saveButton.GetAttribute("IsEnabled");
-            Assert.AreEqual("False", IsEnabled);
-                        
             for (int i = 37; i < 45; i++)
             {
                 string toggleId = "Toggle" + i.ToString();
@@ -161,12 +171,7 @@ namespace PowerToysTests
                 Assert.IsNotNull(toggle);
                 toggle.Click();
 
-                IsEnabled = saveButton.GetAttribute("IsEnabled");
-                Assert.AreEqual("True", IsEnabled);
-
-                saveButton.Click();
-                IsEnabled = saveButton.GetAttribute("IsEnabled");
-                Assert.AreEqual("False", IsEnabled);
+                SaveChanges();
             }
             
             //check saved settings
@@ -191,13 +196,6 @@ namespace PowerToysTests
         [TestMethod]
         public void TogglesDoubleClickSave()
         {
-            OpenFancyZonesSettings();
-
-            WindowsElement saveButton = session.FindElementByName("Save");
-            Assert.IsNotNull(saveButton);
-            string isEnabled = saveButton.GetAttribute("IsEnabled");
-            Assert.AreEqual("False", isEnabled);
-
             for (int i = 37; i < 45; i++)
             {
                 string toggleId = "Toggle" + i.ToString();
@@ -206,12 +204,7 @@ namespace PowerToysTests
                 toggle.Click();
                 toggle.Click();
 
-                isEnabled = saveButton.GetAttribute("IsEnabled");
-                Assert.AreEqual("True", isEnabled);
-
-                saveButton.Click();
-                isEnabled = saveButton.GetAttribute("IsEnabled");
-                Assert.AreEqual("False", isEnabled);
+                SaveChanges();
             }
 
             string savedSettings = File.ReadAllText(_settingsPath);
@@ -221,49 +214,41 @@ namespace PowerToysTests
         [TestMethod]
         public void HighlightOpacitySetValue()
         {
-            OpenFancyZonesSettings();
-            WindowsElement saveButton = session.FindElementByName("Save");
-            Assert.IsNotNull(saveButton);
-
             WindowsElement editor = session.FindElementByName("Zone Highlight Opacity (%)");
             Assert.IsNotNull(editor);
 
             SetOpacity(editor, "50");
-            SaveAndCheckOpacitySettings(saveButton, editor, 50);
+            SaveAndCheckOpacitySettings(editor, 50);
 
             SetOpacity(editor, "-50");
-            SaveAndCheckOpacitySettings(saveButton, editor, 0);
+            SaveAndCheckOpacitySettings(editor, 0);
 
             SetOpacity(editor, "200");
-            SaveAndCheckOpacitySettings(saveButton, editor, 100);
+            SaveAndCheckOpacitySettings(editor, 100);
 
             //for invalid input values previously saved value expected
             SetOpacity(editor, "asdf"); 
-            SaveAndCheckOpacitySettings(saveButton, editor, 100); 
+            SaveAndCheckOpacitySettings(editor, 100); 
             
             SetOpacity(editor, "*");
-            SaveAndCheckOpacitySettings(saveButton, editor, 100); 
+            SaveAndCheckOpacitySettings(editor, 100); 
             
             SetOpacity(editor, OpenQA.Selenium.Keys.Return);
-            SaveAndCheckOpacitySettings(saveButton, editor, 100);
+            SaveAndCheckOpacitySettings(editor, 100);
 
             Clipboard.SetText("Hello, clipboard");
             SetOpacity(editor, OpenQA.Selenium.Keys.Control + "v");
-            SaveAndCheckOpacitySettings(saveButton, editor, 100);
+            SaveAndCheckOpacitySettings(editor, 100);
         }
 
         [TestMethod]
         public void HighlightOpacityIncreaseValue()
         {
-            OpenFancyZonesSettings();
-            WindowsElement saveButton = session.FindElementByName("Save");
-            Assert.IsNotNull(saveButton);
-
             WindowsElement editor = session.FindElementByName("Zone Highlight Opacity (%)");
             Assert.IsNotNull(editor);
 
             SetOpacity(editor, "99");
-            SaveAndCheckOpacitySettings(saveButton, editor, 99);
+            SaveAndCheckOpacitySettings(editor, 99);
 
             System.Drawing.Rectangle editorRect = editor.Rect;
             
@@ -273,25 +258,22 @@ namespace PowerToysTests
 
             action.Click().Perform();
             Assert.AreEqual("100\r\n", editor.Text);
-            SaveAndCheckOpacitySettings(saveButton, editor, 100);
+            SaveAndCheckOpacitySettings(editor, 100);
 
             action.Click().Perform();
             Assert.AreEqual("100\r\n", editor.Text);
-            SaveAndCheckOpacitySettings(saveButton, editor, 100);
+            SaveAndCheckOpacitySettings(editor, 100);
         }
 
         [TestMethod]
         public void HighlightOpacityDecreaseValue()
         {
-            OpenFancyZonesSettings();
-            WindowsElement saveButton = session.FindElementByName("Save");
-            Assert.IsNotNull(saveButton);
-
+            
             WindowsElement editor = session.FindElementByName("Zone Highlight Opacity (%)");
             Assert.IsNotNull(editor);
 
             SetOpacity(editor, "1");
-            SaveAndCheckOpacitySettings(saveButton, editor, 1);
+            SaveAndCheckOpacitySettings(editor, 1);
 
             System.Drawing.Rectangle editorRect = editor.Rect;
 
@@ -301,22 +283,21 @@ namespace PowerToysTests
 
             action.Click().Perform();
             Assert.AreEqual("0\r\n", editor.Text);
-            SaveAndCheckOpacitySettings(saveButton, editor, 0);
+            SaveAndCheckOpacitySettings(editor, 0);
 
             action.Click().Perform();
             Assert.AreEqual("0\r\n", editor.Text);
-            SaveAndCheckOpacitySettings(saveButton, editor, 0);
+            SaveAndCheckOpacitySettings(editor, 0);
         }
 
         [TestMethod]
         public void HighlightOpacityClearValueButton()
         {
-            OpenFancyZonesSettings();
             WindowsElement editor = session.FindElementByName("Zone Highlight Opacity (%)");
             Assert.IsNotNull(editor);
 
             editor.Click(); //activate
-            OpenQA.Selenium.Appium.AppiumWebElement clearButton = editor.FindElementByName("Clear value");
+            AppiumWebElement clearButton = editor.FindElementByName("Clear value");
             Assert.IsNotNull(clearButton);
             
             /*element is not pointer- or keyboard interactable.*/
@@ -329,11 +310,6 @@ namespace PowerToysTests
         [TestMethod]
         public void HighlightColorSlidersTest()
         {
-            OpenFancyZonesSettings();
-
-            WindowsElement saveButton = session.FindElementByName("Save");
-            Assert.IsNotNull(saveButton);
-
             ScrollDown();
 
             WindowsElement saturationAndBrightness = session.FindElementByName("Saturation and brightness");
@@ -362,7 +338,7 @@ namespace PowerToysTests
             Assert.AreEqual("0\r\n", blue.Text);
             Assert.AreEqual("000000\r\n", hex.Text);
 
-            saveButton.Click();
+            SaveChanges();
             ShortWait();            
             Assert.AreEqual("#000000", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
 
@@ -373,7 +349,7 @@ namespace PowerToysTests
             Assert.AreEqual("255\r\n", blue.Text);
             Assert.AreEqual("ffffff\r\n", hex.Text);
 
-            saveButton.Click();
+            SaveChanges();
             ShortWait();
             Assert.AreEqual("#ffffff", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
 
@@ -385,7 +361,7 @@ namespace PowerToysTests
             Assert.AreEqual("0\r\n", blue.Text);
             Assert.AreEqual("ff0000\r\n", hex.Text);
 
-            saveButton.Click();
+            SaveChanges();
             ShortWait();
             Assert.AreEqual("#ff0000", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
         }
@@ -393,20 +369,16 @@ namespace PowerToysTests
         [TestMethod]
         public void HighlightRGBInputsTest()
         {
-            OpenFancyZonesSettings();
             ScrollDown();
 
             TestRgbInput("TextField57"); //red
             TestRgbInput("TextField60"); //green
             TestRgbInput("TextField63"); //blue
-
-            session.FindElementByName("Save").Click();
         }
 
         [TestMethod]
         public void HighlightHexInputTest()
         {
-            OpenFancyZonesSettings();
             ScrollDown();
 
             WindowsElement hexInput = session.FindElementByAccessibilityId("TextField54");
@@ -445,14 +417,11 @@ namespace PowerToysTests
             hexInput.SendKeys("1234");
             new Actions(session).MoveToElement(hexInput).MoveByOffset(0, hexInput.Rect.Height).Click().Perform();
             Assert.AreEqual("112233\r\n", hexInput.Text);
-
-            session.FindElementByName("Save").Click();
         }
 
         [TestMethod]
         public void HighlightColorTest()
         {
-            OpenFancyZonesSettings();
             ScrollDown();
 
             WindowsElement saturationAndBrightness = session.FindElementByName("Saturation and brightness");
@@ -470,7 +439,7 @@ namespace PowerToysTests
             Assert.AreEqual("Saturation 51 brightness 79", saturationAndBrightness.Text);
             Assert.AreEqual("152", hue.Text);
 
-            session.FindElementByName("Save").Click();
+            SaveChanges();
             ShortWait();
             Assert.AreEqual("#63c99a", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
         }
@@ -479,11 +448,29 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context);
+
+            OpenSettings();
+            ShortWait();
+
+            OpenFancyZonesSettings();
+
+            _saveButton = session.FindElementByName("Save");
+            Assert.IsNotNull(_saveButton);
+
+            WindowsElement powerToysWindow = session.FindElementByXPath("//Window[@Name=\"PowerToys Settings\"]");
+            Assert.IsNotNull(powerToysWindow);
+            _scrollUp = new Actions(session).MoveToElement(_saveButton).MoveByOffset(0, _saveButton.Rect.Height).ContextClick()
+                .SendKeys(OpenQA.Selenium.Keys.PageUp + OpenQA.Selenium.Keys.PageUp);
+            Assert.IsNotNull(_scrollUp);
+            _scrollDown = new Actions(session).MoveToElement(_saveButton).MoveByOffset(0, _saveButton.Rect.Height).ContextClick()
+                .SendKeys(OpenQA.Selenium.Keys.PageDown + OpenQA.Selenium.Keys.PageDown);
+            Assert.IsNotNull(_scrollDown);
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
+            CloseSettings();
             TearDown();
         }
 
@@ -499,29 +486,13 @@ namespace PowerToysTests
             {
                 _initialSettings = "";
             }
-            
-
-            OpenSettings();
-            ShortWait();
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
-            try
-            {
-                WindowsElement editorWindow = session.FindElementByName("FancyZones Editor");
-                if (editorWindow != null)
-                {
-                    editorWindow.SendKeys(OpenQA.Selenium.Keys.Alt + OpenQA.Selenium.Keys.F4);
-                }
-            } 
-            catch (OpenQA.Selenium.WebDriverException)
-            {
-                //editor window not found
-            }
+            ScrollUp();
 
-            CloseSettings();
             if (_initialSettings.Length > 0)
             {
                 File.WriteAllText(_settingsPath, _initialSettings);

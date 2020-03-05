@@ -50,14 +50,14 @@ namespace PowerToysTests
             Thread.Sleep(TimeSpan.FromSeconds(0.5));
         }
 
-        public void OpenSettings()
+        public static void OpenSettings()
         {
             trayButton.Click();
             session.FindElementByName("PowerToys").Click();
             trayButton.Click();
         }
 
-        public void CloseSettings()
+        public static void CloseSettings()
         {
             WindowsElement settings = session.FindElementByName("PowerToys Settings");
             settings.SendKeys(Keys.Alt + Keys.F4);
