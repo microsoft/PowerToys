@@ -137,6 +137,13 @@ namespace PowerToysTests
             Assert.AreEqual("255\r\n", colorInput.Text);
         }
 
+        private void ClearInput(WindowsElement input)
+        {
+            input.Click();
+            input.SendKeys(OpenQA.Selenium.Keys.Control + "a");
+            input.SendKeys(OpenQA.Selenium.Keys.Backspace);
+        }
+
         [TestMethod]
         public void FancyZonesSettingsOpen()
         {
@@ -442,6 +449,45 @@ namespace PowerToysTests
             SaveChanges();
             ShortWait();
             Assert.AreEqual("#63c99a", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
+        }
+
+        [TestMethod]
+        public void ExcludeApps()
+        {
+            WindowsElement input = session.FindElementByAccessibilityId("TextField66");
+            ClearInput(input);
+
+            string inputValue;
+
+            //valid
+            inputValue = "Notepad\nChrome";
+            input.SendKeys(inputValue);
+            SaveChanges();
+            ClearInput(input);
+            ShortWait();
+            Assert.AreEqual(inputValue, getPropertyValue<string>("fancyzones_excluded_apps"));
+
+            //invalid
+            inputValue = "Notepad Chrome";
+            input.SendKeys(inputValue);
+            SaveChanges();
+            ClearInput(input);
+            ShortWait();
+            Assert.AreEqual(inputValue, getPropertyValue<string>("fancyzones_excluded_apps"));
+
+            inputValue = "Notepad,Chrome";
+            input.SendKeys(inputValue);
+            SaveChanges();
+            ClearInput(input);
+            ShortWait();
+            Assert.AreEqual(inputValue, getPropertyValue<string>("fancyzones_excluded_apps"));
+
+            inputValue = "Note*";
+            input.SendKeys(inputValue);
+            SaveChanges();
+            ClearInput(input);
+            ShortWait();
+            Assert.AreEqual(inputValue, getPropertyValue<string>("fancyzones_excluded_apps"));
         }
 
         [ClassInitialize]
