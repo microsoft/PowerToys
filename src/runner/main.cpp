@@ -317,7 +317,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     int result = 0;
     try
     {
-
         std::thread{ [] {
             github_update_checking_worker();
         } }.detach();

@@ -20,7 +20,9 @@ $sourceExtensions.Add(".cpp") | Out-Null
 $sourceExtensions.Add(".h")   | Out-Null
 
 function Get-Dirty-Files-From-Git() {
-  $staged    = & git diff --name-only --diff-filter=d --cached
+  $repo_root = & git rev-parse --show-toplevel
+
+  $staged    = & git diff --name-only --diff-filter=d --cached | % { $repo_root + "/" + $_ }
   $unstaged  = & git ls-files -m
   $untracked = & git ls-files --others --exclude-standard
   $result = New-Object System.Collections.Generic.List[string]
@@ -34,9 +36,10 @@ function Get-Dirty-Files-From-Git() {
 
 if($all) { 
   $filesToFormat = 
-    Get-ChildItem -Recurse -File src | 
+    Get-ChildItem -Recurse -File ..\src | 
     Resolve-Path -Relative |
-    where {$sourceExtensions.Contains((Get-Item $_).Extension)}
+    where { (Get-Item $_).Directory -notmatch "(Generated Files)|node_modules" -And 
+      $sourceExtensions.Contains((Get-Item $_).Extension)}
 }
 else {
   $filesToFormat = Get-Dirty-Files-From-Git

@@ -99,7 +99,8 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
     // Shell_NotifyIcon can fail when we invoke it during the time explorer.exe isn't present/ready to handle it.
     // We'll also never receive wm_taskbar_restart message if the first call to Shell_NotifyIcon failed, so we use
     // WM_WINDOWPOSCHANGING which is always received on explorer startup sequence.
-    case WM_WINDOWPOSCHANGING: {
+    case WM_WINDOWPOSCHANGING:
+    {
         if (!tray_icon_created)
         {
             tray_icon_created = Shell_NotifyIcon(NIM_ADD, &tray_icon_data) == TRUE;
@@ -111,12 +112,14 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         {
             switch (lparam)
             {
-            case WM_LBUTTONUP: {
+            case WM_LBUTTONUP:
+            {
                 open_settings_window();
                 break;
             }
             case WM_RBUTTONUP:
-            case WM_CONTEXTMENU: {
+            case WM_CONTEXTMENU:
+            {
                 if (!h_menu)
                 {
                     h_menu = LoadMenu(reinterpret_cast<HINSTANCE>(&__ImageBase), MAKEINTRESOURCE(ID_TRAY_MENU));
