@@ -105,7 +105,7 @@ void UILogic(HINSTANCE hInstance, bool* ptr)
     cb.ItemsSource(keyNames);
 
     Windows::UI::Xaml::Controls::Button bt;
-    bt.Content(winrt::box_value(winrt::to_hstring("Type key")));
+    bt.Content(winrt::box_value(winrt::to_hstring("Edit Keyboard")));
     bt.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
         if (ptr != nullptr)
         {
@@ -119,8 +119,15 @@ void UILogic(HINSTANCE hInstance, bool* ptr)
         }
     });
 
+    Windows::UI::Xaml::Controls::Button bt2;
+    bt2.Content(winrt::box_value(winrt::to_hstring("Edit Shortcuts")));
+    bt2.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    });
+
     keyRow.Children().Append(cb);
     keyRow.Children().Append(bt);
+    keyRow.Children().Append(bt2);
+
 
     xamlContainer.Children().Append(keyRow);
     xamlContainer.UpdateLayout();
