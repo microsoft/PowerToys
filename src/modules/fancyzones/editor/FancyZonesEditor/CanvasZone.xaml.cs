@@ -104,52 +104,29 @@ namespace FancyZonesEditor
                     }
                 }
 
-                // Initialize minValue
-                if (mode == ResizeMode.ModeLow)
+                switch (mode)
                 {
-                    // We're dragging the low edge, don't go below zero
-                    MinValue = 0;
-                }
-                else if (mode == ResizeMode.ModeHigh)
-                {
-                    // We're dragging the high edge, don't make the zone smaller than min_w
-                    MinValue = track_p + min_w;
-                }
-                else if (mode == ResizeMode.ModeBoth)
-                {
-                    // We're moving the window, don't move it below zero
-                    MinValue = 0;
-                }
-
-                // Initialize maxValue
-                if (mode == ResizeMode.ModeLow)
-                {
-                    // We're dragging the low edge, it can't make the zone smaller than min_w
-                    MaxValue = track_p + track_w - min_w;
-                }
-                else if (mode == ResizeMode.ModeHigh)
-                {
-                    // We're dragging the high edge, don't go off the screen
-                    MaxValue = screen_w;
-                }
-                else if (mode == ResizeMode.ModeBoth)
-                {
-                    // We're moving the window, don't go off the screen (this time the lower edge is tracked)
-                    MaxValue = screen_w - track_w;
-                }
-
-                // Initialize position
-                if (mode == ResizeMode.ModeLow)
-                {
-                    Position = track_p;
-                }
-                else if (mode == ResizeMode.ModeHigh)
-                {
-                    Position = track_p + track_w;
-                }
-                else if (mode == ResizeMode.ModeBoth)
-                {
-                    Position = track_p;
+                    case ResizeMode.ModeLow:
+                        // We're dragging the low edge, don't go below zero
+                        MinValue = 0;
+                        // It can't make the zone smaller than min_w
+                        MaxValue = track_p + track_w - min_w;
+                        Position = track_p;
+                        break;
+                    case ResizeMode.ModeHigh:
+                        // We're dragging the high edge, don't make the zone smaller than min_w
+                        MinValue = track_p + min_w;
+                        // Don't go off the screen
+                        MaxValue = screen_w;
+                        Position = track_p + track_w;
+                        break;
+                    case ResizeMode.ModeBoth:
+                        // We're moving the window, don't move it below zero
+                        MinValue = 0;
+                        // Don't go off the screen (this time the lower edge is tracked)
+                        MaxValue = screen_w - track_w;
+                        Position = track_p;
+                        break;
                 }
 
                 Mode = mode;
