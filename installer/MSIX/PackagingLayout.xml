@@ -16,6 +16,7 @@
         <File DestinationPath="modules\Microsoft.Xaml.Behaviors.dll" SourcePath="..\..\x64\Release\modules\Microsoft.Xaml.Behaviors.dll"/>
         <File DestinationPath="modules\PowerRenameExt.dll" SourcePath="..\..\x64\Release\modules\PowerRenameExt.dll"/>
         <File DestinationPath="modules\shortcut_guide.dll" SourcePath="..\..\x64\Release\modules\shortcut_guide.dll"/>
+        <File DestinationPath="modules\PowerKeys.dll" SourcePath="..\..\x64\Release\modules\PowerKeys.dll"/>
         <File DestinationPath="modules\PowerRenameUWPUI.exe" SourcePath="..\..\x64\Release\PowerRenameUWPUI.exe"/>
         <File DestinationPath="modules\System.Text.Json.dll" SourcePath="..\..\x64\Release\modules\System.Text.Json.dll"/>
         <File DestinationPath="modules\System.Memory.dll" SourcePath="..\..\x64\Release\modules\System.Memory.dll"/>

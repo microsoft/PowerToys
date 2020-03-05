@@ -175,7 +175,8 @@ int runner(bool isProcessElevated)
         std::unordered_set<std::wstring> known_dlls = {
             L"shortcut_guide.dll",
             L"fancyzones.dll",
-            L"PowerRenameExt.dll"
+            L"PowerRenameExt.dll",
+            L"PowerKeys.dll"
         };
         for (auto& file : std::filesystem::directory_iterator(L"modules/"))
         {
