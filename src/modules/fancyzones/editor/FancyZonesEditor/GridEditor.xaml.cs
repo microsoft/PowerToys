@@ -137,6 +137,9 @@ namespace FancyZonesEditor
             // extend each edge of the [(_startCol, _startRow) - (_endCol, _endRow)] range based on merged cells until you have 4 straight edges with no "straddling cells"
             GridLayoutModel model = Model;
 
+            // As long as there is an edge of the 2D range such that some zone crosses its boundary, extend that boundary.
+            // A single pass is not enough, a while loop is needed. This results in the unique smallest rectangle containing
+            // the initial range such that no zone is "broken".
             bool global_dirty = true;
 
             while (global_dirty)
