@@ -8,6 +8,8 @@
 #include <common/dpi_aware.h>
 #include <common/common.h>
 
+#include "trace.h"
+
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "shcore.lib")
 #pragma comment(lib, "windowsapp")
@@ -241,8 +243,13 @@ void initialize_webview(int nShowCmd)
 
                 g_webview.NewWindowRequested([=](IWebViewControl sender_requester, WebViewControlNewWindowRequestedEventArgs args) {
                     // Open the requested link in the default browser registered in the Shell
-                    int res = static_cast<int>(reinterpret_cast<uintptr_t>(ShellExecute(nullptr, L"open", args.Uri().AbsoluteUri().c_str(), nullptr, nullptr, SW_SHOWNORMAL)));
-                    WINRT_VERIFY(res > 32);
+                    using winrt::Windows::Foundation::Uri;
+                    Uri uri = args.Uri();
+                    // WebView doesn't let us to open ms-settings:protocol links directly, so we translate it
+                    // from a https placeholder
+                    if (uri.AbsoluteUri() == L"https://ms_settings_startupapps/")
+                        uri = Uri{L"ms-settings:startupapps"};
+                    winrt::Windows::System::Launcher::LaunchUriAsync(uri);
                 });
 
                 g_webview.ContentLoading([=](IWebViewControl sender, WebViewControlContentLoadingEventArgs const& args) {
@@ -272,6 +279,7 @@ void initialize_webview(int nShowCmd)
             else if (status == AsyncStatus::Error)
             {
                 MessageBox(NULL, L"Failed to create the WebView control.\nPlease report the bug to https://github.com/microsoft/PowerToys/issues", L"PowerToys Settings Error", MB_OK);
+                Trace::SettingsInitError(Trace::SettingsInitErrorCause::WebViewInitAsyncError);
                 exit(1);
             }
             else if (status == AsyncStatus::Started)
@@ -286,6 +294,7 @@ void initialize_webview(int nShowCmd)
     }
     catch (hresult_error const& e)
     {
+        Trace::SettingsInitError(Trace::SettingsInitErrorCause::WebViewInitWinRTException);
         WCHAR message[1024] = L"";
         StringCchPrintf(message, ARRAYSIZE(message), L"failed: %ls", e.message().c_str());
         MessageBox(g_main_wnd, message, L"Error", MB_OK);
@@ -482,15 +491,88 @@ void parse_args()
     LocalFree(argument_list);
 }
 
+bool initialize_com_security_policy_for_webview()
+{
+    const wchar_t* security_descriptor =
+        L"O:BA" // Owner: Builtin (local) administrator
+        L"G:BA" // Group: Builtin (local) administrator
+        L"D:"
+        L"(A;;0x7;;;PS)" // Access allowed on COM_RIGHTS_EXECUTE, _LOCAL, & _REMOTE for Personal self
+        L"(A;;0x3;;;SY)" // Access allowed on COM_RIGHTS_EXECUTE, & _LOCAL for Local system
+        L"(A;;0x7;;;BA)" // Access allowed on COM_RIGHTS_EXECUTE, _LOCAL, & _REMOTE for Builtin (local) administrator
+        L"(A;;0x3;;;S-1-15-3-1310292540-1029022339-4008023048-2190398717-53961996-4257829345-603366646)" // Access allowed on COM_RIGHTS_EXECUTE, & _LOCAL for Win32WebViewHost package capability
+        L"S:"
+        L"(ML;;NX;;;LW)"; // Integrity label on No execute up for Low mandatory level
+    PSECURITY_DESCRIPTOR self_relative_sd{};
+    if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(security_descriptor, SDDL_REVISION_1, &self_relative_sd, nullptr))
+    {
+        return false;
+    }
+
+    on_scope_exit free_realtive_sd([&] {
+        LocalFree(self_relative_sd);
+    });
+
+    DWORD absolute_sd_size = 0;
+    DWORD dacl_size = 0;
+    DWORD group_size = 0;
+    DWORD owner_size = 0;
+    DWORD sacl_size = 0;
+
+    if (!MakeAbsoluteSD(self_relative_sd, nullptr, &absolute_sd_size, nullptr, &dacl_size, nullptr, &sacl_size, nullptr, &owner_size, nullptr, &group_size))
+    {
+        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+        {
+            return false;
+        }
+    }
+
+    typed_storage<SECURITY_DESCRIPTOR> absolute_sd{ absolute_sd_size };
+    typed_storage<ACL> dacl{ dacl_size };
+    typed_storage<ACL> sacl{ sacl_size };
+    typed_storage<SID> owner{ owner_size };
+    typed_storage<SID> group{ group_size };
+
+    if (!MakeAbsoluteSD(self_relative_sd,
+                        absolute_sd,
+                        &absolute_sd_size,
+                        dacl,
+                        &dacl_size,
+                        sacl,
+                        &sacl_size,
+                        owner,
+                        &owner_size,
+                        group,
+                        &group_size))
+    {
+        return false;
+    }
+
+    return !FAILED(CoInitializeSecurity(
+        absolute_sd,
+        -1,
+        nullptr,
+        nullptr,
+        RPC_C_AUTHN_LEVEL_PKT_PRIVACY,
+        RPC_C_IMP_LEVEL_IDENTIFY,
+        nullptr,
+        EOAC_DYNAMIC_CLOAKING | EOAC_DISABLE_AAA,
+        nullptr));
+}
+
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
+    Trace::RegisterProvider();
     CoInitialize(nullptr);
 
-    if (is_process_elevated())
+    const bool should_try_drop_privileges = !initialize_com_security_policy_for_webview() && is_process_elevated();
+
+    if (should_try_drop_privileges)
     {
         if (!drop_elevated_privileges())
         {
             MessageBox(NULL, L"Failed to drop admin privileges.\nPlease report the bug to https://github.com/microsoft/PowerToys/issues", L"PowerToys Settings Error", MB_OK);
+            Trace::SettingsInitError(Trace::SettingsInitErrorCause::FailedToDropPrivileges);
             exit(1);
         }
     }
@@ -514,5 +596,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         DispatchMessage(&msg);
     }
 
+    Trace::UnregisterProvider();
     return (int)msg.wParam;
 }

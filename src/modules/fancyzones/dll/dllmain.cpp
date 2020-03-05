@@ -5,8 +5,8 @@
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <interface/win_hook_event_data.h>
 #include <lib/ZoneSet.h>
-#include <lib/RegistryHelpers.h>
 
+#include <lib/resource.h>
 #include <lib/trace.h>
 #include <lib/Settings.h>
 #include <lib/FancyZones.h>
@@ -32,83 +32,13 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
     return TRUE;
 }
 
-// This function is exported and called from FancyZonesEditor.exe to save a layout from the editor.
-STDAPI PersistZoneSet(
-    PCWSTR activeKey, // Registry key holding ActiveZoneSet
-    PCWSTR resolutionKey, // Registry key to persist ZoneSet to
-    HMONITOR monitor,
-    WORD layoutId, // LayoutModel Id
-    int zoneCount, // Number of zones in zones
-    int zones[]) // Array of zones serialized in left/top/right/bottom chunks
-{
-    // See if we have already persisted this layout we can update.
-    UUID id{GUID_NULL};
-    if (wil::unique_hkey key{ RegistryHelpers::OpenKey(resolutionKey) })
-    {
-        ZoneSetPersistedData data{};
-        DWORD dataSize = sizeof(data);
-        wchar_t value[256]{};
-        DWORD valueLength = ARRAYSIZE(value);
-        DWORD i = 0;
-        while (RegEnumValueW(key.get(), i++, value, &valueLength, nullptr, nullptr, reinterpret_cast<BYTE*>(&data), &dataSize) == ERROR_SUCCESS)
-        {
-            if (data.LayoutId == layoutId)
-            {
-                if (data.ZoneCount == zoneCount)
-                {
-                    CLSIDFromString(value, &id);
-                    break;
-                }
-            }
-            valueLength = ARRAYSIZE(value);
-            dataSize = sizeof(data);
-        }
-    }
-
-    if (id == GUID_NULL)
-    {
-        // No existing layout found so let's create a new one.
-        UuidCreate(&id);
-    }
-
-    if (id != GUID_NULL)
-    {
-        winrt::com_ptr<IZoneSet> zoneSet = MakeZoneSet(
-            ZoneSetConfig(
-                id,
-                layoutId,
-                MonitorFromPoint({}, MONITOR_DEFAULTTOPRIMARY),
-                resolutionKey));
-
-        for (int i = 0; i < zoneCount; i++)
-        {
-            const int baseIndex = i * 4;
-            const int left = zones[baseIndex];
-            const int top = zones[baseIndex+1];
-            const int right = zones[baseIndex+2];
-            const int bottom = zones[baseIndex+3];
-            zoneSet->AddZone(MakeZone({ left, top, right, bottom }));
-        }
-        zoneSet->Save();
-
-        wil::unique_cotaskmem_string zoneSetId;
-        if (SUCCEEDED_LOG(StringFromCLSID(id, &zoneSetId)))
-        {
-            RegistryHelpers::SetString(activeKey, L"ActiveZoneSetId", zoneSetId.get());
-        }
-
-        return S_OK;
-    }
-    return E_FAIL;
-}
-
 class FancyZonesModule : public PowertoyModuleIface
 {
 public:
     // Return the display name of the powertoy, this will be cached
     virtual PCWSTR get_name() override
     {
-        return L"FancyZones";
+        return app_name.c_str();
     }
 
     // Return array of the names of all events that this powertoy listens for, with
@@ -146,7 +76,7 @@ public:
         if (!m_app)
         {
             Trace::FancyZones::EnableFancyZones(true);
-            m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings.get());
+            m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings);
             if (m_app)
             {
                 m_app->Run();
@@ -197,45 +127,12 @@ public:
 
     FancyZonesModule()
     {
+        app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
         m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModule::get_name());
+        JSONHelpers::FancyZonesDataInstance().LoadFancyZonesData();
     }
 
 private:
-    bool IsInterestingWindow(HWND window)
-    {
-        auto style = GetWindowLongPtr(window, GWL_STYLE);
-        auto exStyle = GetWindowLongPtr(window, GWL_EXSTYLE);
-        // Ignore:
-        if (GetAncestor(window, GA_ROOT) != window || // windows that are not top-level
-            GetWindow(window, GW_OWNER) != nullptr || // windows that have an owner - like Save As dialogs
-            (style & WS_CHILD) != 0 || // windows that are child elements of other windows - like buttons
-            (style & WS_DISABLED) != 0 || // windows that are disabled
-            (exStyle & WS_EX_TOOLWINDOW) != 0 || // toolbar windows
-            !IsWindowVisible(window)) // invisible windows
-        {
-            return false;
-        }
-        // Filter some windows like the Start menu or Cortana
-        auto windowAndPath = get_filtered_base_window_and_path(window);
-        if (windowAndPath.hwnd == nullptr)
-        {
-            return false;
-        }
-        // Filter out user specified apps
-        CharUpperBuffW(windowAndPath.process_path.data(), (DWORD)windowAndPath.process_path.length());
-        if (m_settings)
-        {
-            for (const auto& excluded : m_settings->GetSettings().excludedAppsArray)
-            {
-                if (windowAndPath.process_path.find(excluded) != std::wstring::npos)
-                {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
     void Disable(bool const traceEvent)
     {
         if (m_app) {
@@ -245,6 +142,7 @@ private:
             }
             m_app->Destroy();
             m_app = nullptr;
+            m_settings->ResetCallback();
         }
     }
 
@@ -254,9 +152,9 @@ private:
     void MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     void MoveSizeUpdate(POINT const& ptScreen) noexcept;
 
-    HANDLE m_movedWindow = nullptr;
     winrt::com_ptr<IFancyZones> m_app;
     winrt::com_ptr<IFancyZonesSettings> m_settings;
+    std::wstring app_name;
 };
 
 intptr_t FancyZonesModule::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
@@ -314,10 +212,7 @@ void FancyZonesModule::HandleWinHookEvent(WinHookEvent* data) noexcept
     {
         if (data->idObject == OBJID_WINDOW)
         {
-            if (IsInterestingWindow(data->hwnd))
-            {
-                m_app.as<IFancyZonesCallback>()->WindowCreated(data->hwnd);
-            }
+            m_app.as<IFancyZonesCallback>()->WindowCreated(data->hwnd);
         }
     }
     break;
@@ -329,23 +224,15 @@ void FancyZonesModule::HandleWinHookEvent(WinHookEvent* data) noexcept
 
 void FancyZonesModule::MoveSizeStart(HWND window, POINT const& ptScreen) noexcept
 {
-    if (IsInterestingWindow(window))
+    if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
     {
-        if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
-        {
-            m_movedWindow = window;
-            m_app.as<IFancyZonesCallback>()->MoveSizeStart(window, monitor, ptScreen);
-        }
+        m_app.as<IFancyZonesCallback>()->MoveSizeStart(window, monitor, ptScreen);
     }
 }
 
 void FancyZonesModule::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
 {
-    if (IsInterestingWindow(window) || (window != nullptr && window == m_movedWindow))
-    {
-        m_movedWindow = nullptr;
-        m_app.as<IFancyZonesCallback>()->MoveSizeEnd(window, ptScreen);
-    }
+    m_app.as<IFancyZonesCallback>()->MoveSizeEnd(window, ptScreen);
 }
 
 void FancyZonesModule::MoveSizeUpdate(POINT const& ptScreen) noexcept

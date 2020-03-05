@@ -4,6 +4,7 @@
 #include <PowerRenameItem.h>
 #include <PowerRenameManager.h>
 #include <trace.h>
+#include <common.h>
 #include <Helpers.h>
 #include <icon_helpers.h>
 #include <Settings.h>
@@ -20,6 +21,7 @@ struct InvokeStruct
 CPowerRenameMenu::CPowerRenameMenu()
 {
     ModuleAddRef();
+    app_name = GET_RESOURCE_STRING(IDS_POWERRENAME);
 }
 
 CPowerRenameMenu::~CPowerRenameMenu()
@@ -196,7 +198,7 @@ DWORD WINAPI CPowerRenameMenu::s_PowerRenameUIThreadProc(_In_ void* pData)
 
 HRESULT __stdcall CPowerRenameMenu::GetTitle(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszName)
 {
-    return SHStrDup(L"PowerRename", ppszName);
+    return SHStrDup(app_name.c_str(), ppszName);
 }
 
 HRESULT __stdcall CPowerRenameMenu::GetIcon(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszIcon)
