@@ -95,6 +95,19 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
+        public void SvgPreviewControl_ShouldDisableAllowNavigation_WhenDoPreviewCalled()
+        {
+            // Arrange
+            var svgPreviewControl = new SvgPreviewControl();
+
+            // Act
+            svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
+
+            // Assert
+            Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).AllowNavigation, false);
+        }
+
+        [TestMethod]
         public void SvgPreviewControl_ShouldAddValidInfoBar_IfSvgPreviewThrows()
         {
             // Arrange
