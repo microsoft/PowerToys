@@ -14,18 +14,20 @@ std::optional<RECT> get_window_pos(HWND hwnd);
 std::optional<POINT> get_mouse_pos();
 
 // Test if window can be zoned by FancyZones
-struct FancyZonesFilter {
-  bool zonable = false; // If the window is zonable by FancyZones by default - true when both standard_window and no_visible_owner are also true
-  bool standard_window = false; // True if from the styles the window looks like a standard window
-  bool no_visible_owner = false; // True if the window is a top-level window that does not have a visible owner
-  std::wstring process_path; // Path to the executable owning the window
+struct FancyZonesFilter
+{
+    bool zonable = false; // If the window is zonable by FancyZones by default - true when both standard_window and no_visible_owner are also true
+    bool standard_window = false; // True if from the styles the window looks like a standard window
+    bool no_visible_owner = false; // True if the window is a top-level window that does not have a visible owner
+    std::wstring process_path; // Path to the executable owning the window
 };
 FancyZonesFilter get_fancyzones_filtered_window(HWND window);
 
 // Gets active foreground window, filtering out all "non standard" windows like the taskbar, etc.
-struct ShortcutGuideFilter {
-  HWND hwnd = nullptr; // Handle to the top-level foreground window or nullptr if there is no such window
-  bool snappable = false; // True, if the window can react to Windows Snap keys
+struct ShortcutGuideFilter
+{
+    HWND hwnd = nullptr; // Handle to the top-level foreground window or nullptr if there is no such window
+    bool snappable = false; // True, if the window can react to Windows Snap keys
 };
 ShortcutGuideFilter get_shortcutguide_filtered_window();
 
@@ -42,17 +44,18 @@ int run_message_loop();
 std::optional<std::wstring> get_last_error_message(const DWORD dw);
 void show_last_error_message(LPCWSTR lpszFunction, DWORD dw);
 
-enum WindowState {
-  UNKNONW,
-  MINIMIZED,
-  MAXIMIZED,
-  SNAPED_TOP_LEFT,
-  SNAPED_LEFT,
-  SNAPED_BOTTOM_LEFT,
-  SNAPED_TOP_RIGHT,
-  SNAPED_RIGHT,
-  SNAPED_BOTTOM_RIGHT,
-  RESTORED
+enum WindowState
+{
+    UNKNONW,
+    MINIMIZED,
+    MAXIMIZED,
+    SNAPED_TOP_LEFT,
+    SNAPED_LEFT,
+    SNAPED_BOTTOM_LEFT,
+    SNAPED_TOP_RIGHT,
+    SNAPED_RIGHT,
+    SNAPED_BOTTOM_RIGHT,
+    RESTORED
 };
 WindowState get_window_state(HWND hwnd);
 

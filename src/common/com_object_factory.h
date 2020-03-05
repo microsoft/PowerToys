@@ -8,7 +8,7 @@ template<typename T>
 class com_object_factory : public IClassFactory
 {
 public:
-    HRESULT __stdcall QueryInterface(const IID & riid, void** ppv) override
+    HRESULT __stdcall QueryInterface(const IID& riid, void** ppv) override
     {
         static const QITAB qit[] = {
             QITABENT(com_object_factory, IClassFactory),
@@ -28,7 +28,7 @@ public:
         return refCount;
     }
 
-    HRESULT __stdcall CreateInstance(IUnknown* punkOuter, const IID & riid, void** ppv)
+    HRESULT __stdcall CreateInstance(IUnknown* punkOuter, const IID& riid, void** ppv)
     {
         *ppv = nullptr;
         HRESULT hr;
