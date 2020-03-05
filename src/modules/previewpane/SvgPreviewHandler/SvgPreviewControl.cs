@@ -110,6 +110,7 @@ namespace SvgPreviewHandler
             this.browser.IsWebBrowserContextMenuEnabled = false;
             this.browser.ScriptErrorsSuppressed = true;
             this.browser.ScrollBarsEnabled = true;
+            this.browser.AllowNavigation = false;
             this.Controls.Add(this.browser);
         }
 
