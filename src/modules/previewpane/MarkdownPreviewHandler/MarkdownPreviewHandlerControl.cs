@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using Common;
 using Markdig;
 using MarkdownPreviewHandler.Properties;
+using PreviewHandlerCommon;
 
 namespace MarkdownPreviewHandler
 {
@@ -46,7 +47,7 @@ namespace MarkdownPreviewHandler
         private RichTextBox infoBar;
 
         /// <summary>
-        /// WebBrowser control to display markdown html.
+        /// Extended Browser Control to display markdown html.
         /// </summary>
         private WebBrowser browser;
 
@@ -85,7 +86,7 @@ namespace MarkdownPreviewHandler
                     MarkdownPipeline pipeline = this.pipelineBuilder.Build();
                     string parsedMarkdown = Markdown.ToHtml(fileText, pipeline);
                     sb.AppendFormat("{0}{1}{2}", this.htmlHeader, parsedMarkdown, this.htmlFooter);
-                    string markdownHTML = this.RemoveScriptFromHTML(sb.ToString());
+                    string markdownHTML = sb.ToString();
 
                     this.browser = new WebBrowser
                     {
@@ -119,23 +120,6 @@ namespace MarkdownPreviewHandler
                     base.DoPreview(dataSource);
                 }
             });
-        }
-
-        /// <summary>
-        /// Removes script tag from html string.
-        /// </summary>
-        /// <param name="html">html string.</param>
-        /// <returns>HTML string without script tag.</returns>
-        public string RemoveScriptFromHTML(string html)
-        {
-            HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
-            doc.LoadHtml(html);
-
-            doc.DocumentNode.Descendants()
-                            .Where(n => n.Name == "script")
-                            .ToList()
-                            .ForEach(n => n.Remove());
-            return doc.DocumentNode.InnerHtml;
         }
 
         /// <summary>

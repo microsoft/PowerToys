@@ -7,6 +7,7 @@ using System.Xml.Linq;
 using Markdig;
 using MarkdownPreviewHandler;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PreviewHandlerCommon;
 
 namespace PreviewPaneUnitTests
 {
@@ -24,7 +25,7 @@ namespace PreviewPaneUnitTests
 
             // Assert
             Assert.AreEqual(markdownPreviewHandlerControl.Controls.Count, 2);
-            Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[0], typeof(WebBrowser));
+            Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[0], typeof(WebBrowserExt));
         }
 
         [TestMethod]
@@ -52,7 +53,7 @@ namespace PreviewPaneUnitTests
 
             // Assert
             Assert.AreEqual(markdownPreviewHandlerControl.Controls.Count, 1);
-            Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[0], typeof(WebBrowser));
+            Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[0], typeof(WebBrowserExt));
         }
 
         [TestMethod]
@@ -65,7 +66,7 @@ namespace PreviewPaneUnitTests
             markdownPreviewHandlerControl.DoPreview<string>("HelperFiles/MarkdownWithExternalImage.txt");
 
             // Assert
-            Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[0], typeof(WebBrowser));
+            Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[0], typeof(WebBrowserExt));
             Assert.IsNotNull(((WebBrowser)markdownPreviewHandlerControl.Controls[0]).DocumentText);
             Assert.AreEqual(((WebBrowser)markdownPreviewHandlerControl.Controls[0]).Dock, DockStyle.Fill);
             Assert.AreEqual(((WebBrowser)markdownPreviewHandlerControl.Controls[0]).IsWebBrowserContextMenuEnabled, false);
@@ -89,20 +90,6 @@ namespace PreviewPaneUnitTests
             Assert.AreEqual(((RichTextBox)markdownPreviewHandlerControl.Controls[1]).BorderStyle, BorderStyle.None);
             Assert.AreEqual(((RichTextBox)markdownPreviewHandlerControl.Controls[1]).BackColor, Color.LightYellow);
             Assert.AreEqual(((RichTextBox)markdownPreviewHandlerControl.Controls[1]).Multiline, true);
-        }
-
-        [TestMethod]
-        public void MarkdownPreviewHandlerControl_RemovesScriptTags_RemoveScriptFromHTMLIsCalled()
-        {
-            // Arrange
-            MarkdownPreviewHandlerControl markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl();
-            string html = "<html><style></style><script>alert(\"hello\");</script><script></script></html>";
-
-            // Act
-            string parsedHTML = markdownPreviewHandlerControl.RemoveScriptFromHTML(html);
-
-            // Assert
-            Assert.AreEqual(parsedHTML, "<html>\r\n  <style></style>\r\n</html>");
         }
     }
 }
