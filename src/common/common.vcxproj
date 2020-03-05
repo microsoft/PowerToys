@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\installer\Version.props" />
+  <Target Name="GenerateVersionData" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <HeaderLines Include="#pragma once" />
+      <HeaderLines Include="#define VERSION_MAJOR $(Version.Split('.')[0])" />
+      <HeaderLines Include="#define VERSION_MINOR $(Version.Split('.')[1])" />
+      <HeaderLines Include="#define VERSION_REVISION $(Version.Split('.')[2])" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="Generated Files\version_gen.h"
+      Lines="@(HeaderLines)"
+      Overwrite="true"
+      Encoding="Unicode"
+      WriteOnlyWhenDifferent="true" />
+  </Target>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
