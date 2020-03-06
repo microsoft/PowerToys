@@ -130,6 +130,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "action_runner", "src\action
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "msi_to_msix_upgrade_lib", "src\common\msi_to_msix_upgrade_lib\msi_to_msix_upgrade_lib.vcxproj", "{17DA04DF-E393-4397-9CF0-84DABE11032E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "settingsui", "src\settingsui\settingsui.csproj", "{A7D5099E-F0FD-4BF3-8522-5A682759F915}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "settings_v2", "src\settings_v2\settings_v2.csproj", "{806222E4-A9BE-431D-A1E7-3B0B15ABD160}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -228,6 +232,16 @@ Global
 		{17DA04DF-E393-4397-9CF0-84DABE11032E}.Debug|x64.Build.0 = Debug|x64
 		{17DA04DF-E393-4397-9CF0-84DABE11032E}.Release|x64.ActiveCfg = Release|x64
 		{17DA04DF-E393-4397-9CF0-84DABE11032E}.Release|x64.Build.0 = Release|x64
+		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Debug|x64.ActiveCfg = Debug|x64
+		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Debug|x64.Build.0 = Debug|x64
+		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Debug|x64.Deploy.0 = Debug|x64
+		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Release|x64.ActiveCfg = Release|x64
+		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Release|x64.Build.0 = Release|x64
+		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Release|x64.Deploy.0 = Release|x64
+		{806222E4-A9BE-431D-A1E7-3B0B15ABD160}.Debug|x64.ActiveCfg = Debug|x64
+		{806222E4-A9BE-431D-A1E7-3B0B15ABD160}.Debug|x64.Build.0 = Debug|x64
+		{806222E4-A9BE-431D-A1E7-3B0B15ABD160}.Release|x64.ActiveCfg = Release|Any CPU
+		{806222E4-A9BE-431D-A1E7-3B0B15ABD160}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
