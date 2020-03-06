@@ -33,6 +33,7 @@ namespace FancyZonesUnitTests
         Assert::AreEqual(expected.overrideSnapHotkeys, actual.overrideSnapHotkeys);
         Assert::AreEqual(expected.appLastZone_moveWindows, actual.appLastZone_moveWindows);
         Assert::AreEqual(expected.use_cursorpos_editor_startupscreen, actual.use_cursorpos_editor_startupscreen);
+        Assert::AreEqual(expected.show_fancy_zones_on_all_monitors, actual.show_fancy_zones_on_all_monitors);
         Assert::AreEqual(expected.zoneHightlightColor.c_str(), actual.zoneHightlightColor.c_str());
         Assert::AreEqual(expected.zoneHighlightOpacity, actual.zoneHighlightOpacity);
         Assert::AreEqual(expected.excludedApps.c_str(), actual.excludedApps.c_str());
@@ -104,6 +105,7 @@ namespace FancyZonesUnitTests
                 .overrideSnapHotkeys = false,
                 .appLastZone_moveWindows = false,
                 .use_cursorpos_editor_startupscreen = true,
+                .show_fancy_zones_on_all_monitors = false,
                 .zoneHightlightColor = L"#00FFD7",
                 .zoneHighlightOpacity = 45,
                 .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
@@ -120,6 +122,7 @@ namespace FancyZonesUnitTests
             values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
             values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
             values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
+            values.add_property(L"fancyzones_show_on_all_monitors", expected.show_fancy_zones_on_all_monitors);
             values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
             values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
             values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
@@ -146,6 +149,7 @@ namespace FancyZonesUnitTests
                 .overrideSnapHotkeys = false,
                 .appLastZone_moveWindows = false,
                 .use_cursorpos_editor_startupscreen = true,
+                .show_fancy_zones_on_all_monitors = false,
                 .zoneHightlightColor = L"#00FFD7",
                 .zoneHighlightOpacity = 45,
                 .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
@@ -162,6 +166,7 @@ namespace FancyZonesUnitTests
             values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
             values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
             values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
+            values.add_property(L"fancyzones_show_on_all_monitors", expected.show_fancy_zones_on_all_monitors);
             values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
             values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
             values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
@@ -187,6 +192,7 @@ namespace FancyZonesUnitTests
                 .overrideSnapHotkeys = m_defaultSettings.overrideSnapHotkeys,
                 .appLastZone_moveWindows = m_defaultSettings.appLastZone_moveWindows,
                 .use_cursorpos_editor_startupscreen = m_defaultSettings.use_cursorpos_editor_startupscreen,
+                .show_fancy_zones_on_all_monitors = m_defaultSettings.show_fancy_zones_on_all_monitors,
                 .zoneHightlightColor = L"#00FFD7",
                 .zoneHighlightOpacity = 45,
                 .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
@@ -221,6 +227,7 @@ namespace FancyZonesUnitTests
                 .overrideSnapHotkeys = false,
                 .appLastZone_moveWindows = false,
                 .use_cursorpos_editor_startupscreen = true,
+                .show_fancy_zones_on_all_monitors = false,
                 .zoneHightlightColor = m_defaultSettings.zoneHightlightColor,
                 .zoneHighlightOpacity = 45,
                 .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
@@ -237,6 +244,7 @@ namespace FancyZonesUnitTests
             values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
             values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
             values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
+            values.add_property(L"fancyzones_show_on_all_monitors", expected.show_fancy_zones_on_all_monitors);
             values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
             values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
             values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
@@ -262,6 +270,7 @@ namespace FancyZonesUnitTests
                 .overrideSnapHotkeys = false,
                 .appLastZone_moveWindows = false,
                 .use_cursorpos_editor_startupscreen = true,
+                .show_fancy_zones_on_all_monitors = false,
                 .zoneHightlightColor = L"#00FFD7",
                 .zoneHighlightOpacity = m_defaultSettings.zoneHighlightOpacity,
                 .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
@@ -278,6 +287,7 @@ namespace FancyZonesUnitTests
             values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
             values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
             values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
+            values.add_property(L"fancyzones_show_on_all_monitors", expected.show_fancy_zones_on_all_monitors);
             values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
             values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
             values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
@@ -303,6 +313,7 @@ namespace FancyZonesUnitTests
                 .overrideSnapHotkeys = false,
                 .appLastZone_moveWindows = false,
                 .use_cursorpos_editor_startupscreen = true,
+                .show_fancy_zones_on_all_monitors = false,
                 .zoneHightlightColor = L"#00FFD7",
                 .zoneHighlightOpacity = 45,
                 .editorHotkey = m_defaultSettings.editorHotkey,
@@ -319,6 +330,7 @@ namespace FancyZonesUnitTests
             values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
             values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
             values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
+            values.add_property(L"fancyzones_show_on_all_monitors", expected.show_fancy_zones_on_all_monitors);
             values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
             values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
             values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
@@ -344,6 +356,7 @@ namespace FancyZonesUnitTests
                 .overrideSnapHotkeys = false,
                 .appLastZone_moveWindows = false,
                 .use_cursorpos_editor_startupscreen = true,
+                .show_fancy_zones_on_all_monitors = false,
                 .zoneHightlightColor = L"#00FFD7",
                 .zoneHighlightOpacity = 45,
                 .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
@@ -360,6 +373,7 @@ namespace FancyZonesUnitTests
             values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
             values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
             values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
+            values.add_property(L"fancyzones_show_on_all_monitors", expected.show_fancy_zones_on_all_monitors);
             values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
             values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
             values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
@@ -435,6 +449,7 @@ namespace FancyZonesUnitTests
                 .overrideSnapHotkeys = false,
                 .appLastZone_moveWindows = false,
                 .use_cursorpos_editor_startupscreen = true,
+                .show_fancy_zones_on_all_monitors = false,
                 .zoneHightlightColor = L"#00FFD7",
                 .zoneHighlightOpacity = 45,
                 .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
@@ -451,6 +466,7 @@ namespace FancyZonesUnitTests
             values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
             values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
             values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
+            values.add_property(L"fancyzones_show_on_all_monitors", expected.show_fancy_zones_on_all_monitors);
             values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
             values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
             values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
@@ -563,6 +579,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toogle(L"fancyzones_virtualDesktopChange_moveWindows", IDS_SETTING_DESCRIPTION_VIRTUALDESKTOPCHANGE_MOVEWINDOWS, settings.virtualDesktopChange_moveWindows);
             ptSettings.add_bool_toogle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, settings.appLastZone_moveWindows);
             ptSettings.add_bool_toogle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
+            ptSettings.add_bool_toogle(L"fancy_zones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.show_fancy_zones_on_all_monitors);
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
             ptSettings.add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, settings.zoneHightlightColor);
             ptSettings.add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, settings.excludedApps);
@@ -584,6 +601,7 @@ namespace FancyZonesUnitTests
                 .overrideSnapHotkeys = false,
                 .appLastZone_moveWindows = false,
                 .use_cursorpos_editor_startupscreen = true,
+                .show_fancy_zones_on_all_monitors = false,
                 .zoneHightlightColor = L"#00FFD7",
                 .zoneHighlightOpacity = 45,
                 .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
@@ -600,6 +618,7 @@ namespace FancyZonesUnitTests
             values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
             values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
             values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
+            values.add_property(L"fancyzones_show_on_all_monitors", expected.show_fancy_zones_on_all_monitors);
             values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
             values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
             values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
@@ -631,6 +650,7 @@ namespace FancyZonesUnitTests
             m_ptSettings->add_bool_toogle(L"fancyzones_virtualDesktopChange_moveWindows", IDS_SETTING_DESCRIPTION_VIRTUALDESKTOPCHANGE_MOVEWINDOWS, expected.virtualDesktopChange_moveWindows);
             m_ptSettings->add_bool_toogle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, expected.appLastZone_moveWindows);
             m_ptSettings->add_bool_toogle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, expected.use_cursorpos_editor_startupscreen);
+            m_ptSettings->add_bool_toogle(L"fancy_zones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, expected.show_fancy_zones_on_all_monitors);
             m_ptSettings->add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, expected.zoneHighlightOpacity, 0, 100, 1);
             m_ptSettings->add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, expected.zoneHightlightColor);
             m_ptSettings->add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, expected.excludedApps);
@@ -695,6 +715,7 @@ namespace FancyZonesUnitTests
                 .overrideSnapHotkeys = false,
                 .appLastZone_moveWindows = true,
                 .use_cursorpos_editor_startupscreen = true,
+                .show_fancy_zones_on_all_monitors = false,
                 .zoneHightlightColor = L"#00AABB",
                 .zoneHighlightOpacity = 45,
                 .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
