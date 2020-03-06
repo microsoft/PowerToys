@@ -510,16 +510,6 @@ namespace FancyZonesUnitTests
             Assert::AreNotEqual(-1, actualZoneIndex); //with invalid point zone remains the same
         }
 
-        TEST_METHOD(MoveSizeCancel)
-        {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false);
-
-            const auto expected = S_OK;
-            const auto actual = m_zoneWindow->MoveSizeCancel();
-
-            Assert::AreEqual(expected, actual);
-        }
-
         TEST_METHOD(MoveWindowIntoZoneByIndexNoActiveZoneSet)
         {
             m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false);
