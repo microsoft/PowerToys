@@ -706,12 +706,10 @@ bool FancyZones::IsInterestingWindow(HWND window) noexcept
     CharUpperBuffW(filtered.process_path.data(), (DWORD)filtered.process_path.length());
     if (m_settings)
     {
-        for (const auto& excluded : m_settings->GetSettings()->excludedAppsArray)
+        auto excludedAppsArray = m_settings->GetSettings()->excludedAppsArray;
+        if (find_app_name_in_path(filtered.process_path, excludedAppsArray))
         {
-            if (filtered.process_path.find(excluded) != std::wstring::npos)
-            {
-                return false;
-            }
+            return false;
         }
     }
     return true;

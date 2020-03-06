@@ -7,6 +7,7 @@
 #include "version.h"
 
 #pragma comment(lib, "advapi32.lib")
+#pragma comment(lib, "shlwapi.lib")
 
 namespace localized_strings
 {
@@ -713,5 +714,19 @@ bool check_user_is_admin()
     }
 
     freeMemory(pSID, pGroupInfo);
+    return false;
+}
+
+bool find_app_name_in_path(const std::wstring& where, const std::vector<std::wstring>& what)
+{
+    for (const auto& row : what)
+    {
+        const auto pos = where.rfind(row);
+        const auto last_slash = where.rfind('\\');
+        if (pos != std::wstring::npos && pos <= last_slash + 1 && pos + row.length() > last_slash)
+        {
+            return true;
+        }
+    }
     return false;
 }
