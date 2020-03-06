@@ -165,7 +165,7 @@ export class GeneralSettings extends React.Component <any, any> {
         />)
         }
         <ChoiceGroupSettingsControl
-          setting={{display_name: 'Chose Settings color',
+          setting={{display_name: 'Choose Settings color',
                     value: this.state.settings.general.theme,
                     options: [
                       { key: 'system', text: 'System default app mode'},
