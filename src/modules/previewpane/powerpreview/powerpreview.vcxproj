@@ -99,6 +99,8 @@
   <ItemGroup>
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="registry_wrapper.h" />
+    <ClInclude Include="registry_wrapper_interface.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="trace.h" />
@@ -113,6 +115,7 @@
     </ClCompile>
     <ClCompile Include="powerpreview.cpp" />
     <ClCompile Include="powerpreview.h" />
+    <ClCompile Include="registry_wrapper.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="trace.cpp" />
   </ItemGroup>

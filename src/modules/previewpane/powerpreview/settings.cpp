@@ -12,12 +12,15 @@ namespace PowerPreviewSettings
     extern "C" IMAGE_DOS_HEADER __ImageBase;
 
     // Base Settinngs Class Implementation
-    FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCWSTR clsid, const std::wstring displayname) :
+    FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCWSTR clsid, const std::wstring displayname, RegistryWrapperIface * registryWrapper) :
         m_isPreviewEnabled(state),
         m_name(name),
         m_description(description),
         m_clsid(clsid),
-        m_displayName(displayname) {}
+        m_displayName(displayname) 
+    {
+        this->m_registryWrapper = registryWrapper;
+    }
 
     bool FileExplorerPreviewSettings::GetState() const
     {
@@ -56,97 +59,6 @@ namespace PowerPreviewSettings
         {
             Trace::PowerPreviewSettingsUpDateFailed(this->GetName().c_str());
         }
-    }
-
-    LONG FileExplorerPreviewSettings::SetRegistryValue() const
-    {
-        HKEY hKey = HKEY_CURRENT_USER;
-        const REGSAM WRITE_PERMISSION = KEY_WRITE;
-        DWORD options = 0;
-        HKEY OpenResult;
-
-        LONG err = RegOpenKeyExW(hKey, this->GetSubKey(), options, WRITE_PERMISSION, &OpenResult);
-
-        if (err == ERROR_SUCCESS)
-        {
-            err = RegSetValueExW(
-                OpenResult,
-                this->GetCLSID(),
-                0,
-                REG_SZ,
-                (LPBYTE)this->GetDisplayName().c_str(),
-                this->GetDisplayName().length() * sizeof(wchar_t));
-            RegCloseKey(OpenResult);
-            if (err != ERROR_SUCCESS)
-            {
-                return err;
-            }
-        }
-        else
-        {
-            return err;
-        }
-    }
-
-    LONG FileExplorerPreviewSettings::DeleteRegistryValue() const
-    {
-        HKEY hKey = HKEY_CURRENT_USER;
-        const REGSAM WRITE_PERMISSION = KEY_WRITE;
-        DWORD options = 0;
-        HKEY OpenResult;
-
-        LONG err = RegOpenKeyExW(hKey, this->GetSubKey(), options, WRITE_PERMISSION, &OpenResult);
-        if (err == ERROR_SUCCESS)
-        {
-            err = RegDeleteKeyValueW(
-                OpenResult,
-                NULL,
-                this->GetCLSID());
-            RegCloseKey(OpenResult);
-
-            if (err != ERROR_SUCCESS)
-            {
-                return err;
-            }
-        }
-        else
-        {
-            return err;
-        }
-    }
-
-    bool FileExplorerPreviewSettings::GetRegistryValue() const
-    {
-        HKEY OpenResult;
-        LONG err = RegOpenKeyExW(
-            HKEY_CURRENT_USER,
-            this->GetSubKey(),
-            0,
-            KEY_READ,
-            &OpenResult);
-
-        if (err == ERROR_SUCCESS)
-        {
-            DWORD dataType;
-            err = RegGetValueW(
-                OpenResult,
-                NULL,
-                this->GetCLSID(),
-                RRF_RT_ANY,
-                &dataType,
-                NULL,
-                0);
-            RegCloseKey(OpenResult);
-            if (err != ERROR_SUCCESS)
-            {
-                return false;
-            }
-        }
-        else
-        {
-            return false;
-        }
-        return true;
     }
 
     std::wstring FileExplorerPreviewSettings::GetName() const
@@ -191,7 +103,10 @@ namespace PowerPreviewSettings
 
     void FileExplorerPreviewSettings::EnablePreview()
     {
-        if (this->SetRegistryValue() == ERROR_SUCCESS)
+        // Add registry value to enable preview.
+        LONG err = this->m_registryWrapper->SetRegistryValue(HKEY_CURRENT_USER, this->GetSubKey(), this->GetCLSID(), REG_SZ, (LPBYTE)this->GetDisplayName().c_str(), this->GetDisplayName().length() * sizeof(wchar_t));
+
+        if (err == ERROR_SUCCESS)
         {
             this->SetState(true);
             Trace::PreviewHandlerEnabled(true, this->GetDisplayName().c_str());
@@ -204,7 +119,10 @@ namespace PowerPreviewSettings
 
     void FileExplorerPreviewSettings::DisablePreview()
     {
-        if (this->DeleteRegistryValue() == ERROR_SUCCESS)
+        // Delete the registry key to disable preview.
+        LONG err = this->m_registryWrapper->DeleteRegistryValue(HKEY_CURRENT_USER, this->GetSubKey(), this->GetCLSID());
+
+        if (err == ERROR_SUCCESS)
         {
             this->SetState(false);
             Trace::PreviewHandlerEnabled(false, this->GetDisplayName().c_str());
