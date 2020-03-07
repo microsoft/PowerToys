@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  IgnorableNamespaces="uap mp">
+
+  <Identity
+    Name="f4f787a5-f0ae-47a9-be89-5408b1dd2b47"
+    Publisher="CN=lamotile"
+    Version="0.15.2.0" />
+
+  <mp:PhoneIdentity PhoneProductId="f4f787a5-f0ae-47a9-be89-5408b1dd2b47" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+
+  <Properties>
+    <DisplayName>PowerToys</DisplayName>
+    <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.0.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="x-generate"/>
+  </Resources>
+
+  <Applications>
+    <Application Id="App"
+      Executable="$targetnametoken$.exe"
+      EntryPoint="settingsui.App">
+      <uap:VisualElements
+        DisplayName="PowerToys"
+        Description="Windows system utilities to maximize productivity"
+        BackgroundColor="transparent"  Square150x150Logo="Assets\Logo.png" Square44x44Logo="Assets\logo44.png">
+        <uap:DefaultTile ShortName="PowerToys"   Square71x71Logo="Assets\logo44.png" Wide310x150Logo="Assets\Logo.png" Square310x310Logo="Assets\Logo.png">
+        </uap:DefaultTile >
+        <uap:SplashScreen BackgroundColor="#FFFFFF" Image="Assets\Logo.png"/>
+        <uap:InitialRotationPreference>
+          <uap:Rotation Preference="landscape"/></uap:InitialRotationPreference>
+        <uap:LockScreen BadgeLogo="Assets\logo.png" Notification="badgeAndTileText"/>
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+</Package>

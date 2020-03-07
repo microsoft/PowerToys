@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <StartupObject>settings_v2.Program</StartupObject>
+    <Authors>Microsoft Corporation</Authors>
+    <Product>PowerToys</Product>
+    <Description>Windows system utilities to maximize productivity</Description>
+    <Company>Microsoft Corporation</Company>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageIconUrl />
+    <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
+    <RepositoryType>Github</RepositoryType>
+    <PackageTags>PowerToys</PackageTags>
+    <Version>0.15.2.0</Version>
+    <Platforms>AnyCPU;x64</Platforms>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <Win32Resource />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Toolkit.Wpf.UI.Controls" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\settingsui\settingsui.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\settingsui\Assets\logo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
