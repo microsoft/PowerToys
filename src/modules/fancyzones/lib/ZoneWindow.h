@@ -28,7 +28,7 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * A window has changed location, shape, or size. Track down window position and give zone layout
      * hints if dragging functionality is enabled.
      *
-     * @param   ptScreen    Cursor coordinates where window is droped.
+     * @param   ptScreen    Cursor coordinates.
      * @param   dragEnabled Boolean indicating is giving hints about active zone layout enabled.
      *                      Hints are given while dragging window while holding SHIFT key.
      */
@@ -37,8 +37,8 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * The movement or resizing of a window has finished. Assign window to the zone of it
      * is dropped within zone borders.
      *
-     * @param window      Handle of window being moved or resized.
-     * @param ptScreen    Cursor coordinates where window is droped.
+     * @param window   Handle of window being moved or resized.
+     * @param ptScreen Cursor coordinates where window is droped.
      */
     IFACEMETHOD(MoveSizeEnd)(HWND window, POINT const& ptScreen) = 0;
     /**
