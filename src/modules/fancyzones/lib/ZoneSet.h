@@ -45,8 +45,8 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * Assign window to the zone based on zone index inside zone layout.
      *
      * @param   window     Handle of window which should be assigned to zone.
-     * @param   zoneWindow Handle of hidden window representing entire display work area.
-     *                     Single work area is defined by monitor and virtual desktop.
+     * @param   zoneWindow The m_window of a ZoneWindow, it's a hidden window representing the
+     *                     current monitor desktop work area.
      * @param   index      Zone index within zone layout.
      */
     IFACEMETHOD_(void, MoveWindowIntoZoneByIndex)(HWND window, HWND zoneWindow, int index) = 0;
@@ -54,8 +54,8 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * Assign window to the zone based on direction (using WIN + LEFT/RIGHT arrow).
      *
      * @param   window     Handle of window which should be assigned to zone.
-     * @param   zoneWindow Handle of hidden window representing entire display work area.
-     *                     Single work area is defined by monitor and virtual desktop.
+     * @param   zoneWindow The m_window of a ZoneWindow, it's a hidden window representing the
+     *                     current monitor desktop work area.
      * @param   vkCode     Pressed arrow key.
      */
     IFACEMETHOD_(void, MoveWindowIntoZoneByDirection)(HWND window, HWND zoneWindow, DWORD vkCode) = 0;
@@ -63,8 +63,8 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * Assign window to the zone based on cursor coordinates.
      *
      * @param   window     Handle of window which should be assigned to zone.
-     * @param   zoneWindow Handle of hidden window representing entire display work area.
-     *                     Single work area is defined by monitor and virtual desktop.
+     * @param   zoneWindow The m_window of a ZoneWindow, it's a hidden window representing the
+     *                     current monitor desktop work area.
      * @param   pt         Cursor coordinates.
      */
     IFACEMETHOD_(void, MoveWindowIntoZoneByPoint)(HWND window, HWND zoneWindow, POINT ptClient) = 0;
