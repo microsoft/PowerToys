@@ -162,10 +162,7 @@ namespace FancyZonesEditor.Models
             }
             catch (Exception ex)
             {
-                string message = "Please report the bug to https://github.com/microsoft/PowerToys/issues" + "\nError persisting canvas layout: " + ex.Message;
-                string title = "FancyZones Editor Exception Handler";
-
-                MessageBox.Show(message, title);
+                ShowExceptionMessageBox("Error persisting canvas layout", ex);
             }
         }
     }

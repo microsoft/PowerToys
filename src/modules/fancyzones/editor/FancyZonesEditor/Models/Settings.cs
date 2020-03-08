@@ -409,10 +409,7 @@ namespace FancyZonesEditor
                 inputStream.Close();
             } catch (Exception ex)
             {
-                string message = "Please report the bug to https://github.com/microsoft/PowerToys/issues" + "\nError parsing device info data: " + ex.Message;
-                string title = "FancyZones Editor Exception Handler";
-
-                MessageBox.Show(message, title);
+                LayoutModel.ShowExceptionMessageBox("Error parsing device info data", ex);
             }
         }
 

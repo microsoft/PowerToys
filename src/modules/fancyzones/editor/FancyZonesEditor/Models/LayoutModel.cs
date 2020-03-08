@@ -27,8 +27,12 @@ namespace FancyZonesEditor.Models
     //  Manages common properties and base persistence
     public abstract class LayoutModel : INotifyPropertyChanged
     {
-        private static readonly string _registryPath = Settings.RegistryPath + "\\Layouts";
-        private static readonly string _fullRegistryPath = Settings.FullRegistryPath + "\\Layouts";
+        public static void ShowExceptionMessageBox(string message, Exception ex)
+        {
+            string title = "FancyZones Editor Exception Handler";
+            string fullMessage = "Please report the bug to https://github.com/microsoft/PowerToys/issues \n" + message + ": " + ex.Message;
+            MessageBox.Show(fullMessage, title);
+        }
 
         protected LayoutModel()
         {
@@ -151,10 +155,7 @@ namespace FancyZonesEditor.Models
             }
             catch (Exception ex)
             {
-                string message = "Please report the bug to https://github.com/microsoft/PowerToys/issues" + "\nError serializing deleted layouts: " + ex.Message;
-                string title = "FancyZones Editor Exception Handler";
-
-                MessageBox.Show(message, title);
+                ShowExceptionMessageBox("Error serializing deleted layouts", ex);
             }
         }
 
@@ -236,10 +237,7 @@ namespace FancyZonesEditor.Models
             }
             catch (Exception ex)
             {
-                string message = "Please report the bug to https://github.com/microsoft/PowerToys/issues" + "\nError loading custom layouts: " + ex.Message;
-                string title = "FancyZones Editor Exception Handler";
-
-                MessageBox.Show(message, title);
+                ShowExceptionMessageBox("Error loading custom layouts", ex);
                 return new ObservableCollection<LayoutModel>();
             }
 
@@ -308,10 +306,7 @@ namespace FancyZonesEditor.Models
             }
             catch (Exception ex)
             {
-                string message = "Please report the bug to https://github.com/microsoft/PowerToys/issues" + "\nError applying layout: " + ex.Message;
-                string title = "FancyZones Editor Exception Handler";
-
-                MessageBox.Show(message, title);
+                ShowExceptionMessageBox("Error applying layout", ex);
             }
         }
     }
