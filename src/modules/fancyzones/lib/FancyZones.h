@@ -43,7 +43,7 @@ interface __declspec(uuid("{2CB37E8F-87E6-4AEC-B4B2-E0FDC873343F}")) IFancyZones
      */
     IFACEMETHOD_(void, MoveSizeUpdate)(HMONITOR monitor, POINT const& ptScreen) = 0;
     /**
-     * The movement or resizing of a window has finished. Assign window to the zone of it
+     * The movement or resizing of a window has finished. Assign window to the zone if it
      * is dropped within zone borders.
      *
      * @param   window   Handle of window being moved or resized.
@@ -98,7 +98,7 @@ interface __declspec(uuid("{5C8D99D6-34B2-4F4A-A8E5-7483F6869775}")) IZoneWindow
      */
     IFACEMETHOD_(IZoneWindow*, GetParentZoneWindow) (HMONITOR monitor) = 0;
     /**
-     * @returns Integer in range [0, 100] indicating opacity of highlited zone (while giving zne layout hints).
+     * @returns Integer in range [0, 100] indicating opacity of highlited zone (while giving zone layout hints).
      */
     IFACEMETHOD_(int, GetZoneHighlightOpacity)() = 0;
 };
