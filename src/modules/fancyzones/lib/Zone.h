@@ -15,15 +15,15 @@ interface __declspec(uuid("{8228E934-B6EF-402A-9892-15A1441BF8B0}")) IZone : pub
     IFACEMETHOD_(bool, IsEmpty)() = 0;
     /**
      * @param   window Window handle.
-     * @returns Boolean indicating of specified window is assigned to the zone.
+     * @returns Boolean indicating if specified window is assigned to the zone.
      */
     IFACEMETHOD_(bool, ContainsWindow)(HWND window) = 0;
     /**
      * Assign single window to this zone.
      *
      * @param   window     Handle of window which should be assigned to zone.
-     * @param   zoneWindow Handle of hidden window representing entire display work area.
-     *                     Single work area is defined by monitor and virtual desktop.
+     * @param   zoneWindow The m_window of a ZoneWindow, it's a hidden window representing the
+     *                     current monitor desktop work area.
      * @param   stampZone  Boolean indicating weather we should add special property on the
      *                     window. This property is used on display change to rearrange windows
      *                     to corresponding zones.
