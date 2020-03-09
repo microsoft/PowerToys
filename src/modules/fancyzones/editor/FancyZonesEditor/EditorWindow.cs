@@ -19,6 +19,8 @@ namespace FancyZonesEditor
                 model.Persist();
             }
 
+            LayoutModel.SerializeDeletedCustomZoneSets();
+
             _choosing = true;
             Close();
             EditorOverlay.Current.Close();
@@ -30,8 +32,6 @@ namespace FancyZonesEditor
             {
                 EditorOverlay.Current.ShowLayoutPicker();
             }
-
-            LayoutModel.SerializeDeletedCustomZoneSets();
         }
 
         protected void OnCancel(object sender, RoutedEventArgs e)
