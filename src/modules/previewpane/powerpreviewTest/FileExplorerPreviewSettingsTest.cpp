@@ -132,6 +132,8 @@ namespace PreviewHandlerSettingsTest
             // Assert
             Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.NumOfCalls, 1);
             Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.SubKey, tempSettings.GetSubKey());
+            Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.ValueName, tempSettings.GetCLSID());
+            Assert::AreEqual((ULONG_PTR)(mockRegistryWrapper->SetRegistryMockProperties.Scope), (ULONG_PTR)(HKEY_CURRENT_USER));
         }
 
         TEST_METHOD(EnablePreview_ShouldNotSetStateToTrue_IfSetRegistryValueFailed)
@@ -175,6 +177,8 @@ namespace PreviewHandlerSettingsTest
             // Assert
             Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.NumOfCalls, 1);
             Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.SubKey, tempSettings.GetSubKey());
+            Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.ValueName, tempSettings.GetCLSID());
+            Assert::AreEqual((ULONG_PTR)(mockRegistryWrapper->DeleteRegistryMockProperties.Scope), (ULONG_PTR)(HKEY_CURRENT_USER));
         }
 
         TEST_METHOD(DisablePreview_ShouldNotSetStateToFalse_IfDeleteRegistryValueFailed)
