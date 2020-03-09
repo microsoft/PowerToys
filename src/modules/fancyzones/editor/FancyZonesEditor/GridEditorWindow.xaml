@@ -21,7 +21,7 @@
             <Setter Property="FontWeight" Value="Bold" />
             <Setter Property="LineHeight" Value="24" />
             <Setter Property="FontSize" Value="18"/>
-            <Setter Property="Margin" Value="16,20,0,12" />
+            <Setter Property="Margin" Value="0,0,0,12" />
         </Style>
         <Style x:Key="zoneCount" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI" />
@@ -69,7 +69,6 @@
             <Setter Property="Padding" Value="0,5,0,5"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Background" Value="#F2F2F2"/>
-            <Setter Property="Margin" Value="16,10,0,0" />
             <Setter Property="Width" Value="239"/>
             <Setter Property="Height" Value="32"/>
             <Setter Property="Template">
@@ -95,7 +94,7 @@
             <Setter Property="Padding" Value="0,5,0,5"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Background" Value="#0078D7"/>
-            <Setter Property="Margin" Value="16,10,0,0" />
+            <Setter Property="Margin" Value="16,0,0,0" />
             <Setter Property="Width" Value="239"/>
             <Setter Property="Height" Value="32"/>
             <Setter Property="Template">
@@ -149,7 +148,7 @@
             <Setter Property="FontFamily" Value="SegoeUI"/>
             <Setter Property="FontWeight" Value="Regular"/>
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Margin" Value="16,12,0,0"/>
+            <Setter Property="Margin" Value="0,12,0,0"/>
         </Style>
         <Style x:Key="textBox" TargetType="TextBox">
             <Setter Property="BorderBrush" Value="#cccccc"/>
@@ -158,17 +157,17 @@
             <Setter Property="FontWeight" Value="Regular"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,5,0,0"/>
+            
             <Setter Property="Padding" Value="5,5,5,5"/>
         </Style>
 
     </Window.Resources>
-    <StackPanel>
+    <StackPanel Margin="16">
         <TextBlock Name="windowEditorDialogTitle" Text="{x:Static props:Resources.Custom_Table_Layout}" Style="{StaticResource titleText}"  />
 
-        <TextBlock Text="{x:Static props:Resources.Note_Custom_Table}" Style="{StaticResource textLabel}" />
+        <TextBlock Text="{x:Static props:Resources.Note_Custom_Table}" Style="{StaticResource textLabel}" TextWrapping="Wrap" />
         <TextBlock Text="{x:Static props:Resources.Name}" Style="{StaticResource textLabel}" />
-        <TextBox Text="{Binding Name}" Width="494" Style="{StaticResource textBox}" />
+        <TextBox Text="{Binding Name}" Style="{StaticResource textBox}" />
 <!--        
         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
             <CheckBox x:Name="showGridSetting" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" Margin="21,4,0,0"/>
@@ -177,7 +176,7 @@
             <TextBox x:Name="gridValue" Text="{Binding Path=Spacing,Mode=TwoWay}" Style="{StaticResource textBox}"/>
         </StackPanel>
 -->        
-        <StackPanel Orientation="Horizontal" Margin="0,12,0,16">
+        <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
             <Button Content="{x:Static props:Resources.Cancel}" Style="{StaticResource secondaryButton}" Click="OnCancel" />
             <Button Content="{x:Static props:Resources.Save_Apply}" Style="{StaticResource primaryButton}" Click="OnSaveApplyTemplate" />
         </StackPanel>
