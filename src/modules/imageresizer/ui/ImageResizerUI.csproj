@@ -69,7 +69,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <CodeAnalysisRuleSet>..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <PlatformTarget>x64</PlatformTarget>
@@ -80,7 +80,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <CodeAnalysisRuleSet>..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Resources\ImageResizer.ico</ApplicationIcon>
@@ -206,7 +206,7 @@
     <EmbeddedResource Include="Properties\Resources.zh-Hans.resx" />
   </ItemGroup>
   <ItemGroup>
-    <AdditionalFiles Include="..\codeAnalysis\StyleCop.json" />
+    <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

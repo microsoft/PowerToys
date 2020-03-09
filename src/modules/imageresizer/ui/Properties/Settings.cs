@@ -383,6 +383,10 @@ namespace ImageResizer.Properties
             jsonData += tempSettings.ToString(Formatting.None);
             jsonData += "}";
 
+            // Create directory if it doesn't exist
+            FileInfo file = new FileInfo(SettingsPath);
+            file.Directory.Create();
+
             // write string to file
             File.WriteAllText(SettingsPath, jsonData);
             _jsonMutex.ReleaseMutex();
@@ -399,15 +403,15 @@ namespace ImageResizer.Properties
             }
 
             string jsonData = File.ReadAllText(SettingsPath);
-            JObject powertoysSettings = JObject.Parse(jsonData);
+            JObject imageResizerSettings = JObject.Parse(jsonData);
 
             // Replace the { "value": <Value> } with <Value> to match the Settings object format
-            foreach (var property in (JObject)powertoysSettings["properties"])
+            foreach (var property in (JObject)imageResizerSettings["properties"])
             {
-                powertoysSettings["properties"][property.Key] = property.Value["value"];
+                imageResizerSettings["properties"][property.Key] = property.Value["value"];
             }
 
-            Settings jsonSettings = JsonConvert.DeserializeObject<Settings>(powertoysSettings["properties"].ToString(), new JsonSerializerSettings() { ObjectCreationHandling = ObjectCreationHandling.Replace });
+            Settings jsonSettings = JsonConvert.DeserializeObject<Settings>(imageResizerSettings["properties"].ToString(), new JsonSerializerSettings() { ObjectCreationHandling = ObjectCreationHandling.Replace });
 
             // Needs to be called on the App UI thread as the properties are bound to the UI.
             App.Current.Dispatcher.Invoke(() =>

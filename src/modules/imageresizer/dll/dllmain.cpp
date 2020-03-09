@@ -58,14 +58,6 @@ public:
     virtual const wchar_t** get_events() override
     {
         static const wchar_t* events[] = { nullptr };
-        // Available events:
-        // - ll_keyboard
-        // - win_hook_event
-        //
-        // static const wchar_t* events[] = { ll_keyboard,
-        //                                   win_hook_event,
-        //                                   nullptr };
-
         return events;
     }
 
