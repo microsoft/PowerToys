@@ -117,46 +117,53 @@ namespace FancyZonesEditor.Models
         // Implements the LayoutModel.PersistData abstract method
         protected override void PersistData()
         {
-            FileStream outputStream = File.Open(Settings.AppliedZoneSetTmpFile, FileMode.Create);
-            JsonWriterOptions writerOptions = new JsonWriterOptions
+            try
             {
-                SkipValidation = true,
-            };
-            using (var writer = new Utf8JsonWriter(outputStream, writerOptions))
-            {
-                writer.WriteStartObject();
-                writer.WriteString("uuid", "{" + Guid.ToString().ToUpper() + "}");
-                writer.WriteString("name", Name);
-
-                writer.WriteString("type", "canvas");
-
-                writer.WriteStartObject("info");
-
-                writer.WriteNumber("ref-width", _referenceWidth);
-                writer.WriteNumber("ref-height", _referenceHeight);
-
-                writer.WriteStartArray("zones");
-                foreach (Int32Rect rect in Zones)
+                FileStream outputStream = File.Open(Settings.AppliedZoneSetTmpFile, FileMode.Create);
+                JsonWriterOptions writerOptions = new JsonWriterOptions
+                {
+                    SkipValidation = true,
+                };
+                using (var writer = new Utf8JsonWriter(outputStream, writerOptions))
                 {
                     writer.WriteStartObject();
-                    writer.WriteNumber("X", rect.X);
-                    writer.WriteNumber("Y", rect.Y);
-                    writer.WriteNumber("width", rect.Width);
-                    writer.WriteNumber("height", rect.Height);
+                    writer.WriteString("uuid", "{" + Guid.ToString().ToUpper() + "}");
+                    writer.WriteString("name", Name);
+
+                    writer.WriteString("type", "canvas");
+
+                    writer.WriteStartObject("info");
+
+                    writer.WriteNumber("ref-width", _referenceWidth);
+                    writer.WriteNumber("ref-height", _referenceHeight);
+
+                    writer.WriteStartArray("zones");
+                    foreach (Int32Rect rect in Zones)
+                    {
+                        writer.WriteStartObject();
+                        writer.WriteNumber("X", rect.X);
+                        writer.WriteNumber("Y", rect.Y);
+                        writer.WriteNumber("width", rect.Width);
+                        writer.WriteNumber("height", rect.Height);
+                        writer.WriteEndObject();
+                    }
+
+                    writer.WriteEndArray();
+
+                    // end info object
                     writer.WriteEndObject();
+
+                    // end root object
+                    writer.WriteEndObject();
+                    writer.Flush();
                 }
 
-                writer.WriteEndArray();
-
-                // end info object
-                writer.WriteEndObject();
-
-                // end root object
-                writer.WriteEndObject();
-                writer.Flush();
+                outputStream.Close();
             }
-
-            outputStream.Close();
+            catch (Exception ex)
+            {
+                ShowExceptionMessageBox("Error persisting canvas layout", ex);
+            }
         }
     }
 }
