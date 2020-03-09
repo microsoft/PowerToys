@@ -23,9 +23,9 @@ namespace FancyZonesEditor
             Canvas.SetZIndex(this, zIndex++);
         }
 
-        private CanvasLayoutModel model;
-
         private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
+
+        private CanvasLayoutModel model;
 
         private int zoneIndex;
 
