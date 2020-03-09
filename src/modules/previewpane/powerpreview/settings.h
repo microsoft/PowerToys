@@ -3,6 +3,7 @@
 #include <string>
 #include "resource.h"
 #include <settings_objects.h>
+#include "registry_wrapper_interface.h"
 
 namespace PowerPreviewSettings
 {
@@ -14,12 +15,14 @@ namespace PowerPreviewSettings
 		std::wstring m_name;
 		std::wstring m_description;
 		std::wstring m_displayName;
+        RegistryWrapperIface * m_registryWrapper;
 
 		LPCWSTR m_clsid;
 		LPCWSTR m_subKey = L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers";
 
 	public:
-		FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCWSTR clsid, const std::wstring displayname);
+        FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCWSTR clsid, const std::wstring displayname, RegistryWrapperIface * registryWrapper);
+        ~ FileExplorerPreviewSettings();
 
 		virtual bool GetState() const;
 		virtual void SetState(bool state);
@@ -30,9 +33,6 @@ namespace PowerPreviewSettings
 		virtual std::wstring GetDescription() const;
 		virtual void SetDescription(const std::wstring& description);
 		virtual void SetDisplayName(const std::wstring& displayName);
-		virtual LONG SetRegistryValue() const;
-		virtual LONG DeleteRegistryValue() const;
-		virtual bool GetRegistryValue() const;
 		virtual std::wstring GetDisplayName() const;
 		virtual LPCWSTR GetCLSID() const;
 		virtual LPCWSTR GetSubKey() const;

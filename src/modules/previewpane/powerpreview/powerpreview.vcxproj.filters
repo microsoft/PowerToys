@@ -7,6 +7,7 @@
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="powerpreview.h" />
     <ClCompile Include="powerpreview.cpp" />
+    <ClCompile Include="registry_wrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -14,6 +15,8 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="CLSID.h" />
+    <ClInclude Include="registry_wrapper.h" />
+    <ClInclude Include="registry_wrapper_interface.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="powerpreview.rc" />
