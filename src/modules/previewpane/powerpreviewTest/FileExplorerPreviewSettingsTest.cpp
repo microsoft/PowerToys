@@ -14,24 +14,48 @@ namespace PreviewHandlerSettingsTest
 {
     extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+    struct FunctionProperties
+    {
+    public:
+        LONG ReturnValue = ERROR_SUCCESS;
+        int NumOfCalls = 0;
+        HKEY Scope;
+        LPCWSTR SubKey;
+        LPCWSTR ValueName;
+    };
+
     class RegistryMock : public RegistryWrapperIface
     {
     public:
-        RegistryMock(){};
+        FunctionProperties SetRegistryMockProperties;
+        FunctionProperties DeleteRegistryMockProperties;
+        FunctionProperties GetRegistryMockProperties;
 
         LONG SetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, CONST BYTE* data, DWORD cbData)
         {
-            return ERROR_SUCCESS;
+            SetRegistryMockProperties.NumOfCalls += 1;
+            SetRegistryMockProperties.Scope = keyScope;
+            SetRegistryMockProperties.SubKey = subKey;
+            SetRegistryMockProperties.ValueName = valueName;
+            return SetRegistryMockProperties.ReturnValue;
         }
 
         LONG DeleteRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName)
         {
-            return ERROR_SUCCESS;
+            DeleteRegistryMockProperties.NumOfCalls++;
+            DeleteRegistryMockProperties.Scope = keyScope;
+            DeleteRegistryMockProperties.SubKey = subKey;
+            DeleteRegistryMockProperties.ValueName = valueName;
+            return DeleteRegistryMockProperties.ReturnValue;
         }
 
         LONG GetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData)
         {
-            return ERROR_SUCCESS;
+            GetRegistryMockProperties.NumOfCalls++;
+            GetRegistryMockProperties.Scope = keyScope;
+            GetRegistryMockProperties.SubKey = subKey;
+            GetRegistryMockProperties.ValueName = valueName;
+            return GetRegistryMockProperties.ReturnValue;
         }
     };
 
@@ -41,7 +65,7 @@ namespace PreviewHandlerSettingsTest
 		TEST_METHOD(LoadState_ShouldLoadNewState_WhenSucessfull)
 		{
 			// Arrange
-			FileExplorerPreviewSettings tempSettings = GetSttingsObjects();
+            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(new RegistryMock());
 			PowerToyValues values = PowerToyValues::from_json_string(GetJSONSettings(tempSettings.GetName(), L"true"));
 			tempSettings.SetState(false);
 			bool expectedState = true;
@@ -57,7 +81,7 @@ namespace PreviewHandlerSettingsTest
 		TEST_METHOD(UpdateState_ShouldChangeState_WhenSucessfull)
 		{
 			// Arrange
-			FileExplorerPreviewSettings tempSettings = GetSttingsObjects();
+            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(new RegistryMock());
 			PowerToyValues values = PowerToyValues::from_json_string(GetJSONSettings(tempSettings.GetName(), L"true"));
 			tempSettings.SetState(false);
 			bool expectedState = true;
@@ -73,7 +97,7 @@ namespace PreviewHandlerSettingsTest
 		TEST_METHOD(EnableRender_ShouldUpdateStateToTrue_WhenSuccessful)
         {
             // Arrange
-            FileExplorerPreviewSettings tempSettings = GetSttingsObjects();
+            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(new RegistryMock());
             tempSettings.SetState(false); //preview handler initially disabled
 
             // Act
@@ -86,7 +110,7 @@ namespace PreviewHandlerSettingsTest
         TEST_METHOD(DisableRender_ShouldUpdateStateToFalse_WhenSuccessful)
         {
             // Arrange
-            FileExplorerPreviewSettings tempSettings = GetSttingsObjects();
+            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(new RegistryMock());
             tempSettings.SetState(true); //preview handler initially enabled
 
             // Act
@@ -96,7 +120,93 @@ namespace PreviewHandlerSettingsTest
             Assert::IsFalse(tempSettings.GetState());
         }
 
-		FileExplorerPreviewSettings GetSttingsObjects()
+        TEST_METHOD(EnablePreview_ShouldCallSetRegistryValueWithValidArguments_WhenCalled)
+        {
+            // Arrange
+            RegistryMock* mockRegistryWrapper = new RegistryMock();
+            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(mockRegistryWrapper);
+
+            // Act
+            tempSettings.EnablePreview();
+
+            // Assert
+            Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.NumOfCalls, 1);
+            Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.SubKey, tempSettings.GetSubKey());
+        }
+
+        TEST_METHOD(EnablePreview_ShouldNotSetStateToTrue_IfSetRegistryValueFailed)
+        {
+            // Arrange
+            RegistryMock* mockRegistryWrapper = new RegistryMock();
+            mockRegistryWrapper->SetRegistryMockProperties.ReturnValue = ERROR_OUTOFMEMORY;
+            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(mockRegistryWrapper);
+            tempSettings.SetState(false);
+
+            // Act
+            tempSettings.EnablePreview();
+
+            // Assert
+            Assert::IsFalse(tempSettings.GetState());
+        }
+
+        TEST_METHOD(EnablePreview_ShouldSetStateToTrue_IfSetRegistryValueReturnSuccessErrorCode)
+        {
+            // Arrange
+            RegistryMock* mockRegistryWrapper = new RegistryMock();
+            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(mockRegistryWrapper);
+            tempSettings.SetState(false);
+
+            // Act
+            tempSettings.EnablePreview();
+
+            // Assert
+            Assert::IsTrue(tempSettings.GetState());
+        }
+
+        TEST_METHOD(DisablePreview_ShouldCallDeleteRegistryValueWithValidArguments_WhenCalled)
+        {
+            // Arrange
+            RegistryMock* mockRegistryWrapper = new RegistryMock();
+            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(mockRegistryWrapper);
+
+            // Act
+            tempSettings.DisablePreview();
+
+            // Assert
+            Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.NumOfCalls, 1);
+            Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.SubKey, tempSettings.GetSubKey());
+        }
+
+        TEST_METHOD(DisablePreview_ShouldNotSetStateToFalse_IfDeleteRegistryValueFailed)
+        {
+            // Arrange
+            RegistryMock* mockRegistryWrapper = new RegistryMock();
+            mockRegistryWrapper->DeleteRegistryMockProperties.ReturnValue = ERROR_OUTOFMEMORY;
+            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(mockRegistryWrapper);
+            tempSettings.SetState(true);
+
+            // Act
+            tempSettings.DisablePreview();
+
+            // Assert
+            Assert::IsTrue(tempSettings.GetState());
+        }
+
+        TEST_METHOD(DisablePreview_ShouldSetStateToFalse_IfDeleteRegistryValueReturnSuccessErrorCode)
+        {
+            // Arrange
+            RegistryMock* mockRegistryWrapper = new RegistryMock();
+            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(mockRegistryWrapper);
+            tempSettings.SetState(true);
+
+            // Act
+            tempSettings.DisablePreview();
+
+            // Assert
+            Assert::IsFalse(tempSettings.GetState());
+        }
+
+		FileExplorerPreviewSettings GetSttingsObjects(RegistryMock * registryMock)
 		{
             return FileExplorerPreviewSettings(
                 false,
@@ -104,7 +214,7 @@ namespace PreviewHandlerSettingsTest
                 GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
                 L"{test-guid}",
                 TEXT("Test Handler\0"),
-                new RegistryMock());
+                registryMock);
 		}
 
 		std::wstring GetJSONSettings(const std::wstring &_settingsNameId, const std::wstring &_value) const
