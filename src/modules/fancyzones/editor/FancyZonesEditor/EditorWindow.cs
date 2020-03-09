@@ -30,6 +30,8 @@ namespace FancyZonesEditor
             {
                 EditorOverlay.Current.ShowLayoutPicker();
             }
+
+            LayoutModel.SerializeDeletedCustomZoneSets();
         }
 
         protected void OnCancel(object sender, RoutedEventArgs e)
