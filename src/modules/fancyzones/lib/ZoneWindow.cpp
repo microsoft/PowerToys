@@ -318,7 +318,7 @@ private:
     HMONITOR m_monitor{};
     std::wstring m_uniqueId; // Parsed deviceId + resolution + virtualDesktopId
     wchar_t m_workArea[256]{};
-    wil::unique_hwnd m_window{};
+    wil::unique_hwnd m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
     bool m_drawHints{};
     bool m_flashMode{};
