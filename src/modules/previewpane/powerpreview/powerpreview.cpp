@@ -14,7 +14,10 @@ void PowerPreviewModule::destroy()
     Trace::Destroyed();
     for (FileExplorerPreviewSettings* previewHandler : this->m_previewHandlers)
     {
-        delete previewHandler;
+        if (previewHandler != NULL)
+        {
+            delete previewHandler;
+        }
     }
 
     delete this;

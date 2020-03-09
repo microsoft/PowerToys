@@ -3,8 +3,6 @@
 
 namespace PowerPreviewSettings
 {
-    extern "C" IMAGE_DOS_HEADER __ImageBase;
-
     LONG RegistryWrapper::SetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, CONST BYTE* data, DWORD cbData)
     {
         HKEY OpenResult;
@@ -40,7 +38,6 @@ namespace PowerPreviewSettings
                 pdwType,
                 pvData,
                 pcbData);
-
             RegCloseKey(OpenResult);
         }
 
