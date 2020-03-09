@@ -120,11 +120,7 @@ namespace FancyZonesEditor.Models
             try
             {
                 FileStream outputStream = File.Open(Settings.AppliedZoneSetTmpFile, FileMode.Create);
-                JsonWriterOptions writerOptions = new JsonWriterOptions
-                {
-                    SkipValidation = true,
-                };
-                using (var writer = new Utf8JsonWriter(outputStream, writerOptions))
+                using (var writer = new Utf8JsonWriter(outputStream, options: default))
                 {
                     writer.WriteStartObject();
                     writer.WriteString("uuid", "{" + Guid.ToString().ToUpper() + "}");
