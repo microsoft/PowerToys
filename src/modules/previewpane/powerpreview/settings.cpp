@@ -17,9 +17,17 @@ namespace PowerPreviewSettings
         m_name(name),
         m_description(description),
         m_clsid(clsid),
-        m_displayName(displayname) 
+        m_displayName(displayname),
+        m_registryWrapper(registryWrapper)
     {
-        this->m_registryWrapper = registryWrapper;
+    }
+
+    FileExplorerPreviewSettings::~FileExplorerPreviewSettings() 
+    {
+        if (this->m_registryWrapper != NULL)
+        {
+            delete this->m_registryWrapper;
+        }
     }
 
     bool FileExplorerPreviewSettings::GetState() const
@@ -104,7 +112,7 @@ namespace PowerPreviewSettings
     void FileExplorerPreviewSettings::EnablePreview()
     {
         // Add registry value to enable preview.
-        LONG err = this->m_registryWrapper->SetRegistryValue(HKEY_CURRENT_USER, this->GetSubKey(), this->GetCLSID(), REG_SZ, (LPBYTE)this->GetDisplayName().c_str(), this->GetDisplayName().length() * sizeof(wchar_t));
+        LONG err = this->m_registryWrapper->SetRegistryValue(HKEY_CURRENT_USER, this->GetSubKey(), this->GetCLSID(), REG_SZ, (LPBYTE)this->GetDisplayName().c_str(), (DWORD)(this->GetDisplayName().length() * sizeof(wchar_t)));
 
         if (err == ERROR_SUCCESS)
         {

@@ -4,6 +4,7 @@
 #include <powerpreview/settings.cpp>
 #include <powerpreview/trace.cpp>
 #include <common.h>
+#include <powerpreview/registry_wrapper.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace PowerToysSettings;
@@ -12,6 +13,28 @@ using namespace PowerPreviewSettings;
 namespace PreviewHandlerSettingsTest
 {
     extern "C" IMAGE_DOS_HEADER __ImageBase;
+
+    class RegistryMock : public RegistryWrapperIface
+    {
+    public:
+        RegistryMock(){};
+
+        LONG SetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, CONST BYTE* data, DWORD cbData)
+        {
+            return ERROR_SUCCESS;
+        }
+
+        LONG DeleteRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName)
+        {
+            return ERROR_SUCCESS;
+        }
+
+        LONG GetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData)
+        {
+            return ERROR_SUCCESS;
+        }
+    };
+
 	TEST_CLASS(BaseSettingsTest)
 	{
 	public:
@@ -47,32 +70,6 @@ namespace PreviewHandlerSettingsTest
 			Assert::AreEqual(actualState, expectedState);
 		}
 
-		TEST_METHOD(SetRegistryValue_ShouldCreateAValueInRegistry_WhenSucessfull)
-		{
-			// Arrange
-			FileExplorerPreviewSettings tempSettings = GetSttingsObjects();
-
-			// Act
-			tempSettings.SetRegistryValue();
-			bool results = tempSettings.GetRegistryValue();
-
-			// Assert
-			Assert::IsTrue(results);
-		}
-
-		TEST_METHOD(RemoveRegistryValue_ShouldDeleteAValueInRegistry_WhenSucessfull)
-		{
-			// Arrange
-			FileExplorerPreviewSettings tempSettings = GetSttingsObjects();
-
-			// Act
-			tempSettings.SetRegistryValue();
-			bool results = tempSettings.DeleteRegistryValue();
-
-			// Assert
-			Assert::IsFalse(results);
-		}
-
 		TEST_METHOD(EnableRender_ShouldUpdateStateToTrue_WhenSuccessful)
         {
             // Arrange
@@ -106,7 +103,8 @@ namespace PreviewHandlerSettingsTest
                 GET_RESOURCE_STRING(IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL),
                 GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
                 L"{test-guid}",
-                TEXT("Test Handler\0"));
+                TEXT("Test Handler\0"),
+                new RegistryMock());
 		}
 
 		std::wstring GetJSONSettings(const std::wstring &_settingsNameId, const std::wstring &_value) const

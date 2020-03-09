@@ -16,14 +16,14 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
     std::wstring m_moduleName;
-    std::vector<FileExplorerPreviewSettings> m_previewHandlers;
+    std::vector<FileExplorerPreviewSettings *> m_previewHandlers;
 
 public:
     PowerPreviewModule() :
         m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
         m_previewHandlers(
             { // SVG Preview Hanlder settings object.
-              FileExplorerPreviewSettings(
+              new FileExplorerPreviewSettings(
                   false,
                   GET_RESOURCE_STRING(IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL),
                   GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION),
@@ -32,7 +32,7 @@ public:
                   new RegistryWrapper()),
 
               // MarkDown Preview Handler Settings Object.
-              FileExplorerPreviewSettings(
+              new FileExplorerPreviewSettings(
                   false,
                   GET_RESOURCE_STRING(IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL),
                   GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),

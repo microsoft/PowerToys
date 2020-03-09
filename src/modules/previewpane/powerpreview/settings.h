@@ -22,6 +22,7 @@ namespace PowerPreviewSettings
 
 	public:
         FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCWSTR clsid, const std::wstring displayname, RegistryWrapperIface * registryWrapper);
+        ~ FileExplorerPreviewSettings();
 
 		virtual bool GetState() const;
 		virtual void SetState(bool state);
