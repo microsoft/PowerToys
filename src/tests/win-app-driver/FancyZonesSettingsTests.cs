@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
@@ -162,6 +164,71 @@ namespace PowerToysTests
             input.Click();
             input.SendKeys(OpenQA.Selenium.Keys.Control + "a");
             input.SendKeys(OpenQA.Selenium.Keys.Backspace);
+        }
+
+        private void TestHotkey(WindowsElement input, int modifierKeysState, string key, string keyString)
+        {
+            BitArray b = new BitArray(new int[] { modifierKeysState });
+            int[] flags = b.Cast<bool>().Select(bit => bit ? 1 : 0).ToArray();
+
+            Actions action = new Actions(session).MoveToElement(input).Click();
+            string expectedText = "", keys = "";
+            if (flags[0] == 1)
+            {
+                action.KeyDown(OpenQA.Selenium.Keys.Command);
+                expectedText += "Win + ";
+            }
+            if (flags[1] == 1)
+            {
+                keys += OpenQA.Selenium.Keys.Control;
+                expectedText += "Ctrl + ";
+            }
+            if (flags[2] == 1)
+            {
+                keys += OpenQA.Selenium.Keys.Alt;
+                expectedText += "Alt + ";
+            }
+            if (flags[3] == 1)
+            {
+                keys += OpenQA.Selenium.Keys.Shift;
+                expectedText += "Shift + ";
+            }
+
+            keys += key + key;
+            expectedText += keyString + "\r\n";
+
+            action.SendKeys(keys);
+            action.MoveByOffset(0, (input.Rect.Height / 2) + 10).ContextClick();
+            if (flags[0] == 1)
+            {
+                action.KeyUp(OpenQA.Selenium.Keys.Command);
+            }
+            if (flags[1] == 1)
+            {
+                action.KeyUp(OpenQA.Selenium.Keys.Control);
+            }
+            if (flags[2] == 1)
+            {
+                action.KeyUp(OpenQA.Selenium.Keys.Alt);
+            }
+            if (flags[3] == 1)
+            {
+                action.KeyUp(OpenQA.Selenium.Keys.Shift);
+            }
+            action.Perform();
+            
+            SaveChanges();
+            ShortWait();
+
+            //Assert.AreEqual(expectedText, input.Text);
+
+            JObject props = getProperties();
+            JObject hotkey = props["fancyzones_editor_hotkey"].ToObject<JObject>()["value"].ToObject<JObject>();
+            Assert.AreEqual(flags[0] == 1, hotkey.Value<bool>("win"));
+            Assert.AreEqual(flags[1] == 1, hotkey.Value<bool>("ctrl"));
+            Assert.AreEqual(flags[2] == 1, hotkey.Value<bool>("alt"));
+            Assert.AreEqual(flags[3] == 1, hotkey.Value<bool>("shift"));
+            //Assert.AreEqual(keyString, hotkey.Value<string>("key"));
         }
 
         [TestMethod]
@@ -599,6 +666,24 @@ namespace PowerToysTests
             //return initial app state
             toggle.Click();
             SaveChanges();
+        }
+
+        [TestMethod]
+        public void ConfigureHotkey()
+        {
+            WindowsElement input = session.FindElementByAccessibilityId("TextField34");
+            
+            for (int i = 0; i < 16; i++)
+            {
+                TestHotkey(input, i, OpenQA.Selenium.Keys.End, "End");
+            }
+        }
+
+        [TestMethod]
+        public void ConfigureLocalSymbolHotkey()
+        {
+            WindowsElement input = session.FindElementByAccessibilityId("TextField34");
+            TestHotkey(input, 0, "ё", "Ё");
         }
 
         [ClassInitialize]
