@@ -224,7 +224,7 @@ namespace ZoneWindowDrawUtils
             RGB(175, 175, 185),
         };
 
-        //                                 { fillAlpha, fill, borderAlpha, border, thickness }
+        // ColorSetting { fillAlpha, fill, borderAlpha, border, thickness }
         ColorSetting const colorHints{ 225, RGB(81, 92, 107), 255, RGB(104, 118, 138), -2 };
         ColorSetting colorViewer{ OpacitySettingToAlpha(highlightOpacity), 0, 255, RGB(40, 50, 60), -2 };
         ColorSetting colorHighlight{ OpacitySettingToAlpha(highlightOpacity), 0, 255, 0, -2 };
