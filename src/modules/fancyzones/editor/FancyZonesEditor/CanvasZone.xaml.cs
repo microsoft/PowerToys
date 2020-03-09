@@ -73,14 +73,14 @@ namespace FancyZonesEditor
                 {
                     if (i != zoneIndex)
                     {
-                        int curr_p = isX ? zones[i].X : zones[i].Y;
-                        int curr_w = isX ? zones[i].Width : zones[i].Height;
-                        key_positions.Add(curr_p);
-                        key_positions.Add(curr_p + curr_w);
+                        int ith_zone_position = isX ? zones[i].X : zones[i].Y;
+                        int ith_zone_axis_size = isX ? zones[i].Width : zones[i].Height;
+                        key_positions.Add(ith_zone_position);
+                        key_positions.Add(ith_zone_position + ith_zone_axis_size);
                         if (mode == ResizeMode.BothEdges)
                         {
-                            key_positions.Add(curr_p - zone_axis_size);
-                            key_positions.Add(curr_p + curr_w - zone_axis_size);
+                            key_positions.Add(ith_zone_position - zone_axis_size);
+                            key_positions.Add(ith_zone_position + ith_zone_axis_size - zone_axis_size);
                         }
                     }
                 }
@@ -106,12 +106,12 @@ namespace FancyZonesEditor
                         // We're dragging the low edge, don't go below zero
                         MinValue = 0;
 
-                        // It can't make the zone smaller than min_w
+                        // It can't make the zone smaller than min_axis_size
                         MaxValue = zone_position + zone_axis_size - min_axis_size;
                         Position = zone_position;
                         break;
                     case ResizeMode.TopEdge:
-                        // We're dragging the high edge, don't make the zone smaller than min_w
+                        // We're dragging the high edge, don't make the zone smaller than min_axis_size
                         MinValue = zone_position + min_axis_size;
 
                         // Don't go off the screen
