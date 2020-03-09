@@ -575,6 +575,13 @@ namespace PowerToysTests
             ClearInput(input);
             ShortWait();
             Assert.AreEqual(inputValue, getPropertyValue<string>("fancyzones_excluded_apps"));
+
+            inputValue = "Кириллица";
+            input.SendKeys(inputValue);
+            SaveChanges();
+            ClearInput(input);
+            ShortWait();
+            Assert.AreEqual(inputValue, getPropertyValue<string>("fancyzones_excluded_apps"));
         }
 
         [TestMethod]
