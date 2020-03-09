@@ -19,6 +19,8 @@ namespace FancyZonesEditor
                 model.Persist();
             }
 
+            LayoutModel.SerializeDeletedCustomZoneSets();
+
             _choosing = true;
             Close();
             EditorOverlay.Current.Close();
