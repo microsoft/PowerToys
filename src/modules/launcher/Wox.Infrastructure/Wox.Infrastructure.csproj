@@ -106,10 +106,9 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>cd $(SolutionDir)packages\Pinyin4DotNet*\pinyindb\
-xcopy /Y unicode_to_hanyu_pinyin.txt $(TargetDir)pinyindb\
-cd $(SolutionDir)packages\NLog.Schema*\content\
-xcopy /Y NLog.xsd $(TargetDir)
+    <PreBuildEvent>
+	xcopy /Y $(PkgPinyin4DotNet)\pinyindb\unicode_to_hanyu_pinyin.txt $(TargetDir)pinyindb\
+	xcopy /Y $(PkgNLog_Schema)\content\NLog.xsd $(TargetDir)
 	</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
