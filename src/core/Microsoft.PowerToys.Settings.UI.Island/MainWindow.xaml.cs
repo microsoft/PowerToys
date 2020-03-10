@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using Microsoft.Toolkit.Win32.UI.Controls.Interop.WinRT;
 
-namespace settings_v2
+namespace SettingsMain
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

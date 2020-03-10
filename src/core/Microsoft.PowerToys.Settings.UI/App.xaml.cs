@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.Toolkit.Win32.UI.XamlHost;
+﻿using Microsoft.Toolkit.Win32.UI.XamlHost;
 
-namespace settingsui
+namespace SettingsUI
 {
     public sealed partial class App : XamlApplication
     {
