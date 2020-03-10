@@ -114,7 +114,8 @@ public:
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void OnDisplayChange(DisplayChangeType changeType) noexcept;
     void AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept;
-    void MoveWindowIntoZoneByIndex(HWND window, int index) noexcept;
+
+    void MoveWindowIntoZoneByIndex(HWND window, HMONITOR monitor, int index) noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
@@ -310,26 +311,21 @@ FancyZones::WindowCreated(HWND window) noexcept
 {
     if (m_settings->GetSettings().appLastZone_moveWindows && IsInterestingWindow(window))
     {
-        auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-        if (monitor)
+        for (const auto& [monitor, zoneWindow] : m_zoneWindowMap)
         {
-            auto zoneWindow = m_zoneWindowMap.find(monitor);
-            if (zoneWindow != m_zoneWindowMap.end())
+            const auto activeZoneSet = zoneWindow->ActiveZoneSet();
+            if (activeZoneSet)
             {
-                const auto& zoneWindowPtr = zoneWindow->second;
-                const auto activeZoneSet = zoneWindowPtr->ActiveZoneSet();
-                if (activeZoneSet)
-                {
-                    const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+                const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
 
-                    wil::unique_cotaskmem_string guidString;
-                    if (SUCCEEDED_LOG(StringFromCLSID(activeZoneSet->Id(), &guidString)))
+                wil::unique_cotaskmem_string guidString;
+                if (SUCCEEDED_LOG(StringFromCLSID(activeZoneSet->Id(), &guidString)))
+                {
+                    int zoneIndex = fancyZonesData.GetAppLastZoneIndex(window, zoneWindow->UniqueId(), guidString.get());
+                    if (zoneIndex != -1)
                     {
-                        int zoneIndex = fancyZonesData.GetAppLastZoneIndex(window, zoneWindowPtr->UniqueId(), guidString.get());
-                        if (zoneIndex != -1)
-                        {
-                            MoveWindowIntoZoneByIndex(window, zoneIndex);
-                        }
+                        MoveWindowIntoZoneByIndex(window, monitor, zoneIndex);
+                        break;
                     }
                 }
             }
@@ -667,18 +663,18 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
     }
 }
 
-void FancyZones::MoveWindowIntoZoneByIndex(HWND window, int index) noexcept
+void FancyZones::MoveWindowIntoZoneByIndex(HWND window, HMONITOR monitor, int index) noexcept
 {
     std::shared_lock readLock(m_lock);
     if (window != m_windowMoveSize)
     {
-        const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-        if (monitor)
+        const HMONITOR hm = (monitor != nullptr) ? monitor : MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+        if (hm)
         {
-            auto iter = m_zoneWindowMap.find(monitor);
-            if (iter != m_zoneWindowMap.end())
+            auto zoneWindow = m_zoneWindowMap.find(hm);
+            if (zoneWindow != m_zoneWindowMap.end())
             {
-                const auto& zoneWindowPtr = iter->second;
+                const auto& zoneWindowPtr = zoneWindow->second;
                 zoneWindowPtr->MoveWindowIntoZoneByIndex(window, index);
             }
         }
@@ -771,7 +767,7 @@ void FancyZones::MoveWindowsOnDisplayChange() noexcept
         {
             // i is off by 1 since 0 is special.
             auto strongThis = reinterpret_cast<FancyZones*>(data);
-            strongThis->MoveWindowIntoZoneByIndex(window, i - 1);
+            strongThis->MoveWindowIntoZoneByIndex(window, nullptr, i - 1);
         }
         return TRUE;
     };
