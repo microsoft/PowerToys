@@ -65,37 +65,37 @@ namespace FancyZonesEditor
             /// <param name="screenAxisSize"> The size of the screen in this (X or Y) dimension</param>
             public SnappyHelperBase(IList<Int32Rect> zones, int zoneIndex, bool isX, ResizeMode mode, int screenAxisSize)
             {
-                int zone_position = isX ? zones[zoneIndex].X : zones[zoneIndex].Y;
-                int zone_axis_size = isX ? zones[zoneIndex].Width : zones[zoneIndex].Height;
-                int min_axis_size = isX ? MinZoneWidth : MinZoneHeight;
-                List<int> key_positions = new List<int>();
+                int zonePosition = isX ? zones[zoneIndex].X : zones[zoneIndex].Y;
+                int zoneAxisSize = isX ? zones[zoneIndex].Width : zones[zoneIndex].Height;
+                int minAxisSize = isX ? MinZoneWidth : MinZoneHeight;
+                List<int> keyPositions = new List<int>();
                 for (int i = 0; i < zones.Count; ++i)
                 {
                     if (i != zoneIndex)
                     {
-                        int ith_zone_position = isX ? zones[i].X : zones[i].Y;
-                        int ith_zone_axis_size = isX ? zones[i].Width : zones[i].Height;
-                        key_positions.Add(ith_zone_position);
-                        key_positions.Add(ith_zone_position + ith_zone_axis_size);
+                        int ithZonePosition = isX ? zones[i].X : zones[i].Y;
+                        int ithZoneAxisSize = isX ? zones[i].Width : zones[i].Height;
+                        keyPositions.Add(ithZonePosition);
+                        keyPositions.Add(ithZonePosition + ithZoneAxisSize);
                         if (mode == ResizeMode.BothEdges)
                         {
-                            key_positions.Add(ith_zone_position - zone_axis_size);
-                            key_positions.Add(ith_zone_position + ith_zone_axis_size - zone_axis_size);
+                            keyPositions.Add(ithZonePosition - zoneAxisSize);
+                            keyPositions.Add(ithZonePosition + ithZoneAxisSize - zoneAxisSize);
                         }
                     }
                 }
 
                 // Remove duplicates and sort
-                key_positions.Sort();
+                keyPositions.Sort();
                 Snaps = new List<int>();
-                if (key_positions.Count > 0)
+                if (keyPositions.Count > 0)
                 {
-                    Snaps.Add(key_positions[0]);
-                    for (int i = 1; i < key_positions.Count; ++i)
+                    Snaps.Add(keyPositions[0]);
+                    for (int i = 1; i < keyPositions.Count; ++i)
                     {
-                        if (key_positions[i] != key_positions[i - 1])
+                        if (keyPositions[i] != keyPositions[i - 1])
                         {
-                            Snaps.Add(key_positions[i]);
+                            Snaps.Add(keyPositions[i]);
                         }
                     }
                 }
@@ -106,25 +106,25 @@ namespace FancyZonesEditor
                         // We're dragging the low edge, don't go below zero
                         MinValue = 0;
 
-                        // It can't make the zone smaller than min_axis_size
-                        MaxValue = zone_position + zone_axis_size - min_axis_size;
-                        Position = zone_position;
+                        // It can't make the zone smaller than minAxisSize
+                        MaxValue = zonePosition + zoneAxisSize - minAxisSize;
+                        Position = zonePosition;
                         break;
                     case ResizeMode.TopEdge:
-                        // We're dragging the high edge, don't make the zone smaller than min_axis_size
-                        MinValue = zone_position + min_axis_size;
+                        // We're dragging the high edge, don't make the zone smaller than minAxisSize
+                        MinValue = zonePosition + minAxisSize;
 
                         // Don't go off the screen
                         MaxValue = screenAxisSize;
-                        Position = zone_position + zone_axis_size;
+                        Position = zonePosition + zoneAxisSize;
                         break;
                     case ResizeMode.BothEdges:
                         // We're moving the window, don't move it below zero
                         MinValue = 0;
 
                         // Don't go off the screen (this time the lower edge is tracked)
-                        MaxValue = screenAxisSize - zone_axis_size;
-                        Position = zone_position;
+                        MaxValue = screenAxisSize - zoneAxisSize;
+                        Position = zonePosition;
                         break;
                 }
 
