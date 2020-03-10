@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace settings_v2
+namespace SettingsMain
 {
     /// <summary>
     /// Interaction logic for App.xaml

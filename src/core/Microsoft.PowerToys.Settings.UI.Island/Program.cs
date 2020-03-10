@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace settings_v2
+namespace SettingsMain
 {
     public class Program
     {
         [System.STAThreadAttribute()]
         public static void Main()
         {
-            using (new settingsui.App())
+            using (new SettingsUI.App())
             {
-                settings_v2.App app = new settings_v2.App();
+                SettingsMain.App app = new SettingsMain.App();
                 app.InitializeComponent();
                 app.Run();
             }
