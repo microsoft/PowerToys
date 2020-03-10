@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    This file contains Runtime Directives, specifications about types your application accesses
+    through reflection and other dynamic code patterns. Runtime Directives are used to control the
+    .NET Native optimizer and ensure that it does not remove code accessed by your library. If your
+    library does not do any reflection, then you generally do not need to edit this file. However,
+    if your library reflects over types, especially types passed to it or derived from its types,
+    then you should write Runtime Directives.
+
+    The most common use of reflection in libraries is to discover information about types passed
+    to the library. Runtime Directives have three ways to express requirements on types passed to
+    your library.
+
+    1.  Parameter, GenericParameter, TypeParameter, TypeEnumerableParameter
+        Use these directives to reflect over types passed as a parameter.
+
+    2.  SubTypes
+        Use a SubTypes directive to reflect over types derived from another type.
+
+    3.  AttributeImplies
+        Use an AttributeImplies directive to indicate that your library needs to reflect over
+        types or methods decorated with an attribute.
+
+    For more information on writing Runtime Directives for libraries, please visit
+    https://go.microsoft.com/fwlink/?LinkID=391919
+-->
+<Directives xmlns="http://schemas.microsoft.com/netfx/2013/01/metadata">
+  <Library Name="Microsoft.PowerToys.Settings.UI.Lib">
+
+  	<!-- add directives for your library here -->
+
+  </Library>
+</Directives>

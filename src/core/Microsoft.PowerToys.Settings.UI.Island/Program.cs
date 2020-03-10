@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SettingsMain
+namespace SettingsRunner
 {
     public class Program
     {
@@ -11,7 +11,7 @@ namespace SettingsMain
         {
             using (new SettingsUI.App())
             {
-                SettingsMain.App app = new SettingsMain.App();
+                SettingsRunner.App app = new SettingsRunner.App();
                 app.InitializeComponent();
                 app.Run();
             }

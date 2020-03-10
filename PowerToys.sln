@@ -136,7 +136,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Setting
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.PowerToys.Settings.UI", "src\core\Microsoft.PowerToys.Settings.UI\Microsoft.PowerToys.Settings.UI.csproj", "{A7D5099E-F0FD-4BF3-8522-5A682759F915}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.Island", "src\core\Microsoft.PowerToys.Settings.UI.Island\Microsoft.PowerToys.Settings.UI.Island.csproj", "{AE3EFE25-662D-4987-B24E-30E729701B2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.Runner", "src\core\Microsoft.PowerToys.Settings.UI.Island\Microsoft.PowerToys.Settings.UI.Runner.csproj", "{AE3EFE25-662D-4987-B24E-30E729701B2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -4,7 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
-    <StartupObject>SettingsMain.Program</StartupObject>
+    <StartupObject>SettingsRunner.Program</StartupObject>
     <Authors>Microsoft Corporation</Authors>
     <Product>PowerToys</Product>
     <Description>Windows system utilities to maximize productivity</Description>
@@ -19,11 +19,6 @@
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <Win32Resource />
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Toolkit.Wpf.UI.Controls" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Toolkit.Wpf.UI.XamlHost" Version="6.0.0" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\settingsui\Assets\logo.png">
