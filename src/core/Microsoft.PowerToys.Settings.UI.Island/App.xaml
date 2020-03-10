@@ -1,7 +1,7 @@
-﻿<Application x:Class="SettingsMain.App"
+﻿<Application x:Class="SettingsRunner.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:SettingsMain"
+             xmlns:local="clr-namespace:SettingsRunner"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          
