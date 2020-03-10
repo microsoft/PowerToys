@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\Output\Debug\Plugins\Wox.Plugin.PluginManagement\</OutputPath>
+    <OutputPath>..\..\..\..\..\x64\Debug\modules\Wox\Plugins\Wox.Plugin.PluginManagement\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
