@@ -134,82 +134,49 @@ namespace FancyZonesEditor
 
         private void ExtendRangeToHaveEvenCellEdges()
         {
-            // extend each edge of the [(_startCol, _startRow) - (_endCol, _endRow)] range based on merged cells until you have 4 straight edges with no "straddling cells"
+            // As long as there is an edge of the 2D range such that some zone crosses its boundary, extend
+            // that boundary. A single pass is not enough, a while loop is needed. This results in the unique
+            // smallest rectangle containing the initial range such that no zone is "broken", meaning that
+            // some part of it is inside the 2D range, and some part is outside.
             GridLayoutModel model = Model;
+            bool possiblyBroken = true;
 
-            while (_startRow > 0)
+            while (possiblyBroken)
             {
-                bool dirty = false;
+                possiblyBroken = false;
+
                 for (int col = _startCol; col <= _endCol; col++)
                 {
-                    if (model.CellChildMap[_startRow - 1, col] == model.CellChildMap[_startRow, col])
+                    if (_startRow > 0 && model.CellChildMap[_startRow - 1, col] == model.CellChildMap[_startRow, col])
                     {
                         _startRow--;
-                        dirty = true;
+                        possiblyBroken = true;
                         break;
                     }
-                }
 
-                if (!dirty)
-                {
-                    break;
-                }
-            }
-
-            while (_endRow < model.Rows - 1)
-            {
-                bool dirty = false;
-                for (int col = _startCol; col <= _endCol; col++)
-                {
-                    if (model.CellChildMap[_endRow + 1, col] == model.CellChildMap[_endRow, col])
+                    if (_endRow < model.Rows - 1 && model.CellChildMap[_endRow + 1, col] == model.CellChildMap[_endRow, col])
                     {
                         _endRow++;
-                        dirty = true;
+                        possiblyBroken = true;
                         break;
                     }
                 }
 
-                if (!dirty)
-                {
-                    break;
-                }
-            }
-
-            while (_startCol > 0)
-            {
-                bool dirty = false;
                 for (int row = _startRow; row <= _endRow; row++)
                 {
-                    if (model.CellChildMap[row, _startCol - 1] == model.CellChildMap[row, _startCol])
+                    if (_startCol > 0 && model.CellChildMap[row, _startCol - 1] == model.CellChildMap[row, _startCol])
                     {
                         _startCol--;
-                        dirty = true;
+                        possiblyBroken = true;
                         break;
                     }
-                }
 
-                if (!dirty)
-                {
-                    break;
-                }
-            }
-
-            while (_endCol < model.Columns - 1)
-            {
-                bool dirty = false;
-                for (int row = _startRow; row <= _endRow; row++)
-                {
-                    if (model.CellChildMap[row, _endCol + 1] == model.CellChildMap[row, _endCol])
+                    if (_endCol < model.Columns - 1 && model.CellChildMap[row, _endCol + 1] == model.CellChildMap[row, _endCol])
                     {
                         _endCol++;
-                        dirty = true;
+                        possiblyBroken = true;
                         break;
                     }
-                }
-
-                if (!dirty)
-                {
-                    break;
                 }
             }
         }
