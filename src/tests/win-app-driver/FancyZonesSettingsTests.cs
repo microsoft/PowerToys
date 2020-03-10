@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -112,7 +113,7 @@ namespace PowerToysTests
 
         private void TestRgbInput(string name)
         {
-            WindowsElement colorInput = session.FindElementByAccessibilityId(name);
+            WindowsElement colorInput = session.FindElementByXPath("//Edit[@Name=\"" + name + "\"]");
             Assert.IsNotNull(colorInput);
 
             colorInput.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
@@ -258,14 +259,16 @@ namespace PowerToysTests
         [TestMethod]
         public void TogglesSingleClickSaveButtonTest()
         {
-            for (int i = 37; i < 45; i++)
+            List<WindowsElement> toggles = session.FindElementsByXPath("//Pane[@Name=\"PowerToys Settings\"]/*[@LocalizedControlType=\"toggleswitch\"]").ToList();
+            Assert.AreEqual(8, toggles.Count);
+
+            foreach (WindowsElement toggle in toggles)
             {
-                string toggleId = "Toggle" + i.ToString();
-                WindowsElement toggle = session.FindElementByAccessibilityId(toggleId);
                 Assert.IsNotNull(toggle);
                 toggle.Click();
 
                 SaveChanges();
+                ShortWait();
             }
             
             //check saved settings
@@ -290,16 +293,18 @@ namespace PowerToysTests
         [TestMethod]
         public void TogglesDoubleClickSave()
         {
-            for (int i = 37; i < 45; i++)
+            List<WindowsElement> toggles = session.FindElementsByXPath("//Pane[@Name=\"PowerToys Settings\"]/*[@LocalizedControlType=\"toggleswitch\"]").ToList();
+            Assert.AreEqual(8, toggles.Count);
+
+            foreach (WindowsElement toggle in toggles)
             {
-                string toggleId = "Toggle" + i.ToString();
-                WindowsElement toggle = session.FindElementByAccessibilityId(toggleId);
                 Assert.IsNotNull(toggle);
                 toggle.Click();
                 toggle.Click();
-
-                SaveChanges();
             }
+            
+            SaveChanges();
+            ShortWait();
 
             string savedSettings = File.ReadAllText(_settingsPath);
             Assert.AreEqual(_initialSettings, savedSettings);
@@ -408,10 +413,10 @@ namespace PowerToysTests
 
             WindowsElement saturationAndBrightness = session.FindElementByName("Saturation and brightness");
             WindowsElement hue = session.FindElementByName("Hue");
-            WindowsElement hex = session.FindElementByAccessibilityId("TextField54");
-            WindowsElement red = session.FindElementByAccessibilityId("TextField57");
-            WindowsElement green = session.FindElementByAccessibilityId("TextField60");
-            WindowsElement blue = session.FindElementByAccessibilityId("TextField63");
+            WindowsElement hex = session.FindElementByXPath("//Edit[@Name=\"Hex\"]");
+            WindowsElement red = session.FindElementByXPath("//Edit[@Name=\"Red\"]");
+            WindowsElement green = session.FindElementByXPath("//Edit[@Name=\"Green\"]");
+            WindowsElement blue = session.FindElementByXPath("//Edit[@Name=\"Blue\"]");
 
             Assert.IsNotNull(saturationAndBrightness);
             Assert.IsNotNull(hue);
@@ -465,9 +470,9 @@ namespace PowerToysTests
         {
             ScrollDown();
 
-            TestRgbInput("TextField57"); //red
-            TestRgbInput("TextField60"); //green
-            TestRgbInput("TextField63"); //blue
+            TestRgbInput("Red");
+            TestRgbInput("Green");
+            TestRgbInput("Blue"); 
         }
 
         [TestMethod]
@@ -475,9 +480,9 @@ namespace PowerToysTests
         {
             ScrollDown();
 
-            WindowsElement hexInput = session.FindElementByAccessibilityId("TextField54");
+            WindowsElement hexInput = session.FindElementByXPath("//Edit[@Name=\"Hex\"]");
             Assert.IsNotNull(hexInput);
-
+            
             hexInput.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
             
             string invalidSymbols = "qwrtyuiopsghjklzxvnm,./';][{}:`~!#@$%^&*()_-+=\"\'\\";
@@ -520,7 +525,7 @@ namespace PowerToysTests
 
             WindowsElement saturationAndBrightness = session.FindElementByName("Saturation and brightness");
             WindowsElement hue = session.FindElementByName("Hue");
-            WindowsElement hex = session.FindElementByAccessibilityId("TextField54");
+            WindowsElement hex = session.FindElementByXPath("//Edit[@Name=\"Hex\"]");
 
             Assert.IsNotNull(saturationAndBrightness);
             Assert.IsNotNull(hue);
@@ -541,7 +546,8 @@ namespace PowerToysTests
         [TestMethod]
         public void ExcludeApps()
         {
-            WindowsElement input = session.FindElementByAccessibilityId("TextField66");
+            WindowsElement input = session.FindElementByXPath("//Edit[contains(@Name, \"exclude\")]");
+            Assert.IsNotNull(input);
             ClearInput(input);
 
             string inputValue;
@@ -678,8 +684,9 @@ namespace PowerToysTests
         [TestMethod]
         public void ConfigureHotkey()
         {
-            WindowsElement input = session.FindElementByAccessibilityId("TextField34");
-            
+            WindowsElement input = session.FindElementByXPath("//Edit[contains(@Name, \"hotkey\")]");
+            Assert.IsNotNull(input);
+
             for (int i = 0; i < 16; i++)
             {
                 TestHotkey(input, i, OpenQA.Selenium.Keys.End, "End");
@@ -689,7 +696,8 @@ namespace PowerToysTests
         [TestMethod]
         public void ConfigureLocalSymbolHotkey()
         {
-            WindowsElement input = session.FindElementByAccessibilityId("TextField34");
+            WindowsElement input = session.FindElementByXPath("//Edit[contains(@Name, \"hotkey\")]");
+            Assert.IsNotNull(input);
             TestHotkey(input, 0, "ё", "Ё");
         }
 
