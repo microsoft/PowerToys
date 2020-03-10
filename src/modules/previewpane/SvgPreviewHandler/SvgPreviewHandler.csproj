@@ -50,10 +50,11 @@
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>SvgPreviewHandler.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -117,7 +118,6 @@
     <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
       <Link>StyleCop.json</Link>
     </AdditionalFiles>
-    <None Include="SvgPreviewHandler.snk" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers">

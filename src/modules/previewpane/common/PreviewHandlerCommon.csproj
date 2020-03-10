@@ -73,10 +73,11 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>PreviewHandlerCommon.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -127,7 +128,6 @@
     <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
       <Link>StyleCop.json</Link>
     </AdditionalFiles>
-    <None Include="PreviewHandlerCommon.snk" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers">

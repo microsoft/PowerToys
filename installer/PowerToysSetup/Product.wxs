@@ -299,12 +299,12 @@
           <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
           <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value=""/>
           <RegistryValue Type="string" Key="InprocServer32" Value="mscoree.dll" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="SvgPreviewHandler, Version=$(var.Version).0, Culture=neutral, PublicKeyToken=9bdcf6dae174efd3" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="SvgPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
           <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="SvgPreviewHandler.SvgPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
           <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[#Svg_PreviewHandler_Dll]" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="SvgPreviewHandler, Version=$(var.Version).0, Culture=neutral, PublicKeyToken=9bdcf6dae174efd3" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="SvgPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="SvgPreviewHandler.SvgPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="RuntimeVersion" Value="v4.0.30319" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[#Svg_PreviewHandler_Dll]" />
@@ -316,12 +316,12 @@
           <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
           <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value="" />
           <RegistryValue Type="string" Key="InprocServer32" Value="mscoree.dll" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral, PublicKeyToken=201d23296ab86a5a" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
           <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
           <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[#Md_PreviewHandler_Dll]" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral, PublicKeyToken=201d23296ab86a5a" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="RuntimeVersion" Value="v4.0.30319" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[#Md_PreviewHandler_Dll]" />

@@ -73,10 +73,11 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>MarkdownPreviewHandler.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -129,9 +130,6 @@
       <Project>{af2349b8-e5b6-4004-9502-687c1c7730b1}</Project>
       <Name>PreviewHandlerCommon</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="MarkdownPreviewHandler.snk" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
