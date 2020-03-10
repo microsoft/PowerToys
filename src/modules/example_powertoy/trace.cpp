@@ -27,4 +27,3 @@ void Trace::MyEvent()
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
-
