@@ -1,0 +1,24 @@
+﻿<Window x:Class="Wox.Plugin.Program.ProgramSuffixes"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+                Width="400"
+                Height="180"
+        WindowStartupLocation="CenterScreen"
+             d:DesignHeight="400" d:DesignWidth="300">
+    <StackPanel>
+        <TextBlock Margin="10 10 0 0" Foreground="Gray" Text="{DynamicResource wox_plugin_program_only_index_tip}" />
+        <TextBlock Margin="10 10 0 0" Foreground="Gray" Text="{DynamicResource wox_plugin_program_split_by_tip}" />
+        <TextBox x:Name="tbSuffixes" Margin="10"/>
+        <Button HorizontalAlignment="Right" Height="30" Width="80" Click="ButtonBase_OnClick" Margin="10" Content="{DynamicResource wox_plugin_program_update}" />
+    </StackPanel>
+</Window>
+
+
+
+
+
+
+

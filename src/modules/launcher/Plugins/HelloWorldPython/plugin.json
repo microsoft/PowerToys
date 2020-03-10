@@ -1,0 +1,12 @@
+{
+    "ID":"2f4e384e-76ce-45c3-aea2-b16f5e5c328f",
+    "ActionKeyword":"h",
+    "Name":"Hello World Python",
+    "Description":"Hello World",
+    "Author":"happlebao",
+    "Version":"1.0",
+    "Language":"python",
+    "Website":"https://github.com/Wox-launcher/Wox",
+    "IcoPath":"Images\\app.png",
+    "ExecuteFileName":"main.py"
+}

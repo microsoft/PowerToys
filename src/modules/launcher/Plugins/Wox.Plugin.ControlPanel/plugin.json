@@ -1,0 +1,12 @@
+{
+    "ID":"209621585B9B4D81813913C507C058C6",
+    "ActionKeyword":"*",
+    "Name":"Control Panel",
+    "Description":"Search within the Control Panel.",
+    "Author":"CoenraadS",
+    "Version":"1.0.0",
+    "Language":"csharp",
+    "Website":"http://www.wox.one/plugin",
+    "ExecuteFileName":"Wox.Plugin.ControlPanel.dll",
+    "IcoPath":"Images\\ControlPanel.png"
+}

@@ -1,0 +1,12 @@
+{
+    "ID":"CEA08895D2544B019B2E9C5009600DF4",
+    "ActionKeyword":"*",
+    "Name":"System Commands",
+    "Description":"Provide System related commands. e.g. shutdown,lock,setting etc.",
+    "Author":"qianlifeng",
+    "Version":"1.0.0",
+    "Language":"csharp",
+    "Website":"http://www.wox.one/plugin",
+    "ExecuteFileName":"Wox.Plugin.Sys.dll",
+    "IcoPath":"Images\\lock.png"
+}

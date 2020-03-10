@@ -1,0 +1,12 @@
+{
+    "ID":"6A122269676E40EB86EB543B945932B9",
+    "ActionKeyword":"*",
+    "Name":"Plugin Indicator",
+    "Description":"Provide plugin actionword suggestion",
+    "Author":"qianlifeng",
+    "Version":"1.0.0",
+    "Language":"csharp",
+    "Website":"http://www.wox.one/plugin",
+    "ExecuteFileName":"Wox.Plugin.PluginIndicator.dll",
+    "IcoPath":"Images\\work.png"
+}

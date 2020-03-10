@@ -1,0 +1,21 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="wox_plugin_sys_command">Befehl</system:String>
+    <system:String x:Key="wox_plugin_sys_desc">Beschreibung</system:String>
+
+    <system:String x:Key="wox_plugin_sys_shutdown_computer">Computer herunterfahren</system:String>
+    <system:String x:Key="wox_plugin_sys_restart_computer">Computer neu starten</system:String>
+    <system:String x:Key="wox_plugin_sys_log_off">Abmelden</system:String>
+    <system:String x:Key="wox_plugin_sys_lock">Computer sperren</system:String>
+    <system:String x:Key="wox_plugin_sys_exit">Wox schließen</system:String>
+    <system:String x:Key="wox_plugin_sys_restart">Wox neu starten</system:String>
+    <system:String x:Key="wox_plugin_sys_setting">Anwendung beschleunigen</system:String>
+    <system:String x:Key="wox_plugin_sys_sleep">Computer in Schlafmodus versetzen</system:String>
+    <system:String x:Key="wox_plugin_sys_emptyrecyclebin">Papierkorb leeren</system:String>
+
+    <system:String x:Key="wox_plugin_sys_plugin_name">Systembefehle</system:String>
+    <system:String x:Key="wox_plugin_sys_plugin_description">Stellt Systemrelevante Befehle bereit. z.B. herunterfahren, sperren, Einstellungen, usw.</system:String>
+
+</ResourceDictionary>

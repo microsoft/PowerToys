@@ -1,0 +1,12 @@
+{
+    "ID":"9B36CE6181FC47FBB597AA2C29CD9B0A",
+    "ActionKeyword":"*",
+    "Name":"Colors",
+    "Description":"Provide hex color preview.(Try #000 in Wox)",
+    "Author":"qianlifeng",
+    "Version":"1.0.0",
+    "Language":"csharp",
+    "Website":"http://www.wox.one/plugin",
+    "ExecuteFileName":"Wox.Plugin.Color.dll",
+    "IcoPath":"Images\\color.png"
+}
