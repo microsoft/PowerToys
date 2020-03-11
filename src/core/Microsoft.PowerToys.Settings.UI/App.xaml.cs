@@ -1,6 +1,6 @@
 ﻿using Microsoft.Toolkit.Win32.UI.XamlHost;
 
-namespace SettingsUI
+namespace Microsoft.PowerToys.Settings.UI
 {
     public sealed partial class App : XamlApplication
     {
@@ -8,5 +8,7 @@ namespace SettingsUI
         {
             this.Initialize();
         }
+
+
     }
 }

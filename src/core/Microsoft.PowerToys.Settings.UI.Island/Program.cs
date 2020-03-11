@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SettingsRunner
+namespace Microsoft.PowerToys.Settings.UI.Runner
 {
     public class Program
     {
         [System.STAThreadAttribute()]
         public static void Main()
         {
-            using (new SettingsUI.App())
+            using (new UI.App())
             {
-                SettingsRunner.App app = new SettingsRunner.App();
+                App app = new App();
                 app.InitializeComponent();
                 app.Run();
             }

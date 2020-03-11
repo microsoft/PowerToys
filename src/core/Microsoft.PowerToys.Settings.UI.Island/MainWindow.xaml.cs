@@ -2,8 +2,9 @@
 using System.Windows;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
 using Microsoft.PowerToys.Settings.UI.Controls;
+using Microsoft.PowerToys.Settings.UI.Views;
 
-namespace SettingsRunner
+namespace Microsoft.PowerToys.Settings.UI.Runner
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -19,11 +20,11 @@ namespace SettingsRunner
         {
             // Hook up x:Bind source.
             WindowsXamlHost windowsXamlHost = sender as WindowsXamlHost;
-            DummyUserControl userControl = windowsXamlHost.GetUwpInternalObject() as DummyUserControl;
+            ShellPage userControl = windowsXamlHost.GetUwpInternalObject() as ShellPage;
 
             if (userControl != null)
             {
-                userControl.XamlIslandMessage = this.WPFMessage;
+                //userControl.XamlIslandMessage = this.WPFMessage;
             }
         }
 

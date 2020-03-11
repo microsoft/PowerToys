@@ -1,0 +1,81 @@
+﻿<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.ShellPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:behaviors="using:Microsoft.PowerToys.Settings.UI.Behaviors"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+    xmlns:helpers="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
+    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    mc:Ignorable="d">
+
+    <i:Interaction.Behaviors>
+        <ic:EventTriggerBehavior EventName="Loaded">
+            <ic:InvokeCommandAction Command="{x:Bind ViewModel.LoadedCommand}" />
+        </ic:EventTriggerBehavior>
+    </i:Interaction.Behaviors>
+
+    <!-- 
+        TODO: 
+            Style clean up for navview
+    -->
+    <winui:NavigationView
+        x:Name="navigationView"
+        IsBackButtonVisible="Collapsed"
+        IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
+        SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
+        IsSettingsVisible="False"
+        IsPaneToggleButtonVisible="False" 
+        PaneDisplayMode="Left"
+        Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
+        <winui:NavigationView.PaneHeader>
+            <!-- 
+                TODO: 
+                    PowerToys needs to be string 
+                    Think maybe about svg logo here
+                    Margin should be style
+            -->
+            <TextBlock Margin="12, 24, 0, 6" Style="{StaticResource SubheaderTextBlockStyle}" FontWeight="Bold">PowerToys</TextBlock>
+        </winui:NavigationView.PaneHeader>
+        <winui:NavigationView.MenuItems>
+            <!--
+            TODO WTS: Change the symbols for each item as appropriate for your app
+            More on Segoe UI Symbol icons: https://docs.microsoft.com/windows/uwp/style/segoe-ui-symbol-font
+            Or to use an IconElement instead of a Symbol see https://github.com/Microsoft/WindowsTemplateStudio/blob/master/docs/projectTypes/navigationpane.md
+            Edit String/en-US/Resources.resw: Add a menu item title for each page
+            
+            TODO: Why isn't main page loading by default
+            -->
+            <winui:NavigationViewItem x:Uid="Shell_Main" Icon="Document" helpers:NavHelper.NavigateTo="views:MainPage" />
+            <winui:NavigationViewItem x:Uid="Shell_Test1" Icon="Document" helpers:NavHelper.NavigateTo="views:Test1Page" />
+            <winui:NavigationViewItem x:Uid="Shell_Test2" Icon="Document" helpers:NavHelper.NavigateTo="views:Test2Page" />
+            <winui:NavigationViewItem x:Uid="Shell_Test3" Icon="Document" helpers:NavHelper.NavigateTo="views:Test3Page" />
+        </winui:NavigationView.MenuItems>
+        <i:Interaction.Behaviors>
+            <behaviors:NavigationViewHeaderBehavior
+                DefaultHeader="{x:Bind ViewModel.Selected.Content, Mode=OneWay}">
+                <behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
+                    <DataTemplate>
+                        <!-- TODO: Style clean up-->
+                        <Grid Margin="0, 24, 0, 6">
+                            <TextBlock
+                                Text="{Binding}"
+                                FontWeight="Bold"
+                                Style="{ThemeResource TitleTextBlockStyle}"
+                                Margin="{StaticResource SmallLeftRightMargin}" />
+                        </Grid>
+                    </DataTemplate>
+                </behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
+            </behaviors:NavigationViewHeaderBehavior>
+            <ic:EventTriggerBehavior EventName="ItemInvoked">
+                <ic:InvokeCommandAction Command="{x:Bind ViewModel.ItemInvokedCommand}" />
+            </ic:EventTriggerBehavior>
+        </i:Interaction.Behaviors>
+        <Grid>
+            <Frame x:Name="shellFrame" />
+        </Grid>
+    </winui:NavigationView>
+</UserControl>
