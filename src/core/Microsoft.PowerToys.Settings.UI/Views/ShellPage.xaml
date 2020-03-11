@@ -49,10 +49,10 @@
             
             TODO: Why isn't main page loading by default
             -->
-            <winui:NavigationViewItem x:Uid="Shell_Main" Icon="Document" helpers:NavHelper.NavigateTo="views:MainPage" />
-            <winui:NavigationViewItem x:Uid="Shell_Test1" Icon="Document" helpers:NavHelper.NavigateTo="views:Test1Page" />
-            <winui:NavigationViewItem x:Uid="Shell_Test2" Icon="Document" helpers:NavHelper.NavigateTo="views:Test2Page" />
-            <winui:NavigationViewItem x:Uid="Shell_Test3" Icon="Document" helpers:NavHelper.NavigateTo="views:Test3Page" />
+            <winui:NavigationViewItem x:Uid="Shell_Main" Icon="Home" helpers:NavHelper.NavigateTo="views:MainPage" />
+            <winui:NavigationViewItem x:Uid="Shell_Test1" Icon="Play" helpers:NavHelper.NavigateTo="views:Test1Page" />
+            <winui:NavigationViewItem x:Uid="Shell_Test2" Icon="Refresh" helpers:NavHelper.NavigateTo="views:Test2Page" />
+            <winui:NavigationViewItem x:Uid="Shell_Test3" Icon="Save" helpers:NavHelper.NavigateTo="views:Test3Page" />
         </winui:NavigationView.MenuItems>
         <i:Interaction.Behaviors>
             <behaviors:NavigationViewHeaderBehavior
