@@ -50,6 +50,7 @@ namespace PowerToysSettings
         void add_custom_action(std::wstring_view name, UINT description_resource_id, UINT button_text_resource_id, std::wstring_view value);
         void add_custom_action(std::wstring_view name, std::wstring_view description, std::wstring_view button_text, std::wstring_view value);
 
+        void add_header_szLarge(std::wstring_view name, std::wstring_view description, std::wstring_view value);
         // Serialize the internal json to a string.
         std::wstring serialize();
         // Serialize the internal json to the input buffer.
