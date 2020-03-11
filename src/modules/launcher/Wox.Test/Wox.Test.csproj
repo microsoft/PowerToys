@@ -47,13 +47,8 @@
     <Compile Include="Plugins\PluginInitTest.cs" />
     <Compile Include="QueryBuilderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UrlPluginTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Plugins\Wox.Plugin.Url\Wox.Plugin.Url.csproj">
-      <Project>{A3DCCBCA-ACC1-421D-B16E-210896234C26}</Project>
-      <Name>Wox.Plugin.Url</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Wox.Core\Wox.Core.csproj">
       <Project>{B749F0DB-8E75-47DB-9E5E-265D16D0C0D2}</Project>
       <Name>Wox.Core</Name>
