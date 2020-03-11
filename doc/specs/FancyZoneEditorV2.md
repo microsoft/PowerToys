@@ -15,6 +15,7 @@
   - Rather than title bar handle for moving, do we have modes (Move, Resize, Split, Edit (Rename, L/T/W/H))?
     - I feel like this would heavily simplify information overload and easier for keyboard interaction.
 - Main dialog needs to display monitors.
+- Multiple quick layout switching - we need to think about #1440 and how to better support this correctly.  Multi-mon + direct switching layouts.
 
 # 1. Overview
 
