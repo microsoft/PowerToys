@@ -124,7 +124,7 @@ namespace FancyZonesEditor.Models
                 {
                     writer.WriteStartObject();
                     writer.WriteString("uuid", "{" + Guid.ToString().ToUpper() + "}");
-                    writer.WriteString("name", Name);
+                    writer.WriteBase64String("name", UTF8Encode(Name));
 
                     writer.WriteString("type", "canvas");
 

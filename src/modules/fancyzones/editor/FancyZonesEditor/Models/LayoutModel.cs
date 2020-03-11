@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using System.Windows;
 
@@ -173,7 +174,7 @@ namespace FancyZonesEditor.Models
                 while (customZoneSetsEnumerator.MoveNext())
                 {
                     var current = customZoneSetsEnumerator.Current;
-                    string name = current.GetProperty("name").GetString();
+                    string name = UTF8Decode(current.GetProperty("name").GetBytesFromBase64());
                     string type = current.GetProperty("type").GetString();
                     string uuid = current.GetProperty("uuid").GetString();
                     var info = current.GetProperty("info");
@@ -308,6 +309,18 @@ namespace FancyZonesEditor.Models
             {
                 ShowExceptionMessageBox("Error applying layout", ex);
             }
+        }
+
+        protected static byte[] UTF8Encode(string value)
+        {
+            UTF8Encoding encoder = new UTF8Encoding();
+            return encoder.GetBytes(value);
+        }
+
+        protected static string UTF8Decode(byte[] value)
+        {
+            UTF8Encoding encoder = new UTF8Encoding();
+            return encoder.GetString(value);
         }
     }
 }
