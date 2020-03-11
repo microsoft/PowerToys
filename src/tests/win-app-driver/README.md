@@ -3,13 +3,13 @@
 The PowerToys tests are implemented using Appium and use the [Windows Application Driver](https://github.com/microsoft/WinAppDriver) as an Appium compatible server for Windows applications.
 
 ## Prerequisites
-  - Install the Windows Application Driver in the test machine: https://github.com/Microsoft/WinAppDriver/releases
-  - Install the ".Net desktop development" components in Visual Studio 2017. It should have support for "C#" and ".Net Framework 4.6.1".
+  - Install the latest stable version of Windows Application Driver in the test machine: https://github.com/microsoft/WinAppDriver/releases/tag/v1.1
+  - Install the ".Net desktop development" components in Visual Studio 2019. It should have support for "C#" and ".Net Framework 4.7.2".
 
 ## Running the tests
 
 ### Preparing the test machine
-  - Start `powertoys.exe`.
+  - Start `PowerToys.exe`.
   - Set Windows to "Developer Mode", by selecting `Developer mode` in `Settings > For developers > Use developer features` in Windows 10.
   - Run the "Windows Application Driver" in Administrator mode in the test machine.
 
