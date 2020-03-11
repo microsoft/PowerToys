@@ -6,9 +6,7 @@ namespace Microsoft.PowerToys.Settings.UI
     {
         public App()
         {
-            this.Initialize();
+            Initialize();
         }
-
-
     }
 }
