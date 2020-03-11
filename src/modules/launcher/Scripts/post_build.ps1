@@ -32,17 +32,17 @@ function Build-Path {
 
 function Copy-Resources ($path, $config) {
     $project = "$path\Wox"
-    $output = "$path\Output"
-    $target = "$output\$config"
+    $output = "$path\..\..\..\x64\$config\modules"
+    $target = "$output\launcher"
     Copy-Item -Recurse -Force $project\Themes\* $target\Themes\
     Copy-Item -Recurse -Force $project\Images\* $target\Images\
     Copy-Item -Recurse -Force $path\Plugins\HelloWorldPython $target\Plugins\HelloWorldPython
     Copy-Item -Recurse -Force $path\JsonRPC $target\JsonRPC
-    Copy-Item -Force $path\packages\squirrel*\tools\Squirrel.exe $output\Update.exe
+    Copy-Item -Force %userprofile%\.nuget\packages\squirrel*\tools\Squirrel.exe $output\Update.exe
 }
 
 function Delete-Unused ($path, $config) {
-    $target = "$path\Output\$config"
+    $target = "$path\..\..\..\x64\$config"
     $included = Get-ChildItem $target -Filter "*.dll"
     foreach ($i in $included){
         Remove-Item -Path $target\Plugins -Include $i -Recurse 
@@ -70,7 +70,7 @@ function Pack-Nuget ($path, $version, $output) {
 function Zip-Release ($path, $version, $output) {
     Write-Host "Begin zip release"
 
-    $input = "$path\Output\Release"
+    $input = "$path\..\..\..\x64\Output\Release\modules\launcher"
     Write-Host "Input path:  $input"
     $file = "$output\Wox-$version.zip"
     Write-Host "Filename: $file"
@@ -87,7 +87,7 @@ function Pack-Squirrel-Installer ($path, $version, $output) {
 
     $spec = "$path\Scripts\wox.nuspec"
     Write-Host "nuspec path: $spec"
-    $input = "$path\Output\Release"
+    $input = "$path\..\..\..\x64\Release\modules\launcher"
     Write-Host "Input path:  $input"
     Nuget pack $spec -Version $version -Properties Configuration=Release -BasePath $input -OutputDirectory  $output
 
@@ -105,7 +105,7 @@ function Pack-Squirrel-Installer ($path, $version, $output) {
     Move-Item $temp\* $output -Force
     Remove-Item $temp
     
-    $file = "$output\Wox-$version.exe"
+    $file = "$output\Wox.exe"
     Write-Host "Filename: $file"
 
     Move-Item "$output\Setup.exe" $file -Force
@@ -121,9 +121,9 @@ function Main {
     if ($config -eq "Release"){
 
         Delete-Unused $p $config
-        $o = "$p\Output\Packages"
+        $o = "$p\..\..\..\x64\Release\modules\Packages"
         Validate-Directory $o
-        New-Alias Nuget $p\packages\NuGet.CommandLine.*\tools\NuGet.exe -Force
+        New-Alias Nuget $p\..\..\..\packages\NuGet.CommandLine.*\tools\NuGet.exe -Force
         Pack-Squirrel-Installer $p $v $o
     
         $isInCI = $env:APPVEYOR
