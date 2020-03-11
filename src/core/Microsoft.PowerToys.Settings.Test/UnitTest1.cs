@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace settingsUintTests
+namespace Microsoft.PowerToys.Settings.Test
 {
     [TestClass]
     public class UnitTest1

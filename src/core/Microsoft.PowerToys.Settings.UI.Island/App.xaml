@@ -1,7 +1,6 @@
-﻿<Application x:Class="SettingsRunner.App"
+﻿<Application x:Class="Microsoft.PowerToys.Settings.UI.Runner.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:SettingsRunner"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          
