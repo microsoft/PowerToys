@@ -11,9 +11,12 @@ namespace PowerPreviewSettings
 {
     extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+    // Relative(HKLM/HKCU) sub key path of Preview Handlers list in registry.
+    static LPCWSTR preview_handlers_subkey = L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers";
+
     // Base Settinngs Class Implementation
-    FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool state, const std::wstring name, const std::wstring description, LPCWSTR clsid, const std::wstring displayname, RegistryWrapperIface * registryWrapper) :
-        m_isPreviewEnabled(state),
+    FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool enabled, const std::wstring& name, const std::wstring& description, LPCWSTR clsid, const std::wstring& displayname, RegistryWrapperIface * registryWrapper) :
+        m_isPreviewEnabled(enabled),
         m_name(name),
         m_description(description),
         m_clsid(clsid),
@@ -91,7 +94,7 @@ namespace PowerPreviewSettings
 
     LPCWSTR FileExplorerPreviewSettings::GetSubKey() const
     {
-        return this->m_subKey;
+        return preview_handlers_subkey;
     }
 
     LPCWSTR FileExplorerPreviewSettings::GetCLSID() const
