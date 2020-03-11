@@ -14,6 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public ShellPage()
         {
             InitializeComponent();
+
             DataContext = ViewModel;
             ViewModel.Initialize(shellFrame, navigationView, KeyboardAccelerators);
         }
