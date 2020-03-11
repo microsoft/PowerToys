@@ -162,7 +162,7 @@ namespace Wox.Infrastructure
 
             if (word.Length > 40)
             {
-                Log.Debug($"|Wox.Infrastructure.StringMatcher.ScoreForPinyin|skip too long string: {word}");
+                //Skip strings that are too long string for Pinyin conversion.
                 return false;
             }
 
