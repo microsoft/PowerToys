@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "auto_start_helper.h"
 
+#include "general_settings.h"
+
 #include <Lmcons.h>
 
 #include <comdef.h>
@@ -217,8 +219,9 @@ bool enable_auto_start_task_for_this_user()
 
         hr = pPrincipal->put_LogonType(TASK_LOGON_INTERACTIVE_TOKEN);
 
-        // Run the task with the highest available privileges.
-        if (IsUserAnAdmin())
+        auto generalSettings = load_general_settings();
+
+        if (generalSettings.GetNamedBoolean(L"run_elevated", false) == true)
         {
             hr = pPrincipal->put_RunLevel(_TASK_RUNLEVEL::TASK_RUNLEVEL_HIGHEST);
         }
@@ -231,16 +234,19 @@ bool enable_auto_start_task_for_this_user()
     }
     // ------------------------------------------------------
     //  Save the task in the PowerToys folder.
-    hr = pTaskFolder->RegisterTaskDefinition(
-        _bstr_t(wstrTaskName.c_str()),
-        pTask,
-        TASK_CREATE_OR_UPDATE,
-        _variant_t(username_domain),
-        _variant_t(),
-        TASK_LOGON_INTERACTIVE_TOKEN,
-        _variant_t(L""),
-        &pRegisteredTask);
-    ExitOnFailure(hr, "Error saving the Task : %x", hr);
+    {
+        _variant_t SDDL_FULL_ACCESS_FOR_EVERYONE = L"D:(A;;FA;;;WD)";
+        hr = pTaskFolder->RegisterTaskDefinition(
+            _bstr_t(wstrTaskName.c_str()),
+            pTask,
+            TASK_CREATE_OR_UPDATE,
+            _variant_t(username_domain),
+            _variant_t(),
+            TASK_LOGON_INTERACTIVE_TOKEN,
+            SDDL_FULL_ACCESS_FOR_EVERYONE,
+            &pRegisteredTask);
+        ExitOnFailure(hr, "Error saving the Task : %x", hr);
+    }
 
 LExit:
     if (pService)
