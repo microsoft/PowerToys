@@ -1,5 +1,7 @@
 ﻿using System;
-
+using Microsoft.PowerToys.Settings.UI.Activation;
+using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 
 using Windows.UI.Xaml.Controls;
@@ -14,9 +16,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public ShellPage()
         {
             InitializeComponent();
-
+            
             DataContext = ViewModel;
             ViewModel.Initialize(shellFrame, navigationView, KeyboardAccelerators);
+            NavigationService.Navigate(typeof(MainPage));
         }
     }
 }
