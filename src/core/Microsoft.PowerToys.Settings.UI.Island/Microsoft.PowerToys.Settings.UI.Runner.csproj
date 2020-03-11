@@ -4,7 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
-    <StartupObject>SettingsRunner.Program</StartupObject>
+    <StartupObject>Microsoft.PowerToys.Settings.UI.Runner.Program</StartupObject>
     <Authors>Microsoft Corporation</Authors>
     <Product>PowerToys</Product>
     <Description>Windows system utilities to maximize productivity</Description>
@@ -18,6 +18,9 @@
     <Platforms>x64</Platforms>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <Win32Resource />
+    
+    <!-- crutkas TODO: added for fallback, may need to be removed for WinUI3 -->
+    <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>

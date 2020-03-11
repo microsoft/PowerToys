@@ -30,7 +30,7 @@
   <Applications>
     <Application Id="App"
       Executable="$targetnametoken$.exe"
-      EntryPoint="settingsui.App">
+      EntryPoint="Microsoft.PowerToys.Settings.UI.App">
       <uap:VisualElements
         DisplayName="PowerToys"
         Description="Windows system utilities to maximize productivity"

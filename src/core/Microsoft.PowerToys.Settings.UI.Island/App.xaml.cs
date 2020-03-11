@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace SettingsRunner
+namespace Microsoft.PowerToys.Settings.UI.Runner
 {
     /// <summary>
     /// Interaction logic for App.xaml
