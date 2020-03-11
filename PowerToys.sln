@@ -154,6 +154,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.PluginManagement
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Url", "src\modules\launcher\Plugins\Wox.Plugin.Url\Wox.Plugin.Url.csproj", "{A3DCCBCA-ACC1-421D-B16E-210896234C26}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Folder", "src\modules\launcher\Plugins\Wox.Plugin.Folder\Wox.Plugin.Folder.csproj", "{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -380,6 +382,14 @@ Global
 		{A3DCCBCA-ACC1-421D-B16E-210896234C26}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A3DCCBCA-ACC1-421D-B16E-210896234C26}.Release|x64.ActiveCfg = Release|Any CPU
 		{A3DCCBCA-ACC1-421D-B16E-210896234C26}.Release|x64.Build.0 = Release|Any CPU
+		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}.Debug|x64.Build.0 = Debug|Any CPU
+		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}.Release|x64.ActiveCfg = Release|Any CPU
+		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -421,6 +431,7 @@ Global
 		{C21BFF9C-2C99-4B5F-B7C9-A5E6DDDB37B0} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{049490F0-ECD2-4148-9B39-2135EC346EBE} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{A3DCCBCA-ACC1-421D-B16E-210896234C26} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
