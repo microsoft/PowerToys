@@ -261,9 +261,14 @@ namespace PowerToysTests
             List<WindowsElement> toggles = session.FindElementsByXPath("//Pane[@Name=\"PowerToys Settings\"]/*[@LocalizedControlType=\"toggleswitch\"]").ToList();
             Assert.AreEqual(8, toggles.Count);
 
+            List<bool> toggleValues = new List<bool>();
             foreach (WindowsElement toggle in toggles)
             {
                 Assert.IsNotNull(toggle);
+                
+                bool isOn = toggle.GetAttribute("Toggle.ToggleState") == "1";
+                toggleValues.Add(isOn);
+
                 toggle.Click();
 
                 SaveChanges();
@@ -272,16 +277,14 @@ namespace PowerToysTests
             
             //check saved settings
             JObject savedProps = getProperties();
-            JObject initialProps = _initialSettingsJson["properties"].ToObject<JObject>();
-
-            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "fancyzones_shiftDrag"), getPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
-            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "fancyzones_overrideSnapHotkeys"), getPropertyValue<bool>(savedProps, "fancyzones_overrideSnapHotkeys"));
-            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "fancyzones_zoneSetChange_flashZones"), getPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_flashZones"));
-            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "fancyzones_displayChange_moveWindows"), getPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
-            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "fancyzones_zoneSetChange_moveWindows"), getPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
-            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "fancyzones_virtualDesktopChange_moveWindows"), getPropertyValue<bool>(savedProps, "fancyzones_virtualDesktopChange_moveWindows"));
-            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "fancyzones_appLastZone_moveWindows"), getPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
-            Assert.AreNotEqual(getPropertyValue<bool>(initialProps, "use_cursorpos_editor_startupscreen"), getPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
+            Assert.AreNotEqual(toggleValues[0], getPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
+            Assert.AreNotEqual(toggleValues[1], getPropertyValue<bool>(savedProps, "fancyzones_overrideSnapHotkeys"));
+            Assert.AreNotEqual(toggleValues[2], getPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_flashZones"));
+            Assert.AreNotEqual(toggleValues[3], getPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
+            Assert.AreNotEqual(toggleValues[4], getPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
+            Assert.AreNotEqual(toggleValues[5], getPropertyValue<bool>(savedProps, "fancyzones_virtualDesktopChange_moveWindows"));
+            Assert.AreNotEqual(toggleValues[6], getPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
+            Assert.AreNotEqual(toggleValues[7], getPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
         }
 
         /*
@@ -295,9 +298,14 @@ namespace PowerToysTests
             List<WindowsElement> toggles = session.FindElementsByXPath("//Pane[@Name=\"PowerToys Settings\"]/*[@LocalizedControlType=\"toggleswitch\"]").ToList();
             Assert.AreEqual(8, toggles.Count);
 
+            List<bool> toggleValues = new List<bool>();
             foreach (WindowsElement toggle in toggles)
             {
                 Assert.IsNotNull(toggle);
+                
+                bool isOn = toggle.GetAttribute("Toggle.ToggleState") == "1";
+                toggleValues.Add(isOn);
+
                 toggle.Click();
                 toggle.Click();
             }
@@ -305,8 +313,15 @@ namespace PowerToysTests
             SaveChanges();
             ShortWait();
 
-            string savedSettings = File.ReadAllText(_settingsPath);
-            Assert.AreEqual(_initialSettings, savedSettings);
+            JObject savedProps = getProperties();
+            Assert.AreEqual(toggleValues[0], getPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
+            Assert.AreEqual(toggleValues[1], getPropertyValue<bool>(savedProps, "fancyzones_overrideSnapHotkeys"));
+            Assert.AreEqual(toggleValues[2], getPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_flashZones"));
+            Assert.AreEqual(toggleValues[3], getPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
+            Assert.AreEqual(toggleValues[4], getPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
+            Assert.AreEqual(toggleValues[5], getPropertyValue<bool>(savedProps, "fancyzones_virtualDesktopChange_moveWindows"));
+            Assert.AreEqual(toggleValues[6], getPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
+            Assert.AreEqual(toggleValues[7], getPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
         }
 
         [TestMethod]
@@ -595,13 +610,11 @@ namespace PowerToysTests
         [TestMethod]
         public void ExitDialogSave()
         {
-            JObject initialProps = _initialSettingsJson["properties"].ToObject<JObject>();
-            bool initialToggleValue = getPropertyValue<bool>(initialProps, "fancyzones_shiftDrag");
-
-            WindowsElement toggle = session.FindElementByAccessibilityId("Toggle37");
+            WindowsElement toggle = session.FindElementByXPath("//Pane[@Name=\"PowerToys Settings\"]/*[@LocalizedControlType=\"toggleswitch\"]");          
             Assert.IsNotNull(toggle);
-            Assert.AreEqual(initialToggleValue, toggle.Selected);
-            
+
+            bool initialToggleValue = toggle.GetAttribute("Toggle.ToggleState") == "1";
+
             toggle.Click();
             CloseSettings();
             WindowsElement exitDialog = session.FindElementByName("Changes not saved");
@@ -625,11 +638,14 @@ namespace PowerToysTests
         [TestMethod]
         public void ExitDialogExit()
         {
-            WindowsElement toggle = session.FindElementByAccessibilityId("Toggle37");
+            WindowsElement toggle = session.FindElementByXPath("//Pane[@Name=\"PowerToys Settings\"]/*[@LocalizedControlType=\"toggleswitch\"]");
             Assert.IsNotNull(toggle);
 
+            bool initialToggleValue = toggle.GetAttribute("Toggle.ToggleState") == "1";
+            
             toggle.Click();
             CloseSettings();
+
             WindowsElement exitDialog = session.FindElementByName("Changes not saved");
             Assert.IsNotNull(exitDialog);
 
@@ -644,21 +660,20 @@ namespace PowerToysTests
             catch(OpenQA.Selenium.WebDriverException)
             {
                 //window is no longer available, which is expected
-            }            
-
-            //check settings change
-            JObject savedProps = getProperties();
-            JObject initialProps = _initialSettingsJson["properties"].ToObject<JObject>();
-            Assert.AreEqual(getPropertyValue<bool>(initialProps, "fancyzones_shiftDrag"), getPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
+            }
 
             //return initial app state
             Init();
+
+            //check settings change
+            JObject savedProps = getProperties();
+            Assert.AreEqual(initialToggleValue, getPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
         }
 
         [TestMethod]
         public void ExitDialogCancel()
         {
-            WindowsElement toggle = session.FindElementByAccessibilityId("Toggle37");
+            WindowsElement toggle = session.FindElementByXPath("//Pane[@Name=\"PowerToys Settings\"]/*[@LocalizedControlType=\"toggleswitch\"]");
             Assert.IsNotNull(toggle);
 
             toggle.Click();
