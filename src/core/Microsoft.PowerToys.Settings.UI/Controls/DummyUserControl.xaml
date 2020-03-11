@@ -5,20 +5,20 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
     <Grid>
-        <winui:NavigationView>
-            <winui:NavigationView.MenuItems>
-                <winui:NavigationViewItem Content="1" Icon="Home" />
-                <winui:NavigationViewItem Content="2" Icon="Home" />
-                <winui:NavigationViewItem Content="3" Icon="Home" />
-                <winui:NavigationViewItem Content="4" Icon="Home" />
-            </winui:NavigationView.MenuItems>
-            <Frame x:Name="ContentFrame" Padding="12,0,12,24" IsTabStop="True" />
-        </winui:NavigationView>
+        <muxc:NavigationView x:Name="nvSample">
+            <muxc:NavigationView.MenuItems>
+                <muxc:NavigationViewItem Icon="Play" Content="Menu Item1" Tag="SamplePage1" />
+                <muxc:NavigationViewItem Icon="Save" Content="Menu Item2" Tag="SamplePage2" />
+                <muxc:NavigationViewItem Icon="Refresh" Content="Menu Item3" Tag="SamplePage3" />
+                <muxc:NavigationViewItem Icon="Download" Content="Menu Item4" Tag="SamplePage4" />
+            </muxc:NavigationView.MenuItems>
+            <Frame x:Name="contentFrame"/>
+        </muxc:NavigationView>
     </Grid>
 </UserControl>
