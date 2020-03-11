@@ -173,7 +173,7 @@ namespace PowerToysTests
             int[] flags = b.Cast<bool>().Select(bit => bit ? 1 : 0).ToArray();
 
             Actions action = new Actions(session).MoveToElement(input).Click();
-            string expectedText = "", keys = "";
+            string expectedText = "";
             if (flags[0] == 1)
             {
                 action.KeyDown(OpenQA.Selenium.Keys.Command);
@@ -181,24 +181,23 @@ namespace PowerToysTests
             }
             if (flags[1] == 1)
             {
-                keys += OpenQA.Selenium.Keys.Control;
+                action.KeyDown(OpenQA.Selenium.Keys.Control);
                 expectedText += "Ctrl + ";
             }
             if (flags[2] == 1)
             {
-                keys += OpenQA.Selenium.Keys.Alt;
+                action.KeyDown(OpenQA.Selenium.Keys.Alt);
                 expectedText += "Alt + ";
             }
             if (flags[3] == 1)
             {
-                keys += OpenQA.Selenium.Keys.Shift;
+                action.KeyDown(OpenQA.Selenium.Keys.Shift);
                 expectedText += "Shift + ";
             }
 
-            keys += key + key;
             expectedText += keyString + "\r\n";
 
-            action.SendKeys(keys);
+            action.SendKeys(key + key);
             action.MoveByOffset(0, (input.Rect.Height / 2) + 10).ContextClick();
             if (flags[0] == 1)
             {
@@ -217,7 +216,7 @@ namespace PowerToysTests
                 action.KeyUp(OpenQA.Selenium.Keys.Shift);
             }
             action.Perform();
-            
+
             SaveChanges();
             ShortWait();
 
@@ -406,6 +405,8 @@ namespace PowerToysTests
             Assert.AreEqual("\r\n", editor.Text);
         }
 
+        //in 0.15.2 sliders cannot be found by inspect.exe
+        /*
         [TestMethod]
         public void HighlightColorSlidersTest()
         {
@@ -464,6 +465,32 @@ namespace PowerToysTests
             ShortWait();
             Assert.AreEqual("#ff0000", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
         }
+        
+        [TestMethod]
+        public void HighlightColorTest()
+        {
+            ScrollDown();
+
+            WindowsElement saturationAndBrightness = session.FindElementByName("Saturation and brightness");
+            WindowsElement hue = session.FindElementByName("Hue");
+            WindowsElement hex = session.FindElementByXPath("//Edit[@Name=\"Hex\"]");
+
+            Assert.IsNotNull(saturationAndBrightness);
+            Assert.IsNotNull(hue);
+            Assert.IsNotNull(hex);
+
+            hex.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
+            hex.SendKeys("63c99a");
+            new Actions(session).MoveToElement(hex).MoveByOffset(0, hex.Rect.Height).Click().Perform();
+
+            Assert.AreEqual("Saturation 51 brightness 79", saturationAndBrightness.Text);
+            Assert.AreEqual("152", hue.Text);
+
+            SaveChanges();
+            ShortWait();
+            Assert.AreEqual("#63c99a", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
+        }
+        */
 
         [TestMethod]
         public void HighlightRGBInputsTest()
@@ -516,31 +543,6 @@ namespace PowerToysTests
             hexInput.SendKeys("1234");
             new Actions(session).MoveToElement(hexInput).MoveByOffset(0, hexInput.Rect.Height).Click().Perform();
             Assert.AreEqual("112233\r\n", hexInput.Text);
-        }
-
-        [TestMethod]
-        public void HighlightColorTest()
-        {
-            ScrollDown();
-
-            WindowsElement saturationAndBrightness = session.FindElementByName("Saturation and brightness");
-            WindowsElement hue = session.FindElementByName("Hue");
-            WindowsElement hex = session.FindElementByXPath("//Edit[@Name=\"Hex\"]");
-
-            Assert.IsNotNull(saturationAndBrightness);
-            Assert.IsNotNull(hue);
-            Assert.IsNotNull(hex);
-
-            hex.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
-            hex.SendKeys("63c99a");
-            new Actions(session).MoveToElement(hex).MoveByOffset(0, hex.Rect.Height).Click().Perform();
-
-            Assert.AreEqual("Saturation 51 brightness 79", saturationAndBrightness.Text);
-            Assert.AreEqual("152", hue.Text);
-
-            SaveChanges();
-            ShortWait();
-            Assert.AreEqual("#63c99a", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
         }
 
         [TestMethod]
@@ -606,7 +608,6 @@ namespace PowerToysTests
             Assert.IsNotNull(exitDialog);
 
             exitDialog.FindElementByName("Save").Click();
-
 
             //check if window still opened
             WindowsElement powerToysWindow = session.FindElementByXPath("//Window[@Name=\"PowerToys Settings\"]");
