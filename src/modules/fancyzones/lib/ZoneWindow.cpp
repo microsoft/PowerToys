@@ -224,7 +224,7 @@ namespace ZoneWindowDrawUtils
             RGB(175, 175, 185),
         };
 
-        //                                 { fillAlpha, fill, borderAlpha, border, thickness }
+        // ColorSetting { fillAlpha, fill, borderAlpha, border, thickness }
         ColorSetting const colorHints{ 225, RGB(81, 92, 107), 255, RGB(104, 118, 138), -2 };
         ColorSetting colorViewer{ OpacitySettingToAlpha(highlightOpacity), 0, 255, RGB(40, 50, 60), -2 };
         ColorSetting colorHighlight{ OpacitySettingToAlpha(highlightOpacity), 0, 255, 0, -2 };
@@ -318,7 +318,7 @@ private:
     HMONITOR m_monitor{};
     std::wstring m_uniqueId; // Parsed deviceId + resolution + virtualDesktopId
     wchar_t m_workArea[256]{};
-    wil::unique_hwnd m_window{};
+    wil::unique_hwnd m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
     bool m_drawHints{};
     bool m_flashMode{};

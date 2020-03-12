@@ -6,7 +6,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ## Build Status
 
-[![Build Status](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build?definitionId=35096)
+[![Build Status](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build?definitionId=219)
 
 ## Installing and running Microsoft PowerToys
 

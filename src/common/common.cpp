@@ -442,6 +442,7 @@ bool run_elevated(const std::wstring& file, const std::wstring& params)
     exec_info.fMask = SEE_MASK_NOCLOSEPROCESS;
     exec_info.lpDirectory = 0;
     exec_info.hInstApp = 0;
+    exec_info.nShow = SW_SHOWDEFAULT;
 
     if (ShellExecuteExW(&exec_info))
     {

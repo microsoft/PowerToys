@@ -376,6 +376,79 @@
                          Key="Software\Classes\SystemFileAssociations\.wdp\ShellEx\ContextMenuHandlers\ImageResizer"
                          Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                          Type="string" />
+      <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
+        <!-- Component to include PowerPreview Module Source dll's -->
+        <!-- File to include PowerPreview Module native dll -->
+        <File Source="$(var.BinX64Dir)\modules\powerpreview.dll" KeyPath="yes" />
+        <!-- File to include common library used by preview handlers -->
+        <File Source="$(var.BinX64Dir)\modules\PreviewHandlerCommon.dll" />
+        <!-- File to include dll for Svg Preview Handler -->
+        <File Id="Svg_PreviewHandler_Dll" Source="$(var.BinX64Dir)\modules\SvgPreviewHandler.dll" />
+        <!-- Files to include dll's for Markdown Preview Handler and it's dependencies -->
+        <File Id="Md_PreviewHandler_Dll" Source="$(var.BinX64Dir)\modules\MarkdownPreviewHandler.dll" />
+        <File Source="$(var.BinX64Dir)\modules\Markdig.Signed.dll" />
+        <File Source="$(var.BinX64Dir)\modules\HtmlAgilityPack.dll" />
+      </Component>
+      <Component Id="Module_PowerPreview_PerUserRegistry" Guid="CD90ADC0-7CD5-4A62-B0AF-23545C1E6DD3" Win64="yes">
+        <!-- Added a separate component for Per-User registry changes -->
+        <!-- Registry Key for Class Registration of Svg Preview Handler -->
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{ddee2b8a-6807-48a6-bb20-2338174ff779}">
+          <RegistryValue Type="string" Value="SvgPreviewHandler.SvgPreviewHandler" />
+          <RegistryValue Type="string" Name="DisplayName" Value="Svg Preview Handler" />
+          <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
+          <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value=""/>
+          <RegistryValue Type="string" Key="InprocServer32" Value="mscoree.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="SvgPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="SvgPreviewHandler.SvgPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[#Svg_PreviewHandler_Dll]" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="SvgPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="SvgPreviewHandler.SvgPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="RuntimeVersion" Value="v4.0.30319" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[#Svg_PreviewHandler_Dll]" />
+        </RegistryKey>
+        <!-- Registry Key for Class Registration of Markdown Preview Handler -->
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{45769bcc-e8fd-42d0-947e-02beef77a1f5}">
+          <RegistryValue Type="string" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
+          <RegistryValue Type="string" Name="DisplayName" Value="Markdown Preview Handler" />
+          <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
+          <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value="" />
+          <RegistryValue Type="string" Key="InprocServer32" Value="mscoree.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[#Md_PreviewHandler_Dll]" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="RuntimeVersion" Value="v4.0.30319" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[#Md_PreviewHandler_Dll]" />
+        </RegistryKey>
+        <!-- Registry Key for AppID registration -->
+        <RegistryKey Root="HKCU" Key="Software\Classes\AppID\{CF142243-F059-45AF-8842-DBBE9783DB14}">
+          <RegistryValue Type="expandable" Name="DllSurrogate" Value="%SystemRoot%\system32\prevhost.exe" />
+        </RegistryKey>
+        <!-- Add Svg preview handler to preview handlers list -->
+        <RegistryKey Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\PreviewHandlers">
+          <RegistryValue Type="string" Name="{ddee2b8a-6807-48a6-bb20-2338174ff779}" Value="Svg Preview Handler" />
+        </RegistryKey>
+        <!-- Add Markdown preview handler to preview handlers list -->
+        <RegistryKey Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\PreviewHandlers">
+          <RegistryValue Type="string" Name="{45769bcc-e8fd-42d0-947e-02beef77a1f5}" Value="Markdown Preview Handler" />
+        </RegistryKey>
+        <!-- Add file type association for Svg Preview Handler -->
+        <RegistryKey Root="HKCU" Key="Software\Classes\.svg\shellex">
+          <RegistryValue Type="string" Key="{8895b1c6-b41f-4c1c-a562-0d564250836f}" Value="{ddee2b8a-6807-48a6-bb20-2338174ff779}" />
+        </RegistryKey>
+        <!-- Add file type association for Markdown Preview Handler -->
+        <RegistryKey Root="HKCU" Key="Software\Classes\.md\shellex">
+          <RegistryValue Type="string" Key="{8895b1c6-b41f-4c1c-a562-0d564250836f}" Value="{45769bcc-e8fd-42d0-947e-02beef77a1f5}" />
+        </RegistryKey>
+        <!-- Update Key to use IE11 for prevhost.exe -->
+        <RegistryKey Root="HKCU" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
+          <RegistryValue Type="integer" Name="prevhost.exe" Value="11000" />
+        </RegistryKey>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsHtmlInstallFolder" FileSource="$(var.RepoDir)\settings\settings-html\">
@@ -425,6 +498,8 @@
       <ComponentRef Id="Module_PowerRename" />
       <ComponentRef Id="Module_ImageResizer" />
       <ComponentRef Id="Module_ImageResizer_Registry" />
+      <ComponentRef Id="Module_PowerPreview" />
+      <ComponentRef Id="Module_PowerPreview_PerUserRegistry" />
       <ComponentRef Id="settings_exe" />
       <ComponentRef Id="settings_html" />
       <ComponentRef Id="settings_dark_html" />
