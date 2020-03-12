@@ -56,7 +56,7 @@
     </UI>
     <WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)\Bitmaps\banner.bmp" />
     <WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)\Bitmaps\dialog.bmp" />
-    <WixVariable Id="WixUILicenseRtf" Value="$(var.RepoDir)\License.rtf" />
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.RepoDir)\installer\License.rtf" />
     <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1"/>
     <Property Id="CREATESCHEDULEDTASK" Value="1"/>
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
@@ -245,7 +245,7 @@
         <File Id="Notifications.dll" KeyPath="yes" Checksum="yes" />
       </Component>
       <Component Id="License_rtf" Guid="3E5AE43B-CFB4-449B-A346-94CAAFF3312E" Win64="yes">
-        <File Source="$(var.RepoDir)\License.rtf" Id="License.rtf" KeyPath="yes" />
+        <File Source="$(var.RepoDir)\installer\License.rtf" Id="License.rtf" KeyPath="yes" />
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SvgsInstallFolder" FileSource="$(var.BinX64Dir)\svgs\">
