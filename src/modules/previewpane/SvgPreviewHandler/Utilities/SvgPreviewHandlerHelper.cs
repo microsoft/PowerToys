@@ -15,12 +15,14 @@ namespace SvgPreviewHandler.Utilities
     public class SvgPreviewHandlerHelper
     {
         /// <summary>
-        /// Dictionary of elements that are blocked from Svg for preview pane.
+        /// Dictionary of elements in lower case that are blocked from Svg for preview pane.
+        /// Reference for list of Svg Elements: https://developer.mozilla.org/en-US/docs/Web/SVG/Element.
         /// </summary>
         private static Dictionary<string, bool> blockedElementsName = new Dictionary<string, bool>
         {
             { "script", true },
             { "image", true },
+            { "feimage", true },
         };
 
         /// <summary>
