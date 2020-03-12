@@ -889,7 +889,8 @@ void FancyZones::MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT cons
             {
                 // Skip calling ShowZoneWindow for iter->second (m_zoneWindowMoveSize) since it
                 // was already called in MoveSizeEnter
-                if (zoneWindow && zoneWindow != iter->second)
+                const bool moveSizeEnterCalled = zoneWindow == m_zoneWindowMoveSize;
+                if (zoneWindow && !moveSizeEnterCalled)
                 {
                     zoneWindow->ShowZoneWindow();
                 }
