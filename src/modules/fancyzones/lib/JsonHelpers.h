@@ -16,6 +16,10 @@ namespace JSONHelpers
 {
     constexpr int MAX_ZONE_COUNT = 50;
 
+    #if defined(UNIT_TESTS)
+    bool isGuid(const std::wstring& str);
+    #endif
+
     enum class ZoneSetLayoutType : int
     {
         Blank = -1,

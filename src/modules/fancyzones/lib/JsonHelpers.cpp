@@ -46,6 +46,12 @@ namespace
 
 namespace JSONHelpers
 {
+    bool isGuid(const std::wstring& str)
+    {
+        GUID id;
+        return SUCCEEDED_LOG(CLSIDFromString(str.c_str(), &id));
+    }
+
     json::JsonArray NumVecToJsonArray(const std::vector<int>& vec)
     {
         json::JsonArray arr;
@@ -733,9 +739,13 @@ namespace JSONHelpers
         try
         {
             ZoneSetData zoneSetData;
-
             zoneSetData.uuid = zoneSet.GetNamedString(L"uuid");
             zoneSetData.type = TypeFromString(std::wstring{ zoneSet.GetNamedString(L"type") });
+
+            if (!isGuid(zoneSetData.uuid))
+            {
+                return std::nullopt;
+            }
 
             return zoneSetData;
         }
@@ -767,6 +777,11 @@ namespace JSONHelpers
             result.data.zoneIndex = static_cast<int>(zoneSet.GetNamedNumber(L"zone-index"));
             result.data.deviceId = zoneSet.GetNamedString(L"device-id");
             result.data.zoneSetUuid = zoneSet.GetNamedString(L"zoneset-uuid");
+
+            if (!isGuid(result.data.zoneSetUuid))
+            {
+                return std::nullopt;
+            }
 
             return result;
         }
@@ -988,6 +1003,11 @@ namespace JSONHelpers
             CustomZoneSetJSON result;
 
             result.uuid = customZoneSet.GetNamedString(L"uuid");
+            if (!isGuid(result.uuid))
+            {
+                return std::nullopt;
+            }
+            
             result.data.name = customZoneSet.GetNamedString(L"name");
 
             json::JsonObject infoJson = customZoneSet.GetNamedObject(L"info");

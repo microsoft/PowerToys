@@ -52,6 +52,32 @@ namespace FancyZonesUnitTests
         }
     }
 
+    TEST_CLASS (IdValidationUnitTest)
+    {
+        TEST_METHOD (GuidValid)
+        {
+            const auto guidStr = Helpers::CreateGuidString();
+            Assert::IsTrue(isGuid(guidStr));
+        }
+
+        TEST_METHOD (GuidInvalidForm)
+        {
+            const auto guidStr = L"33A2B101-06E0-437B-A61E-CDBECF502906";
+            Assert::IsFalse(isGuid(guidStr));
+        }
+
+        TEST_METHOD (GuidInvalidSymbols)
+        {
+            const auto guidStr = L"{33A2B101-06E0-437B-A61E-CDBECF50290*}";
+            Assert::IsFalse(isGuid(guidStr));
+        }
+
+        TEST_METHOD (GuidInvalid)
+        {
+            const auto guidStr = L"guid";
+            Assert::IsFalse(isGuid(guidStr));
+        }
+    };
     TEST_CLASS (ZoneSetLayoutTypeUnitTest)
     {
         TEST_METHOD (ZoneSetLayoutTypeToString)
@@ -476,9 +502,9 @@ namespace FancyZonesUnitTests
         TEST_METHOD (FromJsonGrid)
         {
             const auto grid = GridLayoutInfo(GridLayoutInfo::Full{ 1, 3, { 10000 }, { 2500, 5000, 2500 }, { { 0, 1, 2 } } });
-            CustomZoneSetJSON expected{ L"uuid", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+            CustomZoneSetJSON expected{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
 
-            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"name\": \"name\", \"type\": \"grid\"}");
+            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"name\": \"name\", \"type\": \"grid\"}");
             json.SetNamedValue(L"info", GridLayoutInfo::ToJson(std::get<GridLayoutInfo>(expected.data.info)));
 
             auto actual = CustomZoneSetJSON::FromJson(json);
@@ -496,9 +522,9 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (FromJsonCanvas)
         {
-            CustomZoneSetJSON expected{ L"uuid", CustomZoneSetData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 2, 1 } } };
+            CustomZoneSetJSON expected{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", CustomZoneSetData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 2, 1 } } };
 
-            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"name\": \"name\", \"type\": \"canvas\"}");
+            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"name\": \"name\", \"type\": \"canvas\"}");
             json.SetNamedValue(L"info", CanvasLayoutInfo::ToJson(std::get<CanvasLayoutInfo>(expected.data.info)));
 
             auto actual = CustomZoneSetJSON::FromJson(json);
@@ -512,6 +538,29 @@ namespace FancyZonesUnitTests
             auto actualGrid = std::get<CanvasLayoutInfo>(actual->data.info);
             Assert::AreEqual(expectedGrid.referenceWidth, actualGrid.referenceWidth);
             Assert::AreEqual(expectedGrid.referenceHeight, actualGrid.referenceHeight);
+        }
+
+        TEST_METHOD (FromJsonGridInvalidUuid)
+        {
+            const auto grid = GridLayoutInfo(GridLayoutInfo::Full{ 1, 3, { 10000 }, { 2500, 5000, 2500 }, { { 0, 1, 2 } } });
+            CustomZoneSetJSON expected{ L"uuid", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+
+            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"name\": \"name\", \"type\": \"grid\"}");
+            json.SetNamedValue(L"info", GridLayoutInfo::ToJson(std::get<GridLayoutInfo>(expected.data.info)));
+
+            auto actual = CustomZoneSetJSON::FromJson(json);
+            Assert::IsFalse(actual.has_value());
+        }
+
+        TEST_METHOD (FromJsonCanvasInvalidUuid)
+        {
+            CustomZoneSetJSON expected{ L"uuid", CustomZoneSetData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 2, 1 } } };
+
+            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"name\": \"name\", \"type\": \"canvas\"}");
+            json.SetNamedValue(L"info", CanvasLayoutInfo::ToJson(std::get<CanvasLayoutInfo>(expected.data.info)));
+
+            auto actual = CustomZoneSetJSON::FromJson(json);
+            Assert::IsFalse(actual.has_value());
         }
 
         TEST_METHOD (FromJsonMissingKeys)
@@ -546,17 +595,17 @@ namespace FancyZonesUnitTests
     {
         TEST_METHOD (ToJsonGeneral)
         {
-            json::JsonObject expected = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"type\": \"rows\"}");
-            ZoneSetData data{ L"uuid", ZoneSetLayoutType::Rows };
+            json::JsonObject expected = json::JsonObject::Parse(L"{\"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"type\": \"rows\"}");
+            ZoneSetData data{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Rows };
             const auto actual = ZoneSetData::ToJson(data);
             compareJsonObjects(expected, actual);
         }
 
         TEST_METHOD (FromJsonGeneral)
         {
-            ZoneSetData expected{ L"uuid", ZoneSetLayoutType::Columns };
+            ZoneSetData expected{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Columns };
 
-            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"type\": \"columns\"}");
+            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"type\": \"columns\"}");
             auto actual = ZoneSetData::FromJson(json);
             Assert::IsTrue(actual.has_value());
 
@@ -566,9 +615,9 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (FromJsonTypeInvalid)
         {
-            ZoneSetData expected{ L"uuid", ZoneSetLayoutType::Blank };
+            ZoneSetData expected{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Blank };
 
-            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"type\": \"invalid_type\"}");
+            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"type\": \"invalid_type\"}");
             auto actual = ZoneSetData::FromJson(json);
             Assert::IsTrue(actual.has_value());
 
@@ -576,9 +625,16 @@ namespace FancyZonesUnitTests
             Assert::AreEqual((int)expected.type, (int)actual->type);
         }
 
+        TEST_METHOD (FromJsonUuidInvalid)
+        {
+            json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"type\": \"invalid_type\"}");
+            auto actual = ZoneSetData::FromJson(json);
+            Assert::IsFalse(actual.has_value());
+        }
+
         TEST_METHOD (FromJsonMissingKeys)
         {
-            ZoneSetData data{ L"uuid", ZoneSetLayoutType::Columns };
+            ZoneSetData data{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Columns };
             const auto json = ZoneSetData::ToJson(data);
 
             auto iter = json.First();
@@ -608,8 +664,8 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (FromJson)
         {
-            AppZoneHistoryJSON expected{ L"appPath", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } };
-            json::JsonObject json = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"device-id\": \"device-id\", \"zoneset-uuid\": \"zoneset-uuid\", \"zone-index\": 54321}");
+            AppZoneHistoryJSON expected{ L"appPath", AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}", .deviceId = L"device-id", .zoneIndex = 54321 } };
+            json::JsonObject json = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"device-id\": \"device-id\", \"zoneset-uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"zone-index\": 54321}");
 
             auto actual = AppZoneHistoryJSON::FromJson(json);
             Assert::IsTrue(actual.has_value());
@@ -618,6 +674,15 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(expected.data.zoneIndex, actual->data.zoneIndex);
             Assert::AreEqual(expected.data.deviceId.c_str(), actual->data.deviceId.c_str());
             Assert::AreEqual(expected.data.zoneSetUuid.c_str(), actual->data.zoneSetUuid.c_str());
+        }
+
+        TEST_METHOD (FromJsonInvalidUuid)
+        {
+            AppZoneHistoryJSON expected{ L"appPath", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } };
+            json::JsonObject json = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"device-id\": \"device-id\", \"zoneset-uuid\": \"zoneset-uuid\", \"zone-index\": 54321}");
+
+            auto actual = AppZoneHistoryJSON::FromJson(json);
+            Assert::IsFalse(actual.has_value());
         }
 
         TEST_METHOD (FromJsonMissingKeys)
@@ -648,99 +713,105 @@ namespace FancyZonesUnitTests
     TEST_CLASS (DeviceInfoUnitTests)
     {
     private:
-        DeviceInfoJSON m_defaultDeviceInfo = DeviceInfoJSON{ L"default_device_id", DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
-        json::JsonObject m_defaultJson = json::JsonObject::Parse(L"{\"device-id\": \"default_device_id\", \"active-zoneset\": {\"type\": \"custom\", \"uuid\": \"uuid\"}, \"editor-show-spacing\": true, \"editor-spacing\": 16, \"editor-zone-count\": 3}");
+        DeviceInfoJSON m_defaultDeviceInfo = DeviceInfoJSON{ L"default_device_id", DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3 } };
+        json::JsonObject m_defaultJson = json::JsonObject::Parse(L"{\"device-id\": \"default_device_id\", \"active-zoneset\": {\"type\": \"custom\", \"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\"}, \"editor-show-spacing\": true, \"editor-spacing\": 16, \"editor-zone-count\": 3}");
 
-    public:
-        TEST_METHOD (ToJson)
-        {
-            DeviceInfoJSON deviceInfo = m_defaultDeviceInfo;
-            json::JsonObject expected = m_defaultJson;
-
-            auto actual = DeviceInfoJSON::ToJson(deviceInfo);
-            compareJsonObjects(expected, actual);
-        }
-
-        TEST_METHOD (FromJson)
-        {
-            DeviceInfoJSON expected = m_defaultDeviceInfo;
-            expected.data.spacing = true;
-
-            json::JsonObject json = DeviceInfoJSON::ToJson(expected);
-            auto actual = DeviceInfoJSON::FromJson(json);
-            Assert::IsTrue(actual.has_value());
-
-            Assert::AreEqual(expected.deviceId.c_str(), actual->deviceId.c_str(), L"device id");
-            Assert::AreEqual(expected.data.zoneCount, actual->data.zoneCount, L"zone count");
-            Assert::AreEqual((int)expected.data.activeZoneSet.type, (int)actual->data.activeZoneSet.type, L"zone set type");
-            Assert::AreEqual(expected.data.activeZoneSet.uuid.c_str(), actual->data.activeZoneSet.uuid.c_str(), L"zone set uuid");
-        }
-
-        TEST_METHOD (FromJsonSpacingTrue)
-        {
-            DeviceInfoJSON expected = m_defaultDeviceInfo;
-            expected.data.spacing = true;
-
-            json::JsonObject json = DeviceInfoJSON::ToJson(expected);
-            auto actual = DeviceInfoJSON::FromJson(json);
-            Assert::IsTrue(actual.has_value());
-
-            Assert::AreEqual(expected.data.spacing, actual->data.spacing);
-        }
-
-        TEST_METHOD (FromJsonSpacingFalse)
-        {
-            DeviceInfoJSON expected = m_defaultDeviceInfo;
-            expected.data.activeZoneSet.type = ZoneSetLayoutType::Custom;
-
-            json::JsonObject json = DeviceInfoJSON::ToJson(expected);
-            auto actual = DeviceInfoJSON::FromJson(json);
-            Assert::IsTrue(actual.has_value());
-
-            Assert::AreEqual(expected.data.spacing, actual->data.spacing);
-        }
-
-        TEST_METHOD (FromJsonZoneGeneral)
-        {
-            DeviceInfoJSON expected = m_defaultDeviceInfo;
-            expected.data.activeZoneSet.type = ZoneSetLayoutType::PriorityGrid;
-
-            json::JsonObject json = DeviceInfoJSON::ToJson(expected);
-            auto actual = DeviceInfoJSON::FromJson(json);
-            Assert::IsTrue(actual.has_value());
-
-            Assert::AreEqual((int)expected.data.activeZoneSet.type, (int)actual->data.activeZoneSet.type, L"zone set type");
-        }
-
-        TEST_METHOD (FromJsonMissingKeys)
-        {
-            DeviceInfoJSON deviceInfo{ L"default_device_id", DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
-            const auto json = DeviceInfoJSON::ToJson(deviceInfo);
-
-            auto iter = json.First();
-            while (iter.HasCurrent())
+        public:
+            TEST_METHOD (ToJson)
             {
-                json::JsonObject modifiedJson = json::JsonObject::Parse(json.Stringify());
-                modifiedJson.Remove(iter.Current().Key());
+                DeviceInfoJSON deviceInfo = m_defaultDeviceInfo;
+                json::JsonObject expected = m_defaultJson;
 
-                auto actual = DeviceInfoJSON::FromJson(modifiedJson);
-                Assert::IsFalse(actual.has_value());
-
-                iter.MoveNext();
+                auto actual = DeviceInfoJSON::ToJson(deviceInfo);
+                compareJsonObjects(expected, actual);
             }
-        }
 
-        TEST_METHOD (FromJsonInvalidTypes)
-        {
-            json::JsonObject json = json::JsonObject::Parse(L"{\"device-id\": true, \"active-zoneset\": {\"type\": null, \"uuid\": \"uuid\"}, \"editor-show-spacing\": true, \"editor-spacing\": 16, \"editor-zone-count\": 3}");
-            Assert::IsFalse(DeviceInfoJSON::FromJson(json).has_value());
-        }
+            TEST_METHOD (FromJson)
+            {
+                DeviceInfoJSON expected = m_defaultDeviceInfo;
+                expected.data.spacing = true;
+
+                json::JsonObject json = DeviceInfoJSON::ToJson(expected);
+                auto actual = DeviceInfoJSON::FromJson(json);
+                Assert::IsTrue(actual.has_value());
+
+                Assert::AreEqual(expected.deviceId.c_str(), actual->deviceId.c_str(), L"device id");
+                Assert::AreEqual(expected.data.zoneCount, actual->data.zoneCount, L"zone count");
+                Assert::AreEqual((int)expected.data.activeZoneSet.type, (int)actual->data.activeZoneSet.type, L"zone set type");
+                Assert::AreEqual(expected.data.activeZoneSet.uuid.c_str(), actual->data.activeZoneSet.uuid.c_str(), L"zone set uuid");
+            }
+
+            TEST_METHOD (FromJsonSpacingTrue)
+            {
+                DeviceInfoJSON expected = m_defaultDeviceInfo;
+                expected.data.spacing = true;
+
+                json::JsonObject json = DeviceInfoJSON::ToJson(expected);
+                auto actual = DeviceInfoJSON::FromJson(json);
+                Assert::IsTrue(actual.has_value());
+
+                Assert::AreEqual(expected.data.spacing, actual->data.spacing);
+            }
+
+            TEST_METHOD (FromJsonSpacingFalse)
+            {
+                DeviceInfoJSON expected = m_defaultDeviceInfo;
+                expected.data.activeZoneSet.type = ZoneSetLayoutType::Custom;
+
+                json::JsonObject json = DeviceInfoJSON::ToJson(expected);
+                auto actual = DeviceInfoJSON::FromJson(json);
+                Assert::IsTrue(actual.has_value());
+
+                Assert::AreEqual(expected.data.spacing, actual->data.spacing);
+            }
+
+            TEST_METHOD (FromJsonZoneGeneral)
+            {
+                DeviceInfoJSON expected = m_defaultDeviceInfo;
+                expected.data.activeZoneSet.type = ZoneSetLayoutType::PriorityGrid;
+
+                json::JsonObject json = DeviceInfoJSON::ToJson(expected);
+                auto actual = DeviceInfoJSON::FromJson(json);
+                Assert::IsTrue(actual.has_value());
+
+                Assert::AreEqual((int)expected.data.activeZoneSet.type, (int)actual->data.activeZoneSet.type, L"zone set type");
+            }
+
+            TEST_METHOD (FromJsonMissingKeys)
+            {
+                DeviceInfoJSON deviceInfo{ L"default_device_id", DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3 } };
+                const auto json = DeviceInfoJSON::ToJson(deviceInfo);
+
+                auto iter = json.First();
+                while (iter.HasCurrent())
+                {
+                    json::JsonObject modifiedJson = json::JsonObject::Parse(json.Stringify());
+                    modifiedJson.Remove(iter.Current().Key());
+
+                    auto actual = DeviceInfoJSON::FromJson(modifiedJson);
+                    Assert::IsFalse(actual.has_value());
+
+                    iter.MoveNext();
+                }
+            }
+
+            TEST_METHOD (FromJsonInvalidTypes)
+            {
+                json::JsonObject json = json::JsonObject::Parse(L"{\"device-id\": true, \"active-zoneset\": {\"type\": null, \"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\"}, \"editor-show-spacing\": true, \"editor-spacing\": 16, \"editor-zone-count\": 3}");
+                Assert::IsFalse(DeviceInfoJSON::FromJson(json).has_value());
+            }
+
+            TEST_METHOD (FromJsonInvalidUuid)
+            {
+                json::JsonObject json = json::JsonObject::Parse(L"{\"device-id\": true, \"active-zoneset\": {\"type\": \"custom\", \"uuid\": \"uuid\"}, \"editor-show-spacing\": true, \"editor-spacing\": 16, \"editor-zone-count\": 3}");
+                Assert::IsFalse(DeviceInfoJSON::FromJson(json).has_value());
+            }
     };
 
     TEST_CLASS (FancyZonesDataUnitTests)
     {
     private:
-        const std::wstring m_defaultCustomDeviceStr = L"{\"device-id\": \"default_device_id\", \"active-zoneset\": {\"type\": \"custom\", \"uuid\": \"uuid\"}, \"editor-show-spacing\": true, \"editor-spacing\": 16, \"editor-zone-count\": 3}";
+        const std::wstring m_defaultCustomDeviceStr = L"{\"device-id\": \"default_device_id\", \"active-zoneset\": {\"type\": \"custom\", \"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\"}, \"editor-show-spacing\": true, \"editor-spacing\": 16, \"editor-zone-count\": 3}";
         const json::JsonValue m_defaultCustomDeviceValue = json::JsonValue::Parse(m_defaultCustomDeviceStr);
         const json::JsonObject m_defaultCustomDeviceObj = json::JsonObject::Parse(m_defaultCustomDeviceStr);
 
@@ -942,7 +1013,7 @@ namespace FancyZonesUnitTests
             {
                 FancyZonesData data;
                 const std::wstring zoneUuid = L"default_device_id";
-                DeviceInfoJSON expected{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
+                DeviceInfoJSON expected{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3 } };
                 const std::wstring path = data.GetPersistFancyZonesJSONPath() + L".test_tmp";
                 data.SerializeDeviceInfoToTmpFile(expected, path);
 
@@ -980,7 +1051,7 @@ namespace FancyZonesUnitTests
             {
                 const std::wstring expectedAppPath = L"appPath";
                 const std::wstring expectedDeviceId = L"device-id";
-                const std::wstring expectedZoneSetId = L"zone-set-id";
+                const std::wstring expectedZoneSetId = L"{33A2B101-06E0-437B-A61E-CDBECF502906}";
                 const int expectedIndex = 54321;
 
                 json::JsonObject json;
@@ -1008,10 +1079,10 @@ namespace FancyZonesUnitTests
             {
                 json::JsonObject json;
                 json::JsonArray zoneHistoryArray;
-                zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-1", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-1", .deviceId = L"device-id-1", .zoneIndex = 1 } }));
-                zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-2", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-2", .deviceId = L"device-id-2", .zoneIndex = 2 } }));
-                zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-3", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-3", .deviceId = L"device-id-3", .zoneIndex = 3 } }));
-                zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-4", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-4", .deviceId = L"device-id-4", .zoneIndex = 4 } }));
+                zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-1", AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502900}", .deviceId = L"device-id-1", .zoneIndex = 1 } }));
+                zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-2", AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502901}", .deviceId = L"device-id-2", .zoneIndex = 2 } }));
+                zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-3", AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502902}", .deviceId = L"device-id-3", .zoneIndex = 3 } }));
+                zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-4", AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502903}", .deviceId = L"device-id-4", .zoneIndex = 4 } }));
 
                 json.SetNamedValue(L"app-zone-history", json::JsonValue::Parse(zoneHistoryArray.Stringify()));
 
@@ -1044,10 +1115,10 @@ namespace FancyZonesUnitTests
                 json::JsonArray zoneHistoryArray;
 
                 const auto appPath = L"app-path";
-                zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-1", .deviceId = L"device-id-1", .zoneIndex = 1 } }));
-                zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-2", .deviceId = L"device-id-2", .zoneIndex = 2 } }));
-                zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-3", .deviceId = L"device-id-3", .zoneIndex = 3 } }));
-                const auto expected = AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid-4", .deviceId = L"device-id-4", .zoneIndex = 4 };
+                zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502900}", .deviceId = L"device-id-1", .zoneIndex = 1 } }));
+                zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502901}", .deviceId = L"device-id-2", .zoneIndex = 2 } }));
+                zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502902}", .deviceId = L"device-id-3", .zoneIndex = 3 } }));
+                const auto expected = AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502903}", .deviceId = L"device-id-4", .zoneIndex = 4 };
                 zoneHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, expected }));
                 json.SetNamedValue(L"app-zone-history", json::JsonValue::Parse(zoneHistoryArray.Stringify()));
 
@@ -1076,6 +1147,19 @@ namespace FancyZonesUnitTests
             {
                 const std::wstring appPath = L"appPath";
                 json::JsonObject json;
+                AppZoneHistoryJSON expected{ appPath, AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}", .deviceId = L"device-id", .zoneIndex = 54321 } };
+                json.SetNamedValue(L"app-zone-history", json::JsonValue::Parse(AppZoneHistoryJSON::ToJson(expected).Stringify()));
+
+                FancyZonesData data;
+                bool actual = data.ParseAppZoneHistory(json);
+
+                Assert::IsFalse(actual);
+            }
+
+            TEST_METHOD (AppZoneHistoryParseInvalidUuid)
+            {
+                const std::wstring appPath = L"appPath";
+                json::JsonObject json;
                 AppZoneHistoryJSON expected{ appPath, AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } };
                 json.SetNamedValue(L"app-zone-history", json::JsonValue::Parse(AppZoneHistoryJSON::ToJson(expected).Stringify()));
 
@@ -1089,7 +1173,7 @@ namespace FancyZonesUnitTests
             {
                 const std::wstring appPath = L"appPath";
                 json::JsonArray expected;
-                expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } }));
+                expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}", .deviceId = L"device-id", .zoneIndex = 54321 } }));
                 json::JsonObject json;
                 json.SetNamedValue(L"app-zone-history", json::JsonValue::Parse(expected.Stringify()));
 
@@ -1104,10 +1188,10 @@ namespace FancyZonesUnitTests
             {
                 json::JsonObject json;
                 json::JsonArray expected;
-                expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-1", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } }));
-                expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-2", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } }));
-                expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-3", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } }));
-                expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-4", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } }));
+                expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-1", AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}", .deviceId = L"device-id", .zoneIndex = 54321 } }));
+                expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-2", AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}", .deviceId = L"device-id", .zoneIndex = 54321 } }));
+                expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-3", AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}", .deviceId = L"device-id", .zoneIndex = 54321 } }));
+                expected.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ L"app-path-4", AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}", .deviceId = L"device-id", .zoneIndex = 54321 } }));
                 json.SetNamedValue(L"app-zone-history", json::JsonValue::Parse(expected.Stringify()));
 
                 FancyZonesData data;
@@ -1132,7 +1216,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (CustomZoneSetsParseSingle)
             {
-                const std::wstring zoneUuid = L"uuid";
+                const std::wstring zoneUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}";
                 GridLayoutInfo grid(GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
                     .rows = 1,
                     .columns = 3,
@@ -1172,10 +1256,10 @@ namespace FancyZonesUnitTests
                     .rowsPercents = { 10000 },
                     .columnsPercents = { 2500, 5000, 2500 },
                     .cellChildMap = { { 0, 1, 2 } } }));
-                array.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"zone-uuid-1", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } }));
-                array.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"zone-uuid-2", CustomZoneSetData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 1, 2 } } }));
-                array.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"zone-uuid-3", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } }));
-                array.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"zone-uuid-4", CustomZoneSetData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 1, 2 } } }));
+                array.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"{33A2B101-06E0-437B-A61E-CDBECF502900}", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } }));
+                array.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"{33A2B101-06E0-437B-A61E-CDBECF502901}", CustomZoneSetData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 1, 2 } } }));
+                array.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"{33A2B101-06E0-437B-A61E-CDBECF502902}", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } }));
+                array.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"{33A2B101-06E0-437B-A61E-CDBECF502903}", CustomZoneSetData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 1, 2 } } }));
                 json.SetNamedValue(L"custom-zone-sets", json::JsonValue::Parse(array.Stringify()));
 
                 FancyZonesData data;
@@ -1241,7 +1325,7 @@ namespace FancyZonesUnitTests
                     .rowsPercents = { 10000 },
                     .columnsPercents = { 2500, 5000, 2500 },
                     .cellChildMap = { { 0, 1, 2 } } }));
-                expected.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"uuid", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } }));
+                expected.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } }));
                 json::JsonObject json;
                 json.SetNamedValue(L"custom-zone-sets", json::JsonValue::Parse(expected.Stringify()));
 
@@ -1263,10 +1347,10 @@ namespace FancyZonesUnitTests
                     .columnsPercents = { 2500, 5000, 2500 },
                     .cellChildMap = { { 0, 1, 2 } } }));
 
-                expected.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"zone-uuid-1", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } }));
-                expected.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"zone-uuid-2", CustomZoneSetData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 1, 2 } } }));
-                expected.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"zone-uuid-3", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } }));
-                expected.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"zone-uuid-4", CustomZoneSetData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 1, 2 } } }));
+                expected.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"{33A2B101-06E0-437B-A61E-CDBECF502900}", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } }));
+                expected.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"{33A2B101-06E0-437B-A61E-CDBECF502901}", CustomZoneSetData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 1, 2 } } }));
+                expected.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"{33A2B101-06E0-437B-A61E-CDBECF502902}", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } }));
+                expected.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ L"{33A2B101-06E0-437B-A61E-CDBECF502903}", CustomZoneSetData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 1, 2 } } }));
                 json.SetNamedValue(L"custom-zone-sets", json::JsonValue::Parse(expected.Stringify()));
 
                 FancyZonesData data;
@@ -1295,7 +1379,7 @@ namespace FancyZonesUnitTests
                 const std::wstring deviceId = L"default_device_id";
 
                 {
-                    DeviceInfoJSON deviceInfo{ deviceId, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
+                    DeviceInfoJSON deviceInfo{ deviceId, DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3 } };
                     const std::wstring deviceInfoPath = m_fzData.GetPersistFancyZonesJSONPath() + L".device_info_tmp";
                     m_fzData.SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
 
@@ -1303,7 +1387,7 @@ namespace FancyZonesUnitTests
                     std::filesystem::remove(deviceInfoPath);
                 }
 
-                const std::wstring uuid = L"uuid";
+                const std::wstring uuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}";
                 const GridLayoutInfo grid(GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
                     .rows = 1,
                     .columns = 3,
@@ -1396,7 +1480,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (SetActiveZoneSetUniqueIdInvalid)
             {
                 FancyZonesData data;
-                const std::wstring expected = L"uuid";
+                const std::wstring expected = L"{33A2B101-06E0-437B-A61E-CDBECF502906}";
                 const std::wstring uniqueId = L"id_not_contained_by_device_info_map";
 
                 json::JsonArray devices;
@@ -1436,9 +1520,9 @@ namespace FancyZonesUnitTests
                     .rowsPercents = { 10000 },
                     .columnsPercents = { 2500, 5000, 2500 },
                     .cellChildMap = { { 0, 1, 2 } } }));
-                CustomZoneSetJSON zoneSets{ L"zone-set-uuid", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
-                AppZoneHistoryJSON appZoneHistory{ L"app-path", AppZoneHistoryData{ .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndex = 54321 } };
-                DeviceInfoJSON deviceInfo{ L"uuid", DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
+                CustomZoneSetJSON zoneSets{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+                AppZoneHistoryJSON appZoneHistory{ L"app-path", AppZoneHistoryData{ .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}", .deviceId = L"device-id", .zoneIndex = 54321 } };
+                DeviceInfoJSON deviceInfo{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
                 json::JsonArray zoneSetsArray, appZonesArray, deviceInfoArray;
                 zoneSetsArray.Append(CustomZoneSetJSON::ToJson(zoneSets));
                 appZonesArray.Append(AppZoneHistoryJSON::ToJson(appZoneHistory));
