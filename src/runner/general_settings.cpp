@@ -101,7 +101,7 @@ GeneralSettings get_settings()
 
     for (auto& [name, powertoy] : modules())
     {
-        settings.isModulesEnabledMap[name] = powertoy.is_enabled();
+        settings.isModulesEnabledMap[name] = powertoy->is_enabled();
     }
 
     return settings;
@@ -153,7 +153,7 @@ void apply_general_settings(const json::JsonObject& general_configs)
             {
                 continue;
             }
-            const bool module_inst_enabled = modules().at(name).is_enabled();
+            const bool module_inst_enabled = modules().at(name)->is_enabled();
             const bool target_enabled = value.GetBoolean();
             if (module_inst_enabled == target_enabled)
             {
@@ -161,11 +161,11 @@ void apply_general_settings(const json::JsonObject& general_configs)
             }
             if (target_enabled)
             {
-                modules().at(name).enable();
+                modules().at(name)->enable();
             }
             else
             {
-                modules().at(name).disable();
+                modules().at(name)->disable();
             }
         }
     }
@@ -215,12 +215,12 @@ void start_initial_powertoys()
         {
             if (powertoys_to_enable.find(name) != powertoys_to_enable.end())
             {
-                powertoy.enable();
+                powertoy->enable();
             }
         }
         else
         {
-            powertoy.enable();
+            powertoy->enable();
         }
     }
 }

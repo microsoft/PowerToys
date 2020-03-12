@@ -37,3 +37,24 @@ json::JsonObject PowertoyModule::json_config() const
     module->get_config(result.data(), &size);
     return json::JsonObject::Parse(result);
 }
+
+PowertoyModule::PowertoyModule(PowertoyModuleIface* module, HMODULE handle) :
+    handle(handle), module(module)
+{
+    if (!module)
+    {
+        throw std::runtime_error("Module not initialized");
+    }
+    auto want_signals = module->get_events();
+    if (want_signals)
+    {
+        for (; *want_signals; ++want_signals)
+        {
+            powertoys_events().register_receiver(*want_signals, module);
+        }
+    }
+    if (SystemMenuHelperInstace().HasCustomConfig(module))
+    {
+        powertoys_events().register_system_menu_action(module);
+    }
+}

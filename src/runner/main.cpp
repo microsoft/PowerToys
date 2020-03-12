@@ -199,7 +199,7 @@ int runner(bool isProcessElevated)
             try
             {
                 auto module = load_powertoy(file.path().wstring());
-                modules().emplace(module.get_name(), std::move(module));
+                modules().emplace(module->get_name(), std::move(module));
             }
             catch (...)
             {
