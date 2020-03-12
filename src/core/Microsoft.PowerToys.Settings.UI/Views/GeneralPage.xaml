@@ -1,0 +1,45 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.GeneralPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <ScrollViewer>
+            <StackPanel Orientation="Vertical" Margin="14,0,14,48">
+
+                <ToggleSwitch Header="Start at startup" IsOn="True" Margin="0,14,0,0" />
+
+                <muxc:RadioButtons Header="Theme" Margin="0, 28,0,0">
+                    <RadioButton Content="Dark"/>
+                    <RadioButton Content="Light"/>
+                    <RadioButton Content="System default" IsChecked="True"/>
+                </muxc:RadioButtons>
+
+                <ToggleSwitch Header="Disable telemetry" IsOn="True" Margin="0,14,0,0" />
+                <TextBlock Text="PowerToys currently respects the Windows data &amp; feedback setting" Opacity="0.8" Margin="0,0,0,0" />
+
+                <TextBlock Text="Default apps" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,34,0,8"/>
+                <ComboBox Header="Shell" SelectedIndex="0" MinWidth="240" Margin="0,14,0,0">
+                    <ComboBoxItem>PowerShell</ComboBoxItem>
+                </ComboBox>
+                <ComboBox Header="Terminal" SelectedIndex="0" MinWidth="240" Margin="0,14,0,0">
+                    <ComboBoxItem>Windows Console</ComboBoxItem>
+                </ComboBox>
+                <TextBlock Text="About PowerToys" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,34,0,8"/>
+                <TextBlock FontWeight="Bold" Text="Version 0.15.1.0" Margin="0,14,0,0" />
+                <Button Background="{ThemeResource SystemAccentColor}" Content="Check for updates" Margin="0,10,0,0" Foreground="White"/>
+                <!-- TO DO: The styling of this button should be improved so the hover/pressed states are representing the SystemAccentColor -->
+
+                <HyperlinkButton Content="Report a bug" Margin="0,14,0,0" />
+                <HyperlinkButton Content="Request a feature"  />
+                <HyperlinkButton Content="Privacy statement"  />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

@@ -141,4 +141,8 @@
     <value>Test3</value>
     <comment>Navigation view item name for Test3</comment>
   </data>
+  <data name="Shell_General.Content" xml:space="preserve">
+    <value>General</value>
+    <comment>Navigation view item name for General</comment>
+  </data>
 </root>
