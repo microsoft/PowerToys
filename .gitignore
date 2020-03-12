@@ -301,6 +301,8 @@ __pycache__/
 # Cake - Uncomment if you are using it
 # tools/**
 # !tools/packages.config
+ImageResizer/tools/**
+!ImageResizer/tools/packages.config
 
 # Tabs Studio
 *.tss
