@@ -236,7 +236,7 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall) {
       _variant_t(username_domain),
       _variant_t(),
       TASK_LOGON_INTERACTIVE_TOKEN,
-        SDDL_FULL_ACCESS_FOR_EVERYONE,
+      SDDL_FULL_ACCESS_FOR_EVERYONE,
       &pRegisteredTask);
     ExitOnFailure(hr, "Error saving the Task : %x", hr);
   }
