@@ -60,7 +60,7 @@ namespace FancyZonesUnitTests
             m_monitorInfo.cbSize = sizeof(m_monitorInfo);
             Assert::AreNotEqual(0, GetMonitorInfoW(m_monitor, &m_monitorInfo));
 
-            m_uniqueId << L"DELA026#5&10a58c63&0&UID16777488_" << m_monitorInfo.rcMonitor.right << "_" << m_monitorInfo.rcMonitor.bottom << "_MyVirtualDesktopId";
+            m_uniqueId << L"DELA026#5&10a58c63&0&UID16777488_" << m_monitorInfo.rcMonitor.right << "_" << m_monitorInfo.rcMonitor.bottom << "_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
 
             Assert::IsFalse(ZoneWindowUtils::GetActiveZoneSetTmpPath().empty());
             Assert::IsFalse(ZoneWindowUtils::GetAppliedZoneSetTmpPath().empty());

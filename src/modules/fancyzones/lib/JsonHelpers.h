@@ -18,6 +18,7 @@ namespace JSONHelpers
 
     #if defined(UNIT_TESTS)
     bool isGuid(const std::wstring& str);
+    bool isDeviceId(const std::wstring& str);
     #endif
 
     enum class ZoneSetLayoutType : int

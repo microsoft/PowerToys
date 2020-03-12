@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <fstream>
 #include <regex>
+#include <sstream>
 
 namespace
 {
@@ -50,6 +51,46 @@ namespace JSONHelpers
     {
         GUID id;
         return SUCCEEDED_LOG(CLSIDFromString(str.c_str(), &id));
+    }
+
+    bool isDeviceId(const std::wstring& str)
+    {
+        std::wstring temp;
+        std::vector<std::wstring> parts;
+        std::wstringstream wss(str);
+        while (std::getline(wss, temp, L'_'))
+        {
+            parts.push_back(temp);
+        }
+
+        if (parts.size() != 4)
+        {
+            return false;
+        }
+
+        try
+        {
+            //check if strings can be converted to int
+            for (const auto& c : parts[1])
+            {
+                std::stoi(std::wstring(&c));
+            }
+            for (const auto& c : parts[2])
+            {
+                std::stoi(std::wstring(&c));
+            }
+
+            if (!isGuid(parts[3]) || parts[0].empty())
+            {
+                return false;
+            }
+        }
+        catch (const std::exception&)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     json::JsonArray NumVecToJsonArray(const std::vector<int>& vec)
@@ -778,7 +819,7 @@ namespace JSONHelpers
             result.data.deviceId = zoneSet.GetNamedString(L"device-id");
             result.data.zoneSetUuid = zoneSet.GetNamedString(L"zoneset-uuid");
 
-            if (!isGuid(result.data.zoneSetUuid))
+            if (!isGuid(result.data.zoneSetUuid) || !isDeviceId(result.data.deviceId))
             {
                 return std::nullopt;
             }
@@ -811,6 +852,10 @@ namespace JSONHelpers
             DeviceInfoJSON result;
 
             result.deviceId = device.GetNamedString(L"device-id");
+            if (!isDeviceId(result.deviceId))
+            {
+                return std::nullopt;
+            }
 
             if (auto zoneSet = ZoneSetData::FromJson(device.GetNamedObject(L"active-zoneset")); zoneSet.has_value())
             {
