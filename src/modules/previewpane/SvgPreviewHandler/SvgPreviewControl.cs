@@ -15,6 +15,7 @@ using System.Xml.Linq;
 using Common;
 using Common.Utilities;
 using PreviewHandlerCommon;
+using SvgPreviewHandler.Utilities;
 
 namespace SvgPreviewHandler
 {
@@ -56,6 +57,13 @@ namespace SvgPreviewHandler
                         {
                             svgData = reader.ReadToEnd();
                         }
+                    }
+
+                    // Add a info bar on top of the Preview if any blocked element is present.
+                    if (SvgPreviewHandlerHelper.CheckBlockedElements(svgData))
+                    {
+                        this.infoBarAdded = true;
+                        this.AddTextBoxControl(Resource.BlockedElementInfoText);
                     }
 
                     this.AddBrowserControl(svgData);
