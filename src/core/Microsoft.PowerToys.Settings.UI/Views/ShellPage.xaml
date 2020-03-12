@@ -47,6 +47,11 @@
             Or to use an IconElement instead of a Symbol see https://github.com/Microsoft/WindowsTemplateStudio/blob/master/docs/projectTypes/navigationpane.md
             Edit String/en-US/Resources.resw: Add a menu item title for each page
             -->
+            <winui:NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage">
+                <winui:NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE713;"/>
+                </winui:NavigationViewItem.Icon>
+            </winui:NavigationViewItem>
             <winui:NavigationViewItem x:Uid="Shell_Main" Icon="Home" helpers:NavHelper.NavigateTo="views:MainPage" />
             <winui:NavigationViewItem x:Uid="Shell_Test1" Icon="Play" helpers:NavHelper.NavigateTo="views:Test1Page" />
             <winui:NavigationViewItem x:Uid="Shell_Test2" Icon="Refresh" helpers:NavHelper.NavigateTo="views:Test2Page" />
