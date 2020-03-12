@@ -885,7 +885,7 @@ void FancyZones::MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT cons
         m_zoneWindowMoveSize->MoveSizeEnter(window, m_dragEnabled);
         if (m_settings->GetSettings().showZonesOnAllMonitors)
         {
-            for (auto [key_monitor, zoneWindow] : m_zoneWindowMap)
+            for (auto [keyMonitor, zoneWindow] : m_zoneWindowMap)
             {
                 if (zoneWindow && zoneWindow != iter->second)
                 {
@@ -897,7 +897,7 @@ void FancyZones::MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT cons
     else if (m_zoneWindowMoveSize)
     {
         m_zoneWindowMoveSize = nullptr;
-        for (auto [key_monitor, zoneWindow] : m_zoneWindowMap)
+        for (auto [keyMonitor, zoneWindow] : m_zoneWindowMap)
         {
             if (zoneWindow)
             {
@@ -942,7 +942,7 @@ void FancyZones::MoveSizeEndInternal(HWND window, POINT const& ptScreen, require
     }
 
     // Also, hide all windows (regardless of settings)
-    for (auto [key_monitor, zoneWindow] : m_zoneWindowMap)
+    for (auto [keyMonitor, zoneWindow] : m_zoneWindowMap)
     {
         if (zoneWindow)
         {
@@ -965,7 +965,7 @@ void FancyZones::MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen,
             {
                 // Drag got disabled, tell it to cancel and hide all windows
                 m_zoneWindowMoveSize = nullptr;
-                for (auto [key_monitor, zoneWindow] : m_zoneWindowMap)
+                for (auto [keyMonitor, zoneWindow] : m_zoneWindowMap)
                 {
                     if (zoneWindow)
                     {
