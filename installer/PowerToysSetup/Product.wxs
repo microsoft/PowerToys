@@ -376,6 +376,7 @@
                          Key="Software\Classes\SystemFileAssociations\.wdp\ShellEx\ContextMenuHandlers\ImageResizer"
                          Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                          Type="string" />
+      </Component>
       <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
         <!-- Component to include PowerPreview Module Source dll's -->
         <!-- File to include PowerPreview Module native dll -->
