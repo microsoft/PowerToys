@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
+    
     <!--Medium size margins-->
     <Thickness x:Key="MediumLeftMargin">24,0,0,0</Thickness>
     <Thickness x:Key="MediumTopMargin">0,24,0,0</Thickness>
@@ -9,6 +9,7 @@
     <Thickness x:Key="MediumRightMargin">0,0,24,0</Thickness>
     <Thickness x:Key="MediumTopBottomMargin">0,24,0,24</Thickness>
     <Thickness x:Key="MediumLeftTopRightBottomMargin">24,24,24,24</Thickness>
+    <Thickness x:Key="MediumLeftRightBottomMargin">24,0,24,24</Thickness>
     <Thickness x:Key="MediumBottomMargin">0,0,0,24</Thickness>
 
     <!--Small size margins-->
@@ -17,11 +18,13 @@
     <Thickness x:Key="SmallTopBottomMargin">0, 12, 0, 12</Thickness>
     <Thickness x:Key="SmallLeftRightMargin">12, 0, 12, 0</Thickness>
     <Thickness x:Key="SmallRightMargin">0, 0, 12, 0</Thickness>
+    <Thickness x:Key="SmallLeftRightBottomMargin">12, 0, 12, 12</Thickness>
     <Thickness x:Key="SmallLeftTopRightBottomMargin">12, 12, 12, 12</Thickness>
 
     <!--Extra Small size margins-->
     <Thickness x:Key="XSmallLeftMargin">8, 0, 0, 0</Thickness>
     <Thickness x:Key="XSmallTopMargin">0, 8, 0, 0</Thickness>
+    <Thickness x:Key="XSmallBottomMargin">0, 0, 0, 8</Thickness>
     <Thickness x:Key="XSmallLeftTopRightBottomMargin">8, 8, 8, 8</Thickness>
 
     <!--Extra Extra Small size margins-->

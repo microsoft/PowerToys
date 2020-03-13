@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             
             DataContext = ViewModel;
             ViewModel.Initialize(shellFrame, navigationView, KeyboardAccelerators);
-            NavigationService.Navigate(typeof(MainPage));
+            NavigationService.Navigate(typeof(GeneralPage));
         }
     }
 }

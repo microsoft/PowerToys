@@ -134,28 +134,20 @@
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="ViewModels\GeneralViewModel.cs" />
-    <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\PowerRenameViewModel.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
-    <Compile Include="ViewModels\Test1ViewModel.cs" />
-    <Compile Include="ViewModels\Test2ViewModel.cs" />
-    <Compile Include="ViewModels\Test3ViewModel.cs" />
+    <Compile Include="ViewModels\ShortcutGuideViewModel.cs" />
+    <Compile Include="Views\ShortcutGuidePage.xaml.cs">
+      <DependentUpon>ShortcutGuidePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PowerRenamePage.xaml.cs">
+      <DependentUpon>PowerRenamePage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\GeneralPage.xaml.cs">
       <DependentUpon>GeneralPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\MainPage.xaml.cs">
-      <DependentUpon>MainPage.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\ShellPage.xaml.cs">
       <DependentUpon>ShellPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Test1Page.xaml.cs">
-      <DependentUpon>Test1Page.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Test2Page.xaml.cs">
-      <DependentUpon>Test2Page.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Test3Page.xaml.cs">
-      <DependentUpon>Test3Page.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -216,27 +208,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\ShortcutGuidePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\PowerRenamePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\GeneralPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\MainPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Views\ShellPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\Test1Page.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\Test2Page.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\Test3Page.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

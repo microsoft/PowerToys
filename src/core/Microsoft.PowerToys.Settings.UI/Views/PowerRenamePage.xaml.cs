@@ -17,11 +17,11 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class GeneralPage : Page
+    public sealed partial class PowerRenamePage : Page
     {
-        public GeneralViewModel ViewModel { get; } = new GeneralViewModel();
+        public PowerRenameViewModel ViewModel { get; } = new PowerRenameViewModel();
 
-        public GeneralPage()
+        public PowerRenamePage()
         {
             this.InitializeComponent();
         }

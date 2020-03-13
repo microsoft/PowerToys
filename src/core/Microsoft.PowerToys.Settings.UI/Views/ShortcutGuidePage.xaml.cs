@@ -17,11 +17,11 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class GeneralPage : Page
+    public sealed partial class ShortcutGuidePage : Page
     {
-        public GeneralViewModel ViewModel { get; } = new GeneralViewModel();
+        public ShortcutGuideViewModel ViewModel { get; } = new ShortcutGuideViewModel();
 
-        public GeneralPage()
+        public ShortcutGuidePage()
         {
             this.InitializeComponent();
         }

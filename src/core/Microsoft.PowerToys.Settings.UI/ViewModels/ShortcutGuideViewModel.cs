@@ -4,9 +4,9 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class Test2ViewModel : Observable
+    public class ShortcutGuideViewModel : Observable
     {
-        public Test2ViewModel()
+        public ShortcutGuideViewModel()
         {
         }
     }
