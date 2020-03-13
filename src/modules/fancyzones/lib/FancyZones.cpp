@@ -883,7 +883,7 @@ void FancyZones::MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT cons
     {
         m_zoneWindowMoveSize = iter->second;
         m_zoneWindowMoveSize->MoveSizeEnter(window, m_dragEnabled);
-        if (m_settings->GetSettings().showZonesOnAllMonitors)
+        if (m_settings->GetSettings()->showZonesOnAllMonitors)
         {
             for (auto [keyMonitor, zoneWindow] : m_zoneWindowMap)
             {
@@ -986,7 +986,7 @@ void FancyZones::MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen,
                         // The drag has moved to a different monitor.
                         auto const isDragEnabled = m_zoneWindowMoveSize->IsDragEnabled();
                         // only hide if the option to show all zones is off
-                        if (!m_settings->GetSettings().showZonesOnAllMonitors)
+                        if (!m_settings->GetSettings()->showZonesOnAllMonitors)
                         {
                             m_zoneWindowMoveSize->HideZoneWindow();
                         }
