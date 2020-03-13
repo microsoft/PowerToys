@@ -3,20 +3,24 @@
 ## Steps to build and run launcher successfully
 1. Restore the nuget packages 
 2. Download and install [Windows 10 SDK version 10.0.14393.795](https://go.microsoft.com/fwlink/p/?LinkId=838916). This SDK cannot be installed using the Visual Studio installer.
-3. Run powerToys.sln in Debug/Release and x64 configuration.
+3. Build and run PowerToys.sln in Debug/Release mode and x64 configuration.
 
 ## Contribution details
 
 ### To pull code from PowerToys repository
 
-`cd Launcher`\
-`git remote add public https://github.com/microsoft/PowerToys.git`\
-`git pull public master`\
-`git push origin <branchname>`
+```powershell
+cd Launcher
+git remote add public https://github.com/microsoft/PowerToys.git
+git pull public master
+git push origin <branchname>
+```
 
 ### To pull code from Wox repository
 
-`Git subtree pull --prefix src/modules/launcher https://github.com/jjw24/Wox.git master`
+```powerhsell
+Git subtree pull --prefix src/modules/launcher https://github.com/jjw24/Wox.git master
+```
 
 **NOTE:** Do not use the `--squash` option while pulling changes from the subtree as that would result in all the changes being reflected as made by you, which would tamper the git history. 
 
