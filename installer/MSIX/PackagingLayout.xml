@@ -3,7 +3,7 @@
     
     <Package ID="PowerToys-x64" ProcessorArchitecture="x64">
       <Files>
-        <File DestinationPath="License.rtf" SourcePath="..\..\License.rtf"/>
+        <File DestinationPath="License.rtf" SourcePath="..\License.rtf"/>
 
         <File DestinationPath="action_runner.exe" SourcePath="..\..\x64\Release\action_runner.exe"/>
         <File DestinationPath="PowerToys.exe" SourcePath="..\..\x64\Release\PowerToys.exe"/>
