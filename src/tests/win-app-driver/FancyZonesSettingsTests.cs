@@ -15,8 +15,8 @@ namespace PowerToysTests
     [TestClass]
     public class FancyZonesSettingsTests : PowerToysSession
     {
-        private string _settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft/PowerToys/FancyZones/settings.json");
-        private string _initialSettings;
+        private static string _settingsPath = "";
+        private string _initialSettings = "";
         private JObject _initialSettingsJson;
 
         private static WindowsElement _saveButton;
@@ -721,6 +721,14 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context);
+
+            string settingsFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft/PowerToys/FancyZones");
+            if (!Directory.Exists(settingsFolderPath))
+            {
+                Directory.CreateDirectory(settingsFolderPath);
+            }
+            _settingsPath = settingsFolderPath + "/settings.json";
+
             Init();
         }
 
