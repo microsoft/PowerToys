@@ -83,7 +83,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FancyZonesSettingsTests.cs" />
+    <Compile Include="FancyZonesTests\FancyZonesSettingsTests.cs" />
     <Compile Include="PowerToysSession.cs" />
     <Compile Include="PowerToysTrayTests.cs" />
     <Compile Include="TestShortcutHelper.cs" />
@@ -95,6 +95,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
