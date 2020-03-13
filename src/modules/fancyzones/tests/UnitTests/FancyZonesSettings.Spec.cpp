@@ -71,7 +71,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(actual != nullptr);
 
             auto actualSettings = actual->GetSettings();
-            compareSettings(m_defaultSettings, actualSettings);
+            compareSettings(m_defaultSettings, *actualSettings);
         }
 
         TEST_METHOD(CreateWithHinstanceNullptr)
@@ -80,7 +80,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(actual != nullptr);
 
             auto actualSettings = actual->GetSettings();
-            compareSettings(m_defaultSettings, actualSettings);
+            compareSettings(m_defaultSettings, *actualSettings);
         }
 
         TEST_METHOD(CreateWithNameEmpty)
@@ -89,7 +89,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(actual != nullptr);
 
             auto actualSettings = actual->GetSettings();
-            compareSettings(m_defaultSettings, actualSettings);
+            compareSettings(m_defaultSettings, *actualSettings);
         }
 
         TEST_METHOD(Create)
@@ -131,7 +131,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(actual != nullptr);
 
             auto actualSettings = actual->GetSettings();
-            compareSettings(expected, actualSettings);
+            compareSettings(expected, *actualSettings);
         }
 
         TEST_METHOD(CreateWithMultipleApps)
@@ -173,7 +173,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(actual != nullptr);
 
             auto actualSettings = actual->GetSettings();
-            compareSettings(expected, actualSettings);
+            compareSettings(expected, *actualSettings);
         }
 
         TEST_METHOD(CreateWithBoolValuesMissed)
@@ -206,7 +206,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(actual != nullptr);
 
             auto actualSettings = actual->GetSettings();
-            compareSettings(expected, actualSettings);
+            compareSettings(expected, *actualSettings);
         }
 
         TEST_METHOD(CreateColorMissed)
@@ -247,7 +247,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(actual != nullptr);
 
             auto actualSettings = actual->GetSettings();
-            compareSettings(expected, actualSettings);
+            compareSettings(expected, *actualSettings);
         }
 
         TEST_METHOD(CreateOpacityMissed)
@@ -288,7 +288,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(actual != nullptr);
 
             auto actualSettings = actual->GetSettings();
-            compareSettings(expected, actualSettings);
+            compareSettings(expected, *actualSettings);
         }
 
         TEST_METHOD(CreateHotkeyMissed)
@@ -329,7 +329,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(actual != nullptr);
 
             auto actualSettings = actual->GetSettings();
-            compareSettings(expected, actualSettings);
+            compareSettings(expected, *actualSettings);
         }
 
         TEST_METHOD(CreateAppsMissed)
@@ -370,7 +370,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(actual != nullptr);
 
             auto actualSettings = actual->GetSettings();
-            compareSettings(expected, actualSettings);
+            compareSettings(expected, *actualSettings);
         }
 
         TEST_METHOD(CreateWithEmptyJson)
@@ -380,7 +380,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(actual != nullptr);
 
             auto actualSettings = actual->GetSettings();
-            compareSettings(m_defaultSettings, actualSettings);
+            compareSettings(m_defaultSettings, *actualSettings);
         }
     };
 
@@ -706,7 +706,7 @@ namespace FancyZonesUnitTests
             m_settings->SetConfig(config.c_str());
 
             auto actual = m_settings->GetSettings();
-            compareSettings(expected, actual);
+            compareSettings(expected, *actual);
 
             Assert::IsTrue(std::filesystem::exists(settingsFile));
         }

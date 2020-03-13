@@ -86,7 +86,7 @@ public:
     GetZoneHighlightColor() noexcept
     {
         // Skip the leading # and convert to long
-        const auto color = m_settings->GetSettings().zoneHightlightColor;
+        const auto color = m_settings->GetSettings()->zoneHightlightColor;
         const auto tmp = std::stol(color.substr(1), nullptr, 16);
         const auto nR = (tmp & 0xFF0000) >> 16;
         const auto nG = (tmp & 0xFF00) >> 8;
@@ -108,7 +108,7 @@ public:
     IFACEMETHODIMP_(int)
     GetZoneHighlightOpacity() noexcept
     {
-        return m_settings->GetSettings().zoneHighlightOpacity;
+        return m_settings->GetSettings()->zoneHighlightOpacity;
     }
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
@@ -217,7 +217,7 @@ FancyZones::Run() noexcept
     if (!m_window)
         return;
 
-    RegisterHotKey(m_window, 1, m_settings->GetSettings().editorHotkey.get_modifiers(), m_settings->GetSettings().editorHotkey.get_code());
+    RegisterHotKey(m_window, 1, m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
 
     VirtualDesktopInitialize();
 
@@ -309,7 +309,7 @@ FancyZones::VirtualDesktopInitialize() noexcept
 IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
 {
-    if (m_settings->GetSettings().appLastZone_moveWindows && IsInterestingWindow(window))
+    if (m_settings->GetSettings()->appLastZone_moveWindows && IsInterestingWindow(window))
     {
         for (const auto& [monitor, zoneWindow] : m_zoneWindowMap)
         {
@@ -355,7 +355,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         }
         else if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT))
         {
-            if (m_settings->GetSettings().overrideSnapHotkeys)
+            if (m_settings->GetSettings()->overrideSnapHotkeys)
             {
                 // Win+Left, Win+Right will cycle through Zones in the active ZoneSet
                 Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
@@ -400,7 +400,7 @@ void FancyZones::ToggleEditor() noexcept
     UINT dpi_x = DPIAware::DEFAULT_DPI;
     UINT dpi_y = DPIAware::DEFAULT_DPI;
 
-    const bool use_cursorpos_editor_startupscreen = m_settings->GetSettings().use_cursorpos_editor_startupscreen;
+    const bool use_cursorpos_editor_startupscreen = m_settings->GetSettings()->use_cursorpos_editor_startupscreen;
     POINT currentCursorPos{};
     if (use_cursorpos_editor_startupscreen)
     {
@@ -515,14 +515,14 @@ void FancyZones::SettingsChanged() noexcept
     std::shared_lock readLock(m_lock);
     // Update the hotkey
     UnregisterHotKey(m_window, 1);
-    RegisterHotKey(m_window, 1, m_settings->GetSettings().editorHotkey.get_modifiers(), m_settings->GetSettings().editorHotkey.get_code());
+    RegisterHotKey(m_window, 1, m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
 }
 
 // IZoneWindowHost
 IFACEMETHODIMP_(void)
 FancyZones::MoveWindowsOnActiveZoneSetChange() noexcept
 {
-    if (m_settings->GetSettings().zoneSetChange_moveWindows)
+    if (m_settings->GetSettings()->zoneSetChange_moveWindows)
     {
         MoveWindowsOnDisplayChange();
     }
@@ -616,21 +616,21 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 
     if ((changeType == DisplayChangeType::WorkArea) || (changeType == DisplayChangeType::DisplayChange))
     {
-        if (m_settings->GetSettings().displayChange_moveWindows)
+        if (m_settings->GetSettings()->displayChange_moveWindows)
         {
             MoveWindowsOnDisplayChange();
         }
     }
     else if (changeType == DisplayChangeType::VirtualDesktop)
     {
-        if (m_settings->GetSettings().virtualDesktopChange_moveWindows)
+        if (m_settings->GetSettings()->virtualDesktopChange_moveWindows)
         {
             MoveWindowsOnDisplayChange();
         }
     }
     else if (changeType == DisplayChangeType::Editor)
     {
-        if (m_settings->GetSettings().zoneSetChange_moveWindows)
+        if (m_settings->GetSettings()->zoneSetChange_moveWindows)
         {
             MoveWindowsOnDisplayChange();
         }
@@ -647,7 +647,7 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
         JSONHelpers::FancyZonesDataInstance().SetActiveDeviceId(uniqueId);
 
         const bool newWorkArea = IsNewWorkArea(m_currentVirtualDesktopId, monitor);
-        const bool flash = m_settings->GetSettings().zoneSetChange_flashZones && newWorkArea;
+        const bool flash = m_settings->GetSettings()->zoneSetChange_flashZones && newWorkArea;
 
         auto zoneWindow = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, flash);
         if (zoneWindow)
@@ -706,7 +706,7 @@ bool FancyZones::IsInterestingWindow(HWND window) noexcept
     CharUpperBuffW(filtered.process_path.data(), (DWORD)filtered.process_path.length());
     if (m_settings)
     {
-        for (const auto& excluded : m_settings->GetSettings().excludedAppsArray)
+        for (const auto& excluded : m_settings->GetSettings()->excludedAppsArray)
         {
             if (filtered.process_path.find(excluded) != std::wstring::npos)
             {
@@ -795,7 +795,7 @@ void FancyZones::UpdateDragState(require_write_lock) noexcept
         mouse |= mouseR;
     }
 
-    if (m_settings->GetSettings().shiftDrag)
+    if (m_settings->GetSettings()->shiftDrag)
     {
         m_dragEnabled = (shift | mouse);
     }
