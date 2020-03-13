@@ -42,10 +42,6 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      */
     IFACEMETHOD(MoveSizeEnd)(HWND window, POINT const& ptScreen) = 0;
     /**
-     * Abort tracking down of window position and giving zone layout hints (if dragging functionality is enabled).
-     */
-    IFACEMETHOD(MoveSizeCancel)() = 0;
-    /**
      * @returns Boolean indicating is giving hints about active zone layout enabled. Hints are
      *          given while dragging window while holding SHIFT key.
      */
@@ -89,6 +85,8 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * @returns Active zone layout for this work area.
      */
     IFACEMETHOD_(IZoneSet*, ActiveZoneSet)() = 0;
+    IFACEMETHOD_(void, ShowZoneWindow)() = 0;
+    IFACEMETHOD_(void, HideZoneWindow)() = 0;
 };
 
 winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor,
