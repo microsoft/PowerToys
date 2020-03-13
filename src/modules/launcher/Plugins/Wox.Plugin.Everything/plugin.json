@@ -1,0 +1,13 @@
+{
+    "ID":"D2D2C23B084D411DB66FE0C79D6C2A6E",
+    "ActionKeyword":"*",
+    "Name":"Everything",
+    "Description":"Search Everything",
+    "Author":"qianlifeng,orzfly",
+    "Version":"1.1.0",
+    "Language":"csharp",
+    "Website":"http://www.wox.one",
+    "IcoPath":"Images\\find.png",
+    "ExecuteFileName":"Wox.Plugin.Everything.dll",
+    "Disabled": true
+}

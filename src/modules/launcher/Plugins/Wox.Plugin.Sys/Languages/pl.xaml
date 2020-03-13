@@ -1,0 +1,21 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="wox_plugin_sys_command">Komenda</system:String>
+    <system:String x:Key="wox_plugin_sys_desc">Opis</system:String>
+
+    <system:String x:Key="wox_plugin_sys_shutdown_computer">Wyłącz komputer</system:String>
+    <system:String x:Key="wox_plugin_sys_restart_computer">Uruchom ponownie komputer</system:String>
+    <system:String x:Key="wox_plugin_sys_log_off">Wyloguj się</system:String>
+    <system:String x:Key="wox_plugin_sys_lock">Zablokuj ten komputer</system:String>
+    <system:String x:Key="wox_plugin_sys_exit">Wyłącz Woxa</system:String>
+    <system:String x:Key="wox_plugin_sys_restart">Uruchom ponownie Woxa</system:String>
+    <system:String x:Key="wox_plugin_sys_setting">Dostosuj ustawienia</system:String>
+    <system:String x:Key="wox_plugin_sys_sleep">Przełącz komputer w tryb uśpienia</system:String>
+    <system:String x:Key="wox_plugin_sys_emptyrecyclebin">Opróżnij kosz</system:String>
+
+    <system:String x:Key="wox_plugin_sys_plugin_name">Komendy systemowe</system:String>
+    <system:String x:Key="wox_plugin_sys_plugin_description">Wykonywanie komend systemowych, np. wyłącz, zablokuj komputer, otwórz ustawienia itp.</system:String>
+
+</ResourceDictionary>

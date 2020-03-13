@@ -1,0 +1,31 @@
+version: 1.3.{build}
+image: Visual Studio 2017
+configuration: Release
+platform: Any CPU
+assembly_info:
+  patch: true
+  file: AssemblyInfo.*
+  assembly_version: '{version}'
+  assembly_file_version: '{version}'
+  assembly_informational_version: '{version}'
+before_build:
+- ps: nuget restore
+build:
+  project: Wox.sln
+after_test:
+artifacts:
+- path: 'Output\Packages\Wox-*.zip'
+  name: zipped_binary
+- path: 'Output\Packages\Wox.Plugin.*.nupkg'
+  name: nuget_package
+- path: 'Output\Packages\Wox-*.*'
+  name: installer
+- path: 'Output\Packages\RELEASES'
+  name: installer
+deploy:
+  provider: NuGet
+  api_key:
+    secure: yybUOFgBuGVpbmOVZxsurC8OpkClzt9dR+/54WpMWcq6b6oyMatciaelRPnXsjRn
+  artifact: nuget_package
+  on:
+    branch: api

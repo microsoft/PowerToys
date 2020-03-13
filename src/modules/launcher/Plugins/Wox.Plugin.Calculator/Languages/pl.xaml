@@ -1,0 +1,8 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="wox_plugin_caculator_plugin_name">Kalkulator</system:String>
+    <system:String x:Key="wox_plugin_caculator_plugin_description">Szybkie wykonywanie obliczeń matematycznych. (Spróbuj wpisać 5*3-2 w oknie Woxa)</system:String>
+    
+</ResourceDictionary>

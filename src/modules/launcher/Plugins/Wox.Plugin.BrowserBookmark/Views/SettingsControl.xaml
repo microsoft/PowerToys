@@ -1,0 +1,25 @@
+﻿<UserControl x:Class="Wox.Plugin.BrowserBookmark.Views.SettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             Background="White"
+             d:DesignHeight="300" d:DesignWidth="500">
+    <Grid Margin="10,10,10,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <Label Content="Open bookmark in:" Margin="40 3 0 8"/>
+            <RadioButton Name="NewWindowBrowser" GroupName="OpenSearchBehaviour" Content="New window" Click="OnNewBrowserWindowClick" Margin="10" />
+            <RadioButton Name="NewTabInBrowser" GroupName="OpenSearchBehaviour" Content="New tab" Click="OnNewTabClick" Margin="10" />
+        </StackPanel>
+        <StackPanel VerticalAlignment="Top" Grid.Row="1" Height="106" Margin="41,13,0,0">
+            <Label Content="Set browser from path:" Height="28" Margin="0,0,155,0" HorizontalAlignment="Left" Width="290"/>
+            <TextBox x:Name="browserPathBox" HorizontalAlignment="Left" Height="34" Margin="5,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="311" RenderTransformOrigin="0.502,-1.668"/>
+            <Button x:Name="viewButton" HorizontalAlignment="Left" Margin="340,-33,-1,0" Width="100" Height="28" Click="OnChooseClick" FontSize="10" Content="Choose" />
+        </StackPanel>
+    </Grid>
+</UserControl>

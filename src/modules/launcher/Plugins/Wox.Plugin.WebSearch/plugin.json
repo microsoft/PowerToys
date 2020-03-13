@@ -1,0 +1,33 @@
+{
+    "ID": "565B73353DBF4806919830B9202EE3BF",
+    "ActionKeywords": [
+        "g",
+        "wiki",
+        "findicon",
+        "facebook",
+        "twitter",
+        "maps",
+        "translate",
+        "duckduckgo",
+        "github",
+        "gist",
+        "gmail",
+        "drive",
+        "wolframalpha",
+        "stackoverflow",
+        "lucky",
+        "image",
+        "youtube",
+        "bing",
+        "yahoo",
+        "bd"
+    ],
+    "Name": "Web Searches",
+    "Description": "Provide the web search ability",
+    "Author": "qianlifeng",
+    "Version": "1.0.0",
+    "Language": "csharp",
+    "Website": "http://www.wox.one/plugin",
+    "ExecuteFileName": "Wox.Plugin.WebSearch.dll",
+    "IcoPath": "Images\\web_search.png"
+}

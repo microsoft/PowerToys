@@ -1,0 +1,39 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <!--Program setting-->
+    <system:String x:Key="wox_plugin_program_delete">Sil</system:String>
+    <system:String x:Key="wox_plugin_program_edit">Düzenle</system:String>
+    <system:String x:Key="wox_plugin_program_add">Ekle</system:String>
+    <system:String x:Key="wox_plugin_program_location">Konum</system:String>
+    <system:String x:Key="wox_plugin_program_suffixes">İndekslenecek Uzantılar</system:String>
+    <system:String x:Key="wox_plugin_program_reindex">Yeniden İndeksle</system:String>
+    <system:String x:Key="wox_plugin_program_indexing">İndeksleniyor</system:String>
+    <system:String x:Key="wox_plugin_program_index_start">Başlat Menüsünü İndeksle</system:String>
+    <system:String x:Key="wox_plugin_program_index_registry">Registry'i İndeksle</system:String>
+    <system:String x:Key="wox_plugin_program_suffixes_header">Uzantılar</system:String>
+    <system:String x:Key="wox_plugin_program_max_depth_header">Derinlik</system:String>
+
+    <system:String x:Key="wox_plugin_program_directory">Dizin:</system:String>
+    <system:String x:Key="wox_plugin_program_browse">Gözat</system:String>
+    <system:String x:Key="wox_plugin_program_file_suffixes">Dosya Uzantıları:</system:String>
+    <system:String x:Key="wox_plugin_program_max_search_depth">Maksimum Arama Derinliği (Limitsiz için -1):</system:String>
+
+    <system:String x:Key="wox_plugin_program_pls_select_program_source">İşlem yapmak istediğiniz klasörü seçin.</system:String>
+
+    <system:String x:Key="wox_plugin_program_update">Güncelle</system:String>
+    <system:String x:Key="wox_plugin_program_only_index_tip">Wox yalnızca aşağıdaki uzantılara sahip dosyaları indeksleyecektir:</system:String>
+    <system:String x:Key="wox_plugin_program_split_by_tip">(Her uzantıyı ; işareti ile ayırın)</system:String>
+    <system:String x:Key="wox_plugin_program_update_file_suffixes">Dosya uzantıları başarıyla güncellendi</system:String>
+    <system:String x:Key="wox_plugin_program_suffixes_cannot_empty">Dosya uzantıları boş olamaz</system:String>
+
+    <system:String x:Key="wox_plugin_program_run_as_administrator">Yönetici Olarak Çalıştır</system:String>
+    <system:String x:Key="wox_plugin_program_open_containing_folder">İçeren Klasörü Aç</system:String>
+
+    <system:String x:Key="wox_plugin_program_plugin_name">Program</system:String>
+    <system:String x:Key="wox_plugin_program_plugin_description">Programları Wox'tan arayın</system:String>
+
+    <system:String x:Key="wox_plugin_program_invalid_path">Geçersiz Konum</system:String>
+
+</ResourceDictionary>

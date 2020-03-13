@@ -1,0 +1,14 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="wox_plugin_url_open_url">URL'yi Aç: {0}</system:String>
+    <system:String x:Key="wox_plugin_url_canot_open_url">URL Açılamıyor: {0}</system:String>
+
+    <system:String x:Key="wox_plugin_url_plugin_name">URL</system:String>
+    <system:String x:Key="wox_plugin_url_plugin_description">Wox'a yazılan URL'leri açar</system:String>
+
+    <system:String x:Key="wox_plugin_url_plugin_set_tip">Tarayıcınızın konumunu ayarlayın:</system:String>
+    <system:String x:Key="wox_plugin_url_plugin_choose">Seç</system:String>
+    <system:String x:Key="wox_plugin_url_plugin_filter">Programlar (*.exe)|*.exe|Tüm Dosyalar|*.*</system:String>
+</ResourceDictionary>

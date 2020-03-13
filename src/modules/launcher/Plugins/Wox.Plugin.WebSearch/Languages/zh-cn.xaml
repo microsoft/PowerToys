@@ -1,0 +1,33 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="wox_plugin_websearch_delete">删除</system:String>
+    <system:String x:Key="wox_plugin_websearch_edit">编辑</system:String>
+    <system:String x:Key="wox_plugin_websearch_add">添加</system:String>
+    <system:String x:Key="wox_plugin_websearch_confirm">确认</system:String>
+    <system:String x:Key="wox_plugin_websearch_action_keyword">触发关键字</system:String>
+    <system:String x:Key="wox_plugin_websearch_url">URL</system:String>
+    <system:String x:Key="wox_plugin_websearch_search">搜索</system:String>
+    <system:String x:Key="wox_plugin_websearch_enable_suggestion">启用搜索建议</system:String>
+    <system:String x:Key="wox_plugin_websearch_pls_select_web_search">请选择一项</system:String>
+    <system:String x:Key="wox_plugin_websearch_delete_warning">你确定要删除 {0} 吗？</system:String>
+
+
+    <!--web search edit-->
+    <system:String x:Key="wox_plugin_websearch_title">标题</system:String>
+    <system:String x:Key="wox_plugin_websearch_enable">启用</system:String>
+    <system:String x:Key="wox_plugin_websearch_icon">图标</system:String>
+    <system:String x:Key="wox_plugin_websearch_select_icon">选择图标</system:String>
+    <system:String x:Key="wox_plugin_websearch_cancel">取消</system:String>
+    <system:String x:Key="wox_plugin_websearch_invalid_web_search">非法的网页搜索</system:String>
+    <system:String x:Key="wox_plugin_websearch_input_title">请输入标题</system:String>
+    <system:String x:Key="wox_plugin_websearch_input_action_keyword">请输入触发关键字</system:String>
+    <system:String x:Key="wox_plugin_websearch_input_url">请输入URL</system:String>
+    <system:String x:Key="wox_plugin_websearch_action_keyword_exist">触发关键字已经存在，请选择一个新的关键字</system:String>
+    <system:String x:Key="wox_plugin_websearch_succeed">操作成功</system:String>
+
+    <system:String x:Key="wox_plugin_websearch_plugin_name">网页搜索</system:String>
+    <system:String x:Key="wox_plugin_websearch_plugin_description">提供网页搜索能力</system:String>
+
+</ResourceDictionary>
