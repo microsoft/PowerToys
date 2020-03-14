@@ -380,15 +380,15 @@
       <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
         <!-- Component to include PowerPreview Module Source dll's -->
         <!-- File to include PowerPreview Module native dll -->
-        <File Source="$(var.BinX64Dir)\modules\powerpreview.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)\modules\previewpane\powerpreview.dll" KeyPath="yes" />
         <!-- File to include common library used by preview handlers -->
-        <File Source="$(var.BinX64Dir)\modules\PreviewHandlerCommon.dll" />
+        <File Source="$(var.BinX64Dir)\modules\previewpane\PreviewHandlerCommon.dll" />
         <!-- File to include dll for Svg Preview Handler -->
-        <File Id="Svg_PreviewHandler_Dll" Source="$(var.BinX64Dir)\modules\SvgPreviewHandler.dll" />
+        <File Id="Svg_PreviewHandler_Dll" Source="$(var.BinX64Dir)\modules\previewpane\SvgPreviewHandler.dll" />
         <!-- Files to include dll's for Markdown Preview Handler and it's dependencies -->
-        <File Id="Md_PreviewHandler_Dll" Source="$(var.BinX64Dir)\modules\MarkdownPreviewHandler.dll" />
-        <File Source="$(var.BinX64Dir)\modules\Markdig.Signed.dll" />
-        <File Source="$(var.BinX64Dir)\modules\HtmlAgilityPack.dll" />
+        <File Id="Md_PreviewHandler_Dll" Source="$(var.BinX64Dir)\modules\previewpane\MarkdownPreviewHandler.dll" />
+        <File Source="$(var.BinX64Dir)\modules\previewpane\Markdig.Signed.dll" />
+        <File Source="$(var.BinX64Dir)\modules\previewpane\HtmlAgilityPack.dll" />
       </Component>
       <Component Id="Module_PowerPreview_PerUserRegistry" Guid="CD90ADC0-7CD5-4A62-B0AF-23545C1E6DD3" Win64="yes">
         <!-- Added a separate component for Per-User registry changes -->
