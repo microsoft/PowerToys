@@ -58,9 +58,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\</OutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\previewpane</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DocumentationFile>$(SolutionDir)$(Platform)\$(Configuration)\modules\SvgPreviewHandler.xml</DocumentationFile>
+    <DocumentationFile>$(SolutionDir)$(Platform)\$(Configuration)\modules\previewpane\SvgPreviewHandler.xml</DocumentationFile>
     <WarningLevel>2</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>full</DebugType>
@@ -70,9 +70,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\</OutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\previewpane</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <DocumentationFile>$(SolutionDir)$(Platform)\$(Configuration)\modules\SvgPreviewHandler.xml</DocumentationFile>
+    <DocumentationFile>$(SolutionDir)$(Platform)\$(Configuration)\modules\previewpane\SvgPreviewHandler.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>pdbonly</DebugType>
