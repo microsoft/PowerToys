@@ -380,7 +380,7 @@
       <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
         <!-- Component to include PowerPreview Module Source dll's -->
         <!-- File to include PowerPreview Module native dll -->
-        <File Source="$(var.BinX64Dir)\modules\previewpane\powerpreview.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)\modules\powerpreview.dll" KeyPath="yes" />
         <!-- File to include common library used by preview handlers -->
         <File Source="$(var.BinX64Dir)\modules\previewpane\PreviewHandlerCommon.dll" />
         <!-- File to include dll for Svg Preview Handler -->

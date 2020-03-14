@@ -33,7 +33,7 @@
         <File DestinationPath="modules\System.ValueTuple.dll" SourcePath="..\..\x64\Release\modules\System.ValueTuple.dll"/>
         <File DestinationPath="modules\System.Numerics.Vectors.dll" SourcePath="..\..\x64\Release\modules\System.Numerics.Vectors.dll"/>
         <File DestinationPath="modules\Microsoft.Bcl.AsyncInterfaces.dll" SourcePath="..\..\x64\Release\modules\Microsoft.Bcl.AsyncInterfaces.dll"/>
-        <File DestinationPath="modules\powerpreview.dll" SourcePath="..\..\x64\Release\modules\previewpane\powerpreview.dll"/>
+        <File DestinationPath="modules\powerpreview.dll" SourcePath="..\..\x64\Release\modules\powerpreview.dll"/>
         <File DestinationPath="modules\PreviewHandlerCommon.dll" SourcePath="..\..\x64\Release\modules\previewpane\PreviewHandlerCommon.dll"/>
         <File DestinationPath="modules\SvgPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\previewpane\SvgPreviewHandler.dll"/>
         <File DestinationPath="modules\MarkdownPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\previewpane\MarkdownPreviewHandler.dll"/>
