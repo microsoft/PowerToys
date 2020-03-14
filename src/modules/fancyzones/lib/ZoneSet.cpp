@@ -560,7 +560,7 @@ bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo grid
 
     // Note: The expressions below are carefully written to 
     // make the sum of all zones' sizes exactly total{Width|Height}
-    long long totalPercents = 0;
+    long totalPercents = 0;
     for (int row = 0; row < gridLayoutInfo.rows(); row++)
     {
         rowInfo[row].Start = totalPercents * totalHeight / C_MULTIPLIER + (row + 1) * spacing;
