@@ -58,7 +58,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\previewpane</OutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\previewpane\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DocumentationFile>$(SolutionDir)$(Platform)\$(Configuration)\modules\previewpane\SvgPreviewHandler.xml</DocumentationFile>
     <WarningLevel>2</WarningLevel>
@@ -70,7 +70,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\previewpane</OutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\previewpane\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <DocumentationFile>$(SolutionDir)$(Platform)\$(Configuration)\modules\previewpane\SvgPreviewHandler.xml</DocumentationFile>
     <Optimize>true</Optimize>
