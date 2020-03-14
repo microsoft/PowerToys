@@ -129,6 +129,10 @@
     <value>General</value>
     <comment>Navigation view item name for General</comment>
   </data>
+  <data name="Shell_ImageResizer.Content" xml:space="preserve">
+    <value>Image Resizer</value>
+    <comment>Navigation view item name for Image Resizer</comment>
+  </data>
   <data name="Shell_PowerRename.Content" xml:space="preserve">
     <value>PowerRename</value>
     <comment>Navigation view item name for PowerRename</comment>

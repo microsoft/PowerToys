@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:behaviors="using:Microsoft.PowerToys.Settings.UI.Behaviors"
-    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls" RequestedTheme="Dark"
     xmlns:helpers="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
@@ -61,21 +61,31 @@
             Or to use an IconElement instead of a Symbol see https://github.com/Microsoft/WindowsTemplateStudio/blob/master/docs/projectTypes/navigationpane.md
             Edit String/en-US/Resources.resw: Add a menu item title for each page
             -->
-            <winui:NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage">
+                <!-- TO DO: Update icon -->
+                <winui:NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage">
                 <winui:NavigationViewItem.Icon>
                     <FontIcon Glyph="&#xE713;"/>
                 </winui:NavigationViewItem.Icon>
             </winui:NavigationViewItem>
-            
+
+                <!-- TO DO: Update icon -->
                 <winui:NavigationViewItem x:Uid="Shell_PowerRename" helpers:NavHelper.NavigateTo="views:PowerRenamePage">
                     <winui:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8AC;"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
+                <!-- TO DO: Update icon -->
                 <winui:NavigationViewItem x:Uid="Shell_ShortcutGuide" helpers:NavHelper.NavigateTo="views:ShortcutGuidePage">
                     <winui:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xEDA7;"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+
+            <!-- TO DO: Update icon -->
+                <winui:NavigationViewItem x:Uid="Shell_ImageResizer" helpers:NavHelper.NavigateTo="views:ImageResizerPage">
+                    <winui:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEB9F;"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
             </winui:NavigationView.MenuItems>

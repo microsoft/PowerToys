@@ -9,9 +9,9 @@
         mc:Ignorable="d"
         Title="PowerToys Settings" Height="800" Width="800">
 
-    <Grid>
         <!--<xaml:WindowsXamlHost InitialTypeName="Microsoft.PowerToys.Settings.UI.Controls.DummyUserControl" ChildChanged="WindowsXamlHost_ChildChanged" />-->
-        <xaml:WindowsXamlHost InitialTypeName="Microsoft.PowerToys.Settings.UI.Views.ShellPage" ChildChanged="WindowsXamlHost_ChildChanged" />
+        <xaml:WindowsXamlHost InitialTypeName="Microsoft.PowerToys.Settings.UI.Views.ShellPage" ChildChanged="WindowsXamlHost_ChildChanged" Grid.Row="1" />
+
     </Grid>
 
 </Window>

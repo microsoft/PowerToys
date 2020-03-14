@@ -3,6 +3,7 @@ using System.Windows;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
 using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Views;
+using System.Windows.Input;
 
 namespace Microsoft.PowerToys.Settings.UI.Runner
 {
