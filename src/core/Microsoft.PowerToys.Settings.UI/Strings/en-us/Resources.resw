@@ -141,4 +141,8 @@
     <value>Shortcut Guide</value>
     <comment>Navigation view item name for Shortcut Guide</comment>
   </data>
+  <data name="Shell_PowerLauncher.Content" xml:space="preserve">
+    <value>PowerLauncher</value>
+    <comment>Navigation view item name for PowerLauncher</comment>
+  </data>
 </root>

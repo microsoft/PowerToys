@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:behaviors="using:Microsoft.PowerToys.Settings.UI.Behaviors"
-    xmlns:winui="using:Microsoft.UI.Xaml.Controls" RequestedTheme="Dark"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     xmlns:helpers="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
@@ -86,6 +86,13 @@
                 <winui:NavigationViewItem x:Uid="Shell_ImageResizer" helpers:NavHelper.NavigateTo="views:ImageResizerPage">
                     <winui:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xEB9F;"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+
+                <!-- TO DO: Update icon -->
+                <winui:NavigationViewItem x:Uid="Shell_PowerLauncher" helpers:NavHelper.NavigateTo="views:PowerLauncherPage">
+                    <winui:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8A7;"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
             </winui:NavigationView.MenuItems>
