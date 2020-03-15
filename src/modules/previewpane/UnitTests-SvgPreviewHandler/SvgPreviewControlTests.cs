@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -184,3 +184,4 @@ namespace UnitTests_SvgPreviewHandler
         }
     }
 }
+*/
