@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
+
     <!--Medium size margins-->
     <Thickness x:Key="MediumLeftMargin">24,0,0,0</Thickness>
     <Thickness x:Key="MediumTopMargin">0,24,0,0</Thickness>
