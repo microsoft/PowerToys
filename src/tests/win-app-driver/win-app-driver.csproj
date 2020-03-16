@@ -83,6 +83,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FancyZonesTests\EditorTests.cs" />
     <Compile Include="FancyZonesTests\FancyZonesSettingsTests.cs" />
     <Compile Include="PowerToysSession.cs" />
     <Compile Include="PowerToysTrayTests.cs" />
