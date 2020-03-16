@@ -59,16 +59,13 @@ public:
         {
             hr = CLASS_E_NOAGGREGATION;
         }
+        else if (m_clsid == CLSID_PowerRenameMenu)
+        {
+            hr = CPowerRenameMenu::s_CreateInstance(punkOuter, riid, ppv);
+        }
         else
         {
-            if (m_clsid == CLSID_PowerRenameMenu)
-            {
-                hr = CPowerRenameMenu::s_CreateInstance(punkOuter, riid, ppv);
-            }
-            else
-            {
-                hr = CLASS_E_CLASSNOTAVAILABLE;
-            }
+            hr = CLASS_E_CLASSNOTAVAILABLE;
         }
         return hr;
     }
@@ -126,13 +123,9 @@ STDAPI DllCanUnloadNow(void)
 STDAPI DllGetClassObject(_In_ REFCLSID clsid, _In_ REFIID riid, _Outptr_ void** ppv)
 {
     *ppv = NULL;
-    HRESULT hr = E_OUTOFMEMORY;
     CPowerRenameClassFactory* pClassFactory = new CPowerRenameClassFactory(clsid);
-    if (pClassFactory)
-    {
-        hr = pClassFactory->QueryInterface(riid, ppv);
-        pClassFactory->Release();
-    }
+    HRESULT hr = pClassFactory->QueryInterface(riid, ppv);
+    pClassFactory->Release();
     return hr;
 }
 

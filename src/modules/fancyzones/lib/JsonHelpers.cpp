@@ -13,6 +13,19 @@
 
 namespace
 {
+    // Needed for migration of applied zonesets from registry
+    struct ZoneSetPersistedDataOLD
+    {
+        static constexpr inline size_t MAX_ZONES = 40;
+        DWORD Version{ VERSION_PERSISTEDDATA };
+        WORD LayoutId{};
+        DWORD ZoneCount{};
+        JSONHelpers::ZoneSetLayoutType Layout{};
+        DWORD PaddingInner{};
+        DWORD PaddingOuter{};
+        RECT Zones[MAX_ZONES]{};
+    };
+
     // From Settings.cs
     constexpr int c_focusModelId = 0xFFFF;
     constexpr int c_rowsModelId = 0xFFFE;

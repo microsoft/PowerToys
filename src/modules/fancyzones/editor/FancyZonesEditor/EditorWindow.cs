@@ -16,17 +16,19 @@ namespace FancyZonesEditor
             EditorOverlay mainEditor = EditorOverlay.Current;
             if (mainEditor.DataContext is LayoutModel model)
             {
-                model.Persist(mainEditor.GetZoneRects());
+                model.Persist();
             }
 
-            _choosing = true;
+            LayoutModel.SerializeDeletedCustomZoneSets();
+
+            _backToLayoutPicker = false;
             Close();
             EditorOverlay.Current.Close();
         }
 
         protected void OnClosed(object sender, EventArgs e)
         {
-            if (!_choosing)
+            if (_backToLayoutPicker)
             {
                 EditorOverlay.Current.ShowLayoutPicker();
             }
@@ -34,11 +36,10 @@ namespace FancyZonesEditor
 
         protected void OnCancel(object sender, RoutedEventArgs e)
         {
-            _choosing = true;
+            _backToLayoutPicker = true;
             Close();
-            EditorOverlay.Current.ShowLayoutPicker();
         }
 
-        private bool _choosing = false;
+        private bool _backToLayoutPicker = true;
     }
 }
