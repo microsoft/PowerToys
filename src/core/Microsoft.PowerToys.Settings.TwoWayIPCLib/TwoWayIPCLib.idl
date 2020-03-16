@@ -1,0 +1,48 @@
+// TwoWayIPCLib.idl : IDL source for TwoWayIPCLib
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (TwoWayIPCLib.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+    local,
+	object,
+	uuid(8160da0a-c224-485c-b5ba-66484f212cf4),
+	dual,
+	nonextensible,
+	pointer_default(unique)
+]
+interface ITwoWayIPCManager : IDispatch
+{
+    [id(1)] HRESULT SendMessage([in] BSTR message);
+    [id(2)] HRESULT Initialize([in] BSTR runnerPipeName, [in] BSTR settingsPipeName);
+};
+[
+	uuid(7e00d5a3-11df-45c1-a675-96e408bd5bf5),
+	version(1.0),
+]
+library TwoWayIPCLibLib
+{
+	importlib("stdole2.tlb");
+	[
+		uuid(62d4786d-c6be-4e2a-8362-0f3ed73d3321)
+	]
+	dispinterface _ITwoWayIPCManagerEvents
+	{
+		properties:
+		methods:
+	};
+	[
+		uuid(cbd4dd85-c226-425f-af85-66de72bc5f7e)
+	]
+	coclass TwoWayIPCManager
+	{
+		[default] interface ITwoWayIPCManager;
+	};
+};
+
+
+import "shobjidl.idl";
