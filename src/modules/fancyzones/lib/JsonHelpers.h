@@ -17,8 +17,8 @@ namespace JSONHelpers
     constexpr int MAX_ZONE_COUNT = 50;
 
     #if defined(UNIT_TESTS)
-    bool isGuid(const std::wstring& str);
-    bool isDeviceId(const std::wstring& str);
+    bool isValidGuid(const std::wstring& str);
+    bool isValidDeviceId(const std::wstring& str);
     #endif
 
     enum class ZoneSetLayoutType : int

@@ -57,67 +57,67 @@ namespace FancyZonesUnitTests
         TEST_METHOD (GuidValid)
         {
             const auto guidStr = Helpers::CreateGuidString();
-            Assert::IsTrue(isGuid(guidStr));
+            Assert::IsTrue(isValidGuid(guidStr));
         }
 
         TEST_METHOD (GuidInvalidForm)
         {
             const auto guidStr = L"33A2B101-06E0-437B-A61E-CDBECF502906";
-            Assert::IsFalse(isGuid(guidStr));
+            Assert::IsFalse(isValidGuid(guidStr));
         }
 
         TEST_METHOD (GuidInvalidSymbols)
         {
             const auto guidStr = L"{33A2B101-06E0-437B-A61E-CDBECF50290*}";
-            Assert::IsFalse(isGuid(guidStr));
+            Assert::IsFalse(isValidGuid(guidStr));
         }
 
         TEST_METHOD (GuidInvalid)
         {
             const auto guidStr = L"guid";
-            Assert::IsFalse(isGuid(guidStr));
+            Assert::IsFalse(isValidGuid(guidStr));
         }
 
         TEST_METHOD (DeviceId)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsTrue(isDeviceId(deviceId));
+            Assert::IsTrue(isValidDeviceId(deviceId));
         }
 
         TEST_METHOD (DeviceIdInvalidFormat)
         {
             const auto deviceId = L"_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsFalse(isDeviceId(deviceId));
+            Assert::IsFalse(isValidDeviceId(deviceId));
         }
 
         TEST_METHOD (DeviceIdInvalidFormat2)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_19201200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsFalse(isDeviceId(deviceId));
+            Assert::IsFalse(isValidDeviceId(deviceId));
         }
 
         TEST_METHOD (DeviceIdInvalidDecimals)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_aaaa_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsFalse(isDeviceId(deviceId));
+            Assert::IsFalse(isValidDeviceId(deviceId));
         }
 
         TEST_METHOD (DeviceIdInvalidDecimals2)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_19a0_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsFalse(isDeviceId(deviceId));
+            Assert::IsFalse(isValidDeviceId(deviceId));
         }
 
         TEST_METHOD (DeviceIdInvalidDecimals3)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_1900_120000000000000_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsFalse(isDeviceId(deviceId));
+            Assert::IsFalse(isValidDeviceId(deviceId));
         }
 
         TEST_METHOD (DeviceIdInvalidGuid)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-4B5D-8851-4791D66B1539}";
-            Assert::IsFalse(isDeviceId(deviceId));
+            Assert::IsFalse(isValidDeviceId(deviceId));
         }
     };
     TEST_CLASS (ZoneSetLayoutTypeUnitTest)

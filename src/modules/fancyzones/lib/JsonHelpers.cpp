@@ -47,13 +47,13 @@ namespace
 
 namespace JSONHelpers
 {
-    bool isGuid(const std::wstring& str)
+    bool isValidGuid(const std::wstring& str)
     {
         GUID id;
         return SUCCEEDED_LOG(CLSIDFromString(str.c_str(), &id));
     }
 
-    bool isDeviceId(const std::wstring& str)
+    bool isValidDeviceId(const std::wstring& str)
     {
         std::wstring temp;
         std::vector<std::wstring> parts;
@@ -80,7 +80,7 @@ namespace JSONHelpers
                 std::stoi(std::wstring(&c));
             }
 
-            if (!isGuid(parts[3]) || parts[0].empty())
+            if (!isValidGuid(parts[3]) || parts[0].empty())
             {
                 return false;
             }
@@ -783,7 +783,7 @@ namespace JSONHelpers
             zoneSetData.uuid = zoneSet.GetNamedString(L"uuid");
             zoneSetData.type = TypeFromString(std::wstring{ zoneSet.GetNamedString(L"type") });
 
-            if (!isGuid(zoneSetData.uuid))
+            if (!isValidGuid(zoneSetData.uuid))
             {
                 return std::nullopt;
             }
@@ -819,7 +819,7 @@ namespace JSONHelpers
             result.data.deviceId = zoneSet.GetNamedString(L"device-id");
             result.data.zoneSetUuid = zoneSet.GetNamedString(L"zoneset-uuid");
 
-            if (!isGuid(result.data.zoneSetUuid) || !isDeviceId(result.data.deviceId))
+            if (!isValidGuid(result.data.zoneSetUuid) || !isValidDeviceId(result.data.deviceId))
             {
                 return std::nullopt;
             }
@@ -852,7 +852,7 @@ namespace JSONHelpers
             DeviceInfoJSON result;
 
             result.deviceId = device.GetNamedString(L"device-id");
-            if (!isDeviceId(result.deviceId))
+            if (!isValidDeviceId(result.deviceId))
             {
                 return std::nullopt;
             }
@@ -1048,7 +1048,7 @@ namespace JSONHelpers
             CustomZoneSetJSON result;
 
             result.uuid = customZoneSet.GetNamedString(L"uuid");
-            if (!isGuid(result.uuid))
+            if (!isValidGuid(result.uuid))
             {
                 return std::nullopt;
             }
