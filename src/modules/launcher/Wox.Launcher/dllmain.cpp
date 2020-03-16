@@ -51,6 +51,9 @@ private:
   // Load initial settings from the persisted values.
   void init_settings();
 
+  // Handle to launch and terminate the launcher
+  HANDLE m_hProcess;
+
 public:
   // Constructor
   Wox_Launcher() {
