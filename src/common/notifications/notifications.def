@@ -3,3 +3,4 @@ DllCanUnloadNow = WINRT_CanUnloadNow                    PRIVATE
 DllGetActivationFactory = WINRT_GetActivationFactory    PRIVATE
 DllRegisterServer                                       PRIVATE
 DllUnregisterServer                                     PRIVATE
+dispatch_to_backround_handler                           PRIVATE

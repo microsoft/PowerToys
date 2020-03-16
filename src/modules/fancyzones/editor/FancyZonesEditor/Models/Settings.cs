@@ -258,6 +258,12 @@ namespace FancyZonesEditor
             // Update the "Focus" Default Layout
             _focusModel.Zones.Clear();
 
+            // Sanity check for imported settings that may have invalid data
+            if (ZoneCount < 1)
+            {
+                ZoneCount = 3;
+            }
+
             Int32Rect focusZoneRect = new Int32Rect((int)(_focusModel.ReferenceWidth * 0.1), (int)(_focusModel.ReferenceHeight * 0.1), (int)(_focusModel.ReferenceWidth * 0.6), (int)(_focusModel.ReferenceHeight * 0.6));
             int focusRectXIncrement = (ZoneCount <= 1) ? 0 : (int)(_focusModel.ReferenceWidth * 0.2) / (ZoneCount - 1);
             int focusRectYIncrement = (ZoneCount <= 1) ? 0 : (int)(_focusModel.ReferenceHeight * 0.2) / (ZoneCount - 1);
@@ -280,7 +286,11 @@ namespace FancyZonesEditor
             {
                 _rowsModel.CellChildMap[i, 0] = i;
                 _columnsModel.CellChildMap[0, i] = i;
-                _rowsModel.RowPercents[i] = _multiplier / ZoneCount; // _columnsModel is sharing the same array
+
+                // Note: This is NOT equal to _multiplier / ZoneCount and is done like this to make
+                // the sum of all RowPercents exactly (_multiplier).
+                // _columnsModel is sharing the same array
+                _rowsModel.RowPercents[i] = ((_multiplier * (i + 1)) / ZoneCount) - ((_multiplier * i) / ZoneCount);
             }
 
             // Update the "Grid" Default Layout
@@ -307,14 +317,16 @@ namespace FancyZonesEditor
             _gridModel.ColumnPercents = new int[cols];
             _gridModel.CellChildMap = new int[rows, cols];
 
+            // Note: The following are NOT equal to _multiplier divided by rows or columns and is
+            // done like this to make the sum of all RowPercents exactly (_multiplier).
             for (int row = 0; row < rows; row++)
             {
-                _gridModel.RowPercents[row] = _multiplier / rows;
+                _gridModel.RowPercents[row] = ((_multiplier * (row + 1)) / rows) - ((_multiplier * row) / rows);
             }
 
             for (int col = 0; col < cols; col++)
             {
-                _gridModel.ColumnPercents[col] = _multiplier / cols;
+                _gridModel.ColumnPercents[col] = ((_multiplier * (col + 1)) / cols) - ((_multiplier * col) / cols);
             }
 
             int index = 0;
@@ -348,48 +360,57 @@ namespace FancyZonesEditor
 
         private void ParseDeviceInfoData()
         {
-            FileStream inputStream = File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
-            var jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
-
-            UniqueKey = jsonObject.GetProperty("device-id").GetString();
-            ActiveZoneSetUUid = jsonObject.GetProperty("active-zoneset").GetProperty("uuid").GetString();
-            string layoutType = jsonObject.GetProperty("active-zoneset").GetProperty("type").GetString();
-
-            if (ActiveZoneSetUUid == "null" || layoutType == "blank")
+            try
             {
-                // Default selection is Focus
-                ActiveZoneSetLayoutType = LayoutType.Focus;
-                _showSpacing = true;
-                _spacing = 16;
-                _zoneCount = 3;
-            }
-            else
-            {
-                switch (layoutType)
+                FileStream inputStream = File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
+                var jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
+
+                UniqueKey = jsonObject.GetProperty("device-id").GetString();
+                ActiveZoneSetUUid = jsonObject.GetProperty("active-zoneset").GetProperty("uuid").GetString();
+                string layoutType = jsonObject.GetProperty("active-zoneset").GetProperty("type").GetString();
+
+                if (ActiveZoneSetUUid == "null" || layoutType == "blank")
                 {
-                    case "focus":
-                        ActiveZoneSetLayoutType = LayoutType.Focus;
-                        break;
-                    case "columns":
-                        ActiveZoneSetLayoutType = LayoutType.Columns;
-                        break;
-                    case "rows":
-                        ActiveZoneSetLayoutType = LayoutType.Rows;
-                        break;
-                    case "grid":
-                        ActiveZoneSetLayoutType = LayoutType.Grid;
-                        break;
-                    case "priority-grid":
-                        ActiveZoneSetLayoutType = LayoutType.PriorityGrid;
-                        break;
-                    case "custom":
-                        ActiveZoneSetLayoutType = LayoutType.Custom;
-                        break;
+                    // Default selection is Focus
+                    ActiveZoneSetLayoutType = LayoutType.Focus;
+                    _showSpacing = true;
+                    _spacing = 16;
+                    _zoneCount = 3;
+                }
+                else
+                {
+                    switch (layoutType)
+                    {
+                        case "focus":
+                            ActiveZoneSetLayoutType = LayoutType.Focus;
+                            break;
+                        case "columns":
+                            ActiveZoneSetLayoutType = LayoutType.Columns;
+                            break;
+                        case "rows":
+                            ActiveZoneSetLayoutType = LayoutType.Rows;
+                            break;
+                        case "grid":
+                            ActiveZoneSetLayoutType = LayoutType.Grid;
+                            break;
+                        case "priority-grid":
+                            ActiveZoneSetLayoutType = LayoutType.PriorityGrid;
+                            break;
+                        case "custom":
+                            ActiveZoneSetLayoutType = LayoutType.Custom;
+                            break;
+                    }
+
+                    _showSpacing = jsonObject.GetProperty("editor-show-spacing").GetBoolean();
+                    _spacing = jsonObject.GetProperty("editor-spacing").GetInt32();
+                    _zoneCount = jsonObject.GetProperty("editor-zone-count").GetInt32();
                 }
 
-                _showSpacing = jsonObject.GetProperty("editor-show-spacing").GetBoolean();
-                _spacing = jsonObject.GetProperty("editor-spacing").GetInt32();
-                _zoneCount = jsonObject.GetProperty("editor-zone-count").GetInt32();
+                inputStream.Close();
+            }
+            catch (Exception ex)
+            {
+                LayoutModel.ShowExceptionMessageBox("Error parsing device info data", ex);
             }
         }
 

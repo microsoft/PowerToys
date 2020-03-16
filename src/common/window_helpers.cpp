@@ -4,7 +4,7 @@
 HWND CreateMsgWindow(_In_ HINSTANCE hInst, _In_ WNDPROC pfnWndProc, _In_ void* p)
 {
     WNDCLASS wc = { 0 };
-    
+
     PCWSTR wndClassName = L"MsgWindow";
 
     wc.lpfnWndProc = DefWindowProc;

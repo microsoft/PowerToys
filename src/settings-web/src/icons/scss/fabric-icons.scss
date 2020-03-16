@@ -33,6 +33,7 @@
 @mixin ms-Icon--ChevronLeftMed { content: "\E973"; }
 @mixin ms-Icon--ChevronRightMed { content: "\E974"; }
 @mixin ms-Icon--CircleRing { content: "\EA3A"; }
+@mixin ms-Icon--FabricReportLibrary { content: "\F0A1"; }
 
 
 // Classes
@@ -52,4 +53,5 @@
 .ms-Icon--ChevronLeftMed:before { @include ms-Icon--ChevronLeftMed }
 .ms-Icon--ChevronRightMed:before { @include ms-Icon--ChevronRightMed }
 .ms-Icon--CircleRing:before { @include ms-Icon--CircleRing }
+.ms-Icon--FabricReportLibrary:before { @include ms-Icon--FabricReportLibrary }
 

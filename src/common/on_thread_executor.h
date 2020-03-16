@@ -10,21 +10,22 @@
 // This might come in handy if you use the API which sets thread-wide global state and the state needs
 // to be isolated.
 
-class OnThreadExecutor final {
+class OnThreadExecutor final
+{
 public:
-  using task_t = std::packaged_task<void()>;
+    using task_t = std::packaged_task<void()>;
 
-  OnThreadExecutor();
-  ~OnThreadExecutor();
-  std::future<void> submit(task_t task);
+    OnThreadExecutor();
+    ~OnThreadExecutor();
+    std::future<void> submit(task_t task);
 
 private:
-  void worker_thread();
+    void worker_thread();
 
-  std::thread _worker_thread;
+    std::thread _worker_thread;
 
-  std::mutex _task_mutex;
-  std::condition_variable _task_cv;
-  std::atomic_bool _shutdown_request;
-  std::queue<std::packaged_task<void()>> _task_queue;
+    std::mutex _task_mutex;
+    std::condition_variable _task_cv;
+    std::atomic_bool _shutdown_request;
+    std::queue<std::packaged_task<void()>> _task_queue;
 };

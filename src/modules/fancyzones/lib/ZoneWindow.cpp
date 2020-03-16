@@ -224,7 +224,7 @@ namespace ZoneWindowDrawUtils
             RGB(175, 175, 185),
         };
 
-        //                                 { fillAlpha, fill, borderAlpha, border, thickness }
+        // ColorSetting { fillAlpha, fill, borderAlpha, border, thickness }
         ColorSetting const colorHints{ 225, RGB(81, 92, 107), 255, RGB(104, 118, 138), -2 };
         ColorSetting colorViewer{ OpacitySettingToAlpha(highlightOpacity), 0, 255, RGB(40, 50, 60), -2 };
         ColorSetting colorHighlight{ OpacitySettingToAlpha(highlightOpacity), 0, 255, 0, -2 };
@@ -279,7 +279,6 @@ public:
     IFACEMETHODIMP MoveSizeEnter(HWND window, bool dragEnabled) noexcept;
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled) noexcept;
     IFACEMETHODIMP MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
-    IFACEMETHODIMP MoveSizeCancel() noexcept;
     IFACEMETHODIMP_(bool)
     IsDragEnabled() noexcept { return m_dragEnabled; }
     IFACEMETHODIMP_(void)
@@ -296,13 +295,16 @@ public:
     SaveWindowProcessToZoneIndex(HWND window) noexcept;
     IFACEMETHODIMP_(IZoneSet*)
     ActiveZoneSet() noexcept { return m_activeZoneSet.get(); }
+    IFACEMETHODIMP_(void)
+    ShowZoneWindow() noexcept;
+    IFACEMETHODIMP_(void)
+    HideZoneWindow() noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
 
 private:
-    void ShowZoneWindow() noexcept;
-    void HideZoneWindow() noexcept;
+    
     void LoadSettings() noexcept;
     void InitializeZoneSets(MONITORINFO const& mi) noexcept;
     void CalculateZoneSet() noexcept;
@@ -318,7 +320,7 @@ private:
     HMONITOR m_monitor{};
     std::wstring m_uniqueId; // Parsed deviceId + resolution + virtualDesktopId
     wchar_t m_workArea[256]{};
-    wil::unique_hwnd m_window{};
+    wil::unique_hwnd m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
     bool m_drawHints{};
     bool m_flashMode{};
@@ -455,12 +457,6 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
     return S_OK;
 }
 
-IFACEMETHODIMP ZoneWindow::MoveSizeCancel() noexcept
-{
-    HideZoneWindow();
-    return S_OK;
-}
-
 IFACEMETHODIMP_(void)
 ZoneWindow::MoveWindowIntoZoneByIndex(HWND window, int index) noexcept
 {
@@ -514,8 +510,8 @@ ZoneWindow::SaveWindowProcessToZoneIndex(HWND window) noexcept
     }
 }
 
-#pragma region private
-void ZoneWindow::ShowZoneWindow() noexcept
+IFACEMETHODIMP_(void)
+ZoneWindow::ShowZoneWindow() noexcept
 {
     if (m_window)
     {
@@ -536,7 +532,8 @@ void ZoneWindow::ShowZoneWindow() noexcept
     }
 }
 
-void ZoneWindow::HideZoneWindow() noexcept
+IFACEMETHODIMP_(void)
+ZoneWindow::HideZoneWindow() noexcept
 {
     if (m_window)
     {
@@ -547,6 +544,8 @@ void ZoneWindow::HideZoneWindow() noexcept
         m_highlightZone = nullptr;
     }
 }
+
+#pragma region private
 
 void ZoneWindow::LoadSettings() noexcept
 {
