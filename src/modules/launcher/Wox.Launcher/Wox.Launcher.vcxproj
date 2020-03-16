@@ -82,7 +82,7 @@
       <PreprocessorDefinitions>NDEBUG;EXAMPLEPOWERTOY_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\common\inc;..\..\common\Telemetry;..\;..\..\;..\..\..\deps\cpprestsdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\common\inc;..\..\..\common\Telemetry;..\..\;..\..\..\;..\..\..\..\deps\cpprestsdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
