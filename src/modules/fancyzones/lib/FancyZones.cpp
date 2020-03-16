@@ -706,7 +706,7 @@ bool FancyZones::IsInterestingWindow(HWND window) noexcept
     CharUpperBuffW(filtered.process_path.data(), (DWORD)filtered.process_path.length());
     if (m_settings)
     {
-        auto excludedAppsArray = m_settings->GetSettings()->excludedAppsArray;
+        const auto& excludedAppsArray = m_settings->GetSettings()->excludedAppsArray;
         if (find_app_name_in_path(filtered.process_path, excludedAppsArray))
         {
             return false;

@@ -723,6 +723,7 @@ bool find_app_name_in_path(const std::wstring& where, const std::vector<std::wst
     {
         const auto pos = where.rfind(row);
         const auto last_slash = where.rfind('\\');
+        //Check that row occurs in where, and its last occurrence contains in itself the first character after the last backslash.
         if (pos != std::wstring::npos && pos <= last_slash + 1 && pos + row.length() > last_slash)
         {
             return true;
