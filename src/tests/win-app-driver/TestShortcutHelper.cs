@@ -1,10 +1,9 @@
 ﻿using System;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
-using OpenQA.Selenium.Remote;
-using OpenQA.Selenium;
-using System.Threading;
+using OpenQA.Selenium.Interactions;
 
 namespace PowerToysTests
 {
@@ -20,7 +19,7 @@ namespace PowerToysTests
         {
             if(!isWinKeyPressed)
             {
-                session.Keyboard.PressKey(Keys.Command);
+                new Actions(session).KeyDown(OpenQA.Selenium.Keys.Command).Perform();
                 isWinKeyPressed = true;
             }
         }
@@ -29,7 +28,7 @@ namespace PowerToysTests
         {
             if(isWinKeyPressed)
             {
-                session.Keyboard.ReleaseKey(Keys.Command);
+                new Actions(session).KeyUp(OpenQA.Selenium.Keys.Command).Perform();
                 isWinKeyPressed = false;
             }
         }
@@ -57,7 +56,7 @@ namespace PowerToysTests
                 shortcutHelperWindow = session.FindElementByXPath("/Pane[@ClassName=\"#32769\"]/Pane[@ClassName=\"PToyD2DPopup\"]");
                 Assert.IsNotNull(shortcutHelperWindow);
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException)
             {
                 // Not the exception we wanted to catch here.
                 Assert.Fail("Shortcut Guide not found");
@@ -90,7 +89,7 @@ namespace PowerToysTests
                 // FindElementByClassName will be faster than using with XPath.
                 WindowsElement shortcutHelperWindow = session.FindElementByClassName("PToyD2DPopup");
                 Assert.IsNotNull(shortcutHelperWindow);
-            } catch (InvalidOperationException ex)
+            } catch (InvalidOperationException)
             {
                 // Not the exception we wanted to catch here.
                 Assert.Fail("Shortcut Guide not found");
@@ -119,7 +118,7 @@ namespace PowerToysTests
             try
             {
                 startMenuWindow = session.FindElementByXPath("/Pane[@ClassName=\"#32769\"]/Window[@Name=\"Start\"]");
-            } catch (Exception ex)
+            } catch (Exception)
             {
                 //Start menu not found, as expected.
             }
@@ -133,7 +132,7 @@ namespace PowerToysTests
                 WindowsDriver<WindowsElement> startMenuSession = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appiumOptions);
                 if (startMenuSession != null)
                 {
-                    startMenuSession.Keyboard.SendKeys(OpenQA.Selenium.Keys.Escape + OpenQA.Selenium.Keys.Escape);
+                    new Actions(session).SendKeys(OpenQA.Selenium.Keys.Escape + OpenQA.Selenium.Keys.Escape).Perform();
                     startMenuSession.Quit();
                 }
             }

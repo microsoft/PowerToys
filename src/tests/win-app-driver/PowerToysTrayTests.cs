@@ -1,7 +1,6 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium.Windows;
-using System.Threading;
+using OpenQA.Selenium.Interactions;
 
 namespace PowerToysTests
 {
@@ -15,7 +14,7 @@ namespace PowerToysTests
         public void SettingsOpen()
         {
             OpenSettings();
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+            ShortWait();
 
             //check settings window opened
             WindowsElement settingsWindow = session.FindElementByName("PowerToys Settings");
@@ -35,13 +34,13 @@ namespace PowerToysTests
             WindowsElement pt = session.FindElementByName("PowerToys");
             Assert.IsNotNull(pt);
 
-            session.Mouse.ContextClick(pt.Coordinates);
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+            new Actions(session).MoveToElement(pt).ContextClick().Perform();
+            ShortWait();
 
             //open settings
-            session.FindElementByXPath("//MenuItem[@AutomationId=\"40002\"]").Click();
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
-            
+            session.FindElementByXPath("//MenuItem[@Name=\"Settings\"]").Click();
+            ShortWait();
+
             //check settings window opened
             WindowsElement settingsWindow = session.FindElementByName("PowerToys Settings");
             Assert.IsNotNull(settingsWindow);
@@ -59,17 +58,18 @@ namespace PowerToysTests
             WindowsElement pt = session.FindElementByName("PowerToys");
             Assert.IsNotNull(pt);
 
-            session.Mouse.ContextClick(pt.Coordinates);
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+            new Actions(session).MoveToElement(pt).ContextClick().Perform();
+            ShortWait();
 
             //exit
-            session.FindElementByXPath("//MenuItem[@AutomationId=\"40001\"]").Click();
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+            session.FindElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
+            ShortWait();
 
             //check PowerToys exited
+            pt = null;
             try
             {
-                Assert.IsNull(session.FindElementByName("PowerToys"));
+                pt = session.FindElementByName("PowerToys");
             }
             catch (OpenQA.Selenium.WebDriverException)
             {
@@ -77,7 +77,9 @@ namespace PowerToysTests
             }
 
             LaunchPowerToys();
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+            ShortWait();
+
+            Assert.IsNull(pt);
         }
 
         [ClassInitialize]
