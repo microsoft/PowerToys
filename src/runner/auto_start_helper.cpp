@@ -37,7 +37,7 @@
 const DWORD USERNAME_DOMAIN_LEN = DNLEN + UNLEN + 2; // Domain Name + '\' + User Name + '\0'
 const DWORD USERNAME_LEN = UNLEN + 1; // User Name + '\0'
 
-bool enable_auto_start_task_for_this_user(bool runEvelvated)
+bool create_auto_start_task_for_this_user(bool runEvelvated)
 {
     HRESULT hr = S_OK;
 
@@ -265,7 +265,7 @@ LExit:
     return (SUCCEEDED(hr));
 }
 
-bool disable_auto_start_task_for_this_user()
+bool delete_auto_start_task_for_this_user()
 {
     HRESULT hr = S_OK;
 
