@@ -23,7 +23,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 }
 
 // The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"Wox.Launcher";
+const static wchar_t* MODULE_NAME = L"Launcher";
 // Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"<no description>";
 
