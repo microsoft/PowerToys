@@ -283,8 +283,8 @@ public:
     IsDragEnabled() noexcept { return m_dragEnabled; }
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndex(HWND window, int index) noexcept;
-    IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode) noexcept;
+    IFACEMETHODIMP_(bool)
+    MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(void)
     CycleActiveZoneSet(DWORD vkCode) noexcept;
     IFACEMETHODIMP_(std::wstring)
@@ -466,14 +466,18 @@ ZoneWindow::MoveWindowIntoZoneByIndex(HWND window, int index) noexcept
     }
 }
 
-IFACEMETHODIMP_(void)
-ZoneWindow::MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode) noexcept
+IFACEMETHODIMP_(bool)
+ZoneWindow::MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle) noexcept
 {
     if (m_activeZoneSet)
     {
-        m_activeZoneSet->MoveWindowIntoZoneByDirection(window, m_window.get(), vkCode);
-        SaveWindowProcessToZoneIndex(window);
+        if (m_activeZoneSet->MoveWindowIntoZoneByDirection(window, m_window.get(), vkCode, cycle))
+        {
+            SaveWindowProcessToZoneIndex(window);
+            return true;
+        }
     }
+    return false;
 }
 
 IFACEMETHODIMP_(void)
