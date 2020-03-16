@@ -68,9 +68,16 @@ namespace JSONHelpers
             return false;
         }
 
+        /*
+         Refer to ZoneWindowUtils::GenerateUniqueId parts contain:
+         1. monitor id [string]
+         2. width of device [int]
+         3. height of device [int]
+         4. virtual desktop id (GUID) [string]
+        */
         try
         {
-            //check if strings can be converted to int
+            //check if resolution contain only digits
             for (const auto& c : parts[1])
             {
                 std::stoi(std::wstring(&c));
@@ -79,13 +86,13 @@ namespace JSONHelpers
             {
                 std::stoi(std::wstring(&c));
             }
-
-            if (!isValidGuid(parts[3]) || parts[0].empty())
-            {
-                return false;
-            }
         }
         catch (const std::exception&)
+        {
+            return false;
+        }
+
+        if (!isValidGuid(parts[3]) || parts[0].empty())
         {
             return false;
         }
