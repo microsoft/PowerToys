@@ -43,17 +43,6 @@ namespace PowerToysTests
             Assert.IsNotNull(_scrollDown);
         }
 
-        private static void OpenFancyZonesSettings()
-        {
-            WindowsElement fzNavigationButton = session.FindElementByXPath("//Button[@Name=\"FancyZones\"]");
-            Assert.IsNotNull(fzNavigationButton);
-
-            fzNavigationButton.Click();
-            fzNavigationButton.Click();
-
-            ShortWait();
-        }
-
         private JObject getProperties()
         {
             JObject settings = JObject.Parse(File.ReadAllText(_settingsPath));

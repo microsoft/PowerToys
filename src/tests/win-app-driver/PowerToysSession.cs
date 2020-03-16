@@ -57,6 +57,17 @@ namespace PowerToysTests
             trayButton.Click();
         }
 
+        public static void OpenFancyZonesSettings()
+        {
+            WindowsElement fzNavigationButton = session.FindElementByXPath("//Button[@Name=\"FancyZones\"]");
+            Assert.IsNotNull(fzNavigationButton);
+
+            fzNavigationButton.Click();
+            fzNavigationButton.Click();
+
+            ShortWait();
+        }
+
         public static void CloseSettings()
         {
             WindowsElement settings = session.FindElementByName("PowerToys Settings");
