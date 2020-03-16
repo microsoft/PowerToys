@@ -4,6 +4,7 @@
 #include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
 #include "trace.h"
+#include "resource.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -22,10 +23,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
   return TRUE;
 }
 
-// The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"Launcher";
-// Add a description that will we shown in the module settings page.
-const static wchar_t* MODULE_DESC = L"<no description>";
 
 // These are the properties shown in the Settings page.
 struct ModuleSettings {
@@ -54,9 +51,13 @@ private:
   // Handle to launch and terminate the launcher
   HANDLE m_hProcess;
 
+  //contains the name of the powerToys
+  std::wstring app_name;
+
 public:
   // Constructor
   Wox_Launcher() {
+    app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
     init_settings();
   };
 
@@ -67,7 +68,7 @@ public:
 
   // Return the display name of the powertoy, this will be cached by the runner
   virtual const wchar_t* get_name() override {
-    return MODULE_NAME;
+      return app_name.c_str();
   }
 
   // Return array of the names of all events that this powertoy listens for, with
@@ -92,7 +93,7 @@ public:
 
     // Create a Settings object.
     PowerToysSettings::Settings settings(hinstance, get_name());
-    settings.set_description(MODULE_DESC);
+    settings.set_description(GET_RESOURCE_STRING(IDS_LAUNCHER_SETTINGS_DESC));
 
     // Show an overview link in the Settings page
     //settings.set_overview_link(L"https://");

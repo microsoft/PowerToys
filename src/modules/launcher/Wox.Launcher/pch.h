@@ -4,3 +4,4 @@
 #include <common/common.h>
 #include <ProjectTelemetry.h>
 #include <shellapi.h>
+#include <Shlwapi.h>
