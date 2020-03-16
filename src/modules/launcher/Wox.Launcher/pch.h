@@ -3,3 +3,4 @@
 #include <windows.h>
 #include <common/common.h>
 #include <ProjectTelemetry.h>
+#include <shellapi.h>
