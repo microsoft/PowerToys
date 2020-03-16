@@ -110,12 +110,12 @@
     <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\common\common.vcxproj">
-      <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
-    </ProjectReference>
+    <ResourceCompile Include="Wox.Launcher.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Wox.Launcher.rc" />
+    <ProjectReference Include="..\..\..\common\common.vcxproj">
+      <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
