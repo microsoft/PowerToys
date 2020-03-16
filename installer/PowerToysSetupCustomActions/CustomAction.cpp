@@ -221,7 +221,7 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall) {
   }
 
   // Run the task with the highest available privileges.
-  hr = pPrincipal->put_RunLevel(TASK_RUNLEVEL_HIGHEST);
+  hr = pPrincipal->put_RunLevel(TASK_RUNLEVEL_LUA);
   pPrincipal->Release();
   ExitOnFailure(hr, "Cannot put principal run level: %x", hr);
 

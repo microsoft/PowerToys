@@ -37,7 +37,7 @@
 const DWORD USERNAME_DOMAIN_LEN = DNLEN + UNLEN + 2; // Domain Name + '\' + User Name + '\0'
 const DWORD USERNAME_LEN = UNLEN + 1; // User Name + '\0'
 
-bool enable_auto_start_task_for_this_user()
+bool enable_auto_start_task_for_this_user(bool runEvelvated)
 {
     HRESULT hr = S_OK;
 
@@ -219,9 +219,7 @@ bool enable_auto_start_task_for_this_user()
 
         hr = pPrincipal->put_LogonType(TASK_LOGON_INTERACTIVE_TOKEN);
 
-        auto generalSettings = load_general_settings();
-
-        if (generalSettings.GetNamedBoolean(L"run_elevated", false) == true)
+        if (runEvelvated)
         {
             hr = pPrincipal->put_RunLevel(_TASK_RUNLEVEL::TASK_RUNLEVEL_HIGHEST);
         }
@@ -319,13 +317,7 @@ bool disable_auto_start_task_for_this_user()
         if (SUCCEEDED(hr))
         {
             // Task exists, try disabling it.
-            hr = pExistingRegisteredTask->put_Enabled(VARIANT_FALSE);
-            pExistingRegisteredTask->Release();
-            if (SUCCEEDED(hr))
-            {
-                // Function disable. Sounds like a success.
-                ExitFunction();
-            }
+            hr = pTaskFolder->DeleteTask(_bstr_t(wstrTaskName.c_str()), 0);
         }
     }
 

@@ -115,6 +115,8 @@ json::JsonObject get_general_settings()
 
 void apply_general_settings(const json::JsonObject& general_configs)
 {
+    run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
+
     if (json::has(general_configs, L"startup", json::JsonValueType::Boolean))
     {
         const bool startup = general_configs.GetNamedBoolean(L"startup");
@@ -124,17 +126,32 @@ void apply_general_settings(const json::JsonObject& general_configs)
         }
         else
         {
-            const bool current_startup = is_auto_start_task_active_for_this_user();
-            if (current_startup != startup)
+            if (startup)
             {
-                if (startup)
+                if (is_process_elevated())
                 {
-                    enable_auto_start_task_for_this_user();
+                    delete_auto_start_task_for_this_user();
+                    create_auto_start_task_for_this_user(general_configs.GetNamedBoolean(L"run_elevated", false));
                 }
                 else
                 {
-                    disable_auto_start_task_for_this_user();
+                    if (!is_auto_start_task_active_for_this_user())
+                    {
+                        delete_auto_start_task_for_this_user();
+                        create_auto_start_task_for_this_user(false);
+
+                        run_as_elevated = false;
+                    }
+                    else if (!general_configs.GetNamedBoolean(L"run_elevated", false))
+                    {
+                        delete_auto_start_task_for_this_user();
+                        create_auto_start_task_for_this_user(false);
+                    }
                 }
+            }
+            else
+            {
+                delete_auto_start_task_for_this_user();
             }
         }
     }
@@ -169,7 +186,7 @@ void apply_general_settings(const json::JsonObject& general_configs)
             }
         }
     }
-    run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
+
     if (json::has(general_configs, L"theme", json::JsonValueType::String))
     {
         settings_theme = general_configs.GetNamedString(L"theme");
