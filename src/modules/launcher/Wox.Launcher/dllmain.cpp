@@ -206,14 +206,29 @@ public:
     }
   }
 
-  // Enable the powertoy
-  virtual void enable() {
-    m_enabled = true;
+   // Enable the powertoy
+  virtual void enable()
+  {
+      SHELLEXECUTEINFO sei{ sizeof(sei) };
+      sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+      sei.lpFile = L"modules\\launcher\\Wox.exe";
+      sei.nShow = SW_SHOWNORMAL;
+      ShellExecuteEx(&sei);
+
+      m_hProcess = sei.hProcess;
+
+      m_enabled = true;
   }
 
   // Disable the powertoy
-  virtual void disable() {
-    m_enabled = false;
+  virtual void disable()
+  {
+      if (m_enabled)
+      {
+          TerminateProcess(m_hProcess, 1);
+      }
+
+      m_enabled = false;
   }
 
   // Returns if the powertoys is enabled
