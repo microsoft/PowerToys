@@ -14,6 +14,7 @@ struct Settings
     bool overrideSnapHotkeys = false;
     bool appLastZone_moveWindows = false;
     bool use_cursorpos_editor_startupscreen = true;
+    bool showZonesOnAllMonitors = false;
     std::wstring zoneHightlightColor = L"#0078D7";
     int zoneHighlightOpacity = 90;
     PowerToysSettings::HotkeyObject editorHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_OEM_3);
@@ -28,7 +29,7 @@ interface __declspec(uuid("{BA4E77C4-6F44-4C5D-93D3-CBDE880495C2}")) IFancyZones
     IFACEMETHOD_(bool, GetConfig)(_Out_ PWSTR buffer, _Out_ int *buffer_size) = 0;
     IFACEMETHOD_(void, SetConfig)(PCWSTR serializedPowerToysSettingsJson) = 0;
     IFACEMETHOD_(void, CallCustomAction)(PCWSTR action) = 0;
-    IFACEMETHOD_(Settings, GetSettings)() = 0;
+    IFACEMETHOD_(const Settings*, GetSettings)() const = 0;
 };
 
 winrt::com_ptr<IFancyZonesSettings> MakeFancyZonesSettings(HINSTANCE hinstance, PCWSTR config) noexcept;

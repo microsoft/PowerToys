@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="trace.cpp" />
+    <ClCompile Include="settings.cpp" />
+    <ClCompile Include="powerpreview.h" />
+    <ClCompile Include="powerpreview.cpp" />
+    <ClCompile Include="registry_wrapper.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="trace.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="settings.h" />
+    <ClInclude Include="CLSID.h" />
+    <ClInclude Include="registry_wrapper.h" />
+    <ClInclude Include="registry_wrapper_interface.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="powerpreview.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="powerpreview.def" />
+  </ItemGroup>
+</Project>

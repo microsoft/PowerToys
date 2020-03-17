@@ -399,11 +399,11 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetL
         if (type == JSONHelpers::ZoneSetLayoutType::Columns)
         {
             right = left + (zone + 1) * totalWidth / zoneCount - zone * totalWidth / zoneCount;
-            bottom = totalHeight - spacing;
+            bottom = totalHeight + spacing;
         }
         else
         { //Rows
-            right = totalWidth - spacing;
+            right = totalWidth + spacing;
             bottom = top + (zone + 1) * totalHeight / zoneCount - zone * totalHeight / zoneCount;
         }
         
@@ -560,7 +560,7 @@ bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo grid
 
     // Note: The expressions below are carefully written to 
     // make the sum of all zones' sizes exactly total{Width|Height}
-    long long totalPercents = 0;
+    int totalPercents = 0;
     for (int row = 0; row < gridLayoutInfo.rows(); row++)
     {
         rowInfo[row].Start = totalPercents * totalHeight / C_MULTIPLIER + (row + 1) * spacing;

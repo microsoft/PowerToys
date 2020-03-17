@@ -63,8 +63,8 @@ namespace FancyZonesEditor
                 zone.ZoneIndex = i;
                 Canvas.SetLeft(zone, rect.X);
                 Canvas.SetTop(zone, rect.Y);
-                zone.MinHeight = rect.Height;
-                zone.MinWidth = rect.Width;
+                zone.Height = rect.Height;
+                zone.Width = rect.Width;
             }
         }
     }

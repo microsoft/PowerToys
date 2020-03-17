@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <string>
 #include <memory>
+#include <vector>
 
 // Returns RECT with positions of the minmize/maximize buttons of the given window.
 // Does not always work, since some apps draw custom toolbars.
@@ -76,6 +77,9 @@ bool run_same_elevation(const std::wstring& file, const std::wstring& params);
 
 // Returns true if the current process is running from administrator account
 bool check_user_is_admin();
+
+//Returns true when one or more strings from vector found in string 
+bool find_app_name_in_path(const std::wstring& where, const std::vector<std::wstring>& what);
 
 // Get the executable path or module name for modern apps
 std::wstring get_process_path(DWORD pid) noexcept;
