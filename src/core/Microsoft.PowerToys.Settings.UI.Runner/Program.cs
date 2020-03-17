@@ -8,6 +8,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 {
     public class Program
     {
+        // Create an instance of the  IPC wrapper 
         public static ITwoWayIPCManager ipcmanager = new TwoWayIPCManager();
         [System.STAThreadAttribute()]
         public static void Main(string[] args)
