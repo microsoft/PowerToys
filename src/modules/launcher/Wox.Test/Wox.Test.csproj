@@ -38,6 +38,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SolutionAssemblyInfo.cs">
@@ -45,10 +46,15 @@
     </Compile>
     <Compile Include="FuzzyMatcherTest.cs" />
     <Compile Include="Plugins\PluginInitTest.cs" />
+    <Compile Include="Plugins\WindowsIndexerTest.cs" />
     <Compile Include="QueryBuilderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Plugins\Wox.Plugin.Indexer\Wox.Plugin.Indexer.csproj">
+      <Project>{63c3cea8-51fe-472e-b97c-b58f8b17dd51}</Project>
+      <Name>Wox.Plugin.Indexer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Wox.Core\Wox.Core.csproj">
       <Project>{B749F0DB-8E75-47DB-9E5E-265D16D0C0D2}</Project>
       <Name>Wox.Core</Name>
@@ -71,6 +77,9 @@
     </PackageReference>
     <PackageReference Include="NUnit3TestAdapter">
       <Version>3.15.1</Version>
+    </PackageReference>
+    <PackageReference Include="tlbimp-Microsoft.Search.Interop">
+      <Version>1.0.0</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

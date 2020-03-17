@@ -7,9 +7,9 @@ namespace Wox.Plugin.Indexer.SearchHelper
 {
     public class WindowsSearchAPI
     {
-        private OleDbConnection conn;
-        private OleDbCommand command;
-        private OleDbDataReader WDSResults;
+        public OleDbConnection conn;
+        public OleDbCommand command;
+        public OleDbDataReader WDSResults;
 
         public IEnumerable<SearchResult> ExecuteQuery(ISearchQueryHelper queryHelper, string keyword)
         {
@@ -43,7 +43,8 @@ namespace Wox.Plugin.Indexer.SearchHelper
             }
         }
 
-        public void setQueryHelper(ref ISearchQueryHelper queryHelper, string pattern)
+
+        public void ModifyQueryHelper(ref ISearchQueryHelper queryHelper, string pattern)
         {
             // convert file pattern if it is not '*'. Don't create restriction for '*' as it includes all files.
             if (pattern != "*")
@@ -63,7 +64,7 @@ namespace Wox.Plugin.Indexer.SearchHelper
             }
         }
 
-        public IEnumerable<SearchResult> Search(string keyword, string pattern = "*", int maxCount = 100)
+        public void InitQueryHelper(out ISearchQueryHelper queryHelper, int maxCount)
         {
             // This uses the Microsoft.Search.Interop assembly
             CSearchManager manager = new CSearchManager();
@@ -72,7 +73,7 @@ namespace Wox.Plugin.Indexer.SearchHelper
             ISearchCatalogManager catalogManager = manager.GetCatalog("SystemIndex");
 
             // Get the ISearchQueryHelper which will help us to translate AQS --> SQL necessary to query the indexer
-            ISearchQueryHelper queryHelper = catalogManager.GetQueryHelper();
+            queryHelper = catalogManager.GetQueryHelper();
 
             // Set the number of results we want. Don't set this property if all results are needed.
             queryHelper.QueryMaxResults = maxCount;
@@ -85,9 +86,13 @@ namespace Wox.Plugin.Indexer.SearchHelper
 
             // Set sorting order 
             queryHelper.QuerySorting = "System.DateModified DESC";
+        }
 
-            setQueryHelper(ref queryHelper, pattern);
-
+        public IEnumerable<SearchResult> Search(string keyword, string pattern = "*", int maxCount = 100)
+        {
+            ISearchQueryHelper queryHelper;
+            InitQueryHelper(out queryHelper, maxCount);
+            ModifyQueryHelper(ref queryHelper, pattern);
             return ExecuteQuery(queryHelper, keyword);
         }
     }
