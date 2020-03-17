@@ -1,0 +1,12 @@
+{
+  "ID": "2140FC9819AD43A3A616E2735815C27C",
+  "ActionKeyword": "*",
+  "Name": "Windows Indexer",
+  "Description": "Search for files and folders",
+  "Author": "??",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "http://www.wox.one/plugin",
+  "ExecuteFileName": "Wox.Plugin.Indexer.dll",
+  "IcoPath": "Images\\WindowsIndexerImg.bmp"
+}
