@@ -54,3 +54,29 @@ Windows Application Driver can run remotely on any Windows 10 machine with `WinA
 > 2. Under *Active Solution*, uncheck *For improved performance, only use test adapters in test assembly folder or as specified in runsettings file*
 
 If a remote test machine is being used, the IP of the test machine must be used to replace the `WindowsApplicationDriverUrl` value in [PowerToysSession.cs](PowerToysSession.cs).
+
+### Extra tools and information
+
+For tests creation you will need a tool that enables you select any UI element and view the element's accessibility data. For this purpose you could use  [AccessibilityInsights](https://accessibilityinsights.io/docs/en/windows/overview) or [Inspect](https://docs.microsoft.com/ru-ru/windows/win32/winauto/inspect-objects?redirectedfrom=MSDN).
+
+* `inspect.exe` you can find installed at `C:\Program Files (x86)\Windows Kits\10\bin\<version>\<platform>\inspect.exe`
+* `AccessibilityInsights` you can download [here](https://aka.ms/accessibilityinsights-windows/download)
+
+##### How to use Inspect
+Open Inspect, find element you need to investigate (by clicking on element or finding it in a tree) and in the right part of inspector window you will see info about this element. 
+
+Examples for searching elements with values of `Name`, `AutomationId` and `ControlType`:
+```
+//use FindElementByAccessibilityId with AutomationId value
+session.FindElementByAccessibilityId("40001");
+session.FindElementByAccessibilityId("decrementZones");
+
+session.FindElementByName("PowerToys Settings");
+
+//with XPath you can search elements with more specific information 
+session.FindElementByXPath("//Pane[@Name=\"PowerToys Settings\"]");
+session.FindElementByXPath("//Edit[contains(@Name, \"hotkey\")]");
+session.FindElementByXPath("//Pane[@Name=\"PowerToys Settings\"]/*[@LocalizedControlType=\"toggleswitch\"]");
+```
+
+>One more thing to notice: close helper tools while running tests. Overlapping windows can affect test results.
