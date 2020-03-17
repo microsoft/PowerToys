@@ -75,6 +75,11 @@ namespace PowerToysTests
             }
         }
 
+        public static void WaitSeconds(int seconds)
+        {
+            Thread.Sleep(TimeSpan.FromSeconds(seconds));
+        }
+
         public static void ShortWait()
         {
             Thread.Sleep(TimeSpan.FromSeconds(0.5));
