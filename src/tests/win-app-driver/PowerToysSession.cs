@@ -16,7 +16,9 @@ namespace PowerToysTests
         protected static WindowsElement trayButton;
 
         protected static string _settingsPath = "";
+        protected static string _zoneSettingsPath = "";
         protected static string _initialSettings = "";
+        protected static string _initialZoneSettings = "";
 
         public static void Setup(TestContext context)
         {
@@ -25,6 +27,12 @@ namespace PowerToysTests
             if (Directory.Exists(_settingsPath))
             {
                 _initialSettings = File.ReadAllText(_settingsPath);
+            }
+
+            _zoneSettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft/PowerToys/FancyZones/zones-settings.json");
+            if (Directory.Exists(_zoneSettingsPath))
+            {
+                _initialZoneSettings = File.ReadAllText(_zoneSettingsPath);
             }
 
             if (session == null)
@@ -55,10 +63,15 @@ namespace PowerToysTests
                 session = null;
             }
 
-            //restore initial settings file
+            //restore initial settings files
             if (_initialSettings.Length > 0)
             {
                 File.WriteAllText(_settingsPath, _initialSettings);
+            }
+
+            if (_initialZoneSettings.Length > 0)
+            {
+                File.WriteAllText(_zoneSettingsPath, _initialZoneSettings);
             }
         }
 
