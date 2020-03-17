@@ -407,7 +407,8 @@ namespace FancyZonesEditor
                 }
 
                 inputStream.Close();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 LayoutModel.ShowExceptionMessageBox("Error parsing device info data", ex);
             }

@@ -5,6 +5,7 @@
 #include <Sddl.h>
 #include <accctrl.h>
 #include <aclapi.h>
+#include <list>
 
 class TwoWayPipeMessageIPC
 {
@@ -53,6 +54,7 @@ private:
     std::thread output_queue_thread;
     std::thread input_pipe_thread;
     std::mutex pipe_connect_handle_mutex; // For manipulating the current_connect_pipe
+    std::wstring outgoing_message; // Store the updated json settings.  
 
     HANDLE current_connect_pipe_handle = NULL;
     bool closed = false;
@@ -124,12 +126,12 @@ private:
             NULL); // not overlapped
         if (!fSuccess)
         {
+
             return;
         }
         CloseHandle(output_pipe_handle);
         return;
     }
-
     void consume_output_queue_thread()
     {
         while (!closed)
@@ -142,7 +144,7 @@ private:
             send_pipe_message(message);
         }
     }
-
+                                 
     BOOL GetLogonSID(HANDLE hToken, PSID* ppsid)
     {
         // From https://docs.microsoft.com/en-us/previous-versions/aa446670(v=vs.85)
@@ -465,12 +467,20 @@ private:
     {
         while (!closed)
         {
+            outgoing_message = L"";
             std::wstring message = input_queue.pop_message();
             if (message.length() == 0)
             {
                 break;
             }
-            dispatch_inc_message_function(message);
+
+            // Check if callback method exists first before trying to call it.
+            // otherwise just store the response message in a variable.
+            if (dispatch_inc_message_function != nullptr)
+            {
+                dispatch_inc_message_function(message);
+            }
+            outgoing_message = message;
         }
     }
 };
