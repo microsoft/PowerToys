@@ -54,7 +54,7 @@ private:
     std::thread output_queue_thread;
     std::thread input_pipe_thread;
     std::mutex pipe_connect_handle_mutex; // For manipulating the current_connect_pipe
-    std::wstring outgoing_message;
+    std::wstring outgoing_message; // Store the updated json settings.  
 
     HANDLE current_connect_pipe_handle = NULL;
     bool closed = false;
@@ -473,6 +473,9 @@ private:
             {
                 break;
             }
+
+            // Check if callback method exists first before trying to call it.
+            // otherwise just store the response message in a variable.
             if (dispatch_inc_message_function != nullptr)
             {
                 dispatch_inc_message_function(message);
