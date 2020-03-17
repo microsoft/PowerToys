@@ -42,9 +42,14 @@
         <Canvas x:Name="Body" />
         <Label Name="LabelID"
                Content="ID"
-               Canvas.Left="10" Canvas.Bottom="10"
-               FontSize="80" FontFamily="Times New Roman"
-               Background="LightSkyBlue"
-               Foreground="Red" Grid.Column="2" Grid.Row="3" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" RenderTransformOrigin="-0.743,-0.2"/>
+               Canvas.Left="10"
+               Canvas.Bottom="10"
+               FontSize="80"
+               FontFamily="Segoe UI"
+               Foreground="Black"
+               Grid.Column="2"
+               Grid.Row="3"
+               VerticalContentAlignment="Center"
+               HorizontalContentAlignment="Center" />
     </Grid>
 </UserControl>

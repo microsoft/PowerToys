@@ -22,12 +22,10 @@
             Canvas.Bottom="10"
             HorizontalContentAlignment="Center"
             VerticalContentAlignment="Center"
-            Background="LightSkyBlue"
             Content="ID"
-            FontFamily="Times New Roman"
+            FontFamily="Segoe UI"
             FontSize="80"
-            Foreground="Red"
-            RenderTransformOrigin="-0.743,-0.2" />
+            Foreground="Black" />
         <!--<TextBlock Margin="2" Text="Shift Key switches direction&#13;Ctrl  Key repeats"/>-->
     </Grid>
 </UserControl>
