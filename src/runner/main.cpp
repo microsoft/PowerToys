@@ -188,7 +188,8 @@ int runner(bool isProcessElevated)
             L"fancyzones.dll",
             L"PowerRenameExt.dll",
             L"ImageResizerExt.dll",
-            L"powerpreview.dll"
+            L"powerpreview.dll",
+            L"WindowWalker.dll"
         };
         for (auto& file : std::filesystem::directory_iterator(L"modules/"))
         {
