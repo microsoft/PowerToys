@@ -5,14 +5,15 @@
 #include <iostream>
 #include <string>
 
-// CTwoWayIPCManager
 
 using namespace std;
 
+/*
+* Default constructor, initialized the IPC variabl to null.
+*/
 CTwoWayIPCManager::CTwoWayIPCManager()
 {
-        this->m_MessagePipe = nullptr;
-        m_message_from_runner = nullptr;
+    this->m_MessagePipe = nullptr;
 }
 
 CTwoWayIPCManager::~CTwoWayIPCManager()
@@ -21,7 +22,7 @@ CTwoWayIPCManager::~CTwoWayIPCManager()
 }
 
 /*
-Send IPC Message.
+* Send IPC Message.
 */
 STDMETHODIMP CTwoWayIPCManager::SendMessage(BSTR message)
 {
@@ -31,6 +32,10 @@ STDMETHODIMP CTwoWayIPCManager::SendMessage(BSTR message)
     return S_OK;
 }
 
+/*
+* This method is meant to initialize the IPC constructor and
+* and start the threading process.
+*/
 STDMETHODIMP CTwoWayIPCManager::Initialize(BSTR runnerPipeName, BSTR settingsPipeName)
 {
     try
@@ -38,16 +43,12 @@ STDMETHODIMP CTwoWayIPCManager::Initialize(BSTR runnerPipeName, BSTR settingsPip
         wstring powertoys_pipe_name = (PCWSTR)runnerPipeName;
         wstring settings_pipe_name = (PCWSTR)settingsPipeName;
 
-        wcout << powertoys_pipe_name.c_str() << L"\n";
-        wcout << settings_pipe_name.c_str() << L"\n";
-
-        this->m_MessagePipe = nullptr;
         this->m_MessagePipe = new TwoWayPipeMessageIPC(powertoys_pipe_name, settings_pipe_name, nullptr);
         this->m_MessagePipe->start(nullptr);
     }
     catch (std::exception exp)
     {
-        wcout << "failed starting queue " << L"\n";
+        S_FALSE;
     }
     return S_OK;
 }

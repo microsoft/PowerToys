@@ -12,6 +12,10 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         [System.STAThreadAttribute()]
         public static void Main(string[] args)
         {
+            MessageBox.Show(
+                        string.Join(",", args),
+                        "Input",
+                        MessageBoxButton.OK);
             using (new UI.App())
             {
                 App app = new App();
