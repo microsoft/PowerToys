@@ -1,0 +1,44 @@
+﻿<UserControl x:Class="ImageResizer.Views.ResultsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:p="clr-namespace:ImageResizer.Properties"
+             MinWidth="350">
+
+    <StackPanel>
+        <TextBlock Margin="11,11,11,0"
+                   Style="{StaticResource MainInstructionTextBlockStyle}"
+                   Text="{x:Static p:Resources.Results_MainInstruction}"/>
+        <ScrollViewer MaxWidth="363"
+                      MaxHeight="350"
+                      HorizontalAlignment="Stretch"
+                      VerticalScrollBarVisibility="Auto">
+            <ItemsControl Margin="11,4,11,0" ItemsSource="{Binding Errors}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="ResizeError">
+                        <StackPanel>
+                            <TextBlock Margin="0,7,0,0"
+                                       FontWeight="Bold"
+                                       Text="{Binding File}"/>
+                            <TextBlock Text="{Binding Error}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        <Border Margin="0,11,0,0"
+                Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+                BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}"
+                BorderThickness="0,1,0,0"
+                Padding="11,11">
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                <Button Height="23"
+                        MinWidth="75"
+                        Command="{Binding CloseCommand}"
+                        Content="{x:Static p:Resources.Results_Close}"
+                        IsCancel="True"
+                        IsDefault="True"/>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+
+</UserControl>

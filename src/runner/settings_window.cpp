@@ -68,7 +68,7 @@ void dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
         else if (modules().find(name) != modules().end())
         {
             const auto element = powertoy_element.Value().Stringify();
-            modules().at(name).call_custom_action(element.c_str());
+            modules().at(name)->call_custom_action(element.c_str());
         }
     }
 }
@@ -77,7 +77,7 @@ void send_json_config_to_module(const std::wstring& module_key, const std::wstri
 {
     if (modules().find(module_key) != modules().end())
     {
-        modules().at(module_key).set_config(settings.c_str());
+        modules().at(module_key)->set_config(settings.c_str());
     }
 }
 

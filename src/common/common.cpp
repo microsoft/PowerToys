@@ -7,6 +7,7 @@
 #include "version.h"
 
 #pragma comment(lib, "advapi32.lib")
+#pragma comment(lib, "shlwapi.lib")
 
 namespace localized_strings
 {
@@ -442,6 +443,7 @@ bool run_elevated(const std::wstring& file, const std::wstring& params)
     exec_info.fMask = SEE_MASK_NOCLOSEPROCESS;
     exec_info.lpDirectory = 0;
     exec_info.hInstApp = 0;
+    exec_info.nShow = SW_SHOWDEFAULT;
 
     if (ShellExecuteExW(&exec_info))
     {
@@ -712,5 +714,20 @@ bool check_user_is_admin()
     }
 
     freeMemory(pSID, pGroupInfo);
+    return false;
+}
+
+bool find_app_name_in_path(const std::wstring& where, const std::vector<std::wstring>& what)
+{
+    for (const auto& row : what)
+    {
+        const auto pos = where.rfind(row);
+        const auto last_slash = where.rfind('\\');
+        //Check that row occurs in where, and its last occurrence contains in itself the first character after the last backslash.
+        if (pos != std::wstring::npos && pos <= last_slash + 1 && pos + row.length() > last_slash)
+        {
+            return true;
+        }
+    }
     return false;
 }

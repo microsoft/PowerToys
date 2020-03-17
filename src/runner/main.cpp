@@ -167,6 +167,17 @@ int runner(bool isProcessElevated)
     int result = -1;
     try
     {
+        std::thread{ [] {
+            github_update_checking_worker();
+        } }.detach();
+
+        if (winstore::running_as_packaged())
+        {
+            std::thread{ [] {
+                start_msi_uninstallation_sequence();
+            } }.detach();
+        }
+
         notifications::register_background_toast_handler();
 
         chdir_current_executable();
@@ -175,7 +186,9 @@ int runner(bool isProcessElevated)
         std::unordered_set<std::wstring> known_dlls = {
             L"shortcut_guide.dll",
             L"fancyzones.dll",
-            L"PowerRenameExt.dll"
+            L"PowerRenameExt.dll",
+            L"ImageResizerExt.dll",
+            L"powerpreview.dll"
         };
         for (auto& file : std::filesystem::directory_iterator(L"modules/"))
         {
@@ -186,7 +199,7 @@ int runner(bool isProcessElevated)
             try
             {
                 auto module = load_powertoy(file.path().wstring());
-                modules().emplace(module.get_name(), std::move(module));
+                modules().emplace(module->get_name(), std::move(module));
             }
             catch (...)
             {
@@ -317,17 +330,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     int result = 0;
     try
     {
-        std::thread{ [] {
-            github_update_checking_worker();
-        } }.detach();
-
-        if (winstore::running_as_packaged())
-        {
-            std::thread{ [] {
-                start_msi_uninstallation_sequence();
-            } }.detach();
-        }
-
         // Singletons initialization order needs to be preserved, first events and
         // then modules to guarantee the reverse destruction order.
         SystemMenuHelperInstace();
