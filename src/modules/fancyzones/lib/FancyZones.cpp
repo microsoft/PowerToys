@@ -474,9 +474,9 @@ void FancyZones::ToggleEditor() noexcept
         /*1*/ std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
         /*2*/ editorLocation + L" " +
         /*3*/ zoneWindow->WorkAreaKey() + L" " +
-        /*4*/ ZoneWindowUtils::GetActiveZoneSetTmpPath() + L" " +
-        /*5*/ ZoneWindowUtils::GetAppliedZoneSetTmpPath() + L" " +
-        /*6*/ ZoneWindowUtils::GetCustomZoneSetsTmpPath();
+        /*4*/ L"\"" + ZoneWindowUtils::GetActiveZoneSetTmpPath() + L"\" " +
+        /*5*/ L"\"" + ZoneWindowUtils::GetAppliedZoneSetTmpPath() + L"\" " +
+        /*6*/ L"\"" + ZoneWindowUtils::GetCustomZoneSetsTmpPath() + L"\"";
 
     SHELLEXECUTEINFO sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
