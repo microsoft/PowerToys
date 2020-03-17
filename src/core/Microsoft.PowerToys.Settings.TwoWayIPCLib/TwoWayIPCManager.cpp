@@ -28,6 +28,7 @@ STDMETHODIMP CTwoWayIPCManager::SendMessage(BSTR message)
 {
     wstring strMessage = (PCWSTR)message;
     this->m_MessagePipe->send(strMessage);
+    wcout << "sending message" << L"\n";
     return S_OK;
 }
 
