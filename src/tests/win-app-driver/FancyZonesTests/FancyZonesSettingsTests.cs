@@ -15,8 +15,6 @@ namespace PowerToysTests
     [TestClass]
     public class FancyZonesSettingsTests : PowerToysSession
     {
-        private static string _settingsPath = "";
-        private string _initialSettings = "";
         private JObject _initialSettingsJson;
 
         private static WindowsElement _saveButton;
@@ -45,8 +43,15 @@ namespace PowerToysTests
 
         private JObject getProperties()
         {
-            JObject settings = JObject.Parse(File.ReadAllText(_settingsPath));
-            return settings["properties"].ToObject<JObject>();
+            try
+            {
+                JObject settings = JObject.Parse(File.ReadAllText(_settingsPath));
+                return settings["properties"].ToObject<JObject>();
+            }
+            catch (Newtonsoft.Json.JsonReaderException)
+            {
+                return new JObject();
+            }
         }
 
         private T getPropertyValue<T>(string propertyName)
@@ -226,19 +231,7 @@ namespace PowerToysTests
             WindowsElement fzTitle = session.FindElementByName("FancyZones Settings");
             Assert.IsNotNull(fzTitle);
         }
-        /*
-        [TestMethod]
-        public void EditorOpen()
-        {
-            session.FindElementByXPath("//Button[@Name=\"Edit zones\"]").Click();
-            ShortWait();
 
-            WindowsElement editorWindow = session.FindElementByName("FancyZones Editor");
-            Assert.IsNotNull(editorWindow);
-
-            editorWindow.SendKeys(OpenQA.Selenium.Keys.Alt + OpenQA.Selenium.Keys.F4);
-        }
-        */
         /*
          * click each toggle,
          * save changes,
@@ -710,14 +703,6 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context);
-
-            string settingsFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft/PowerToys/FancyZones");
-            if (!Directory.Exists(settingsFolderPath))
-            {
-                Directory.CreateDirectory(settingsFolderPath);
-            }
-            _settingsPath = settingsFolderPath + "/settings.json";
-
             Init();
         }
 
@@ -747,24 +732,18 @@ namespace PowerToysTests
         {
             try
             {
-                _initialSettings = File.ReadAllText(_settingsPath);
                 _initialSettingsJson = JObject.Parse(_initialSettings);
             }
-            catch (System.IO.FileNotFoundException)
+            catch (Newtonsoft.Json.JsonReaderException)
             {
-                _initialSettings = "";
+                //empty settings
             }
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
-            ScrollUp();
-
-            if (_initialSettings.Length > 0)
-            {
-                File.WriteAllText(_settingsPath, _initialSettings);
-            }            
+            ScrollUp();           
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
@@ -14,8 +15,18 @@ namespace PowerToysTests
         protected static bool isPowerToysLaunched = false;
         protected static WindowsElement trayButton;
 
+        protected static string _settingsPath = "";
+        protected static string _initialSettings = "";
+
         public static void Setup(TestContext context)
         {
+            //read settings before running tests to restore them after
+            _settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft/PowerToys/FancyZones/settings.json");
+            if (Directory.Exists(_settingsPath))
+            {
+                _initialSettings = File.ReadAllText(_settingsPath);
+            }
+
             if (session == null)
             {
                 // Create a new Desktop session to use PowerToys.
@@ -42,6 +53,12 @@ namespace PowerToysTests
             {
                 session.Quit();
                 session = null;
+            }
+
+            //restore initial settings file
+            if (_initialSettings.Length > 0)
+            {
+                File.WriteAllText(_settingsPath, _initialSettings);
             }
         }
 
