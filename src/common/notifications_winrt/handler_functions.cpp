@@ -2,19 +2,26 @@
 
 #include "handler_functions.h"
 
-using handler_function_t = void (*)(IBackgroundTaskInstance, const size_t button_id);
+#include <winrt/Windows.System.h>
+
+using handler_function_t = void (*)(const size_t button_id);
 
 namespace
 {
     const std::unordered_map<std::wstring_view, handler_function_t> handlers_map;
 }
 
-void dispatch_to_backround_handler(std::wstring_view background_handler_id, IBackgroundTaskInstance bti, const size_t button_id)
+void dispatch_to_backround_handler(std::wstring_view argument)
 {
-    const auto found_handler = handlers_map.find(background_handler_id);
+    winrt::Windows::Foundation::WwwFormUrlDecoder decoder{ argument };
+
+    const size_t button_id = std::stoi(decoder.GetFirstValueByName(L"button_id").c_str());
+    auto handler = decoder.GetFirstValueByName(L"handler");
+
+    const auto found_handler = handlers_map.find(handler);
     if (found_handler == end(handlers_map))
     {
         return;
     }
-    found_handler->second(std::move(bti), button_id);
+    found_handler->second(button_id);
 }

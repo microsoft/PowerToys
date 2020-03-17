@@ -43,3 +43,9 @@ namespace Mocks
 
     HWND WindowCreate(HINSTANCE hInst);
 }
+
+namespace Helpers
+{
+    std::wstring GuidToString(const GUID& guid);
+    std::wstring CreateGuidString();
+}

@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\installer\Version.props" />
+  <Target Name="GenerateVersionData" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <HeaderLines Include="#pragma once" />
+      <HeaderLines Include="#define VERSION_MAJOR $(Version.Split('.')[0])" />
+      <HeaderLines Include="#define VERSION_MINOR $(Version.Split('.')[1])" />
+      <HeaderLines Include="#define VERSION_REVISION $(Version.Split('.')[2])" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="Generated Files\version_gen.h"
+      Lines="@(HeaderLines)"
+      Overwrite="true"
+      Encoding="Unicode"
+      WriteOnlyWhenDifferent="true" />
+  </Target>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -105,7 +120,10 @@
     <ClInclude Include="d2d_text.h" />
     <ClInclude Include="d2d_window.h" />
     <ClInclude Include="dpi_aware.h" />
+    <ClInclude Include="com_object_factory.h" />
     <ClInclude Include="notifications.h" />
+    <ClInclude Include="timeutil.h" />
+    <ClInclude Include="VersionHelper.h" />
     <ClInclude Include="window_helpers.h" />
     <ClInclude Include="icon_helpers.h" />
     <ClInclude Include="json.h" />
@@ -144,6 +162,7 @@
     <ClCompile Include="start_visible.cpp" />
     <ClCompile Include="tasklist_positions.cpp" />
     <ClCompile Include="common.cpp" />
+    <ClCompile Include="VersionHelper.cpp" />
     <ClCompile Include="windows_colors.cpp" />
     <ClCompile Include="window_helpers.cpp" />
     <ClCompile Include="winstore.cpp" />

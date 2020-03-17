@@ -72,6 +72,10 @@
     {
       "name": "CircleRing",
       "unicode": "EA3A"
+    },
+    {
+      "name": "FabricReportLibrary",
+      "unicode": "F0A1"
     }
   ]
 }

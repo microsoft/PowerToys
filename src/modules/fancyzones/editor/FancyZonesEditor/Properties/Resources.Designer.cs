@@ -142,7 +142,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Note: Hold down Shift Key to change orientation of splitter.
+        ///   Looks up a localized string similar to Note: Hold down Shift Key to change orientation of splitter.  To merge zones, select the zones and click &quot;merge&quot;..
         /// </summary>
         public static string Note_Custom_Table {
             get {

@@ -99,6 +99,7 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(expectedCount, counter.load());
         }
 
+        /*
         TEST_METHOD(RunDestroy)
         {
             auto actual = MakeFancyZones(m_hInst, m_settings);
@@ -126,11 +127,13 @@ namespace FancyZonesUnitTests
 
             Assert::AreEqual(expectedCount, counter.load());
         }
+        */
     };
 
     TEST_CLASS(FancyZonesIZoneWindowHostUnitTests)
     {
         HINSTANCE m_hInst{};
+        std::wstring m_settingsLocation = L"FancyZonesUnitTests";
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
         winrt::com_ptr<IZoneWindowHost> m_zoneWindowHost = nullptr;
 
@@ -147,6 +150,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toogle(L"fancyzones_virtualDesktopChange_moveWindows", IDS_SETTING_DESCRIPTION_VIRTUALDESKTOPCHANGE_MOVEWINDOWS, settings.virtualDesktopChange_moveWindows);
             ptSettings.add_bool_toogle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, settings.appLastZone_moveWindows);
             ptSettings.add_bool_toogle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
+            ptSettings.add_bool_toogle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
             ptSettings.add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, settings.zoneHightlightColor);
             ptSettings.add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, settings.excludedApps);
@@ -157,7 +161,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD_INITIALIZE(Init)
         {
             m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
-            m_settings = MakeFancyZonesSettings(m_hInst, L"FancyZonesUnitTests");
+            m_settings = MakeFancyZonesSettings(m_hInst, m_settingsLocation.c_str());
             Assert::IsTrue(m_settings != nullptr);
 
             auto fancyZones = MakeFancyZones(m_hInst, m_settings);
@@ -169,8 +173,10 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD_CLEANUP(Cleanup)
         {
-            const auto settingsFile = PTSettingsHelper::get_module_save_folder_location(L"FancyZonesUnitTests") + L"\\settings.json";
+            auto settingsFolder = PTSettingsHelper::get_module_save_folder_location(m_settingsLocation);
+            const auto settingsFile = settingsFolder + L"\\settings.json";
             std::filesystem::remove(settingsFile);
+            std::filesystem::remove(settingsFolder);
         }
 
         TEST_METHOD(GetZoneHighlightColor)
@@ -185,6 +191,7 @@ namespace FancyZonesUnitTests
                 .overrideSnapHotkeys = false,
                 .appLastZone_moveWindows = true,
                 .use_cursorpos_editor_startupscreen = true,
+                .showZonesOnAllMonitors = false,
                 .zoneHightlightColor = L"#abafee",
                 .zoneHighlightOpacity = 45,
                 .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
@@ -211,6 +218,7 @@ namespace FancyZonesUnitTests
                 .overrideSnapHotkeys = false,
                 .appLastZone_moveWindows = true,
                 .use_cursorpos_editor_startupscreen = true,
+                .showZonesOnAllMonitors = false,
                 .zoneHightlightColor = L"#abafee",
                 .zoneHighlightOpacity = expected,
                 .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
@@ -241,6 +249,7 @@ namespace FancyZonesUnitTests
     TEST_CLASS(FancyZonesIFancyZonesCallbackUnitTests)
     {
         HINSTANCE m_hInst{};
+        std::wstring m_settingsLocation = L"FancyZonesUnitTests";
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
         winrt::com_ptr<IFancyZonesCallback> m_fzCallback = nullptr;
 
@@ -259,6 +268,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toogle(L"fancyzones_virtualDesktopChange_moveWindows", IDS_SETTING_DESCRIPTION_VIRTUALDESKTOPCHANGE_MOVEWINDOWS, settings.virtualDesktopChange_moveWindows);
             ptSettings.add_bool_toogle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, settings.appLastZone_moveWindows);
             ptSettings.add_bool_toogle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
+            ptSettings.add_bool_toogle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
             ptSettings.add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, settings.zoneHightlightColor);
             ptSettings.add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, settings.excludedApps);
@@ -281,7 +291,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD_INITIALIZE(Init)
         {
             m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
-            m_settings = MakeFancyZonesSettings(m_hInst, L"FancyZonesUnitTests");
+            m_settings = MakeFancyZonesSettings(m_hInst, m_settingsLocation.c_str());
             Assert::IsTrue(m_settings != nullptr);
 
             auto fancyZones = MakeFancyZones(m_hInst, m_settings);
@@ -299,8 +309,10 @@ namespace FancyZonesUnitTests
             sendKeyboardInput(VK_LWIN, true);
             sendKeyboardInput(VK_CONTROL, true);
 
-            const auto settingsFile = PTSettingsHelper::get_module_save_folder_location(L"FancyZonesUnitTests") + L"\\settings.json";
+            auto settingsFolder = PTSettingsHelper::get_module_save_folder_location(m_settingsLocation);
+            const auto settingsFile = settingsFolder + L"\\settings.json";
             std::filesystem::remove(settingsFile);
+            std::filesystem::remove(settingsFolder);
         }
 
         TEST_METHOD(OnKeyDownNothingPressed)
@@ -429,31 +441,5 @@ namespace FancyZonesUnitTests
                 Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
             }
         }
-
-#if 0
-        TEST_METHOD(OnKeyDownWinPressedOverride)
-        {
-            sendKeyboardInput(VK_LWIN);
-
-            const Settings settings{
-                .overrideSnapHotkeys = true,
-            };
-
-            auto config = serializedPowerToySettings(settings);
-            m_settings->SetConfig(config.c_str());
-
-            {
-                tagKBDLLHOOKSTRUCT input{};
-                input.vkCode = VK_LEFT;
-                Assert::IsTrue(m_fzCallback->OnKeyDown(&input));
-            }
-
-            {
-                tagKBDLLHOOKSTRUCT input{};
-                input.vkCode = VK_RIGHT;
-                Assert::IsTrue(m_fzCallback->OnKeyDown(&input));
-            }
-        }
-#endif
     };
 }
