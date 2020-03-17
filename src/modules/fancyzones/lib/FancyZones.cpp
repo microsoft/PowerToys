@@ -845,7 +845,7 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
                 }
             }
 
-            auto comparePositions = [](const auto& a, const auto& b) {
+            auto compare = [](const auto& a, const auto& b) {
                 // Compare coordinates of top-left corner.
                 if (a.second.left > b.second.left)
                 {
@@ -857,7 +857,7 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
                 }
                 return false;
             };
-            std::sort(std::begin(monitorInfo), std::end(monitorInfo), comparePositions);
+            std::sort(std::begin(monitorInfo), std::end(monitorInfo), compare);
 
             if (monitorInfo.size() > 1)
             {
@@ -868,7 +868,7 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
                 do
                 {
                     auto iter = m_zoneWindowMap.find(currMonitorInfo->first);
-                    if (iter != m_zoneWindowMap.end())
+                    if (iter != std::end(m_zoneWindowMap))
                     {
                         const auto& zoneWindowPtr = iter->second;
                         if (zoneWindowPtr->MoveWindowIntoZoneByDirection(window, vkCode, false /* cycle through zones */))
@@ -876,10 +876,11 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
                             return true;
                         }
                     }
+                    // We iterated through all zones in current monitor zone layout, move on to next one.
                     currMonitorInfo = std::next(currMonitorInfo);
-                    if (currMonitorInfo == end(monitorInfo))
+                    if (currMonitorInfo == std::end(monitorInfo))
                     {
-                        currMonitorInfo = begin(monitorInfo);
+                        currMonitorInfo = std::begin(monitorInfo);
                     }
                 } while (currMonitorInfo->first != current);
             }
@@ -887,7 +888,7 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
             {
                 // Single monitor environment.
                 auto iter = m_zoneWindowMap.find(current);
-                if (iter != m_zoneWindowMap.end())
+                if (iter != std::end(m_zoneWindowMap))
                 {
                     const auto& zoneWindowPtr = iter->second;
                     zoneWindowPtr->MoveWindowIntoZoneByDirection(window, vkCode, true /* cycle through zones */);
