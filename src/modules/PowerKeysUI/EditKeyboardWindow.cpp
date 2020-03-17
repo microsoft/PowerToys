@@ -3,32 +3,28 @@
 LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 
 HWND hWndXamlIslandEditKeyboardWindow = nullptr;
+bool isEditKeyboardWindowRegistrationCompleted = false;
 
-void registerWinClass(HINSTANCE& hInst)
+void createEditKeyboardWindow(HINSTANCE hInst, int* uiFlag)
 {
-    // The main window class name.
     const wchar_t szWindowClass[] = L"EditKeyboardWindow";
-    WNDCLASSEX windowClass = {};
-
-    windowClass.cbSize = sizeof(WNDCLASSEX);
-    windowClass.lpfnWndProc = EditKeyboardWindowProc;
-    windowClass.hInstance = hInst;
-    windowClass.lpszClassName = szWindowClass;
-    windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW);
-
-    windowClass.hIconSm = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
-
-    if (RegisterClassEx(&windowClass) == NULL)
+    if (!isEditKeyboardWindowRegistrationCompleted)
     {
-        MessageBox(NULL, L"Windows registration failed!", L"Error", NULL);
-        return;
-    }
-}
+        WNDCLASSEX windowClass = {};
+        windowClass.cbSize = sizeof(WNDCLASSEX);
+        windowClass.lpfnWndProc = EditKeyboardWindowProc;
+        windowClass.hInstance = hInst;
+        windowClass.lpszClassName = szWindowClass;
+        windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW);
+        windowClass.hIconSm = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
+        if (RegisterClassEx(&windowClass) == NULL)
+        {
+            MessageBox(NULL, L"Windows registration failed!", L"Error", NULL);
+            return;
+        }
 
-void createEditKeyboardWindow(HINSTANCE hInst)
-{
-    // The main window class name.
-    const wchar_t szWindowClass[] = L"EditKeyboardWindow";
+        isEditKeyboardWindowRegistrationCompleted = true;
+    }
     HWND _hWndEditKeyboardWindow = CreateWindow(
         szWindowClass,
         L"PowerKeys Remap Keyboard",

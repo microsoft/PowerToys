@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "EditKeyboardWindow.h"
+#include "EditShortcutsWindow.h"
 
 using namespace winrt;
 using namespace Windows::UI;
@@ -14,33 +15,30 @@ HWND _hWndMain;
 HINSTANCE _hInstance;
 // This Hwnd will be the window handler for the Xaml Island: A child window that contains Xaml.
 HWND hWndXamlIslandMain = nullptr;
-bool isRegistrationCompleted = false;
+bool isMainWindowRegistrationCompleted = false;
 
-void createMainWindow(HINSTANCE hInstance, bool* ptr)
+void createMainWindow(HINSTANCE hInstance, int* uiFlag)
 {
     _hInstance = hInstance;
 
     // The main window class name.
     const wchar_t szWindowClass[] = L"MainWindowClass";
-    if (!isRegistrationCompleted)
+    if (!isMainWindowRegistrationCompleted)
     {
-        registerWinClass(_hInstance);
         WNDCLASSEX windowClass = {};
-
         windowClass.cbSize = sizeof(WNDCLASSEX);
         windowClass.lpfnWndProc = MainWindowProc;
         windowClass.hInstance = hInstance;
         windowClass.lpszClassName = szWindowClass;
         windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-
         windowClass.hIconSm = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
-
         if (RegisterClassEx(&windowClass) == NULL)
         {
             MessageBox(NULL, L"Windows registration failed!", L"Error", NULL);
             return;
         }
-        isRegistrationCompleted = true;
+
+        isMainWindowRegistrationCompleted = true;
     }
 
     _hWndMain = CreateWindow(
@@ -62,7 +60,6 @@ void createMainWindow(HINSTANCE hInstance, bool* ptr)
     }
 
     //XAML Island section
-
     // This DesktopWindowXamlSource is the object that enables a non-UWP desktop application
     // to host UWP controls in any UI element that is associated with a window handle (HWND).
     DesktopWindowXamlSource desktopSource;
@@ -101,27 +98,28 @@ void createMainWindow(HINSTANCE hInstance, bool* ptr)
     Windows::UI::Xaml::Controls::Button bt;
     bt.Content(winrt::box_value(winrt::to_hstring("Edit Keyboard")));
     bt.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
-        if (ptr != nullptr)
+        if (uiFlag != nullptr)
         {
-            *ptr = true;
+            *uiFlag = 1;
         }
-        std::thread th(createEditKeyboardWindow, _hInstance);
+        std::thread th(createEditKeyboardWindow, _hInstance, uiFlag);
         th.join();
-        if (ptr != nullptr)
+        if (uiFlag != nullptr)
         {
-            *ptr = false;
+            *uiFlag = 0;
         }
     });
 
     Windows::UI::Xaml::Controls::Button bt2;
     bt2.Content(winrt::box_value(winrt::to_hstring("Edit Shortcuts")));
     bt2.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+        std::thread th(createEditShortcutsWindow, _hInstance, uiFlag);
+        th.join();
     });
 
     keyRow.Children().Append(cb);
     keyRow.Children().Append(bt);
     keyRow.Children().Append(bt2);
-
 
     xamlContainer.Children().Append(keyRow);
     xamlContainer.UpdateLayout();

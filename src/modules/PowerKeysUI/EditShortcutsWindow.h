@@ -12,6 +12,8 @@
 #include "winrt/Windows.Foundation.h"
 #include "winrt/Windows.Foundation.Numerics.h"
 #include "winrt/Windows.UI.Xaml.Controls.Primitives.h"
+#include "winrt/Windows.UI.Text.h"
+#include "winrt/Windows.UI.Core.h"
 
 using namespace winrt;
 using namespace Windows::UI;
@@ -22,4 +24,5 @@ using namespace Windows::Foundation;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 
-__declspec(dllexport) void createEditKeyboardWindow(HINSTANCE hInst, int* uiFlag);
+__declspec(dllexport) void createEditShortcutsWindow(HINSTANCE hInst, int* uiFlag);
+__declspec(dllexport) void updateDetectShortcutTextBlock(std::vector<DWORD> &shortcutKeys);

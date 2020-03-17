@@ -5,6 +5,7 @@
 #include <common/settings_objects.h>
 #include "trace.h"
 #include <PowerKeysUI/MainWindow.h>
+#include <PowerKeysUI/EditShortcutsWindow.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -59,8 +60,14 @@ private:
     // Static pointer to the current powerkeys object required for accessing the HandleKeyboardHookEvent function in the hook procedure
     static PowerKeys* powerkeys_object_ptr;
 
-    // Flag used to check if the UI window is currently up. A reference to the variable can be sent while calling the UI window
-    bool uiFlag = false;
+    // Flag used to check which UI window is currently up. A reference to the variable can be sent while calling the UI window
+    int uiFlag = 0;
+
+    // Vector to store the detected shortcut in the detect shortcut UI
+    std::vector<DWORD> detectedShortcutKeys;
+
+    // Flag to clean the detected shortcut keys vector
+    bool cleanDetectedShortcutKeys = false;
 
 public:
     // Constructor
@@ -262,29 +269,66 @@ public:
     }
 
     // This function can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
-    void DetectKeyUIBackend()
+    bool DetectKeyUIBackend(LowlevelKeyboardEvent* data)
     {
-        if (uiFlag)
+        if (uiFlag == 1)
         {
-            // Disables the [ key when the UI window is up
-            singleKeyReMap[VK_OEM_4] = 0x0;
+            return true;
         }
-        else if (singleKeyReMap.find(VK_OEM_4) == singleKeyReMap.end())
+
+        return false;
+    }
+
+    bool DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
+    {
+        if (uiFlag == 2)
         {
+            cleanDetectedShortcutKeys = true;
+            if (data->lParam->dwExtraInfo != POWERKEYS_SHORTCUT_FLAG)
+            {
+                if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+                {
+                    if (std::find(detectedShortcutKeys.begin(), detectedShortcutKeys.end(), data->lParam->vkCode) == detectedShortcutKeys.end())
+                    {
+                        detectedShortcutKeys.push_back(data->lParam->vkCode);                    
+                    }
+
+                    updateDetectShortcutTextBlock(detectedShortcutKeys);
+                }
+                else if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+                {
+                    detectedShortcutKeys.erase(std::remove(detectedShortcutKeys.begin(), detectedShortcutKeys.end(), data->lParam->vkCode), detectedShortcutKeys.end());
+                }
+            }
+
+            return true;
         }
-        else
+
+        // Clean keyboard state after the shortcut UI is closed
+        else if (cleanDetectedShortcutKeys)
         {
-            // Removes the remapping if the UI window is not up and the remapping doesn't already exist
-            singleKeyReMap.erase(VK_OEM_4);
+            detectedShortcutKeys.clear();
+            cleanDetectedShortcutKeys = false;
         }
+
+        return false;
     }
 
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
-        DetectKeyUIBackend();
+        if (DetectKeyUIBackend(data))
+        {
+            return 1;
+        }
+
         intptr_t SingleKeyRemapResult = HandleSingleKeyRemapEvent(data);
         // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts
         if (SingleKeyRemapResult == 1)
+        {
+            return 1;
+        }
+
+        if (DetectShortcutUIBackend(data))
         {
             return 1;
         }
