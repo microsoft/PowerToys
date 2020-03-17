@@ -63,7 +63,7 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * @returns Boolean which is always true if cycle argument is set, otherwise indicating if there is more
      *          zones left in the zone layout in which window can move.
      */
-    IFACEMETHOD_(bool, MoveWindowIntoZoneByDirection)(HWND window, DWORD vkCode, bool forceCycle) = 0;
+    IFACEMETHOD_(bool, MoveWindowIntoZoneByDirection)(HWND window, DWORD vkCode, bool cycle) = 0;
     /**
      * Cycle through active zone layouts (giving hints about each layout).
      *
