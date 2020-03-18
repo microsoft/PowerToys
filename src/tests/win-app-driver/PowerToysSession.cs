@@ -16,7 +16,8 @@ namespace PowerToysTests
         protected static bool isPowerToysLaunched = false;
         protected static WindowsElement trayButton;
 
-        protected static string _settingsPath = "";
+        protected static string _settingsFolderPath = "";
+        protected static string _settingsPath = ""; 
         protected static string _zoneSettingsPath = "";
         protected static string _initialSettings = "";
         protected static string _initialZoneSettings = "";
@@ -24,8 +25,9 @@ namespace PowerToysTests
         public static void Setup(TestContext context, bool isLaunchRequired = true)
         {
             //read settings before running tests to restore them after
-            _settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\FancyZones\\settings.json");
-            _zoneSettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\FancyZones\\zones-settings.json");
+            _settingsFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\FancyZones");
+            _settingsPath = _settingsFolderPath + "\\settings.json";
+            _zoneSettingsPath = _settingsFolderPath + "\\zones-settings.json";
             try
             {
                 _initialSettings = File.ReadAllText(_settingsPath);
@@ -64,10 +66,18 @@ namespace PowerToysTests
             {
                 File.WriteAllText(_settingsPath, _initialSettings);
             }
+            else
+            {
+                File.Delete(_settingsPath);
+            }
 
             if (_initialZoneSettings.Length > 0)
             {
                 File.WriteAllText(_zoneSettingsPath, _initialZoneSettings);
+            }
+            else
+            {
+                File.Delete(_zoneSettingsPath);
             }
 
             if (session != null)
