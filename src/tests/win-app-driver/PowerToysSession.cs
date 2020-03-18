@@ -157,5 +157,18 @@ namespace PowerToysTests
                 //exception could be thrown even if app launched successfully
             }
         }
+
+        public static void ExitPowerToys()
+        {
+            trayButton.Click();
+            ShortWait();
+
+            WindowsElement pt = session.FindElementByXPath("//Button[@Name=\"PowerToys\"]");
+            new Actions(session).MoveToElement(pt).ContextClick().Perform();
+            ShortWait();
+
+            session.FindElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
+            trayButton.Click(); //close tray
+        }
     }
 }
