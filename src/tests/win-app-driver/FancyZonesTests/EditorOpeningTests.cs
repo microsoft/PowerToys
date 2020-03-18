@@ -47,10 +47,8 @@ namespace PowerToysTests
             File.WriteAllText(_zoneSettingsPath, zoneSettings);
         }
 
-        [TestMethod]
-        public void OpenEditorBySettingsButtonNoSettings()
+        void OpenEditorBySettingsButton()
         {
-            RemoveSettingsFile();
             OpenFancyZonesSettings();
 
             WindowsElement editorButton = session.FindElementByXPath("//Button[@Name=\"Edit zones\"]");
@@ -61,86 +59,48 @@ namespace PowerToysTests
 
             editorWindow = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
             Assert.IsNotNull(editorWindow);
+        }
+
+        [TestMethod]
+        public void OpenEditorBySettingsButtonNoSettings()
+        {
+            RemoveSettingsFile();
+            OpenEditorBySettingsButton();
         }
 
         [TestMethod]
         public void OpenEditorBySettingsButtonEmptySettings()
         {
             CreateEmptySettingsFile();
-            OpenFancyZonesSettings();
-
-            WindowsElement editorButton = session.FindElementByXPath("//Button[@Name=\"Edit zones\"]");
-            Assert.IsNotNull(editorButton);
-
-            editorButton.Click();
-            ShortWait();
-
-            editorWindow = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
-            Assert.IsNotNull(editorWindow);
+            OpenEditorBySettingsButton();
         }
 
         [TestMethod]
         public void OpenEditorBySettingsButtonDefaultSettings()
         {
             CreateDefaultSettingsFile();
-            OpenFancyZonesSettings();
-
-            WindowsElement editorButton = session.FindElementByXPath("//Button[@Name=\"Edit zones\"]");
-            Assert.IsNotNull(editorButton);
-
-            editorButton.Click();
-            ShortWait();
-
-            editorWindow = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
-            Assert.IsNotNull(editorWindow);
+            OpenEditorBySettingsButton();
         }
 
         [TestMethod]
         public void OpenEditorBySettingsButtonValidSettings()
         {
             CreateValidSettingsFile();
-            OpenFancyZonesSettings();
-
-            WindowsElement editorButton = session.FindElementByXPath("//Button[@Name=\"Edit zones\"]");
-            Assert.IsNotNull(editorButton);
-
-            editorButton.Click();
-            ShortWait();
-
-            editorWindow = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
-            Assert.IsNotNull(editorWindow);
+            OpenEditorBySettingsButton();
         }
 
         [TestMethod]
         public void OpenEditorBySettingsButtonValidUtf8Settings()
         {
             CreateValidSettingsFileWithUtf8();
-            OpenFancyZonesSettings();
-
-            WindowsElement editorButton = session.FindElementByXPath("//Button[@Name=\"Edit zones\"]");
-            Assert.IsNotNull(editorButton);
-
-            editorButton.Click();
-            ShortWait();
-
-            editorWindow = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
-            Assert.IsNotNull(editorWindow);
+            OpenEditorBySettingsButton();
         }
 
         [TestMethod]
         public void OpenEditorBySettingsButtonInvalidSettings()
         {
             CreateInvalidSettingsFile();
-            OpenFancyZonesSettings();
-
-            WindowsElement editorButton = session.FindElementByXPath("//Button[@Name=\"Edit zones\"]");
-            Assert.IsNotNull(editorButton);
-
-            editorButton.Click();
-            ShortWait();
-
-            editorWindow = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
-            Assert.IsNotNull(editorWindow);
+            OpenEditorBySettingsButton();
         }
 
         [ClassInitialize]
