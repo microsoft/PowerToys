@@ -61,6 +61,41 @@ namespace PowerToysTests
             File.WriteAllText(_zoneSettingsPath, zoneSettings);
         }
 
+        void CreateCroppedSettingsFile()
+        {
+            string zoneSettings = "{\"app-zone-history\":[],\"devices\":[],\"custom-zone-sets\":[{\"uuid\":\"{8BEC7183-C90E-4D41-AD1C-1AC2BC4760BA}\",\"name\":\"";
+            File.WriteAllText(_zoneSettingsPath, zoneSettings);
+        }
+
+        void TestEditorOpened()
+        {
+            WindowsElement errorMessage = null;
+            try
+            {
+                errorMessage = session.FindElementByName("FancyZones Editor Exception Handler");
+                if (errorMessage != null)
+                {
+                    errorMessage.FindElementByName("OK").Click();
+                    ShortWait();
+                }
+            }
+            catch (OpenQA.Selenium.WebDriverException)
+            {
+                //no error message, it's ok
+            }
+
+            try
+            {
+                editorWindow = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
+            }
+            catch (OpenQA.Selenium.WebDriverException)
+            {
+            }
+
+            Assert.IsNotNull(editorWindow);
+            Assert.IsNull(errorMessage);
+        }
+
         void OpenEditorBySettingsButton()
         {
             OpenSettings();
@@ -72,14 +107,34 @@ namespace PowerToysTests
             editorButton.Click();
             ShortWait();
 
-            editorWindow = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
-            Assert.IsNotNull(editorWindow);
+            TestEditorOpened();
+        }
+
+        void OpenEditorByHotkey()
+        {
+            new Actions(session).KeyDown(OpenQA.Selenium.Keys.Command).SendKeys("`").KeyUp(OpenQA.Selenium.Keys.Command).Perform();
+            ShortWait();
+
+            TestEditorOpened();
         }
 
         [TestMethod]
         public void OpenEditorBySettingsButtonNoSettings()
         {
             RemoveSettingsFile();
+            OpenEditorBySettingsButton();
+        }
+
+        [TestMethod]
+        public void OpenEditorBySettingsButtonNoSettingsFolder()
+        {
+            if (isPowerToysLaunched)
+            {
+                ExitPowerToys();
+            }
+            RemoveSettingsFolder();
+            LaunchPowerToys();
+
             OpenEditorBySettingsButton();
         }
 
@@ -116,6 +171,81 @@ namespace PowerToysTests
         {
             CreateInvalidSettingsFile();
             OpenEditorBySettingsButton();
+        }
+
+        [TestMethod]
+        public void OpenEditorBySettingsButtonCroppedSettings()
+        {
+            CreateCroppedSettingsFile();
+            OpenEditorBySettingsButton();
+        }
+
+        [TestMethod]
+        public void OpenEditorByHotkeyNoSettings()
+        {
+            RemoveSettingsFile();
+            OpenEditorByHotkey();
+        }
+
+        [TestMethod]
+        public void OpenEditorByHotkeyNoSettingsFolder()
+        {
+            if (isPowerToysLaunched)
+            {
+                ExitPowerToys();
+            }
+            RemoveSettingsFolder();
+            LaunchPowerToys();
+            
+            OpenEditorByHotkey();
+        }
+
+        [TestMethod]
+        public void OpenEditorByHotkeyEmptySettings()
+        {
+            CreateEmptySettingsFile();
+            OpenEditorByHotkey();
+        }
+
+        [TestMethod]
+        public void OpenEditorByHotkeyDefaultSettings()
+        {
+            CreateDefaultSettingsFile();
+            OpenEditorByHotkey();
+        }
+
+        [TestMethod]
+        public void OpenEditorByHotkeyValidSettings()
+        {
+            CreateValidSettingsFile();
+            OpenEditorByHotkey();
+        }
+
+        [TestMethod]
+        public void OpenEditorByHotkeyValidUtf8Settings()
+        {
+            CreateValidSettingsFileWithUtf8();
+            OpenEditorByHotkey();
+        }
+
+        [TestMethod]
+        public void OpenEditorByHotkeyInvalidSettings()
+        {
+            CreateInvalidSettingsFile();
+            OpenEditorByHotkey();
+        }
+
+        [TestMethod]
+        public void OpenEditorByHotkeyCroppedSettings()
+        {
+            if (isPowerToysLaunched)
+            {
+                ExitPowerToys();
+            }
+            CreateCroppedSettingsFile();
+            LaunchPowerToys();
+
+            OpenEditorByHotkey();
         }
 
         [ClassInitialize]
