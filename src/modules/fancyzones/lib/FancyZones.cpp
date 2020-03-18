@@ -162,7 +162,7 @@ private:
 
     void OnEditorExitEvent() noexcept;
 
-    const std::vector<HMONITOR> GetMonitorsSorted();
+    std::vector<HMONITOR> GetMonitorsSorted();
     bool MoveWindowIntoZoneByDirection(HMONITOR monitor, HWND window, DWORD vkCode, bool cycle);
 
     const HINSTANCE m_hinstance{};
@@ -834,8 +834,6 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
         const HMONITOR current = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
         if (current)
         {
-            std::shared_lock readLock(m_lock);
-
             std::vector<HMONITOR> monitorInfo = GetMonitorsSorted();
             if (monitorInfo.size() > 1)
             {
@@ -1142,8 +1140,10 @@ void FancyZones::OnEditorExitEvent() noexcept
     JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
 }
 
-const std::vector<HMONITOR> FancyZones::GetMonitorsSorted()
+std::vector<HMONITOR> FancyZones::GetMonitorsSorted()
 {
+    std::shared_lock readLock(m_lock);
+
     std::vector<std::pair<HMONITOR, RECT>> monitorInfo;
     for (const auto& [monitor, window] : m_zoneWindowMap)
     {
