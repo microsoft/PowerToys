@@ -59,12 +59,6 @@ namespace PowerToysTests
 
         public static void TearDown()
         {
-            if (session!=null)
-            {
-                session.Quit();
-                session = null;
-            }
-
             //restore initial settings files
             if (_initialSettings.Length > 0)
             {
@@ -74,6 +68,12 @@ namespace PowerToysTests
             if (_initialZoneSettings.Length > 0)
             {
                 File.WriteAllText(_zoneSettingsPath, _initialZoneSettings);
+            }
+
+            if (session != null)
+            {
+                session.Quit();
+                session = null;
             }
         }
 
@@ -90,7 +90,7 @@ namespace PowerToysTests
         public static void OpenSettings()
         {
             trayButton.Click();
-            session.FindElementByName("PowerToys").Click();
+            session.FindElementByXPath("//Button[@Name=\"PowerToys\"]").Click();
             trayButton.Click();
         }
 
@@ -107,8 +107,18 @@ namespace PowerToysTests
 
         public static void CloseSettings()
         {
-            WindowsElement settings = session.FindElementByName("PowerToys Settings");
-            settings.SendKeys(Keys.Alt + Keys.F4);
+            try
+            {
+                WindowsElement settings = session.FindElementByName("PowerToys Settings");
+                if (settings != null)
+                {
+                    settings.SendKeys(Keys.Alt + Keys.F4);
+                }
+            }
+            catch(Exception)
+            {
+
+            }
         }
 
         private static bool CheckPowerToysLaunched()        
@@ -118,7 +128,7 @@ namespace PowerToysTests
 
             try
             {
-                WindowsElement pt = session.FindElementByName("PowerToys");
+                WindowsElement pt = session.FindElementByXPath("//Button[@Name=\"PowerToys\"]");
                 isLaunched = (pt != null);
             }
             catch(OpenQA.Selenium.WebDriverException)
