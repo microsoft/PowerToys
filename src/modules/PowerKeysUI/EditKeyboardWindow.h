@@ -22,4 +22,4 @@ using namespace Windows::Foundation;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 
-__declspec(dllexport) void createEditKeyboardWindow(HINSTANCE hInst, int* uiFlag);
+__declspec(dllexport) void createEditKeyboardWindow(HINSTANCE hInst, int* uiFlag, HWND* detectWindowHandle);

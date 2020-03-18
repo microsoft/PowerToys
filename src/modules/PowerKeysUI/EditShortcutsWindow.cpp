@@ -2,13 +2,15 @@
 
 LRESULT CALLBACK EditShortcutsWindowProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK DetectShortcutWindowProc(HWND, UINT, WPARAM, LPARAM);
-void createDetectShortcutWindow(XamlRoot, TextBlock&, int*);
+void createDetectShortcutWindow(XamlRoot, TextBlock&, int*, HWND*);
 
 HWND hWndXamlIslandEditShortcutsWindow = nullptr;
 bool isEditShortcutsWindowRegistrationCompleted = false;
 TextBlock detectShortcutTextBlock = nullptr;
+std::vector<DWORD> detectedShortcuts;
+std::unordered_map<DWORD, std::string> VKCodeToKeyName({ { 0x41, "A" }, { 0x53, "S" }, { 0x44, "D" }, { VK_LWIN, "LWin" }, { VK_LCONTROL, "LCtrl" }, { VK_LMENU, "LAlt" }, {VK_LSHIFT, "LShift"} });
 
-void createEditShortcutsWindow(HINSTANCE hInst, int* uiFlag)
+void createEditShortcutsWindow(HINSTANCE hInst, int* uiFlag, HWND* detectWindowHandle)
 {
     const wchar_t szWindowClass[] = L"EditShortcutsWindow";
 
@@ -75,17 +77,22 @@ void createEditShortcutsWindow(HINSTANCE hInst, int* uiFlag)
     header2.FontWeight(Text::FontWeights::Bold());
     header2.Margin({ 10 });
 
+    TextBlock shortcutText;
+    shortcutText.Margin({ 10 });  
     Windows::UI::Xaml::Controls::Button bt;
     bt.Content(winrt::box_value(winrt::to_hstring("Type Shortcut")));
     bt.Margin({ 10 });
     bt.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+        *detectWindowHandle = _hWndEditShortcutsWindow;
         // Using the XamlRoot of the bt to get the root of the XAML host
-        createDetectShortcutWindow(bt.XamlRoot(), header2, uiFlag);
+        createDetectShortcutWindow(bt.XamlRoot(), shortcutText, uiFlag, detectWindowHandle);
     });
+  
 
     xamlContainer.Children().Append(header);
     xamlContainer.Children().Append(header2);
     xamlContainer.Children().Append(bt);
+    xamlContainer.Children().Append(shortcutText);
     xamlContainer.UpdateLayout();
     desktopSource.Content(xamlContainer);
     ////End XAML Island section
@@ -125,7 +132,7 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
     return 0;
 }
 
-void createDetectShortcutWindow(XamlRoot xamlRoot, TextBlock& header2, int* uiFlag)
+void createDetectShortcutWindow(XamlRoot xamlRoot, TextBlock& shortcutText, int* uiFlag, HWND* detectWindowHandle)
 {
     ContentDialog detectShortcutBox;
 
@@ -137,17 +144,32 @@ void createDetectShortcutWindow(XamlRoot xamlRoot, TextBlock& header2, int* uiFl
     detectShortcutBox.CloseButtonText(to_hstring(L"Cancel"));
     detectShortcutBox.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     detectShortcutBox.PrimaryButtonClick([=](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
-        header2.Text(to_hstring("Dialog ok"));
+        hstring shortcutString;
+        for (int i = 0; i < detectedShortcuts.size(); i++)
+        {
+            if (VKCodeToKeyName.find(detectedShortcuts[i]) != VKCodeToKeyName.end())
+            {
+                shortcutString = shortcutString + to_hstring(VKCodeToKeyName[detectedShortcuts[i]]) + to_hstring(L" ");
+            }
+            else
+            {
+                shortcutString = shortcutString + to_hstring((unsigned int)detectedShortcuts[i]) + to_hstring(L" ");
+            }
+        }
+
+        shortcutText.Text(shortcutString);
         if (uiFlag != nullptr)
         {
             *uiFlag = 0;
         }
+        *detectWindowHandle = nullptr;
     });
     detectShortcutBox.CloseButtonClick([=](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
         if (uiFlag != nullptr)
         {
             *uiFlag = 0;
         }
+        *detectWindowHandle = nullptr;
     });
 
     Windows::UI::Xaml::Controls::StackPanel stackPanel;
@@ -178,10 +200,19 @@ void updateDetectShortcutTextBlock(std::vector<DWORD> &shortcutKeys)
         return;
     }
 
+    detectedShortcuts = shortcutKeys;
+
     hstring shortcutString;
     for (int i = 0; i < shortcutKeys.size(); i++)
     {
-        shortcutString = shortcutString + to_hstring((unsigned int)shortcutKeys[i]) + to_hstring(L" ");
+        if (VKCodeToKeyName.find(shortcutKeys[i])!=VKCodeToKeyName.end())
+        {
+            shortcutString = shortcutString + to_hstring(VKCodeToKeyName[shortcutKeys[i]]) + to_hstring(L" ");
+        }
+        else
+        {
+            shortcutString = shortcutString + to_hstring((unsigned int)shortcutKeys[i]) + to_hstring(L" ");        
+        }
     }
 
     detectShortcutTextBlock.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [=]() {

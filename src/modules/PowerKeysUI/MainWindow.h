@@ -13,5 +13,5 @@
 #include "winrt/Windows.Foundation.Numerics.h"
 #include "winrt/Windows.UI.Xaml.Controls.Primitives.h"
 
-__declspec(dllexport) void createMainWindow(HINSTANCE hInstance, int* uiFlag);
+__declspec(dllexport) void createMainWindow(HINSTANCE hInstance, int* uiFlag, HWND* detectWindowHandle);
 LRESULT CALLBACK MainWindowProc(HWND, UINT, WPARAM, LPARAM);

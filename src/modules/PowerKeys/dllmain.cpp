@@ -63,6 +63,9 @@ private:
     // Flag used to check which UI window is currently up. A reference to the variable can be sent while calling the UI window
     int uiFlag = 0;
 
+    // Window handle for the current detection window
+    HWND detectWindowHandle = nullptr;
+
     // Vector to store the detected shortcut in the detect shortcut UI
     std::vector<DWORD> detectedShortcutKeys;
 
@@ -193,7 +196,7 @@ public:
     {
         m_enabled = true;
         HINSTANCE hInstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-        std::thread(createMainWindow, hInstance, &uiFlag).detach();
+        std::thread(createMainWindow, hInstance, &uiFlag, &detectWindowHandle).detach();
         start_lowlevel_keyboard_hook();
     }
 
@@ -283,25 +286,29 @@ public:
     {
         if (uiFlag == 2)
         {
-            cleanDetectedShortcutKeys = true;
-            if (data->lParam->dwExtraInfo != POWERKEYS_SHORTCUT_FLAG)
+            // GetForegroundWindow can be used here since we only need to check the main parent window and not the sub windows within the content dialog
+            HWND current_window_handle = GetForegroundWindow();
+            if (detectWindowHandle == current_window_handle)
             {
-                if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+                cleanDetectedShortcutKeys = true;
+                if (data->lParam->dwExtraInfo != POWERKEYS_SHORTCUT_FLAG)
                 {
-                    if (std::find(detectedShortcutKeys.begin(), detectedShortcutKeys.end(), data->lParam->vkCode) == detectedShortcutKeys.end())
+                    if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                     {
-                        detectedShortcutKeys.push_back(data->lParam->vkCode);                    
+                        if (std::find(detectedShortcutKeys.begin(), detectedShortcutKeys.end(), data->lParam->vkCode) == detectedShortcutKeys.end())
+                        {
+                            detectedShortcutKeys.push_back(data->lParam->vkCode);
+                            updateDetectShortcutTextBlock(detectedShortcutKeys);
+                        }
                     }
+                    else if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+                    {
+                        detectedShortcutKeys.erase(std::remove(detectedShortcutKeys.begin(), detectedShortcutKeys.end(), data->lParam->vkCode), detectedShortcutKeys.end());
+                    }
+                }
 
-                    updateDetectShortcutTextBlock(detectedShortcutKeys);
-                }
-                else if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
-                {
-                    detectedShortcutKeys.erase(std::remove(detectedShortcutKeys.begin(), detectedShortcutKeys.end(), data->lParam->vkCode), detectedShortcutKeys.end());
-                }
+                return true;
             }
-
-            return true;
         }
 
         // Clean keyboard state after the shortcut UI is closed
@@ -576,19 +583,25 @@ public:
         return 0;
     }
 
-    std::wstring GetCurrentApplication(bool keepPath)
+    HWND GetFocusWindowHandle()
     {
         // Using GetGUIThreadInfo for getting the process of the window in focus. GetForegroundWindow has issues with UWP apps as it returns the Application Frame Host as its linked process
         GUITHREADINFO guiThreadInfo;
         guiThreadInfo.cbSize = sizeof(GUITHREADINFO);
         GetGUIThreadInfo(0, &guiThreadInfo);
-        HWND current_window_handle = guiThreadInfo.hwndFocus;
 
         // If no window in focus, use the active window
-        if (current_window_handle == nullptr)
+        if (guiThreadInfo.hwndFocus == nullptr)
         {
-            current_window_handle = guiThreadInfo.hwndActive;
+            return guiThreadInfo.hwndActive;
         }
+        return guiThreadInfo.hwndFocus;
+    }
+
+    std::wstring GetCurrentApplication(bool keepPath)
+    {
+
+        HWND current_window_handle = GetFocusWindowHandle();
         DWORD process_id;
         DWORD nSize = MAX_PATH;
         WCHAR buffer[MAX_PATH] = { 0 };
