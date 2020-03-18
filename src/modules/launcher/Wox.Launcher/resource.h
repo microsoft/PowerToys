@@ -1,0 +1,2 @@
+#define IDS_LAUNCHER_NAME             601
+#define IDS_LAUNCHER_SETTINGS_DESC    602

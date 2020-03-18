@@ -152,6 +152,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Shell", "src\mod
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Folder", "src\modules\launcher\Plugins\Wox.Plugin.Folder\Wox.Plugin.Folder.csproj", "{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Wox.Launcher", "src\modules\launcher\Wox.Launcher\Wox.Launcher.vcxproj", "{E364F67B-BB12-4E91-B639-355866EBCD8B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -370,6 +372,12 @@ Global
 		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}.Release|x64.ActiveCfg = Release|Any CPU
 		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}.Release|x64.Build.0 = Release|Any CPU
+		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Debug|x64.ActiveCfg = Debug|x64
+		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Debug|x64.Build.0 = Debug|x64
+		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Release|Any CPU.ActiveCfg = Release|x64
+		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Release|x64.ActiveCfg = Release|x64
+		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -410,6 +418,7 @@ Global
 		{FDB3555B-58EF-4AE6-B5F1-904719637AB4} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{C21BFF9C-2C99-4B5F-B7C9-A5E6DDDB37B0} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{E364F67B-BB12-4E91-B639-355866EBCD8B} = {C140A3EF-6DBF-4084-9D4C-4EB5A99FEE68}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
