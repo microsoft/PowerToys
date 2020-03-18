@@ -1,6 +1,7 @@
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium.Windows;
+using OpenQA.Selenium.Interactions;
 
 namespace PowerToysTests
 {
@@ -8,6 +9,12 @@ namespace PowerToysTests
     public class FancyZonesEditorOpeningTests : PowerToysSession
     {
         WindowsElement editorWindow;
+
+        static void ResetDefaultFancyZonesSettings()
+        {
+            string settings = "{\"version\":\"1.0\",\"name\":\"FancyZones\",\"properties\":{\"fancyzones_shiftDrag\":{\"value\":true},\"fancyzones_overrideSnapHotkeys\":{\"value\":false},\"fancyzones_zoneSetChange_flashZones\":{\"value\":false},\"fancyzones_displayChange_moveWindows\":{\"value\":false},\"fancyzones_zoneSetChange_moveWindows\":{\"value\":false},\"fancyzones_virtualDesktopChange_moveWindows\":{\"value\":false},\"fancyzones_appLastZone_moveWindows\":{\"value\":false},\"use_cursorpos_editor_startupscreen\":{\"value\":true},\"fancyzones_zoneHighlightColor\":{\"value\":\"#0078D7\"},\"fancyzones_highlight_opacity\":{\"value\":90},\"fancyzones_editor_hotkey\":{\"value\":{\"win\":true,\"ctrl\":false,\"alt\":false,\"shift\":false,\"code\":192,\"key\":\"`\"}},\"fancyzones_excluded_apps\":{\"value\":\"\"}}}";
+            File.WriteAllText(_settingsPath, settings);
+        }
 
         void RemoveSettingsFile()
         {
@@ -49,6 +56,7 @@ namespace PowerToysTests
 
         void OpenEditorBySettingsButton()
         {
+            OpenSettings();
             OpenFancyZonesSettings();
 
             WindowsElement editorButton = session.FindElementByXPath("//Button[@Name=\"Edit zones\"]");
@@ -106,14 +114,21 @@ namespace PowerToysTests
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            Setup(context);
-            OpenSettings();
+            Setup(context, false);
+
+            if (isPowerToysLaunched)
+            {
+                ExitPowerToys();
+            }
+            ResetDefaultFancyZonesSettings();
+            LaunchPowerToys();
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
             CloseSettings();
+            ExitPowerToys();
             TearDown();
         }
 
