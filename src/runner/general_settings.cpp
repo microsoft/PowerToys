@@ -207,22 +207,22 @@ void start_initial_powertoys()
     try
     {
         general_settings = load_general_settings();
-        json::JsonObject enabled = general_settings.GetNamedObject(L"enabled");
-        for (const auto& enabled_element : enabled)
+        if (general_settings.HasKey(L"enabled"))
         {
-            if (enabled_element.Value().GetBoolean())
+            json::JsonObject enabled = general_settings.GetNamedObject(L"enabled");
+            for (const auto& enabled_element : enabled)
             {
-                // Enable this powertoy.
-                powertoys_to_enable.emplace(enabled_element.Key());
+                if (enabled_element.Value().GetBoolean())
+                {
+                    // Enable this powertoy.
+                    powertoys_to_enable.emplace(enabled_element.Key());
+                }
             }
+            only_enable_some_powertoys = true;
         }
-        only_enable_some_powertoys = true;
     }
     catch (...)
     {
-        // Couldn't read the general settings correctly.
-        // Load all powertoys.
-        // TODO: notify user about invalid json config
         only_enable_some_powertoys = false;
     }
 
