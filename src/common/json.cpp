@@ -10,8 +10,12 @@ namespace json
         try
         {
             std::wifstream file(file_name.data(), std::ios::binary);
-            using isbi = std::istreambuf_iterator<wchar_t>;
-            return JsonValue::Parse(std::wstring{ isbi{ file }, isbi{} }).GetObjectW();
+            if (file.is_open())
+            {
+                using isbi = std::istreambuf_iterator<wchar_t>;
+                return JsonValue::Parse(std::wstring{ isbi{ file }, isbi{} }).GetObjectW();
+            }
+            return std::nullopt;
         }
         catch (...)
         {
