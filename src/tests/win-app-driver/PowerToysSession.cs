@@ -2,9 +2,10 @@ using System;
 using System.IO;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
-using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 
 namespace PowerToysTests
 {
@@ -20,20 +21,21 @@ namespace PowerToysTests
         protected static string _initialSettings = "";
         protected static string _initialZoneSettings = "";
 
-        public static void Setup(TestContext context)
+        public static void Setup(TestContext context, bool isLaunchRequired = true)
         {
             //read settings before running tests to restore them after
-            _settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft/PowerToys/FancyZones/settings.json");
-            if (Directory.Exists(_settingsPath))
+            _settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\FancyZones\\settings.json");
+            _zoneSettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\FancyZones\\zones-settings.json");
+            try
             {
                 _initialSettings = File.ReadAllText(_settingsPath);
-            }
-
-            _zoneSettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft/PowerToys/FancyZones/zones-settings.json");
-            if (Directory.Exists(_zoneSettingsPath))
-            {
                 _initialZoneSettings = File.ReadAllText(_zoneSettingsPath);
             }
+            catch(Exception)
+            {
+                //failed to read settings
+            }
+            
 
             if (session == null)
             {
@@ -47,7 +49,7 @@ namespace PowerToysTests
                 trayButton = session.FindElementByAccessibilityId("1502");
 
                 isPowerToysLaunched = CheckPowerToysLaunched();
-                if (!isPowerToysLaunched)
+                if (!isPowerToysLaunched && isLaunchRequired)
                 {
                     LaunchPowerToys();
                 }
