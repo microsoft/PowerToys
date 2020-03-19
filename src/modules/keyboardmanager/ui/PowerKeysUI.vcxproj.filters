@@ -4,11 +4,13 @@
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="EditKeyboardWindow.cpp" />
     <ClCompile Include="EditShortcutsWindow.cpp" />
+    <ClCompile Include="ShortcutControl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="EditKeyboardWindow.h" />
     <ClInclude Include="EditShortcutsWindow.h" />
+    <ClInclude Include="ShortcutControl.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -5,7 +5,7 @@
 #include <common/settings_objects.h>
 #include "trace.h"
 #include <keyboardmanager/ui/MainWindow.h>
-#include <keyboardmanager/ui/EditShortcutsWindow.h>
+#include <keyboardmanager/ui/ShortcutControl.h>
 #include <keyboardmanager/common/KeyboardManagerState.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;

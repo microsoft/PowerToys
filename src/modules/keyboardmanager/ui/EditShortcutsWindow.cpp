@@ -1,14 +1,11 @@
 #include "EditShortcutsWindow.h"
-
+#include "ShortcutControl.h"
 LRESULT CALLBACK EditShortcutsWindowProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK DetectShortcutWindowProc(HWND, UINT, WPARAM, LPARAM);
-void createDetectShortcutWindow(XamlRoot, TextBlock&, KeyboardManagerState&);
+//void createDetectShortcutWindow(IInspectable const&, XamlRoot, KeyboardManagerState&);
 
 HWND hWndXamlIslandEditShortcutsWindow = nullptr;
 bool isEditShortcutsWindowRegistrationCompleted = false;
-TextBlock detectShortcutTextBlock = nullptr;
-std::vector<DWORD> detectedShortcuts;
-std::unordered_map<DWORD, std::string> VKCodeToKeyName({ { 0x41, "A" }, { 0x53, "S" }, { 0x44, "D" }, { VK_LWIN, "LWin" }, { VK_LCONTROL, "LCtrl" }, { VK_LMENU, "LAlt" }, { VK_LSHIFT, "LShift" } });
 
 void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
@@ -67,26 +64,43 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     Windows::UI::Xaml::Controls::StackPanel xamlContainer;
     xamlContainer.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
 
-    TextBlock header;
-    header.Text(winrt::to_hstring("Edit Shortcuts"));
-    header.FontSize(30);
+    Windows::UI::Xaml::Controls::StackPanel header;
+    header.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    header.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
     header.Margin({ 10, 10, 10, 30 });
+    header.Spacing(10);
+
+    TextBlock headerText;
+    headerText.Text(winrt::to_hstring("Edit Shortcuts"));
+    headerText.FontSize(30);
+    headerText.Margin({ 0, 0, 100, 0 });
+
+    Button cancelButton;
+    cancelButton.Content(winrt::box_value(winrt::to_hstring("Cancel")));
+    cancelButton.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+        // Close the window since settings do not need to be saved
+        PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
+    });
+
+    Button applyButton;
+    applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
+    applyButton.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    });
+
+    header.Children().Append(headerText);
+    header.Children().Append(cancelButton);
+    header.Children().Append(applyButton);
+
+    Windows::UI::Xaml::Controls::StackPanel originalShortcutColumn;
+    originalShortcutColumn.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    originalShortcutColumn.Margin({ 10 });
+    originalShortcutColumn.Spacing(10);
 
     TextBlock header2;
     header2.Text(winrt::to_hstring("Original Shortcut:"));
     header2.FontWeight(Text::FontWeights::Bold());
-    header2.Margin({ 10, 10, 10, 20 });
-
-    TextBlock shortcutText;
-    shortcutText.Margin({ 10 });
-    Windows::UI::Xaml::Controls::Button bt;
-    bt.Content(winrt::box_value(winrt::to_hstring("Type Shortcut")));
-    bt.Margin({ 10 });
-    bt.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
-        keyboardManagerState.SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, _hWndEditShortcutsWindow);
-        // Using the XamlRoot of the bt to get the root of the XAML host
-        createDetectShortcutWindow(bt.XamlRoot(), shortcutText, keyboardManagerState);
-    });
+    header2.Margin({ 0, 0, 0, 10 });
+    ShortcutControl::_hWndEditShortcutsWindow = _hWndEditShortcutsWindow;
 
     Windows::UI::Xaml::Controls::Button addShortcut;
     FontIcon plusSymbol;
@@ -95,12 +109,13 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     addShortcut.Content(plusSymbol);
     addShortcut.Margin({ 10 });
     addShortcut.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+        ShortcutControl sc(keyboardManagerState);
+        sc.AddToParent(originalShortcutColumn);
     });
 
     xamlContainer.Children().Append(header);
-    xamlContainer.Children().Append(header2);
-    xamlContainer.Children().Append(bt);
-    xamlContainer.Children().Append(shortcutText);
+    originalShortcutColumn.Children().Append(header2);
+    xamlContainer.Children().Append(originalShortcutColumn);
     xamlContainer.Children().Append(addShortcut);
     xamlContainer.UpdateLayout();
     desktopSource.Content(xamlContainer);
@@ -141,78 +156,90 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
     return 0;
 }
 
-void createDetectShortcutWindow(XamlRoot xamlRoot, TextBlock& shortcutText, KeyboardManagerState& keyboardManagerState)
-{
-    ContentDialog detectShortcutBox;
+//IInspectable getSiblingElement(IInspectable const& element)
+//{
+//    FrameworkElement frameworkElement = element.as<FrameworkElement>();
+//    StackPanel parentElement = frameworkElement.Parent().as<StackPanel>();
+//    uint32_t index;
+//
+//    parentElement.Children().IndexOf(frameworkElement, index);
+//    return parentElement.Children().GetAt(index + 1);
+//}
 
-    // ContentDialog requires manually setting the XamlRoot (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
-    detectShortcutBox.XamlRoot(xamlRoot);
-    detectShortcutBox.Title(box_value(L"Press the keys in shortcut:"));
-    detectShortcutBox.PrimaryButtonText(to_hstring(L"OK"));
-    detectShortcutBox.IsSecondaryButtonEnabled(false);
-    detectShortcutBox.CloseButtonText(to_hstring(L"Cancel"));
-    detectShortcutBox.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    detectShortcutBox.PrimaryButtonClick([=, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
-        hstring shortcutString;
-        for (int i = 0; i < detectedShortcuts.size(); i++)
-        {
-            if (VKCodeToKeyName.find(detectedShortcuts[i]) != VKCodeToKeyName.end())
-            {
-                shortcutString = shortcutString + to_hstring(VKCodeToKeyName[detectedShortcuts[i]]) + to_hstring(L" ");
-            }
-            else
-            {
-                shortcutString = shortcutString + to_hstring((unsigned int)detectedShortcuts[i]) + to_hstring(L" ");
-            }
-        }
-
-        shortcutText.Text(shortcutString);
-        keyboardManagerState.ResetUIState();
-    });
-    detectShortcutBox.CloseButtonClick([=, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
-        keyboardManagerState.ResetUIState();
-    });
-
-    Windows::UI::Xaml::Controls::StackPanel stackPanel;
-    stackPanel.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-
-    TextBlock text;
-    text.Text(winrt::to_hstring("Keys Pressed:"));
-    text.Margin({ 0, 0, 0, 10 });
-    TextBlock shortcutKeys;
-    detectShortcutTextBlock = shortcutKeys;
-
-    stackPanel.Children().Append(text);
-    stackPanel.Children().Append(shortcutKeys);
-    stackPanel.UpdateLayout();
-    detectShortcutBox.Content(stackPanel);
-
-    detectShortcutBox.ShowAsync();
-}
-
-void updateDetectShortcutTextBlock(std::vector<DWORD>& shortcutKeys)
-{
-    if (detectShortcutTextBlock == nullptr)
-    {
-        return;
-    }
-
-    detectedShortcuts = shortcutKeys;
-
-    hstring shortcutString;
-    for (int i = 0; i < shortcutKeys.size(); i++)
-    {
-        if (VKCodeToKeyName.find(shortcutKeys[i]) != VKCodeToKeyName.end())
-        {
-            shortcutString = shortcutString + to_hstring(VKCodeToKeyName[shortcutKeys[i]]) + to_hstring(L" ");
-        }
-        else
-        {
-            shortcutString = shortcutString + to_hstring((unsigned int)shortcutKeys[i]) + to_hstring(L" ");
-        }
-    }
-
-    detectShortcutTextBlock.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [=]() {
-        detectShortcutTextBlock.Text(shortcutString);
-    });
-}
+//void createDetectShortcutWindow(IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState)
+//{
+//    ContentDialog detectShortcutBox;
+//
+//    // ContentDialog requires manually setting the XamlRoot (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
+//    detectShortcutBox.XamlRoot(xamlRoot);
+//    detectShortcutBox.Title(box_value(L"Press the keys in shortcut:"));
+//    detectShortcutBox.PrimaryButtonText(to_hstring(L"OK"));
+//    detectShortcutBox.IsSecondaryButtonEnabled(false);
+//    detectShortcutBox.CloseButtonText(to_hstring(L"Cancel"));
+//    detectShortcutBox.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+//
+//    TextBlock linkedShortcutText = getSiblingElement(sender).as<TextBlock>();
+//
+//    detectShortcutBox.PrimaryButtonClick([=, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
+//        hstring shortcutString;
+//        for (int i = 0; i < detectedShortcuts.size(); i++)
+//        {
+//            if (VKCodeToKeyName.find(detectedShortcuts[i]) != VKCodeToKeyName.end())
+//            {
+//                shortcutString = shortcutString + to_hstring(VKCodeToKeyName[detectedShortcuts[i]]) + to_hstring(L" ");
+//            }
+//            else
+//            {
+//                shortcutString = shortcutString + to_hstring((unsigned int)detectedShortcuts[i]) + to_hstring(L" ");
+//            }
+//        }
+//        linkedShortcutText.Text(shortcutString);
+//        keyboardManagerState.ResetUIState();
+//    });
+//    detectShortcutBox.CloseButtonClick([=, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
+//        keyboardManagerState.ResetUIState();
+//    });
+//
+//    Windows::UI::Xaml::Controls::StackPanel stackPanel;
+//    stackPanel.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+//
+//    TextBlock text;
+//    text.Text(winrt::to_hstring("Keys Pressed:"));
+//    text.Margin({ 0, 0, 0, 10 });
+//    TextBlock shortcutKeys;
+//    detectShortcutTextBlock = shortcutKeys;
+//
+//    stackPanel.Children().Append(text);
+//    stackPanel.Children().Append(shortcutKeys);
+//    stackPanel.UpdateLayout();
+//    detectShortcutBox.Content(stackPanel);
+//
+//    detectShortcutBox.ShowAsync();
+//}
+//
+//void updateDetectShortcutTextBlock(std::vector<DWORD>& shortcutKeys)
+//{
+//    if (detectShortcutTextBlock == nullptr)
+//    {
+//        return;
+//    }
+//
+//    detectedShortcuts = shortcutKeys;
+//
+//    hstring shortcutString;
+//    for (int i = 0; i < shortcutKeys.size(); i++)
+//    {
+//        if (VKCodeToKeyName.find(shortcutKeys[i]) != VKCodeToKeyName.end())
+//        {
+//            shortcutString = shortcutString + to_hstring(VKCodeToKeyName[shortcutKeys[i]]) + to_hstring(L" ");
+//        }
+//        else
+//        {
+//            shortcutString = shortcutString + to_hstring((unsigned int)shortcutKeys[i]) + to_hstring(L" ");
+//        }
+//    }
+//
+//    detectShortcutTextBlock.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [=]() {
+//        detectShortcutTextBlock.Text(shortcutString);
+//    });
+//}

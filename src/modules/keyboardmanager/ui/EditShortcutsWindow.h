@@ -27,4 +27,4 @@ using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 
 __declspec(dllexport) void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState);
-__declspec(dllexport) void updateDetectShortcutTextBlock(std::vector<DWORD> &shortcutKeys);
+//__declspec(dllexport) void updateDetectShortcutTextBlock(std::vector<DWORD> &shortcutKeys);
