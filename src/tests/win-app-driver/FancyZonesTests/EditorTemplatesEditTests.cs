@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 
@@ -10,7 +11,7 @@ namespace PowerToysTests
     {
         WindowsElement editorWindow;
 
-        static void ResetDefaultFancyZonesSettings()
+        private static void ResetDefaultFancyZonesSettings()
         {
             if (!Directory.Exists(_settingsFolderPath))
             {
@@ -19,6 +20,12 @@ namespace PowerToysTests
 
             string settings = "{\"version\":\"1.0\",\"name\":\"FancyZones\",\"properties\":{\"fancyzones_shiftDrag\":{\"value\":true},\"fancyzones_overrideSnapHotkeys\":{\"value\":false},\"fancyzones_zoneSetChange_flashZones\":{\"value\":false},\"fancyzones_displayChange_moveWindows\":{\"value\":false},\"fancyzones_zoneSetChange_moveWindows\":{\"value\":false},\"fancyzones_virtualDesktopChange_moveWindows\":{\"value\":false},\"fancyzones_appLastZone_moveWindows\":{\"value\":false},\"use_cursorpos_editor_startupscreen\":{\"value\":true},\"fancyzones_zoneHighlightColor\":{\"value\":\"#0078D7\"},\"fancyzones_highlight_opacity\":{\"value\":90},\"fancyzones_editor_hotkey\":{\"value\":{\"win\":true,\"ctrl\":false,\"alt\":false,\"shift\":false,\"code\":192,\"key\":\"`\"}},\"fancyzones_excluded_apps\":{\"value\":\"\"}}}";
             File.WriteAllText(_settingsPath, settings);
+        }
+
+        private void ResetDefautZoneSettings()
+        {
+            string zoneSettings = "{\"app-zone-history\":[],\"devices\":[],\"custom-zone-sets\":[]}";
+            File.WriteAllText(_zoneSettingsPath, zoneSettings);
         }
 
         private void OpenEditor()
@@ -54,10 +61,20 @@ namespace PowerToysTests
 
         private void CancelTest()
         {
-            new Actions(session).MoveToElement(session.FindElementByName("Cancel")).Click().Perform();
+            new Actions(session).MoveToElement(session.FindElementByXPath("//Button[@Name=\"Cancel\"]")).Click().Perform();
             ShortWait();
 
             Assert.AreEqual(_initialZoneSettings, File.ReadAllText(_zoneSettingsPath), "Settings were changed");
+        }
+
+        private void SaveTest()
+        {
+            new Actions(session).MoveToElement(session.FindElementByName("Save and apply")).Click().Perform();
+            ShortWait();
+
+            JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
+            Assert.AreEqual("Custom Layout 1", settings["custom-zone-sets"][0]["name"]);
+            Assert.AreEqual(settings["custom-zone-sets"][0]["uuid"], settings["devices"][0]["active-zoneset"]["uuid"]);
         }
 
         [TestMethod]
@@ -100,6 +117,46 @@ namespace PowerToysTests
             CancelTest();
         }
 
+        [TestMethod]
+        public void EditFocusSave()
+        {
+            OpenCreatorWindow("Focus", "Custom layout creator");
+            session.FindElementByAccessibilityId("newZoneButton").Click();
+            SaveTest();
+        }
+
+        [TestMethod]
+        public void EditColumnsSave()
+        {
+            OpenCreatorWindow("Columns", "Custom table layout creator");
+            ChangeLayout();
+            SaveTest();
+        }
+
+        [TestMethod]
+        public void EditRowsSave()
+        {
+            OpenCreatorWindow("Rows", "Custom table layout creator");
+            ChangeLayout();
+            SaveTest();
+        }
+
+        [TestMethod]
+        public void EditGridSave()
+        {
+            OpenCreatorWindow("Grid", "Custom table layout creator");
+            ChangeLayout();
+            SaveTest();
+        }
+
+        [TestMethod]
+        public void EditPriorityGridSave()
+        {
+            OpenCreatorWindow("Priority Grid", "Custom table layout creator");
+            ChangeLayout();
+            SaveTest();
+        }
+
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
@@ -117,13 +174,16 @@ namespace PowerToysTests
         public static void ClassCleanup()
         {
             CloseSettings();
-            //ExitPowerToys();
             TearDown();
         }
 
         [TestInitialize]
         public void TestInitialize()
         {
+            if (!isPowerToysLaunched)
+            {
+                LaunchPowerToys();
+            }
             OpenEditor();
             OpenTemplates();
         }
@@ -132,11 +192,21 @@ namespace PowerToysTests
         public void TestCleanup()
         {
             //Close editor
-            if (editorWindow != null)
+            try
             {
-                editorWindow.SendKeys(OpenQA.Selenium.Keys.Alt + OpenQA.Selenium.Keys.F4);
-                ShortWait();
+                if (editorWindow != null)
+                {
+                    editorWindow.SendKeys(OpenQA.Selenium.Keys.Alt + OpenQA.Selenium.Keys.F4);
+                    ShortWait();
+                }
             }
+            catch(OpenQA.Selenium.WebDriverException)
+            {
+                //editor has already closed
+            }
+
+            ResetDefautZoneSettings();
+            ExitPowerToys();
         }
     }
 }
