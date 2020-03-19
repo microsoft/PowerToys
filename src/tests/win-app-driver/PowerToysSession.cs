@@ -206,6 +206,7 @@ namespace PowerToysTests
                 WindowsDriver<WindowsElement> driver = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), opts);
                 Assert.IsNotNull(driver);
                 driver.LaunchApp();
+                isPowerToysLaunched = true;
             }
             catch (OpenQA.Selenium.WebDriverException)
             {
@@ -224,6 +225,7 @@ namespace PowerToysTests
 
             session.FindElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
             trayButton.Click(); //close tray
+            isPowerToysLaunched = false;
         }
     }
 }
