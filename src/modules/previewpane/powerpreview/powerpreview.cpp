@@ -12,10 +12,16 @@
 void PowerPreviewModule::destroy()
 {
     Trace::Destroyed();
-    for (FileExplorerPreviewSettings* previewHandler : this->m_previewHandlers)
+    for (auto previewHandler : this->m_previewHandlers)
     {
         if (previewHandler != NULL)
         {
+            // Stop all the active previews handlers.
+            if (this->m_enabled && previewHandler->GetState())
+            {
+                previewHandler->DisablePreview();
+            }
+
             delete previewHandler;
         }
     }
@@ -52,7 +58,7 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_DESC),
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_TEXT));
 
-    for (FileExplorerPreviewSettings * previewHandler : this->m_previewHandlers)
+    for (auto previewHandler : this->m_previewHandlers)
     {
         settings.add_bool_toogle(
             previewHandler->GetName(),
@@ -68,14 +74,36 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 {
     try
     {
-        PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::from_json_string(config);
+        PowerToysSettings::PowerToyValues setttings = PowerToysSettings::PowerToyValues::from_json_string(config);
 
-        for (FileExplorerPreviewSettings * previewHandler : this->m_previewHandlers)
+        for (auto previewHandler : this->m_previewHandlers)
         {
-            previewHandler->UpdateState(values);
+            auto toggle = setttings.get_bool_value(previewHandler->GetName());
+            if (toggle)
+            {
+                auto lastState = previewHandler->GetState();
+                if (lastState != *toggle)
+                {
+                    previewHandler->SetState(*toggle);
+
+                    // If global setting is enable. Add or remove the preview handler otherwise just change the UI and save the updated config.
+                    if (this->m_enabled)
+                    {
+                        if (lastState)
+                        {
+                            previewHandler->DisablePreview();
+                        }
+                        else
+                        {
+                            previewHandler->EnablePreview();
+                        }
+                    }
+
+                }                
+            }
         }
 
-        values.save_to_settings_file();
+        setttings.save_to_settings_file();
     }
     catch (std::exception const& e)
     {
@@ -86,17 +114,29 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 // Enable preview handlers.
 void PowerPreviewModule::enable()
 {
-    init_settings();
+    for (auto previewHandler : this->m_previewHandlers)
+    {
+        if (previewHandler->GetState())
+        {
+            // Enable all the previews with intial state set as true.
+            previewHandler->EnablePreview();
+        }
+    }
+
     this->m_enabled = true;
 }
 
-// Disable all preview handlers.
+// Disable active preview handlers.
 void PowerPreviewModule::disable()
 {
-    for (FileExplorerPreviewSettings * previewHandler : this->m_previewHandlers)
+    for (auto previewHandler : this->m_previewHandlers)
     {
-        previewHandler->DisablePreview();
+        if (previewHandler->GetState())
+        {
+            previewHandler->DisablePreview();
+        }
     }
+
     this->m_enabled = false;
 }
 
@@ -122,9 +162,14 @@ void PowerPreviewModule::init_settings()
             PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_name());
 
         // Load settings states.
-        for (FileExplorerPreviewSettings * previewHandler : this->m_previewHandlers)
+        for (auto previewHandler : this->m_previewHandlers)
         {
-            previewHandler->LoadState(settings);
+            auto toggle = settings.get_bool_value(previewHandler->GetName());
+            if (toggle)
+            {
+                // If no exisiting setting found leave the default intitialization value i.e: true
+                previewHandler->SetState(*toggle);
+            }
         }
     }
     catch (std::exception const& e)

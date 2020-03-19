@@ -24,7 +24,7 @@ public:
         m_previewHandlers(
             { // SVG Preview Hanlder settings object.
               new FileExplorerPreviewSettings(
-                  false,
+                  true,
                   GET_RESOURCE_STRING(IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL),
                   GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION),
                   L"{ddee2b8a-6807-48a6-bb20-2338174ff779}",
@@ -33,7 +33,7 @@ public:
 
               // MarkDown Preview Handler Settings Object.
               new FileExplorerPreviewSettings(
-                  false,
+                  true,
                   GET_RESOURCE_STRING(IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL),
                   GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
                   L"{45769bcc-e8fd-42d0-947e-02beef77a1f5}",

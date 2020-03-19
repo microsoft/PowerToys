@@ -43,35 +43,6 @@ namespace PowerPreviewSettings
         this->m_isPreviewEnabled = state;
     }
 
-    void FileExplorerPreviewSettings::LoadState(PowerToysSettings::PowerToyValues& settings)
-    {
-        auto toggle = settings.get_bool_value(this->GetName());
-        if (toggle != std::nullopt)
-        {
-            this->m_isPreviewEnabled = toggle.value();
-        }
-    }
-
-    void FileExplorerPreviewSettings::UpdateState(PowerToysSettings::PowerToyValues& values)
-    {
-        auto toggle = values.get_bool_value(this->GetName());
-        if (toggle != std::nullopt)
-        {
-            if (toggle.value())
-            {
-                this->EnablePreview();
-            }
-            else
-            {
-                this->DisablePreview();
-            }
-        }
-        else
-        {
-            Trace::PowerPreviewSettingsUpDateFailed(this->GetName().c_str());
-        }
-    }
-
     std::wstring FileExplorerPreviewSettings::GetName() const
     {
         return this->m_name;
@@ -119,7 +90,6 @@ namespace PowerPreviewSettings
 
         if (err == ERROR_SUCCESS)
         {
-            this->SetState(true);
             Trace::PreviewHandlerEnabled(true, this->GetDisplayName().c_str());
         }
         else
@@ -135,12 +105,11 @@ namespace PowerPreviewSettings
 
         if (err == ERROR_SUCCESS)
         {
-            this->SetState(false);
             Trace::PreviewHandlerEnabled(false, this->GetDisplayName().c_str());
         }
         else
         {
             Trace::PowerPreviewSettingsUpDateFailed(this->GetName().c_str());
-        }    
+        }  
     }
 }

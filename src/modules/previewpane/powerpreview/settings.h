@@ -25,8 +25,6 @@ namespace PowerPreviewSettings
 
 		virtual bool GetState() const;
 		virtual void SetState(bool state);
-		virtual void LoadState(PowerToysSettings::PowerToyValues& settings);
-        virtual void UpdateState(PowerToysSettings::PowerToyValues& values);
 		virtual std::wstring GetName() const;
 		virtual void SetName(const std::wstring& name);
 		virtual std::wstring GetDescription() const;
