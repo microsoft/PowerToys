@@ -1156,19 +1156,18 @@ std::vector<HMONITOR> FancyZones::GetMonitorsSorted()
         }
     }
 
-    auto compare = [](const auto& a, const auto& b) {
-        // Compare coordinates of top-left corner.
-        if (a.second.left > b.second.left)
+    auto isGreater = [](const std::pair<HMONITOR, RECT>& lhs, const std::pair<HMONITOR, RECT>& rhs) {
+        if (lhs.second.left > rhs.second.left)
         {
             return true;
         }
-        else if (a.second.left == b.second.left)
+        else if (lhs.second.left == rhs.second.left)
         {
-            return a.second.top > b.second.top;
+            return lhs.second.top > rhs.second.top;
         }
         return false;
     };
-    std::sort(std::begin(monitorInfo), std::end(monitorInfo), compare);
+    std::sort(std::begin(monitorInfo), std::end(monitorInfo), isGreater);
 
     std::vector<HMONITOR> output;
     std::transform(std::begin(monitorInfo), std::end(monitorInfo), std::back_inserter(output), [](const auto& info) { return info.first; });
