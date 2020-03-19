@@ -84,7 +84,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FancyZonesTests\EditorOpeningTests.cs" />
-    <Compile Include="FancyZonesTests\EditorSettingsTests.cs" />
     <Compile Include="FancyZonesTests\FancyZonesSettingsTests.cs" />
     <Compile Include="PowerToysSession.cs" />
     <Compile Include="PowerToysTrayTests.cs" />
