@@ -2,7 +2,7 @@
 
 LRESULT CALLBACK EditShortcutsWindowProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK DetectShortcutWindowProc(HWND, UINT, WPARAM, LPARAM);
-void createDetectShortcutWindow(XamlRoot, TextBlock&, int*, HWND*);
+void createDetectShortcutWindow(XamlRoot, TextBlock&, KeyboardManagerState&);
 
 HWND hWndXamlIslandEditShortcutsWindow = nullptr;
 bool isEditShortcutsWindowRegistrationCompleted = false;
@@ -10,7 +10,7 @@ TextBlock detectShortcutTextBlock = nullptr;
 std::vector<DWORD> detectedShortcuts;
 std::unordered_map<DWORD, std::string> VKCodeToKeyName({ { 0x41, "A" }, { 0x53, "S" }, { 0x44, "D" }, { VK_LWIN, "LWin" }, { VK_LCONTROL, "LCtrl" }, { VK_LMENU, "LAlt" }, { VK_LSHIFT, "LShift" } });
 
-void createEditShortcutsWindow(HINSTANCE hInst, int* uiFlag, HWND* detectWindowHandle)
+void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
     const wchar_t szWindowClass[] = L"EditShortcutsWindow";
 
@@ -83,9 +83,9 @@ void createEditShortcutsWindow(HINSTANCE hInst, int* uiFlag, HWND* detectWindowH
     bt.Content(winrt::box_value(winrt::to_hstring("Type Shortcut")));
     bt.Margin({ 10 });
     bt.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
-        *detectWindowHandle = _hWndEditShortcutsWindow;
+        keyboardManagerState.SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, _hWndEditShortcutsWindow);
         // Using the XamlRoot of the bt to get the root of the XAML host
-        createDetectShortcutWindow(bt.XamlRoot(), shortcutText, uiFlag, detectWindowHandle);
+        createDetectShortcutWindow(bt.XamlRoot(), shortcutText, keyboardManagerState);
     });
 
     Windows::UI::Xaml::Controls::Button addShortcut;
@@ -141,7 +141,7 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
     return 0;
 }
 
-void createDetectShortcutWindow(XamlRoot xamlRoot, TextBlock& shortcutText, int* uiFlag, HWND* detectWindowHandle)
+void createDetectShortcutWindow(XamlRoot xamlRoot, TextBlock& shortcutText, KeyboardManagerState& keyboardManagerState)
 {
     ContentDialog detectShortcutBox;
 
@@ -152,7 +152,7 @@ void createDetectShortcutWindow(XamlRoot xamlRoot, TextBlock& shortcutText, int*
     detectShortcutBox.IsSecondaryButtonEnabled(false);
     detectShortcutBox.CloseButtonText(to_hstring(L"Cancel"));
     detectShortcutBox.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    detectShortcutBox.PrimaryButtonClick([=](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
+    detectShortcutBox.PrimaryButtonClick([=, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
         hstring shortcutString;
         for (int i = 0; i < detectedShortcuts.size(); i++)
         {
@@ -167,18 +167,10 @@ void createDetectShortcutWindow(XamlRoot xamlRoot, TextBlock& shortcutText, int*
         }
 
         shortcutText.Text(shortcutString);
-        if (uiFlag != nullptr)
-        {
-            *uiFlag = 0;
-        }
-        *detectWindowHandle = nullptr;
+        keyboardManagerState.ResetUIState();
     });
-    detectShortcutBox.CloseButtonClick([=](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
-        if (uiFlag != nullptr)
-        {
-            *uiFlag = 0;
-        }
-        *detectWindowHandle = nullptr;
+    detectShortcutBox.CloseButtonClick([=, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
+        keyboardManagerState.ResetUIState();
     });
 
     Windows::UI::Xaml::Controls::StackPanel stackPanel;
@@ -194,10 +186,6 @@ void createDetectShortcutWindow(XamlRoot xamlRoot, TextBlock& shortcutText, int*
     stackPanel.Children().Append(shortcutKeys);
     stackPanel.UpdateLayout();
     detectShortcutBox.Content(stackPanel);
-    if (uiFlag != nullptr)
-    {
-        *uiFlag = 2;
-    }
 
     detectShortcutBox.ShowAsync();
 }

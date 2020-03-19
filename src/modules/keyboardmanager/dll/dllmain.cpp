@@ -4,8 +4,9 @@
 #include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
 #include "trace.h"
-#include <PowerKeysUI/MainWindow.h>
-#include <PowerKeysUI/EditShortcutsWindow.h>
+#include <keyboardmanager/ui/MainWindow.h>
+#include <keyboardmanager/ui/EditShortcutsWindow.h>
+#include <keyboardmanager/common/KeyboardManagerState.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -60,11 +61,8 @@ private:
     // Static pointer to the current powerkeys object required for accessing the HandleKeyboardHookEvent function in the hook procedure
     static PowerKeys* powerkeys_object_ptr;
 
-    // Flag used to check which UI window is currently up. A reference to the variable can be sent while calling the UI window
-    int uiFlag = 0;
-
-    // Window handle for the current detection window
-    HWND detectWindowHandle = nullptr;
+    // Variable which stores all the state information to be shared between the UI and back-end
+    KeyboardManagerState keyboardManagerState;
 
     // Vector to store the detected shortcut in the detect shortcut UI
     std::vector<DWORD> detectedShortcutKeys;
@@ -196,7 +194,7 @@ public:
     {
         m_enabled = true;
         HINSTANCE hInstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-        std::thread(createMainWindow, hInstance, &uiFlag, &detectWindowHandle).detach();
+        std::thread(createMainWindow, hInstance, std::ref(keyboardManagerState)).detach();
         start_lowlevel_keyboard_hook();
     }
 
@@ -274,7 +272,7 @@ public:
     // This function can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
     bool DetectKeyUIBackend(LowlevelKeyboardEvent* data)
     {
-        if (uiFlag == 1)
+        if (keyboardManagerState.CheckUIState(KeyboardManagerUIState::DetectKeyWindowActivated))
         {
             return true;
         }
@@ -284,31 +282,26 @@ public:
 
     bool DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
     {
-        if (uiFlag == 2)
+        if (keyboardManagerState.CheckUIState(KeyboardManagerUIState::DetectShortcutWindowActivated))
         {
-            // GetForegroundWindow can be used here since we only need to check the main parent window and not the sub windows within the content dialog
-            HWND current_window_handle = GetForegroundWindow();
-            if (detectWindowHandle == current_window_handle)
+            cleanDetectedShortcutKeys = true;
+            if (data->lParam->dwExtraInfo != POWERKEYS_SHORTCUT_FLAG)
             {
-                cleanDetectedShortcutKeys = true;
-                if (data->lParam->dwExtraInfo != POWERKEYS_SHORTCUT_FLAG)
+                if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                 {
-                    if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+                    if (std::find(detectedShortcutKeys.begin(), detectedShortcutKeys.end(), data->lParam->vkCode) == detectedShortcutKeys.end())
                     {
-                        if (std::find(detectedShortcutKeys.begin(), detectedShortcutKeys.end(), data->lParam->vkCode) == detectedShortcutKeys.end())
-                        {
-                            detectedShortcutKeys.push_back(data->lParam->vkCode);
-                            updateDetectShortcutTextBlock(detectedShortcutKeys);
-                        }
-                    }
-                    else if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
-                    {
-                        detectedShortcutKeys.erase(std::remove(detectedShortcutKeys.begin(), detectedShortcutKeys.end(), data->lParam->vkCode), detectedShortcutKeys.end());
+                        detectedShortcutKeys.push_back(data->lParam->vkCode);
+                        updateDetectShortcutTextBlock(detectedShortcutKeys);
                     }
                 }
-
-                return true;
+                else if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+                {
+                    detectedShortcutKeys.erase(std::remove(detectedShortcutKeys.begin(), detectedShortcutKeys.end(), data->lParam->vkCode), detectedShortcutKeys.end());
+                }
             }
+
+            return true;
         }
 
         // Clean keyboard state after the shortcut UI is closed
@@ -600,7 +593,6 @@ public:
 
     std::wstring GetCurrentApplication(bool keepPath)
     {
-
         HWND current_window_handle = GetFocusWindowHandle();
         DWORD process_id;
         DWORD nSize = MAX_PATH;

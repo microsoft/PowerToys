@@ -5,7 +5,7 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 HWND hWndXamlIslandEditKeyboardWindow = nullptr;
 bool isEditKeyboardWindowRegistrationCompleted = false;
 
-void createEditKeyboardWindow(HINSTANCE hInst, int* uiFlag, HWND* detectWindowHandle)
+void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
     const wchar_t szWindowClass[] = L"EditKeyboardWindow";
     if (!isEditKeyboardWindowRegistrationCompleted)

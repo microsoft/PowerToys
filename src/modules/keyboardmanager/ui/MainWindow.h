@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <stdlib.h>
 #include <string.h>
+#include <thread>
 
 #include <winrt/Windows.system.h>
 #include <winrt/windows.ui.xaml.hosting.h>
@@ -13,13 +14,7 @@
 #include "winrt/Windows.Foundation.Numerics.h"
 #include "winrt/Windows.UI.Xaml.Controls.Primitives.h"
 
-using namespace winrt;
-using namespace Windows::UI;
-using namespace Windows::UI::Composition;
-using namespace Windows::UI::Xaml::Hosting;
-using namespace Windows::Foundation::Numerics;
-using namespace Windows::Foundation;
-using namespace Windows::UI::Xaml;
-using namespace Windows::UI::Xaml::Controls;
+#include <keyboardmanager/common/KeyboardManagerState.h>
 
-__declspec(dllexport) void createEditKeyboardWindow(HINSTANCE hInst, int* uiFlag, HWND* detectWindowHandle);
+__declspec(dllexport) void createMainWindow(HINSTANCE hInstance, KeyboardManagerState& keyboardManagerState);
+LRESULT CALLBACK MainWindowProc(HWND, UINT, WPARAM, LPARAM);

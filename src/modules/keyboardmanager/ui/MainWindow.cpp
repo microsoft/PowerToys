@@ -17,7 +17,7 @@ HINSTANCE _hInstance;
 HWND hWndXamlIslandMain = nullptr;
 bool isMainWindowRegistrationCompleted = false;
 
-void createMainWindow(HINSTANCE hInstance, int* uiFlag, HWND* detectWindowHandle)
+void createMainWindow(HINSTANCE hInstance, KeyboardManagerState& keyboardManagerState)
 {
     _hInstance = hInstance;
 
@@ -98,22 +98,16 @@ void createMainWindow(HINSTANCE hInstance, int* uiFlag, HWND* detectWindowHandle
     Windows::UI::Xaml::Controls::Button bt;
     bt.Content(winrt::box_value(winrt::to_hstring("Edit Keyboard")));
     bt.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
-        if (uiFlag != nullptr)
-        {
-            *uiFlag = 1;
-        }
-        std::thread th(createEditKeyboardWindow, _hInstance, uiFlag, detectWindowHandle);
+        //keyboardManagerState.SetUIState(KeyboardManagerUIState::DetectKeyWindowActivated);
+        std::thread th(createEditKeyboardWindow, _hInstance, std::ref(keyboardManagerState));
         th.join();
-        if (uiFlag != nullptr)
-        {
-            *uiFlag = 0;
-        }
+        //keyboardManagerState.ResetUIState();
     });
 
     Windows::UI::Xaml::Controls::Button bt2;
     bt2.Content(winrt::box_value(winrt::to_hstring("Edit Shortcuts")));
     bt2.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
-        std::thread th(createEditShortcutsWindow, _hInstance, uiFlag, detectWindowHandle);
+        std::thread th(createEditShortcutsWindow, _hInstance, std::ref(keyboardManagerState));
         th.join();
     });
 
