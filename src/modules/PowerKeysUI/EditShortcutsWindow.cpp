@@ -8,7 +8,7 @@ HWND hWndXamlIslandEditShortcutsWindow = nullptr;
 bool isEditShortcutsWindowRegistrationCompleted = false;
 TextBlock detectShortcutTextBlock = nullptr;
 std::vector<DWORD> detectedShortcuts;
-std::unordered_map<DWORD, std::string> VKCodeToKeyName({ { 0x41, "A" }, { 0x53, "S" }, { 0x44, "D" }, { VK_LWIN, "LWin" }, { VK_LCONTROL, "LCtrl" }, { VK_LMENU, "LAlt" }, {VK_LSHIFT, "LShift"} });
+std::unordered_map<DWORD, std::string> VKCodeToKeyName({ { 0x41, "A" }, { 0x53, "S" }, { 0x44, "D" }, { VK_LWIN, "LWin" }, { VK_LCONTROL, "LCtrl" }, { VK_LMENU, "LAlt" }, { VK_LSHIFT, "LShift" } });
 
 void createEditShortcutsWindow(HINSTANCE hInst, int* uiFlag, HWND* detectWindowHandle)
 {
@@ -75,10 +75,10 @@ void createEditShortcutsWindow(HINSTANCE hInst, int* uiFlag, HWND* detectWindowH
     TextBlock header2;
     header2.Text(winrt::to_hstring("Original Shortcut:"));
     header2.FontWeight(Text::FontWeights::Bold());
-    header2.Margin({ 10 });
+    header2.Margin({ 10, 10, 10, 20 });
 
     TextBlock shortcutText;
-    shortcutText.Margin({ 10 });  
+    shortcutText.Margin({ 10 });
     Windows::UI::Xaml::Controls::Button bt;
     bt.Content(winrt::box_value(winrt::to_hstring("Type Shortcut")));
     bt.Margin({ 10 });
@@ -87,12 +87,21 @@ void createEditShortcutsWindow(HINSTANCE hInst, int* uiFlag, HWND* detectWindowH
         // Using the XamlRoot of the bt to get the root of the XAML host
         createDetectShortcutWindow(bt.XamlRoot(), shortcutText, uiFlag, detectWindowHandle);
     });
-  
+
+    Windows::UI::Xaml::Controls::Button addShortcut;
+    FontIcon plusSymbol;
+    plusSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
+    plusSymbol.Glyph(L"\xE109");
+    addShortcut.Content(plusSymbol);
+    addShortcut.Margin({ 10 });
+    addShortcut.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    });
 
     xamlContainer.Children().Append(header);
     xamlContainer.Children().Append(header2);
     xamlContainer.Children().Append(bt);
     xamlContainer.Children().Append(shortcutText);
+    xamlContainer.Children().Append(addShortcut);
     xamlContainer.UpdateLayout();
     desktopSource.Content(xamlContainer);
     ////End XAML Island section
@@ -193,7 +202,7 @@ void createDetectShortcutWindow(XamlRoot xamlRoot, TextBlock& shortcutText, int*
     detectShortcutBox.ShowAsync();
 }
 
-void updateDetectShortcutTextBlock(std::vector<DWORD> &shortcutKeys)
+void updateDetectShortcutTextBlock(std::vector<DWORD>& shortcutKeys)
 {
     if (detectShortcutTextBlock == nullptr)
     {
@@ -205,13 +214,13 @@ void updateDetectShortcutTextBlock(std::vector<DWORD> &shortcutKeys)
     hstring shortcutString;
     for (int i = 0; i < shortcutKeys.size(); i++)
     {
-        if (VKCodeToKeyName.find(shortcutKeys[i])!=VKCodeToKeyName.end())
+        if (VKCodeToKeyName.find(shortcutKeys[i]) != VKCodeToKeyName.end())
         {
             shortcutString = shortcutString + to_hstring(VKCodeToKeyName[shortcutKeys[i]]) + to_hstring(L" ");
         }
         else
         {
-            shortcutString = shortcutString + to_hstring((unsigned int)shortcutKeys[i]) + to_hstring(L" ");        
+            shortcutString = shortcutString + to_hstring((unsigned int)shortcutKeys[i]) + to_hstring(L" ");
         }
     }
 
