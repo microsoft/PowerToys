@@ -128,13 +128,16 @@ namespace PowerToysTests
         [TestMethod]
         public void OpenEditorBySettingsButtonNoSettingsFolder()
         {
+            /*
             if (isPowerToysLaunched)
             {
                 ExitPowerToys();
             }
             RemoveSettingsFolder();
             LaunchPowerToys();
+            */
 
+            RemoveSettingsFolder();
             OpenEditorBySettingsButton();
         }
 
@@ -190,13 +193,15 @@ namespace PowerToysTests
         [TestMethod]
         public void OpenEditorByHotkeyNoSettingsFolder()
         {
+            /*
             if (isPowerToysLaunched)
             {
                 ExitPowerToys();
             }
             RemoveSettingsFolder();
             LaunchPowerToys();
-            
+            */
+            RemoveSettingsFolder();
             OpenEditorByHotkey();
         }
 
@@ -238,13 +243,7 @@ namespace PowerToysTests
         [TestMethod]
         public void OpenEditorByHotkeyCroppedSettings()
         {
-            if (isPowerToysLaunched)
-            {
-                ExitPowerToys();
-            }
             CreateCroppedSettingsFile();
-            LaunchPowerToys();
-
             OpenEditorByHotkey();
         }
 
