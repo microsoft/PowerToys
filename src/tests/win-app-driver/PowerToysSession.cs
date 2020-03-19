@@ -1,9 +1,11 @@
 using System;
+using System.IO;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
-using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 
 namespace PowerToysTests
 {
@@ -14,8 +16,29 @@ namespace PowerToysTests
         protected static bool isPowerToysLaunched = false;
         protected static WindowsElement trayButton;
 
-        public static void Setup(TestContext context)
+        protected static string _settingsFolderPath = "";
+        protected static string _settingsPath = ""; 
+        protected static string _zoneSettingsPath = "";
+        protected static string _initialSettings = "";
+        protected static string _initialZoneSettings = "";
+
+        public static void Setup(TestContext context, bool isLaunchRequired = true)
         {
+            //read settings before running tests to restore them after
+            _settingsFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\FancyZones");
+            _settingsPath = _settingsFolderPath + "\\settings.json";
+            _zoneSettingsPath = _settingsFolderPath + "\\zones-settings.json";
+            try
+            {
+                _initialSettings = File.ReadAllText(_settingsPath);
+                _initialZoneSettings = File.ReadAllText(_zoneSettingsPath);
+            }
+            catch(Exception)
+            {
+                //failed to read settings
+            }
+            
+
             if (session == null)
             {
                 // Create a new Desktop session to use PowerToys.
@@ -28,7 +51,7 @@ namespace PowerToysTests
                 trayButton = session.FindElementByAccessibilityId("1502");
 
                 isPowerToysLaunched = CheckPowerToysLaunched();
-                if (!isPowerToysLaunched)
+                if (!isPowerToysLaunched && isLaunchRequired)
                 {
                     LaunchPowerToys();
                 }
@@ -38,11 +61,35 @@ namespace PowerToysTests
 
         public static void TearDown()
         {
-            if (session!=null)
+            //restore initial settings files
+            if (_initialSettings.Length > 0)
+            {
+                File.WriteAllText(_settingsPath, _initialSettings);
+            }
+            else
+            {
+                File.Delete(_settingsPath);
+            }
+
+            if (_initialZoneSettings.Length > 0)
+            {
+                File.WriteAllText(_zoneSettingsPath, _initialZoneSettings);
+            }
+            else
+            {
+                File.Delete(_zoneSettingsPath);
+            }
+
+            if (session != null)
             {
                 session.Quit();
                 session = null;
             }
+        }
+
+        public static void WaitSeconds(int seconds)
+        {
+            Thread.Sleep(TimeSpan.FromSeconds(seconds));
         }
 
         public static void ShortWait()
@@ -53,14 +100,35 @@ namespace PowerToysTests
         public static void OpenSettings()
         {
             trayButton.Click();
-            session.FindElementByName("PowerToys").Click();
+            session.FindElementByXPath("//Button[@Name=\"PowerToys\"]").Click();
             trayButton.Click();
+        }
+
+        public static void OpenFancyZonesSettings()
+        {
+            WindowsElement fzNavigationButton = session.FindElementByXPath("//Button[@Name=\"FancyZones\"]");
+            Assert.IsNotNull(fzNavigationButton);
+
+            fzNavigationButton.Click();
+            fzNavigationButton.Click();
+
+            ShortWait();
         }
 
         public static void CloseSettings()
         {
-            WindowsElement settings = session.FindElementByName("PowerToys Settings");
-            settings.SendKeys(Keys.Alt + Keys.F4);
+            try
+            {
+                WindowsElement settings = session.FindElementByName("PowerToys Settings");
+                if (settings != null)
+                {
+                    settings.SendKeys(Keys.Alt + Keys.F4);
+                }
+            }
+            catch(Exception)
+            {
+
+            }
         }
 
         private static bool CheckPowerToysLaunched()        
@@ -70,7 +138,7 @@ namespace PowerToysTests
 
             try
             {
-                WindowsElement pt = session.FindElementByName("PowerToys");
+                WindowsElement pt = session.FindElementByXPath("//Button[@Name=\"PowerToys\"]");
                 isLaunched = (pt != null);
             }
             catch(OpenQA.Selenium.WebDriverException)
@@ -98,6 +166,19 @@ namespace PowerToysTests
             {
                 //exception could be thrown even if app launched successfully
             }
+        }
+
+        public static void ExitPowerToys()
+        {
+            trayButton.Click();
+            ShortWait();
+
+            WindowsElement pt = session.FindElementByXPath("//Button[@Name=\"PowerToys\"]");
+            new Actions(session).MoveToElement(pt).ContextClick().Perform();
+            ShortWait();
+
+            session.FindElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
+            trayButton.Click(); //close tray
         }
     }
 }
