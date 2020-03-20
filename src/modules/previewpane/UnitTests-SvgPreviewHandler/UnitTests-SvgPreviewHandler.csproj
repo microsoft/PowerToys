@@ -89,6 +89,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="SvgPreviewControlTests.cs" />
+    <Compile Include="SvgPreviewHandlerHelperTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Moq">

@@ -384,9 +384,9 @@
         <!-- File to include common library used by preview handlers -->
         <File Source="$(var.BinX64Dir)\modules\PreviewHandlerCommon.dll" />
         <!-- File to include dll for Svg Preview Handler -->
-        <File Id="Svg_PreviewHandler_Dll" Source="$(var.BinX64Dir)\modules\SvgPreviewHandler.dll" />
+        <File Source="$(var.BinX64Dir)\modules\SvgPreviewHandler.dll" />
         <!-- Files to include dll's for Markdown Preview Handler and it's dependencies -->
-        <File Id="Md_PreviewHandler_Dll" Source="$(var.BinX64Dir)\modules\MarkdownPreviewHandler.dll" />
+        <File Source="$(var.BinX64Dir)\modules\MarkdownPreviewHandler.dll" />
         <File Source="$(var.BinX64Dir)\modules\Markdig.Signed.dll" />
         <File Source="$(var.BinX64Dir)\modules\HtmlAgilityPack.dll" />
       </Component>
@@ -403,11 +403,11 @@
           <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="SvgPreviewHandler.SvgPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[#Svg_PreviewHandler_Dll]" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[ModulesInstallFolder]SvgPreviewHandler.dll" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="SvgPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="SvgPreviewHandler.SvgPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="RuntimeVersion" Value="v4.0.30319" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[#Svg_PreviewHandler_Dll]" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[ModulesInstallFolder]SvgPreviewHandler.dll" />
         </RegistryKey>
         <!-- Registry Key for Class Registration of Markdown Preview Handler -->
         <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{45769bcc-e8fd-42d0-947e-02beef77a1f5}">
@@ -420,11 +420,11 @@
           <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[#Md_PreviewHandler_Dll]" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[ModulesInstallFolder]MarkdownPreviewHandler.dll" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="RuntimeVersion" Value="v4.0.30319" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[#Md_PreviewHandler_Dll]" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[ModulesInstallFolder]MarkdownPreviewHandler.dll" />
         </RegistryKey>
         <!-- Registry Key for AppID registration -->
         <RegistryKey Root="HKCU" Key="Software\Classes\AppID\{CF142243-F059-45AF-8842-DBBE9783DB14}">
