@@ -28,7 +28,12 @@ namespace Wox.Plugin.SharedCommands
             }
             catch (System.ComponentModel.Win32Exception)
             {
-                Process.Start(url);
+                var psi = new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                };
+                Process.Start(psi);
             }
         }
 

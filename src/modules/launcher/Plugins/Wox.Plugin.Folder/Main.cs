@@ -19,6 +19,7 @@ namespace Wox.Plugin.Folder
 
         private string DefaultFolderSubtitleString = "Ctrl + Enter to open the directory";
 
+        private const string _fileExplorerProgramName = "explorer";
         private static List<string> _driverNames;
         private PluginInitContext _context;
 
@@ -102,7 +103,7 @@ namespace Wox.Plugin.Folder
                     {
                         try
                         {
-                            Process.Start(path);
+                            Process.Start(_fileExplorerProgramName, path);
                             return true;
                         }
                         catch (Exception ex)
@@ -254,7 +255,7 @@ namespace Wox.Plugin.Folder
                 {
                     try
                     {
-                        Process.Start(filePath);
+                        Process.Start(_fileExplorerProgramName, filePath);
                     }
                     catch (Exception ex)
                     {
@@ -285,7 +286,7 @@ namespace Wox.Plugin.Folder
                 Score = 500,
                 Action = c =>
                 {
-                    Process.Start(search);
+                    Process.Start(_fileExplorerProgramName, search);
                     return true;
                 }
             };

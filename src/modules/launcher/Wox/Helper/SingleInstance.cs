@@ -4,13 +4,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Channels;
-using System.Runtime.Remoting.Channels.Ipc;
+using System.IO.Pipes;
 using System.Runtime.Serialization.Formatters;
 using System.Security;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -217,24 +216,9 @@ namespace Wox.Helper
         private const string ChannelNameSuffix = "SingeInstanceIPCChannel";
 
         /// <summary>
-        /// Remote service name.
-        /// </summary>
-        private const string RemoteServiceName = "SingleInstanceApplicationService";
-
-        /// <summary>
-        /// IPC protocol used (string).
-        /// </summary>
-        private const string IpcProtocol = "ipc://";
-
-        /// <summary>
         /// Application mutex.
         /// </summary>
         internal static Mutex singleInstanceMutex;
-
-        /// <summary>
-        /// IPC channel for communications.
-        /// </summary>
-        private static IpcServerChannel channel;
 
         #endregion
 
@@ -261,12 +245,12 @@ namespace Wox.Helper
             singleInstanceMutex = new Mutex(true, applicationIdentifier, out firstInstance);
             if (firstInstance)
             {
-                CreateRemoteService(channelName);
+                _ = CreateRemoteService(channelName);
                 return true;
             }
             else
             {
-                SignalFirstInstance(channelName);
+                _ = SignalFirstInstance(channelName);
                 return false;
             }
         }
@@ -277,12 +261,6 @@ namespace Wox.Helper
         public static void Cleanup()
         {
             singleInstanceMutex?.ReleaseMutex();
-
-            if (channel != null)
-            {
-                ChannelServices.UnregisterChannel(channel);
-                channel = null;
-            }
         }
 
         #endregion
@@ -296,13 +274,15 @@ namespace Wox.Helper
         private static IList<string> GetCommandLineArgs( string uniqueApplicationName )
         {
             string[] args = null;
-            if (AppDomain.CurrentDomain.ActivationContext == null)
+
+            try
             {
                 // The application was not clickonce deployed, get args from standard API's
                 args = Environment.GetCommandLineArgs();
             }
-            else
+            catch (NotSupportedException)
             {
+              
                 // The application was clickonce deployed
                 // Clickonce deployed apps cannot recieve traditional commandline arguments
                 // As a workaround commandline arguments can be written to a shared location before 
@@ -338,56 +318,43 @@ namespace Wox.Helper
         }
 
         /// <summary>
-        /// Creates a remote service for communication.
+        /// Creates a remote server pipe for communication. 
+        /// Once receives signal from client, will activate first instance.
         /// </summary>
         /// <param name="channelName">Application's IPC channel name.</param>
-        private static void CreateRemoteService(string channelName)
+        private static async Task CreateRemoteService(string channelName)
         {
-            BinaryServerFormatterSinkProvider serverProvider = new BinaryServerFormatterSinkProvider();
-            serverProvider.TypeFilterLevel = TypeFilterLevel.Full;
-            IDictionary props = new Dictionary<string, string>();
-
-            props["name"] = channelName;
-            props["portName"] = channelName;
-            props["exclusiveAddressUse"] = "false";
-
-            // Create the IPC Server channel with the channel properties
-            channel = new IpcServerChannel(props, serverProvider);
-
-            // Register the channel with the channel services
-            ChannelServices.RegisterChannel(channel, true);
-
-            // Expose the remote service with the REMOTE_SERVICE_NAME
-            IPCRemoteService remoteService = new IPCRemoteService();
-            RemotingServices.Marshal(remoteService, RemoteServiceName);
+            using (NamedPipeServerStream pipeServer = new NamedPipeServerStream(channelName, PipeDirection.In))
+            {
+                while(true)
+                {
+                    // Wait for connection to the pipe
+                    await pipeServer.WaitForConnectionAsync();
+                    if (Application.Current != null)
+                    {
+                        // Do an asynchronous call to ActivateFirstInstance function
+                        Application.Current.Dispatcher.Invoke(ActivateFirstInstance);
+                    }
+                    // Disconect client
+                    pipeServer.Disconnect();
+                }
+            }
         }
 
         /// <summary>
-        /// Creates a client channel and obtains a reference to the remoting service exposed by the server - 
-        /// in this case, the remoting service exposed by the first instance. Calls a function of the remoting service 
-        /// class to pass on command line arguments from the second instance to the first and cause it to activate itself.
+        /// Creates a client pipe and sends a signal to server to launch first instance
         /// </summary>
         /// <param name="channelName">Application's IPC channel name.</param>
         /// <param name="args">
         /// Command line arguments for the second instance, passed to the first instance to take appropriate action.
         /// </param>
-        private static void SignalFirstInstance(string channelName)
+        private static async Task SignalFirstInstance(string channelName)
         {
-            IpcClientChannel secondInstanceChannel = new IpcClientChannel();
-            ChannelServices.RegisterChannel(secondInstanceChannel, true);
-
-            string remotingServiceUrl = IpcProtocol + channelName + "/" + RemoteServiceName;
-
-            // Obtain a reference to the remoting service exposed by the server i.e the first instance of the application
-            IPCRemoteService firstInstanceRemoteServiceReference = (IPCRemoteService)RemotingServices.Connect(typeof(IPCRemoteService), remotingServiceUrl);
-
-            // Check that the remote service exists, in some cases the first instance may not yet have created one, in which case
-            // the second instance should just exit
-            if (firstInstanceRemoteServiceReference != null)
+            // Create a client pipe connected to server
+            using (NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", channelName, PipeDirection.Out))
             {
-                // Invoke a method of the remote service exposed by the first instance passing on the command line
-                // arguments and causing the first instance to activate itself
-                firstInstanceRemoteServiceReference.InvokeFirstInstance();
+                // Connect to the available pipe
+                await pipeClient.ConnectAsync(0);
             }
         }
 
@@ -427,17 +394,6 @@ namespace Wox.Helper
         /// </summary>
         private class IPCRemoteService : MarshalByRefObject
         {
-            /// <summary>
-            /// Activates the first instance of the application.
-            /// </summary>
-            public void InvokeFirstInstance()
-            {
-                if (Application.Current != null)
-                {
-                    // Do an asynchronous call to ActivateFirstInstance function
-                    Application.Current.Dispatcher.Invoke(ActivateFirstInstance);
-                }
-            }
 
             /// <summary>
             /// Remoting Object's ease expires after every 5 minutes by default. We need to override the InitializeLifetimeService class

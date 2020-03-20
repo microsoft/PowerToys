@@ -1,122 +1,71 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B749F0DB-8E75-47DB-9E5E-265D16D0C0D2}</ProjectGuid>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWpf>true</UseWpf>
+    <UseWindowsForms>true</UseWindowsForms>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Wox.Core</RootNamespace>
     <AssemblyName>Wox.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
+  
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\..\x64\Debug\modules\launcher\</OutputPath>
+    <OutputPath>..\Output\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\..\..\x64\Release\modules\launcher\</OutputPath>
+    <OutputPath>..\Output\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\SolutionAssemblyInfo.cs">
-      <Link>Properties\SolutionAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="Plugin\ExecutablePlugin.cs" />
-    <Compile Include="Plugin\PluginsLoader.cs" />
-    <Compile Include="Plugin\QueryBuilder.cs" />
-    <Compile Include="Updater.cs" />
-    <Compile Include="Resource\AvailableLanguages.cs" />
-    <Compile Include="Resource\Internationalization.cs" />
-    <Compile Include="Resource\InternationalizationManager.cs" />
-    <Compile Include="Resource\Language.cs" />
-    <Compile Include="Resource\ThemeManager.cs" />
-    <Compile Include="Plugin\PluginInstaller.cs" />
-    <Compile Include="Plugin\JsonRPCPlugin.cs" />
-    <Compile Include="Plugin\JsonPRCModel.cs" />
-    <Compile Include="Plugin\PluginConfig.cs" />
-    <Compile Include="Plugin\PluginManager.cs" />
-    <Compile Include="Plugin\PythonPlugin.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Resource\FontHelper.cs" />
-    <Compile Include="Resource\Theme.cs" />
-  </ItemGroup>
+
   <ItemGroup>
     <None Include="Plugin\README.md" />
     <None Include="README.md" />
   </ItemGroup>
+  
   <ItemGroup>
-    <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj">
-      <Project>{4fd29318-a8ab-4d8f-aa47-60bc241b8da3}</Project>
-      <Name>Wox.Infrastructure</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj">
-      <Project>{8451ecdd-2ea4-4966-bb0a-7bbc40138e80}</Project>
-      <Name>Wox.Plugin</Name>
-    </ProjectReference>
+    <None Remove="FodyWeavers.xml" />
   </ItemGroup>
+
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
+  
   <ItemGroup>
-    <PackageReference Include="Fody">
-      <Version>1.29.2</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    <PackageReference Include="Fody" Version="6.1.1">
       <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="JetBrains.Annotations">
-      <Version>10.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>9.0.1</Version>
-    </PackageReference>
-    <PackageReference Include="PropertyChanged.Fody">
-      <Version>1.51.0</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="squirrel.windows">
-      <Version>1.5.2</Version>
-    </PackageReference>
-    <PackageReference Include="System.Runtime">
-      <Version>4.0.0</Version>
-    </PackageReference>
+    <PackageReference Include="JetBrains.Annotations" Version="2019.1.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="ppy.squirrel.windows" Version="1.9.0.4" />
+    <PackageReference Include="PropertyChanged.Fody" Version="3.2.6" />
+    <PackageReference Include="SharpZipLib" Version="1.2.0" />
+    <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
+    <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj" />
+  </ItemGroup>
+
 </Project>

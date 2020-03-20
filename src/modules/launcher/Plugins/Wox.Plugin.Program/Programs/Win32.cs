@@ -62,7 +62,8 @@ namespace Wox.Plugin.Program.Programs
                     var info = new ProcessStartInfo
                     {
                         FileName = FullPath,
-                        WorkingDirectory = ParentDirectory
+                        WorkingDirectory = ParentDirectory,
+                        UseShellExecute = true
                     };
 
                     Main.StartProcess(Process.Start, info);
@@ -102,7 +103,12 @@ namespace Wox.Plugin.Program.Programs
                     Title = api.GetTranslation("wox_plugin_program_run_as_different_user"),
                     Action = _ =>
                     {
-                        var info = FullPath.SetProcessStartInfo(ParentDirectory);
+                        var info = new ProcessStartInfo
+                        {
+                            FileName = FullPath,
+                            WorkingDirectory = ParentDirectory,
+                            UseShellExecute = true
+                        };
 
                         Task.Run(() => Main.StartProcess(ShellCommand.RunAsDifferentUser, info));
 
@@ -119,7 +125,8 @@ namespace Wox.Plugin.Program.Programs
                         {
                             FileName = FullPath,
                             WorkingDirectory = ParentDirectory,
-                            Verb = "runas"
+                            Verb = "runas",
+                            UseShellExecute = true
                         };
 
                         Task.Run(() => Main.StartProcess(Process.Start, info));
@@ -133,7 +140,9 @@ namespace Wox.Plugin.Program.Programs
                     Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
                     Action = _ =>
                     {
-                        Main.StartProcess(Process.Start, new ProcessStartInfo(ParentDirectory));
+
+
+                        Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
 
                         return true;
                     },
