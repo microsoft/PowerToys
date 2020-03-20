@@ -93,10 +93,10 @@ public:
     void ClearOSLevelShortcuts();
 
     // Function to add a new OS level shortcut remapping
-    void AddOSLevelShortcut(std::vector<DWORD> originalSC, std::vector<WORD> newSC);
+    void AddOSLevelShortcut(const std::vector<DWORD>& originalSC, const std::vector<WORD>& newSC);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
-    void ConfigureDetectShortcutUI(TextBlock& textBlock);
+    void ConfigureDetectShortcutUI(const TextBlock& textBlock);
 
     // Function to update the detect shortcut UI based on the entered keys
     void UpdateDetectShortcutUI();

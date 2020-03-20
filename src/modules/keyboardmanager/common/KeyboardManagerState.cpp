@@ -48,13 +48,13 @@ void KeyboardManagerState::ClearOSLevelShortcuts()
 }
 
 // Function to add a new OS level shortcut remapping
-void KeyboardManagerState::AddOSLevelShortcut(std::vector<DWORD> originalSC, std::vector<WORD> newSC)
+void KeyboardManagerState::AddOSLevelShortcut(const std::vector<DWORD>& originalSC,const std::vector<WORD>& newSC)
 {
     osLevelShortcutReMap[originalSC] = std::make_pair(newSC, false);
 }
 
 // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
-void KeyboardManagerState::ConfigureDetectShortcutUI(TextBlock& textBlock)
+void KeyboardManagerState::ConfigureDetectShortcutUI(const TextBlock& textBlock)
 {
     currentShortcutTextBlock = textBlock;
 }

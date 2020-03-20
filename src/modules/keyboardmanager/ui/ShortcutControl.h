@@ -64,7 +64,7 @@ public:
     }
 
     // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-    static void AddNewShortcutControlRow(StackPanel& parent, std::vector<DWORD> originalKeys = std::vector<DWORD>(), std::vector<WORD> newKeys = std::vector<WORD>());
+    static void AddNewShortcutControlRow(StackPanel& parent, const std::vector<DWORD>& originalKeys = std::vector<DWORD>(), const std::vector<WORD>& newKeys = std::vector<WORD>());
 
     // Function to return the stack panel element of the ShortcutControl. This is the externally visible UI element which can be used to add it to other layouts
     StackPanel getShortcutControl();
