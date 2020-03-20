@@ -131,6 +131,12 @@ namespace FancyZonesEditor.Models
         public override LayoutModel Clone()
         {
             GridLayoutModel layout = new GridLayoutModel(Name);
+            RestoreTo(layout);
+            return layout;
+        }
+
+        public void RestoreTo(GridLayoutModel layout)
+        {
             int rows = Rows;
             int cols = Columns;
 
@@ -163,8 +169,6 @@ namespace FancyZonesEditor.Models
             }
 
             layout.ColumnPercents = colPercents;
-
-            return layout;
         }
 
         // PersistData

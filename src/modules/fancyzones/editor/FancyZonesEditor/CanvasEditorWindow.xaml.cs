@@ -16,6 +16,7 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
             _model = EditorOverlay.Current.DataContext as CanvasLayoutModel;
+            _stashedModel = (CanvasLayoutModel)_model.Clone();
         }
 
         private void OnAddZone(object sender, RoutedEventArgs e)
@@ -24,7 +25,14 @@ namespace FancyZonesEditor
             _offset += 100;
         }
 
+        protected new void OnCancel(object sender, RoutedEventArgs e)
+        {
+            base.OnCancel(sender, e);
+            _stashedModel.RestoreTo(_model);
+        }
+
         private int _offset = 100;
         private CanvasLayoutModel _model;
+        private CanvasLayoutModel _stashedModel;
     }
 }

@@ -18,11 +18,16 @@ namespace FancyZonesEditor
     {
         public static readonly DependencyProperty ModelProperty = DependencyProperty.Register("Model", typeof(GridLayoutModel), typeof(GridEditor), new PropertyMetadata(null, OnGridDimensionsChanged));
 
+        private static int gridEditorUniqueIdCounter = 0;
+
+        private int gridEditorUniqueId;
+
         public GridEditor()
         {
             InitializeComponent();
             Loaded += GridEditor_Loaded;
             ((App)Application.Current).ZoneSettings.PropertyChanged += ZoneSettings_PropertyChanged;
+            gridEditorUniqueId = ++gridEditorUniqueIdCounter;
         }
 
         private void GridEditor_Loaded(object sender, RoutedEventArgs e)
@@ -73,7 +78,9 @@ namespace FancyZonesEditor
         private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             Size actualSize = new Size(ActualWidth, ActualHeight);
-            if (actualSize.Width > 0)
+
+            // Only enter if this is the newest instance
+            if (actualSize.Width > 0 && gridEditorUniqueId == gridEditorUniqueIdCounter)
             {
                 ArrangeGridRects(actualSize);
             }
@@ -495,7 +502,8 @@ namespace FancyZonesEditor
 
         private void OnGridDimensionsChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if ((e.PropertyName == "Rows") || (e.PropertyName == "Columns"))
+            // Only enter if this is the newest instance
+            if (((e.PropertyName == "Rows") || (e.PropertyName == "Columns")) && gridEditorUniqueId == gridEditorUniqueIdCounter)
             {
                 OnGridDimensionsChanged();
             }
