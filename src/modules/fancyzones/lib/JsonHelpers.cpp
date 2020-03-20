@@ -714,14 +714,14 @@ namespace JSONHelpers
                     int j = 5;
                     GridLayoutInfo zoneSetInfo(GridLayoutInfo::Minimal{ .rows = data[j++], .columns = data[j++] });
 
-                    for (int row = 0; row < zoneSetInfo.rows(); row++)
+                    for (int row = 0; row < zoneSetInfo.rows(); row++, j+=2)
                     {
-                        zoneSetInfo.rowsPercents()[row] = data[j++] * 256 + data[j++];
+                        zoneSetInfo.rowsPercents()[row] = data[j] * 256 + data[j+1];
                     }
 
-                    for (int col = 0; col < zoneSetInfo.columns(); col++)
+                    for (int col = 0; col < zoneSetInfo.columns(); col++, j+=2)
                     {
-                        zoneSetInfo.columnsPercents()[col] = data[j++] * 256 + data[j++];
+                        zoneSetInfo.columnsPercents()[col] = data[j] * 256 + data[j+1];
                     }
 
                     for (int row = 0; row < zoneSetInfo.rows(); row++)
