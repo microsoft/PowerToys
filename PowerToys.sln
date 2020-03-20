@@ -154,6 +154,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Folder", "src\mo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Wox.Launcher", "src\modules\launcher\Wox.Launcher\Wox.Launcher.vcxproj", "{E364F67B-BB12-4E91-B639-355866EBCD8B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wox.Plugin.Indexer", "src\modules\launcher\Plugins\Wox.Plugin.Indexer\Wox.Plugin.Indexer.csproj", "{63C3CEA8-51FE-472E-B97C-B58F8B17DD51}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -378,6 +380,14 @@ Global
 		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Release|Any CPU.ActiveCfg = Release|x64
 		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Release|x64.ActiveCfg = Release|x64
 		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Release|x64.Build.0 = Release|x64
+		{63C3CEA8-51FE-472E-B97C-B58F8B17DD51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63C3CEA8-51FE-472E-B97C-B58F8B17DD51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63C3CEA8-51FE-472E-B97C-B58F8B17DD51}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{63C3CEA8-51FE-472E-B97C-B58F8B17DD51}.Debug|x64.Build.0 = Debug|Any CPU
+		{63C3CEA8-51FE-472E-B97C-B58F8B17DD51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63C3CEA8-51FE-472E-B97C-B58F8B17DD51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63C3CEA8-51FE-472E-B97C-B58F8B17DD51}.Release|x64.ActiveCfg = Release|Any CPU
+		{63C3CEA8-51FE-472E-B97C-B58F8B17DD51}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -419,6 +429,7 @@ Global
 		{C21BFF9C-2C99-4B5F-B7C9-A5E6DDDB37B0} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{E364F67B-BB12-4E91-B639-355866EBCD8B} = {C140A3EF-6DBF-4084-9D4C-4EB5A99FEE68}
+		{63C3CEA8-51FE-472E-B97C-B58F8B17DD51} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
