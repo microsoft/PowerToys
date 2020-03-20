@@ -17,7 +17,7 @@ void PowerPreviewModule::destroy()
         if (previewHandler != NULL)
         {
             // Stop all the active previews handlers.
-            if (this->m_enabled && previewHandler->GetState())
+            if (this->m_enabled && previewHandler->GetToggleSettingState())
             {
                 previewHandler->DisablePreview();
             }
@@ -61,9 +61,9 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
     for (auto previewHandler : this->m_previewHandlers)
     {
         settings.add_bool_toogle(
-            previewHandler->GetName(),
-            previewHandler->GetDescription(),
-            previewHandler->GetState());
+            previewHandler->GetToggleSettingName(),
+            previewHandler->GetToggleSettingDescription(),
+            previewHandler->GetToggleSettingState());
     }
 
     return settings.serialize_to_buffer(buffer, buffer_size);
@@ -74,36 +74,14 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 {
     try
     {
-        PowerToysSettings::PowerToyValues setttings = PowerToysSettings::PowerToyValues::from_json_string(config);
+        PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::from_json_string(config);
 
         for (auto previewHandler : this->m_previewHandlers)
         {
-            auto toggle = setttings.get_bool_value(previewHandler->GetName());
-            if (toggle)
-            {
-                auto lastState = previewHandler->GetState();
-                if (lastState != *toggle)
-                {
-                    previewHandler->SetState(*toggle);
-
-                    // If global setting is enable. Add or remove the preview handler otherwise just change the UI and save the updated config.
-                    if (this->m_enabled)
-                    {
-                        if (lastState)
-                        {
-                            previewHandler->DisablePreview();
-                        }
-                        else
-                        {
-                            previewHandler->EnablePreview();
-                        }
-                    }
-
-                }                
-            }
+            previewHandler->UpdateState(settings, this->m_enabled);
         }
 
-        setttings.save_to_settings_file();
+        settings.save_to_settings_file();
     }
     catch (std::exception const& e)
     {
@@ -116,7 +94,7 @@ void PowerPreviewModule::enable()
 {
     for (auto previewHandler : this->m_previewHandlers)
     {
-        if (previewHandler->GetState())
+        if (previewHandler->GetToggleSettingState())
         {
             // Enable all the previews with intial state set as true.
             previewHandler->EnablePreview();
@@ -131,7 +109,7 @@ void PowerPreviewModule::disable()
 {
     for (auto previewHandler : this->m_previewHandlers)
     {
-        if (previewHandler->GetState())
+        if (previewHandler->GetToggleSettingState())
         {
             previewHandler->DisablePreview();
         }
@@ -164,12 +142,7 @@ void PowerPreviewModule::init_settings()
         // Load settings states.
         for (auto previewHandler : this->m_previewHandlers)
         {
-            auto toggle = settings.get_bool_value(previewHandler->GetName());
-            if (toggle)
-            {
-                // If no exisiting setting found leave the default intitialization value i.e: true
-                previewHandler->SetState(*toggle);
-            }
+            previewHandler->LoadState(settings);
         }
     }
     catch (std::exception const& e)

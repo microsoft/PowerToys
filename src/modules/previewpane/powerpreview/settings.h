@@ -11,28 +11,25 @@ namespace PowerPreviewSettings
 	class FileExplorerPreviewSettings
 	{
 	private:
-		bool m_isPreviewEnabled;
-		std::wstring m_name;
-		std::wstring m_description;
-		std::wstring m_displayName;
+		bool m_toggleSettingEnabled;
+        std::wstring m_toggleSettingName;
+        std::wstring m_toggleSettingDescription;
+		std::wstring m_registryValueData;
         RegistryWrapperIface * m_registryWrapper;
 		LPCWSTR m_clsid;
-        
 
 	public:
-        FileExplorerPreviewSettings(bool enabled, const std::wstring& name, const std::wstring& description, LPCWSTR clsid, const std::wstring& displayname, RegistryWrapperIface* registryWrapper);
+        FileExplorerPreviewSettings(bool toggleSettingEnabled, const std::wstring& toggleSettingName, const std::wstring& toggleSettingDescription, LPCWSTR clsid, const std::wstring& registryValueData, RegistryWrapperIface* registryWrapper);
         ~ FileExplorerPreviewSettings();
 
-		virtual bool GetState() const;
-		virtual void SetState(bool state);
-		virtual std::wstring GetName() const;
-		virtual void SetName(const std::wstring& name);
-		virtual std::wstring GetDescription() const;
-		virtual void SetDescription(const std::wstring& description);
-		virtual void SetDisplayName(const std::wstring& displayName);
-		virtual std::wstring GetDisplayName() const;
-		virtual LPCWSTR GetCLSID() const;
-		virtual LPCWSTR GetSubKey() const;
+		virtual bool GetToggleSettingState() const;
+        virtual void UpdateToggleSettingState(bool state);
+		virtual std::wstring GetToggleSettingName() const;
+        virtual std::wstring GetToggleSettingDescription() const;
+        virtual LPCWSTR GetCLSID() const;
+        virtual std::wstring GetRegistryValueData() const;
+        virtual void LoadState(PowerToysSettings::PowerToyValues& settings);
+        virtual void UpdateState(PowerToysSettings::PowerToyValues& settings, bool enabled);
 		virtual void EnablePreview();
 		virtual void DisablePreview();
 	};
