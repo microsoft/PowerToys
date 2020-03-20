@@ -27,7 +27,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 // The PowerToy name that will be shown in the settings.
 const static wchar_t* MODULE_NAME = L"Window Walker";
 // Add a description that will we shown in the module settings page.
-const static wchar_t* MODULE_DESC = L"Alt+Tab but with search";
+const static wchar_t* MODULE_DESC = L"A text-based Alt+Tab with search.  Use Ctrl+Win to pop up";
 
 // These are the properties shown in the Settings page.
 struct ModuleSettings
