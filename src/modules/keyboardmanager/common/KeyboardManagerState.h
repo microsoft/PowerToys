@@ -31,6 +31,7 @@ using namespace Windows::UI::Xaml::Controls;
 
 using namespace Windows::UI::Xaml::Controls;
 
+// Enum type to store different states of the UI
 enum class KeyboardManagerUIState
 {
     // If set to this value then there is no keyboard manager window currently active that requires a hook
@@ -41,15 +42,19 @@ enum class KeyboardManagerUIState
     DetectShortcutWindowActivated
 };
 
+// Class to store the shared state of the keyboard manager between the UI and the hook
 class KeyboardManagerState
 {
 private:
     // State variable used to store which UI window is currently active that requires interaction with the hook
     KeyboardManagerUIState uiState;
+
     // Window handle for the current UI window which is active. Should be set to nullptr if UI is deactivated
     HWND currentUIWindow;
+
     // Vector to store the shortcut detected in the detect shortcut UI window. This is used in both the backend and the UI.
     std::vector<DWORD> detectedShortcut;
+
     // Stores the UI element which is to be updated based on the shortcut entered
     TextBlock currentShortcutTextBlock = nullptr;
 
@@ -72,17 +77,36 @@ public:
     {
     }
 
+    // Function to reset the UI state members
     void ResetUIState();
+
+    // Function to check the if the UI state matches the argument state. For states with activated windows it also checks if the window is in focus.
     bool CheckUIState(KeyboardManagerUIState state);
+
+    // Function to set the window handle of the current UI window that is activated
     void SetCurrentUIWindow(HWND windowHandle);
+
+    // Function to set the UI state. When a window is activated, the handle to the window can be passed in the windowHandle argument.
     void SetUIState(KeyboardManagerUIState state, HWND windowHandle = nullptr);
+
+    // Function to clear the OS Level shortcut remapping table
     void ClearOSLevelShortcuts();
+
+    // Function to add a new OS level shortcut remapping
     void AddOSLevelShortcut(std::vector<DWORD> originalSC, std::vector<WORD> newSC);
+
+    // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
     void ConfigureDetectShortcutUI(TextBlock& textBlock);
+
+    // Function to update the detect shortcut UI based on the entered keys
     void UpdateDetectShortcutUI();
+
+    // Function to return the currently detected shortcut which is displayed on the UI
     std::vector<DWORD> GetDetectedShortcut();
-    // This function can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
+
+    // Function which can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
     bool DetectKeyUIBackend(LowlevelKeyboardEvent* data);
-    // This function can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
+
+    // Function which can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
     bool DetectShortcutUIBackend(LowlevelKeyboardEvent* data);
 };

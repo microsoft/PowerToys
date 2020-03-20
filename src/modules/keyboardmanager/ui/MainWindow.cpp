@@ -15,13 +15,15 @@ HWND _hWndMain;
 HINSTANCE _hInstance;
 // This Hwnd will be the window handler for the Xaml Island: A child window that contains Xaml.
 HWND hWndXamlIslandMain = nullptr;
+// This variable is used to check if window registration has been done to avoid repeated registration leading to an error.
 bool isMainWindowRegistrationCompleted = false;
 
+// Function to create the Main Window
 void createMainWindow(HINSTANCE hInstance, KeyboardManagerState& keyboardManagerState)
 {
     _hInstance = hInstance;
 
-    // The main window class name.
+    // Window Registration
     const wchar_t szWindowClass[] = L"MainWindowClass";
     if (!isMainWindowRegistrationCompleted)
     {
@@ -41,6 +43,7 @@ void createMainWindow(HINSTANCE hInstance, KeyboardManagerState& keyboardManager
         isMainWindowRegistrationCompleted = true;
     }
 
+    // Window Creation
     _hWndMain = CreateWindow(
         szWindowClass,
         L"PowerKeys Settings",

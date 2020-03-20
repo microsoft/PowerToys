@@ -2,11 +2,15 @@
 
 LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 
+// This Hwnd will be the window handler for the Xaml Island: A child window that contains Xaml.
 HWND hWndXamlIslandEditKeyboardWindow = nullptr;
+// This variable is used to check if window registration has been done to avoid repeated registration leading to an error.
 bool isEditKeyboardWindowRegistrationCompleted = false;
 
+// Function to create the Edit Keyboard Window
 void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
+    // Window Registration
     const wchar_t szWindowClass[] = L"EditKeyboardWindow";
     if (!isEditKeyboardWindowRegistrationCompleted)
     {
@@ -25,6 +29,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
         isEditKeyboardWindowRegistrationCompleted = true;
     }
+
+    // Window Creation
     HWND _hWndEditKeyboardWindow = CreateWindow(
         szWindowClass,
         L"PowerKeys Remap Keyboard",

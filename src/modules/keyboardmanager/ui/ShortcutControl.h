@@ -31,20 +31,27 @@ using namespace Windows::UI::Xaml::Controls;
 class ShortcutControl
 {
 private:
+    // Textblock to display the selected shortcut
     TextBlock shortcutText;
-    Button bt;
+
+    // Button to type the shortcut
+    Button typeShortcut;
+
+    // StackPanel to parent the above controls
     StackPanel shortcutControlLayout;
 
 public:
-    static HWND _hWndEditShortcutsWindow;
+    // Handle to the current Edit Shortcuts Window
+    static HWND EditShortcutsWindowHandle;
+    // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
 
     ShortcutControl()
     {
-        bt.Content(winrt::box_value(winrt::to_hstring("Type Shortcut")));
-        bt.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
-            keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, _hWndEditShortcutsWindow);
-            // Using the XamlRoot of the bt to get the root of the XAML host
+        typeShortcut.Content(winrt::box_value(winrt::to_hstring("Type Shortcut")));
+        typeShortcut.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+            keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, EditShortcutsWindowHandle);
+            // Using the XamlRoot of the typeShortcut to get the root of the XAML host
             createDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), *keyboardManagerState);
         });
 
@@ -52,40 +59,16 @@ public:
         shortcutControlLayout.Margin({ 0, 0, 0, 10 });
         shortcutControlLayout.Spacing(10);
 
-        shortcutControlLayout.Children().Append(bt);
+        shortcutControlLayout.Children().Append(typeShortcut);
         shortcutControlLayout.Children().Append(shortcutText);
     }
 
-    static void AddNewShortcutControlRow(StackPanel& parent, std::vector<DWORD> originalKeys = std::vector<DWORD>(), std::vector<WORD> newKeys = std::vector<WORD>())
-    {
-        Windows::UI::Xaml::Controls::StackPanel tableRow;
-        tableRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-        tableRow.Spacing(100);
-        tableRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
-        ShortcutControl originalSC;
-        tableRow.Children().Append(originalSC.getShortcutControl());
-        ShortcutControl newSC;
-        tableRow.Children().Append(newSC.getShortcutControl());
-        if (!originalKeys.empty() && !newKeys.empty())
-        {
-            originalSC.shortcutText.Text(convertVectorToHstring<DWORD>(originalKeys));
-            newSC.shortcutText.Text(convertVectorToHstring<WORD>(newKeys));
-        }
-        Windows::UI::Xaml::Controls::Button deleteShortcut;
-        FontIcon deleteSymbol;
-        deleteSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
-        deleteSymbol.Glyph(L"\xE74D");
-        deleteShortcut.Content(deleteSymbol);
-        deleteShortcut.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
-            StackPanel currentRow = sender.as<Button>().Parent().as<StackPanel>();
-            uint32_t index;
-            parent.Children().IndexOf(currentRow, index);
-            parent.Children().RemoveAt(index);
-        });
-        tableRow.Children().Append(deleteShortcut);
-        parent.Children().Append(tableRow);
-    }
+    // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
+    static void AddNewShortcutControlRow(StackPanel& parent, std::vector<DWORD> originalKeys = std::vector<DWORD>(), std::vector<WORD> newKeys = std::vector<WORD>());
 
+    // Function to return the stack panel element of the ShortcutControl. This is the externally visible UI element which can be used to add it to other layouts
     StackPanel getShortcutControl();
+
+    // Function to create the detect shortcut UI window
     void createDetectShortcutWindow(IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState);
 };

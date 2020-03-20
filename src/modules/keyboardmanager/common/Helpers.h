@@ -25,9 +25,13 @@ using namespace Windows::Foundation;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 
+// Function to split a wstring based on a delimiter and return a vector of split strings
 std::vector<std::wstring> splitwstring(std::wstring input, wchar_t delimiter);
+
+// Function to return the next sibling element for an element under a stack panel
 IInspectable getSiblingElement(IInspectable const& element);
 
+// Function to convert an unsigned int vector to hstring by concatenating them
 template<typename T>
 hstring convertVectorToHstring(std::vector<T>& input)
 {
@@ -39,8 +43,9 @@ hstring convertVectorToHstring(std::vector<T>& input)
     return output;
 }
 
+// Function to convert a wstring vector to a integer vector
 template<typename T>
-std::vector<T> convertWStringVectorToNumberType(std::vector<std::wstring> input)
+std::vector<T> convertWStringVectorToIntegerVector(std::vector<std::wstring> input)
 {
     std::vector<T> typeVector;
     for (int i = 0; i < input.size(); i++)

@@ -27,4 +27,5 @@ using namespace Windows::Foundation;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 
+// Function to create the Edit Shortcuts Window
 __declspec(dllexport) void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState);
