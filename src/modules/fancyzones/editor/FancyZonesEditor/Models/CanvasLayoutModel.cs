@@ -113,6 +113,15 @@ namespace FancyZonesEditor.Models
             return layout;
         }
 
+        public void RestoreTo(CanvasLayoutModel other)
+        {
+            other.Zones.Clear();
+            foreach (Int32Rect zone in Zones)
+            {
+                other.Zones.Add(zone);
+            }
+        }
+
         // PersistData
         // Implements the LayoutModel.PersistData abstract method
         protected override void PersistData()
