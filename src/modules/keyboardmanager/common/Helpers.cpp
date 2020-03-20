@@ -1,7 +1,7 @@
 #include "Helpers.h"
 
 // Function to split a wstring based on a delimiter and return a vector of split strings
-std::vector<std::wstring> splitwstring(std::wstring input, wchar_t delimiter)
+std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter)
 {
     std::wstringstream ss(input);
     std::wstring item;

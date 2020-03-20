@@ -79,7 +79,9 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
 std::vector<DWORD> KeyboardManagerState::GetDetectedShortcut()
 {
     hstring detectedShortcutString = currentShortcutTextBlock.Text();
-    return convertWStringVectorToIntegerVector<DWORD>(splitwstring(detectedShortcutString.c_str(), L' '));
+    std::wstring detectedShortcutWstring = detectedShortcutString.c_str();
+    std::vector<std::wstring> detectedShortcutVector = splitwstring(detectedShortcutWstring, L' ');
+    return convertWStringVectorToIntegerVector<DWORD>(detectedShortcutVector);
 }
 
 // Function which can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
