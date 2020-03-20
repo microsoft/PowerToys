@@ -23,13 +23,8 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
     TextBlock linkedShortcutText = getSiblingElement(sender).as<TextBlock>();
 
     detectShortcutBox.PrimaryButtonClick([=, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
-        hstring shortcutString;
-        std::vector<DWORD> shortcutKeys = keyboardManagerState.GetDetectedShortcut();
-        for (int i = 0; i < shortcutKeys.size(); i++)
-        {
-            shortcutString = shortcutString + to_hstring((unsigned int)shortcutKeys[i]) + to_hstring(L" ");
-        }
-        linkedShortcutText.Text(shortcutString);
+        std::vector<DWORD> detectedShortcutKeys = keyboardManagerState.GetDetectedShortcut();
+        linkedShortcutText.Text(convertVectorToHstring<DWORD>(detectedShortcutKeys));
         keyboardManagerState.ResetUIState();
     });
     detectShortcutBox.CloseButtonClick([=, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {

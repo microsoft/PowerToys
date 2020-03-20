@@ -50,17 +50,14 @@ private:
     static HHOOK hook_handle;
     static HHOOK hook_handle_copy; // make sure we do use nullptr in CallNextHookEx call
 
-    // Static pointer to the current powerkeys object required for accessing the HandleKeyboardHookEvent function in the hook procedure
+    // Static pointer to the current powerkeys object required for accessing the HandleKeyboardHookEvent function in the hook procedure (Only global or static variables can be accessed in a hook procedure CALLBACK)
     static PowerKeys* powerkeys_object_ptr;
 
     // Variable which stores all the state information to be shared between the UI and back-end
     KeyboardManagerState keyboardManagerState;
 
-    // Vector to store the detected shortcut in the detect shortcut UI
+    // Vector to store the detected shortcut in the detect shortcut UI. Acts as a shortcut buffer while detecting the shortcuts in the UI.
     std::vector<DWORD> detectedShortcutKeys;
-
-    // Flag to clean the detected shortcut keys vector
-    bool cleanDetectedShortcutKeys = false;
 
 public:
     // Constructor
@@ -74,31 +71,32 @@ public:
     void init_map()
     {
         //// If mapped to 0x0 then key is disabled.
-        ////singleKeyReMap[0x41] = 0x42;
-        ////singleKeyReMap[0x42] = 0x43;
-        ////singleKeyReMap[0x43] = 0x41;
-        //singleKeyReMap[VK_LWIN] = VK_LCONTROL;
-        //singleKeyReMap[VK_LCONTROL] = VK_LWIN;
-        //singleKeyReMap[VK_OEM_4] = 0x0;
-        //singleKeyToggleToMod[VK_CAPITAL] = false;
+        //keyboardManagerState.singleKeyReMap[0x41] = 0x42;
+        //keyboardManagerState.singleKeyReMap[0x42] = 0x43;
+        //keyboardManagerState.singleKeyReMap[0x43] = 0x41;
+        //keyboardManagerState.singleKeyReMap[VK_LWIN] = VK_LCONTROL;
+        //keyboardManagerState.singleKeyReMap[VK_LCONTROL] = VK_LWIN;
+        //keyboardManagerState.singleKeyReMap[VK_CAPITAL] = 0x0;
+        //keyboardManagerState.singleKeyReMap[VK_LSHIFT] = VK_CAPITAL;
+        //keyboardManagerState.singleKeyToggleToMod[VK_CAPITAL] = false;
 
         //// OS-level shortcut remappings
-        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
-        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x45 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
-        ////osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x53 }), false);
-        ///*osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
-        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);*/
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x45 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x53 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);
 
-        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
-        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LMENU, 0x44 }), false);
-        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x56 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LMENU, 0x44 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x56 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);
 
         ////App-specific shortcut remappings
-        //appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x43 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+C to Ctrl+V
-        //appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x46 }), false); // Alt+D to Ctrl+F
-        //appSpecificShortcutReMap[L"OUTLOOK.EXE"][std::vector<DWORD>({ VK_LCONTROL, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x45 }), false); // Ctrl+F to Ctrl+E
-        //appSpecificShortcutReMap[L"MicrosoftEdge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+X to Ctrl+V
-        //appSpecificShortcutReMap[L"Calculator.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x47 })] = std::make_pair(std::vector<WORD>({ VK_LSHIFT, 0x32 }), false); // Ctrl+G to Shift+2
+        //keyboardManagerState.appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x43 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+C to Ctrl+V
+        //keyboardManagerState.appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x46 }), false); // Alt+D to Ctrl+F
+        //keyboardManagerState.appSpecificShortcutReMap[L"OUTLOOK.EXE"][std::vector<DWORD>({ VK_LCONTROL, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x45 }), false); // Ctrl+F to Ctrl+E
+        //keyboardManagerState.appSpecificShortcutReMap[L"MicrosoftEdge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+X to Ctrl+V
+        //keyboardManagerState.appSpecificShortcutReMap[L"Calculator.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x47 })] = std::make_pair(std::vector<WORD>({ VK_LSHIFT, 0x32 }), false); // Ctrl+G to Shift+2
     }
 
     // Destroy the powertoy and free memory
@@ -119,11 +117,6 @@ public:
     // list.
     virtual const wchar_t** get_events() override
     {
-        //static const wchar_t* events[] = { nullptr };
-        // Available events:
-        // - ll_keyboard
-        // - win_hook_event
-        //
         static const wchar_t* events[] = { ll_keyboard, nullptr };
 
         return events;
@@ -252,6 +245,7 @@ public:
         }
     }
 
+    // Function to terminate the low level hook
     void stop_lowlevel_keyboard_hook()
     {
         if (hook_handle)
@@ -261,54 +255,9 @@ public:
         }
     }
 
-    // This function can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
-    bool DetectKeyUIBackend(LowlevelKeyboardEvent* data)
-    {
-        if (keyboardManagerState.CheckUIState(KeyboardManagerUIState::DetectKeyWindowActivated))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    bool DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
-    {
-        if (keyboardManagerState.CheckUIState(KeyboardManagerUIState::DetectShortcutWindowActivated))
-        {
-            cleanDetectedShortcutKeys = true;
-            if (data->lParam->dwExtraInfo != POWERKEYS_SHORTCUT_FLAG)
-            {
-                if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
-                {
-                    if (std::find(detectedShortcutKeys.begin(), detectedShortcutKeys.end(), data->lParam->vkCode) == detectedShortcutKeys.end())
-                    {
-                        detectedShortcutKeys.push_back(data->lParam->vkCode);
-                        keyboardManagerState.UpdateDetectShortcutUI(detectedShortcutKeys);
-                    }
-                }
-                else if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
-                {
-                    detectedShortcutKeys.erase(std::remove(detectedShortcutKeys.begin(), detectedShortcutKeys.end(), data->lParam->vkCode), detectedShortcutKeys.end());
-                }
-            }
-
-            return true;
-        }
-
-        // Clean keyboard state after the shortcut UI is closed
-        else if (cleanDetectedShortcutKeys)
-        {
-            detectedShortcutKeys.clear();
-            cleanDetectedShortcutKeys = false;
-        }
-
-        return false;
-    }
-
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
-        if (DetectKeyUIBackend(data))
+        if (keyboardManagerState.DetectKeyUIBackend(data))
         {
             return 1;
         }
@@ -320,7 +269,7 @@ public:
             return 1;
         }
 
-        if (DetectShortcutUIBackend(data))
+        if (keyboardManagerState.DetectShortcutUIBackend(data))
         {
             return 1;
         }

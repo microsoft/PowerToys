@@ -56,6 +56,36 @@ public:
         shortcutControlLayout.Children().Append(shortcutText);
     }
 
+    static void AddNewShortcutControlRow(StackPanel& parent, std::vector<DWORD> originalKeys = std::vector<DWORD>(), std::vector<WORD> newKeys = std::vector<WORD>())
+    {
+        Windows::UI::Xaml::Controls::StackPanel tableRow;
+        tableRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+        tableRow.Spacing(100);
+        tableRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+        ShortcutControl originalSC;
+        tableRow.Children().Append(originalSC.getShortcutControl());
+        ShortcutControl newSC;
+        tableRow.Children().Append(newSC.getShortcutControl());
+        if (!originalKeys.empty() && !newKeys.empty())
+        {
+            originalSC.shortcutText.Text(convertVectorToHstring<DWORD>(originalKeys));
+            newSC.shortcutText.Text(convertVectorToHstring<WORD>(newKeys));
+        }
+        Windows::UI::Xaml::Controls::Button deleteShortcut;
+        FontIcon deleteSymbol;
+        deleteSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
+        deleteSymbol.Glyph(L"\xE74D");
+        deleteShortcut.Content(deleteSymbol);
+        deleteShortcut.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+            StackPanel currentRow = sender.as<Button>().Parent().as<StackPanel>();
+            uint32_t index;
+            parent.Children().IndexOf(currentRow, index);
+            parent.Children().RemoveAt(index);
+        });
+        tableRow.Children().Append(deleteShortcut);
+        parent.Children().Append(tableRow);
+    }
+
     StackPanel getShortcutControl();
     void createDetectShortcutWindow(IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState);
 };

@@ -111,7 +111,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
     applyButton.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
         bool isSuccess = true;
-        keyboardManagerState.osLevelShortcutReMap.clear();
+        keyboardManagerState.ClearOSLevelShortcuts();
         for (int i = 1; i < shortcutTable.Children().Size(); i++)
         {
             StackPanel currentRow = shortcutTable.Children().GetAt(i).as<StackPanel>();
@@ -119,13 +119,13 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
             hstring newShortcut = currentRow.Children().GetAt(1).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
             if (!originalShortcut.empty() && !newShortcut.empty())
             {
-                std::vector<std::wstring> originalKeys = splitwstring(originalShortcut.c_str(), L' ');
-                std::vector<std::wstring> newKeys = splitwstring(newShortcut.c_str(), L' ');
+                std::vector<DWORD> originalKeys = convertWStringVectorToNumberType<DWORD>(splitwstring(originalShortcut.c_str(), L' '));
+                std::vector<WORD> newKeys = convertWStringVectorToNumberType<WORD>(splitwstring(newShortcut.c_str(), L' '));
 
                 // Check if number of keys is two since only that is currently implemented
                 if (originalKeys.size() == 2 && newKeys.size() == 2)
                 {
-                    keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ (DWORD)std::stoi(originalKeys[0]), (DWORD)std::stoi(originalKeys[1]) })] = std::make_pair(std::vector<WORD>({ (WORD)std::stoi(newKeys[0]), (WORD)std::stoi(newKeys[1]) }), false);
+                    keyboardManagerState.AddOSLevelShortcut(originalKeys, newKeys);
                 }
                 else
                 {
@@ -158,6 +158,12 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     ShortcutControl::_hWndEditShortcutsWindow = _hWndEditShortcutsWindow;
     ShortcutControl::keyboardManagerState = &keyboardManagerState;
 
+    // Load existing shortcuts into UI
+    for (const auto& it: keyboardManagerState.osLevelShortcutReMap)
+    {
+        ShortcutControl::AddNewShortcutControlRow(shortcutTable, it.first, it.second.first);
+    }
+
     Windows::UI::Xaml::Controls::Button addShortcut;
     FontIcon plusSymbol;
     plusSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
@@ -165,27 +171,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     addShortcut.Content(plusSymbol);
     addShortcut.Margin({ 10 });
     addShortcut.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
-        Windows::UI::Xaml::Controls::StackPanel tableRow;
-        tableRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-        tableRow.Spacing(100);
-        tableRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
-        ShortcutControl originalSC;
-        tableRow.Children().Append(originalSC.getShortcutControl());
-        ShortcutControl newSC;
-        tableRow.Children().Append(newSC.getShortcutControl());
-        Windows::UI::Xaml::Controls::Button deleteShortcut;
-        FontIcon deleteSymbol;
-        deleteSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
-        deleteSymbol.Glyph(L"\xE74D");
-        deleteShortcut.Content(deleteSymbol);
-        deleteShortcut.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
-            StackPanel currentRow = sender.as<Button>().Parent().as<StackPanel>();
-            uint32_t index;
-            shortcutTable.Children().IndexOf(currentRow, index);
-            shortcutTable.Children().RemoveAt(index);
-        });
-        tableRow.Children().Append(deleteShortcut);
-        shortcutTable.Children().Append(tableRow);
+        ShortcutControl::AddNewShortcutControlRow(shortcutTable);
     });
 
     xamlContainer.Children().Append(header);

@@ -37,25 +37,29 @@ void KeyboardManagerState::ResetUIState()
     detectedShortcut.clear();
 }
 
+void KeyboardManagerState::ClearOSLevelShortcuts()
+{
+    osLevelShortcutReMap.clear();
+}
+
+void KeyboardManagerState::AddOSLevelShortcut(std::vector<DWORD> originalSC, std::vector<WORD> newSC)
+{
+    osLevelShortcutReMap[originalSC] = std::make_pair(newSC, false);
+}
+
 void KeyboardManagerState::ConfigureDetectShortcutUI(TextBlock& textBlock)
 {
     currentShortcutTextBlock = textBlock;
 }
 
-void KeyboardManagerState::UpdateDetectShortcutUI(std::vector<DWORD>& shortcutKeys)
+void KeyboardManagerState::UpdateDetectShortcutUI()
 {
     if (currentShortcutTextBlock == nullptr)
     {
         return;
     }
 
-    detectedShortcut = shortcutKeys;
-
-    hstring shortcutString;
-    for (int i = 0; i < shortcutKeys.size(); i++)
-    {
-        shortcutString = shortcutString + to_hstring((unsigned int)shortcutKeys[i]) + to_hstring(L" ");
-    }
+    hstring shortcutString = convertVectorToHstring<DWORD>(detectedShortcut);    
 
     currentShortcutTextBlock.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [=]() {
         currentShortcutTextBlock.Text(shortcutString);
@@ -64,5 +68,51 @@ void KeyboardManagerState::UpdateDetectShortcutUI(std::vector<DWORD>& shortcutKe
 
 std::vector<DWORD> KeyboardManagerState::GetDetectedShortcut()
 {
-    return detectedShortcut;
+    hstring detectedShortcutString = currentShortcutTextBlock.Text();
+    return convertWStringVectorToNumberType<DWORD>(splitwstring(detectedShortcutString.c_str(), L' '));
+}
+
+// This function can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
+bool KeyboardManagerState::DetectKeyUIBackend(LowlevelKeyboardEvent* data)
+{
+    // Check if the detect key UI window has been activated
+    if (CheckUIState(KeyboardManagerUIState::DetectKeyWindowActivated))
+    {
+        // Suppress the keyboard event
+        return true;
+    }
+
+    return false;
+}
+
+// This function can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
+bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
+{
+    // Check if the detect shortcut UI window has been activated
+    if (CheckUIState(KeyboardManagerUIState::DetectShortcutWindowActivated))
+    {
+        if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+        {
+            if (std::find(detectedShortcut.begin(), detectedShortcut.end(), data->lParam->vkCode) == detectedShortcut.end())
+            {
+                detectedShortcut.push_back(data->lParam->vkCode);
+                UpdateDetectShortcutUI();
+            }
+        }
+        else if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+        {
+            detectedShortcut.erase(std::remove(detectedShortcut.begin(), detectedShortcut.end(), data->lParam->vkCode), detectedShortcut.end());
+        }
+
+        // Suppress the keyboard event
+        return true;
+    }
+
+    // If the detect shortcut UI window is not activated, then clear the shortcut buffer if it isn't empty
+    else if (!detectedShortcut.empty())
+    {
+        detectedShortcut.clear();
+    }
+
+    return false;
 }

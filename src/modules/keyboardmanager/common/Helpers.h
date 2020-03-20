@@ -27,3 +27,27 @@ using namespace Windows::UI::Xaml::Controls;
 
 std::vector<std::wstring> splitwstring(std::wstring input, wchar_t delimiter);
 IInspectable getSiblingElement(IInspectable const& element);
+
+template<typename T>
+hstring convertVectorToHstring(std::vector<T>& input)
+{
+    hstring output;
+    for (int i = 0; i < input.size(); i++)
+    {
+        output = output + to_hstring((unsigned int)input[i]) + to_hstring(L" ");
+    }
+    return output;
+}
+
+template<typename T>
+std::vector<T> convertWStringVectorToNumberType(std::vector<std::wstring> input)
+{
+    std::vector<T> typeVector;
+    for (int i = 0; i < input.size(); i++)
+    {
+        typeVector.push_back((T)std::stoi(input[i]));
+    }
+
+    return typeVector;
+}
+

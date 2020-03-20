@@ -17,6 +17,9 @@
 #include "winrt/Windows.UI.Text.h"
 #include "winrt/Windows.UI.Core.h"
 
+#include "Helpers.h"
+#include <interface/lowlevel_keyboard_event_data.h>
+
 using namespace winrt;
 using namespace Windows::UI;
 using namespace Windows::UI::Composition;
@@ -50,7 +53,7 @@ private:
     // Stores the UI element which is to be updated based on the shortcut entered
     TextBlock currentShortcutTextBlock = nullptr;
 
-public:   
+public:
     // Maps which store the remappings for each of the features. The bool fields should be initalised to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
     // Stores single key remappings
     std::unordered_map<DWORD, WORD> singleKeyReMap;
@@ -73,7 +76,13 @@ public:
     bool CheckUIState(KeyboardManagerUIState state);
     void SetCurrentUIWindow(HWND windowHandle);
     void SetUIState(KeyboardManagerUIState state, HWND windowHandle = nullptr);
+    void ClearOSLevelShortcuts();
+    void AddOSLevelShortcut(std::vector<DWORD> originalSC, std::vector<WORD> newSC);
     void ConfigureDetectShortcutUI(TextBlock& textBlock);
-    void UpdateDetectShortcutUI(std::vector<DWORD>& shortcutKeys);
+    void UpdateDetectShortcutUI();
     std::vector<DWORD> GetDetectedShortcut();
+    // This function can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
+    bool DetectKeyUIBackend(LowlevelKeyboardEvent* data);
+    // This function can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
+    bool DetectShortcutUIBackend(LowlevelKeyboardEvent* data);
 };
