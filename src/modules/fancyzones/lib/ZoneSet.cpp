@@ -293,8 +293,9 @@ ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCod
             oldZone->RemoveWindowFromZone(window, false);
         }
         newZone->AddWindowToZone(window, windowZone, true);
+        return true;
     }
-    return true;
+    return false;
 }
 
 IFACEMETHODIMP_(void)
