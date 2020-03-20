@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -87,7 +88,7 @@ namespace PowerToysTests
             }
         }
 
-        public static void WaitSeconds(int seconds)
+        public static void WaitSeconds(double seconds)
         {
             Thread.Sleep(TimeSpan.FromSeconds(seconds));
         }
@@ -95,6 +96,50 @@ namespace PowerToysTests
         public static void ShortWait()
         {
             Thread.Sleep(TimeSpan.FromSeconds(0.5));
+        }
+
+        //Trying to find element by XPath
+        protected WindowsElement WaitElementByXPath(string xPath, double maxTime = 10)
+        {
+            WindowsElement result = null;
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            while (timer.Elapsed < TimeSpan.FromSeconds(maxTime))
+            {
+                try
+                {
+                    result = session.FindElementByXPath(xPath);
+                }
+                catch { }
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+            Assert.IsNotNull(result);
+            return null;
+        }
+
+        //Trying to find element by AccessibilityId
+        protected WindowsElement WaitElementByAccessibilityId(string accessibilityId, double maxTime = 10)
+        {
+            WindowsElement result = null;
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            while (timer.Elapsed < TimeSpan.FromSeconds(maxTime))
+            {
+                try
+                {
+                    result = session.FindElementByAccessibilityId(accessibilityId);
+                }
+                catch { }
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+            Assert.IsNotNull(result);
+            return null;
         }
 
         public static void OpenSettings()
