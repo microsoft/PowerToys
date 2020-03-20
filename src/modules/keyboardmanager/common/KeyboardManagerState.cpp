@@ -33,4 +33,36 @@ void KeyboardManagerState::SetUIState(KeyboardManagerUIState state, HWND windowH
 void KeyboardManagerState::ResetUIState()
 {
     SetUIState(KeyboardManagerUIState::Deactivated);
+    currentShortcutTextBlock = nullptr;
+    detectedShortcut.clear();
+}
+
+void KeyboardManagerState::ConfigureDetectShortcutUI(TextBlock& textBlock)
+{
+    currentShortcutTextBlock = textBlock;
+}
+
+void KeyboardManagerState::UpdateDetectShortcutUI(std::vector<DWORD>& shortcutKeys)
+{
+    if (currentShortcutTextBlock == nullptr)
+    {
+        return;
+    }
+
+    detectedShortcut = shortcutKeys;
+
+    hstring shortcutString;
+    for (int i = 0; i < shortcutKeys.size(); i++)
+    {
+        shortcutString = shortcutString + to_hstring((unsigned int)shortcutKeys[i]) + to_hstring(L" ");
+    }
+
+    currentShortcutTextBlock.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [=]() {
+        currentShortcutTextBlock.Text(shortcutString);
+    });
+}
+
+std::vector<DWORD> KeyboardManagerState::GetDetectedShortcut()
+{
+    return detectedShortcut;
 }

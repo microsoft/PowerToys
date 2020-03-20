@@ -5,7 +5,6 @@
 #include <common/settings_objects.h>
 #include "trace.h"
 #include <keyboardmanager/ui/MainWindow.h>
-#include <keyboardmanager/ui/ShortcutControl.h>
 #include <keyboardmanager/common/KeyboardManagerState.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -38,13 +37,6 @@ class PowerKeys : public PowertoyModuleIface
 private:
     // The PowerToy state.
     bool m_enabled = false;
-
-    // Maps which store the remappings for each of the features. The bool fields should be initalised to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
-    std::unordered_map<DWORD, WORD> singleKeyReMap;
-    std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>> osLevelShortcutReMap;
-    // Maps application name to the shortcut map
-    std::map<std::wstring, std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>>> appSpecificShortcutReMap;
-    std::unordered_map<DWORD, bool> singleKeyToggleToMod;
 
     // Flags used for distinguishing key events sent by PowerKeys
     static const ULONG_PTR POWERKEYS_INJECTED_FLAG = 0x1;
@@ -292,7 +284,7 @@ public:
                     if (std::find(detectedShortcutKeys.begin(), detectedShortcutKeys.end(), data->lParam->vkCode) == detectedShortcutKeys.end())
                     {
                         detectedShortcutKeys.push_back(data->lParam->vkCode);
-                        updateDetectShortcutTextBlock(detectedShortcutKeys);
+                        keyboardManagerState.UpdateDetectShortcutUI(detectedShortcutKeys);
                     }
                 }
                 else if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
@@ -354,8 +346,8 @@ public:
     {
         if (!(data->lParam->dwExtraInfo & POWERKEYS_INJECTED_FLAG))
         {
-            auto it = singleKeyReMap.find(data->lParam->vkCode);
-            if (it != singleKeyReMap.end())
+            auto it = keyboardManagerState.singleKeyReMap.find(data->lParam->vkCode);
+            if (it != keyboardManagerState.singleKeyReMap.end())
             {
                 // If mapped to 0x0 then the key is disabled
                 if (it->second == 0x0)
@@ -388,15 +380,15 @@ public:
     {
         if (!(data->lParam->dwExtraInfo & POWERKEYS_INJECTED_FLAG))
         {
-            auto it = singleKeyToggleToMod.find(data->lParam->vkCode);
-            if (it != singleKeyToggleToMod.end())
+            auto it = keyboardManagerState.singleKeyToggleToMod.find(data->lParam->vkCode);
+            if (it != keyboardManagerState.singleKeyToggleToMod.end())
             {
                 // To avoid long presses (which leads to continuous keydown messages) from toggling the key on and off
                 if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                 {
                     if (it->second == false)
                     {
-                        singleKeyToggleToMod[data->lParam->vkCode] = true;
+                        keyboardManagerState.singleKeyToggleToMod[data->lParam->vkCode] = true;
                     }
                     else
                     {
@@ -421,7 +413,7 @@ public:
                 // Reset the long press flag when the key has been lifted.
                 if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
                 {
-                    singleKeyToggleToMod[data->lParam->vkCode] = false;
+                    keyboardManagerState.singleKeyToggleToMod[data->lParam->vkCode] = false;
                 }
                 return 1;
             }
@@ -570,7 +562,7 @@ public:
     {
         if (data->lParam->dwExtraInfo != POWERKEYS_SHORTCUT_FLAG)
         {
-            return HandleShortcutRemapEvent(data, osLevelShortcutReMap);
+            return HandleShortcutRemapEvent(data, keyboardManagerState.osLevelShortcutReMap);
         }
 
         return 0;
@@ -630,10 +622,10 @@ public:
                 return 0;
             }
 
-            auto it = appSpecificShortcutReMap.find(process_name);
-            if (it != appSpecificShortcutReMap.end())
+            auto it = keyboardManagerState.appSpecificShortcutReMap.find(process_name);
+            if (it != keyboardManagerState.appSpecificShortcutReMap.end())
             {
-                return HandleShortcutRemapEvent(data, appSpecificShortcutReMap[process_name]);
+                return HandleShortcutRemapEvent(data, keyboardManagerState.appSpecificShortcutReMap[process_name]);
             }
         }
 

@@ -1,8 +1,9 @@
 #pragma once
 #include <windows.h>
 #include <stdlib.h>
-#include <string.h>
-
+#include <sstream>
+#include <string>
+#include <vector>
 #include <winrt/Windows.system.h>
 #include <winrt/windows.ui.xaml.hosting.h>
 #include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
@@ -15,9 +16,6 @@
 #include "winrt/Windows.UI.Text.h"
 #include "winrt/Windows.UI.Core.h"
 
-#include "keyboardmanager/common/KeyboardManagerState.h"
-#include "keyboardmanager/common/Helpers.h"
-
 using namespace winrt;
 using namespace Windows::UI;
 using namespace Windows::UI::Composition;
@@ -27,4 +25,5 @@ using namespace Windows::Foundation;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 
-__declspec(dllexport) void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState);
+std::vector<std::wstring> splitwstring(std::wstring input, wchar_t delimiter);
+IInspectable getSiblingElement(IInspectable const& element);
