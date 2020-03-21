@@ -32,6 +32,15 @@ namespace PowerToysTests
             string elementXPath = "//Text[@Name=\"" + tabName + "\"]";
             session.FindElementByXPath(elementXPath).Click();
             session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
+
+            try
+            {
+                Assert.IsNull(session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]"));
+            }
+            catch (OpenQA.Selenium.WebDriverException)
+            {
+                //editor was closed as expected
+            }
         }
 
         private void CheckSettingsLayout(string expectedLayout)
