@@ -126,7 +126,7 @@ For terminology, lets get some lock for v2
 | x | User can delete saved layouts | 0 |
 | x | Editor's selected monitor follows existing logic | 0 |
 | x | Editor has selectable monitor layout that mimics Settings dialog interaction model and look/feel.  | 0 |
-| 1 | For applying layouts, the zone layout will resize smoothly to accordingly. *see edge cases | 0 |
+| 1 | For applying layouts, the zone layout will resize smoothly to accordingly. \*see edge cases | 0 |
 | 1 | New layouts can be added, Blank and "Quick Starts" (Focus, Column, Row, Grid, Priority Grid) | 0 |
 | x | Quickstarts can have base properties like `default zone count` and `zone padding` like in existing dialog | 0 |
 | x | x | 0 |
@@ -149,11 +149,12 @@ For terminology, lets get some lock for v2
 
 | No. | Requirement | Priority |
 | --- | ----------- | -------- |
-| 1 | Grid-based dividers can move via arrow keys | 0 |
-| 2 | Grid-based dividers, when focused, can be deleted with backspace or delete key | 0 |
-| 3 | Grid-based dividers can be deleted with via right click->Delete | 0 |
-| 4 | Grid-based zones can be merged together right click->merge | 0 |
-| 2 | If a zone shares a common border, the other zones will be automatically adjusted. | 0 |
+| 1 | User can can the padding between dividers for the zone (#1634) | 0 |
+| 2 | Grid-based dividers can move via arrow keys | 0 |
+| 3 | Grid-based dividers, when focused, can be deleted with backspace or delete key | 0 |
+| 4 | Grid-based dividers can be deleted with via right click->Delete | 0 |
+| 5 | Grid-based zones can be merged together right click->merge | 0 |
+| 6 | If a zone shares a common border, the other zones will be automatically adjusted. | 0 |
 | x | x | 0 |
 
 ### 4.1.3 Canvas-based Zones
