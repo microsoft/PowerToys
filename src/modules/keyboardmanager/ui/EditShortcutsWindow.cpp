@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "EditShortcutsWindow.h"
 #include "ShortcutControl.h"
 
@@ -129,7 +130,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         keyboardManagerState.ClearOSLevelShortcuts();
 
         // Save the shortcuts that are valid and report if any of them were invalid
-        for (int i = 1; i < shortcutTable.Children().Size(); i++)
+        for (unsigned int i = 1; i < shortcutTable.Children().Size(); i++)
         {
             StackPanel currentRow = shortcutTable.Children().GetAt(i).as<StackPanel>();
             hstring originalShortcut = currentRow.Children().GetAt(0).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();

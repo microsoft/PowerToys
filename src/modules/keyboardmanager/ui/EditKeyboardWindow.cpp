@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "EditKeyboardWindow.h"
 
 LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);

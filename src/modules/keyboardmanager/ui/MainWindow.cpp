@@ -1,15 +1,7 @@
+#include "pch.h"
 #include "MainWindow.h"
 #include "EditKeyboardWindow.h"
 #include "EditShortcutsWindow.h"
-
-using namespace winrt;
-using namespace Windows::UI;
-using namespace Windows::UI::Composition;
-using namespace Windows::UI::Xaml::Hosting;
-using namespace Windows::Foundation::Numerics;
-using namespace Windows::Foundation;
-using namespace Windows::UI::Xaml;
-using namespace Windows::UI::Xaml::Controls;
 
 HWND _hWndMain;
 HINSTANCE _hInstance;

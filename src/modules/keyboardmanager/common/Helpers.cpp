@@ -1,4 +1,6 @@
+#include "pch.h"
 #include "Helpers.h"
+#include <sstream>
 
 // Function to split a wstring based on a delimiter and return a vector of split strings
 std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter)

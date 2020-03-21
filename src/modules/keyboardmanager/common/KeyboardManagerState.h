@@ -1,35 +1,9 @@
 #pragma once
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <map>
-#include <vector>
-#include <string>
-#include <unordered_map>
-#include <winrt/Windows.system.h>
-#include <winrt/windows.ui.xaml.hosting.h>
-#include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
-#include <winrt/windows.ui.xaml.controls.h>
-#include <winrt/Windows.ui.xaml.media.h>
-#include <winrt/Windows.Foundation.Collections.h>
-#include "winrt/Windows.Foundation.h"
-#include "winrt/Windows.Foundation.Numerics.h"
-#include "winrt/Windows.UI.Xaml.Controls.Primitives.h"
-#include "winrt/Windows.UI.Text.h"
-#include "winrt/Windows.UI.Core.h"
-
+//#include "pch.h"
 #include "Helpers.h"
 #include <interface/lowlevel_keyboard_event_data.h>
+#include <winrt/Windows.UI.Xaml.Controls.h>
 
-using namespace winrt;
-using namespace Windows::UI;
-using namespace Windows::UI::Composition;
-using namespace Windows::UI::Xaml::Hosting;
-using namespace Windows::Foundation::Numerics;
-using namespace Windows::Foundation;
-using namespace Windows::UI::Xaml;
-using namespace Windows::UI::Xaml::Controls;
-
-using namespace Windows::UI::Xaml::Controls;
 
 // Enum type to store different states of the UI
 enum class KeyboardManagerUIState
@@ -56,7 +30,7 @@ private:
     std::vector<DWORD> detectedShortcut;
 
     // Stores the UI element which is to be updated based on the shortcut entered
-    TextBlock currentShortcutTextBlock = nullptr;
+    winrt::Windows::UI::Xaml::Controls::TextBlock currentShortcutTextBlock;
 
 public:
     // Maps which store the remappings for each of the features. The bool fields should be initalised to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
@@ -72,10 +46,8 @@ public:
     // Stores the app-specific shortcut remappings. Maps application name to the shortcut map
     std::map<std::wstring, std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>>> appSpecificShortcutReMap;
 
-    KeyboardManagerState() :
-        uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr)
-    {
-    }
+    // Constructor
+    KeyboardManagerState();
 
     // Function to reset the UI state members
     void ResetUIState();
@@ -96,7 +68,7 @@ public:
     void AddOSLevelShortcut(const std::vector<DWORD>& originalSC, const std::vector<WORD>& newSC);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
-    void ConfigureDetectShortcutUI(const TextBlock& textBlock);
+    void ConfigureDetectShortcutUI(const winrt::Windows::UI::Xaml::Controls::TextBlock& textBlock);
 
     // Function to update the detect shortcut UI based on the entered keys
     void UpdateDetectShortcutUI();

@@ -1,4 +1,11 @@
+#include "pch.h"
 #include "KeyboardManagerState.h"
+
+// Constructor
+KeyboardManagerState::KeyboardManagerState() :
+    uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutTextBlock(nullptr)
+{
+}
 
 // Function to check the if the UI state matches the argument state. For states with activated windows it also checks if the window is in focus.
 bool KeyboardManagerState::CheckUIState(KeyboardManagerUIState state)
@@ -48,7 +55,7 @@ void KeyboardManagerState::ClearOSLevelShortcuts()
 }
 
 // Function to add a new OS level shortcut remapping
-void KeyboardManagerState::AddOSLevelShortcut(const std::vector<DWORD>& originalSC,const std::vector<WORD>& newSC)
+void KeyboardManagerState::AddOSLevelShortcut(const std::vector<DWORD>& originalSC, const std::vector<WORD>& newSC)
 {
     osLevelShortcutReMap[originalSC] = std::make_pair(newSC, false);
 }

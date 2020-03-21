@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ShortcutControl.h"
 
 //Both static members are initialized to null
@@ -78,7 +79,7 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
     });
 
     // Cancel button
-    detectShortcutBox.CloseButtonClick([=, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
+    detectShortcutBox.CloseButtonClick([&keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
     });
