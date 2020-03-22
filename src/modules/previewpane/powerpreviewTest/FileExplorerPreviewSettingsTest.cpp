@@ -19,7 +19,7 @@ namespace PreviewHandlerSettingsTest
     public:
         LONG ReturnValue = ERROR_SUCCESS;
         int NumOfCalls = 0;
-        HKEY Scope;
+        HKEY Scope = NULL;
         LPCWSTR SubKey;
         LPCWSTR ValueName;
     };
@@ -84,7 +84,7 @@ namespace PreviewHandlerSettingsTest
             bool defaultState = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             FileExplorerPreviewSettings previewSettings = GetSettingsObject(defaultState, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(L"", L""));
+            auto settings = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\"}");
 
             // Act
             previewSettings.LoadState(settings);

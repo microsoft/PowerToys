@@ -63,14 +63,13 @@ namespace PowerPreviewSettings
         return this->m_registryValueData;
     }
 
-
     // Load intital state of the Preview Handler. If no inital state present initialize setting with default value.
     void FileExplorerPreviewSettings::LoadState(PowerToysSettings::PowerToyValues& settings)
     {
         auto toggle = settings.get_bool_value(this->GetToggleSettingName());
         if (toggle)
         {
-            // If no exisiting setting found leave the default intitialization value i.e: true
+            // If no exisiting setting found leave the default intitialization value.
             this->UpdateToggleSettingState(*toggle);
         }
     }

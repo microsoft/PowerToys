@@ -16,7 +16,7 @@ void PowerPreviewModule::destroy()
     {
         if (previewHandler != NULL)
         {
-            // Stop all the active previews handlers.
+            // Disable all the active preview handlers.
             if (this->m_enabled && previewHandler->GetToggleSettingState())
             {
                 previewHandler->DisablePreview();

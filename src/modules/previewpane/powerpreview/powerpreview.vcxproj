@@ -116,7 +116,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="powerpreview.cpp" />
-    <ClCompile Include="powerpreview.h" />
+    <ClInclude Include="powerpreview.h" />
     <ClCompile Include="registry_wrapper.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="trace.cpp" />

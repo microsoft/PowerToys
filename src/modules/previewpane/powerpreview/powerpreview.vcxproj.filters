@@ -5,7 +5,6 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="settings.cpp" />
-    <ClCompile Include="powerpreview.h" />
     <ClCompile Include="powerpreview.cpp" />
     <ClCompile Include="registry_wrapper.cpp" />
   </ItemGroup>
@@ -17,6 +16,7 @@
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="registry_wrapper.h" />
     <ClInclude Include="registry_wrapper_interface.h" />
+    <ClInclude Include="powerpreview.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="powerpreview.rc" />
