@@ -4,7 +4,8 @@
 #include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
 #include "trace.h"
-#include <PowerKeysUI/MainWindow.h>
+#include <keyboardmanager/ui/MainWindow.h>
+#include <keyboardmanager/common/KeyboardManagerState.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -37,13 +38,6 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
 
-    // Maps which store the remappings for each of the features. The bool fields should be initalised to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
-    std::unordered_map<DWORD, WORD> singleKeyReMap;
-    std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>> osLevelShortcutReMap;
-    // Maps application name to the shortcut map
-    std::map<std::wstring, std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>>> appSpecificShortcutReMap;
-    std::unordered_map<DWORD, bool> singleKeyToggleToMod;
-
     // Flags used for distinguishing key events sent by PowerKeys
     static const ULONG_PTR POWERKEYS_INJECTED_FLAG = 0x1;
     static const ULONG_PTR POWERKEYS_SINGLEKEY_FLAG = 0x11;
@@ -54,19 +48,26 @@ private:
 
     // Low level hook handles
     static HHOOK hook_handle;
-    static HHOOK hook_handle_copy; // make sure we do use nullptr in CallNextHookEx call
 
-    // Static pointer to the current powerkeys object required for accessing the HandleKeyboardHookEvent function in the hook procedure
+    // Required for Unhook in old versions of Windows
+    static HHOOK hook_handle_copy;
+
+    // Static pointer to the current powerkeys object required for accessing the HandleKeyboardHookEvent function in the hook procedure (Only global or static variables can be accessed in a hook procedure CALLBACK)
     static PowerKeys* powerkeys_object_ptr;
 
-    // Flag used to check if the UI window is currently up. A reference to the variable can be sent while calling the UI window
-    bool uiFlag = false;
+    // Variable which stores all the state information to be shared between the UI and back-end
+    KeyboardManagerState keyboardManagerState;
+
+    // Vector to store the detected shortcut in the detect shortcut UI. Acts as a shortcut buffer while detecting the shortcuts in the UI.
+    std::vector<DWORD> detectedShortcutKeys;
 
 public:
     // Constructor
     PowerKeys()
     {
         init_map();
+
+        // Set the static pointer to the newest object of the class
         powerkeys_object_ptr = this;
     };
 
@@ -74,31 +75,32 @@ public:
     void init_map()
     {
         //// If mapped to 0x0 then key is disabled.
-        ////singleKeyReMap[0x41] = 0x42;
-        ////singleKeyReMap[0x42] = 0x43;
-        ////singleKeyReMap[0x43] = 0x41;
-        //singleKeyReMap[VK_LWIN] = VK_LCONTROL;
-        //singleKeyReMap[VK_LCONTROL] = VK_LWIN;
-        //singleKeyReMap[VK_OEM_4] = 0x0;
-        //singleKeyToggleToMod[VK_CAPITAL] = false;
+        //keyboardManagerState.singleKeyReMap[0x41] = 0x42;
+        //keyboardManagerState.singleKeyReMap[0x42] = 0x43;
+        //keyboardManagerState.singleKeyReMap[0x43] = 0x41;
+        //keyboardManagerState.singleKeyReMap[VK_LWIN] = VK_LCONTROL;
+        //keyboardManagerState.singleKeyReMap[VK_LCONTROL] = VK_LWIN;
+        //keyboardManagerState.singleKeyReMap[VK_CAPITAL] = 0x0;
+        //keyboardManagerState.singleKeyReMap[VK_LSHIFT] = VK_CAPITAL;
+        //keyboardManagerState.singleKeyToggleToMod[VK_CAPITAL] = false;
 
         //// OS-level shortcut remappings
-        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
-        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x45 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
-        ////osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x53 }), false);
-        ///*osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
-        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);*/
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x45 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x53 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);
 
-        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
-        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LMENU, 0x44 }), false);
-        //osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x56 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LMENU, 0x44 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x56 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);
 
         ////App-specific shortcut remappings
-        //appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x43 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+C to Ctrl+V
-        //appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x46 }), false); // Alt+D to Ctrl+F
-        //appSpecificShortcutReMap[L"OUTLOOK.EXE"][std::vector<DWORD>({ VK_LCONTROL, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x45 }), false); // Ctrl+F to Ctrl+E
-        //appSpecificShortcutReMap[L"MicrosoftEdge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+X to Ctrl+V
-        //appSpecificShortcutReMap[L"Calculator.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x47 })] = std::make_pair(std::vector<WORD>({ VK_LSHIFT, 0x32 }), false); // Ctrl+G to Shift+2
+        //keyboardManagerState.appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x43 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+C to Ctrl+V
+        //keyboardManagerState.appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x46 }), false); // Alt+D to Ctrl+F
+        //keyboardManagerState.appSpecificShortcutReMap[L"OUTLOOK.EXE"][std::vector<DWORD>({ VK_LCONTROL, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x45 }), false); // Ctrl+F to Ctrl+E
+        //keyboardManagerState.appSpecificShortcutReMap[L"MicrosoftEdge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+X to Ctrl+V
+        //keyboardManagerState.appSpecificShortcutReMap[L"Calculator.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x47 })] = std::make_pair(std::vector<WORD>({ VK_LSHIFT, 0x32 }), false); // Ctrl+G to Shift+2
     }
 
     // Destroy the powertoy and free memory
@@ -119,11 +121,6 @@ public:
     // list.
     virtual const wchar_t** get_events() override
     {
-        //static const wchar_t* events[] = { nullptr };
-        // Available events:
-        // - ll_keyboard
-        // - win_hook_event
-        //
         static const wchar_t* events[] = { ll_keyboard, nullptr };
 
         return events;
@@ -186,7 +183,7 @@ public:
     {
         m_enabled = true;
         HINSTANCE hInstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-        std::thread(createMainWindow, hInstance, &uiFlag).detach();
+        std::thread(createMainWindow, hInstance, std::ref(keyboardManagerState)).detach();
         start_lowlevel_keyboard_hook();
     }
 
@@ -209,7 +206,6 @@ public:
         return 0;
     }
 
-    // This methods are part of an experimental features not fully supported yet
     virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
 
     virtual void signal_system_menu_action(const wchar_t* name) override {}
@@ -252,6 +248,7 @@ public:
         }
     }
 
+    // Function to terminate the low level hook
     void stop_lowlevel_keyboard_hook()
     {
         if (hook_handle)
@@ -261,41 +258,46 @@ public:
         }
     }
 
-    // This function can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
-    void DetectKeyUIBackend()
-    {
-        if (uiFlag)
-        {
-            // Disables the [ key when the UI window is up
-            singleKeyReMap[VK_OEM_4] = 0x0;
-        }
-        else if (singleKeyReMap.find(VK_OEM_4) == singleKeyReMap.end())
-        {
-        }
-        else
-        {
-            // Removes the remapping if the UI window is not up and the remapping doesn't already exist
-            singleKeyReMap.erase(VK_OEM_4);
-        }
-    }
-
+    // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
-        DetectKeyUIBackend();
+        // If the Detect Key Window is currently activated, then suppress the keyboard event
+        if (keyboardManagerState.DetectKeyUIBackend(data))
+        {
+            return 1;
+        }
+
+        // Remap a key
         intptr_t SingleKeyRemapResult = HandleSingleKeyRemapEvent(data);
-        // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts
+
+        // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
         if (SingleKeyRemapResult == 1)
         {
             return 1;
         }
 
+        // If the Detect Shortcut Window is currently activated, then suppress the keyboard event
+        if (keyboardManagerState.DetectShortcutUIBackend(data))
+        {
+            return 1;
+        }
+
+        // Remap a key to behave like a modifier instead of a toggle
         intptr_t SingleKeyToggleToModResult = HandleSingleKeyToggleToModEvent(data);
+
+        // Handle an app-specific shortcut remapping
         intptr_t AppSpecificShortcutRemapResult = HandleAppSpecificShortcutRemapEvent(data);
+
+        // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
         if (AppSpecificShortcutRemapResult == 1)
         {
             return 1;
         }
+
+        // Handle an os-level shortcut remapping
         intptr_t OSLevelShortcutRemapResult = HandleOSLevelShortcutRemapEvent(data);
+
+        // If any of the supported types of remappings took place, then suppress the key event
         if ((SingleKeyRemapResult + SingleKeyToggleToModResult + OSLevelShortcutRemapResult + AppSpecificShortcutRemapResult) > 0)
         {
             return 1;
@@ -306,12 +308,14 @@ public:
         }
     }
 
+    // Function to a handle a single key remap
     intptr_t HandleSingleKeyRemapEvent(LowlevelKeyboardEvent* data) noexcept
     {
+        // Check if the key event was generated by KeyboardManager to avoid remapping events generated by us.
         if (!(data->lParam->dwExtraInfo & POWERKEYS_INJECTED_FLAG))
         {
-            auto it = singleKeyReMap.find(data->lParam->vkCode);
-            if (it != singleKeyReMap.end())
+            auto it = keyboardManagerState.singleKeyReMap.find(data->lParam->vkCode);
+            if (it != keyboardManagerState.singleKeyReMap.end())
             {
                 // If mapped to 0x0 then the key is disabled
                 if (it->second == 0x0)
@@ -340,19 +344,21 @@ public:
         return 0;
     }
 
+    // Function to a change a key's behaviour from toggle to modifier
     intptr_t HandleSingleKeyToggleToModEvent(LowlevelKeyboardEvent* data) noexcept
     {
+        // Check if the key event was generated by KeyboardManager to avoid remapping events generated by us.
         if (!(data->lParam->dwExtraInfo & POWERKEYS_INJECTED_FLAG))
         {
-            auto it = singleKeyToggleToMod.find(data->lParam->vkCode);
-            if (it != singleKeyToggleToMod.end())
+            auto it = keyboardManagerState.singleKeyToggleToMod.find(data->lParam->vkCode);
+            if (it != keyboardManagerState.singleKeyToggleToMod.end())
             {
                 // To avoid long presses (which leads to continuous keydown messages) from toggling the key on and off
                 if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                 {
                     if (it->second == false)
                     {
-                        singleKeyToggleToMod[data->lParam->vkCode] = true;
+                        keyboardManagerState.singleKeyToggleToMod[data->lParam->vkCode] = true;
                     }
                     else
                     {
@@ -377,7 +383,7 @@ public:
                 // Reset the long press flag when the key has been lifted.
                 if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
                 {
-                    singleKeyToggleToMod[data->lParam->vkCode] = false;
+                    keyboardManagerState.singleKeyToggleToMod[data->lParam->vkCode] = false;
                 }
                 return 1;
             }
@@ -386,6 +392,7 @@ public:
         return 0;
     }
 
+    // Function to a handle a shortcut remap
     intptr_t HandleShortcutRemapEvent(LowlevelKeyboardEvent* data, std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>>& reMap) noexcept
     {
         for (auto& it : reMap)
@@ -436,6 +443,7 @@ public:
                     return 1;
                 }
             }
+            // The shortcut has already been pressed down at least once, i.e. the shortcut has been invoked
             else if (it.second.second)
             {
                 // If the modifier key of the original shortcut is released before the normal key
@@ -458,7 +466,7 @@ public:
                     delete[] keyEventList;
                     return 1;
                 }
-
+                // The system will see dest_1 as being held down because of the shortcut remap
                 if (GetAsyncKeyState(dest_1) & 0x8000)
                 {
                     // If the original shortcut is still held down the keyboard will see the original normal key along with the new modifier (keys held down send repeated keydown messages)
@@ -522,29 +530,38 @@ public:
         return 0;
     }
 
+    // Function to a handle an os-level shortcut remap
     intptr_t HandleOSLevelShortcutRemapEvent(LowlevelKeyboardEvent* data) noexcept
     {
+        // Check if the key event was generated by KeyboardManager to avoid remapping events generated by us.
         if (data->lParam->dwExtraInfo != POWERKEYS_SHORTCUT_FLAG)
         {
-            return HandleShortcutRemapEvent(data, osLevelShortcutReMap);
+            return HandleShortcutRemapEvent(data, keyboardManagerState.osLevelShortcutReMap);
         }
 
         return 0;
     }
 
-    std::wstring GetCurrentApplication(bool keepPath)
+    // Function to return the window in focus
+    HWND GetFocusWindowHandle()
     {
         // Using GetGUIThreadInfo for getting the process of the window in focus. GetForegroundWindow has issues with UWP apps as it returns the Application Frame Host as its linked process
         GUITHREADINFO guiThreadInfo;
         guiThreadInfo.cbSize = sizeof(GUITHREADINFO);
         GetGUIThreadInfo(0, &guiThreadInfo);
-        HWND current_window_handle = guiThreadInfo.hwndFocus;
 
         // If no window in focus, use the active window
-        if (current_window_handle == nullptr)
+        if (guiThreadInfo.hwndFocus == nullptr)
         {
-            current_window_handle = guiThreadInfo.hwndActive;
+            return guiThreadInfo.hwndActive;
         }
+        return guiThreadInfo.hwndFocus;
+    }
+
+    // Function to return the executable name of the application in focus
+    std::wstring GetCurrentApplication(bool keepPath)
+    {
+        HWND current_window_handle = GetFocusWindowHandle();
         DWORD process_id;
         DWORD nSize = MAX_PATH;
         WCHAR buffer[MAX_PATH] = { 0 };
@@ -571,8 +588,10 @@ public:
         return process_name;
     }
 
+    // Function to a handle an app-specific shortcut remap
     intptr_t HandleAppSpecificShortcutRemapEvent(LowlevelKeyboardEvent* data) noexcept
     {
+        // Check if the key event was generated by KeyboardManager to avoid remapping events generated by us.
         if (data->lParam->dwExtraInfo != POWERKEYS_SHORTCUT_FLAG)
         {
             std::wstring process_name = GetCurrentApplication(false);
@@ -581,10 +600,10 @@ public:
                 return 0;
             }
 
-            auto it = appSpecificShortcutReMap.find(process_name);
-            if (it != appSpecificShortcutReMap.end())
+            auto it = keyboardManagerState.appSpecificShortcutReMap.find(process_name);
+            if (it != keyboardManagerState.appSpecificShortcutReMap.end())
             {
-                return HandleShortcutRemapEvent(data, appSpecificShortcutReMap[process_name]);
+                return HandleShortcutRemapEvent(data, keyboardManagerState.appSpecificShortcutReMap[process_name]);
             }
         }
 

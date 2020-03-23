@@ -1,34 +1,37 @@
+#include "pch.h"
 #include "EditKeyboardWindow.h"
 
 LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 
+// This Hwnd will be the window handler for the Xaml Island: A child window that contains Xaml.
 HWND hWndXamlIslandEditKeyboardWindow = nullptr;
+// This variable is used to check if window registration has been done to avoid repeated registration leading to an error.
+bool isEditKeyboardWindowRegistrationCompleted = false;
 
-void registerWinClass(HINSTANCE& hInst)
+// Function to create the Edit Keyboard Window
+void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
-    // The main window class name.
+    // Window Registration
     const wchar_t szWindowClass[] = L"EditKeyboardWindow";
-    WNDCLASSEX windowClass = {};
-
-    windowClass.cbSize = sizeof(WNDCLASSEX);
-    windowClass.lpfnWndProc = EditKeyboardWindowProc;
-    windowClass.hInstance = hInst;
-    windowClass.lpszClassName = szWindowClass;
-    windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW);
-
-    windowClass.hIconSm = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
-
-    if (RegisterClassEx(&windowClass) == NULL)
+    if (!isEditKeyboardWindowRegistrationCompleted)
     {
-        MessageBox(NULL, L"Windows registration failed!", L"Error", NULL);
-        return;
-    }
-}
+        WNDCLASSEX windowClass = {};
+        windowClass.cbSize = sizeof(WNDCLASSEX);
+        windowClass.lpfnWndProc = EditKeyboardWindowProc;
+        windowClass.hInstance = hInst;
+        windowClass.lpszClassName = szWindowClass;
+        windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW);
+        windowClass.hIconSm = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
+        if (RegisterClassEx(&windowClass) == NULL)
+        {
+            MessageBox(NULL, L"Windows registration failed!", L"Error", NULL);
+            return;
+        }
 
-void createEditKeyboardWindow(HINSTANCE hInst)
-{
-    // The main window class name.
-    const wchar_t szWindowClass[] = L"EditKeyboardWindow";
+        isEditKeyboardWindowRegistrationCompleted = true;
+    }
+
+    // Window Creation
     HWND _hWndEditKeyboardWindow = CreateWindow(
         szWindowClass,
         L"PowerKeys Remap Keyboard",

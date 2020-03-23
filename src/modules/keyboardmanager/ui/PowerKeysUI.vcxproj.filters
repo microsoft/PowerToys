@@ -3,10 +3,16 @@
   <ItemGroup>
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="EditKeyboardWindow.cpp" />
+    <ClCompile Include="EditShortcutsWindow.cpp" />
+    <ClCompile Include="ShortcutControl.cpp" />
+    <ClCompile Include="pch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="EditKeyboardWindow.h" />
+    <ClInclude Include="EditShortcutsWindow.h" />
+    <ClInclude Include="ShortcutControl.h" />
+    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
