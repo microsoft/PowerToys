@@ -99,6 +99,10 @@ void PowerPreviewModule::enable()
             // Enable all the previews with intial state set as true.
             previewHandler->EnablePreview();
         }
+        else
+        {
+            previewHandler->DisablePreview();
+        }
     }
 
     this->m_enabled = true;
