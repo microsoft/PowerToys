@@ -146,7 +146,9 @@ To add a new Previewer update the `Product.wxs` file in `PowerToysSetup` similar
 
 ### MSIX
 
-To add a new Previewer with MSIX update the `appxmanifest.xml` file to add file type association for preview handler and add `SurrogateServer` element with class registration. MSIX currently doesn't support .Net Assembly activation with `SurrogateServer` the logic used is shim the activation by using native dll. `dll.main` in `powerpreview` project expose the `DLLGetClassObject` method which is used to activate .net Assembly by using `CoGetClassObject`.
+Warning: There are known issues([Issue - 1446](https://github.com/microsoft/PowerToys/issues/1446), [Issue - 1545](https://github.com/microsoft/PowerToys/issues/1545)) with MSIX Installation of Preview Handlers and it's not fully supported.
+ 
+To add a new Previewer with MSIX update the `appxmanifest.xml` file to add file type association for preview handler and add `SurrogateServer` element with class registration. MSIX currently doesn't support .Net Assembly activation with `SurrogateServer` the logic used is shim the activation by using native dll. `dllmain.cpp` in `powerpreview` project expose the `DLLGetClassObject` method which is used to activate .net Assembly by using `CoGetClassObject`.
 
 Changes required in `appxmanifest.xml`:
 
