@@ -376,7 +376,7 @@ HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, B
     // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
     AssocGetPerceivedType(pszExt, &type, &flag, NULL);
 
-    free(pszPath);
+    CoTaskMemFree(pszPath);
     // If selected file is an image...
     if (type == PERCEIVED_TYPE_IMAGE)
     {
