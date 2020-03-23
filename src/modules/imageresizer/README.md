@@ -15,9 +15,9 @@ Image Resizer is a windows shell extension for bulk image resizing. After instal
 <figure>
   <img src="../../../doc/images/imageresizer/resizeNormal.gif" alt="Image Resizer Demo" >
   <figcaption>Figure 1 : Image Resizer Demo</figcaption>
-</figure>
+</figure>  
 
-Image Resizer also allows you to resize images using drag and drop with the right-click mouse button. This allows you to save your resized pictures in another folder.
+Image Resizer also allows you to resize images by dragging and dropping your selected files with the right mouse button. This allows you to save your resized pictures in another folder.
 
 <figure>
   <img src="../../../doc/images/imageresizer/resizeDragAndDrop.gif" alt="Image Resizer Drag And Drop Demo" >
