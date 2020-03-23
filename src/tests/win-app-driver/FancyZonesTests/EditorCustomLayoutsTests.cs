@@ -1,7 +1,7 @@
 ﻿using System.IO;
-using System.Collections.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 
@@ -55,6 +55,21 @@ namespace PowerToysTests
             Assert.IsNotNull(creatorWindow, "Creator window didn't open");
         }
 
+        private void SetLayoutName(string name)
+        {
+            WindowsElement textBox = session.FindElementByClassName("TextBox");
+            textBox.Click();
+            textBox.SendKeys(Keys.Control + "a");
+            textBox.SendKeys(Keys.Backspace);
+            textBox.SendKeys(name);
+        }
+
+        private void ZoneCountTest(int canvasZoneCount, int gridZoneCount)
+        {
+            Assert.AreEqual(canvasZoneCount, session.FindElementsByClassName("CanvasZone").Count);
+            Assert.AreEqual(gridZoneCount, session.FindElementsByClassName("GridZone").Count);
+        }
+
         private void CancelTest()
         {
             new Actions(session).MoveToElement(session.FindElementByXPath("//Text[@Name=\"Cancel\"]")).Click().Perform();
@@ -63,13 +78,13 @@ namespace PowerToysTests
             Assert.AreEqual(_initialZoneSettings, File.ReadAllText(_zoneSettingsPath), "Settings were changed");
         }
 
-        private void SaveTest(string type, int zoneCount)
+        private void SaveTest(string type, string name, int zoneCount)
         {
             new Actions(session).MoveToElement(session.FindElementByName("Save and apply")).Click().Perform();
             ShortWait();
 
             JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
-            Assert.AreEqual("Custom Layout 1", settings["custom-zone-sets"][0]["name"]);
+            Assert.AreEqual(name, settings["custom-zone-sets"][0]["name"]);
             Assert.AreEqual(settings["custom-zone-sets"][0]["uuid"], settings["devices"][0]["active-zoneset"]["uuid"]);
             Assert.AreEqual(type, settings["custom-zone-sets"][0]["type"]);
             Assert.AreEqual(zoneCount, settings["custom-zone-sets"][0]["info"]["zones"].ToObject<JArray>().Count);
@@ -79,36 +94,40 @@ namespace PowerToysTests
         public void CreateCancel()
         {
             OpenCreatorWindow("Create new custom", "Custom layout creator");
-            Assert.AreEqual(0, session.FindElementsByClassName("CanvasZone").Count);
-            Assert.AreEqual(0, session.FindElementsByClassName("GridZone").Count);
+            ZoneCountTest(0, 0);
 
             session.FindElementByAccessibilityId("newZoneButton").Click();
-            Assert.AreEqual(1, session.FindElementsByClassName("CanvasZone").Count);
-            Assert.AreEqual(0, session.FindElementsByClassName("GridZone").Count);
+            ZoneCountTest(1, 0);
 
             CancelTest();
+        }
+
+        [TestMethod]
+        public void CreateEmpty()
+        {
+            OpenCreatorWindow("Create new custom", "Custom layout creator");
+            ZoneCountTest(0, 0);
+
+            SaveTest("canvas", "Custom Layout 1", 0);
         }
 
         [TestMethod]
         public void CreateSingleZone()
         {
             OpenCreatorWindow("Create new custom", "Custom layout creator");
-            Assert.AreEqual(0, session.FindElementsByClassName("CanvasZone").Count);
-            Assert.AreEqual(0, session.FindElementsByClassName("GridZone").Count);
+            ZoneCountTest(0, 0);
 
             session.FindElementByAccessibilityId("newZoneButton").Click();
-            Assert.AreEqual(1, session.FindElementsByClassName("CanvasZone").Count);
-            Assert.AreEqual(0, session.FindElementsByClassName("GridZone").Count);
+            ZoneCountTest(1, 0);
 
-            SaveTest("canvas", 1);
+            SaveTest("canvas", "Custom Layout 1", 1);
         }
 
         [TestMethod]
         public void CreateManyZones()
         {
             OpenCreatorWindow("Create new custom", "Custom layout creator");
-            Assert.AreEqual(0, session.FindElementsByClassName("CanvasZone").Count);
-            Assert.AreEqual(0, session.FindElementsByClassName("GridZone").Count);
+            ZoneCountTest(0, 0);
 
             const int expectedZoneCount = 20;
             WindowsElement addButton = session.FindElementByAccessibilityId("newZoneButton");
@@ -117,10 +136,59 @@ namespace PowerToysTests
                 addButton.Click();
             }
 
-            Assert.AreEqual(expectedZoneCount, session.FindElementsByClassName("CanvasZone").Count);
-            Assert.AreEqual(0, session.FindElementsByClassName("GridZone").Count);
+            ZoneCountTest(expectedZoneCount, 0);
+            SaveTest("canvas", "Custom Layout 1", expectedZoneCount);
+        }
 
-            SaveTest("canvas", expectedZoneCount);
+        [TestMethod]
+        public void CreateDeleteZone()
+        {
+            OpenCreatorWindow("Create new custom", "Custom layout creator");
+            ZoneCountTest(0, 0);
+
+            WindowsElement addButton = session.FindElementByAccessibilityId("newZoneButton");
+
+            for (int i = 0; i < 10; i++)
+            {
+                //add zone
+                addButton.Click();
+                WindowsElement zone = session.FindElementByClassName("CanvasZone");
+                Assert.IsNotNull(zone, "Zone was not created");
+                Assert.IsTrue(zone.Displayed, "Zone was not displayed");
+
+                //remove zone
+                zone.FindElementByClassName("Button").Click();
+            }
+
+            ZoneCountTest(0, 0);
+            CancelTest();
+        }
+
+        [TestMethod]
+        public void CreateWithName()
+        {
+            OpenCreatorWindow("Create new custom", "Custom layout creator");
+            string name = "My custom zone layout name";
+            SetLayoutName(name);          
+            SaveTest("canvas", name, 0);
+        }
+
+        [TestMethod]
+        public void CreateWithEmptyName()
+        {
+            OpenCreatorWindow("Create new custom", "Custom layout creator");
+            string name = "";
+            SetLayoutName(name);
+            SaveTest("canvas", name, 0);
+        }
+
+        [TestMethod]
+        public void CreateWithUnicodeCharactersName()
+        {
+            OpenCreatorWindow("Create new custom", "Custom layout creator");
+            string name = "ёÖ±¬āݾᵩὡ√ﮘﻹտ";
+            SetLayoutName(name);
+            SaveTest("canvas", name, 0);
         }
 
         [ClassInitialize]
