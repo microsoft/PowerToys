@@ -47,6 +47,10 @@ namespace Wox
             _viewModel.Save();
         }
 
+        private void OnInitialized(object sender, EventArgs e)
+        {
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs _)
         {
             // todo is there a way to set blur only once?
@@ -151,6 +155,9 @@ namespace Wox
             e.Handled = true;
         }
 
+        private void OnContextMenusForSettingsClick(object sender, RoutedEventArgs e)
+        {
+        }
 
         private void OnDeactivated(object sender, EventArgs e)
         {
