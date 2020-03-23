@@ -94,13 +94,6 @@ namespace Wox
 
         private void AutoStartup()
         {
-            if (_settings.StartWoxOnSystemStartup)
-            {
-                if (!SettingWindow.StartupSet())
-                {
-                    SettingWindow.SetStartup();
-                }
-            }
         }
 
         //[Conditional("RELEASE")]

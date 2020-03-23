@@ -16,7 +16,6 @@ using DataFormats = System.Windows.DataFormats;
 using DragEventArgs = System.Windows.DragEventArgs;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
-using NotifyIcon = System.Windows.Forms.NotifyIcon;
 
 namespace Wox
 {
@@ -46,10 +45,6 @@ namespace Wox
         private void OnClosing(object sender, CancelEventArgs e)
         {
             _viewModel.Save();
-        }
-
-        private void OnInitialized(object sender, EventArgs e)
-        {
         }
 
         private void OnLoaded(object sender, RoutedEventArgs _)
@@ -154,11 +149,6 @@ namespace Wox
         private void OnPreviewDragOver(object sender, DragEventArgs e)
         {
             e.Handled = true;
-        }
-
-        private void OnContextMenusForSettingsClick(object sender, RoutedEventArgs e)
-        {
-            App.API.OpenSettingDialog();
         }
 
 

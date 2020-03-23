@@ -106,14 +106,6 @@ namespace Wox
             });
         }
 
-        public void OpenSettingDialog()
-        {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                SettingWindow sw = SingletonWindowOpener.Open<SettingWindow>(this, _settingsVM);
-            });
-        }
-
         public void StartLoadingBar()
         {
             _mainVM.ProgressBarVisibility = Visibility.Visible;
