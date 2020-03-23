@@ -50,6 +50,14 @@ public:
     init_settings();
   };
 
+  ~Wox_Launcher() {
+      if (m_enabled)
+      {
+          TerminateProcess(m_hProcess, 1);
+      }
+      m_enabled = false;
+  }
+
   // Destroy the powertoy and free memory
   virtual void destroy() override {
     delete this;
