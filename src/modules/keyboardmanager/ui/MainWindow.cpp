@@ -1,48 +1,41 @@
+#include "pch.h"
 #include "MainWindow.h"
 #include "EditKeyboardWindow.h"
-
-using namespace winrt;
-using namespace Windows::UI;
-using namespace Windows::UI::Composition;
-using namespace Windows::UI::Xaml::Hosting;
-using namespace Windows::Foundation::Numerics;
-using namespace Windows::Foundation;
-using namespace Windows::UI::Xaml;
-using namespace Windows::UI::Xaml::Controls;
+#include "EditShortcutsWindow.h"
 
 HWND _hWndMain;
 HINSTANCE _hInstance;
 // This Hwnd will be the window handler for the Xaml Island: A child window that contains Xaml.
 HWND hWndXamlIslandMain = nullptr;
-bool isRegistrationCompleted = false;
+// This variable is used to check if window registration has been done to avoid repeated registration leading to an error.
+bool isMainWindowRegistrationCompleted = false;
 
-void createMainWindow(HINSTANCE hInstance, bool* ptr)
+// Function to create the Main Window
+void createMainWindow(HINSTANCE hInstance, KeyboardManagerState& keyboardManagerState)
 {
     _hInstance = hInstance;
 
-    // The main window class name.
+    // Window Registration
     const wchar_t szWindowClass[] = L"MainWindowClass";
-    if (!isRegistrationCompleted)
+    if (!isMainWindowRegistrationCompleted)
     {
-        registerWinClass(_hInstance);
         WNDCLASSEX windowClass = {};
-
         windowClass.cbSize = sizeof(WNDCLASSEX);
         windowClass.lpfnWndProc = MainWindowProc;
         windowClass.hInstance = hInstance;
         windowClass.lpszClassName = szWindowClass;
         windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-
         windowClass.hIconSm = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
-
         if (RegisterClassEx(&windowClass) == NULL)
         {
             MessageBox(NULL, L"Windows registration failed!", L"Error", NULL);
             return;
         }
-        isRegistrationCompleted = true;
+
+        isMainWindowRegistrationCompleted = true;
     }
 
+    // Window Creation
     _hWndMain = CreateWindow(
         szWindowClass,
         L"PowerKeys Settings",
@@ -62,7 +55,6 @@ void createMainWindow(HINSTANCE hInstance, bool* ptr)
     }
 
     //XAML Island section
-
     // This DesktopWindowXamlSource is the object that enables a non-UWP desktop application
     // to host UWP controls in any UI element that is associated with a window handle (HWND).
     DesktopWindowXamlSource desktopSource;
@@ -101,27 +93,22 @@ void createMainWindow(HINSTANCE hInstance, bool* ptr)
     Windows::UI::Xaml::Controls::Button bt;
     bt.Content(winrt::box_value(winrt::to_hstring("Edit Keyboard")));
     bt.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
-        if (ptr != nullptr)
-        {
-            *ptr = true;
-        }
-        std::thread th(createEditKeyboardWindow, _hInstance);
+        //keyboardManagerState.SetUIState(KeyboardManagerUIState::DetectKeyWindowActivated);
+        std::thread th(createEditKeyboardWindow, _hInstance, std::ref(keyboardManagerState));
         th.join();
-        if (ptr != nullptr)
-        {
-            *ptr = false;
-        }
+        //keyboardManagerState.ResetUIState();
     });
 
     Windows::UI::Xaml::Controls::Button bt2;
     bt2.Content(winrt::box_value(winrt::to_hstring("Edit Shortcuts")));
     bt2.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+        std::thread th(createEditShortcutsWindow, _hInstance, std::ref(keyboardManagerState));
+        th.join();
     });
 
     keyRow.Children().Append(cb);
     keyRow.Children().Append(bt);
     keyRow.Children().Append(bt2);
-
 
     xamlContainer.Children().Append(keyRow);
     xamlContainer.UpdateLayout();
