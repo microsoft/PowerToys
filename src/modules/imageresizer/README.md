@@ -12,24 +12,15 @@
 ## Overview
 Image Resizer is a windows shell extension for bulk image resizing. After installing PowerToys, right-click on one or more selected image files in File Explorer, and then select _Resize pictures_ from the menu.
 
-<figure>
-  <img src="../../../doc/images/imageresizer/resizeNormal.gif" alt="Image Resizer Demo" >
-  <figcaption>Figure 1 : Image Resizer Demo</figcaption>
-</figure>
+![Image Resizer Demo](../../../doc/images/imageresizer/resizeNormal.gif)
 
 Image Resizer also allows you to resize images by dragging and dropping your selected files with the right mouse button. This allows you to save your resized pictures in another folder.
 
-<figure>
-  <img src="../../../doc/images/imageresizer/resizeDragAndDrop.gif" alt="Image Resizer Drag And Drop Demo" >
-  <figcaption>Figure 2 : Image Resizer Drag And Drop Demo</figcaption>
-</figure>
+![Image Resizer Drag And Drop Demo](../../../doc/images/imageresizer/resizeDragAndDrop.gif)
 
 ## Settings
 
-<figure>
-  <img src="../../../doc/images/imageresizer/resizeSettings.gif" alt="Image Resizer Settings" >
-  <figcaption>Figure 3 : Image Resizer Settings</figcaption>
-</figure>
+![Image Resizer Settings](../../../doc/images/imageresizer/resizeSettings.gif)
 
 Image Resizer allows the user to configure the following settings:
 
