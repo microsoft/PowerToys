@@ -27,7 +27,6 @@ namespace Wox
 
         private readonly Storyboard _progressBarStoryboard = new Storyboard();
         private Settings _settings;
-        private NotifyIcon _notifyIcon;
         private MainViewModel _viewModel;
 
         #endregion
@@ -46,14 +45,11 @@ namespace Wox
 
         private void OnClosing(object sender, CancelEventArgs e)
         {
-            _notifyIcon.Visible = false;
             _viewModel.Save();
         }
 
         private void OnInitialized(object sender, EventArgs e)
         {
-            // show notify icon when wox is hided
-            InitializeNotifyIcon();
         }
 
         private void OnLoaded(object sender, RoutedEventArgs _)
@@ -85,13 +81,6 @@ namespace Wox
                     }
                 }
             };
-            _settings.PropertyChanged += (o, e) =>
-            {
-                if (e.PropertyName == nameof(Settings.HideNotifyIcon))
-                {
-                    _notifyIcon.Visible = !_settings.HideNotifyIcon;
-                }
-            };
             InitializePosition();
         }
 
@@ -101,42 +90,6 @@ namespace Wox
             Left = WindowLeft();
             _settings.WindowTop = Top;
             _settings.WindowLeft = Left;
-        }
-
-        private void InitializeNotifyIcon()
-        {
-            _notifyIcon = new NotifyIcon
-            {
-                Text = Infrastructure.Constant.Wox,
-                Icon = Properties.Resources.app,
-                Visible = !_settings.HideNotifyIcon
-            };
-            var menu = new ContextMenuStrip();
-            var items = menu.Items;
-
-            var open = items.Add(InternationalizationManager.Instance.GetTranslation("iconTrayOpen"));
-            open.Click += (o, e) => Visibility = Visibility.Visible;
-            var setting = items.Add(InternationalizationManager.Instance.GetTranslation("iconTraySettings"));
-            setting.Click += (o, e) => App.API.OpenSettingDialog();
-            var exit = items.Add(InternationalizationManager.Instance.GetTranslation("iconTrayExit"));
-            exit.Click += (o, e) => Close();
-
-            _notifyIcon.ContextMenuStrip = menu;
-            _notifyIcon.MouseClick += (o, e) =>
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    if (menu.Visible)
-                    {
-                        menu.Close();
-                    }
-                    else
-                    {
-                        var p = System.Windows.Forms.Cursor.Position;
-                        menu.Show(p);
-                    }
-                }
-            };
         }
 
         private void InitProgressbarAnimation()
