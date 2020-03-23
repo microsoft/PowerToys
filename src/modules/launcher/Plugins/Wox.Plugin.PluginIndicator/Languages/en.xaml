@@ -1,8 +1,0 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:system="clr-namespace:System;assembly=mscorlib">
-
-    <system:String x:Key="wox_plugin_pluginindicator_plugin_name">Plugin Indicator</system:String>
-    <system:String x:Key="wox_plugin_pluginindicator_plugin_description">Provides plugins action words suggestions</system:String>
-    
-</ResourceDictionary>
