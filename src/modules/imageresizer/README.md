@@ -6,7 +6,7 @@
 > A Windows Shell Extension for bulk image resizing
 
 [**Overview**](#overview) · 
-[**Settings**](#Developing)
+[**Settings**](#settings)
 </center>
 
 ## Overview
