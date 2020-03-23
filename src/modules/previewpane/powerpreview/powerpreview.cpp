@@ -113,10 +113,7 @@ void PowerPreviewModule::disable()
 {
     for (auto previewHandler : this->m_previewHandlers)
     {
-        if (previewHandler->GetToggleSettingState())
-        {
-            previewHandler->DisablePreview();
-        }
+        previewHandler->DisablePreview();
     }
 
     this->m_enabled = false;
