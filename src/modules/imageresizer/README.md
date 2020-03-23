@@ -1,13 +1,8 @@
-<center>
-
-<img width="200" src="../../../doc/images/Logo.jpg">
-
 # Image Resizer
 > A Windows Shell Extension for bulk image resizing
 
 [**Overview**](#overview) · 
 [**Settings**](#settings)
-</center>
 
 ## Overview
 Image Resizer is a windows shell extension for bulk image resizing. After installing PowerToys, right-click on one or more selected image files in File Explorer, and then select _Resize pictures_ from the menu.
