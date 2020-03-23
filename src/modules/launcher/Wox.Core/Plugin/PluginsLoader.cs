@@ -20,9 +20,8 @@ namespace Wox.Core.Plugin
         public static List<PluginPair> Plugins(List<PluginMetadata> metadatas, PluginsSettings settings)
         {
             var csharpPlugins = CSharpPlugins(metadatas).ToList();
-            var pythonPlugins = PythonPlugins(metadatas, settings.PythonDirectory);
             var executablePlugins = ExecutablePlugins(metadatas);
-            var plugins = csharpPlugins.Concat(pythonPlugins).Concat(executablePlugins).ToList();
+            var plugins = csharpPlugins.Concat(executablePlugins).ToList();
             return plugins;
         }
 
@@ -84,55 +83,6 @@ namespace Wox.Core.Plugin
                 metadata.InitTime += milliseconds;
 
             }
-            return plugins;
-        }
-
-        public static IEnumerable<PluginPair> PythonPlugins(List<PluginMetadata> source, string pythonDirecotry)
-        {
-            var metadatas = source.Where(o => o.Language.ToUpper() == AllowedLanguage.Python);
-            string filename;
-
-            if (string.IsNullOrEmpty(pythonDirecotry))
-            {
-                var paths = Environment.GetEnvironmentVariable(PATH);
-                if (paths != null)
-                {
-                    var pythonPaths = paths.Split(';').Where(p => p.ToLower().Contains(Python));
-                    if (pythonPaths.Any())
-                    {
-                        filename = PythonExecutable;
-                    }
-                    else
-                    {
-                        Log.Error("|PluginsLoader.PythonPlugins|Python can't be found in PATH.");
-                        return new List<PluginPair>();
-                    }
-                }
-                else
-                {
-                    Log.Error("|PluginsLoader.PythonPlugins|PATH environment variable is not set.");
-                    return new List<PluginPair>();
-                }
-            }
-            else
-            {
-                var path = Path.Combine(pythonDirecotry, PythonExecutable);
-                if (File.Exists(path))
-                {
-                    filename = path;
-                }
-                else
-                {
-                    Log.Error("|PluginsLoader.PythonPlugins|Can't find python executable in <b ");
-                    return new List<PluginPair>();
-                }
-            }
-            Constant.PythonPath = filename;
-            var plugins = metadatas.Select(metadata => new PluginPair
-            {
-                Plugin = new PythonPlugin(filename),
-                Metadata = metadata
-            });
             return plugins;
         }
 
