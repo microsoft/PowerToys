@@ -176,7 +176,7 @@ Update the `PackagingLayout.xml` to include dll's required by the new Preview Ha
         <File DestinationPath="modules\XYZDependency.dll" SourcePath="..\..\x64\Release\modules\XYZDependency.dll"/>
 ```
 
-Add the actual Clsid of the new preview handler in `CLSID.h` in `powerpreview` project and class registration registry changes in `registry.dat` similar to existing preview handler. To update the `registry.dat` mount the registry hive on a empty key in registry by using `reggedit.exe` and add regsirty key for class registartion for the new preview handler similar to MSI class registration and existing preview handlers. And export the updated `registry.dat` hive also export the `registry.reg` file for making the contents in `registy.dat` visible in source code.
+Add the actual Clsid of the new preview handler in `CLSID.h` in `powerpreview` project and class registration registry changes in `registry.dat` similar to existing preview handler. To update the `registry.dat` mount the registry hive on a empty key in registry by using `reggedit.exe` and add registry key for class registartion for the new preview handler similar to MSI class registration and existing preview handlers. And export the updated `registry.dat` hive also export the `registry.reg` file for making the contents in `registy.dat` visible in source code.
 
 ```cpp
 // CLSID used in manifest file for Preview Handler.
