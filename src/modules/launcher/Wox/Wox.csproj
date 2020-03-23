@@ -122,9 +122,6 @@
     <Compile Include="Helper\SyntaxSugars.cs" />
     <Compile Include="Helper\WallpaperPathRetrieval.cs" />
     <Compile Include="Helper\WindowsInteropHelper.cs" />
-    <Compile Include="CustomQueryHotkeySetting.xaml.cs">
-      <DependentUpon>CustomQueryHotkeySetting.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Helper\DWMDropShadow.cs" />
     <Compile Include="HotkeyControl.xaml.cs">
       <DependentUpon>HotkeyControl.xaml</DependentUpon>
@@ -132,14 +129,7 @@
     <Compile Include="Msg.xaml.cs">
       <DependentUpon>Msg.xaml</DependentUpon>
     </Compile>
-    <Compile Include="SettingWindow.xaml.cs">
-      <DependentUpon>SettingWindow.xaml</DependentUpon>
-    </Compile>
     <Page Include="ActionKeywords.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="CustomQueryHotkeySetting.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -276,10 +266,6 @@
     <Page Include="ResultListBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="SettingWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Include="Themes\Light.xaml">
       <Generator>MSBuild:Compile</Generator>

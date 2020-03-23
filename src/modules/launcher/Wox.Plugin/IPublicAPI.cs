@@ -84,11 +84,6 @@ namespace Wox.Plugin
         void ShowMsg(string title, string subTitle = "", string iconPath = "", bool useMainWindowAsOwner = true);
 
         /// <summary>
-        /// Open setting dialog
-        /// </summary>
-        void OpenSettingDialog();
-
-        /// <summary>
         /// Show loading animation
         /// </summary>
         [Obsolete("automatically start")]
