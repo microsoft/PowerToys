@@ -24,9 +24,7 @@
     <system:String x:Key="language">Sprog</system:String>
     <system:String x:Key="maxShowResults">Maksimum antal resultater vist</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignorer genvejstaster i fuldskærmsmode</system:String>
-    <system:String x:Key="pythonDirectory">Python bibliotek</system:String>
     <system:String x:Key="autoUpdates">Autoopdatering</system:String>
-    <system:String x:Key="selectPythonDirectory">Vælg</system:String>
     <system:String x:Key="hideOnStartup">Skjul Wox ved opstart</system:String>
 
     <!--Setting Plugin-->

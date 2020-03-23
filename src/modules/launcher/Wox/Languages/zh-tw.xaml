@@ -24,9 +24,7 @@
     <system:String x:Key="language">語言</system:String>
     <system:String x:Key="maxShowResults">最大結果顯示個數</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">全螢幕模式下忽略熱鍵</system:String>
-    <system:String x:Key="pythonDirectory">Python 路徑</system:String>
     <system:String x:Key="autoUpdates">自動更新</system:String>
-    <system:String x:Key="selectPythonDirectory">選擇</system:String>
     <system:String x:Key="hideOnStartup">啟動時不顯示主視窗</system:String>
 
     <!--設置，外掛-->

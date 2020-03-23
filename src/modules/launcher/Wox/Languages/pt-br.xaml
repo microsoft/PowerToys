@@ -28,9 +28,7 @@
     <system:String x:Key="LastQueryEmpty">Limpar última consulta</system:String>
     <system:String x:Key="maxShowResults">Máximo de resultados mostrados</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignorar atalhos em tela cheia</system:String>
-    <system:String x:Key="pythonDirectory">Diretório Python</system:String>
     <system:String x:Key="autoUpdates">Atualizar Automaticamente</system:String>
-    <system:String x:Key="selectPythonDirectory">Selecionar</system:String>
     <system:String x:Key="hideOnStartup">Esconder Wox na inicialização</system:String>
 
     <!--Setting Plugin-->

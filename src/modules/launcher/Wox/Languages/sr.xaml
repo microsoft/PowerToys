@@ -28,9 +28,7 @@
     <system:String x:Key="LastQueryEmpty">Isprazni poslednji Upit</system:String>
     <system:String x:Key="maxShowResults">Maksimum prikazanih rezultata</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignoriši prečice u fullscreen režimu</system:String>
-    <system:String x:Key="pythonDirectory">Python direktorijum</system:String>
     <system:String x:Key="autoUpdates">Auto ažuriranje</system:String>
-    <system:String x:Key="selectPythonDirectory">Izaberi</system:String>
     <system:String x:Key="hideOnStartup">Sakrij Wox pri podizanju sistema</system:String>
 
     <!--Setting Plugin-->

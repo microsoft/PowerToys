@@ -28,9 +28,7 @@
     <system:String x:Key="LastQueryEmpty">Ne pas afficher la dernière recherche</system:String>
     <system:String x:Key="maxShowResults">Résultats maximums à afficher</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignore les raccourcis lorsqu'une application est en plein écran</system:String>
-    <system:String x:Key="pythonDirectory">Répertoire de Python</system:String>
     <system:String x:Key="autoUpdates">Mettre à jour automatiquement</system:String>
-    <system:String x:Key="selectPythonDirectory">Sélectionner</system:String>
     <system:String x:Key="hideOnStartup">Cacher Wox au démarrage</system:String>
     
     <!--Setting Plugin-->

@@ -28,9 +28,7 @@
     <system:String x:Key="LastQueryEmpty">前回のクエリを消去</system:String>
     <system:String x:Key="maxShowResults">結果の最大表示件数</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">ウィンドウがフルスクリーン時にホットキーを無効にする</system:String>
-    <system:String x:Key="pythonDirectory">Pythonのディレクトリ</system:String>
     <system:String x:Key="autoUpdates">自動更新</system:String>
-    <system:String x:Key="selectPythonDirectory">選択</system:String>
     <system:String x:Key="hideOnStartup">起動時にWoxを隠す</system:String>
     <system:String x:Key="hideNotifyIcon">トレイアイコンを隠す</system:String>
     

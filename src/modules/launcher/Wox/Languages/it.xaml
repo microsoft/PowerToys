@@ -28,9 +28,7 @@
     <system:String x:Key="LastQueryEmpty">Cancella ultima ricerca</system:String>
     <system:String x:Key="maxShowResults">Numero massimo di risultati mostrati</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignora i tasti di scelta rapida in applicazione a schermo pieno</system:String>
-    <system:String x:Key="pythonDirectory">Cartella Python</system:String>
     <system:String x:Key="autoUpdates">Aggiornamento automatico</system:String>
-    <system:String x:Key="selectPythonDirectory">Seleziona</system:String>
     <system:String x:Key="hideOnStartup">Nascondi Wox all'avvio</system:String>
 
     <!--Setting Plugin-->
