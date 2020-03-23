@@ -13,17 +13,22 @@
         <ScrollViewer>
             <StackPanel Orientation="Vertical" Margin="14,0,14,48">
 
-                <ToggleSwitch Header="Start at startup" IsOn="True" Margin="0,14,0,0" />
+                <ToggleSwitch Header="Run at startup" x:Name="ToggleSwitch_RunAtStartUp"  Margin="0,14,0,0" Toggled="ToggleSwitch_RunAtStartUp_Toggled" />
 
                 <muxc:RadioButtons Header="Theme" Margin="0, 28,0,0">
-                    <RadioButton Content="Dark"/>
-                    <RadioButton Content="Light"/>
-                    <RadioButton Content="System default" IsChecked="True"/>
+                    <RadioButton x:Name="Rodio_Theme_Dark" Content="Dark" Tag="Dark" Checked="Theme_Changed"/>
+                    <RadioButton x:Name="Rodio_Theme_Light"  Content="Light" Tag="Light" Checked="Theme_Changed"/>
+                    <RadioButton x:Name="Rodio_Theme_Default"  Content="System default" Tag="System" Checked="Theme_Changed"/>
                 </muxc:RadioButtons>
 
+                <!--
                 <ToggleSwitch Header="Disable telemetry" IsOn="True" Margin="0,14,0,0" />
                 <TextBlock Text="PowerToys currently respects the Windows data &amp; feedback setting" Opacity="0.8" Margin="0,0,0,0" />
+                    -->
 
+                <Button Background="{ThemeResource SystemAccentColor}" Content="Restart as admin" Margin="0,10,0,0" Foreground="White" Click="Restart_Elevated" />
+
+                <!--
                 <TextBlock Text="Default apps" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,34,0,8"/>
                 <ComboBox Header="Shell" SelectedIndex="0" MinWidth="240" Margin="0,14,0,0">
                     <ComboBoxItem>PowerShell</ComboBoxItem>
@@ -31,14 +36,16 @@
                 <ComboBox Header="Terminal" SelectedIndex="0" MinWidth="240" Margin="0,14,0,0">
                     <ComboBoxItem>Windows Console</ComboBoxItem>
                 </ComboBox>
+               -->
+
                 <TextBlock Text="About PowerToys" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,34,0,8"/>
                 <TextBlock FontWeight="Bold" Text="Version 0.15.1.0" Margin="0,14,0,0" />
-                <Button Background="{ThemeResource SystemAccentColor}" Content="Check for updates" Margin="0,10,0,0" Foreground="White"/>
-                <!-- TO DO: The styling of this button should be improved so the hover/pressed states are representing the SystemAccentColor -->
+                <!--<Button Background="{ThemeResource SystemAccentColor}" Content="Check for updates" Margin="0,10,0,0" Foreground="White" />
+                 TO DO: The styling of this button should be improved so the hover/pressed states are representing the SystemAccentColor -->
 
-                <HyperlinkButton Content="Report a bug" Margin="0,14,0,0" />
-                <HyperlinkButton Content="Request a feature"  />
-                <HyperlinkButton Content="Privacy statement"  />
+                <HyperlinkButton Content="Report a bug" Margin="0,14,0,0" NavigateUri="https://github.com/microsoft/PowerToys/issues" />
+                <HyperlinkButton Content="Request a feature"  NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
+                <HyperlinkButton Content="Privacy statement" NavigateUri="https://privacy.microsoft.com/en-us/privacystatement" />
             </StackPanel>
         </ScrollViewer>
     </Grid>
