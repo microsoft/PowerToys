@@ -87,34 +87,6 @@ namespace Wox
                 }
             }
         }
-
-        private void OnSelectPythonDirectoryClick(object sender, RoutedEventArgs e)
-        {
-            var dlg = new System.Windows.Forms.FolderBrowserDialog
-            {
-                SelectedPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)
-            };
-
-            var result = dlg.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK)
-            {
-                string pythonDirectory = dlg.SelectedPath;
-                if (!string.IsNullOrEmpty(pythonDirectory))
-                {
-                    var pythonPath = Path.Combine(pythonDirectory, PluginsLoader.PythonExecutable);
-                    if (File.Exists(pythonPath))
-                    {
-                        _settings.PluginSettings.PythonDirectory = pythonDirectory;
-                        MessageBox.Show("Remember to restart Wox use new Python path");
-                    }
-                    else
-                    {
-                        MessageBox.Show("Can't find python in given directory");
-                    }
-                }
-            }
-        }
-
         #endregion
 
         #region Hotkey

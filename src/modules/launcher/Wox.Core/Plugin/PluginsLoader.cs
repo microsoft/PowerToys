@@ -14,8 +14,6 @@ namespace Wox.Core.Plugin
     public static class PluginsLoader
     {
         public const string PATH = "PATH";
-        public const string Python = "python";
-        public const string PythonExecutable = "pythonw.exe";
 
         public static List<PluginPair> Plugins(List<PluginMetadata> metadatas, PluginsSettings settings)
         {

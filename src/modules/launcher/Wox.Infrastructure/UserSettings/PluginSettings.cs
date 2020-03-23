@@ -5,7 +5,6 @@ namespace Wox.Infrastructure.UserSettings
 {
     public class PluginsSettings : BaseModel
     {
-        public string PythonDirectory { get; set; }
         public Dictionary<string, Plugin> Plugins { get; set; } = new Dictionary<string, Plugin>();
 
         public void UpdatePluginSettings(List<PluginMetadata> metadatas)
