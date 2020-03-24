@@ -29,24 +29,40 @@ void Trace::UnregisterProvider()
     TraceLoggingUnregister(g_hProvider);
 }
 
-void Trace::PreviewHandlerEnabled(bool enabled, LPCWSTR previewHandlerName)
+void Trace::EnabledPowerPreview(bool enabled)
 {
     TraceLoggingWrite(
         g_hProvider,
-        "PowerPreview_TweakUISettings_Enabled",
-        TraceLoggingWideString(previewHandlerName, "PreviewHanlder_FileType"),
+        "PowerPreview_Enabled",
         TraceLoggingBoolean(enabled, "Enabled"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
-void Trace::PowerPreviewSettingsUpDateFailed(LPCWSTR SettingsName)
+void Trace::PowerPreviewSettingsUpdated(LPCWSTR SettingsName, bool oldState, bool newState, bool globalState)
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "PowerPreview_TweakUISettings_SuccesfullyUpdatedSettings",
+        TraceLoggingWideString(SettingsName, "Previewer_Settings_Name"),
+        TraceLoggingBoolean(oldState, "Old_Settings_State"),
+        TraceLoggingBoolean(newState, "New_Settings_State"),
+        TraceLoggingBoolean(globalState, "Global_File_Explorer_Settings_State"),
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+void Trace::PowerPreviewSettingsUpdateFailed(LPCWSTR SettingsName, bool oldState, bool newState, bool globalState)
 {
     TraceLoggingWrite(
         g_hProvider,
         "PowerPreview_TweakUISettings_FailedUpdatingSettings",
-        TraceLoggingWideString(SettingsName, "ExceptionMessage"),
+        TraceLoggingWideString(SettingsName, "Previewer_Settings_Name"),
+        TraceLoggingBoolean(oldState, "Old_Settings_State"),
+        TraceLoggingBoolean(newState, "New_Settings_State"),
+        TraceLoggingBoolean(globalState, "Global_File_Explorer_Settings_State"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));

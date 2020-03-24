@@ -105,6 +105,11 @@ void PowerPreviewModule::enable()
         }
     }
 
+    if (!this->m_enabled)
+    {
+        Trace::EnabledPowerPreview(true);
+    }
+
     this->m_enabled = true;
 }
 
@@ -114,6 +119,11 @@ void PowerPreviewModule::disable()
     for (auto previewHandler : this->m_previewHandlers)
     {
         previewHandler->DisablePreview();
+    }
+
+    if (this->m_enabled)
+    {
+        Trace::EnabledPowerPreview(false);
     }
 
     this->m_enabled = false;

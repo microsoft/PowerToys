@@ -81,53 +81,50 @@ namespace PowerPreviewSettings
         if (toggle)
         {
             auto lastState = this->GetToggleSettingState();
-            if (lastState != *toggle)
+            auto newState = *toggle;
+            if (lastState != newState)
             {
-                this->UpdateToggleSettingState(*toggle);
+                this->UpdateToggleSettingState(newState);
 
                 // If global setting is enable. Add or remove the preview handler otherwise just change the UI and save the updated config.
                 if (enabled)
                 {
+                    LONG err;
                     if (lastState)
                     {
-                        this->DisablePreview();
+                        err = this->DisablePreview();
                     }
                     else
                     {
-                        this->EnablePreview();
+                        err = this->EnablePreview();
                     }
+
+                    if (err == ERROR_SUCCESS)
+                    {
+                        Trace::PowerPreviewSettingsUpdated(this->GetToggleSettingName().c_str(), lastState, newState, enabled);
+                    }
+                    else
+                    {
+                        Trace::PowerPreviewSettingsUpdateFailed(this->GetToggleSettingName().c_str(), lastState, newState, enabled);
+                    }
+                }
+                else
+                {
+                    Trace::PowerPreviewSettingsUpdated(this->GetToggleSettingName().c_str(), lastState, newState, enabled);
                 }
             }
         }
     }
 
-    void FileExplorerPreviewSettings::EnablePreview()
+    LONG FileExplorerPreviewSettings::EnablePreview()
     {
         // Add registry value to enable preview.
-        LONG err = this->m_registryWrapper->SetRegistryValue(HKEY_CURRENT_USER, preview_handlers_subkey, this->GetCLSID(), REG_SZ, (LPBYTE)this->GetRegistryValueData().c_str(), (DWORD)(this->GetRegistryValueData().length() * sizeof(wchar_t)));
-
-        if (err == ERROR_SUCCESS)
-        {
-            Trace::PreviewHandlerEnabled(true, this->GetToggleSettingName().c_str());
-        }
-        else
-        {
-            Trace::PowerPreviewSettingsUpDateFailed(this->GetToggleSettingName().c_str());
-        }
+        return this->m_registryWrapper->SetRegistryValue(HKEY_CURRENT_USER, preview_handlers_subkey, this->GetCLSID(), REG_SZ, (LPBYTE)this->GetRegistryValueData().c_str(), (DWORD)(this->GetRegistryValueData().length() * sizeof(wchar_t)));
     }
 
-    void FileExplorerPreviewSettings::DisablePreview()
+    LONG FileExplorerPreviewSettings::DisablePreview()
     {
         // Delete the registry key to disable preview.
-        LONG err = this->m_registryWrapper->DeleteRegistryValue(HKEY_CURRENT_USER, preview_handlers_subkey, this->GetCLSID());
-
-        if (err == ERROR_SUCCESS)
-        {
-            Trace::PreviewHandlerEnabled(false, this->GetToggleSettingName().c_str());
-        }
-        else
-        {
-            Trace::PowerPreviewSettingsUpDateFailed(this->GetToggleSettingName().c_str());
-        }
+        return this->m_registryWrapper->DeleteRegistryValue(HKEY_CURRENT_USER, preview_handlers_subkey, this->GetCLSID());
     }
 }
