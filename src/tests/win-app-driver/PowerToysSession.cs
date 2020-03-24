@@ -206,12 +206,14 @@ namespace PowerToysTests
                 WindowsDriver<WindowsElement> driver = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), opts);
                 Assert.IsNotNull(driver);
                 driver.LaunchApp();
-                isPowerToysLaunched = true;
             }
-            catch (OpenQA.Selenium.WebDriverException)
+            catch (OpenQA.Selenium.WebDriverException ex)
             {
+                Console.WriteLine("Exception on PowerToys launch:" + ex.Message);
                 //exception could be thrown even if app launched successfully
             }
+
+            isPowerToysLaunched = true;
         }
 
         public static void ExitPowerToys()
