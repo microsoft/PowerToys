@@ -130,8 +130,8 @@ public:
     GetZones() noexcept { return m_zones; }
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndex(HWND window, HWND zoneWindow, int index) noexcept;
-    IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByDirection(HWND window, HWND zoneWindow, DWORD vkCode) noexcept;
+    IFACEMETHODIMP_(bool)
+    MoveWindowIntoZoneByDirection(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByPoint(HWND window, HWND zoneWindow, POINT ptClient) noexcept;
     IFACEMETHODIMP_(bool)
@@ -240,12 +240,12 @@ ZoneSet::MoveWindowIntoZoneByIndex(HWND window, HWND windowZone, int index) noex
     }
 }
 
-IFACEMETHODIMP_(void)
-ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCode) noexcept
+IFACEMETHODIMP_(bool)
+ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCode, bool cycle) noexcept
 {
     if (m_zones.empty())
     {
-        return;
+        return false;
     }
 
     winrt::com_ptr<IZone> oldZone = nullptr;
@@ -262,6 +262,11 @@ ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCod
         {
             if (iter == m_zones.begin())
             {
+                if (!cycle)
+                {
+                    oldZone->RemoveWindowFromZone(window, false);
+                    return false;
+                }
                 iter = m_zones.end();
             }
             iter--;
@@ -271,6 +276,11 @@ ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCod
             iter++;
             if (iter == m_zones.end())
             {
+                if (!cycle)
+                {
+                    oldZone->RemoveWindowFromZone(window, false);
+                    return false;
+                }
                 iter = m_zones.begin();
             }
         }
@@ -283,7 +293,9 @@ ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCod
             oldZone->RemoveWindowFromZone(window, false);
         }
         newZone->AddWindowToZone(window, windowZone, true);
+        return true;
     }
+    return false;
 }
 
 IFACEMETHODIMP_(void)

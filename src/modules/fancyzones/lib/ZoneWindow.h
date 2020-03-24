@@ -58,8 +58,12 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      *
      * @param   window Handle of window which should be assigned to zone.
      * @param   vkCode Pressed arrow key.
+     * @param   cycle  Whether we should move window to the first zone if we reached last zone in layout.
+     *
+     * @returns Boolean which is always true if cycle argument is set, otherwise indicating if there is more
+     *          zones left in the zone layout in which window can move.
      */
-    IFACEMETHOD_(void, MoveWindowIntoZoneByDirection)(HWND window, DWORD vkCode) = 0;
+    IFACEMETHOD_(bool, MoveWindowIntoZoneByDirection)(HWND window, DWORD vkCode, bool cycle) = 0;
     /**
      * Cycle through active zone layouts (giving hints about each layout).
      *

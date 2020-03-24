@@ -523,7 +523,7 @@ namespace FancyZonesUnitTests
             Assert::IsNotNull(m_zoneWindow->ActiveZoneSet());
 
             const auto window = Mocks::WindowCreate(m_hInst);
-            m_zoneWindow->MoveWindowIntoZoneByDirection(window, VK_RIGHT);
+            m_zoneWindow->MoveWindowIntoZoneByDirection(window, VK_RIGHT, true);
 
             const auto actualAppZoneHistory = m_fancyZonesData.GetAppZoneHistoryMap();
             Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
@@ -537,9 +537,9 @@ namespace FancyZonesUnitTests
             Assert::IsNotNull(m_zoneWindow->ActiveZoneSet());
 
             const auto window = Mocks::WindowCreate(m_hInst);
-            m_zoneWindow->MoveWindowIntoZoneByDirection(window, VK_RIGHT);
-            m_zoneWindow->MoveWindowIntoZoneByDirection(window, VK_RIGHT);
-            m_zoneWindow->MoveWindowIntoZoneByDirection(window, VK_RIGHT);
+            m_zoneWindow->MoveWindowIntoZoneByDirection(window, VK_RIGHT, true);
+            m_zoneWindow->MoveWindowIntoZoneByDirection(window, VK_RIGHT, true);
+            m_zoneWindow->MoveWindowIntoZoneByDirection(window, VK_RIGHT, true);
 
             const auto actualAppZoneHistory = m_fancyZonesData.GetAppZoneHistoryMap();
             Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
