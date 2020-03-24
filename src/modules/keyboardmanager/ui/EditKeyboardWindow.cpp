@@ -38,8 +38,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        400,
-        400,
+        CW_USEDEFAULT,
+        CW_USEDEFAULT,
         NULL,
         NULL,
         hInst,
@@ -63,13 +63,75 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Update the xaml island window size becuase initially is 0,0
     SetWindowPos(hWndXamlIslandEditKeyboardWindow, 0, 0, 0, 400, 400, SWP_SHOWWINDOW);
 
-    //Creating the Xaml content
+    // Creating the Xaml content. xamlContainer is the parent UI element
     Windows::UI::Xaml::Controls::StackPanel xamlContainer;
-    xamlContainer.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    Windows::UI::Xaml::Controls::Button bt;
-    bt.Content(winrt::box_value(winrt::to_hstring("Don't Type key")));
-    xamlContainer.Children().Append(bt);
+    xamlContainer.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::AliceBlue() });
+
+    // Header for the window
+    Windows::UI::Xaml::Controls::StackPanel header;
+    header.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+    header.Margin({ 10, 10, 10, 30 });
+    header.Spacing(10);
+
+    // Header text
+    TextBlock headerText;
+    headerText.Text(winrt::to_hstring("Remap Keyboard"));
+    headerText.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
+    headerText.FontSize(30);
+    headerText.Margin({ 0, 0, 1000, 0 });
+
+    // Header Cancel button
+    Button cancelButton;
+    cancelButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    cancelButton.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
+    cancelButton.Content(winrt::box_value(winrt::to_hstring("Cancel")));
+
+    // Header Apply button
+    Button applyButton;
+    applyButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    applyButton.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
+    applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
+
+    // Table to display the remap keys
+    Windows::UI::Xaml::Controls::StackPanel remapTable;
+    remapTable.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    remapTable.Margin({ 10, 10, 10, 20 });
+    remapTable.Spacing(10);
+
+    // Header row of the remap keys table
+    Windows::UI::Xaml::Controls::StackPanel tableHeaderRow;
+    tableHeaderRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    tableHeaderRow.Spacing(100);
+    tableHeaderRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+
+    // First header textblock in the header row of the remap keys table
+    TextBlock originalRemapHeader;
+    originalRemapHeader.Text(winrt::to_hstring("Original Key:"));
+    originalRemapHeader.FontWeight(Text::FontWeights::Bold());
+    originalRemapHeader.Margin({ 0, 0, 0, 10 });
+    tableHeaderRow.Children().Append(originalRemapHeader);
+
+    // Second header textblock in the header row of the shortcut table
+    TextBlock newRemapHeader;
+    newRemapHeader.Text(winrt::to_hstring("New Key:"));
+    newRemapHeader.FontWeight(Text::FontWeights::Bold());
+    newRemapHeader.Margin({ 0, 0, 0, 10 });
+    tableHeaderRow.Children().Append(newRemapHeader);
+
+    remapTable.Children().Append(tableHeaderRow);
+
+
+
+
+
+    header.Children().Append(headerText);
+    header.Children().Append(cancelButton);
+    header.Children().Append(applyButton);
+
+    xamlContainer.Children().Append(header);
+    xamlContainer.Children().Append(remapTable);
     xamlContainer.UpdateLayout();
+
     desktopSource.Content(xamlContainer);
     ////End XAML Island section
     if (_hWndEditKeyboardWindow)
