@@ -540,7 +540,7 @@ namespace FancyZonesUnitTests
                 m_settings = MakeFancyZonesSettings(hInst, m_moduleName);
                 Assert::IsTrue(m_settings != nullptr);
             }
-        
+
             TEST_METHOD_CLEANUP(Cleanup)
                 {
                     const auto settingsFile = PTSettingsHelper::get_module_save_folder_location(m_moduleName) + L"\\settings.json";
@@ -722,8 +722,8 @@ namespace FancyZonesUnitTests
                 m_ptSettings->add_bool_toogle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, expected.showZonesOnAllMonitors);
                 m_ptSettings->add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, expected.zoneColor);
                 m_ptSettings->add_color_picker(L"fancyzones_zoneBorderColor", IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, expected.zoneBorderColor);
-                m_ptSettings->add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, expected.zoneHighlightOpacity, 0, 100, 1);
                 m_ptSettings->add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, expected.zoneHightlightColor);
+                m_ptSettings->add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, expected.zoneHighlightOpacity, 0, 100, 1);
                 m_ptSettings->add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, expected.excludedApps);
             }
 
