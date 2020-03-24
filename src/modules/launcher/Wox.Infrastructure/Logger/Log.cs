@@ -126,9 +126,6 @@ namespace Wox.Infrastructure.Logger
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static void Exception(string message, System.Exception e)
         {
-#if DEBUG
-            throw e;
-#else
             if (FormatValid(message))
             {
                 var parts = message.Split('|');
@@ -140,7 +137,6 @@ namespace Wox.Infrastructure.Logger
             {
                 LogFaultyFormat(message);
             }
-#endif
         }
 
         /// <param name="message">example: "|prefix|unprefixed" </param>
