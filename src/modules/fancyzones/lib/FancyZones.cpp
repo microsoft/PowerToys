@@ -949,6 +949,7 @@ void FancyZones::MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT cons
     }
     else if (m_zoneWindowMoveSize)
     {
+        m_zoneWindowMoveSize->RestoreOrginalTransparency();
         m_zoneWindowMoveSize = nullptr;
         for (auto [keyMonitor, zoneWindow] : m_zoneWindowMap)
         {
@@ -1018,10 +1019,12 @@ void FancyZones::MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen,
             {
                 // Drag got disabled, tell it to cancel and hide all windows
                 m_zoneWindowMoveSize = nullptr;
+                
                 for (auto [keyMonitor, zoneWindow] : m_zoneWindowMap)
                 {
                     if (zoneWindow)
                     {
+                        zoneWindow->RestoreOrginalTransparency();
                         zoneWindow->HideZoneWindow();
                     }
                 }
@@ -1038,6 +1041,7 @@ void FancyZones::MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen,
                         // only hide if the option to show all zones is off
                         if (!m_settings->GetSettings()->showZonesOnAllMonitors)
                         {
+                            m_zoneWindowMoveSize->RestoreOrginalTransparency();
                             m_zoneWindowMoveSize->HideZoneWindow();
                         }
                         m_zoneWindowMoveSize = iter->second;

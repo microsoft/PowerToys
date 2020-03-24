@@ -71,6 +71,10 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      */
     IFACEMETHOD_(void, CycleActiveZoneSet)(DWORD vkCode) = 0;
     /**
+     * Restore orginal transaprency of dragged window.
+     */
+    IFACEMETHOD_(void, RestoreOrginalTransparency) () = 0;
+    /**
      * Save information about zone in which window was assigned, when closing the window.
      * Used once we open same window again to assign it to its previous zone.
      *
