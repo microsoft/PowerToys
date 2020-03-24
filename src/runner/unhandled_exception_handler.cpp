@@ -5,7 +5,7 @@
 #pragma comment(lib, "DbgHelp.lib")
 #include <string>
 #include <sstream>
-#include <signal.h>
+#include <csignal>
 
 static IMAGEHLP_SYMBOL64* p_symbol = (IMAGEHLP_SYMBOL64*)malloc(sizeof(IMAGEHLP_SYMBOL64) + MAX_PATH * sizeof(WCHAR));
 static IMAGEHLP_LINE64 line;
