@@ -60,11 +60,21 @@ namespace PowerToysTests
             Assert.AreEqual(settings["custom-zone-sets"][0]["uuid"], settings["devices"][0]["active-zoneset"]["uuid"]);
         }
 
+        private void ZoneCountTest(int canvasZonesCount, int gridZonesCount)
+        {
+            Assert.AreEqual(canvasZonesCount, session.FindElementsByClassName("CanvasZone").Count);
+            Assert.AreEqual(gridZonesCount, session.FindElementsByClassName("GridZone").Count);
+        }
+
         [TestMethod]
         public void EditFocusCancel()
         {
             OpenCreatorWindow("Focus", "Custom layout creator");
+            ZoneCountTest(3, 0);
+
             session.FindElementByAccessibilityId("newZoneButton").Click();
+            ZoneCountTest(4, 0);
+
             CancelTest();
         }
 
@@ -72,7 +82,11 @@ namespace PowerToysTests
         public void EditColumnsCancel()
         {
             OpenCreatorWindow("Columns", "Custom table layout creator");
+            ZoneCountTest(0, 3);
+
             ChangeLayout();
+            ZoneCountTest(0, 4);
+
             CancelTest();
         }
 
@@ -80,7 +94,11 @@ namespace PowerToysTests
         public void EditRowsCancel()
         {
             OpenCreatorWindow("Rows", "Custom table layout creator");
+            ZoneCountTest(0, 3);
+
             ChangeLayout();
+            ZoneCountTest(0, 4);
+
             CancelTest();
         }
 
@@ -88,7 +106,11 @@ namespace PowerToysTests
         public void EditGridCancel()
         {
             OpenCreatorWindow("Grid", "Custom table layout creator");
+            ZoneCountTest(0, 3);
+
             ChangeLayout();
+            ZoneCountTest(0, 4);
+
             CancelTest();
         }
 
@@ -96,7 +118,11 @@ namespace PowerToysTests
         public void EditPriorityGridCancel()
         {
             OpenCreatorWindow("Priority Grid", "Custom table layout creator");
+            ZoneCountTest(0, 3);
+
             ChangeLayout();
+            ZoneCountTest(0, 4);
+
             CancelTest();
         }
 
@@ -104,7 +130,11 @@ namespace PowerToysTests
         public void EditFocusSave()
         {
             OpenCreatorWindow("Focus", "Custom layout creator");
+            ZoneCountTest(3, 0);
+
             session.FindElementByAccessibilityId("newZoneButton").Click();
+            ZoneCountTest(4, 0);
+
             SaveTest();
         }
 
@@ -112,7 +142,11 @@ namespace PowerToysTests
         public void EditColumnsSave()
         {
             OpenCreatorWindow("Columns", "Custom table layout creator");
+            ZoneCountTest(0, 3);
+
             ChangeLayout();
+            ZoneCountTest(0, 4);
+
             SaveTest();
         }
 
@@ -120,7 +154,11 @@ namespace PowerToysTests
         public void EditRowsSave()
         {
             OpenCreatorWindow("Rows", "Custom table layout creator");
+            ZoneCountTest(0, 3);
+
             ChangeLayout();
+            ZoneCountTest(0, 4);
+
             SaveTest();
         }
 
@@ -128,7 +166,11 @@ namespace PowerToysTests
         public void EditGridSave()
         {
             OpenCreatorWindow("Grid", "Custom table layout creator");
+            ZoneCountTest(0, 3);
+
             ChangeLayout();
+            ZoneCountTest(0, 4);
+
             SaveTest();
         }
 
@@ -136,7 +178,11 @@ namespace PowerToysTests
         public void EditPriorityGridSave()
         {
             OpenCreatorWindow("Priority Grid", "Custom table layout creator");
+            ZoneCountTest(0, 3);
+
             ChangeLayout();
+            ZoneCountTest(0, 4);
+
             SaveTest();
         }
 
