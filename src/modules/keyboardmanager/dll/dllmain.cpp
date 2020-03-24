@@ -392,6 +392,25 @@ public:
         return 0;
     }
 
+    // Function to check if any keys are pressed down except those passed in the argument
+    bool IsKeyboardStateClearExceptArgs(const std::vector<DWORD>& args)
+    {
+        for (int keyVal = 0; keyVal < 0x100; keyVal++)
+        {
+            // Check state of the key
+            if (GetAsyncKeyState(keyVal) & 0x8000)
+            {
+                // If the key is not part of the argument then the keyboard state is not clear
+                if (std::find(args.begin(), args.end(), keyVal) == args.end())
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     // Function to a handle a shortcut remap
     intptr_t HandleShortcutRemapEvent(LowlevelKeyboardEvent* data, std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>>& reMap) noexcept
     {
@@ -406,6 +425,10 @@ public:
             {
                 if (data->lParam->vkCode == src_2 && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                 {
+                    if (!IsKeyboardStateClearExceptArgs(it.first))
+                    {
+                        return 0;
+                    }
                     int key_count = 4;
                     LPINPUT keyEventList = new INPUT[size_t(key_count)]();
                     memset(keyEventList, 0, sizeof(keyEventList));
