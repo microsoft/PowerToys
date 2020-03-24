@@ -190,12 +190,8 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context, false);
-
-            if (isPowerToysLaunched)
-            {
-                ExitPowerToys();
-            }
-            ResetDefaultFancyZonesSettings(true);
+            ResetDefaultFancyZonesSettings(false);
+            ResetDefautZoneSettings(true);
         }
 
         [ClassCleanup]
