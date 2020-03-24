@@ -3,7 +3,7 @@
 */
 @font-face {
   font-family: 'FabricMDL2Icons';
-  src: url('../fonts/fabric-icons-ac89a46c.woff') format('woff');
+  src: url('../fonts/fabric-icons.woff') format('woff');
 }
 
 .ms-Icon {
@@ -18,7 +18,6 @@
 
 .ms-Icon--GlobalNavButton:before { content: "\E700"; }
 .ms-Icon--ChevronDown:before { content: "\E70D"; }
-.ms-Icon--ChevronUp:before { content: "\E70E"; }
 .ms-Icon--Cancel:before { content: "\E711"; }
 .ms-Icon--Settings:before { content: "\E713"; }
 .ms-Icon--ChevronLeft:before { content: "\E76B"; }

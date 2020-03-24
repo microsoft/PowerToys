@@ -3,7 +3,7 @@
 */
 @font-face {
   font-family: 'FabricMDL2Icons';
-  src: url('../fonts/fabric-icons-ac89a46c.woff') format('woff');
+  src: url('../fonts/fabric-icons.woff') format('woff');
 }
 
 .ms-Icon {
@@ -19,7 +19,6 @@
 // Mixins
 @mixin ms-Icon--GlobalNavButton { content: "\E700"; }
 @mixin ms-Icon--ChevronDown { content: "\E70D"; }
-@mixin ms-Icon--ChevronUp { content: "\E70E"; }
 @mixin ms-Icon--Cancel { content: "\E711"; }
 @mixin ms-Icon--Settings { content: "\E713"; }
 @mixin ms-Icon--ChevronLeft { content: "\E76B"; }
@@ -40,7 +39,6 @@
 // Classes
 .ms-Icon--GlobalNavButton:before { @include ms-Icon--GlobalNavButton }
 .ms-Icon--ChevronDown:before { @include ms-Icon--ChevronDown }
-.ms-Icon--ChevronUp:before { @include ms-Icon--ChevronUp }
 .ms-Icon--Cancel:before { @include ms-Icon--Cancel }
 .ms-Icon--Settings:before { @include ms-Icon--Settings }
 .ms-Icon--ChevronLeft:before { @include ms-Icon--ChevronLeft }

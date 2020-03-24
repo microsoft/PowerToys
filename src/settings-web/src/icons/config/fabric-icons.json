@@ -4,7 +4,7 @@
   "excludeGlyphs": false,
   "excludeThirdPartyIcons": false,
   "chunkSubsets": false,
-  "hashFontFileName": true,
+  "hashFontFileName": false,
   "glyphs": [
     {
       "name": "GlobalNavButton",
@@ -13,10 +13,6 @@
     {
       "name": "ChevronDown",
       "unicode": "E70D"
-    },
-    {
-      "name": "ChevronUp",
-      "unicode": "E70E"
     },
     {
       "name": "Cancel",
