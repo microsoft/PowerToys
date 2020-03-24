@@ -6,7 +6,7 @@ namespace Wox.Plugin
 {
     public class Query
     {
-        public Query() { }
+        internal Query() { }
 
         /// <summary>
         /// to allow unit tests for plug ins

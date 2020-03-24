@@ -25,6 +25,6 @@ namespace Wox.Plugin
 
     public class WoxQueryEventArgs
     {
-        internal Query Query { get; set; }
+        public Query Query { get; set; }
     }
 }
