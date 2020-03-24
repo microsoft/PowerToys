@@ -12,10 +12,16 @@
 void PowerPreviewModule::destroy()
 {
     Trace::Destroyed();
-    for (FileExplorerPreviewSettings* previewHandler : this->m_previewHandlers)
+    for (auto previewHandler : this->m_previewHandlers)
     {
         if (previewHandler != NULL)
         {
+            // Disable all the active preview handlers.
+            if (this->m_enabled && previewHandler->GetToggleSettingState())
+            {
+                previewHandler->DisablePreview();
+            }
+
             delete previewHandler;
         }
     }
@@ -52,12 +58,12 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_DESC),
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_TEXT));
 
-    for (FileExplorerPreviewSettings * previewHandler : this->m_previewHandlers)
+    for (auto previewHandler : this->m_previewHandlers)
     {
         settings.add_bool_toogle(
-            previewHandler->GetName(),
-            previewHandler->GetDescription(),
-            previewHandler->GetState());
+            previewHandler->GetToggleSettingName(),
+            previewHandler->GetToggleSettingDescription(),
+            previewHandler->GetToggleSettingState());
     }
 
     return settings.serialize_to_buffer(buffer, buffer_size);
@@ -68,14 +74,14 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 {
     try
     {
-        PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::from_json_string(config);
+        PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::from_json_string(config);
 
-        for (FileExplorerPreviewSettings * previewHandler : this->m_previewHandlers)
+        for (auto previewHandler : this->m_previewHandlers)
         {
-            previewHandler->UpdateState(values);
+            previewHandler->UpdateState(settings, this->m_enabled);
         }
 
-        values.save_to_settings_file();
+        settings.save_to_settings_file();
     }
     catch (std::exception const& e)
     {
@@ -86,17 +92,40 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 // Enable preview handlers.
 void PowerPreviewModule::enable()
 {
-    init_settings();
+    for (auto previewHandler : this->m_previewHandlers)
+    {
+        if (previewHandler->GetToggleSettingState())
+        {
+            // Enable all the previews with intial state set as true.
+            previewHandler->EnablePreview();
+        }
+        else
+        {
+            previewHandler->DisablePreview();
+        }
+    }
+
+    if (!this->m_enabled)
+    {
+        Trace::EnabledPowerPreview(true);
+    }
+
     this->m_enabled = true;
 }
 
-// Disable all preview handlers.
+// Disable active preview handlers.
 void PowerPreviewModule::disable()
 {
-    for (FileExplorerPreviewSettings * previewHandler : this->m_previewHandlers)
+    for (auto previewHandler : this->m_previewHandlers)
     {
         previewHandler->DisablePreview();
     }
+
+    if (this->m_enabled)
+    {
+        Trace::EnabledPowerPreview(false);
+    }
+
     this->m_enabled = false;
 }
 
@@ -122,7 +151,7 @@ void PowerPreviewModule::init_settings()
             PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_name());
 
         // Load settings states.
-        for (FileExplorerPreviewSettings * previewHandler : this->m_previewHandlers)
+        for (auto previewHandler : this->m_previewHandlers)
         {
             previewHandler->LoadState(settings);
         }

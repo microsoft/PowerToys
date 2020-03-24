@@ -19,7 +19,7 @@ namespace PreviewHandlerSettingsTest
     public:
         LONG ReturnValue = ERROR_SUCCESS;
         int NumOfCalls = 0;
-        HKEY Scope;
+        HKEY Scope = NULL;
         LPCWSTR SubKey;
         LPCWSTR ValueName;
     };
@@ -62,162 +62,141 @@ namespace PreviewHandlerSettingsTest
 	TEST_CLASS(BaseSettingsTest)
 	{
 	public:
-		TEST_METHOD(LoadState_ShouldLoadNewState_WhenSucessfull)
-		{
-			// Arrange
-            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(new RegistryMock());
-			PowerToyValues values = PowerToyValues::from_json_string(GetJSONSettings(tempSettings.GetName(), L"true"));
-			tempSettings.SetState(false);
-			bool expectedState = true;
 
-			// Act
-			tempSettings.LoadState(values);
-			bool actualState = tempSettings.GetState();
-
-			// Assert
-			Assert::AreEqual(actualState, expectedState);
-		}
-
-		TEST_METHOD(UpdateState_ShouldChangeState_WhenSucessfull)
-		{
-			// Arrange
-            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(new RegistryMock());
-			PowerToyValues values = PowerToyValues::from_json_string(GetJSONSettings(tempSettings.GetName(), L"true"));
-			tempSettings.SetState(false);
-			bool expectedState = true;
-
-			// Act
-			tempSettings.UpdateState(values);
-			bool actualState = tempSettings.GetState();
-
-			// Assert
-			Assert::AreEqual(actualState, expectedState);
-		}
-
-		TEST_METHOD(EnableRender_ShouldUpdateStateToTrue_WhenSuccessful)
+        TEST_METHOD (LoadState_ShouldLoadValidState_IfInitalStateIsPresent)
         {
             // Arrange
-            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(new RegistryMock());
-            tempSettings.SetState(false); //preview handler initially disabled
+            bool defaultState = true;
+            RegistryMock* mockRegistryWrapper = new RegistryMock();
+            FileExplorerPreviewSettings previewSettings = GetSettingsObject(defaultState, mockRegistryWrapper);
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
 
             // Act
-            tempSettings.EnablePreview();
+            previewSettings.LoadState(settings);
 
             // Assert
-            Assert::IsTrue(tempSettings.GetState());
+            Assert::IsFalse(previewSettings.GetToggleSettingState());
         }
 
-        TEST_METHOD(DisableRender_ShouldUpdateStateToFalse_WhenSuccessful)
+        TEST_METHOD (LoadState_ShouldNotChangeDefaultState_IfNoInitalStateIsPresent)
         {
             // Arrange
-            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(new RegistryMock());
-            tempSettings.SetState(true); //preview handler initially enabled
+            bool defaultState = true;
+            RegistryMock* mockRegistryWrapper = new RegistryMock();
+            FileExplorerPreviewSettings previewSettings = GetSettingsObject(defaultState, mockRegistryWrapper);
+            auto settings = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\"}");
 
             // Act
-            tempSettings.DisablePreview();
+            previewSettings.LoadState(settings);
 
             // Assert
-            Assert::IsFalse(tempSettings.GetState());
+            Assert::AreEqual(previewSettings.GetToggleSettingState(), defaultState);
+        }
+
+        TEST_METHOD (UpdateState_ShouldDisablePreview_IfPreviewsAreEnabledAndNewSettingsStateIsFalse)
+        {
+            // Arrange
+            bool enabled = true;
+            RegistryMock* mockRegistryWrapper = new RegistryMock();
+            FileExplorerPreviewSettings previewSettings = GetSettingsObject(true, mockRegistryWrapper);
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
+            previewSettings.UpdateToggleSettingState(true);
+
+            // Act
+            previewSettings.UpdateState(settings, enabled);
+
+            // Assert
+            Assert::IsFalse(previewSettings.GetToggleSettingState());
+            Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.NumOfCalls, 1);
+        }
+
+        TEST_METHOD (UpdateState_ShouldEnablePreview_IfPreviewsAreEnabledAndNewSettingsStateIsTrue)
+        {
+            // Arrange
+            bool enabled = true;
+            RegistryMock* mockRegistryWrapper = new RegistryMock();
+            FileExplorerPreviewSettings previewSettings = GetSettingsObject(true, mockRegistryWrapper);
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"true"));
+            previewSettings.UpdateToggleSettingState(false);
+
+            // Act
+            previewSettings.UpdateState(settings, enabled);
+
+            // Assert
+            Assert::IsTrue(previewSettings.GetToggleSettingState());
+            Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.NumOfCalls, 1);
+        }
+
+        TEST_METHOD (UpdateState_ShouldOnlyUpdateToggleSettingState_IfPreviewsAreDisabled)
+        {
+            // Arrange
+            bool enabled = false;
+            RegistryMock* mockRegistryWrapper = new RegistryMock();
+            FileExplorerPreviewSettings previewSettings = GetSettingsObject(true, mockRegistryWrapper);
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
+
+            // Act
+            previewSettings.UpdateState(settings, enabled);
+
+            // Assert
+            Assert::IsFalse(previewSettings.GetToggleSettingState());
+            Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.NumOfCalls, 0);
+            Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.NumOfCalls, 0);
+        }
+
+        TEST_METHOD (UpdateToggleSettingState_ShouldUpdateState_WhenCalled)
+        {
+            // Arrange
+            bool updatedState = false;
+            FileExplorerPreviewSettings previewSettings = GetSettingsObject(true, new RegistryMock());
+
+            // Act
+            previewSettings.UpdateToggleSettingState(updatedState);
+
+            // Assert
+            Assert::AreEqual(previewSettings.GetToggleSettingState(), updatedState);
         }
 
         TEST_METHOD(EnablePreview_ShouldCallSetRegistryValueWithValidArguments_WhenCalled)
         {
             // Arrange
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(mockRegistryWrapper);
+            FileExplorerPreviewSettings previewSettings = GetSettingsObject(true, mockRegistryWrapper);
 
             // Act
-            tempSettings.EnablePreview();
+            previewSettings.EnablePreview();
 
             // Assert
             Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.NumOfCalls, 1);
-            Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.SubKey, tempSettings.GetSubKey());
-            Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.ValueName, tempSettings.GetCLSID());
+            Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.SubKey, preview_handlers_subkey);
+            Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.ValueName, previewSettings.GetCLSID());
             Assert::AreEqual((ULONG_PTR)(mockRegistryWrapper->SetRegistryMockProperties.Scope), (ULONG_PTR)(HKEY_CURRENT_USER));
-        }
-
-        TEST_METHOD(EnablePreview_ShouldNotSetStateToTrue_IfSetRegistryValueFailed)
-        {
-            // Arrange
-            RegistryMock* mockRegistryWrapper = new RegistryMock();
-            mockRegistryWrapper->SetRegistryMockProperties.ReturnValue = ERROR_OUTOFMEMORY;
-            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(mockRegistryWrapper);
-            tempSettings.SetState(false);
-
-            // Act
-            tempSettings.EnablePreview();
-
-            // Assert
-            Assert::IsFalse(tempSettings.GetState());
-        }
-
-        TEST_METHOD(EnablePreview_ShouldSetStateToTrue_IfSetRegistryValueReturnSuccessErrorCode)
-        {
-            // Arrange
-            RegistryMock* mockRegistryWrapper = new RegistryMock();
-            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(mockRegistryWrapper);
-            tempSettings.SetState(false);
-
-            // Act
-            tempSettings.EnablePreview();
-
-            // Assert
-            Assert::IsTrue(tempSettings.GetState());
         }
 
         TEST_METHOD(DisablePreview_ShouldCallDeleteRegistryValueWithValidArguments_WhenCalled)
         {
             // Arrange
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(mockRegistryWrapper);
+            FileExplorerPreviewSettings previewSettings = GetSettingsObject(true, mockRegistryWrapper);
 
             // Act
-            tempSettings.DisablePreview();
+            previewSettings.DisablePreview();
 
             // Assert
             Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.NumOfCalls, 1);
-            Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.SubKey, tempSettings.GetSubKey());
-            Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.ValueName, tempSettings.GetCLSID());
+            Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.SubKey, preview_handlers_subkey);
+            Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.ValueName, previewSettings.GetCLSID());
             Assert::AreEqual((ULONG_PTR)(mockRegistryWrapper->DeleteRegistryMockProperties.Scope), (ULONG_PTR)(HKEY_CURRENT_USER));
         }
 
-        TEST_METHOD(DisablePreview_ShouldNotSetStateToFalse_IfDeleteRegistryValueFailed)
-        {
-            // Arrange
-            RegistryMock* mockRegistryWrapper = new RegistryMock();
-            mockRegistryWrapper->DeleteRegistryMockProperties.ReturnValue = ERROR_OUTOFMEMORY;
-            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(mockRegistryWrapper);
-            tempSettings.SetState(true);
-
-            // Act
-            tempSettings.DisablePreview();
-
-            // Assert
-            Assert::IsTrue(tempSettings.GetState());
-        }
-
-        TEST_METHOD(DisablePreview_ShouldSetStateToFalse_IfDeleteRegistryValueReturnSuccessErrorCode)
-        {
-            // Arrange
-            RegistryMock* mockRegistryWrapper = new RegistryMock();
-            FileExplorerPreviewSettings tempSettings = GetSttingsObjects(mockRegistryWrapper);
-            tempSettings.SetState(true);
-
-            // Act
-            tempSettings.DisablePreview();
-
-            // Assert
-            Assert::IsFalse(tempSettings.GetState());
-        }
-
-		FileExplorerPreviewSettings GetSttingsObjects(RegistryMock * registryMock)
+		FileExplorerPreviewSettings GetSettingsObject(bool defaultState, RegistryWrapperIface* registryMock)
 		{
             return FileExplorerPreviewSettings(
-                false,
-                GET_RESOURCE_STRING(IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL),
-                GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
-                L"{test-guid}",
-                TEXT("Test Handler\0"),
+                defaultState,
+                L"valid-name",
+                L"valid-description",
+                L"valid-guid",
+                L"valid-handler",
                 registryMock);
 		}
 
