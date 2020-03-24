@@ -395,13 +395,61 @@ public:
     // Function to check if any keys are pressed down except those passed in the argument
     bool IsKeyboardStateClearExceptArgs(const std::vector<DWORD>& args)
     {
+        bool isIgnore = false;
         for (int keyVal = 0; keyVal < 0x100; keyVal++)
         {
             // Check state of the key
             if (GetAsyncKeyState(keyVal) & 0x8000)
             {
+                isIgnore = false;
                 // If the key is not part of the argument then the keyboard state is not clear
-                if (std::find(args.begin(), args.end(), keyVal) == args.end())
+                for (int i = 0; i < args.size(); i++)
+                {
+                    // If the key matches one of the args, ignore
+                    if (args[i] == keyVal)
+                    {
+                        isIgnore = true;
+                        break;
+                    }
+                    // If the key is Control and either of the args is L/R Control, ignore
+                    else if ((args[i] == VK_LCONTROL || args[i] == VK_RCONTROL) && keyVal == VK_CONTROL)
+                    {
+                        isIgnore = true;
+                        break;
+                    }
+                    // If the key is Alt and either of the args is L/R Alt, ignore
+                    else if ((args[i] == VK_LMENU || args[i] == VK_RMENU) && keyVal == VK_MENU)
+                    {
+                        isIgnore = true;
+                        break;
+                    }
+                    // If the key is Shift and either of the args is L/R Shift, ignore
+                    else if ((args[i] == VK_LSHIFT || args[i] == VK_RSHIFT) && keyVal == VK_SHIFT)
+                    {
+                        isIgnore = true;
+                        break;
+                    }
+                    // If the key is L/R Control and either of the args is Control, ignore
+                    else if ((keyVal == VK_LCONTROL || keyVal == VK_RCONTROL) && args[i] == VK_CONTROL)
+                    {
+                        isIgnore = true;
+                        break;
+                    }
+                    // If the key is L/R Alt and either of the args is Alt, ignore
+                    else if ((keyVal == VK_LMENU || keyVal == VK_RMENU) && args[i] == VK_MENU)
+                    {
+                        isIgnore = true;
+                        break;
+                    }
+                    // If the key is L/R Shift and either of the args is Shift, ignore
+                    else if ((keyVal == VK_LSHIFT || keyVal == VK_RSHIFT) && args[i] == VK_SHIFT)
+                    {
+                        isIgnore = true;
+                        break;
+                    }
+                }
+
+                if (!isIgnore)
                 {
                     return false;
                 }
@@ -425,6 +473,7 @@ public:
             {
                 if (data->lParam->vkCode == src_2 && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                 {
+                    // Check if any other keys have been pressed apart from the shortcut
                     if (!IsKeyboardStateClearExceptArgs(it.first))
                     {
                         return 0;
