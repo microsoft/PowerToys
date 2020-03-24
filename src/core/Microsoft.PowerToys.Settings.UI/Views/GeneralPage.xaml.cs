@@ -1,46 +1,152 @@
-﻿using Microsoft.PowerToys.Settings.UI.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Popups;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
+﻿// <copyright file="GeneralPage.xaml.cs" company="Microsoft Corp">
+// Copyright (c) Microsoft Corp. All rights reserved.
+// </copyright>
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
+    using System;
+    using System.IO;
+    using Microsoft.PowerToys.Settings.UI.ViewModels;
+    using Windows.UI.Popups;
+    using Windows.UI.Xaml;
+    using Windows.UI.Xaml.Controls;
+    using Windows.UI.Xaml.Navigation;
+
+    /// <summary>
+    /// General Settings Page.
+    /// </summary>
     public sealed partial class GeneralPage : Page
     {
+        /// <summary>
+        /// Gets view model.
+        /// </summary>
         public GeneralViewModel ViewModel { get; } = new GeneralViewModel();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GeneralPage"/> class.
+        /// General Settings page constructor.
+        /// </summary>
         public GeneralPage()
         {
             this.InitializeComponent();
         }
 
+        /// <summary>
+        /// Get the settings vakey value.
+        /// </summary>
+        /// <param name="dynSettings">json settings dynamic object.</param>
+        /// <returns>string value of the setting.</returns>
+        public string GetValue(dynamic dynSettings)
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(dynSettings);
+        }
 
+        /// <summary>
+        /// Get path to the json settings file.
+        /// </summary>
+        /// <returns>string path.</returns>
+        public string GetSettingsPath()
+        {
+            return Path.Combine(
+                Environment.GetFolderPath(
+                    Environment.SpecialFolder.LocalApplicationData),
+                "Microsoft\\PowerToys\\settings.json");
+        }
+
+        /// <summary>
+        /// Get a dynamic object of the json settings.
+        /// </summary>
+        /// <returns>dynamic json settings object.</returns>
+        public dynamic GetGeneralSettings()
+        {
+            var jsonSettingsString = System.IO.File.ReadAllText(this.GetSettingsPath());
+            return Newtonsoft.Json.JsonConvert.DeserializeObject(jsonSettingsString);
+        }
+
+        /// <summary>
+        /// Save theme change settings.
+        /// </summary>
+        /// <param name="themeName">theme name.</param>
+        public void SaveThemeSettings(string themeName)
+        {
+            dynamic settings = this.GetGeneralSettings();
+            settings.theme = themeName;
+
+            string jsonSettingsStringModified = Newtonsoft.Json.JsonConvert.SerializeObject(settings);
+            System.IO.File.WriteAllText(this.GetSettingsPath(), this.FormatJson(jsonSettingsStringModified));
+        }
+
+        /// <summary>
+        /// Save settings to a json file.
+        /// </summary>
+        /// <param name="settings">dynamic json settings object.</param>
+        public void SaveSettings(dynamic settings)
+        {
+            string jsonSettingsStringModified = Newtonsoft.Json.JsonConvert.SerializeObject(settings);
+            System.IO.File.WriteAllText(
+                this.GetSettingsPath(),
+                this.FormatJson(jsonSettingsStringModified));
+        }
+
+        /// <summary>
+        /// remove unwanted chars.
+        /// </summary>
+        /// <param name="settings">json string settings.</param>
+        /// <returns>formatted json string.</returns>
+        public string FormatJson(string settings)
+        {
+            return settings.Replace("\\r\\n", string.Empty)
+                           .Replace("\\", string.Empty)
+                           .Replace(" ", string.Empty)
+                           .Replace("\"{", "{")
+                           .Replace("}\"", "}");
+        }
+
+        /// <summary>
+        /// Update and save theme settings to json file.
+        /// </summary>
+        /// <param name="themeName">theme name.</param>
+        private void UpdateTheme(string themeName)
+        {
+            switch (themeName.ToLower())
+            {
+                case "light":
+                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
+                    this.Rodio_Theme_Light.IsChecked = true;
+                    this.SaveThemeSettings(themeName.ToLower());
+                    break;
+                case "dark":
+                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
+                    this.Rodio_Theme_Dark.IsChecked = true;
+                    this.SaveThemeSettings(themeName.ToLower());
+                    break;
+                case "system":
+                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
+                    this.Rodio_Theme_Default.IsChecked = true;
+                    this.SaveThemeSettings(themeName.ToLower());
+                    break;
+            }
+        }
+
+        /// <inheritdoc/>
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            UpdateTheme(GetSettinValue(GetGeneralSettings().theme).Replace("\"", ""));
+            this.UpdateTheme(
+                this.GetValue(this.GetGeneralSettings().theme)
+                .Replace("\"", string.Empty));
 
-            string startup = GetSettinValue(GetGeneralSettings().startup).Replace("\"", "").ToLower();
+            string startup = this.GetValue(
+                this.GetGeneralSettings().startup)
+                .Replace("\"", string.Empty).ToLower();
 
             switch (startup)
             {
                 case "true":
-                    ToggleSwitch_RunAtStartUp.IsOn = true;
+                    this.ToggleSwitch_RunAtStartUp.IsOn = true;
                     break;
                 case "false":
-                    ToggleSwitch_RunAtStartUp.IsOn = false;
+                    this.ToggleSwitch_RunAtStartUp.IsOn = false;
                     break;
             }
         }
@@ -49,16 +155,27 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             ToggleSwitch swt = sender as ToggleSwitch;
 
-            if(swt != null)
+            if (swt != null)
             {
-                dynamic settings = GetGeneralSettings();
-                settings.startup = swt.IsOn.ToString().ToLower();
-                SaveSettings(settings);
+                dynamic settings = this.GetGeneralSettings();
+
+                string startup = swt.IsOn.ToString().ToLower();
+                switch (startup)
+                {
+                    case "true":
+                        settings.startup = true;
+                        break;
+                    case "false":
+                        settings.startup = false;
+                        break;
+                }
+
+                this.SaveSettings(settings);
 
                 dynamic baseObject = Newtonsoft.Json.JsonConvert.DeserializeObject("{\"general\":{}}");
-                baseObject.general = GetSettinValue(settings);
+                baseObject.general = this.GetValue(settings);
 
-                string message = FormatJson(GetSettinValue(baseObject));
+                string message = this.FormatJson(this.GetValue(baseObject));
 
                 if (ShellPage.Run_OnStartUp_Callback != null)
                 {
@@ -66,23 +183,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
                 else
                 {
-                    new MessageDialog("Callback function not yet defined").ShowAsync();
                 }
             }
         }
 
         private void Restart_Elevated(object sender, RoutedEventArgs e)
         {
-            dynamic modifiedSettings = GetGeneralSettings();
+            dynamic modifiedSettings = this.GetGeneralSettings();
             modifiedSettings.run_elevated = true;
 
             dynamic baseObject = Newtonsoft.Json.JsonConvert.DeserializeObject("{\"general\":{}}");
-            baseObject.general = GetSettinValue(modifiedSettings);
+            baseObject.general = this.GetValue(modifiedSettings);
 
-            string message = FormatJson(GetSettinValue(baseObject));
-
-            //show message generated.
-            //new MessageDialog(message).ShowAsync();
+            string message = this.FormatJson(this.GetValue(baseObject));
 
             if (ShellPage.Restart_Elevated_Callback != null)
             {
@@ -90,9 +203,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
             else
             {
-                new MessageDialog("Callback function not yet defined").ShowAsync();
             }
-
         }
 
         private void Theme_Changed(object sender, RoutedEventArgs e)
@@ -102,67 +213,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (rb != null)
             {
                 string themeName = rb.Tag.ToString();
-                UpdateTheme(themeName);
+                this.UpdateTheme(themeName);
             }
         }
-
-        public void UpdateTheme(string themeName)
-        {
-            switch (themeName)
-            {
-                case "Light":
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
-                    Rodio_Theme_Light.IsChecked = true;
-                    SaveThemeSettings(themeName);
-                    break;
-                case "Dark":
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
-                    Rodio_Theme_Dark.IsChecked = true;
-                    SaveThemeSettings(themeName);
-                    break;
-                case "System":
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
-                    Rodio_Theme_Default.IsChecked = true;
-                    SaveThemeSettings(themeName);
-                    break;
-            }
-        }
-
-        public string GetSettinValue(dynamic dynSettings)
-        {
-            return Newtonsoft.Json.JsonConvert.SerializeObject(dynSettings);
-        }
-
-        public string GetSettingsPath()
-        {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\settings.json");
-        }
-
-        public dynamic GetGeneralSettings()
-        {
-            var jsonSettingsString = System.IO.File.ReadAllText(GetSettingsPath());
-            return Newtonsoft.Json.JsonConvert.DeserializeObject(jsonSettingsString);
-        }
-
-        public void SaveThemeSettings(string themeName)
-        {
-            dynamic settings = GetGeneralSettings();
-            settings.theme = themeName;
-
-            string jsonSettingsStringModified = Newtonsoft.Json.JsonConvert.SerializeObject(settings);
-            System.IO.File.WriteAllText(GetSettingsPath(), this.FormatJson(jsonSettingsStringModified));
-        }
-
-        public void SaveSettings(dynamic settings)
-        {
-            string jsonSettingsStringModified = Newtonsoft.Json.JsonConvert.SerializeObject(settings);
-            System.IO.File.WriteAllText(GetSettingsPath(), this.FormatJson(jsonSettingsStringModified));
-        }
-
-        public string FormatJson(string settings)
-        {
-            return settings.Replace("\\r\\n", "").Replace("\\", "").Replace(" ", "").Replace("\"{", "{").Replace("}\"", "}");
-        }
-
     }
 }
