@@ -3,7 +3,7 @@
 */
 @font-face {
   font-family: 'FabricMDL2Icons';
-  src: url('../fonts/fabric-icons.woff') format('woff');
+  src: url('../fonts/fabric-icons-ac89a46c.woff') format('woff');
 }
 
 .ms-Icon {
@@ -33,3 +33,4 @@
 .ms-Icon--ChevronRightMed:before { content: "\E974"; }
 .ms-Icon--CircleRing:before { content: "\EA3A"; }
 .ms-Icon--FabricReportLibrary:before { content: "\F0A1"; }
+.ms-Icon--PictureStretch:before { content: "\F525"; }
