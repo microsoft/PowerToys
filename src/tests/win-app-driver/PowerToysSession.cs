@@ -206,12 +206,14 @@ namespace PowerToysTests
                 WindowsDriver<WindowsElement> driver = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), opts);
                 Assert.IsNotNull(driver);
                 driver.LaunchApp();
-                isPowerToysLaunched = true;
             }
-            catch (OpenQA.Selenium.WebDriverException)
+            catch (OpenQA.Selenium.WebDriverException ex)
             {
+                Console.WriteLine("Exception on PowerToys launch:" + ex.Message);
                 //exception could be thrown even if app launched successfully
             }
+
+            isPowerToysLaunched = true;
         }
 
         public static void ExitPowerToys()
@@ -226,6 +228,39 @@ namespace PowerToysTests
             session.FindElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
             trayButton.Click(); //close tray
             isPowerToysLaunched = false;
+        }
+
+        public static void ResetDefaultFancyZonesSettings(bool relaunch)
+        {
+            if (!Directory.Exists(_settingsFolderPath))
+            {
+                Directory.CreateDirectory(_settingsFolderPath);
+            }
+
+            string settings = "{\"version\":\"1.0\",\"name\":\"FancyZones\",\"properties\":{\"fancyzones_shiftDrag\":{\"value\":true},\"fancyzones_overrideSnapHotkeys\":{\"value\":false},\"fancyzones_zoneSetChange_flashZones\":{\"value\":false},\"fancyzones_displayChange_moveWindows\":{\"value\":false},\"fancyzones_zoneSetChange_moveWindows\":{\"value\":false},\"fancyzones_virtualDesktopChange_moveWindows\":{\"value\":false},\"fancyzones_appLastZone_moveWindows\":{\"value\":false},\"use_cursorpos_editor_startupscreen\":{\"value\":true},\"fancyzones_zoneHighlightColor\":{\"value\":\"#0078D7\"},\"fancyzones_highlight_opacity\":{\"value\":90},\"fancyzones_editor_hotkey\":{\"value\":{\"win\":true,\"ctrl\":false,\"alt\":false,\"shift\":false,\"code\":192,\"key\":\"`\"}},\"fancyzones_excluded_apps\":{\"value\":\"\"}}}";
+            File.WriteAllText(_settingsPath, settings);
+
+            if (isPowerToysLaunched)
+            {
+                ExitPowerToys();
+            }
+            
+            if (relaunch)
+            {
+                LaunchPowerToys();
+            }
+        }
+
+        public static void ResetDefautZoneSettings(bool relaunch)
+        {
+            string zoneSettings = "{\"app-zone-history\":[],\"devices\":[],\"custom-zone-sets\":[]}";
+            File.WriteAllText(_zoneSettingsPath, zoneSettings);
+
+            ExitPowerToys();
+            if (relaunch)
+            {
+                LaunchPowerToys();
+            }
         }
     }
 }

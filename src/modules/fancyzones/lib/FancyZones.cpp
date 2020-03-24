@@ -162,6 +162,10 @@ private:
 
     void OnEditorExitEvent() noexcept;
 
+    std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
+    std::vector<HMONITOR> GetMonitorsSorted() noexcept;
+    bool MoveWindowIntoZoneByDirection(HMONITOR monitor, HWND window, DWORD vkCode, bool cycle);
+
     const HINSTANCE m_hinstance{};
 
     HKEY m_virtualDesktopsRegKey{ nullptr };
@@ -828,17 +832,43 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
     auto window = GetForegroundWindow();
     if (IsInterestingWindow(window))
     {
-        const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-        if (monitor)
+        const HMONITOR current = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+        if (current)
         {
-            std::shared_lock readLock(m_lock);
-
-            auto iter = m_zoneWindowMap.find(monitor);
-            if (iter != m_zoneWindowMap.end())
+            std::vector<HMONITOR> monitorInfo = GetMonitorsSorted();
+            if (monitorInfo.size() > 1)
             {
-                const auto& zoneWindowPtr = iter->second;
-                zoneWindowPtr->MoveWindowIntoZoneByDirection(window, vkCode);
-                return true;
+                // Multi monitor environment.
+                auto currMonitorInfo = std::find(std::begin(monitorInfo), std::end(monitorInfo), current);
+                do
+                {
+                    if (MoveWindowIntoZoneByDirection(*currMonitorInfo, window, vkCode, false /* cycle through zones */))
+                    {
+                        return true;
+                    }
+                    // We iterated through all zones in current monitor zone layout, move on to next one (or previous depending on direction).
+                    if (vkCode == VK_RIGHT)
+                    {
+                        currMonitorInfo = std::next(currMonitorInfo);
+                        if (currMonitorInfo == std::end(monitorInfo))
+                        {
+                            currMonitorInfo = std::begin(monitorInfo);
+                        }
+                    }
+                    else if (vkCode == VK_LEFT)
+                    {
+                        if (currMonitorInfo == std::begin(monitorInfo))
+                        {
+                            currMonitorInfo = std::end(monitorInfo);
+                        }
+                        currMonitorInfo = std::prev(currMonitorInfo);
+                    }
+                } while (*currMonitorInfo != current);
+            }
+            else
+            {
+                // Single monitor environment.
+                return MoveWindowIntoZoneByDirection(current, window, vkCode, true /* cycle through zones */);
             }
         }
     }
@@ -1109,6 +1139,46 @@ void FancyZones::OnEditorExitEvent() noexcept
     JSONHelpers::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
     JSONHelpers::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(ZoneWindowUtils::GetAppliedZoneSetTmpPath());
     JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
+}
+
+std::vector<HMONITOR> FancyZones::GetMonitorsSorted() noexcept
+{
+    std::shared_lock readLock(m_lock);
+
+    auto monitorInfo = GetRawMonitorData();
+    OrderMonitors(monitorInfo);
+    std::vector<HMONITOR> output;
+    std::transform(std::begin(monitorInfo), std::end(monitorInfo), std::back_inserter(output), [](const auto& info) { return info.first; });
+    return output;
+}
+
+std::vector<std::pair<HMONITOR, RECT>> FancyZones::GetRawMonitorData() noexcept
+{
+    std::shared_lock readLock(m_lock);
+
+    std::vector<std::pair<HMONITOR, RECT>> monitorInfo;
+    for (const auto& [monitor, window] : m_zoneWindowMap)
+    {
+        if (window->ActiveZoneSet() != nullptr)
+        {
+            MONITORINFOEX mi;
+            mi.cbSize = sizeof(mi);
+            GetMonitorInfo(monitor, &mi);
+            monitorInfo.push_back({ monitor, mi.rcMonitor });
+        }
+    }
+    return monitorInfo;
+}
+
+bool FancyZones::MoveWindowIntoZoneByDirection(HMONITOR monitor, HWND window, DWORD vkCode, bool cycle)
+{
+    auto iter = m_zoneWindowMap.find(monitor);
+    if (iter != std::end(m_zoneWindowMap))
+    {
+        const auto& zoneWindowPtr = iter->second;
+        return zoneWindowPtr->MoveWindowIntoZoneByDirection(window, vkCode, cycle);
+    }
+    return false;
 }
 
 winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept
