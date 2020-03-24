@@ -83,6 +83,28 @@ public:
     IFACEMETHODIMP_(void)
     MoveWindowsOnActiveZoneSetChange() noexcept;
     IFACEMETHODIMP_(COLORREF)
+    GetZoneColor() noexcept
+    {
+        // Skip the leading # and convert to long
+        const auto color = m_settings->GetSettings().zoneColor;
+        const auto tmp = std::stol(color.substr(1), nullptr, 16);
+        const auto nR = (tmp & 0xFF0000) >> 16;
+        const auto nG = (tmp & 0xFF00) >> 8;
+        const auto nB = (tmp & 0xFF);
+        return RGB(nR, nG, nB);
+    }
+    IFACEMETHODIMP_(COLORREF)
+    GetZoneBorderColor() noexcept
+    {
+        // Skip the leading # and convert to long
+        const auto color = m_settings->GetSettings().zoneBorderColor;
+        const auto tmp = std::stol(color.substr(1), nullptr, 16);
+        const auto nR = (tmp & 0xFF0000) >> 16;
+        const auto nG = (tmp & 0xFF00) >> 8;
+        const auto nB = (tmp & 0xFF);
+        return RGB(nR, nG, nB);
+    }
+    IFACEMETHODIMP_(COLORREF)
     GetZoneHighlightColor() noexcept
     {
         // Skip the leading # and convert to long

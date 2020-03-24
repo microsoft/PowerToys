@@ -18,6 +18,16 @@ namespace FancyZonesUnitTests
         IFACEMETHODIMP_(void)
         MoveWindowsOnActiveZoneSetChange() noexcept {};
         IFACEMETHODIMP_(COLORREF)
+        GetZoneColor() noexcept
+        {
+            return RGB(0xFF, 0xFF, 0xFF);
+        }
+        IFACEMETHODIMP_(COLORREF)
+        GetZoneBorderColor() noexcept
+        {
+            return RGB(0xFF, 0xFF, 0xFF);
+        }
+        IFACEMETHODIMP_(COLORREF)
         GetZoneHighlightColor() noexcept
         {
             return RGB(0xFF, 0xFF, 0xFF);

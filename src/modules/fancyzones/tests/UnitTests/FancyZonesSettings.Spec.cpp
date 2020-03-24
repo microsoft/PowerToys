@@ -35,6 +35,8 @@ namespace FancyZonesUnitTests
         Assert::AreEqual(expected.appLastZone_moveWindows, actual.appLastZone_moveWindows);
         Assert::AreEqual(expected.use_cursorpos_editor_startupscreen, actual.use_cursorpos_editor_startupscreen);
         Assert::AreEqual(expected.showZonesOnAllMonitors, actual.showZonesOnAllMonitors);
+        Assert::AreEqual(expected.zoneColor.c_str(), actual.zoneColor.c_str());
+        Assert::AreEqual(expected.zoneBorderColor.c_str(), actual.zoneBorderColor.c_str());
         Assert::AreEqual(expected.zoneHightlightColor.c_str(), actual.zoneHightlightColor.c_str());
         Assert::AreEqual(expected.zoneHighlightOpacity, actual.zoneHighlightOpacity);
         Assert::AreEqual(expected.excludedApps.c_str(), actual.excludedApps.c_str());
@@ -61,7 +63,6 @@ namespace FancyZonesUnitTests
                 m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
                 m_tmpName = PTSettingsHelper::get_module_save_folder_location(m_moduleName) + L"\\settings.json";
             }
-
             TEST_METHOD_CLEANUP(Cleanup)
                 {
                     std::filesystem::remove(m_tmpName);
@@ -510,7 +511,7 @@ namespace FancyZonesUnitTests
                 m_settings = MakeFancyZonesSettings(hInst, m_moduleName);
                 Assert::IsTrue(m_settings != nullptr);
             }
-
+        
             TEST_METHOD_CLEANUP(Cleanup)
                 {
                     const auto settingsFile = PTSettingsHelper::get_module_save_folder_location(m_moduleName) + L"\\settings.json";
@@ -614,6 +615,8 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toogle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
             ptSettings.add_bool_toogle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
+            ptSettings.add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, settings.zoneColor);
+            ptSettings.add_color_picker(L"fancyzones_zoneBorderColor", IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, settings.zoneBorderColor);
             ptSettings.add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, settings.zoneHightlightColor);
             ptSettings.add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, settings.excludedApps);
 

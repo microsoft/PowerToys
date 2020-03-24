@@ -152,6 +152,8 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toogle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
             ptSettings.add_bool_toogle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
+            ptSettings.add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, settings.zoneColor);
+            ptSettings.add_color_picker(L"fancyzones_zoneBorderColor", IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, settings.zoneBorderColor);
             ptSettings.add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, settings.zoneHightlightColor);
             ptSettings.add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, settings.excludedApps);
 
@@ -179,6 +181,62 @@ namespace FancyZonesUnitTests
             std::filesystem::remove(settingsFolder);
         }
 
+        TEST_METHOD(GetZoneColor)
+        {
+            const auto expected = RGB(171, 175, 238);
+            const Settings settings{
+                .shiftDrag = true,
+                .displayChange_moveWindows = true,
+                .virtualDesktopChange_moveWindows = true,
+                .zoneSetChange_flashZones = false,
+                .zoneSetChange_moveWindows = true,
+                .overrideSnapHotkeys = false,
+                .appLastZone_moveWindows = true,
+                .use_cursorpos_editor_startupscreen = true,
+                .zoneColor = L"#abafee",
+                .zoneBorderColor = L"FAFAFA",
+                .zoneHightlightColor = L"#FAFAFA",
+                .zoneHighlightOpacity = 45,
+                .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
+                .excludedApps = L"app\r\napp2",
+                .excludedAppsArray = { L"APP", L"APP2" },
+            };
+
+            auto config = serializedPowerToySettings(settings);
+            m_settings->SetConfig(config.c_str());
+
+            const auto actual = m_zoneWindowHost->GetZoneColor();
+            Assert::AreEqual(expected, actual);
+        }
+
+        TEST_METHOD(GetZoneBorderColor)
+        {
+            const auto expected = RGB(171, 175, 238);
+            const Settings settings{
+                .shiftDrag = true,
+                .displayChange_moveWindows = true,
+                .virtualDesktopChange_moveWindows = true,
+                .zoneSetChange_flashZones = false,
+                .zoneSetChange_moveWindows = true,
+                .overrideSnapHotkeys = false,
+                .appLastZone_moveWindows = true,
+                .use_cursorpos_editor_startupscreen = true,
+                .zoneColor = L"#FAFAFA",
+                .zoneBorderColor = L"#abafee",
+                .zoneHightlightColor = L"#FAFAFA",
+                .zoneHighlightOpacity = 45,
+                .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
+                .excludedApps = L"app\r\napp2",
+                .excludedAppsArray = { L"APP", L"APP2" },
+            };
+
+            auto config = serializedPowerToySettings(settings);
+            m_settings->SetConfig(config.c_str());
+
+            const auto actual = m_zoneWindowHost->GetZoneBorderColor();
+            Assert::AreEqual(expected, actual);
+        }
+
         TEST_METHOD(GetZoneHighlightColor)
         {
             const auto expected = RGB(171, 175, 238);
@@ -192,6 +250,8 @@ namespace FancyZonesUnitTests
                 .appLastZone_moveWindows = true,
                 .use_cursorpos_editor_startupscreen = true,
                 .showZonesOnAllMonitors = false,
+                .zoneColor = L"#FAFAFA",
+                .zoneBorderColor = L"FAFAFA",
                 .zoneHightlightColor = L"#abafee",
                 .zoneHighlightOpacity = 45,
                 .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
@@ -219,6 +279,9 @@ namespace FancyZonesUnitTests
                 .appLastZone_moveWindows = true,
                 .use_cursorpos_editor_startupscreen = true,
                 .showZonesOnAllMonitors = false,
+                .zoneColor = L"#FAFAFA",
+                .zoneBorderColor = L"FAFAFA",
+                
                 .zoneHightlightColor = L"#abafee",
                 .zoneHighlightOpacity = expected,
                 .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
@@ -270,6 +333,8 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toogle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
             ptSettings.add_bool_toogle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
+            ptSettings.add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, settings.zoneColor);
+            ptSettings.add_color_picker(L"fancyzones_zoneBorderColor", IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, settings.zoneBorderColor);
             ptSettings.add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, settings.zoneHightlightColor);
             ptSettings.add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, settings.excludedApps);
 

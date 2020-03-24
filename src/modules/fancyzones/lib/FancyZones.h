@@ -89,6 +89,14 @@ interface __declspec(uuid("{5C8D99D6-34B2-4F4A-A8E5-7483F6869775}")) IZoneWindow
      * Assign window to appropriate zone inside new zone layout.
      */
     IFACEMETHOD_(void, MoveWindowsOnActiveZoneSetChange)() = 0;
+        /**
+     * @returns Basic zone color.
+     */
+    IFACEMETHOD_(COLORREF, GetZoneColor)() = 0;
+        /**
+     * @returns Zone border color.
+     */
+    IFACEMETHOD_(COLORREF, GetZoneBorderColor)() = 0;
     /**
      * @returns Color used to highlight zone while giving zone layout hints.
      */
