@@ -1,0 +1,60 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+#include "../../../common/version.h"
+
+STRINGTABLE
+BEGIN
+    IDS_SETTING_DESCRIPTION                                    "Create window layouts to help make multi-tasking easy"
+    IDS_SETTING_DESCRIPTION_SHIFTDRAG                          "On: Hold Shift key or any non-primary mouse button to enable zones while dragging"
+    IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS              "Override Windows Snap hotkeys (win+arrow) to move windows between zones"
+    IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS          "Keep windows in their zones when the screen resolution changes"
+    IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS          "During zone layout changes, windows assigned to a zone will match new size/positions"  
+    IDS_SETTING_DESCRIPTION_VIRTUALDESKTOPCHANGE_MOVEWINDOWS   "Keep windows pinned to multiple desktops in the same zone when the active desktop changes"
+    IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES           "Flash zones when the active FancyZones layout changes"
+    IDS_SETTING_DESCRIPTION_ZONECOLOR                          "Zone Color (Default #9696A0)"
+    IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR                  "Zone Border Color (Default #4B4B55)"
+    IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR                 "Zone Highlight Color (Default #0078D7)"
+    IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN "Follow mouse cursor instead of focus when launching editor in a multi screen environment"
+    IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS            "Move newly created windows to their last known zone"
+    IDS_SETTING_LAUNCH_EDITOR_LABEL                            "Zone configuration"
+    IDS_SETTING_LAUNCH_EDITOR_BUTTON                           "Edit zones"
+    IDS_SETTING_LAUNCH_EDITOR_DESCRIPTION                      "To launch the zone editor, select the Edit zones button below or press the zone editor hotkey anytime"
+    IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL                     "Configure the zone editor hotkey"
+    IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION                     "To exclude an application from snapping to zones add its name here (one per line). Excluded apps will react to the Windows Snap regardless of all other settings."
+    IDS_SETTINGS_HIGHLIGHT_OPACITY                             "Zone Highlight Opacity (%)" 
+    IDS_FANCYZONES                                             L"FancyZones" 
+END
+
+1 VERSIONINFO
+ FILEVERSION FILE_VERSION
+ PRODUCTVERSION PRODUCT_VERSION
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", COMPANY_NAME
+            VALUE "FileDescription", "FancyZones PowerToy Module"
+            VALUE "FileVersion", FILE_VERSION_STRING
+            VALUE "InternalName", "FancyZones PowerToy"
+            VALUE "LegalCopyright", COPYRIGHT_NOTE
+            VALUE "OriginalFilename", "fancyzones_powertoy.dll"
+            VALUE "ProductName", "FancyZones PowerToy"
+            VALUE "ProductVersion", PRODUCT_VERSION_STRING
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
