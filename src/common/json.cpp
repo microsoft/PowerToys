@@ -18,7 +18,7 @@ namespace json
                 std::string obj_str;
                 obj_str.resize(length);
                 file.read(obj_str.data(), length);
-
+                file.close();
                 return JsonValue::Parse(winrt::to_hstring(obj_str)).GetObjectW();
             }
             return std::nullopt;
@@ -37,6 +37,7 @@ namespace json
         {
             std::string obj_str{winrt::to_string(obj.Stringify())};
             file.write(obj_str.c_str(), obj_str.size());
+            file.close();
         }
     }
 }
