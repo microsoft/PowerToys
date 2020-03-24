@@ -19,3 +19,6 @@
 #define IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION                      119
 #define IDS_SETTINGS_HIGHLIGHT_OPACITY                              120
 #define IDS_FANCYZONES                                              121
+#define IDS_CANT_DRAG_ELEVATED                                      122
+#define IDS_CANT_DRAG_ELEVATED_LEARN_MORE                           123
+#define IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN               124

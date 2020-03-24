@@ -31,6 +31,12 @@
     <Application Id="PowerToys" Executable="PowerToys.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements DisplayName="PowerToys (Experimental)" Description="Windows system utilities to maximize productivity" Square150x150Logo="Images\logo150.png" Square44x44Logo="Images\logo44.png" BackgroundColor="transparent" />
       <Extensions>
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="powertoys">
+            <uap:Logo>images\logo.png</uap:Logo>
+            <uap:DisplayName>Powertoys custom protocol</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
         <uap5:Extension Category="windows.startupTask" Executable="PowerToys.exe" EntryPoint="Windows.FullTrustApplication">
           <uap5:StartupTask TaskId="PowerToysStartupTaskID" Enabled="true" DisplayName="PowerToys" />
         </uap5:Extension>

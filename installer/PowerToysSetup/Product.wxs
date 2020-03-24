@@ -236,8 +236,20 @@
           </Shortcut>
         </File>
 
+        <RegistryKey Root="HKCR" Key="powertoys" Action="createAndRemoveOnUninstall">
+          <RegistryValue Type="string" Name="URL Protocol" Value=""/>
+          <RegistryValue Type="string" Value="URL:PowerToys custom internal URI protocol"/>
+          <RegistryKey Key="DefaultIcon">
+            <RegistryValue Type="string" Value="PowerToys.exe" />
+          </RegistryKey>
+          <RegistryKey Key="shell\open\command">
+            <RegistryValue Type="string" Value="&quot;[INSTALLFOLDER]PowerToys.exe&quot; &quot;%1&quot;" />
+          </RegistryKey>
+        </RegistryKey>
+
         <RemoveFolder Id="DeleteShortcutFolder" Directory="ApplicationProgramsFolder" On="uninstall" />
       </Component>
+
       <Component Id="settings_exe" Guid="A5A461A9-7097-4CBA-9D39-3DBBB6B7B80C" Win64="yes">
         <File Id="PowerToysSettings.exe" KeyPath="yes" Checksum="yes" />
       </Component>
