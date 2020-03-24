@@ -8,8 +8,9 @@ namespace FancyZonesEditor.Utils
 {
     public static class StringUtils
     {
-        public static string ToDashCase(this string str)
+        public static string UpperCamelCaseToDashCase(this string str)
         {
+            // If it's single letter variable, leave it as it is
             if (str.Length == 1)
             {
                 return str;

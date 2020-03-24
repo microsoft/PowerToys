@@ -14,8 +14,7 @@ namespace FancyZonesEditor
 
         public override string ConvertName(string name)
         {
-            // Conversion to other naming conventaion goes here. Like SnakeCase, KebabCase etc.
-            return name.ToDashCase();
+            return name.UpperCamelCaseToDashCase();
         }
     }
 }
