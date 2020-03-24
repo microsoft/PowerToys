@@ -34,7 +34,6 @@
 @mixin ms-Icon--ChevronRightMed { content: "\E974"; }
 @mixin ms-Icon--CircleRing { content: "\EA3A"; }
 @mixin ms-Icon--FabricReportLibrary { content: "\F0A1"; }
-@mixin ms-Icon--PictureStretch { content: "\F525"; }
 
 
 // Classes
@@ -55,5 +54,4 @@
 .ms-Icon--ChevronRightMed:before { @include ms-Icon--ChevronRightMed }
 .ms-Icon--CircleRing:before { @include ms-Icon--CircleRing }
 .ms-Icon--FabricReportLibrary:before { @include ms-Icon--FabricReportLibrary }
-.ms-Icon--PictureStretch:before { @include ms-Icon--PictureStretch }
 

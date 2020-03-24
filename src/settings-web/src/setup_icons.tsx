@@ -17,7 +17,6 @@ export function setup_powertoys_icons(): void {
       'pt-power-rename': ( <PowerRenameSVG /> ),
       'pt-shortcut-guide': ( <ShortcutGuideSVG /> ),
       'pt-power-preview': ( <Icon iconName="FabricReportLibrary" /> ),
-      'pt-image-resizer': ( <Icon iconName="PictureStretch" /> ),
     }
   });
 }

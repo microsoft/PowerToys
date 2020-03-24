@@ -5,6 +5,9 @@
   "excludeThirdPartyIcons": false,
   "chunkSubsets": false,
   "hashFontFileName": false,
+  "subsetChunkSettings": {
+    "maxSubsetSize": 100
+  },
   "glyphs": [
     {
       "name": "GlobalNavButton",
@@ -73,10 +76,6 @@
     {
       "name": "FabricReportLibrary",
       "unicode": "F0A1"
-    },
-    {
-      "name": "PictureStretch",
-      "unicode": "F525"
     }
   ]
 }
