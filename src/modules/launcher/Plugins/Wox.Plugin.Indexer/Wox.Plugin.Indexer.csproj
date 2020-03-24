@@ -4,6 +4,10 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget></PlatformTarget>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="System.Data.OleDb" Version="4.7.0" />
     <PackageReference Include="tlbimp-Microsoft.Search.Interop" Version="1.0.0" />
