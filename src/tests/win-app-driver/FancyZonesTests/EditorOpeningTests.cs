@@ -6,10 +6,8 @@ using OpenQA.Selenium.Interactions;
 namespace PowerToysTests
 {
     [TestClass]
-    public class FancyZonesEditorOpeningTests : PowerToysSession
+    public class FancyZonesEditorOpeningTests : FancyZonesEditor
     {
-        WindowsElement editorWindow;
-
         void RemoveSettingsFile()
         {
             File.Delete(_zoneSettingsPath);
@@ -246,7 +244,6 @@ namespace PowerToysTests
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            CloseSettings();
             ExitPowerToys();
             TearDown();
         }
@@ -260,12 +257,7 @@ namespace PowerToysTests
         [TestCleanup]
         public void TestCleanup()
         {
-            //Close editor
-            if (editorWindow != null)
-            {
-                editorWindow.SendKeys(OpenQA.Selenium.Keys.Alt + OpenQA.Selenium.Keys.F4);
-                ShortWait();
-            }
+            CloseEditor();
 
             if (!Directory.Exists(_settingsFolderPath))
             {

@@ -8,42 +8,8 @@ using OpenQA.Selenium.Interactions;
 namespace PowerToysTests
 {
     [TestClass]
-    public class FancyZonesEditorCustomLayoutsTests : PowerToysSession
-    {
-        WindowsElement editorWindow;
-
-        private void ResetDefautZoneSettings()
-        {
-            string zoneSettings = "{\"app-zone-history\":[],\"devices\":[],\"custom-zone-sets\":[]}";
-            File.WriteAllText(_zoneSettingsPath, zoneSettings);
-        }
-
-        private void OpenEditor()
-        {
-            new Actions(session).KeyDown(OpenQA.Selenium.Keys.Command).SendKeys("`").KeyUp(OpenQA.Selenium.Keys.Command).Perform();
-            ShortWait();
-
-            editorWindow = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
-        }
-
-        private void OpenCustomLayouts()
-        {
-            WindowsElement customsTab = session.FindElementByName("Custom");
-            customsTab.Click();
-            string isSelected = customsTab.GetAttribute("SelectionItem.IsSelected");
-            Assert.AreEqual("True", isSelected, "Custom tab cannot be opened");
-        }
-
-        private void OpenCreatorWindow(string tabName, string creatorWindowName)
-        {
-            string elementXPath = "//Text[@Name=\"" + tabName + "\"]";
-            session.FindElementByXPath(elementXPath).Click();
-            session.FindElementByAccessibilityId("EditCustomButton").Click();
-
-            WindowsElement creatorWindow = session.FindElementByName(creatorWindowName);
-            Assert.IsNotNull(creatorWindow, "Creator window didn't open");
-        }
-
+    public class FancyZonesEditorCustomLayoutsTests : FancyZonesEditor
+    {       
         private void SetLayoutName(string name)
         {
             WindowsElement textBox = session.FindElementByClassName("TextBox");
@@ -51,12 +17,6 @@ namespace PowerToysTests
             textBox.SendKeys(Keys.Control + "a");
             textBox.SendKeys(Keys.Backspace);
             textBox.SendKeys(name);
-        }
-
-        private void ZoneCountTest(int canvasZoneCount, int gridZoneCount)
-        {
-            Assert.AreEqual(canvasZoneCount, session.FindElementsByClassName("CanvasZone").Count);
-            Assert.AreEqual(gridZoneCount, session.FindElementsByClassName("GridZone").Count);
         }
 
         private void CancelTest()
@@ -184,14 +144,12 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context, false);
-            ResetDefaultFancyZonesSettings(false);
-            ResetDefautZoneSettings(true);
+            ResetSettings();
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            CloseSettings();
             TearDown();
         }
 
@@ -209,22 +167,8 @@ namespace PowerToysTests
         [TestCleanup]
         public void TestCleanup()
         {
-            //Close editor
-            try
-            {
-                if (editorWindow != null)
-                {
-                    editorWindow.SendKeys(OpenQA.Selenium.Keys.Alt + OpenQA.Selenium.Keys.F4);
-                    ShortWait();
-                }
-            }
-            catch (OpenQA.Selenium.WebDriverException)
-            {
-                //editor has already closed
-            }
-
-            ResetDefautZoneSettings();
-            ExitPowerToys();
+            CloseEditor();
+            ResetDefautZoneSettings(false);
         }
     }
 }

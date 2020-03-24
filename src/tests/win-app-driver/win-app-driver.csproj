@@ -91,6 +91,7 @@
     <Compile Include="FancyZonesTests\EditorSettingsTests.cs" />
     <Compile Include="FancyZonesTests\EditorTemplatesApplyTests.cs" />
     <Compile Include="FancyZonesTests\EditorTemplatesEditTests.cs" />
+    <Compile Include="FancyZonesTests\FancyZonesEditor.cs" />
     <Compile Include="FancyZonesTests\FancyZonesSettingsTests.cs" />
     <Compile Include="PowerToysSession.cs" />
     <Compile Include="PowerToysTrayTests.cs" />
