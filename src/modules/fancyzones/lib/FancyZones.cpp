@@ -162,7 +162,8 @@ private:
 
     void OnEditorExitEvent() noexcept;
 
-    std::vector<HMONITOR> GetMonitorsSorted();
+    std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
+    std::vector<HMONITOR> GetMonitorsSorted() noexcept;
     bool MoveWindowIntoZoneByDirection(HMONITOR monitor, HWND window, DWORD vkCode, bool cycle);
 
     const HINSTANCE m_hinstance{};
@@ -1140,7 +1141,18 @@ void FancyZones::OnEditorExitEvent() noexcept
     JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
 }
 
-std::vector<HMONITOR> FancyZones::GetMonitorsSorted()
+std::vector<HMONITOR> FancyZones::GetMonitorsSorted() noexcept
+{
+    std::shared_lock readLock(m_lock);
+
+    auto monitorInfo = GetRawMonitorData();
+    OrderMonitors(monitorInfo);
+    std::vector<HMONITOR> output;
+    std::transform(std::begin(monitorInfo), std::end(monitorInfo), std::back_inserter(output), [](const auto& info) { return info.first; });
+    return output;
+}
+
+std::vector<std::pair<HMONITOR, RECT>> FancyZones::GetRawMonitorData() noexcept
 {
     std::shared_lock readLock(m_lock);
 
@@ -1155,23 +1167,7 @@ std::vector<HMONITOR> FancyZones::GetMonitorsSorted()
             monitorInfo.push_back({ monitor, mi.rcMonitor });
         }
     }
-
-    auto isGreater = [](const std::pair<HMONITOR, RECT>& lhs, const std::pair<HMONITOR, RECT>& rhs) {
-        if (lhs.second.left > rhs.second.left)
-        {
-            return true;
-        }
-        else if (lhs.second.left == rhs.second.left)
-        {
-            return lhs.second.top > rhs.second.top;
-        }
-        return false;
-    };
-    std::sort(std::begin(monitorInfo), std::end(monitorInfo), isGreater);
-
-    std::vector<HMONITOR> output;
-    std::transform(std::begin(monitorInfo), std::end(monitorInfo), std::back_inserter(output), [](const auto& info) { return info.first; });
-    return output;
+    return monitorInfo;
 }
 
 bool FancyZones::MoveWindowIntoZoneByDirection(HMONITOR monitor, HWND window, DWORD vkCode, bool cycle)
