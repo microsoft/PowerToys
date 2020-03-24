@@ -9,6 +9,8 @@
 #define IDI_RESIZE_PICTURES             105
 #define IDS_IMAGERESIZER                106
 #define IDS_SETTINGS_DESCRIPTION        107
+#define IDS_SETTINGS_HEADER             108
+#define IDS_SETTINGS_HEADER_DESCRIPTION 109
 
 // Next default values for new objects
 //

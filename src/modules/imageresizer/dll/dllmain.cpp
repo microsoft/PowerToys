@@ -69,6 +69,8 @@ public:
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(GET_RESOURCE_STRING(IDS_SETTINGS_DESCRIPTION));
+        settings.set_overview_link(L"https://github.com/microsoft/PowerToys/blob/master/src/modules/imageresizer/README.md");
+        settings.add_header_szLarge(L"imageresizer_settingsheader", GET_RESOURCE_STRING(IDS_SETTINGS_HEADER_DESCRIPTION), GET_RESOURCE_STRING(IDS_SETTINGS_HEADER));
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
