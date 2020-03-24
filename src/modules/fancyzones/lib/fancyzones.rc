@@ -12,6 +12,7 @@ BEGIN
     IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS          "During zone layout changes, windows assigned to a zone will match new size/positions"  
     IDS_SETTING_DESCRIPTION_VIRTUALDESKTOPCHANGE_MOVEWINDOWS   "Keep windows pinned to multiple desktops in the same zone when the active desktop changes"
     IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES           "Flash zones when the active FancyZones layout changes"
+    IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS   "Show zones on all monitors while dragging a window"
     IDS_SETTING_DESCRIPTION_ZONECOLOR                          "Zone Color (Default #9696A0)"
     IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR                  "Zone Border Color (Default #4B4B55)"
     IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR                 "Zone Highlight Color (Default #0078D7)"
