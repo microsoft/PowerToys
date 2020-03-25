@@ -45,7 +45,7 @@
 
                 <HyperlinkButton Content="Report a bug" Margin="0,14,0,0" NavigateUri="https://github.com/microsoft/PowerToys/issues" />
                 <HyperlinkButton Content="Request a feature"  NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
-                <HyperlinkButton Content="Privacy statement" NavigateUri="https://privacy.microsoft.com/en-us/privacystatement" />
+                <HyperlinkButton Content="Privacy statement" NavigateUri=" http://go.microsoft.com/fwlink/?LinkId=521839" />
             </StackPanel>
         </ScrollViewer>
     </Grid>
