@@ -83,11 +83,15 @@ void send_json_config_to_module(const std::wstring& module_key, const std::wstri
 
 void dispatch_json_config_to_modules(const json::JsonObject& powertoys_configs)
 {
+    const auto& powertoyName = powertoys_configs.Lookup(L"name").GetString();
+    send_json_config_to_module(powertoyName.c_str(), powertoys_configs.GetString().c_str());
+    
+    /*
     for (const auto& powertoy_element : powertoys_configs)
     {
         const auto element = powertoy_element.Value().Stringify();
         send_json_config_to_module(powertoy_element.Key().c_str(), element.c_str());
-    }
+    }*/
 };
 
 void dispatch_received_json(const std::wstring& json_to_parse)
@@ -222,7 +226,8 @@ void run_settings_window()
 
     // Arg 1: executable path.
     std::wstring executable_path = get_module_folderpath();
-    executable_path.append(L"\\netcoreapp3.1\\Microsoft.PowerToys.Settings.UI.Runner.exe");
+    //executable_path.append(L"\\netcoreapp3.1\\Microsoft.PowerToys.Settings.UI.Runner.exe");
+    executable_path.append(L"\\PowerToysSettings.exe");
 
     // Arg 2: pipe server. Generate unique names for the pipes, if getting a UUID is possible.
     std::wstring powertoys_pipe_name(L"\\\\.\\pipe\\powertoys_runner_");

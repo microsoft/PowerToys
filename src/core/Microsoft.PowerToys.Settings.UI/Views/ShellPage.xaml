@@ -52,7 +52,12 @@
                     <FontIcon Glyph="&#xE713;"/>
                 </winui:NavigationViewItem.Icon>
             </winui:NavigationViewItem>
-            <!--<winui:NavigationViewItem x:Uid="Shell_Main" Icon="Home" helpers:NavHelper.NavigateTo="views:MainPage" />
+            <winui:NavigationViewItem x:Uid="Shell_PowerPreview" Icon="Preview" helpers:NavHelper.NavigateTo="views:PowerPreview" >
+                <winui:NavigationViewItem.Background>
+                    <ImageBrush/>
+                </winui:NavigationViewItem.Background>
+            </winui:NavigationViewItem>
+            <!--
             <winui:NavigationViewItem x:Uid="Shell_Test1" Icon="Play" helpers:NavHelper.NavigateTo="views:Test1Page" />
             <winui:NavigationViewItem x:Uid="Shell_Test2" Icon="Refresh" helpers:NavHelper.NavigateTo="views:Test2Page" />
             <winui:NavigationViewItem x:Uid="Shell_Test3" Icon="Save" helpers:NavHelper.NavigateTo="views:Test3Page" />-->
