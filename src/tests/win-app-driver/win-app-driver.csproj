@@ -88,6 +88,7 @@
   <ItemGroup>
     <Compile Include="FancyZonesTests\EditorCanvasZoneResizeTests.cs" />
     <Compile Include="FancyZonesTests\EditorCustomLayoutsTests.cs" />
+    <Compile Include="FancyZonesTests\EditorGridZoneResizeTests.cs" />
     <Compile Include="FancyZonesTests\EditorOpeningTests.cs" />
     <Compile Include="FancyZonesTests\EditorSettingsTests.cs" />
     <Compile Include="FancyZonesTests\EditorTemplatesApplyTests.cs" />
