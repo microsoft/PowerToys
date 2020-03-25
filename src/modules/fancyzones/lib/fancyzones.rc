@@ -23,7 +23,7 @@ BEGIN
     IDS_SETTING_LAUNCH_EDITOR_DESCRIPTION                      "To launch the zone editor, select the Edit zones button below or press the zone editor hotkey anytime"
     IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL                     "Configure the zone editor hotkey"
     IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION                     "To exclude an application from snapping to zones add its name here (one per line). Excluded apps will react to the Windows Snap regardless of all other settings."
-    IDS_SETTINGS_HIGHLIGHT_OPACITY                             "Zone Opacity" 
+    IDS_SETTINGS_HIGHLIGHT_OPACITY                             "Zone opacity (%)" 
     IDS_FANCYZONES                                             L"FancyZones" 
 END
 
