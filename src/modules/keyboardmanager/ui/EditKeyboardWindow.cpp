@@ -91,6 +91,12 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
     });
 
+    //  Text block for information about remap key section.
+    TextBlock keyRemapInfoHeader;
+    keyRemapInfoHeader.Text(winrt::to_hstring("Select the key you want to remap, original key, and it's new output when pressed, the new key"));
+    keyRemapInfoHeader.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
+    keyRemapInfoHeader.Margin({ 0, 0, 0, 10 });
+
     // Table to display the key remaps
     Windows::UI::Xaml::Controls::StackPanel keyRemapTable;
     keyRemapTable.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
@@ -194,6 +200,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     });
 
     xamlContainer.Children().Append(header);
+    xamlContainer.Children().Append(keyRemapInfoHeader);
     xamlContainer.Children().Append(keyRemapTable);
     xamlContainer.Children().Append(addRemapKey);
     xamlContainer.UpdateLayout();
