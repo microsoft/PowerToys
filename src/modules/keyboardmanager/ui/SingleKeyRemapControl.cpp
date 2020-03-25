@@ -31,6 +31,8 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, const D
 
     // Delete row button
     Windows::UI::Xaml::Controls::Button deleteRemapKeys;
+    deleteRemapKeys.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    deleteRemapKeys.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     FontIcon deleteSymbol;
     deleteSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     deleteSymbol.Glyph(L"\xE74D");

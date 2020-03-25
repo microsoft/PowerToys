@@ -99,13 +99,14 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Header row of the keys remap table
     Windows::UI::Xaml::Controls::StackPanel tableHeaderRow;
-    tableHeaderRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    tableHeaderRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::AliceBlue() });
     tableHeaderRow.Spacing(100);
     tableHeaderRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
     // First header textblock in the header row of the keys remap table
     TextBlock originalKeyRemapHeader;
     originalKeyRemapHeader.Text(winrt::to_hstring("Original Key:"));
+    originalKeyRemapHeader.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     originalKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     originalKeyRemapHeader.Margin({ 0, 0, 0, 10 });
     tableHeaderRow.Children().Append(originalKeyRemapHeader);
@@ -113,6 +114,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Second header textblock in the header row of the keys remap table
     TextBlock newKeyRemapHeader;
     newKeyRemapHeader.Text(winrt::to_hstring("New Key:"));
+    newKeyRemapHeader.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     newKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     newKeyRemapHeader.Margin({ 0, 0, 0, 10 });
     tableHeaderRow.Children().Append(newKeyRemapHeader);
