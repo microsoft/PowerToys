@@ -9,14 +9,13 @@
     <AssemblyCopyright>Copyright (C) 2019 Microsoft Corp.</AssemblyCopyright>
   </PropertyGroup>
   <ItemGroup>
-    <AssemblyVersionFiles Include="Generated Files\AssemblyInfo.cs"/>
+    <AssemblyVersionFiles Include="Generated Files\AssemblyInfo.cs" />
   </ItemGroup>
   <Target Name="GenerateAssemblyInfo" BeforeTargets="PrepareForBuild">
     <ItemGroup>
       <HeaderLines Include="// Copyright (c) Microsoft Corporation" />
       <HeaderLines Include="// The Microsoft Corporation licenses this file to you under the MIT license." />
       <HeaderLines Include="// See the LICENSE file in the project root for more information." />
-
       <HeaderLines Include="#pragma warning disable SA1516" />
       <HeaderLines Include="using System.Reflection%3b" />
       <HeaderLines Include="using System.Resources%3b" />
@@ -36,13 +35,7 @@
       <HeaderLines Include="[assembly: AssemblyVersion(&quot;$(Version).0&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyFileVersion(&quot;$(Version).0&quot;)]" />
     </ItemGroup>
-    
-    <WriteLinesToFile
-      File="Generated Files\AssemblyInfo.cs"
-      Lines="@(HeaderLines)"
-      Overwrite="true"
-      Encoding="Unicode"
-      WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile File="Generated Files\AssemblyInfo.cs" Lines="@(HeaderLines)" Overwrite="true" Encoding="Unicode" WriteOnlyWhenDifferent="true" />
   </Target>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>

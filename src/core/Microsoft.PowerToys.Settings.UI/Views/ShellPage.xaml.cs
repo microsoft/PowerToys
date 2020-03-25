@@ -1,25 +1,79 @@
-﻿using System;
-using Microsoft.PowerToys.Settings.UI.Activation;
-using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.Services;
-using Microsoft.PowerToys.Settings.UI.ViewModels;
-
-using Windows.UI.Xaml.Controls;
+﻿// <copyright file="ShellPage.xaml.cs" company="Microsoft Corp">
+// Copyright (c) Microsoft Corp. All rights reserved.
+// </copyright>
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    // TODO WTS: Change the icons and titles for all NavigationViewItems in ShellPage.xaml.
+    using System;
+    using Microsoft.PowerToys.Settings.UI.Activation;
+    using Microsoft.PowerToys.Settings.UI.Helpers;
+    using Microsoft.PowerToys.Settings.UI.Services;
+    using Microsoft.PowerToys.Settings.UI.ViewModels;
+    using Windows.UI.Xaml.Controls;
+
+    /// <summary>
+    /// Root page.
+    /// </summary>
     public sealed partial class ShellPage : UserControl
     {
+        /// <summary>
+        /// Delcaration for the ipc callback function.
+        /// </summary>
+        /// <param name="msg">message.</param>
+        public delegate void IPCMessageCallback(string msg);
+
+        /// <summary>
+        /// Gets view model.
+        /// </summary>
         public ShellViewModel ViewModel { get; } = new ShellViewModel();
 
+        /// <summary>
+        /// A shell handler to be used to update contents of the shell dynamically from page within the frame.
+        /// </summary>
+        public static Microsoft.UI.Xaml.Controls.NavigationView ShellHandler = null;
+
+
+        /// <summary>
+        /// IPC callback function for restart elevated.
+        /// </summary>
+        public static IPCMessageCallback Restart_Elevated_Callback = null;
+
+
+        /// <summary>
+        /// IPC callback function for run on start up.
+        /// </summary>
+        public static IPCMessageCallback Run_OnStartUp_Callback = null;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ShellPage"/> class.
+        /// Shell page constructor.
+        /// </summary>
         public ShellPage()
         {
-            InitializeComponent();
-            
-            DataContext = ViewModel;
-            ViewModel.Initialize(shellFrame, navigationView, KeyboardAccelerators);
-            NavigationService.Navigate(typeof(MainPage));
+            this.InitializeComponent();
+
+            this.DataContext = this.ViewModel;
+            ShellHandler = this.navigationView;
+            this.ViewModel.Initialize(this.shellFrame, this.navigationView, this.KeyboardAccelerators);
+            this.shellFrame.Navigate(typeof(GeneralPage));
+        }
+
+        /// <summary>
+        /// Restart elevated callback function  initialization.
+        /// </summary>
+        /// <param name="implmentation">delegate function implementation.</param>
+        public void SetRestartElevatedCallback(IPCMessageCallback implmentation)
+        {
+            Restart_Elevated_Callback = implmentation;
+        }
+
+        /// <summary>
+        /// Run on start up callback function elevated initialization.
+        /// </summary>
+        /// <param name="implmentation">delegate function implementation.</param>
+        public void SetRunOnStartUpCallback(IPCMessageCallback implmentation)
+        {
+            Run_OnStartUp_Callback = implmentation;
         }
     }
 }

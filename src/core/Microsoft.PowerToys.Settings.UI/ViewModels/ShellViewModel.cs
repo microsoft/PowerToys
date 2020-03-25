@@ -1,24 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
-
-using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.Services;
-
-using Windows.System;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Navigation;
-
-using WinUI = Microsoft.UI.Xaml.Controls;
+﻿// <copyright file="ShellViewModel.cs" company="Microsoft Corp">
+// Copyright (c) Microsoft Corp. All rights reserved.
+// </copyright>
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using System.Windows.Input;
+    using Microsoft.PowerToys.Settings.UI.Helpers;
+    using Microsoft.PowerToys.Settings.UI.Services;
+    using Windows.System;
+    using Windows.UI.Xaml.Controls;
+    using Windows.UI.Xaml.Input;
+    using Windows.UI.Xaml.Navigation;
+    using WinUI = Microsoft.UI.Xaml.Controls;
+
     public class ShellViewModel : Observable
     {
         private readonly KeyboardAccelerator _altLeftKeyboardAccelerator = BuildKeyboardAccelerator(VirtualKey.Left, VirtualKeyModifiers.Menu);
+
         private readonly KeyboardAccelerator _backKeyboardAccelerator = BuildKeyboardAccelerator(VirtualKey.GoBack);
 
         private bool _isBackEnabled;

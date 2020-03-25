@@ -168,6 +168,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "powerpreview", "src\modules
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "powerpreviewTest", "src\modules\previewpane\powerpreviewTest\powerpreviewTest.vcxproj", "{47310AB4-9034-4BD1-8D8B-E88AD21A171B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4981CCD1-4CD9-4A49-B240-00AA46493FF8}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.PowerToys.Settings.UI.Lib", "src\core\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj", "{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -406,6 +413,14 @@ Global
 		{47310AB4-9034-4BD1-8D8B-E88AD21A171B}.Release|Any CPU.ActiveCfg = Release|Win32
 		{47310AB4-9034-4BD1-8D8B-E88AD21A171B}.Release|x64.ActiveCfg = Release|x64
 		{47310AB4-9034-4BD1-8D8B-E88AD21A171B}.Release|x64.Build.0 = Release|x64
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|x64.Build.0 = Debug|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|x64.ActiveCfg = Release|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -452,6 +467,7 @@ Global
 		{DA425894-6E13-404F-8DCB-78584EC0557A} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{217DF501-135C-4E38-BFC8-99D4821032EA} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{47310AB4-9034-4BD1-8D8B-E88AD21A171B} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

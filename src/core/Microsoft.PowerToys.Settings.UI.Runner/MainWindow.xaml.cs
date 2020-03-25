@@ -3,6 +3,7 @@ using System.Windows;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
 using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Views;
+using System.Threading;
 
 namespace Microsoft.PowerToys.Settings.UI.Runner
 {
@@ -20,11 +21,34 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         {
             // Hook up x:Bind source.
             WindowsXamlHost windowsXamlHost = sender as WindowsXamlHost;
-            ShellPage userControl = windowsXamlHost.GetUwpInternalObject() as ShellPage;
+            ShellPage shellPage = windowsXamlHost.GetUwpInternalObject() as ShellPage;
 
-            if (userControl != null)
+            if (shellPage != null)
             {
-                //userControl.XamlIslandMessage = this.WPFMessage;
+                shellPage.SetRestartElevatedCallback(delegate(string msg) 
+                {
+                    MessageBox.Show(
+                        msg,
+                        "Restart Elevated",
+                        MessageBoxButton.OK);
+
+                    Program.ipcmanager.SendMessage(msg);
+
+                    int milliseconds = 2000;
+                    Thread.Sleep(milliseconds);
+
+                    System.Windows.Application.Current.Shutdown();
+                });
+
+                shellPage.SetRunOnStartUpCallback(delegate (string msg)
+                {
+                    MessageBox.Show(
+                        msg,
+                        "Run On Start Up",
+                        MessageBoxButton.OK);
+
+                    Program.ipcmanager.SendMessage(msg);
+                });
             }
         }
 
