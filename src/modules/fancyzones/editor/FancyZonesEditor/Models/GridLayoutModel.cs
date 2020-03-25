@@ -171,65 +171,67 @@ namespace FancyZonesEditor.Models
             layout.ColumnPercents = colPercents;
         }
 
+        private struct GridLayoutInfo
+        {
+            public int Rows { get; set; }
+
+            public int Columns { get; set; }
+
+            public int[] RowsPercentage { get; set; }
+
+            public int[] ColumnsPercentage { get; set; }
+
+            public int[][] CellChildMap { get; set; }
+        }
+
+        private struct GridLayoutJson
+        {
+            public string Uuid { get; set; }
+
+            public string Name { get; set; }
+
+            public string Type { get; set; }
+
+            public GridLayoutInfo Info { get; set; }
+        }
+
         // PersistData
         // Implements the LayoutModel.PersistData abstract method
         protected override void PersistData()
         {
+            GridLayoutInfo layoutInfo = new GridLayoutInfo
+            {
+                Rows = Rows,
+                Columns = Columns,
+                RowsPercentage = RowPercents,
+                ColumnsPercentage = ColumnPercents,
+                CellChildMap = new int[Rows][],
+            };
+            for (int row = 0; row < Rows; row++)
+            {
+                layoutInfo.CellChildMap[row] = new int[Columns];
+                for (int col = 0; col < Columns; col++)
+                {
+                    layoutInfo.CellChildMap[row][col] = CellChildMap[row, col];
+                }
+            }
+
+            GridLayoutJson jsonObj = new GridLayoutJson
+            {
+                Uuid = "{" + Guid.ToString().ToUpper() + "}",
+                Name = Name,
+                Type = "grid",
+                Info = layoutInfo,
+            };
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = new DashCaseNamingPolicy(),
+            };
+
             try
             {
-                FileStream outputStream = File.Open(Settings.AppliedZoneSetTmpFile, FileMode.Create);
-                using (var writer = new Utf8JsonWriter(outputStream, options: default))
-                {
-                    writer.WriteStartObject();
-                    writer.WriteString("uuid", "{" + Guid.ToString().ToUpper() + "}");
-                    writer.WriteString("name", Name);
-
-                    writer.WriteString("type", "grid");
-
-                    writer.WriteStartObject("info");
-
-                    writer.WriteNumber("rows", Rows);
-                    writer.WriteNumber("columns", Columns);
-
-                    writer.WriteStartArray("rows-percentage");
-                    for (int row = 0; row < Rows; row++)
-                    {
-                        writer.WriteNumberValue(RowPercents[row]);
-                    }
-
-                    writer.WriteEndArray();
-
-                    writer.WriteStartArray("columns-percentage");
-                    for (int col = 0; col < Columns; col++)
-                    {
-                        writer.WriteNumberValue(ColumnPercents[col]);
-                    }
-
-                    writer.WriteEndArray();
-
-                    writer.WriteStartArray("cell-child-map");
-                    for (int row = 0; row < Rows; row++)
-                    {
-                        writer.WriteStartArray();
-                        for (int col = 0; col < Columns; col++)
-                        {
-                            writer.WriteNumberValue(CellChildMap[row, col]);
-                        }
-
-                        writer.WriteEndArray();
-                    }
-
-                    writer.WriteEndArray();
-
-                    // end info object
-                    writer.WriteEndObject();
-
-                    // end root object
-                    writer.WriteEndObject();
-                    writer.Flush();
-                }
-
-                outputStream.Close();
+                string jsonString = JsonSerializer.Serialize(jsonObj, options);
+                File.WriteAllText(Settings.AppliedZoneSetTmpFile, jsonString);
             }
             catch (Exception ex)
             {

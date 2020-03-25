@@ -135,23 +135,27 @@ namespace FancyZonesEditor.Models
             }
         }
 
+        private struct DeletedCustomZoneSetsWrapper
+        {
+            public List<string> DeletedCustomZoneSets { get; set; }
+        }
+
         public static void SerializeDeletedCustomZoneSets()
         {
+            DeletedCustomZoneSetsWrapper deletedLayouts = new DeletedCustomZoneSetsWrapper
+            {
+                DeletedCustomZoneSets = _deletedCustomModels,
+            };
+
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = new DashCaseNamingPolicy(),
+            };
+
             try
             {
-                FileStream outputStream = File.Open(Settings.CustomZoneSetsTmpFile, FileMode.Create);
-                var writer = new Utf8JsonWriter(outputStream, options: default);
-                writer.WriteStartObject();
-                writer.WriteStartArray("deleted-custom-zone-sets");
-                foreach (string zoneSet in _deletedCustomModels)
-                {
-                    writer.WriteStringValue(zoneSet);
-                }
-
-                writer.WriteEndArray();
-                writer.WriteEndObject();
-                writer.Flush();
-                outputStream.Close();
+                string jsonString = JsonSerializer.Serialize(deletedLayouts, options);
+                File.WriteAllText(Settings.CustomZoneSetsTmpFile, jsonString);
             }
             catch (Exception ex)
             {
@@ -258,51 +262,75 @@ namespace FancyZonesEditor.Models
             Apply();
         }
 
+        private struct ActiveZoneSetWrapper
+        {
+            public string Uuid { get; set; }
+
+            public string Type { get; set; }
+        }
+
+        private struct AppliedZoneSet
+        {
+            public string DeviceId { get; set; }
+
+            public ActiveZoneSetWrapper ActiveZoneset { get; set; }
+
+            public bool EditorShowSpacing { get; set; }
+
+            public int EditorSpacing { get; set; }
+
+            public int EditorZoneCount { get; set; }
+        }
+
         public void Apply()
         {
+            ActiveZoneSetWrapper activeZoneSet = new ActiveZoneSetWrapper
+            {
+                Uuid = "{" + Guid.ToString().ToUpper() + "}",
+            };
+
+            switch (Type)
+            {
+                case LayoutType.Focus:
+                    activeZoneSet.Type = "focus";
+                    break;
+                case LayoutType.Rows:
+                    activeZoneSet.Type = "rows";
+                    break;
+                case LayoutType.Columns:
+                    activeZoneSet.Type = "columns";
+                    break;
+                case LayoutType.Grid:
+                    activeZoneSet.Type = "grid";
+                    break;
+                case LayoutType.PriorityGrid:
+                    activeZoneSet.Type = "priority-grid";
+                    break;
+                case LayoutType.Custom:
+                    activeZoneSet.Type = "custom";
+                    break;
+            }
+
+            Settings settings = ((App)Application.Current).ZoneSettings;
+
+            AppliedZoneSet zoneSet = new AppliedZoneSet
+            {
+                DeviceId = Settings.UniqueKey,
+                ActiveZoneset = activeZoneSet,
+                EditorShowSpacing = settings.ShowSpacing,
+                EditorSpacing = settings.Spacing,
+                EditorZoneCount = settings.ZoneCount,
+            };
+
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = new DashCaseNamingPolicy(),
+            };
+
             try
             {
-                FileStream outputStream = File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Create);
-                var writer = new Utf8JsonWriter(outputStream, options: default);
-
-                writer.WriteStartObject();
-                writer.WriteString("device-id", Settings.UniqueKey);
-
-                writer.WriteStartObject("active-zoneset");
-                writer.WriteString("uuid", "{" + Guid.ToString().ToUpper() + "}");
-                switch (Type)
-                {
-                    case LayoutType.Focus:
-                        writer.WriteString("type", "focus");
-                        break;
-                    case LayoutType.Rows:
-                        writer.WriteString("type", "rows");
-                        break;
-                    case LayoutType.Columns:
-                        writer.WriteString("type", "columns");
-                        break;
-                    case LayoutType.Grid:
-                        writer.WriteString("type", "grid");
-                        break;
-                    case LayoutType.PriorityGrid:
-                        writer.WriteString("type", "priority-grid");
-                        break;
-                    case LayoutType.Custom:
-                        writer.WriteString("type", "custom");
-                        break;
-                }
-
-                writer.WriteEndObject();
-
-                Settings settings = ((App)Application.Current).ZoneSettings;
-
-                writer.WriteBoolean("editor-show-spacing", settings.ShowSpacing);
-                writer.WriteNumber("editor-spacing", settings.Spacing);
-                writer.WriteNumber("editor-zone-count", settings.ZoneCount);
-
-                writer.WriteEndObject();
-                writer.Flush();
-                outputStream.Close();
+                string jsonString = JsonSerializer.Serialize(zoneSet, options);
+                File.WriteAllText(Settings.ActiveZoneSetTmpFile, jsonString);
             }
             catch (Exception ex)
             {
