@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "EditKeyboardWindow.h"
+#include "SingleKeyRemapControl.h"
 
 LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -85,54 +86,115 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     cancelButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     cancelButton.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     cancelButton.Content(winrt::box_value(winrt::to_hstring("Cancel")));
+    cancelButton.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+        // Close the window since settings do not need to be saved
+        PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
+    });
 
-    // Header Apply button
-    Button applyButton;
-    applyButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    applyButton.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
-    applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
+    // Table to display the key remaps
+    Windows::UI::Xaml::Controls::StackPanel keyRemapTable;
+    keyRemapTable.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    keyRemapTable.Margin({ 10, 10, 10, 20 });
+    keyRemapTable.Spacing(10);
 
-    // Table to display the remap keys
-    Windows::UI::Xaml::Controls::StackPanel remapTable;
-    remapTable.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    remapTable.Margin({ 10, 10, 10, 20 });
-    remapTable.Spacing(10);
-
-    // Header row of the remap keys table
+    // Header row of the keys remap table
     Windows::UI::Xaml::Controls::StackPanel tableHeaderRow;
     tableHeaderRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     tableHeaderRow.Spacing(100);
     tableHeaderRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
-    // First header textblock in the header row of the remap keys table
-    TextBlock originalRemapHeader;
-    originalRemapHeader.Text(winrt::to_hstring("Original Key:"));
-    originalRemapHeader.FontWeight(Text::FontWeights::Bold());
-    originalRemapHeader.Margin({ 0, 0, 0, 10 });
-    tableHeaderRow.Children().Append(originalRemapHeader);
+    // First header textblock in the header row of the keys remap table
+    TextBlock originalKeyRemapHeader;
+    originalKeyRemapHeader.Text(winrt::to_hstring("Original Key:"));
+    originalKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
+    originalKeyRemapHeader.Margin({ 0, 0, 0, 10 });
+    tableHeaderRow.Children().Append(originalKeyRemapHeader);
 
-    // Second header textblock in the header row of the shortcut table
-    TextBlock newRemapHeader;
-    newRemapHeader.Text(winrt::to_hstring("New Key:"));
-    newRemapHeader.FontWeight(Text::FontWeights::Bold());
-    newRemapHeader.Margin({ 0, 0, 0, 10 });
-    tableHeaderRow.Children().Append(newRemapHeader);
+    // Second header textblock in the header row of the keys remap table
+    TextBlock newKeyRemapHeader;
+    newKeyRemapHeader.Text(winrt::to_hstring("New Key:"));
+    newKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
+    newKeyRemapHeader.Margin({ 0, 0, 0, 10 });
+    tableHeaderRow.Children().Append(newKeyRemapHeader);
 
-    remapTable.Children().Append(tableHeaderRow);
+    keyRemapTable.Children().Append(tableHeaderRow);
 
+    // Message to display success/failure of saving settings.
+    TextBlock settingsMessage;
 
+    // Main Header Apply button
+    Button applyButton;
+    applyButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    applyButton.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
+    applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
+    applyButton.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+        bool isSuccess = true;
+        // Clear existing Key Remaps
+        keyboardManagerState.ClearSingleKeyRemaps();
 
+        // Save the keys that are valid and report if any of them were invalid
+        for (unsigned int i = 1; i < keyRemapTable.Children().Size(); i++)
+        {
+            StackPanel currentRow = keyRemapTable.Children().GetAt(i).as<StackPanel>();
+            hstring originalKeyString = currentRow.Children().GetAt(0).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
+            hstring newKeyString = currentRow.Children().GetAt(1).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
+            if (!originalKeyString.empty() && !newKeyString.empty())
+            {
+                DWORD originalKey = std::stoi(originalKeyString.c_str());
+                DWORD newKey = std::stoi(newKeyString.c_str());
+                keyboardManagerState.AddSingleKeyRemap(originalKey, newKey);
+            }
+            else
+            {
+                isSuccess = false;
+            }
+        }
 
+        if (isSuccess)
+        {
+            settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Green() });
+            settingsMessage.Text(winrt::to_hstring("Remapping successful!"));
+        }
+        else
+        {
+            settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Red() });
+            settingsMessage.Text(winrt::to_hstring("All remappings were not successfully applied."));
+        }
+    });
 
     header.Children().Append(headerText);
     header.Children().Append(cancelButton);
     header.Children().Append(applyButton);
+    header.Children().Append(settingsMessage);
+
+    // Store handle of edit keyboard window
+    SingleKeyRemapControl::EditKeyboardWindowHandle = _hWndEditKeyboardWindow;
+    // Store keyboard manager state
+    SingleKeyRemapControl::keyboardManagerState = &keyboardManagerState;
+
+    // Load existing remaps into UI
+    for (const auto& it : keyboardManagerState.singleKeyReMap)
+    {
+        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, it.first, it.second);
+    }
+
+    // Add remap key button
+    Windows::UI::Xaml::Controls::Button addRemapKey;
+    FontIcon plusSymbol;
+    plusSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
+    plusSymbol.Glyph(L"\xE109");
+    addRemapKey.Content(plusSymbol);
+    addRemapKey.Margin({ 10 });
+    addRemapKey.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable);
+    });
 
     xamlContainer.Children().Append(header);
-    xamlContainer.Children().Append(remapTable);
+    xamlContainer.Children().Append(keyRemapTable);
+    xamlContainer.Children().Append(addRemapKey);
     xamlContainer.UpdateLayout();
-
     desktopSource.Content(xamlContainer);
+
     ////End XAML Island section
     if (_hWndEditKeyboardWindow)
     {
