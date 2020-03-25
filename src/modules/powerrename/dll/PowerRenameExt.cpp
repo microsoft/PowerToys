@@ -21,7 +21,7 @@ struct InvokeStruct
 CPowerRenameMenu::CPowerRenameMenu()
 {
     ModuleAddRef();
-    app_name = GET_RESOURCE_STRING(IDS_POWERRENAME);
+    app_name = GET_RESOURCE_STRING(IDS_POWERRENAME_APP_NAME);
 }
 
 CPowerRenameMenu::~CPowerRenameMenu()

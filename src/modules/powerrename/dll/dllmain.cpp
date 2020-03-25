@@ -295,7 +295,7 @@ public:
     PowerRenameModule()
     {
         init_settings();
-        app_name = GET_RESOURCE_STRING(IDS_POWERRENAME);
+        app_name = GET_RESOURCE_STRING(IDS_POWERRENAME_APP_NAME);
     }
 
     ~PowerRenameModule(){};
