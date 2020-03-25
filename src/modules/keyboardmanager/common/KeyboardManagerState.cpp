@@ -134,7 +134,13 @@ std::vector<DWORD> KeyboardManagerState::GetDetectedShortcut()
 {
     hstring remapKeyString = currentSingleKeyRemapTextBlock.Text();
     std::wstring remapKeyWString = remapKeyString.c_str();
-    return std::stoi(remapKeyWString);
+    DWORD remapKey = NULL;
+    if (!remapKeyString.empty())
+    {
+        remapKey = std::stoul(remapKeyWString);
+    }
+
+    return remapKey;
 }
 
 // Function which can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.

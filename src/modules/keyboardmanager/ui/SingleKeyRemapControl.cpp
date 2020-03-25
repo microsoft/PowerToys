@@ -75,7 +75,10 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
     detectRemapKeyBox.PrimaryButtonClick([=, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
         // Save the detected key in the linked text block
         DWORD detectedKey = keyboardManagerState.GetDetectedSingleRemapKey();
-        linkedRemapText.Text(winrt::to_hstring((unsigned int)detectedKey));
+        if (detectedKey != NULL)
+        {
+            linkedRemapText.Text(winrt::to_hstring((unsigned int)detectedKey));
+        }
 
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
