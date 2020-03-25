@@ -24,9 +24,7 @@
     <system:String x:Key="language">Мова</system:String>
     <system:String x:Key="maxShowResults">Максимальна кількість результатів</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ігнорувати гарячі клавіші в повноекранному режимі</system:String>
-    <system:String x:Key="pythonDirectory">Директорія Python</system:String>
     <system:String x:Key="autoUpdates">Автоматичне оновлення</system:String>
-    <system:String x:Key="selectPythonDirectory">Вибрати</system:String>
     <system:String x:Key="hideOnStartup">Сховати Wox при запуску системи</system:String>
 
     <!--Setting Plugin-->

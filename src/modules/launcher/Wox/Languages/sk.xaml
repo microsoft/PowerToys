@@ -28,9 +28,7 @@
     <system:String x:Key="LastQueryEmpty">Prázdne</system:String>
     <system:String x:Key="maxShowResults">Max. výsledkov</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignorovať klávesové skraty v režime na celú obrazovku</system:String>
-    <system:String x:Key="pythonDirectory">Priečinok s Pythonom</system:String>
     <system:String x:Key="autoUpdates">Automatická aktualizácia</system:String>
-    <system:String x:Key="selectPythonDirectory">Vybrať</system:String>
     <system:String x:Key="hideOnStartup">Schovať Wox po spustení</system:String>
     <system:String x:Key="hideNotifyIcon">Schovať ikonu v oblasti oznámení</system:String>
 

@@ -69,7 +69,6 @@
     <Compile Include="Plugin\JsonPRCModel.cs" />
     <Compile Include="Plugin\PluginConfig.cs" />
     <Compile Include="Plugin\PluginManager.cs" />
-    <Compile Include="Plugin\PythonPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resource\FontHelper.cs" />
     <Compile Include="Resource\Theme.cs" />
