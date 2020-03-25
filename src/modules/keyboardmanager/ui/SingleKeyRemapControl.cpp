@@ -102,7 +102,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
     detectRemapKeyBox.Content(stackPanel);
 
     // Configure the keyboardManagerState to store the UI information.
-    keyboardManagerState.ConfigureDetectShortcutUI(remapKey);
+    keyboardManagerState.ConfigureDetectSingleKeyRemapUI(remapKey);
 
     // Show the dialog
     detectRemapKeyBox.ShowAsync();

@@ -3,7 +3,7 @@
 
 // Constructor
 KeyboardManagerState::KeyboardManagerState() :
-    uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutTextBlock(nullptr)
+    uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutTextBlock(nullptr), currentSingleKeyRemapTextBlock(nullptr)
 {
 }
 
@@ -129,10 +129,10 @@ std::vector<DWORD> KeyboardManagerState::GetDetectedShortcut()
     return convertWStringVectorToIntegerVector<DWORD>(detectedShortcutVector);
 }
 
-// Function to return the currently detected shortcut which is displayed on the UI
+// Function to return the currently detected remap key which is displayed on the UI
  DWORD KeyboardManagerState::GetDetectedSingleRemapKey()
 {
-    hstring remapKeyString = currentShortcutTextBlock.Text();
+    hstring remapKeyString = currentSingleKeyRemapTextBlock.Text();
     std::wstring remapKeyWString = remapKeyString.c_str();
     return std::stoi(remapKeyWString);
 }
