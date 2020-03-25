@@ -83,6 +83,28 @@ public:
     IFACEMETHODIMP_(void)
     MoveWindowsOnActiveZoneSetChange() noexcept;
     IFACEMETHODIMP_(COLORREF)
+    GetZoneColor() noexcept
+    {
+        // Skip the leading # and convert to long
+        const auto color = m_settings->GetSettings()->zoneColor;
+        const auto tmp = std::stol(color.substr(1), nullptr, 16);
+        const auto nR = (tmp & 0xFF0000) >> 16;
+        const auto nG = (tmp & 0xFF00) >> 8;
+        const auto nB = (tmp & 0xFF);
+        return RGB(nR, nG, nB);
+    }
+    IFACEMETHODIMP_(COLORREF)
+    GetZoneBorderColor() noexcept
+    {
+        // Skip the leading # and convert to long
+        const auto color = m_settings->GetSettings()->zoneBorderColor;
+        const auto tmp = std::stol(color.substr(1), nullptr, 16);
+        const auto nR = (tmp & 0xFF0000) >> 16;
+        const auto nG = (tmp & 0xFF00) >> 8;
+        const auto nB = (tmp & 0xFF);
+        return RGB(nR, nG, nB);
+    }
+    IFACEMETHODIMP_(COLORREF)
     GetZoneHighlightColor() noexcept
     {
         // Skip the leading # and convert to long
@@ -109,6 +131,12 @@ public:
     GetZoneHighlightOpacity() noexcept
     {
         return m_settings->GetSettings()->zoneHighlightOpacity;
+    }
+
+    IFACEMETHODIMP_(bool)
+    isMakeDraggedWindowTransparentActive() noexcept
+    {
+        return m_settings->GetSettings()->makeDraggedWindowTransparent;
     }
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
@@ -927,6 +955,7 @@ void FancyZones::MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT cons
     }
     else if (m_zoneWindowMoveSize)
     {
+        m_zoneWindowMoveSize->RestoreOrginalTransparency();
         m_zoneWindowMoveSize = nullptr;
         for (auto [keyMonitor, zoneWindow] : m_zoneWindowMap)
         {
@@ -996,10 +1025,12 @@ void FancyZones::MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen,
             {
                 // Drag got disabled, tell it to cancel and hide all windows
                 m_zoneWindowMoveSize = nullptr;
+
                 for (auto [keyMonitor, zoneWindow] : m_zoneWindowMap)
                 {
                     if (zoneWindow)
                     {
+                        zoneWindow->RestoreOrginalTransparency();
                         zoneWindow->HideZoneWindow();
                     }
                 }
@@ -1012,14 +1043,14 @@ void FancyZones::MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen,
                     if (iter->second != m_zoneWindowMoveSize)
                     {
                         // The drag has moved to a different monitor.
-                        auto const isDragEnabled = m_zoneWindowMoveSize->IsDragEnabled();
-                        // only hide if the option to show all zones is off
+                        m_zoneWindowMoveSize->RestoreOrginalTransparency();
+
                         if (!m_settings->GetSettings()->showZonesOnAllMonitors)
                         {
                             m_zoneWindowMoveSize->HideZoneWindow();
                         }
                         m_zoneWindowMoveSize = iter->second;
-                        m_zoneWindowMoveSize->MoveSizeEnter(m_windowMoveSize, isDragEnabled);
+                        m_zoneWindowMoveSize->MoveSizeEnter(m_windowMoveSize, m_zoneWindowMoveSize->IsDragEnabled());
                     }
                     m_zoneWindowMoveSize->MoveSizeUpdate(ptScreen, m_dragEnabled);
                 }

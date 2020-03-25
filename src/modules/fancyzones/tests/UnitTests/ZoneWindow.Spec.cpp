@@ -18,6 +18,16 @@ namespace FancyZonesUnitTests
         IFACEMETHODIMP_(void)
         MoveWindowsOnActiveZoneSetChange() noexcept {};
         IFACEMETHODIMP_(COLORREF)
+        GetZoneColor() noexcept
+        {
+            return RGB(0xFF, 0xFF, 0xFF);
+        }
+        IFACEMETHODIMP_(COLORREF)
+        GetZoneBorderColor() noexcept
+        {
+            return RGB(0xFF, 0xFF, 0xFF);
+        }
+        IFACEMETHODIMP_(COLORREF)
         GetZoneHighlightColor() noexcept
         {
             return RGB(0xFF, 0xFF, 0xFF);
@@ -31,6 +41,11 @@ namespace FancyZonesUnitTests
         GetZoneHighlightOpacity() noexcept
         {
             return 100;
+        }
+        IFACEMETHODIMP_(bool)
+        isMakeDraggedWindowTransparentActive() noexcept
+        {
+            return true;
         }
 
         IZoneWindow* m_zoneWindow;
