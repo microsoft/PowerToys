@@ -9,11 +9,12 @@ namespace json
     {
         try
         {
-            std::wifstream file(file_name.data(), std::ios::binary);
+            std::ifstream file(file_name.data(), std::ios::binary);
             if (file.is_open())
             {
-                using isbi = std::istreambuf_iterator<wchar_t>;
-                return JsonValue::Parse(std::wstring{ isbi{ file }, isbi{} }).GetObjectW();
+                using isbi = std::istreambuf_iterator<char>;
+                std::string obj_str{ isbi{ file }, isbi{} };
+                return JsonValue::Parse(winrt::to_hstring(obj_str)).GetObjectW();
             }
             return std::nullopt;
         }
@@ -25,6 +26,7 @@ namespace json
 
     void to_file(std::wstring_view file_name, const JsonObject& obj)
     {
-        std::wofstream{ file_name.data(), std::ios::binary } << obj.Stringify().c_str();
+        std::wstring obj_str{ obj.Stringify().c_str() };
+        std::ofstream{ file_name.data(), std::ios::binary } << winrt::to_string(obj_str);
     }
 }
