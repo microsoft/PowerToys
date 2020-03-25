@@ -377,13 +377,14 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
         if (ctrl)
         {
-            if ((info->vkCode >= '0') && (info->vkCode <= '9'))
-            {
-                // Win+Ctrl+Number will cycle through ZoneSets
-                Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
-                CycleActiveZoneSet(info->vkCode);
-                return true;
-            }
+            // Temporarily disable Win+Ctrl+Number functionality
+            //if ((info->vkCode >= '0') && (info->vkCode <= '9'))
+            //{
+            //    // Win+Ctrl+Number will cycle through ZoneSets
+            //    Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
+            //    CycleActiveZoneSet(info->vkCode);
+            //    return true;
+            //}
         }
         else if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT))
         {
@@ -395,13 +396,14 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
             }
         }
     }
-    else if (m_inMoveSize && (info->vkCode >= '0') && (info->vkCode <= '9'))
-    {
-        // This allows you to cycle through ZoneSets while dragging a window
-        Trace::FancyZones::OnKeyDown(info->vkCode, win, false /*control*/, true /*inMoveSize*/);
-        CycleActiveZoneSet(info->vkCode);
-        return false;
-    }
+    // Temporarily disable Win+Ctrl+Number functionality
+    //else if (m_inMoveSize && (info->vkCode >= '0') && (info->vkCode <= '9'))
+    //{
+    //    // This allows you to cycle through ZoneSets while dragging a window
+    //    Trace::FancyZones::OnKeyDown(info->vkCode, win, false /*control*/, true /*inMoveSize*/);
+    //    CycleActiveZoneSet(info->vkCode);
+    //    return false;
+    //}
     if (m_dragEnabled && shift)
     {
         return true;
