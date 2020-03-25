@@ -21,6 +21,7 @@
             <TextBlock Text="Sizes" 
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
+            <!-- TO DO: Don't know if a listview with these items is the best solution here -->
             <ListView Margin="{StaticResource SmallTopMargin}" Padding="-12,0,0,0" SelectionMode="None" ItemsSource="{x:Bind Sizes, Mode=OneWay}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="local:ResizeSize">
