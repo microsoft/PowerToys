@@ -133,6 +133,12 @@ public:
         return m_settings->GetSettings()->zoneHighlightOpacity;
     }
 
+    IFACEMETHODIMP_(bool)
+    isMakeDraggedWindowTransparentActive() noexcept
+    {
+        return m_settings->GetSettings()->makeDraggedWindowTransparent;
+    }
+
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void OnDisplayChange(DisplayChangeType changeType) noexcept;
     void AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept;
@@ -1019,7 +1025,7 @@ void FancyZones::MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen,
             {
                 // Drag got disabled, tell it to cancel and hide all windows
                 m_zoneWindowMoveSize = nullptr;
-                
+
                 for (auto [keyMonitor, zoneWindow] : m_zoneWindowMap)
                 {
                     if (zoneWindow)
@@ -1037,15 +1043,14 @@ void FancyZones::MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen,
                     if (iter->second != m_zoneWindowMoveSize)
                     {
                         // The drag has moved to a different monitor.
-                        auto const isDragEnabled = m_zoneWindowMoveSize->IsDragEnabled();
-                        // only hide if the option to show all zones is off
+                        m_zoneWindowMoveSize->RestoreOrginalTransparency();
+
                         if (!m_settings->GetSettings()->showZonesOnAllMonitors)
                         {
-                            m_zoneWindowMoveSize->RestoreOrginalTransparency();
                             m_zoneWindowMoveSize->HideZoneWindow();
                         }
                         m_zoneWindowMoveSize = iter->second;
-                        m_zoneWindowMoveSize->MoveSizeEnter(m_windowMoveSize, isDragEnabled);
+                        m_zoneWindowMoveSize->MoveSizeEnter(m_windowMoveSize, m_zoneWindowMoveSize->IsDragEnabled());
                     }
                     m_zoneWindowMoveSize->MoveSizeUpdate(ptScreen, m_dragEnabled);
                 }

@@ -171,6 +171,7 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingBoolean(settings.appLastZone_moveWindows, "MoveWindowsToLastZoneOnAppOpening"),
         TraceLoggingBoolean(settings.use_cursorpos_editor_startupscreen, "UseCursorPosOnEditorStartup"),
         TraceLoggingBoolean(settings.showZonesOnAllMonitors, "ShowZonesOnAllMonitors"),
+        TraceLoggingBoolean(settings.makeDraggedWindowTransparent, "MakeDraggedWindowTransparent"),
         TraceLoggingWideString(settings.zoneColor.c_str(), "ZoneColor"),
         TraceLoggingWideString(settings.zoneBorderColor.c_str(), "ZoneBorderColor"),
         TraceLoggingWideString(settings.zoneHightlightColor.c_str(), "ZoneHighlightColor"),

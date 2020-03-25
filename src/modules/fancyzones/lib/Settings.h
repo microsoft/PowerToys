@@ -15,9 +15,10 @@ struct Settings
     bool appLastZone_moveWindows = false;
     bool use_cursorpos_editor_startupscreen = true;
     bool showZonesOnAllMonitors = false;
-    std::wstring zoneColor = L"#9696a0";
-    std::wstring zoneBorderColor = L"#4b4b55";
-    std::wstring zoneHightlightColor = L"#0078D7";
+    bool makeDraggedWindowTransparent = true;
+    std::wstring zoneColor = L"#F5FCFF";
+    std::wstring zoneBorderColor = L"#FFFFFF";
+    std::wstring zoneHightlightColor = L"#008CFF";
     int zoneHighlightOpacity = 50;
     PowerToysSettings::HotkeyObject editorHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_OEM_3);
     std::wstring excludedApps = L"";

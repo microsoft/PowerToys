@@ -42,6 +42,11 @@ namespace FancyZonesUnitTests
         {
             return 100;
         }
+        IFACEMETHODIMP_(bool)
+        isMakeDraggedWindowTransparentActive() noexcept
+        {
+            return true;
+        }
 
         IZoneWindow* m_zoneWindow;
     };

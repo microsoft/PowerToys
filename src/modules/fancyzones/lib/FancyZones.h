@@ -109,6 +109,10 @@ interface __declspec(uuid("{5C8D99D6-34B2-4F4A-A8E5-7483F6869775}")) IZoneWindow
      * @returns Integer in range [0, 100] indicating opacity of highlited zone (while giving zone layout hints).
      */
     IFACEMETHOD_(int, GetZoneHighlightOpacity)() = 0;
+    /**
+     * @returns Bool indicating if dragged window should be transparrent 
+     */
+    IFACEMETHOD_(bool, isMakeDraggedWindowTransparentActive) () = 0;
 };
 
 winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept;

@@ -35,6 +35,7 @@ namespace FancyZonesUnitTests
         Assert::AreEqual(expected.appLastZone_moveWindows, actual.appLastZone_moveWindows);
         Assert::AreEqual(expected.use_cursorpos_editor_startupscreen, actual.use_cursorpos_editor_startupscreen);
         Assert::AreEqual(expected.showZonesOnAllMonitors, actual.showZonesOnAllMonitors);
+        Assert::AreEqual(expected.makeDraggedWindowTransparent, actual.makeDraggedWindowTransparent);
         Assert::AreEqual(expected.zoneColor.c_str(), actual.zoneColor.c_str());
         Assert::AreEqual(expected.zoneBorderColor.c_str(), actual.zoneBorderColor.c_str());
         Assert::AreEqual(expected.zoneHightlightColor.c_str(), actual.zoneHightlightColor.c_str());
@@ -109,6 +110,7 @@ namespace FancyZonesUnitTests
                         .appLastZone_moveWindows = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
+                        .makeDraggedWindowTransparent = true,
                         .zoneColor = L"FAFAFA",
                         .zoneBorderColor = L"CCDDEE",
                         .zoneHightlightColor = L"#00FFD7",
@@ -128,6 +130,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
                     values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
@@ -157,6 +160,7 @@ namespace FancyZonesUnitTests
                         .appLastZone_moveWindows = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
+                        .makeDraggedWindowTransparent = true,
                         .zoneColor = L"FAFAFA",
                         .zoneBorderColor = L"CCDDEE",
                         .zoneHightlightColor = L"#00FFD7",
@@ -176,6 +180,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
                     values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
@@ -204,6 +209,7 @@ namespace FancyZonesUnitTests
                         .appLastZone_moveWindows = m_defaultSettings.appLastZone_moveWindows,
                         .use_cursorpos_editor_startupscreen = m_defaultSettings.use_cursorpos_editor_startupscreen,
                         .showZonesOnAllMonitors = m_defaultSettings.showZonesOnAllMonitors,
+                        .makeDraggedWindowTransparent = m_defaultSettings.makeDraggedWindowTransparent,
                         .zoneColor = L"FAFAFA",
                         .zoneBorderColor = L"CCDDEE",
                         .zoneHightlightColor = L"#00FFD7",
@@ -243,6 +249,7 @@ namespace FancyZonesUnitTests
                         .appLastZone_moveWindows = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
+                        .makeDraggedWindowTransparent = true,
                         .zoneColor = m_defaultSettings.zoneColor,
                         .zoneBorderColor = m_defaultSettings.zoneBorderColor,
                         .zoneHightlightColor = m_defaultSettings.zoneHightlightColor,
@@ -262,6 +269,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
@@ -288,6 +296,7 @@ namespace FancyZonesUnitTests
                         .appLastZone_moveWindows = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
+                        .makeDraggedWindowTransparent = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"#4b4b55",
                         .zoneHightlightColor = L"#00FFD7",
@@ -307,6 +316,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
@@ -334,6 +344,7 @@ namespace FancyZonesUnitTests
                         .appLastZone_moveWindows = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
+                        .makeDraggedWindowTransparent = true,
                         .zoneColor = L"FAFAFA",
                         .zoneBorderColor = L"CCDDEE",
                         .zoneHightlightColor = L"#00FFD7",
@@ -353,6 +364,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
                     values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
@@ -381,6 +393,7 @@ namespace FancyZonesUnitTests
                         .appLastZone_moveWindows = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
+                        .makeDraggedWindowTransparent = true,
                         .zoneColor = L"FAFAFA",
                         .zoneBorderColor = L"CCDDEE",
                         .zoneHightlightColor = L"#00FFD7",
@@ -400,6 +413,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
                     values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
@@ -509,6 +523,7 @@ namespace FancyZonesUnitTests
                     .appLastZone_moveWindows = false,
                     .use_cursorpos_editor_startupscreen = true,
                     .showZonesOnAllMonitors = false,
+                    .makeDraggedWindowTransparent = true,
                     .zoneColor = L"FAFAFA",
                     .zoneBorderColor = L"CCDDEE",
                     .zoneHightlightColor = L"#00FFD7",
@@ -528,6 +543,7 @@ namespace FancyZonesUnitTests
                 values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                 values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                 values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                 values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                 values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
                 values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
@@ -643,6 +659,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toogle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, settings.appLastZone_moveWindows);
             ptSettings.add_bool_toogle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
             ptSettings.add_bool_toogle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
+            ptSettings.add_bool_toogle(L"fancyzones_makeDraggedWindowTransparent", IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT, settings.makeDraggedWindowTransparent);
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
             ptSettings.add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, settings.zoneColor);
             ptSettings.add_color_picker(L"fancyzones_zoneBorderColor", IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, settings.zoneBorderColor);
@@ -667,6 +684,7 @@ namespace FancyZonesUnitTests
                     .appLastZone_moveWindows = false,
                     .use_cursorpos_editor_startupscreen = true,
                     .showZonesOnAllMonitors = false,
+                    .makeDraggedWindowTransparent = true,
                     .zoneColor = L"FAFAFA",
                     .zoneBorderColor = L"CCDDEE",
                     .zoneHightlightColor = L"#00FFD7",
@@ -720,6 +738,7 @@ namespace FancyZonesUnitTests
                 m_ptSettings->add_bool_toogle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, expected.appLastZone_moveWindows);
                 m_ptSettings->add_bool_toogle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, expected.use_cursorpos_editor_startupscreen);
                 m_ptSettings->add_bool_toogle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, expected.showZonesOnAllMonitors);
+                m_ptSettings->add_bool_toogle(L"fancyzones_makeDraggedWindowTransparent", IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT, expected.makeDraggedWindowTransparent);
                 m_ptSettings->add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, expected.zoneHightlightColor);
                 m_ptSettings->add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, expected.zoneColor);
                 m_ptSettings->add_color_picker(L"fancyzones_zoneBorderColor", IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, expected.zoneBorderColor);
@@ -787,6 +806,7 @@ namespace FancyZonesUnitTests
                         .appLastZone_moveWindows = true,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
+                        .makeDraggedWindowTransparent = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"CCDDEE",
                         .zoneHightlightColor = L"#00AABB",
