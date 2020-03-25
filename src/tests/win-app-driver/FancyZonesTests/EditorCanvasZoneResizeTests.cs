@@ -286,11 +286,16 @@ namespace PowerToysTests
             }
             OpenEditor();
             OpenCustomLayouts();
+
+            //create canvas zone
+            OpenCreatorWindow("Create new custom", "Custom layout creator");
+            session.FindElementByAccessibilityId("newZoneButton").Click();
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
+            new Actions(session).MoveToElement(session.FindElementByXPath("//Button[@Name=\"Cancel\"]")).Click().Perform();
             CloseEditor();
             TearDown();
         }
@@ -298,16 +303,13 @@ namespace PowerToysTests
         [TestInitialize]
         public void TestInitialize()
         {
-            //create canvas zone
-            OpenCreatorWindow("Create new custom", "Custom layout creator");
-            session.FindElementByAccessibilityId("newZoneButton").Click();
-            ZoneCountTest(1, 0);
+
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
-            new Actions(session).MoveToElement(session.FindElementByXPath("//Button[@Name=\"Cancel\"]")).Click().Perform();
+            
         }
     }
 }

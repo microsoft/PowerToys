@@ -53,7 +53,7 @@ namespace PowerToysTests
             Assert.AreEqual("True", isSelected, "Templates tab cannot be opened");
         }
 
-        protected void OpenCreatorWindow(string tabName, string creatorWindowName, string buttonId = "EditCustomButton")
+        protected static void OpenCreatorWindow(string tabName, string creatorWindowName, string buttonId = "EditCustomButton")
         {
             string elementXPath = "//Text[@Name=\"" + tabName + "\"]";
             session.FindElementByXPath(elementXPath).Click();
