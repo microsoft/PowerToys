@@ -11,7 +11,7 @@ enum class KeyboardManagerUIState
     // If set to this value then there is no keyboard manager window currently active that requires a hook
     Deactivated,
     // If set to this value then the detect key window is currently active and it requires a hook
-    DetectKeyWindowActivated,
+    DetectSingleKeyRemapWindowActivated,
     // If set to this value then the detect shortcut window is currently active and it requires a hook
     DetectShortcutWindowActivated
 };
@@ -28,6 +28,12 @@ private:
 
     // Vector to store the shortcut detected in the detect shortcut UI window. This is used in both the backend and the UI.
     std::vector<DWORD> detectedShortcut;
+
+    // Store detected remap key in the remap UI window. This is used in both the backend and the UI.
+    DWORD detectedRemapKey;
+
+    // Stores the UI element which is to be updated based on the remap key entered.
+    winrt::Windows::UI::Xaml::Controls::TextBlock currentSingleKeyRemapTextBlock;
 
     // Stores the UI element which is to be updated based on the shortcut entered
     winrt::Windows::UI::Xaml::Controls::TextBlock currentShortcutTextBlock;
@@ -64,20 +70,35 @@ public:
     // Function to clear the OS Level shortcut remapping table
     void ClearOSLevelShortcuts();
 
+    // Function to clear the Keys remapping table
+    void ClearSingleKeyRemaps();
+
+    // Function to add a new OS level shortcut remapping
+    void AddSingleKeyRemap(const DWORD& originalKey, const WORD& newRemapKey);
+
     // Function to add a new OS level shortcut remapping
     void AddOSLevelShortcut(const std::vector<DWORD>& originalSC, const std::vector<WORD>& newSC);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
     void ConfigureDetectShortcutUI(const winrt::Windows::UI::Xaml::Controls::TextBlock& textBlock);
 
+    // Function to set the textblock of the detect remap key UI so that it can be accessed by the hook
+    void ConfigureDetectSingleKeyRemapUI(const winrt::Windows::UI::Xaml::Controls::TextBlock& textBlock);
+
     // Function to update the detect shortcut UI based on the entered keys
     void UpdateDetectShortcutUI();
+
+    // Function to update the detect remap key UI based on the entered key.
+    void UpdateDetectSingleKeyRemapUI();
 
     // Function to return the currently detected shortcut which is displayed on the UI
     std::vector<DWORD> GetDetectedShortcut();
 
+    // Function to return the currently detected remap key which is displayed on the UI
+    DWORD GetDetectedSingleRemapKey();
+
     // Function which can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
-    bool DetectKeyUIBackend(LowlevelKeyboardEvent* data);
+    bool DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data);
 
     // Function which can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
     bool DetectShortcutUIBackend(LowlevelKeyboardEvent* data);
