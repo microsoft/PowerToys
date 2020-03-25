@@ -76,7 +76,7 @@ public:
     {
         //// If mapped to 0x0 then key is disabled.
         //keyboardManagerState.singleKeyReMap[0x41] = 0x42;
-        //keyboardManagerState.singleKeyReMap[0x42] = 0x43;
+        //keyboardManagerState.singleKeyReMap[0x42] = 0x41;
         //keyboardManagerState.singleKeyReMap[0x43] = 0x41;
         //keyboardManagerState.singleKeyReMap[VK_LWIN] = VK_LCONTROL;
         //keyboardManagerState.singleKeyReMap[VK_LCONTROL] = VK_LWIN;
@@ -85,11 +85,11 @@ public:
         //keyboardManagerState.singleKeyToggleToMod[VK_CAPITAL] = false;
 
         //// OS-level shortcut remappings
-        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_MENU, 0x56 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
         //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x45 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
         //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x53 }), false);
         //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
-        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);
+        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x56 })] = std::make_pair(std::vector<WORD>({ VK_MENU, 0x56 }), false);
 
         //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
         //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LMENU, 0x44 }), false);
@@ -322,7 +322,7 @@ public:
                 {
                     return 1;
                 }
-
+ 
                 int key_count = 1;
                 LPINPUT keyEventList = new INPUT[size_t(key_count)]();
                 memset(keyEventList, 0, sizeof(keyEventList));
@@ -398,6 +398,11 @@ public:
         bool isIgnore = false;
         for (int keyVal = 0; keyVal < 0x100; keyVal++)
         {
+            // Skip mouse buttons. Keeping this could cause a remapping to fail if a mouse button is also pressed at the same time
+            if (keyVal == VK_LBUTTON || keyVal == VK_RBUTTON || keyVal == VK_MBUTTON || keyVal == VK_XBUTTON1 || keyVal == VK_XBUTTON2)
+            {
+                continue;
+            }
             // Check state of the key
             if (GetAsyncKeyState(keyVal) & 0x8000)
             {
