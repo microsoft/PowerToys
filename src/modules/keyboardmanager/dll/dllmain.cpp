@@ -80,8 +80,8 @@ public:
         //keyboardManagerState.singleKeyReMap[0x43] = 0x41;
         //keyboardManagerState.singleKeyReMap[VK_LWIN] = VK_LCONTROL;
         //keyboardManagerState.singleKeyReMap[VK_LCONTROL] = VK_LWIN;
-        //keyboardManagerState.singleKeyReMap[VK_CAPITAL] = 0x0;
-        //keyboardManagerState.singleKeyReMap[VK_LSHIFT] = VK_CAPITAL;
+        //keyboardManagerState.singleKeyReMap[VK_CAPITAL] = 0x41;
+        //keyboardManagerState.singleKeyReMap[0x41] = VK_CAPITAL;
         //keyboardManagerState.singleKeyToggleToMod[VK_CAPITAL] = false;
 
         //// OS-level shortcut remappings
@@ -459,139 +459,302 @@ public:
         return true;
     }
 
+    // Function to check if the modifiers in the shortcut have been pressed down
+    template<typename T>
+    bool CheckModifiersKeyboardState(const std::vector<T>& args)
+    {
+        // Check all keys except last
+        for (int i = 0; i < args.size() - 1; i++)
+        {
+            if (!(GetAsyncKeyState(args[i]) & 0x8000))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Function to check if all the modifiers in the first shorcut are present in the second shortcut, i.e. Modifiers(src) are a subset of Modifiers(dest)
+    std::vector<DWORD> GetCommonModifiers(const std::vector<DWORD>& src, const std::vector<WORD>& dest)
+    {
+        std::vector<DWORD> commonElements;
+        for (auto it = src.begin(); it != src.end() - 1; it++)
+        {
+            if (std::find(dest.begin(), dest.end() - 1, *it) != dest.end() - 1)
+            {
+                commonElements.push_back(*it);
+            }
+        }
+
+        return commonElements;
+    }
+
     // Function to a handle a shortcut remap
     intptr_t HandleShortcutRemapEvent(LowlevelKeyboardEvent* data, std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>>& reMap) noexcept
     {
         for (auto& it : reMap)
         {
-            DWORD src_1 = it.first[0];
-            DWORD src_2 = it.first[1];
-            WORD dest_1 = it.second.first[0];
-            WORD dest_2 = it.second.first[1];
+            const size_t src_size = it.first.size();
+            const size_t dest_size = it.second.first.size();
             // If the shortcut has been pressed down
-            if ((GetAsyncKeyState(src_1) & 0x8000) && !it.second.second)
+            if (!it.second.second && CheckModifiersKeyboardState<DWORD>(it.first))
             {
-                if (data->lParam->vkCode == src_2 && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                if (data->lParam->vkCode == it.first[src_size - 1] && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                 {
-                    // Check if any other keys have been pressed apart from the shortcut
+                    // Check if any other keys have been pressed apart from the shortcut. If true, then check for the next shortcut
                     if (!IsKeyboardStateClearExceptArgs(it.first))
                     {
-                        return 0;
+                        continue;
                     }
-                    int key_count = 4;
-                    LPINPUT keyEventList = new INPUT[size_t(key_count)]();
-                    memset(keyEventList, 0, sizeof(keyEventList));
-                    if (src_1 == dest_1)
+
+                    size_t key_count;
+                    LPINPUT keyEventList;
+                    // Get the common keys between the two shortcuts
+                    std::vector<DWORD> commonKeys = GetCommonModifiers(it.first, it.second.first);
+
+                    // If the original shortcut modifiers are a subset of the new shortcut
+                    if (commonKeys.size() == src_size - 1)
                     {
-                        key_count = 1;
-                        keyEventList[0].type = INPUT_KEYBOARD;
-                        keyEventList[0].ki.wVk = dest_2;
-                        keyEventList[0].ki.dwFlags = 0;
-                        keyEventList[0].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
+                        // key down for all new shortcut keys except the common modifiers
+                        key_count = dest_size - commonKeys.size();
+                        keyEventList = new INPUT[key_count]();
+                        memset(keyEventList, 0, sizeof(keyEventList));
+                        long long i = 0;
+                        long long j = 0;
+                        // Add a key down only for the non-common keys in the new shortcut
+                        while (i < (long long)key_count)
+                        {
+                            if (std::find(commonKeys.begin(), commonKeys.end(), it.second.first[j]) == commonKeys.end())
+                            {
+                                keyEventList[i].type = INPUT_KEYBOARD;
+                                keyEventList[i].ki.wVk = it.second.first[j];
+                                keyEventList[i].ki.dwFlags = 0;
+                                keyEventList[i].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
+                                i++;
+                            }
+                            j++;
+                        }
                     }
                     else
                     {
+                        // Dummy key, key up for all the original shortcut modifier keys and key down for all the new shortcut keys but common keys in each are not repeated
+                        key_count = 1 + (src_size - 1) + (dest_size) - (2 * commonKeys.size());
+                        keyEventList = new INPUT[key_count]();
+                        memset(keyEventList, 0, sizeof(keyEventList));
+
+                        // Send dummy key
                         keyEventList[0].type = INPUT_KEYBOARD;
                         keyEventList[0].ki.wVk = (WORD)DUMMY_KEY;
                         keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
                         keyEventList[0].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
-                        keyEventList[1].type = INPUT_KEYBOARD;
-                        keyEventList[1].ki.wVk = (WORD)src_1;
-                        keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
-                        keyEventList[1].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
-                        keyEventList[2].type = INPUT_KEYBOARD;
-                        keyEventList[2].ki.wVk = dest_1;
-                        keyEventList[2].ki.dwFlags = 0;
-                        keyEventList[2].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
-                        keyEventList[3].type = INPUT_KEYBOARD;
-                        keyEventList[3].ki.wVk = dest_2;
-                        keyEventList[3].ki.dwFlags = 0;
-                        keyEventList[3].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
+
+                        // Release original shortcut state (release in reverse order of shortcut to be accurate)
+                        long long i = 1;
+                        long long j = (long long)src_size - 2;
+                        while (j >= 0)
+                        {
+                            // Release only those keys which are not common
+                            if (std::find(commonKeys.begin(), commonKeys.end(), it.first[j]) == commonKeys.end())
+                            {
+                                keyEventList[i].type = INPUT_KEYBOARD;
+                                keyEventList[i].ki.wVk = (WORD)it.first[j];
+                                keyEventList[i].ki.dwFlags = KEYEVENTF_KEYUP;
+                                keyEventList[i].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
+                                i++;
+                            }
+                            j--;
+                        }
+
+                        // Set new shortcut key down state
+                        j = 0;
+                        while (i < (long long)key_count)
+                        {
+                            // Key down only those keys which are not common
+                            if (std::find(commonKeys.begin(), commonKeys.end(), it.second.first[j]) == commonKeys.end())
+                            {
+                                keyEventList[i].type = INPUT_KEYBOARD;
+                                keyEventList[i].ki.wVk = it.second.first[j];
+                                keyEventList[i].ki.dwFlags = 0;
+                                keyEventList[i].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
+                                i++;
+                            }
+                            j++;
+                        }
                     }
 
                     it.second.second = true;
-                    UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+                    UINT res = SendInput((UINT)key_count, keyEventList, sizeof(INPUT));
                     delete[] keyEventList;
                     return 1;
                 }
             }
             // The shortcut has already been pressed down at least once, i.e. the shortcut has been invoked
+            // There are 4 cases to be handled if the shortcut has been pressed down
+            // 1. The user lets go of one of the modifier keys - reset the keyboard back to the state of the keys actually being pressed down
+            // 2. The user keeps the shortcut pressed - the shortcut is repeated (for example you could hold down Ctrl+V and it will keep pasting)
+            // 3. The user lets go of the last key - reset the keyboard back to the state of the keys actually being pressed down
+            // 4. The user presses another key while holding the shortcut down - the system now sees all the new shortcut keys and this extra key pressed at the end. Not handled as resetting the state would trigger the original shortcut once more
             else if (it.second.second)
             {
-                // If the modifier key of the original shortcut is released before the normal key
-                if (data->lParam->vkCode == src_1 && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                // Get the common keys between the two shortcuts
+                std::vector<DWORD> commonKeys = GetCommonModifiers(it.first, it.second.first);
+
+                // Case 1: If any of the modifier keys of the original shortcut are released before the normal key
+                auto keyIt = std::find(it.first.begin(), it.first.end() - 1, data->lParam->vkCode);
+                if (keyIt != (it.first.end() - 1) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                 {
-                    int key_count = 2;
-                    LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+                    // Release new shortcut, and set original shortcut keys except the one released
+                    size_t key_count;
+                    if (std::find(commonKeys.begin(), commonKeys.end(), data->lParam->vkCode) != commonKeys.end())
+                    {
+                        // release all new shortcut keys and the common released modifier except the other common modifiers, and add all original shortcut modifiers except the common ones
+                        key_count = (dest_size - commonKeys.size() + 1) + (src_size - 1 - commonKeys.size());
+                    }
+                    else
+                    {
+                        // release all new shortcut keys except the common modifiers and add all original shortcut modifiers except the common ones
+                        key_count = dest_size + (src_size - 2) - (2 * commonKeys.size());
+                    }
+                    LPINPUT keyEventList = new INPUT[key_count]();
                     memset(keyEventList, 0, sizeof(keyEventList));
-                    keyEventList[0].type = INPUT_KEYBOARD;
-                    keyEventList[0].ki.wVk = dest_2;
-                    keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
-                    keyEventList[0].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
-                    keyEventList[1].type = INPUT_KEYBOARD;
-                    keyEventList[1].ki.wVk = dest_1;
-                    keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
-                    keyEventList[1].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
+
+                    // Release new shortcut state (release in reverse order of shortcut to be accurate)
+                    long long i = 0;
+                    long long j = (long long)dest_size - 1;
+                    while (j >= 0)
+                    {
+                        // Do not release if it is a common modifier, except the case where a common modifier is released (second part of the if condition))
+                        if ((std::find(commonKeys.begin(), commonKeys.end(), it.second.first[j]) == commonKeys.end()) || it.second.first[j] == data->lParam->vkCode)
+                        {
+                            keyEventList[i].type = INPUT_KEYBOARD;
+                            keyEventList[i].ki.wVk = it.second.first[j];
+                            keyEventList[i].ki.dwFlags = KEYEVENTF_KEYUP;
+                            keyEventList[i].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
+                            i++;
+                        }
+                        j--;
+                    }
+
+                    // Set original shortcut key down state except the last key and the released modifier
+                    j = 0;
+                    while (i < (long long)key_count)
+                    {
+                        // Do not set key down for the released modifier and for the common modifiers
+                        if (it.first[j] != data->lParam->vkCode && (std::find(commonKeys.begin(), commonKeys.end(), it.first[j]) == commonKeys.end()))
+                        {
+                            keyEventList[i].type = INPUT_KEYBOARD;
+                            keyEventList[i].ki.wVk = (WORD)it.first[j];
+                            keyEventList[i].ki.dwFlags = 0;
+                            keyEventList[i].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
+                            i++;
+                        }
+                        j++;
+                    }
+
                     it.second.second = false;
-                    UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+                    UINT res = SendInput((UINT)key_count, keyEventList, sizeof(INPUT));
 
                     delete[] keyEventList;
                     return 1;
                 }
-                // The system will see dest_1 as being held down because of the shortcut remap
-                if (GetAsyncKeyState(dest_1) & 0x8000)
+
+                // The system will see the modifiers of the new shortcut as being held down because of the shortcut remap
+                if (CheckModifiersKeyboardState<WORD>(it.second.first))
                 {
-                    // If the original shortcut is still held down the keyboard will see the original normal key along with the new modifier (keys held down send repeated keydown messages)
-                    if (data->lParam->vkCode == src_2 && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                    // Case 2: If the original shortcut is still held down the keyboard will get a key down message of the last key in the original shortcut and the new shortcut's modifiers will be held down (keys held down send repeated keydown messages)
+                    if (data->lParam->vkCode == it.first[src_size - 1] && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                     {
-                        int key_count = 1;
-                        LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+                        size_t key_count = 1;
+                        LPINPUT keyEventList = new INPUT[key_count]();
                         memset(keyEventList, 0, sizeof(keyEventList));
                         keyEventList[0].type = INPUT_KEYBOARD;
-                        keyEventList[0].ki.wVk = dest_2;
+                        keyEventList[0].ki.wVk = it.second.first[dest_size - 1];
                         keyEventList[0].ki.dwFlags = 0;
                         keyEventList[0].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
 
                         it.second.second = true;
-                        UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+                        UINT res = SendInput((UINT)key_count, keyEventList, sizeof(INPUT));
                         delete[] keyEventList;
                         return 1;
                     }
-                    // If the normal key is released from the original shortcut then revert the keyboard state to just the original modifier being held down
-                    if (data->lParam->vkCode == src_2 && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+
+                    // Case 3: If the last key is released from the original shortcut then revert the keyboard state to just the original modifiers being held down
+                    if (data->lParam->vkCode == it.first[src_size - 1] && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                     {
-                        int key_count = 4;
-                        LPINPUT keyEventList = new INPUT[size_t(key_count)]();
-                        memset(keyEventList, 0, sizeof(keyEventList));
-                        if (src_1 == dest_1)
+                        size_t key_count;
+                        LPINPUT keyEventList;
+
+                        // If the original shortcut is a subset of the new shortcut
+                        if (commonKeys.size() == src_size - 1)
                         {
-                            key_count = 1;
-                            keyEventList[0].type = INPUT_KEYBOARD;
-                            keyEventList[0].ki.wVk = dest_2;
-                            keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
-                            keyEventList[0].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
+                            key_count = dest_size - commonKeys.size();
+                            keyEventList = new INPUT[key_count]();
+                            memset(keyEventList, 0, sizeof(keyEventList));
+                            long long i = 0;
+                            long long j = (long long)dest_size - 1;
+                            while (i < (long long)key_count)
+                            {
+                                if (std::find(commonKeys.begin(), commonKeys.end(), it.second.first[j]) == commonKeys.end())
+                                {
+                                    keyEventList[i].type = INPUT_KEYBOARD;
+                                    keyEventList[i].ki.wVk = it.second.first[j];
+                                    keyEventList[i].ki.dwFlags = KEYEVENTF_KEYUP;
+                                    keyEventList[i].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
+                                    i++;
+                                }
+                                j--;
+                            }
                         }
                         else
                         {
-                            keyEventList[0].type = INPUT_KEYBOARD;
-                            keyEventList[0].ki.wVk = dest_2;
-                            keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
-                            keyEventList[0].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
-                            keyEventList[1].type = INPUT_KEYBOARD;
-                            keyEventList[1].ki.wVk = dest_1;
-                            keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
-                            keyEventList[1].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
-                            keyEventList[2].type = INPUT_KEYBOARD;
-                            keyEventList[2].ki.wVk = (WORD)src_1;
-                            keyEventList[2].ki.dwFlags = 0;
-                            keyEventList[2].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
-                            keyEventList[3].type = INPUT_KEYBOARD;
-                            keyEventList[3].ki.wVk = (WORD)DUMMY_KEY;
-                            keyEventList[3].ki.dwFlags = KEYEVENTF_KEYUP;
-                            keyEventList[3].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
+                            // Key up for all new shortcut keys, key down for original shortcut modifiers and dummy key but common keys aren't repeated
+                            key_count = (dest_size) + (src_size - 1) + 1 - (2 * commonKeys.size());
+                            keyEventList = new INPUT[key_count]();
+                            memset(keyEventList, 0, sizeof(keyEventList));
+
+                            // Release new shortcut state (release in reverse order of shortcut to be accurate)
+                            long long i = 0;
+                            long long j = (long long)dest_size - 1;
+                            while (j >= 0 && i < (long long)(dest_size - commonKeys.size()))
+                            {
+                                // Release only those keys which are not common
+                                if (std::find(commonKeys.begin(), commonKeys.end(), it.second.first[j]) == commonKeys.end())
+                                {
+                                    keyEventList[i].type = INPUT_KEYBOARD;
+                                    keyEventList[i].ki.wVk = it.second.first[j];
+                                    keyEventList[i].ki.dwFlags = KEYEVENTF_KEYUP;
+                                    keyEventList[i].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
+                                    i++;
+                                }
+                                j--;
+                            }
+
+                            // Set old shortcut key down state
+                            j = 0;
+                            while (i < (long long)key_count)
+                            {
+                                // Key down only those keys which are not common
+                                if (std::find(commonKeys.begin(), commonKeys.end(), it.first[j]) == commonKeys.end())
+                                {
+                                    keyEventList[i].type = INPUT_KEYBOARD;
+                                    keyEventList[i].ki.wVk = (WORD)it.first[j];
+                                    keyEventList[i].ki.dwFlags = 0;
+                                    keyEventList[i].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
+                                    i++;
+                                }
+                                j++;
+                            }
+
+                            // Send dummy key
+                            keyEventList[key_count - 1].type = INPUT_KEYBOARD;
+                            keyEventList[key_count - 1].ki.wVk = (WORD)DUMMY_KEY;
+                            keyEventList[key_count - 1].ki.dwFlags = KEYEVENTF_KEYUP;
+                            keyEventList[key_count - 1].ki.dwExtraInfo = POWERKEYS_SHORTCUT_FLAG;
                         }
+
                         it.second.second = false;
-                        UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
+                        UINT res = SendInput((UINT)key_count, keyEventList, sizeof(INPUT));
                         delete[] keyEventList;
                         return 1;
                     }
