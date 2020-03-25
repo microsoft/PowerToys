@@ -64,6 +64,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
     detectRemapKeyBox.IsSecondaryButtonEnabled(false);
     detectRemapKeyBox.CloseButtonText(to_hstring(L"Cancel"));
     detectRemapKeyBox.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    detectRemapKeyBox.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
 
     // Get the linked text block for the "Type Key" button that was clicked
     TextBlock linkedRemapText = getSiblingElement(sender).as<TextBlock>();
