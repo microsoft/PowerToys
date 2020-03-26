@@ -518,6 +518,7 @@ void FancyZones::ToggleEditor() noexcept
     sei.lpParameters = params.c_str();
     sei.nShow = SW_SHOWNORMAL;
     ShellExecuteEx(&sei);
+    Trace::FancyZones::EditorLaunched(1);
 
     // Launch the editor on a background thread
     // Wait for the editor's process to exit

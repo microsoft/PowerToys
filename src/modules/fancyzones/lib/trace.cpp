@@ -147,6 +147,16 @@ void Trace::FancyZones::DataChanged() noexcept
         TraceLoggingWideString(activeZoneSetInfo.c_str(), "ActiveZoneSetsList"));
 }
 
+void Trace::FancyZones::EditorLaunched(int value) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "FancyZones_EditorLaunch",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingInt32(value, "Value"));
+}
+
 void Trace::SettingsChanged(const Settings& settings) noexcept
 {
     const auto& editorHotkey = settings.editorHotkey;
