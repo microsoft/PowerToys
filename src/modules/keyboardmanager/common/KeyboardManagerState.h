@@ -33,10 +33,10 @@ private:
     DWORD detectedRemapKey;
 
     // Stores the UI element which is to be updated based on the remap key entered.
-    winrt::Windows::UI::Xaml::Controls::TextBlock currentSingleKeyRemapTextBlock;
+    TextBlock currentSingleKeyRemapTextBlock;
 
     // Stores the UI element which is to be updated based on the shortcut entered
-    winrt::Windows::UI::Xaml::Controls::TextBlock currentShortcutTextBlock;
+    TextBlock currentShortcutTextBlock;
 
 public:
     // Maps which store the remappings for each of the features. The bool fields should be initalised to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
@@ -73,17 +73,17 @@ public:
     // Function to clear the Keys remapping table
     void ClearSingleKeyRemaps();
 
-    // Function to add a new OS level shortcut remapping
+    // Function to add a new single key remapping
     void AddSingleKeyRemap(const DWORD& originalKey, const WORD& newRemapKey);
 
     // Function to add a new OS level shortcut remapping
     void AddOSLevelShortcut(const std::vector<DWORD>& originalSC, const std::vector<WORD>& newSC);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
-    void ConfigureDetectShortcutUI(const winrt::Windows::UI::Xaml::Controls::TextBlock& textBlock);
+    void ConfigureDetectShortcutUI(const TextBlock& textBlock);
 
     // Function to set the textblock of the detect remap key UI so that it can be accessed by the hook
-    void ConfigureDetectSingleKeyRemapUI(const winrt::Windows::UI::Xaml::Controls::TextBlock& textBlock);
+    void ConfigureDetectSingleKeyRemapUI(const TextBlock& textBlock);
 
     // Function to update the detect shortcut UI based on the entered keys
     void UpdateDetectShortcutUI();

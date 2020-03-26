@@ -83,7 +83,7 @@ void KeyboardManagerState::ConfigureDetectShortcutUI(const TextBlock& textBlock)
 }
 
 // Function to set the textblock of the detect remap key UI so that it can be accessed by the hook
-void KeyboardManagerState::ConfigureDetectSingleKeyRemapUI(const winrt::Windows::UI::Xaml::Controls::TextBlock& textBlock)
+void KeyboardManagerState::ConfigureDetectSingleKeyRemapUI(const TextBlock& textBlock)
 {
     currentSingleKeyRemapTextBlock = textBlock;
 }
