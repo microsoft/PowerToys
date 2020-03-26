@@ -83,11 +83,8 @@ void send_json_config_to_module(const std::wstring& module_key, const std::wstri
 
 void dispatch_json_config_to_modules(const json::JsonObject& powertoys_configs)
 {
-    for (const auto& powertoy_element : powertoys_configs)
-    {
-        const auto element = powertoy_element.Value().Stringify();
-        send_json_config_to_module(powertoy_element.Key().c_str(), element.c_str());
-    }
+    std::wstring pt_module_name = powertoys_configs.Lookup(L"name").GetString().c_str();
+    send_json_config_to_module(pt_module_name, powertoys_configs.Stringify().c_str());
 };
 
 void dispatch_received_json(const std::wstring& json_to_parse)

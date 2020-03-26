@@ -42,7 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// IPC callback function for run on start up.
         /// </summary>
-        public static IPCMessageCallback Run_OnStartUp_Callback = null;
+        public static IPCMessageCallback Default_SndMSG_Callback = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShellPage"/> class.
@@ -71,9 +71,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Run on start up callback function elevated initialization.
         /// </summary>
         /// <param name="implmentation">delegate function implementation.</param>
-        public void SetRunOnStartUpCallback(IPCMessageCallback implmentation)
+        public void SetDefaultSndMessageCallback(IPCMessageCallback implmentation)
         {
-            Run_OnStartUp_Callback = implmentation;
+            Default_SndMSG_Callback = implmentation;
         }
     }
 }

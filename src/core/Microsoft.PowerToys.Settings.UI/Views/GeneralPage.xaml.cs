@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
             base.OnNavigatedTo(e);
-            
+
             // load and apply theme settings
             this.ReLoadTheme(settings.theme);
 
@@ -90,9 +90,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SettingsUtils.SaveSettings<GeneralSettings>(settings, string.Empty);
                 OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
 
-                if (ShellPage.Run_OnStartUp_Callback != null)
+                if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Run_OnStartUp_Callback(outsettings.ToString());
+                    ShellPage.Default_SndMSG_Callback(outsettings.ToString());
                 }
             }
         }
@@ -121,7 +121,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // update and save settings to file.
                 GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
                 settings.theme = themeName;
-                SettingsUtils.SaveSettings<GeneralSettings>(settings,string.Empty);
+                SettingsUtils.SaveSettings<GeneralSettings>(settings, string.Empty);
             }
         }
     }

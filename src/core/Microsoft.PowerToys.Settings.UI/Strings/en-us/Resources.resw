@@ -125,24 +125,12 @@
     <value>Microsoft.PowerToys.Settings.UI</value>
     <comment>Application description</comment>
   </data>
-  <data name="Shell_Main.Content" xml:space="preserve">
-    <value>Main</value>
-    <comment>Navigation view item name for Main</comment>
-  </data>
-  <data name="Shell_Test1.Content" xml:space="preserve">
-    <value>Test1</value>
-    <comment>Navigation view item name for Test1</comment>
-  </data>
-  <data name="Shell_Test2.Content" xml:space="preserve">
-    <value>Test2</value>
-    <comment>Navigation view item name for Test2</comment>
-  </data>
-  <data name="Shell_Test3.Content" xml:space="preserve">
-    <value>Test3</value>
-    <comment>Navigation view item name for Test3</comment>
-  </data>
   <data name="Shell_General.Content" xml:space="preserve">
     <value>General</value>
     <comment>Navigation view item name for General</comment>
+  </data>
+  <data name="Shell_PowerPreview.Content" xml:space="preserve">
+    <value>File Explorer Preview</value>
+    <comment>File Explorer Preview Settings</comment>
   </data>
 </root>

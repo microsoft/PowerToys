@@ -25,13 +25,9 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
             if (shellPage != null)
             {
-                shellPage.SetRestartElevatedCallback(delegate(string msg) 
+                // set restart as admin configuration and restart.
+                shellPage.SetRestartElevatedCallback(delegate (string msg)
                 {
-                    MessageBox.Show(
-                        msg,
-                        "Restart Elevated",
-                        MessageBoxButton.OK);
-
                     Program.ipcmanager.SendMessage(msg);
 
                     int milliseconds = 2000;
@@ -40,15 +36,12 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                     System.Windows.Application.Current.Shutdown();
                 });
 
-                shellPage.SetRunOnStartUpCallback(delegate (string msg)
+                // send the rest of the settings without restarting.
+                shellPage.SetDefaultSndMessageCallback(delegate (string msg)
                 {
-                    MessageBox.Show(
-                        msg,
-                        "Run On Start Up",
-                        MessageBoxButton.OK);
-
                     Program.ipcmanager.SendMessage(msg);
                 });
+
             }
         }
 
