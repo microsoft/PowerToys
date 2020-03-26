@@ -1052,9 +1052,12 @@ void FancyZones::MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen,
                             m_zoneWindowMoveSize->HideZoneWindow();
                         }
                         m_zoneWindowMoveSize = iter->second;
-                        m_zoneWindowMoveSize->MoveSizeEnter(m_windowMoveSize, m_zoneWindowMoveSize->IsDragEnabled());
                     }
-                    m_zoneWindowMoveSize->MoveSizeUpdate(ptScreen, m_dragEnabled);
+
+                    for (auto [keyMonitor, zoneWindow] : m_zoneWindowMap)
+                    {
+                        zoneWindow->MoveSizeUpdate(ptScreen, m_dragEnabled);
+                    }
                 }
             }
         }
