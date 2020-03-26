@@ -43,6 +43,20 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
+        public void MarkdownPreviewHandlerControl__AddsInfoBarToFormIfHTMLImageTagIsPresent_WhenDoPreviewIsCalled()
+        {
+            // Arrange 
+            MarkdownPreviewHandlerControl markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl();
+
+            // Act
+            markdownPreviewHandlerControl.DoPreview<string>("HelperFiles/MarkdownWithHTMLImageTag.txt");
+
+            // Assert
+            Assert.AreEqual(markdownPreviewHandlerControl.Controls.Count, 2);
+            Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[1], typeof(RichTextBox));
+        }
+
+        [TestMethod]
         public void MarkdownPreviewHandlerControl__DoesNotAddInfoBarToFormIfExternalImageLinkNotPresent_WhenDoPreviewIsCalled()
         {
             // Arrange 
