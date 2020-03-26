@@ -47,7 +47,7 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
-        public void Extension_UpdatesFigureClassAndRelativeUrltoAbsolute_WhenUsed()
+        public void Extension_UpdatesFigureClassAndBlocksRelativeUrl_WhenUsed()
         {
             // arrange 
             String mdString = "![text](a.jpg \"Figure\")";
@@ -58,37 +58,7 @@ namespace PreviewPaneUnitTests
             String html = Markdown.ToHtml(mdString, markdownPipeline);
 
             // Assert
-            Assert.AreEqual(html, "<p><img src=\"file:///C:/Users/a.jpg\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n");
-        }
-
-        [TestMethod]
-        public void Extension_CreatesCorrectAbsoluteLinkByTrimmingForwardSlash_WhenUsed()
-        {
-            // arrange 
-            String mdString = "![text](\\document\\a.jpg \"Figure\")";
-            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { }, "C:\\Users\\");
-            MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
-
-            // Act
-            String html = Markdown.ToHtml(mdString, markdownPipeline);
-
-            // Assert
-            Assert.AreEqual(html, "<p><img src=\"file:///C:/Users/document/a.jpg\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n");
-        }
-
-        [TestMethod]
-        public void Extension_CreatesCorrectAbsoluteLinkByTrimmingBackwardSlash_WhenUsed()
-        {
-            // arrange 
-            String mdString = "![text](/document/a.jpg \"Figure\")";
-            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { }, "C:/Users/");
-            MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
-
-            // Act
-            String html = Markdown.ToHtml(mdString, markdownPipeline);
-
-            // Assert
-            Assert.AreEqual(html, "<p><img src=\"file:///C:/Users/document/a.jpg\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n");
+            Assert.AreEqual(html, "<p><img src=\"#\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n");
         }
 
         [TestMethod]

@@ -116,6 +116,9 @@
     <Content Include="HelperFiles\MarkdownWithExternalImage.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="HelperFiles\MarkdownWithHTMLImageTag.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="HelperFiles\MarkdownWithscript.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
