@@ -58,6 +58,11 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        if (m_enabled)
+        {
+            TerminateProcess(m_hProcess, 1);
+        }
+
         delete this;
     }
 
