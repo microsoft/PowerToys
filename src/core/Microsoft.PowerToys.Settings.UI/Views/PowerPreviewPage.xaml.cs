@@ -21,11 +21,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class PowerPreview : Page
+    public sealed partial class PowerPreviewPage : Page
     {
         private const string POWERTOY_NAME = "File Explorer Preview";
 
-        public PowerPreview()
+        public PowerPreviewPage()
         {
             this.InitializeComponent();
         }
@@ -50,9 +50,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
                 settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value = swt.IsOn;
 
-                if (ShellPage.Run_OnStartUp_Callback != null)
+                ModuleSettings<PowerPreviewSettings> moduleSettings = new ModuleSettings<PowerPreviewSettings>(settings);
+
+                if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Run_OnStartUp_Callback(settings.ToString());
+                    ShellPage.Default_SndMSG_Callback(moduleSettings.ToString());
                 }
             }
         }
@@ -66,9 +68,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
                 settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value = swt.IsOn;
 
-                if (ShellPage.Run_OnStartUp_Callback != null)
+                ModuleSettings<PowerPreviewSettings> moduleSettings = new ModuleSettings<PowerPreviewSettings>(settings);
+
+                if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Run_OnStartUp_Callback(settings.ToString());
+                    ShellPage.Default_SndMSG_Callback(moduleSettings.ToString());
                 }
             }
         }

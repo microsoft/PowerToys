@@ -68,8 +68,8 @@
     <Compile Include="Views\GeneralPage.xaml.cs">
       <DependentUpon>GeneralPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\PowerPreview.xaml.cs">
-      <DependentUpon>PowerPreview.xaml</DependentUpon>
+    <Compile Include="Views\PowerPreviewPage.xaml.cs">
+      <DependentUpon>PowerPreviewPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ShellPage.xaml.cs">
       <DependentUpon>ShellPage.xaml</DependentUpon>
@@ -81,6 +81,7 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\file_explorer_preview_menu_icon.svg" />
     <Content Include="Assets\Logo.png" />
     <Content Include="Assets\Logo44.png" />
     <Content Include="Properties\Default.rd.xml" />
@@ -140,7 +141,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\PowerPreview.xaml">
+    <Page Include="Views\PowerPreviewPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

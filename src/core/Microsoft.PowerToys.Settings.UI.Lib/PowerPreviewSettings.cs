@@ -5,6 +5,19 @@ using System.Text.Json;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
+    /// <summary>
+    /// This class models the settings for the PowerPreview class. 
+    /// Eaxmple JSON:
+    /// {
+    ///     "name": "File Explorer Preview",
+    ///     "properties": {
+    ///         "IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL": { "value": true },
+    ///         "PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID": { "value": true }
+    ///     },
+    ///     "version": "1.0"
+    /// }
+
+    /// </summary>
     public class PowerPreviewSettings
     {
         public string name { get; set; }

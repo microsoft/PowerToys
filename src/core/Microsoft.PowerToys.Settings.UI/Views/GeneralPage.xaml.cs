@@ -90,9 +90,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SettingsUtils.SaveSettings<GeneralSettings>(settings, string.Empty);
                 OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
 
-                if (ShellPage.Run_OnStartUp_Callback != null)
+                if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Run_OnStartUp_Callback(outsettings.ToString());
+                    ShellPage.Default_SndMSG_Callback(outsettings.ToString());
                 }
             }
         }

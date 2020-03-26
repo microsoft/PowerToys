@@ -1,5 +1,5 @@
 ﻿<Page
-    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerPreview"
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerPreviewPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
@@ -12,6 +12,7 @@
     <Grid>
         <ScrollViewer>
             <StackPanel Orientation="Vertical" Margin="14,0,14,48">
+                <TextBlock FontWeight="Normal" Text="These settings allow you to manage your Windows File Explorer Addons." Margin="0,14,0,0" />
                 <ToggleSwitch Header="Svg Preview Handler" x:Name="ToggleSwitch_Preview_SVG"  Margin="0,14,0,0" Toggled="ToggleSwitch_Preview_SVG_Toggled" />
                 <ToggleSwitch Header="Markdown Preview Handler" x:Name="ToggleSwitch_Preview_MD"  Margin="0,14,0,0" Toggled="ToggleSwitch_Preview_MD_Toggled" />
             </StackPanel>

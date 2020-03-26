@@ -124,17 +124,16 @@ void send_message_to_webview(const std::wstring& msg)
     }
 }
 
+std::wstring ConvertBool(bool b)
+{
+    return b ? L"true" : L"false";
+}
+
 void send_message_to_powertoys_runner(const std::wstring& msg)
 {
     if (g_message_pipe != nullptr)
     {
-        MessageBox(g_main_wnd, msg.c_str(), L"File Explorer Settings", MB_OK);
-
-        std::wstring temp_message(LR"json(
-        {"name":"File Explorer Preview","properties":{"IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL":{"value":false},"PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID":{"value":true}},"version":"1.0"}
-        )json");
-
-        g_message_pipe->send(temp_message);
+        g_message_pipe->send(msg);  
     }
     else
     {
