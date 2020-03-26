@@ -3,9 +3,9 @@
 #include "lowlevel_keyboard_event.h"
 #include <algorithm>
 
-std::unordered_map<std::wstring, PowertoyModule>& modules()
+std::map<std::wstring, PowertoyModule>& modules()
 {
-    static std::unordered_map<std::wstring, PowertoyModule> modules;
+    static std::map<std::wstring, PowertoyModule> modules;
     return modules;
 }
 

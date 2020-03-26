@@ -50,4 +50,4 @@ private:
 };
 
 PowertoyModule load_powertoy(const std::wstring& filename);
-std::unordered_map<std::wstring, PowertoyModule>& modules();
+std::map<std::wstring, PowertoyModule>& modules();
