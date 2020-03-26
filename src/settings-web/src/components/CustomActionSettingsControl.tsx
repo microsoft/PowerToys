@@ -35,13 +35,22 @@ export class CustomActionSettingsControl extends BaseSettingsControl {
           : null
         }
         {
-          this.state.property_values.value ?
-            <Text styles ={{
-              root: {
-                paddingBottom: '0.5em'
-              }
-            }}>{this.state.property_values.value}</Text>
-          : <span/>
+          <Stack horizontal tokens={{childrenGap:5}}>
+            {
+              this.state.property_values.value ?
+                <Text styles ={{
+                  root: {
+                    paddingBottom: '0.5em'
+                  }
+                }}>{this.state.property_values.value}</Text>
+                : <span/>
+            }
+            {
+              this.state.property_values.help_link ?
+                this.state.property_values.help_link
+              : <span/>
+            }
+          </Stack>
         }
         <PrimaryButton
             styles={{
