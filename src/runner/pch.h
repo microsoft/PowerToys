@@ -20,7 +20,6 @@
 #include <condition_variable>
 #include <stdexcept>
 #include <tuple>
-#include <set>
 #include <unordered_set>
 #include <string>
 #include <ProjectTelemetry.h>
