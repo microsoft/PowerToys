@@ -140,8 +140,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
                 std::vector<DWORD> originalKeys = convertWStringVectorToIntegerVector<DWORD>(splitwstring(originalShortcut.c_str(), L' '));
                 std::vector<WORD> newKeys = convertWStringVectorToIntegerVector<WORD>(splitwstring(newShortcut.c_str(), L' '));
 
-                // Check if number of keys is two since only that is currently implemented
-                if (originalKeys.size() == 2 && newKeys.size() == 2)
+                // Shortcut should consist of atleast two keys
+                if (originalKeys.size() > 1 && newKeys.size() > 1)
                 {
                     keyboardManagerState.AddOSLevelShortcut(originalKeys, newKeys);
                 }
