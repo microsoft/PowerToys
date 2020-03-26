@@ -13,6 +13,8 @@
         <ScrollViewer>
             <StackPanel Orientation="Vertical" Margin="14,0,14,48">
                 <TextBlock FontWeight="Normal" Text="These settings allow you to manage your Windows File Explorer Addons." Margin="0,14,0,0" />
+                
+                <HyperlinkButton Content="Module Overview" Margin="0,14,0,0" NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/previewpane" />
                 <ToggleSwitch Header="Svg Preview Handler" x:Name="ToggleSwitch_Preview_SVG"  Margin="0,14,0,0" Toggled="ToggleSwitch_Preview_SVG_Toggled" />
                 <ToggleSwitch Header="Markdown Preview Handler" x:Name="ToggleSwitch_Preview_MD"  Margin="0,14,0,0" Toggled="ToggleSwitch_Preview_MD_Toggled" />
             </StackPanel>
