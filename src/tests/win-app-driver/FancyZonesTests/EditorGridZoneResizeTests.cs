@@ -157,6 +157,133 @@ namespace PowerToysTests
             }
         }
 
+        [TestMethod]
+        public void CreateDelimiter()
+        {
+            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
+            Assert.IsNotNull(gridEditor);
+
+            ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
+            Assert.AreEqual(3, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(2, thumbs.Count);
+
+            new Actions(session).MoveToElement(thumbs[0]).MoveByOffset(-30, 0).Click().Perform();
+            Assert.AreEqual(3, gridEditor.FindElementsByClassName("Thumb").Count);
+
+            ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
+            Assert.AreEqual(4, zones.Count);
+
+            //check that zone was splitted horizontally 
+            Assert.AreNotEqual(zones[0].Rect.Height, zones[1].Rect.Height);
+            Assert.AreNotEqual(zones[3].Rect.Height, zones[1].Rect.Height);
+            Assert.AreEqual(zones[1].Rect.Height, zones[2].Rect.Height);
+        }
+
+        [TestMethod]
+        public void CreateDelimiterWithShiftPressed()
+        {
+            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
+            Assert.IsNotNull(gridEditor);
+
+            ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
+            Assert.AreEqual(3, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(2, thumbs.Count);
+
+            new Actions(session).MoveToElement(thumbs[0]).MoveByOffset(-100, 0)
+                .KeyDown(OpenQA.Selenium.Keys.Shift).Click().KeyUp(OpenQA.Selenium.Keys.Shift)
+                .Perform();
+            Assert.AreEqual(3, gridEditor.FindElementsByClassName("Thumb").Count);
+
+            ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
+            Assert.AreEqual(4, zones.Count);
+            
+            //check that zone was splitted vertically
+            Assert.AreEqual(zones[0].Rect.Height, zones[1].Rect.Height);
+            Assert.AreEqual(zones[1].Rect.Height, zones[2].Rect.Height);
+            Assert.AreEqual(zones[2].Rect.Height, zones[3].Rect.Height);
+        }
+
+        [TestMethod]
+        public void MoveHorizontallyWithLimiter()
+        {
+            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
+            Assert.IsNotNull(gridEditor);
+
+            Assert.AreEqual(3, session.FindElementsByClassName("GridZone").Count);
+            ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
+            Assert.AreEqual(2, thumbs.Count);
+
+            //create new zones
+            new Actions(session).MoveToElement(thumbs[0]).MoveByOffset(-30, 0).Click().Perform();
+            thumbs = gridEditor.FindElementsByClassName("Thumb");
+            Assert.AreEqual(4, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(3, thumbs.Count);
+
+            new Actions(session).MoveToElement(thumbs[0]).MoveByOffset(0, 30).Click().Perform();
+            thumbs = gridEditor.FindElementsByClassName("Thumb");
+            Assert.AreEqual(5, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(4, thumbs.Count);
+
+            //move thumbs
+            AppiumWebElement limiter = gridEditor.FindElementsByClassName("Thumb")[1];
+            AppiumWebElement movable = gridEditor.FindElementsByClassName("Thumb")[2];
+
+            Move(movable, 0, false, true);
+            Assert.IsTrue(movable.Rect.X > limiter.Rect.X);
+            Assert.IsTrue(movable.Rect.X - limiter.Rect.X < movable.Rect.Width);
+
+            Move(limiter, limiter.Rect.X - (limiter.Rect.X / 2), false, true);
+
+            Move(movable, 0, false, true);
+            Assert.IsTrue(movable.Rect.X > limiter.Rect.X);
+            Assert.IsTrue(movable.Rect.X - limiter.Rect.X < movable.Rect.Width);
+        }
+
+        [TestMethod]
+        public void MoveVerticallyWithLimiter()
+        {
+            OpenCreatorWindow("Rows", "Custom table layout creator", "EditTemplateButton"); 
+            WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
+            Assert.IsNotNull(gridEditor);
+
+            Assert.AreEqual(3, session.FindElementsByClassName("GridZone").Count);
+            ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
+            Assert.AreEqual(2, thumbs.Count);
+
+            //create new zones
+            new Actions(session).MoveToElement(thumbs[0]).MoveByOffset(0, -30).Click().Perform();
+            thumbs = gridEditor.FindElementsByClassName("Thumb");
+            Assert.AreEqual(4, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(3, thumbs.Count);
+            
+            new Actions(session).MoveToElement(thumbs[2]).MoveByOffset(-100, 0).Click().Perform();
+            thumbs = gridEditor.FindElementsByClassName("Thumb");
+            Assert.AreEqual(5, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(4, thumbs.Count);
+
+            new Actions(session).MoveToElement(thumbs[2]).MoveByOffset(50, 0).Click().Perform();
+            thumbs = gridEditor.FindElementsByClassName("Thumb");
+            Assert.AreEqual(6, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(5, thumbs.Count);
+
+            //move thumbs
+            AppiumWebElement limiter = gridEditor.FindElementsByClassName("Thumb")[3];
+            AppiumWebElement movable = gridEditor.FindElementsByClassName("Thumb")[1];
+
+            Move(movable, 0, false, false);
+            Assert.IsTrue(movable.Rect.Y < limiter.Rect.Y);
+            Assert.IsTrue(limiter.Rect.Y - movable.Rect.Y < movable.Rect.Height);
+
+            Move(limiter, limiter.Rect.Y - (limiter.Rect.Y / 2), false, false);
+
+            Move(movable, 0, false, false);
+            Assert.IsTrue(movable.Rect.Y < limiter.Rect.Y);
+            Assert.IsTrue(limiter.Rect.Y - movable.Rect.Y < movable.Rect.Height);
+        }
+
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
