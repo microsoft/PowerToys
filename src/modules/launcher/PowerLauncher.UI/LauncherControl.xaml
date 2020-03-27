@@ -1,0 +1,18 @@
+﻿<UserControl
+    x:Class="PowerLauncher.UI.LauncherControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PowerLauncher.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <StackPanel Background="LightCoral">
+            <TextBlock>This is a simple custom UWP control</TextBlock>
+            <Rectangle Fill="Blue" Height="100" Width="100"/>
+            <TextBlock Text="{x:Bind XamlIslandMessage}" FontSize="50"></TextBlock>
+        </StackPanel>
+    </Grid>
+</UserControl>

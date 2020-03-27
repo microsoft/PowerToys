@@ -1,0 +1,119 @@
+﻿<ListBox x:Class="PowerLauncher.ResultListBox"
+         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+         xmlns:vm="clr-namespace:Wox.ViewModel;assembly=Wox"
+         xmlns:converter="clr-namespace:Wox.Converters;assembly=Wox"
+         mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100"
+         d:DataContext="{d:DesignInstance vm:ResultsViewModel}"
+         MaxHeight="{Binding MaxHeight}"
+         SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}"
+         SelectedItem="{Binding SelectedItem, Mode=OneWayToSource}"
+         HorizontalContentAlignment="Stretch" ItemsSource="{Binding Results}"
+         Margin="{Binding Margin}"
+         Visibility="{Binding Visbility}"
+         Style="{DynamicResource BaseListboxStyle}" Focusable="False"
+         KeyboardNavigation.DirectionalNavigation="Cycle" SelectionMode="Single"
+         VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Standard"
+         SelectionChanged="OnSelectionChanged"
+         IsSynchronizedWithCurrentItem="True"
+         PreviewMouseDown="ListBox_PreviewMouseDown">
+    <!--IsSynchronizedWithCurrentItem: http://stackoverflow.com/a/7833798/2833083-->
+    <ListBox.ItemTemplate>
+        <DataTemplate>
+            <Button>
+                <Button.Template>
+                    <ControlTemplate>
+                        <ContentPresenter Content="{TemplateBinding Button.Content}" />
+                    </ControlTemplate>
+                </Button.Template>
+                <Button.Content>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5"
+                          Cursor="Hand" UseLayoutRounding="False">
+                        <Grid.Resources>
+                            <converter:HighlightTextConverter x:Key="HighlightTextConverter"/>
+                        </Grid.Resources>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="32" />
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="0" />
+                        </Grid.ColumnDefinitions>
+                        <Image x:Name="imgIco" Width="32" Height="32" HorizontalAlignment="Left"
+                               Source="{Binding Image ,IsAsync=True}" />
+                        <Grid Margin="5 0 5 0" Grid.Column="1" HorizontalAlignment="Stretch">
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition Height="Auto" x:Name="SubTitleRowDefinition" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Style="{DynamicResource ItemTitleStyle}" DockPanel.Dock="Left"
+                                       VerticalAlignment="Center" ToolTip="{Binding Result.Title}" x:Name="Title"
+                                       Text="{Binding Result.Title}">
+                                <vm:ResultsViewModel.FormattedText>
+                                    <MultiBinding Converter="{StaticResource HighlightTextConverter}">
+                                        <Binding Path="Result.Title" />
+                                        <Binding Path="Result.TitleHighlightData" />
+                                    </MultiBinding>
+                                </vm:ResultsViewModel.FormattedText>
+                            </TextBlock>
+                            <TextBlock Style="{DynamicResource ItemSubTitleStyle}" ToolTip="{Binding Result.SubTitle}"
+                                       Grid.Row="1" x:Name="SubTitle" Text="{Binding Result.SubTitle}">
+                                <vm:ResultsViewModel.FormattedText>
+                                    <MultiBinding Converter="{StaticResource HighlightTextConverter}">
+                                        <Binding Path="Result.SubTitle" />
+                                        <Binding Path="Result.SubTitleHighlightData" />
+                                    </MultiBinding>
+                                </vm:ResultsViewModel.FormattedText>
+                            </TextBlock>
+                        </Grid>
+                    </Grid>
+                </Button.Content>
+            </Button>
+            <!-- a result item height is 50 including margin -->
+            <DataTemplate.Triggers>
+                <DataTrigger
+                    Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListBoxItem}}, Path=IsSelected}"
+                    Value="True">
+                    <Setter TargetName="Title" Property="Style" Value="{DynamicResource ItemTitleSelectedStyle}" />
+                    <Setter TargetName="SubTitle" Property="Style" Value="{DynamicResource ItemSubTitleSelectedStyle}" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+    </ListBox.ItemTemplate>
+    <!--http://stackoverflow.com/questions/16819577/setting-background-color-or-wpf-4-0-listbox-windows-8/#16820062-->
+    <ListBox.ItemContainerStyle>
+        <Style TargetType="{x:Type ListBoxItem}">
+            <EventSetter Event="MouseEnter" Handler="OnMouseEnter" />
+            <EventSetter Event="MouseMove" Handler="OnMouseMove" />
+            <Setter Property="Height" Value="50" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Content="{TemplateBinding Content}"
+                                              ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background"
+                                        Value="{DynamicResource ItemSelectedBackgroundColor}" />
+                                <Setter TargetName="Bd" Property="BorderBrush"
+                                        Value="{DynamicResource ItemSelectedBackgroundColor}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </ListBox.ItemContainerStyle>
+</ListBox>
