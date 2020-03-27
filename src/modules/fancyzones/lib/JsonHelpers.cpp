@@ -691,7 +691,7 @@ namespace JSONHelpers
 
                 if (it != appliedZoneSetsMap.end())
                 {
-                    it->second.uuid = uuid = it->first;
+                    uuid = it->first;
                 }
                 else
                 {
@@ -704,7 +704,7 @@ namespace JSONHelpers
                     wil::unique_cotaskmem_string guidString;
                     if (SUCCEEDED_LOG(StringFromCLSID(guid, &guidString)))
                     {
-                        it->second.uuid = uuid = guidString.get();
+                        uuid = guidString.get();
                     }
                 }
 
