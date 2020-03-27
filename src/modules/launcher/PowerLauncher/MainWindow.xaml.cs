@@ -254,18 +254,6 @@ namespace PowerLauncher
             global::PowerLauncher.UI.LauncherControl userControl =
                 windowsXamlHost.GetUwpInternalObject() as global::PowerLauncher.UI.LauncherControl;
 
-            if (userControl != null)
-            {
-                userControl.XamlIslandMessage = this.WPFMessage;
-            }
-        }
-
-        public string WPFMessage
-        {
-            get
-            {
-                return "Binding from WPF to UWP XAML";
-            }
         }
     }
 }
