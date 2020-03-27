@@ -35,14 +35,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <inheritdoc/>
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+            //GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
             base.OnNavigatedTo(e);
             
             // load and apply theme settings
-            this.ReLoadTheme(settings.theme);
+          //  this.ReLoadTheme(settings.theme);
 
             // load run on start up ui settings value and update the ui state.
-            this.ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
+            //this.ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
         }
 
         /// <summary>
