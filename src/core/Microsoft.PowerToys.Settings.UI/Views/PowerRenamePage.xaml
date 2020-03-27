@@ -1,0 +1,51 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerRenamePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+
+        <StackPanel Orientation="Vertical">
+            <TextBlock Text="A Windows Shell Extension for more advanced bulk renaming using search and replace or regular expressions."
+                       TextWrapping="Wrap"/>
+
+            <ToggleSwitch Header="Enable PowerRename"
+                          IsOn="True"
+                          Margin="{StaticResource SmallTopMargin}" />
+
+            <TextBlock Text="Shell integration"
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <ToggleSwitch Header="Show on default context menu"
+                          IsOn="True"
+                          Margin="{StaticResource SmallTopMargin}"/>
+
+            <ToggleSwitch Header="Only show on extended context menu (Shift + Right-click)"
+                          IsOn="True" 
+                          Margin="{StaticResource SmallTopMargin}" />
+
+            <TextBlock Text="Miscellaneous" 
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <ToggleSwitch Header="Enable autocomplete and autosuggest of recently used inputs for search and replace values"
+                          IsOn="True"
+                          Margin="{StaticResource SmallTopMargin}"/>
+
+            <ToggleSwitch Header="Restore search, replace and flags values on launch from previous run" 
+                          IsOn="True" 
+                          Margin="{StaticResource SmallTopMargin}" />
+
+            <muxc:NumberBox Header="Maximum numbers of items to show in recently used list"
+                            Value="10"
+                            SpinButtonPlacementMode="Inline"
+                            HorizontalAlignment="Left"
+                            Margin="{StaticResource SmallTopMargin}" />
+        </StackPanel>
+    </Grid>
+</Page>
