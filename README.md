@@ -21,7 +21,7 @@ This is our preferred method.
 
 ##### MSIX / Store Build Update
 
-- CRUTKAS TO PUT STUFF HERE
+- We put in a lot of effort here but currently our plan of record is to make the MSI our only installer option and build in auto-upgrade. MSIX is a great installer / container tech but there are few spots we are working with the team to improve so we can adopt.
 
 #### Via Chocolatey - ⚠ Unofficial ⚠
 
@@ -45,7 +45,7 @@ We currently support the matrix below.  Adding MSIX support will make supporting
 
 | x64 | x86 | ARM |
 |:---:|:---:|:---:|
-| [Install][github-release-link] | [Issue #602](https://github.com/microsoft/PowerToys/issues/602)  | [Issue #490](https://github.com/microsoft/PowerToys/issues/490)|
+| [Supported][github-release-link] | [Issue #602](https://github.com/microsoft/PowerToys/issues/602) | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) |
 
 ## Current PowerToy Utilities
 
@@ -61,21 +61,22 @@ We currently support the matrix below.  Adding MSIX support will make supporting
 
 [PowerRename](/src/modules/powerrename) - PowerRename is a Windows Shell Extension for advanced bulk renaming using search and replace or regular expressions. PowerRename allows simple search and replace or more advanced regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits.
 
-### File Explorer
+### File Explorer (Preview Panes)
 
-- CRUTKAS TO PUT STUFF HERE
-- SVG PREVIEW PANE
-- MARKDOWN PREVIEW PANE
+[File Explorer](/src/modules/previewpane) add-ons right now are just limited to Preview Pane additions for File Explorer. Preview Pane is an existing feature in the File Explorer.  To enable it, you just click the View tab in the ribbon and then click "Preview Pane".
+
+PowerToys will now enable two types of files to be previewed:
+
+- Markdown files (.md)
+- SVG (.svg)
 
 ### Image Resizer
 
-- CRUTKAS TO PUT STUFF HERE
-
-Image Resizer is a Windows Shell Extension for quickly resizing images.  With a simple right click from File Explorer, resize one or many images instantly.
+[Image Resizer](/src/modules/imageresizer) is a Windows Shell Extension for quickly resizing images.  With a simple right click from File Explorer, resize one or many images instantly.
 
 ### Window Walker (Text based alt-tab alternative)
 
-- CRUTKAS TO PUT STUFF HERE
+[Window Walker](src/modules/windowwalker/) is an app that lets you search and switch between windows that you have open, all from the comfort of your keyboard. As you are searching for an app, you can use the keyboard up and down arrows to see an Alt-Tab style preview of the windows.  In the future, this will be merged into the Launcher project.
 
 ### Version 1.0 plan
 
@@ -90,14 +91,20 @@ Our mantra for the 0.16 was adding in new features along with a continual push f
 Below are just a few of the bullet items from this release.
 
 - We shipped [v0.16][github-release-link]!
-- CRUTKAS ADD 
+- Markdown Preview pane extension
+- SVG Preview pane extension
+- Image Resizer Window Shell extension
+- Window Walker, an alt-tab alternative
+- Fixed over 100 issues!
+- Initial UX automated testing brought online
 
-For 0.17, we are proactively working on:
+For [0.17](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F3), we are proactively working on:
 
 - Auto-updating
-- Win+R replacement (launcher)
+- Win+R replacement (Launcher)
 - Keyboard remapping
 - Performance improvements with FancyZones
+- A testing utility for FancyZones to be sure we can test different window configurations.
 
 Future release work, we are proactively working on:
 
