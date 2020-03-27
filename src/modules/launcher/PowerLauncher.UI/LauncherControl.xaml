@@ -8,7 +8,6 @@
     mc:Ignorable="d"
        xmlns:ToolkitBehaviors="using:Microsoft.Toolkit.Uwp.UI.Animations.Behaviors"
       xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
-    xmlns:Behaviors="using:PowerToysUX.Behaviours"
      xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     d:DesignHeight="300"
     d:DesignWidth="400">
@@ -418,7 +417,7 @@
         <Grid x:Name="PowerBar" CornerRadius="4" Height="72" Background="{StaticResource BackdropAcrylicBrush}" Translation="0,0,16" Shadow="{StaticResource ShellBarShadow}" Margin="12" VerticalAlignment="Top" HorizontalAlignment="Center" MinWidth="240">
 
 
-            <AutoSuggestBox x:Name="SearchBox" PlaceholderText="Launch an app" FontSize="24" Style="{StaticResource CustomStyledAutoSuggestBox}" TextChanged="SearchBox_TextChanged" MinWidth="720" >
+            <AutoSuggestBox x:Name="SearchBox"  x:FieldModifier="public" PlaceholderText="Launch an app" FontSize="24" Style="{StaticResource CustomStyledAutoSuggestBox}" TextChanged="SearchBox_TextChanged" MinWidth="720" >
                 <AutoSuggestBox.QueryIcon>
                     <SymbolIcon Symbol="Find"/>
                 </AutoSuggestBox.QueryIcon>

@@ -168,19 +168,19 @@ namespace PowerLauncher
             }
         }
 
-        //private void UpdatePosition()
-        //{
-        //    if (_settings.RememberLastLaunchLocation)
-        //    {
-        //        Left = _settings.WindowLeft;
-        //        Top = _settings.WindowTop;
-        //    }
-        //    else
-        //    {
-        //        Left = WindowLeft();
-        //        Top = WindowTop();
-        //    }
-        //}
+        private void UpdatePosition()
+        {
+            if (_settings.RememberLastLaunchLocation)
+            {
+                Left = _settings.WindowLeft;
+                Top = _settings.WindowTop;
+            }
+            else
+            {
+                Left = WindowLeft();
+                //Top = WindowTop();
+            }
+        }
 
         private void OnLocationChanged(object sender, EventArgs e)
         {
@@ -246,14 +246,42 @@ namespace PowerLauncher
         //    }
         //}
 
-        private void WindowsXamlHost_ChildChanged(object sender, EventArgs e)
+        private PowerLauncher.UI.LauncherControl _launcher = null;
+        private void WindowsXamlHost_ChildChanged(object sender, EventArgs ev)
         {
-            // Hook up x:Bind source.
-            global::Microsoft.Toolkit.Wpf.UI.XamlHost.WindowsXamlHost windowsXamlHost =
-                sender as global::Microsoft.Toolkit.Wpf.UI.XamlHost.WindowsXamlHost;
-            global::PowerLauncher.UI.LauncherControl userControl =
-                windowsXamlHost.GetUwpInternalObject() as global::PowerLauncher.UI.LauncherControl;
+            if (sender == null) return;
 
+            var host = (WindowsXamlHost)sender;
+            _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
+            _launcher.DataContext = _viewModel;
+            _launcher.SearchBox.TextChanged += QueryTextBox_TextChanged;
+
+            _launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
+
+            _viewModel.PropertyChanged += (o, e) =>
+            {
+                if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
+                {
+                    if (Visibility == System.Windows.Visibility.Visible)
+                    {
+                        Activate();
+                        _launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
+                        UpdatePosition();
+                        _settings.ActivateTimes++;
+                        if (!_viewModel.LastQuerySelected)
+                        {
+                            _viewModel.LastQuerySelected = true;
+                        }
+                    }
+                }
+            };
+        }
+        private void QueryTextBox_TextChanged(Windows.UI.Xaml.Controls.AutoSuggestBox sender, Windows.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (_viewModel.QueryTextCursorMovedToEnd)
+            {
+                _viewModel.QueryTextCursorMovedToEnd = false;
+            }
         }
     }
-}
+ }
