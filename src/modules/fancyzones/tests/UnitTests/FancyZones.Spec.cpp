@@ -506,7 +506,7 @@ namespace FancyZonesUnitTests
                         Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
                     }
                 }
-
+                /*
                 TEST_METHOD (OnKeyDownWinCtrlPressed)
                 {
                     sendKeyboardInput(VK_LWIN);
@@ -538,5 +538,6 @@ namespace FancyZonesUnitTests
                         Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
                     }
                 }
+                */
     };
 }
