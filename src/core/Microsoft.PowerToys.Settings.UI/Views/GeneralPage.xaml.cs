@@ -114,9 +114,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             settings.run_elevated = true;
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
 
-            if (ShellPage.Restart_Elevated_Callback != null)
+            if (ShellPage.Default_SndMSG_Callback != null)
             {
-                ShellPage.Restart_Elevated_Callback(outsettings.ToString());
+                ShellPage.Default_SndMSG_Callback(outsettings.ToString());
             }
         }
 

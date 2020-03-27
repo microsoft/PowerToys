@@ -25,18 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
             if (shellPage != null)
             {
-                // set restart as admin configuration and restart.
-                shellPage.SetRestartElevatedCallback(delegate (string msg)
-                {
-                    Program.ipcmanager.SendMessage(msg);
-
-                    int milliseconds = 2000;
-                    Thread.Sleep(milliseconds);
-
-                    System.Windows.Application.Current.Shutdown();
-                });
-
-                // send the rest of the settings without restarting.
+                // send IPC Message
                 shellPage.SetDefaultSndMessageCallback(delegate (string msg)
                 {
                     Program.ipcmanager.SendMessage(msg);

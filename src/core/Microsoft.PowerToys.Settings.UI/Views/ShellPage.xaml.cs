@@ -32,13 +32,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         public static Microsoft.UI.Xaml.Controls.NavigationView ShellHandler = null;
 
-
-        /// <summary>
-        /// IPC callback function for restart elevated.
-        /// </summary>
-        public static IPCMessageCallback Restart_Elevated_Callback = null;
-
-
         /// <summary>
         /// IPC callback function for run on start up.
         /// </summary>
@@ -56,15 +49,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ShellHandler = this.navigationView;
             this.ViewModel.Initialize(this.shellFrame, this.navigationView, this.KeyboardAccelerators);
             this.shellFrame.Navigate(typeof(GeneralPage));
-        }
-
-        /// <summary>
-        /// Restart elevated callback function  initialization.
-        /// </summary>
-        /// <param name="implmentation">delegate function implementation.</param>
-        public void SetRestartElevatedCallback(IPCMessageCallback implmentation)
-        {
-            Restart_Elevated_Callback = implmentation;
         }
 
         /// <summary>
