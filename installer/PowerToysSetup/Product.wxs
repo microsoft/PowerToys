@@ -311,6 +311,14 @@
           <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
         </RegistryKey>
       </Component>
+      
+      <Component Id="Module_WindowWalker" Guid="0F96981C-5D36-4467-9515-71FB0CE72F6F" Win64="yes">
+        <File Source="$(var.BinX64Dir)\modules\WindowWalker.exe" />
+        <File Source="$(var.BinX64Dir)\modules\WindowWalker.dll" />
+        <File Source="$(var.BinX64Dir)\modules\MaterialDesignColors.dll" />
+        <File Source="$(var.BinX64Dir)\modules\MaterialDesignThemes.Wpf.dll" />
+      </Component>
+
       <Component Id="Module_ImageResizer" Guid="96E63289-759C-4A73-A56B-EE7429932F72" Win64="yes">
         <File Source="$(var.BinX64Dir)\modules\ImageResizer.exe">
           <netfx:NativeImage Id="ImageResizer.exe" Platform="all" Priority="0" />
@@ -513,6 +521,7 @@
       <ComponentRef Id="Module_ImageResizer_Registry" />
       <ComponentRef Id="Module_PowerPreview" />
       <ComponentRef Id="Module_PowerPreview_PerUserRegistry" />
+      <ComponentRef Id="Module_WindowWalker" />
       <ComponentRef Id="settings_exe" />
       <ComponentRef Id="settings_html" />
       <ComponentRef Id="settings_dark_html" />
