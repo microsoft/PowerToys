@@ -40,7 +40,7 @@ class WindowWalker : public PowertoyModuleIface
 {
 private:
     // The PowerToy state.
-    bool m_enabled = true;
+    bool m_enabled = false;
 
     // Load initial settings from the persisted values.
     void init_settings();
