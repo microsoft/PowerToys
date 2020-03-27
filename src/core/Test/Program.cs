@@ -10,9 +10,9 @@ namespace Test
     {
         static void Main(string[] args)
         {
-            GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-            OutGoingGeneralSettings outSettings = new OutGoingGeneralSettings(settings);
-            Console.WriteLine(outSettings.ToString());
+            PowerPreviewSettings settings = new PowerPreviewSettings("Image Resizer");
+            
+            Console.WriteLine(settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value);
         }
     }
 }

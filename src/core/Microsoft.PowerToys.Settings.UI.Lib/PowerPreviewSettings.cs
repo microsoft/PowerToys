@@ -24,6 +24,20 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public Properties properties { get; set; }
         public string version { get; set; }
 
+        public PowerPreviewSettings()
+        {
+            this.properties = new Properties();
+            this.version = "1";
+            this.name = "_unset_";
+        }
+
+        public PowerPreviewSettings(string ptName)
+        {
+            this.properties = new Properties();
+            this.version = "1";
+            this.name = ptName;
+        }
+
         public override string ToString()
         {
             return JsonSerializer.Serialize(this);
@@ -44,6 +58,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         public Property IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL { get; set; }
         public Property PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID { get; set; }
+
+        public Properties()
+        {
+            this.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL = new Property();
+            this.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID = new Property();
+        }
 
         public override string ToString()
         {

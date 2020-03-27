@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.ServiceModel.Channels;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -33,12 +35,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <inheritdoc/>
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
-            base.OnNavigatedTo(e);
-
-            // load settings to view.
-            ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
-            ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
+            PowerPreviewSettings settings;
+            try
+            {
+                base.OnNavigatedTo(e);
+                settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
+                ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
+                ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
+            }
+            catch(Exception exp)
+            {
+                settings = new PowerPreviewSettings(POWERTOY_NAME);
+                SettingsUtils.SaveSettings<PowerPreviewSettings>(settings, POWERTOY_NAME);
+                ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
+                ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
+            }
         }
 
         private void ToggleSwitch_Preview_SVG_Toggled(object sender, RoutedEventArgs e)
@@ -66,7 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (swt != null)
             {
                 PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
-                settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value = swt.IsOn;
+                settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value = swt.IsOn;
 
                 ModuleSettings<PowerPreviewSettings> moduleSettings = new ModuleSettings<PowerPreviewSettings>(settings);
 
