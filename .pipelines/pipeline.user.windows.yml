@@ -50,6 +50,8 @@ build:
             - 'modules\fancyzones.dll'
             - 'modules\shortcut_guide.dll'
             - 'modules\PowerRenameExt.dll'
+            - 'modules\WindowWalker.exe'
+            - 'modules\WindowWalker.dll'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
     - !!buildcommand
