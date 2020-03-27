@@ -17,8 +17,8 @@ namespace WindowWalker.ViewModels
         private readonly HotKeyHandler _hotKeyHandler;
         private readonly List<string> _hints = new List<string>()
         {
-            "search...",
-            "you can reinvoke this app using CTRL + WIN",
+            "search for running processes ...",
+            // "you can reinvoke this app using CTRL + WIN",
         };
 
         private string _searchText = string.Empty;
@@ -168,7 +168,7 @@ namespace WindowWalker.ViewModels
             _hotKeyHandler = new HotKeyHandler(mainWindow);
             _hotKeyHandler.OnHotKeyPressed += HotKeyPressedHandler;
 
-            _hints.AddRange(Commands.GetTips());
+            // _hints.AddRange(Commands.GetTips());
             Hint = _hints[_hintCounter];
 
             WireCommands();
@@ -226,7 +226,8 @@ namespace WindowWalker.ViewModels
         {
             LivePreview.DeactivateLivePreview();
             WindowVisibility = false;
-            ApplicationUpdates.InstallUpdateSyncWithInfo();
+
+            // ApplicationUpdates.InstallUpdateSyncWithInfo();
         }
 
         private void WindowShow()

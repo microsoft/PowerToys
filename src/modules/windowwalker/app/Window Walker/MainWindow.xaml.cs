@@ -51,6 +51,9 @@ namespace WindowWalker
 
             UpdateDisplayedVersionNumber();
 
+            Left = (SystemParameters.WorkArea.Width - ActualWidth) / 2.0;
+            Top = (SystemParameters.WorkArea.Height - ActualHeight) / 2.0;
+
             HideWindow();
         }
 
