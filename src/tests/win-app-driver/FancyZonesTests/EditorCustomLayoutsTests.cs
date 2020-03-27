@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 
@@ -138,6 +139,110 @@ namespace PowerToysTests
             string name = "ёÖ±¬āݾᵩὡ√ﮘﻹտ";
             SetLayoutName(name);
             SaveTest("canvas", name, 0);
+        }
+
+        [TestMethod]
+        public void RenameLayout()
+        {
+            //create layout
+            OpenCreatorWindow("Create new custom", "Custom layout creator");
+            string name = "My custom zone layout name";
+            SetLayoutName(name);
+            SaveTest("canvas", name, 0);
+            ShortWait();
+
+            //rename layout
+            OpenEditor();
+            OpenCustomLayouts();
+            OpenCreatorWindow(name, "Custom layout creator");
+            name = "New name";
+            SetLayoutName(name);
+            SaveTest("canvas", name, 0);
+        }
+
+        [TestMethod]
+        public void RemoveLayout()
+        {
+            //create layout
+            OpenCreatorWindow("Create new custom", "Custom layout creator");
+            string name = "Name";
+            SetLayoutName(name);
+            SaveTest("canvas", name, 0);
+            ShortWait();
+
+            //remove layout
+            OpenEditor();
+            OpenCustomLayouts();
+            WindowsElement nameLabel = session.FindElementByXPath("//Text[@Name=\"" + name + "\"]");
+            new Actions(session).MoveToElement(nameLabel).MoveByOffset(nameLabel.Rect.Width / 2 + 10, 0).Click().Perform();
+
+            //settings are saved on window closing
+            new Actions(session).MoveToElement(session.FindElementByAccessibilityId("PART_Close")).Click().Perform();
+            ShortWait();
+
+            //check settings
+            JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
+            Assert.AreEqual(0, settings["custom-zone-sets"].ToObject<JArray>().Count);
+        }
+
+        [TestMethod]
+        public void AddRemoveSameLayoutNames()
+        {
+            string name = "Name";
+
+            for (int i = 0; i < 3; i++)
+            {
+                //create layout
+                OpenCreatorWindow("Create new custom", "Custom layout creator");
+                SetLayoutName(name);
+
+                new Actions(session).MoveToElement(session.FindElementByName("Save and apply")).Click().Perform();
+                ShortWait();
+
+                //remove layout
+                OpenEditor();
+                OpenCustomLayouts();
+                WindowsElement nameLabel = session.FindElementByXPath("//Text[@Name=\"" + name + "\"]");
+                new Actions(session).MoveToElement(nameLabel).MoveByOffset(nameLabel.Rect.Width / 2 + 10, 0).Click().Perform();
+            }
+
+            //settings are saved on window closing
+            new Actions(session).MoveToElement(session.FindElementByAccessibilityId("PART_Close")).Click().Perform();
+            ShortWait();
+
+            //check settings
+            JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
+            Assert.AreEqual(0, settings["custom-zone-sets"].ToObject<JArray>().Count);
+        }
+
+        [TestMethod]
+        public void AddRemoveDifferentLayoutNames()
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                string name = i.ToString();
+
+                //create layout
+                OpenCreatorWindow("Create new custom", "Custom layout creator");
+                SetLayoutName(name);
+
+                new Actions(session).MoveToElement(session.FindElementByName("Save and apply")).Click().Perform();
+                ShortWait();
+
+                //remove layout
+                OpenEditor();
+                OpenCustomLayouts();
+                WindowsElement nameLabel = session.FindElementByXPath("//Text[@Name=\"" + name + "\"]");
+                new Actions(session).MoveToElement(nameLabel).MoveByOffset(nameLabel.Rect.Width / 2 + 10, 0).Click().Perform();
+            }
+
+            //settings are saved on window closing
+            new Actions(session).MoveToElement(session.FindElementByAccessibilityId("PART_Close")).Click().Perform();
+            ShortWait();
+
+            //check settings
+            JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
+            Assert.AreEqual(0, settings["custom-zone-sets"].ToObject<JArray>().Count);
         }
 
         [ClassInitialize]
