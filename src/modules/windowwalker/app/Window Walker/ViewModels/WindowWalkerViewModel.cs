@@ -244,13 +244,7 @@ namespace WindowWalker.ViewModels
 
         public void SwitchToSelectedWindow()
         {
-            if (SearchText.StartsWith(":"))
-            {
-                LivePreview.DeactivateLivePreview();
-                WindowHide();
-                Commands.ProcessCommand(SearchText);
-            }
-            else if (SelectedWindowResult != null)
+            if (SelectedWindowResult != null)
             {
                 LivePreview.DeactivateLivePreview();
                 SelectedWindowResult.Result.SwitchToWindow();
