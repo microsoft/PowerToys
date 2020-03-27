@@ -90,6 +90,7 @@ public:
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(MODULE_DESC);
+        settings.set_icon_key(L"pt-window-walker");
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
