@@ -146,13 +146,13 @@ namespace FancyZonesEditor
 
         protected override void OnMouseEnter(MouseEventArgs e)
         {
-            Frame.Visibility = Visibility.Visible;
+            _splitter.Fill = Brushes.DarkGray;
             base.OnMouseEnter(e);
         }
 
         protected override void OnMouseLeave(MouseEventArgs e)
         {
-            Frame.Visibility = Visibility.Collapsed;
+             _splitter.Fill = Brushes.Transparent;
             base.OnMouseLeave(e);
         }
 
