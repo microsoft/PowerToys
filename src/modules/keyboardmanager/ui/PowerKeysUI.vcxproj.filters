@@ -6,6 +6,7 @@
     <ClCompile Include="EditShortcutsWindow.cpp" />
     <ClCompile Include="ShortcutControl.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="SingleKeyRemapControl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainWindow.h" />
@@ -13,6 +14,7 @@
     <ClInclude Include="EditShortcutsWindow.h" />
     <ClInclude Include="ShortcutControl.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="SingleKeyRemapControl.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
