@@ -17,7 +17,7 @@ namespace WindowWalker
         public App()
         {
             // Check if there is already a running instance
-            _appMutex = new Mutex(false, "Global\\" + Guid);
+            _appMutex = new Mutex(false, Guid);
             if (!_appMutex.WaitOne(0, false))
             {
                 Shutdown();
