@@ -91,10 +91,12 @@ Our mantra for the 0.16 was adding in new features along with a continual push f
 Below are just a few of the bullet items from this release.
 
 - We shipped [v0.16][github-release-link]!
-- Markdown Preview pane extension
-- SVG Preview pane extension
-- Image Resizer Window Shell extension
-- Window Walker, an alt-tab alternative
+- FancyZone improvement: Zone switching now works between monitors!
+- New Utilities!
+  - Markdown Preview pane extension
+  - SVG Preview pane extension
+  - Image Resizer Window Shell extension
+  - Window Walker, an alt-tab alternative
 - Fixed over 100 issues!
 - Initial UX automated testing brought online
 
