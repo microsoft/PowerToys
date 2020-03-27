@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
@@ -13,10 +13,10 @@ namespace PowerToysTests
     {
         private const int moveStep = 5;
 
-        private void Move(AppiumWebElement thumb, int border, bool moveAscending, bool moveHorizontally)
+        private void Move(AppiumWebElement thumb, int border, bool moveAscending, bool moveHorizontally, int clickShift = 0)
         {
             Actions action = new Actions(session);
-            action.ClickAndHold(thumb);
+            action.MoveToElement(thumb).MoveByOffset(0, clickShift).ClickAndHold();
 
             int thumbCenter = 0;
             if (moveHorizontally)
@@ -291,11 +291,62 @@ namespace PowerToysTests
             Assert.IsTrue(movable.Rect.Y > limiter.Rect.Y);
             Assert.IsTrue(movable.Rect.Y - limiter.Rect.Y < movable.Rect.Height);
 
-            Move(limiter, limiter.Rect.Y - (limiter.Rect.Y / 2), false, false);
+            Move(limiter, limiter.Rect.Y - (limiter.Rect.Y / 2), false, false, -5);
 
             Move(movable, 0, false, false);
             Assert.IsTrue(movable.Rect.Y > limiter.Rect.Y);
             Assert.IsTrue(movable.Rect.Y - limiter.Rect.Y < movable.Rect.Height);
+        }
+
+        [TestMethod]
+        public void MergeZones()
+        {
+            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
+            Assert.IsNotNull(gridEditor);
+
+            ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
+            ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
+            Assert.AreEqual(3, zones.Count);
+            Assert.AreEqual(2, thumbs.Count);
+
+            Move(zones[0], thumbs[0].Rect.X + thumbs[0].Rect.Width + 10, true, true, -(zones[0].Rect.Height / 2) + 10);
+
+            WindowsElement mergeButton = session.FindElementByName("Merge zones");
+            Assert.IsNotNull(mergeButton, "Cannot merge: no merge button");
+            new Actions(session).Click(mergeButton).Perform();
+
+            Assert.AreEqual(2, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(1, gridEditor.FindElementsByClassName("Thumb").Count);
+        }
+
+        [TestMethod]
+        public void MoveAfterMerge()
+        {
+            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
+            Assert.IsNotNull(gridEditor);
+
+            ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
+
+            //create new zones
+            new Actions(session).MoveToElement(thumbs[0]).Click().MoveByOffset(-(thumbs[0].Rect.X / 2), 0)
+                .KeyDown(OpenQA.Selenium.Keys.Shift).Click().KeyUp(OpenQA.Selenium.Keys.Shift)
+                .Perform();
+            thumbs = gridEditor.FindElementsByClassName("Thumb");
+
+            //merge zones
+            ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
+            Move(zones[0], thumbs[0].Rect.X + thumbs[0].Rect.Width + 10, true, true, -(zones[0].Rect.Height / 2) + 10);
+            WindowsElement mergeButton = session.FindElementByName("Merge zones");
+            Assert.IsNotNull(mergeButton, "Cannot merge: no merge button");
+            new Actions(session).Click(mergeButton).Perform();
+
+            //move thumb
+            AppiumWebElement thumb = thumbs[1]; //thumb from merged zone is still present 
+            Move(thumb, 0, false, true); 
+            Assert.IsTrue(thumb.Rect.Left <= moveStep);
+            Assert.IsTrue(thumb.Rect.Right > 0);
         }
 
         [ClassInitialize]
