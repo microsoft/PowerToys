@@ -160,18 +160,6 @@ namespace WindowWalker.ViewModels
 
         public WindowWalkerViewModel(System.Windows.Window mainWindow)
         {
-            // The path to the key where Windows looks for startup applications
-            RegistryKey rkApp = Registry.CurrentUser.OpenSubKey(
-                                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
-
-            // Path to launch shortcut
-            string startPath = Environment.GetFolderPath(Environment.SpecialFolder.Programs)
-                               + @"\WindowWalker\WindowWalker.appref-ms";
-
-            rkApp.SetValue("WindowWalker", startPath);
-
-            rkApp.Close();
-
             SearchController.Instance.OnSearchResultUpdate += SearchResultUpdated;
             OpenWindows.Instance.UpdateOpenWindowsList();
             Hwnd = new WindowInteropHelper(mainWindow).Handle;
