@@ -7,3 +7,7 @@ Window walker is an app that lets you search and switch between windows that you
 ## To use 
 
 Hit `WinKey + Ctrl` and start typing :)
+
+## Based on
+
+This code is from https://github.com/betsegaw/windowwalker
