@@ -2,7 +2,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 
@@ -170,6 +169,11 @@ namespace PowerToysTests
             SaveTest("canvas", name, 0);
             ShortWait();
 
+            //save layout id
+            JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
+            Assert.AreEqual(1, settings["custom-zone-sets"].ToObject<JArray>().Count);
+            string layoutId = settings["custom-zone-sets"][0]["uuid"].ToString();
+
             //remove layout
             OpenEditor();
             OpenCustomLayouts();
@@ -181,8 +185,12 @@ namespace PowerToysTests
             ShortWait();
 
             //check settings
-            JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
+            settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
             Assert.AreEqual(0, settings["custom-zone-sets"].ToObject<JArray>().Count);
+            foreach (JObject device in settings["devices"].ToObject<JArray>())
+            {
+                Assert.AreNotEqual(layoutId, device["active-zoneset"]["uuid"], "Deleted layout still applied");
+            }
         }
 
         [TestMethod]
@@ -243,6 +251,41 @@ namespace PowerToysTests
             //check settings
             JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
             Assert.AreEqual(0, settings["custom-zone-sets"].ToObject<JArray>().Count);
+        }
+
+        [TestMethod]
+        public void RemoveApply()
+        {
+            string name = "Name";
+
+            //create layout
+            OpenCreatorWindow("Create new custom", "Custom layout creator");
+            SetLayoutName(name);
+            new Actions(session).MoveToElement(session.FindElementByName("Save and apply")).Click().Perform();
+            ShortWait();
+
+            //save layout id
+            JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
+            Assert.AreEqual(1, settings["custom-zone-sets"].ToObject<JArray>().Count);
+            string layoutId = settings["custom-zone-sets"][0]["uuid"].ToString();
+
+            //remove layout
+            OpenEditor();
+            OpenCustomLayouts();
+            WindowsElement nameLabel = session.FindElementByXPath("//Text[@Name=\"" + name + "\"]");
+            new Actions(session).MoveToElement(nameLabel).MoveByOffset(nameLabel.Rect.Width / 2 + 10, 0).Click().Perform();
+
+            //apply
+            new Actions(session).MoveToElement(session.FindElementByName("Apply")).Click().Perform();
+            ShortWait();
+
+            //check settings
+            settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
+            Assert.AreEqual(0, settings["custom-zone-sets"].ToObject<JArray>().Count);
+            foreach (JObject device in settings["devices"].ToObject<JArray>())
+            {
+                Assert.AreNotEqual(layoutId, device["active-zoneset"]["uuid"], "Deleted layout still applied");
+            }
         }
 
         [ClassInitialize]
