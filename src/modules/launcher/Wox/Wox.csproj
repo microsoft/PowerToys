@@ -6,10 +6,11 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <StartupObject>Wox.App</StartupObject>
-    <ApplicationIcon>Resources\app.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\placeholderLauncher.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <AssemblyName>PowerLauncher</AssemblyName>
     <Platforms>x64</Platforms>
   </PropertyGroup>
 
@@ -181,11 +182,12 @@
     </None>
   </ItemGroup>
 
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File $(SolutionDir)src\modules\launcher\Scripts\post_build.ps1 $(ConfigurationName) $(SolutionDir)src\modules\launcher" />
   </Target>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="taskkill /f /fi &quot;IMAGENAME eq Wox.exe&quot;" />
+    <Exec Command="taskkill /f /fi &quot;IMAGENAME eq Launcher.exe&quot;" />
   </Target>
 </Project>
