@@ -28,9 +28,7 @@
     <system:String x:Key="LastQueryEmpty">清空上次搜索关键字</system:String>
     <system:String x:Key="maxShowResults">最大结果显示个数</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">全屏模式下忽略热键</system:String>
-    <system:String x:Key="pythonDirectory">Python 路径</system:String>
     <system:String x:Key="autoUpdates">自动更新</system:String>
-    <system:String x:Key="selectPythonDirectory">Select</system:String>
     <system:String x:Key="hideOnStartup">启动时不显示主窗口</system:String>
     <system:String x:Key="hideNotifyIcon">隐藏任务栏图标</system:String>
 

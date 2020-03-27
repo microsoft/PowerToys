@@ -28,9 +28,7 @@
     <system:String x:Key="LastQueryEmpty">직전 쿼리 지우기</system:String>
     <system:String x:Key="maxShowResults">표시할 결과 수</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">전체화면 모드에서는 핫키 무시</system:String>
-    <system:String x:Key="pythonDirectory">Python 디렉토리</system:String>
     <system:String x:Key="autoUpdates">자동 업데이트</system:String>
-    <system:String x:Key="selectPythonDirectory">선택</system:String>
     <system:String x:Key="hideOnStartup">시작 시 Wox 숨김</system:String>
 
     <!--Setting Plugin-->

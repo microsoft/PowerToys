@@ -28,9 +28,7 @@
     <system:String x:Key="LastQueryEmpty">Tøm siste spørring</system:String>
     <system:String x:Key="maxShowResults">Maks antall resultater vist</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignorer hurtigtaster i fullskjermsmodus</system:String>
-    <system:String x:Key="pythonDirectory">Python-mappe</system:String>
     <system:String x:Key="autoUpdates">Oppdater automatisk</system:String>
-    <system:String x:Key="selectPythonDirectory">Velg</system:String>
     <system:String x:Key="hideOnStartup">Skjul Wox ved oppstart</system:String>
 
     <!--Setting Plugin-->

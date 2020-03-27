@@ -41,8 +41,7 @@ namespace Wox.Helper
 
         public static string DependenciesInfo()
         {
-            var info = $"\nPython Path: {Constant.PythonPath}" +
-                       $"\nEverything SDK Path: {Constant.EverythingSDKPath}";
+            var info = $"\nEverything SDK Path: {Constant.EverythingSDKPath}";
             return info;
         }
     }

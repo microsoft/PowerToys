@@ -42,20 +42,6 @@ namespace Wox.Core.Plugin
             }
         }
 
-        private static void DeletePythonBinding()
-        {
-            const string binding = "wox.py";
-            var directory = Constant.PluginsDirectory;
-            foreach (var subDirectory in Directory.GetDirectories(directory))
-            {
-                var path = Path.Combine(subDirectory, binding);
-                if (File.Exists(path))
-                {
-                    File.Delete(path);
-                }
-            }
-        }
-
         public static void Save()
         {
             foreach (var plugin in AllPlugins)
@@ -77,8 +63,6 @@ namespace Wox.Core.Plugin
         static PluginManager()
         {
             ValidateUserDirectory();
-            // force old plugins use new python binding
-            DeletePythonBinding();
         }
 
         /// <summary>

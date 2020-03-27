@@ -24,9 +24,7 @@
     <system:String x:Key="language">Język</system:String>
     <system:String x:Key="maxShowResults">Maksymalna liczba wyników</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignoruj skróty klawiszowe w trybie pełnego ekranu</system:String>
-    <system:String x:Key="pythonDirectory">Folder biblioteki Python</system:String>
     <system:String x:Key="autoUpdates">Automatyczne aktualizacje</system:String>
-    <system:String x:Key="selectPythonDirectory">Wybierz</system:String>
     <system:String x:Key="hideOnStartup">Uruchamiaj Wox zminimalizowany</system:String>
 
     <!--Setting Plugin-->
