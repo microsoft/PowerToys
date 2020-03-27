@@ -262,7 +262,7 @@ public:
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
         // If the Detect Key Window is currently activated, then suppress the keyboard event
-        if (keyboardManagerState.DetectKeyUIBackend(data))
+        if (keyboardManagerState.DetectSingleRemapKeyUIBackend(data))
         {
             return 1;
         }

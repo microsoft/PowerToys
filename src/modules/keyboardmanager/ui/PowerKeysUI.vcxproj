@@ -104,6 +104,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ShortcutControl.cpp" />
+    <ClCompile Include="SingleKeyRemapControl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EditKeyboardWindow.h" />
@@ -111,6 +112,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="ShortcutControl.h" />
+    <ClInclude Include="SingleKeyRemapControl.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -3,7 +3,7 @@
 
 // Constructor
 KeyboardManagerState::KeyboardManagerState() :
-    uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutTextBlock(nullptr)
+    uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutTextBlock(nullptr), currentSingleKeyRemapTextBlock(nullptr)
 {
 }
 
@@ -46,6 +46,10 @@ void KeyboardManagerState::ResetUIState()
     SetUIState(KeyboardManagerUIState::Deactivated);
     currentShortcutTextBlock = nullptr;
     detectedShortcut.clear();
+
+    // Reset all the single key remap stored variables.
+    currentSingleKeyRemapTextBlock = nullptr;
+    detectedRemapKey = NULL;
 }
 
 // Function to clear the OS Level shortcut remapping table
@@ -54,16 +58,34 @@ void KeyboardManagerState::ClearOSLevelShortcuts()
     osLevelShortcutReMap.clear();
 }
 
+// Function to clear the Keys remapping table.
+void KeyboardManagerState::ClearSingleKeyRemaps()
+{
+    singleKeyReMap.clear();
+}
+
 // Function to add a new OS level shortcut remapping
 void KeyboardManagerState::AddOSLevelShortcut(const std::vector<DWORD>& originalSC, const std::vector<WORD>& newSC)
 {
     osLevelShortcutReMap[originalSC] = std::make_pair(newSC, false);
 }
 
+// Function to add a new OS level shortcut remapping
+void KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const WORD& newRemapKey)
+{
+    singleKeyReMap[originalKey] = newRemapKey;
+}
+
 // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
 void KeyboardManagerState::ConfigureDetectShortcutUI(const TextBlock& textBlock)
 {
     currentShortcutTextBlock = textBlock;
+}
+
+// Function to set the textblock of the detect remap key UI so that it can be accessed by the hook
+void KeyboardManagerState::ConfigureDetectSingleKeyRemapUI(const TextBlock& textBlock)
+{
+    currentSingleKeyRemapTextBlock = textBlock;
 }
 
 // Function to update the detect shortcut UI based on the entered keys
@@ -82,6 +104,22 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
     });
 }
 
+// Function to update the detect remap key UI based on the entered key.
+void KeyboardManagerState::UpdateDetectSingleKeyRemapUI()
+{
+    if (currentSingleKeyRemapTextBlock == nullptr)
+    {
+        return;
+    }
+
+    hstring remapKeyString = winrt::to_hstring((unsigned int)detectedRemapKey);
+
+    // Since this function is invoked from the back-end thread, in order to update the UI the dispatcher must be used.
+    currentSingleKeyRemapTextBlock.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [=]() {
+        currentSingleKeyRemapTextBlock.Text(remapKeyString);
+    });
+}
+
 // Function to return the currently detected shortcut which is displayed on the UI
 std::vector<DWORD> KeyboardManagerState::GetDetectedShortcut()
 {
@@ -91,12 +129,28 @@ std::vector<DWORD> KeyboardManagerState::GetDetectedShortcut()
     return convertWStringVectorToIntegerVector<DWORD>(detectedShortcutVector);
 }
 
+// Function to return the currently detected remap key which is displayed on the UI
+ DWORD KeyboardManagerState::GetDetectedSingleRemapKey()
+{
+    hstring remapKeyString = currentSingleKeyRemapTextBlock.Text();
+    std::wstring remapKeyWString = remapKeyString.c_str();
+    DWORD remapKey = NULL;
+    if (!remapKeyString.empty())
+    {
+        remapKey = std::stoul(remapKeyWString);
+    }
+
+    return remapKey;
+}
+
 // Function which can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
-bool KeyboardManagerState::DetectKeyUIBackend(LowlevelKeyboardEvent* data)
+bool KeyboardManagerState::DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data)
 {
     // Check if the detect key UI window has been activated
-    if (CheckUIState(KeyboardManagerUIState::DetectKeyWindowActivated))
+    if (CheckUIState(KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated))
     {
+        detectedRemapKey = data->lParam->vkCode;
+        UpdateDetectSingleKeyRemapUI();
         // Suppress the keyboard event
         return true;
     }
