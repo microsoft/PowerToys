@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
@@ -46,7 +46,7 @@ namespace PowerToysTests
         }
 
         [TestMethod]
-        public void MoveVerticalDelimiter()
+        public void MoveVerticalSplitter()
         {
             OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
@@ -102,7 +102,7 @@ namespace PowerToysTests
         }
 
         [TestMethod]
-        public void MoveHorizontalDelimiter()
+        public void MoveHorizontalSplitter()
         {
             OpenCreatorWindow("Rows", "Custom table layout creator", "EditTemplateButton");
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
@@ -158,7 +158,7 @@ namespace PowerToysTests
         }
 
         [TestMethod]
-        public void CreateDelimiter()
+        public void CreateSplitter()
         {
             OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
@@ -181,7 +181,7 @@ namespace PowerToysTests
         }
 
         [TestMethod]
-        public void CreateDelimiterWithShiftPressed()
+        public void CreateSplitterWithShiftPressed()
         {
             OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
@@ -206,6 +206,31 @@ namespace PowerToysTests
         }
 
         [TestMethod]
+        public void CreateSplitterWithShiftPressedFocusOnGridEditor()
+        {
+            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
+            Assert.IsNotNull(gridEditor);
+
+            ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
+            Assert.AreEqual(3, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(2, thumbs.Count);
+
+            new Actions(session).MoveToElement(thumbs[0]).Click().MoveByOffset(-100, 0)
+                .KeyDown(OpenQA.Selenium.Keys.Shift).Click().KeyUp(OpenQA.Selenium.Keys.Shift)
+                .Perform();
+            Assert.AreEqual(3, gridEditor.FindElementsByClassName("Thumb").Count);
+
+            ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
+            Assert.AreEqual(4, zones.Count);
+
+            //check that zone was splitted vertically
+            Assert.AreEqual(zones[0].Rect.Height, zones[1].Rect.Height);
+            Assert.AreEqual(zones[1].Rect.Height, zones[2].Rect.Height);
+            Assert.AreEqual(zones[2].Rect.Height, zones[3].Rect.Height);
+        }
+
+        [TestMethod]
         public void MoveHorizontallyWithLimiter()
         {
             OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
@@ -217,19 +242,16 @@ namespace PowerToysTests
             Assert.AreEqual(2, thumbs.Count);
 
             //create new zones
-            new Actions(session).MoveToElement(thumbs[0]).MoveByOffset(-30, 0).Click().Perform();
+            new Actions(session).MoveToElement(thumbs[0]).Click().MoveByOffset(-30, 0)
+                .KeyDown(OpenQA.Selenium.Keys.Shift).Click().KeyUp(OpenQA.Selenium.Keys.Shift)
+                .Perform();
             thumbs = gridEditor.FindElementsByClassName("Thumb");
             Assert.AreEqual(4, session.FindElementsByClassName("GridZone").Count);
             Assert.AreEqual(3, thumbs.Count);
 
-            new Actions(session).MoveToElement(thumbs[0]).MoveByOffset(0, 30).Click().Perform();
-            thumbs = gridEditor.FindElementsByClassName("Thumb");
-            Assert.AreEqual(5, session.FindElementsByClassName("GridZone").Count);
-            Assert.AreEqual(4, thumbs.Count);
-
             //move thumbs
-            AppiumWebElement limiter = gridEditor.FindElementsByClassName("Thumb")[1];
-            AppiumWebElement movable = gridEditor.FindElementsByClassName("Thumb")[2];
+            AppiumWebElement limiter = gridEditor.FindElementsByClassName("Thumb")[0];
+            AppiumWebElement movable = gridEditor.FindElementsByClassName("Thumb")[1];
 
             Move(movable, 0, false, true);
             Assert.IsTrue(movable.Rect.X > limiter.Rect.X);
@@ -254,34 +276,26 @@ namespace PowerToysTests
             Assert.AreEqual(2, thumbs.Count);
 
             //create new zones
-            new Actions(session).MoveToElement(thumbs[0]).MoveByOffset(0, -30).Click().Perform();
+            new Actions(session).MoveToElement(thumbs[0]).Click().MoveByOffset(0, -(thumbs[0].Rect.Y / 2))
+                .KeyDown(OpenQA.Selenium.Keys.Shift).Click().KeyUp(OpenQA.Selenium.Keys.Shift)
+                .Perform();
             thumbs = gridEditor.FindElementsByClassName("Thumb");
             Assert.AreEqual(4, session.FindElementsByClassName("GridZone").Count);
             Assert.AreEqual(3, thumbs.Count);
-            
-            new Actions(session).MoveToElement(thumbs[2]).MoveByOffset(-100, 0).Click().Perform();
-            thumbs = gridEditor.FindElementsByClassName("Thumb");
-            Assert.AreEqual(5, session.FindElementsByClassName("GridZone").Count);
-            Assert.AreEqual(4, thumbs.Count);
-
-            new Actions(session).MoveToElement(thumbs[2]).MoveByOffset(50, 0).Click().Perform();
-            thumbs = gridEditor.FindElementsByClassName("Thumb");
-            Assert.AreEqual(6, session.FindElementsByClassName("GridZone").Count);
-            Assert.AreEqual(5, thumbs.Count);
 
             //move thumbs
-            AppiumWebElement limiter = gridEditor.FindElementsByClassName("Thumb")[3];
+            AppiumWebElement limiter = gridEditor.FindElementsByClassName("Thumb")[0];
             AppiumWebElement movable = gridEditor.FindElementsByClassName("Thumb")[1];
 
             Move(movable, 0, false, false);
-            Assert.IsTrue(movable.Rect.Y < limiter.Rect.Y);
-            Assert.IsTrue(limiter.Rect.Y - movable.Rect.Y < movable.Rect.Height);
+            Assert.IsTrue(movable.Rect.Y > limiter.Rect.Y);
+            Assert.IsTrue(movable.Rect.Y - limiter.Rect.Y < movable.Rect.Height);
 
             Move(limiter, limiter.Rect.Y - (limiter.Rect.Y / 2), false, false);
 
             Move(movable, 0, false, false);
-            Assert.IsTrue(movable.Rect.Y < limiter.Rect.Y);
-            Assert.IsTrue(limiter.Rect.Y - movable.Rect.Y < movable.Rect.Height);
+            Assert.IsTrue(movable.Rect.Y > limiter.Rect.Y);
+            Assert.IsTrue(movable.Rect.Y - limiter.Rect.Y < movable.Rect.Height);
         }
 
         [ClassInitialize]
