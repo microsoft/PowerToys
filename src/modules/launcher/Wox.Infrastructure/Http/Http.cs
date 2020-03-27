@@ -19,8 +19,7 @@ namespace Wox.Infrastructure.Http
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls
                                                     | SecurityProtocolType.Tls11
-                                                    | SecurityProtocolType.Tls12
-                                                    | SecurityProtocolType.Ssl3;
+                                                    | SecurityProtocolType.Tls12;
         }
 
         public static HttpProxy Proxy { private get; set; }

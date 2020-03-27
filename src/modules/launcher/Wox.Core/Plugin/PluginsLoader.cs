@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
@@ -34,7 +35,7 @@ namespace Wox.Core.Plugin
                 {
 
 #if DEBUG
-                    var assembly = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
+                    var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(metadata.ExecuteFilePath);
                     var types = assembly.GetTypes();
                     var type = types.First(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IPlugin)));
                     var plugin = (IPlugin)Activator.CreateInstance(type);
@@ -42,7 +43,7 @@ namespace Wox.Core.Plugin
                     Assembly assembly;
                     try
                     {
-                        assembly = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
+                        assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(metadata.ExecuteFilePath);
                     }
                     catch (Exception e)
                     {

@@ -14,7 +14,7 @@
         AllowDrop="True"
         ShowInTaskbar="False"
         Style="{DynamicResource WindowStyle}"
-        Icon="Images\app.png"
+        Icon="Images/app.png"
         AllowsTransparency="True"
         Loaded="OnLoaded"
         Initialized="OnInitialized"
