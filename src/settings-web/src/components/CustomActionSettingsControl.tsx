@@ -1,6 +1,6 @@
 import React from 'react';
 import {BaseSettingsControl} from './BaseSettingsControl';
-import {Label, Stack, PrimaryButton, Text } from 'office-ui-fabric-react';
+import {Label, Link, Stack, PrimaryButton, Text } from 'office-ui-fabric-react';
 
 export class CustomActionSettingsControl extends BaseSettingsControl {
   colorpickerref:any = null;
@@ -10,7 +10,6 @@ export class CustomActionSettingsControl extends BaseSettingsControl {
     this.colorpickerref = null;
     this.state={
       property_values: props.setting,
-      call_action_callback: props.action_callback,
       name: props.action_name
     }
   }
@@ -34,24 +33,31 @@ export class CustomActionSettingsControl extends BaseSettingsControl {
           <Label>{this.state.property_values.display_name}</Label>
           : null
         }
+        <Stack horizontal tokens={{childrenGap:5}}>
         {
-          <Stack horizontal tokens={{childrenGap:5}}>
-            {
-              this.state.property_values.value ?
-                <Text styles ={{
-                  root: {
-                    paddingBottom: '0.5em'
-                  }
-                }}>{this.state.property_values.value}</Text>
-                : <span/>
-            }
-            {
-              this.state.property_values.help_link ?
-                this.state.property_values.help_link
-              : <span/>
-            }
-          </Stack>
+          this.state.property_values.value ?
+            <Text styles ={{
+              root: {
+                paddingBottom: '0.5em'
+              }
+            }}>{this.state.property_values.value}</Text>
+          : <span/>
         }
+        {
+          this.state.property_values.help_link_url && this.state.property_values.help_link_text ?
+          <Link
+            styles = {{
+              root: {
+                alignSelf:'center',
+                paddingBottom: '0.5em'
+              }
+            }}
+            href={ this.state.property_values.help_link_url }
+            target='_blank'
+          >{ this.state.property_values.help_link_text }</Link> 
+          : <span/>
+        }
+        </Stack>
         <PrimaryButton
             styles={{
               root: {
@@ -59,7 +65,7 @@ export class CustomActionSettingsControl extends BaseSettingsControl {
               }
           }}
           text={this.state.property_values.button_text}
-          onClick={()=>this.state.call_action_callback(this.state.name, this.state.property_values)}
+          onClick={()=>this.props.action_callback(this.state.name, this.state.property_values)}
         />
       </Stack>
     );
