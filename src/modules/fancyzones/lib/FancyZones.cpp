@@ -688,7 +688,9 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
         JSONHelpers::FancyZonesDataInstance().SetActiveDeviceId(uniqueId);
 
         const bool newWorkArea = IsNewWorkArea(m_currentVirtualDesktopId, monitor);
-        const bool flash = m_settings->GetSettings()->zoneSetChange_flashZones && newWorkArea;
+        // "Turning FLASHING_ZONE option off"
+        //const bool flash = m_settings->GetSettings()->zoneSetChange_flashZones && newWorkArea;
+        const bool flash = false;
 
         auto zoneWindow = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, flash);
         if (zoneWindow)
