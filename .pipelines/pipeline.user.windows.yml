@@ -52,6 +52,12 @@ build:
             - 'modules\PowerRenameExt.dll'
             - 'modules\WindowWalker.exe'
             - 'modules\WindowWalker.dll'
+            - 'modules\ImageResizerExt.dll'
+            - 'modules\ImageResizer.exe'
+            - 'modules\powerpreview.dll'
+            - 'modules\PreviewHandlerCommon.dll'
+            - 'modules\MarkdownPreviewHandler.dll'
+            - 'modules\SvgPreviewHandler.dll'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
     - !!buildcommand
