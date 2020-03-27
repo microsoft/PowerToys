@@ -37,6 +37,7 @@ public:
     // Constructor
     ImageResizerModule()
     {
+        m_enabled = CSettings::GetEnabled();
         app_name = GET_RESOURCE_STRING(IDS_IMAGERESIZER);
     };
 
