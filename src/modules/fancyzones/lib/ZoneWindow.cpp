@@ -737,6 +737,9 @@ void ZoneWindow::CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::Inp
 
 void ZoneWindow::FlashZones() noexcept
 {
+    // "Turning FLASHING_ZONE option off"
+    if(true) return;
+
     m_flashMode = true;
 
     ShowWindow(m_window.get(), SW_SHOWNA);
