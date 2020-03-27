@@ -4,4 +4,292 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:xaml="using:Microsoft.Toolkit.Win32.UI.XamlHost"
     xmlns:local="using:PowerLauncher.UI">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+            </ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="PrimaryTextColor" Color="Black"/>
+                    <AcrylicBrush x:Key="BackdropAcrylicBrush" BackgroundSource="Backdrop" TintColor="White" TintOpacity="0.9" FallbackColor="White"/>
+                    <AcrylicBrush x:Key="KeyboardShortcutAcrylicBrush" BackgroundSource="Backdrop" TintColor="White" TintOpacity="0.9" FallbackColor="White"/>
+                    <SolidColorBrush x:Key="ItemBackgroundColor" Color="#FFFFFFFF"/>
+                    <Color x:Key="DropShadowColor">#FF979797</Color>
+                    <x:Double x:Key="DropShadowBlurRadius">8</x:Double>
+                </ResourceDictionary>
+
+                <ResourceDictionary x:Key="Default">
+                    <SolidColorBrush x:Key="PrimaryTextColor" Color="White"/>
+                    <AcrylicBrush x:Key="BackdropAcrylicBrush" BackgroundSource="Backdrop" TintColor="#88484848" TintOpacity="0.9" FallbackColor="#FF484848"/>
+                    <AcrylicBrush x:Key="KeyboardShortcutAcrylicBrush" BackgroundSource="Backdrop" TintColor="Black" TintOpacity="0.9" FallbackColor="Black"/>
+                    <SolidColorBrush x:Key="ItemBackgroundColor" Color="#FFFFFFFF"/>
+                    <x:Double x:Key="DropShadowBlurRadius">8</x:Double>
+                    <Color x:Key="DropShadowColor">#FF979797</Color>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
+            <Style x:Key="IconOnlyButton" TargetType="Button">
+                <Setter Property="Background" Value="{ThemeResource ButtonRevealBackground}" />
+                <Setter Property="Foreground" Value="{ThemeResource PrimaryTextColor}" />
+                <!--<Setter Property="BorderBrush" Value="0" />-->
+                <Setter Property="BorderThickness" Value="{ThemeResource ButtonRevealBorderThemeThickness}" />
+                <Setter Property="Padding" Value="{ThemeResource ButtonPadding}" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+                <Setter Property="FontWeight" Value="Normal" />
+                <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+                <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+                <Setter Property="FocusVisualMargin" Value="-3" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Grid x:Name="RootGrid" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}">
+
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal">
+
+                                            <Storyboard>
+                                                <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                            </Storyboard>
+                                        </VisualState>
+
+                                        <VisualState x:Name="PointerOver">
+                                            <VisualState.Setters>
+                                                <Setter Target="RootGrid.(RevealBrush.State)" Value="PointerOver" />
+                                                <Setter Target="RootGrid.Background" Value="{ThemeResource ButtonRevealBackgroundPointerOver}" />
+                                                <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ButtonRevealBorderBrushPointerOver}" />
+                                                <!--<Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ButtonForegroundPointerOver}" />-->
+                                            </VisualState.Setters>
+
+                                            <Storyboard>
+                                                <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                            </Storyboard>
+                                        </VisualState>
+
+                                        <VisualState x:Name="Pressed">
+                                            <VisualState.Setters>
+                                                <Setter Target="RootGrid.(RevealBrush.State)" Value="Pressed" />
+                                                <Setter Target="RootGrid.Background" Value="{ThemeResource ButtonRevealBackgroundPressed}" />
+                                                <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ButtonRevealBorderBrushPressed}" />
+                                                <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ButtonForegroundPressed}" />
+                                            </VisualState.Setters>
+
+                                            <Storyboard>
+                                                <PointerDownThemeAnimation Storyboard.TargetName="RootGrid" />
+                                            </Storyboard>
+                                        </VisualState>
+
+                                        <VisualState x:Name="Disabled">
+                                            <VisualState.Setters>
+                                                <Setter Target="RootGrid.Background" Value="{ThemeResource ButtonRevealBackgroundDisabled}" />
+                                                <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ButtonRevealBorderBrushDisabled}" />
+                                                <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+
+                                    </VisualStateGroup>
+
+                                </VisualStateManager.VisualStateGroups>
+                                <ContentPresenter x:Name="ContentPresenter" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" CornerRadius="{TemplateBinding CornerRadius}" Content="{TemplateBinding Content}" ContentTransitions="{TemplateBinding ContentTransitions}" ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" AutomationProperties.AccessibilityView="Raw" />
+
+                            </Grid>
+
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="GridViewItem" x:Key="DropShadowGridViewItemRevealStyle">
+                <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+                <Setter Property="Background" Value="Transparent" />
+                <!--<Setter Property="Background" Value="{ThemeResource GridViewItemRevealBackground}" />-->
+                <Setter Property="BorderThickness" Value="{ThemeResource GridViewItemRevealBorderThemeThickness}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource GridViewItemRevealBorderBrush}" />
+                <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+
+                <Setter Property="Foreground" Value="{ThemeResource GridViewItemForeground}" />
+                <Setter Property="TabNavigation" Value="Local" />
+                <Setter Property="IsHoldingEnabled" Value="True" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Margin" Value="0,0,4,4" />
+                <Setter Property="MinWidth" Value="{ThemeResource GridViewItemMinWidth}" />
+                <Setter Property="MinHeight" Value="{ThemeResource GridViewItemMinHeight}" />
+                <Setter Property="AllowDrop" Value="False" />
+                <Setter Property="UseSystemFocusVisuals" Value="True" />
+                <Setter Property="FocusVisualMargin" Value="-2" />
+                <Setter Property="FocusVisualPrimaryBrush" Value="{ThemeResource GridViewItemFocusVisualPrimaryBrush}" />
+                <Setter Property="FocusVisualPrimaryThickness" Value="2" />
+                <Setter Property="FocusVisualSecondaryBrush" Value="{ThemeResource GridViewItemFocusVisualSecondaryBrush}" />
+                <Setter Property="FocusVisualSecondaryThickness" Value="1" />
+
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="GridViewItem">
+
+                            <Grid x:Name="RootGrid" Width="120" Background="{ThemeResource GridViewItemRevealBackground}">
+                                <!--<Interactivity:Interaction.Behaviors>
+                                    <Core:EventTriggerBehavior EventName="PointerEntered">
+                                        <Core:CallMethodAction TargetObject="{Binding ElementName=GridScaleUp}" MethodName="StartAnimation"/>
+                                    </Core:EventTriggerBehavior>
+                                    <Core:EventTriggerBehavior EventName="PointerExited">
+                                        <Core:CallMethodAction TargetObject="{Binding ElementName=GridScaleDown}" MethodName="StartAnimation"/>
+                                    </Core:EventTriggerBehavior>
+                                </Interactivity:Interaction.Behaviors>-->
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+
+                                        <VisualStateGroup.Transitions>
+                                            <VisualTransition From="PointerOver" To="Normal" GeneratedDuration="0:0:0">
+                                                <Storyboard>
+                                                    <DoubleAnimationUsingKeyFrames EnableDependentAnimation="True" Storyboard.TargetName="DropShadowHolder" Storyboard.TargetProperty="(DropShadowPanel.ShadowOpacity)">
+                                                        <EasingDoubleKeyFrame KeyTime="00:00:00" Value="0.8">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <CubicEase EasingMode="EaseIn"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                        <EasingDoubleKeyFrame KeyTime="00:00:0.6" Value="0.2">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <CubicEase EasingMode="EaseOut"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames EnableDependentAnimation="True" Storyboard.TargetName="DropShadowHolder" Storyboard.TargetProperty="(DropShadowPanel.BlurRadius)">
+                                                        <EasingDoubleKeyFrame KeyTime="00:00:00" Value="{StaticResource DropShadowBlurRadiusOnHover}">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <CubicEase EasingMode="EaseIn"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                        <EasingDoubleKeyFrame KeyTime="00:00:0.6" Value="{StaticResource DropShadowBlurRadius}">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <CubicEase EasingMode="EaseOut"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualTransition>
+                                        </VisualStateGroup.Transitions>
+
+                                        <VisualState x:Name="Normal"/>
+                                        <VisualState x:Name="Selected">
+                                            <VisualState.Setters>
+                                                <Setter Target="ContentPresenter.BorderThickness" Value="2" />
+                                                <Setter Target="ContentPresenter.BorderBrush" Value="{StaticResource PrimaryTextColor}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+
+                                        <VisualState x:Name="PointerOver">
+                                            <VisualState.Setters>
+                                                <Setter Target="RootGrid.(RevealBrush.State)" Value="PointerOver" />
+                                                <Setter Target="RootGrid.Background" Value="{ThemeResource ListViewItemRevealBackground}" />
+                                                <!--<Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource GridViewItemRevealBackgroundPointerOver}"/>-->
+                                                <!--<Setter Target="ContentPresenter.Foreground" Value="{ThemeResource GridViewItemRevealForegroundPointerOver}" />-->
+                                            </VisualState.Setters>
+                                            <Storyboard>
+                                                <DoubleAnimationUsingKeyFrames EnableDependentAnimation="True" Storyboard.TargetName="DropShadowHolder" Storyboard.TargetProperty="(DropShadowPanel.ShadowOpacity)">
+                                                    <EasingDoubleKeyFrame KeyTime="00:00:00" Value="0.2">
+                                                        <EasingDoubleKeyFrame.EasingFunction>
+                                                            <CubicEase EasingMode="EaseIn"/>
+                                                        </EasingDoubleKeyFrame.EasingFunction>
+                                                    </EasingDoubleKeyFrame>
+                                                    <EasingDoubleKeyFrame KeyTime="00:00:0.6" Value="0.8">
+                                                        <EasingDoubleKeyFrame.EasingFunction>
+                                                            <CubicEase EasingMode="EaseOut"/>
+                                                        </EasingDoubleKeyFrame.EasingFunction>
+                                                    </EasingDoubleKeyFrame>
+                                                </DoubleAnimationUsingKeyFrames>
+                                                <DoubleAnimationUsingKeyFrames EnableDependentAnimation="True" Storyboard.TargetName="DropShadowHolder" Storyboard.TargetProperty="(DropShadowPanel.BlurRadius)">
+                                                    <EasingDoubleKeyFrame KeyTime="00:00:00" Value="{StaticResource DropShadowBlurRadius}">
+                                                        <EasingDoubleKeyFrame.EasingFunction>
+                                                            <CubicEase EasingMode="EaseIn"/>
+                                                        </EasingDoubleKeyFrame.EasingFunction>
+                                                    </EasingDoubleKeyFrame>
+                                                    <EasingDoubleKeyFrame KeyTime="00:00:0.6" Value="{StaticResource DropShadowBlurRadiusOnHover}">
+                                                        <EasingDoubleKeyFrame.EasingFunction>
+                                                            <CubicEase EasingMode="EaseOut"/>
+                                                        </EasingDoubleKeyFrame.EasingFunction>
+                                                    </EasingDoubleKeyFrame>
+                                                </DoubleAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+
+                                        <VisualState x:Name="PointerOverSelected">
+                                            <VisualState.Setters>
+                                                <Setter Target="RootGrid.(RevealBrush.State)" Value="PointerOver" />
+                                                <Setter Target="RootGrid.Background" Value="{ThemeResource ListViewItemRevealBackground }" />
+                                                <Setter Target="ContentPresenter.BorderThickness" Value="2" />
+                                                <Setter Target="ContentPresenter.BorderBrush" Value="{StaticResource PrimaryTextColor}" />
+                                                <!--<Setter Target="ContentPresenter.Foreground" Value="{ThemeResource GridViewItemRevealForegroundPointerOver}" />-->
+                                            </VisualState.Setters>
+                                        </VisualState>
+
+                                        <VisualState x:Name="PointerOverPressed">
+                                            <VisualState.Setters>
+                                                <Setter Target="RootGrid.(RevealBrush.State)" Value="Pressed" />
+                                                <Setter Target="RootGrid.Background" Value="{ThemeResource ListViewItemRevealBackground }" />
+                                                <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ListViewItemRevealBackground }" />
+                                                <!--<Setter Target="ContentPresenter.Foreground" Value="{ThemeResource GridViewItemForegroundPressed}" />-->
+                                            </VisualState.Setters>
+                                        </VisualState>
+
+                                        <VisualState x:Name="Pressed">
+                                            <VisualState.Setters>
+                                                <Setter Target="RootGrid.(RevealBrush.State)" Value="Pressed" />
+                                                <Setter Target="RootGrid.Background" Value="{ThemeResource ListViewItemRevealBackground }" />
+                                                <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ListViewItemRevealBackground }" />
+                                                <!--<Setter Target="ContentPresenter.Foreground" Value="{ThemeResource GridViewItemForegroundPressed}" />-->
+                                            </VisualState.Setters>
+                                        </VisualState>
+
+
+                                        <VisualState x:Name="PressedSelected">
+                                            <VisualState.Setters>
+                                                <Setter Target="RootGrid.(RevealBrush.State)" Value="Pressed" />
+
+                                                <Setter Target="ContentPresenter.BorderThickness" Value="2" />
+                                                <Setter Target="ContentPresenter.BorderBrush" Value="{StaticResource PrimaryTextColor}" />
+                                                <!--<Setter Target="ContentPresenter.Foreground" Value="{ThemeResource GridViewItemForegroundPressed}" />-->
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                    <VisualStateGroup x:Name="DisabledStates">
+                                        <VisualState x:Name="Enabled" />
+
+                                        <VisualState x:Name="Disabled">
+                                            <VisualState.Setters>
+                                                <Setter Target="Root.RevealBorderThickness" Value="0" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+
+                                <ToolkitControls:DropShadowPanel x:Name="DropShadowHolder" VerticalAlignment="Stretch" Width="72" Margin="10" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                               BlurRadius="{StaticResource DropShadowBlurRadius}"
+                               ShadowOpacity="0.2"
+                               OffsetX="0"
+                               OffsetY="0"
+                               Color="{StaticResource DropShadowColor}">
+                                    <ContentPresenter x:Name="ContentPresenter" CornerRadius="4" Width="72"
+                                                  Background="{StaticResource ItemBackgroundColor}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="2"
+                                Content="{TemplateBinding Content}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                               
+                                AutomationProperties.AccessibilityView="Raw" />
+                                </ToolkitControls:DropShadowPanel>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
 </xaml:XamlApplication>
