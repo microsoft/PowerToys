@@ -337,7 +337,7 @@ namespace FancyZonesEditor
                     _gridModel.CellChildMap[row, col] = index--;
                     if (index < 0)
                     {
-                        index = 0; ;
+                        index = 0;
                     }
                 }
             }

@@ -152,7 +152,7 @@ namespace FancyZonesEditor
 
         protected override void OnMouseLeave(MouseEventArgs e)
         {
-             _splitter.Fill = Brushes.Transparent;
+            _splitter.Fill = Brushes.Transparent;
             base.OnMouseLeave(e);
         }
 
