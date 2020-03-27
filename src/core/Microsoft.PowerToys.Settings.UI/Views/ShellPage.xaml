@@ -18,10 +18,30 @@
         </ic:EventTriggerBehavior>
     </i:Interaction.Behaviors>
 
-    <!-- 
-        TODO: 
-            Style clean up for navview
-    -->
+    <Grid>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="LargeLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="1100" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="480" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+   
     <winui:NavigationView
         x:Name="navigationView"
         IsBackButtonVisible="Collapsed"
@@ -31,15 +51,17 @@
         IsPaneToggleButtonVisible="False" 
         PaneDisplayMode="Left"
         Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
-        <winui:NavigationView.PaneHeader>
-            <!-- 
+            <!--     <winui:NavigationView.PaneHeader>
+           
                 TODO: 
                     PowerToys needs to be string 
                     Think maybe about svg logo here
                     Margin should be style
-            -->
-            <TextBlock Margin="12, 24, 0, 6" Style="{StaticResource SubheaderTextBlockStyle}" FontWeight="Bold">PowerToys</TextBlock>
-        </winui:NavigationView.PaneHeader>
+   
+            <TextBlock Margin="12, 24, 0, 6" Style="{StaticResource SubheaderTextBlockStyle}" FontWeight="Bold">PowerToys</TextBlock>    
+            
+          
+        </winui:NavigationView.PaneHeader>   -->
         <winui:NavigationView.MenuItems>
             <!--
             TODO WTS: Change the symbols for each item as appropriate for your app
@@ -52,10 +74,27 @@
                     <FontIcon Glyph="&#xE713;"/>
                 </winui:NavigationViewItem.Icon>
             </winui:NavigationViewItem>
-            <!--<winui:NavigationViewItem x:Uid="Shell_Main" Icon="Home" helpers:NavHelper.NavigateTo="views:MainPage" />
-            <winui:NavigationViewItem x:Uid="Shell_Test1" Icon="Play" helpers:NavHelper.NavigateTo="views:Test1Page" />
-            <winui:NavigationViewItem x:Uid="Shell_Test2" Icon="Refresh" helpers:NavHelper.NavigateTo="views:Test2Page" />
-            <winui:NavigationViewItem x:Uid="Shell_Test3" Icon="Save" helpers:NavHelper.NavigateTo="views:Test3Page" />-->
+
+            <!-- TO DO: Update icon -->
+            <winui:NavigationViewItem x:Uid="Shell_PowerRename" helpers:NavHelper.NavigateTo="views:PowerRenamePage">
+                <winui:NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE8AC;"/>
+                </winui:NavigationViewItem.Icon>
+            </winui:NavigationViewItem>
+
+            <!-- TO DO: Update icon -->
+            <winui:NavigationViewItem x:Uid="Shell_ShortcutGuide" helpers:NavHelper.NavigateTo="views:ShortcutGuidePage">
+                <winui:NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xEDA7;"/>
+                </winui:NavigationViewItem.Icon>
+            </winui:NavigationViewItem>
+
+            <!-- TO DO: Update icon -->
+            <winui:NavigationViewItem x:Uid="Shell_PowerLauncher" helpers:NavHelper.NavigateTo="views:PowerLauncherPage">
+                <winui:NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE8A7;"/>
+                </winui:NavigationViewItem.Icon>
+            </winui:NavigationViewItem>
         </winui:NavigationView.MenuItems>
         <i:Interaction.Behaviors>
             <behaviors:NavigationViewHeaderBehavior
@@ -77,8 +116,42 @@
                 <ic:InvokeCommandAction Command="{x:Bind ViewModel.ItemInvokedCommand}" />
             </ic:EventTriggerBehavior>
         </i:Interaction.Behaviors>
-        <Grid>
-            <Frame x:Name="shellFrame" />
-        </Grid>
+        <ScrollViewer Grid.Column="0">
+            <Grid RowSpacing="32"
+                      Margin="{StaticResource MediumLeftRightBottomMargin}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Frame x:Name="shellFrame" />
+
+                <StackPanel x:Name="SidePanel"
+                                Orientation="Vertical"
+                                HorizontalAlignment="Left"
+                                Width="240"
+                                Grid.Column="1">
+
+                    <TextBlock Text="About this feature"
+                                   Style="{StaticResource SettingsGroupTitleStyle}"
+                                   Margin="{StaticResource XSmallBottomMargin}"/>
+
+                    <HyperlinkButton Content="Module overview"/>
+                    <HyperlinkButton Content="Give feedback"/>
+
+                    <TextBlock Text="Contributors"
+                           Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+                    <HyperlinkButton Content="Contributor name"/>
+                    <HyperlinkButton Content="Contributor name"/>
+                    <HyperlinkButton Content="Contributor name"/>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
     </winui:NavigationView>
+    </Grid>
 </UserControl>
