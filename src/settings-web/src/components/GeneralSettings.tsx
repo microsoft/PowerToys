@@ -149,7 +149,9 @@ export class GeneralSettings extends React.Component <any, any> {
           setting={{
             display_name: '',
             value: 'Running as user. Do you wish to run as administrator instead?',
-            button_text: 'Restart as administrator'
+            button_text: 'Restart as administrator',
+            help_link_url: "https://aka.ms/powertoysDetectedElevatedHelp",
+            help_link_text: "(Learn more about Admin mode)"
           }}
           action_name={'restart_elevation'}
           action_callback={(action_name: any, value:any) => {

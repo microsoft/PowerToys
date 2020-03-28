@@ -91,23 +91,9 @@ namespace MarkdownPreviewHandler
                     {
                         if (link.IsImage)
                         {
+                            link.Url = "#";
                             link.GetAttributes().AddClass("img-fluid");
-                        }
-
-                        if (!Uri.TryCreate(link.Url, UriKind.Absolute, out _))
-                        {
-                            link.Url = link.Url.TrimStart('/', '\\');
-                            this.BaseUrl = this.BaseUrl.TrimEnd('/', '\\');
-                            Uri uriLink = new Uri(Path.Combine(this.BaseUrl, link.Url));
-                            link.Url = uriLink.ToString();
-                        }
-                        else
-                        {
-                            if (link.IsImage)
-                            {
-                                link.Url = "#";
-                                this.imagesBlockedCallBack();
-                            }
+                            this.imagesBlockedCallBack();
                         }
                     }
                 }

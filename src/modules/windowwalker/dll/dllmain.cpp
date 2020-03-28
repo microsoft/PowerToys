@@ -39,7 +39,7 @@ private:
     std::wstring m_appName;
 
     // The PowerToy state.
-    bool m_enabled = true;
+    bool m_enabled = false;
 
     // Load initial settings from the persisted values.
     void init_settings();
@@ -58,6 +58,11 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        if (m_enabled)
+        {
+            TerminateProcess(m_hProcess, 1);
+        }
+
         delete this;
     }
 
@@ -86,6 +91,8 @@ public:
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(GET_RESOURCE_STRING(IDS_GENERAL_DESCRIPTION));
         settings.set_overview_link(GET_RESOURCE_STRING(IDS_OVERVIEW_LINK));
+        settings.set_icon_key(L"pt-window-walker");
+
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }

@@ -51,6 +51,7 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
     // General Settings.
     settings.set_description(GET_RESOURCE_STRING(IDS_GENERAL_DESCRIPTION));
     settings.set_icon_key(GET_RESOURCE_STRING(IDS_ICON_KEY_NAME));
+    settings.set_overview_link(L"https://github.com/microsoft/PowerToys/blob/master/src/modules/previewpane/README.md");
 
     // Preview Pane: Settings Group Header.
     settings.add_header_szLarge(

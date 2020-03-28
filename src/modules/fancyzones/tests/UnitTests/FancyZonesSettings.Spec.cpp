@@ -100,25 +100,7 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (Create)
                 {
                     //prepare data
-                    const Settings expected{
-                        .shiftDrag = false,
-                        .displayChange_moveWindows = true,
-                        .virtualDesktopChange_moveWindows = true,
-                        .zoneSetChange_flashZones = true,
-                        .zoneSetChange_moveWindows = true,
-                        .overrideSnapHotkeys = false,
-                        .appLastZone_moveWindows = false,
-                        .use_cursorpos_editor_startupscreen = true,
-                        .showZonesOnAllMonitors = false,
-                        .makeDraggedWindowTransparent = true,
-                        .zoneColor = L"FAFAFA",
-                        .zoneBorderColor = L"CCDDEE",
-                        .zoneHightlightColor = L"#00FFD7",
-                        .zoneHighlightOpacity = 45,
-                        .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
-                        .excludedApps = L"app",
-                        .excludedAppsArray = { L"APP" },
-                    };
+                    const Settings expected;
 
                     PowerToysSettings::PowerToyValues values(m_moduleName);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
@@ -151,21 +133,6 @@ namespace FancyZonesUnitTests
                 {
                     //prepare data
                     const Settings expected{
-                        .shiftDrag = false,
-                        .displayChange_moveWindows = true,
-                        .virtualDesktopChange_moveWindows = true,
-                        .zoneSetChange_flashZones = true,
-                        .zoneSetChange_moveWindows = true,
-                        .overrideSnapHotkeys = false,
-                        .appLastZone_moveWindows = false,
-                        .use_cursorpos_editor_startupscreen = true,
-                        .showZonesOnAllMonitors = false,
-                        .makeDraggedWindowTransparent = true,
-                        .zoneColor = L"FAFAFA",
-                        .zoneBorderColor = L"CCDDEE",
-                        .zoneHightlightColor = L"#00FFD7",
-                        .zoneHighlightOpacity = 45,
-                        .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
                         .excludedApps = L"app\r\napp1\r\napp2\r\nanother app",
                         .excludedAppsArray = { L"APP", L"APP1", L"APP2", L"ANOTHER APP" },
                     };
@@ -239,25 +206,7 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CreateColorMissed)
                 {
                     //prepare data
-                    const Settings expected{
-                        .shiftDrag = false,
-                        .displayChange_moveWindows = true,
-                        .virtualDesktopChange_moveWindows = true,
-                        .zoneSetChange_flashZones = true,
-                        .zoneSetChange_moveWindows = true,
-                        .overrideSnapHotkeys = false,
-                        .appLastZone_moveWindows = false,
-                        .use_cursorpos_editor_startupscreen = true,
-                        .showZonesOnAllMonitors = false,
-                        .makeDraggedWindowTransparent = true,
-                        .zoneColor = m_defaultSettings.zoneColor,
-                        .zoneBorderColor = m_defaultSettings.zoneBorderColor,
-                        .zoneHightlightColor = m_defaultSettings.zoneHightlightColor,
-                        .zoneHighlightOpacity = 45,
-                        .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
-                        .excludedApps = L"app",
-                        .excludedAppsArray = { L"APP" },
-                    };
+                    const Settings expected;
 
                     PowerToysSettings::PowerToyValues values(m_moduleName);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
@@ -286,25 +235,7 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CreateOpacityMissed)
                 {
                     //prepare data
-                    const Settings expected{
-                        .shiftDrag = false,
-                        .displayChange_moveWindows = true,
-                        .virtualDesktopChange_moveWindows = true,
-                        .zoneSetChange_flashZones = true,
-                        .zoneSetChange_moveWindows = true,
-                        .overrideSnapHotkeys = false,
-                        .appLastZone_moveWindows = false,
-                        .use_cursorpos_editor_startupscreen = true,
-                        .showZonesOnAllMonitors = false,
-                        .makeDraggedWindowTransparent = true,
-                        .zoneColor = L"#FAFAFA",
-                        .zoneBorderColor = L"#4b4b55",
-                        .zoneHightlightColor = L"#00FFD7",
-                        .zoneHighlightOpacity = m_defaultSettings.zoneHighlightOpacity,
-                        .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
-                        .excludedApps = L"app",
-                        .excludedAppsArray = { L"APP" },
-                    };
+                    const Settings expected;
 
                     PowerToysSettings::PowerToyValues values(m_moduleName);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
@@ -334,25 +265,7 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CreateHotkeyMissed)
                 {
                     //prepare data
-                    const Settings expected = Settings{
-                        .shiftDrag = false,
-                        .displayChange_moveWindows = true,
-                        .virtualDesktopChange_moveWindows = true,
-                        .zoneSetChange_flashZones = true,
-                        .zoneSetChange_moveWindows = true,
-                        .overrideSnapHotkeys = false,
-                        .appLastZone_moveWindows = false,
-                        .use_cursorpos_editor_startupscreen = true,
-                        .showZonesOnAllMonitors = false,
-                        .makeDraggedWindowTransparent = true,
-                        .zoneColor = L"FAFAFA",
-                        .zoneBorderColor = L"CCDDEE",
-                        .zoneHightlightColor = L"#00FFD7",
-                        .zoneHighlightOpacity = 45,
-                        .editorHotkey = m_defaultSettings.editorHotkey,
-                        .excludedApps = L"app",
-                        .excludedAppsArray = { L"APP" },
-                    };
+                    const Settings expected;
 
                     PowerToysSettings::PowerToyValues values(m_moduleName);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
@@ -383,25 +296,7 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CreateAppsMissed)
                 {
                     //prepare data
-                    const Settings expected = Settings{
-                        .shiftDrag = false,
-                        .displayChange_moveWindows = true,
-                        .virtualDesktopChange_moveWindows = true,
-                        .zoneSetChange_flashZones = true,
-                        .zoneSetChange_moveWindows = true,
-                        .overrideSnapHotkeys = false,
-                        .appLastZone_moveWindows = false,
-                        .use_cursorpos_editor_startupscreen = true,
-                        .showZonesOnAllMonitors = false,
-                        .makeDraggedWindowTransparent = true,
-                        .zoneColor = L"FAFAFA",
-                        .zoneBorderColor = L"CCDDEE",
-                        .zoneHightlightColor = L"#00FFD7",
-                        .zoneHighlightOpacity = 45,
-                        .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
-                        .excludedApps = m_defaultSettings.excludedApps,
-                        .excludedAppsArray = m_defaultSettings.excludedAppsArray,
-                    };
+                    const Settings expected;
 
                     PowerToysSettings::PowerToyValues values(m_moduleName);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
@@ -674,31 +569,13 @@ namespace FancyZonesUnitTests
                 HINSTANCE hInst = (HINSTANCE)GetModuleHandleW(nullptr);
 
                 //init m_settings
-                const Settings expected{
-                    .shiftDrag = false,
-                    .displayChange_moveWindows = true,
-                    .virtualDesktopChange_moveWindows = true,
-                    .zoneSetChange_flashZones = true,
-                    .zoneSetChange_moveWindows = true,
-                    .overrideSnapHotkeys = false,
-                    .appLastZone_moveWindows = false,
-                    .use_cursorpos_editor_startupscreen = true,
-                    .showZonesOnAllMonitors = false,
-                    .makeDraggedWindowTransparent = true,
-                    .zoneColor = L"FAFAFA",
-                    .zoneBorderColor = L"CCDDEE",
-                    .zoneHightlightColor = L"#00FFD7",
-                    .zoneHighlightOpacity = 45,
-                    .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
-                    .excludedApps = L"app",
-                    .excludedAppsArray = { L"APP" },
-                };
+                const Settings expected;
 
                 PowerToysSettings::PowerToyValues values(m_moduleName);
                 values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                 values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
                 values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
-                values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
+                //values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                 values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                 values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
                 values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
@@ -731,7 +608,7 @@ namespace FancyZonesUnitTests
                 m_ptSettings->add_hotkey(L"fancyzones_editor_hotkey", IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, expected.editorHotkey);
                 m_ptSettings->add_bool_toogle(L"fancyzones_shiftDrag", IDS_SETTING_DESCRIPTION_SHIFTDRAG, expected.shiftDrag);
                 m_ptSettings->add_bool_toogle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, expected.overrideSnapHotkeys);
-                m_ptSettings->add_bool_toogle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, expected.zoneSetChange_flashZones);
+                //m_ptSettings->add_bool_toogle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, expected.zoneSetChange_flashZones);
                 m_ptSettings->add_bool_toogle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, expected.displayChange_moveWindows);
                 m_ptSettings->add_bool_toogle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, expected.zoneSetChange_moveWindows);
                 m_ptSettings->add_bool_toogle(L"fancyzones_virtualDesktopChange_moveWindows", IDS_SETTING_DESCRIPTION_VIRTUALDESKTOPCHANGE_MOVEWINDOWS, expected.virtualDesktopChange_moveWindows);

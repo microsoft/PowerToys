@@ -8,6 +8,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Common;
 using Markdig;
@@ -82,6 +83,12 @@ namespace MarkdownPreviewHandler
                     string filePath = dataSource as string;
                     string fileText = File.ReadAllText(filePath);
                     this.extension.BaseUrl = Path.GetDirectoryName(filePath);
+
+                    Regex rgx = new Regex(@"<[ ]*img.*>");
+                    if (rgx.IsMatch(fileText))
+                    {
+                        this.infoBarDisplayed = true;
+                    }
 
                     MarkdownPipeline pipeline = this.pipelineBuilder.Build();
                     string parsedMarkdown = Markdown.ToHtml(fileText, pipeline);
