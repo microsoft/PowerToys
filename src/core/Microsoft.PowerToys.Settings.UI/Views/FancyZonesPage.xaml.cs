@@ -16,11 +16,11 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class PowerRenamePage : Page
+    public sealed partial class FancyZonesPage : Page
     {
-        public PowerRenameViewModel ViewModel { get; } = new PowerRenameViewModel();
+        public FancyZonesViewModel ViewModel { get; } = new FancyZonesViewModel();
 
-        public PowerRenamePage()
+        public FancyZonesPage()
         {
             this.InitializeComponent();
         }

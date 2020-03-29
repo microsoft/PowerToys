@@ -1,0 +1,74 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.FancyZonesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+
+        <StackPanel Orientation="Vertical">
+            <TextBlock Text="Create window layouts to help make multi-tasking easy."
+                       TextWrapping="Wrap"/>
+
+            <ToggleSwitch Header="Enable FancyZones"
+                          IsOn="True"
+                          Margin="{StaticResource SmallTopMargin}" />
+
+            <TextBlock Text="General"
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <CheckBox Content="Hold Shift key or any non-primary mouse button to enable zones while dragging"
+                          IsChecked="True"
+                          Margin="{StaticResource SmallTopMargin}"/>
+
+            <CheckBox Content="Override Windows Snap hotkeys (Win + arrow) to move windows between zones"
+                          IsChecked="True"
+                          Margin="{StaticResource SmallTopMargin}"/>
+
+            <CheckBox Content="Flash zones when the active FancyZones layout changes"
+                          IsChecked="True"
+                          Margin="{StaticResource SmallTopMargin}"/>
+
+            <CheckBox Content="Keep windows in their zones when the screen resolution changes"
+                          IsChecked="True"
+                          Margin="{StaticResource SmallTopMargin}"/>
+
+            <CheckBox Content="During zone layout changes, windows assigned to a zone will match new size/positions"
+                          IsChecked="True"
+                          Margin="{StaticResource SmallTopMargin}"/>
+
+            <CheckBox Content="Keep windows pinned to multiple desktops in the same zone when the active desktop changes"
+                          IsChecked="True"
+                          Margin="{StaticResource SmallTopMargin}"/>
+
+            <CheckBox Content="Move newly created windows to their last known zone"
+                          IsChecked="True"
+                          Margin="{StaticResource SmallTopMargin}"/>
+
+            <CheckBox Content="Follow mouse cursor instead of focus when launching editor in a multi screen environment"
+                          IsChecked="True"
+                          Margin="{StaticResource SmallTopMargin}"/>
+
+
+
+
+            <TextBlock Text="Appearnce" 
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <muxc:NumberBox Header="Zone highlight opacity (%)"
+                            Value="90"
+                            Minimum="0"
+                            Maximum="100"
+                            SpinButtonPlacementMode="Inline"
+                            HorizontalAlignment="Left"
+                            Margin="{StaticResource SmallTopMargin}" />
+
+            <muxc:ColorPicker Margin="{StaticResource SmallTopMargin}"/>
+        </StackPanel>
+    </Grid>
+</Page>

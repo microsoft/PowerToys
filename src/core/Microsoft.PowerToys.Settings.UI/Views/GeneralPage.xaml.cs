@@ -55,15 +55,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 case "light":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
-                    this.Rodio_Theme_Light.IsChecked = true;
+                    this.Radio_Theme_Light.IsChecked = true;
                     break;
                 case "dark":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
-                    this.Rodio_Theme_Dark.IsChecked = true;
+                    this.Radio_Theme_Dark.IsChecked = true;
                     break;
                 case "system":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
-                    this.Rodio_Theme_Default.IsChecked = true;
+                    this.Radio_Theme_Default.IsChecked = true;
                     break;
             }
         }

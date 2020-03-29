@@ -22,12 +22,12 @@
             <TextBlock Text="Shell integration"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <ToggleSwitch Header="Show on default context menu"
-                          IsOn="True"
+            <CheckBox Content="Show on default context menu"
+                          IsChecked="True"
                           Margin="{StaticResource SmallTopMargin}"/>
 
-            <ToggleSwitch Header="Only show on extended context menu (Shift + Right-click)"
-                          IsOn="True" 
+            <CheckBox Content="Only show on extended context menu (Shift + Right-click)"
+                          IsChecked="True" 
                           Margin="{StaticResource SmallTopMargin}" />
 
             <TextBlock Text="Miscellaneous" 

@@ -16,9 +16,9 @@
                 <ToggleSwitch Header="Run at startup" x:Name="ToggleSwitch_RunAtStartUp"  Margin="{StaticResource SmallTopMargin}" Toggled="ToggleSwitch_RunAtStartUp_Toggled" />
 
                 <muxc:RadioButtons Header="Theme" Margin="{StaticResource SmallTopMargin}">
-                    <RadioButton x:Name="Rodio_Theme_Dark" Content="Dark" Tag="Dark" Checked="Theme_Changed"/>
-                    <RadioButton x:Name="Rodio_Theme_Light"  Content="Light" Tag="Light" Checked="Theme_Changed"/>
-                    <RadioButton x:Name="Rodio_Theme_Default"  Content="System default" Tag="System" Checked="Theme_Changed"/>
+                    <RadioButton x:Name="Radio_Theme_Dark" Content="Dark" Tag="Dark" Checked="Theme_Changed"/>
+                    <RadioButton x:Name="Radio_Theme_Light"  Content="Light" Tag="Light" Checked="Theme_Changed"/>
+                    <RadioButton x:Name="Radio_Theme_Default"  Content="System default" Tag="System" Checked="Theme_Changed"/>
                 </muxc:RadioButtons>
 
                 <!--

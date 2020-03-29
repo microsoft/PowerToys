@@ -12,7 +12,7 @@
     <Grid>
 
         <StackPanel Orientation="Vertical">
-            <TextBlock Text="A quick launcher that has additional capabilities without sacrificing performance."
+            <TextBlock Text="A quick launcher that has additional capabilities without sacrificing performance." Style="{StaticResource BodyTextBlockStyle}"
                        TextWrapping="Wrap"/>
 
             <ToggleSwitch Header="Enable PowerLauncher"

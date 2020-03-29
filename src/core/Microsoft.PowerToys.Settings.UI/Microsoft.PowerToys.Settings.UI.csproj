@@ -64,6 +64,7 @@
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="ViewModels\GeneralViewModel.cs" />
+    <Compile Include="ViewModels\FancyZonesViewModel.cs" />
     <Compile Include="ViewModels\PowerRenameViewModel.cs" />
     <Compile Include="ViewModels\PowerLauncherViewModel.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
@@ -74,8 +75,8 @@
     <Compile Include="Views\PowerLauncherPage.xaml.cs">
       <DependentUpon>PowerLauncherPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\FanzyZonesPage.xaml.cs">
-      <DependentUpon>FanzyZonesPage.xaml</DependentUpon>
+    <Compile Include="Views\FancyZonesPage.xaml.cs">
+      <DependentUpon>FancyZonesPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\PowerRenamePage.xaml.cs">
       <DependentUpon>PowerRenamePage.xaml</DependentUpon>
@@ -156,7 +157,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\FanzyZonesPage.xaml">
+    <Page Include="Views\FancyZonesPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
