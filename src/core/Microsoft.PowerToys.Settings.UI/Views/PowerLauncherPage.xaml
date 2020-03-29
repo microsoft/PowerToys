@@ -78,12 +78,12 @@
                      Width="320"
                      Margin="{StaticResource SmallTopMargin}"/>
 
-            <ToggleSwitch Header="Override Win+R key"
-                          IsOn="True"
+            <CheckBox Content="Override Win+R key"
+                          IsChecked="True"
                           Margin="{StaticResource SmallTopMargin}"/>
 
-            <ToggleSwitch Header="Override Win+S key"
-                          IsOn="True" 
+            <CheckBox Content="Override Win+S key"
+                          IsChecked="True" 
                           Margin="{StaticResource SmallTopMargin}" />
 
         </StackPanel>

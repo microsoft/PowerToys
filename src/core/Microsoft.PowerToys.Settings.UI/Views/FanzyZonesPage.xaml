@@ -33,12 +33,12 @@
             <TextBlock Text="Miscellaneous" 
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <CheckBox Content="Enable autocomplete and autosuggest of recently used inputs for search and replace values"
-                          IsChecked="True"
+            <ToggleSwitch Header="Enable autocomplete and autosuggest of recently used inputs for search and replace values"
+                          IsOn="True"
                           Margin="{StaticResource SmallTopMargin}"/>
 
-            <CheckBox Content="Restore search, replace and flags values on launch from previous run" 
-                          IsChecked="True" 
+            <ToggleSwitch Header="Restore search, replace and flags values on launch from previous run" 
+                          IsOn="True" 
                           Margin="{StaticResource SmallTopMargin}" />
 
             <muxc:NumberBox Header="Maximum numbers of items to show in recently used list"

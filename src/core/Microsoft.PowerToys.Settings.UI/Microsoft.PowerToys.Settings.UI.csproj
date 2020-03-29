@@ -74,6 +74,9 @@
     <Compile Include="Views\PowerLauncherPage.xaml.cs">
       <DependentUpon>PowerLauncherPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\FanzyZonesPage.xaml.cs">
+      <DependentUpon>FanzyZonesPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\PowerRenamePage.xaml.cs">
       <DependentUpon>PowerRenamePage.xaml</DependentUpon>
     </Compile>
@@ -152,6 +155,10 @@
     <Page Include="Views\PowerLauncherPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FanzyZonesPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\PowerRenamePage.xaml">
       <SubType>Designer</SubType>
