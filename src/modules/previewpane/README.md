@@ -1,15 +1,20 @@
-<center>
-
 <img width="200" src="../../../doc/images/Logo.jpg">
 
-# PowerPreview
+# File Explorer
+
+File Explorer add ons right now are just limited to Preview Pane additions for File Explorer.
+
+
+## Preview Pane
+
+Preview Pane is an existing feature in the File Explorer.  To enable it, you just click the View tab in the ribbon and then click `Preview Pane`.
+
 > Adding Custom Preview Handlers to Windows File Explorer Preview Pane.
 
 [**Overview**](#overview) · 
 [**Developing**](#Developing) · 
 [**MSIX Integration**](#Install-With-MSIX) · 
 [**Contributing »**](#Contributing)
-</center>
 
 ## Overview
 
