@@ -8,6 +8,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     using System.IO;
     using Microsoft.PowerToys.Settings.UI.Lib;
     using Microsoft.PowerToys.Settings.UI.ViewModels;
+    using Windows.System;
     using Windows.UI.Popups;
     using Windows.UI.Xaml;
     using Windows.UI.Xaml.Controls;
@@ -123,6 +124,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 settings.theme = themeName;
                 SettingsUtils.SaveSettings<GeneralSettings>(settings,string.Empty);
             }
+        }
+
+        private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
+        {
+            await Launcher.LaunchUriAsync(new Uri("https://github.com/microsoft/PowerToys/releases"));
         }
     }
 }

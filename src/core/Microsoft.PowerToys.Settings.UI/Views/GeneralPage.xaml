@@ -9,27 +9,56 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
-        <ScrollViewer>
-            <StackPanel Orientation="Vertical">
+    <Grid ColumnSpacing="32" RowSpacing="32">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="SmallLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Vertical">
 
-                <ToggleSwitch Header="Run at startup" x:Name="ToggleSwitch_RunAtStartUp"  Margin="{StaticResource SmallTopMargin}" Toggled="ToggleSwitch_RunAtStartUp_Toggled" />
+            <ToggleSwitch Header="Run at startup" x:Name="ToggleSwitch_RunAtStartUp"  Margin="{StaticResource SmallTopMargin}" Toggled="ToggleSwitch_RunAtStartUp_Toggled" />
 
-                <muxc:RadioButtons Header="Theme" Margin="{StaticResource SmallTopMargin}">
-                    <RadioButton x:Name="Radio_Theme_Dark" Content="Dark" Tag="Dark" Checked="Theme_Changed"/>
-                    <RadioButton x:Name="Radio_Theme_Light"  Content="Light" Tag="Light" Checked="Theme_Changed"/>
-                    <RadioButton x:Name="Radio_Theme_Default"  Content="System default" Tag="System" Checked="Theme_Changed"/>
-                </muxc:RadioButtons>
+            <muxc:RadioButtons Header="Theme" Margin="{StaticResource SmallTopMargin}">
+                <RadioButton x:Name="Radio_Theme_Dark" Content="Dark" Tag="Dark" Checked="Theme_Changed"/>
+                <RadioButton x:Name="Radio_Theme_Light"  Content="Light" Tag="Light" Checked="Theme_Changed"/>
+                <RadioButton x:Name="Radio_Theme_Default"  Content="System default" Tag="System" Checked="Theme_Changed"/>
+            </muxc:RadioButtons>
 
-                <!--
+            <!--
                     <TextBlock Text="Default apps" Style="{StaticResource SettingsGroupTitleStyle}"/>
                 <ToggleSwitch Header="Disable telemetry" IsOn="True" Margin="0,14,0,0" />
                 <TextBlock Text="PowerToys currently respects the Windows data &amp; feedback setting" Opacity="0.8" Margin="0,0,0,0" />
                     -->
 
-                <Button Background="{ThemeResource SystemAccentColor}" Content="Restart as admin" Margin="{StaticResource SmallTopMargin}" Foreground="White" Click="Restart_Elevated" />
+            <Button Content="Restart as admin" Margin="{StaticResource SmallTopMargin}" Style="{StaticResource AccentButtonStyle}" Click="Restart_Elevated" />
 
-                <!--
+            <!--
                 <TextBlock Text="Default apps" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,34,0,8"/>
                 <ComboBox Header="Shell" SelectedIndex="0" MinWidth="240" Margin="0,14,0,0">
                     <ComboBoxItem>PowerShell</ComboBoxItem>
@@ -39,15 +68,31 @@
                 </ComboBox>
                -->
 
-                <TextBlock Text="About PowerToys" Style="{StaticResource SettingsGroupTitleStyle}"/>
-                <TextBlock Text="Version 0.15.1.0" FontWeight="Bold" Margin="{StaticResource SmallTopMargin}" />
-                <!--<Button Background="{ThemeResource SystemAccentColor}" Content="Check for updates" Margin="0,10,0,0" Foreground="White" />
-                 TO DO: The styling of this button should be improved so the hover/pressed states are representing the SystemAccentColor -->
+        </StackPanel>
 
-                <HyperlinkButton Content="Report a bug" NavigateUri="https://github.com/microsoft/PowerToys/issues" />
-                <HyperlinkButton Content="Request a feature"  NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
-                <HyperlinkButton Content="Privacy statement" NavigateUri=" http://go.microsoft.com/fwlink/?LinkId=521839" />
-            </StackPanel>
-        </ScrollViewer>
+        <StackPanel x:Name="SidePanel"
+                                Orientation="Vertical"
+                                HorizontalAlignment="Left"
+                                Width="{StaticResource SidePanelWidth}"
+                                Grid.Column="1">
+
+            <TextBlock Text="About PowerToys"
+                                   Style="{StaticResource SettingsGroupTitleStyle}"
+                                   Margin="{StaticResource XSmallBottomMargin}"/>
+            <TextBlock Text="Version 0.15.2" FontWeight="Bold" Margin="{StaticResource SmallTopMargin}" />
+            <Button Content="Check for updates" Margin="{StaticResource SmallTopMargin}" Foreground="White" Style="{StaticResource AccentButtonStyle}" Click="CheckForUpdates_Click" />
+
+            <HyperlinkButton Content="Report a bug" NavigateUri="https://github.com/microsoft/PowerToys/issues" Margin="{StaticResource SmallTopMargin}" />
+            <HyperlinkButton Content="Request a feature"  NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
+            <HyperlinkButton Content="Privacy statement" NavigateUri=" http://go.microsoft.com/fwlink/?LinkId=521839" />
+
+         
+
+            <TextBlock Text="Contributors" Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <HyperlinkButton Content="Contributor name"/>
+            <HyperlinkButton Content="Contributor name"/>
+            <HyperlinkButton Content="Contributor name"/>
+        </StackPanel>
     </Grid>
 </Page>

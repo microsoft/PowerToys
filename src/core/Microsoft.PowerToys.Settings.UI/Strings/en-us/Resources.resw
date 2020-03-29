@@ -145,4 +145,8 @@
     <value>Shortcut Guide</value>
     <comment>Navigation view item name for Shortcut Guide</comment>
   </data>
+  <data name="Shell_FancyZones.Content" xml:space="preserve">
+    <value>FancyZones</value>
+    <comment>Navigation view item name for FancyZones</comment>
+  </data>
 </root>

@@ -1,0 +1,13 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Styles">
+
+    <x:Double x:Key="SidePanelWidth">180</x:Double>
+
+    <!-- Breakpoint for wide layout (side panel next to content) -->
+    <x:Double x:Key="WideLayoutMinWidth">1100</x:Double>
+    
+    <!-- Breakpoint for small layout (side panel under content) -->
+    <x:Double x:Key="SmallLayoutMinWidth">480</x:Double>
+</ResourceDictionary>

@@ -9,7 +9,37 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
+    <Grid ColumnSpacing="32" RowSpacing="32">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="SmallLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
         <StackPanel Orientation="Vertical">
             <TextBlock Text="Create window layouts to help make multi-tasking easy."
@@ -19,7 +49,7 @@
                           IsOn="True"
                           Margin="{StaticResource SmallTopMargin}" />
 
-            <TextBlock Text="General"
+            <TextBlock Text="Zone behaviour"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <CheckBox Content="Hold Shift key or any non-primary mouse button to enable zones while dragging"
@@ -57,9 +87,10 @@
 
 
 
-            <TextBlock Text="Appearnce" 
+            <TextBlock Text="Appearance" 
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
+            <!-- TO DO: Do we still need this numberbox? The colorpicker has an Alpha/Opacity option as well so we could use that -->
             <muxc:NumberBox Header="Zone highlight opacity (%)"
                             Value="90"
                             Minimum="0"
@@ -68,7 +99,48 @@
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}" />
 
-            <muxc:ColorPicker Margin="{StaticResource SmallTopMargin}"/>
+            <TextBlock Text="Zone highlight color (default: #0078D7)" 
+                       Style="{StaticResource BodyTextBlockStyle}"
+                       Margin="{StaticResource SmallTopMargin}" />
+            
+            <muxc:ColorPicker Margin="0,6,0,0"
+                              HorizontalAlignment="Left"
+                              IsMoreButtonVisible="True"
+                              IsColorSliderVisible="True"
+                              IsColorChannelTextInputVisible="True"
+                              IsHexInputVisible="True"
+                              IsAlphaEnabled="True"
+                              IsAlphaSliderVisible="True"
+                              IsAlphaTextInputVisible="True" />
+
+            <TextBlock Text="Excluded apps" 
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <TextBox Header="To exclude an application from snapping to zones add its name here (one per line). Excluded apps will react to the Windows Snap regardless of all other settings."
+                     Margin="{StaticResource SmallTopMargin}"/>
+            
+        </StackPanel>
+        
+        <StackPanel x:Name="SidePanel"
+                                Orientation="Vertical"
+                                HorizontalAlignment="Left"
+                                Width="{StaticResource SidePanelWidth}"
+                                Grid.Column="1">
+
+            <TextBlock Text="About this feature"
+                                   Style="{StaticResource SettingsGroupTitleStyle}"
+                                   Margin="{StaticResource XSmallBottomMargin}"/>
+
+            <HyperlinkButton Content="Module overview" NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/fancyzones/README.md"/>
+            <HyperlinkButton Content="Video demo" NavigateUri="https://www.youtube.com/watch?v=rTtGzZYAXgY"/>
+            <HyperlinkButton Content="Give feedback"/>
+
+            <TextBlock Text="Contributors"
+                           Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <HyperlinkButton Content="Contributor name"/>
+            <HyperlinkButton Content="Contributor name"/>
+            <HyperlinkButton Content="Contributor name"/>
         </StackPanel>
     </Grid>
 </Page>
