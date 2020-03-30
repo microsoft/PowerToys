@@ -144,7 +144,7 @@ namespace UnitTests_PreviewHandlerCommon
             Assert.IsFalse(testFormHandlerControl.Visible);
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public void FormHandlerControl_ShouldSetVisibletrue_WhenDoPreviewCalled()
         {
             // Arrange
@@ -155,7 +155,7 @@ namespace UnitTests_PreviewHandlerCommon
 
             // Assert
             Assert.IsTrue(testFormHandlerControl.Visible);
-        }
+        }*/
 
         [TestMethod]
         public void FormHandlerControl_ShouldSetParentHandle_WhenSetWindowCalled()
