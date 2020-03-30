@@ -7,7 +7,7 @@ File Explorer add ons right now are just limited to Preview Pane additions for F
 
 ## Preview Pane
 
-Preview Pane is an existing feature in the File Explorer which shows a lightweight, rich, read-only preview of the file's contents in the view's reading pane. To enable it, you just click the View tab in the ribbon and then click `Preview Pane`. Figure 1 shows an example of Markdown and Svg files previews in File Explorer with PowerToys.
+Preview Pane is an existing feature in the File Explorer which shows a lightweight, rich, read-only preview of the file's contents in the view's reading pane. To enable it, you just click the View tab in the ribbon and then click `Preview Pane`. Below is an example of Markdown and Svg files previews in File Explorer with PowerToys.
 
 ![PowerToys Preview Pane Demo](../../../doc/images/preview_pane/demo.gif)
 
