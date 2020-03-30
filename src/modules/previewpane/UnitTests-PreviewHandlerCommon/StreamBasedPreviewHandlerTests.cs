@@ -29,7 +29,7 @@ namespace UnitTests_PreviewHandlerCommon
         [DataTestMethod]
         [DataRow((uint)0)]
         [DataRow((uint)1)]
-        public void FileBasedPreviewHandler_ShouldSetFilePath_WhenInitializeCalled(uint grfMode)
+        public void StreamBasedPreviewHandler_ShouldSetStream_WhenInitializeCalled(uint grfMode)
         {
             // Arrange
             var streamBasedPreviewHandler = new TestStreamBasedPreviewHandler();

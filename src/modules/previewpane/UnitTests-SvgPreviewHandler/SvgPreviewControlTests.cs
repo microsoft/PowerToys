@@ -19,6 +19,7 @@ namespace UnitTests_SvgPreviewHandler
     [TestClass]
     public class SvgPreviewControlTests
     {
+        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldAddExtendedBrowserControl_WhenDoPreviewCalled()
         {
@@ -33,6 +34,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.IsInstanceOfType(svgPreviewControl.Controls[0], typeof(WebBrowserExt));
         }
 
+        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldSetDocumentStream_WhenDoPreviewCalled()
         {
@@ -46,6 +48,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.IsNotNull(((WebBrowser)svgPreviewControl.Controls[0]).DocumentStream);
         }
 
+        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldDisableWebBrowserContextMenu_WhenDoPreviewCalled()
         {
@@ -59,6 +62,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).IsWebBrowserContextMenuEnabled, false);
         }
 
+        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldFillDockForWebBrowser_WhenDoPreviewCalled()
         {
@@ -72,6 +76,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).Dock, DockStyle.Fill);
         }
 
+        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldSetScriptErrorsSuppressedProperty_WhenDoPreviewCalled()
         {
@@ -85,6 +90,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).ScriptErrorsSuppressed, true);
         }
 
+        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldSetScrollBarsEnabledProperty_WhenDoPreviewCalled()
         {
@@ -98,6 +104,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).ScrollBarsEnabled, true);
         }
 
+        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldDisableAllowNavigation_WhenDoPreviewCalled()
         {
@@ -111,6 +118,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).AllowNavigation, false);
         }
 
+        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldAddValidInfoBar_IfSvgPreviewThrows()
         {
@@ -136,7 +144,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.AreEqual(textBox.BorderStyle, BorderStyle.None);
         }
 
-
+        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_InfoBarWidthShouldAdjustWithParentControlWidthChanges_IfSvgPreviewThrows()
         {
@@ -161,6 +169,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.AreEqual(finalParentWidth, textBox.Width);
         }
 
+        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldAddTextBox_IfBlockedElementsArePresent()
         {
@@ -180,6 +189,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.AreEqual(svgPreviewControl.Controls.Count, 2);
         }
 
+        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldNotAddTextBox_IfNoBlockedElementsArePresent()
         {
@@ -199,6 +209,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.AreEqual(svgPreviewControl.Controls.Count, 1);
         }
 
+        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_InfoBarWidthShouldAdjustWithParentControlWidthChanges_IfBlockedElementsArePresent()
         {

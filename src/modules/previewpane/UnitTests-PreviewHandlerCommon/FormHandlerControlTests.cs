@@ -17,6 +17,7 @@ namespace UnitTests_PreviewHandlerCommon
         private class TestFormControl : FormHandlerControl
         { }
 
+        [STAThread]
         [TestMethod]
         public void FormHandlerControl_ShouldCreateHandle_OnIntialization()
         {
@@ -27,6 +28,7 @@ namespace UnitTests_PreviewHandlerCommon
             Assert.IsTrue(testFormHandlerControl.IsHandleCreated);
         }
 
+        [STAThread]
         [TestMethod]
         public void FormHandlerControl_ShouldSetVisibleFalse_OnIntialization()
         {
@@ -37,6 +39,7 @@ namespace UnitTests_PreviewHandlerCommon
             Assert.IsFalse(testFormHandlerControl.Visible);
         }
 
+        [STAThread]
         [TestMethod]
         public void FormHandlerControl_ShouldSetFormBorderStyle_OnIntialization()
         {
@@ -47,6 +50,7 @@ namespace UnitTests_PreviewHandlerCommon
             Assert.AreEqual(FormBorderStyle.None, testFormHandlerControl.FormBorderStyle);
         }
 
+        [STAThread]
         [TestMethod]
         public void FormHandlerControl_ShouldReturnValidHandle_WhenGetHandleCalled()
         {
@@ -60,6 +64,7 @@ namespace UnitTests_PreviewHandlerCommon
             Assert.AreEqual(testFormHandlerControl.Handle, handle);
         }
 
+        [STAThread]
         [TestMethod]
         public void FormHandlerControl_ShouldSetBackgroundColor_WhenSetBackgroundColorCalled()
         {
@@ -74,6 +79,7 @@ namespace UnitTests_PreviewHandlerCommon
             Assert.AreEqual(color, testFormHandlerControl.BackColor);
         }
 
+        [STAThread]
         [TestMethod]
         public void FormHandlerControl_ShouldSetFont_WhenSetFontCalled()
         {
@@ -88,6 +94,7 @@ namespace UnitTests_PreviewHandlerCommon
             Assert.AreEqual(font, testFormHandlerControl.Font);
         }
 
+        [STAThread]
         [TestMethod]
         public void FormHandlerControl_ShouldUpdateBounds_WhenSetRectCalled()
         {
@@ -102,6 +109,7 @@ namespace UnitTests_PreviewHandlerCommon
             Assert.AreEqual(bounds, testFormHandlerControl.Bounds);
         }
 
+        [STAThread]
         [TestMethod]
         public void FormHandlerControl_ShouldSetTextColor_WhenSetTextColorCalled()
         {
@@ -116,6 +124,7 @@ namespace UnitTests_PreviewHandlerCommon
             Assert.AreEqual(color, testFormHandlerControl.ForeColor);
         }
 
+        [STAThread]
         [TestMethod]
         public void FormHandlerControl_ShouldClearAllControls_WhenUnloadCalled()
         {
@@ -131,6 +140,7 @@ namespace UnitTests_PreviewHandlerCommon
             Assert.AreEqual(0, testFormHandlerControl.Controls.Count);
         }
 
+        [STAThread]
         [TestMethod]
         public void FormHandlerControl_ShouldSetVisibleFalse_WhenUnloadCalled()
         {
@@ -144,6 +154,7 @@ namespace UnitTests_PreviewHandlerCommon
             Assert.IsFalse(testFormHandlerControl.Visible);
         }
 
+        [STAThread]
         [TestMethod]
         public void FormHandlerControl_ShouldSetVisibletrue_WhenDoPreviewCalled()
         {
@@ -157,6 +168,7 @@ namespace UnitTests_PreviewHandlerCommon
             Assert.IsTrue(testFormHandlerControl.Visible);
         }
 
+        [STAThread]
         [TestMethod]
         public void FormHandlerControl_ShouldSetParentHandle_WhenSetWindowCalled()
         {

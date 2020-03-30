@@ -14,6 +14,7 @@ namespace PreviewPaneUnitTests
     [TestClass]
     public class MarkdownPreviewHandlerTest
     {
+        [STAThread]
         [TestMethod]
         public void MarkdownPreviewHandlerControl__AddsBrowserToForm_WhenDoPreviewIsCalled()
         {
@@ -28,6 +29,7 @@ namespace PreviewPaneUnitTests
             Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[0], typeof(WebBrowserExt));
         }
 
+        [STAThread]
         [TestMethod]
         public void MarkdownPreviewHandlerControl__AddsInfoBarToFormIfExternalImageLinkPresent_WhenDoPreviewIsCalled()
         {
@@ -42,6 +44,7 @@ namespace PreviewPaneUnitTests
             Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[1], typeof(RichTextBox));
         }
 
+        [STAThread]
         [TestMethod]
         public void MarkdownPreviewHandlerControl__AddsInfoBarToFormIfHTMLImageTagIsPresent_WhenDoPreviewIsCalled()
         {
@@ -56,6 +59,7 @@ namespace PreviewPaneUnitTests
             Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[1], typeof(RichTextBox));
         }
 
+        [STAThread]
         [TestMethod]
         public void MarkdownPreviewHandlerControl__DoesNotAddInfoBarToFormIfExternalImageLinkNotPresent_WhenDoPreviewIsCalled()
         {
@@ -70,6 +74,7 @@ namespace PreviewPaneUnitTests
             Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[0], typeof(WebBrowserExt));
         }
 
+        [STAThread]
         [TestMethod]
         public void MarkdownPreviewHandlerControl__UpdatesWebBrowserSettings_WhenDoPreviewIsCalled()
         {
@@ -89,6 +94,7 @@ namespace PreviewPaneUnitTests
             Assert.AreEqual(((WebBrowser)markdownPreviewHandlerControl.Controls[0]).AllowNavigation, false);
         }
 
+        [STAThread]
         [TestMethod]
         public void MarkdownPreviewHandlerControl__UpdateInfobarSettings_WhenDoPreviewIsCalled()
         {
