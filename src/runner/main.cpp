@@ -204,7 +204,7 @@ int runner(bool isProcessElevated)
             L"ImageResizerExt.dll",
             L"powerpreview.dll",
             L"WindowWalker.dll",
-            L"PowerKeys.dll"
+            L"KeyboardManager.dll"
         };
         for (auto& file : std::filesystem::directory_iterator(L"modules/"))
         {

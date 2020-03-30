@@ -1,9 +1,8 @@
 #pragma once
-//#include "pch.h"
 #include "Helpers.h"
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <winrt/Windows.UI.Xaml.Controls.h>
-
+using namespace winrt::Windows::UI::Xaml::Controls;
 
 // Enum type to store different states of the UI
 enum class KeyboardManagerUIState
