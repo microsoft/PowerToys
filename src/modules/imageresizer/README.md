@@ -23,7 +23,7 @@ Image Resizer allows the user to configure the following settings:
 The user can add new preset sizes. Each size can be configured as Fill, Fit or Stretch. The dimension to be used for resizing can also be configured as Centimeters, Inches, Percent and Pixels.
 
 ### Encoding
-The user can change the fallback encoder and modify PNG, JPEG and TIFF settings.
+The user can change the fallback encoder (the one it uses when it can't save as the original format) and modify PNG, JPEG and TIFF settings.
 
 ### File
 The user can modify the format of the file name of the resized image. They can also choose to retain the original _last modified_ date on the resized image.
