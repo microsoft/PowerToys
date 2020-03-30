@@ -69,7 +69,7 @@
         <SolidColorBrush x:Key="BackgroundColor" Color="#BF333333"/>
     </UserControl.Resources>
 
-    <Border BorderBrush="#33FFFFFF" Background="{StaticResource BackgroundColor}" BorderThickness="1">
+    <Border BorderBrush="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}" Background="{StaticResource BackgroundColor}" BorderThickness="1">
         <Grid x:Name="Frame">
             <Grid.RowDefinitions>
                 <RowDefinition Height="8"/>
