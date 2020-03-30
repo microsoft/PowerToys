@@ -150,7 +150,12 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
             {
                 DWORD originalKey = std::stoi(originalKeyString.c_str());
                 DWORD newKey = std::stoi(newKeyString.c_str());
-                keyboardManagerState.AddSingleKeyRemap(originalKey, newKey);
+
+                bool result = keyboardManagerState.AddSingleKeyRemap(originalKey, newKey);
+                if (!result)
+                {
+                    isSuccess = false;
+                }
             }
             else
             {
@@ -181,10 +186,12 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     SingleKeyRemapControl::keyboardManagerState = &keyboardManagerState;
 
     // Load existing remaps into UI
+    std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
     for (const auto& it : keyboardManagerState.singleKeyReMap)
     {
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, it.first, it.second);
     }
+    lock.unlock();
 
     // Add remap key button
     Windows::UI::Xaml::Controls::Button addRemapKey;

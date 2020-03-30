@@ -109,7 +109,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     originalShortcutHeader.Margin({ 0, 0, 0, 10 });
     tableHeaderRow.Children().Append(originalShortcutHeader);
 
-     // Second header textblock in the header row of the shortcut table
+    // Second header textblock in the header row of the shortcut table
     TextBlock newShortcutHeader;
     newShortcutHeader.Text(winrt::to_hstring("New Shortcut:"));
     newShortcutHeader.FontWeight(Text::FontWeights::Bold());
@@ -143,7 +143,11 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
                 // Shortcut should consist of atleast two keys
                 if (originalKeys.size() > 1 && newKeys.size() > 1)
                 {
-                    keyboardManagerState.AddOSLevelShortcut(originalKeys, newKeys);
+                    bool result = keyboardManagerState.AddOSLevelShortcut(originalKeys, newKeys);
+                    if (!result)
+                    {
+                        isSuccess = false;
+                    }
                 }
                 else
                 {
@@ -179,10 +183,12 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     ShortcutControl::keyboardManagerState = &keyboardManagerState;
 
     // Load existing shortcuts into UI
-    for (const auto& it: keyboardManagerState.osLevelShortcutReMap)
+    std::unique_lock<std::mutex> lock(keyboardManagerState.osLevelShortcutReMap_mutex);
+    for (const auto& it : keyboardManagerState.osLevelShortcutReMap)
     {
         ShortcutControl::AddNewShortcutControlRow(shortcutTable, it.first, it.second.first);
     }
+    lock.unlock();
 
     // Add shortcut button
     Windows::UI::Xaml::Controls::Button addShortcut;
