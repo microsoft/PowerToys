@@ -188,6 +188,6 @@
   </Target>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="taskkill /f /fi &quot;IMAGENAME eq Launcher.exe&quot;" />
+    <Exec Command="taskkill /f /fi &quot;IMAGENAME eq PowerLauncher.exe&quot;" />
   </Target>
 </Project>
