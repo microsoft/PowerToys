@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+﻿/*// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -118,7 +118,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).AllowNavigation, false);
         }
 
-        /*[STAThread]
+        *//*[STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldAddValidInfoBar_IfSvgPreviewThrows()
         {
@@ -167,7 +167,7 @@ namespace UnitTests_SvgPreviewHandler
             // Assert
             Assert.AreEqual(intialParentWidth, intitialTextBoxWidth);
             Assert.AreEqual(finalParentWidth, textBox.Width);
-        }*/
+        }*//*
 
         [STAThread]
         [TestMethod]
@@ -261,3 +261,4 @@ namespace UnitTests_SvgPreviewHandler
         }
     }
 }
+*/
