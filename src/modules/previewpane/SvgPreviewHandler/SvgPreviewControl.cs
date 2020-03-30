@@ -78,7 +78,6 @@ namespace SvgPreviewHandler
                     this.infoBarAdded = true;
                     this.AddTextBoxControl(Resource.SvgNotPreviewedError);
                     base.DoPreview(dataSource);
-                    throw ex;
                 }
             });
         }
