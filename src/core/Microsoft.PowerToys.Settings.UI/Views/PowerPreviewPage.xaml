@@ -1,0 +1,27 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerPreviewPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <StackPanel Orientation="Vertical">
+            <TextBlock Text="These settings allow you to manage your Windows File Explorer Addons."
+                       TextWrapping="Wrap"/>
+
+            <ToggleSwitch Header="Svg Preview Handler"
+                              x:Name="ToggleSwitch_Preview_SVG"
+                              Margin="{StaticResource SmallTopMargin}"
+                              Toggled="ToggleSwitch_Preview_SVG_Toggled" />
+
+            <ToggleSwitch Header="Markdown Preview Handler"
+                              x:Name="ToggleSwitch_Preview_MD"
+                              Margin="{StaticResource SmallTopMargin}"
+                              Toggled="ToggleSwitch_Preview_MD_Toggled" />
+
+        </StackPanel>
+    </Grid>
+</Page>

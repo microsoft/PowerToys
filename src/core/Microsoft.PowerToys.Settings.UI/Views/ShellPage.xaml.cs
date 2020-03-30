@@ -5,10 +5,13 @@
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
     using System;
+    using System.Collections.Generic;
     using Microsoft.PowerToys.Settings.UI.Activation;
     using Microsoft.PowerToys.Settings.UI.Helpers;
+    using Microsoft.PowerToys.Settings.UI.Lib;
     using Microsoft.PowerToys.Settings.UI.Services;
     using Microsoft.PowerToys.Settings.UI.ViewModels;
+    using Windows.UI.Xaml;
     using Windows.UI.Xaml.Controls;
 
     /// <summary>
@@ -30,19 +33,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// A shell handler to be used to update contents of the shell dynamically from page within the frame.
         /// </summary>
-        public static Microsoft.UI.Xaml.Controls.NavigationView ShellHandler = null;
-
-
-        /// <summary>
-        /// IPC callback function for restart elevated.
-        /// </summary>
-        public static IPCMessageCallback Restart_Elevated_Callback = null;
-
+        public static ShellPage ShellHandler = null;
 
         /// <summary>
         /// IPC callback function for run on start up.
         /// </summary>
-        public static IPCMessageCallback Run_OnStartUp_Callback = null;
+        public static IPCMessageCallback Default_SndMSG_Callback = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShellPage"/> class.
@@ -53,27 +49,61 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.InitializeComponent();
 
             this.DataContext = this.ViewModel;
-            ShellHandler = this.navigationView;
+            ShellHandler = this;
             this.ViewModel.Initialize(this.shellFrame, this.navigationView, this.KeyboardAccelerators);
             this.shellFrame.Navigate(typeof(GeneralPage));
-        }
-
-        /// <summary>
-        /// Restart elevated callback function  initialization.
-        /// </summary>
-        /// <param name="implmentation">delegate function implementation.</param>
-        public void SetRestartElevatedCallback(IPCMessageCallback implmentation)
-        {
-            Restart_Elevated_Callback = implmentation;
         }
 
         /// <summary>
         /// Run on start up callback function elevated initialization.
         /// </summary>
         /// <param name="implmentation">delegate function implementation.</param>
-        public void SetRunOnStartUpCallback(IPCMessageCallback implmentation)
+        public void SetDefaultSndMessageCallback(IPCMessageCallback implmentation)
         {
-            Run_OnStartUp_Callback = implmentation;
+            Default_SndMSG_Callback = implmentation;
+        }
+
+        public void HideFeatureDetails()
+        {
+            this.Feature_Details_Title.Visibility = Visibility.Collapsed;
+            this.Feature_Details.Visibility = Visibility.Collapsed;
+        }
+
+        public void ShowFeatureDetails()
+        {
+            this.Feature_Details_Title.Visibility = Visibility.Visible;
+            this.Feature_Details.Visibility = Visibility.Visible;
+        }
+
+        public void SetFeatureDetails(string moduleOverviewLink,string reportBugLink)
+        {
+            this.Module_Overview_LinkButton.NavigateUri = new Uri(moduleOverviewLink);
+            this.Module_Feedback_LinkButton.NavigateUri = new Uri(reportBugLink);
+        }
+
+        public void HideContributorsList()
+        {
+            this.Contributors_List_Title.Visibility = Visibility.Collapsed;
+            this.Contributors_List.Visibility = Visibility.Collapsed;
+        }
+
+        public void ShowContributorsList()
+        {
+            this.Contributors_List_Title.Visibility = Visibility.Visible;
+            this.Contributors_List.Visibility = Visibility.Visible;
+        }
+
+        public void PopulateContributorsList(List<Contributor> contributors)
+        {
+            this.Contributors_List.Items.Clear();
+
+            foreach (Contributor contributor in contributors)
+            {
+                HyperlinkButton link = new HyperlinkButton();
+                link.Content = contributor.Name;
+                link.NavigateUri = new Uri(contributor.Link);
+                this.Contributors_List.Items.Add(link);
+            }
         }
     }
 }
