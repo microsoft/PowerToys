@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -145,4 +145,8 @@
     <value>Shortcut Guide</value>
     <comment>Navigation view item name for Shortcut Guide</comment>
   </data>
+   <data name="Shell_PowerPreview.Content" xml:space="preserve">
+    <value>File Explorer Preview</value>
+    <comment>File Explorer Preview Settings</comment>
+  </data> 
 </root>

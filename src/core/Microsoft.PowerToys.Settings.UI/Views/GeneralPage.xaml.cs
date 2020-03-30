@@ -1,4 +1,4 @@
-﻿// <copyright file="GeneralPage.xaml.cs" company="Microsoft Corp">
+// <copyright file="GeneralPage.xaml.cs" company="Microsoft Corp">
 // Copyright (c) Microsoft Corp. All rights reserved.
 // </copyright>
 
@@ -35,14 +35,32 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <inheritdoc/>
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            //GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
             base.OnNavigatedTo(e);
-            
-            // load and apply theme settings
-          //  this.ReLoadTheme(settings.theme);
+            GeneralSettings settings = null;
+            try
+            {
+                // get settings file if they exist.
+                settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+                // load and apply theme settings
+                this.ReLoadTheme(settings.theme);
 
-            // load run on start up ui settings value and update the ui state.
-            //this.ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
+                // load run on start-up settings value and update the ui state.
+                this.ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
+            }
+            catch (Exception exp)
+            {
+                // create settings file if one is not found.
+                settings = new GeneralSettings();
+                SettingsUtils.SaveSettings<GeneralSettings>(settings, string.Empty);
+                // load and apply theme settings
+                this.ReLoadTheme(settings.theme);
+
+                // load run on start up ui settings value and update the ui state.
+                this.ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
+            }
+
+            ShellPage.ShellHandler.HideContributorsList();
+            ShellPage.ShellHandler.HideFeatureDetails();
         }
 
         /// <summary>
@@ -90,9 +108,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SettingsUtils.SaveSettings<GeneralSettings>(settings, string.Empty);
                 OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
 
-                if (ShellPage.Run_OnStartUp_Callback != null)
+                if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Run_OnStartUp_Callback(outsettings.ToString());
+                    ShellPage.Default_SndMSG_Callback(outsettings.ToString());
                 }
             }
         }
@@ -103,9 +121,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             settings.run_elevated = true;
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
 
-            if (ShellPage.Restart_Elevated_Callback != null)
+            if (ShellPage.Default_SndMSG_Callback != null)
             {
-                ShellPage.Restart_Elevated_Callback(outsettings.ToString());
+                ShellPage.Default_SndMSG_Callback(outsettings.ToString());
             }
         }
 
@@ -121,7 +139,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // update and save settings to file.
                 GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
                 settings.theme = themeName;
-                SettingsUtils.SaveSettings<GeneralSettings>(settings,string.Empty);
+                SettingsUtils.SaveSettings<GeneralSettings>(settings, string.Empty);
             }
         }
     }
