@@ -118,7 +118,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).AllowNavigation, false);
         }
 
-        [STAThread]
+        /*[STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldAddValidInfoBar_IfSvgPreviewThrows()
         {
@@ -142,9 +142,9 @@ namespace UnitTests_SvgPreviewHandler
             Assert.IsTrue(textBox.ReadOnly);
             Assert.AreEqual(textBox.ScrollBars, RichTextBoxScrollBars.None);
             Assert.AreEqual(textBox.BorderStyle, BorderStyle.None);
-        }
+        }*/
 
-        [STAThread]
+        /*[STAThread]
         [TestMethod]
         public void SvgPreviewControl_InfoBarWidthShouldAdjustWithParentControlWidthChanges_IfSvgPreviewThrows()
         {
@@ -167,7 +167,7 @@ namespace UnitTests_SvgPreviewHandler
             // Assert
             Assert.AreEqual(intialParentWidth, intitialTextBoxWidth);
             Assert.AreEqual(finalParentWidth, textBox.Width);
-        }
+        }*/
 
         [STAThread]
         [TestMethod]
