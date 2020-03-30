@@ -7,7 +7,9 @@ File Explorer add ons right now are just limited to Preview Pane additions for F
 
 ## Preview Pane
 
-Preview Pane is an existing feature in the File Explorer.  To enable it, you just click the View tab in the ribbon and then click `Preview Pane`.
+Preview Pane is an existing feature in the File Explorer which shows a lightweight, rich, read-only preview of the file's contents in the view's reading pane. To enable it, you just click the View tab in the ribbon and then click `Preview Pane`. Figure 1 shows an example of Markdown and Svg files previews in File Explorer with PowerToys.
+
+![PowerToys Preview Pane Demo](../../../doc/images/preview_pane/demo.gif)
 
 > Adding Custom Preview Handlers to Windows File Explorer Preview Pane.
 
@@ -18,16 +20,7 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 
 ## Overview
 
-Preview handlers are called when an item is selected to show a lightweight, rich, read-only preview of the file's contents in the view's reading pane. This is done without launching the file's associated application. Figure 1 shows an example of a preview handler that preview a .md file type. Please follow this [documentation](https://docs.microsoft.com/en-us/archive/msdn-magazine/2007/january/windows-vista-and-office-writing-your-own-preview-handlers) to start developing a preview handler, when done, continue with this documentation to learn how to integrate a preview handler into PowerToys.
-
-<center>
-
-<figure>
-  <img src="../../../doc/images/preview_pane/markdown.gif" alt="Mark Down Preview Handler Demo" >
-  <figcaption>Figure 1 : Mark Down Preview Handler Demo</figcaption>
-</figure>
-
-</center>
+Preview handlers are called when an item is selected to show a lightweight, rich, read-only preview of the file's contents in the view's reading pane. This is done without launching the file's associated application. Please follow this [documentation](https://docs.microsoft.com/en-us/archive/msdn-magazine/2007/january/windows-vista-and-office-writing-your-own-preview-handlers) to start developing a preview handler, when done, continue with this documentation to learn how to integrate a preview handler into PowerToys.
 
 ## Developing
 
