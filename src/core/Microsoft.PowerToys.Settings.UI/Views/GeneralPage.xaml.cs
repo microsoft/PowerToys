@@ -1,4 +1,4 @@
-﻿// <copyright file="GeneralPage.xaml.cs" company="Microsoft Corp">
+// <copyright file="GeneralPage.xaml.cs" company="Microsoft Corp">
 // Copyright (c) Microsoft Corp. All rights reserved.
 // </copyright>
 
