@@ -40,9 +40,9 @@ steps:
     configuration: '$(BuildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
+      **\PreviewPaneUnitTests.dll
       **\UnitTests-SvgPreviewHandler.dll
       **\UnitTests-PreviewHandlerCommon.dll
-      **\UnitTests-MarkdownPreviewHandler.dll
       **\powerpreviewTest.dll
       !**\*TestAdapter.dll
       !**\obj\**
