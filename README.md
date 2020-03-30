@@ -91,14 +91,18 @@ Our mantra for the 0.16 was adding in new features along with a continual push f
 Below are just a few of the bullet items from this release.
 
 - We shipped [v0.16][github-release-link]!
-- FancyZone improvement: Zone switching now works between monitors!
+- FancyZone improvement: 
+  - Multi-Monitor improvement: Zone flipping switching now works between monitors!
+  - Simplified UX: Removed layout hot-swap and flashing due to multi-monitor lacking
 - New Utilities!
   - Markdown Preview pane extension
   - SVG Preview pane extension
   - Image Resizer Window Shell extension
   - Window Walker, an alt-tab alternative
 - Fixed over 100 issues!
-- Initial UX automated testing brought online
+- Testing improvements
+  - 54 UX Functional tests
+  - 161 new Unit tests
 
 For [0.17](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F3), we are proactively working on:
 
